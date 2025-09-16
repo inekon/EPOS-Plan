@@ -70,8 +70,10 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -79,12 +81,18 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CSExeCOMServer">
+      <HintPath>..\CSExeCOMServer\bin\x86\Debug\CSExeCOMServer.exe</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -96,83 +104,368 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\FileDlgClass.cs" />
+    <Compile Include="Classes\Form3Src.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Classes\RecordSet.cs" />
+    <Compile Include="Classes\Simulation\SimulationGebaeude.cs" />
+    <Compile Include="Classes\Simulation\SimulationStrombedarf.cs" />
+    <Compile Include="Classes\StromTestClass.cs" />
     <Compile Include="Controller\ApplikationCtrl.cs" />
-    <Compile Include="Controller\Class1.cs" />
-    <Compile Include="Controller\KlimaregionCtrl .cs" />
+    <Compile Include="Controller\BrennstoffCtrl.cs" />
+    <Compile Include="Controller\GebaeudeCtrl.cs" />
+    <Compile Include="Controller\GebäudeKontextMenuCtrl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controller\HeizkesselKontextMenuCtrl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controller\KenndatenCtrl.cs" />
+    <Compile Include="Controller\KlimaregionCtrl.cs" />
+    <Compile Include="Controller\ProjektGebaeudeCtrl.cs" />
+    <Compile Include="Controller\ProzesswaermeKontextMenuCtrl.cs" />
+    <Compile Include="Controller\Z_ProjektProzesswaermeCtrl.cs" />
+    <Compile Include="Controller\ProzesswaermeCtrl.cs" />
+    <Compile Include="Controller\StromspeicherKontextMenuCtrl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controller\TagVCtrl.cs" />
+    <Compile Include="Controller\WaermebedarfExternCtrl.cs" />
+    <Compile Include="Controller\WaermebedarfExternKontextMenuCtrl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Model\ProzesswaermeModel.cs" />
+    <Compile Include="Model\WaermebedarfExternModel.cs" />
+    <Compile Include="Controller\WPKontextMenuCtrl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controller\StromspeicherCtrl.cs" />
+    <Compile Include="Controller\WErzeugerCtrl.cs" />
+    <Compile Include="Controller\WizardCtrl.cs" />
+    <Compile Include="Controller\KlimadatenCtrl.cs" />
     <Compile Include="Controller\ProjektCtrl.cs" />
-    <Compile Include="Controller\WPTestCtrl.cs" />
+    <Compile Include="Controller\WPCtrl.cs" />
+    <Compile Include="Controller\Z_ProjGebCtrl.cs" />
     <Compile Include="Model\ApplikationModel.cs" />
-    <Compile Include="Model\KlimaregionModel.cs" />
+    <Compile Include="Model\BrennstoffModel.cs" />
+    <Compile Include="Model\ProjektGebaeudeModel.cs" />
+    <Compile Include="Model\TagVDatenModel.cs" />
+    <Compile Include="Model\TagVModel.cs" />
+    <Compile Include="Model\GebaeudeModel.cs" />
+    <Compile Include="Model\KenndatenModel.cs" />
     <Compile Include="Model\KlimadatenModel.cs" />
+    <Compile Include="Model\KlimaregionModel.cs" />
+    <Compile Include="Model\StromspeicherModel.cs" />
+    <Compile Include="Model\WErzeugerModel.cs" />
     <Compile Include="Model\ProjektModel.cs" />
-    <Compile Include="Views\Form1.cs">
+    <Compile Include="Model\Z_ProjektProzesswaermeModel.cs" />
+    <Compile Include="Model\Z_ProjGebModel.cs" />
+    <Compile Include="Views\Prozesswärme\Form_EingDBProzess.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Views\Prozesswärme\Form_EingDBProzess.designer.cs">
+      <DependentUpon>Form_EingDBProzess.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Form_Klimaregionen.cs">
+    <Compile Include="Views\Prozesswärme\Form_EingProzTyp.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Form_Klimaregionen.Designer.cs">
-      <DependentUpon>Form_Klimaregionen.cs</DependentUpon>
+    <Compile Include="Views\Prozesswärme\Form_EingProzTyp.designer.cs">
+      <DependentUpon>Form_EingProzTyp.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Form_ProjektOpen.cs">
+    <Compile Include="Views\Prozesswärme\Form_ErgProzesswaerme.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Form_ProjektOpen.Designer.cs">
+    <Compile Include="Views\Prozesswärme\Form_ErgProzesswaerme.designer.cs">
+      <DependentUpon>Form_ErgProzesswaerme.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Prozesswärme\Form_Prozesswaerme.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Prozesswärme\Form_Prozesswaerme.designer.cs">
+      <DependentUpon>Form_Prozesswaerme.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_EingGebTyp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_EingGebTyp.designer.cs">
+      <DependentUpon>Form_EingGebTyp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_Gebaeude.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_Gebaeude.designer.cs">
+      <DependentUpon>Form_Gebaeude.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_Gebaeude1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_Gebaeude1.designer.cs">
+      <DependentUpon>Form_Gebaeude1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_Gebaeude2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_Gebaeude2.designer.cs">
+      <DependentUpon>Form_Gebaeude2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_GebaeudetypNeu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_GebaeudetypNeu.designer.cs">
+      <DependentUpon>Form_GebaeudetypNeu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_GebWohnflaeche.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Gebäude\Form_GebWohnflaeche.designer.cs">
+      <DependentUpon>Form_GebWohnflaeche.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Heizkessel\Form_Heizkessel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Heizkessel\Form_Heizkessel.Designer.cs">
+      <DependentUpon>Form_Heizkessel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Prozesswärme\Form_Prozesswaerme_Admin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Prozesswärme\Form_Prozesswaerme_Admin.designer.cs">
+      <DependentUpon>Form_Prozesswaerme_Admin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Stromspeicher\Form_Stromspeicher.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromspeicher\Form_Stromspeicher.designer.cs">
+      <DependentUpon>Form_Stromspeicher.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Stromspeicher\Form_StromspeicherItemNeu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromspeicher\Form_StromspeicherItemNeu.Designer.cs">
+      <DependentUpon>Form_StromspeicherItemNeu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Stromspeicher\Form_AdminStromspeicher.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromspeicher\Form_AdminStromspeicher.designer.cs">
+      <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_StromverbraucherEingabe.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_StromverbraucherEingabe.designer.cs">
+      <DependentUpon>Form_StromverbraucherEingabe.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Gebaeude.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Gebaeude.Designer.cs">
+      <DependentUpon>Wizard_Gebaeude.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Referenz.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Referenz.designer.cs">
+      <DependentUpon>Wizard_Referenz.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wärmebedarf\Form_Waermeeinlesen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wärmebedarf\Form_Waermeeinlesen.designer.cs">
+      <DependentUpon>Form_Waermeeinlesen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wärmepumpe\Form_WP.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wärmepumpe\Form_WP.Designer.cs">
+      <DependentUpon>Form_WP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Klimadaten\Klimadaten.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Klimadaten\Klimadaten.Designer.cs">
+      <DependentUpon>Klimadaten.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Projekt\Form_ProjektOpen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Projekt\Form_ProjektOpen.Designer.cs">
       <DependentUpon>Form_ProjektOpen.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Form_Projekt.cs">
+    <Compile Include="Views\Projekt\Form_ProjektDelete.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Form_Projekt.Designer.cs">
-      <DependentUpon>Form_Projekt.cs</DependentUpon>
+    <Compile Include="Views\Projekt\Form_ProjektDelete.Designer.cs">
+      <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Hauptformular\Form_Start.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Hauptformular\Form_Start.Designer.cs">
+      <DependentUpon>Form_Start.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Projekt.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Projekt.Designer.cs">
+      <DependentUpon>Wizard_Projekt.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\WPModel.cs" />
     <Compile Include="Classes\DbClass.cs" />
     <Compile Include="Classes\MDIHelperClass.cs" />
-    <Compile Include="Controller\ToolsClass.cs" />
+    <Compile Include="Classes\ToolsClass.cs" />
     <Compile Include="Controller\MenueCtrl.cs" />
-    <Compile Include="Views\MDIMainForm.cs">
+    <Compile Include="MDIMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\MDIMainForm.Designer.cs">
+    <Compile Include="MDIMainForm.Designer.cs">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Form_Main.cs">
+    <Compile Include="Views\Hauptformular\FormMain.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\FormMain.Designer.cs">
-      <DependentUpon>Form_Main.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\FormTest.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\FormTest.Designer.cs">
-      <DependentUpon>FormTest.cs</DependentUpon>
+    <Compile Include="Views\Hauptformular\FormMain.Designer.cs">
+      <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Views\Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Views\Wizard\Wizard_PV.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_PV.Designer.cs">
+      <DependentUpon>Wizard_PV.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Solar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Solar.designer.cs">
+      <DependentUpon>Wizard_Solar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Komponenten.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Komponenten.designer.cs">
+      <DependentUpon>Wizard_Komponenten.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Klima.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Klima.designer.cs">
+      <DependentUpon>Wizard_Klima.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Sp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Sp.Designer.cs">
+      <DependentUpon>Wizard_Sp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\WizardParent.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\WizardParent.designer.cs">
+      <DependentUpon>WizardParent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Classes\WizardItemClass.cs" />
+    <Compile Include="Views\Wizard\Wizard_WP.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_WP.designer.cs">
+      <DependentUpon>Wizard_WP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_WPItem.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_WPItem.Designer.cs">
+      <DependentUpon>Wizard_WPItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wärmepumpe\Kenndaten.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wärmepumpe\Kenndaten.Designer.cs">
+      <DependentUpon>Kenndaten.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Views\Gebäude\Form_EingGebTyp.resx">
+      <DependentUpon>Form_EingGebTyp.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form_Klimaregionen.resx">
-      <DependentUpon>Form_Klimaregionen.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude.resx">
+      <DependentUpon>Form_Gebaeude.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form_Main.resx">
-      <DependentUpon>Form_Main.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude1.resx">
+      <DependentUpon>Form_Gebaeude1.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form_ProjektOpen.resx">
+    <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude2.resx">
+      <DependentUpon>Form_Gebaeude2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_GebaeudetypNeu.resx">
+      <DependentUpon>Form_GebaeudetypNeu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_GebWohnflaeche.resx">
+      <DependentUpon>Form_GebWohnflaeche.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Hauptformular\FormMain.resx">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel.resx">
+      <DependentUpon>Form_Heizkessel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Prozesswärme\Form_EingDBProzess.resx">
+      <DependentUpon>Form_EingDBProzess.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Prozesswärme\Form_EingProzTyp.resx">
+      <DependentUpon>Form_EingProzTyp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Prozesswärme\Form_ErgProzesswaerme.resx">
+      <DependentUpon>Form_ErgProzesswaerme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Prozesswärme\Form_Prozesswaerme.resx">
+      <DependentUpon>Form_Prozesswaerme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Prozesswärme\Form_Prozesswaerme_Admin.resx">
+      <DependentUpon>Form_Prozesswaerme_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromspeicher\Form_Stromspeicher.resx">
+      <DependentUpon>Form_Stromspeicher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromspeicher\Form_StromspeicherItemNeu.resx">
+      <DependentUpon>Form_StromspeicherItemNeu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromspeicher\Form_AdminStromspeicher.resx">
+      <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_StromverbraucherEingabe.resx">
+      <DependentUpon>Form_StromverbraucherEingabe.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\WizardParent.resx">
+      <DependentUpon>WizardParent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Referenz.resx">
+      <DependentUpon>Wizard_Referenz.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_WP.resx">
+      <DependentUpon>Wizard_WP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmebedarf\Form_Waermeeinlesen.resx">
+      <DependentUpon>Form_Waermeeinlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WP.resx">
+      <DependentUpon>Form_WP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Klimadaten\Klimadaten.resx">
+      <DependentUpon>Klimadaten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Projekt\Form_ProjektOpen.resx">
       <DependentUpon>Form_ProjektOpen.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form_Projekt.resx">
-      <DependentUpon>Form_Projekt.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Projekt\Form_ProjektDelete.resx">
+      <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\FormTest.resx">
-      <DependentUpon>FormTest.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Hauptformular\Form_Start.resx">
+      <DependentUpon>Form_Start.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\MDIMainForm.resx">
+    <EmbeddedResource Include="Views\Wizard\Wizard_Projekt.resx">
+      <DependentUpon>Wizard_Projekt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MDIMainForm.resx">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -185,6 +478,27 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Views\Wizard\Wizard_PV.resx">
+      <DependentUpon>Wizard_PV.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Solar.resx">
+      <DependentUpon>Wizard_Solar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Komponenten.resx">
+      <DependentUpon>Wizard_Komponenten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Klima.resx">
+      <DependentUpon>Wizard_Klima.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Sp.resx">
+      <DependentUpon>Wizard_Sp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_WPItem.resx">
+      <DependentUpon>Wizard_WPItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Kenndaten.resx">
+      <DependentUpon>Kenndaten.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -242,6 +556,19 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Logo125_125.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\LogoInekon.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\germany-map-2431251_640.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\IMG-20250629-WA0001.jpg" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
