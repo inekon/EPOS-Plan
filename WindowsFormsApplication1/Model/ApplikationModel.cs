@@ -10,19 +10,21 @@ namespace WindowsFormsApplication1
     
     class ApplikationModel
     {
-        public int m_ID;
-        public int m_ID_Projekt;
-        public string m_szProjektname;
-        public string m_szBeschreibung;
-        public string m_icon;
+        public int ID;
+        public int ID_Projekt;
+        public string Projektname;
+        public string Beschreibung;
+        public int ID_Klimaregion;
+        public string Klimaregion;
 
         public ApplikationModel()
         {
-            m_ID = 0;
-            m_ID_Projekt = 0;
-            m_szProjektname = "";
-            m_szBeschreibung = "";
-            m_icon = "";
+            ID = 0;
+            ID_Projekt = 0;
+            Projektname = "";
+            Beschreibung = "";
+            ID_Klimaregion = 0;
+            Klimaregion = "";
         }
  
     }

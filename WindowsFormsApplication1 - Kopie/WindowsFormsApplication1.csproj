@@ -97,7 +97,6 @@
   <ItemGroup>
     <Compile Include="Classes\FileDlgClass.cs" />
     <Compile Include="Controller\ApplikationCtrl.cs" />
-    <Compile Include="Controller\Class1.cs" />
     <Compile Include="Controller\KlimaregionCtrl .cs" />
     <Compile Include="Controller\ProjektCtrl.cs" />
     <Compile Include="Controller\WPTestCtrl.cs" />
@@ -105,18 +104,6 @@
     <Compile Include="Model\KlimaregionModel.cs" />
     <Compile Include="Model\KlimadatenModel.cs" />
     <Compile Include="Model\ProjektModel.cs" />
-    <Compile Include="Views\Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Form_Klimaregionen.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Form_Klimaregionen.Designer.cs">
-      <DependentUpon>Form_Klimaregionen.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Form_ProjektOpen.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -134,17 +121,17 @@
     <Compile Include="Classes\MDIHelperClass.cs" />
     <Compile Include="Controller\ToolsClass.cs" />
     <Compile Include="Controller\MenueCtrl.cs" />
-    <Compile Include="Views\MDIMainForm.cs">
+    <Compile Include="MDIMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\MDIMainForm.Designer.cs">
+    <Compile Include="MDIMainForm.Designer.cs">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Form_Main.cs">
+    <Compile Include="Views\FormMain.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\FormMain.Designer.cs">
-      <DependentUpon>Form_Main.cs</DependentUpon>
+      <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\FormTest.cs">
       <SubType>Form</SubType>
@@ -154,25 +141,19 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Views\Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form_Klimaregionen.resx">
-      <DependentUpon>Form_Klimaregionen.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form_Main.resx">
-      <DependentUpon>Form_Main.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Views\Form_ProjektOpen.resx">
       <DependentUpon>Form_ProjektOpen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Form_Projekt.resx">
       <DependentUpon>Form_Projekt.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\FormMain.resx">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\FormTest.resx">
       <DependentUpon>FormTest.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\MDIMainForm.resx">
+    <EmbeddedResource Include="MDIMainForm.resx">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

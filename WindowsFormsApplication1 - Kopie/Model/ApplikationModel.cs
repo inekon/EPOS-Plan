@@ -8,21 +8,18 @@ using System.Windows.Forms;
 namespace WindowsFormsApplication1
 {
     
-    class WPModel
+    class ApplikationModel
     {
-        public WPModel[] items;
-
         public int ID;
-        public string WPName;
-        public string Firma;
+        public int ID_Projekt;
+        public string Projektname;
         public string Beschreibung;
 
-        public WPModel()
+        public ApplikationModel()
         {
-            items = null;
             ID = 0;
-            WPName = "";
-            Firma = "";
+            ID_Projekt = 0;
+            Projektname = "";
             Beschreibung = "";
         }
  

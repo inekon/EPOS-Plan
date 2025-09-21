@@ -52,9 +52,11 @@ namespace WindowsFormsApplication1
         {
             DBCommand.CommandText = "select * from Tab_Projekt order by Projektname";
             OdbcDataReader DBReader = DBCommand.ExecuteReader();
-            projektmodel.items = new ProjektModel[100];
+
+            int fCount = DBReader.FieldCount;
+            projektmodel.items = new ProjektModel[fCount];
+            string fName = DBReader.GetName(fCount - 1);
             rows = 0;
-            
             while (DBReader.Read())
             {
                 ProjektModel item = new ProjektModel();
@@ -65,6 +67,8 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(3)) item.Beschreibung = (string)DBReader.GetValue(3);
                 if (!DBReader.IsDBNull(4)) item.Kunde = (string)DBReader.GetValue(4);
                 if (!DBReader.IsDBNull(5)) item.Aenderung = (DateTime)DBReader.GetValue(5);
+
+
 
                 projektmodel.items[rows] = item;
                 item = null;

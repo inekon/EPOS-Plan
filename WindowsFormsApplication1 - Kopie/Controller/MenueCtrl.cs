@@ -30,20 +30,8 @@ namespace WindowsFormsApplication1
         {
             ApplikationCtrl ctrl = new ApplikationCtrl();
             ctrl.ReadSingle("Select * from Tab_Applikation where ID=1");
-            Form_Main frm = (Form_Main)Program.mainfrm;
+            FormMain frm = (FormMain)Program.mainfrm;
             frm.SetProjekt(ctrl.Projektname);
         }
-        public void SetKlimaregion()
-        {
-            ApplikationCtrl ctrl = new ApplikationCtrl();
-            ctrl.ReadSingle("Select * from Tab_Applikation where ID=1");
-            
-            KlimaregionCtrl ctrl_klima = new KlimaregionCtrl();
-            ctrl_klima.ReadSingleKlimaregion("select * from Tab_Klimaregion where ID_Klimaregion=" + ctrl.ID_Klimaregion);
-
-            Form_Main frm = (Form_Main)Program.mainfrm;
-            frm.SetKlimaregion(ctrl_klima.Klimaregion);
-        }
-
     }
 }

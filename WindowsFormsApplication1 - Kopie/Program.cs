@@ -9,10 +9,9 @@ namespace WindowsFormsApplication1
     static class Program
     {
         public static MDIMainForm mdifrm = null;
-        public static Form_Main mainfrm = null;
         public static MenueCtrl menuectrl = null;
         public static OdbcConnection DBConnection = null;
-        
+        public static FormMain mainfrm = null;
 
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
@@ -23,10 +22,10 @@ namespace WindowsFormsApplication1
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             menuectrl = new MenueCtrl(); 
-            DbClass db = new DbClass();
+            DbClass test = new DbClass();
             try
             {
-                DBConnection = db.openDB();
+                DBConnection = test.openDB();
             }
             catch (OdbcException sqlEx)
             {
@@ -46,7 +45,7 @@ namespace WindowsFormsApplication1
             }
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);
-            db.closeDB();
+            test.closeDB();
             Application.Exit(); 
 
         }

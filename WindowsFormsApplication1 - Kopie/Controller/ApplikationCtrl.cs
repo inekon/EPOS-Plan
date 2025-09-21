@@ -26,7 +26,7 @@ namespace WindowsFormsApplication1
 
         public void Update()
         {
-            DBCommand.CommandText = "UPDATE Tab_Applikation SET Projektname='" + Projektname + "', ID_Projekt=" + ID_Projekt + ", Beschreibung='" + Beschreibung + "', ID_Klimaregion=" + ID_Klimaregion + " WHERE ID=" + 1;
+            DBCommand.CommandText = "UPDATE Tab_Applikation SET Projektname='" + Projektname + "', ID_Projekt=" + ID_Projekt + ", Beschreibung='" + Beschreibung + "' WHERE ID=" + 1;
             DBCommand.ExecuteNonQuery();
         }
 
@@ -43,7 +43,7 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(1)) Projektname = (string)DBReader.GetString(1);
                 if (!DBReader.IsDBNull(2)) ID_Projekt = (int)DBReader.GetValue(2);
                 if (!DBReader.IsDBNull(3)) Beschreibung = (string)DBReader.GetString(3);
-                if (!DBReader.IsDBNull(4)) ID_Klimaregion = (int)DBReader.GetValue(4);
+
                 rows = 1;
             }
             DBReader.Dispose();
