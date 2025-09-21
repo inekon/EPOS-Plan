@@ -62,7 +62,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -88,7 +88,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CSExeCOMServer">
-      <HintPath>..\CSExeCOMServer\bin\x86\Debug\CSExeCOMServer.exe</HintPath>
+      <HintPath>..\CSExeCOMServer.exe</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -103,14 +103,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\CsvReader.cs" />
     <Compile Include="Classes\FileDlgClass.cs" />
     <Compile Include="Classes\Form3Src.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Classes\RecordSet.cs" />
-    <Compile Include="Classes\Simulation\SimulationGebaeude.cs" />
+    <Compile Include="Classes\Simulation\Init.cs" />
     <Compile Include="Classes\Simulation\SimulationStrombedarf.cs" />
+    <Compile Include="Classes\Simulation\SimulationWaermebedarf.cs" />
     <Compile Include="Classes\StromTestClass.cs" />
+    <Compile Include="Classes\WaermepumpenImport.cs" />
     <Compile Include="Controller\ApplikationCtrl.cs" />
     <Compile Include="Controller\BrennstoffCtrl.cs" />
     <Compile Include="Controller\GebaeudeCtrl.cs" />
@@ -121,21 +124,35 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Controller\KenndatenCtrl.cs" />
+    <Compile Include="Controller\KenndatenKuehlungCtrl.cs" />
     <Compile Include="Controller\KlimaregionCtrl.cs" />
     <Compile Include="Controller\ProjektGebaeudeCtrl.cs" />
     <Compile Include="Controller\ProzesswaermeKontextMenuCtrl.cs" />
+    <Compile Include="Controller\StrombedarfKontextMenuCtrl.cs" />
+    <Compile Include="Controller\StromganglinieCtrl.cs" />
+    <Compile Include="Controller\StromganglinieDatenCtrl.cs" />
+    <Compile Include="Controller\StromganglinieKontextMenuCtrl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controller\StromverbraucherCtrl .cs" />
+    <Compile Include="Controller\WaermebedarfCtrl.cs" />
+    <Compile Include="Controller\WaermebedarfDatenCtrl.cs" />
+    <Compile Include="Controller\Z_ProjektGebGanglinieCtrl.cs" />
     <Compile Include="Controller\Z_ProjektProzesswaermeCtrl.cs" />
     <Compile Include="Controller\ProzesswaermeCtrl.cs" />
     <Compile Include="Controller\StromspeicherKontextMenuCtrl.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Controller\TagVCtrl.cs" />
-    <Compile Include="Controller\WaermebedarfExternCtrl.cs" />
     <Compile Include="Controller\WaermebedarfExternKontextMenuCtrl.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Controller\Z_ProjektStromganglinieCtrl.cs" />
+    <Compile Include="Controller\Z_ProjektStromverbraucherCtrl.cs" />
+    <Compile Include="Model\KenndatenKuehlungModel.cs" />
     <Compile Include="Model\ProzesswaermeModel.cs" />
-    <Compile Include="Model\WaermebedarfExternModel.cs" />
+    <Compile Include="Model\StromganglinieModel.cs" />
+    <Compile Include="Model\StromverbraucherModel.cs" />
     <Compile Include="Controller\WPKontextMenuCtrl.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -156,9 +173,13 @@
     <Compile Include="Model\KlimadatenModel.cs" />
     <Compile Include="Model\KlimaregionModel.cs" />
     <Compile Include="Model\StromspeicherModel.cs" />
+    <Compile Include="Model\WaermebedarfModel.cs" />
     <Compile Include="Model\WErzeugerModel.cs" />
     <Compile Include="Model\ProjektModel.cs" />
     <Compile Include="Model\Z_ProjektProzesswaermeModel.cs" />
+    <Compile Include="Model\Z_ProjektStromganglinieModel.cs" />
+    <Compile Include="Model\Z_ProjektStromverbraucherModel.cs" />
+    <Compile Include="Model\Z_ProjektWaermebedarfModel.cs" />
     <Compile Include="Model\Z_ProjGebModel.cs" />
     <Compile Include="Views\Prozesswärme\Form_EingDBProzess.cs">
       <SubType>Form</SubType>
@@ -250,11 +271,53 @@
     <Compile Include="Views\Stromspeicher\Form_AdminStromspeicher.designer.cs">
       <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_EingDBStromverbraucher.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_EingDBStromverbraucher.designer.cs">
+      <DependentUpon>Form_EingDBStromverbraucher.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_EingStromTyp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_EingStromTyp.designer.cs">
+      <DependentUpon>Form_EingStromTyp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_ErgStromverbraucher.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_ErgStromverbraucher.designer.cs">
+      <DependentUpon>Form_ErgStromverbraucher.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_Stromeinlesen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_Stromeinlesen.designer.cs">
+      <DependentUpon>Form_Stromeinlesen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_Stromganglinie.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_Stromganglinie.designer.cs">
+      <DependentUpon>Form_Stromganglinie.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_Stromverbraucher.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_Stromverbraucher.designer.cs">
+      <DependentUpon>Form_Stromverbraucher.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Stromverbraucher\Form_StromverbraucherEingabe.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Stromverbraucher\Form_StromverbraucherEingabe.designer.cs">
       <DependentUpon>Form_StromverbraucherEingabe.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_Stromverbraucher_Admin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromverbraucher\Form_Stromverbraucher_Admin.designer.cs">
+      <DependentUpon>Form_Stromverbraucher_Admin.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Gebaeude.cs">
       <SubType>Form</SubType>
@@ -262,11 +325,23 @@
     <Compile Include="Views\Wizard\Wizard_Gebaeude.Designer.cs">
       <DependentUpon>Wizard_Gebaeude.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Wizard\Wizard_Prozess.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Prozess.designer.cs">
+      <DependentUpon>Wizard_Prozess.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Wizard\Wizard_Referenz.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Referenz.designer.cs">
       <DependentUpon>Wizard_Referenz.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wärmebedarf\Form_Waermebedarf.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wärmebedarf\Form_Waermebedarf.designer.cs">
+      <DependentUpon>Form_Waermebedarf.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wärmebedarf\Form_Waermeeinlesen.cs">
       <SubType>Form</SubType>
@@ -377,6 +452,12 @@
     </Compile>
     <Compile Include="Views\Wizard\Wizard_WPItem.Designer.cs">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wärmepumpe\Form_WP_einlesen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wärmepumpe\Form_WP_einlesen.designer.cs">
+      <DependentUpon>Form_WP_einlesen.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wärmepumpe\Kenndaten.cs">
       <SubType>Form</SubType>
