@@ -8,26 +8,22 @@ using System.Windows.Forms;
 namespace WindowsFormsApplication1
 {
     
-    class ProjektModel
+    class WPModel
     {
-        public ProjektModel[] items;
+        public WPModel[] items;
 
         public int ID;
-        public string Projektname;
-        public string Bearbeiter;
+        public string WPName;
+        public string Firma;
         public string Beschreibung;
-        public string Kunde;
-        public DateTime Aenderung;
 
-        public ProjektModel()
+        public WPModel()
         {
             items = null;
             ID = 0;
-            Projektname = "";
-            Bearbeiter = "";
+            WPName = "";
+            Firma = "";
             Beschreibung = "";
-            Kunde = "";
-            Aenderung = DateTime.Now;
         }
  
     }

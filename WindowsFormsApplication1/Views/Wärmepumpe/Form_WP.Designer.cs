@@ -74,6 +74,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.textBox_Kuehlung = new System.Windows.Forms.TextBox();
+            this.radioButton_Waerme = new System.Windows.Forms.RadioButton();
+            this.radioButton_Kuehlung = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -84,7 +86,7 @@
             // btn_Beenden
             // 
             this.btn_Beenden.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Beenden.Location = new System.Drawing.Point(682, 600);
+            this.btn_Beenden.Location = new System.Drawing.Point(748, 600);
             this.btn_Beenden.Name = "btn_Beenden";
             this.btn_Beenden.Size = new System.Drawing.Size(95, 30);
             this.btn_Beenden.TabIndex = 48;
@@ -98,7 +100,7 @@
             this.label_WP.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label_WP.Location = new System.Drawing.Point(14, 39);
             this.label_WP.Name = "label_WP";
-            this.label_WP.Size = new System.Drawing.Size(162, 19);
+            this.label_WP.Size = new System.Drawing.Size(161, 19);
             this.label_WP.TabIndex = 59;
             this.label_WP.Text = "Wärmepumpen Auswahl:";
             // 
@@ -106,7 +108,7 @@
             // 
             this.label30.AutoSize = true;
             this.label30.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label30.Location = new System.Drawing.Point(557, 90);
+            this.label30.Location = new System.Drawing.Point(633, 89);
             this.label30.Name = "label30";
             this.label30.Size = new System.Drawing.Size(90, 19);
             this.label30.TabIndex = 96;
@@ -116,7 +118,7 @@
             // 
             this.textBox_Nennleistung.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
             this.textBox_Nennleistung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Nennleistung.Location = new System.Drawing.Point(649, 90);
+            this.textBox_Nennleistung.Location = new System.Drawing.Point(725, 89);
             this.textBox_Nennleistung.Name = "textBox_Nennleistung";
             this.textBox_Nennleistung.Size = new System.Drawing.Size(89, 25);
             this.textBox_Nennleistung.TabIndex = 95;
@@ -125,7 +127,7 @@
             // 
             this.label32.AutoSize = true;
             this.label32.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label32.Location = new System.Drawing.Point(555, 217);
+            this.label32.Location = new System.Drawing.Point(631, 216);
             this.label32.Name = "label32";
             this.label32.Size = new System.Drawing.Size(90, 19);
             this.label32.TabIndex = 124;
@@ -134,7 +136,7 @@
             // textBox_Modulkosten
             // 
             this.textBox_Modulkosten.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Modulkosten.Location = new System.Drawing.Point(649, 217);
+            this.textBox_Modulkosten.Location = new System.Drawing.Point(725, 216);
             this.textBox_Modulkosten.Name = "textBox_Modulkosten";
             this.textBox_Modulkosten.Size = new System.Drawing.Size(87, 25);
             this.textBox_Modulkosten.TabIndex = 123;
@@ -143,7 +145,7 @@
             // 
             this.label29.AutoSize = true;
             this.label29.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label29.Location = new System.Drawing.Point(259, 217);
+            this.label29.Location = new System.Drawing.Point(335, 216);
             this.label29.Name = "label29";
             this.label29.Size = new System.Drawing.Size(55, 19);
             this.label29.TabIndex = 122;
@@ -153,7 +155,7 @@
             // 
             this.comboBox_Baujahr.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.comboBox_Baujahr.FormattingEnabled = true;
-            this.comboBox_Baujahr.Location = new System.Drawing.Point(394, 217);
+            this.comboBox_Baujahr.Location = new System.Drawing.Point(470, 216);
             this.comboBox_Baujahr.Name = "comboBox_Baujahr";
             this.comboBox_Baujahr.Size = new System.Drawing.Size(89, 25);
             this.comboBox_Baujahr.TabIndex = 121;
@@ -162,7 +164,7 @@
             // 
             this.label28.AutoSize = true;
             this.label28.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label28.Location = new System.Drawing.Point(260, 256);
+            this.label28.Location = new System.Drawing.Point(336, 255);
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(91, 19);
             this.label28.TabIndex = 120;
@@ -172,7 +174,7 @@
             // 
             this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_Beschreibung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Beschreibung.Location = new System.Drawing.Point(394, 254);
+            this.textBox_Beschreibung.Location = new System.Drawing.Point(470, 253);
             this.textBox_Beschreibung.Multiline = true;
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
             this.textBox_Beschreibung.Size = new System.Drawing.Size(355, 43);
@@ -182,7 +184,7 @@
             // 
             this.label27.AutoSize = true;
             this.label27.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label27.Location = new System.Drawing.Point(259, 121);
+            this.label27.Location = new System.Drawing.Point(335, 120);
             this.label27.Name = "label27";
             this.label27.Size = new System.Drawing.Size(67, 19);
             this.label27.TabIndex = 118;
@@ -191,7 +193,7 @@
             // textBox_Hersteller
             // 
             this.textBox_Hersteller.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Hersteller.Location = new System.Drawing.Point(394, 121);
+            this.textBox_Hersteller.Location = new System.Drawing.Point(470, 120);
             this.textBox_Hersteller.Name = "textBox_Hersteller";
             this.textBox_Hersteller.Size = new System.Drawing.Size(157, 25);
             this.textBox_Hersteller.TabIndex = 117;
@@ -200,7 +202,7 @@
             // 
             this.label26.AutoSize = true;
             this.label26.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label26.Location = new System.Drawing.Point(259, 186);
+            this.label26.Location = new System.Drawing.Point(335, 185);
             this.label26.Name = "label26";
             this.label26.Size = new System.Drawing.Size(105, 19);
             this.label26.TabIndex = 116;
@@ -210,7 +212,7 @@
             // 
             this.comboBox_Leistungsstufen.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.comboBox_Leistungsstufen.FormattingEnabled = true;
-            this.comboBox_Leistungsstufen.Location = new System.Drawing.Point(394, 186);
+            this.comboBox_Leistungsstufen.Location = new System.Drawing.Point(470, 185);
             this.comboBox_Leistungsstufen.Name = "comboBox_Leistungsstufen";
             this.comboBox_Leistungsstufen.Size = new System.Drawing.Size(157, 25);
             this.comboBox_Leistungsstufen.TabIndex = 115;
@@ -219,9 +221,9 @@
             // 
             this.label25.AutoSize = true;
             this.label25.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label25.Location = new System.Drawing.Point(259, 90);
+            this.label25.Location = new System.Drawing.Point(335, 89);
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(124, 19);
+            this.label25.Size = new System.Drawing.Size(123, 19);
             this.label25.TabIndex = 114;
             this.label25.Text = "Wärmepumpentyp";
             // 
@@ -229,7 +231,7 @@
             // 
             this.comboBox_Waermepumpentyp.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.comboBox_Waermepumpentyp.FormattingEnabled = true;
-            this.comboBox_Waermepumpentyp.Location = new System.Drawing.Point(394, 90);
+            this.comboBox_Waermepumpentyp.Location = new System.Drawing.Point(470, 89);
             this.comboBox_Waermepumpentyp.Name = "comboBox_Waermepumpentyp";
             this.comboBox_Waermepumpentyp.Size = new System.Drawing.Size(157, 25);
             this.comboBox_Waermepumpentyp.TabIndex = 113;
@@ -246,6 +248,13 @@
             // 
             // chart1
             // 
+            chartArea1.AxisX.LineColor = System.Drawing.Color.DimGray;
+            chartArea1.AxisX.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea1.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gray;
+            chartArea1.AxisX.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea1.AxisX.MinorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea1.AxisY.LineColor = System.Drawing.Color.Gray;
+            chartArea1.AxisY.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
             chartArea1.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
             chartArea1.Name = "ChartArea1";
             this.chart1.ChartAreas.Add(chartArea1);
@@ -256,6 +265,7 @@
             series1.ChartArea = "ChartArea1";
             series1.Legend = "Legend1";
             series1.MarkerBorderWidth = 3;
+            series1.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Cross;
             series1.Name = "Series1";
             this.chart1.Series.Add(series1);
             this.chart1.Size = new System.Drawing.Size(484, 195);
@@ -267,7 +277,7 @@
             this.label33.BackColor = System.Drawing.Color.Black;
             this.label33.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label33.ForeColor = System.Drawing.Color.White;
-            this.label33.Location = new System.Drawing.Point(742, 217);
+            this.label33.Location = new System.Drawing.Point(818, 216);
             this.label33.Name = "label33";
             this.label33.Size = new System.Drawing.Size(23, 19);
             this.label33.TabIndex = 42;
@@ -280,7 +290,7 @@
             this.listBox_WP.HorizontalScrollbar = true;
             this.listBox_WP.Location = new System.Drawing.Point(18, 61);
             this.listBox_WP.Name = "listBox_WP";
-            this.listBox_WP.Size = new System.Drawing.Size(229, 212);
+            this.listBox_WP.Size = new System.Drawing.Size(309, 212);
             this.listBox_WP.TabIndex = 128;
             this.listBox_WP.SelectedIndexChanged += new System.EventHandler(this.listBox_WP_SelectedIndexChanged);
             // 
@@ -288,7 +298,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label2.Location = new System.Drawing.Point(257, 152);
+            this.label2.Location = new System.Drawing.Point(333, 151);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(78, 19);
             this.label2.TabIndex = 132;
@@ -298,7 +308,7 @@
             // 
             this.comboBox_Aufstellung.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.comboBox_Aufstellung.FormattingEnabled = true;
-            this.comboBox_Aufstellung.Location = new System.Drawing.Point(394, 152);
+            this.comboBox_Aufstellung.Location = new System.Drawing.Point(470, 151);
             this.comboBox_Aufstellung.Name = "comboBox_Aufstellung";
             this.comboBox_Aufstellung.Size = new System.Drawing.Size(157, 25);
             this.comboBox_Aufstellung.TabIndex = 131;
@@ -307,7 +317,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label3.Location = new System.Drawing.Point(557, 121);
+            this.label3.Location = new System.Drawing.Point(633, 120);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(61, 19);
             this.label3.TabIndex = 134;
@@ -317,7 +327,7 @@
             // 
             this.textBox_Heizstab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
             this.textBox_Heizstab.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Heizstab.Location = new System.Drawing.Point(651, 121);
+            this.textBox_Heizstab.Location = new System.Drawing.Point(727, 120);
             this.textBox_Heizstab.Name = "textBox_Heizstab";
             this.textBox_Heizstab.Size = new System.Drawing.Size(87, 25);
             this.textBox_Heizstab.TabIndex = 133;
@@ -327,7 +337,7 @@
             this.label4.BackColor = System.Drawing.Color.Black;
             this.label4.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label4.ForeColor = System.Drawing.Color.White;
-            this.label4.Location = new System.Drawing.Point(744, 121);
+            this.label4.Location = new System.Drawing.Point(820, 120);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(32, 19);
             this.label4.TabIndex = 135;
@@ -337,7 +347,7 @@
             // btn_Neu
             // 
             this.btn_Neu.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Neu.Location = new System.Drawing.Point(467, 600);
+            this.btn_Neu.Location = new System.Drawing.Point(533, 600);
             this.btn_Neu.Name = "btn_Neu";
             this.btn_Neu.Size = new System.Drawing.Size(95, 30);
             this.btn_Neu.TabIndex = 136;
@@ -359,9 +369,11 @@
             // btn_Speichern
             // 
             this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Speichern.Location = new System.Drawing.Point(366, 600);
+            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_Speichern.Location = new System.Drawing.Point(410, 600);
             this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.Size = new System.Drawing.Size(95, 30);
+            this.btn_Speichern.Size = new System.Drawing.Size(117, 30);
             this.btn_Speichern.TabIndex = 138;
             this.btn_Speichern.Text = "Speichern";
             this.btn_Speichern.UseVisualStyleBackColor = true;
@@ -370,7 +382,7 @@
             // btn_Loeschen
             // 
             this.btn_Loeschen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Loeschen.Location = new System.Drawing.Point(568, 600);
+            this.btn_Loeschen.Location = new System.Drawing.Point(634, 600);
             this.btn_Loeschen.Name = "btn_Loeschen";
             this.btn_Loeschen.Size = new System.Drawing.Size(95, 30);
             this.btn_Loeschen.TabIndex = 139;
@@ -383,7 +395,7 @@
             this.label5.BackColor = System.Drawing.Color.Black;
             this.label5.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label5.ForeColor = System.Drawing.Color.White;
-            this.label5.Location = new System.Drawing.Point(744, 90);
+            this.label5.Location = new System.Drawing.Point(820, 89);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(32, 19);
             this.label5.TabIndex = 140;
@@ -394,7 +406,7 @@
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label6.Location = new System.Drawing.Point(260, 59);
+            this.label6.Location = new System.Drawing.Point(336, 58);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(45, 19);
             this.label6.TabIndex = 142;
@@ -403,7 +415,7 @@
             // textBox_Name
             // 
             this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Name.Location = new System.Drawing.Point(311, 59);
+            this.textBox_Name.Location = new System.Drawing.Point(387, 58);
             this.textBox_Name.Name = "textBox_Name";
             this.textBox_Name.Size = new System.Drawing.Size(427, 25);
             this.textBox_Name.TabIndex = 141;
@@ -415,7 +427,7 @@
             this.label1.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.label1.Location = new System.Drawing.Point(0, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(796, 28);
+            this.label1.Size = new System.Drawing.Size(877, 28);
             this.label1.TabIndex = 143;
             this.label1.Text = "Verwaltung Daten zu Wärmepumpen und deren Kennlinien";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -427,7 +439,7 @@
             this.tabControl1.Location = new System.Drawing.Point(14, 317);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(505, 233);
+            this.tabControl1.Size = new System.Drawing.Size(505, 277);
             this.tabControl1.TabIndex = 144;
             // 
             // tabPage1
@@ -436,7 +448,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(497, 207);
+            this.tabPage1.Size = new System.Drawing.Size(497, 251);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "COP";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -447,7 +459,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(497, 207);
+            this.tabPage2.Size = new System.Drawing.Size(497, 251);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Leistung";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -474,7 +486,7 @@
             this.label7.BackColor = System.Drawing.Color.Black;
             this.label7.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label7.ForeColor = System.Drawing.Color.White;
-            this.label7.Location = new System.Drawing.Point(744, 152);
+            this.label7.Location = new System.Drawing.Point(820, 151);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(32, 19);
             this.label7.TabIndex = 147;
@@ -485,7 +497,7 @@
             // 
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label8.Location = new System.Drawing.Point(557, 152);
+            this.label8.Location = new System.Drawing.Point(633, 151);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(84, 19);
             this.label8.TabIndex = 146;
@@ -495,17 +507,45 @@
             // 
             this.textBox_Kuehlung.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             this.textBox_Kuehlung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kuehlung.Location = new System.Drawing.Point(651, 152);
+            this.textBox_Kuehlung.Location = new System.Drawing.Point(727, 151);
             this.textBox_Kuehlung.Name = "textBox_Kuehlung";
             this.textBox_Kuehlung.Size = new System.Drawing.Size(87, 25);
             this.textBox_Kuehlung.TabIndex = 145;
+            // 
+            // radioButton_Waerme
+            // 
+            this.radioButton_Waerme.AutoSize = true;
+            this.radioButton_Waerme.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.radioButton_Waerme.Checked = true;
+            this.radioButton_Waerme.Location = new System.Drawing.Point(176, 297);
+            this.radioButton_Waerme.Name = "radioButton_Waerme";
+            this.radioButton_Waerme.Size = new System.Drawing.Size(59, 17);
+            this.radioButton_Waerme.TabIndex = 149;
+            this.radioButton_Waerme.TabStop = true;
+            this.radioButton_Waerme.Text = "Wärme";
+            this.radioButton_Waerme.UseVisualStyleBackColor = false;
+            this.radioButton_Waerme.CheckedChanged += new System.EventHandler(this.radioButton_Waerme_CheckedChanged);
+            // 
+            // radioButton_Kuehlung
+            // 
+            this.radioButton_Kuehlung.AutoSize = true;
+            this.radioButton_Kuehlung.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.radioButton_Kuehlung.Location = new System.Drawing.Point(241, 297);
+            this.radioButton_Kuehlung.Name = "radioButton_Kuehlung";
+            this.radioButton_Kuehlung.Size = new System.Drawing.Size(64, 17);
+            this.radioButton_Kuehlung.TabIndex = 150;
+            this.radioButton_Kuehlung.Text = "Kühlung";
+            this.radioButton_Kuehlung.UseVisualStyleBackColor = false;
+            this.radioButton_Kuehlung.CheckedChanged += new System.EventHandler(this.radioButton_Kuehlung_CheckedChanged);
             // 
             // Form_WP
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(796, 642);
+            this.ClientSize = new System.Drawing.Size(877, 642);
             this.ControlBox = false;
+            this.Controls.Add(this.radioButton_Kuehlung);
+            this.Controls.Add(this.radioButton_Waerme);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.textBox_Kuehlung);
@@ -544,7 +584,6 @@
             this.Controls.Add(this.btn_Beenden);
             this.Name = "Form_WP";
             this.Text = "Datenbank Wärmepumpen";
-            this.Load += new System.EventHandler(this.Form_WP_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
@@ -597,5 +636,7 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox textBox_Kuehlung;
+        private System.Windows.Forms.RadioButton radioButton_Waerme;
+        private System.Windows.Forms.RadioButton radioButton_Kuehlung;
     }
 }

@@ -28,13 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title3 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title4 = new System.Windows.Forms.DataVisualization.Charting.Title();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title5 = new System.Windows.Forms.DataVisualization.Charting.Title();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title6 = new System.Windows.Forms.DataVisualization.Charting.Title();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.button_Beenden = new System.Windows.Forms.Button();
@@ -80,7 +80,6 @@
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.textBox_Gesamt_Strombedarf = new System.Windows.Forms.TextBox();
-            this.btn_StromSimulSpeichern = new System.Windows.Forms.Button();
             this.label19 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.textBox_MaxStrombedarf = new System.Windows.Forms.TextBox();
@@ -102,8 +101,9 @@
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.btn_Start = new System.Windows.Forms.Button();
             this.tabControl_Simulation = new System.Windows.Forms.TabControl();
-            this.btn_DragDestination = new System.Windows.Forms.Button();
             this.btn_Speichern = new System.Windows.Forms.Button();
+            this.btn_DragDestination = new System.Windows.Forms.Button();
+            this.btn_StromSimulSpeichern = new System.Windows.Forms.Button();
             this.tabControl_Komponenten.SuspendLayout();
             this.tabPage5.SuspendLayout();
             this.tabPage9.SuspendLayout();
@@ -723,20 +723,6 @@
             this.textBox_Gesamt_Strombedarf.Size = new System.Drawing.Size(74, 25);
             this.textBox_Gesamt_Strombedarf.TabIndex = 43;
             // 
-            // btn_StromSimulSpeichern
-            // 
-            this.btn_StromSimulSpeichern.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_StromSimulSpeichern.ForeColor = System.Drawing.Color.Black;
-            this.btn_StromSimulSpeichern.Image = ((System.Drawing.Image)(resources.GetObject("btn_StromSimulSpeichern.Image")));
-            this.btn_StromSimulSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_StromSimulSpeichern.Location = new System.Drawing.Point(511, 185);
-            this.btn_StromSimulSpeichern.Name = "btn_StromSimulSpeichern";
-            this.btn_StromSimulSpeichern.Size = new System.Drawing.Size(175, 32);
-            this.btn_StromSimulSpeichern.TabIndex = 40;
-            this.btn_StromSimulSpeichern.Text = "Simulation Speichern";
-            this.btn_StromSimulSpeichern.UseVisualStyleBackColor = true;
-            this.btn_StromSimulSpeichern.Click += new System.EventHandler(this.btn_StromSimulSpeichern_Click);
-            // 
             // label19
             // 
             this.label19.AutoSize = true;
@@ -767,41 +753,41 @@
             // 
             // chart2
             // 
-            chartArea5.AxisX.IsLabelAutoFit = false;
-            chartArea5.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea5.AxisX.Title = "Jahresstunden";
-            chartArea5.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea5.AxisY.Title = "Strombedarf in % ";
-            chartArea5.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea5.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea5.Name = "ChartArea1";
-            this.chart2.ChartAreas.Add(chartArea5);
+            chartArea3.AxisX.IsLabelAutoFit = false;
+            chartArea3.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea3.AxisX.Title = "Jahresstunden";
+            chartArea3.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea3.AxisY.Title = "Strombedarf in % ";
+            chartArea3.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea3.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea3.Name = "ChartArea1";
+            this.chart2.ChartAreas.Add(chartArea3);
             this.chart2.Location = new System.Drawing.Point(3, 22);
             this.chart2.Name = "chart2";
-            series5.ChartArea = "ChartArea1";
-            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series5.Name = "Series1";
-            this.chart2.Series.Add(series5);
+            series3.ChartArea = "ChartArea1";
+            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series3.Name = "Series1";
+            this.chart2.Series.Add(series3);
             this.chart2.Size = new System.Drawing.Size(472, 275);
             this.chart2.TabIndex = 38;
             this.chart2.Text = "chart2";
-            title5.Name = "Title1";
-            title5.Text = "Strombedarf Jahresganglinie ";
-            this.chart2.Titles.Add(title5);
+            title3.Name = "Title1";
+            title3.Text = "Strombedarf Jahresganglinie ";
+            this.chart2.Titles.Add(title3);
             // 
             // btn_Start_Strombedarf
             // 
             this.btn_Start_Strombedarf.AllowDrop = true;
+            this.btn_Start_Strombedarf.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.btn_Start_Strombedarf.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.btn_Start_Strombedarf.ForeColor = System.Drawing.Color.Black;
-            this.btn_Start_Strombedarf.Image = ((System.Drawing.Image)(resources.GetObject("btn_Start_Strombedarf.Image")));
             this.btn_Start_Strombedarf.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btn_Start_Strombedarf.Location = new System.Drawing.Point(511, 31);
             this.btn_Start_Strombedarf.Name = "btn_Start_Strombedarf";
             this.btn_Start_Strombedarf.Size = new System.Drawing.Size(157, 28);
             this.btn_Start_Strombedarf.TabIndex = 37;
             this.btn_Start_Strombedarf.Text = "Simulation Start...";
-            this.btn_Start_Strombedarf.UseVisualStyleBackColor = true;
+            this.btn_Start_Strombedarf.UseVisualStyleBackColor = false;
             this.btn_Start_Strombedarf.Click += new System.EventHandler(this.btn_Start_Strombedarf_Click);
             // 
             // tabPage7
@@ -887,7 +873,7 @@
             // 
             this.btn_SimulSpeichern.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.btn_SimulSpeichern.ForeColor = System.Drawing.Color.Black;
-            this.btn_SimulSpeichern.Image = ((System.Drawing.Image)(resources.GetObject("btn_SimulSpeichern.Image")));
+            this.btn_SimulSpeichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
             this.btn_SimulSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btn_SimulSpeichern.Location = new System.Drawing.Point(484, 196);
             this.btn_SimulSpeichern.Name = "btn_SimulSpeichern";
@@ -961,27 +947,27 @@
             // 
             // chart1
             // 
-            chartArea6.AxisX.IsLabelAutoFit = false;
-            chartArea6.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea6.AxisX.Title = "Jahresstunden";
-            chartArea6.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea6.AxisY.Title = "Wärmelast in % ";
-            chartArea6.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea6.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea6.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea6);
+            chartArea4.AxisX.IsLabelAutoFit = false;
+            chartArea4.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea4.AxisX.Title = "Jahresstunden";
+            chartArea4.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea4.AxisY.Title = "Wärmelast in % ";
+            chartArea4.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea4.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea4.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea4);
             this.chart1.Location = new System.Drawing.Point(6, 39);
             this.chart1.Name = "chart1";
-            series6.ChartArea = "ChartArea1";
-            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series6.Name = "Series1";
-            this.chart1.Series.Add(series6);
+            series4.ChartArea = "ChartArea1";
+            series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series4.Name = "Series1";
+            this.chart1.Series.Add(series4);
             this.chart1.Size = new System.Drawing.Size(472, 246);
             this.chart1.TabIndex = 25;
             this.chart1.Text = "chart1";
-            title6.Name = "Title1";
-            title6.Text = "Wärmelast Jahresganglinie ";
-            this.chart1.Titles.Add(title6);
+            title4.Name = "Title1";
+            title4.Text = "Wärmelast Jahresganglinie ";
+            this.chart1.Titles.Add(title4);
             this.chart1.SelectionRangeChanging += new System.EventHandler<System.Windows.Forms.DataVisualization.Charting.CursorEventArgs>(this.SelectionRangeBegin);
             this.chart1.AxisScrollBarClicked += new System.EventHandler<System.Windows.Forms.DataVisualization.Charting.ScrollBarEventArgs>(this.AxisScrollBarClicked);
             this.chart1.Click += new System.EventHandler(this.chart1_Click);
@@ -989,16 +975,16 @@
             // btn_Start
             // 
             this.btn_Start.AllowDrop = true;
+            this.btn_Start.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.btn_Start.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.btn_Start.ForeColor = System.Drawing.Color.Black;
-            this.btn_Start.Image = ((System.Drawing.Image)(resources.GetObject("btn_Start.Image")));
             this.btn_Start.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btn_Start.Location = new System.Drawing.Point(484, 42);
             this.btn_Start.Name = "btn_Start";
             this.btn_Start.Size = new System.Drawing.Size(157, 28);
             this.btn_Start.TabIndex = 24;
             this.btn_Start.Text = "Simulation Start...";
-            this.btn_Start.UseVisualStyleBackColor = true;
+            this.btn_Start.UseVisualStyleBackColor = false;
             this.btn_Start.Click += new System.EventHandler(this.btn_Start_Click);
             // 
             // tabControl_Simulation
@@ -1011,6 +997,21 @@
             this.tabControl_Simulation.SelectedIndex = 0;
             this.tabControl_Simulation.Size = new System.Drawing.Size(727, 333);
             this.tabControl_Simulation.TabIndex = 27;
+            // 
+            // btn_Speichern
+            // 
+            this.btn_Speichern.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_Speichern.ForeColor = System.Drawing.Color.Black;
+            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_Speichern.Location = new System.Drawing.Point(16, 288);
+            this.btn_Speichern.Name = "btn_Speichern";
+            this.btn_Speichern.Size = new System.Drawing.Size(115, 30);
+            this.btn_Speichern.TabIndex = 30;
+            this.btn_Speichern.Text = "Speichern";
+            this.btn_Speichern.UseVisualStyleBackColor = false;
+            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
             // 
             // btn_DragDestination
             // 
@@ -1030,18 +1031,19 @@
             this.btn_DragDestination.DragOver += new System.Windows.Forms.DragEventHandler(this.button1_DragOver);
             this.btn_DragDestination.MouseHover += new System.EventHandler(this.btn_DragDestination_MouseHover);
             // 
-            // btn_Speichern
+            // btn_StromSimulSpeichern
             // 
-            this.btn_Speichern.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Speichern.ForeColor = System.Drawing.Color.Black;
-            this.btn_Speichern.Location = new System.Drawing.Point(16, 288);
-            this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.Size = new System.Drawing.Size(106, 30);
-            this.btn_Speichern.TabIndex = 30;
-            this.btn_Speichern.Text = "Speichern";
-            this.btn_Speichern.UseVisualStyleBackColor = false;
-            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
+            this.btn_StromSimulSpeichern.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btn_StromSimulSpeichern.ForeColor = System.Drawing.Color.Black;
+            this.btn_StromSimulSpeichern.Image = ((System.Drawing.Image)(resources.GetObject("btn_StromSimulSpeichern.Image")));
+            this.btn_StromSimulSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_StromSimulSpeichern.Location = new System.Drawing.Point(511, 185);
+            this.btn_StromSimulSpeichern.Name = "btn_StromSimulSpeichern";
+            this.btn_StromSimulSpeichern.Size = new System.Drawing.Size(175, 32);
+            this.btn_StromSimulSpeichern.TabIndex = 40;
+            this.btn_StromSimulSpeichern.Text = "Simulation Speichern";
+            this.btn_StromSimulSpeichern.UseVisualStyleBackColor = true;
+            this.btn_StromSimulSpeichern.Click += new System.EventHandler(this.btn_StromSimulSpeichern_Click);
             // 
             // FormMain
             // 

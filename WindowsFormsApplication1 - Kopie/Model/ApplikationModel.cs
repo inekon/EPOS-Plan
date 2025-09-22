@@ -8,26 +8,19 @@ using System.Windows.Forms;
 namespace WindowsFormsApplication1
 {
     
-    class ProjektModel
+    class ApplikationModel
     {
-        public ProjektModel[] items;
-
         public int ID;
+        public int ID_Projekt;
         public string Projektname;
-        public string Bearbeiter;
         public string Beschreibung;
-        public string Kunde;
-        public DateTime Aenderung;
 
-        public ProjektModel()
+        public ApplikationModel()
         {
-            items = null;
             ID = 0;
+            ID_Projekt = 0;
             Projektname = "";
-            Bearbeiter = "";
             Beschreibung = "";
-            Kunde = "";
-            Aenderung = DateTime.Now;
         }
  
     }

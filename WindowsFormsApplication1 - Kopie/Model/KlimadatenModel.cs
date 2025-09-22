@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WindowsFormsApplication1
 {
-    public class KlimadatenModel
+    class KlimadatenModel
     {
         public int ID_Klimaregion;
         public string Temperatur;

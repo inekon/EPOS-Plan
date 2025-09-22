@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Odbc;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
@@ -25,6 +26,7 @@ namespace WindowsFormsApplication1
             ctrl = new WPCtrl();
             ctrl.ReadAll();
             FillWPList();
+            InitChart("WÄRME");
         }
 
         public Form_WP(string wpname)
@@ -37,6 +39,7 @@ namespace WindowsFormsApplication1
             textBox_Name.Enabled = false;
             btn_Neu.Enabled=false;
             btn_Loeschen.Enabled = false;
+            InitChart("WÄRME");
         }
 
         public void FillWPList()
@@ -88,14 +91,44 @@ namespace WindowsFormsApplication1
             comboBox_Baujahr.Items.Add("2018");
             comboBox_Baujahr.Items.Add("2017");
             comboBox_Baujahr.Items.Add("2016");
-
-            InitChart();
+            
+            
         }
 
-        private void InitChart()
+        private void InitChart(string mode)
         {
             // Erstellen eines Datasets und Füllen mit Daten
-            OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Kenndaten where ID_WP = " + item.ID + " order by Temperatur ASC", Program.DBConnection);
+            string sql_Waerme = "select * from Tab_Kenndaten where ID_WP = " + item.ID + " order by Temperatur ASC";
+            string sql_Kuehlung;
+            string sql = "";
+
+            if (mode == "WÄRME")
+            {
+                sql = sql_Waerme;
+            }
+            else
+            {
+                RecordSet rs = new RecordSet();
+                rs.Open("SELECT MAX(Last) as maxwert FROM Tab_Kenndaten_Kuehlung where ID_WP = " + item.ID);
+                if (rs.Next())
+                {
+                    if (rs.Read("maxwert") != DBNull.Value)
+                    {
+                        int last = (int)rs.Read("maxwert");
+                        sql_Kuehlung = "select * from Tab_Kenndaten_Kuehlung where ID_WP = " + item.ID + " and Last=" + last + " order by Temperatur ASC";
+                        
+                    }
+                    else
+                        sql_Kuehlung = "select * from Tab_Kenndaten_Kuehlung where ID_WP = " + item.ID + " order by Temperatur ASC";
+
+                }
+                else
+                    sql_Kuehlung = "select * from Tab_Kenndaten_Kuehlung where ID_WP = " + item.ID + " order by Temperatur ASC";
+                rs.Close();
+                sql = sql_Kuehlung;
+            }
+
+            OdbcDataAdapter adapter = new OdbcDataAdapter(sql, Program.DBConnection);
             DataSet dataSet = new DataSet();
             adapter.Fill(dataSet, "Tab_Kenndaten");
             
@@ -108,7 +141,10 @@ namespace WindowsFormsApplication1
             chart2.Series.Clear();
 
             KenndatenCtrl ctrl = new KenndatenCtrl();
-            ctrl.ReadVorlauf("SELECT Vorlauf, ID_WP FROM Tab_Kenndaten GROUP BY Vorlauf, ID_WP HAVING ID_WP=" + item.ID);
+            if(mode == "WÄRME")
+                ctrl.ReadVorlauf("SELECT Vorlauf, ID_WP FROM Tab_Kenndaten GROUP BY Vorlauf, ID_WP HAVING ID_WP=" + item.ID);
+            else
+                ctrl.ReadVorlauf("SELECT Vorlauf, ID_WP FROM Tab_Kenndaten_Kuehlung GROUP BY Vorlauf, ID_WP HAVING ID_WP=" + item.ID);
 
             for (int i = 0; i < ctrl.rows; i++)
             {
@@ -130,11 +166,22 @@ namespace WindowsFormsApplication1
                 chart1.Series[i].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
                 chart1.Series[i].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
                 chart1.Series[i].Points.DataBind(dataSet.Tables["Tab_Kenndaten"].Select("Vorlauf=" + ctrl.items[i].m_nVorlauf.ToString()), "Temperatur", "COP", "");
+                chart1.Series[i].MarkerSize = 5;
+                chart1.Series[i].MarkerStyle = MarkerStyle.Circle;
+                chart1.Series[i].MarkerColor = chart2.Series[i].Color;
 
                 chart2.Series[i].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Yes;
                 chart2.Series[i].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
                 chart2.Series[i].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
-                chart2.Series[i].Points.DataBind(dataSet.Tables["Tab_Kenndaten"].Select("Vorlauf=" + ctrl.items[i].m_nVorlauf.ToString()), "Temperatur", "Ptherm", "");
+                chart2.Series[i].MarkerSize = 5;
+                chart2.Series[i].MarkerStyle = MarkerStyle.Cross;
+                chart2.Series[i].MarkerColor = chart2.Series[i].Color;
+
+                if (mode== "WÄRME")  
+                    chart2.Series[i].Points.DataBind(dataSet.Tables["Tab_Kenndaten"].Select("Vorlauf=" + ctrl.items[i].m_nVorlauf.ToString()), "Temperatur", "Ptherm", "");
+                else
+                    chart2.Series[i].Points.DataBind(dataSet.Tables["Tab_Kenndaten"].Select("Vorlauf=" + ctrl.items[i].m_nVorlauf.ToString()), "Temperatur", "Pkuehl", "");
+                
             }
         }
 
@@ -158,6 +205,23 @@ namespace WindowsFormsApplication1
                 item = ctrl.items[index];
                 textBox_Name.Text = item.WPName;
                 SetControls();
+                InitChart("WÄRME");
+
+                RecordSet rs = new RecordSet();
+                rs.Open("SELECT * FROM Tab_Kenndaten_Kuehlung where ID_WP = " + item.ID);
+                if (!rs.Next())
+                {
+                    radioButton_Kuehlung.Visible = false;
+                    radioButton_Waerme.Visible = false;
+                }
+                else
+                {
+                    radioButton_Kuehlung.Visible = true;
+                    radioButton_Waerme.Visible = true;
+                    radioButton_Waerme.PerformClick();
+                }   
+
+                rs.Close(); 
             }
         }
 
@@ -256,14 +320,18 @@ namespace WindowsFormsApplication1
                 OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
                 adapter.Update(ds);
 
-                InitChart();
+                InitChart("WÄRME");
             }
         }
 
-        private void Form_WP_Load(object sender, EventArgs e)
+        private void radioButton_Waerme_CheckedChanged(object sender, EventArgs e)
         {
-
+            InitChart("WÄRME");
         }
-  
-     }
+
+        private void radioButton_Kuehlung_CheckedChanged(object sender, EventArgs e)
+        {
+            InitChart("KÜHLUNG");
+        }
+    }
 }

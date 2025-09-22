@@ -27,7 +27,7 @@ namespace WindowsFormsApplication1
         private int top = WizardItemClass.KOMPONENTEN_ITEM;
         private int pagecount;
         public int projektID;
-        
+
         public WizardParent()
         {
             wizardmode = WIZARD_MODE_NEU;
@@ -470,7 +470,8 @@ namespace WindowsFormsApplication1
                 m_Projektmodel.m_szBearbeiter = ((Wizard_Projekt)pageproj).GetBearbeiter();
                 m_Projektmodel.m_szKunde = ((Wizard_Projekt)pageproj).GetKunde();
                 m_Projektmodel.m_szBeschreibung = ((Wizard_Projekt)pageproj).GetBeschreibung();
-                
+                m_Projektmodel.m_ID_Klimaregion = ((Wizard_Projekt)pageproj).m_ID_Klimaregion;
+
                 result = Program.wizardctrl.Update_Projekt(projektID, m_Projektmodel);
                 if (!result) return;
 

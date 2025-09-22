@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WizardParent));
             this.pnlLeft = new System.Windows.Forms.Panel();
             this.label_Projekt = new System.Windows.Forms.Label();
             this.listBox_Projekte = new System.Windows.Forms.ListBox();
@@ -86,7 +85,6 @@
             // pictureBox_App
             // 
             this.pictureBox_App.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pictureBox_App.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox_App.Image")));
             this.pictureBox_App.Location = new System.Drawing.Point(0, 0);
             this.pictureBox_App.Name = "pictureBox_App";
             this.pictureBox_App.Size = new System.Drawing.Size(174, 155);
@@ -110,6 +108,8 @@
             // btnSpeichern
             // 
             this.btnSpeichern.Enabled = false;
+            this.btnSpeichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btnSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnSpeichern.Location = new System.Drawing.Point(273, 19);
             this.btnSpeichern.Name = "btnSpeichern";
             this.btnSpeichern.Size = new System.Drawing.Size(121, 28);
