@@ -39,6 +39,7 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(0)) item.m_ID_Z = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) item.m_ID_Projekt = (int)DBReader.GetValue(1);
                 if (!DBReader.IsDBNull(2)) item.m_ID_Stromganglinie = (int)DBReader.GetValue(2);
+                if (!DBReader.IsDBNull(3)) item.m_szStromganglinie = (string)DBReader.GetString(3);
 
                 items[rows] = item;
                 rows += 1;

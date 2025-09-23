@@ -3,15 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Data.Odbc;
+using System.IO;
 
 namespace WindowsFormsApplication1
 {
     static class Program
     {
         public static MDIMainForm mdifrm = null;
+        public static FormMain mainfrm = null;
         public static MenueCtrl menuectrl = null;
         public static OdbcConnection DBConnection = null;
-        public static FormMain mainfrm = null;
+        public static WizardCtrl wizardctrl = null;
+        public static string ApplicationPath_Common = "";
+        public static string ApplicationPath_User = "";
 
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
@@ -21,11 +25,14 @@ namespace WindowsFormsApplication1
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            menuectrl = new MenueCtrl(); 
-            DbClass test = new DbClass();
+
+            menuectrl = new MenueCtrl();
+            wizardctrl = new WizardCtrl();
+            DbClass db = new DbClass();
+            
             try
             {
-                DBConnection = test.openDB();
+                DBConnection = db.openDB();
             }
             catch (OdbcException sqlEx)
             {
@@ -43,11 +50,69 @@ namespace WindowsFormsApplication1
                 Application.Exit();
                 return;
             }
+
+            ApplicationPath_Common = Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData);
+            ApplicationPath_Common = Path.Combine(ApplicationPath_Common, "WP-Plan");
+            ApplicationPath_User = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            ApplicationPath_User = Path.Combine(ApplicationPath_User, "WP-Plan");
+
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);
-            test.closeDB();
-            Application.Exit(); 
 
+            db.closeDB();
+            Application.Exit(); 
+        }
+
+        public static bool HasValue(this double value)
+        {
+            return !Double.IsNaN(value) && !Double.IsInfinity(value);
+        }
+
+        public static bool checkInt(Control ctrl, string text)
+        {
+            int number;
+            if (!int.TryParse(text, out number))
+            {
+                ctrl.Focus();
+                MessageBox.Show("Eingaben überprüfen!");
+                return false;
+            }
+            return true;
+        }
+
+        public static bool checkDouble(Control ctrl, string text)
+        {
+            double number;
+            if (!double.TryParse(text, out number))
+            {
+                ctrl.Focus();
+                MessageBox.Show("Eingaben überprüfen: " + text);
+                return false;
+            }
+            return true;
+        }
+
+        public static double convertTxt2Double(string txt)
+        {
+            if (txt != "")
+            {
+                double number = Convert.ToDouble(txt, System.Globalization.CultureInfo.InvariantCulture);
+                return number;
+            }
+            return 0;
+        }
+
+        public static int convertTxt2Int(string txt)
+        {
+            if (txt != "")
+            {
+                int number;
+                if (Int32.TryParse(txt, out number))
+                {
+                    return number;
+                }
+            }
+            return 0;
         }
     }
 }

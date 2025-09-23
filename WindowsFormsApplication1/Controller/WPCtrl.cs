@@ -186,6 +186,7 @@ namespace WindowsFormsApplication1
             }
             DBReader.Dispose();
             DBReader.Close();
+
         }
 
         public void FillListBox(ListBox ctrl)

@@ -121,4 +121,19 @@
   <data name="WP_Symbol" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\WP_Symbol.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="germany-map-2431251_640" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\germany-map-2431251_640.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="IMG-20250629-WA0001" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\IMG-20250629-WA0001.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Logo125_125" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Logo125_125.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="LogoInekon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\LogoInekon.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="WP_Symbol1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\WP_Symbol.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

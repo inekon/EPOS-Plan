@@ -11,23 +11,40 @@ namespace WindowsFormsApplication1
         OdbcCommand DBCommand;
         ApplikationModel applikationmodel;
         public int rows;
-
+ 
         public ApplikationCtrl()
         {
             rows = 0;
             DBCommand = Program.DBConnection.CreateCommand();
             applikationmodel = new ApplikationModel();
         }
+        
         ~ApplikationCtrl()
         {
             rows = 0;
             DBCommand.Dispose();
         }
 
-        public void Update()
+        public bool Update()
         {
-            DBCommand.CommandText = "UPDATE Tab_Applikation SET Projektname='" + Projektname + "', ID_Projekt=" + ID_Projekt + ", Beschreibung='" + Beschreibung + "', ID_Klimaregion=" + ID_Klimaregion + " WHERE ID=" + 1;
-            DBCommand.ExecuteNonQuery();
+            try
+            {
+                DBCommand.CommandText = "UPDATE Tab_Applikation SET Projektname='" + m_szProjektname + "', ID_Projekt=" + m_ID_Projekt + ", Beschreibung='" + m_szBeschreibung + "', Icon='" + m_icon + "' WHERE ID=" + 1;
+                DBCommand.ExecuteNonQuery();
+            }
+            catch (OdbcException sqlEx)
+            {
+                // Fehler beim Datenbankzugriff abfangen
+                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Allgemeine Fehler abfangen
+                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                return false;
+            }
+            return true;
         }
 
         public void ReadSingle(string sql)
@@ -39,11 +56,11 @@ namespace WindowsFormsApplication1
             DBReader.Read();
             if (DBReader.HasRows)
             {
-                if (!DBReader.IsDBNull(0)) ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) Projektname = (string)DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) ID_Projekt = (int)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) Beschreibung = (string)DBReader.GetString(3);
-                if (!DBReader.IsDBNull(4)) ID_Klimaregion = (int)DBReader.GetValue(4);
+                if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
+                if (!DBReader.IsDBNull(1)) m_szProjektname = (string)DBReader.GetString(1);
+                if (!DBReader.IsDBNull(2)) m_ID_Projekt = (int)DBReader.GetValue(2);
+                if (!DBReader.IsDBNull(3)) m_szBeschreibung = (string)DBReader.GetString(3);
+                if (!DBReader.IsDBNull(4)) m_icon = (string)DBReader.GetValue(4);
                 rows = 1;
             }
             DBReader.Dispose();

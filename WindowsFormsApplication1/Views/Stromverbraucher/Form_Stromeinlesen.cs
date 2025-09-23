@@ -103,6 +103,7 @@ namespace WindowsFormsApplication1
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 filename = openFileDialog.FileName;
+                filebasename = System.IO.Path.GetFileName(filename);
 
                 try
                 {

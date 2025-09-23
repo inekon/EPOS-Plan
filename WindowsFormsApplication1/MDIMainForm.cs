@@ -101,7 +101,7 @@ namespace WindowsFormsApplication1
         private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
             StromTestClass st = new StromTestClass();
-            st.MyTest(); 
+         //  st.MyTest(); 
         }
 
         private void MenuItem_Stromganglinie_Click(object sender, EventArgs e)

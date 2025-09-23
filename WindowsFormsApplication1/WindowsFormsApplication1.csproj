@@ -181,6 +181,12 @@
     <Compile Include="Model\Z_ProjektStromverbraucherModel.cs" />
     <Compile Include="Model\Z_ProjektWaermebedarfModel.cs" />
     <Compile Include="Model\Z_ProjGebModel.cs" />
+    <Compile Include="Views\Form_StromTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Form_StromTest.Designer.cs">
+      <DependentUpon>Form_StromTest.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Prozesswärme\Form_EingDBProzess.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -465,6 +471,9 @@
     <Compile Include="Views\Wärmepumpe\Kenndaten.Designer.cs">
       <DependentUpon>Kenndaten.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Views\Form_StromTest.resx">
+      <DependentUpon>Form_StromTest.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Gebäude\Form_EingGebTyp.resx">
       <DependentUpon>Form_EingGebTyp.cs</DependentUpon>
     </EmbeddedResource>

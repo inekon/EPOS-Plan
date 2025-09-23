@@ -30,10 +30,25 @@
         {
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.Projekte = new System.Windows.Forms.ToolStripMenuItem();
-            this.verwaltungToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.öffnenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.Fenster = new System.Windows.Forms.ToolStripMenuItem();
-            this.WP = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_ProjektNeu = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_ProjektOeffnen = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_ProjektBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_zuletztGeöffnet = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_ProjektLöschen = new System.Windows.Forms.ToolStripMenuItem();
+            this.Administration = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_GebBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_GebTypen = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Klimadaten = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Prozesswaerme = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Stromspeicher = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Stromverbraucher = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Stromganglinie = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_WP = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_WPBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
+            this.MeniItem_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_WaermebedarfExtern = new System.Windows.Forms.ToolStripMenuItem();
+            this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -42,8 +57,8 @@
             this.menuStrip1.BackColor = System.Drawing.Color.AliceBlue;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.Projekte,
-            this.Fenster,
-            this.WP});
+            this.Administration,
+            this.testToolStripMenuItem});
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -54,42 +69,163 @@
             // Projekte
             // 
             this.Projekte.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.verwaltungToolStripMenuItem,
-            this.öffnenToolStripMenuItem});
+            this.MenuItem_ProjektNeu,
+            this.MenuItem_ProjektOeffnen,
+            this.MenuItem_ProjektBearbeiten,
+            this.MenuItem_zuletztGeöffnet,
+            this.MenuItem_ProjektLöschen});
             this.Projekte.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Projekte.Name = "Projekte";
-            this.Projekte.Size = new System.Drawing.Size(79, 25);
+            this.Projekte.Size = new System.Drawing.Size(71, 25);
             this.Projekte.Tag = "Projekte";
-            this.Projekte.Text = "Projekte";
+            this.Projekte.Text = "Projekt";
             // 
-            // verwaltungToolStripMenuItem
+            // MenuItem_ProjektNeu
             // 
-            this.verwaltungToolStripMenuItem.Name = "verwaltungToolStripMenuItem";
-            this.verwaltungToolStripMenuItem.Size = new System.Drawing.Size(159, 26);
-            this.verwaltungToolStripMenuItem.Text = "Verwaltung";
-            this.verwaltungToolStripMenuItem.Click += new System.EventHandler(this.verwaltungToolStripMenuItem_Click);
+            this.MenuItem_ProjektNeu.Name = "MenuItem_ProjektNeu";
+            this.MenuItem_ProjektNeu.Size = new System.Drawing.Size(187, 26);
+            this.MenuItem_ProjektNeu.Text = "Neu...";
+            this.MenuItem_ProjektNeu.Click += new System.EventHandler(this.MenuItem_Neu_Click);
             // 
-            // öffnenToolStripMenuItem
+            // MenuItem_ProjektOeffnen
             // 
-            this.öffnenToolStripMenuItem.Name = "öffnenToolStripMenuItem";
-            this.öffnenToolStripMenuItem.Size = new System.Drawing.Size(159, 26);
-            this.öffnenToolStripMenuItem.Text = "Öffnen";
-            this.öffnenToolStripMenuItem.Click += new System.EventHandler(this.öffnenToolStripMenuItem_Click);
+            this.MenuItem_ProjektOeffnen.Name = "MenuItem_ProjektOeffnen";
+            this.MenuItem_ProjektOeffnen.Size = new System.Drawing.Size(187, 26);
+            this.MenuItem_ProjektOeffnen.Text = "Öffnen...";
+            this.MenuItem_ProjektOeffnen.Click += new System.EventHandler(this.MenuItem_ProjektOeffnen_Click);
             // 
-            // Fenster
+            // MenuItem_ProjektBearbeiten
             // 
-            this.Fenster.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Fenster.Name = "Fenster";
-            this.Fenster.Size = new System.Drawing.Size(84, 25);
-            this.Fenster.Text = "Gebäude";
+            this.MenuItem_ProjektBearbeiten.Name = "MenuItem_ProjektBearbeiten";
+            this.MenuItem_ProjektBearbeiten.Size = new System.Drawing.Size(187, 26);
+            this.MenuItem_ProjektBearbeiten.Text = "Bearbeiten...";
+            this.MenuItem_ProjektBearbeiten.Click += new System.EventHandler(this.MenuItem_ProjektBearbeiten_Click);
             // 
-            // WP
+            // MenuItem_zuletztGeöffnet
             // 
-            this.WP.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.WP.Name = "WP";
-            this.WP.Size = new System.Drawing.Size(46, 25);
-            this.WP.Text = "WP";
-            this.WP.Click += new System.EventHandler(this.WP_Click);
+            this.MenuItem_zuletztGeöffnet.Name = "MenuItem_zuletztGeöffnet";
+            this.MenuItem_zuletztGeöffnet.Size = new System.Drawing.Size(187, 26);
+            this.MenuItem_zuletztGeöffnet.Text = "zuletzt geöffnet";
+            this.MenuItem_zuletztGeöffnet.Click += new System.EventHandler(this.MenuItem_zuletztGeöffnet_Click);
+            // 
+            // MenuItem_ProjektLöschen
+            // 
+            this.MenuItem_ProjektLöschen.Name = "MenuItem_ProjektLöschen";
+            this.MenuItem_ProjektLöschen.Size = new System.Drawing.Size(187, 26);
+            this.MenuItem_ProjektLöschen.Text = "Löschen...";
+            this.MenuItem_ProjektLöschen.Click += new System.EventHandler(this.MenuItem_ProjektLöschen_Click);
+            // 
+            // Administration
+            // 
+            this.Administration.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_Gebaeude,
+            this.MenuItem_Klimadaten,
+            this.MenuItem_Prozesswaerme,
+            this.MenuItem_Stromspeicher,
+            this.MenuItem_Stromverbraucher,
+            this.MenuItem_Stromganglinie,
+            this.MenuItem_WP,
+            this.MenuItem_WaermebedarfExtern});
+            this.Administration.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Administration.Name = "Administration";
+            this.Administration.Size = new System.Drawing.Size(125, 25);
+            this.Administration.Text = "Administration";
+            // 
+            // MenuItem_Gebaeude
+            // 
+            this.MenuItem_Gebaeude.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_GebBearbeiten,
+            this.MenuItem_GebTypen});
+            this.MenuItem_Gebaeude.Name = "MenuItem_Gebaeude";
+            this.MenuItem_Gebaeude.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Gebaeude.Text = "Gebäude";
+            // 
+            // MenuItem_GebBearbeiten
+            // 
+            this.MenuItem_GebBearbeiten.Name = "MenuItem_GebBearbeiten";
+            this.MenuItem_GebBearbeiten.Size = new System.Drawing.Size(181, 26);
+            this.MenuItem_GebBearbeiten.Text = "Bearbeiten";
+            this.MenuItem_GebBearbeiten.Click += new System.EventHandler(this.MenuItem_GebBearbeiten_Click);
+            // 
+            // MenuItem_GebTypen
+            // 
+            this.MenuItem_GebTypen.Name = "MenuItem_GebTypen";
+            this.MenuItem_GebTypen.Size = new System.Drawing.Size(181, 26);
+            this.MenuItem_GebTypen.Text = "Gebäudetypen";
+            this.MenuItem_GebTypen.Click += new System.EventHandler(this.MenuItem_GebTypen_Click);
+            // 
+            // MenuItem_Klimadaten
+            // 
+            this.MenuItem_Klimadaten.Name = "MenuItem_Klimadaten";
+            this.MenuItem_Klimadaten.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Klimadaten.Text = "Klimadaten";
+            this.MenuItem_Klimadaten.Click += new System.EventHandler(this.MenuItem_Klimadaten_Click);
+            // 
+            // MenuItem_Prozesswaerme
+            // 
+            this.MenuItem_Prozesswaerme.Name = "MenuItem_Prozesswaerme";
+            this.MenuItem_Prozesswaerme.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Prozesswaerme.Text = "Prozesswärme";
+            this.MenuItem_Prozesswaerme.Click += new System.EventHandler(this.MenuItem_Prozesswaerme_Click);
+            // 
+            // MenuItem_Stromspeicher
+            // 
+            this.MenuItem_Stromspeicher.Name = "MenuItem_Stromspeicher";
+            this.MenuItem_Stromspeicher.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Stromspeicher.Text = "Stromspeicher";
+            this.MenuItem_Stromspeicher.Click += new System.EventHandler(this.MenuItem_Stromspeicher_Click);
+            // 
+            // MenuItem_Stromverbraucher
+            // 
+            this.MenuItem_Stromverbraucher.Name = "MenuItem_Stromverbraucher";
+            this.MenuItem_Stromverbraucher.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Stromverbraucher.Text = "Stromverbraucher";
+            this.MenuItem_Stromverbraucher.Click += new System.EventHandler(this.MenuItem_Stromverbraucher_Click);
+            // 
+            // MenuItem_Stromganglinie
+            // 
+            this.MenuItem_Stromganglinie.Name = "MenuItem_Stromganglinie";
+            this.MenuItem_Stromganglinie.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Stromganglinie.Text = "Stromganglinie";
+            this.MenuItem_Stromganglinie.Click += new System.EventHandler(this.MenuItem_Stromganglinie_Click);
+            // 
+            // MenuItem_WP
+            // 
+            this.MenuItem_WP.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_WPBearbeiten,
+            this.MeniItem_VDI3805});
+            this.MenuItem_WP.Name = "MenuItem_WP";
+            this.MenuItem_WP.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_WP.Text = "Wärmepumpen";
+            // 
+            // MenuItem_WPBearbeiten
+            // 
+            this.MenuItem_WPBearbeiten.Name = "MenuItem_WPBearbeiten";
+            this.MenuItem_WPBearbeiten.Size = new System.Drawing.Size(231, 26);
+            this.MenuItem_WPBearbeiten.Text = "Bearbeiten";
+            this.MenuItem_WPBearbeiten.Click += new System.EventHandler(this.MenuItem_WPBearbeiten_Click_1);
+            // 
+            // MeniItem_VDI3805
+            // 
+            this.MeniItem_VDI3805.Name = "MeniItem_VDI3805";
+            this.MeniItem_VDI3805.Size = new System.Drawing.Size(231, 26);
+            this.MeniItem_VDI3805.Text = "Importieren VDI 3805";
+            this.MeniItem_VDI3805.Click += new System.EventHandler(this.MeniItem_VDI3805_Click);
+            // 
+            // MenuItem_WaermebedarfExtern
+            // 
+            this.MenuItem_WaermebedarfExtern.Name = "MenuItem_WaermebedarfExtern";
+            this.MenuItem_WaermebedarfExtern.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_WaermebedarfExtern.Text = "Wärmebedarf Lastgang";
+            this.MenuItem_WaermebedarfExtern.Click += new System.EventHandler(this.MenuItem_WaermebedarfExtern_Click);
+            // 
+            // testToolStripMenuItem
+            // 
+            this.testToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.testToolStripMenuItem.Name = "testToolStripMenuItem";
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(50, 25);
+            this.testToolStripMenuItem.Text = "Test";
+            this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
             // 
             // MDIMainForm
             // 
@@ -100,9 +236,8 @@
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MDIMainForm";
-            this.Text = "WP-Wärmeplan";
+            this.Text = "WP-Plan";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MDIMainForm_FormClosing);
             this.Load += new System.EventHandler(this.MDIMainForm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -115,10 +250,26 @@
 
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem Projekte;
-        private System.Windows.Forms.ToolStripMenuItem Fenster;
-        private System.Windows.Forms.ToolStripMenuItem WP;
-        private System.Windows.Forms.ToolStripMenuItem verwaltungToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem öffnenToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem Administration;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_ProjektNeu;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_ProjektOeffnen;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_ProjektBearbeiten;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_zuletztGeöffnet;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Klimadaten;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_ProjektLöschen;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_WP;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_WPBearbeiten;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Stromspeicher;
+        private System.Windows.Forms.ToolStripMenuItem MeniItem_VDI3805;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Gebaeude;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_GebBearbeiten;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_GebTypen;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_WaermebedarfExtern;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Prozesswaerme;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Stromverbraucher;
+        private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Stromganglinie;
+
     }
 }
 

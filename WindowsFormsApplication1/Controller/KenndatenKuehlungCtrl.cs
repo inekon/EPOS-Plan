@@ -111,9 +111,13 @@ namespace WindowsFormsApplication1
             return true;
         }
         
-        public void ReadAll()
+        public void ReadAll(int ID_WP=0)
         {
-            DBCommand.CommandText = "select * from Tab_Kenndaten_Kuehlung order by ID_WP";
+            if(ID_WP >0)
+                DBCommand.CommandText = "select * from Tab_Kenndaten_Kuehlung where ID_WP=" + ID_WP + " order by ID_WP";
+            else
+                DBCommand.CommandText = "select * from Tab_Kenndaten_Kuehlung order by ID_WP";
+            
             OdbcDataReader DBReader = DBCommand.ExecuteReader();
 
             items = new KenndatenKuehlungModel[1000];

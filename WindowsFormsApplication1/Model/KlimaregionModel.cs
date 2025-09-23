@@ -7,17 +7,17 @@ namespace WindowsFormsApplication1
 {
     class KlimaregionModel
     {
-        public int ID_Klimaregion;
-        public string Klimaregion;
-        public double Temperatur;
         public KlimaregionModel[] items;
+        public int m_ID_Klimaregion;
+        public string m_szName;
+        public int rows;
 
         public KlimaregionModel()
         {
             items = null;
-            ID_Klimaregion = 0;
-            Klimaregion = "";
-            Temperatur = 0.0;
+            m_ID_Klimaregion = 0;
+            m_szName = "";
+            rows = 0;
         }
 
 

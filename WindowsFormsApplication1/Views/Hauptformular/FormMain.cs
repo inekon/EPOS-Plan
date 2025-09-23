@@ -1248,5 +1248,12 @@ namespace WindowsFormsApplication1
         {
             this.Cursor = Cursors.Default;
         }
-     }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Form_StromTest frm = new Form_StromTest();
+            frm.SetControls(m_ID_Projekt);  
+            frm.ShowDialog();
+        }
+    }
 }

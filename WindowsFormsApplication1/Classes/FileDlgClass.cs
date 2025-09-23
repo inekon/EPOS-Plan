@@ -3,25 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.IO;
 
 namespace WindowsFormsApplication1
 {
     class FileDlgClass
     {
         public string filebasename;
-        string filename = "";
+        public string filename = "";
+        public string default_folder = "";
 
         public FileDlgClass()
         {
             filebasename = "";
             filename = "";
+            default_folder = "";
         }
 
-        public string FileDlg()
+        public string Show()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            //openFileDialog1.InitialDirectory = "c:\\";
-            openFileDialog.Filter = "xls files (*.xls)|*.xls|All files (*.*)|*.*";
+            string path = Path.Combine(Program.ApplicationPath_User, default_folder);
+            openFileDialog.InitialDirectory = path;
+            openFileDialog.Filter = "xls files (*.xls)|*.xls";
             openFileDialog.FilterIndex = 1;
             openFileDialog.RestoreDirectory = true;
 
@@ -29,6 +33,7 @@ namespace WindowsFormsApplication1
             {
                 filename = openFileDialog.FileName;
                 filebasename = System.IO.Path.GetFileName(filename);
+                filebasename = Path.GetFileNameWithoutExtension(filebasename);
             }
             openFileDialog = null;
             
