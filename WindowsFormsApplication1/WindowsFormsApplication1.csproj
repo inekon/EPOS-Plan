@@ -343,6 +343,12 @@
     <Compile Include="Views\Wizard\Wizard_Referenz.designer.cs">
       <DependentUpon>Wizard_Referenz.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Wizard\Wizard_Stromlastgang.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Stromlastgang.Designer.cs">
+      <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Wärmebedarf\Form_Waermebedarf.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -522,6 +528,9 @@
     <EmbeddedResource Include="Views\Stromspeicher\Form_AdminStromspeicher.resx">
       <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie.resx">
+      <DependentUpon>Form_Stromganglinie.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromverbraucher\Form_StromverbraucherEingabe.resx">
       <DependentUpon>Form_StromverbraucherEingabe.cs</DependentUpon>
     </EmbeddedResource>
@@ -530,6 +539,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Referenz.resx">
       <DependentUpon>Wizard_Referenz.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Stromlastgang.resx">
+      <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_WP.resx">
       <DependentUpon>Wizard_WP.cs</DependentUpon>

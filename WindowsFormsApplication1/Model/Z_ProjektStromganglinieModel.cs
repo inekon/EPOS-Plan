@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WindowsFormsApplication1
 {
-    class Z_ProjektStromganglinieModel
+    public class Z_ProjektStromganglinieModel
     {
         public Z_ProjektStromganglinieModel[] items;
         public int m_ID_Z;

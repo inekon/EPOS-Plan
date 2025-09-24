@@ -84,10 +84,10 @@
             // 
             // pictureBox_App
             // 
-            this.pictureBox_App.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pictureBox_App.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox_App.Image = global::WindowsFormsApplication1.Properties.Resources.LogoInekon;
+            this.pictureBox_App.Location = new System.Drawing.Point(12, 12);
             this.pictureBox_App.Name = "pictureBox_App";
-            this.pictureBox_App.Size = new System.Drawing.Size(174, 155);
+            this.pictureBox_App.Size = new System.Drawing.Size(145, 121);
             this.pictureBox_App.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox_App.TabIndex = 0;
             this.pictureBox_App.TabStop = false;

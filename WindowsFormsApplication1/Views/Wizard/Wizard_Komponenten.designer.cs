@@ -38,6 +38,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.checkBox_Prozess = new System.Windows.Forms.CheckBox();
+            this.checkBox_Stromlastgang = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -45,10 +46,10 @@
             // 
             this.label1.Dock = System.Windows.Forms.DockStyle.Top;
             this.label1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(0, 109);
+            this.label1.Location = new System.Drawing.Point(0, 106);
             this.label1.Name = "label1";
             this.label1.Padding = new System.Windows.Forms.Padding(0, 5, 0, 5);
-            this.label1.Size = new System.Drawing.Size(712, 53);
+            this.label1.Size = new System.Drawing.Size(712, 46);
             this.label1.TabIndex = 1;
             this.label1.Text = "Projektkonfiguration Erstellung";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -70,7 +71,7 @@
             this.checkBox_WP.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.checkBox_WP.Location = new System.Drawing.Point(128, 282);
             this.checkBox_WP.Name = "checkBox_WP";
-            this.checkBox_WP.Size = new System.Drawing.Size(129, 25);
+            this.checkBox_WP.Size = new System.Drawing.Size(128, 25);
             this.checkBox_WP.TabIndex = 3;
             this.checkBox_WP.Text = "Wärmepumpe";
             this.checkBox_WP.UseVisualStyleBackColor = true;
@@ -106,7 +107,7 @@
             this.checkBox_StromSp.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.checkBox_StromSp.Location = new System.Drawing.Point(128, 351);
             this.checkBox_StromSp.Name = "checkBox_StromSp";
-            this.checkBox_StromSp.Size = new System.Drawing.Size(130, 25);
+            this.checkBox_StromSp.Size = new System.Drawing.Size(129, 25);
             this.checkBox_StromSp.TabIndex = 6;
             this.checkBox_StromSp.Text = "Stromspeicher";
             this.checkBox_StromSp.UseVisualStyleBackColor = true;
@@ -120,7 +121,7 @@
             this.label3.ForeColor = System.Drawing.Color.White;
             this.label3.Location = new System.Drawing.Point(31, 244);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(461, 21);
+            this.label3.Size = new System.Drawing.Size(460, 21);
             this.label3.TabIndex = 7;
             this.label3.Text = "Wärmeerzeuger bzw. Energieerzeuger  Komponenten auswählen:";
             // 
@@ -130,7 +131,7 @@
             this.pictureBox1.Image = global::WindowsFormsApplication1.Properties.Resources.Logo125_125;
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(712, 109);
+            this.pictureBox1.Size = new System.Drawing.Size(712, 106);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
@@ -146,13 +147,26 @@
             this.checkBox_Prozess.UseVisualStyleBackColor = true;
             this.checkBox_Prozess.CheckedChanged += new System.EventHandler(this.checkBox_Prozess_CheckedChanged);
             // 
+            // checkBox_Stromlastgang
+            // 
+            this.checkBox_Stromlastgang.AutoSize = true;
+            this.checkBox_Stromlastgang.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.checkBox_Stromlastgang.Location = new System.Drawing.Point(128, 397);
+            this.checkBox_Stromlastgang.Name = "checkBox_Stromlastgang";
+            this.checkBox_Stromlastgang.Size = new System.Drawing.Size(130, 25);
+            this.checkBox_Stromlastgang.TabIndex = 9;
+            this.checkBox_Stromlastgang.Text = "Stromlastgang";
+            this.checkBox_Stromlastgang.UseVisualStyleBackColor = true;
+            this.checkBox_Stromlastgang.CheckedChanged += new System.EventHandler(this.checkBox_Stromlastgang_CheckedChanged);
+            // 
             // Wizard_Komponenten
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(712, 426);
+            this.ClientSize = new System.Drawing.Size(712, 434);
+            this.Controls.Add(this.checkBox_Stromlastgang);
             this.Controls.Add(this.checkBox_Prozess);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.checkBox_StromSp);
@@ -183,5 +197,6 @@
         private System.Windows.Forms.CheckBox checkBox_StromSp;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.CheckBox checkBox_Prozess;
+        private System.Windows.Forms.CheckBox checkBox_Stromlastgang;
     }
 }

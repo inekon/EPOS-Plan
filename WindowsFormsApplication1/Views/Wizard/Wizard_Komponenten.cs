@@ -63,6 +63,11 @@ namespace WindowsFormsApplication1
             checkBox_Prozess.Checked = value;
         }
 
+        public void SetStromglastgangCheckBox(bool value)
+        {
+            checkBox_Stromlastgang.Checked = value;
+        }
+
         private void checkBox_WP_CheckedChanged(object sender, EventArgs e)
         {
             WizardItemClass wizard;
@@ -101,6 +106,14 @@ namespace WindowsFormsApplication1
             wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.PROZESS_ITEM);
             wizard.aktiv = checkBox_Prozess.Checked;
             ((WizardParent)parentForm).listPages[WizardItemClass.PROZESS_ITEM] = wizard;
-        }     
+        }
+
+        private void checkBox_Stromlastgang_CheckedChanged(object sender, EventArgs e)
+        {
+            WizardItemClass wizard;
+            wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.STROMLASTGANG_ITEM);
+            wizard.aktiv = checkBox_Stromlastgang.Checked;
+            ((WizardParent)parentForm).listPages[WizardItemClass.STROMLASTGANG_ITEM] = wizard;
+        }
     }
 }

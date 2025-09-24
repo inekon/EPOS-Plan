@@ -19,6 +19,7 @@ namespace WindowsFormsApplication1
         public List<WizardItemClass> listPages = new List<WizardItemClass>();
         public List<WErzeugerModel> list_werzmodel  = new List<WErzeugerModel>();
         public List<Z_ProjektProzesswaermeModel> list_prozmodel = new List<Z_ProjektProzesswaermeModel>();
+        public List<Z_ProjektStromganglinieModel> list_stromlastmodel = new List<Z_ProjektStromganglinieModel>();
         public List<Z_ProjGebModel> list_gebmodel = new List<Z_ProjGebModel>();
         public ProjektModel m_Projektmodel  = new ProjektModel();
   
@@ -35,7 +36,8 @@ namespace WindowsFormsApplication1
             pagecount = 0;
             list_werzmodel.Clear();
             list_gebmodel.Clear();
-            list_prozmodel.Clear(); 
+            list_prozmodel.Clear();
+            list_stromlastmodel.Clear();
         }
 
         public WizardParent(List<WizardItemClass> WizardPages)
@@ -46,15 +48,18 @@ namespace WindowsFormsApplication1
             pagecount = 0;
             list_werzmodel.Clear();
             list_gebmodel.Clear();
-            list_prozmodel.Clear(); 
-            
+            list_prozmodel.Clear();
+            list_stromlastmodel.Clear();
+
             listPages = WizardPages;
             listPages[WizardItemClass.KOMPONENTEN_ITEM].aktiv = true;
             listPages[WizardItemClass.PROJEKT_ITEM].aktiv = true;
             listPages[WizardItemClass.KLIMA_ITEM].aktiv = false;  // Klima Wizard Page ausgeblendet
             listPages[WizardItemClass.GEBAEUDE_ITEM].aktiv = true;
-            listPages[WizardItemClass.REFERENZ_ITEM].aktiv = true;
             listPages[WizardItemClass.PROZESS_ITEM].aktiv = true;
+            listPages[WizardItemClass.STROMLASTGANG_ITEM].aktiv = true;
+            listPages[WizardItemClass.REFERENZ_ITEM].aktiv = true;
+
             pagecount = listPages.Count();
             
             ApplikationCtrl ctrl = new ApplikationCtrl();
@@ -174,6 +179,7 @@ namespace WindowsFormsApplication1
                 LoadWEFromDB(m_Projektmodel.m_szProjektname);
                 LoadZGeb(m_Projektmodel.m_szProjektname);
                 LoadProzessFromDB(m_Projektmodel.m_szProjektname);
+                LoadStromlastFromDB(m_Projektmodel.m_szProjektname);
             }
 
             // Klimaregion Auswahl in Projektmodel speichern
@@ -188,7 +194,7 @@ namespace WindowsFormsApplication1
             // nächste Seite laden...
             LoadNewForm();
 
-            // nachem die nächste Seite geladen wurde...
+            // nachdem die nächste Seite geladen wurde...
             page = listPages.ElementAt(top).wizardform;
             listBox_Projekte.Visible = false;
             label_Projekt.Visible = false;
@@ -222,14 +228,18 @@ namespace WindowsFormsApplication1
                 {
                     ((Wizard_Sp)page).SetControls(listBox_Projekte.Text);
                 }
+                else if (top == WizardItemClass.PROZESS_ITEM)
+                {
+                    ((Wizard_Prozess)page).SetControls(listBox_Projekte.Text);
+                }
+                else if (top == WizardItemClass.STROMLASTGANG_ITEM)
+                {
+                    ((Wizard_Stromlastgang)page).SetControls(listBox_Projekte.Text);
+                }
                 else if (top == WizardItemClass.REFERENZ_ITEM)
                 {
                     ((Wizard_Referenz)page).SetControls(listBox_Projekte.Text);
                     ((Wizard_Referenz)page).SetWPControls(listBox_Projekte.Text);
-                }
-                else if (top == WizardItemClass.PROZESS_ITEM)
-                {
-                    ((Wizard_Prozess)page).SetControls(listBox_Projekte.Text);
                 }
             }
             else
@@ -338,7 +348,8 @@ namespace WindowsFormsApplication1
             ((Wizard_Komponenten)page).SetWPCheckBox(false);
             ((Wizard_Komponenten)page).SetStromSpCheckBox(false);
             ((Wizard_Komponenten)page).SetProzessCheckBox(false);
-            
+            ((Wizard_Komponenten)page).SetStromglastgangCheckBox(false);
+
             int rows = werzctrl.rows;
            
             while(rows > 0)
@@ -349,12 +360,21 @@ namespace WindowsFormsApplication1
                 if (werzctrl.items[rows-1].ID_SP > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.SP_TYP) ((Wizard_Komponenten)page).SetStromSpCheckBox(true);
                 rows--;
             }
+            
             // prüfe Prozess Definition
             Z_ProjektProzesswaermeCtrl prozctrl = new Z_ProjektProzesswaermeCtrl();
             prozctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + projektID);
             if (prozctrl.rows > 0)
             {
                 ((Wizard_Komponenten)page).SetProzessCheckBox(true);
+            }
+            
+            // prüfe Stromlastgang Definition
+            Z_ProjektStromganglinieCtrl stromctrl = new Z_ProjektStromganglinieCtrl();
+            stromctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + projektID);
+            if (stromctrl.rows > 0)
+            {
+                ((Wizard_Komponenten)page).SetStromglastgangCheckBox(true);
             }
 
         }
@@ -436,11 +456,18 @@ namespace WindowsFormsApplication1
                 {
                     bool result = Program.wizardctrl.Add_Projekt_ZuordungGebäude(projektID, list_gebmodel);
                     if (!result) return;
-                    if (Program.wizardctrl.Add_WP_Waermeerzeuger(projektID, list_werzmodel))
-                    {
-                        this.DialogResult = DialogResult.OK;
-                        gespeichert = true;
-                    }
+
+                    result = Program.wizardctrl.Add_WP_Waermeerzeuger(projektID, list_werzmodel);
+                    if (!result) return;
+
+                    result = Program.wizardctrl.Add_Projekt_Prozess(projektID, list_prozmodel);
+                    if (!result) return;
+
+                    result = Program.wizardctrl.Add_Stromganglinie(projektID, list_stromlastmodel);
+                    if (!result) return;
+
+                    this.DialogResult = DialogResult.OK;
+                    gespeichert = true;
                 }
             }
             else
@@ -464,6 +491,12 @@ namespace WindowsFormsApplication1
                 if (!result) return;
 
                 result = Program.wizardctrl.Add_Projekt_Prozess(projektID, list_prozmodel);
+                if (!result) return;
+
+                result = Program.wizardctrl.Del_Stromganglinie(projektID);
+                if (!result) return;
+
+                result = Program.wizardctrl.Add_Stromganglinie(projektID, list_stromlastmodel);
                 if (!result) return;
 
                 m_Projektmodel.m_Aenderungsdatum = DateTime.Now;
@@ -576,5 +609,31 @@ namespace WindowsFormsApplication1
                 }
             }
         }
-     }
+
+        public void LoadStromlastFromDB(string projekt)
+        {
+            if (projekt != "")
+            {
+                ProjektCtrl projctrl = new ProjektCtrl();
+                Z_ProjektStromganglinieCtrl prozctrl = new Z_ProjektStromganglinieCtrl();
+
+                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + projekt + "'");
+                prozctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + projctrl.m_ID);
+
+                list_stromlastmodel.Clear();
+
+                for (int n = 0; n < prozctrl.rows; n++)
+                {
+                    Z_ProjektStromganglinieModel item = new Z_ProjektStromganglinieModel();
+
+                    item.m_ID_Z = prozctrl.items[n].m_ID_Z;
+                    item.m_ID_Projekt = projctrl.m_ID;
+                    item.m_szStromganglinie = prozctrl.items[n].m_szStromganglinie;
+                    item.m_ID_Stromganglinie = prozctrl.items[n].m_ID_Stromganglinie;
+
+                    list_stromlastmodel.Add(item);
+                }
+            }
+        }
+    }
 }

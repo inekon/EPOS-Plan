@@ -54,8 +54,10 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Wizard_Solar(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Wizard_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Sp(), WizardItemClass.SP_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.PROZESS_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Referenz(), WizardItemClass.REFERENZ_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.WAERMELASTGANG_ITEM));
+
             wizparent = new WizardParent(frm);
             Program.wizardctrl.parentform = wizparent;
             wizparent.SetWizardMode(WizardParent.WIZARD_MODE_NEU);
@@ -77,8 +79,10 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Wizard_Solar(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Wizard_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Sp(), WizardItemClass.SP_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.PROZESS_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Referenz(), WizardItemClass.REFERENZ_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.WAERMELASTGANG_ITEM));
+
             wizparent = new WizardParent(frm);
             Program.wizardctrl.parentform = wizparent;
             wizparent.SetWizardMode(WizardParent.WIZARD_MODE_BEARBEITEN);
