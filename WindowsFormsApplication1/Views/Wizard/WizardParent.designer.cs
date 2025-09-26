@@ -48,13 +48,14 @@
             // pnlLeft
             // 
             this.pnlLeft.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.pnlLeft.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.pnlLeft.Controls.Add(this.label_Projekt);
             this.pnlLeft.Controls.Add(this.listBox_Projekte);
             this.pnlLeft.Controls.Add(this.pictureBox_App);
             this.pnlLeft.Dock = System.Windows.Forms.DockStyle.Left;
             this.pnlLeft.Location = new System.Drawing.Point(0, 0);
             this.pnlLeft.Name = "pnlLeft";
-            this.pnlLeft.Size = new System.Drawing.Size(174, 580);
+            this.pnlLeft.Size = new System.Drawing.Size(174, 586);
             this.pnlLeft.TabIndex = 0;
             // 
             // label_Projekt
@@ -95,14 +96,14 @@
             // 
             // pnlBottom
             // 
-            this.pnlBottom.BackColor = System.Drawing.SystemColors.Control;
+            this.pnlBottom.BackColor = System.Drawing.SystemColors.ControlLight;
             this.pnlBottom.Controls.Add(this.btnSpeichern);
             this.pnlBottom.Controls.Add(this.tableLayoutPanel1);
             this.pnlBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlBottom.Location = new System.Drawing.Point(0, 580);
+            this.pnlBottom.Location = new System.Drawing.Point(0, 586);
             this.pnlBottom.Name = "pnlBottom";
             this.pnlBottom.Padding = new System.Windows.Forms.Padding(10);
-            this.pnlBottom.Size = new System.Drawing.Size(863, 63);
+            this.pnlBottom.Size = new System.Drawing.Size(863, 57);
             this.pnlBottom.TabIndex = 1;
             // 
             // btnSpeichern
@@ -110,7 +111,7 @@
             this.btnSpeichern.Enabled = false;
             this.btnSpeichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
             this.btnSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnSpeichern.Location = new System.Drawing.Point(273, 19);
+            this.btnSpeichern.Location = new System.Drawing.Point(453, 13);
             this.btnSpeichern.Name = "btnSpeichern";
             this.btnSpeichern.Size = new System.Drawing.Size(121, 28);
             this.btnSpeichern.TabIndex = 2;
@@ -134,7 +135,7 @@
             this.tableLayoutPanel1.Padding = new System.Windows.Forms.Padding(3);
             this.tableLayoutPanel1.RowCount = 1;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(243, 43);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(243, 37);
             this.tableLayoutPanel1.TabIndex = 1;
             // 
             // btnCancel
@@ -142,7 +143,7 @@
             this.btnCancel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnCancel.Location = new System.Drawing.Point(158, 6);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(70, 31);
+            this.btnCancel.Size = new System.Drawing.Size(70, 25);
             this.btnCancel.TabIndex = 2;
             this.btnCancel.Text = "&Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -153,7 +154,7 @@
             this.btnNext.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnNext.Location = new System.Drawing.Point(82, 6);
             this.btnNext.Name = "btnNext";
-            this.btnNext.Size = new System.Drawing.Size(70, 31);
+            this.btnNext.Size = new System.Drawing.Size(70, 25);
             this.btnNext.TabIndex = 1;
             this.btnNext.Text = "&Next >";
             this.btnNext.UseVisualStyleBackColor = true;
@@ -164,7 +165,7 @@
             this.btnBack.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnBack.Location = new System.Drawing.Point(6, 6);
             this.btnBack.Name = "btnBack";
-            this.btnBack.Size = new System.Drawing.Size(70, 31);
+            this.btnBack.Size = new System.Drawing.Size(70, 25);
             this.btnBack.TabIndex = 0;
             this.btnBack.Text = "< &Back";
             this.btnBack.UseVisualStyleBackColor = true;
@@ -176,7 +177,7 @@
             this.pnlContent.Location = new System.Drawing.Point(174, 0);
             this.pnlContent.Name = "pnlContent";
             this.pnlContent.Padding = new System.Windows.Forms.Padding(10);
-            this.pnlContent.Size = new System.Drawing.Size(689, 580);
+            this.pnlContent.Size = new System.Drawing.Size(689, 586);
             this.pnlContent.TabIndex = 2;
             // 
             // WizardParent

@@ -105,7 +105,7 @@
             this.label15.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label15.Location = new System.Drawing.Point(39, 327);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(31, 19);
+            this.label15.Size = new System.Drawing.Size(30, 19);
             this.label15.TabIndex = 93;
             this.label15.Text = "Typ";
             // 
@@ -179,6 +179,7 @@
             this.listBox_Kessel_DB.Name = "listBox_Kessel_DB";
             this.listBox_Kessel_DB.Size = new System.Drawing.Size(250, 157);
             this.listBox_Kessel_DB.TabIndex = 86;
+            this.listBox_Kessel_DB.SelectedIndexChanged += new System.EventHandler(this.listBox_Kessel_DB_SelectedIndexChanged);
             // 
             // label12
             // 
@@ -249,7 +250,7 @@
             this.Controls.Add(this.label12);
             this.Controls.Add(this.listBox_Kessel);
             this.Name = "Form_Heizkessel";
-            this.Text = "Form_Heizkessel";
+            this.Text = "Verwaltung Heizkessel";
             this.Load += new System.EventHandler(this.Form_Heizkessel_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

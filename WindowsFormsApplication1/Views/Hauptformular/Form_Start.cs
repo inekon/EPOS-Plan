@@ -1,13 +1,14 @@
-﻿using System;
+﻿using NReco.Csv;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.IO;
-using NReco.Csv;
+using static System.Net.WebRequestMethods;
 
 namespace WindowsFormsApplication1
 {
@@ -18,8 +19,6 @@ namespace WindowsFormsApplication1
         public Form_Start()
         {
             InitializeComponent();
-            Init_TreeView();
-
         }
 
  
@@ -28,35 +27,6 @@ namespace WindowsFormsApplication1
         {
             WindowState = FormWindowState.Maximized;
         }
-
-        private void Init_TreeView()
-        {
-            ProjektCtrl ctrl = new ProjektCtrl();
-            ctrl.ReadAll(); 
-
-            for (int i = 0; i < ctrl.rows; i++)
-            {
-                TreeNode root = new TreeNode(ctrl.items[i].m_szProjektname );
-                
-                CreateNode(root);
-                treeView_Projekt.Nodes.Add(root);
-            }
-
-        }
-
-        void CreateNode(TreeNode node)
-        {
-            index++;
-            if (index > 2) return;
-            for (int i = 0; i < 10; i++)
-            {
-                TreeNode tnode = new TreeNode(i.ToString());
-           
-                node.Nodes.Add(tnode);
-                CreateNode(tnode);
-   
-            }
-
-        }
+ 
     }
 }

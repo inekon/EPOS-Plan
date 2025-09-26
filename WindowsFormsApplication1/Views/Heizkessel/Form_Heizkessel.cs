@@ -122,13 +122,20 @@ namespace WindowsFormsApplication1
             rs.Close();
         }
 
- 
+        private void listBox_Kessel_DB_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RecordSet rs = new RecordSet();
 
- 
-
-
- 
-
- 
+            rs.Open("select * from [DB-Heizung] where Name='" + listBox_Kessel_DB.Text + "'");
+            if (!rs.EOF())
+            {
+                textBox_Kesselname.Text = (string)rs.Read("Name");
+                textBox_Kesselbeschreibung.Text = (string)rs.Read("Beschreibung");
+                textBox_Kesseltyp.Text = BrennstoffCtrl.Brennstoffart[(int)rs.Read("Brennstoff")].ToString();
+                double kl = (double)rs.Read("Ptherm");
+                textBox_Kesselleistung.Text = kl.ToString("F2");
+            }
+            rs.Close();
+        }
     }
 }

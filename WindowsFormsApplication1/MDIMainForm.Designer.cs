@@ -137,7 +137,7 @@
             this.MenuItem_GebBearbeiten,
             this.MenuItem_GebTypen});
             this.MenuItem_Gebaeude.Name = "MenuItem_Gebaeude";
-            this.MenuItem_Gebaeude.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Gebaeude.Size = new System.Drawing.Size(242, 26);
             this.MenuItem_Gebaeude.Text = "Gebäude";
             // 
             // MenuItem_GebBearbeiten
@@ -157,35 +157,35 @@
             // MenuItem_Klimadaten
             // 
             this.MenuItem_Klimadaten.Name = "MenuItem_Klimadaten";
-            this.MenuItem_Klimadaten.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Klimadaten.Size = new System.Drawing.Size(242, 26);
             this.MenuItem_Klimadaten.Text = "Klimadaten";
             this.MenuItem_Klimadaten.Click += new System.EventHandler(this.MenuItem_Klimadaten_Click);
             // 
             // MenuItem_Prozesswaerme
             // 
             this.MenuItem_Prozesswaerme.Name = "MenuItem_Prozesswaerme";
-            this.MenuItem_Prozesswaerme.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Prozesswaerme.Size = new System.Drawing.Size(242, 26);
             this.MenuItem_Prozesswaerme.Text = "Prozesswärme";
             this.MenuItem_Prozesswaerme.Click += new System.EventHandler(this.MenuItem_Prozesswaerme_Click);
             // 
             // MenuItem_Stromspeicher
             // 
             this.MenuItem_Stromspeicher.Name = "MenuItem_Stromspeicher";
-            this.MenuItem_Stromspeicher.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Stromspeicher.Size = new System.Drawing.Size(242, 26);
             this.MenuItem_Stromspeicher.Text = "Stromspeicher";
             this.MenuItem_Stromspeicher.Click += new System.EventHandler(this.MenuItem_Stromspeicher_Click);
             // 
             // MenuItem_Stromverbraucher
             // 
             this.MenuItem_Stromverbraucher.Name = "MenuItem_Stromverbraucher";
-            this.MenuItem_Stromverbraucher.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Stromverbraucher.Size = new System.Drawing.Size(242, 26);
             this.MenuItem_Stromverbraucher.Text = "Stromverbraucher";
             this.MenuItem_Stromverbraucher.Click += new System.EventHandler(this.MenuItem_Stromverbraucher_Click);
             // 
             // MenuItem_Stromganglinie
             // 
             this.MenuItem_Stromganglinie.Name = "MenuItem_Stromganglinie";
-            this.MenuItem_Stromganglinie.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_Stromganglinie.Size = new System.Drawing.Size(242, 26);
             this.MenuItem_Stromganglinie.Text = "Stromganglinie";
             this.MenuItem_Stromganglinie.Click += new System.EventHandler(this.MenuItem_Stromganglinie_Click);
             // 
@@ -195,7 +195,7 @@
             this.MenuItem_WPBearbeiten,
             this.MeniItem_VDI3805});
             this.MenuItem_WP.Name = "MenuItem_WP";
-            this.MenuItem_WP.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_WP.Size = new System.Drawing.Size(242, 26);
             this.MenuItem_WP.Text = "Wärmepumpen";
             // 
             // MenuItem_WPBearbeiten
@@ -215,7 +215,7 @@
             // MenuItem_WaermebedarfExtern
             // 
             this.MenuItem_WaermebedarfExtern.Name = "MenuItem_WaermebedarfExtern";
-            this.MenuItem_WaermebedarfExtern.Size = new System.Drawing.Size(243, 26);
+            this.MenuItem_WaermebedarfExtern.Size = new System.Drawing.Size(242, 26);
             this.MenuItem_WaermebedarfExtern.Text = "Wärmebedarf Lastgang";
             this.MenuItem_WaermebedarfExtern.Click += new System.EventHandler(this.MenuItem_WaermebedarfExtern_Click);
             // 
@@ -223,7 +223,7 @@
             // 
             this.testToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.testToolStripMenuItem.Name = "testToolStripMenuItem";
-            this.testToolStripMenuItem.Size = new System.Drawing.Size(50, 25);
+            this.testToolStripMenuItem.Size = new System.Drawing.Size(48, 25);
             this.testToolStripMenuItem.Text = "Test";
             this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
             // 

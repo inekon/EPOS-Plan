@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1
             listView_WP_Ref.Columns.Add("Betriebsart", -2, HorizontalAlignment.Left);
             listView_WP_Ref.Width = tabControl_Komponenten.ClientSize.Width;
             listView_WP_Ref.Left = -2;
-            listView_WP_Ref.Height = tabPage1.Height-listView_WP_Ref.Top+2;
+            listView_WP_Ref.Height = tabPage_Komponenten.Height-listView_WP_Ref.Top+2;
             //listView_WP_Ref.Columns.Add("", 0, HorizontalAlignment.Left);
 
 
@@ -141,7 +141,7 @@ namespace WindowsFormsApplication1
             listView_SP_REF.Width = tabControl_Komponenten.ClientSize.Width;
             //listView_SP_REF.Height = tabControl_Komponenten.ClientSize.Height;
             listView_SP_REF.Left = -2;
-            listView_SP_REF.Height = tabPage2.Height - listView_SP_REF.Top + 2;
+            listView_SP_REF.Height = tabPage_Einstellungen.Height - listView_SP_REF.Top + 2;
 
             listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
@@ -232,7 +232,7 @@ namespace WindowsFormsApplication1
             ca.CursorX.AutoScroll = true;
             ca.AxisX.ScrollBar.Enabled = true;
 
-            chart.Series[0].BorderWidth = 2;
+            chart.Series[0].BorderWidth = 3;
             chart.ChartAreas[0].AxisX.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
             chart.ChartAreas[0].AxisY.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
             chart.ChartAreas[0].CursorX.LineDashStyle = ChartDashStyle.Dot;
@@ -615,21 +615,7 @@ namespace WindowsFormsApplication1
 
         private void button1_Click_1(object sender, EventArgs e)
         {
-            Point buttonTopLeft = btn_DragDestination.PointToScreen(Point.Empty);
 
-            // Das Kontextmenü an der entsprechenden Position anzeigen
-            if (tabControl_Komponenten.SelectedIndex == 0)
-            {
-                GebäudeKontextMenuCtrl ctrl = new GebäudeKontextMenuCtrl();
-                ctrl.Init(listView_Gebaeude, m_ID_Projekt, m_szProjektname);
-                ctrl.contextMenuStrip1.Show(btn_DragDestination, new Point(0, btn_DragDestination.Height)); // Zeigt es unter dem Button an
-            }
-            else if (tabControl_Komponenten.SelectedIndex == 1)
-            {
-                WaermebedarfExternKontextMenuCtrl ctrl = new WaermebedarfExternKontextMenuCtrl();
-                ctrl.Init(listView_WaermebedarfExtern, m_ID_Projekt, m_szProjektname);
-                ctrl.contextMenuStrip1.Show(btn_DragDestination, new Point(0, btn_DragDestination.Height)); // Zeigt es unter dem Button an
-            }
         }
 
         private void listView_Gebaeude_DoubleClick(object sender, EventArgs e)
@@ -1254,6 +1240,11 @@ namespace WindowsFormsApplication1
             Form_StromTest frm = new Form_StromTest();
             frm.SetControls(m_ID_Projekt);  
             frm.ShowDialog();
+        }
+
+        private void btn_DragDestination_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

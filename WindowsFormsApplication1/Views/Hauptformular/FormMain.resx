@@ -121,7 +121,7 @@
   <data name="btn_StromSimulSpeichern.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABQAAAAaCAYAAAC3g3x9AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
-        wQAADsEBuJFr7QAAARBJREFUSEtj+E9lMFIN/Pvv///Nz379X/7oJ9F43ZNf//8A9aEDsIEbgYYxrHsP
+        vgAADr4B6kKxwAAAARBJREFUSEtj+E9lMFIN/Pvv///Nz379X/7oJ9F43ZNf//8A9aEDsIEbgYYxrHsP
         x+JbP/w33vsJLxbd8uF//JmvGIaCDVwKtBHZwBNv/4Al0cGRN7//exz5/N/r6Of/y6B6EtAMxWrgxQ/Y
         DZx7H6Fuxr0fcHbi2a/gYAMBqhgIwtue/wKrIcnA+Q8Q6mahGbjhKR4Dyy5/A8c6OgbFbiVQrubKt/85
         F76h6MFrIDkYw0BQMtj98tf/o8CYJAXvfPHrP9+mD5gGgtIWuUBj18dRA4eEgTq7yTdQaQeagRuBHFDi
@@ -132,7 +132,7 @@
   <data name="btn_DragDestination.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAA
-        rAAAAKwBhgk01AAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIdSURBVEhL7VU9
+        qQAAAKkBq7NRIgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIdSURBVEhL7VU9
         aBRBGB0T2xiiYMDbTThuZxXcXYRAGhGuSCVEsEiRmTVFSBUrCwvFIqCFYJPCIpaGJLC7MeSnU8EmGBJS
         xS4giDYWgUBM4Q94vpn94t3e7ZjLlpIHj5n55pv3Zr/dmWWnYFNTHSyRk+ACi+RdFo900owB1erZPr8y
         cMl3h0y0Paeic5VYLGfBGviZ2nmjieU5VStwPlk+rx3DL1okkltaNAofaoE4vJ8ZN0LtCgsPLd/ZQSvy
