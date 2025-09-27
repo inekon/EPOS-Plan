@@ -597,6 +597,7 @@ namespace WindowsFormsApplication1
                     newRow["ID"] = list[i].m_ID_Z;
                     newRow["ID_Projekt"] = projektID;
                     newRow["ID_Stromverbraucher"] = list[i].m_ID_Stromverbraucher;
+                    newRow["Bezeichner"] = list[i].m_szVerbraucher; 
 
                     dataSet.Tables["Z_Projekt_Stromverbraucher"].Rows.Add(newRow);
                 }

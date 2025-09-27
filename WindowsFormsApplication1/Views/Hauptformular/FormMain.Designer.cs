@@ -139,7 +139,7 @@
             this.tabControl_Main.Location = new System.Drawing.Point(12, 42);
             this.tabControl_Main.Name = "tabControl_Main";
             this.tabControl_Main.SelectedIndex = 0;
-            this.tabControl_Main.Size = new System.Drawing.Size(1210, 778);
+            this.tabControl_Main.Size = new System.Drawing.Size(1252, 778);
             this.tabControl_Main.TabIndex = 0;
             // 
             // tabPage_Komponenten
@@ -167,7 +167,7 @@
             this.tabPage_Komponenten.Location = new System.Drawing.Point(4, 34);
             this.tabPage_Komponenten.Name = "tabPage_Komponenten";
             this.tabPage_Komponenten.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_Komponenten.Size = new System.Drawing.Size(1202, 740);
+            this.tabPage_Komponenten.Size = new System.Drawing.Size(1244, 740);
             this.tabPage_Komponenten.TabIndex = 0;
             this.tabPage_Komponenten.Text = "Konfiguration Projekt";
             this.tabPage_Komponenten.UseVisualStyleBackColor = true;
@@ -630,7 +630,7 @@
             this.tabPage5.Location = new System.Drawing.Point(4, 48);
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(677, 214);
+            this.tabPage5.Size = new System.Drawing.Size(677, 229);
             this.tabPage5.TabIndex = 6;
             this.tabPage5.Text = "Gebäude";
             this.tabPage5.UseVisualStyleBackColor = true;
@@ -658,7 +658,7 @@
             this.tabPage9.Controls.Add(this.listView_WaermebedarfExtern);
             this.tabPage9.Location = new System.Drawing.Point(4, 48);
             this.tabPage9.Name = "tabPage9";
-            this.tabPage9.Size = new System.Drawing.Size(677, 214);
+            this.tabPage9.Size = new System.Drawing.Size(677, 229);
             this.tabPage9.TabIndex = 7;
             this.tabPage9.Text = "Wärmebedarf Einlesen";
             this.tabPage9.UseVisualStyleBackColor = true;
@@ -689,7 +689,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 48);
             this.tabPage3.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(677, 214);
+            this.tabPage3.Size = new System.Drawing.Size(677, 229);
             this.tabPage3.TabIndex = 0;
             this.tabPage3.Text = "Wärmepumpen";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -804,7 +804,7 @@
             this.tabPage6.Location = new System.Drawing.Point(4, 48);
             this.tabPage6.Name = "tabPage6";
             this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage6.Size = new System.Drawing.Size(677, 214);
+            this.tabPage6.Size = new System.Drawing.Size(677, 229);
             this.tabPage6.TabIndex = 2;
             this.tabPage6.Text = "Solar";
             this.tabPage6.UseVisualStyleBackColor = true;
@@ -814,7 +814,7 @@
             this.tabPage10.Location = new System.Drawing.Point(4, 48);
             this.tabPage10.Name = "tabPage10";
             this.tabPage10.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage10.Size = new System.Drawing.Size(677, 214);
+            this.tabPage10.Size = new System.Drawing.Size(677, 229);
             this.tabPage10.TabIndex = 3;
             this.tabPage10.Text = "PV";
             this.tabPage10.UseVisualStyleBackColor = true;
@@ -1135,7 +1135,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.ClientSize = new System.Drawing.Size(1237, 1000);
+            this.ClientSize = new System.Drawing.Size(1300, 1000);
             this.ControlBox = false;
             this.Controls.Add(this.tabControl_Main);
             this.Controls.Add(this.button_Beenden);
