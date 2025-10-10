@@ -68,6 +68,11 @@ namespace WindowsFormsApplication1
             checkBox_Stromlastgang.Checked = value;
         }
 
+        public void SetKesselCheckBox(bool value)
+        {
+            checkBox_Kessel.Checked = value;
+        }
+
         private void checkBox_WP_CheckedChanged(object sender, EventArgs e)
         {
             WizardItemClass wizard;
@@ -114,6 +119,14 @@ namespace WindowsFormsApplication1
             wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.STROMLASTGANG_ITEM);
             wizard.aktiv = checkBox_Stromlastgang.Checked;
             ((WizardParent)parentForm).listPages[WizardItemClass.STROMLASTGANG_ITEM] = wizard;
+        }
+
+        private void checkBox_Kessel_CheckedChanged(object sender, EventArgs e)
+        {
+            WizardItemClass wizard;
+            wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.KESSEL_ITEM);
+            wizard.aktiv = checkBox_Kessel.Checked;
+            ((WizardParent)parentForm).listPages[WizardItemClass.KESSEL_ITEM] = wizard;
         }
     }
 }

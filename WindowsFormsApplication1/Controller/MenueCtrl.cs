@@ -56,6 +56,7 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Wizard_Sp(), WizardItemClass.SP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.PROZESS_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Referenz(), WizardItemClass.REFERENZ_ITEM));
 
             wizparent = new WizardParent(frm);
@@ -81,6 +82,7 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Wizard_Sp(), WizardItemClass.SP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.PROZESS_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Referenz(), WizardItemClass.REFERENZ_ITEM));
 
             wizparent = new WizardParent(frm);

@@ -70,7 +70,7 @@ namespace WindowsFormsApplication1
             WizardParent wizardparent = (WizardParent)getWizardPage();
             for (int i = 0; i < wizardparent.list_werzmodel.Count; i++)
             {
-                if (wizardparent.list_werzmodel[i].Bezeichner == listBox_SP.Text)
+                if (wizardparent.list_werzmodel[i].Bezeichner == listBox_SP.Text && wizardparent.list_werzmodel[i].ID_Type == WizardItemClass.SP_ITEM)
                 {
                     wizardparent.list_werzmodel.RemoveAt(i);
                     listBox_SP.Items.Remove(listBox_SP.Text);

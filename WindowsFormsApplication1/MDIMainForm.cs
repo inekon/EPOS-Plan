@@ -100,8 +100,10 @@ namespace WindowsFormsApplication1
 
         private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            StromTestClass st = new StromTestClass();
-         //  st.MyTest(); 
+            SimulationWaermepumpe wp = new SimulationWaermepumpe();
+            wp.wp_list.Add(5);
+            wp.wp_list.Add(7);
+            wp.Berechnung();    
         }
 
         private void MenuItem_Stromganglinie_Click(object sender, EventArgs e)

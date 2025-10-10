@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Wizard_WPItem));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend6 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.btn_Beenden = new System.Windows.Forms.Button();
             this.btn_Abbrechen = new System.Windows.Forms.Button();
             this.label23 = new System.Windows.Forms.Label();
@@ -56,7 +56,7 @@
             this.textBox_Abschalttemp = new System.Windows.Forms.TextBox();
             this.label_AbschalttemperaturEinheit = new System.Windows.Forms.Label();
             this.label_Abschalttemperatur = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
+            this.label_Betriebsart = new System.Windows.Forms.Label();
             this.comboBox_Betriebsart = new System.Windows.Forms.ComboBox();
             this.checkBox_Bivalent = new System.Windows.Forms.CheckBox();
             this.label13 = new System.Windows.Forms.Label();
@@ -84,6 +84,7 @@
             this.label34 = new System.Windows.Forms.Label();
             this.label35 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label15 = new System.Windows.Forms.Label();
             this.textBox_Baujahr = new System.Windows.Forms.TextBox();
             this.textBox_Leistungsstufen = new System.Windows.Forms.TextBox();
             this.textBox_Waermepumpentyp = new System.Windows.Forms.TextBox();
@@ -106,7 +107,6 @@
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.label15 = new System.Windows.Forms.Label();
             this.groupBox3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -185,7 +185,7 @@
             this.label19.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label19.Location = new System.Drawing.Point(46, 179);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(285, 17);
+            this.label19.Size = new System.Drawing.Size(284, 17);
             this.label19.TabIndex = 78;
             this.label19.Text = "Wärmepumpenleistung / maximale Betriebszeit:";
             // 
@@ -196,7 +196,7 @@
             this.label18.ForeColor = System.Drawing.Color.Navy;
             this.label18.Location = new System.Drawing.Point(19, 150);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(397, 17);
+            this.label18.Size = new System.Drawing.Size(396, 17);
             this.label18.TabIndex = 77;
             this.label18.Text = "Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund:";
             // 
@@ -228,7 +228,7 @@
             this.label7.ForeColor = System.Drawing.Color.Navy;
             this.label7.Location = new System.Drawing.Point(19, 71);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(180, 17);
+            this.label7.Size = new System.Drawing.Size(179, 17);
             this.label7.TabIndex = 75;
             this.label7.Text = "Wärmeerzeuger Spitzenlast:";
             // 
@@ -333,14 +333,15 @@
             this.label_Abschalttemperatur.TabIndex = 70;
             this.label_Abschalttemperatur.Text = "Abschalttemperatur";
             // 
-            // label14
+            // label_Betriebsart
             // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(38, 296);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(57, 13);
-            this.label14.TabIndex = 69;
-            this.label14.Text = "Betriebsart";
+            this.label_Betriebsart.AutoSize = true;
+            this.label_Betriebsart.Location = new System.Drawing.Point(38, 296);
+            this.label_Betriebsart.Name = "label_Betriebsart";
+            this.label_Betriebsart.Size = new System.Drawing.Size(57, 13);
+            this.label_Betriebsart.TabIndex = 69;
+            this.label_Betriebsart.Text = "Betriebsart";
+            this.label_Betriebsart.Visible = false;
             // 
             // comboBox_Betriebsart
             // 
@@ -349,6 +350,7 @@
             this.comboBox_Betriebsart.Name = "comboBox_Betriebsart";
             this.comboBox_Betriebsart.Size = new System.Drawing.Size(131, 21);
             this.comboBox_Betriebsart.TabIndex = 68;
+            this.comboBox_Betriebsart.Visible = false;
             this.comboBox_Betriebsart.SelectedIndexChanged += new System.EventHandler(this.comboBox_Betriebsart_SelectedIndexChanged);
             // 
             // checkBox_Bivalent
@@ -436,7 +438,7 @@
             // checkBox_rendeMIX
             // 
             this.checkBox_rendeMIX.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBox_rendeMIX.Location = new System.Drawing.Point(17, 58);
+            this.checkBox_rendeMIX.Location = new System.Drawing.Point(18, 53);
             this.checkBox_rendeMIX.Name = "checkBox_rendeMIX";
             this.checkBox_rendeMIX.Size = new System.Drawing.Size(385, 29);
             this.checkBox_rendeMIX.TabIndex = 10;
@@ -505,7 +507,7 @@
             this.label1.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(14, 30);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(53, 13);
+            this.label1.Size = new System.Drawing.Size(52, 13);
             this.label1.TabIndex = 3;
             this.label1.Text = "Volumen";
             // 
@@ -541,7 +543,7 @@
             this.label_WP.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label_WP.Location = new System.Drawing.Point(14, 11);
             this.label_WP.Name = "label_WP";
-            this.label_WP.Size = new System.Drawing.Size(162, 19);
+            this.label_WP.Size = new System.Drawing.Size(161, 19);
             this.label_WP.TabIndex = 59;
             this.label_WP.Text = "Wärmepumpen Auswahl:";
             // 
@@ -567,7 +569,7 @@
             // label31
             // 
             this.label31.AutoSize = true;
-            this.label31.Location = new System.Drawing.Point(465, 135);
+            this.label31.Location = new System.Drawing.Point(456, 137);
             this.label31.Name = "label31";
             this.label31.Size = new System.Drawing.Size(79, 13);
             this.label31.TabIndex = 128;
@@ -633,6 +635,15 @@
             this.groupBox2.TabIndex = 133;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Wärmepumpen Kenndaten";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(25, 193);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(48, 13);
+            this.label15.TabIndex = 154;
+            this.label15.Text = "Heizstab";
             // 
             // textBox_Baujahr
             // 
@@ -821,18 +832,18 @@
             // 
             // chart1
             // 
-            chartArea5.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea5.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea5);
-            legend5.Name = "Legend1";
-            this.chart1.Legends.Add(legend5);
+            chartArea3.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea3.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea3);
+            legend3.Name = "Legend1";
+            this.chart1.Legends.Add(legend3);
             this.chart1.Location = new System.Drawing.Point(6, 6);
             this.chart1.Name = "chart1";
-            series5.ChartArea = "ChartArea1";
-            series5.Legend = "Legend1";
-            series5.MarkerBorderWidth = 3;
-            series5.Name = "Series1";
-            this.chart1.Series.Add(series5);
+            series3.ChartArea = "ChartArea1";
+            series3.Legend = "Legend1";
+            series3.MarkerBorderWidth = 3;
+            series3.Name = "Series1";
+            this.chart1.Series.Add(series3);
             this.chart1.Size = new System.Drawing.Size(337, 189);
             this.chart1.TabIndex = 125;
             this.chart1.Text = "COP";
@@ -850,29 +861,20 @@
             // 
             // chart2
             // 
-            chartArea6.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea6.Name = "ChartArea1";
-            this.chart2.ChartAreas.Add(chartArea6);
-            legend6.Name = "Legend1";
-            this.chart2.Legends.Add(legend6);
+            chartArea4.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea4.Name = "ChartArea1";
+            this.chart2.ChartAreas.Add(chartArea4);
+            legend4.Name = "Legend1";
+            this.chart2.Legends.Add(legend4);
             this.chart2.Location = new System.Drawing.Point(12, 6);
             this.chart2.Name = "chart2";
-            series6.ChartArea = "ChartArea1";
-            series6.Legend = "Legend1";
-            series6.MarkerBorderWidth = 3;
-            series6.Name = "Series1";
-            this.chart2.Series.Add(series6);
+            series4.ChartArea = "ChartArea1";
+            series4.Legend = "Legend1";
+            series4.MarkerBorderWidth = 3;
+            series4.Name = "Series1";
+            this.chart2.Series.Add(series4);
             this.chart2.Size = new System.Drawing.Size(337, 189);
             this.chart2.TabIndex = 126;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(25, 193);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(48, 13);
-            this.label15.TabIndex = 154;
-            this.label15.Text = "Heizstab";
             // 
             // Wizard_WPItem
             // 
@@ -899,7 +901,7 @@
             this.Controls.Add(this.textBox_Abschalttemp);
             this.Controls.Add(this.label_AbschalttemperaturEinheit);
             this.Controls.Add(this.label_Abschalttemperatur);
-            this.Controls.Add(this.label14);
+            this.Controls.Add(this.label_Betriebsart);
             this.Controls.Add(this.comboBox_Betriebsart);
             this.Controls.Add(this.checkBox_Bivalent);
             this.Controls.Add(this.label13);
@@ -953,7 +955,7 @@
         private System.Windows.Forms.TextBox textBox_Abschalttemp;
         private System.Windows.Forms.Label label_AbschalttemperaturEinheit;
         private System.Windows.Forms.Label label_Abschalttemperatur;
-        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label label_Betriebsart;
         private System.Windows.Forms.ComboBox comboBox_Betriebsart;
         private System.Windows.Forms.CheckBox checkBox_Bivalent;
         private System.Windows.Forms.Label label13;

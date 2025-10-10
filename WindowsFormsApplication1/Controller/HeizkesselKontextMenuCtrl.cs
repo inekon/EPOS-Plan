@@ -107,9 +107,17 @@ namespace WindowsFormsApplication1
             int id_type;
 
             frm.list_heizkesselmodel.Clear();
-			werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.REF_KESSEL_TYP);
-			id_type = WizardItemClass.REF_KESSEL_TYP;
-            
+            if (listView_Heizkessel.Name == "listView_Heizkessel_REF")
+            {
+                werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.REF_KESSEL_TYP);
+                id_type = WizardItemClass.REF_KESSEL_TYP;
+            }
+            else
+            {
+                werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
+                id_type = WizardItemClass.KESSEL_TYP;
+            }
+
             for (int i = 0; i < werzctrl.rows; i++)
             {
                 WErzeugerModel item = new WErzeugerModel();
@@ -130,8 +138,10 @@ namespace WindowsFormsApplication1
             {
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
-
-                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt);
+                for (int n = 0; n < frm.list_heizkesselmodel.Count; n++)
+                {
+                    wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, frm.list_heizkesselmodel[n].ID);
+                }
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_heizkesselmodel);
 
                 ProjektCtrl projctrl = new ProjektCtrl();

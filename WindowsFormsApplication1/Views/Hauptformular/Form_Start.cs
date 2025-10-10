@@ -14,7 +14,6 @@ namespace WindowsFormsApplication1
 {
     public partial class Form_Start : Form
     {
-        int index = 0;
 
         public Form_Start()
         {

@@ -61,6 +61,7 @@ namespace WindowsFormsApplication1
             listPages[WizardItemClass.PROZESS_ITEM].aktiv = true;
             listPages[WizardItemClass.STROMLASTGANG_ITEM].aktiv = true;
             listPages[WizardItemClass.REFERENZ_ITEM].aktiv = true;
+            listPages[WizardItemClass.KESSEL_ITEM].aktiv = true;
 
             pagecount = listPages.Count();
             
@@ -243,6 +244,11 @@ namespace WindowsFormsApplication1
                     ((Wizard_Referenz)page).SetControls(listBox_Projekte.Text);
                     ((Wizard_Referenz)page).SetWPControls(listBox_Projekte.Text);
                 }
+                else if (top == WizardItemClass.KESSEL_ITEM)
+                {
+                    ((Wizard_Kessel)page).SetControls(listBox_Projekte.Text);
+                }
+
             }
             else
             {
@@ -351,6 +357,7 @@ namespace WindowsFormsApplication1
             ((Wizard_Komponenten)page).SetStromSpCheckBox(false);
             ((Wizard_Komponenten)page).SetProzessCheckBox(false);
             ((Wizard_Komponenten)page).SetStromglastgangCheckBox(false);
+            ((Wizard_Komponenten)page).SetKesselCheckBox(false);
 
             int rows = werzctrl.rows;
            
@@ -360,6 +367,7 @@ namespace WindowsFormsApplication1
                 if (werzctrl.items[rows-1].ID_Solar > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.SOLAR_TYP) ((Wizard_Komponenten)page).SetSolarCheckBox(true);
                 if (werzctrl.items[rows-1].ID_PV > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.PV_TYP) ((Wizard_Komponenten)page).SetPVPCheckBox(true);
                 if (werzctrl.items[rows-1].ID_SP > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.SP_TYP) ((Wizard_Komponenten)page).SetStromSpCheckBox(true);
+                if (werzctrl.items[rows-1].ID_Kessel > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.KESSEL_TYP) ((Wizard_Komponenten)page).SetKesselCheckBox(true);
                 rows--;
             }
             

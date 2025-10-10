@@ -39,6 +39,7 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.checkBox_Prozess = new System.Windows.Forms.CheckBox();
             this.checkBox_Stromlastgang = new System.Windows.Forms.CheckBox();
+            this.checkBox_Kessel = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -159,13 +160,26 @@
             this.checkBox_Stromlastgang.UseVisualStyleBackColor = true;
             this.checkBox_Stromlastgang.CheckedChanged += new System.EventHandler(this.checkBox_Stromlastgang_CheckedChanged);
             // 
+            // checkBox_Kessel
+            // 
+            this.checkBox_Kessel.AutoSize = true;
+            this.checkBox_Kessel.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.checkBox_Kessel.Location = new System.Drawing.Point(127, 420);
+            this.checkBox_Kessel.Name = "checkBox_Kessel";
+            this.checkBox_Kessel.Size = new System.Drawing.Size(122, 25);
+            this.checkBox_Kessel.TabIndex = 10;
+            this.checkBox_Kessel.Text = "Spitzenkessel";
+            this.checkBox_Kessel.UseVisualStyleBackColor = true;
+            this.checkBox_Kessel.CheckedChanged += new System.EventHandler(this.checkBox_Kessel_CheckedChanged);
+            // 
             // Wizard_Komponenten
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(712, 434);
+            this.ClientSize = new System.Drawing.Size(712, 453);
+            this.Controls.Add(this.checkBox_Kessel);
             this.Controls.Add(this.checkBox_Stromlastgang);
             this.Controls.Add(this.checkBox_Prozess);
             this.Controls.Add(this.label3);
@@ -198,5 +212,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.CheckBox checkBox_Prozess;
         private System.Windows.Forms.CheckBox checkBox_Stromlastgang;
+        private System.Windows.Forms.CheckBox checkBox_Kessel;
     }
 }

@@ -71,7 +71,7 @@ namespace WindowsFormsApplication1
                     {
                         newRow["ID_SP"] = list[i].ID_SP;
                     }
-                    else if (list[i].ID_Type == WizardItemClass.REF_KESSEL_TYP)
+                    else if (list[i].ID_Type == WizardItemClass.KESSEL_TYP || list[i].ID_Type == WizardItemClass.REF_KESSEL_TYP)
                     {
                         newRow["ID_KESSEL"] = list[i].ID_Kessel;
                     }

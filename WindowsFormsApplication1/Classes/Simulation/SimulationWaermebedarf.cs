@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.InteropServices;
 using System.Data.Odbc;
 using System.Globalization;
 using System.Windows.Forms;
-using System.IO;
 
 namespace WindowsFormsApplication1
 {
@@ -35,7 +31,7 @@ namespace WindowsFormsApplication1
         public float[] Waermebedarf_Gebaeude = new float[8760];
         public float[] Waermebedarf_Gebaeude_Monat = new float[12];
         public float[] HeizwaermebedarfGeb = new float[100];
-        private float[] Waermebedarf_sortiert = new float[8760];
+        public float[] Waermebedarf_sortiert = new float[8760];
         public float Waermebedarf_Max = 0;
         public float Waermebedarf_Gesamt = 0;
         public double Waermebedarf_Gebaeude_Gesamt = 0;
@@ -233,8 +229,9 @@ namespace WindowsFormsApplication1
             Waermebedarf_Gesamt = com.I_vector_summe(Waermebedarf);
 
             com.CSharp_I_vectoren_addieren(Waermebedarf, Waermebedarf_sortiert);
+            com.CSharp_I_vectoren_addieren(Waermebedarf, Dauerlinie_nicht_sortiert);
 
-            Dauerlinie_nicht_sortiert = Waermebedarf;
+            //Dauerlinie_nicht_sortiert = Waermebedarf;
 
             // Maximaler Stunden Wärmebedarf gesamt
             Waermebedarf_Max = Maximaler_Waermebedarf(Waermebedarf);

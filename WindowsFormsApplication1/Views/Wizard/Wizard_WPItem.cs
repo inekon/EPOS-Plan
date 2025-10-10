@@ -34,6 +34,12 @@ namespace WindowsFormsApplication1
             comboBox_Betriebsart.Items.Add("Alternativbetrieb");
             comboBox_Betriebsart.Items.Add("Parallelbetrieb");
             comboBox_Betriebsart.Items.Add("Teilparallelbetrieb");
+
+            comboBox_Betriebsart.Visible = false;
+            textBox_Abschalttemp.Visible = false;
+            label_AbschalttemperaturEinheit.Visible = false;
+            label_Abschalttemperatur.Visible = false;
+            label_Betriebsart.Visible = false;
         }
 
         public Wizard_WPItem(string wpname)
@@ -91,6 +97,14 @@ namespace WindowsFormsApplication1
                 textBox_Abschalttemp.Text = item.Abschaltpunkt.ToString();
                 comboBox_Betriebsart.Text = item.Betriebsart;
                 checkBox_Bivalent.Checked = item.Bivalenter_Betrieb;
+                if (!item.Bivalenter_Betrieb)
+                {
+                    comboBox_Betriebsart.Visible = false;
+                    textBox_Abschalttemp.Visible = false;
+                    label_AbschalttemperaturEinheit.Visible = false;
+                    label_Abschalttemperatur.Visible = false;
+                    label_Betriebsart.Visible = false;
+                }
                 comboBox_Ruecklauf.Text = item.Ruecklauf.ToString();
                 checkBox_Sperrzeit.Checked = item.Sperrung;
                 textBox_bis.Text = item.Sperrzeit_bis.ToString();
@@ -112,7 +126,6 @@ namespace WindowsFormsApplication1
                 textBox_Hersteller.Text = item.Firma;
                 textBox_Modulkosten.Text = item.Modulkosten.ToString();
                 textBox_Nennleistung.Text = item.Nennleistung.ToString();
- 
             }
         }
 
@@ -127,7 +140,7 @@ namespace WindowsFormsApplication1
             item.Ruecklauf = Int32.Parse(comboBox_Ruecklauf.Text);
             item.Vorlauf = Int32.Parse(comboBox_Vorlauf.Text);
             item.Bivalenter_Betrieb = checkBox_Bivalent.Checked;
-            item.Abschaltpunkt = Int32.Parse(textBox_Abschalttemp.Text);
+            item.Abschaltpunkt = double.Parse(textBox_Abschalttemp.Text);
             item.Nutzungszeit = 0;
             item.ID_WP = m_nID_WP;
             item.ID_SP = 0;
@@ -233,11 +246,13 @@ namespace WindowsFormsApplication1
              if(checkBox_Bivalent.Checked)
              {
                 comboBox_Betriebsart.Visible = true;
-                if(comboBox_Betriebsart.Text == "Teilparallelbetrieb")
+                label_Betriebsart.Visible = true;
+                if (comboBox_Betriebsart.Text == "Teilparallelbetrieb")
                 {
                     textBox_Abschalttemp.Visible = true;
                     label_AbschalttemperaturEinheit.Visible = true;
                     label_Abschalttemperatur.Visible = true;
+                    
                 }
                 else
                 {
@@ -252,6 +267,7 @@ namespace WindowsFormsApplication1
                 textBox_Abschalttemp.Visible = false;
                 label_AbschalttemperaturEinheit.Visible = false;
                 label_Abschalttemperatur.Visible = false;
+                label_Betriebsart.Visible = false;
             }
         }
 
