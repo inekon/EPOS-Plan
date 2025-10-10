@@ -95,6 +95,7 @@ namespace WindowsFormsApplication1
 
 
             wp_model.Clear();
+            wp_kenndaten.Clear();
             for (int i = 0; i < wp_list.Count; i++)
             {
                 wp.ReadAllFilter("ID=" + wp_list[i]);
