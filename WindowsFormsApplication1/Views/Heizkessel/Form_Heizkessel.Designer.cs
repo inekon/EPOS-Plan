@@ -45,13 +45,17 @@
             this.listBox_Kessel = new System.Windows.Forms.ListBox();
             this.btn_Abbrechen = new System.Windows.Forms.Button();
             this.btn_OK = new System.Windows.Forms.Button();
+            this.comboBox_Brennstoffart = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.comboBox_Leistung = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // label18
             // 
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label18.Location = new System.Drawing.Point(39, 281);
+            this.label18.Location = new System.Drawing.Point(19, 271);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(91, 19);
             this.label18.TabIndex = 98;
@@ -61,10 +65,11 @@
             // 
             this.textBox_Kesselbeschreibung.Enabled = false;
             this.textBox_Kesselbeschreibung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kesselbeschreibung.Location = new System.Drawing.Point(131, 278);
+            this.textBox_Kesselbeschreibung.Location = new System.Drawing.Point(111, 268);
             this.textBox_Kesselbeschreibung.Multiline = true;
             this.textBox_Kesselbeschreibung.Name = "textBox_Kesselbeschreibung";
-            this.textBox_Kesselbeschreibung.Size = new System.Drawing.Size(395, 40);
+            this.textBox_Kesselbeschreibung.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox_Kesselbeschreibung.Size = new System.Drawing.Size(258, 69);
             this.textBox_Kesselbeschreibung.TabIndex = 97;
             // 
             // label13
@@ -72,7 +77,7 @@
             this.label13.BackColor = System.Drawing.Color.Black;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label13.ForeColor = System.Drawing.Color.White;
-            this.label13.Location = new System.Drawing.Point(195, 355);
+            this.label13.Location = new System.Drawing.Point(175, 374);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(33, 19);
             this.label13.TabIndex = 96;
@@ -83,7 +88,7 @@
             // 
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label14.Location = new System.Drawing.Point(39, 358);
+            this.label14.Location = new System.Drawing.Point(19, 377);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(61, 19);
             this.label14.TabIndex = 95;
@@ -93,7 +98,7 @@
             // 
             this.textBox_Kesselleistung.Enabled = false;
             this.textBox_Kesselleistung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kesselleistung.Location = new System.Drawing.Point(131, 355);
+            this.textBox_Kesselleistung.Location = new System.Drawing.Point(111, 374);
             this.textBox_Kesselleistung.Name = "textBox_Kesselleistung";
             this.textBox_Kesselleistung.Size = new System.Drawing.Size(58, 25);
             this.textBox_Kesselleistung.TabIndex = 94;
@@ -103,7 +108,7 @@
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label15.Location = new System.Drawing.Point(39, 327);
+            this.label15.Location = new System.Drawing.Point(19, 346);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(30, 19);
             this.label15.TabIndex = 93;
@@ -113,7 +118,7 @@
             // 
             this.textBox_Kesseltyp.Enabled = false;
             this.textBox_Kesseltyp.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kesseltyp.Location = new System.Drawing.Point(131, 324);
+            this.textBox_Kesseltyp.Location = new System.Drawing.Point(111, 343);
             this.textBox_Kesseltyp.Name = "textBox_Kesseltyp";
             this.textBox_Kesseltyp.Size = new System.Drawing.Size(177, 25);
             this.textBox_Kesseltyp.TabIndex = 92;
@@ -122,7 +127,7 @@
             // 
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label16.Location = new System.Drawing.Point(39, 250);
+            this.label16.Location = new System.Drawing.Point(19, 240);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(45, 19);
             this.label16.TabIndex = 91;
@@ -132,7 +137,7 @@
             // 
             this.textBox_Kesselname.Enabled = false;
             this.textBox_Kesselname.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kesselname.Location = new System.Drawing.Point(131, 247);
+            this.textBox_Kesselname.Location = new System.Drawing.Point(111, 237);
             this.textBox_Kesselname.Name = "textBox_Kesselname";
             this.textBox_Kesselname.Size = new System.Drawing.Size(258, 25);
             this.textBox_Kesselname.TabIndex = 90;
@@ -141,7 +146,7 @@
             // 
             this.label11.AutoSize = true;
             this.label11.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label11.Location = new System.Drawing.Point(379, 22);
+            this.label11.Location = new System.Drawing.Point(418, 22);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(142, 19);
             this.label11.TabIndex = 89;
@@ -175,7 +180,7 @@
             this.listBox_Kessel_DB.FormattingEnabled = true;
             this.listBox_Kessel_DB.HorizontalScrollbar = true;
             this.listBox_Kessel_DB.ItemHeight = 17;
-            this.listBox_Kessel_DB.Location = new System.Drawing.Point(383, 44);
+            this.listBox_Kessel_DB.Location = new System.Drawing.Point(411, 44);
             this.listBox_Kessel_DB.Name = "listBox_Kessel_DB";
             this.listBox_Kessel_DB.Size = new System.Drawing.Size(250, 157);
             this.listBox_Kessel_DB.TabIndex = 86;
@@ -227,11 +232,52 @@
             this.btn_OK.UseVisualStyleBackColor = true;
             this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
             // 
+            // comboBox_Brennstoffart
+            // 
+            this.comboBox_Brennstoffart.FormattingEnabled = true;
+            this.comboBox_Brennstoffart.Location = new System.Drawing.Point(524, 229);
+            this.comboBox_Brennstoffart.Name = "comboBox_Brennstoffart";
+            this.comboBox_Brennstoffart.Size = new System.Drawing.Size(125, 21);
+            this.comboBox_Brennstoffart.TabIndex = 101;
+            this.comboBox_Brennstoffart.Text = "Gas Brennwert";
+            this.comboBox_Brennstoffart.SelectedIndexChanged += new System.EventHandler(this.comboBox_Brennstoffart_SelectedIndexChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(521, 213);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(128, 13);
+            this.label1.TabIndex = 102;
+            this.label1.Text = "Filtern nach Brennstoffart:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(521, 267);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(108, 13);
+            this.label2.TabIndex = 104;
+            this.label2.Text = "Filtern nach Leistung:";
+            // 
+            // comboBox_Leistung
+            // 
+            this.comboBox_Leistung.FormattingEnabled = true;
+            this.comboBox_Leistung.Location = new System.Drawing.Point(524, 283);
+            this.comboBox_Leistung.Name = "comboBox_Leistung";
+            this.comboBox_Leistung.Size = new System.Drawing.Size(125, 21);
+            this.comboBox_Leistung.TabIndex = 103;
+            this.comboBox_Leistung.SelectedIndexChanged += new System.EventHandler(this.comboBox_Leistung_SelectedIndexChanged);
+            // 
             // Form_Heizkessel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(673, 450);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.comboBox_Leistung);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.comboBox_Brennstoffart);
             this.Controls.Add(this.btn_Abbrechen);
             this.Controls.Add(this.btn_OK);
             this.Controls.Add(this.label18);
@@ -276,5 +322,9 @@
         private System.Windows.Forms.ListBox listBox_Kessel;
         private System.Windows.Forms.Button btn_Abbrechen;
         private System.Windows.Forms.Button btn_OK;
+        private System.Windows.Forms.ComboBox comboBox_Brennstoffart;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ComboBox comboBox_Leistung;
     }
 }

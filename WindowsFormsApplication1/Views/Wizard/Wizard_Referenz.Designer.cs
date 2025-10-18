@@ -80,6 +80,10 @@
             this.listBox_Kessel_DB = new System.Windows.Forms.ListBox();
             this.label12 = new System.Windows.Forms.Label();
             this.listBox_Kessel = new System.Windows.Forms.ListBox();
+            this.label24 = new System.Windows.Forms.Label();
+            this.comboBox_Leistung = new System.Windows.Forms.ComboBox();
+            this.label25 = new System.Windows.Forms.Label();
+            this.comboBox_Brennstoffart = new System.Windows.Forms.ComboBox();
             this.tabControl_SP.SuspendLayout();
             this.tabPage_WP.SuspendLayout();
             this.tabPage_SP.SuspendLayout();
@@ -209,7 +213,7 @@
             this.label23.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label23.Location = new System.Drawing.Point(34, 42);
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(186, 19);
+            this.label23.Size = new System.Drawing.Size(185, 19);
             this.label23.TabIndex = 59;
             this.label23.Text = "Ausgewählte Wärmepumpen";
             // 
@@ -229,6 +233,7 @@
             this.listView_WP.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.listView_WP.FullRowSelect = true;
             this.listView_WP.GridLines = true;
+            this.listView_WP.HideSelection = false;
             this.listView_WP.Location = new System.Drawing.Point(38, 64);
             this.listView_WP.MultiSelect = false;
             this.listView_WP.Name = "listView_WP";
@@ -400,7 +405,7 @@
             this.label4.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label4.Location = new System.Drawing.Point(35, 237);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(31, 19);
+            this.label4.Size = new System.Drawing.Size(30, 19);
             this.label4.TabIndex = 65;
             this.label4.Text = "Typ";
             // 
@@ -496,6 +501,10 @@
             // 
             // tabPage_Standard
             // 
+            this.tabPage_Standard.Controls.Add(this.label24);
+            this.tabPage_Standard.Controls.Add(this.comboBox_Leistung);
+            this.tabPage_Standard.Controls.Add(this.label25);
+            this.tabPage_Standard.Controls.Add(this.comboBox_Brennstoffart);
             this.tabPage_Standard.Controls.Add(this.label18);
             this.tabPage_Standard.Controls.Add(this.textBox_Kesselbeschreibung);
             this.tabPage_Standard.Controls.Add(this.label13);
@@ -522,7 +531,7 @@
             // 
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label18.Location = new System.Drawing.Point(78, 251);
+            this.label18.Location = new System.Drawing.Point(16, 262);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(91, 19);
             this.label18.TabIndex = 83;
@@ -531,10 +540,11 @@
             // textBox_Kesselbeschreibung
             // 
             this.textBox_Kesselbeschreibung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kesselbeschreibung.Location = new System.Drawing.Point(170, 248);
+            this.textBox_Kesselbeschreibung.Location = new System.Drawing.Point(108, 259);
             this.textBox_Kesselbeschreibung.Multiline = true;
             this.textBox_Kesselbeschreibung.Name = "textBox_Kesselbeschreibung";
-            this.textBox_Kesselbeschreibung.Size = new System.Drawing.Size(395, 40);
+            this.textBox_Kesselbeschreibung.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox_Kesselbeschreibung.Size = new System.Drawing.Size(250, 40);
             this.textBox_Kesselbeschreibung.TabIndex = 82;
             // 
             // label13
@@ -542,7 +552,7 @@
             this.label13.BackColor = System.Drawing.Color.Black;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label13.ForeColor = System.Drawing.Color.White;
-            this.label13.Location = new System.Drawing.Point(234, 325);
+            this.label13.Location = new System.Drawing.Point(172, 336);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(33, 19);
             this.label13.TabIndex = 81;
@@ -553,7 +563,7 @@
             // 
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label14.Location = new System.Drawing.Point(78, 328);
+            this.label14.Location = new System.Drawing.Point(16, 339);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(61, 19);
             this.label14.TabIndex = 80;
@@ -562,7 +572,7 @@
             // textBox_Kesselleistung
             // 
             this.textBox_Kesselleistung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kesselleistung.Location = new System.Drawing.Point(170, 325);
+            this.textBox_Kesselleistung.Location = new System.Drawing.Point(108, 336);
             this.textBox_Kesselleistung.Name = "textBox_Kesselleistung";
             this.textBox_Kesselleistung.Size = new System.Drawing.Size(58, 25);
             this.textBox_Kesselleistung.TabIndex = 79;
@@ -573,16 +583,16 @@
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label15.Location = new System.Drawing.Point(78, 297);
+            this.label15.Location = new System.Drawing.Point(16, 308);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(31, 19);
+            this.label15.Size = new System.Drawing.Size(30, 19);
             this.label15.TabIndex = 78;
             this.label15.Text = "Typ";
             // 
             // textBox_Kesseltyp
             // 
             this.textBox_Kesseltyp.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kesseltyp.Location = new System.Drawing.Point(170, 294);
+            this.textBox_Kesseltyp.Location = new System.Drawing.Point(108, 305);
             this.textBox_Kesseltyp.Name = "textBox_Kesseltyp";
             this.textBox_Kesseltyp.Size = new System.Drawing.Size(177, 25);
             this.textBox_Kesseltyp.TabIndex = 77;
@@ -591,7 +601,7 @@
             // 
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label16.Location = new System.Drawing.Point(78, 220);
+            this.label16.Location = new System.Drawing.Point(16, 231);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(45, 19);
             this.label16.TabIndex = 76;
@@ -600,9 +610,9 @@
             // textBox_Kesselname
             // 
             this.textBox_Kesselname.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kesselname.Location = new System.Drawing.Point(170, 217);
+            this.textBox_Kesselname.Location = new System.Drawing.Point(108, 228);
             this.textBox_Kesselname.Name = "textBox_Kesselname";
-            this.textBox_Kesselname.Size = new System.Drawing.Size(258, 25);
+            this.textBox_Kesselname.Size = new System.Drawing.Size(250, 25);
             this.textBox_Kesselname.TabIndex = 75;
             // 
             // label11
@@ -669,6 +679,43 @@
             this.listBox_Kessel.Size = new System.Drawing.Size(238, 157);
             this.listBox_Kessel.TabIndex = 14;
             this.listBox_Kessel.SelectedIndexChanged += new System.EventHandler(this.listBox_Kessel_SelectedIndexChanged);
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(434, 276);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(139, 19);
+            this.label24.TabIndex = 112;
+            this.label24.Text = "Filtern nach Leistung:";
+            // 
+            // comboBox_Leistung
+            // 
+            this.comboBox_Leistung.FormattingEnabled = true;
+            this.comboBox_Leistung.Location = new System.Drawing.Point(437, 298);
+            this.comboBox_Leistung.Name = "comboBox_Leistung";
+            this.comboBox_Leistung.Size = new System.Drawing.Size(125, 25);
+            this.comboBox_Leistung.TabIndex = 111;
+            this.comboBox_Leistung.SelectedIndexChanged += new System.EventHandler(this.comboBox_Leistung_SelectedIndexChanged);
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(433, 222);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(167, 19);
+            this.label25.TabIndex = 110;
+            this.label25.Text = "Filtern nach Brennstoffart:";
+            // 
+            // comboBox_Brennstoffart
+            // 
+            this.comboBox_Brennstoffart.FormattingEnabled = true;
+            this.comboBox_Brennstoffart.Location = new System.Drawing.Point(438, 244);
+            this.comboBox_Brennstoffart.Name = "comboBox_Brennstoffart";
+            this.comboBox_Brennstoffart.Size = new System.Drawing.Size(125, 25);
+            this.comboBox_Brennstoffart.TabIndex = 109;
+            this.comboBox_Brennstoffart.Text = "Gas Brennwert";
+            this.comboBox_Brennstoffart.SelectedIndexChanged += new System.EventHandler(this.comboBox_Brennstoffart_SelectedIndexChanged);
             // 
             // Wizard_Referenz
             // 
@@ -748,5 +795,9 @@
         private System.Windows.Forms.Button btn_Löschen;
         private System.Windows.Forms.ListView listView_WP;
         private System.Windows.Forms.Button btn_Uebernehmen;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.ComboBox comboBox_Leistung;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.ComboBox comboBox_Brennstoffart;
     }
 }

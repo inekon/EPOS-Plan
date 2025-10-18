@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
         public BrennstoffModel model;
 
 
-        public static string[] Brennstoffart = { "Öl", "Gas", "Holz", "", "Pellet", "", "", "", "Gas Brennwert", "", "", "", "", "" };
+        public static string[] Brennstoffart = { "Öl", "Gas", "", "Rapsöl", "Holz", "Sonstiges", "", "", "Flüssiggas", "", "", "Biogas", "", "","Fernwärme","Strom" };
 
         public BrennstoffCtrl()
         {

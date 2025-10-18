@@ -25,12 +25,12 @@ namespace WindowsFormsApplication1
 
     public partial class FormMain : Form
     {
- 
+
         private int m_ID_Projekt = 0;
         private string m_szProjektname = "";
         private int m_ID_Klimaregion = 0;
-        private Control drag_control; 
-        
+        private Control drag_control;
+
         SimulationWaermebedarf simulation_Waermebedarf = new SimulationWaermebedarf();
         SimulationStrombedarf simulation_strom = new SimulationStrombedarf();
         SimulationWaermepumpe simulation_wp = new SimulationWaermepumpe();
@@ -39,7 +39,7 @@ namespace WindowsFormsApplication1
         double ChartSelBegin;
         double ChartSelEnd;
 
-        public bool Simulation_durchgeführt = false;   
+        public bool Simulation_durchgeführt = false;
 
         public void SetProjekt(string szProjekt)
         {
@@ -54,9 +54,9 @@ namespace WindowsFormsApplication1
 
         public void SetKlima(string szKlima)
         {
-           comboBox_Klima.Text = szKlima;
+            comboBox_Klima.Text = szKlima;
         }
-        
+
         public void SetKunde(string szKunde)
         {
             textBox_Kunde.Text = szKunde;
@@ -80,7 +80,7 @@ namespace WindowsFormsApplication1
         public void SetNetzverluste(int nVerluste, string Einheit)
         {
             textBox_Netzverluste.Text = nVerluste.ToString();
-            comboBox_NetzvEinheit.Text = Einheit; 
+            comboBox_NetzvEinheit.Text = Einheit;
         }
 
         public FormMain()
@@ -90,7 +90,7 @@ namespace WindowsFormsApplication1
             SimulationWaermebedarf.Ergebnis result;
             result = simulation_Waermebedarf.SimulationErgebis_aus_DB();
 
-            textBox_MaxWaermelast.Text = result.Waermebedarf_Max.ToString("F2") ;
+            textBox_MaxWaermelast.Text = result.Waermebedarf_Max.ToString("F2");
             textBox_Gesamt_Waermebedarf.Text = result.Gesamt_Waermebedarf.ToString("F2");
 
             tt.Draw += new DrawToolTipEventHandler(this.tt_Draw);
@@ -109,7 +109,7 @@ namespace WindowsFormsApplication1
             Size clientsize = this.ClientSize;
             button_Beenden.Top = ClientSize.Height - button_Beenden.Height;
             button_Beenden.Left = ClientSize.Width - button_Beenden.Width;
- 
+
             listView_WP.View = View.Details;
             listView_WP.Columns.Add("Name", -2, HorizontalAlignment.Left);
             listView_WP.Columns.Add("Vorlauf [°C]", -2, HorizontalAlignment.Left);
@@ -128,7 +128,7 @@ namespace WindowsFormsApplication1
             listView_WP_Ref.Columns.Add("Betriebsart", -2, HorizontalAlignment.Left);
             listView_WP_Ref.Width = tabControl_Komponenten.ClientSize.Width;
             listView_WP_Ref.Left = -2;
-            listView_WP_Ref.Height = tabPage_Komponenten.Height-listView_WP_Ref.Top+2;
+            listView_WP_Ref.Height = tabPage_Komponenten.Height - listView_WP_Ref.Top + 2;
             //listView_WP_Ref.Columns.Add("", 0, HorizontalAlignment.Left);
 
 
@@ -236,9 +236,21 @@ namespace WindowsFormsApplication1
             listView_Stromganglinie.Top = -2;
             listView_Stromganglinie.Left = -2;
 
+            listView_SimSPK.View = View.Details;
+            listView_SimSPK.Columns.Add("Kessel", -2, HorizontalAlignment.Left);
+            listView_SimSPK.Columns.Add("Name", -2, HorizontalAlignment.Left);
+            listView_SimSPK.Columns.Add("Gas/Biogas/Rapsöl/Holz... [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimSPK.Columns.Add("Öl [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimSPK.Columns.Add("Jahresnutzungsgrad [%]", -2, HorizontalAlignment.Left);
+            listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+
 
             init_Chart(chart1);
             init_Chart(chart2);
+
+            comboBox_Bereitschaft.Items.Add("6000");
+            comboBox_Bereitschaft.Items.Add("3000");
 
         }
 
@@ -273,18 +285,18 @@ namespace WindowsFormsApplication1
         {
             ProjektCtrl projctrl = new ProjektCtrl();
             WPCtrl wpctrl = new WPCtrl();
-            
+
             projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.WP_TYP + " or ID_Type=" + WizardItemClass.REF_WP_TYP + ")");
 
             listView_WP.Items.Clear();
-            listView_WP_Ref.Items.Clear();       
+            listView_WP_Ref.Items.Clear();
 
-            while(rs.Next())
+            while (rs.Next())
             {
                 ListViewItem lvitem = new ListViewItem();
-               
+
                 lvitem.Text = (string)rs.Read("Bezeichner");
                 lvitem.SubItems.Add(rs.Read("Vorlauf").ToString());
                 lvitem.SubItems.Add(rs.Read("Rücklauf").ToString());
@@ -323,8 +335,8 @@ namespace WindowsFormsApplication1
                 ListViewItem lvitem = new ListViewItem();
                 RecordSet rs_sp = new RecordSet();
                 rs_sp.Open("select * from Tab_Stromspeicher where ID=" + rs.Read("ID_SP"));
-                
-                if(!rs_sp.EOF()) 
+
+                if (!rs_sp.EOF())
                 {
                     lvitem.Text = (string)rs_sp.Read("Bezeichner");
                     lvitem.SubItems.Add(rs_sp.Read("Typ").ToString());
@@ -342,7 +354,7 @@ namespace WindowsFormsApplication1
                         listView_SP_REF.Items.Add(lvitem);
                     }
                 }
-                rs_sp.Close(); 
+                rs_sp.Close();
             }
             rs.Close();
 
@@ -355,7 +367,7 @@ namespace WindowsFormsApplication1
         private void listView_WP_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             ListView.SelectedIndexCollection indexes = listView_WP.SelectedIndices;
-            
+
             if (indexes.Count > 0)
             {
                 ListViewItem lvitem = listView_WP.Items[indexes[0]];
@@ -363,7 +375,7 @@ namespace WindowsFormsApplication1
                 WErzeugerCtrl ctrl = new WErzeugerCtrl();
                 List<WErzeugerModel> list = new List<WErzeugerModel>();
                 WPCtrl wpctrl = new WPCtrl();
-                
+
                 ctrl.ReadAllFilter("Bezeichner='" + lvitem.Text + "'");
                 wpctrl.ReadAll("ID_WP=" + ctrl.items[0].ID_WP);
                 ctrl.items[0].Regelung = wpctrl.items[0].Regelung;
@@ -373,7 +385,7 @@ namespace WindowsFormsApplication1
                 ctrl.items[0].Beschreibung = wpctrl.items[0].Beschreibung;
                 ctrl.items[0].Firma = wpctrl.items[0].Firma;
                 ctrl.items[0].Typ = wpctrl.items[0].Typ;
-                
+
                 list.Add(ctrl.items[0]);
                 frm_wpitem.m_werzitemlist = list;
                 frm_wpitem.SetControls(0);
@@ -439,20 +451,20 @@ namespace WindowsFormsApplication1
         {
             ProjektCtrl projctrl = new ProjektCtrl();
             RecordSet rs = new RecordSet();
-            
+
             projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.REF_KESSEL_TYP + " or ID_Type=" + WizardItemClass.KESSEL_TYP + ")");
 
             listView_Heizkessel.Items.Clear();
-            listView_Heizkessel_REF.Items.Clear();  
+            listView_Heizkessel_REF.Items.Clear();
 
             while (rs.Next())
             {
                 ListViewItem lvitem = new ListViewItem();
                 RecordSet rs_hk = new RecordSet();
-                
+
                 rs_hk.Open("select * from [DB-Heizung] where ID=" + rs.Read("ID_Kessel"));
-                
+
                 if (!rs_hk.EOF())
                 {
                     lvitem.Text = (string)rs_hk.Read("Name");
@@ -490,7 +502,7 @@ namespace WindowsFormsApplication1
              "[DBGebaeude].Gebaeudename, Z_ProjektGebaeude.Einheit_Waermebedarf_Wohnflaeche, [DBGebaeude].Gebaeudeart " +
              "FROM [DBGebaeude] INNER JOIN Z_ProjektGebaeude ON [DBGebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
              " where Z_ProjektGebaeude.ID_Projekt=" + projctrl.m_ID;
-            
+
             RecordSet rs = new RecordSet();
             rs.Open(sql);
             listView_Gebaeude.Items.Clear();
@@ -520,7 +532,7 @@ namespace WindowsFormsApplication1
             RecordSet rs = new RecordSet();
 
             projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
-   
+
             listView_WaermebedarfExtern.Items.Clear();
 
             string sql = "SELECT Z_ProjektWaermebedarf.ID_Z, Z_ProjektWaermebedarf.ID_Projekt, " +
@@ -538,8 +550,8 @@ namespace WindowsFormsApplication1
                 lvitem.SubItems.Add(rs.Read("ID_Ganglinie").ToString());
                 listView_WaermebedarfExtern.Items.Add(lvitem);
             }
-            rs.Close(); 
-     
+            rs.Close();
+
             listView_WaermebedarfExtern.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_WaermebedarfExtern.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
@@ -571,7 +583,7 @@ namespace WindowsFormsApplication1
             listView_Prozesswaerme.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_Prozesswaerme.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
-        
+
         public void FillKlimaList()
         {
             KlimaregionCtrl ctrl = new KlimaregionCtrl();
@@ -588,7 +600,7 @@ namespace WindowsFormsApplication1
         private void comboBox_Klima_SelectedIndexChanged(object sender, EventArgs e)
         {
             m_ID_Klimaregion = GetIDKlimaregion();
-            simulation_Waermebedarf.DBGelesen = false; 
+            simulation_Waermebedarf.DBGelesen = false;
         }
 
         private int GetIDKlimaregion()
@@ -645,7 +657,7 @@ namespace WindowsFormsApplication1
         {
             Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
             frm.Init(simulation_Waermebedarf);
-            frm.ShowDialog(); 
+            frm.ShowDialog();
         }
 
         private void button1_Click_1(object sender, EventArgs e)
@@ -654,38 +666,38 @@ namespace WindowsFormsApplication1
         }
 
         private void listView_Gebaeude_DoubleClick(object sender, EventArgs e)
-        { 
+        {
             GebäudeKontextMenuCtrl ctrl = new GebäudeKontextMenuCtrl();
             ctrl.Init(listView_Gebaeude, m_ID_Projekt, m_szProjektname);
-            ctrl.contextMenuStrip1.Items[0].PerformClick(); 
+            ctrl.contextMenuStrip1.Items[0].PerformClick();
         }
 
         private void listView_WaermebedatfExtern_DoubleClick(object sender, EventArgs e)
         {
             WaermebedarfExternKontextMenuCtrl ctrl = new WaermebedarfExternKontextMenuCtrl();
             ctrl.Init(listView_WaermebedarfExtern, m_ID_Projekt, m_szProjektname);
-            ctrl.contextMenuStrip1.Items[0].PerformClick(); 
+            ctrl.contextMenuStrip1.Items[0].PerformClick();
         }
 
         private void listView_SP_REF_DoubleClick(object sender, EventArgs e)
         {
             SpKontextMenuCtrl ctrl = new SpKontextMenuCtrl();
             ctrl.Init(listView_SP_REF, m_ID_Projekt, m_szProjektname);
-            ctrl.contextMenuStrip1.Items[0].PerformClick(); 
+            ctrl.contextMenuStrip1.Items[0].PerformClick();
         }
 
         private void listView_SP_DoubleClick(object sender, EventArgs e)
         {
             SpKontextMenuCtrl ctrl = new SpKontextMenuCtrl();
             ctrl.Init(listView_SP, m_ID_Projekt, m_szProjektname);
-            ctrl.contextMenuStrip1.Items[0].PerformClick(); 
+            ctrl.contextMenuStrip1.Items[0].PerformClick();
         }
 
         private void listView_Heizkessel_DoubleClick(object sender, EventArgs e)
         {
             HeizkesselKontextMenuCtrl ctrl = new HeizkesselKontextMenuCtrl();
             ctrl.Init(listView_Heizkessel, m_ID_Projekt, m_szProjektname);
-            ctrl.contextMenuStrip1.Items[0].PerformClick(); 
+            ctrl.contextMenuStrip1.Items[0].PerformClick();
         }
 
         private void listView_Prozesswaerme_DoubleClick(object sender, EventArgs e)
@@ -704,7 +716,7 @@ namespace WindowsFormsApplication1
             {
                 GebäudeKontextMenuCtrl ctrl = new GebäudeKontextMenuCtrl();
                 ctrl.Init((ListView)drag_control, m_ID_Projekt, m_szProjektname);
-                ctrl.contextMenuStrip1.Items[0].PerformClick(); 
+                ctrl.contextMenuStrip1.Items[0].PerformClick();
             }
             else if ((ListView)drag_control == listView_WaermebedarfExtern)
             {
@@ -997,7 +1009,7 @@ namespace WindowsFormsApplication1
             rs.Open("UPDATE Tab_Projekt SET Netzverluste=" + Int32.Parse(textBox_Netzverluste.Text) + ", Netzverluste_Einheit='" + comboBox_NetzvEinheit.Text + "' where ID=" + m_ID_Projekt);
             rs.Close();
 
-         //   Simulation_durchgeführt = true;
+            //   Simulation_durchgeführt = true;
         }
 
         private void btn_DragDestination_MouseHover(object sender, EventArgs e)
@@ -1054,7 +1066,7 @@ namespace WindowsFormsApplication1
         {
             Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();
             frm.Init(simulation_strom);
-            frm.ShowDialog(); 
+            frm.ShowDialog();
         }
 
         private void btn_StromSimulSpeichern_Click(object sender, EventArgs e)
@@ -1095,7 +1107,7 @@ namespace WindowsFormsApplication1
             ChartSelBegin = chart1.ChartAreas[0].CursorX.SelectionStart;
             ChartSelEnd = chart1.ChartAreas[0].CursorX.SelectionEnd;
         }
-         
+
         private void AxisScrollBarClicked(object sender, ScrollBarEventArgs e)
         {
             if (e.ButtonType == ScrollBarButtonType.ZoomReset)
@@ -1109,11 +1121,11 @@ namespace WindowsFormsApplication1
             ChartSelBegin = chart1.ChartAreas[0].CursorX.Position;
             if (!Program.HasValue(ChartSelBegin)) return;
             if (chart1.Series[0].Points.Count == 0) return;
-            
+
             DateTime date = new DateTime(DateTime.Now.Year, 1, 1);
             date = new DateTime(DateTime.Now.Year, 1, 1).AddHours(ChartSelBegin - 1);
             string szText = date.ToString("dd.MMMM");
- 
+
             TextAnnotation ta2 = new TextAnnotation();
             ta2.Text = szText;
             ta2.AnchorX = 18;  // % of chart width
@@ -1126,7 +1138,8 @@ namespace WindowsFormsApplication1
             {
                 chart1.Annotations[0] = ta2;
             }
-;        }
+;
+        }
 
         private void listView_Strombedarf_MouseDown(object sender, MouseEventArgs e)
         {
@@ -1269,7 +1282,7 @@ namespace WindowsFormsApplication1
         private void button1_Click(object sender, EventArgs e)
         {
             Form_StromTest frm = new Form_StromTest();
-            frm.SetControls(m_ID_Projekt);  
+            frm.SetControls(m_ID_Projekt);
             frm.ShowDialog();
         }
 
@@ -1277,7 +1290,7 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
 
-            System.Diagnostics.Stopwatch  watch = new System.Diagnostics.Stopwatch();
+            System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
             watch.Start();
 
             textBox_WB_Deckung.Text = "";
@@ -1319,7 +1332,7 @@ namespace WindowsFormsApplication1
             simulation_wp.Temperatur = simulation_Waermebedarf.Stundentemperatur;
             simulation_wp.Waermebedarf_stuendlich = simulation_Waermebedarf.Waermebedarf;
             simulation_wp.Mit_Heizstab = checkBox_Heizstab.Checked;
-            
+
             // Simulation starten
             simulation_wp.Berechnung();
 
@@ -1357,7 +1370,8 @@ namespace WindowsFormsApplication1
                 if (checkBox_Heizstab.Checked)
                 {
                     temp[i] = simulation_wp.WP_Waermeproduktion_stuendlich[i] + simulation_wp.Heizstab_stuendlich[i];
-                } else temp[i] = 0;
+                }
+                else temp[i] = 0;
             }
             chart3.Series["Heizstab"].Points.DataBindY(temp);
             chart3.Series["Heizstab"].BorderWidth = 1;
@@ -1374,10 +1388,12 @@ namespace WindowsFormsApplication1
             textBox_WPWaermeproduktion.Text = (simulation_wp.WP_Waermeproduktion_gesamt / 1000).ToString("F2");
             textBox_Pufferspeicher.Text = (simulation_wp.Volumen_Pufferspeicher * 1.16).ToString();
             textBox_WPVollbenutzungsstunden.Text = (simulation_wp.WP_Laufzeit / simulation_wp.wp_list.Count).ToString("F0");
-            textBox_Waermerestbedarf.Text = (simulation_wp.waermerestbedarf_gesamt).ToString("F2");
+            
+            textBox_Waermerestbedarf.Text = (simulation_wp.waermerestbedarf_gesamt/1000).ToString("F2");
+            tb_gesWaermebedarf.Text = (simulation_Waermebedarf.Waermebedarf_Gesamt).ToString("F2");
 
             double Max_Spk = 0;
-            for (int i = 0; i<8750; i++)
+            for (int i = 0; i < 8750; i++)
             {
                 if (simulation_wp.waermerestbedarf_stuendlich[i] > Max_Spk) Max_Spk = simulation_wp.waermerestbedarf_stuendlich[i];
             }
@@ -1385,10 +1401,10 @@ namespace WindowsFormsApplication1
 
             for (int i = 1; i <= 5; i++)
             {
-                tabPage_Simulation_WP.Controls["textBox" + i.ToString() + "_1"].Text = (simulation_wp.Modul_WP_Waermeproduktion[i-1] / 1000).ToString("F2");
-                tabPage_Simulation_WP.Controls["textBox" + i.ToString() + "_2"].Text = (simulation_wp.Modul_WP_Strombedarf[i-1] / 1000).ToString("F2");
-                tabPage_Simulation_WP.Controls["textBox" + i.ToString() + "_3"].Text = (simulation_wp.Modul_Heizstab[i-1] / 1000).ToString("F2");
-                tabPage_Simulation_WP.Controls["textBox" + i.ToString() + "_4"].Text = (simulation_wp.Modul_WP_Laufzeit[i-1]).ToString("F2");
+                tabPage_Simulation_WP.Controls["textBox" + i.ToString() + "_1"].Text = (simulation_wp.Modul_WP_Waermeproduktion[i - 1] / 1000).ToString("F2");
+                tabPage_Simulation_WP.Controls["textBox" + i.ToString() + "_2"].Text = (simulation_wp.Modul_WP_Strombedarf[i - 1] / 1000).ToString("F2");
+                tabPage_Simulation_WP.Controls["textBox" + i.ToString() + "_3"].Text = (simulation_wp.Modul_Heizstab[i - 1] / 1000).ToString("F2");
+                tabPage_Simulation_WP.Controls["textBox" + i.ToString() + "_4"].Text = (simulation_wp.Modul_WP_Laufzeit[i - 1]).ToString("F2");
                 tabPage_Simulation_WP.Controls["textBox" + i.ToString() + "_Modul"].Text = simulation_wp.WP_Modul[i - 1];
             }
 
@@ -1399,7 +1415,7 @@ namespace WindowsFormsApplication1
 
             List<double> werte_produktion = new List<double>();
             List<double> werte_bedarf = new List<double>();
-            
+
             // nur 1 Leistungswert Wert pro gleicher Temperatur nehmen
             int index = 0;
             for (int n = 0; n < 8760; n++)
@@ -1414,7 +1430,7 @@ namespace WindowsFormsApplication1
                     ps_heizstab_raw[index].Y = simulation_wp.WP_Waermeproduktion_stuendlich[n] + simulation_wp.Heizstab_stuendlich[n];
                 else
                     ps_heizstab_raw[index].Y = 0;
-                    
+
                 ps_heizstab_raw[index].X = ps_produktion_raw[index].X;
                 werte_produktion.Add(simulation_wp.Temperatur[n]);
                 werte_bedarf.Add(simulation_wp.Waermebedarf_stuendlich[n]);
@@ -1443,7 +1459,7 @@ namespace WindowsFormsApplication1
             chart4.Series["Heizstab"].Points.DataBindXY(ps_heizstab, "X", ps_heizstab, "Y");
             chart4.Series["Waermeproduktion"].Points.DataBindXY(ps_produktion, "X", ps_produktion, "Y");
             chart4.Series["Waermebedarf"].Points.DataBindXY(ps_bedarf, "X", ps_bedarf, "Y");
-            
+
             chart4.Series[0].Sort(PointSortOrder.Ascending, "X");
             chart4.Series[1].Sort(PointSortOrder.Ascending, "X");
             chart4.Series[2].Sort(PointSortOrder.Ascending, "X");
@@ -1455,7 +1471,7 @@ namespace WindowsFormsApplication1
             watch.Stop();
             TimeSpan ts = watch.Elapsed;
             Console.WriteLine("Zeit, die benötigt wurde: " + watch.Elapsed + " ms:" + ts.Milliseconds);
-            
+
         }
 
         private void checkBox_WP_sortiert_CheckedChanged(object sender, EventArgs e)
@@ -1471,10 +1487,10 @@ namespace WindowsFormsApplication1
                 else temp[i] = 0;
             }
 
-            if (checkBox_WP_sortiert.Checked )
+            if (checkBox_WP_sortiert.Checked)
             {
                 chart3.Series["Waermeproduktion"].Points.DataBindY(simulation_wp.WP_Waermeproduktion_stuendlich_sortiert);
-                
+
                 float[] sortedArray = new float[8760];
                 Array.Copy(simulation_wp.Waermebedarf_stuendlich, sortedArray, 8760);
                 Array.Sort(sortedArray);
@@ -1482,7 +1498,7 @@ namespace WindowsFormsApplication1
                 float[] sortedArrayHeizstab = new float[8760];
                 Array.Copy(temp, sortedArrayHeizstab, 8760);
                 Array.Sort(sortedArrayHeizstab);
-                chart3.Series["Heizstab"].Points.DataBindY(sortedArrayHeizstab);   
+                chart3.Series["Heizstab"].Points.DataBindY(sortedArrayHeizstab);
             }
             else
             {
@@ -1525,7 +1541,9 @@ namespace WindowsFormsApplication1
             RecordSet rs = new RecordSet();
 
             sim.spk_list.Clear();
-            sim.Berechnung(m_ID_Projekt);
+
+            sim.Max_Waermebedarf = simulation_wp.waermerestbedarf_gesamt;
+            sim.Waermebedarf = Array.ConvertAll(simulation_wp.waermerestbedarf_stuendlich, x => (double)x);
 
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
             while (rs.Next())
@@ -1533,8 +1551,85 @@ namespace WindowsFormsApplication1
                 sim.spk_list.Add((string)rs.Read("Bezeichner"));
             }
             rs.Close();
-            
-            
+
+            sim.Vorgabe_Betriebsbereitschaft = Int32.Parse(comboBox_Bereitschaft.Text);
+            sim.Berechnung(m_ID_Projekt);
+
+
+            tb_gesWaermebedarf.Text = (simulation_Waermebedarf.Waermebedarf_Gesamt).ToString("F2");
+            tb_WaermeprSpk.Text = (sim.S_Waerme_spk).ToString("F2");
+            tb_Gasverbrauch.Text = (sim.Gasverbrauch_SPK).ToString("F2");
+            tb_Oelverbrauch.Text = (sim.Oelverbrauch_SPK).ToString("F2");
+            tb_Biogasverbrauch.Text = (sim.Biogasverbrauch_SPK).ToString("F2");
+            tb_Rapsoelverbrauch.Text = (sim.Rapsoelverbrauch_SPK).ToString("F2");
+            tb_Holzverbrauch.Text = (sim.Holzverbrauch_SPK).ToString("F2");
+            tb_Fluessiggasverbrauch.Text = (sim.Fluessiggasverbrauch_SPK).ToString("F2");
+            tb_Stromverbrauch.Text = (sim.Stromverbrauch_Spk).ToString("F2");
+            tb_Sonstigverbrauch.Text = (sim.Sonstigverbrauch_SPK).ToString("F2");
+
+
+            tb_Max_Kesselleistung.Text = (sim.Maximale_Kesselleistung_Spk).ToString("F2");
+            tb_Gasspitze.Text = sim.Gasspitze_Spk.ToString("F2");
+
+            //reset your chart series and legends
+            //chart5.Series.Clear();
+            //chart5.Legends.Clear();
+
+            //Add a new Legend(if needed) and do some formating
+            //chart5.Legends.Add("MyLegend");
+            chart5.Legends[0].LegendStyle = LegendStyle.Table;
+            chart5.Legends[0].Docking = Docking.Right;
+            chart5.Legends[0].Alignment = StringAlignment.Center;
+            chart5.Legends[0].Title = "Wärmebedarfsdeckung";
+            chart5.Legends[0].BorderColor = Color.Green;
+            chart5.Series[0].IsValueShownAsLabel = false;
+            chart5.Series[0]["PieLabelStyle"] = "Outside";
+            //chart5.Series[0].Points.AddXY("Gesamtbbedarf", double.Parse(tb_gesWaermebedarf.Text));
+            chart5.Series[0].Points.Clear();
+
+            for (int i = 0; i < sim.spk_list.Count(); i++)
+            {
+                double valkessel = sim.s_waerme_Gas_Spk[i] + sim.s_waerme_Oel_Spk[i];
+                if (valkessel > 0)
+                    chart5.Series[0].Points.AddXY("Kessel" + (i + 1).ToString(), valkessel);
+            }
+       
+            chart5.Series[0].Points.AddXY("WP", simulation_wp.WP_Waermeproduktion_gesamt/1000);
+            if (simulation_wp.Heizstab_gesamt > 0)
+                chart5.Series[0].Points.AddXY("Heizstab", simulation_wp.Heizstab_gesamt / 1000);   
+
+            double rest = 0;
+            for (int i = 0; i < sim.spk_list.Count() ; i++)
+            {
+                rest = rest + sim.s_waerme_Gas_Spk[i] + sim.s_waerme_Oel_Spk[i];
+            }
+            rest = simulation_Waermebedarf.Waermebedarf_Gesamt -
+                                                        simulation_wp.WP_Waermeproduktion_gesamt / 1000 -
+                                                        simulation_wp.Heizstab_gesamt / 1000 -
+                                                        rest;
+
+            textBox_SPKRestwermebedarf.Text = "0";
+            if (rest >= 0.1)
+            {
+                textBox_SPKRestwermebedarf.Text = rest.ToString("F2");
+                chart5.Series[0].Points.AddXY("Restbedarf", rest);
+            }
+
+            listView_SimSPK.Items.Clear();
+            for (int i = 0; i < sim.spk_list.Count(); i++)
+            {
+
+                ListViewItem lvitem = new ListViewItem();
+                lvitem.Text = (i+1).ToString();
+                lvitem.SubItems.Add(sim.spk_list[i]);
+                lvitem.SubItems.Add((sim.s_waerme_Gas_Spk[i]).ToString("F2"));
+                lvitem.SubItems.Add((sim.s_waerme_Oel_Spk[i]).ToString("F2"));
+                lvitem.SubItems.Add((sim.Kessel_Wirk_Gas_Spk[i] * 100).ToString("F1"));
+
+                listView_SimSPK.Items.Add(lvitem);
+            }
+            listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
         }
     }

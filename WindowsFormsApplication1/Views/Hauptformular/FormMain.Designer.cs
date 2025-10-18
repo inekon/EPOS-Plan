@@ -28,25 +28,28 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series9 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title5 = new System.Windows.Forms.DataVisualization.Charting.Title();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series10 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title6 = new System.Windows.Forms.DataVisualization.Charting.Title();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea7 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series11 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Series series12 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Series series13 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title7 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.Title title5 = new System.Windows.Forms.DataVisualization.Charting.Title();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea8 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series12 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title6 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea9 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series13 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series14 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series15 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title7 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea10 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend6 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series16 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series17 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series18 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Title title8 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series10 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.tabControl_Main = new System.Windows.Forms.TabControl();
             this.tabPage_Komponenten = new System.Windows.Forms.TabPage();
             this.label11 = new System.Windows.Forms.Label();
@@ -75,12 +78,12 @@
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.textBox_Gesamt_Strombedarf = new System.Windows.Forms.TextBox();
-            this.btn_StromSimulSpeichern = new System.Windows.Forms.Button();
             this.label19 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.textBox_MaxStrombedarf = new System.Windows.Forms.TextBox();
             this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.btn_Start_Strombedarf = new System.Windows.Forms.Button();
+            this.btn_StromSimulSpeichern = new System.Windows.Forms.Button();
             this.btn_DragDestination = new System.Windows.Forms.Button();
             this.tabControl_Komponenten = new System.Windows.Forms.TabControl();
             this.tabPage5 = new System.Windows.Forms.TabPage();
@@ -121,6 +124,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.tabPage_Simulation_WP = new System.Windows.Forms.TabPage();
+            this.chart4 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.label58 = new System.Windows.Forms.Label();
             this.textBox5_Modul = new System.Windows.Forms.TextBox();
             this.textBox4_Modul = new System.Windows.Forms.TextBox();
@@ -194,13 +198,58 @@
             this.chart3 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.btn_WP_Simulation = new System.Windows.Forms.Button();
             this.tabPage_Simulation_SPK = new System.Windows.Forms.TabPage();
-            this.tabPage_Bericht = new System.Windows.Forms.TabPage();
-            this.button_Beenden = new System.Windows.Forms.Button();
-            this.chart4 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.label45 = new System.Windows.Forms.Label();
+            this.listView_SimSPK = new System.Windows.Forms.ListView();
+            this.chart5 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.label46 = new System.Windows.Forms.Label();
+            this.label47 = new System.Windows.Forms.Label();
+            this.tb_gesWaermebedarf = new System.Windows.Forms.TextBox();
+            this.label59 = new System.Windows.Forms.Label();
+            this.tb_WaermeprSpk = new System.Windows.Forms.TextBox();
+            this.label60 = new System.Windows.Forms.Label();
+            this.label61 = new System.Windows.Forms.Label();
+            this.label62 = new System.Windows.Forms.Label();
+            this.label64 = new System.Windows.Forms.Label();
+            this.label65 = new System.Windows.Forms.Label();
+            this.label66 = new System.Windows.Forms.Label();
+            this.tb_Oelverbrauch = new System.Windows.Forms.TextBox();
+            this.label67 = new System.Windows.Forms.Label();
+            this.label68 = new System.Windows.Forms.Label();
+            this.tb_Biogasverbrauch = new System.Windows.Forms.TextBox();
+            this.label69 = new System.Windows.Forms.Label();
+            this.label70 = new System.Windows.Forms.Label();
+            this.tb_Rapsoelverbrauch = new System.Windows.Forms.TextBox();
+            this.label71 = new System.Windows.Forms.Label();
+            this.label72 = new System.Windows.Forms.Label();
+            this.tb_Holzverbrauch = new System.Windows.Forms.TextBox();
+            this.label73 = new System.Windows.Forms.Label();
+            this.label74 = new System.Windows.Forms.Label();
+            this.tb_Fluessiggasverbrauch = new System.Windows.Forms.TextBox();
+            this.label75 = new System.Windows.Forms.Label();
+            this.label76 = new System.Windows.Forms.Label();
+            this.tb_Stromverbrauch = new System.Windows.Forms.TextBox();
+            this.label77 = new System.Windows.Forms.Label();
+            this.label78 = new System.Windows.Forms.Label();
+            this.tb_Sonstigverbrauch = new System.Windows.Forms.TextBox();
+            this.label79 = new System.Windows.Forms.Label();
+            this.label80 = new System.Windows.Forms.Label();
+            this.label110 = new System.Windows.Forms.Label();
+            this.label112 = new System.Windows.Forms.Label();
+            this.tb_Max_Kesselleistung = new System.Windows.Forms.TextBox();
+            this.label113 = new System.Windows.Forms.Label();
+            this.tb_Gasspitze = new System.Windows.Forms.TextBox();
+            this.label114 = new System.Windows.Forms.Label();
+            this.tb_Gasverbrauch = new System.Windows.Forms.TextBox();
+            this.btn_Simulation = new System.Windows.Forms.Button();
             this.label40 = new System.Windows.Forms.Label();
             this.textBox_Waermerestbedarf = new System.Windows.Forms.TextBox();
-            this.label45 = new System.Windows.Forms.Label();
-            this.btn_Simulation = new System.Windows.Forms.Button();
+            this.tabPage_Bericht = new System.Windows.Forms.TabPage();
+            this.button_Beenden = new System.Windows.Forms.Button();
+            this.comboBox_Bereitschaft = new System.Windows.Forms.ComboBox();
+            this.label57 = new System.Windows.Forms.Label();
+            this.label63 = new System.Windows.Forms.Label();
+            this.label81 = new System.Windows.Forms.Label();
+            this.textBox_SPKRestwermebedarf = new System.Windows.Forms.TextBox();
             this.tabControl_Main.SuspendLayout();
             this.tabPage_Komponenten.SuspendLayout();
             this.tabControl_Simulation.SuspendLayout();
@@ -218,9 +267,10 @@
             this.tabPage14.SuspendLayout();
             this.tabPage12.SuspendLayout();
             this.tabPage_Simulation_WP.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart3)).BeginInit();
             this.tabPage_Simulation_SPK.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.chart4)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chart5)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl_Main
@@ -484,23 +534,23 @@
             // 
             // chart1
             // 
-            chartArea5.AxisX.IsLabelAutoFit = false;
-            chartArea5.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea5.AxisX.Title = "Jahresstunden";
-            chartArea5.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea5.AxisY.Title = "Wärmelast in % ";
-            chartArea5.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
-            chartArea5.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
-            chartArea5.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea5.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea5);
+            chartArea7.AxisX.IsLabelAutoFit = false;
+            chartArea7.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea7.AxisX.Title = "Jahresstunden";
+            chartArea7.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea7.AxisY.Title = "Wärmelast in % ";
+            chartArea7.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            chartArea7.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
+            chartArea7.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea7.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea7);
             this.chart1.Location = new System.Drawing.Point(6, 39);
             this.chart1.Name = "chart1";
-            series9.ChartArea = "ChartArea1";
-            series9.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series9.Name = "Series1";
-            this.chart1.Series.Add(series9);
+            series11.ChartArea = "ChartArea1";
+            series11.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series11.Name = "Series1";
+            this.chart1.Series.Add(series11);
             this.chart1.Size = new System.Drawing.Size(472, 246);
             this.chart1.TabIndex = 25;
             this.chart1.Text = "chart1";
@@ -530,12 +580,12 @@
             this.tabPage8.Controls.Add(this.label17);
             this.tabPage8.Controls.Add(this.label18);
             this.tabPage8.Controls.Add(this.textBox_Gesamt_Strombedarf);
-            this.tabPage8.Controls.Add(this.btn_StromSimulSpeichern);
             this.tabPage8.Controls.Add(this.label19);
             this.tabPage8.Controls.Add(this.label20);
             this.tabPage8.Controls.Add(this.textBox_MaxStrombedarf);
             this.tabPage8.Controls.Add(this.chart2);
             this.tabPage8.Controls.Add(this.btn_Start_Strombedarf);
+            this.tabPage8.Controls.Add(this.btn_StromSimulSpeichern);
             this.tabPage8.Location = new System.Drawing.Point(4, 26);
             this.tabPage8.Name = "tabPage8";
             this.tabPage8.Padding = new System.Windows.Forms.Padding(3);
@@ -598,20 +648,6 @@
             this.textBox_Gesamt_Strombedarf.Size = new System.Drawing.Size(74, 25);
             this.textBox_Gesamt_Strombedarf.TabIndex = 43;
             // 
-            // btn_StromSimulSpeichern
-            // 
-            this.btn_StromSimulSpeichern.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_StromSimulSpeichern.ForeColor = System.Drawing.Color.Black;
-            this.btn_StromSimulSpeichern.Image = ((System.Drawing.Image)(resources.GetObject("btn_StromSimulSpeichern.Image")));
-            this.btn_StromSimulSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_StromSimulSpeichern.Location = new System.Drawing.Point(511, 185);
-            this.btn_StromSimulSpeichern.Name = "btn_StromSimulSpeichern";
-            this.btn_StromSimulSpeichern.Size = new System.Drawing.Size(175, 32);
-            this.btn_StromSimulSpeichern.TabIndex = 40;
-            this.btn_StromSimulSpeichern.Text = "Simulation Speichern";
-            this.btn_StromSimulSpeichern.UseVisualStyleBackColor = true;
-            this.btn_StromSimulSpeichern.Click += new System.EventHandler(this.btn_StromSimulSpeichern_Click);
-            // 
             // label19
             // 
             this.label19.AutoSize = true;
@@ -642,23 +678,23 @@
             // 
             // chart2
             // 
-            chartArea6.AxisX.IsLabelAutoFit = false;
-            chartArea6.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea6.AxisX.Title = "Jahresstunden";
-            chartArea6.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea6.AxisY.Title = "Strombedarf in % ";
-            chartArea6.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
-            chartArea6.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
-            chartArea6.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea6.Name = "ChartArea1";
-            this.chart2.ChartAreas.Add(chartArea6);
+            chartArea8.AxisX.IsLabelAutoFit = false;
+            chartArea8.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea8.AxisX.Title = "Jahresstunden";
+            chartArea8.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea8.AxisY.Title = "Strombedarf in % ";
+            chartArea8.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            chartArea8.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
+            chartArea8.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea8.Name = "ChartArea1";
+            this.chart2.ChartAreas.Add(chartArea8);
             this.chart2.Location = new System.Drawing.Point(3, 22);
             this.chart2.Name = "chart2";
-            series10.ChartArea = "ChartArea1";
-            series10.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series10.Name = "Series1";
-            this.chart2.Series.Add(series10);
+            series12.ChartArea = "ChartArea1";
+            series12.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series12.Name = "Series1";
+            this.chart2.Series.Add(series12);
             this.chart2.Size = new System.Drawing.Size(472, 275);
             this.chart2.TabIndex = 38;
             this.chart2.Text = "chart2";
@@ -680,6 +716,20 @@
             this.btn_Start_Strombedarf.Text = "Simulation Start...";
             this.btn_Start_Strombedarf.UseVisualStyleBackColor = false;
             this.btn_Start_Strombedarf.Click += new System.EventHandler(this.btn_Start_Strombedarf_Click);
+            // 
+            // btn_StromSimulSpeichern
+            // 
+            this.btn_StromSimulSpeichern.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btn_StromSimulSpeichern.ForeColor = System.Drawing.Color.Black;
+            this.btn_StromSimulSpeichern.Image = ((System.Drawing.Image)(resources.GetObject("btn_StromSimulSpeichern.Image")));
+            this.btn_StromSimulSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_StromSimulSpeichern.Location = new System.Drawing.Point(511, 185);
+            this.btn_StromSimulSpeichern.Name = "btn_StromSimulSpeichern";
+            this.btn_StromSimulSpeichern.Size = new System.Drawing.Size(175, 32);
+            this.btn_StromSimulSpeichern.TabIndex = 40;
+            this.btn_StromSimulSpeichern.Text = "Simulation Speichern";
+            this.btn_StromSimulSpeichern.UseVisualStyleBackColor = true;
+            this.btn_StromSimulSpeichern.Click += new System.EventHandler(this.btn_StromSimulSpeichern_Click);
             // 
             // btn_DragDestination
             // 
@@ -750,9 +800,9 @@
             // tabPage9
             // 
             this.tabPage9.Controls.Add(this.listView_WaermebedarfExtern);
-            this.tabPage9.Location = new System.Drawing.Point(4, 48);
+            this.tabPage9.Location = new System.Drawing.Point(4, 26);
             this.tabPage9.Name = "tabPage9";
-            this.tabPage9.Size = new System.Drawing.Size(677, 229);
+            this.tabPage9.Size = new System.Drawing.Size(867, 251);
             this.tabPage9.TabIndex = 7;
             this.tabPage9.Text = "Wärmebedarf Einlesen";
             this.tabPage9.UseVisualStyleBackColor = true;
@@ -780,10 +830,10 @@
             this.tabPage3.Controls.Add(this.label7);
             this.tabPage3.Controls.Add(this.listView_WP_Ref);
             this.tabPage3.Controls.Add(this.listView_WP);
-            this.tabPage3.Location = new System.Drawing.Point(4, 48);
+            this.tabPage3.Location = new System.Drawing.Point(4, 26);
             this.tabPage3.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(677, 229);
+            this.tabPage3.Size = new System.Drawing.Size(867, 251);
             this.tabPage3.TabIndex = 0;
             this.tabPage3.Text = "Wärmepumpen";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -839,10 +889,10 @@
             this.tabPage4.Controls.Add(this.label10);
             this.tabPage4.Controls.Add(this.listView_SP_REF);
             this.tabPage4.Controls.Add(this.listView_SP);
-            this.tabPage4.Location = new System.Drawing.Point(4, 48);
+            this.tabPage4.Location = new System.Drawing.Point(4, 26);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(677, 229);
+            this.tabPage4.Size = new System.Drawing.Size(867, 251);
             this.tabPage4.TabIndex = 1;
             this.tabPage4.Text = "Stromspeicher";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -895,20 +945,20 @@
             // 
             // tabPage6
             // 
-            this.tabPage6.Location = new System.Drawing.Point(4, 48);
+            this.tabPage6.Location = new System.Drawing.Point(4, 26);
             this.tabPage6.Name = "tabPage6";
             this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage6.Size = new System.Drawing.Size(677, 229);
+            this.tabPage6.Size = new System.Drawing.Size(867, 251);
             this.tabPage6.TabIndex = 2;
             this.tabPage6.Text = "Solar";
             this.tabPage6.UseVisualStyleBackColor = true;
             // 
             // tabPage10
             // 
-            this.tabPage10.Location = new System.Drawing.Point(4, 48);
+            this.tabPage10.Location = new System.Drawing.Point(4, 26);
             this.tabPage10.Name = "tabPage10";
             this.tabPage10.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage10.Size = new System.Drawing.Size(677, 229);
+            this.tabPage10.Size = new System.Drawing.Size(867, 251);
             this.tabPage10.TabIndex = 3;
             this.tabPage10.Text = "PV";
             this.tabPage10.UseVisualStyleBackColor = true;
@@ -918,10 +968,10 @@
             this.tabPage11.Controls.Add(this.listView_Heizkessel_REF);
             this.tabPage11.Controls.Add(this.label39);
             this.tabPage11.Controls.Add(this.listView_Heizkessel);
-            this.tabPage11.Location = new System.Drawing.Point(4, 48);
+            this.tabPage11.Location = new System.Drawing.Point(4, 26);
             this.tabPage11.Name = "tabPage11";
             this.tabPage11.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage11.Size = new System.Drawing.Size(677, 229);
+            this.tabPage11.Size = new System.Drawing.Size(867, 251);
             this.tabPage11.TabIndex = 5;
             this.tabPage11.Text = "Heizkessel";
             this.tabPage11.UseVisualStyleBackColor = true;
@@ -975,9 +1025,9 @@
             // tabPage13
             // 
             this.tabPage13.Controls.Add(this.listView_Prozesswaerme);
-            this.tabPage13.Location = new System.Drawing.Point(4, 48);
+            this.tabPage13.Location = new System.Drawing.Point(4, 26);
             this.tabPage13.Name = "tabPage13";
-            this.tabPage13.Size = new System.Drawing.Size(677, 229);
+            this.tabPage13.Size = new System.Drawing.Size(867, 251);
             this.tabPage13.TabIndex = 8;
             this.tabPage13.Text = "Prozesswärme";
             this.tabPage13.UseVisualStyleBackColor = true;
@@ -1003,9 +1053,9 @@
             // tabPage14
             // 
             this.tabPage14.Controls.Add(this.listView_Strombedarf);
-            this.tabPage14.Location = new System.Drawing.Point(4, 48);
+            this.tabPage14.Location = new System.Drawing.Point(4, 26);
             this.tabPage14.Name = "tabPage14";
-            this.tabPage14.Size = new System.Drawing.Size(677, 229);
+            this.tabPage14.Size = new System.Drawing.Size(867, 251);
             this.tabPage14.TabIndex = 9;
             this.tabPage14.Text = "Strombedarf";
             this.tabPage14.UseVisualStyleBackColor = true;
@@ -1031,9 +1081,9 @@
             // tabPage12
             // 
             this.tabPage12.Controls.Add(this.listView_Stromganglinie);
-            this.tabPage12.Location = new System.Drawing.Point(4, 48);
+            this.tabPage12.Location = new System.Drawing.Point(4, 26);
             this.tabPage12.Name = "tabPage12";
-            this.tabPage12.Size = new System.Drawing.Size(677, 229);
+            this.tabPage12.Size = new System.Drawing.Size(867, 251);
             this.tabPage12.TabIndex = 10;
             this.tabPage12.Text = "Stromganglinie";
             this.tabPage12.UseVisualStyleBackColor = true;
@@ -1296,6 +1346,59 @@
             this.tabPage_Simulation_WP.TabIndex = 1;
             this.tabPage_Simulation_WP.Text = "WP Simulation";
             this.tabPage_Simulation_WP.UseVisualStyleBackColor = true;
+            // 
+            // chart4
+            // 
+            this.chart4.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.chart4.BorderlineColor = System.Drawing.Color.Transparent;
+            this.chart4.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.DashDotDot;
+            this.chart4.BorderlineWidth = 2;
+            chartArea9.AxisX.IsLabelAutoFit = false;
+            chartArea9.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea9.AxisX.Title = "Temperatur [°C]";
+            chartArea9.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea9.AxisY.Title = "Wärmeleistung [kW]";
+            chartArea9.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea9.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            chartArea9.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
+            chartArea9.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea9.Name = "ChartArea1";
+            this.chart4.ChartAreas.Add(chartArea9);
+            legend5.BackColor = System.Drawing.Color.Transparent;
+            legend5.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
+            legend5.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            legend5.IsTextAutoFit = false;
+            legend5.Name = "Legend1";
+            legend5.TitleFont = new System.Drawing.Font("Segoe UI Semibold", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chart4.Legends.Add(legend5);
+            this.chart4.Location = new System.Drawing.Point(41, 421);
+            this.chart4.Name = "chart4";
+            series13.ChartArea = "ChartArea1";
+            series13.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Area;
+            series13.Color = System.Drawing.Color.Yellow;
+            series13.Legend = "Legend1";
+            series13.Name = "Heizstab";
+            series14.ChartArea = "ChartArea1";
+            series14.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Area;
+            series14.Color = System.Drawing.Color.Red;
+            series14.Legend = "Legend1";
+            series14.Name = "Waermebedarf";
+            series15.ChartArea = "ChartArea1";
+            series15.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Area;
+            series15.Color = System.Drawing.Color.Blue;
+            series15.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            series15.Legend = "Legend1";
+            series15.LegendText = "Wärmeproduktion";
+            series15.Name = "Waermeproduktion";
+            this.chart4.Series.Add(series13);
+            this.chart4.Series.Add(series14);
+            this.chart4.Series.Add(series15);
+            this.chart4.Size = new System.Drawing.Size(474, 313);
+            this.chart4.TabIndex = 134;
+            this.chart4.Text = "chart4";
+            title7.Name = "Title1";
+            title7.Text = "Jahrestemperaturgang";
+            this.chart4.Titles.Add(title7);
             // 
             // label58
             // 
@@ -1978,71 +2081,118 @@
             this.chart3.BorderlineColor = System.Drawing.Color.Transparent;
             this.chart3.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.DashDotDot;
             this.chart3.BorderlineWidth = 2;
-            chartArea7.AxisX.IsLabelAutoFit = false;
-            chartArea7.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea7.AxisX.Title = "Jahresstunden";
-            chartArea7.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea7.AxisY.Title = "Wärmeproduktion in kW";
-            chartArea7.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
-            chartArea7.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
-            chartArea7.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea7.Name = "ChartArea1";
-            this.chart3.ChartAreas.Add(chartArea7);
-            legend3.BackColor = System.Drawing.Color.Transparent;
-            legend3.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
-            legend3.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            legend3.IsTextAutoFit = false;
-            legend3.Name = "Legend1";
-            legend3.TitleFont = new System.Drawing.Font("Segoe UI Semibold", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chart3.Legends.Add(legend3);
+            chartArea10.AxisX.IsLabelAutoFit = false;
+            chartArea10.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea10.AxisX.Title = "Jahresstunden";
+            chartArea10.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea10.AxisY.Title = "Wärmeproduktion in kW";
+            chartArea10.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea10.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            chartArea10.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
+            chartArea10.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea10.Name = "ChartArea1";
+            this.chart3.ChartAreas.Add(chartArea10);
+            legend6.BackColor = System.Drawing.Color.Transparent;
+            legend6.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
+            legend6.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            legend6.IsTextAutoFit = false;
+            legend6.Name = "Legend1";
+            legend6.TitleFont = new System.Drawing.Font("Segoe UI Semibold", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chart3.Legends.Add(legend6);
             this.chart3.Location = new System.Drawing.Point(41, 100);
             this.chart3.Name = "chart3";
-            series11.ChartArea = "ChartArea1";
-            series11.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series11.Color = System.Drawing.Color.Red;
-            series11.Legend = "Legend1";
-            series11.LegendText = "Wärmebedarf";
-            series11.Name = "Waermebedarf";
-            series12.ChartArea = "ChartArea1";
-            series12.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series12.Color = System.Drawing.Color.Yellow;
-            series12.Legend = "Legend1";
-            series12.LegendText = "Heizstab";
-            series12.Name = "Heizstab";
-            series13.ChartArea = "ChartArea1";
-            series13.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series13.Color = System.Drawing.Color.Blue;
-            series13.Legend = "Legend1";
-            series13.LegendText = "Wärmeproduktion";
-            series13.Name = "Waermeproduktion";
-            this.chart3.Series.Add(series11);
-            this.chart3.Series.Add(series12);
-            this.chart3.Series.Add(series13);
+            series16.ChartArea = "ChartArea1";
+            series16.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series16.Color = System.Drawing.Color.Red;
+            series16.Legend = "Legend1";
+            series16.LegendText = "Wärmebedarf";
+            series16.Name = "Waermebedarf";
+            series17.ChartArea = "ChartArea1";
+            series17.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series17.Color = System.Drawing.Color.Yellow;
+            series17.Legend = "Legend1";
+            series17.LegendText = "Heizstab";
+            series17.Name = "Heizstab";
+            series18.ChartArea = "ChartArea1";
+            series18.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series18.Color = System.Drawing.Color.Blue;
+            series18.Legend = "Legend1";
+            series18.LegendText = "Wärmeproduktion";
+            series18.Name = "Waermeproduktion";
+            this.chart3.Series.Add(series16);
+            this.chart3.Series.Add(series17);
+            this.chart3.Series.Add(series18);
             this.chart3.Size = new System.Drawing.Size(474, 301);
             this.chart3.TabIndex = 55;
             this.chart3.Text = "chart3";
-            title7.Name = "Title1";
-            title7.Text = "Wärmelast Jahresganglinie ";
-            this.chart3.Titles.Add(title7);
+            title8.Name = "Title1";
+            title8.Text = "Wärmelast Jahresganglinie ";
+            this.chart3.Titles.Add(title8);
             // 
             // btn_WP_Simulation
             // 
+            this.btn_WP_Simulation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.btn_WP_Simulation.ForeColor = System.Drawing.Color.Black;
-            this.btn_WP_Simulation.Location = new System.Drawing.Point(41, 46);
+            this.btn_WP_Simulation.Location = new System.Drawing.Point(22, 46);
             this.btn_WP_Simulation.Name = "btn_WP_Simulation";
-            this.btn_WP_Simulation.Size = new System.Drawing.Size(133, 33);
+            this.btn_WP_Simulation.Size = new System.Drawing.Size(152, 33);
             this.btn_WP_Simulation.TabIndex = 54;
-            this.btn_WP_Simulation.Text = "WP Simulation";
-            this.btn_WP_Simulation.UseVisualStyleBackColor = true;
+            this.btn_WP_Simulation.Text = "WP Simulation =>";
+            this.btn_WP_Simulation.UseVisualStyleBackColor = false;
             this.btn_WP_Simulation.Click += new System.EventHandler(this.btn_WP_Simulation_Click);
             // 
             // tabPage_Simulation_SPK
             // 
+            this.tabPage_Simulation_SPK.Controls.Add(this.label63);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label81);
+            this.tabPage_Simulation_SPK.Controls.Add(this.textBox_SPKRestwermebedarf);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label57);
+            this.tabPage_Simulation_SPK.Controls.Add(this.comboBox_Bereitschaft);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label45);
+            this.tabPage_Simulation_SPK.Controls.Add(this.listView_SimSPK);
+            this.tabPage_Simulation_SPK.Controls.Add(this.chart5);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label46);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label47);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_gesWaermebedarf);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label59);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_WaermeprSpk);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label60);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label61);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label62);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label64);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label65);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label66);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_Oelverbrauch);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label67);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label68);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_Biogasverbrauch);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label69);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label70);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_Rapsoelverbrauch);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label71);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label72);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_Holzverbrauch);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label73);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label74);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_Fluessiggasverbrauch);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label75);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label76);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_Stromverbrauch);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label77);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label78);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_Sonstigverbrauch);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label79);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label80);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label110);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label112);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_Max_Kesselleistung);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label113);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_Gasspitze);
+            this.tabPage_Simulation_SPK.Controls.Add(this.label114);
+            this.tabPage_Simulation_SPK.Controls.Add(this.tb_Gasverbrauch);
             this.tabPage_Simulation_SPK.Controls.Add(this.btn_Simulation);
             this.tabPage_Simulation_SPK.Controls.Add(this.label40);
             this.tabPage_Simulation_SPK.Controls.Add(this.textBox_Waermerestbedarf);
-            this.tabPage_Simulation_SPK.Controls.Add(this.label45);
             this.tabPage_Simulation_SPK.Location = new System.Drawing.Point(4, 34);
             this.tabPage_Simulation_SPK.Name = "tabPage_Simulation_SPK";
             this.tabPage_Simulation_SPK.Size = new System.Drawing.Size(1382, 740);
@@ -2050,11 +2200,597 @@
             this.tabPage_Simulation_SPK.Text = "SPK Simulation";
             this.tabPage_Simulation_SPK.UseVisualStyleBackColor = true;
             // 
+            // label45
+            // 
+            this.label45.AutoSize = true;
+            this.label45.BackColor = System.Drawing.Color.White;
+            this.label45.Font = new System.Drawing.Font("Segoe UI", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label45.ForeColor = System.Drawing.Color.Black;
+            this.label45.Location = new System.Drawing.Point(237, 126);
+            this.label45.Name = "label45";
+            this.label45.Size = new System.Drawing.Size(78, 17);
+            this.label45.TabIndex = 186;
+            this.label45.Text = "Ergebnisse:";
+            this.label45.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // listView_SimSPK
+            // 
+            this.listView_SimSPK.BackColor = System.Drawing.Color.White;
+            this.listView_SimSPK.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.listView_SimSPK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.listView_SimSPK.FullRowSelect = true;
+            this.listView_SimSPK.GridLines = true;
+            this.listView_SimSPK.HideSelection = false;
+            this.listView_SimSPK.Location = new System.Drawing.Point(30, 495);
+            this.listView_SimSPK.MultiSelect = false;
+            this.listView_SimSPK.Name = "listView_SimSPK";
+            this.listView_SimSPK.Size = new System.Drawing.Size(575, 191);
+            this.listView_SimSPK.TabIndex = 185;
+            this.listView_SimSPK.UseCompatibleStateImageBehavior = false;
+            // 
+            // chart5
+            // 
+            this.chart5.BorderlineColor = System.Drawing.Color.Black;
+            this.chart5.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.DashDot;
+            chartArea6.Name = "ChartArea1";
+            this.chart5.ChartAreas.Add(chartArea6);
+            legend4.Name = "Legend1";
+            this.chart5.Legends.Add(legend4);
+            this.chart5.Location = new System.Drawing.Point(663, 406);
+            this.chart5.Name = "chart5";
+            series10.ChartArea = "ChartArea1";
+            series10.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
+            series10.Legend = "Legend1";
+            series10.Name = "Series1";
+            this.chart5.Series.Add(series10);
+            this.chart5.Size = new System.Drawing.Size(539, 280);
+            this.chart5.TabIndex = 184;
+            this.chart5.Text = "chart5";
+            // 
+            // label46
+            // 
+            this.label46.AutoSize = true;
+            this.label46.BackColor = System.Drawing.Color.White;
+            this.label46.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label46.ForeColor = System.Drawing.Color.Black;
+            this.label46.Location = new System.Drawing.Point(796, 222);
+            this.label46.Name = "label46";
+            this.label46.Size = new System.Drawing.Size(134, 17);
+            this.label46.TabIndex = 183;
+            this.label46.Text = "Maximaler Gasbezug:";
+            this.label46.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label47
+            // 
+            this.label47.AutoSize = true;
+            this.label47.BackColor = System.Drawing.Color.White;
+            this.label47.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label47.ForeColor = System.Drawing.Color.Black;
+            this.label47.Location = new System.Drawing.Point(126, 21);
+            this.label47.Name = "label47";
+            this.label47.Size = new System.Drawing.Size(220, 17);
+            this.label47.TabIndex = 92;
+            this.label47.Text = "Wärmebedarf des Nahwärmenetzes:";
+            this.label47.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // tb_gesWaermebedarf
+            // 
+            this.tb_gesWaermebedarf.BackColor = System.Drawing.Color.White;
+            this.tb_gesWaermebedarf.Enabled = false;
+            this.tb_gesWaermebedarf.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_gesWaermebedarf.ForeColor = System.Drawing.Color.Black;
+            this.tb_gesWaermebedarf.Location = new System.Drawing.Point(363, 19);
+            this.tb_gesWaermebedarf.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_gesWaermebedarf.Name = "tb_gesWaermebedarf";
+            this.tb_gesWaermebedarf.Size = new System.Drawing.Size(84, 25);
+            this.tb_gesWaermebedarf.TabIndex = 93;
+            // 
+            // label59
+            // 
+            this.label59.AutoSize = true;
+            this.label59.BackColor = System.Drawing.Color.White;
+            this.label59.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label59.ForeColor = System.Drawing.Color.Black;
+            this.label59.Location = new System.Drawing.Point(709, 254);
+            this.label59.Name = "label59";
+            this.label59.Size = new System.Drawing.Size(221, 17);
+            this.label59.TabIndex = 96;
+            this.label59.Text = "Wärmeproduktion der Spitzenkessel:";
+            this.label59.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // tb_WaermeprSpk
+            // 
+            this.tb_WaermeprSpk.BackColor = System.Drawing.Color.White;
+            this.tb_WaermeprSpk.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_WaermeprSpk.Enabled = false;
+            this.tb_WaermeprSpk.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_WaermeprSpk.ForeColor = System.Drawing.Color.Black;
+            this.tb_WaermeprSpk.Location = new System.Drawing.Point(936, 254);
+            this.tb_WaermeprSpk.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_WaermeprSpk.Name = "tb_WaermeprSpk";
+            this.tb_WaermeprSpk.Size = new System.Drawing.Size(84, 25);
+            this.tb_WaermeprSpk.TabIndex = 97;
+            // 
+            // label60
+            // 
+            this.label60.AutoSize = true;
+            this.label60.BackColor = System.Drawing.Color.White;
+            this.label60.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label60.ForeColor = System.Drawing.Color.Blue;
+            this.label60.Location = new System.Drawing.Point(29, 163);
+            this.label60.Name = "label60";
+            this.label60.Size = new System.Drawing.Size(233, 17);
+            this.label60.TabIndex = 98;
+            this.label60.Text = "Brennstoffverbrauch der Spitzenkessel:";
+            this.label60.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label61
+            // 
+            this.label61.AutoSize = true;
+            this.label61.BackColor = System.Drawing.Color.White;
+            this.label61.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label61.ForeColor = System.Drawing.Color.Black;
+            this.label61.Location = new System.Drawing.Point(123, 193);
+            this.label61.Name = "label61";
+            this.label61.Size = new System.Drawing.Size(119, 17);
+            this.label61.TabIndex = 99;
+            this.label61.Text = "Gasverbrauch (Hu):";
+            this.label61.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label62
+            // 
+            this.label62.AutoSize = true;
+            this.label62.BackColor = System.Drawing.Color.White;
+            this.label62.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label62.ForeColor = System.Drawing.Color.Black;
+            this.label62.Location = new System.Drawing.Point(459, 24);
+            this.label62.Name = "label62";
+            this.label62.Size = new System.Drawing.Size(51, 17);
+            this.label62.TabIndex = 100;
+            this.label62.Text = "MWh/a";
+            this.label62.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label64
+            // 
+            this.label64.AutoSize = true;
+            this.label64.BackColor = System.Drawing.Color.White;
+            this.label64.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label64.ForeColor = System.Drawing.Color.Black;
+            this.label64.Location = new System.Drawing.Point(1028, 256);
+            this.label64.Name = "label64";
+            this.label64.Size = new System.Drawing.Size(51, 17);
+            this.label64.TabIndex = 102;
+            this.label64.Text = "MWh/a";
+            this.label64.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label65
+            // 
+            this.label65.AutoSize = true;
+            this.label65.BackColor = System.Drawing.Color.White;
+            this.label65.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label65.ForeColor = System.Drawing.Color.Black;
+            this.label65.Location = new System.Drawing.Point(362, 195);
+            this.label65.Name = "label65";
+            this.label65.Size = new System.Drawing.Size(51, 17);
+            this.label65.TabIndex = 103;
+            this.label65.Text = "MWh/a";
+            this.label65.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label66
+            // 
+            this.label66.AutoSize = true;
+            this.label66.BackColor = System.Drawing.Color.White;
+            this.label66.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label66.ForeColor = System.Drawing.Color.Black;
+            this.label66.Location = new System.Drawing.Point(123, 226);
+            this.label66.Name = "label66";
+            this.label66.Size = new System.Drawing.Size(82, 17);
+            this.label66.TabIndex = 104;
+            this.label66.Text = "Ölverbrauch:";
+            this.label66.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // tb_Oelverbrauch
+            // 
+            this.tb_Oelverbrauch.BackColor = System.Drawing.Color.White;
+            this.tb_Oelverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_Oelverbrauch.Enabled = false;
+            this.tb_Oelverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Oelverbrauch.ForeColor = System.Drawing.Color.Black;
+            this.tb_Oelverbrauch.Location = new System.Drawing.Point(267, 222);
+            this.tb_Oelverbrauch.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Oelverbrauch.Name = "tb_Oelverbrauch";
+            this.tb_Oelverbrauch.Size = new System.Drawing.Size(84, 25);
+            this.tb_Oelverbrauch.TabIndex = 105;
+            // 
+            // label67
+            // 
+            this.label67.AutoSize = true;
+            this.label67.BackColor = System.Drawing.Color.White;
+            this.label67.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label67.ForeColor = System.Drawing.Color.Black;
+            this.label67.Location = new System.Drawing.Point(362, 224);
+            this.label67.Name = "label67";
+            this.label67.Size = new System.Drawing.Size(51, 17);
+            this.label67.TabIndex = 106;
+            this.label67.Text = "MWh/a";
+            this.label67.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label68
+            // 
+            this.label68.AutoSize = true;
+            this.label68.BackColor = System.Drawing.Color.White;
+            this.label68.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label68.ForeColor = System.Drawing.Color.Black;
+            this.label68.Location = new System.Drawing.Point(123, 254);
+            this.label68.Name = "label68";
+            this.label68.Size = new System.Drawing.Size(108, 17);
+            this.label68.TabIndex = 107;
+            this.label68.Text = "Biogasverbrauch:";
+            this.label68.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // tb_Biogasverbrauch
+            // 
+            this.tb_Biogasverbrauch.BackColor = System.Drawing.Color.White;
+            this.tb_Biogasverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_Biogasverbrauch.Enabled = false;
+            this.tb_Biogasverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Biogasverbrauch.ForeColor = System.Drawing.Color.Black;
+            this.tb_Biogasverbrauch.Location = new System.Drawing.Point(267, 252);
+            this.tb_Biogasverbrauch.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Biogasverbrauch.Name = "tb_Biogasverbrauch";
+            this.tb_Biogasverbrauch.Size = new System.Drawing.Size(84, 25);
+            this.tb_Biogasverbrauch.TabIndex = 108;
+            // 
+            // label69
+            // 
+            this.label69.AutoSize = true;
+            this.label69.BackColor = System.Drawing.Color.White;
+            this.label69.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label69.ForeColor = System.Drawing.Color.Black;
+            this.label69.Location = new System.Drawing.Point(362, 254);
+            this.label69.Name = "label69";
+            this.label69.Size = new System.Drawing.Size(51, 17);
+            this.label69.TabIndex = 109;
+            this.label69.Text = "MWh/a";
+            this.label69.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label70
+            // 
+            this.label70.AutoSize = true;
+            this.label70.BackColor = System.Drawing.Color.White;
+            this.label70.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label70.ForeColor = System.Drawing.Color.Black;
+            this.label70.Location = new System.Drawing.Point(123, 284);
+            this.label70.Name = "label70";
+            this.label70.Size = new System.Drawing.Size(109, 17);
+            this.label70.TabIndex = 110;
+            this.label70.Text = "Rapsölverbrauch:";
+            this.label70.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // tb_Rapsoelverbrauch
+            // 
+            this.tb_Rapsoelverbrauch.BackColor = System.Drawing.Color.White;
+            this.tb_Rapsoelverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_Rapsoelverbrauch.Enabled = false;
+            this.tb_Rapsoelverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Rapsoelverbrauch.ForeColor = System.Drawing.Color.Black;
+            this.tb_Rapsoelverbrauch.Location = new System.Drawing.Point(267, 282);
+            this.tb_Rapsoelverbrauch.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Rapsoelverbrauch.Name = "tb_Rapsoelverbrauch";
+            this.tb_Rapsoelverbrauch.Size = new System.Drawing.Size(84, 25);
+            this.tb_Rapsoelverbrauch.TabIndex = 111;
+            // 
+            // label71
+            // 
+            this.label71.AutoSize = true;
+            this.label71.BackColor = System.Drawing.Color.White;
+            this.label71.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label71.ForeColor = System.Drawing.Color.Black;
+            this.label71.Location = new System.Drawing.Point(362, 284);
+            this.label71.Name = "label71";
+            this.label71.Size = new System.Drawing.Size(51, 17);
+            this.label71.TabIndex = 112;
+            this.label71.Text = "MWh/a";
+            this.label71.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label72
+            // 
+            this.label72.AutoSize = true;
+            this.label72.BackColor = System.Drawing.Color.White;
+            this.label72.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label72.ForeColor = System.Drawing.Color.Black;
+            this.label72.Location = new System.Drawing.Point(123, 314);
+            this.label72.Name = "label72";
+            this.label72.Size = new System.Drawing.Size(95, 17);
+            this.label72.TabIndex = 113;
+            this.label72.Text = "Holzverbrauch:";
+            this.label72.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // tb_Holzverbrauch
+            // 
+            this.tb_Holzverbrauch.BackColor = System.Drawing.Color.White;
+            this.tb_Holzverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_Holzverbrauch.Enabled = false;
+            this.tb_Holzverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Holzverbrauch.ForeColor = System.Drawing.Color.Black;
+            this.tb_Holzverbrauch.Location = new System.Drawing.Point(267, 312);
+            this.tb_Holzverbrauch.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Holzverbrauch.Name = "tb_Holzverbrauch";
+            this.tb_Holzverbrauch.Size = new System.Drawing.Size(84, 25);
+            this.tb_Holzverbrauch.TabIndex = 114;
+            // 
+            // label73
+            // 
+            this.label73.AutoSize = true;
+            this.label73.BackColor = System.Drawing.Color.White;
+            this.label73.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label73.ForeColor = System.Drawing.Color.Black;
+            this.label73.Location = new System.Drawing.Point(362, 314);
+            this.label73.Name = "label73";
+            this.label73.Size = new System.Drawing.Size(51, 17);
+            this.label73.TabIndex = 115;
+            this.label73.Text = "MWh/a";
+            this.label73.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label74
+            // 
+            this.label74.AutoSize = true;
+            this.label74.BackColor = System.Drawing.Color.White;
+            this.label74.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label74.ForeColor = System.Drawing.Color.Black;
+            this.label74.Location = new System.Drawing.Point(123, 344);
+            this.label74.Name = "label74";
+            this.label74.Size = new System.Drawing.Size(129, 17);
+            this.label74.TabIndex = 116;
+            this.label74.Text = "Flüssiggasverbrauch:";
+            this.label74.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // tb_Fluessiggasverbrauch
+            // 
+            this.tb_Fluessiggasverbrauch.BackColor = System.Drawing.Color.White;
+            this.tb_Fluessiggasverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_Fluessiggasverbrauch.Enabled = false;
+            this.tb_Fluessiggasverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Fluessiggasverbrauch.ForeColor = System.Drawing.Color.Black;
+            this.tb_Fluessiggasverbrauch.Location = new System.Drawing.Point(267, 342);
+            this.tb_Fluessiggasverbrauch.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Fluessiggasverbrauch.Name = "tb_Fluessiggasverbrauch";
+            this.tb_Fluessiggasverbrauch.Size = new System.Drawing.Size(84, 25);
+            this.tb_Fluessiggasverbrauch.TabIndex = 117;
+            // 
+            // label75
+            // 
+            this.label75.AutoSize = true;
+            this.label75.BackColor = System.Drawing.Color.White;
+            this.label75.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label75.ForeColor = System.Drawing.Color.Black;
+            this.label75.Location = new System.Drawing.Point(362, 344);
+            this.label75.Name = "label75";
+            this.label75.Size = new System.Drawing.Size(51, 17);
+            this.label75.TabIndex = 118;
+            this.label75.Text = "MWh/a";
+            this.label75.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label76
+            // 
+            this.label76.AutoSize = true;
+            this.label76.BackColor = System.Drawing.Color.White;
+            this.label76.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label76.ForeColor = System.Drawing.Color.Black;
+            this.label76.Location = new System.Drawing.Point(123, 374);
+            this.label76.Name = "label76";
+            this.label76.Size = new System.Drawing.Size(104, 17);
+            this.label76.TabIndex = 119;
+            this.label76.Text = "Stromverbrauch:";
+            this.label76.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // tb_Stromverbrauch
+            // 
+            this.tb_Stromverbrauch.BackColor = System.Drawing.Color.White;
+            this.tb_Stromverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_Stromverbrauch.Enabled = false;
+            this.tb_Stromverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Stromverbrauch.ForeColor = System.Drawing.Color.Black;
+            this.tb_Stromverbrauch.Location = new System.Drawing.Point(267, 372);
+            this.tb_Stromverbrauch.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Stromverbrauch.Name = "tb_Stromverbrauch";
+            this.tb_Stromverbrauch.Size = new System.Drawing.Size(84, 25);
+            this.tb_Stromverbrauch.TabIndex = 120;
+            // 
+            // label77
+            // 
+            this.label77.AutoSize = true;
+            this.label77.BackColor = System.Drawing.Color.White;
+            this.label77.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label77.ForeColor = System.Drawing.Color.Black;
+            this.label77.Location = new System.Drawing.Point(362, 374);
+            this.label77.Name = "label77";
+            this.label77.Size = new System.Drawing.Size(51, 17);
+            this.label77.TabIndex = 121;
+            this.label77.Text = "MWh/a";
+            this.label77.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label78
+            // 
+            this.label78.AutoSize = true;
+            this.label78.BackColor = System.Drawing.Color.White;
+            this.label78.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label78.ForeColor = System.Drawing.Color.Black;
+            this.label78.Location = new System.Drawing.Point(123, 404);
+            this.label78.Name = "label78";
+            this.label78.Size = new System.Drawing.Size(131, 17);
+            this.label78.TabIndex = 122;
+            this.label78.Text = "Sonstige Brennstoffe:";
+            this.label78.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // tb_Sonstigverbrauch
+            // 
+            this.tb_Sonstigverbrauch.BackColor = System.Drawing.Color.White;
+            this.tb_Sonstigverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_Sonstigverbrauch.Enabled = false;
+            this.tb_Sonstigverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Sonstigverbrauch.ForeColor = System.Drawing.Color.Black;
+            this.tb_Sonstigverbrauch.Location = new System.Drawing.Point(267, 402);
+            this.tb_Sonstigverbrauch.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Sonstigverbrauch.Name = "tb_Sonstigverbrauch";
+            this.tb_Sonstigverbrauch.Size = new System.Drawing.Size(84, 25);
+            this.tb_Sonstigverbrauch.TabIndex = 123;
+            // 
+            // label79
+            // 
+            this.label79.AutoSize = true;
+            this.label79.BackColor = System.Drawing.Color.White;
+            this.label79.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label79.ForeColor = System.Drawing.Color.Black;
+            this.label79.Location = new System.Drawing.Point(362, 404);
+            this.label79.Name = "label79";
+            this.label79.Size = new System.Drawing.Size(51, 17);
+            this.label79.TabIndex = 124;
+            this.label79.Text = "MWh/a";
+            this.label79.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label80
+            // 
+            this.label80.AutoSize = true;
+            this.label80.BackColor = System.Drawing.Color.White;
+            this.label80.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label80.ForeColor = System.Drawing.Color.Blue;
+            this.label80.Location = new System.Drawing.Point(29, 465);
+            this.label80.Name = "label80";
+            this.label80.Size = new System.Drawing.Size(279, 17);
+            this.label80.TabIndex = 125;
+            this.label80.Text = "Wärmeproduktion der einzelnen Spitzenkessel:";
+            this.label80.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label110
+            // 
+            this.label110.BackColor = System.Drawing.Color.White;
+            this.label110.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label110.ForeColor = System.Drawing.Color.Black;
+            this.label110.Location = new System.Drawing.Point(27, 52);
+            this.label110.Name = "label110";
+            this.label110.Size = new System.Drawing.Size(324, 25);
+            this.label110.TabIndex = 173;
+            this.label110.Text = "Maximaler Restwärmebedarf der versorgten Objekte:";
+            this.label110.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label112
+            // 
+            this.label112.AutoSize = true;
+            this.label112.BackColor = System.Drawing.Color.White;
+            this.label112.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label112.ForeColor = System.Drawing.Color.Black;
+            this.label112.Location = new System.Drawing.Point(690, 190);
+            this.label112.Name = "label112";
+            this.label112.Size = new System.Drawing.Size(240, 17);
+            this.label112.TabIndex = 176;
+            this.label112.Text = "Gesamte Wärmeleistung der Heizkessel:";
+            this.label112.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tb_Max_Kesselleistung
+            // 
+            this.tb_Max_Kesselleistung.BackColor = System.Drawing.Color.White;
+            this.tb_Max_Kesselleistung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_Max_Kesselleistung.Enabled = false;
+            this.tb_Max_Kesselleistung.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Max_Kesselleistung.ForeColor = System.Drawing.Color.Black;
+            this.tb_Max_Kesselleistung.Location = new System.Drawing.Point(936, 188);
+            this.tb_Max_Kesselleistung.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Max_Kesselleistung.Name = "tb_Max_Kesselleistung";
+            this.tb_Max_Kesselleistung.Size = new System.Drawing.Size(84, 25);
+            this.tb_Max_Kesselleistung.TabIndex = 177;
+            // 
+            // label113
+            // 
+            this.label113.AutoSize = true;
+            this.label113.BackColor = System.Drawing.Color.White;
+            this.label113.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label113.ForeColor = System.Drawing.Color.Black;
+            this.label113.Location = new System.Drawing.Point(1028, 193);
+            this.label113.Name = "label113";
+            this.label113.Size = new System.Drawing.Size(26, 16);
+            this.label113.TabIndex = 178;
+            this.label113.Text = "KW";
+            this.label113.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tb_Gasspitze
+            // 
+            this.tb_Gasspitze.BackColor = System.Drawing.Color.White;
+            this.tb_Gasspitze.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_Gasspitze.Enabled = false;
+            this.tb_Gasspitze.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Gasspitze.ForeColor = System.Drawing.Color.Black;
+            this.tb_Gasspitze.Location = new System.Drawing.Point(936, 221);
+            this.tb_Gasspitze.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Gasspitze.Name = "tb_Gasspitze";
+            this.tb_Gasspitze.Size = new System.Drawing.Size(84, 25);
+            this.tb_Gasspitze.TabIndex = 179;
+            // 
+            // label114
+            // 
+            this.label114.AutoSize = true;
+            this.label114.BackColor = System.Drawing.Color.White;
+            this.label114.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label114.ForeColor = System.Drawing.Color.Black;
+            this.label114.Location = new System.Drawing.Point(1028, 226);
+            this.label114.Name = "label114";
+            this.label114.Size = new System.Drawing.Size(25, 16);
+            this.label114.TabIndex = 180;
+            this.label114.Text = "kW";
+            this.label114.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tb_Gasverbrauch
+            // 
+            this.tb_Gasverbrauch.BackColor = System.Drawing.Color.White;
+            this.tb_Gasverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tb_Gasverbrauch.Enabled = false;
+            this.tb_Gasverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tb_Gasverbrauch.ForeColor = System.Drawing.Color.Black;
+            this.tb_Gasverbrauch.Location = new System.Drawing.Point(267, 191);
+            this.tb_Gasverbrauch.Margin = new System.Windows.Forms.Padding(4);
+            this.tb_Gasverbrauch.Name = "tb_Gasverbrauch";
+            this.tb_Gasverbrauch.Size = new System.Drawing.Size(84, 25);
+            this.tb_Gasverbrauch.TabIndex = 181;
+            // 
+            // btn_Simulation
+            // 
+            this.btn_Simulation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.btn_Simulation.ForeColor = System.Drawing.Color.Black;
+            this.btn_Simulation.Location = new System.Drawing.Point(654, 47);
+            this.btn_Simulation.Name = "btn_Simulation";
+            this.btn_Simulation.Size = new System.Drawing.Size(158, 33);
+            this.btn_Simulation.TabIndex = 73;
+            this.btn_Simulation.Text = "SPK Simulation =>";
+            this.btn_Simulation.UseVisualStyleBackColor = false;
+            this.btn_Simulation.Click += new System.EventHandler(this.btn_Simulation_Click);
+            // 
+            // label40
+            // 
+            this.label40.AutoSize = true;
+            this.label40.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label40.ForeColor = System.Drawing.Color.Black;
+            this.label40.Location = new System.Drawing.Point(459, 60);
+            this.label40.Name = "label40";
+            this.label40.Size = new System.Drawing.Size(51, 17);
+            this.label40.TabIndex = 72;
+            this.label40.Text = "MWh/a";
+            // 
+            // textBox_Waermerestbedarf
+            // 
+            this.textBox_Waermerestbedarf.BackColor = System.Drawing.Color.White;
+            this.textBox_Waermerestbedarf.Enabled = false;
+            this.textBox_Waermerestbedarf.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox_Waermerestbedarf.ForeColor = System.Drawing.Color.Black;
+            this.textBox_Waermerestbedarf.Location = new System.Drawing.Point(364, 57);
+            this.textBox_Waermerestbedarf.Name = "textBox_Waermerestbedarf";
+            this.textBox_Waermerestbedarf.Size = new System.Drawing.Size(84, 25);
+            this.textBox_Waermerestbedarf.TabIndex = 71;
+            // 
             // tabPage_Bericht
             // 
             this.tabPage_Bericht.Location = new System.Drawing.Point(4, 34);
             this.tabPage_Bericht.Name = "tabPage_Bericht";
-            this.tabPage_Bericht.Size = new System.Drawing.Size(1366, 740);
+            this.tabPage_Bericht.Size = new System.Drawing.Size(1382, 740);
             this.tabPage_Bericht.TabIndex = 3;
             this.tabPage_Bericht.Text = "Bericht";
             this.tabPage_Bericht.UseVisualStyleBackColor = true;
@@ -2071,99 +2807,63 @@
             this.button_Beenden.UseVisualStyleBackColor = true;
             this.button_Beenden.Click += new System.EventHandler(this.button_Beenden_Click);
             // 
-            // chart4
+            // comboBox_Bereitschaft
             // 
-            this.chart4.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.chart4.BorderlineColor = System.Drawing.Color.Transparent;
-            this.chart4.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.DashDotDot;
-            this.chart4.BorderlineWidth = 2;
-            chartArea8.AxisX.IsLabelAutoFit = false;
-            chartArea8.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea8.AxisX.Title = "Temperatur [°C]";
-            chartArea8.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea8.AxisY.Title = "Wärmeleistung [kW]";
-            chartArea8.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
-            chartArea8.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
-            chartArea8.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea8.Name = "ChartArea1";
-            this.chart4.ChartAreas.Add(chartArea8);
-            legend4.BackColor = System.Drawing.Color.Transparent;
-            legend4.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
-            legend4.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            legend4.IsTextAutoFit = false;
-            legend4.Name = "Legend1";
-            legend4.TitleFont = new System.Drawing.Font("Segoe UI Semibold", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chart4.Legends.Add(legend4);
-            this.chart4.Location = new System.Drawing.Point(41, 421);
-            this.chart4.Name = "chart4";
-            series14.ChartArea = "ChartArea1";
-            series14.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Area;
-            series14.Color = System.Drawing.Color.Yellow;
-            series14.Legend = "Legend1";
-            series14.Name = "Heizstab";
-            series15.ChartArea = "ChartArea1";
-            series15.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Area;
-            series15.Color = System.Drawing.Color.Red;
-            series15.Legend = "Legend1";
-            series15.Name = "Waermebedarf";
-            series16.ChartArea = "ChartArea1";
-            series16.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Area;
-            series16.Color = System.Drawing.Color.Blue;
-            series16.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            series16.Legend = "Legend1";
-            series16.LegendText = "Wärmeproduktion";
-            series16.Name = "Waermeproduktion";
-            this.chart4.Series.Add(series14);
-            this.chart4.Series.Add(series15);
-            this.chart4.Series.Add(series16);
-            this.chart4.Size = new System.Drawing.Size(474, 313);
-            this.chart4.TabIndex = 134;
-            this.chart4.Text = "chart4";
-            title8.Name = "Title1";
-            title8.Text = "Jahrestemperaturgang";
-            this.chart4.Titles.Add(title8);
+            this.comboBox_Bereitschaft.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox_Bereitschaft.FormattingEnabled = true;
+            this.comboBox_Bereitschaft.Location = new System.Drawing.Point(542, 53);
+            this.comboBox_Bereitschaft.Name = "comboBox_Bereitschaft";
+            this.comboBox_Bereitschaft.Size = new System.Drawing.Size(97, 25);
+            this.comboBox_Bereitschaft.TabIndex = 187;
+            this.comboBox_Bereitschaft.Text = "6000";
             // 
-            // label40
+            // label57
             // 
-            this.label40.AutoSize = true;
-            this.label40.Font = new System.Drawing.Font("Segoe UI Light", 8F);
-            this.label40.ForeColor = System.Drawing.Color.Black;
-            this.label40.Location = new System.Drawing.Point(247, 35);
-            this.label40.Name = "label40";
-            this.label40.Size = new System.Drawing.Size(38, 13);
-            this.label40.TabIndex = 72;
-            this.label40.Text = "KWh/a";
+            this.label57.AutoSize = true;
+            this.label57.BackColor = System.Drawing.Color.White;
+            this.label57.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label57.ForeColor = System.Drawing.Color.Black;
+            this.label57.Location = new System.Drawing.Point(539, 32);
+            this.label57.Name = "label57";
+            this.label57.Size = new System.Drawing.Size(109, 17);
+            this.label57.TabIndex = 188;
+            this.label57.Text = "Bereitschaft (h/a):";
+            this.label57.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // textBox_Waermerestbedarf
+            // label63
             // 
-            this.textBox_Waermerestbedarf.Font = new System.Drawing.Font("Segoe UI Semibold", 8F);
-            this.textBox_Waermerestbedarf.Location = new System.Drawing.Point(152, 32);
-            this.textBox_Waermerestbedarf.Name = "textBox_Waermerestbedarf";
-            this.textBox_Waermerestbedarf.Size = new System.Drawing.Size(89, 22);
-            this.textBox_Waermerestbedarf.TabIndex = 71;
+            this.label63.AutoSize = true;
+            this.label63.BackColor = System.Drawing.Color.White;
+            this.label63.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label63.ForeColor = System.Drawing.Color.Black;
+            this.label63.Location = new System.Drawing.Point(816, 312);
+            this.label63.Name = "label63";
+            this.label63.Size = new System.Drawing.Size(114, 17);
+            this.label63.TabIndex = 191;
+            this.label63.Text = "Restwärmebedarf:";
+            this.label63.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // label45
+            // label81
             // 
-            this.label45.AutoSize = true;
-            this.label45.Font = new System.Drawing.Font("Segoe UI Semibold", 8F);
-            this.label45.ForeColor = System.Drawing.Color.Black;
-            this.label45.Location = new System.Drawing.Point(42, 35);
-            this.label45.Name = "label45";
-            this.label45.Size = new System.Drawing.Size(100, 13);
-            this.label45.TabIndex = 70;
-            this.label45.Text = "Wärmerestbedarf:";
+            this.label81.AutoSize = true;
+            this.label81.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label81.ForeColor = System.Drawing.Color.Black;
+            this.label81.Location = new System.Drawing.Point(1026, 312);
+            this.label81.Name = "label81";
+            this.label81.Size = new System.Drawing.Size(51, 17);
+            this.label81.TabIndex = 190;
+            this.label81.Text = "MWh/a";
             // 
-            // btn_Simulation
+            // textBox_SPKRestwermebedarf
             // 
-            this.btn_Simulation.ForeColor = System.Drawing.Color.Black;
-            this.btn_Simulation.Location = new System.Drawing.Point(45, 76);
-            this.btn_Simulation.Name = "btn_Simulation";
-            this.btn_Simulation.Size = new System.Drawing.Size(133, 33);
-            this.btn_Simulation.TabIndex = 73;
-            this.btn_Simulation.Text = "SPK Simulation";
-            this.btn_Simulation.UseVisualStyleBackColor = true;
-            this.btn_Simulation.Click += new System.EventHandler(this.btn_Simulation_Click);
+            this.textBox_SPKRestwermebedarf.BackColor = System.Drawing.Color.White;
+            this.textBox_SPKRestwermebedarf.Enabled = false;
+            this.textBox_SPKRestwermebedarf.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox_SPKRestwermebedarf.ForeColor = System.Drawing.Color.Black;
+            this.textBox_SPKRestwermebedarf.Location = new System.Drawing.Point(936, 309);
+            this.textBox_SPKRestwermebedarf.Name = "textBox_SPKRestwermebedarf";
+            this.textBox_SPKRestwermebedarf.Size = new System.Drawing.Size(84, 25);
+            this.textBox_SPKRestwermebedarf.TabIndex = 189;
             // 
             // FormMain
             // 
@@ -2205,10 +2905,11 @@
             this.tabPage12.ResumeLayout(false);
             this.tabPage_Simulation_WP.ResumeLayout(false);
             this.tabPage_Simulation_WP.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart4)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart3)).EndInit();
             this.tabPage_Simulation_SPK.ResumeLayout(false);
             this.tabPage_Simulation_SPK.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.chart4)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chart5)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2367,7 +3068,53 @@
         private System.Windows.Forms.DataVisualization.Charting.Chart chart4;
         private System.Windows.Forms.Label label40;
         private System.Windows.Forms.TextBox textBox_Waermerestbedarf;
-        private System.Windows.Forms.Label label45;
         private System.Windows.Forms.Button btn_Simulation;
+        private System.Windows.Forms.Label label46;
+        private System.Windows.Forms.Label label47;
+        private System.Windows.Forms.TextBox tb_gesWaermebedarf;
+        private System.Windows.Forms.Label label59;
+        private System.Windows.Forms.TextBox tb_WaermeprSpk;
+        private System.Windows.Forms.Label label60;
+        private System.Windows.Forms.Label label61;
+        private System.Windows.Forms.Label label62;
+        private System.Windows.Forms.Label label64;
+        private System.Windows.Forms.Label label65;
+        private System.Windows.Forms.Label label66;
+        private System.Windows.Forms.TextBox tb_Oelverbrauch;
+        private System.Windows.Forms.Label label67;
+        private System.Windows.Forms.Label label68;
+        private System.Windows.Forms.TextBox tb_Biogasverbrauch;
+        private System.Windows.Forms.Label label69;
+        private System.Windows.Forms.Label label70;
+        private System.Windows.Forms.TextBox tb_Rapsoelverbrauch;
+        private System.Windows.Forms.Label label71;
+        private System.Windows.Forms.Label label72;
+        private System.Windows.Forms.TextBox tb_Holzverbrauch;
+        private System.Windows.Forms.Label label73;
+        private System.Windows.Forms.Label label74;
+        private System.Windows.Forms.TextBox tb_Fluessiggasverbrauch;
+        private System.Windows.Forms.Label label75;
+        private System.Windows.Forms.Label label76;
+        private System.Windows.Forms.TextBox tb_Stromverbrauch;
+        private System.Windows.Forms.Label label77;
+        private System.Windows.Forms.Label label78;
+        private System.Windows.Forms.TextBox tb_Sonstigverbrauch;
+        private System.Windows.Forms.Label label79;
+        private System.Windows.Forms.Label label80;
+        private System.Windows.Forms.Label label110;
+        private System.Windows.Forms.Label label112;
+        private System.Windows.Forms.TextBox tb_Max_Kesselleistung;
+        private System.Windows.Forms.Label label113;
+        private System.Windows.Forms.TextBox tb_Gasspitze;
+        private System.Windows.Forms.Label label114;
+        private System.Windows.Forms.TextBox tb_Gasverbrauch;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart5;
+        private System.Windows.Forms.ListView listView_SimSPK;
+        private System.Windows.Forms.Label label45;
+        private System.Windows.Forms.ComboBox comboBox_Bereitschaft;
+        private System.Windows.Forms.Label label57;
+        private System.Windows.Forms.Label label63;
+        private System.Windows.Forms.Label label81;
+        private System.Windows.Forms.TextBox textBox_SPKRestwermebedarf;
     }
 }
