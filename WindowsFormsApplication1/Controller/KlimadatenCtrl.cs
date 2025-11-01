@@ -54,8 +54,8 @@ namespace WindowsFormsApplication1
                 item = null;
                 rows += 1;
             }
-            DBReader.Dispose();
             DBReader.Close();
+            DBReader.Dispose();
         }
 
         public void ReadAll(int ID_Klimaregion)
@@ -87,8 +87,8 @@ namespace WindowsFormsApplication1
                
                 rows += 1;
             }
-            DBReader.Dispose();
             DBReader.Close();
+            DBReader.Dispose();
         }
 
         public void ReadSingle(string sql)
@@ -113,8 +113,8 @@ namespace WindowsFormsApplication1
    
                 rows = 1;
             }
-            DBReader.Dispose();
             DBReader.Close();
+            DBReader.Dispose();
         }
 
         public bool Delete(string szName)

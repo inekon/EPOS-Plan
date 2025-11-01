@@ -40,8 +40,8 @@ namespace WindowsFormsApplication1
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.btn_Neu = new System.Windows.Forms.Button();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.textBox_WP = new System.Windows.Forms.TextBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -63,6 +63,7 @@ namespace WindowsFormsApplication1
             this.listView_WP.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.listView_WP.FullRowSelect = true;
             this.listView_WP.GridLines = true;
+            this.listView_WP.HideSelection = false;
             this.listView_WP.Location = new System.Drawing.Point(27, 238);
             this.listView_WP.MultiSelect = false;
             this.listView_WP.Name = "listView_WP";
@@ -89,7 +90,7 @@ namespace WindowsFormsApplication1
             this.label7.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label7.Location = new System.Drawing.Point(23, 216);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(226, 19);
+            this.label7.Size = new System.Drawing.Size(225, 19);
             this.label7.TabIndex = 8;
             this.label7.Text = "Liste der Wärmepumpen im Projekt";
             // 
@@ -166,16 +167,6 @@ namespace WindowsFormsApplication1
             this.btn_Neu.UseVisualStyleBackColor = true;
             this.btn_Neu.Click += new System.EventHandler(this.btn_Neu_Click);
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.BackgroundImage")));
-            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pictureBox1.Location = new System.Drawing.Point(4, 45);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(143, 127);
-            this.pictureBox1.TabIndex = 57;
-            this.pictureBox1.TabStop = false;
-            // 
             // textBox_WP
             // 
             this.textBox_WP.Enabled = false;
@@ -185,6 +176,16 @@ namespace WindowsFormsApplication1
             this.textBox_WP.Size = new System.Drawing.Size(215, 29);
             this.textBox_WP.TabIndex = 54;
             this.textBox_WP.Visible = false;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.BackgroundImage")));
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(4, 45);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(143, 127);
+            this.pictureBox1.TabIndex = 57;
+            this.pictureBox1.TabStop = false;
             // 
             // Wizard_WP
             // 

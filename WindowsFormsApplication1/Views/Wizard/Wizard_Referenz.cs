@@ -176,6 +176,7 @@ namespace WindowsFormsApplication1
                 double kl = (double)rs.Read("Ptherm");
                 textBox_Kesselleistung.Text = kl.ToString("F2");
                 textBox_Kesselbeschreibung.Text = (string)rs.Read("Beschreibung");
+                textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
             }
             rs.Close();
         }
@@ -193,6 +194,7 @@ namespace WindowsFormsApplication1
                 double kl = (double)rs.Read("Ptherm");
                 textBox_Kesselleistung.Text = kl.ToString("F2");
                 textBox_Kesselbeschreibung.Text = (string)rs.Read("Beschreibung");
+                textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
             }
             rs.Close();
         }
@@ -505,5 +507,6 @@ namespace WindowsFormsApplication1
             rs.Close();
         }
 
+ 
     }
 }

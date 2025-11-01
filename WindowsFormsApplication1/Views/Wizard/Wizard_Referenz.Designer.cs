@@ -65,6 +65,13 @@
             this.label1 = new System.Windows.Forms.Label();
             this.listBox_SP = new System.Windows.Forms.ListBox();
             this.tabPage_Standard = new System.Windows.Forms.TabPage();
+            this.label26 = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
+            this.textBox_Investitionskosten = new System.Windows.Forms.TextBox();
+            this.label24 = new System.Windows.Forms.Label();
+            this.comboBox_Leistung = new System.Windows.Forms.ComboBox();
+            this.label25 = new System.Windows.Forms.Label();
+            this.comboBox_Brennstoffart = new System.Windows.Forms.ComboBox();
             this.label18 = new System.Windows.Forms.Label();
             this.textBox_Kesselbeschreibung = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
@@ -80,10 +87,6 @@
             this.listBox_Kessel_DB = new System.Windows.Forms.ListBox();
             this.label12 = new System.Windows.Forms.Label();
             this.listBox_Kessel = new System.Windows.Forms.ListBox();
-            this.label24 = new System.Windows.Forms.Label();
-            this.comboBox_Leistung = new System.Windows.Forms.ComboBox();
-            this.label25 = new System.Windows.Forms.Label();
-            this.comboBox_Brennstoffart = new System.Windows.Forms.ComboBox();
             this.tabControl_SP.SuspendLayout();
             this.tabPage_WP.SuspendLayout();
             this.tabPage_SP.SuspendLayout();
@@ -111,7 +114,7 @@
             this.tabControl_SP.Location = new System.Drawing.Point(21, 62);
             this.tabControl_SP.Name = "tabControl_SP";
             this.tabControl_SP.SelectedIndex = 0;
-            this.tabControl_SP.Size = new System.Drawing.Size(642, 423);
+            this.tabControl_SP.Size = new System.Drawing.Size(642, 450);
             this.tabControl_SP.TabIndex = 25;
             // 
             // tabPage_WP
@@ -501,6 +504,9 @@
             // 
             // tabPage_Standard
             // 
+            this.tabPage_Standard.Controls.Add(this.label26);
+            this.tabPage_Standard.Controls.Add(this.label27);
+            this.tabPage_Standard.Controls.Add(this.textBox_Investitionskosten);
             this.tabPage_Standard.Controls.Add(this.label24);
             this.tabPage_Standard.Controls.Add(this.comboBox_Leistung);
             this.tabPage_Standard.Controls.Add(this.label25);
@@ -522,10 +528,78 @@
             this.tabPage_Standard.Controls.Add(this.listBox_Kessel);
             this.tabPage_Standard.Location = new System.Drawing.Point(4, 26);
             this.tabPage_Standard.Name = "tabPage_Standard";
-            this.tabPage_Standard.Size = new System.Drawing.Size(634, 393);
+            this.tabPage_Standard.Size = new System.Drawing.Size(634, 420);
             this.tabPage_Standard.TabIndex = 2;
             this.tabPage_Standard.Text = "ÖL/Gas/Holz Heizkessel";
             this.tabPage_Standard.UseVisualStyleBackColor = true;
+            // 
+            // label26
+            // 
+            this.label26.BackColor = System.Drawing.Color.DimGray;
+            this.label26.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label26.ForeColor = System.Drawing.Color.White;
+            this.label26.Location = new System.Drawing.Point(211, 374);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(33, 19);
+            this.label26.TabIndex = 115;
+            this.label26.Text = "€";
+            this.label26.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label27
+            // 
+            this.label27.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.label27.Location = new System.Drawing.Point(16, 368);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(86, 39);
+            this.label27.TabIndex = 114;
+            this.label27.Text = "Investitions-kosten:";
+            // 
+            // textBox_Investitionskosten
+            // 
+            this.textBox_Investitionskosten.Enabled = false;
+            this.textBox_Investitionskosten.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.textBox_Investitionskosten.Location = new System.Drawing.Point(108, 371);
+            this.textBox_Investitionskosten.Name = "textBox_Investitionskosten";
+            this.textBox_Investitionskosten.Size = new System.Drawing.Size(97, 25);
+            this.textBox_Investitionskosten.TabIndex = 113;
+            this.textBox_Investitionskosten.Text = "10";
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(434, 276);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(139, 19);
+            this.label24.TabIndex = 112;
+            this.label24.Text = "Filtern nach Leistung:";
+            // 
+            // comboBox_Leistung
+            // 
+            this.comboBox_Leistung.FormattingEnabled = true;
+            this.comboBox_Leistung.Location = new System.Drawing.Point(437, 298);
+            this.comboBox_Leistung.Name = "comboBox_Leistung";
+            this.comboBox_Leistung.Size = new System.Drawing.Size(125, 25);
+            this.comboBox_Leistung.TabIndex = 111;
+            this.comboBox_Leistung.SelectedIndexChanged += new System.EventHandler(this.comboBox_Leistung_SelectedIndexChanged);
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(433, 222);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(167, 19);
+            this.label25.TabIndex = 110;
+            this.label25.Text = "Filtern nach Brennstoffart:";
+            // 
+            // comboBox_Brennstoffart
+            // 
+            this.comboBox_Brennstoffart.FormattingEnabled = true;
+            this.comboBox_Brennstoffart.Location = new System.Drawing.Point(438, 244);
+            this.comboBox_Brennstoffart.Name = "comboBox_Brennstoffart";
+            this.comboBox_Brennstoffart.Size = new System.Drawing.Size(125, 25);
+            this.comboBox_Brennstoffart.TabIndex = 109;
+            this.comboBox_Brennstoffart.Text = "Gas Brennwert";
+            this.comboBox_Brennstoffart.SelectedIndexChanged += new System.EventHandler(this.comboBox_Brennstoffart_SelectedIndexChanged);
             // 
             // label18
             // 
@@ -549,10 +623,10 @@
             // 
             // label13
             // 
-            this.label13.BackColor = System.Drawing.Color.Black;
+            this.label13.BackColor = System.Drawing.Color.DimGray;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label13.ForeColor = System.Drawing.Color.White;
-            this.label13.Location = new System.Drawing.Point(172, 336);
+            this.label13.Location = new System.Drawing.Point(172, 339);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(33, 19);
             this.label13.TabIndex = 81;
@@ -680,43 +754,6 @@
             this.listBox_Kessel.TabIndex = 14;
             this.listBox_Kessel.SelectedIndexChanged += new System.EventHandler(this.listBox_Kessel_SelectedIndexChanged);
             // 
-            // label24
-            // 
-            this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(434, 276);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(139, 19);
-            this.label24.TabIndex = 112;
-            this.label24.Text = "Filtern nach Leistung:";
-            // 
-            // comboBox_Leistung
-            // 
-            this.comboBox_Leistung.FormattingEnabled = true;
-            this.comboBox_Leistung.Location = new System.Drawing.Point(437, 298);
-            this.comboBox_Leistung.Name = "comboBox_Leistung";
-            this.comboBox_Leistung.Size = new System.Drawing.Size(125, 25);
-            this.comboBox_Leistung.TabIndex = 111;
-            this.comboBox_Leistung.SelectedIndexChanged += new System.EventHandler(this.comboBox_Leistung_SelectedIndexChanged);
-            // 
-            // label25
-            // 
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(433, 222);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(167, 19);
-            this.label25.TabIndex = 110;
-            this.label25.Text = "Filtern nach Brennstoffart:";
-            // 
-            // comboBox_Brennstoffart
-            // 
-            this.comboBox_Brennstoffart.FormattingEnabled = true;
-            this.comboBox_Brennstoffart.Location = new System.Drawing.Point(438, 244);
-            this.comboBox_Brennstoffart.Name = "comboBox_Brennstoffart";
-            this.comboBox_Brennstoffart.Size = new System.Drawing.Size(125, 25);
-            this.comboBox_Brennstoffart.TabIndex = 109;
-            this.comboBox_Brennstoffart.Text = "Gas Brennwert";
-            this.comboBox_Brennstoffart.SelectedIndexChanged += new System.EventHandler(this.comboBox_Brennstoffart_SelectedIndexChanged);
-            // 
             // Wizard_Referenz
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -799,5 +836,8 @@
         private System.Windows.Forms.ComboBox comboBox_Leistung;
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.ComboBox comboBox_Brennstoffart;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.TextBox textBox_Investitionskosten;
     }
 }

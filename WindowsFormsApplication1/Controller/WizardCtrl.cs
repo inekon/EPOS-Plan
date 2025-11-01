@@ -103,7 +103,7 @@ namespace WindowsFormsApplication1
             OdbcTransaction transaction = null;
 
             ExecuteTransaction(Program.DBConnection.ConnectionString, projektID );
-            return true;
+
             try
             {
                 OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID, Program.DBConnection);
@@ -136,8 +136,7 @@ namespace WindowsFormsApplication1
 
         public static void ExecuteTransaction(string connectionString, int projektID)
         {
-            using (OdbcConnection connection =
-                       new OdbcConnection(connectionString))
+            using (OdbcConnection connection = new OdbcConnection(connectionString))
             {
                 OdbcCommand command = new OdbcCommand();
                 OdbcTransaction transaction = null;
@@ -149,9 +148,6 @@ namespace WindowsFormsApplication1
                 try
                 {
                     connection.Open();
-
- 
-
 
                     OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID, Program.DBConnection);
                     adapter.SelectCommand.Transaction = transaction;
@@ -166,8 +162,6 @@ namespace WindowsFormsApplication1
                     //command.Connection = connection;
                     command.Transaction = transaction;
 
-
-
                     for (int i = 0; i < dataSet.Tables["Tab_Energieanlagen"].Rows.Count; i++)
                     {
                         DataRow row = dataSet.Tables["Tab_Energieanlagen"].Rows[i];
@@ -175,9 +169,6 @@ namespace WindowsFormsApplication1
                     }
                     OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
                     adapter.Update(dataSet, "Tab_Energieanlagen");
-
-
-                    
 
                     // Commit the transaction.
                     transaction.Commit();
@@ -295,7 +286,32 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID + " and ID=" + ID_Waermeerzeuger, Program.DBConnection);
+                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID + " and ID_Type=" + ID_Waermeerzeuger, Program.DBConnection);
+                DataSet dataSet = new DataSet();
+                adapter.Fill(dataSet, "Tab_Energieanlagen");
+
+                for (int i = 0; i < dataSet.Tables["Tab_Energieanlagen"].Rows.Count; i++)
+                {
+                    DataRow row = dataSet.Tables["Tab_Energieanlagen"].Rows[i];
+                    row.Delete();
+                }
+                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
+                adapter.Update(dataSet, "Tab_Energieanlagen");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
+                return false;
+            }
+        }
+
+        public bool Del_Projekt_Waermeerzeuger(int projektID, WizardItemClass nType)
+        {
+            try
+            {
+                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID + " and ID_Type=" + nType, Program.DBConnection);
                 DataSet dataSet = new DataSet();
                 adapter.Fill(dataSet, "Tab_Energieanlagen");
 

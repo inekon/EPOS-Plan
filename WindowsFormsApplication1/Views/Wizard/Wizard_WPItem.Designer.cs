@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Wizard_WPItem));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea9 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend9 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series9 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea10 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend10 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series10 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.btn_Beenden = new System.Windows.Forms.Button();
             this.btn_Abbrechen = new System.Windows.Forms.Button();
             this.label23 = new System.Windows.Forms.Label();
@@ -379,6 +379,7 @@
             this.textBox_bis.Size = new System.Drawing.Size(27, 20);
             this.textBox_bis.TabIndex = 65;
             this.textBox_bis.Text = "17";
+            this.textBox_bis.TextChanged += new System.EventHandler(this.textBox_bis_TextChanged);
             // 
             // label12
             // 
@@ -396,6 +397,7 @@
             this.textBox_von.Size = new System.Drawing.Size(29, 20);
             this.textBox_von.TabIndex = 63;
             this.textBox_von.Text = "14";
+            this.textBox_von.TextChanged += new System.EventHandler(this.textBox_von_TextChanged);
             // 
             // checkBox_Sperrzeit
             // 
@@ -519,6 +521,7 @@
             this.textBox_Anteil.Size = new System.Drawing.Size(59, 22);
             this.textBox_Anteil.TabIndex = 2;
             this.textBox_Anteil.Text = "0";
+            this.textBox_Anteil.TextChanged += new System.EventHandler(this.textBox_Anteil_TextChanged);
             // 
             // textBox_Kapazität
             // 
@@ -536,6 +539,7 @@
             this.textBox_Volumen.Size = new System.Drawing.Size(59, 22);
             this.textBox_Volumen.TabIndex = 0;
             this.textBox_Volumen.Text = "10";
+            this.textBox_Volumen.TextChanged += new System.EventHandler(this.textBox_Volumen_TextChanged);
             // 
             // label_WP
             // 
@@ -582,6 +586,7 @@
             this.textBox_Nutzungszeit.Size = new System.Drawing.Size(53, 20);
             this.textBox_Nutzungszeit.TabIndex = 127;
             this.textBox_Nutzungszeit.Text = "20";
+            this.textBox_Nutzungszeit.TextChanged += new System.EventHandler(this.textBox_Nutzungszeit_TextChanged);
             // 
             // label34
             // 
@@ -832,18 +837,18 @@
             // 
             // chart1
             // 
-            chartArea3.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea3.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea3);
-            legend3.Name = "Legend1";
-            this.chart1.Legends.Add(legend3);
+            chartArea9.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea9.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea9);
+            legend9.Name = "Legend1";
+            this.chart1.Legends.Add(legend9);
             this.chart1.Location = new System.Drawing.Point(6, 6);
             this.chart1.Name = "chart1";
-            series3.ChartArea = "ChartArea1";
-            series3.Legend = "Legend1";
-            series3.MarkerBorderWidth = 3;
-            series3.Name = "Series1";
-            this.chart1.Series.Add(series3);
+            series9.ChartArea = "ChartArea1";
+            series9.Legend = "Legend1";
+            series9.MarkerBorderWidth = 3;
+            series9.Name = "Series1";
+            this.chart1.Series.Add(series9);
             this.chart1.Size = new System.Drawing.Size(337, 189);
             this.chart1.TabIndex = 125;
             this.chart1.Text = "COP";
@@ -861,18 +866,18 @@
             // 
             // chart2
             // 
-            chartArea4.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea4.Name = "ChartArea1";
-            this.chart2.ChartAreas.Add(chartArea4);
-            legend4.Name = "Legend1";
-            this.chart2.Legends.Add(legend4);
+            chartArea10.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea10.Name = "ChartArea1";
+            this.chart2.ChartAreas.Add(chartArea10);
+            legend10.Name = "Legend1";
+            this.chart2.Legends.Add(legend10);
             this.chart2.Location = new System.Drawing.Point(12, 6);
             this.chart2.Name = "chart2";
-            series4.ChartArea = "ChartArea1";
-            series4.Legend = "Legend1";
-            series4.MarkerBorderWidth = 3;
-            series4.Name = "Series1";
-            this.chart2.Series.Add(series4);
+            series10.ChartArea = "ChartArea1";
+            series10.Legend = "Legend1";
+            series10.MarkerBorderWidth = 3;
+            series10.Name = "Series1";
+            this.chart2.Series.Add(series10);
             this.chart2.Size = new System.Drawing.Size(337, 189);
             this.chart2.TabIndex = 126;
             // 

@@ -24,7 +24,7 @@ namespace WindowsFormsApplication1
 
         private void MDIMainForm_Load(object sender, EventArgs e)
         {
-            Program.menuectrl.OpenForm(typeof(Form_Start), true);
+            Program.startfrm = (Form_Start)Program.menuectrl.OpenForm(typeof(Form_Start), true);
         }
 
         private void MenuItem_zuletztGeöffnet_Click(object sender, EventArgs e)
@@ -117,7 +117,24 @@ namespace WindowsFormsApplication1
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.WPImport();
         }
-  
+
+        private void MenuItem_Kessel_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.Kessel();
+        }
+
+        private void MenuItem_Gebaeude_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.GebaeudeBearbeiten();
+        }
+
+        private void MenuItem_BHKW_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.BHKW();
+        }
     }
 }
 

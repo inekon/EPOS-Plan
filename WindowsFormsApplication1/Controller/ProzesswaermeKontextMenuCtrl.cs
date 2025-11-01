@@ -89,53 +89,46 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemBearbeiten_Click(object sender, EventArgs e)
         {
-            //ListView.SelectedIndexCollection indexes = listView_Prozesswaerme.SelectedIndices;
+            Form_Prozesswaerme frm = new Form_Prozesswaerme();
+            RecordSet rs = new RecordSet();
+            WizardCtrl wizctrl = new WizardCtrl();
+            ProjektCtrl projctrl = new ProjektCtrl();
 
-            //if (indexes.Count > 0)
+            frm.list_pwmodel.Clear();
+            frm.SetControls(m_szProjektname);
+
+            string sql = "SELECT Z_Projekt_Prozesswaerme.ID, Z_Projekt_Prozesswaerme.ID_Projekt, " +
+                "Z_Projekt_Prozesswaerme.ID_Prozesswaerme, Tab_Prozesswaerme.Prozessname " +
+                "FROM Z_Projekt_Prozesswaerme INNER JOIN Tab_Prozesswaerme ON " +
+                "Z_Projekt_Prozesswaerme.ID_Prozesswaerme = Tab_Prozesswaerme.ID " +
+                " where ID_Projekt=" + m_ID_Projekt;
+                //+ " and Tab_Prozesswaerme.Prozessname='" + lvitem.Text +
+                //"' and Z_Projekt_Prozesswaerme.ID=" + lvitem.SubItems[3].Text;
+
+            rs.Open(sql);
+            while (rs.Next())
             {
-                //ListViewItem lvitem = listView_Prozesswaerme.Items[indexes[0]];
+                Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
+                item.ID_Z = (int)rs.Read("ID");
+                item.ID_Projekt = m_ID_Projekt;
+                item.ID_Prozesswaerme = (int)rs.Read("ID_Prozesswaerme");
+                item.szProzessname = (string)rs.Read("Prozessname");//item.Text;
+                frm.list_pwmodel.Add(item);
+            }
                 
-                Form_Prozesswaerme frm = new Form_Prozesswaerme();
-                RecordSet rs = new RecordSet();
-                WizardCtrl wizctrl = new WizardCtrl();
-                ProjektCtrl projctrl = new ProjektCtrl();
+            frm.m_ID_Projekt = m_ID_Projekt;
+            frm.SetControls(m_szProjektname);
+            frm.ShowDialog();
 
-                frm.list_pwmodel.Clear();
-                frm.SetControls(m_szProjektname);
-
-                string sql = "SELECT Z_Projekt_Prozesswaerme.ID, Z_Projekt_Prozesswaerme.ID_Projekt, " +
-                    "Z_Projekt_Prozesswaerme.ID_Prozesswaerme, Tab_Prozesswaerme.Prozessname " +
-                    "FROM Z_Projekt_Prozesswaerme INNER JOIN Tab_Prozesswaerme ON " +
-                    "Z_Projekt_Prozesswaerme.ID_Prozesswaerme = Tab_Prozesswaerme.ID " +
-                    " where ID_Projekt=" + m_ID_Projekt;
-                    //+ " and Tab_Prozesswaerme.Prozessname='" + lvitem.Text +
-                    //"' and Z_Projekt_Prozesswaerme.ID=" + lvitem.SubItems[3].Text;
-
-                rs.Open(sql);
-                while (rs.Next())
-                {
-                    Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
-                    item.ID_Z = (int)rs.Read("ID");
-                    item.ID_Projekt = m_ID_Projekt;
-                    item.ID_Prozesswaerme = (int)rs.Read("ID_Prozesswaerme");
-                    item.szProzessname = (string)rs.Read("Prozessname");//item.Text;
-                    frm.list_pwmodel.Add(item);
-                }
-                
-                frm.m_ID_Projekt = m_ID_Projekt;
-                frm.SetControls(m_szProjektname);
-                frm.ShowDialog();
-
-                if (frm.DialogResult == DialogResult.OK)
-                {
-                    wizctrl.Del_Projekt_Prozess(m_ID_Projekt);
-                    wizctrl.Add_Projekt_Prozess(m_ID_Projekt, frm.list_pwmodel);
+            if (frm.DialogResult == DialogResult.OK)
+            {
+                wizctrl.Del_Projekt_Prozess(m_ID_Projekt);
+                wizctrl.Add_Projekt_Prozess(m_ID_Projekt, frm.list_pwmodel);
                     
-                    projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
-                    projctrl.m_Aenderungsdatum = DateTime.Now;
-                    projctrl.Update();
-                    Program.mainfrm.SetProzesswaermeControl(m_ID_Projekt);
-                }
+                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.m_Aenderungsdatum = DateTime.Now;
+                projctrl.Update();
+                Program.mainfrm.SetProzesswaermeControl(m_ID_Projekt);
             }
         }
 

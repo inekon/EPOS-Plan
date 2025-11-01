@@ -141,6 +141,7 @@ namespace WindowsFormsApplication1
                 textBox_Kesseltyp.Text = BrennstoffCtrl.Brennstoffart[(int)rs.Read("Brennstoff")].ToString();
                 double kl = (double)rs.Read("Ptherm");
                 textBox_Kesselleistung.Text = kl.ToString("F2");
+                textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
             }
             rs.Close();
         }
@@ -157,6 +158,7 @@ namespace WindowsFormsApplication1
                 textBox_Kesseltyp.Text = BrennstoffCtrl.Brennstoffart[(int)rs.Read("Brennstoff")].ToString();
                 double kl = (double)rs.Read("Ptherm");
                 textBox_Kesselleistung.Text = kl.ToString("F2");
+                textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
             }
             rs.Close();
         }

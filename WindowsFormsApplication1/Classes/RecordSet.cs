@@ -1,17 +1,19 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Data.Odbc;
 using System.Linq;
 using System.Text;
-using System.Data.Odbc;
-using System.Data;
 
 namespace WindowsFormsApplication1
 {
     public class RecordSet
     {
-        OdbcCommand DBCommand;
+        public OdbcCommand DBCommand;
         OdbcDataReader DBReader;
-         
+
         public RecordSet()
         {
             DBCommand = Program.DBConnection.CreateCommand();
@@ -22,6 +24,22 @@ namespace WindowsFormsApplication1
             DBCommand.CommandText = sql;
             DBReader = DBCommand.ExecuteReader();
             return true;
+        }
+
+        public bool Insert(string sql)
+        {
+            try
+            {
+                DBCommand.CommandText = sql;
+                DBCommand.ExecuteNonQuery();
+                return true;
+            }
+            catch (OdbcException sqlEx)
+            {
+                // Fehler beim Datenbankzugriff abfangen
+                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                return false;
+            }
         }
 
         public bool EOF()
@@ -44,11 +62,20 @@ namespace WindowsFormsApplication1
         {
             return DBReader.GetValue(index);
         }
-        
+
+        public String GetString(string name)
+        {
+            if (DBReader[name] == DBNull.Value) return "";
+            return (string)DBReader[name];
+        }   
+
         public void Close()
         {
-            DBReader.Dispose();
-            DBReader.Close();
+            if (DBReader != null)
+            {
+                DBReader.Close();
+                DBReader.Dispose();
+            }
         }
 
         public void CreateDataAdapter()

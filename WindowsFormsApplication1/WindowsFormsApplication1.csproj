@@ -120,6 +120,7 @@
     <Compile Include="Classes\StromTestClass.cs" />
     <Compile Include="Classes\WaermepumpenImport.cs" />
     <Compile Include="Controller\ApplikationCtrl.cs" />
+    <Compile Include="Controller\BHKWCtrl.cs" />
     <Compile Include="Controller\BrennstoffCtrl.cs" />
     <Compile Include="Controller\GebaeudeCtrl.cs" />
     <Compile Include="Controller\GebäudeKontextMenuCtrl.cs">
@@ -154,6 +155,7 @@
     </Compile>
     <Compile Include="Controller\Z_ProjektStromganglinieCtrl.cs" />
     <Compile Include="Controller\Z_ProjektStromverbraucherCtrl.cs" />
+    <Compile Include="Model\BHKWModel.cs" />
     <Compile Include="Model\KenndatenKuehlungModel.cs" />
     <Compile Include="Model\ProzesswaermeModel.cs" />
     <Compile Include="Model\StromganglinieModel.cs" />
@@ -186,11 +188,29 @@
     <Compile Include="Model\Z_ProjektStromverbraucherModel.cs" />
     <Compile Include="Model\Z_ProjektWaermebedarfModel.cs" />
     <Compile Include="Model\Z_ProjGebModel.cs" />
+    <Compile Include="Views\BHKW\Form_BHKWEing.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\BHKW\Form_BHKWEing.designer.cs">
+      <DependentUpon>Form_BHKWEing.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Form_StromTest.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Form_StromTest.Designer.cs">
       <DependentUpon>Form_StromTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Heizkessel\Form_Heizkessel_Admin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Heizkessel\Form_Heizkessel_Admin.Designer.cs">
+      <DependentUpon>Form_Heizkessel_Admin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Heizkessel\Form_Heizkessel_Bearbeiten.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Heizkessel\Form_Heizkessel_Bearbeiten.designer.cs">
+      <DependentUpon>Form_Heizkessel_Bearbeiten.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Prozesswärme\Form_EingDBProzess.cs">
       <SubType>Form</SubType>
@@ -482,6 +502,12 @@
     <Compile Include="Views\Wizard\Wizard_WPItem.Designer.cs">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Wärmepumpe\Form_WPEing.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wärmepumpe\Form_WPEing.designer.cs">
+      <DependentUpon>Form_WPEing.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Wärmepumpe\Form_WP_einlesen.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -494,6 +520,15 @@
     <Compile Include="Views\Wärmepumpe\Kenndaten.Designer.cs">
       <DependentUpon>Kenndaten.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Wärmepumpe\WizWP.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wärmepumpe\WizWP.designer.cs">
+      <DependentUpon>WizWP.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Views\BHKW\Form_BHKWEing.resx">
+      <DependentUpon>Form_BHKWEing.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Form_StromTest.resx">
       <DependentUpon>Form_StromTest.cs</DependentUpon>
     </EmbeddedResource>
@@ -520,6 +555,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel.resx">
       <DependentUpon>Form_Heizkessel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_Admin.resx">
+      <DependentUpon>Form_Heizkessel_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_Bearbeiten.resx">
+      <DependentUpon>Form_Heizkessel_Bearbeiten.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Prozesswärme\Form_EingDBProzess.resx">
       <DependentUpon>Form_EingDBProzess.cs</DependentUpon>
@@ -621,8 +662,14 @@
     <EmbeddedResource Include="Views\Wizard\Wizard_WPItem.resx">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WPEing.resx">
+      <DependentUpon>Form_WPEing.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wärmepumpe\Kenndaten.resx">
       <DependentUpon>Kenndaten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\WizWP.resx">
+      <DependentUpon>WizWP.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="packages.config" />
@@ -696,6 +743,72 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\speichern.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\wärmebedarf.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Wärme_Stromerzeugung.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Unbenannt.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Unbenannt2.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Unbenannt3.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Unbenannt4.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PWeiter.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PProjektname.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PProjektNeu.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PProjektOeffnen.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PProjektZuletzt.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PProjektBearbeiten.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PZurueck.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PTitel.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PStdLastProfil.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PStromProfilEigenes.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PStromMessdaten.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PWP.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PEETipp.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PBHKW.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PHeizkessel.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PSSpeicher.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

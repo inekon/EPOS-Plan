@@ -333,5 +333,11 @@ namespace WindowsFormsApplication1
         {
             InitChart("KÜHLUNG");
         }
+
+        private void textBox_Modulkosten_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
     }
 }

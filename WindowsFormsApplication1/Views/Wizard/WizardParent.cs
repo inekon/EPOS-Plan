@@ -452,7 +452,6 @@ namespace WindowsFormsApplication1
 
         private void btnSpeichern_Click(object sender, EventArgs e)
         {
- 
             Form pageklima = listPages.ElementAt(WizardItemClass.KLIMA_ITEM).wizardform;
             Program.wizardctrl.Klimazone = ((Wizard_Klima)pageklima).GetKlimaname();
             Form pageproj = listPages.ElementAt(WizardItemClass.PROJEKT_ITEM).wizardform;

@@ -39,6 +39,7 @@
             this.MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebTypen = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Kessel = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Klimadaten = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Prozesswaerme = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Stromspeicher = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,6 +50,7 @@
             this.MeniItem_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_WaermebedarfExtern = new System.Windows.Forms.ToolStripMenuItem();
             this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_BHKW = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -118,7 +120,9 @@
             // Administration
             // 
             this.Administration.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_BHKW,
             this.MenuItem_Gebaeude,
+            this.MenuItem_Kessel,
             this.MenuItem_Klimadaten,
             this.MenuItem_Prozesswaerme,
             this.MenuItem_Stromspeicher,
@@ -139,6 +143,7 @@
             this.MenuItem_Gebaeude.Name = "MenuItem_Gebaeude";
             this.MenuItem_Gebaeude.Size = new System.Drawing.Size(242, 26);
             this.MenuItem_Gebaeude.Text = "Gebäude";
+            this.MenuItem_Gebaeude.Click += new System.EventHandler(this.MenuItem_Gebaeude_Click);
             // 
             // MenuItem_GebBearbeiten
             // 
@@ -153,6 +158,13 @@
             this.MenuItem_GebTypen.Size = new System.Drawing.Size(181, 26);
             this.MenuItem_GebTypen.Text = "Gebäudetypen";
             this.MenuItem_GebTypen.Click += new System.EventHandler(this.MenuItem_GebTypen_Click);
+            // 
+            // MenuItem_Kessel
+            // 
+            this.MenuItem_Kessel.Name = "MenuItem_Kessel";
+            this.MenuItem_Kessel.Size = new System.Drawing.Size(242, 26);
+            this.MenuItem_Kessel.Text = "Heizkessel";
+            this.MenuItem_Kessel.Click += new System.EventHandler(this.MenuItem_Kessel_Click);
             // 
             // MenuItem_Klimadaten
             // 
@@ -227,6 +239,13 @@
             this.testToolStripMenuItem.Text = "Test";
             this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
             // 
+            // MenuItem_BHKW
+            // 
+            this.MenuItem_BHKW.Name = "MenuItem_BHKW";
+            this.MenuItem_BHKW.Size = new System.Drawing.Size(242, 26);
+            this.MenuItem_BHKW.Text = "BHKW";
+            this.MenuItem_BHKW.Click += new System.EventHandler(this.MenuItem_BHKW_Click);
+            // 
             // MDIMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -269,7 +288,8 @@
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Stromverbraucher;
         private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Stromganglinie;
-
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Kessel;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_BHKW;
     }
 }
 

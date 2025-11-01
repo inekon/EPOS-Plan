@@ -48,6 +48,9 @@
             this.comboBox_Leistung = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.comboBox_Brennstoffart = new System.Windows.Forms.ComboBox();
+            this.label26 = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
+            this.textBox_Investitionskosten = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label_Type
@@ -85,10 +88,10 @@
             // 
             // label13
             // 
-            this.label13.BackColor = System.Drawing.Color.Black;
+            this.label13.BackColor = System.Drawing.Color.DimGray;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label13.ForeColor = System.Drawing.Color.White;
-            this.label13.Location = new System.Drawing.Point(185, 378);
+            this.label13.Location = new System.Drawing.Point(185, 381);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(35, 19);
             this.label13.TabIndex = 96;
@@ -253,12 +256,46 @@
             this.comboBox_Brennstoffart.Text = "Gas Brennwert";
             this.comboBox_Brennstoffart.SelectedIndexChanged += new System.EventHandler(this.comboBox_Brennstoffart_SelectedIndexChanged);
             // 
+            // label26
+            // 
+            this.label26.BackColor = System.Drawing.Color.DimGray;
+            this.label26.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label26.ForeColor = System.Drawing.Color.White;
+            this.label26.Location = new System.Drawing.Point(224, 421);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(33, 19);
+            this.label26.TabIndex = 118;
+            this.label26.Text = "€";
+            this.label26.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label27
+            // 
+            this.label27.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.label27.Location = new System.Drawing.Point(30, 415);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(86, 39);
+            this.label27.TabIndex = 117;
+            this.label27.Text = "Investitions-kosten:";
+            // 
+            // textBox_Investitionskosten
+            // 
+            this.textBox_Investitionskosten.Enabled = false;
+            this.textBox_Investitionskosten.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.textBox_Investitionskosten.Location = new System.Drawing.Point(121, 418);
+            this.textBox_Investitionskosten.Name = "textBox_Investitionskosten";
+            this.textBox_Investitionskosten.Size = new System.Drawing.Size(97, 25);
+            this.textBox_Investitionskosten.TabIndex = 116;
+            this.textBox_Investitionskosten.Text = "10";
+            // 
             // Wizard_Kessel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(656, 477);
+            this.Controls.Add(this.label26);
+            this.Controls.Add(this.label27);
+            this.Controls.Add(this.textBox_Investitionskosten);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.comboBox_Leistung);
             this.Controls.Add(this.label1);
@@ -309,5 +346,8 @@
         private System.Windows.Forms.ComboBox comboBox_Leistung;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox comboBox_Brennstoffart;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.TextBox textBox_Investitionskosten;
     }
 }

@@ -20,6 +20,7 @@ namespace WindowsFormsApplication1
             DBCommand = Program.DBConnection.CreateCommand();
             wpmodel = new WPModel();
         }
+        
         ~WPCtrl()
         {
             rows = 0;
@@ -186,7 +187,6 @@ namespace WindowsFormsApplication1
             }
             DBReader.Dispose();
             DBReader.Close();
-
         }
 
         public void FillListBox(ListBox ctrl)

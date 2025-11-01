@@ -118,17 +118,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="germany-map-2431251_640" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\germany-map-2431251_640.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="IMG-20250629-WA0001" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\IMG-20250629-WA0001.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="LogoInekon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\LogoInekon.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Logo125_125" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Logo125_125.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Unbenannt" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Unbenannt.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="WP_Symbol" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\WP_Symbol.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -136,7 +127,91 @@
   <data name="WP_Symbol1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\WP_Symbol.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Logo125_125" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Logo125_125.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PWP" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PWP.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PBHKW" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PBHKW.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Unbenannt4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Unbenannt4.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="speichern" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\speichern.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PWeiter" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PWeiter.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PTitel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PTitel.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="LogoInekon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\LogoInekon.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PSSpeicher" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PSSpeicher.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Unbenannt3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Unbenannt3.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PStdLastProfil" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PStdLastProfil.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PProjektname" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PProjektname.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="IMG-20250629-WA0001" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\IMG-20250629-WA0001.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Wärme_Stromerzeugung" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Wärme_Stromerzeugung.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PProjektNeu" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PProjektNeu.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PEETipp" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PEETipp.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PStromMessdaten" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PStromMessdaten.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PTitel1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PTitel.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PZurueck" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PZurueck.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="germany-map-2431251_640" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\germany-map-2431251_640.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PStromProfilEigenes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PStromProfilEigenes.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PProjektZuletzt" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PProjektZuletzt.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Unbenannt2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Unbenannt2.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="wärmebedarf" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\wärmebedarf.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Unbenannt1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Unbenannt.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PHeizkessel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PHeizkessel.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PProjektOeffnen" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PProjektOeffnen.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PProjektBearbeiten" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PProjektBearbeiten.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PHeizkessel1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PHeizkessel.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

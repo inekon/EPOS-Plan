@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.Data.Odbc;
-using System.IO;
 
 namespace WindowsFormsApplication1
 {
@@ -11,6 +13,7 @@ namespace WindowsFormsApplication1
     {
         public static MDIMainForm mdifrm = null;
         public static FormMain mainfrm = null;
+        public static Form_Start startfrm = null;
         public static MenueCtrl menuectrl = null;
         public static OdbcConnection DBConnection = null;
         public static WizardCtrl wizardctrl = null;
@@ -113,6 +116,51 @@ namespace WindowsFormsApplication1
                 }
             }
             return 0;
+        }
+
+        public static void FillRoundedRectangle(Graphics graphics, Brush brush, Rectangle bounds, int cornerRadius)
+        {
+            if (graphics == null)
+                throw new ArgumentNullException(nameof(graphics));
+            if (brush == null)
+                throw new ArgumentNullException(nameof(brush));
+
+            using (GraphicsPath path = RoundedRect(bounds, cornerRadius))
+            {
+                graphics.FillPath(brush, path);
+            }
+        }
+
+        private static GraphicsPath RoundedRect(Rectangle bounds, int radius)
+        {
+            int diameter = radius * 2;
+            Size size = new Size(diameter, diameter);
+            Rectangle arc = new Rectangle(bounds.Location, size);
+            GraphicsPath path = new GraphicsPath();
+
+            if (radius == 0)
+            {
+                path.AddRectangle(bounds);
+                return path;
+            }
+
+            // top left arc  
+            path.AddArc(arc, 180, 90);
+
+            // top right arc  
+            arc.X = bounds.Right - diameter;
+            path.AddArc(arc, 270, 90);
+
+            // bottom right arc  
+            arc.Y = bounds.Bottom - diameter;
+            path.AddArc(arc, 0, 90);
+
+            // bottom left arc 
+            arc.X = bounds.Left;
+            path.AddArc(arc, 90, 90);
+
+            path.CloseFigure();
+            return path;
         }
     }
 }

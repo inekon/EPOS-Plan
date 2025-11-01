@@ -288,6 +288,34 @@ namespace WindowsFormsApplication1
             }
         }
 
-  
-     }
+        private void textBox_Nutzungszeit_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_Volumen_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_von_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_bis_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_Anteil_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+    }
 }

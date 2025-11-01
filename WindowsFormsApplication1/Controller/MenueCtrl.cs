@@ -135,8 +135,12 @@ namespace WindowsFormsApplication1
                    frmmain.Add_StrombedarfKontext();
                    frmmain.Add_StromganglinieKontext(); 
                    frmmain.SetNetzverluste(ctrlproj.m_nNetzverluste, ctrlproj.m_szEinheit);
-               }
-           }
+
+                   Program.startfrm.m_szProjektname = frm.m_szProjekt;
+                   Program.startfrm.m_ID_Projekt = frm.m_ID_Projekt;
+                   Program.startfrm.SetTextProjekt(frm.m_szProjekt);
+                }
+            }
            else
            {
                // falls zuletzt geöffnetes Projekt gelöscht wurde
@@ -169,12 +173,16 @@ namespace WindowsFormsApplication1
                    frmmain.Add_ProzesswaermeKontext();
                    frmmain.Add_StrombedarfKontext();
                    frmmain.Add_StromganglinieKontext(); 
-                   frmmain.SetNetzverluste(ctrlproj.m_nNetzverluste, ctrlproj.m_szEinheit);  
-               }
-           }
-       }
+                   frmmain.SetNetzverluste(ctrlproj.m_nNetzverluste, ctrlproj.m_szEinheit);
 
-       public void ProjektDelete(bool zuletzt = false)
+                   Program.startfrm.m_szProjektname = ctrl.m_szProjektname;
+                   Program.startfrm.m_ID_Projekt = ctrl.m_ID_Projekt;
+                   Program.startfrm.SetTextProjekt(ctrl.m_szProjektname);
+                }
+            }
+        }
+
+        public void ProjektDelete(bool zuletzt = false)
        {
             ProjektCtrl ctrlproj = new ProjektCtrl();
             WErzeugerCtrl ctrlwerz = new WErzeugerCtrl();
@@ -279,6 +287,18 @@ namespace WindowsFormsApplication1
        public void WPImport()
        {
            Form_WP_einlesen frm = new Form_WP_einlesen();
+           frm.ShowDialog();
+       }
+
+       public void Kessel()
+       {
+           Form_Heizkessel_Admin frm = new Form_Heizkessel_Admin();
+           frm.ShowDialog();
+       }
+
+       public void BHKW()
+       {
+           Form_BHKWEing frm = new Form_BHKWEing();
            frm.ShowDialog();
        }
     }

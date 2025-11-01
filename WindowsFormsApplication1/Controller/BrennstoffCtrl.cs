@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.Odbc;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
     class BrennstoffCtrl : BrennstoffModel 
     {
         public int rows;
-        OdbcCommand DBCommand;
+        public OdbcCommand DBCommand;
         OdbcDataReader DBReader;
         public BrennstoffModel model;
 
 
-        public static string[] Brennstoffart = { "Öl", "Gas", "", "Rapsöl", "Holz", "Sonstiges", "", "", "Flüssiggas", "", "", "Biogas", "", "","Fernwärme","Strom" };
+        public static string[] Brennstoffart = { "Öl", "Gas", "", "Rapsöl", "Holz/Pellet", "Sonstiges", "", "", "Flüssiggas", "", "", "Biogas", "", "","Fernwärme","Strom" };
 
         public BrennstoffCtrl()
         {
@@ -70,9 +72,70 @@ namespace WindowsFormsApplication1
                 rows += 1;
                 item = null;
             }
-            DBReader.Dispose();
             DBReader.Close();
+            DBReader.Dispose();
+            //DBReader.Close();
+        }
+        
+        public bool Delete(string szName)
+        {
+            try
+            {
+                DBCommand.CommandText = "DELETE * FROM [DB-Heizung] where Name= '" + szName + "'";
+                DBCommand.ExecuteNonQuery();
+            }
+            catch (OdbcException sqlEx)
+            {
+                // Fehler beim Datenbankzugriff abfangen
+                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Allgemeine Fehler abfangen
+                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                return false;
+            }
+            return true;
         }
 
+        public bool Update()
+        {
+            try
+            {
+                string sql = "UPDATE [DB-Heizung] SET Beschreibung='" + model.Beschreibung + "'" +
+                    ", Firma = '" + model.Firma + "'" +
+                    ", Ptherm=" + model.Ptherm.ToString(CultureInfo.CreateSpecificCulture("en-US"))  + ", Brennstoff=" + model.Brennstoff + 
+                    ", Wirkungsgrad_Gas=" + model.Wirkungsgrad_Gas.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Wirkungsgrad_Öl= " + model.Wirkungsgrad_Oel.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Investitionskosten= " + model.Investitionskosten.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Raumbedarf= " + model.Raumbedarf.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Wartungskosten= " + model.Wartungskosten.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Nutzungsdauer= " + model.Nutzungsdauer.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", CO2= " + model.CO2.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", SO2= " + model.SO2.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", NOx= " + model.NOx.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", CO= " + model.CO.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Staub= " + model.Staub.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Betriebsbereitschaftverlust= " + model.Betriebsbereitschaftverlust.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    " WHERE Name='" + model.Name + "'";
+                
+                DBCommand.CommandText = sql;
+                DBCommand.ExecuteNonQuery();
+            }
+            catch (OdbcException sqlEx)
+            {
+                // Fehler beim Datenbankzugriff abfangen
+                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Allgemeine Fehler abfangen
+                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                return false;
+            }
+            return true;
+        }
     }
 }

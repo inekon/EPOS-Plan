@@ -140,6 +140,7 @@
             this.textBox_Modulkosten.Name = "textBox_Modulkosten";
             this.textBox_Modulkosten.Size = new System.Drawing.Size(87, 25);
             this.textBox_Modulkosten.TabIndex = 123;
+            this.textBox_Modulkosten.TextChanged += new System.EventHandler(this.textBox_Modulkosten_TextChanged);
             // 
             // label29
             // 
