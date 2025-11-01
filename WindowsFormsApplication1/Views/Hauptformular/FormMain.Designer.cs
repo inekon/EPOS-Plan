@@ -34,6 +34,7 @@
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Title title2 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
@@ -49,12 +50,12 @@
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series9 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.tabControl_Main = new System.Windows.Forms.TabControl();
             this.tabPage_Komponenten = new System.Windows.Forms.TabPage();
             this.label11 = new System.Windows.Forms.Label();
             this.comboBox_Klima = new System.Windows.Forms.ComboBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.btn_Speichern = new System.Windows.Forms.Button();
             this.tabControl_Simulation = new System.Windows.Forms.TabControl();
             this.tabPage7 = new System.Windows.Forms.TabPage();
             this.btn_Details = new System.Windows.Forms.Button();
@@ -62,6 +63,7 @@
             this.label15 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.textBox_Gesamt_Waermebedarf = new System.Windows.Forms.TextBox();
+            this.btn_SimulSpeichern = new System.Windows.Forms.Button();
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.comboBox_NetzvEinheit = new System.Windows.Forms.ComboBox();
@@ -81,6 +83,8 @@
             this.textBox_MaxStrombedarf = new System.Windows.Forms.TextBox();
             this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.btn_Start_Strombedarf = new System.Windows.Forms.Button();
+            this.btn_StromSimulSpeichern = new System.Windows.Forms.Button();
+            this.btn_DragDestination = new System.Windows.Forms.Button();
             this.tabControl_Komponenten = new System.Windows.Forms.TabControl();
             this.tabPage5 = new System.Windows.Forms.TabPage();
             this.listView_Gebaeude = new System.Windows.Forms.ListView();
@@ -244,12 +248,15 @@
             this.btn_Simulation = new System.Windows.Forms.Button();
             this.label40 = new System.Windows.Forms.Label();
             this.textBox_Waermerestbedarf = new System.Windows.Forms.TextBox();
+            this.tabPage_Simulation_SSP = new System.Windows.Forms.TabPage();
+            this.button3 = new System.Windows.Forms.Button();
+            this.label83 = new System.Windows.Forms.Label();
+            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.label82 = new System.Windows.Forms.Label();
+            this.button2 = new System.Windows.Forms.Button();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.tabPage_Bericht = new System.Windows.Forms.TabPage();
             this.button_Beenden = new System.Windows.Forms.Button();
-            this.btn_Speichern = new System.Windows.Forms.Button();
-            this.btn_SimulSpeichern = new System.Windows.Forms.Button();
-            this.btn_StromSimulSpeichern = new System.Windows.Forms.Button();
-            this.btn_DragDestination = new System.Windows.Forms.Button();
             this.tabControl_Main.SuspendLayout();
             this.tabPage_Komponenten.SuspendLayout();
             this.tabControl_Simulation.SuspendLayout();
@@ -271,6 +278,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.chart3)).BeginInit();
             this.tabPage_Simulation_SPK.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart5)).BeginInit();
+            this.tabPage_Simulation_SSP.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl_Main
@@ -278,6 +286,7 @@
             this.tabControl_Main.Controls.Add(this.tabPage_Komponenten);
             this.tabControl_Main.Controls.Add(this.tabPage_Simulation_WP);
             this.tabControl_Main.Controls.Add(this.tabPage_Simulation_SPK);
+            this.tabControl_Main.Controls.Add(this.tabPage_Simulation_SSP);
             this.tabControl_Main.Controls.Add(this.tabPage_Bericht);
             this.tabControl_Main.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tabControl_Main.ItemSize = new System.Drawing.Size(66, 30);
@@ -351,6 +360,21 @@
             this.button1.Text = "SP";
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // btn_Speichern
+            // 
+            this.btn_Speichern.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_Speichern.ForeColor = System.Drawing.Color.Black;
+            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_Speichern.Location = new System.Drawing.Point(10, 250);
+            this.btn_Speichern.Name = "btn_Speichern";
+            this.btn_Speichern.Size = new System.Drawing.Size(115, 30);
+            this.btn_Speichern.TabIndex = 51;
+            this.btn_Speichern.Text = "Speichern";
+            this.btn_Speichern.UseVisualStyleBackColor = false;
+            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
             // 
             // tabControl_Simulation
             // 
@@ -441,6 +465,20 @@
             this.textBox_Gesamt_Waermebedarf.Name = "textBox_Gesamt_Waermebedarf";
             this.textBox_Gesamt_Waermebedarf.Size = new System.Drawing.Size(60, 25);
             this.textBox_Gesamt_Waermebedarf.TabIndex = 32;
+            // 
+            // btn_SimulSpeichern
+            // 
+            this.btn_SimulSpeichern.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btn_SimulSpeichern.ForeColor = System.Drawing.Color.Black;
+            this.btn_SimulSpeichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btn_SimulSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_SimulSpeichern.Location = new System.Drawing.Point(484, 196);
+            this.btn_SimulSpeichern.Name = "btn_SimulSpeichern";
+            this.btn_SimulSpeichern.Size = new System.Drawing.Size(175, 32);
+            this.btn_SimulSpeichern.TabIndex = 29;
+            this.btn_SimulSpeichern.Text = "Simulation Speichern";
+            this.btn_SimulSpeichern.UseVisualStyleBackColor = true;
+            this.btn_SimulSpeichern.Click += new System.EventHandler(this.btn_SimulSpeichern_Click);
             // 
             // label14
             // 
@@ -687,6 +725,37 @@
             this.btn_Start_Strombedarf.Text = "Simulation Start...";
             this.btn_Start_Strombedarf.UseVisualStyleBackColor = false;
             this.btn_Start_Strombedarf.Click += new System.EventHandler(this.btn_Start_Strombedarf_Click);
+            // 
+            // btn_StromSimulSpeichern
+            // 
+            this.btn_StromSimulSpeichern.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btn_StromSimulSpeichern.ForeColor = System.Drawing.Color.Black;
+            this.btn_StromSimulSpeichern.Image = ((System.Drawing.Image)(resources.GetObject("btn_StromSimulSpeichern.Image")));
+            this.btn_StromSimulSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_StromSimulSpeichern.Location = new System.Drawing.Point(511, 185);
+            this.btn_StromSimulSpeichern.Name = "btn_StromSimulSpeichern";
+            this.btn_StromSimulSpeichern.Size = new System.Drawing.Size(175, 32);
+            this.btn_StromSimulSpeichern.TabIndex = 40;
+            this.btn_StromSimulSpeichern.Text = "Simulation Speichern";
+            this.btn_StromSimulSpeichern.UseVisualStyleBackColor = true;
+            this.btn_StromSimulSpeichern.Click += new System.EventHandler(this.btn_StromSimulSpeichern_Click);
+            // 
+            // btn_DragDestination
+            // 
+            this.btn_DragDestination.AllowDrop = true;
+            this.btn_DragDestination.AutoSize = true;
+            this.btn_DragDestination.ForeColor = System.Drawing.Color.Black;
+            this.btn_DragDestination.Image = ((System.Drawing.Image)(resources.GetObject("btn_DragDestination.Image")));
+            this.btn_DragDestination.Location = new System.Drawing.Point(814, 23);
+            this.btn_DragDestination.Name = "btn_DragDestination";
+            this.btn_DragDestination.Size = new System.Drawing.Size(33, 35);
+            this.btn_DragDestination.TabIndex = 50;
+            this.btn_DragDestination.Text = "..";
+            this.btn_DragDestination.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.btn_DragDestination.UseVisualStyleBackColor = true;
+            this.btn_DragDestination.DragDrop += new System.Windows.Forms.DragEventHandler(this.button1_DragDrop);
+            this.btn_DragDestination.DragEnter += new System.Windows.Forms.DragEventHandler(this.button1_DragEnter);
+            this.btn_DragDestination.DragOver += new System.Windows.Forms.DragEventHandler(this.button1_DragOver);
             // 
             // tabControl_Komponenten
             // 
@@ -2784,6 +2853,85 @@
             this.textBox_Waermerestbedarf.Size = new System.Drawing.Size(84, 25);
             this.textBox_Waermerestbedarf.TabIndex = 71;
             // 
+            // tabPage_Simulation_SSP
+            // 
+            this.tabPage_Simulation_SSP.Controls.Add(this.button3);
+            this.tabPage_Simulation_SSP.Controls.Add(this.label83);
+            this.tabPage_Simulation_SSP.Controls.Add(this.comboBox2);
+            this.tabPage_Simulation_SSP.Controls.Add(this.label82);
+            this.tabPage_Simulation_SSP.Controls.Add(this.button2);
+            this.tabPage_Simulation_SSP.Controls.Add(this.comboBox1);
+            this.tabPage_Simulation_SSP.Location = new System.Drawing.Point(4, 34);
+            this.tabPage_Simulation_SSP.Name = "tabPage_Simulation_SSP";
+            this.tabPage_Simulation_SSP.Size = new System.Drawing.Size(1382, 740);
+            this.tabPage_Simulation_SSP.TabIndex = 4;
+            this.tabPage_Simulation_SSP.Text = "SSP Simulation";
+            this.tabPage_Simulation_SSP.UseVisualStyleBackColor = true;
+            // 
+            // button3
+            // 
+            this.button3.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button3.ForeColor = System.Drawing.Color.Black;
+            this.button3.Location = new System.Drawing.Point(35, 173);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(106, 29);
+            this.button3.TabIndex = 5;
+            this.button3.Text = "Simulation";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // label83
+            // 
+            this.label83.AutoSize = true;
+            this.label83.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label83.ForeColor = System.Drawing.Color.Black;
+            this.label83.Location = new System.Drawing.Point(220, 84);
+            this.label83.Name = "label83";
+            this.label83.Size = new System.Drawing.Size(227, 21);
+            this.label83.TabIndex = 4;
+            this.label83.Text = "Alle Stromlastgänge im Projekt:";
+            // 
+            // comboBox2
+            // 
+            this.comboBox2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox2.FormattingEnabled = true;
+            this.comboBox2.Location = new System.Drawing.Point(457, 84);
+            this.comboBox2.Name = "comboBox2";
+            this.comboBox2.Size = new System.Drawing.Size(525, 29);
+            this.comboBox2.TabIndex = 3;
+            // 
+            // label82
+            // 
+            this.label82.AutoSize = true;
+            this.label82.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label82.ForeColor = System.Drawing.Color.Black;
+            this.label82.Location = new System.Drawing.Point(220, 36);
+            this.label82.Name = "label82";
+            this.label82.Size = new System.Drawing.Size(218, 21);
+            this.label82.TabIndex = 2;
+            this.label82.Text = "Alle Stromspeicher im Projekt:";
+            // 
+            // button2
+            // 
+            this.button2.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button2.ForeColor = System.Drawing.Color.Black;
+            this.button2.Location = new System.Drawing.Point(35, 36);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(106, 29);
+            this.button2.TabIndex = 1;
+            this.button2.Text = "Alle SP";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(457, 36);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(525, 29);
+            this.comboBox1.TabIndex = 0;
+            // 
             // tabPage_Bericht
             // 
             this.tabPage_Bericht.Location = new System.Drawing.Point(4, 34);
@@ -2804,66 +2952,6 @@
             this.button_Beenden.Text = "Beenden";
             this.button_Beenden.UseVisualStyleBackColor = true;
             this.button_Beenden.Click += new System.EventHandler(this.button_Beenden_Click);
-            // 
-            // btn_Speichern
-            // 
-            this.btn_Speichern.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Speichern.ForeColor = System.Drawing.Color.Black;
-            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
-            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_Speichern.Location = new System.Drawing.Point(10, 250);
-            this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.Size = new System.Drawing.Size(115, 30);
-            this.btn_Speichern.TabIndex = 51;
-            this.btn_Speichern.Text = "Speichern";
-            this.btn_Speichern.UseVisualStyleBackColor = false;
-            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
-            // 
-            // btn_SimulSpeichern
-            // 
-            this.btn_SimulSpeichern.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_SimulSpeichern.ForeColor = System.Drawing.Color.Black;
-            this.btn_SimulSpeichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
-            this.btn_SimulSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_SimulSpeichern.Location = new System.Drawing.Point(484, 196);
-            this.btn_SimulSpeichern.Name = "btn_SimulSpeichern";
-            this.btn_SimulSpeichern.Size = new System.Drawing.Size(175, 32);
-            this.btn_SimulSpeichern.TabIndex = 29;
-            this.btn_SimulSpeichern.Text = "Simulation Speichern";
-            this.btn_SimulSpeichern.UseVisualStyleBackColor = true;
-            this.btn_SimulSpeichern.Click += new System.EventHandler(this.btn_SimulSpeichern_Click);
-            // 
-            // btn_StromSimulSpeichern
-            // 
-            this.btn_StromSimulSpeichern.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_StromSimulSpeichern.ForeColor = System.Drawing.Color.Black;
-            this.btn_StromSimulSpeichern.Image = ((System.Drawing.Image)(resources.GetObject("btn_StromSimulSpeichern.Image")));
-            this.btn_StromSimulSpeichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_StromSimulSpeichern.Location = new System.Drawing.Point(511, 185);
-            this.btn_StromSimulSpeichern.Name = "btn_StromSimulSpeichern";
-            this.btn_StromSimulSpeichern.Size = new System.Drawing.Size(175, 32);
-            this.btn_StromSimulSpeichern.TabIndex = 40;
-            this.btn_StromSimulSpeichern.Text = "Simulation Speichern";
-            this.btn_StromSimulSpeichern.UseVisualStyleBackColor = true;
-            this.btn_StromSimulSpeichern.Click += new System.EventHandler(this.btn_StromSimulSpeichern_Click);
-            // 
-            // btn_DragDestination
-            // 
-            this.btn_DragDestination.AllowDrop = true;
-            this.btn_DragDestination.AutoSize = true;
-            this.btn_DragDestination.ForeColor = System.Drawing.Color.Black;
-            this.btn_DragDestination.Image = ((System.Drawing.Image)(resources.GetObject("btn_DragDestination.Image")));
-            this.btn_DragDestination.Location = new System.Drawing.Point(814, 23);
-            this.btn_DragDestination.Name = "btn_DragDestination";
-            this.btn_DragDestination.Size = new System.Drawing.Size(33, 35);
-            this.btn_DragDestination.TabIndex = 50;
-            this.btn_DragDestination.Text = "..";
-            this.btn_DragDestination.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.btn_DragDestination.UseVisualStyleBackColor = true;
-            this.btn_DragDestination.DragDrop += new System.Windows.Forms.DragEventHandler(this.button1_DragDrop);
-            this.btn_DragDestination.DragEnter += new System.Windows.Forms.DragEventHandler(this.button1_DragEnter);
-            this.btn_DragDestination.DragOver += new System.Windows.Forms.DragEventHandler(this.button1_DragOver);
             // 
             // FormMain
             // 
@@ -2910,6 +2998,8 @@
             this.tabPage_Simulation_SPK.ResumeLayout(false);
             this.tabPage_Simulation_SPK.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart5)).EndInit();
+            this.tabPage_Simulation_SSP.ResumeLayout(false);
+            this.tabPage_Simulation_SSP.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -3116,5 +3206,12 @@
         private System.Windows.Forms.Label label63;
         private System.Windows.Forms.Label label81;
         private System.Windows.Forms.TextBox textBox_SPKRestwermebedarf;
+        private System.Windows.Forms.TabPage tabPage_Simulation_SSP;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Label label82;
+        private System.Windows.Forms.Label label83;
+        private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.Button button3;
     }
 }
