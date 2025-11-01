@@ -552,6 +552,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Hauptformular\FormMain.resx">
       <DependentUpon>FormMain.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel.resx">
       <DependentUpon>Form_Heizkessel.cs</DependentUpon>
