@@ -31,6 +31,24 @@ namespace WindowsFormsApplication1
         private void Form_Start_Load(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Maximized;
+            tabControl_Wizard.DrawMode = TabDrawMode.OwnerDrawFixed;
+            tabControl_Wizard.DrawItem += tabControl_Wizard_DrawItem;
+        }
+
+        private void tabControl_Wizard_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            e.DrawBackground();
+            Color tabTextColor = Color.FromArgb(0x000000);
+            var color = Color.FromArgb(tabTextColor.R, tabTextColor.G, tabTextColor.B);
+
+            if (e.Index == tabControl_Wizard.SelectedIndex)
+            {
+                TextRenderer.DrawText(e.Graphics, tabControl_Wizard.TabPages[e.Index].Text, e.Font, e.Bounds, Color.FromArgb(0xffffff));
+            }
+            else
+            {
+                TextRenderer.DrawText(e.Graphics, tabControl_Wizard.TabPages[e.Index].Text, e.Font, e.Bounds, color);
+            }
         }
 
         public void SetTextProjekt(string szProjekt)

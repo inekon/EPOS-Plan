@@ -2880,7 +2880,7 @@
             this.ForeColor = System.Drawing.Color.White;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "FormMain";
-            this.Text = "Hauptformular";
+            this.Text = "Detailformular";
             this.Load += new System.EventHandler(this.FormMain_Load);
             this.tabControl_Main.ResumeLayout(false);
             this.tabPage_Komponenten.ResumeLayout(false);
