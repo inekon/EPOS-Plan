@@ -1,11 +1,24 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra.Factorization;
+using Microsoft.Office.Interop.Excel;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
+using System.Data.Odbc;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using static System.Net.Mime.MediaTypeNames;
+using System.Diagnostics;
+using Series = System.Windows.Forms.DataVisualization.Charting.Series;
+using WindowsFormsApplication1.Classes.Simulation;
 
 namespace WindowsFormsApplication1
 {
@@ -1620,51 +1633,5 @@ namespace WindowsFormsApplication1
 
         }
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-           // SimulationSPK sim = new SimulationSPK();
-            RecordSet rs = new RecordSet();
-
-            // sim.spk_list.Clear();
-
-            //sim.Max_Waermebedarf = simulation_wp.waermerestbedarf_gesamt;
-            //sim.Waermebedarf = Array.ConvertAll(simulation_wp.waermerestbedarf_stuendlich, x => (double)x);
-            comboBox1.Items.Clear();
-            comboBox2.Items.Clear();
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
-            while (rs.Next())
-            {
-                comboBox1.Items.Add((string)rs.Read("Bezeichner"));
-            }
-            if(comboBox1.Items.Count > 0) comboBox1.SelectedIndex = 0;
-            rs.Close();
-
-            Z_ProjektStromganglinieCtrl ctrl = new Z_ProjektStromganglinieCtrl();
-            ctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + m_ID_Projekt);
-
-            for(int i = 0; i < ctrl.rows; i++)
-            {
-                comboBox2.Items.Add(ctrl.items[i].m_szStromganglinie);
-            }
-            if (comboBox2.Items.Count > 0) comboBox2.SelectedIndex = 0;
-         
-
-
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            SimulationSSP sim = new SimulationSSP();
-            sim.Berechnung(m_ID_Projekt);
-
-            RecordSet rs = new RecordSet();
-            rs.Open("select * from Tab_Stromspeicher where Bezeichner='" + comboBox1.Text + "'") ;
-            while (rs.Next())
-            {
-                double leistung = (double)rs.Read("Leistung");
-            }
-            rs.Close();
-
-        }
     }
 }
