@@ -113,6 +113,16 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap PDetailansicht {
+            get {
+                object obj = ResourceManager.GetObject("PDetailansicht", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap PEETipp {
             get {
                 object obj = ResourceManager.GetObject("PEETipp", resourceCulture);
@@ -276,6 +286,16 @@ namespace WindowsFormsApplication1.Properties {
         internal static System.Drawing.Bitmap PZurueck {
             get {
                 object obj = ResourceManager.GetObject("PZurueck", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap PZusammenfassung_pg {
+            get {
+                object obj = ResourceManager.GetObject("PZusammenfassung.pg", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

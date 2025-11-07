@@ -42,6 +42,12 @@
             this.textBox7 = new System.Windows.Forms.TextBox();
             this.textBox8 = new System.Windows.Forms.TextBox();
             this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.label_Komponenten = new System.Windows.Forms.Label();
+            this.label_Strom = new System.Windows.Forms.Label();
+            this.label_WBedarf = new System.Windows.Forms.Label();
+            this.label_Name = new System.Windows.Forms.Label();
+            this.textBox9 = new System.Windows.Forms.TextBox();
+            this.textBox10 = new System.Windows.Forms.TextBox();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.textBox_ProjektOpen = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -66,13 +72,7 @@
             this.pBox_BHKW = new System.Windows.Forms.PictureBox();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.pBox_WP = new System.Windows.Forms.PictureBox();
-            this.pictureBox4 = new System.Windows.Forms.PictureBox();
-            this.textBox9 = new System.Windows.Forms.TextBox();
-            this.textBox10 = new System.Windows.Forms.TextBox();
-            this.label_Name = new System.Windows.Forms.Label();
-            this.label_WBedarf = new System.Windows.Forms.Label();
-            this.label_Strom = new System.Windows.Forms.Label();
-            this.label_Komponenten = new System.Windows.Forms.Label();
+            this.pictureBox_Zusammenfassung = new System.Windows.Forms.PictureBox();
             this.tabControl_Wizard.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -100,7 +100,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_BHKW)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WP)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_Zusammenfassung)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl_Wizard
@@ -284,7 +284,7 @@
             this.tabPage5.Controls.Add(this.label_Name);
             this.tabPage5.Controls.Add(this.textBox9);
             this.tabPage5.Controls.Add(this.textBox10);
-            this.tabPage5.Controls.Add(this.pictureBox4);
+            this.tabPage5.Controls.Add(this.pictureBox_Zusammenfassung);
             this.tabPage5.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold);
             this.tabPage5.Location = new System.Drawing.Point(4, 30);
             this.tabPage5.Name = "tabPage5";
@@ -293,6 +293,80 @@
             this.tabPage5.Text = "Simulation";
             this.tabPage5.UseVisualStyleBackColor = true;
             this.tabPage5.Enter += new System.EventHandler(this.tabPage5_Enter);
+            // 
+            // label_Komponenten
+            // 
+            this.label_Komponenten.AutoSize = true;
+            this.label_Komponenten.Font = new System.Drawing.Font("Segoe UI", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Komponenten.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_Komponenten.Location = new System.Drawing.Point(876, 365);
+            this.label_Komponenten.Name = "label_Komponenten";
+            this.label_Komponenten.Size = new System.Drawing.Size(68, 23);
+            this.label_Komponenten.TabIndex = 61;
+            this.label_Komponenten.Text = "Projekt";
+            this.label_Komponenten.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label_Komponenten.Click += new System.EventHandler(this.label_Komponenten_Click);
+            // 
+            // label_Strom
+            // 
+            this.label_Strom.AutoSize = true;
+            this.label_Strom.Font = new System.Drawing.Font("Segoe UI", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Strom.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_Strom.Location = new System.Drawing.Point(876, 317);
+            this.label_Strom.Name = "label_Strom";
+            this.label_Strom.Size = new System.Drawing.Size(68, 23);
+            this.label_Strom.TabIndex = 60;
+            this.label_Strom.Text = "Projekt";
+            this.label_Strom.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label_Strom.Click += new System.EventHandler(this.label_Strom_Click);
+            // 
+            // label_WBedarf
+            // 
+            this.label_WBedarf.AutoSize = true;
+            this.label_WBedarf.Font = new System.Drawing.Font("Segoe UI", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_WBedarf.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_WBedarf.Location = new System.Drawing.Point(876, 261);
+            this.label_WBedarf.Name = "label_WBedarf";
+            this.label_WBedarf.Size = new System.Drawing.Size(68, 23);
+            this.label_WBedarf.TabIndex = 59;
+            this.label_WBedarf.Text = "Projekt";
+            this.label_WBedarf.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label_WBedarf.Click += new System.EventHandler(this.label_WBedarf_Click);
+            // 
+            // label_Name
+            // 
+            this.label_Name.AutoSize = true;
+            this.label_Name.Font = new System.Drawing.Font("Segoe UI", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Name.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_Name.Location = new System.Drawing.Point(876, 199);
+            this.label_Name.Name = "label_Name";
+            this.label_Name.Size = new System.Drawing.Size(68, 23);
+            this.label_Name.TabIndex = 58;
+            this.label_Name.Text = "Projekt";
+            this.label_Name.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label_Name.Click += new System.EventHandler(this.label_Name_Click);
+            // 
+            // textBox9
+            // 
+            this.textBox9.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBox9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBox9.Location = new System.Drawing.Point(24, 60);
+            this.textBox9.Name = "textBox9";
+            this.textBox9.Size = new System.Drawing.Size(530, 22);
+            this.textBox9.TabIndex = 57;
+            this.textBox9.TabStop = false;
+            this.textBox9.Text = "Berechnen Sie die Energieflüsse und Systemleistung.";
+            // 
+            // textBox10
+            // 
+            this.textBox10.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBox10.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox10.Location = new System.Drawing.Point(24, 20);
+            this.textBox10.Name = "textBox10";
+            this.textBox10.Size = new System.Drawing.Size(289, 26);
+            this.textBox10.TabIndex = 56;
+            this.textBox10.TabStop = false;
+            this.textBox10.Text = "Simulation durchführen";
             // 
             // tabPage6
             // 
@@ -587,90 +661,17 @@
             this.pBox_WP.Click += new System.EventHandler(this.pBox_WP_Click);
             this.pBox_WP.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_WP_Paint);
             // 
-            // pictureBox4
+            // pictureBox_Zusammenfassung
             // 
-            this.pictureBox4.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PZusammenfassung_pg;
-            this.pictureBox4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.pictureBox4.Location = new System.Drawing.Point(15, 93);
-            this.pictureBox4.Name = "pictureBox4";
-            this.pictureBox4.Size = new System.Drawing.Size(969, 345);
-            this.pictureBox4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox4.TabIndex = 0;
-            this.pictureBox4.TabStop = false;
-            // 
-            // textBox9
-            // 
-            this.textBox9.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.textBox9.Location = new System.Drawing.Point(24, 60);
-            this.textBox9.Name = "textBox9";
-            this.textBox9.Size = new System.Drawing.Size(530, 22);
-            this.textBox9.TabIndex = 57;
-            this.textBox9.TabStop = false;
-            this.textBox9.Text = "Berechnen Sie die Energieflüsse und Systemleistung.";
-            // 
-            // textBox10
-            // 
-            this.textBox10.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox10.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox10.Location = new System.Drawing.Point(24, 20);
-            this.textBox10.Name = "textBox10";
-            this.textBox10.Size = new System.Drawing.Size(289, 26);
-            this.textBox10.TabIndex = 56;
-            this.textBox10.TabStop = false;
-            this.textBox10.Text = "Simulation durchführen";
-            // 
-            // label_Name
-            // 
-            this.label_Name.AutoSize = true;
-            this.label_Name.Font = new System.Drawing.Font("Segoe UI Semibold", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Name.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.label_Name.Location = new System.Drawing.Point(876, 199);
-            this.label_Name.Name = "label_Name";
-            this.label_Name.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.label_Name.Size = new System.Drawing.Size(64, 23);
-            this.label_Name.TabIndex = 58;
-            this.label_Name.Text = "Projekt";
-            this.label_Name.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // label_WBedarf
-            // 
-            this.label_WBedarf.AutoSize = true;
-            this.label_WBedarf.Font = new System.Drawing.Font("Segoe UI Semibold", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_WBedarf.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.label_WBedarf.Location = new System.Drawing.Point(876, 261);
-            this.label_WBedarf.Name = "label_WBedarf";
-            this.label_WBedarf.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.label_WBedarf.Size = new System.Drawing.Size(64, 23);
-            this.label_WBedarf.TabIndex = 59;
-            this.label_WBedarf.Text = "Projekt";
-            this.label_WBedarf.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // label_Strom
-            // 
-            this.label_Strom.AutoSize = true;
-            this.label_Strom.Font = new System.Drawing.Font("Segoe UI Semibold", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Strom.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.label_Strom.Location = new System.Drawing.Point(876, 317);
-            this.label_Strom.Name = "label_Strom";
-            this.label_Strom.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.label_Strom.Size = new System.Drawing.Size(64, 23);
-            this.label_Strom.TabIndex = 60;
-            this.label_Strom.Text = "Projekt";
-            this.label_Strom.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // label_Komponenten
-            // 
-            this.label_Komponenten.AutoSize = true;
-            this.label_Komponenten.Font = new System.Drawing.Font("Segoe UI Semibold", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Komponenten.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.label_Komponenten.Location = new System.Drawing.Point(876, 365);
-            this.label_Komponenten.Name = "label_Komponenten";
-            this.label_Komponenten.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.label_Komponenten.Size = new System.Drawing.Size(64, 23);
-            this.label_Komponenten.TabIndex = 61;
-            this.label_Komponenten.Text = "Projekt";
-            this.label_Komponenten.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.pictureBox_Zusammenfassung.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PZusammenfassung_pg;
+            this.pictureBox_Zusammenfassung.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox_Zusammenfassung.Location = new System.Drawing.Point(15, 93);
+            this.pictureBox_Zusammenfassung.Name = "pictureBox_Zusammenfassung";
+            this.pictureBox_Zusammenfassung.Size = new System.Drawing.Size(969, 345);
+            this.pictureBox_Zusammenfassung.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox_Zusammenfassung.TabIndex = 0;
+            this.pictureBox_Zusammenfassung.TabStop = false;
+            this.pictureBox_Zusammenfassung.Click += new System.EventHandler(this.pictureBox_Zusammenfassung_Click);
             // 
             // Form_Start
             // 
@@ -722,7 +723,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_BHKW)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WP)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_Zusammenfassung)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -767,7 +768,7 @@
         private System.Windows.Forms.PictureBox pBox_Heizkessel;
         private System.Windows.Forms.PictureBox pBox_Stromspeicher;
         private System.Windows.Forms.PictureBox pBox_Detailansicht;
-        private System.Windows.Forms.PictureBox pictureBox4;
+        private System.Windows.Forms.PictureBox pictureBox_Zusammenfassung;
         private System.Windows.Forms.TextBox textBox9;
         private System.Windows.Forms.TextBox textBox10;
         private System.Windows.Forms.Label label_Name;

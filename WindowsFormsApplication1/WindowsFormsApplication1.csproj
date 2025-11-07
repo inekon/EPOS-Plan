@@ -303,6 +303,12 @@
     <Compile Include="Views\Stromspeicher\Form_AdminStromspeicher.designer.cs">
       <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Stromspeicher\Form_WizSp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Stromspeicher\Form_WizSp.Designer.cs">
+      <DependentUpon>Form_WizSp.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Stromverbraucher\Form_EingDBStromverbraucher.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -386,6 +392,18 @@
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Stromlastgang.Designer.cs">
       <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Stromprofil.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Stromprofil.Designer.cs">
+      <DependentUpon>Wizard_Stromprofil.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Waermebedarf.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wizard\Wizard_Waermebedarf.designer.cs">
+      <DependentUpon>Wizard_Waermebedarf.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wärmebedarf\Form_Waermebedarf.cs">
       <SubType>Form</SubType>
@@ -588,6 +606,9 @@
     <EmbeddedResource Include="Views\Stromspeicher\Form_AdminStromspeicher.resx">
       <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromspeicher\Form_WizSp.resx">
+      <DependentUpon>Form_WizSp.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie.resx">
       <DependentUpon>Form_Stromganglinie.cs</DependentUpon>
     </EmbeddedResource>
@@ -608,6 +629,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Stromlastgang.resx">
       <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Stromprofil.resx">
+      <DependentUpon>Wizard_Stromprofil.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Waermebedarf.resx">
+      <DependentUpon>Wizard_Waermebedarf.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_WP.resx">
       <DependentUpon>Wizard_WP.cs</DependentUpon>
@@ -811,6 +838,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\PSSpeicher.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\PDetailansicht.jpg" />
+    <Content Include="Resources\PZusammenfassung.pg.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

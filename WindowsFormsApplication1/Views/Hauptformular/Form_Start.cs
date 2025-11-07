@@ -696,6 +696,7 @@ namespace WindowsFormsApplication1
             simulationWaermebedarf.Waermebedarf_berechnen(ctrl.m_ID, ctrl.m_ID_Klimaregion);
             label_WBedarf.Text = simulationWaermebedarf.Waermebedarf_Gesamt.ToString("F2") + " kWh/a";
 
+            label_Name.Left = pictureBox_Zusammenfassung.Width - label_Name.Width - 20;  
             label_WBedarf.Left = label_Name.Left + label_Name.Width - label_WBedarf.Width;
             label_Strom.Left = label_Name.Left + label_Name.Width - label_Strom.Width;
             
@@ -710,6 +711,31 @@ namespace WindowsFormsApplication1
         }
 
         private void pBox_BHKW_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label_Strom_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox_Zusammenfassung_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label_Name_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label_WBedarf_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label_Komponenten_Click(object sender, EventArgs e)
         {
 
         }
