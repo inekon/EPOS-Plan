@@ -114,6 +114,7 @@
     <Compile Include="Classes\RecordSet.cs" />
     <Compile Include="Classes\Simulation\Init.cs" />
     <Compile Include="Classes\Simulation\SimulationSPK.cs" />
+    <Compile Include="Classes\Simulation\SimulationSSP.cs" />
     <Compile Include="Classes\Simulation\SimulationStrombedarf.cs" />
     <Compile Include="Classes\Simulation\SimulationWaermebedarf.cs" />
     <Compile Include="Classes\Simulation\SimulationWaermepumpe.cs" />
