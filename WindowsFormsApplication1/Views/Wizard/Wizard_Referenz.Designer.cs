@@ -133,7 +133,7 @@
             this.tabPage_WP.Location = new System.Drawing.Point(4, 26);
             this.tabPage_WP.Name = "tabPage_WP";
             this.tabPage_WP.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_WP.Size = new System.Drawing.Size(634, 393);
+            this.tabPage_WP.Size = new System.Drawing.Size(634, 420);
             this.tabPage_WP.TabIndex = 0;
             this.tabPage_WP.Text = "Wärmepumpen";
             this.tabPage_WP.UseVisualStyleBackColor = true;
@@ -282,7 +282,7 @@
             this.tabPage_SP.Location = new System.Drawing.Point(4, 26);
             this.tabPage_SP.Name = "tabPage_SP";
             this.tabPage_SP.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_SP.Size = new System.Drawing.Size(634, 393);
+            this.tabPage_SP.Size = new System.Drawing.Size(634, 420);
             this.tabPage_SP.TabIndex = 1;
             this.tabPage_SP.Text = "Stromspeicher";
             this.tabPage_SP.UseVisualStyleBackColor = true;
@@ -292,7 +292,7 @@
             this.label10.BackColor = System.Drawing.Color.Black;
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label10.ForeColor = System.Drawing.Color.White;
-            this.label10.Location = new System.Drawing.Point(191, 334);
+            this.label10.Location = new System.Drawing.Point(191, 331);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(33, 19);
             this.label10.TabIndex = 76;
@@ -304,7 +304,7 @@
             this.label9.BackColor = System.Drawing.Color.Black;
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label9.ForeColor = System.Drawing.Color.White;
-            this.label9.Location = new System.Drawing.Point(191, 359);
+            this.label9.Location = new System.Drawing.Point(191, 362);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(23, 19);
             this.label9.TabIndex = 75;
@@ -316,7 +316,7 @@
             this.label17.BackColor = System.Drawing.Color.Black;
             this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label17.ForeColor = System.Drawing.Color.White;
-            this.label17.Location = new System.Drawing.Point(191, 265);
+            this.label17.Location = new System.Drawing.Point(191, 267);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(33, 19);
             this.label17.TabIndex = 74;
@@ -327,21 +327,21 @@
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label6.Location = new System.Drawing.Point(37, 331);
+            this.label6.Location = new System.Drawing.Point(24, 331);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(85, 19);
+            this.label6.Size = new System.Drawing.Size(88, 19);
             this.label6.TabIndex = 73;
-            this.label6.Text = "Degradation";
+            this.label6.Text = "Degradation:";
             // 
             // label8
             // 
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label8.Location = new System.Drawing.Point(35, 362);
+            this.label8.Location = new System.Drawing.Point(23, 362);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(86, 19);
+            this.label8.Size = new System.Drawing.Size(89, 19);
             this.label8.TabIndex = 72;
-            this.label8.Text = "Ladezustand";
+            this.label8.Text = "Ladezustand:";
             // 
             // textBox_Ladezustand
             // 
@@ -357,11 +357,11 @@
             // 
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label7.Location = new System.Drawing.Point(35, 301);
+            this.label7.Location = new System.Drawing.Point(55, 301);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(54, 19);
+            this.label7.Size = new System.Drawing.Size(57, 19);
             this.label7.TabIndex = 70;
-            this.label7.Text = "Energie";
+            this.label7.Text = "Energie:";
             // 
             // textBox_Degradation
             // 
@@ -386,11 +386,11 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label5.Location = new System.Drawing.Point(35, 268);
+            this.label5.Location = new System.Drawing.Point(48, 268);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(61, 19);
+            this.label5.Size = new System.Drawing.Size(64, 19);
             this.label5.TabIndex = 67;
-            this.label5.Text = "Leistung";
+            this.label5.Text = "Leistung:";
             // 
             // textBox_Leistung
             // 
@@ -406,36 +406,36 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label4.Location = new System.Drawing.Point(35, 237);
+            this.label4.Location = new System.Drawing.Point(79, 237);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(30, 19);
+            this.label4.Size = new System.Drawing.Size(33, 19);
             this.label4.TabIndex = 65;
-            this.label4.Text = "Typ";
+            this.label4.Text = "Typ:";
             // 
             // textBox_Typ
             // 
             this.textBox_Typ.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Typ.Location = new System.Drawing.Point(127, 234);
             this.textBox_Typ.Name = "textBox_Typ";
-            this.textBox_Typ.Size = new System.Drawing.Size(235, 25);
+            this.textBox_Typ.Size = new System.Drawing.Size(320, 25);
             this.textBox_Typ.TabIndex = 64;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label3.Location = new System.Drawing.Point(35, 207);
+            this.label3.Location = new System.Drawing.Point(64, 207);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(45, 19);
+            this.label3.Size = new System.Drawing.Size(48, 19);
             this.label3.TabIndex = 63;
-            this.label3.Text = "Name";
+            this.label3.Text = "Name:";
             // 
             // textBox_Name
             // 
             this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Name.Location = new System.Drawing.Point(127, 203);
             this.textBox_Name.Name = "textBox_Name";
-            this.textBox_Name.Size = new System.Drawing.Size(235, 25);
+            this.textBox_Name.Size = new System.Drawing.Size(320, 25);
             this.textBox_Name.TabIndex = 62;
             this.textBox_Name.Text = "Vitovalor 300-P C3TB Brennwertkessel";
             // 
@@ -548,7 +548,7 @@
             // label27
             // 
             this.label27.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label27.Location = new System.Drawing.Point(16, 368);
+            this.label27.Location = new System.Drawing.Point(11, 368);
             this.label27.Name = "label27";
             this.label27.Size = new System.Drawing.Size(86, 39);
             this.label27.TabIndex = 114;
@@ -605,11 +605,11 @@
             // 
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label18.Location = new System.Drawing.Point(16, 262);
+            this.label18.Location = new System.Drawing.Point(3, 262);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(91, 19);
+            this.label18.Size = new System.Drawing.Size(94, 19);
             this.label18.TabIndex = 83;
-            this.label18.Text = "Beschreibung";
+            this.label18.Text = "Beschreibung:";
             // 
             // textBox_Kesselbeschreibung
             // 
@@ -637,11 +637,11 @@
             // 
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label14.Location = new System.Drawing.Point(16, 339);
+            this.label14.Location = new System.Drawing.Point(33, 339);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(61, 19);
+            this.label14.Size = new System.Drawing.Size(64, 19);
             this.label14.TabIndex = 80;
-            this.label14.Text = "Leistung";
+            this.label14.Text = "Leistung:";
             // 
             // textBox_Kesselleistung
             // 
@@ -657,11 +657,11 @@
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label15.Location = new System.Drawing.Point(16, 308);
+            this.label15.Location = new System.Drawing.Point(64, 308);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(30, 19);
+            this.label15.Size = new System.Drawing.Size(33, 19);
             this.label15.TabIndex = 78;
-            this.label15.Text = "Typ";
+            this.label15.Text = "Typ:";
             // 
             // textBox_Kesseltyp
             // 
@@ -675,11 +675,11 @@
             // 
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label16.Location = new System.Drawing.Point(16, 231);
+            this.label16.Location = new System.Drawing.Point(49, 231);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(45, 19);
+            this.label16.Size = new System.Drawing.Size(48, 19);
             this.label16.TabIndex = 76;
-            this.label16.Text = "Name";
+            this.label16.Text = "Name:";
             // 
             // textBox_Kesselname
             // 

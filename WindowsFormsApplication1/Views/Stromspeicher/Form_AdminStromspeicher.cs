@@ -53,16 +53,13 @@ namespace WindowsFormsApplication1
             RecordSet rs = new RecordSet();
             rs.Open("SELECT * FROM Tab_Stromspeicher");   
             
-            if(!rs.EOF())
+            while (rs.Next())
             {
-                while (rs.Next())
-                {
-                    string bezeichner = rs.Read("Bezeichner").ToString();
-                    Console.WriteLine("Bezeichner: {bezeichner}");
-                    listBox_Stromspeicher.Items.Add(bezeichner);
-                }
-                listBox_Stromspeicher.SelectedIndex = 0;
+                string bezeichner = rs.Read("Bezeichner").ToString();
+                Console.WriteLine("Bezeichner: {bezeichner}");
+                listBox_Stromspeicher.Items.Add(bezeichner);
             }
+            listBox_Stromspeicher.SelectedIndex = 0;
         }
 
         private TextBox GetTextBox_Energie()
@@ -148,11 +145,21 @@ namespace WindowsFormsApplication1
         {
             InitControls();
             Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
+            
+            Point p1 = btn_Neu.Location;  
+            p1 = this.PointToScreen(p1); 
+            
+            frm.Location = p1;  
+
             frm.ShowDialog();
             if (frm.result == DialogResult.OK)
             {
                 m_Neu = true;
                 textBox_Bezeichner.Text = frm.m_szName;
+                textBox_Typ.Text = "";
+                textBox_Degradation.Text = "0";
+                textBox_Ladezustand.Text = "0";
+                textBox_Leistung.Text = "0";
             }
             return;
         }

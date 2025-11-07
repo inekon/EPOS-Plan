@@ -98,6 +98,7 @@ namespace WindowsFormsApplication1
             List<string> pw_list = new List<string>();
 
             com.I_vector_init(ref Strombedarf);
+            com.I_vector_init(ref Strombedarf_sortiert);
             com.I_vector_init(ref prozesswerte);
             com.I_vector_init(ref temp);
 

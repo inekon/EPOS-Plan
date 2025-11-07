@@ -14,10 +14,10 @@ namespace WindowsFormsApplication1
         public StromspeicherModel[] items;
         public int m_ID;
         public string m_szBezeichner;
-        public double m_Energie;
-        public double m_Leistung;
+        public int m_Energie;
+        public int m_Leistung;
         public double m_Degradation;
-        public double m_Ladezustand;
+        public int m_Ladezustand;
         public string m_szTyp;
      
         public StromspeicherModel()

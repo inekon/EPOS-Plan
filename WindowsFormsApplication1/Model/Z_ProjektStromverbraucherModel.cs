@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WindowsFormsApplication1
 {
-    class Z_ProjektStromverbraucherModel
+    public class Z_ProjektStromverbraucherModel
     {
         public Z_ProjektStromverbraucherModel[] items;
         public int m_ID_Z;

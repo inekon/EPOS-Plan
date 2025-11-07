@@ -11,7 +11,8 @@ namespace WindowsFormsApplication1
 {
     public partial class Wizard_Komponenten : Form
     {
-        Form parentForm;
+        public Form parentForm;
+
         public Wizard_Komponenten()
         {
             InitializeComponent();
@@ -73,6 +74,25 @@ namespace WindowsFormsApplication1
             checkBox_Kessel.Checked = value;
         }
 
+        public void SetWBedarfDatenCheckBox(bool value)
+        {
+            checkBox_WBedarfDaten.Checked = value;
+        }
+
+        public void SetGebaeudeCheckBox(bool value)
+        {
+            checkBox_Gebaeude.Checked = value;
+        }
+        public void SetReferenzCheckBox(bool value)
+        {
+            checkBox_Referenz.Checked = value;
+        }
+
+        public void SetStromprofilCheckBox(bool value)
+        {
+            checkBox_StdStromprofil.Checked = value;
+        }
+
         private void checkBox_WP_CheckedChanged(object sender, EventArgs e)
         {
             WizardItemClass wizard;
@@ -127,6 +147,38 @@ namespace WindowsFormsApplication1
             wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.KESSEL_ITEM);
             wizard.aktiv = checkBox_Kessel.Checked;
             ((WizardParent)parentForm).listPages[WizardItemClass.KESSEL_ITEM] = wizard;
+        }
+
+        private void checkBox_Gebaeude_CheckedChanged(object sender, EventArgs e)
+        {
+            WizardItemClass wizard;
+            wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.GEBAEUDE_ITEM);
+            wizard.aktiv = checkBox_Gebaeude.Checked;
+            ((WizardParent)parentForm).listPages[WizardItemClass.GEBAEUDE_ITEM] = wizard;
+        }
+
+        private void checkBox_Referenz_CheckedChanged(object sender, EventArgs e)
+        {
+            WizardItemClass wizard;
+            wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.REFERENZ_ITEM);
+            wizard.aktiv = checkBox_Referenz.Checked;
+            ((WizardParent)parentForm).listPages[WizardItemClass.REFERENZ_ITEM] = wizard;
+        }
+
+        private void checkBox_WBedarfDaten_CheckedChanged(object sender, EventArgs e)
+        {
+            WizardItemClass wizard;
+            wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.WAERMEBEDARF_ITEM);
+            wizard.aktiv = checkBox_WBedarfDaten.Checked;
+            ((WizardParent)parentForm).listPages[WizardItemClass.WAERMEBEDARF_ITEM] = wizard;
+        }
+
+        private void checkBox_StdStromprofil_CheckedChanged(object sender, EventArgs e)
+        {
+            WizardItemClass wizard;
+            wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.STROMSTD_ITEM);
+            wizard.aktiv = checkBox_StdStromprofil.Checked;
+            ((WizardParent)parentForm).listPages[WizardItemClass.STROMSTD_ITEM] = wizard;
         }
     }
 }

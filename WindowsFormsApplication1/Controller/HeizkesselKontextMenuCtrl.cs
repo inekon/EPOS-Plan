@@ -90,7 +90,7 @@ namespace WindowsFormsApplication1
             {
                 ListViewItem item = listView_Heizkessel.Items[indexes[0]];
                 listView_Heizkessel.Items[indexes[0]].Remove();
-                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, Int32.Parse(item.SubItems[4].Text));
+                wizctrl.Del_Projekt_ID_Waermeerzeuger(m_ID_Projekt, Int32.Parse(item.SubItems[4].Text));
 
                 projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
                 projctrl.m_Aenderungsdatum = DateTime.Now;
@@ -138,10 +138,7 @@ namespace WindowsFormsApplication1
             {
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
-                for (int n = 0; n < frm.list_heizkesselmodel.Count; n++)
-                {
-                    wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, frm.list_heizkesselmodel[n].ID);
-                }
+                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_heizkesselmodel);
 
                 ProjektCtrl projctrl = new ProjektCtrl();

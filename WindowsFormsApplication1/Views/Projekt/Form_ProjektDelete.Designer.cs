@@ -47,9 +47,9 @@
             // btn_OK
             // 
             this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_OK.Location = new System.Drawing.Point(29, 78);
+            this.btn_OK.Location = new System.Drawing.Point(269, 74);
             this.btn_OK.Name = "btn_OK";
-            this.btn_OK.Size = new System.Drawing.Size(87, 27);
+            this.btn_OK.Size = new System.Drawing.Size(87, 34);
             this.btn_OK.TabIndex = 2;
             this.btn_OK.Text = "OK";
             this.btn_OK.UseVisualStyleBackColor = true;
@@ -58,9 +58,9 @@
             // btn_Abbrechen
             // 
             this.btn_Abbrechen.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_Abbrechen.Location = new System.Drawing.Point(257, 78);
+            this.btn_Abbrechen.Location = new System.Drawing.Point(158, 74);
             this.btn_Abbrechen.Name = "btn_Abbrechen";
-            this.btn_Abbrechen.Size = new System.Drawing.Size(87, 27);
+            this.btn_Abbrechen.Size = new System.Drawing.Size(87, 34);
             this.btn_Abbrechen.TabIndex = 3;
             this.btn_Abbrechen.Text = "Abbrechen";
             this.btn_Abbrechen.UseVisualStyleBackColor = true;

@@ -184,7 +184,11 @@ namespace WindowsFormsApplication1
         private void btn_Neu_Click(object sender, EventArgs e)
         {
             Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
+            Point p1 = btn_Neu.Location;
+            p1 = this.PointToScreen(p1);
+            frm.Location = p1;
             frm.ShowDialog();
+
             if (frm.result == DialogResult.Cancel) return;
 
             for (int Tag = 0; Tag < 7; Tag++)
@@ -215,6 +219,10 @@ namespace WindowsFormsApplication1
         private void btn_SpeichernUnter_Click(object sender, EventArgs e)
         {
             Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
+
+            Point p1 = btn_SpeichernUnter.Location;
+            p1 = this.PointToScreen(p1);
+            frm.Location = p1;
             frm.ShowDialog();
             if (frm.result == DialogResult.Cancel) return;
 

@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
 
                 for (int n = 0; n < wizardparent.list_prozmodel.Count; n++)
                 {
-                    Z_ProjektProzesswaermeCtrl item = new Z_ProjektProzesswaermeCtrl();
+                    Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
 
                     item.szProzessname = wizardparent.list_prozmodel[n].szProzessname;
                     listBox_SP.Items.Add(item.szProzessname);

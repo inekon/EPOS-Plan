@@ -45,6 +45,7 @@
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.textBox_ProjektOpen = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.pBox_Detailansicht = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pBox_Zurueck = new System.Windows.Forms.PictureBox();
             this.pBox_Weiter = new System.Windows.Forms.PictureBox();
@@ -65,11 +66,20 @@
             this.pBox_BHKW = new System.Windows.Forms.PictureBox();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.pBox_WP = new System.Windows.Forms.PictureBox();
+            this.pictureBox4 = new System.Windows.Forms.PictureBox();
+            this.textBox9 = new System.Windows.Forms.TextBox();
+            this.textBox10 = new System.Windows.Forms.TextBox();
+            this.label_Name = new System.Windows.Forms.Label();
+            this.label_WBedarf = new System.Windows.Forms.Label();
+            this.label_Strom = new System.Windows.Forms.Label();
+            this.label_Komponenten = new System.Windows.Forms.Label();
             this.tabControl_Wizard.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
+            this.tabPage5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_Detailansicht)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Zurueck)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Weiter)).BeginInit();
@@ -90,6 +100,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_BHKW)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WP)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl_Wizard
@@ -101,7 +112,7 @@
             this.tabControl_Wizard.Controls.Add(this.tabPage5);
             this.tabControl_Wizard.Controls.Add(this.tabPage6);
             this.tabControl_Wizard.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold);
-            this.tabControl_Wizard.Location = new System.Drawing.Point(25, 206);
+            this.tabControl_Wizard.Location = new System.Drawing.Point(25, 217);
             this.tabControl_Wizard.Name = "tabControl_Wizard";
             this.tabControl_Wizard.SelectedIndex = 0;
             this.tabControl_Wizard.Size = new System.Drawing.Size(1222, 649);
@@ -267,6 +278,13 @@
             // 
             // tabPage5
             // 
+            this.tabPage5.Controls.Add(this.label_Komponenten);
+            this.tabPage5.Controls.Add(this.label_Strom);
+            this.tabPage5.Controls.Add(this.label_WBedarf);
+            this.tabPage5.Controls.Add(this.label_Name);
+            this.tabPage5.Controls.Add(this.textBox9);
+            this.tabPage5.Controls.Add(this.textBox10);
+            this.tabPage5.Controls.Add(this.pictureBox4);
             this.tabPage5.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold);
             this.tabPage5.Location = new System.Drawing.Point(4, 30);
             this.tabPage5.Name = "tabPage5";
@@ -274,6 +292,7 @@
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Simulation";
             this.tabPage5.UseVisualStyleBackColor = true;
+            this.tabPage5.Enter += new System.EventHandler(this.tabPage5_Enter);
             // 
             // tabPage6
             // 
@@ -289,27 +308,38 @@
             // 
             this.textBox_ProjektOpen.BackColor = System.Drawing.Color.White;
             this.textBox_ProjektOpen.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox_ProjektOpen.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox_ProjektOpen.ForeColor = System.Drawing.Color.Black;
-            this.textBox_ProjektOpen.Location = new System.Drawing.Point(950, 176);
+            this.textBox_ProjektOpen.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox_ProjektOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.textBox_ProjektOpen.Location = new System.Drawing.Point(111, 176);
             this.textBox_ProjektOpen.Name = "textBox_ProjektOpen";
             this.textBox_ProjektOpen.Size = new System.Drawing.Size(358, 26);
             this.textBox_ProjektOpen.TabIndex = 57;
             this.textBox_ProjektOpen.TabStop = false;
-            this.textBox_ProjektOpen.Text = "nicht geöffnet";
-            this.textBox_ProjektOpen.TextChanged += new System.EventHandler(this.textBox_ProjektOpen_TextChanged);
+            this.textBox_ProjektOpen.Text = "bitte auswählen!";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.BackColor = System.Drawing.Color.White;
+            this.label1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.label1.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.ForeColor = System.Drawing.Color.Black;
-            this.label1.Location = new System.Drawing.Point(872, 176);
+            this.label1.ForeColor = System.Drawing.Color.White;
+            this.label1.Location = new System.Drawing.Point(27, 176);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(78, 25);
             this.label1.TabIndex = 58;
             this.label1.Text = "Projekt:";
+            // 
+            // pBox_Detailansicht
+            // 
+            this.pBox_Detailansicht.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PDetailansicht;
+            this.pBox_Detailansicht.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pBox_Detailansicht.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pBox_Detailansicht.Location = new System.Drawing.Point(475, 172);
+            this.pBox_Detailansicht.Name = "pBox_Detailansicht";
+            this.pBox_Detailansicht.Size = new System.Drawing.Size(164, 36);
+            this.pBox_Detailansicht.TabIndex = 61;
+            this.pBox_Detailansicht.TabStop = false;
+            this.pBox_Detailansicht.Click += new System.EventHandler(this.pBox_Detailansicht_Click);
             // 
             // pictureBox2
             // 
@@ -327,7 +357,7 @@
             this.pBox_Zurueck.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PZurueck;
             this.pBox_Zurueck.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pBox_Zurueck.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pBox_Zurueck.Location = new System.Drawing.Point(32, 861);
+            this.pBox_Zurueck.Location = new System.Drawing.Point(32, 872);
             this.pBox_Zurueck.Name = "pBox_Zurueck";
             this.pBox_Zurueck.Size = new System.Drawing.Size(136, 41);
             this.pBox_Zurueck.TabIndex = 46;
@@ -339,7 +369,7 @@
             this.pBox_Weiter.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PWeiter;
             this.pBox_Weiter.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pBox_Weiter.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pBox_Weiter.Location = new System.Drawing.Point(1107, 861);
+            this.pBox_Weiter.Location = new System.Drawing.Point(1107, 872);
             this.pBox_Weiter.Name = "pBox_Weiter";
             this.pBox_Weiter.Size = new System.Drawing.Size(136, 41);
             this.pBox_Weiter.TabIndex = 45;
@@ -363,19 +393,20 @@
             this.pBox_ProjektZuletzt.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektZuletzt;
             this.pBox_ProjektZuletzt.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pBox_ProjektZuletzt.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pBox_ProjektZuletzt.Location = new System.Drawing.Point(809, 104);
+            this.pBox_ProjektZuletzt.Location = new System.Drawing.Point(805, 104);
             this.pBox_ProjektZuletzt.Name = "pBox_ProjektZuletzt";
-            this.pBox_ProjektZuletzt.Size = new System.Drawing.Size(377, 190);
+            this.pBox_ProjektZuletzt.Size = new System.Drawing.Size(377, 193);
             this.pBox_ProjektZuletzt.TabIndex = 52;
             this.pBox_ProjektZuletzt.TabStop = false;
             this.pBox_ProjektZuletzt.Click += new System.EventHandler(this.pBox_ProjektZuletzt_Click);
+            this.pBox_ProjektZuletzt.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_ProjektZuletzt_Paint);
             // 
             // pBox_ProjektOeffnen
             // 
             this.pBox_ProjektOeffnen.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektOeffnen;
             this.pBox_ProjektOeffnen.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pBox_ProjektOeffnen.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pBox_ProjektOeffnen.Location = new System.Drawing.Point(410, 104);
+            this.pBox_ProjektOeffnen.Location = new System.Drawing.Point(408, 104);
             this.pBox_ProjektOeffnen.Name = "pBox_ProjektOeffnen";
             this.pBox_ProjektOeffnen.Size = new System.Drawing.Size(377, 190);
             this.pBox_ProjektOeffnen.TabIndex = 51;
@@ -427,6 +458,7 @@
             this.pBox_Prozess.TabIndex = 45;
             this.pBox_Prozess.TabStop = false;
             this.pBox_Prozess.Click += new System.EventHandler(this.pBox_Prozess_Click);
+            this.pBox_Prozess.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Prozess_Paint);
             // 
             // pBox_WBedarfDaten
             // 
@@ -439,6 +471,7 @@
             this.pBox_WBedarfDaten.TabIndex = 44;
             this.pBox_WBedarfDaten.TabStop = false;
             this.pBox_WBedarfDaten.Click += new System.EventHandler(this.pBox_WBedarfDaten_Click);
+            this.pBox_WBedarfDaten.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_WBedarfDaten_Paint);
             // 
             // pBox_Gebaude
             // 
@@ -451,6 +484,7 @@
             this.pBox_Gebaude.TabIndex = 43;
             this.pBox_Gebaude.TabStop = false;
             this.pBox_Gebaude.Click += new System.EventHandler(this.pBox_Gebaude_Click);
+            this.pBox_Gebaude.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Gebaude_Paint);
             // 
             // pBox_StromMessdaten
             // 
@@ -463,6 +497,7 @@
             this.pBox_StromMessdaten.TabIndex = 57;
             this.pBox_StromMessdaten.TabStop = false;
             this.pBox_StromMessdaten.Click += new System.EventHandler(this.pBox_StromMessdaten_Click);
+            this.pBox_StromMessdaten.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_StromMessdaten_Paint);
             // 
             // pBox_StromProfilEigenes
             // 
@@ -487,6 +522,7 @@
             this.pBox_StdLastProfil.TabIndex = 53;
             this.pBox_StdLastProfil.TabStop = false;
             this.pBox_StdLastProfil.Click += new System.EventHandler(this.pBox_StdLastProfil_Click);
+            this.pBox_StdLastProfil.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_StdLastProfil_Paint);
             // 
             // pBox_Stromspeicher
             // 
@@ -499,6 +535,7 @@
             this.pBox_Stromspeicher.TabIndex = 58;
             this.pBox_Stromspeicher.TabStop = false;
             this.pBox_Stromspeicher.Click += new System.EventHandler(this.pBox_Stromspeicher_Click);
+            this.pBox_Stromspeicher.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Stromspeicher_Paint);
             // 
             // pBox_Heizkessel
             // 
@@ -524,6 +561,7 @@
             this.pBox_BHKW.Size = new System.Drawing.Size(377, 190);
             this.pBox_BHKW.TabIndex = 56;
             this.pBox_BHKW.TabStop = false;
+            this.pBox_BHKW.Click += new System.EventHandler(this.pBox_BHKW_Click);
             // 
             // pictureBox3
             // 
@@ -549,6 +587,91 @@
             this.pBox_WP.Click += new System.EventHandler(this.pBox_WP_Click);
             this.pBox_WP.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_WP_Paint);
             // 
+            // pictureBox4
+            // 
+            this.pictureBox4.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PZusammenfassung_pg;
+            this.pictureBox4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBox4.Location = new System.Drawing.Point(15, 93);
+            this.pictureBox4.Name = "pictureBox4";
+            this.pictureBox4.Size = new System.Drawing.Size(969, 345);
+            this.pictureBox4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox4.TabIndex = 0;
+            this.pictureBox4.TabStop = false;
+            // 
+            // textBox9
+            // 
+            this.textBox9.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBox9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBox9.Location = new System.Drawing.Point(24, 60);
+            this.textBox9.Name = "textBox9";
+            this.textBox9.Size = new System.Drawing.Size(530, 22);
+            this.textBox9.TabIndex = 57;
+            this.textBox9.TabStop = false;
+            this.textBox9.Text = "Berechnen Sie die Energieflüsse und Systemleistung.";
+            // 
+            // textBox10
+            // 
+            this.textBox10.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBox10.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox10.Location = new System.Drawing.Point(24, 20);
+            this.textBox10.Name = "textBox10";
+            this.textBox10.Size = new System.Drawing.Size(289, 26);
+            this.textBox10.TabIndex = 56;
+            this.textBox10.TabStop = false;
+            this.textBox10.Text = "Simulation durchführen";
+            // 
+            // label_Name
+            // 
+            this.label_Name.AutoSize = true;
+            this.label_Name.Font = new System.Drawing.Font("Segoe UI Semibold", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Name.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_Name.Location = new System.Drawing.Point(876, 199);
+            this.label_Name.Name = "label_Name";
+            this.label_Name.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.label_Name.Size = new System.Drawing.Size(64, 23);
+            this.label_Name.TabIndex = 58;
+            this.label_Name.Text = "Projekt";
+            this.label_Name.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label_WBedarf
+            // 
+            this.label_WBedarf.AutoSize = true;
+            this.label_WBedarf.Font = new System.Drawing.Font("Segoe UI Semibold", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_WBedarf.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_WBedarf.Location = new System.Drawing.Point(876, 261);
+            this.label_WBedarf.Name = "label_WBedarf";
+            this.label_WBedarf.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.label_WBedarf.Size = new System.Drawing.Size(64, 23);
+            this.label_WBedarf.TabIndex = 59;
+            this.label_WBedarf.Text = "Projekt";
+            this.label_WBedarf.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label_Strom
+            // 
+            this.label_Strom.AutoSize = true;
+            this.label_Strom.Font = new System.Drawing.Font("Segoe UI Semibold", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Strom.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_Strom.Location = new System.Drawing.Point(876, 317);
+            this.label_Strom.Name = "label_Strom";
+            this.label_Strom.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.label_Strom.Size = new System.Drawing.Size(64, 23);
+            this.label_Strom.TabIndex = 60;
+            this.label_Strom.Text = "Projekt";
+            this.label_Strom.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label_Komponenten
+            // 
+            this.label_Komponenten.AutoSize = true;
+            this.label_Komponenten.Font = new System.Drawing.Font("Segoe UI Semibold", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Komponenten.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_Komponenten.Location = new System.Drawing.Point(876, 365);
+            this.label_Komponenten.Name = "label_Komponenten";
+            this.label_Komponenten.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.label_Komponenten.Size = new System.Drawing.Size(64, 23);
+            this.label_Komponenten.TabIndex = 61;
+            this.label_Komponenten.Text = "Projekt";
+            this.label_Komponenten.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // Form_Start
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -556,6 +679,7 @@
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1620, 932);
             this.ControlBox = false;
+            this.Controls.Add(this.pBox_Detailansicht);
             this.Controls.Add(this.textBox_ProjektOpen);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox2);
@@ -575,6 +699,9 @@
             this.tabPage3.PerformLayout();
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
+            this.tabPage5.ResumeLayout(false);
+            this.tabPage5.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_Detailansicht)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Zurueck)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Weiter)).EndInit();
@@ -595,6 +722,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_BHKW)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WP)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -638,5 +766,13 @@
         private System.Windows.Forms.PictureBox pBox_BHKW;
         private System.Windows.Forms.PictureBox pBox_Heizkessel;
         private System.Windows.Forms.PictureBox pBox_Stromspeicher;
+        private System.Windows.Forms.PictureBox pBox_Detailansicht;
+        private System.Windows.Forms.PictureBox pictureBox4;
+        private System.Windows.Forms.TextBox textBox9;
+        private System.Windows.Forms.TextBox textBox10;
+        private System.Windows.Forms.Label label_Name;
+        private System.Windows.Forms.Label label_WBedarf;
+        private System.Windows.Forms.Label label_Strom;
+        private System.Windows.Forms.Label label_Komponenten;
     }
 }

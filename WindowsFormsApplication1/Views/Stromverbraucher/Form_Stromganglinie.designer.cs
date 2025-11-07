@@ -39,6 +39,7 @@ namespace WindowsFormsApplication1
             this.Label3 = new System.Windows.Forms.Label();
             this.textBox_Name = new System.Windows.Forms.TextBox();
             this.btn_Abbrechen = new System.Windows.Forms.Button();
+            this.btn_Bearbeiten = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // Label1
@@ -136,7 +137,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label3.AutoSize = true;
             this.Label3.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label3.Location = new System.Drawing.Point(22, 242);
+            this.Label3.Location = new System.Drawing.Point(19, 223);
             this.Label3.Name = "Label3";
             this.Label3.Size = new System.Drawing.Size(48, 19);
             this.Label3.TabIndex = 8;
@@ -147,12 +148,12 @@ namespace WindowsFormsApplication1
             // 
             this.textBox_Name.BackColor = System.Drawing.Color.White;
             this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Name.Location = new System.Drawing.Point(78, 242);
+            this.textBox_Name.Location = new System.Drawing.Point(23, 247);
             this.textBox_Name.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Name.Name = "textBox_Name";
             this.textBox_Name.ReadOnly = true;
             this.textBox_Name.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-            this.textBox_Name.Size = new System.Drawing.Size(406, 25);
+            this.textBox_Name.Size = new System.Drawing.Size(323, 25);
             this.textBox_Name.TabIndex = 9;
             // 
             // btn_Abbrechen
@@ -167,11 +168,22 @@ namespace WindowsFormsApplication1
             this.btn_Abbrechen.UseVisualStyleBackColor = true;
             this.btn_Abbrechen.Click += new System.EventHandler(this.btn_Abbrechen_Click);
             // 
+            // btn_Bearbeiten
+            // 
+            this.btn_Bearbeiten.Location = new System.Drawing.Point(569, 217);
+            this.btn_Bearbeiten.Name = "btn_Bearbeiten";
+            this.btn_Bearbeiten.Size = new System.Drawing.Size(97, 31);
+            this.btn_Bearbeiten.TabIndex = 15;
+            this.btn_Bearbeiten.Text = "Bearbeiten...";
+            this.btn_Bearbeiten.UseVisualStyleBackColor = true;
+            this.btn_Bearbeiten.Click += new System.EventHandler(this.btn_Bearbeiten_Click);
+            // 
             // Form_Stromganglinie
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(678, 345);
+            this.Controls.Add(this.btn_Bearbeiten);
             this.Controls.Add(this.btn_Abbrechen);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.listBox_Auswahl);
@@ -205,8 +217,6 @@ private System.Windows.Forms.Button btn_OK;
 private System.Windows.Forms.Label Label3;
 private System.Windows.Forms.TextBox textBox_Name;
 private System.Windows.Forms.Button btn_Abbrechen;
-
-
- 
+        private System.Windows.Forms.Button btn_Bearbeiten;
     }
 }

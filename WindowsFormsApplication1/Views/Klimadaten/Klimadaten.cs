@@ -122,11 +122,15 @@ namespace WindowsFormsApplication1
         private void btn_Import_Click(object sender, EventArgs e)
         {
             string file = textBox_Excel.Text;
+            
             if (textBox_Excel.Text != "")
             {
                 ToolsClass ctrl = new ToolsClass();
+
                 if (!ctrl.Exist(m_szExcelBasName))
                 {
+                    this.Cursor = Cursors.WaitCursor;
+
                     ctrl.OpenExcel(textBox_Excel.Text, "Klima", 6, 370, 4, 11);
 
                     KlimaregionCtrl ctrlklimareg = new KlimaregionCtrl();
@@ -139,6 +143,8 @@ namespace WindowsFormsApplication1
                     ctrlklimareg.FillListBox(listBoxKlimreg);
                     listBoxKlimreg.SelectedIndex = listBoxKlimreg.FindString(m_szExcelBasName);   
                     ctrlklimareg = null;
+
+                    this.Cursor = Cursors.Default;
                 }
                 else MessageBox.Show("Daten sind bereits importiert!");
             }

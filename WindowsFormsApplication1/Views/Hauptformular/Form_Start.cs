@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Net.WebRequestMethods;
 using Rectangle = System.Drawing.Rectangle;
@@ -35,6 +36,7 @@ namespace WindowsFormsApplication1
         public void SetTextProjekt(string szProjekt)
         {
             textBox_ProjektOpen.Text = szProjekt;
+            pBox_Detailansicht.Enabled = true; 
         }
 
         private void pBox_Prozess_Click(object sender, EventArgs e)
@@ -52,9 +54,7 @@ namespace WindowsFormsApplication1
                 "FROM Z_Projekt_Prozesswaerme INNER JOIN Tab_Prozesswaerme ON " +
                 "Z_Projekt_Prozesswaerme.ID_Prozesswaerme = Tab_Prozesswaerme.ID " +
                 " where ID_Projekt=" + m_ID_Projekt;
-            //+ " and Tab_Prozesswaerme.Prozessname='" + lvitem.Text +
-            //"' and Z_Projekt_Prozesswaerme.ID=" + lvitem.SubItems[3].Text;
-
+          
             rs.Open(sql);
             while (rs.Next())
             {
@@ -79,6 +79,11 @@ namespace WindowsFormsApplication1
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
+
+            if (frm.list_pwmodel.Count > 0)
+                status |= 32;
+            else status &= ~32;
+            pBox_Prozess.Invalidate();
         }
 
         private void pBox_WBedarfDaten_Click(object sender, EventArgs e)
@@ -120,6 +125,11 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
+
+                if (frm.DateiListe.Count > 0)
+                    status |= 16;
+                else status &= ~16;
+                pBox_WBedarfDaten.Invalidate();
             }
         }
 
@@ -165,6 +175,11 @@ namespace WindowsFormsApplication1
 
             if (frm.DialogResult == DialogResult.OK)
             {
+                if (frm.list_gebmodel.Count > 0)
+                    status |= 8;
+                else status &= ~8;
+                pBox_Gebaude.Invalidate();
+
                 wizctrl.Del_Projekt_ZuordungGebäude(m_ID_Projekt);
                 wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, frm.list_gebmodel);
 
@@ -178,6 +193,18 @@ namespace WindowsFormsApplication1
         {
             MenueCtrl menu = new MenueCtrl();
             menu.ProjektNeu();
+            
+            ApplikationCtrl ctrl_app = new ApplikationCtrl();
+            ProjektCtrl ctrl_projekt = new ProjektCtrl();
+
+            if (Program.wizardctrl.Projektname == "") return;
+            ctrl_projekt.ReadSingle("Select * from Tab_Projekt where Projektname='" + Program.wizardctrl.Projektname + "'");
+
+            ctrl_app.m_ID_Projekt = ctrl_projekt.m_ID;
+            ctrl_app.m_szProjektname = ctrl_projekt.m_szProjektname;
+            ctrl_app.Update();
+            
+            SetTextProjekt(Program.wizardctrl.Projektname);
         }
 
         private void pBox_ProjektOeffnen_Click(object sender, EventArgs e)
@@ -196,12 +223,6 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void pBox_ProjektZuletzt_Click(object sender, EventArgs e)
-        {
-            MenueCtrl menu = new MenueCtrl();
-            menu.ProjektOeffnen(true);
-        }
-
         private void pBox_Bearbeiten_Click(object sender, EventArgs e)
         {
             MenueCtrl menu = new MenueCtrl();
@@ -210,13 +231,43 @@ namespace WindowsFormsApplication1
 
         private void pBox_Weiter_Click(object sender, EventArgs e)
         {
+            if(textBox_ProjektOpen.Text == "bitte auswählen!")
+            {
+                MessageBox.Show("Bitte zuerst ein Projekt auswählen!\n (<Projekt öffnen> oder <zuletzt geöffnet>)!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information); 
+                return;
+            }
+
             if (tabControl_Wizard.SelectedIndex >= tabControl_Wizard.TabCount-1) return;
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
+            
             if (werzctrl.rows > 0) status |= 1; else status &= ~1;
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP);
+            
             if (werzctrl.rows > 0) status |= 2; else status &= ~2;
-
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
+            
+            if (werzctrl.rows > 0) status |= 4; else status &= ~4;
+            Z_ProjGebCtrl gebCtrl = new Z_ProjGebCtrl();
+            gebCtrl.ReadAll(" select * from Z_ProjektGebaeude where ID_Projekt=" + m_ID_Projekt.ToString());
+            
+            if (gebCtrl.rows > 0) status |= 8; else status &= ~8;
+            Z_ProjektGebGanglinieCtrl gebgangctrl = new Z_ProjektGebGanglinieCtrl();
+            gebgangctrl.ReadAll(" select * from Z_ProjektWaermebedarf where ID_Projekt=" + m_ID_Projekt.ToString());
+            
+            if (gebgangctrl.rows > 0) status |= 16; else status &= ~16;
+            Z_ProjektProzesswaermeCtrl proctrl = new Z_ProjektProzesswaermeCtrl();
+            proctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + m_ID_Projekt.ToString());
+            
+            if (proctrl.rows > 0) status |= 32; else status &= ~32;
+            Z_ProjektStromverbraucherCtrl strvctrl = new Z_ProjektStromverbraucherCtrl();
+            strvctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + m_ID_Projekt.ToString());
+            
+            if (strvctrl.rows > 0) status |= 64; else status &= ~64;
+            Z_ProjektStromganglinieCtrl strgctrl = new Z_ProjektStromganglinieCtrl();
+            strgctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + m_ID_Projekt.ToString());
+            
+            if (strgctrl.rows > 0) status |= 128; else status &= ~128;
 
             tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
         }
@@ -267,22 +318,66 @@ namespace WindowsFormsApplication1
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
+
+            if (frm.list_sbmodel.Count > 0)
+                status |= 64;
+            else status &= ~64;
+            pBox_StdLastProfil.Invalidate();
         }
 
         private void pBox_StromProfilEigenes_Click(object sender, EventArgs e)
         {
-
+            Form_EingStromTyp frm = new Form_EingStromTyp();
+            frm.SetControls();
+            frm.ShowDialog();
         }
 
         private void pBox_StromMessdaten_Click(object sender, EventArgs e)
         {
-            MenueCtrl ctrl = new MenueCtrl();
-            ctrl.Stromganglinie();
-        }
+            Form_Stromganglinie frm = new Form_Stromganglinie();
+            WizardCtrl wizctrl = new WizardCtrl();
+            ProjektCtrl projctrl = new ProjektCtrl();
+            RecordSet rs = new RecordSet();
 
-        private void textBox_ProjektOpen_TextChanged(object sender, EventArgs e)
-        {
+            frm.DateiListe.Clear();
 
+            string sql = "SELECT Z_ProjektStromganglinie.ID_Z, Z_ProjektStromganglinie.ID_Projekt, " +
+                  "Z_ProjektStromganglinie.ID_Ganglinie, Tab_Stromganglinie.Bezeichner " +
+                  "FROM Z_ProjektStromganglinie INNER JOIN Tab_Stromganglinie ON " +
+                  "Z_ProjektStromganglinie.ID_Ganglinie = Tab_Stromganglinie.ID " +
+                  " where ID_Projekt=" + m_ID_Projekt;
+
+            rs.Open(sql);
+            while (rs.Next())
+            {
+                Z_ProjektStromganglinieCtrl item = new Z_ProjektStromganglinieCtrl();
+                item.m_ID_Z = (int)rs.Read("ID_Z");
+                item.m_ID_Projekt = m_ID_Projekt;
+                item.m_ID_Stromganglinie = (int)rs.Read("ID_Ganglinie");
+                item.m_szStromganglinie = (string)rs.Read("Bezeichner");//item.Text;
+                frm.DateiListe.Add(item);
+            }
+            rs.Close();
+
+            frm.m_ID_Projekt = m_ID_Projekt;
+            frm.SetControls(m_szProjektname);
+
+            frm.ShowDialog();
+
+            if (frm.result == DialogResult.OK)
+            {
+                wizctrl.Del_Stromganglinie(m_ID_Projekt);
+                wizctrl.Add_Stromganglinie(m_ID_Projekt, frm.DateiListe);
+  
+                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.m_Aenderungsdatum = DateTime.Now;
+                projctrl.Update();
+            }
+
+            if (frm.DateiListe.Count > 0)
+                status |= 128;
+            else status &= ~128;
+            pBox_StromMessdaten.Invalidate();
         }
 
         private void pBox_WP_Click(object sender, EventArgs e)
@@ -308,7 +403,7 @@ namespace WindowsFormsApplication1
             if (result == DialogResult.OK)
             {
                 WizardCtrl wizctrl = new WizardCtrl();
-                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, WizardItemClass.WP_TYP);
+                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
             }
 
@@ -350,7 +445,7 @@ namespace WindowsFormsApplication1
             {
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
-                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, WizardItemClass.KESSEL_TYP);
+                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_heizkesselmodel);
                 if (frm.list_heizkesselmodel.Count > 0)
                     status |= 1;
@@ -366,7 +461,36 @@ namespace WindowsFormsApplication1
 
         private void pBox_Stromspeicher_Click(object sender, EventArgs e)
         {
+            Form_WizSp frm = new Form_WizSp();
+            WErzeugerCtrl werzctrl = new WErzeugerCtrl();
+            WPCtrl wpctrl = new WPCtrl();
+            int id_type;
 
+            frm.list_werzmodel.Clear();
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
+            id_type = WizardItemClass.SP_TYP;
+
+            WErzeugerModel item = new WErzeugerModel();
+            for (int i = 0; i < werzctrl.rows; i++)
+            {
+                frm.list_werzmodel.Add(werzctrl.items[i]);
+            }
+
+            frm.SetControls(m_szProjektname);
+            DialogResult result = frm.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                WizardCtrl wizctrl = new WizardCtrl();
+                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
+                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
+            }
+
+            if (frm.list_werzmodel.Count > 0)
+                status |= 4;
+            else status &= ~4;
+
+            pBox_Stromspeicher.Invalidate();
         }
 
         private void pBox_Heizkessel_Paint(object sender, PaintEventArgs e)
@@ -376,7 +500,12 @@ namespace WindowsFormsApplication1
             {
                 if ((status & 1) == 1)
                 {
-                    Program.FillRoundedRectangle(e.Graphics, brush, e.ClipRectangle, 10);
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
                 }
             }
         }
@@ -388,9 +517,201 @@ namespace WindowsFormsApplication1
             {
                 if ((status & 2) == 2)
                 {
-                    Program.FillRoundedRectangle(e.Graphics, brush, e.ClipRectangle, 10);
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
                 }
             }
+        }
+
+        private void pBox_Stromspeicher_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                if ((status & 4) == 4)
+                {
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                }
+            }
+        }
+
+        private void pBox_ProjektZuletzt_Click(object sender, EventArgs e)
+        {
+            ApplikationCtrl ctrl = new ApplikationCtrl();
+
+            ctrl.ReadSingle("Select * from Tab_Applikation where ID=1");
+
+            // falls zuletzt geöffnetes Projekt gelöscht wurde
+            if (ctrl.m_szProjektname != "")
+            {
+                m_szProjektname = ctrl.m_szProjektname;
+                m_ID_Projekt = ctrl.m_ID_Projekt;
+                SetTextProjekt(m_szProjektname);
+            }
+            
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                Graphics g = pBox_ProjektZuletzt.CreateGraphics();
+                Rectangle rt = pBox_ProjektZuletzt.ClientRectangle;
+                rt.Width = rt.Width - 20;
+                rt.Height = rt.Height - 20;
+                rt.Y = rt.Y + 10;
+                rt.X = rt.X + 10;
+                Program.FillRoundedRectangle(g, brush, rt, 10);
+                var t = Task.Run(async delegate
+                {
+                    await Task.Delay(200);
+                    return 0;
+                });
+                t.Wait();
+                pBox_ProjektZuletzt.Invalidate(); 
+            }
+
+            MessageBox.Show("Projekt " + m_szProjektname  + " geöffnet!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void pBox_Detailansicht_Click(object sender, EventArgs e)
+        {
+            if (textBox_ProjektOpen.Text == "bitte auswählen!")
+            {
+                MessageBox.Show("Bitte zuerst ein Projekt auswählen!\n (<Projekt öffnen> oder <zuletzt geöffnet>)!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            MenueCtrl ctrl = new MenueCtrl();
+            if (textBox_ProjektOpen.Text == "nicht geöffnet") return;
+            ctrl.ProjektOeffnen(true);
+        }
+
+        private void pBox_Gebaude_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                if ((status & 8) == 8)
+                {
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                }
+            }
+        }
+
+        private void pBox_WBedarfDaten_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                if ((status & 16) == 16)
+                {
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                }
+            }
+        }
+
+        private void pBox_Prozess_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                if ((status & 32) == 32)
+                {
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                }
+            }
+        }
+
+        private void pBox_StdLastProfil_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                if ((status & 64) == 64)
+                {
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                }
+            }
+        }
+
+        private void pBox_StromMessdaten_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                if ((status & 128) == 128)
+                {
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                }
+            }
+        }
+
+        private void pBox_ProjektZuletzt_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void tabPage5_Enter(object sender, EventArgs e)
+        {
+            ProjektCtrl ctrl = new ProjektCtrl();
+            ctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_ProjektOpen.Text + "'");
+
+            label_Name.Text = textBox_ProjektOpen.Text;
+            SimulationStrombedarf simulationStrombedarf = new SimulationStrombedarf();
+            simulationStrombedarf.Berechnung(ctrl.m_ID);
+            label_Strom.Text = simulationStrombedarf.Strombedarf_gesamt.ToString("F2") + " kWh/a";
+
+            SimulationWaermebedarf simulationWaermebedarf = new SimulationWaermebedarf();
+            simulationWaermebedarf.Waermebedarf_berechnen(ctrl.m_ID, ctrl.m_ID_Klimaregion);
+            label_WBedarf.Text = simulationWaermebedarf.Waermebedarf_Gesamt.ToString("F2") + " kWh/a";
+
+            label_WBedarf.Left = label_Name.Left + label_Name.Width - label_WBedarf.Width;
+            label_Strom.Left = label_Name.Left + label_Name.Width - label_Strom.Width;
+            
+            label_Komponenten.Text = "";
+            if ((status & 1) == 1) label_Komponenten.Text += "Heizkessel";
+            if ((status & 2) == 2) label_Komponenten.Text += ", Wärmepumpe";
+            if ((status & 4) == 4) label_Komponenten.Text += ", Stromspeicher";
+
+            if (label_Komponenten.Text.StartsWith(", ")) label_Komponenten.Text = label_Komponenten.Text.Substring(2);
+            label_Komponenten.Left = label_Name.Left + label_Name.Width - label_Komponenten.Width;
+
+        }
+
+        private void pBox_BHKW_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

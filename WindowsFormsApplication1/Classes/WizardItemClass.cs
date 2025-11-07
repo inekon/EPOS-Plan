@@ -12,14 +12,16 @@ namespace WindowsFormsApplication1
         public const int PROJEKT_ITEM = 1;
         public const int KLIMA_ITEM = 2;
         public const int GEBAEUDE_ITEM = 3;
-        public const int WP_ITEM = 4;
-        public const int SOLAR_ITEM = 5;
-        public const int PV_ITEM = 6;
-        public const int SP_ITEM = 7;
-        public const int PROZESS_ITEM = 8;
-        public const int STROMLASTGANG_ITEM = 9;
-        public const int KESSEL_ITEM = 10;
-        public const int REFERENZ_ITEM = 11;
+        public const int WAERMEBEDARF_ITEM = 4;
+        public const int PROZESS_ITEM = 5;
+        public const int STROMSTD_ITEM = 6;
+        public const int STROMLASTGANG_ITEM = 7;
+        public const int WP_ITEM = 8;
+        public const int SOLAR_ITEM = 9;
+        public const int PV_ITEM = 10;
+        public const int SP_ITEM = 11;
+        public const int KESSEL_ITEM = 12;
+        public const int REFERENZ_ITEM = 13;
 
         public const int WP_TYP = 1;
         public const int SOLAR_TYP = 2;
@@ -30,8 +32,7 @@ namespace WindowsFormsApplication1
         public const int REF_WP_TYP = 7;
         public const int REF_SOLAR_TYP = 8;
         public const int REF_PV_TYP = 9;
-        public const int STROMLASTGANG_TYP = 10;
-        public const int KESSEL_TYP = 11;
+        public const int KESSEL_TYP = 10;
 
         public Form wizardform;
         public int formtype;

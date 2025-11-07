@@ -36,9 +36,9 @@ namespace WindowsFormsApplication1
             {
                 Z_ProjGebModel item = new Z_ProjGebModel();
 
-                if (!DBReader.IsDBNull(0)) item.ID_Gebaeude = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.ID_Projekt = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.Gebaeudename = (string)DBReader.GetString(2);
+                if (!DBReader.IsDBNull(0)) item.ID_Z = (int)DBReader.GetValue(0);
+                if (!DBReader.IsDBNull(1)) item.ID_Gebaeude = (int)DBReader.GetValue(1);
+                if (!DBReader.IsDBNull(2)) item.ID_Projekt = (int)DBReader.GetValue(2);
                 if (!DBReader.IsDBNull(3)) item.Wohnflaeche = (double)DBReader.GetValue(3);
                 if (!DBReader.IsDBNull(4)) item.Einheit = (string)DBReader.GetString(4);
                 if (!DBReader.IsDBNull(5)) item.Jahresnutzungsgrad = (double)DBReader.GetValue(5);

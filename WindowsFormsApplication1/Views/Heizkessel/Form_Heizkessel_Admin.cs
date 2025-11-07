@@ -159,6 +159,10 @@ namespace WindowsFormsApplication1
             Form_Heizkessel_Bearbeiten frm = new Form_Heizkessel_Bearbeiten(Form_Heizkessel_Bearbeiten.MODE_NEU);
             Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
 
+            Point p1 = btn_Neu.Location;
+            p1 = this.PointToScreen(p1);
+            frmLabel.Location = p1;
+
             frmLabel.m_szName = "";
             frmLabel.SetControl();
             frmLabel.ShowDialog();

@@ -23,6 +23,9 @@ namespace WindowsFormsApplication1
         public List<Z_ProjektProzesswaermeModel> list_prozmodel = new List<Z_ProjektProzesswaermeModel>();
         public List<Z_ProjektStromganglinieModel> list_stromlastmodel = new List<Z_ProjektStromganglinieModel>();
         public List<Z_ProjGebModel> list_gebmodel = new List<Z_ProjGebModel>();
+        public List<Z_ProjektStromverbraucherModel> list_stromverbrauchermodel = new List<Z_ProjektStromverbraucherModel>();
+        public List<Z_ProjWaermebedarfModel> list_wbmodel = new List<Z_ProjWaermebedarfModel>();
+
         public ProjektModel m_Projektmodel  = new ProjektModel();
   
         public int wizardmode;
@@ -40,6 +43,8 @@ namespace WindowsFormsApplication1
             list_gebmodel.Clear();
             list_prozmodel.Clear();
             list_stromlastmodel.Clear();
+            list_stromverbrauchermodel.Clear();
+            list_wbmodel.Clear();
         }
 
         public WizardParent(List<WizardItemClass> WizardPages)
@@ -52,16 +57,24 @@ namespace WindowsFormsApplication1
             list_gebmodel.Clear();
             list_prozmodel.Clear();
             list_stromlastmodel.Clear();
+            list_stromverbrauchermodel.Clear();
+            list_wbmodel.Clear();
 
             listPages = WizardPages;
             listPages[WizardItemClass.KOMPONENTEN_ITEM].aktiv = true;
             listPages[WizardItemClass.PROJEKT_ITEM].aktiv = true;
             listPages[WizardItemClass.KLIMA_ITEM].aktiv = false;  // Klima Wizard Page ausgeblendet
-            listPages[WizardItemClass.GEBAEUDE_ITEM].aktiv = true;
-            listPages[WizardItemClass.PROZESS_ITEM].aktiv = true;
-            listPages[WizardItemClass.STROMLASTGANG_ITEM].aktiv = true;
-            listPages[WizardItemClass.REFERENZ_ITEM].aktiv = true;
-            listPages[WizardItemClass.KESSEL_ITEM].aktiv = true;
+            listPages[WizardItemClass.GEBAEUDE_ITEM].aktiv = false;
+            listPages[WizardItemClass.PROZESS_ITEM].aktiv = false;
+            listPages[WizardItemClass.STROMLASTGANG_ITEM].aktiv = false;
+            listPages[WizardItemClass.REFERENZ_ITEM].aktiv = false;
+            listPages[WizardItemClass.KESSEL_ITEM].aktiv = false;
+            listPages[WizardItemClass.PV_ITEM].aktiv = false;
+            listPages[WizardItemClass.SOLAR_ITEM].aktiv = false;
+            listPages[WizardItemClass.SP_ITEM].aktiv = false;
+            listPages[WizardItemClass.WP_ITEM].aktiv = false;
+            listPages[WizardItemClass.STROMSTD_ITEM].aktiv = false;
+            listPages[WizardItemClass.WAERMEBEDARF_ITEM].aktiv = false;
 
             pagecount = listPages.Count();
             
@@ -183,6 +196,8 @@ namespace WindowsFormsApplication1
                 LoadZGeb(m_Projektmodel.m_szProjektname);
                 LoadProzessFromDB(m_Projektmodel.m_szProjektname);
                 LoadStromlastFromDB(m_Projektmodel.m_szProjektname);
+                LoadWBedarfFromDB(m_Projektmodel.m_szProjektname);
+                LoadStromverbraucherFromDB(m_Projektmodel.m_szProjektname);
             }
 
             // Klimaregion Auswahl in Projektmodel speichern
@@ -248,6 +263,14 @@ namespace WindowsFormsApplication1
                 {
                     ((Wizard_Kessel)page).SetControls(listBox_Projekte.Text);
                 }
+                else if (top == WizardItemClass.WAERMEBEDARF_ITEM)
+                {
+                    ((Wizard_Waermebedarf)page).SetControls(listBox_Projekte.Text);
+                }
+                else if (top == WizardItemClass.STROMSTD_ITEM)
+                {
+                    ((Wizard_Stromprofil)page).SetControls(listBox_Projekte.Text);
+                }
 
             }
             else
@@ -269,7 +292,7 @@ namespace WindowsFormsApplication1
             if (lastIndex())
             {
                 btnNext.Enabled = false;
-                if (top > WizardItemClass.KLIMA_ITEM) btnSpeichern.Enabled = true;
+                if (top >= WizardItemClass.PROJEKT_ITEM) btnSpeichern.Enabled = true;
             }
 
             // bei 1. Seite kein zurück möglich
@@ -358,6 +381,10 @@ namespace WindowsFormsApplication1
             ((Wizard_Komponenten)page).SetProzessCheckBox(false);
             ((Wizard_Komponenten)page).SetStromglastgangCheckBox(false);
             ((Wizard_Komponenten)page).SetKesselCheckBox(false);
+            ((Wizard_Komponenten)page).SetStromprofilCheckBox(false);
+            ((Wizard_Komponenten)page).SetWBedarfDatenCheckBox(false);
+            ((Wizard_Komponenten)page).SetGebaeudeCheckBox(false);
+            ((Wizard_Komponenten)page).SetReferenzCheckBox(false);
 
             int rows = werzctrl.rows;
            
@@ -387,8 +414,45 @@ namespace WindowsFormsApplication1
                 ((Wizard_Komponenten)page).SetStromglastgangCheckBox(true);
             }
 
+            // prüfe Gebaeude Definition
+            Z_ProjGebCtrl gebctrl = new Z_ProjGebCtrl();
+            gebctrl.ReadAll("select * from Z_ProjektGebaeude where ID_Projekt=" + projektID);
+            if (gebctrl.rows > 0)
+            {
+                ((Wizard_Komponenten)page).SetGebaeudeCheckBox(true);
+            }
+
+            // prüfe Strom Profil Definition
+            Z_ProjektStromverbraucherCtrl stromvctrl = new Z_ProjektStromverbraucherCtrl();
+            stromvctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + projektID);
+            if (stromvctrl.rows > 0)
+            {
+                ((Wizard_Komponenten)page).SetStromprofilCheckBox(true);
+            }
+
+            // prüfe Strom Wärmebedarf Lastgang Definition
+            RecordSet rs = new RecordSet();
+            rs.Open("select * from Z_ProjektWaermebedarf where ID_Projekt=" + projektID);
+ 
+            if (rs.Next())
+            {
+                ((Wizard_Komponenten)page).SetWBedarfDatenCheckBox(true);
+            }
+            rs.Close();
+
+            string sql = "SELECT Tab_Energieanlagen.ID_Projekt, Tab_Energieanlagen.ID_Type FROM Tab_Energieanlagen " +
+                         "WHERE Tab_Energieanlagen.ID_Projekt=" + projektID.ToString() +
+                         " AND ((Tab_Energieanlagen.ID_Type) = 5 OR (Tab_Energieanlagen.ID_Type) = 6 OR (Tab_Energieanlagen.ID_Type) = 7)";
+            rs = new RecordSet();
+            rs.Open(sql);
+            if (rs.Next())
+            {
+                ((Wizard_Komponenten)page).SetReferenzCheckBox(true);
+            }
+            rs.Close();
+
         }
-        
+
         public void LoadWEFromDB(string projekt)
         {
             if (projekt != "")
@@ -475,6 +539,15 @@ namespace WindowsFormsApplication1
                     result = Program.wizardctrl.Add_Stromganglinie(projektID, list_stromlastmodel);
                     if (!result) return;
 
+                    result = Program.wizardctrl.Del_WaermebedarfExtern(projektID);
+                    if (!result) return;
+
+                    result = Program.wizardctrl.Add_WaermebedarfExtern(projektID, list_wbmodel);
+                    if (!result) return;
+
+                    result = Program.wizardctrl.Add_Projekt_Stromverbraucher(projektID, list_stromverbrauchermodel);
+                    if (!result) return;
+
                     this.DialogResult = DialogResult.OK;
                     gespeichert = true;
                 }
@@ -508,6 +581,18 @@ namespace WindowsFormsApplication1
                 result = Program.wizardctrl.Add_Stromganglinie(projektID, list_stromlastmodel);
                 if (!result) return;
 
+                result = Program.wizardctrl.Del_WaermebedarfExtern(projektID);
+                if (!result) return;
+
+                result = Program.wizardctrl.Add_WaermebedarfExtern(projektID, list_wbmodel);
+                if (!result) return;
+
+                result = Program.wizardctrl.Del_Projekt_Stromverbraucher(projektID);
+                if (!result) return;
+
+                result = Program.wizardctrl.Add_Projekt_Stromverbraucher(projektID, list_stromverbrauchermodel);
+                if (!result) return;
+
                 m_Projektmodel.m_Aenderungsdatum = DateTime.Now;
                 m_Projektmodel.m_szBearbeiter = ((Wizard_Projekt)pageproj).GetBearbeiter();
                 m_Projektmodel.m_szKunde = ((Wizard_Projekt)pageproj).GetKunde();
@@ -528,6 +613,7 @@ namespace WindowsFormsApplication1
             if (!listPages[WizardItemClass.SP_ITEM].aktiv && item.ID_Type == WizardItemClass.SP_TYP) return true;
             if (!listPages[WizardItemClass.PV_ITEM].aktiv && item.ID_Type == WizardItemClass.PV_TYP) return true;
             if (!listPages[WizardItemClass.WP_ITEM].aktiv && item.ID_Type == WizardItemClass.WP_TYP) return true;
+
             return false;
         }
 
@@ -644,6 +730,59 @@ namespace WindowsFormsApplication1
                 }
             }
         }
- 
+
+        public void LoadWBedarfFromDB(string projekt)
+        {
+            if (projekt != "")
+            {
+                ProjektCtrl projctrl = new ProjektCtrl();
+                RecordSet rs = new RecordSet(); 
+
+                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + projekt + "'");
+                rs.Open("select * from Z_ProjektWaermebedarf where ID_Projekt=" + projctrl.m_ID);
+
+                list_wbmodel.Clear();
+
+                while(rs.Next())
+                {
+                    Z_ProjWaermebedarfModel item = new Z_ProjWaermebedarfModel();
+
+                    item.m_ID_Z = (int)rs.Read("ID_Z");
+                    item.m_ID_Projekt = projctrl.m_ID;
+                    item.m_szBezeichner = (string)rs.Read("Bezeichner");
+                    item.m_ID_Ganglinie = (int)rs.Read("ID_Ganglinie");
+
+                    list_wbmodel.Add(item);
+                }
+            }
+        }
+
+        public void LoadStromverbraucherFromDB(string projekt)
+        {
+            if (projekt != "")
+            {
+                ProjektCtrl projctrl = new ProjektCtrl();
+                Z_ProjektStromverbraucherCtrl svctrl = new Z_ProjektStromverbraucherCtrl();
+
+                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + projekt + "'");
+                svctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + projctrl.m_ID);
+
+                list_stromverbrauchermodel.Clear();
+
+                for (int n = 0; n < svctrl.rows; n++)
+                {
+                    Z_ProjektStromverbraucherModel item = new Z_ProjektStromverbraucherModel();
+
+                    item.m_ID_Z = svctrl.items[n].m_ID_Z;
+                    item.m_ID_Projekt = projctrl.m_ID;
+                    item.m_szVerbraucher = svctrl.items[n].m_szVerbraucher;
+                    item.m_ID_Stromverbraucher = svctrl.items[n].m_ID_Stromverbraucher;
+
+                    list_stromverbrauchermodel.Add(item);
+                }
+            }
+        }
+
+
     }
 }

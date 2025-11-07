@@ -138,6 +138,22 @@ namespace WindowsFormsApplication1
             rs.Close();
         }
 
+        private void listBox_SP_DB_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RecordSet rs = new RecordSet();
+
+            rs.Open("select * from Tab_Stromspeicher where Bezeichner='" + listBox_SP_DB.Text + "'");
+            if (!rs.EOF())
+            {
+                textBox_Name.Text = (string)rs.Read("Bezeichner");
+                textBox_Typ.Text = (string)rs.Read("Typ");
+                textBox_Leistung.Text = rs.Read("Leistung").ToString();
+                textBox_Energie.Text = rs.Read("Energie").ToString();
+                textBox_Degradation.Text = rs.Read("Degradation").ToString(); ;
+                textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString(); ;
+            }
+            rs.Close();
+        }
     }
 }
 

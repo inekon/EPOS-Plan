@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WindowsFormsApplication1
 {
-    class Z_ProjWaermebedarfModel
+    public class Z_ProjWaermebedarfModel
     {
         public Z_ProjWaermebedarfModel[] items;
         public int m_ID_Z;

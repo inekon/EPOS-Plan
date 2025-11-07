@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -24,6 +18,7 @@ namespace WindowsFormsApplication1
         public void SetControls(string projekt)
         {
             wizardparent = (WizardParent)getWizardPage();
+            m_ID_Projekt = wizardparent.projektID;
 
             if ((wizardparent.wizardmode == WizardParent.WIZARD_MODE_BEARBEITEN) && projekt != "")
             {
@@ -35,7 +30,6 @@ namespace WindowsFormsApplication1
 
                     item.m_szStromganglinie = wizardparent.list_stromlastmodel[n].m_szStromganglinie;
                     listBox_Auswahl.Items.Add(item.m_szStromganglinie);
-                    m_ID_Projekt = wizardparent.list_stromlastmodel[n].m_ID_Projekt;
                 }
                 if (listBox_Auswahl.Items.Count > 0) listBox_Auswahl.SelectedIndex = 0;
             }

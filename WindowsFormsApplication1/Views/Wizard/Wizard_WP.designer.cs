@@ -90,9 +90,9 @@ namespace WindowsFormsApplication1
             this.label7.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label7.Location = new System.Drawing.Point(23, 216);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(225, 19);
+            this.label7.Size = new System.Drawing.Size(228, 19);
             this.label7.TabIndex = 8;
-            this.label7.Text = "Liste der Wärmepumpen im Projekt";
+            this.label7.Text = "Liste der Wärmepumpen im Projekt:";
             // 
             // btn_Ansicht
             // 
@@ -171,7 +171,7 @@ namespace WindowsFormsApplication1
             // 
             this.textBox_WP.Enabled = false;
             this.textBox_WP.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.textBox_WP.Location = new System.Drawing.Point(279, 194);
+            this.textBox_WP.Location = new System.Drawing.Point(303, 63);
             this.textBox_WP.Name = "textBox_WP";
             this.textBox_WP.Size = new System.Drawing.Size(215, 29);
             this.textBox_WP.TabIndex = 54;

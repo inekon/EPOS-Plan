@@ -78,7 +78,7 @@ namespace WindowsFormsApplication1
             this.label4.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label4.Location = new System.Drawing.Point(44, 251);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(31, 19);
+            this.label4.Size = new System.Drawing.Size(30, 19);
             this.label4.TabIndex = 13;
             this.label4.Text = "Typ";
             // 
@@ -179,7 +179,7 @@ namespace WindowsFormsApplication1
             this.label17.BackColor = System.Drawing.Color.Black;
             this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label17.ForeColor = System.Drawing.Color.White;
-            this.label17.Location = new System.Drawing.Point(200, 279);
+            this.label17.Location = new System.Drawing.Point(200, 281);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(33, 19);
             this.label17.TabIndex = 59;
@@ -191,7 +191,7 @@ namespace WindowsFormsApplication1
             this.label9.BackColor = System.Drawing.Color.Black;
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label9.ForeColor = System.Drawing.Color.White;
-            this.label9.Location = new System.Drawing.Point(200, 373);
+            this.label9.Location = new System.Drawing.Point(200, 376);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(23, 19);
             this.label9.TabIndex = 60;
@@ -203,7 +203,7 @@ namespace WindowsFormsApplication1
             this.label10.BackColor = System.Drawing.Color.Black;
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label10.ForeColor = System.Drawing.Color.White;
-            this.label10.Location = new System.Drawing.Point(200, 348);
+            this.label10.Location = new System.Drawing.Point(200, 345);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(33, 19);
             this.label10.TabIndex = 61;
@@ -285,6 +285,7 @@ namespace WindowsFormsApplication1
             this.listBox_SP_DB.Name = "listBox_SP_DB";
             this.listBox_SP_DB.Size = new System.Drawing.Size(186, 157);
             this.listBox_SP_DB.TabIndex = 65;
+            this.listBox_SP_DB.SelectedIndexChanged += new System.EventHandler(this.listBox_SP_DB_SelectedIndexChanged);
             // 
             // listBox_SP
             // 

@@ -52,25 +52,26 @@
             this.label3 = new System.Windows.Forms.Label();
             this.textBox_Investitionskosten = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.btn_Bearbeiten = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label18
             // 
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label18.Location = new System.Drawing.Point(16, 326);
+            this.label18.Location = new System.Drawing.Point(22, 326);
             this.label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(91, 19);
+            this.label18.Size = new System.Drawing.Size(94, 19);
             this.label18.TabIndex = 98;
-            this.label18.Text = "Beschreibung";
+            this.label18.Text = "Beschreibung:";
             // 
             // textBox_Kesselbeschreibung
             // 
             this.textBox_Kesselbeschreibung.Enabled = false;
             this.textBox_Kesselbeschreibung.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Kesselbeschreibung.Location = new System.Drawing.Point(124, 322);
-            this.textBox_Kesselbeschreibung.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBox_Kesselbeschreibung.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Kesselbeschreibung.Multiline = true;
             this.textBox_Kesselbeschreibung.Name = "textBox_Kesselbeschreibung";
             this.textBox_Kesselbeschreibung.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -82,7 +83,7 @@
             this.label13.BackColor = System.Drawing.Color.DimGray;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label13.ForeColor = System.Drawing.Color.White;
-            this.label13.Location = new System.Drawing.Point(198, 464);
+            this.label13.Location = new System.Drawing.Point(198, 461);
             this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(38, 25);
@@ -94,19 +95,19 @@
             // 
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label14.Location = new System.Drawing.Point(16, 463);
+            this.label14.Location = new System.Drawing.Point(52, 463);
             this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(61, 19);
+            this.label14.Size = new System.Drawing.Size(64, 19);
             this.label14.TabIndex = 95;
-            this.label14.Text = "Leistung";
+            this.label14.Text = "Leistung:";
             // 
             // textBox_Kesselleistung
             // 
             this.textBox_Kesselleistung.Enabled = false;
             this.textBox_Kesselleistung.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Kesselleistung.Location = new System.Drawing.Point(124, 460);
-            this.textBox_Kesselleistung.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBox_Kesselleistung.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Kesselleistung.Name = "textBox_Kesselleistung";
             this.textBox_Kesselleistung.Size = new System.Drawing.Size(67, 25);
             this.textBox_Kesselleistung.TabIndex = 94;
@@ -116,19 +117,19 @@
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label15.Location = new System.Drawing.Point(16, 422);
+            this.label15.Location = new System.Drawing.Point(83, 422);
             this.label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(30, 19);
+            this.label15.Size = new System.Drawing.Size(33, 19);
             this.label15.TabIndex = 93;
-            this.label15.Text = "Typ";
+            this.label15.Text = "Typ:";
             // 
             // textBox_Kesseltyp
             // 
             this.textBox_Kesseltyp.Enabled = false;
             this.textBox_Kesseltyp.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Kesseltyp.Location = new System.Drawing.Point(124, 420);
-            this.textBox_Kesseltyp.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBox_Kesseltyp.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Kesseltyp.Name = "textBox_Kesseltyp";
             this.textBox_Kesseltyp.Size = new System.Drawing.Size(206, 25);
             this.textBox_Kesseltyp.TabIndex = 92;
@@ -137,19 +138,19 @@
             // 
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label16.Location = new System.Drawing.Point(16, 285);
+            this.label16.Location = new System.Drawing.Point(68, 285);
             this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(45, 19);
+            this.label16.Size = new System.Drawing.Size(48, 19);
             this.label16.TabIndex = 91;
-            this.label16.Text = "Name";
+            this.label16.Text = "Name:";
             // 
             // textBox_Kesselname
             // 
             this.textBox_Kesselname.Enabled = false;
             this.textBox_Kesselname.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Kesselname.Location = new System.Drawing.Point(124, 281);
-            this.textBox_Kesselname.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBox_Kesselname.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Kesselname.Name = "textBox_Kesselname";
             this.textBox_Kesselname.Size = new System.Drawing.Size(300, 25);
             this.textBox_Kesselname.TabIndex = 90;
@@ -158,7 +159,7 @@
             // 
             this.label11.AutoSize = true;
             this.label11.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label11.Location = new System.Drawing.Point(465, 29);
+            this.label11.Location = new System.Drawing.Point(465, 35);
             this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(142, 19);
@@ -168,8 +169,8 @@
             // btn_Kessel_Entfernen
             // 
             this.btn_Kessel_Entfernen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Kessel_Entfernen.Location = new System.Drawing.Point(349, 139);
-            this.btn_Kessel_Entfernen.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_Kessel_Entfernen.Location = new System.Drawing.Point(347, 139);
+            this.btn_Kessel_Entfernen.Margin = new System.Windows.Forms.Padding(4);
             this.btn_Kessel_Entfernen.Name = "btn_Kessel_Entfernen";
             this.btn_Kessel_Entfernen.Size = new System.Drawing.Size(88, 37);
             this.btn_Kessel_Entfernen.TabIndex = 88;
@@ -180,8 +181,8 @@
             // btn_Kessel_Hinzu
             // 
             this.btn_Kessel_Hinzu.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Kessel_Hinzu.Location = new System.Drawing.Point(349, 93);
-            this.btn_Kessel_Hinzu.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_Kessel_Hinzu.Location = new System.Drawing.Point(347, 93);
+            this.btn_Kessel_Hinzu.Margin = new System.Windows.Forms.Padding(4);
             this.btn_Kessel_Hinzu.Name = "btn_Kessel_Hinzu";
             this.btn_Kessel_Hinzu.Size = new System.Drawing.Size(88, 38);
             this.btn_Kessel_Hinzu.TabIndex = 87;
@@ -196,7 +197,7 @@
             this.listBox_Kessel_DB.HorizontalScrollbar = true;
             this.listBox_Kessel_DB.ItemHeight = 17;
             this.listBox_Kessel_DB.Location = new System.Drawing.Point(465, 58);
-            this.listBox_Kessel_DB.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.listBox_Kessel_DB.Margin = new System.Windows.Forms.Padding(4);
             this.listBox_Kessel_DB.Name = "listBox_Kessel_DB";
             this.listBox_Kessel_DB.Size = new System.Drawing.Size(291, 191);
             this.listBox_Kessel_DB.TabIndex = 86;
@@ -206,7 +207,7 @@
             // 
             this.label12.AutoSize = true;
             this.label12.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label12.Location = new System.Drawing.Point(36, 29);
+            this.label12.Location = new System.Drawing.Point(36, 35);
             this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(126, 19);
@@ -220,7 +221,7 @@
             this.listBox_Kessel.HorizontalScrollbar = true;
             this.listBox_Kessel.ItemHeight = 17;
             this.listBox_Kessel.Location = new System.Drawing.Point(38, 58);
-            this.listBox_Kessel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.listBox_Kessel.Margin = new System.Windows.Forms.Padding(4);
             this.listBox_Kessel.Name = "listBox_Kessel";
             this.listBox_Kessel.Size = new System.Drawing.Size(277, 191);
             this.listBox_Kessel.TabIndex = 84;
@@ -229,10 +230,10 @@
             // btn_Abbrechen
             // 
             this.btn_Abbrechen.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_Abbrechen.Location = new System.Drawing.Point(559, 534);
+            this.btn_Abbrechen.Location = new System.Drawing.Point(561, 540);
             this.btn_Abbrechen.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btn_Abbrechen.Name = "btn_Abbrechen";
-            this.btn_Abbrechen.Size = new System.Drawing.Size(106, 41);
+            this.btn_Abbrechen.Size = new System.Drawing.Size(106, 34);
             this.btn_Abbrechen.TabIndex = 99;
             this.btn_Abbrechen.Text = "Abbrechen";
             this.btn_Abbrechen.UseVisualStyleBackColor = true;
@@ -241,10 +242,10 @@
             // btn_OK
             // 
             this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_OK.Location = new System.Drawing.Point(681, 534);
+            this.btn_OK.Location = new System.Drawing.Point(683, 540);
             this.btn_OK.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btn_OK.Name = "btn_OK";
-            this.btn_OK.Size = new System.Drawing.Size(90, 41);
+            this.btn_OK.Size = new System.Drawing.Size(90, 34);
             this.btn_OK.TabIndex = 100;
             this.btn_OK.Text = "OK";
             this.btn_OK.UseVisualStyleBackColor = true;
@@ -253,8 +254,8 @@
             // comboBox_Brennstoffart
             // 
             this.comboBox_Brennstoffart.FormattingEnabled = true;
-            this.comboBox_Brennstoffart.Location = new System.Drawing.Point(611, 299);
-            this.comboBox_Brennstoffart.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.comboBox_Brennstoffart.Location = new System.Drawing.Point(469, 282);
+            this.comboBox_Brennstoffart.Margin = new System.Windows.Forms.Padding(4);
             this.comboBox_Brennstoffart.Name = "comboBox_Brennstoffart";
             this.comboBox_Brennstoffart.Size = new System.Drawing.Size(145, 25);
             this.comboBox_Brennstoffart.TabIndex = 101;
@@ -264,7 +265,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(608, 279);
+            this.label1.Location = new System.Drawing.Point(466, 261);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(156, 17);
@@ -274,7 +275,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(608, 349);
+            this.label2.Location = new System.Drawing.Point(466, 317);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(129, 17);
@@ -284,8 +285,8 @@
             // comboBox_Leistung
             // 
             this.comboBox_Leistung.FormattingEnabled = true;
-            this.comboBox_Leistung.Location = new System.Drawing.Point(611, 370);
-            this.comboBox_Leistung.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.comboBox_Leistung.Location = new System.Drawing.Point(469, 338);
+            this.comboBox_Leistung.Margin = new System.Windows.Forms.Padding(4);
             this.comboBox_Leistung.Name = "comboBox_Leistung";
             this.comboBox_Leistung.Size = new System.Drawing.Size(145, 25);
             this.comboBox_Leistung.TabIndex = 103;
@@ -294,10 +295,10 @@
             // label3
             // 
             this.label3.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label3.Location = new System.Drawing.Point(16, 496);
+            this.label3.Location = new System.Drawing.Point(25, 493);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(100, 51);
+            this.label3.Size = new System.Drawing.Size(91, 51);
             this.label3.TabIndex = 106;
             this.label3.Text = "Investitions-kosten:";
             // 
@@ -306,7 +307,7 @@
             this.textBox_Investitionskosten.Enabled = false;
             this.textBox_Investitionskosten.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Investitionskosten.Location = new System.Drawing.Point(124, 502);
-            this.textBox_Investitionskosten.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBox_Investitionskosten.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Investitionskosten.Name = "textBox_Investitionskosten";
             this.textBox_Investitionskosten.Size = new System.Drawing.Size(112, 25);
             this.textBox_Investitionskosten.TabIndex = 105;
@@ -317,7 +318,7 @@
             this.label4.BackColor = System.Drawing.Color.DimGray;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.ForeColor = System.Drawing.Color.White;
-            this.label4.Location = new System.Drawing.Point(244, 507);
+            this.label4.Location = new System.Drawing.Point(243, 502);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(38, 25);
@@ -325,11 +326,22 @@
             this.label4.Text = "€";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // btn_Bearbeiten
+            // 
+            this.btn_Bearbeiten.Location = new System.Drawing.Point(657, 256);
+            this.btn_Bearbeiten.Name = "btn_Bearbeiten";
+            this.btn_Bearbeiten.Size = new System.Drawing.Size(99, 32);
+            this.btn_Bearbeiten.TabIndex = 108;
+            this.btn_Bearbeiten.Text = "Bearbeiten...";
+            this.btn_Bearbeiten.UseVisualStyleBackColor = true;
+            this.btn_Bearbeiten.Click += new System.EventHandler(this.btn_Bearbeiten_Click);
+            // 
             // Form_Heizkessel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(786, 588);
+            this.Controls.Add(this.btn_Bearbeiten);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.textBox_Investitionskosten);
@@ -355,7 +367,7 @@
             this.Controls.Add(this.label12);
             this.Controls.Add(this.listBox_Kessel);
             this.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form_Heizkessel";
             this.Text = "Verwaltung Heizkessel";
             this.Load += new System.EventHandler(this.Form_Heizkessel_Load);
@@ -390,5 +402,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBox_Investitionskosten;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button btn_Bearbeiten;
     }
 }

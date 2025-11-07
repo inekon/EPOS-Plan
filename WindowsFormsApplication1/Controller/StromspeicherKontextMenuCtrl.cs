@@ -95,7 +95,7 @@ namespace WindowsFormsApplication1
             {
                 ListViewItem item = listView_SP.Items[indexes[0]];
                 listView_SP.Items[indexes[0]].Remove();
-                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, Int32.Parse(item.SubItems[6].Text));
+                wizctrl.Del_Projekt_ID_Waermeerzeuger(m_ID_Projekt, Int32.Parse(item.SubItems[6].Text));
 
                 projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
                 projctrl.m_Aenderungsdatum = DateTime.Now;
@@ -143,10 +143,7 @@ namespace WindowsFormsApplication1
             {
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
-                for (int n = 0; n < frm.list_spmodel.Count; n++)
-                {
-                    wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, frm.list_spmodel[n].ID);
-                }
+                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_spmodel);
 
                 ProjektCtrl projctrl = new ProjektCtrl();
@@ -180,6 +177,7 @@ namespace WindowsFormsApplication1
             model.Bezeichner = werzctrl.items[0].Bezeichner;
             frm.list_spmodel.Add(model);
             frm.m_bItemBearbeiten = true;
+            int id_type = model.ID_Type;
 
             frm.SetControls(m_szProjektname);
             frm.ShowDialog();
@@ -188,10 +186,7 @@ namespace WindowsFormsApplication1
             {
                 WizardCtrl wizctrl = new WizardCtrl();
                 // Datenbank aktualisieren
-                for (int n = 0; n < frm.list_spmodel.Count; n++)
-                {
-                    wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, frm.list_spmodel[n].ID);
-                }
+                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_spmodel);
 
                 projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");

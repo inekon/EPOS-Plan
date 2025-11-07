@@ -135,7 +135,7 @@ namespace WindowsFormsApplication1
             {
                 ListViewItem item = listView_WP.Items[indexes[0]];
                 listView_WP.Items[indexes[0]].Remove();
-                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, Int32.Parse(item.SubItems[4].Text));
+                wizctrl.Del_Projekt_ID_Waermeerzeuger(m_ID_Projekt, Int32.Parse(item.SubItems[4].Text));
 
                 projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
                 projctrl.m_Aenderungsdatum = DateTime.Now;

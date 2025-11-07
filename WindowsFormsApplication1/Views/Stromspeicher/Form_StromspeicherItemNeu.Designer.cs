@@ -87,6 +87,7 @@
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "Form_Sp_ItemNeu";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Bezeichner eingeben";
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -224,6 +224,9 @@ namespace WindowsFormsApplication1
             Form_EingDBProzess frm = new Form_EingDBProzess();
             Form_Sp_ItemNeu frm_item = new Form_Sp_ItemNeu();
 
+            Point p1 = btn_Prozess_DBneu.Location;
+            p1 = this.PointToScreen(p1);
+            frm_item.Location = p1;
             frm_item.ShowDialog();
 
             if (frm_item.result == DialogResult.OK)

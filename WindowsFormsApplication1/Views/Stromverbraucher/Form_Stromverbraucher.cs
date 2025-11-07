@@ -223,7 +223,9 @@ namespace WindowsFormsApplication1
         {
             Form_EingDBStromverbraucher frm = new Form_EingDBStromverbraucher();
             Form_Sp_ItemNeu frm_item = new Form_Sp_ItemNeu();
-
+            Point p1 = btn_Strom_DBneu.Location;
+            p1 = this.PointToScreen(p1);
+            frm_item.Location = p1;
             frm_item.ShowDialog();
 
             if (frm_item.result == DialogResult.OK)
@@ -267,8 +269,9 @@ namespace WindowsFormsApplication1
             frm.ShowDialog(); 
         }
 
+        private void btn_neuerWert_Click(object sender, EventArgs e)
+        {
 
-
- 
+        }
     }
 }

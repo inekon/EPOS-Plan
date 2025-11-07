@@ -103,7 +103,7 @@ namespace WindowsFormsApplication1
             OdbcTransaction transaction = null;
 
             ExecuteTransaction(Program.DBConnection.ConnectionString, projektID );
-
+            return true;
             try
             {
                 OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID, Program.DBConnection);
@@ -282,11 +282,11 @@ namespace WindowsFormsApplication1
 
         }
 
-        public bool Del_Projekt_Waermeerzeuger(int projektID, int ID_Waermeerzeuger)
+        public bool Del_Projekt_ID_Waermeerzeuger(int projektID, int ID_Waermeerzeuger)
         {
             try
             {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID + " and ID_Type=" + ID_Waermeerzeuger, Program.DBConnection);
+                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID + " and ID=" + ID_Waermeerzeuger, Program.DBConnection);
                 DataSet dataSet = new DataSet();
                 adapter.Fill(dataSet, "Tab_Energieanlagen");
 
@@ -307,7 +307,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public bool Del_Projekt_Waermeerzeuger(int projektID, WizardItemClass nType)
+        public bool Del_Projekt_Waermeerzeuger(int projektID, int nType)
         {
             try
             {

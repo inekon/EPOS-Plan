@@ -116,6 +116,10 @@ namespace WindowsFormsApplication1
             
             frm.m_szName = textBox_Prozessname.Text;
             frm.SetControl();
+            Point p1 = btn_Speichern_Unter.Location;
+            p1 = this.PointToScreen(p1);
+            frm.Location = p1;
+
             frm.ShowDialog();
 
             if (frm.result == DialogResult.OK)

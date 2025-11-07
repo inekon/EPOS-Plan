@@ -215,5 +215,21 @@ namespace WindowsFormsApplication1
             }
             rs.Close();
         }
+
+        private void btn_Bearbeiten_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+
+            int index = listBox_Kessel_DB.SelectedIndex;
+            listBox_Kessel.SelectedItems.Clear();
+            listBox_Kessel_DB.SelectedItems.Clear();
+            ctrl.Kessel();
+            listBox_Kessel_DB.Items.Clear();
+            heizkesselctrl.ReadAll();
+            for (int i = 0; i < heizkesselctrl.rows; i++)
+            {
+                listBox_Kessel_DB.Items.Add(heizkesselctrl.items[i].Name);
+            }
+        }
     }
 }

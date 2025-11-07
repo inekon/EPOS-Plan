@@ -50,12 +50,14 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Wizard_Projekt(), WizardItemClass.PROJEKT_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Klima(), WizardItemClass.KLIMA_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Gebaeude(), WizardItemClass.GEBAEUDE_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Waermebedarf(), WizardItemClass.WAERMEBEDARF_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.PROZESS_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Stromprofil(), WizardItemClass.STROMSTD_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_WP(), WizardItemClass.WP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Solar(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Wizard_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Sp(), WizardItemClass.SP_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.PROZESS_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Referenz(), WizardItemClass.REFERENZ_ITEM));
 
@@ -63,6 +65,7 @@ namespace WindowsFormsApplication1
             Program.wizardctrl.parentform = wizparent;
             wizparent.SetWizardMode(WizardParent.WIZARD_MODE_NEU);
             wizparent.ShowDialog();
+            
             if (wizparent.gespeichert)
             {
                 MessageBox.Show("Daten gespeichert");
@@ -76,12 +79,14 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Wizard_Projekt(), WizardItemClass.PROJEKT_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Klima(),WizardItemClass.KLIMA_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Gebaeude(), WizardItemClass.GEBAEUDE_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Waermebedarf(), WizardItemClass.WAERMEBEDARF_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.PROZESS_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Stromprofil(), WizardItemClass.STROMSTD_ITEM));
+            frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_WP(), WizardItemClass.WP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Solar(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Wizard_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Sp(), WizardItemClass.SP_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.PROZESS_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Referenz(), WizardItemClass.REFERENZ_ITEM));
 

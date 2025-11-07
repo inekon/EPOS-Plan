@@ -40,6 +40,10 @@
             this.checkBox_Prozess = new System.Windows.Forms.CheckBox();
             this.checkBox_Stromlastgang = new System.Windows.Forms.CheckBox();
             this.checkBox_Kessel = new System.Windows.Forms.CheckBox();
+            this.checkBox_Gebaeude = new System.Windows.Forms.CheckBox();
+            this.checkBox_Referenz = new System.Windows.Forms.CheckBox();
+            this.checkBox_WBedarfDaten = new System.Windows.Forms.CheckBox();
+            this.checkBox_StdStromprofil = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -70,7 +74,7 @@
             // 
             this.checkBox_WP.AutoSize = true;
             this.checkBox_WP.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.checkBox_WP.Location = new System.Drawing.Point(128, 282);
+            this.checkBox_WP.Location = new System.Drawing.Point(269, 280);
             this.checkBox_WP.Name = "checkBox_WP";
             this.checkBox_WP.Size = new System.Drawing.Size(128, 25);
             this.checkBox_WP.TabIndex = 3;
@@ -82,7 +86,7 @@
             // 
             this.checkBox_Solar.AutoSize = true;
             this.checkBox_Solar.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.checkBox_Solar.Location = new System.Drawing.Point(128, 305);
+            this.checkBox_Solar.Location = new System.Drawing.Point(269, 302);
             this.checkBox_Solar.Name = "checkBox_Solar";
             this.checkBox_Solar.Size = new System.Drawing.Size(65, 25);
             this.checkBox_Solar.TabIndex = 4;
@@ -94,7 +98,7 @@
             // 
             this.checkBox_PV.AutoSize = true;
             this.checkBox_PV.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.checkBox_PV.Location = new System.Drawing.Point(128, 328);
+            this.checkBox_PV.Location = new System.Drawing.Point(269, 324);
             this.checkBox_PV.Name = "checkBox_PV";
             this.checkBox_PV.Size = new System.Drawing.Size(116, 25);
             this.checkBox_PV.TabIndex = 5;
@@ -106,7 +110,7 @@
             // 
             this.checkBox_StromSp.AutoSize = true;
             this.checkBox_StromSp.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.checkBox_StromSp.Location = new System.Drawing.Point(128, 351);
+            this.checkBox_StromSp.Location = new System.Drawing.Point(269, 346);
             this.checkBox_StromSp.Name = "checkBox_StromSp";
             this.checkBox_StromSp.Size = new System.Drawing.Size(129, 25);
             this.checkBox_StromSp.TabIndex = 6;
@@ -116,15 +120,15 @@
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
             this.label3.BackColor = System.Drawing.Color.DimGray;
             this.label3.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.label3.ForeColor = System.Drawing.Color.White;
             this.label3.Location = new System.Drawing.Point(31, 244);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(460, 21);
+            this.label3.Size = new System.Drawing.Size(609, 21);
             this.label3.TabIndex = 7;
             this.label3.Text = "Wärmeerzeuger bzw. Energieerzeuger  Komponenten auswählen:";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // pictureBox1
             // 
@@ -140,7 +144,7 @@
             // 
             this.checkBox_Prozess.AutoSize = true;
             this.checkBox_Prozess.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.checkBox_Prozess.Location = new System.Drawing.Point(128, 374);
+            this.checkBox_Prozess.Location = new System.Drawing.Point(49, 324);
             this.checkBox_Prozess.Name = "checkBox_Prozess";
             this.checkBox_Prozess.Size = new System.Drawing.Size(130, 25);
             this.checkBox_Prozess.TabIndex = 8;
@@ -152,7 +156,7 @@
             // 
             this.checkBox_Stromlastgang.AutoSize = true;
             this.checkBox_Stromlastgang.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.checkBox_Stromlastgang.Location = new System.Drawing.Point(128, 397);
+            this.checkBox_Stromlastgang.Location = new System.Drawing.Point(49, 368);
             this.checkBox_Stromlastgang.Name = "checkBox_Stromlastgang";
             this.checkBox_Stromlastgang.Size = new System.Drawing.Size(130, 25);
             this.checkBox_Stromlastgang.TabIndex = 9;
@@ -164,13 +168,61 @@
             // 
             this.checkBox_Kessel.AutoSize = true;
             this.checkBox_Kessel.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.checkBox_Kessel.Location = new System.Drawing.Point(127, 420);
+            this.checkBox_Kessel.Location = new System.Drawing.Point(269, 368);
             this.checkBox_Kessel.Name = "checkBox_Kessel";
             this.checkBox_Kessel.Size = new System.Drawing.Size(122, 25);
             this.checkBox_Kessel.TabIndex = 10;
             this.checkBox_Kessel.Text = "Spitzenkessel";
             this.checkBox_Kessel.UseVisualStyleBackColor = true;
             this.checkBox_Kessel.CheckedChanged += new System.EventHandler(this.checkBox_Kessel_CheckedChanged);
+            // 
+            // checkBox_Gebaeude
+            // 
+            this.checkBox_Gebaeude.AutoSize = true;
+            this.checkBox_Gebaeude.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.checkBox_Gebaeude.Location = new System.Drawing.Point(49, 280);
+            this.checkBox_Gebaeude.Name = "checkBox_Gebaeude";
+            this.checkBox_Gebaeude.Size = new System.Drawing.Size(91, 25);
+            this.checkBox_Gebaeude.TabIndex = 11;
+            this.checkBox_Gebaeude.Text = "Gebäude";
+            this.checkBox_Gebaeude.UseVisualStyleBackColor = true;
+            this.checkBox_Gebaeude.CheckedChanged += new System.EventHandler(this.checkBox_Gebaeude_CheckedChanged);
+            // 
+            // checkBox_Referenz
+            // 
+            this.checkBox_Referenz.AutoSize = true;
+            this.checkBox_Referenz.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.checkBox_Referenz.Location = new System.Drawing.Point(429, 280);
+            this.checkBox_Referenz.Name = "checkBox_Referenz";
+            this.checkBox_Referenz.Size = new System.Drawing.Size(139, 25);
+            this.checkBox_Referenz.TabIndex = 12;
+            this.checkBox_Referenz.Text = "Referenzsystem";
+            this.checkBox_Referenz.UseVisualStyleBackColor = true;
+            this.checkBox_Referenz.CheckedChanged += new System.EventHandler(this.checkBox_Referenz_CheckedChanged);
+            // 
+            // checkBox_WBedarfDaten
+            // 
+            this.checkBox_WBedarfDaten.AutoSize = true;
+            this.checkBox_WBedarfDaten.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.checkBox_WBedarfDaten.Location = new System.Drawing.Point(49, 302);
+            this.checkBox_WBedarfDaten.Name = "checkBox_WBedarfDaten";
+            this.checkBox_WBedarfDaten.Size = new System.Drawing.Size(170, 25);
+            this.checkBox_WBedarfDaten.TabIndex = 13;
+            this.checkBox_WBedarfDaten.Text = "Wärmebedarfsdaten";
+            this.checkBox_WBedarfDaten.UseVisualStyleBackColor = true;
+            this.checkBox_WBedarfDaten.CheckedChanged += new System.EventHandler(this.checkBox_WBedarfDaten_CheckedChanged);
+            // 
+            // checkBox_StdStromprofil
+            // 
+            this.checkBox_StdStromprofil.AutoSize = true;
+            this.checkBox_StdStromprofil.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.checkBox_StdStromprofil.Location = new System.Drawing.Point(49, 346);
+            this.checkBox_StdStromprofil.Name = "checkBox_StdStromprofil";
+            this.checkBox_StdStromprofil.Size = new System.Drawing.Size(198, 25);
+            this.checkBox_StdStromprofil.TabIndex = 14;
+            this.checkBox_StdStromprofil.Text = "Standard Stromlastprofil";
+            this.checkBox_StdStromprofil.UseVisualStyleBackColor = true;
+            this.checkBox_StdStromprofil.CheckedChanged += new System.EventHandler(this.checkBox_StdStromprofil_CheckedChanged);
             // 
             // Wizard_Komponenten
             // 
@@ -179,6 +231,10 @@
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(712, 453);
+            this.Controls.Add(this.checkBox_StdStromprofil);
+            this.Controls.Add(this.checkBox_WBedarfDaten);
+            this.Controls.Add(this.checkBox_Referenz);
+            this.Controls.Add(this.checkBox_Gebaeude);
             this.Controls.Add(this.checkBox_Kessel);
             this.Controls.Add(this.checkBox_Stromlastgang);
             this.Controls.Add(this.checkBox_Prozess);
@@ -213,5 +269,9 @@
         private System.Windows.Forms.CheckBox checkBox_Prozess;
         private System.Windows.Forms.CheckBox checkBox_Stromlastgang;
         private System.Windows.Forms.CheckBox checkBox_Kessel;
+        private System.Windows.Forms.CheckBox checkBox_Gebaeude;
+        private System.Windows.Forms.CheckBox checkBox_Referenz;
+        private System.Windows.Forms.CheckBox checkBox_WBedarfDaten;
+        private System.Windows.Forms.CheckBox checkBox_StdStromprofil;
     }
 }

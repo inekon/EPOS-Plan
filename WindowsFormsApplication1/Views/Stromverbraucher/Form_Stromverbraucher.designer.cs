@@ -62,7 +62,7 @@ namespace WindowsFormsApplication1
             // btn_Hinzu
             // 
             this.btn_Hinzu.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Hinzu.Location = new System.Drawing.Point(332, 110);
+            this.btn_Hinzu.Location = new System.Drawing.Point(330, 110);
             this.btn_Hinzu.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Hinzu.Name = "btn_Hinzu";
             this.btn_Hinzu.Size = new System.Drawing.Size(82, 33);
@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
             // btn_Entfernen
             // 
             this.btn_Entfernen.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Entfernen.Location = new System.Drawing.Point(332, 151);
+            this.btn_Entfernen.Location = new System.Drawing.Point(330, 151);
             this.btn_Entfernen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Entfernen.Name = "btn_Entfernen";
             this.btn_Entfernen.Size = new System.Drawing.Size(82, 31);
@@ -91,7 +91,7 @@ namespace WindowsFormsApplication1
             this.btn_Strom_DBneu.Name = "btn_Strom_DBneu";
             this.btn_Strom_DBneu.Size = new System.Drawing.Size(184, 31);
             this.btn_Strom_DBneu.TabIndex = 3;
-            this.btn_Strom_DBneu.Text = "Stromverbraucher neu";
+            this.btn_Strom_DBneu.Text = "Stromverbraucher neu...";
             this.btn_Strom_DBneu.UseVisualStyleBackColor = true;
             this.btn_Strom_DBneu.Click += new System.EventHandler(this.btn_Strom_DBneu_Click);
             // 
@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1
             this.btn_ErgebnisseVerbrauch.Name = "btn_ErgebnisseVerbrauch";
             this.btn_ErgebnisseVerbrauch.Size = new System.Drawing.Size(144, 31);
             this.btn_ErgebnisseVerbrauch.TabIndex = 6;
-            this.btn_ErgebnisseVerbrauch.Text = "monatlicher Verlauf";
+            this.btn_ErgebnisseVerbrauch.Text = "monatlicher Verlauf...";
             this.btn_ErgebnisseVerbrauch.UseVisualStyleBackColor = true;
             this.btn_ErgebnisseVerbrauch.Click += new System.EventHandler(this.btn_ErgebnisseVerbrauch_Click);
             // 
@@ -127,7 +127,7 @@ namespace WindowsFormsApplication1
             this.btn_Simulation.Name = "btn_Simulation";
             this.btn_Simulation.Size = new System.Drawing.Size(119, 31);
             this.btn_Simulation.TabIndex = 9;
-            this.btn_Simulation.Text = "Simulation";
+            this.btn_Simulation.Text = "Simulation...";
             this.btn_Simulation.UseVisualStyleBackColor = true;
             this.btn_Simulation.Click += new System.EventHandler(this.btn_Simulation_Click);
             // 
@@ -162,7 +162,7 @@ namespace WindowsFormsApplication1
             this.btn_StromtypDBedit.Name = "btn_StromtypDBedit";
             this.btn_StromtypDBedit.Size = new System.Drawing.Size(184, 31);
             this.btn_StromtypDBedit.TabIndex = 13;
-            this.btn_StromtypDBedit.Text = "Typ in DB ändern";
+            this.btn_StromtypDBedit.Text = "Typ in DB ändern...";
             this.btn_StromtypDBedit.UseVisualStyleBackColor = true;
             this.btn_StromtypDBedit.Click += new System.EventHandler(this.btn_StromtypDBedit_Click);
             // 
@@ -174,7 +174,7 @@ namespace WindowsFormsApplication1
             this.btn_Strom_DBedit.Name = "btn_Strom_DBedit";
             this.btn_Strom_DBedit.Size = new System.Drawing.Size(184, 34);
             this.btn_Strom_DBedit.TabIndex = 15;
-            this.btn_Strom_DBedit.Text = "Stromverbraucher ändern";
+            this.btn_Strom_DBedit.Text = "Stromverbraucher ändern...";
             this.btn_Strom_DBedit.UseVisualStyleBackColor = true;
             this.btn_Strom_DBedit.Click += new System.EventHandler(this.btn_Strom_DBedit_Click);
             // 
@@ -261,7 +261,7 @@ namespace WindowsFormsApplication1
             this.Label15.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label15.Location = new System.Drawing.Point(115, 347);
             this.Label15.Name = "Label15";
-            this.Label15.Size = new System.Drawing.Size(34, 19);
+            this.Label15.Size = new System.Drawing.Size(33, 19);
             this.Label15.TabIndex = 26;
             this.Label15.Text = "Typ:";
             this.Label15.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -272,7 +272,7 @@ namespace WindowsFormsApplication1
             this.Label11.BackColor = System.Drawing.Color.Black;
             this.Label11.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label11.ForeColor = System.Drawing.Color.White;
-            this.Label11.Location = new System.Drawing.Point(228, 388);
+            this.Label11.Location = new System.Drawing.Point(228, 389);
             this.Label11.Name = "Label11";
             this.Label11.Size = new System.Drawing.Size(48, 19);
             this.Label11.TabIndex = 27;
@@ -337,6 +337,7 @@ namespace WindowsFormsApplication1
             // 
             // listView_Strom_Auswahl
             // 
+            this.listView_Strom_Auswahl.HideSelection = false;
             this.listView_Strom_Auswahl.Location = new System.Drawing.Point(16, 53);
             this.listView_Strom_Auswahl.Name = "listView_Strom_Auswahl";
             this.listView_Strom_Auswahl.Size = new System.Drawing.Size(284, 178);
@@ -372,7 +373,7 @@ namespace WindowsFormsApplication1
             this.Label8.BackColor = System.Drawing.Color.Black;
             this.Label8.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label8.ForeColor = System.Drawing.Color.White;
-            this.Label8.Location = new System.Drawing.Point(88, 242);
+            this.Label8.Location = new System.Drawing.Point(88, 241);
             this.Label8.Name = "Label8";
             this.Label8.Size = new System.Drawing.Size(43, 19);
             this.Label8.TabIndex = 39;
@@ -389,6 +390,7 @@ namespace WindowsFormsApplication1
             this.btn_neuerWert.TabIndex = 40;
             this.btn_neuerWert.Text = "Neuer Wert...";
             this.btn_neuerWert.UseVisualStyleBackColor = true;
+            this.btn_neuerWert.Click += new System.EventHandler(this.btn_neuerWert_Click);
             // 
             // Form_Stromverbraucher
             // 

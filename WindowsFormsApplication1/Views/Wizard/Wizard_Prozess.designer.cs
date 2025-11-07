@@ -60,11 +60,11 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label3.Location = new System.Drawing.Point(13, 292);
+            this.label3.Location = new System.Drawing.Point(59, 291);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(45, 19);
+            this.label3.Size = new System.Drawing.Size(48, 19);
             this.label3.TabIndex = 19;
-            this.label3.Text = "Name";
+            this.label3.Text = "Name:";
             // 
             // textBox_Name
             // 
@@ -142,11 +142,11 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label4.Location = new System.Drawing.Point(13, 332);
+            this.label4.Location = new System.Drawing.Point(74, 330);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(31, 19);
+            this.label4.Size = new System.Drawing.Size(33, 19);
             this.label4.TabIndex = 21;
-            this.label4.Text = "Typ";
+            this.label4.Text = "Typ:";
             // 
             // textBox_Typ
             // 
@@ -160,11 +160,11 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label5.Location = new System.Drawing.Point(13, 380);
+            this.label5.Location = new System.Drawing.Point(13, 371);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(91, 19);
+            this.label5.Size = new System.Drawing.Size(94, 19);
             this.label5.TabIndex = 23;
-            this.label5.Text = "Beschreibung";
+            this.label5.Text = "Beschreibung:";
             // 
             // textBox_Beschreibung
             // 

@@ -121,5 +121,20 @@ namespace WindowsFormsApplication1
             textBox_Name.Text = listBox_Auswahl.Text;
         }
 
+        private void btn_Bearbeiten_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            WaermebedarfCtrl wbctrl = new WaermebedarfCtrl();
+
+            listBox_Auswahl.SelectedItems.Clear();
+            listBox_Extern.SelectedItems.Clear();
+            ctrl.WaermebedarfExtern();
+            listBox_Extern.Items.Clear();
+            wbctrl.ReadAll();
+            for (int i = 0; i < wbctrl.rows; i++)
+            {
+                listBox_Extern.Items.Add(wbctrl.items[i].m_szBezeichner);
+            }
+        }
     }
 }
