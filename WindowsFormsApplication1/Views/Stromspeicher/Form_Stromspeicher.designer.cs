@@ -298,6 +298,21 @@ namespace WindowsFormsApplication1
             this.listBox_SP.TabIndex = 70;
             this.listBox_SP.SelectedIndexChanged += new System.EventHandler(this.listBox_SP_SelectedIndexChanged);
             // 
+<<<<<<< HEAD
+=======
+            // button1
+            // 
+            this.button1.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.button1.Location = new System.Drawing.Point(391, 260);
+            this.button1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(77, 31);
+            this.button1.TabIndex = 71;
+            this.button1.Text = "OK";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+>>>>>>> 5865c3e (add)
             // Form_Sp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);

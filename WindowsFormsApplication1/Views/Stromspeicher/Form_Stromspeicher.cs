@@ -159,6 +159,11 @@ namespace WindowsFormsApplication1
             frm.ShowDialog();
             SetControls(m_szProjekt);
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
 
