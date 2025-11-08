@@ -1,0 +1,12 @@
+Vorgehensweise git sync:
+
+
+Start: (noch keine lokale Änderung)
+git pull
+
+dann bei Änderungen (auch merge):
+git add -A .
+git commit
+git push
+
+
