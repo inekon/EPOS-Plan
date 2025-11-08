@@ -150,7 +150,7 @@ namespace WindowsFormsApplication1
                 textBox_Degradation.Text = rs.Read("Degradation").ToString(); ;
                 textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString(); ;
             }
-            rs.Close();
+            rs.Close(); 
         }
 
         private void btn_Bearbeiten_Click(object sender, EventArgs e)
