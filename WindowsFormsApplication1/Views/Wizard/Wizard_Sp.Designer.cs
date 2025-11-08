@@ -50,6 +50,7 @@
             this.label17 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
+            this.btn_Bearbeiten = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // listBox_SP
@@ -59,7 +60,7 @@
             this.listBox_SP.ItemHeight = 17;
             this.listBox_SP.Location = new System.Drawing.Point(25, 93);
             this.listBox_SP.Name = "listBox_SP";
-            this.listBox_SP.Size = new System.Drawing.Size(186, 157);
+            this.listBox_SP.Size = new System.Drawing.Size(225, 157);
             this.listBox_SP.TabIndex = 3;
             this.listBox_SP.SelectedIndexChanged += new System.EventHandler(this.listBox_SP_SelectedIndexChanged);
             // 
@@ -68,15 +69,15 @@
             this.listBox_SP_DB.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.listBox_SP_DB.FormattingEnabled = true;
             this.listBox_SP_DB.ItemHeight = 17;
-            this.listBox_SP_DB.Location = new System.Drawing.Point(350, 93);
+            this.listBox_SP_DB.Location = new System.Drawing.Point(384, 93);
             this.listBox_SP_DB.Name = "listBox_SP_DB";
-            this.listBox_SP_DB.Size = new System.Drawing.Size(186, 157);
+            this.listBox_SP_DB.Size = new System.Drawing.Size(221, 157);
             this.listBox_SP_DB.TabIndex = 4;
             // 
             // btn_Hinzu
             // 
             this.btn_Hinzu.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Hinzu.Location = new System.Drawing.Point(245, 120);
+            this.btn_Hinzu.Location = new System.Drawing.Point(279, 132);
             this.btn_Hinzu.Name = "btn_Hinzu";
             this.btn_Hinzu.Size = new System.Drawing.Size(75, 29);
             this.btn_Hinzu.TabIndex = 5;
@@ -87,7 +88,7 @@
             // btn_Entfernen
             // 
             this.btn_Entfernen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Entfernen.Location = new System.Drawing.Point(245, 155);
+            this.btn_Entfernen.Location = new System.Drawing.Point(279, 167);
             this.btn_Entfernen.Name = "btn_Entfernen";
             this.btn_Entfernen.Size = new System.Drawing.Size(75, 28);
             this.btn_Entfernen.TabIndex = 6;
@@ -109,7 +110,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label2.Location = new System.Drawing.Point(347, 71);
+            this.label2.Location = new System.Drawing.Point(389, 71);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(192, 19);
             this.label2.TabIndex = 8;
@@ -279,12 +280,23 @@
             this.label10.Text = "%/a";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // btn_Bearbeiten
+            // 
+            this.btn_Bearbeiten.Location = new System.Drawing.Point(508, 256);
+            this.btn_Bearbeiten.Name = "btn_Bearbeiten";
+            this.btn_Bearbeiten.Size = new System.Drawing.Size(97, 31);
+            this.btn_Bearbeiten.TabIndex = 72;
+            this.btn_Bearbeiten.Text = "Bearbeiten...";
+            this.btn_Bearbeiten.UseVisualStyleBackColor = true;
+            this.btn_Bearbeiten.Click += new System.EventHandler(this.btn_Bearbeiten_Click);
+            // 
             // Wizard_Sp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(656, 477);
+            this.Controls.Add(this.btn_Bearbeiten);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label17);
@@ -340,5 +352,6 @@
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Button btn_Bearbeiten;
     }
 }

@@ -9,6 +9,7 @@ namespace WindowsFormsApplication1
         private WErzeugerModel model = new WErzeugerModel();
         private WErzeugerCtrl ctrl = new WErzeugerCtrl();
         private StromspeicherCtrl spctrl = new StromspeicherCtrl();
+        public string m_szProjekt;
 
         public Wizard_Sp()
         {
@@ -95,6 +96,7 @@ namespace WindowsFormsApplication1
         public void SetControls(string projekt)
         {
             WizardParent wizardparent = (WizardParent)getWizardPage();
+            m_szProjekt = projekt;
 
             if ((wizardparent.wizardmode == WizardParent.WIZARD_MODE_BEARBEITEN) && projekt != "")
             {
@@ -132,6 +134,13 @@ namespace WindowsFormsApplication1
         private void textBox_Ladezustand_Validating(object sender, CancelEventArgs e)
         {
             if (!Program.checkInt(textBox_Ladezustand, textBox_Ladezustand.Text)) { textBox_Ladezustand.Undo(); }
+        }
+
+        private void btn_Bearbeiten_Click(object sender, EventArgs e)
+        {
+            Form_Stromverbraucher_Admin frm = new Form_Stromverbraucher_Admin();
+            frm.ShowDialog();
+            SetControls(m_szProjekt);
         }
     }
 }

@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -17,6 +13,7 @@ namespace WindowsFormsApplication1
         public List<WErzeugerModel> list_spmodel = new List<WErzeugerModel>();
         public int m_nType = WizardItemClass.SP_TYP;
         public int m_ID_Projekt = 0;
+        private string m_szProjekt;
         int startindex = 100000;
 
         public Form_Sp()
@@ -26,8 +23,9 @@ namespace WindowsFormsApplication1
             listBox_SP.Items.Clear();
         }
 
-        public void SetControls(string projekt)
+        public void SetControls(string szprojekt)
         {
+            m_szProjekt = szprojekt;    
             listBox_SP.Items.Clear();
             for (int i = 0; i < list_spmodel.Count; i++)
             {
@@ -153,6 +151,13 @@ namespace WindowsFormsApplication1
                 textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString(); ;
             }
             rs.Close();
+        }
+
+        private void btn_Bearbeiten_Click(object sender, EventArgs e)
+        {
+            Form_Stromverbraucher_Admin frm = new Form_Stromverbraucher_Admin();
+            frm.ShowDialog();
+            SetControls(m_szProjekt);
         }
     }
 }

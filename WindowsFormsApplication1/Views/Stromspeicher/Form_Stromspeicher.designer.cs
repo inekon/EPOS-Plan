@@ -51,6 +51,8 @@ namespace WindowsFormsApplication1
             this.btn_Hinzu = new System.Windows.Forms.Button();
             this.listBox_SP_DB = new System.Windows.Forms.ListBox();
             this.listBox_SP = new System.Windows.Forms.ListBox();
+            this.btn_Bearbeiten = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // textBox_Name
@@ -298,12 +300,35 @@ namespace WindowsFormsApplication1
             this.listBox_SP.TabIndex = 70;
             this.listBox_SP.SelectedIndexChanged += new System.EventHandler(this.listBox_SP_SelectedIndexChanged);
             // 
+            // btn_Bearbeiten
+            // 
+            this.btn_Bearbeiten.Location = new System.Drawing.Point(446, 212);
+            this.btn_Bearbeiten.Name = "btn_Bearbeiten";
+            this.btn_Bearbeiten.Size = new System.Drawing.Size(97, 31);
+            this.btn_Bearbeiten.TabIndex = 71;
+            this.btn_Bearbeiten.Text = "Bearbeiten...";
+            this.btn_Bearbeiten.UseVisualStyleBackColor = true;
+            this.btn_Bearbeiten.Click += new System.EventHandler(this.btn_Bearbeiten_Click);
+            // 
+            // button1
+            // 
+            this.button1.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.button1.Location = new System.Drawing.Point(236, 194);
+            this.button1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(91, 31);
+            this.button1.TabIndex = 72;
+            this.button1.Text = "Abbrechen";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
             // Form_Sp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(562, 418);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btn_Bearbeiten);
             this.Controls.Add(this.listBox_SP);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -360,5 +385,7 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.Button btn_Hinzu;
         private System.Windows.Forms.ListBox listBox_SP_DB;
         private System.Windows.Forms.ListBox listBox_SP;
+        private System.Windows.Forms.Button btn_Bearbeiten;
+        private System.Windows.Forms.Button button1;
     }
 }
