@@ -170,6 +170,7 @@ namespace WindowsFormsApplication1
             int b;
             int a;
             int d;
+            int j;
         }
     }
 }
