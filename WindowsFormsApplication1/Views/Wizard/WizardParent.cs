@@ -522,6 +522,7 @@ namespace WindowsFormsApplication1
             Program.wizardctrl.Projektname = ((Wizard_Projekt)pageproj).GetProjektName();
             Program.wizardctrl.speichern = false;
 
+            list_prozmodel = ((Form_Prozesswaerme)listPages[WizardItemClass.PROZESS_ITEM].wizardform).list_gebmodel;
             gespeichert = false;
             if (wizardmode == WIZARD_MODE_NEU)
             {
