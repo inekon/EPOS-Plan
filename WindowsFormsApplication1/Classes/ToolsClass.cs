@@ -1,11 +1,17 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using Microsoft.Office.Interop.Excel;
-using System.IO;
+using System.Data;
+using System.Data.Odbc;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Windows.Documents;
+using System.Windows.Forms;
+using static System.Net.WebRequestMethods;
+using File = System.IO.File;
 
 namespace WindowsFormsApplication1
 {
@@ -17,6 +23,7 @@ namespace WindowsFormsApplication1
         private Microsoft.Office.Interop.Excel.Worksheet oWorksheet = null;
 
         public List<KlimadatenModel> excelList = new List<KlimadatenModel>();
+        public List<SolardatenModel> excelListSolar = new List<SolardatenModel>();
         public List<string> textList = new List<string>();
 
         public bool Exist(string szName)
@@ -27,55 +34,55 @@ namespace WindowsFormsApplication1
             return false;
         }
 
-        public bool OpenExcel(string file, string szSheet, int startZeile, int stopZeile, int startSpalte, int stopSpalte)
+        public System.Data.DataTable ReadExcel(string file, string szSheet, int startZeile, int stopZeile, int startSpalte, int stopSpalte, ProgressBar pBar_Import)
         {
-            Range oRange;
-            object[] oValue;
+            System.Data.DataTable dt;
 
             try
             {
-                if (!File.Exists(file)) { MessageBox.Show("Datei " + file + " existiert nicht!"); return false; }  
+                if (!File.Exists(file)) { MessageBox.Show("Datei " + file + " existiert nicht!"); return null; }
 
                 // Datei öffnen und aktives Blatt und benutzten Bereich auswählen
                 oExcelApp = new Microsoft.Office.Interop.Excel.Application();
 
                 oWorkbook = oExcelApp.Workbooks.Open(file);
                 oWorksheet = (Worksheet)oWorkbook.Sheets[szSheet];
-                oRange = oWorksheet.UsedRange;
+    
+                dt = new System.Data.DataTable(oWorksheet.Name);
+                DataColumn[] xco = new DataColumn[stopSpalte - startSpalte + 1];
 
-                for (int n = startZeile; n <= stopZeile; n++)
+                for (int c = startSpalte; c <= stopSpalte; c++)
                 {
-                    oValue = new object[stopSpalte - startSpalte + 1];
-                    int i = 0;
-                    for (int col = startSpalte-1; col < stopSpalte; col++)
-                    {
-                        oValue[i] = (oRange.Cells[n, col] as Range).Value;
-                        i++;
-                    }
-
-
-                    // muss unbedingt abgefangen werden
-                    if (oValue != null)
-                    {
-                        KlimadatenModel item = new KlimadatenModel();
-                        item.m_Sol_Nord = (double)oValue[0];
-                        item.m_Sol_Ost = (double)oValue[1];
-                        item.m_Sol_Sued = (double)oValue[2];
-                        item.m_Sol_West = (double)oValue[3];
-                        item.m_nTemperatur = (double)oValue[4];
-                        item.m_WE = (bool)oValue[5];
-                        item.m_TagTyp_W = (double)oValue[6];
-                        item.m_TagTyp_NW = (double)oValue[7];
-                        excelList.Add(item);
-                    }
+                    //var colName = oWorksheet.Cells[startZeile, c].Value;
+                    xco[c - startSpalte] = new DataColumn(c.ToString(), typeof(Object));
                 }
+
+                dt.Columns.AddRange(xco);
+                var headerOffset = startZeile; //have to skip header row
+                var width = dt.Columns.Count;
+                var depth = stopZeile - startZeile;
+                for (var i = 0; i <= depth; i++)
+                {
+                    var row = dt.NewRow();
+                    for (var j = 0; j < width; j++)
+                    {
+                        var currentValue = oWorksheet.Cells[i + headerOffset, j + startSpalte].Value;
+
+                        //have to decrement b/c excel is 1 based and datatable is 0 based.
+                        row[j] = currentValue == null ? null : currentValue.ToString();
+                    }
+
+                    dt.Rows.Add(row);
+                    pBar_Import.Value += 1;
+                    pBar_Import.Refresh();
+                }
+
             }
             catch(SystemException ex)
             {
-                MessageBox.Show(ex.Message); 
+                MessageBox.Show(ex.Message);
+                return null;
             }
-
-                
             oWorkbook.Close(false);
             System.Runtime.InteropServices.Marshal.ReleaseComObject(oWorkbook);
             oWorkbook = null;
@@ -87,12 +94,14 @@ namespace WindowsFormsApplication1
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
-            return true;
+            return dt;
         }
 
         public bool OpenText(string file)
         {
             char[] trennzeichen = { ',', ';' };
+            if (file == "") return false;
+
             var textFile = File.ReadAllLines(file);
             
             for (int i = 0; i < textFile.Length; i++)

@@ -441,6 +441,7 @@
             this.pBox_BHKW.TabIndex = 56;
             this.pBox_BHKW.TabStop = false;
             this.pBox_BHKW.Click += new System.EventHandler(this.pBox_BHKW_Click);
+            this.pBox_BHKW.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_BHKW_Paint);
             // 
             // textBox7
             // 
@@ -608,7 +609,7 @@
             this.textBox_ProjektOpen.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_ProjektOpen.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox_ProjektOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.textBox_ProjektOpen.Location = new System.Drawing.Point(111, 176);
+            this.textBox_ProjektOpen.Location = new System.Drawing.Point(885, 178);
             this.textBox_ProjektOpen.Name = "textBox_ProjektOpen";
             this.textBox_ProjektOpen.Size = new System.Drawing.Size(358, 26);
             this.textBox_ProjektOpen.TabIndex = 57;
@@ -621,11 +622,11 @@
             this.label1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(120)))), ((int)(((byte)(215)))));
             this.label1.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(27, 176);
+            this.label1.Location = new System.Drawing.Point(723, 178);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(78, 25);
+            this.label1.Size = new System.Drawing.Size(157, 25);
             this.label1.TabIndex = 58;
-            this.label1.Text = "Projekt:";
+            this.label1.Text = "Projekt geöffnet:";
             // 
             // pBox_Detailansicht
             // 

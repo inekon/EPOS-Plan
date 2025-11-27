@@ -1,12 +1,13 @@
-﻿using System;
+﻿//using MathNet.Numerics;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Odbc;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Data.Odbc;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
@@ -18,6 +19,12 @@ namespace WindowsFormsApplication1
         private string m_szExcelBasName;
         double ChartSelBegin;
         double ChartSelEnd;
+
+        class test
+        {
+            public int A;
+            public double B;
+        }   
 
         public Form_Klimadaten()
         {
@@ -126,18 +133,25 @@ namespace WindowsFormsApplication1
             if (textBox_Excel.Text != "")
             {
                 ToolsClass ctrl = new ToolsClass();
+                pBar_Import.Value = 0;
 
                 if (!ctrl.Exist(m_szExcelBasName))
                 {
                     this.Cursor = Cursors.WaitCursor;
-
-                    ctrl.OpenExcel(textBox_Excel.Text, "Klima", 6, 370, 4, 11);
-
+                    pBar_Import.Visible = true;
                     KlimaregionCtrl ctrlklimareg = new KlimaregionCtrl();
                     ctrlklimareg.Add(m_szExcelBasName);
 
-                    KlimadatenCtrl ctrlklimadat = new KlimadatenCtrl();
-                    ctrlklimadat.Insert(ctrlklimareg.m_ID_Klimaregion, ctrl.excelList);
+                    System.Data.DataTable dt = ctrl.ReadExcel(textBox_Excel.Text, "Klima", 6, 370, 4, 11, pBar_Import);
+                    KlimadatenCtrl ctrlklimadaten = new KlimadatenCtrl();
+                    ctrlklimadaten.WritetDataTable(dt,m_szExcelBasName);
+
+                    dt = ctrl.ReadExcel(textBox_Excel.Text, "Solar", 3, 8762, 1, 1, pBar_Import);
+                    SolardatenCtrl ctrlsolardaten = new SolardatenCtrl();
+                    ctrlsolardaten.WritetDataTable(dt, m_szExcelBasName);
+
+                    pBar_Import.Value = 0;
+                    pBar_Import.Visible = false;    
 
                     ctrlklimareg.ReadAll();
                     ctrlklimareg.FillListBox(listBoxKlimreg);
@@ -148,6 +162,11 @@ namespace WindowsFormsApplication1
                 }
                 else MessageBox.Show("Daten sind bereits importiert!");
             }
+        }
+
+        public void IncrPBar()
+        {
+            pBar_Import.Value += 1;
         }
 
         private void btn_Beenden_Click(object sender, EventArgs e)

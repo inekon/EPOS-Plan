@@ -34,7 +34,6 @@ namespace WindowsFormsApplication1
             this.btn_Entfernen = new System.Windows.Forms.Button();
             this.listBox_Extern = new System.Windows.Forms.ListBox();
             this.Label2 = new System.Windows.Forms.Label();
-            this.btn_Hilfe = new System.Windows.Forms.Button();
             this.btn_OK = new System.Windows.Forms.Button();
             this.Label3 = new System.Windows.Forms.Label();
             this.textBox_Name = new System.Windows.Forms.TextBox();
@@ -110,17 +109,6 @@ namespace WindowsFormsApplication1
             this.Label2.Text = "Wärmebedarf aus DB";
             this.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // btn_Hilfe
-            // 
-            this.btn_Hilfe.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Hilfe.Location = new System.Drawing.Point(23, 304);
-            this.btn_Hilfe.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btn_Hilfe.Name = "btn_Hilfe";
-            this.btn_Hilfe.Size = new System.Drawing.Size(98, 31);
-            this.btn_Hilfe.TabIndex = 6;
-            this.btn_Hilfe.Text = "Hilfe";
-            this.btn_Hilfe.UseVisualStyleBackColor = true;
-            // 
             // btn_OK
             // 
             this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 10F);
@@ -191,7 +179,6 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.btn_Entfernen);
             this.Controls.Add(this.listBox_Extern);
             this.Controls.Add(this.Label2);
-            this.Controls.Add(this.btn_Hilfe);
             this.Controls.Add(this.btn_OK);
             this.Controls.Add(this.Label3);
             this.Controls.Add(this.textBox_Name);
@@ -212,7 +199,6 @@ private System.Windows.Forms.Button btn_Hinzufuegen;
 private System.Windows.Forms.Button btn_Entfernen;
 private System.Windows.Forms.ListBox listBox_Extern;
 private System.Windows.Forms.Label Label2;
-private System.Windows.Forms.Button btn_Hilfe;
 private System.Windows.Forms.Button btn_OK;
 private System.Windows.Forms.Label Label3;
 private System.Windows.Forms.TextBox textBox_Name;

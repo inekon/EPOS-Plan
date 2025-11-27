@@ -187,7 +187,9 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(18)) item.Volumen = (double)DBReader.GetValue(18);
                 if (!DBReader.IsDBNull(19)) item.rendeMix = (bool)DBReader.GetValue(19);
                 if (!DBReader.IsDBNull(20)) item.Solaranteil = (int)DBReader.GetValue(20);
-                if (!DBReader.IsDBNull(21)) item.ID_Kessel = (int)DBReader.GetValue(21); 
+                if (!DBReader.IsDBNull(21)) item.ID_Kessel = (int)DBReader.GetValue(21);
+                if (!DBReader.IsDBNull(22)) item.ID_BHKW = (int)DBReader.GetValue(22);
+                if (!DBReader.IsDBNull(23)) item.Grenzleistung = (double)DBReader.GetValue(23);
 
                 items[rows] = item;
                 rows += 1;
@@ -226,7 +228,10 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(17)) Heizstab = (bool)DBReader.GetValue(17);
                 if (!DBReader.IsDBNull(18)) Volumen = (double)DBReader.GetValue(18);
                 if (!DBReader.IsDBNull(19)) rendeMix = (bool)DBReader.GetValue(19);
-                if (!DBReader.IsDBNull(20)) Solaranteil = (int)DBReader.GetValue(20);     
+                if (!DBReader.IsDBNull(20)) Solaranteil = (int)DBReader.GetValue(20);
+                if (!DBReader.IsDBNull(21)) ID_Kessel = (int)DBReader.GetValue(21);
+                if (!DBReader.IsDBNull(22)) ID_BHKW = (int)DBReader.GetValue(22);
+                if (!DBReader.IsDBNull(23)) Grenzleistung = (double)DBReader.GetValue(23);
 
                 rows = 1;
             }

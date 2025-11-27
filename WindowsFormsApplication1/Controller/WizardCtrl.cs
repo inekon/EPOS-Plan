@@ -48,12 +48,14 @@ namespace WindowsFormsApplication1
                     newRow["Bivalenter_Betrieb"] = list[i].Bivalenter_Betrieb;
                     newRow["Abschaltpunkt"] = list[i].Abschaltpunkt;
                     newRow["Nutzungszeit"] = list[i].Nutzungszeit;
+                    newRow["Grenzleistung"] = list[i].Grenzleistung;
 
                     newRow["ID_WP"] = DBNull.Value;
                     newRow["ID_SP"] = DBNull.Value;
                     newRow["ID_PV"] = DBNull.Value;
                     newRow["ID_KESSEL"] = DBNull.Value;
                     newRow["ID_Type"] = list[i].ID_Type;
+                    newRow["ID_BHKW"] = DBNull.Value;
                     
                     if (list[i].ID_Type == WizardItemClass.WP_TYP || list[i].ID_Type == WizardItemClass.REF_WP_TYP)
                     {
@@ -74,6 +76,10 @@ namespace WindowsFormsApplication1
                     else if (list[i].ID_Type == WizardItemClass.KESSEL_TYP || list[i].ID_Type == WizardItemClass.REF_KESSEL_TYP)
                     {
                         newRow["ID_KESSEL"] = list[i].ID_Kessel;
+                    }
+                    else if (list[i].ID_Type == WizardItemClass.BHKW_TYP || list[i].ID_Type == WizardItemClass.BHKW_TYP)
+                    {
+                        newRow["ID_BHKW"] = list[i].ID_BHKW;
                     }
 
                     newRow["Heizstab"] = list[i].Heizstab;
@@ -100,38 +106,8 @@ namespace WindowsFormsApplication1
 
         public bool Del_Projekt_Waermeerzeuger(int projektID)
         {
-            OdbcTransaction transaction = null;
-
             ExecuteTransaction(Program.DBConnection.ConnectionString, projektID );
             return true;
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Tab_Energieanlagen");
-
-                transaction = Program.DBConnection.BeginTransaction(); // Transaktion starten
-                adapter.SelectCommand.Transaction = transaction;
-
-                for (int i = 0; i < dataSet.Tables["Tab_Energieanlagen"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Tab_Energieanlagen"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Tab_Energieanlagen");
-                
-                transaction.Commit();  
-                
-                return true;
-            }
-            catch (Exception ex)
-            {
-                if(transaction != null)
-                    transaction.Rollback();
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
         }
 
         public static void ExecuteTransaction(string connectionString, int projektID)
@@ -547,7 +523,8 @@ namespace WindowsFormsApplication1
                     newRow["ID"] = list[i].ID_Z;
                     newRow["ID_Projekt"] = projektID;
                     newRow["ID_Prozesswaerme"] = list[i].ID_Prozesswaerme;
-                    newRow["Bezeichner"] = list[i].szProzessname;  
+                    newRow["Bezeichner"] = list[i].szProzessname;
+                    newRow["Summe"] = list[i].Summe;
                     dataSet.Tables["Z_Projekt_Prozesswaerme"].Rows.Add(newRow);
                 }
 
@@ -614,6 +591,7 @@ namespace WindowsFormsApplication1
                     newRow["ID_Projekt"] = projektID;
                     newRow["ID_Stromverbraucher"] = list[i].m_ID_Stromverbraucher;
                     newRow["Bezeichner"] = list[i].m_szVerbraucher; 
+                    newRow["Summe"] = list[i].m_Summe;
 
                     dataSet.Tables["Z_Projekt_Stromverbraucher"].Rows.Add(newRow);
                 }

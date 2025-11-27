@@ -105,7 +105,7 @@ namespace WindowsFormsApplication1
             this.comboBox_Prozesstyp.Margin = new System.Windows.Forms.Padding(3, 5, 3, 5);
             this.comboBox_Prozesstyp.Name = "comboBox_Prozesstyp";
             this.comboBox_Prozesstyp.Size = new System.Drawing.Size(192, 25);
-            this.comboBox_Prozesstyp.TabIndex = 3;
+            this.comboBox_Prozesstyp.TabIndex = 2;
             // 
             // Label3
             // 
@@ -127,7 +127,7 @@ namespace WindowsFormsApplication1
             this.textBox_Beschreibung.Multiline = true;
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
             this.textBox_Beschreibung.Size = new System.Drawing.Size(506, 48);
-            this.textBox_Beschreibung.TabIndex = 5;
+            this.textBox_Beschreibung.TabIndex = 3;
             // 
             // btn_Speichern
             // 
@@ -137,6 +137,7 @@ namespace WindowsFormsApplication1
             this.btn_Speichern.Name = "btn_Speichern";
             this.btn_Speichern.Size = new System.Drawing.Size(91, 34);
             this.btn_Speichern.TabIndex = 6;
+            this.btn_Speichern.TabStop = false;
             this.btn_Speichern.Text = "Speichern";
             this.btn_Speichern.UseVisualStyleBackColor = true;
             this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
@@ -149,6 +150,7 @@ namespace WindowsFormsApplication1
             this.btn_Speichern_Unter.Name = "btn_Speichern_Unter";
             this.btn_Speichern_Unter.Size = new System.Drawing.Size(106, 34);
             this.btn_Speichern_Unter.TabIndex = 7;
+            this.btn_Speichern_Unter.TabStop = false;
             this.btn_Speichern_Unter.Text = "Speichern unter";
             this.btn_Speichern_Unter.UseVisualStyleBackColor = true;
             this.btn_Speichern_Unter.Click += new System.EventHandler(this.btn_Speichern_Unter_Click);
@@ -161,6 +163,7 @@ namespace WindowsFormsApplication1
             this.btn_OK.Name = "btn_OK";
             this.btn_OK.Size = new System.Drawing.Size(91, 34);
             this.btn_OK.TabIndex = 8;
+            this.btn_OK.TabStop = false;
             this.btn_OK.Text = "Beenden";
             this.btn_OK.UseVisualStyleBackColor = true;
             this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
@@ -173,6 +176,7 @@ namespace WindowsFormsApplication1
             this.btn_Ueberschreiben.Name = "btn_Ueberschreiben";
             this.btn_Ueberschreiben.Size = new System.Drawing.Size(102, 34);
             this.btn_Ueberschreiben.TabIndex = 9;
+            this.btn_Ueberschreiben.TabStop = false;
             this.btn_Ueberschreiben.Text = "Überschreiben";
             this.btn_Ueberschreiben.UseVisualStyleBackColor = true;
             this.btn_Ueberschreiben.Click += new System.EventHandler(this.btn_Ueberschreiben_Click);
@@ -186,7 +190,7 @@ namespace WindowsFormsApplication1
             this.textBox_Prozessname.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Prozessname.Name = "textBox_Prozessname";
             this.textBox_Prozessname.Size = new System.Drawing.Size(212, 25);
-            this.textBox_Prozessname.TabIndex = 10;
+            this.textBox_Prozessname.TabIndex = 1;
             // 
             // Label4
             // 
@@ -207,7 +211,7 @@ namespace WindowsFormsApplication1
             this.Wert1.Margin = new System.Windows.Forms.Padding(5);
             this.Wert1.Name = "Wert1";
             this.Wert1.Size = new System.Drawing.Size(82, 25);
-            this.Wert1.TabIndex = 13;
+            this.Wert1.TabIndex = 4;
             // 
             // Label5
             // 
@@ -241,7 +245,7 @@ namespace WindowsFormsApplication1
             this.Wert2.Margin = new System.Windows.Forms.Padding(5);
             this.Wert2.Name = "Wert2";
             this.Wert2.Size = new System.Drawing.Size(82, 25);
-            this.Wert2.TabIndex = 16;
+            this.Wert2.TabIndex = 5;
             // 
             // Label7
             // 
@@ -275,7 +279,7 @@ namespace WindowsFormsApplication1
             this.Wert3.Margin = new System.Windows.Forms.Padding(5);
             this.Wert3.Name = "Wert3";
             this.Wert3.Size = new System.Drawing.Size(82, 25);
-            this.Wert3.TabIndex = 19;
+            this.Wert3.TabIndex = 6;
             // 
             // Label9
             // 
@@ -309,7 +313,7 @@ namespace WindowsFormsApplication1
             this.Wert4.Margin = new System.Windows.Forms.Padding(5);
             this.Wert4.Name = "Wert4";
             this.Wert4.Size = new System.Drawing.Size(82, 25);
-            this.Wert4.TabIndex = 22;
+            this.Wert4.TabIndex = 7;
             // 
             // Label11
             // 
@@ -343,7 +347,7 @@ namespace WindowsFormsApplication1
             this.Wert5.Margin = new System.Windows.Forms.Padding(5);
             this.Wert5.Name = "Wert5";
             this.Wert5.Size = new System.Drawing.Size(82, 25);
-            this.Wert5.TabIndex = 25;
+            this.Wert5.TabIndex = 8;
             // 
             // Label13
             // 
@@ -390,7 +394,7 @@ namespace WindowsFormsApplication1
             this.Wert8.Margin = new System.Windows.Forms.Padding(5);
             this.Wert8.Name = "Wert8";
             this.Wert8.Size = new System.Drawing.Size(82, 25);
-            this.Wert8.TabIndex = 29;
+            this.Wert8.TabIndex = 11;
             // 
             // Label16
             // 
@@ -424,7 +428,7 @@ namespace WindowsFormsApplication1
             this.Wert7.Margin = new System.Windows.Forms.Padding(5);
             this.Wert7.Name = "Wert7";
             this.Wert7.Size = new System.Drawing.Size(82, 25);
-            this.Wert7.TabIndex = 32;
+            this.Wert7.TabIndex = 10;
             // 
             // Label18
             // 
@@ -469,7 +473,7 @@ namespace WindowsFormsApplication1
             this.Wert9.Margin = new System.Windows.Forms.Padding(5);
             this.Wert9.Name = "Wert9";
             this.Wert9.Size = new System.Drawing.Size(82, 25);
-            this.Wert9.TabIndex = 36;
+            this.Wert9.TabIndex = 12;
             // 
             // Label21
             // 
@@ -503,7 +507,7 @@ namespace WindowsFormsApplication1
             this.Wert10.Margin = new System.Windows.Forms.Padding(5);
             this.Wert10.Name = "Wert10";
             this.Wert10.Size = new System.Drawing.Size(82, 25);
-            this.Wert10.TabIndex = 39;
+            this.Wert10.TabIndex = 13;
             // 
             // Label23
             // 
@@ -537,7 +541,7 @@ namespace WindowsFormsApplication1
             this.Wert11.Margin = new System.Windows.Forms.Padding(5);
             this.Wert11.Name = "Wert11";
             this.Wert11.Size = new System.Drawing.Size(82, 25);
-            this.Wert11.TabIndex = 42;
+            this.Wert11.TabIndex = 14;
             // 
             // Label25
             // 
@@ -560,7 +564,7 @@ namespace WindowsFormsApplication1
             this.Wert12.Margin = new System.Windows.Forms.Padding(5);
             this.Wert12.Name = "Wert12";
             this.Wert12.Size = new System.Drawing.Size(82, 25);
-            this.Wert12.TabIndex = 44;
+            this.Wert12.TabIndex = 15;
             // 
             // Label26
             // 
@@ -594,7 +598,7 @@ namespace WindowsFormsApplication1
             this.Wert6.Margin = new System.Windows.Forms.Padding(5);
             this.Wert6.Name = "Wert6";
             this.Wert6.Size = new System.Drawing.Size(82, 25);
-            this.Wert6.TabIndex = 47;
+            this.Wert6.TabIndex = 9;
             // 
             // Form_EingDBProzess
             // 

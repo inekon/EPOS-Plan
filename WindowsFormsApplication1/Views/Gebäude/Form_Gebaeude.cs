@@ -20,55 +20,50 @@ namespace WindowsFormsApplication1
         public int m_ID_Projekt = 0;
         public List<Z_ProjGebModel> list_gebmodel = new List<Z_ProjGebModel>();
         public bool m_bAdmin = false;
-
+        
         public Form_Gebaeude()
         {
             InitializeComponent();
-            SetGebaeudeDB();
+            
             listView_Gebaeude.View = View.Details;
             listView_Gebaeude.Columns.Add("Name", -2, HorizontalAlignment.Left);
-            listView_Gebaeude.Columns.Add("ID", -2, HorizontalAlignment.Left);
             listView_Gebaeude.Columns[0].Width = listView_Gebaeude.ClientRectangle.Width;
-        }
 
-        private void SetGebaeudeDB()
-        {
-            GebaeudeCtrl ctrl = new GebaeudeCtrl();
-            listBox_Gebaeude_DB.Items.Clear();
-            ctrl.ReadAll();
-            for (int i = 0; i < ctrl.rows; i++)
+            DataGridView dgv = dataGridView1;
+            dgv.AutoGenerateColumns = false;
+            dgv.RowHeadersVisible = false;
+            dgv.MultiSelect = false;
+            dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgv.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+
+            dgv.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                listBox_Gebaeude_DB.Items.Add(ctrl.items[i].Gebaeudename);
-            }
-        }
+                HeaderText = "Name",
+                ReadOnly = true,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                FillWeight = 60
+            });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                HeaderText = "Typ/Wohnfläche",
+                ReadOnly = true,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                FillWeight = 40
+            });
 
-        public void SetControls(string szProjekt)
-        {
-            WizardParent wizardparent = (WizardParent)getWizardPage();
-            Z_ProjGebCtrl ctrl = new Z_ProjGebCtrl();
-            GebaeudeCtrl ctrl_geb = new GebaeudeCtrl();
-            RecordSet rs = new RecordSet();
+            dgv.BackgroundColor = Color.White;
+            dgv.GridColor = Color.White;
+            dgv.Columns[1].DefaultCellStyle.BackColor = Color.GreenYellow;
+            dgv.DefaultCellStyle.BackColor = Color.FromArgb(255, 215, 159, 57);
+
+            SetGebaeudeDB();
 
             szFilterOption = szFilterWohngebäude;
 
-            listView_Gebaeude.Items.Clear();
-            for (int i = 0; i < list_gebmodel.Count; i++)
-            {
-                ListViewItem lvitem = new ListViewItem();
-                lvitem.Text = list_gebmodel[i].Gebaeudename;
-                lvitem.SubItems.Add(list_gebmodel[i].ID_Z.ToString());
-                listView_Gebaeude.Items.Add(lvitem);
-            }
-       //     listView_Gebaeude.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
-       //     listView_Gebaeude.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-
-            listBox_Gebaeude_DB.Items.Clear();
-            ctrl_geb.ReadAll();
-            for (int i = 0; i < ctrl_geb.rows; i++)
-            {
-                listBox_Gebaeude_DB.Items.Add(ctrl_geb.items[i].Gebaeudename);
-            }
-            if (listView_Gebaeude.Items.Count > 0) listView_Gebaeude.Items[0].Selected = true;
+            comboBox_Baujahr.Items.Clear();
+            comboBox_Baujahr.Items.Clear();
 
             comboBox_Baujahr.Items.Add("Alle");
             for (int i = 0; i < list_geb.Count; i++)
@@ -78,6 +73,7 @@ namespace WindowsFormsApplication1
             comboBox_Baujahr.SelectedIndex = 0;
             comboBox_Gebäudeart.Items.Add("Alle");
 
+            RecordSet rs = new RecordSet();
             rs.Open("SELECT * from Abfrage_Gebaeudearten where " + szFilterWohngebäude);
             while (rs.Next())
             {
@@ -87,6 +83,49 @@ namespace WindowsFormsApplication1
             rs.Close();
 
             comboBox_Gebäudeart.SelectedIndex = 0;
+            dataGridView1.ClearSelection();
+        }
+
+        private void SetGebaeudeDB()
+        {
+            GebaeudeCtrl ctrl = new GebaeudeCtrl();
+            DataGridView dgv = dataGridView1;
+
+            dgv.Rows.Clear();
+
+            ctrl.ReadAll();
+            for (int i = 0; i < ctrl.rows; i++)
+            {
+                dgv.Rows.Add(ctrl.items[i].Gebaeudename, ctrl.items[i].Gebaeudeart + "\n" + ctrl.items[i].Wohnflaeche_gesamt + " [m²]");
+                dgv.Rows[i].DividerHeight = 1;
+            }
+        }
+
+        public void SetControls(string szProjekt, bool bWizard=false)
+        {
+            Z_ProjGebCtrl ctrl = new Z_ProjGebCtrl();
+            GebaeudeCtrl ctrl_geb = new GebaeudeCtrl();
+            RecordSet rs = new RecordSet();
+
+            if (bWizard)
+            {
+                btn_Abbrechen.Visible = false;
+                btn_OK.Visible = false;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.BackColor = Color.White;
+            }
+
+            listView_Gebaeude.Items.Clear();
+            for (int i = 0; i < list_gebmodel.Count; i++)
+            {
+                ListViewItem lvitem = new ListViewItem();
+                lvitem.Text = list_gebmodel[i].Gebaeudename;
+                lvitem.SubItems.Add(list_gebmodel[i].ID_Z.ToString());
+                listView_Gebaeude.Items.Add(lvitem);
+            }
+             
+            listView_Gebaeude.Select();
+            if (listView_Gebaeude.Items.Count > 0) listView_Gebaeude.Items[0].Selected = true;
         }
 
         private Form getWizardPage()
@@ -105,15 +144,17 @@ namespace WindowsFormsApplication1
         {
             GebaeudeCtrl ctrl_geb = new GebaeudeCtrl();
             RecordSet rs = new RecordSet();
+            DataGridView dgv = dataGridView1;
 
             szFilterOption = szFilterNichtWohngebäude;
 
-            listBox_Gebaeude_DB.Items.Clear();
+            dgv.Rows.Clear();
             ctrl_geb.ReadAll(szFilterNichtWohngebäude);
-       //     listBox_Gebaeude_DB.Items.Add("Alle");
+    
             for (int i = 0; i < ctrl_geb.rows; i++)
             {
-                listBox_Gebaeude_DB.Items.Add(ctrl_geb.items[i].Gebaeudename);
+                dgv.Rows.Add(ctrl_geb.items[i].Gebaeudename, ctrl_geb.items[i].Gebaeudeart + "\n" + ctrl_geb.items[i].Wohnflaeche_gesamt.ToString("F2") + " [m²]");
+                dgv.Rows[i].DividerHeight = 1;
             }
 
             comboBox_Gebäudeart.Enabled = false;
@@ -137,15 +178,17 @@ namespace WindowsFormsApplication1
         {
             GebaeudeCtrl ctrl_geb = new GebaeudeCtrl();
             RecordSet rs = new RecordSet();
+            DataGridView dgv = dataGridView1;
 
             szFilterOption = szFilterWohngebäude;
-            listBox_Gebaeude_DB.Items.Clear();
+            dgv.Rows.Clear();
             ctrl_geb.ReadAll();
 
-            listBox_Gebaeude_DB.Items.Add("Alle");
+    //        listBox_Gebaeude_DB.Items.Add("Alle");
             for (int i = 0; i < ctrl_geb.rows; i++)
             {
-                listBox_Gebaeude_DB.Items.Add(ctrl_geb.items[i].Gebaeudename);
+                dgv.Rows.Add(ctrl_geb.items[i].Gebaeudename, ctrl_geb.items[i].Gebaeudeart + "\n" + ctrl_geb.items[i].Wohnflaeche_gesamt.ToString("F2") + " [m²]");
+                dgv.Rows[i].DividerHeight = 1;
             }
 
             comboBox_Gebäudeart.Enabled = false;
@@ -168,12 +211,12 @@ namespace WindowsFormsApplication1
         private void btn_Hinzu_Click(object sender, EventArgs e)
         {
             RecordSet rs = new RecordSet();
-            WizardParent wizardparent = (WizardParent)getWizardPage();
             Z_ProjGebModel model = new Z_ProjGebModel();
+            DataGridView dgv = dataGridView1;
 
-            if (listBox_Gebaeude_DB.Text == "") return;
+            if (dataGridView1.CurrentCell.RowIndex == -1) return;
 
-            string sql = "SELECT * from [DBGebaeude] where [DBGebaeude].Gebaeudename='" + listBox_Gebaeude_DB.Text + "'";
+            string sql = "SELECT * from [DBGebaeude] where [DBGebaeude].Gebaeudename='" + (string)dataGridView1.CurrentRow.Cells[0].Value + "'";
             rs.Open(sql);
 
             if (rs.Next())
@@ -185,16 +228,24 @@ namespace WindowsFormsApplication1
                 model.Einheit = "Wohnfläche [m²]";
                 model.Jahresnutzungsgrad = 1;
                 model.DezentralWarmwasser = false;
-                model.Gebaeudename = listBox_Gebaeude_DB.Text;
-  
+                model.Gebaeudename = (string)dataGridView1.CurrentRow.Cells[0].Value;
+                model.Gebaeudeart = (string)rs.Read("Typ");
+                model.Beschreibung = (string)rs.Read("Beschreibung");
+
                 list_gebmodel.Add(model);
 
                 ListViewItem lvitem = new ListViewItem();
-                lvitem.Text = listBox_Gebaeude_DB.Text;
+                lvitem.Text = (string)dataGridView1.CurrentRow.Cells[0].Value;
                 lvitem.SubItems.Add(model.ID_Z.ToString());
                 listView_Gebaeude.Items.Add(lvitem);
-          
-                if (listView_Gebaeude.Items.Count > 0) listView_Gebaeude.Items[listView_Gebaeude.Items.Count-1].Selected=true;
+
+
+                listView_Gebaeude.Select();
+                if (listView_Gebaeude.Items.Count > 0)
+                {
+                    listView_Gebaeude.SelectedItems.Clear();
+                    listView_Gebaeude.Items[listView_Gebaeude.Items.Count - 1].Selected = true;
+                }
             }
             rs.Close();
         }
@@ -210,7 +261,6 @@ namespace WindowsFormsApplication1
             Z_ProjGebModel model = new Z_ProjGebModel();
             model.Gebaeudename = lvitem.Text;
 
-            WizardParent wizardparent = (WizardParent)getWizardPage();
             for (int i = 0; i < list_gebmodel.Count; i++)
             {
                 if (list_gebmodel[i].ID_Gebaeude == Int32.Parse(textBox_ID_Gebaeude.Text))
@@ -220,7 +270,32 @@ namespace WindowsFormsApplication1
                     break;
                 }
             }
-            if (listView_Gebaeude.Items.Count > 0) listView_Gebaeude.Items[0].Selected = true;
+
+            dataGridView1.ClearSelection();
+            if (list_gebmodel.Count == 0)
+            {
+                dataGridView1.Rows[0].Selected = true;
+                dataGridView1.Rows[0].Cells[0].Selected = true;
+
+                // Definiere die Zeile und Spalte des zu klickenden Cells
+                int rowIndex = 0;
+                int columnIndex = 0;
+
+                // Erstelle ein MouseEventArgs Objekt
+                MouseEventArgs me = new MouseEventArgs(System.Windows.Forms.MouseButtons.Left, 1, 100, 100, 0);
+
+                // Erstelle ein DataGridViewCellMouseEventArgs Objekt
+                DataGridViewCellMouseEventArgs dgvme = new DataGridViewCellMouseEventArgs(columnIndex, rowIndex, 100, 100, me);
+
+                // Rufe den CellMouseClick-Ereignis-Handler auf
+                // Ersetzen Sie dataGridView1_CellMouseClick durch den Namen Ihres tatsächlichen Event-Handlers
+                listBox_Gebaeude_DB_SelectedIndexChanged(this.dataGridView1, dgvme);
+            }
+            else
+            {
+                listView_Gebaeude.Select();
+                listView_Gebaeude.Items[0].Selected = true;
+            }
         }
 
         private int GetIDGebaeude(string szGebaeude)
@@ -236,9 +311,10 @@ namespace WindowsFormsApplication1
         private void comboBox_Gebäudeart_SelectedIndexChanged(object sender, EventArgs e)
         {
             GebaeudeCtrl ctrl_geb = new GebaeudeCtrl();
+            DataGridView dgv = dataGridView1;
             int index = 0;
 
-            listBox_Gebaeude_DB.Items.Clear();
+            dgv.Rows.Clear();
 
             if (comboBox_Gebäudeart.Text == "Alle" && comboBox_Baujahr.Text == "Alle")
             {
@@ -272,16 +348,18 @@ namespace WindowsFormsApplication1
             }
             for (int i = 0; i < ctrl_geb.rows; i++)
             {
-                listBox_Gebaeude_DB.Items.Add(ctrl_geb.items[i].Gebaeudename);
+                dgv.Rows.Add(ctrl_geb.items[i].Gebaeudename, ctrl_geb.items[i].Gebaeudeart + "\n" + ctrl_geb.items[i].Wohnflaeche_gesamt.ToString("F2")  + " [m²]");
+                dgv.Rows[i].DividerHeight = 1;
             }
         }
 
         private void comboBox_Baujahr_SelectedIndexChanged(object sender, EventArgs e)
         {
             GebaeudeCtrl ctrl_geb = new GebaeudeCtrl();
+            DataGridView dgv = dataGridView1;
             int index = 0;
 
-            listBox_Gebaeude_DB.Items.Clear();
+            dgv.Rows.Clear();
 
             if (comboBox_Gebäudeart.Text == "Alle" && comboBox_Baujahr.Text == "Alle")
             {
@@ -313,7 +391,8 @@ namespace WindowsFormsApplication1
 
             for (int i = 0; i < ctrl_geb.rows; i++)
             {
-                listBox_Gebaeude_DB.Items.Add(ctrl_geb.items[i].Gebaeudename);
+                dgv.Rows.Add(ctrl_geb.items[i].Gebaeudename, ctrl_geb.items[i].Gebaeudeart + "\n" + ctrl_geb.items[i].Wohnflaeche_gesamt.ToString("F2") + " [m²]");
+                dgv.Rows[i].DividerHeight = 1;
             }
 
 
@@ -345,7 +424,6 @@ namespace WindowsFormsApplication1
 
             if (frm.DialogResult == DialogResult.OK)
             {
-                WizardParent wizardparent = (WizardParent)getWizardPage();
                 for (int i = 0; i < list_gebmodel.Count; i++)
                 {
                     if (list_gebmodel[i].ID_Gebaeude == Int32.Parse(textBox_ID_Gebaeude.Text) &&
@@ -394,7 +472,11 @@ namespace WindowsFormsApplication1
                 textBox_Gebäudename.Text = lvitem.Text;
                 zprojGeb_id = Int32.Parse(lvitem.SubItems[1].Text);
             }
-            else return;
+            else
+            {
+     //           dataGridView1.ClearSelection();
+                return;
+            }
 
             int id = GetIDGebaeude(textBox_Gebäudename.Text);
             textBox_ID_Gebaeude.Text = id.ToString();
@@ -406,26 +488,28 @@ namespace WindowsFormsApplication1
                 {
                     textBox_Jahresnutzungsgrad.Text = list_gebmodel[i].Jahresnutzungsgrad.ToString();
                     textBox_TypEinheit.Text = list_gebmodel[i].Einheit;
-                    textBox_Wohnflaeche.Text = list_gebmodel[i].Wohnflaeche.ToString();
+                    textBox_Wohnflaeche.Text = list_gebmodel[i].Wohnflaeche.ToString("F2");
                     checkBox_dezWarmwasser.Checked = list_gebmodel[i].DezentralWarmwasser;
                     textBox_Gebaeudeart.Text = list_gebmodel[i].Gebaeudeart;
                     textBox_Beschreibung.Text = list_gebmodel[i].Beschreibung;
                     break;
                 }
             }
+            
         }
 
         private void btn_GebAendern_DB_Click(object sender, EventArgs e)
         {
             Form_Gebaeude1 frm = new Form_Gebaeude1();
+            DataGridView dgv = dataGridView1;
 
-            if (listBox_Gebaeude_DB.SelectedIndex < 0)
+            if (dgv.CurrentCell.RowIndex < 0)
             {
                 MessageBox.Show("Gebäude in DB auswählen!");
                 return;
             }
             frm.m_bNeu = false;
-            frm.model.Gebaeudename = listBox_Gebaeude_DB.Text;
+            frm.model.Gebaeudename = (string)dataGridView1.CurrentRow.Cells[0].Value;
             frm.SetControls(); 
             frm.ShowDialog();
             SetGebaeudeDB();
@@ -445,13 +529,19 @@ namespace WindowsFormsApplication1
         private void btn_GebLoeschen_DB_Click(object sender, EventArgs e)
         {
             RecordSet rs = new RecordSet();
-            if (listBox_Gebaeude_DB.SelectedIndex <= 0)
+            DataGridView dgv = dataGridView1;
+
+            if (dgv.CurrentCell.RowIndex < 0)
             {
                 MessageBox.Show("Gebäude auswählen!"); 
                 return;
             }
-            rs.Open("Delete * from DBGebaeude where Gebaeudename='" + listBox_Gebaeude_DB.Text + "'");
-            listBox_Gebaeude_DB.Items.RemoveAt(listBox_Gebaeude_DB.SelectedIndex);
+
+            DialogResult dialogResult = MessageBox.Show("Soll " + (string)dataGridView1.CurrentRow.Cells[0].Value + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.No) return;
+
+            rs.Open("Delete * from DBGebaeude where Gebaeudename='" + (string)dataGridView1.CurrentRow.Cells[0].Value + "'");
+            dgv.Rows.RemoveAt(dgv.CurrentCell.RowIndex);
             MessageBox.Show("Gebäude gelöscht!"); 
         }
 
@@ -465,13 +555,18 @@ namespace WindowsFormsApplication1
         private void listBox_Gebaeude_DB_SelectedIndexChanged(object sender, EventArgs e)
         {
             GebaeudeCtrl ctrl = new GebaeudeCtrl();
-            ctrl.ReadAll("Gebaeudename='" + listBox_Gebaeude_DB.Text + "'");
-            
-            textBox_Gebäudename.Text = listBox_Gebaeude_DB.Text; 
-            textBox_Jahresnutzungsgrad.Text = "";
-            checkBox_dezWarmwasser.Checked = false;
+            DataGridView dgv = dataGridView1;
+
+            if (dgv.CurrentRow.Cells[0].Value == null) return;
+
             try
             {
+                ctrl.ReadAll("Gebaeudename='" + (string)dataGridView1.CurrentRow.Cells[0].Value + "'");
+            
+                textBox_Gebäudename.Text = (string)dataGridView1.CurrentRow.Cells[0].Value; 
+                textBox_Jahresnutzungsgrad.Text = "";
+                checkBox_dezWarmwasser.Checked = false;
+           
                 textBox_TypEinheit.Text = "Wohnfläche [m²]";
                 textBox_Wohnflaeche.Text = ctrl.items[0].Wohnflaeche_gesamt.ToString();
                 textBox_Gebaeudeart.Text = ctrl.items[0].Gebaeudeart;
@@ -489,6 +584,8 @@ namespace WindowsFormsApplication1
 
         private void Form_Gebaeude_Load(object sender, EventArgs e)
         {
+            DataGridView dgv = dataGridView1;
+
             if (m_bAdmin)
             {
                 listView_Gebaeude.Visible = false;
@@ -497,14 +594,23 @@ namespace WindowsFormsApplication1
                 label_ListProjektGebaeude.Visible = false;
 
                 btn_Aendern.Visible = false;
-                listBox_Gebaeude_DB.Left = groupBox1.Left;
+                dgv.Left = groupBox1.Left;
                 label_ListGebaeudeDB.Left = groupBox1.Left;
                 pictureBox1.Visible = true;
-                listBox_Gebaeude_DB.SelectedIndex = 0; 
+                if (dgv.Rows.Count > 0) dgv.Rows[0].Selected = true;
+            }
+            else
+            {
+                dataGridView1.ClearSelection();
+
+                if (listView_Gebaeude.Items.Count > 0)
+                {
+                    listView_Gebaeude.Select();
+                    listView_Gebaeude.SelectedItems.Clear();
+                    listView_Gebaeude.Items[0].Selected = true;
+                }
             }
         }
-
-         
     }
 }
 

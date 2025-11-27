@@ -26,7 +26,7 @@ namespace WindowsFormsApplication1
 
             // Menüelemente hinzufügen
             ContextMenuItemNeu = new ToolStripMenuItem();
-            ContextMenuItemNeu.Text = "Hinzufügen";
+            ContextMenuItemNeu.Text = "Hinzufügen/Bearbeiten";
             ContextMenuItemNeu.Click += new EventHandler(ContextMenuItemNeu_Click);
             contextMenuStrip1.Items.Add(ContextMenuItemNeu);
 
@@ -35,12 +35,7 @@ namespace WindowsFormsApplication1
             ContextMenuItemLoeschen.Click += new EventHandler(ContextMenuItemLoeschen_Click);
             contextMenuStrip1.Items.Add(ContextMenuItemLoeschen);
 
-            ContextMenuItemNeu = new ToolStripMenuItem();
-            ContextMenuItemNeu.Text = "Bearbeiten";
-            ContextMenuItemNeu.Click += new EventHandler(ContextMenuItemBearbeiten_Click);
-            contextMenuStrip1.Items.Add(ContextMenuItemNeu);
-
-            // Kontextmenü dem ListView zuweisen
+             // Kontextmenü dem ListView zuweisen
             listView_SP.ContextMenuStrip = contextMenuStrip1;
 
             // Ereignisbehandlung für MouseDown hinzufügen, um das Kontextmenü bei Rechtsklick zu öffnen
@@ -75,13 +70,11 @@ namespace WindowsFormsApplication1
                 // e.Cancel = true;
                 contextMenuStrip1.Items[0].Enabled = true;
                 contextMenuStrip1.Items[1].Enabled = false;
-                contextMenuStrip1.Items[2].Enabled = false;
             }
             else
             {
                 contextMenuStrip1.Items[0].Enabled = true;
                 contextMenuStrip1.Items[1].Enabled = true;
-                contextMenuStrip1.Items[2].Enabled = true;
              }
         }
 
@@ -106,12 +99,12 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            Form_Sp frm = new Form_Sp();
+            Form_Stromspeicher frm = new Form_Stromspeicher();
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
             WPCtrl wpctrl = new WPCtrl();
             int id_type;
 
-            frm.list_spmodel.Clear();
+            frm.list_werzmodel.Clear();
             if (listView_SP.Name == "listView_SP_REF")
             {
                 werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.REF_SP_TYP);
@@ -131,7 +124,7 @@ namespace WindowsFormsApplication1
                 item.ID_Type = werzctrl.items[i].ID_Type;
                 item.Bezeichner = werzctrl.items[i].Bezeichner;
 
-                frm.list_spmodel.Add(item);
+                frm.list_werzmodel.Add(item);
             }
 
             frm.SetControls(m_szProjektname);
@@ -144,7 +137,7 @@ namespace WindowsFormsApplication1
                 // Datenbank aktualisieren
                 WizardCtrl wizctrl = new WizardCtrl();
                 wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
-                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_spmodel);
+                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
 
                 ProjektCtrl projctrl = new ProjektCtrl();
                 projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");

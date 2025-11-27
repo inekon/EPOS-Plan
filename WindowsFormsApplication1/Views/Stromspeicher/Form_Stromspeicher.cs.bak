@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Form_WizSp : Form
+    public partial class Form_Stromspeicher : Form
     {
         private WErzeugerModel model = new WErzeugerModel();
         private WErzeugerCtrl ctrl = new WErzeugerCtrl();
@@ -17,29 +17,65 @@ namespace WindowsFormsApplication1
         public List<WErzeugerModel> list_werzmodel = new List<WErzeugerModel>();
 
 
-        public Form_WizSp ()
+        public Form_Stromspeicher ()
         {
             InitializeComponent();
-            listBox_SP_DB.Items.Clear();
+            dataGridView1.Rows.Clear();
             listBox_SP.Items.Clear();
         }
 
-        private void Form_WizSp_Load(object sender, EventArgs e)
+        private void Form_Stromspeicher_Load(object sender, EventArgs e)
         {
+            DataGridView dgv = dataGridView1;
+            dgv.AutoGenerateColumns = false;
+            dgv.RowHeadersVisible = false;
+            dgv.MultiSelect = false;
+            dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgv.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgv.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+
+            dgv.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                HeaderText = "Name",
+                ReadOnly = true,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                FillWeight = 25
+            });
+            dgv.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                HeaderText = "Eigenschaften",
+                ReadOnly = true,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                FillWeight = 75
+            });
+
+            dgv.BackgroundColor = Color.White;
+            dgv.GridColor = Color.White;
+
+            SetDBList();
+        }
+
+        private void SetDBList()
+        {
+            DataGridView dgv = dataGridView1;
+            dgv.Rows.Clear();
             spctrl.ReadAll();
             for (int i = 0; i < spctrl.rows; i++)
             {
-                listBox_SP_DB.Items.Add(spctrl.items[i].m_szBezeichner);
+                dgv.Rows.Add(spctrl.items[i].m_szBezeichner, spctrl.items[i].m_Leistung + " kW\n" + spctrl.items[i].m_szTyp);
+                dgv.Rows[i].DividerHeight = 5;
             }
+            if (dgv.Rows.Count > 0) dgv.Rows[0].Selected = true;
         }
 
         private void btn_Hinzu_Click(object sender, EventArgs e)
         {
-            if (listBox_SP_DB.Text == "") return;
-            model.Bezeichner = listBox_SP_DB.Text;
+            if (dataGridView1.CurrentCell.RowIndex == -1) return;
+            model.Bezeichner = (string)dataGridView1.CurrentRow.Cells[0].Value;
             RecordSet rs = new RecordSet();
 
-            rs.Open("select * from Tab_Stromspeicher where Bezeichner='" + listBox_SP_DB.Text + "'");
+            rs.Open("select * from Tab_Stromspeicher where Bezeichner='" + model.Bezeichner + "'");
             if (!rs.EOF())
             {
                 model.ID_SP = (int)rs.Read("ID");
@@ -48,8 +84,21 @@ namespace WindowsFormsApplication1
             rs.Close();
  
             list_werzmodel.Add(model);
-            listBox_SP.Items.Add(listBox_SP_DB.Text);
+            listBox_SP.Items.Add(model.Bezeichner);
             if (listBox_SP.Items.Count > 0) listBox_SP.SelectedIndex = listBox_SP.Items.Count-1;
+        }
+
+        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+
+            // Use this one liner to check which number is associated with which column
+            // Debug.WriteLine($"{e.ColumnIndex} : '{e.Value}'");
+            if (e.ColumnIndex == 0)
+            {
+                var style = dataGridView1.Rows[e.RowIndex].DefaultCellStyle;
+                style.BackColor = Color.GreenYellow;
+                style.ForeColor = Color.Black;
+            }
         }
 
         private void btn_Entfernen_Click(object sender, EventArgs e)
@@ -72,10 +121,6 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
             
-            int index = listBox_SP.SelectedIndex;
-            listBox_SP_DB.SelectedItems.Clear();
-            listBox_SP.SelectedIndex = index;
-            
             rs.Open("select * from Tab_Stromspeicher where Bezeichner='" + listBox_SP.Text + "'");
             if (!rs.EOF())
             {
@@ -87,11 +132,18 @@ namespace WindowsFormsApplication1
                 textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString(); ;
             }
             rs.Close();
-            listBox_SP_DB.SelectedIndex = -1;
         }
 
-        public void SetControls(string projekt)
+        public void SetControls(string projekt, bool bWizard=false)
         {
+            if (bWizard)
+            {
+                btn_Abbrechen.Visible = false;
+                btn_OK.Visible = false;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.BackColor = Color.White;
+            }
+
             listBox_SP.Items.Clear();
 
             for (int n = 0; n < list_werzmodel.Count; n++)
@@ -139,40 +191,13 @@ namespace WindowsFormsApplication1
             Close();
         }
 
-        private void listBox_SP_DB_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            RecordSet rs = new RecordSet();
-
-            int index = listBox_SP_DB.SelectedIndex;
-            listBox_SP.SelectedItems.Clear();
-            listBox_SP_DB.SelectedIndex = index;
-
-            rs.Open("select * from Tab_Stromspeicher where Bezeichner='" + listBox_SP_DB.Text + "'");
-            if (!rs.EOF())
-            {
-                textBox_Name.Text = (string)rs.Read("Bezeichner");
-                textBox_Typ.Text = (string)rs.Read("Typ");
-                textBox_Leistung.Text = rs.Read("Leistung").ToString();
-                textBox_Energie.Text = rs.Read("Energie").ToString();
-                textBox_Degradation.Text = rs.Read("Degradation").ToString(); ;
-                textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString(); ;
-            }
-            rs.Close();
-        }
-
         private void btn_Bearbeiten_Click(object sender, EventArgs e)
         {
-            MenueCtrl ctrl = new MenueCtrl();
-
-            int index = listBox_SP_DB.SelectedIndex;
-            listBox_SP.SelectedItems.Clear();
-            listBox_SP_DB.SelectedItems.Clear();
-            ctrl.StromspeicherBearbeiten();
-            listBox_SP_DB.Items.Clear(); 
-            spctrl.ReadAll();
-            for (int i = 0; i < spctrl.rows; i++)
+            Form_AdminStromspeicher frm = new Form_AdminStromspeicher();
+            frm.ShowDialog();
+            if (frm.DialogResult == DialogResult.OK)
             {
-                listBox_SP_DB.Items.Add(spctrl.items[i].m_szBezeichner);
+                SetDBList();
             }
         }
     }

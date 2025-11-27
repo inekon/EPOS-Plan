@@ -45,7 +45,7 @@ namespace WindowsFormsApplication1
 
         private void DBGebaeude(string sql)
         {
-                        DBCommand.CommandText = sql;
+            DBCommand.CommandText = sql;
             OdbcDataReader DBReader = DBCommand.ExecuteReader();
 
             items = new GebaeudeModel[1000];

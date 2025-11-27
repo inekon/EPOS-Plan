@@ -21,7 +21,8 @@ namespace WindowsFormsApplication1
         public const int PV_ITEM = 10;
         public const int SP_ITEM = 11;
         public const int KESSEL_ITEM = 12;
-        public const int REFERENZ_ITEM = 13;
+        public const int BHKW_ITEM = 13;
+        public const int REFERENZ_ITEM = 14;
 
         public const int WP_TYP = 1;
         public const int SOLAR_TYP = 2;
@@ -33,6 +34,7 @@ namespace WindowsFormsApplication1
         public const int REF_SOLAR_TYP = 8;
         public const int REF_PV_TYP = 9;
         public const int KESSEL_TYP = 10;
+        public const int BHKW_TYP = 11;
 
         public Form wizardform;
         public int formtype;

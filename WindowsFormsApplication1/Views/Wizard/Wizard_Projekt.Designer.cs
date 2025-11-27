@@ -187,9 +187,9 @@
             this.label8.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label8.Location = new System.Drawing.Point(82, 485);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(64, 19);
+            this.label8.Size = new System.Drawing.Size(81, 19);
             this.label8.TabIndex = 20;
-            this.label8.Text = "Gebäude";
+            this.label8.Text = "Klimaregion";
             // 
             // comboBox_Gebaeude
             // 
@@ -199,6 +199,7 @@
             this.comboBox_Gebaeude.Name = "comboBox_Gebaeude";
             this.comboBox_Gebaeude.Size = new System.Drawing.Size(355, 25);
             this.comboBox_Gebaeude.TabIndex = 21;
+            this.comboBox_Gebaeude.SelectedIndexChanged += new System.EventHandler(this.comboBox_Gebaeude_SelectedIndexChanged);
             // 
             // label9
             // 

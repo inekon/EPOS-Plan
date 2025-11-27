@@ -10,7 +10,7 @@ using System.IO;
 
 namespace WindowsFormsApplication1
 {
-    partial class Form_Stromeinlesen : Form
+    partial class Form_Stromganglinie_Admin : Form
     {
         public int m_ID_Projekt = 0;
         public string m_szProjekt = "";
@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
         string filename;
         string filebasename;
 
-        public Form_Stromeinlesen ()
+        public Form_Stromganglinie_Admin ()
         {
             InitializeComponent();
  
@@ -125,7 +125,11 @@ namespace WindowsFormsApplication1
             StromganglinieDatenCtrl ctrl = new StromganglinieDatenCtrl();
             if (filebasename == "" || filebasename == null ) return;
             // Datei schon eingelesen?
-            if (listBox_Extern.FindString(Path.GetFileNameWithoutExtension(filebasename)) != ListBox.NoMatches) return;
+            if (listBox_Extern.FindString(Path.GetFileNameWithoutExtension(filebasename)) != ListBox.NoMatches)
+            {
+                MessageBox.Show("Stromganglinie ist bereits in Datenbank vorhanden!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
             // Datei in Liste einlesen 
             if (!tool.OpenText(textBox_Name.Text)) return;

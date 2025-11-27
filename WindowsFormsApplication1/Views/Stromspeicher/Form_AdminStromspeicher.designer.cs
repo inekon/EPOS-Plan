@@ -46,6 +46,10 @@
             this.btn_Neu = new System.Windows.Forms.Button();
             this.btn_OK = new System.Windows.Forms.Button();
             this.btn_Loeschen = new System.Windows.Forms.Button();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btn_Beenden
@@ -66,7 +70,7 @@
             this.listBox_Stromspeicher.Location = new System.Drawing.Point(22, 22);
             this.listBox_Stromspeicher.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.listBox_Stromspeicher.Name = "listBox_Stromspeicher";
-            this.listBox_Stromspeicher.Size = new System.Drawing.Size(179, 259);
+            this.listBox_Stromspeicher.Size = new System.Drawing.Size(201, 293);
             this.listBox_Stromspeicher.TabIndex = 2;
             this.listBox_Stromspeicher.SelectedIndexChanged += new System.EventHandler(this.listBox_Stromspeicher_SelectedIndexChanged);
             // 
@@ -76,7 +80,7 @@
             this.textBox_Bezeichner.Location = new System.Drawing.Point(336, 56);
             this.textBox_Bezeichner.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.textBox_Bezeichner.Name = "textBox_Bezeichner";
-            this.textBox_Bezeichner.Size = new System.Drawing.Size(116, 25);
+            this.textBox_Bezeichner.Size = new System.Drawing.Size(250, 25);
             this.textBox_Bezeichner.TabIndex = 3;
             // 
             // label1
@@ -102,7 +106,7 @@
             this.textBox_Energie.Location = new System.Drawing.Point(336, 152);
             this.textBox_Energie.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.textBox_Energie.Name = "textBox_Energie";
-            this.textBox_Energie.Size = new System.Drawing.Size(116, 25);
+            this.textBox_Energie.Size = new System.Drawing.Size(110, 25);
             this.textBox_Energie.TabIndex = 5;
             this.textBox_Energie.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Energie_Validating);
             // 
@@ -111,7 +115,7 @@
             this.textBox_Typ.Location = new System.Drawing.Point(336, 88);
             this.textBox_Typ.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.textBox_Typ.Name = "textBox_Typ";
-            this.textBox_Typ.Size = new System.Drawing.Size(116, 25);
+            this.textBox_Typ.Size = new System.Drawing.Size(250, 25);
             this.textBox_Typ.TabIndex = 5;
             this.textBox_Typ.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Typ_Validating);
             // 
@@ -138,7 +142,7 @@
             this.textBox_Leistung.Location = new System.Drawing.Point(336, 119);
             this.textBox_Leistung.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.textBox_Leistung.Name = "textBox_Leistung";
-            this.textBox_Leistung.Size = new System.Drawing.Size(116, 25);
+            this.textBox_Leistung.Size = new System.Drawing.Size(110, 25);
             this.textBox_Leistung.TabIndex = 7;
             this.textBox_Leistung.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Leistung_Validating);
             // 
@@ -156,7 +160,7 @@
             this.textBox_Ladezustand.Location = new System.Drawing.Point(336, 185);
             this.textBox_Ladezustand.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.textBox_Ladezustand.Name = "textBox_Ladezustand";
-            this.textBox_Ladezustand.Size = new System.Drawing.Size(116, 25);
+            this.textBox_Ladezustand.Size = new System.Drawing.Size(110, 25);
             this.textBox_Ladezustand.TabIndex = 9;
             this.textBox_Ladezustand.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Ladezustand_Validating);
             // 
@@ -174,7 +178,7 @@
             this.textBox_Degradation.Location = new System.Drawing.Point(336, 216);
             this.textBox_Degradation.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.textBox_Degradation.Name = "textBox_Degradation";
-            this.textBox_Degradation.Size = new System.Drawing.Size(116, 25);
+            this.textBox_Degradation.Size = new System.Drawing.Size(110, 25);
             this.textBox_Degradation.TabIndex = 11;
             this.textBox_Degradation.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Degradation_Validating);
             // 
@@ -182,7 +186,7 @@
             // 
             this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
             this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_Speichern.Location = new System.Drawing.Point(265, 324);
+            this.btn_Speichern.Location = new System.Drawing.Point(339, 324);
             this.btn_Speichern.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Speichern.Name = "btn_Speichern";
             this.btn_Speichern.Size = new System.Drawing.Size(119, 30);
@@ -193,10 +197,10 @@
             // 
             // btn_Neu
             // 
-            this.btn_Neu.Location = new System.Drawing.Point(247, 251);
+            this.btn_Neu.Location = new System.Drawing.Point(336, 249);
             this.btn_Neu.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Neu.Name = "btn_Neu";
-            this.btn_Neu.Size = new System.Drawing.Size(205, 30);
+            this.btn_Neu.Size = new System.Drawing.Size(124, 30);
             this.btn_Neu.TabIndex = 14;
             this.btn_Neu.Text = "Neu...";
             this.btn_Neu.UseVisualStyleBackColor = true;
@@ -204,7 +208,7 @@
             // 
             // btn_OK
             // 
-            this.btn_OK.Location = new System.Drawing.Point(423, 324);
+            this.btn_OK.Location = new System.Drawing.Point(499, 324);
             this.btn_OK.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_OK.Name = "btn_OK";
             this.btn_OK.Size = new System.Drawing.Size(87, 30);
@@ -224,11 +228,67 @@
             this.btn_Loeschen.UseVisualStyleBackColor = true;
             this.btn_Loeschen.Click += new System.EventHandler(this.btn_Loeschen_Click);
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.BackColor = System.Drawing.Color.Black;
+            this.label7.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.label7.ForeColor = System.Drawing.Color.White;
+            this.label7.Location = new System.Drawing.Point(451, 122);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(29, 19);
+            this.label7.TabIndex = 17;
+            this.label7.Text = "kW";
+            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.BackColor = System.Drawing.Color.Black;
+            this.label8.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.label8.ForeColor = System.Drawing.Color.White;
+            this.label8.Location = new System.Drawing.Point(451, 154);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(29, 19);
+            this.label8.TabIndex = 18;
+            this.label8.Text = "kW";
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.BackColor = System.Drawing.Color.Black;
+            this.label9.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.label9.ForeColor = System.Drawing.Color.White;
+            this.label9.Location = new System.Drawing.Point(451, 188);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(20, 19);
+            this.label9.TabIndex = 19;
+            this.label9.Text = "%";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.BackColor = System.Drawing.Color.Black;
+            this.label10.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.label10.ForeColor = System.Drawing.Color.White;
+            this.label10.Location = new System.Drawing.Point(451, 219);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(20, 19);
+            this.label10.TabIndex = 20;
+            this.label10.Text = "%";
+            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // Form_AdminStromspeicher
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(522, 367);
+            this.ClientSize = new System.Drawing.Size(614, 367);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.label7);
             this.Controls.Add(this.btn_Loeschen);
             this.Controls.Add(this.btn_OK);
             this.Controls.Add(this.btn_Neu);
@@ -250,7 +310,7 @@
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "Form_AdminStromspeicher";
-            this.Text = "Stromspeicher";
+            this.Text = "Administration Stromspeicher";
             this.Load += new System.EventHandler(this.Form_Stromspeicher_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -277,5 +337,9 @@
         private System.Windows.Forms.Button btn_Neu;
         private System.Windows.Forms.Button btn_OK;
         private System.Windows.Forms.Button btn_Loeschen;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label10;
     }
 }

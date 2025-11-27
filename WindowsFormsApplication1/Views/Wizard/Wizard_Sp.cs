@@ -8,7 +8,7 @@ namespace WindowsFormsApplication1
     {
         private WErzeugerModel model = new WErzeugerModel();
         private WErzeugerCtrl ctrl = new WErzeugerCtrl();
-        private StromspeicherCtrl spctrl = new StromspeicherCtrl();
+        private StromspeicherCtrl spctrl = new StromspeicherCtrl(); 
         public string m_szProjekt;
 
         public Wizard_Sp()

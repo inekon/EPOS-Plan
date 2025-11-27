@@ -54,15 +54,18 @@ namespace WindowsFormsApplication1
             this.btn_Abbrechen = new System.Windows.Forms.Button();
             this.listView_Strom_Auswahl = new System.Windows.Forms.ListView();
             this.Label1 = new System.Windows.Forms.Label();
+            this.label_Type = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBox_Verbrauch = new System.Windows.Forms.TextBox();
             this.Label8 = new System.Windows.Forms.Label();
             this.btn_neuerWert = new System.Windows.Forms.Button();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btn_Hinzu
             // 
             this.btn_Hinzu.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Hinzu.Location = new System.Drawing.Point(330, 110);
+            this.btn_Hinzu.Location = new System.Drawing.Point(330, 127);
             this.btn_Hinzu.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Hinzu.Name = "btn_Hinzu";
             this.btn_Hinzu.Size = new System.Drawing.Size(82, 33);
@@ -74,7 +77,7 @@ namespace WindowsFormsApplication1
             // btn_Entfernen
             // 
             this.btn_Entfernen.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Entfernen.Location = new System.Drawing.Point(330, 151);
+            this.btn_Entfernen.Location = new System.Drawing.Point(330, 168);
             this.btn_Entfernen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Entfernen.Name = "btn_Entfernen";
             this.btn_Entfernen.Size = new System.Drawing.Size(82, 31);
@@ -86,7 +89,7 @@ namespace WindowsFormsApplication1
             // btn_Strom_DBneu
             // 
             this.btn_Strom_DBneu.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Strom_DBneu.Location = new System.Drawing.Point(543, 293);
+            this.btn_Strom_DBneu.Location = new System.Drawing.Point(543, 310);
             this.btn_Strom_DBneu.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Strom_DBneu.Name = "btn_Strom_DBneu";
             this.btn_Strom_DBneu.Size = new System.Drawing.Size(184, 31);
@@ -98,7 +101,7 @@ namespace WindowsFormsApplication1
             // btn_Strom_loeschen
             // 
             this.btn_Strom_loeschen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Strom_loeschen.Location = new System.Drawing.Point(543, 332);
+            this.btn_Strom_loeschen.Location = new System.Drawing.Point(543, 349);
             this.btn_Strom_loeschen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Strom_loeschen.Name = "btn_Strom_loeschen";
             this.btn_Strom_loeschen.Size = new System.Drawing.Size(184, 34);
@@ -110,7 +113,7 @@ namespace WindowsFormsApplication1
             // btn_ErgebnisseVerbrauch
             // 
             this.btn_ErgebnisseVerbrauch.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_ErgebnisseVerbrauch.Location = new System.Drawing.Point(190, 558);
+            this.btn_ErgebnisseVerbrauch.Location = new System.Drawing.Point(184, 530);
             this.btn_ErgebnisseVerbrauch.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_ErgebnisseVerbrauch.Name = "btn_ErgebnisseVerbrauch";
             this.btn_ErgebnisseVerbrauch.Size = new System.Drawing.Size(144, 31);
@@ -122,7 +125,7 @@ namespace WindowsFormsApplication1
             // btn_Simulation
             // 
             this.btn_Simulation.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Simulation.Location = new System.Drawing.Point(340, 558);
+            this.btn_Simulation.Location = new System.Drawing.Point(334, 530);
             this.btn_Simulation.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Simulation.Name = "btn_Simulation";
             this.btn_Simulation.Size = new System.Drawing.Size(119, 31);
@@ -134,7 +137,7 @@ namespace WindowsFormsApplication1
             // btn_OK
             // 
             this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_OK.Location = new System.Drawing.Point(633, 558);
+            this.btn_OK.Location = new System.Drawing.Point(622, 530);
             this.btn_OK.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_OK.Name = "btn_OK";
             this.btn_OK.Size = new System.Drawing.Size(105, 31);
@@ -147,7 +150,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label24.AutoSize = true;
             this.Label24.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label24.Location = new System.Drawing.Point(435, 31);
+            this.Label24.Location = new System.Drawing.Point(435, 48);
             this.Label24.Name = "Label24";
             this.Label24.Size = new System.Drawing.Size(156, 19);
             this.Label24.TabIndex = 12;
@@ -157,7 +160,7 @@ namespace WindowsFormsApplication1
             // btn_StromtypDBedit
             // 
             this.btn_StromtypDBedit.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_StromtypDBedit.Location = new System.Drawing.Point(543, 374);
+            this.btn_StromtypDBedit.Location = new System.Drawing.Point(543, 391);
             this.btn_StromtypDBedit.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_StromtypDBedit.Name = "btn_StromtypDBedit";
             this.btn_StromtypDBedit.Size = new System.Drawing.Size(184, 31);
@@ -169,7 +172,7 @@ namespace WindowsFormsApplication1
             // btn_Strom_DBedit
             // 
             this.btn_Strom_DBedit.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Strom_DBedit.Location = new System.Drawing.Point(543, 251);
+            this.btn_Strom_DBedit.Location = new System.Drawing.Point(543, 268);
             this.btn_Strom_DBedit.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Strom_DBedit.Name = "btn_Strom_DBedit";
             this.btn_Strom_DBedit.Size = new System.Drawing.Size(184, 34);
@@ -181,9 +184,9 @@ namespace WindowsFormsApplication1
             // Label12
             // 
             this.Label12.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label12.Location = new System.Drawing.Point(5, 372);
+            this.Label12.Location = new System.Drawing.Point(136, 488);
             this.Label12.Name = "Label12";
-            this.Label12.Size = new System.Drawing.Size(144, 52);
+            this.Label12.Size = new System.Drawing.Size(153, 24);
             this.Label12.TabIndex = 19;
             this.Label12.Text = "jährlicher Strombedarf:";
             this.Label12.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -192,7 +195,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label10.AutoSize = true;
             this.Label10.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label10.Location = new System.Drawing.Point(101, 315);
+            this.Label10.Location = new System.Drawing.Point(66, 330);
             this.Label10.Name = "Label10";
             this.Label10.Size = new System.Drawing.Size(48, 19);
             this.Label10.TabIndex = 20;
@@ -201,12 +204,13 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Stromname
             // 
+            this.textBox_Stromname.BackColor = System.Drawing.Color.White;
             this.textBox_Stromname.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Stromname.Enabled = false;
             this.textBox_Stromname.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Stromname.Location = new System.Drawing.Point(157, 317);
+            this.textBox_Stromname.Location = new System.Drawing.Point(122, 332);
             this.textBox_Stromname.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Stromname.Name = "textBox_Stromname";
+            this.textBox_Stromname.ReadOnly = true;
             this.textBox_Stromname.Size = new System.Drawing.Size(331, 22);
             this.textBox_Stromname.TabIndex = 21;
             // 
@@ -214,7 +218,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label13.AutoSize = true;
             this.Label13.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label13.Location = new System.Drawing.Point(55, 430);
+            this.Label13.Location = new System.Drawing.Point(20, 394);
             this.Label13.Name = "Label13";
             this.Label13.Size = new System.Drawing.Size(94, 19);
             this.Label13.TabIndex = 22;
@@ -223,35 +227,38 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Jahres_Verbrauch
             // 
+            this.textBox_Jahres_Verbrauch.BackColor = System.Drawing.Color.White;
             this.textBox_Jahres_Verbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Jahres_Verbrauch.Enabled = false;
             this.textBox_Jahres_Verbrauch.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Jahres_Verbrauch.Location = new System.Drawing.Point(157, 388);
+            this.textBox_Jahres_Verbrauch.Location = new System.Drawing.Point(298, 491);
             this.textBox_Jahres_Verbrauch.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Jahres_Verbrauch.Name = "textBox_Jahres_Verbrauch";
+            this.textBox_Jahres_Verbrauch.ReadOnly = true;
             this.textBox_Jahres_Verbrauch.Size = new System.Drawing.Size(63, 22);
             this.textBox_Jahres_Verbrauch.TabIndex = 23;
             // 
             // textBox_Beschreibung
             // 
+            this.textBox_Beschreibung.BackColor = System.Drawing.Color.White;
             this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Beschreibung.Enabled = false;
             this.textBox_Beschreibung.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Beschreibung.Location = new System.Drawing.Point(157, 432);
+            this.textBox_Beschreibung.Location = new System.Drawing.Point(122, 391);
             this.textBox_Beschreibung.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Beschreibung.Multiline = true;
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
-            this.textBox_Beschreibung.Size = new System.Drawing.Size(510, 57);
+            this.textBox_Beschreibung.ReadOnly = true;
+            this.textBox_Beschreibung.Size = new System.Drawing.Size(331, 57);
             this.textBox_Beschreibung.TabIndex = 24;
             // 
             // textBox_Stromtyp
             // 
+            this.textBox_Stromtyp.BackColor = System.Drawing.Color.White;
             this.textBox_Stromtyp.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Stromtyp.Enabled = false;
             this.textBox_Stromtyp.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Stromtyp.Location = new System.Drawing.Point(157, 349);
+            this.textBox_Stromtyp.Location = new System.Drawing.Point(122, 361);
             this.textBox_Stromtyp.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Stromtyp.Name = "textBox_Stromtyp";
+            this.textBox_Stromtyp.ReadOnly = true;
             this.textBox_Stromtyp.Size = new System.Drawing.Size(156, 22);
             this.textBox_Stromtyp.TabIndex = 25;
             // 
@@ -259,7 +266,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label15.AutoSize = true;
             this.Label15.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label15.Location = new System.Drawing.Point(115, 347);
+            this.Label15.Location = new System.Drawing.Point(80, 359);
             this.Label15.Name = "Label15";
             this.Label15.Size = new System.Drawing.Size(33, 19);
             this.Label15.TabIndex = 26;
@@ -272,7 +279,7 @@ namespace WindowsFormsApplication1
             this.Label11.BackColor = System.Drawing.Color.Black;
             this.Label11.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label11.ForeColor = System.Drawing.Color.White;
-            this.Label11.Location = new System.Drawing.Point(228, 389);
+            this.Label11.Location = new System.Drawing.Point(370, 493);
             this.Label11.Name = "Label11";
             this.Label11.Size = new System.Drawing.Size(48, 19);
             this.Label11.TabIndex = 27;
@@ -282,7 +289,7 @@ namespace WindowsFormsApplication1
             // Label19
             // 
             this.Label19.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label19.Location = new System.Drawing.Point(153, 502);
+            this.Label19.Location = new System.Drawing.Point(26, 453);
             this.Label19.Name = "Label19";
             this.Label19.Size = new System.Drawing.Size(268, 36);
             this.Label19.TabIndex = 28;
@@ -295,7 +302,7 @@ namespace WindowsFormsApplication1
             this.Label18.BackColor = System.Drawing.Color.Black;
             this.Label18.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label18.ForeColor = System.Drawing.Color.White;
-            this.Label18.Location = new System.Drawing.Point(495, 511);
+            this.Label18.Location = new System.Drawing.Point(369, 464);
             this.Label18.Name = "Label18";
             this.Label18.Size = new System.Drawing.Size(48, 19);
             this.Label18.TabIndex = 29;
@@ -304,12 +311,13 @@ namespace WindowsFormsApplication1
             // 
             // textBox_StromSumme
             // 
+            this.textBox_StromSumme.BackColor = System.Drawing.Color.White;
             this.textBox_StromSumme.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_StromSumme.Enabled = false;
             this.textBox_StromSumme.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_StromSumme.Location = new System.Drawing.Point(424, 510);
+            this.textBox_StromSumme.Location = new System.Drawing.Point(298, 463);
             this.textBox_StromSumme.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_StromSumme.Name = "textBox_StromSumme";
+            this.textBox_StromSumme.ReadOnly = true;
             this.textBox_StromSumme.Size = new System.Drawing.Size(63, 22);
             this.textBox_StromSumme.TabIndex = 30;
             // 
@@ -317,7 +325,7 @@ namespace WindowsFormsApplication1
             // 
             this.listBox_Strom_DB.FormattingEnabled = true;
             this.listBox_Strom_DB.ItemHeight = 17;
-            this.listBox_Strom_DB.Location = new System.Drawing.Point(439, 53);
+            this.listBox_Strom_DB.Location = new System.Drawing.Point(439, 70);
             this.listBox_Strom_DB.Name = "listBox_Strom_DB";
             this.listBox_Strom_DB.Size = new System.Drawing.Size(288, 174);
             this.listBox_Strom_DB.TabIndex = 32;
@@ -326,7 +334,7 @@ namespace WindowsFormsApplication1
             // btn_Abbrechen
             // 
             this.btn_Abbrechen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Abbrechen.Location = new System.Drawing.Point(522, 558);
+            this.btn_Abbrechen.Location = new System.Drawing.Point(511, 530);
             this.btn_Abbrechen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Abbrechen.Name = "btn_Abbrechen";
             this.btn_Abbrechen.Size = new System.Drawing.Size(105, 31);
@@ -337,10 +345,11 @@ namespace WindowsFormsApplication1
             // 
             // listView_Strom_Auswahl
             // 
+            this.listView_Strom_Auswahl.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listView_Strom_Auswahl.HideSelection = false;
-            this.listView_Strom_Auswahl.Location = new System.Drawing.Point(16, 53);
+            this.listView_Strom_Auswahl.Location = new System.Drawing.Point(16, 70);
             this.listView_Strom_Auswahl.Name = "listView_Strom_Auswahl";
-            this.listView_Strom_Auswahl.Size = new System.Drawing.Size(284, 178);
+            this.listView_Strom_Auswahl.Size = new System.Drawing.Size(292, 178);
             this.listView_Strom_Auswahl.TabIndex = 41;
             this.listView_Strom_Auswahl.UseCompatibleStateImageBehavior = false;
             this.listView_Strom_Auswahl.SelectedIndexChanged += new System.EventHandler(this.listView_Prozess_Auswahl_SelectedIndexChanged);
@@ -349,23 +358,48 @@ namespace WindowsFormsApplication1
             // 
             this.Label1.AutoSize = true;
             this.Label1.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label1.Location = new System.Drawing.Point(12, 31);
+            this.Label1.Location = new System.Drawing.Point(12, 48);
             this.Label1.Name = "Label1";
             this.Label1.Size = new System.Drawing.Size(240, 19);
             this.Label1.TabIndex = 37;
             this.Label1.Text = "Ausgewählte Strombedarfe im Projekt";
             this.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // label_Type
+            // 
+            this.label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.label_Type.Dock = System.Windows.Forms.DockStyle.Top;
+            this.label_Type.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Type.Location = new System.Drawing.Point(0, 0);
+            this.label_Type.Name = "label_Type";
+            this.label_Type.Padding = new System.Windows.Forms.Padding(0, 5, 0, 5);
+            this.label_Type.Size = new System.Drawing.Size(742, 37);
+            this.label_Type.TabIndex = 42;
+            this.label_Type.Text = "Standard Stromprofil";
+            this.label_Type.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.textBox_Verbrauch);
+            this.groupBox1.Controls.Add(this.Label8);
+            this.groupBox1.Controls.Add(this.btn_neuerWert);
+            this.groupBox1.Location = new System.Drawing.Point(18, 256);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(264, 65);
+            this.groupBox1.TabIndex = 43;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Ändern des Jahresverbrauchs";
+            // 
             // textBox_Verbrauch
             // 
             this.textBox_Verbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Verbrauch.Enabled = false;
             this.textBox_Verbrauch.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Verbrauch.Location = new System.Drawing.Point(16, 239);
+            this.textBox_Verbrauch.Location = new System.Drawing.Point(8, 27);
             this.textBox_Verbrauch.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Verbrauch.Name = "textBox_Verbrauch";
-            this.textBox_Verbrauch.Size = new System.Drawing.Size(63, 22);
-            this.textBox_Verbrauch.TabIndex = 38;
+            this.textBox_Verbrauch.Size = new System.Drawing.Size(76, 22);
+            this.textBox_Verbrauch.TabIndex = 41;
+            this.textBox_Verbrauch.TextChanged += new System.EventHandler(this.textBox_Verbrauch_TextChanged);
             // 
             // Label8
             // 
@@ -373,22 +407,22 @@ namespace WindowsFormsApplication1
             this.Label8.BackColor = System.Drawing.Color.Black;
             this.Label8.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label8.ForeColor = System.Drawing.Color.White;
-            this.Label8.Location = new System.Drawing.Point(88, 241);
+            this.Label8.Location = new System.Drawing.Point(93, 29);
             this.Label8.Name = "Label8";
             this.Label8.Size = new System.Drawing.Size(43, 19);
-            this.Label8.TabIndex = 39;
+            this.Label8.TabIndex = 42;
             this.Label8.Text = "MWh";
             this.Label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btn_neuerWert
             // 
             this.btn_neuerWert.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_neuerWert.Location = new System.Drawing.Point(16, 270);
+            this.btn_neuerWert.Location = new System.Drawing.Point(142, 25);
             this.btn_neuerWert.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_neuerWert.Name = "btn_neuerWert";
             this.btn_neuerWert.Size = new System.Drawing.Size(115, 30);
-            this.btn_neuerWert.TabIndex = 40;
-            this.btn_neuerWert.Text = "Neuer Wert...";
+            this.btn_neuerWert.TabIndex = 43;
+            this.btn_neuerWert.Text = "Übernehmen";
             this.btn_neuerWert.UseVisualStyleBackColor = true;
             this.btn_neuerWert.Click += new System.EventHandler(this.btn_neuerWert_Click);
             // 
@@ -396,12 +430,11 @@ namespace WindowsFormsApplication1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(758, 603);
+            this.ClientSize = new System.Drawing.Size(742, 571);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.label_Type);
             this.Controls.Add(this.listView_Strom_Auswahl);
             this.Controls.Add(this.Label1);
-            this.Controls.Add(this.textBox_Verbrauch);
-            this.Controls.Add(this.Label8);
-            this.Controls.Add(this.btn_neuerWert);
             this.Controls.Add(this.btn_Abbrechen);
             this.Controls.Add(this.listBox_Strom_DB);
             this.Controls.Add(this.btn_Hinzu);
@@ -430,6 +463,8 @@ namespace WindowsFormsApplication1
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "Form_Stromverbraucher";
             this.Text = "Strombedarf Verwaltung";
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -463,11 +498,10 @@ private System.Windows.Forms.ListBox listBox_Strom_DB;
 private System.Windows.Forms.Button btn_Abbrechen;
 private System.Windows.Forms.ListView listView_Strom_Auswahl;
 private System.Windows.Forms.Label Label1;
-private System.Windows.Forms.TextBox textBox_Verbrauch;
-private System.Windows.Forms.Label Label8;
-private System.Windows.Forms.Button btn_neuerWert;
-
-
- 
+        private System.Windows.Forms.Label label_Type;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.TextBox textBox_Verbrauch;
+        private System.Windows.Forms.Label Label8;
+        private System.Windows.Forms.Button btn_neuerWert;
     }
 }

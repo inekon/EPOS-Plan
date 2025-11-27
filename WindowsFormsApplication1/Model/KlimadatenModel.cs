@@ -37,4 +37,20 @@ namespace WindowsFormsApplication1
         }
     }
 
+    public class SolardatenModel
+    {
+        public SolardatenModel[] items;
+        public int m_ID;
+        public int m_ID_Klimaregion;
+        public double Außen_Temp;
+        public int rows;
+
+        public SolardatenModel()
+        {
+            m_ID = 0;
+            m_ID_Klimaregion = 0;
+            Außen_Temp = 0;
+            rows = 0;
+        }
+    }
 }

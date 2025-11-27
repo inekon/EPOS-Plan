@@ -39,6 +39,7 @@
             this.btnNext = new System.Windows.Forms.Button();
             this.btnBack = new System.Windows.Forms.Button();
             this.pnlContent = new System.Windows.Forms.Panel();
+            this.button_NeuProjekt = new System.Windows.Forms.Button();
             this.pnlLeft.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_App)).BeginInit();
             this.pnlBottom.SuspendLayout();
@@ -49,25 +50,26 @@
             // 
             this.pnlLeft.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.pnlLeft.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.pnlLeft.Controls.Add(this.button_NeuProjekt);
             this.pnlLeft.Controls.Add(this.label_Projekt);
             this.pnlLeft.Controls.Add(this.listBox_Projekte);
             this.pnlLeft.Controls.Add(this.pictureBox_App);
             this.pnlLeft.Dock = System.Windows.Forms.DockStyle.Left;
             this.pnlLeft.Location = new System.Drawing.Point(0, 0);
             this.pnlLeft.Name = "pnlLeft";
-            this.pnlLeft.Size = new System.Drawing.Size(174, 586);
+            this.pnlLeft.Size = new System.Drawing.Size(174, 654);
             this.pnlLeft.TabIndex = 0;
             // 
             // label_Projekt
             // 
-            this.label_Projekt.AutoSize = true;
-            this.label_Projekt.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.label_Projekt.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.label_Projekt.Font = new System.Drawing.Font("Segoe UI Semibold", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_Projekt.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.label_Projekt.Location = new System.Drawing.Point(12, 204);
+            this.label_Projekt.Location = new System.Drawing.Point(12, 180);
             this.label_Projekt.Name = "label_Projekt";
-            this.label_Projekt.Size = new System.Drawing.Size(50, 20);
+            this.label_Projekt.Size = new System.Drawing.Size(145, 44);
             this.label_Projekt.TabIndex = 2;
-            this.label_Projekt.Text = "label1";
+            this.label_Projekt.Text = "bestehendes Projekt auswählen";
             // 
             // listBox_Projekte
             // 
@@ -79,7 +81,7 @@
             this.listBox_Projekte.ItemHeight = 20;
             this.listBox_Projekte.Location = new System.Drawing.Point(12, 225);
             this.listBox_Projekte.Name = "listBox_Projekte";
-            this.listBox_Projekte.Size = new System.Drawing.Size(150, 344);
+            this.listBox_Projekte.Size = new System.Drawing.Size(150, 284);
             this.listBox_Projekte.TabIndex = 1;
             this.listBox_Projekte.SelectedIndexChanged += new System.EventHandler(this.listBox_Projekte_SelectedIndexChanged);
             // 
@@ -100,10 +102,10 @@
             this.pnlBottom.Controls.Add(this.btnSpeichern);
             this.pnlBottom.Controls.Add(this.tableLayoutPanel1);
             this.pnlBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlBottom.Location = new System.Drawing.Point(0, 586);
+            this.pnlBottom.Location = new System.Drawing.Point(0, 654);
             this.pnlBottom.Name = "pnlBottom";
             this.pnlBottom.Padding = new System.Windows.Forms.Padding(10);
-            this.pnlBottom.Size = new System.Drawing.Size(863, 57);
+            this.pnlBottom.Size = new System.Drawing.Size(1049, 57);
             this.pnlBottom.TabIndex = 1;
             // 
             // btnSpeichern
@@ -130,7 +132,7 @@
             this.tableLayoutPanel1.Controls.Add(this.btnNext, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnBack, 0, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(610, 10);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(796, 10);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.Padding = new System.Windows.Forms.Padding(3);
             this.tableLayoutPanel1.RowCount = 1;
@@ -173,19 +175,34 @@
             // 
             // pnlContent
             // 
+            this.pnlContent.AutoSize = true;
+            this.pnlContent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.pnlContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlContent.Location = new System.Drawing.Point(174, 0);
             this.pnlContent.Name = "pnlContent";
             this.pnlContent.Padding = new System.Windows.Forms.Padding(10);
-            this.pnlContent.Size = new System.Drawing.Size(689, 586);
+            this.pnlContent.Size = new System.Drawing.Size(875, 654);
             this.pnlContent.TabIndex = 2;
+            // 
+            // button_NeuProjekt
+            // 
+            this.button_NeuProjekt.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.button_NeuProjekt.Font = new System.Drawing.Font("Segoe UI Semibold", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_NeuProjekt.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.button_NeuProjekt.Location = new System.Drawing.Point(12, 521);
+            this.button_NeuProjekt.Name = "button_NeuProjekt";
+            this.button_NeuProjekt.Size = new System.Drawing.Size(150, 29);
+            this.button_NeuProjekt.TabIndex = 0;
+            this.button_NeuProjekt.Text = "Neues Projekt...";
+            this.button_NeuProjekt.UseVisualStyleBackColor = false;
+            this.button_NeuProjekt.Click += new System.EventHandler(this.button_NeuProjekt_Click);
             // 
             // WizardParent
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(863, 643);
+            this.ClientSize = new System.Drawing.Size(1049, 711);
             this.Controls.Add(this.pnlContent);
             this.Controls.Add(this.pnlLeft);
             this.Controls.Add(this.pnlBottom);
@@ -193,11 +210,11 @@
             this.Text = "Projekt Wizard";
             this.Load += new System.EventHandler(this.WizardParent_Load);
             this.pnlLeft.ResumeLayout(false);
-            this.pnlLeft.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_App)).EndInit();
             this.pnlBottom.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -214,6 +231,7 @@
         private System.Windows.Forms.Button btnNext;
         private System.Windows.Forms.Button btnBack;
         private System.Windows.Forms.Button btnSpeichern;
+        private System.Windows.Forms.Button button_NeuProjekt;
     }
 }
 

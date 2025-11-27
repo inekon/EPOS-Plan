@@ -14,7 +14,6 @@ namespace WindowsFormsApplication1
         public List<WErzeugerModel> list_wpmodel = new List<WErzeugerModel>();
         public int m_nType = WizardItemClass.SP_TYP;
         public int m_ID_Projekt = 0;
-        int startindex = 100000;
 
         public Form_WPEing ()
         {

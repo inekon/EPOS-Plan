@@ -22,6 +22,13 @@
         public int m_CO;
         public int m_CO2;
         public int m_Staub;
+        public string m_szMotortyp;
+        public double m_Grenzleistung;
+        public double m_Kosten_Modul;
+        public double m_Kosten_Schallschutzhaube;
+        public double m_Kosten_Lieferung;
+        public double m_Kosten_Montage;
+        public double m_Kosten_Abgasreinigung;
 
         public BHKWModel()
         {
@@ -43,7 +50,14 @@
             m_CO = 0;
             m_CO2 = 0;
             m_Staub = 0;
+            m_szMotortyp = "";
+            m_Grenzleistung = 0;
+            m_Kosten_Modul = 0;
+            m_Kosten_Schallschutzhaube = 0;
+            m_Kosten_Lieferung = 0;
+            m_Kosten_Montage = 0;
+            m_Kosten_Abgasreinigung = 0;
         }
 
-    }
+}
 }

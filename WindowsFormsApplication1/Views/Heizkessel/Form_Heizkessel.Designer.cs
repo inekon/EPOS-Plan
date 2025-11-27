@@ -53,6 +53,7 @@
             this.textBox_Investitionskosten = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.btn_Bearbeiten = new System.Windows.Forms.Button();
+            this.btn_Löschen = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label18
@@ -336,11 +337,22 @@
             this.btn_Bearbeiten.UseVisualStyleBackColor = true;
             this.btn_Bearbeiten.Click += new System.EventHandler(this.btn_Bearbeiten_Click);
             // 
+            // btn_Löschen
+            // 
+            this.btn_Löschen.Location = new System.Drawing.Point(657, 295);
+            this.btn_Löschen.Name = "btn_Löschen";
+            this.btn_Löschen.Size = new System.Drawing.Size(99, 28);
+            this.btn_Löschen.TabIndex = 109;
+            this.btn_Löschen.Text = "Löschen";
+            this.btn_Löschen.UseVisualStyleBackColor = true;
+            this.btn_Löschen.Click += new System.EventHandler(this.btn_Löschen_Click);
+            // 
             // Form_Heizkessel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(786, 588);
+            this.Controls.Add(this.btn_Löschen);
             this.Controls.Add(this.btn_Bearbeiten);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -403,5 +415,6 @@
         private System.Windows.Forms.TextBox textBox_Investitionskosten;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button btn_Bearbeiten;
+        private System.Windows.Forms.Button btn_Löschen;
     }
 }

@@ -41,6 +41,7 @@
             this.btn_Import = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.pBar_Import = new System.Windows.Forms.ProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -176,11 +177,23 @@
             this.chart1.SelectionRangeChanged += new System.EventHandler<System.Windows.Forms.DataVisualization.Charting.CursorEventArgs>(this.SelectionRangeEnd);
             this.chart1.AxisScrollBarClicked += new System.EventHandler<System.Windows.Forms.DataVisualization.Charting.ScrollBarEventArgs>(this.AxisScrollBarClicked);
             // 
+            // pBar_Import
+            // 
+            this.pBar_Import.ForeColor = System.Drawing.Color.RoyalBlue;
+            this.pBar_Import.Location = new System.Drawing.Point(172, 93);
+            this.pBar_Import.Maximum = 9125;
+            this.pBar_Import.Name = "pBar_Import";
+            this.pBar_Import.Size = new System.Drawing.Size(270, 14);
+            this.pBar_Import.Step = 1;
+            this.pBar_Import.TabIndex = 17;
+            this.pBar_Import.Visible = false;
+            // 
             // Form_Klimadaten
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(738, 496);
+            this.Controls.Add(this.pBar_Import);
             this.Controls.Add(this.chart1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.btn_Import);
@@ -216,5 +229,6 @@
         private System.Windows.Forms.Button btn_Import;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.ProgressBar pBar_Import;
     }
 }

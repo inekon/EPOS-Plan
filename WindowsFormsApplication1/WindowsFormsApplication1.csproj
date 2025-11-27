@@ -93,9 +93,13 @@
     <Reference Include="MathNet.Numerics, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathNet.Numerics.5.0.0\lib\net48\MathNet.Numerics.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -104,12 +108,21 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\CsvReader.cs" />
     <Compile Include="Classes\FileDlgClass.cs" />
     <Compile Include="Classes\Form3Src.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Classes\Form_Hinweis.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Classes\Form_Hinweis.Designer.cs">
+      <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </Compile>
     <Compile Include="Classes\RecordSet.cs" />
     <Compile Include="Classes\Simulation\Init.cs" />
@@ -122,6 +135,9 @@
     <Compile Include="Classes\WaermepumpenImport.cs" />
     <Compile Include="Controller\ApplikationCtrl.cs" />
     <Compile Include="Controller\BHKWCtrl.cs" />
+    <Compile Include="Controller\BHKWKontextMenuCtrl.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Controller\BrennstoffCtrl.cs" />
     <Compile Include="Controller\GebaeudeCtrl.cs" />
     <Compile Include="Controller\GebäudeKontextMenuCtrl.cs">
@@ -135,6 +151,7 @@
     <Compile Include="Controller\KlimaregionCtrl.cs" />
     <Compile Include="Controller\ProjektGebaeudeCtrl.cs" />
     <Compile Include="Controller\ProzesswaermeKontextMenuCtrl.cs" />
+    <Compile Include="Controller\SolardatenCtrl .cs" />
     <Compile Include="Controller\StrombedarfKontextMenuCtrl.cs" />
     <Compile Include="Controller\StromganglinieCtrl.cs" />
     <Compile Include="Controller\StromganglinieDatenCtrl.cs" />
@@ -189,11 +206,23 @@
     <Compile Include="Model\Z_ProjektStromverbraucherModel.cs" />
     <Compile Include="Model\Z_ProjektWaermebedarfModel.cs" />
     <Compile Include="Model\Z_ProjGebModel.cs" />
+    <Compile Include="Views\BHKW\Form_BHKWAdmin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\BHKW\Form_BHKWAdmin.designer.cs">
+      <DependentUpon>Form_BHKWAdmin.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\BHKW\Form_BHKWEing.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\BHKW\Form_BHKWEing.designer.cs">
       <DependentUpon>Form_BHKWEing.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BHKW\Form_DBBHKW.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\BHKW\Form_DBBHKW.designer.cs">
+      <DependentUpon>Form_DBBHKW.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Form_StromTest.cs">
       <SubType>Form</SubType>
@@ -303,12 +332,6 @@
     <Compile Include="Views\Stromspeicher\Form_AdminStromspeicher.designer.cs">
       <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Stromspeicher\Form_WizSp.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Stromspeicher\Form_WizSp.Designer.cs">
-      <DependentUpon>Form_WizSp.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Stromverbraucher\Form_EingDBStromverbraucher.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -327,11 +350,11 @@
     <Compile Include="Views\Stromverbraucher\Form_ErgStromverbraucher.designer.cs">
       <DependentUpon>Form_ErgStromverbraucher.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Stromverbraucher\Form_Stromeinlesen.cs">
+    <Compile Include="Views\Stromverbraucher\Form_Stromganglinie_Admin.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Stromverbraucher\Form_Stromeinlesen.designer.cs">
-      <DependentUpon>Form_Stromeinlesen.cs</DependentUpon>
+    <Compile Include="Views\Stromverbraucher\Form_Stromganglinie_Admin.designer.cs">
+      <DependentUpon>Form_Stromganglinie_Admin.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Stromverbraucher\Form_Stromganglinie.cs">
       <SubType>Form</SubType>
@@ -345,41 +368,23 @@
     <Compile Include="Views\Stromverbraucher\Form_Stromverbraucher.designer.cs">
       <DependentUpon>Form_Stromverbraucher.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Stromverbraucher\Form_StromverbraucherEingabe.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Stromverbraucher\Form_StromverbraucherEingabe.designer.cs">
-      <DependentUpon>Form_StromverbraucherEingabe.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Stromverbraucher\Form_Stromverbraucher_Admin.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Stromverbraucher\Form_Stromverbraucher_Admin.designer.cs">
       <DependentUpon>Form_Stromverbraucher_Admin.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Wizard\Form_ErgebnisSpk.cs">
+    <Compile Include="Views\Form_ErgebnisSpk.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Wizard\Form_ErgebnisSpk.designer.cs">
+    <Compile Include="Views\Form_ErgebnisSpk.designer.cs">
       <DependentUpon>Form_ErgebnisSpk.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Gebaeude.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Gebaeude.Designer.cs">
-      <DependentUpon>Wizard_Gebaeude.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Kessel.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Kessel.Designer.cs">
       <DependentUpon>Wizard_Kessel.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Prozess.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Prozess.designer.cs">
-      <DependentUpon>Wizard_Prozess.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Referenz.cs">
       <SubType>Form</SubType>
@@ -393,23 +398,11 @@
     <Compile Include="Views\Wizard\Wizard_Stromlastgang.Designer.cs">
       <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Wizard\Wizard_Stromprofil.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Stromprofil.Designer.cs">
-      <DependentUpon>Wizard_Stromprofil.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Wizard\Wizard_Waermebedarf.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Waermebedarf.designer.cs">
       <DependentUpon>Wizard_Waermebedarf.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Wärmebedarf\Form_Waermebedarf.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wärmebedarf\Form_Waermebedarf.designer.cs">
-      <DependentUpon>Form_Waermebedarf.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wärmebedarf\Form_Waermeeinlesen.cs">
       <SubType>Form</SubType>
@@ -496,12 +489,6 @@
     <Compile Include="Views\Wizard\Wizard_Klima.designer.cs">
       <DependentUpon>Wizard_Klima.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Wizard\Wizard_Sp.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Sp.Designer.cs">
-      <DependentUpon>Wizard_Sp.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Wizard\WizardParent.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -545,8 +532,17 @@
     <Compile Include="Views\Wärmepumpe\WizWP.designer.cs">
       <DependentUpon>WizWP.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Classes\Form_Hinweis.resx">
+      <DependentUpon>Form_Hinweis.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\BHKW\Form_BHKWAdmin.resx">
+      <DependentUpon>Form_BHKWAdmin.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\BHKW\Form_BHKWEing.resx">
       <DependentUpon>Form_BHKWEing.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\BHKW\Form_DBBHKW.resx">
+      <DependentUpon>Form_DBBHKW.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Form_StromTest.resx">
       <DependentUpon>Form_StromTest.cs</DependentUpon>
@@ -606,17 +602,17 @@
     <EmbeddedResource Include="Views\Stromspeicher\Form_AdminStromspeicher.resx">
       <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Stromspeicher\Form_WizSp.resx">
-      <DependentUpon>Form_WizSp.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie_Admin.resx">
+      <DependentUpon>Form_Stromganglinie_Admin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie.resx">
       <DependentUpon>Form_Stromganglinie.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Stromverbraucher\Form_StromverbraucherEingabe.resx">
-      <DependentUpon>Form_StromverbraucherEingabe.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Form_ErgebnisSpk.resx">
+    <EmbeddedResource Include="Views\Form_ErgebnisSpk.resx">
       <DependentUpon>Form_ErgebnisSpk.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromverbraucher.resx">
+      <DependentUpon>Form_Stromverbraucher.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\WizardParent.resx">
       <DependentUpon>WizardParent.cs</DependentUpon>
@@ -629,9 +625,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Stromlastgang.resx">
       <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Wizard_Stromprofil.resx">
-      <DependentUpon>Wizard_Stromprofil.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Waermebedarf.resx">
       <DependentUpon>Wizard_Waermebedarf.cs</DependentUpon>
@@ -684,9 +677,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Klima.resx">
       <DependentUpon>Wizard_Klima.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Wizard_Sp.resx">
-      <DependentUpon>Wizard_Sp.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_WPItem.resx">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>
@@ -840,6 +830,8 @@
     <None Include="Resources\PSSpeicher.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\info-1459077_1280.jpg" />
+    <None Include="Resources\info-1459077_1280.png" />
     <Content Include="Resources\PDetailansicht.jpg" />
     <Content Include="Resources\PZusammenfassung.pg.jpg" />
   </ItemGroup>

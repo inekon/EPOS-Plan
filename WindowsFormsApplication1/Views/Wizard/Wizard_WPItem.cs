@@ -131,6 +131,33 @@ namespace WindowsFormsApplication1
 
         private void btn_Beenden_Click(object sender, EventArgs e)
         {
+            if(comboBox_Betriebsart.Text == "" && checkBox_Bivalent.Checked)
+            {
+                MessageBox.Show("Bitte Betriebsart auswählen!");
+                return;
+            }
+            if(listBox_WP.Text == "")
+            {
+                MessageBox.Show("Bitte Wärmepumpe auswählen!");
+                return;
+            }   
+            if(comboBox_Ruecklauf.Text == "" || Int32.Parse(comboBox_Ruecklauf.Text) == 0)
+            {
+                MessageBox.Show("Bitte Rücklauftemperatur auswählen!");
+                return;
+            }   
+            if (comboBox_Vorlauf.Text == "" || Int32.Parse(comboBox_Vorlauf.Text) == 0)
+            {
+                MessageBox.Show("Bitte Vorlauftemperatur auswählen!");
+                return;
+            }
+
+            if(Int32.Parse(comboBox_Vorlauf.Text) < Int32.Parse(comboBox_Ruecklauf.Text))
+            {
+                MessageBox.Show("Vorlauftemperatur muss größer als Rücklauftemperatur gewählt werden!");
+                return;
+            }
+
             item.Bezeichner = listBox_WP.Text;
          //   item.ID_Type = WizardItemClass.WP_TYP;
             item.Betriebsart = comboBox_Betriebsart.Text;

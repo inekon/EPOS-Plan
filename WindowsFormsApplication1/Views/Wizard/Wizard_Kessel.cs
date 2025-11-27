@@ -92,10 +92,11 @@ namespace WindowsFormsApplication1
             WizardParent wizardparent = (WizardParent)getWizardPage();
             for (int i = 0; i < wizardparent.list_werzmodel.Count; i++)
             {
-                if (wizardparent.list_werzmodel[i].Bezeichner == listBox_Kessel.Text && wizardparent.list_werzmodel[i].ID_Type == WizardItemClass.KESSEL_ITEM)
+                if (wizardparent.list_werzmodel[i].Bezeichner == listBox_Kessel.Text && wizardparent.list_werzmodel[i].ID_Type == WizardItemClass.KESSEL_TYP)
                 {
                     wizardparent.list_werzmodel.RemoveAt(i);
                     listBox_Kessel.Items.Remove(listBox_Kessel.Text);
+                    break;
                 }
             }
             if(listBox_Kessel.Items.Count > 0) listBox_Kessel.SelectedIndex = 0;

@@ -708,6 +708,7 @@
             this.btn_Kessel_Entfernen.TabIndex = 18;
             this.btn_Kessel_Entfernen.Text = "-->";
             this.btn_Kessel_Entfernen.UseVisualStyleBackColor = true;
+            this.btn_Kessel_Entfernen.Click += new System.EventHandler(this.btn_Kessel_Entfernen_Click);
             // 
             // btn_Kessel_Hinzu
             // 

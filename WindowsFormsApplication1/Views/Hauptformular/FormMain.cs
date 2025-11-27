@@ -245,6 +245,17 @@ namespace WindowsFormsApplication1
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
+            listView_BHKW.View = View.Details;
+            listView_BHKW.Columns.Add("Name", -2, HorizontalAlignment.Left);
+            listView_BHKW.Columns.Add("Firma", -2, HorizontalAlignment.Left);
+            listView_BHKW.Columns.Add("Ptherm", -2, HorizontalAlignment.Left);
+            listView_BHKW.Columns.Add("Pel", -2, HorizontalAlignment.Left);
+            listView_BHKW.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_BHKW.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            listView_BHKW.Width = tabControl_Komponenten.ClientSize.Width;
+            listView_BHKW.Height = tabControl_Komponenten.ClientSize.Height;
+            listView_BHKW.Top = -2;
+            listView_BHKW.Left = -2;
 
             init_Chart(chart1);
             init_Chart(chart2);
@@ -394,6 +405,14 @@ namespace WindowsFormsApplication1
         }
 
         public void Add_WPKontext()
+        {
+            WPKontextMenuCtrl ctrl = new WPKontextMenuCtrl();
+            ctrl.Init(listView_WP, m_ID_Projekt, m_szProjektname);
+            WPKontextMenuCtrl refctrl = new WPKontextMenuCtrl();
+            refctrl.Init(listView_WP_Ref, m_ID_Projekt, m_szProjektname);
+        }
+
+        public void Add_BHKWKontext()
         {
             WPKontextMenuCtrl ctrl = new WPKontextMenuCtrl();
             ctrl.Init(listView_WP, m_ID_Projekt, m_szProjektname);
@@ -777,6 +796,12 @@ namespace WindowsFormsApplication1
                 WPKontextMenuCtrl ctrl = new WPKontextMenuCtrl();
                 ctrl.Init((ListView)drag_control, m_ID_Projekt, m_szProjektname);
                 ctrl.contextMenuStrip1.Items[2].PerformClick();
+            }
+            else if ((ListView)drag_control == listView_BHKW)
+            {
+                BHKWKontextMenuCtrl ctrl = new BHKWKontextMenuCtrl();
+                ctrl.Init((ListView)drag_control, m_ID_Projekt, m_szProjektname);
+                ctrl.contextMenuStrip1.Items[0].PerformClick();
             }
         }
 
@@ -1633,5 +1658,60 @@ namespace WindowsFormsApplication1
 
         }
 
+        public void SetBHKWControl(string Projekt)
+        {
+            ProjektCtrl projctrl = new ProjektCtrl();
+            BHKWCtrl bhkwctrl = new BHKWCtrl();
+
+            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            RecordSet rs = new RecordSet();
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.BHKW_TYP + ")");
+
+            listView_BHKW.Items.Clear();
+
+            while (rs.Next())
+            {
+                bhkwctrl.ReadSingle((int)rs.Read("ID_BHKW"));
+                ListViewItem lvitem = new ListViewItem();
+
+                lvitem.Text = (string)rs.Read("Bezeichner");
+                lvitem.SubItems.Add(bhkwctrl.m_szFirma.ToString());
+                lvitem.SubItems.Add(bhkwctrl.m_Ptherm.ToString());
+                lvitem.SubItems.Add(bhkwctrl.m_Pel.ToString());
+                lvitem.SubItems.Add(rs.Read("ID").ToString());
+                listView_BHKW.Items.Add(lvitem);
+            }
+            rs.Close();
+
+            listView_BHKW.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_BHKW.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+        }
+
+        private void listView_BHKW_MouseDown(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                drag_control = listView_BHKW;
+                ListViewItem lvi = listView_BHKW.GetItemAt(e.X, e.Y);
+
+                if (lvi != null)
+                {
+                    listView_BHKW.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
+                }
+            }
+        }
+
+        private void listView_BHKW_MouseMove(object sender, MouseEventArgs e)
+        {
+            this.Cursor = Cursors.Default;
+        }
+
+        private void listView_BHKW_MouseUp(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                listView_BHKW.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
+            }
+        }
     }
 }

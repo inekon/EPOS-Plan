@@ -137,10 +137,11 @@ namespace WindowsFormsApplication1
             WizardParent wizardparent = (WizardParent)getWizardPage();
             for (int i = 0; i < wizardparent.list_werzmodel.Count; i++)
             {
-                if (wizardparent.list_werzmodel[i].Bezeichner == listBox_SP.Text)
+                if ((wizardparent.list_werzmodel[i].Bezeichner) == listBox_SP.Text && (wizardparent.list_werzmodel[i].ID_Type == WizardItemClass.REF_SP_TYP))
                 {
                     wizardparent.list_werzmodel.RemoveAt(i);
                     listBox_SP.Items.Remove(listBox_SP.Text);
+                    break;
                 }
             }
             if (listBox_SP.Items.Count > 0) listBox_SP.SelectedIndex = 0;
@@ -507,6 +508,23 @@ namespace WindowsFormsApplication1
             rs.Close();
         }
 
- 
+        private void btn_Kessel_Entfernen_Click(object sender, EventArgs e)
+        {
+            if (listBox_Kessel.Text == "") return;
+
+            WErzeugerModel model = new WErzeugerModel();
+            model.Bezeichner = listBox_Kessel.Text;
+            WizardParent wizardparent = (WizardParent)getWizardPage();
+            for (int i = 0; i < wizardparent.list_werzmodel.Count; i++)
+            {
+                if ((wizardparent.list_werzmodel[i].Bezeichner == listBox_Kessel.Text) && (wizardparent.list_werzmodel[i].ID_Type == WizardItemClass.REF_KESSEL_TYP))
+                {
+                    wizardparent.list_werzmodel.RemoveAt(i);
+                    listBox_Kessel.Items.Remove(listBox_Kessel.Text);
+                    break;
+                }
+            }
+            if (listBox_Kessel.Items.Count > 0) listBox_Kessel.SelectedIndex = 0;
+        }
     }
 }

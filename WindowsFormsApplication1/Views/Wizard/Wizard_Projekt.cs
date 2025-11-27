@@ -32,6 +32,14 @@ namespace WindowsFormsApplication1
                 textBox_Aenderungsdatum.Text = projctrl.m_Aenderungsdatum.ToString("d", CultureInfo.CreateSpecificCulture("de-DE"));
                 textBox_Erstelldatum.Text = projctrl.m_Erstelldatum.ToString("d", CultureInfo.CreateSpecificCulture("de-DE"));
                 m_ID_Klimaregion = projctrl.m_ID_Klimaregion;
+                RecordSet rs = new RecordSet();
+                rs.Open("select * from Tab_Klimaregion where ID_Klimaregion=" + m_ID_Klimaregion);
+                if (rs.Next())
+                {
+                    comboBox_Gebaeude.Text = (string)rs.Read("Name");
+                }
+                rs.Close();
+
             }
             else
             {
@@ -39,11 +47,11 @@ namespace WindowsFormsApplication1
                 textBox_Erstelldatum.Text = DateTime.Now.ToString("d", CultureInfo.CreateSpecificCulture("de-DE"));
             }
             projctrl = null;
-            GebaeudeCtrl ctrl = new GebaeudeCtrl();
+            KlimaregionCtrl ctrl = new KlimaregionCtrl();
             ctrl.ReadAll();
             for (int i = 0; i < ctrl.rows; i++)
             {
-                comboBox_Gebaeude.Items.Add(ctrl.items[i].Gebaeudename);   
+                comboBox_Gebaeude.Items.Add(ctrl.items[i].m_szName);   
             }
         }
 
@@ -54,5 +62,18 @@ namespace WindowsFormsApplication1
         public string GetKunde() { return textBox_Kunde.Text; }
         public DateTime GetDatum() { return DateTime.Now ; }
         public DateTime GetErstellDatum() { return DateTime.Parse(textBox_Erstelldatum.Text); }
+        public int GetIDKlimaregion() { return m_ID_Klimaregion; }
+        public string GetKlimaname() { return comboBox_Gebaeude.Text; }
+
+        private void comboBox_Gebaeude_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RecordSet rs = new RecordSet();
+            rs.Open("select * from Tab_Klimaregion where Name='" + comboBox_Gebaeude.Text + "'");
+            if (rs.Next())
+            {
+                m_ID_Klimaregion = (int)rs.Read("ID_Klimaregion");
+            }
+            rs.Close();
+        }
     }
 }

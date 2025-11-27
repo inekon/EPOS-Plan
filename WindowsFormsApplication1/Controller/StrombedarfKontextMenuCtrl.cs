@@ -99,7 +99,7 @@ namespace WindowsFormsApplication1
             frm.SetControls(m_szProjektname);
 
             string sql = "SELECT Z_Projekt_Stromverbraucher.ID, Z_Projekt_Stromverbraucher.ID_Projekt, " +
-                "Z_Projekt_Stromverbraucher.ID_Stromverbraucher, Tab_Stromverbraucher.Bezeichner " +
+                "Z_Projekt_Stromverbraucher.ID_Stromverbraucher, Tab_Stromverbraucher.Bezeichner, Z_Projekt_Stromverbraucher.Summe " +
                 "FROM Z_Projekt_Stromverbraucher INNER JOIN Tab_Stromverbraucher ON " +
                 "Z_Projekt_Stromverbraucher.ID_Stromverbraucher = Tab_Stromverbraucher.ID " +
                 " where ID_Projekt=" + m_ID_Projekt;
@@ -111,7 +111,8 @@ namespace WindowsFormsApplication1
                 item.m_ID_Z = (int)rs.Read("ID");
                 item.m_ID_Projekt = m_ID_Projekt;
                 item.m_ID_Stromverbraucher = (int)rs.Read("ID_Stromverbraucher");
-                item.m_szVerbraucher = (string)rs.Read("Bezeichner");//item.Text;
+                item.m_szVerbraucher = (string)rs.Read("Bezeichner");
+                item.m_Summe = (double)rs.Read("Summe");
                 frm.list_sbmodel.Add(item);
             }
                 

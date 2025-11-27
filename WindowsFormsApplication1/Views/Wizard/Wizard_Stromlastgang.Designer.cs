@@ -35,8 +35,6 @@
             this.btn_Entfernen = new System.Windows.Forms.Button();
             this.listBox_Extern = new System.Windows.Forms.ListBox();
             this.Label2 = new System.Windows.Forms.Label();
-            this.Label3 = new System.Windows.Forms.Label();
-            this.textBox_Name = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label_Type
@@ -65,13 +63,14 @@
             // 
             // listBox_Auswahl
             // 
+            this.listBox_Auswahl.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             this.listBox_Auswahl.HorizontalScrollbar = true;
+            this.listBox_Auswahl.ItemHeight = 16;
             this.listBox_Auswahl.Location = new System.Drawing.Point(22, 109);
             this.listBox_Auswahl.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.listBox_Auswahl.Name = "listBox_Auswahl";
-            this.listBox_Auswahl.Size = new System.Drawing.Size(249, 173);
+            this.listBox_Auswahl.Size = new System.Drawing.Size(249, 164);
             this.listBox_Auswahl.TabIndex = 16;
-            this.listBox_Auswahl.SelectedIndexChanged += new System.EventHandler(this.listBox_SP_SelectedIndexChanged);
             // 
             // btn_Hinzufuegen
             // 
@@ -99,13 +98,14 @@
             // 
             // listBox_Extern
             // 
+            this.listBox_Extern.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             this.listBox_Extern.HorizontalScrollbar = true;
+            this.listBox_Extern.ItemHeight = 16;
             this.listBox_Extern.Location = new System.Drawing.Point(375, 109);
             this.listBox_Extern.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.listBox_Extern.Name = "listBox_Extern";
-            this.listBox_Extern.Size = new System.Drawing.Size(264, 173);
+            this.listBox_Extern.Size = new System.Drawing.Size(264, 164);
             this.listBox_Extern.TabIndex = 19;
-            this.listBox_Extern.SelectedIndexChanged += new System.EventHandler(this.listBox_SP_DB_SelectedIndexChanged);
             // 
             // Label2
             // 
@@ -117,29 +117,6 @@
             this.Label2.TabIndex = 20;
             this.Label2.Text = "Stromlastgang aus DB";
             this.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // Label3
-            // 
-            this.Label3.AutoSize = true;
-            this.Label3.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label3.Location = new System.Drawing.Point(22, 315);
-            this.Label3.Name = "Label3";
-            this.Label3.Size = new System.Drawing.Size(48, 19);
-            this.Label3.TabIndex = 23;
-            this.Label3.Text = "Name:";
-            this.Label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // textBox_Name
-            // 
-            this.textBox_Name.BackColor = System.Drawing.Color.White;
-            this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Name.Location = new System.Drawing.Point(78, 315);
-            this.textBox_Name.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Name.Name = "textBox_Name";
-            this.textBox_Name.ReadOnly = true;
-            this.textBox_Name.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-            this.textBox_Name.Size = new System.Drawing.Size(406, 25);
-            this.textBox_Name.TabIndex = 24;
             // 
             // Wizard_Stromlastgang
             // 
@@ -153,8 +130,6 @@
             this.Controls.Add(this.btn_Entfernen);
             this.Controls.Add(this.listBox_Extern);
             this.Controls.Add(this.Label2);
-            this.Controls.Add(this.Label3);
-            this.Controls.Add(this.textBox_Name);
             this.Controls.Add(this.label_Type);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "Wizard_Stromlastgang";
@@ -174,7 +149,5 @@
         private System.Windows.Forms.Button btn_Entfernen;
         private System.Windows.Forms.ListBox listBox_Extern;
         private System.Windows.Forms.Label Label2;
-        private System.Windows.Forms.Label Label3;
-        private System.Windows.Forms.TextBox textBox_Name;
     }
 }

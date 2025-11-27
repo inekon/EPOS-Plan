@@ -34,10 +34,11 @@ namespace WindowsFormsApplication1
             this.btn_Entfernen = new System.Windows.Forms.Button();
             this.listBox_Extern = new System.Windows.Forms.ListBox();
             this.Label2 = new System.Windows.Forms.Label();
-            this.Label3 = new System.Windows.Forms.Label();
-            this.textBox_Name = new System.Windows.Forms.TextBox();
             this.btn_Bearbeiten = new System.Windows.Forms.Button();
             this.label_Type = new System.Windows.Forms.Label();
+            this.btn_Abbrechen = new System.Windows.Forms.Button();
+            this.btn_OK = new System.Windows.Forms.Button();
+            this.btn_Loeschen = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // Label1
@@ -55,20 +56,19 @@ namespace WindowsFormsApplication1
             // 
             this.listBox_Auswahl.HorizontalScrollbar = true;
             this.listBox_Auswahl.ItemHeight = 17;
-            this.listBox_Auswahl.Location = new System.Drawing.Point(23, 93);
+            this.listBox_Auswahl.Location = new System.Drawing.Point(27, 95);
             this.listBox_Auswahl.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.listBox_Auswahl.Name = "listBox_Auswahl";
-            this.listBox_Auswahl.Size = new System.Drawing.Size(271, 174);
+            this.listBox_Auswahl.Size = new System.Drawing.Size(341, 174);
             this.listBox_Auswahl.TabIndex = 1;
-            this.listBox_Auswahl.SelectedIndexChanged += new System.EventHandler(this.listBox_Auswahl_SelectedIndexChanged);
             // 
             // btn_Hinzufuegen
             // 
             this.btn_Hinzufuegen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Hinzufuegen.Location = new System.Drawing.Point(300, 138);
+            this.btn_Hinzufuegen.Location = new System.Drawing.Point(374, 140);
             this.btn_Hinzufuegen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Hinzufuegen.Name = "btn_Hinzufuegen";
-            this.btn_Hinzufuegen.Size = new System.Drawing.Size(63, 31);
+            this.btn_Hinzufuegen.Size = new System.Drawing.Size(90, 31);
             this.btn_Hinzufuegen.TabIndex = 2;
             this.btn_Hinzufuegen.Text = "<--";
             this.btn_Hinzufuegen.UseVisualStyleBackColor = true;
@@ -77,10 +77,10 @@ namespace WindowsFormsApplication1
             // btn_Entfernen
             // 
             this.btn_Entfernen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Entfernen.Location = new System.Drawing.Point(300, 177);
+            this.btn_Entfernen.Location = new System.Drawing.Point(374, 179);
             this.btn_Entfernen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Entfernen.Name = "btn_Entfernen";
-            this.btn_Entfernen.Size = new System.Drawing.Size(63, 31);
+            this.btn_Entfernen.Size = new System.Drawing.Size(90, 31);
             this.btn_Entfernen.TabIndex = 3;
             this.btn_Entfernen.Text = "-->";
             this.btn_Entfernen.UseVisualStyleBackColor = true;
@@ -90,54 +90,30 @@ namespace WindowsFormsApplication1
             // 
             this.listBox_Extern.HorizontalScrollbar = true;
             this.listBox_Extern.ItemHeight = 17;
-            this.listBox_Extern.Location = new System.Drawing.Point(369, 93);
+            this.listBox_Extern.Location = new System.Drawing.Point(470, 95);
             this.listBox_Extern.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.listBox_Extern.Name = "listBox_Extern";
-            this.listBox_Extern.Size = new System.Drawing.Size(287, 174);
+            this.listBox_Extern.Size = new System.Drawing.Size(341, 174);
             this.listBox_Extern.TabIndex = 4;
-            this.listBox_Extern.SelectedIndexChanged += new System.EventHandler(this.listBox_Extern_SelectedIndexChanged);
             // 
             // Label2
             // 
             this.Label2.AutoSize = true;
             this.Label2.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label2.Location = new System.Drawing.Point(368, 70);
+            this.Label2.Location = new System.Drawing.Point(469, 72);
             this.Label2.Name = "Label2";
             this.Label2.Size = new System.Drawing.Size(138, 19);
             this.Label2.TabIndex = 5;
             this.Label2.Text = "Wärmebedarf aus DB";
             this.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // Label3
-            // 
-            this.Label3.AutoSize = true;
-            this.Label3.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label3.Location = new System.Drawing.Point(19, 281);
-            this.Label3.Name = "Label3";
-            this.Label3.Size = new System.Drawing.Size(48, 19);
-            this.Label3.TabIndex = 8;
-            this.Label3.Text = "Name:";
-            this.Label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // textBox_Name
-            // 
-            this.textBox_Name.BackColor = System.Drawing.Color.White;
-            this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Name.Location = new System.Drawing.Point(73, 282);
-            this.textBox_Name.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Name.Name = "textBox_Name";
-            this.textBox_Name.ReadOnly = true;
-            this.textBox_Name.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-            this.textBox_Name.Size = new System.Drawing.Size(433, 25);
-            this.textBox_Name.TabIndex = 9;
-            // 
             // btn_Bearbeiten
             // 
-            this.btn_Bearbeiten.Location = new System.Drawing.Point(536, 279);
+            this.btn_Bearbeiten.Location = new System.Drawing.Point(625, 300);
             this.btn_Bearbeiten.Name = "btn_Bearbeiten";
-            this.btn_Bearbeiten.Size = new System.Drawing.Size(120, 30);
+            this.btn_Bearbeiten.Size = new System.Drawing.Size(158, 30);
             this.btn_Bearbeiten.TabIndex = 15;
-            this.btn_Bearbeiten.Text = "DB Bearbeiten...";
+            this.btn_Bearbeiten.Text = "Gamglinie einlesen...";
             this.btn_Bearbeiten.UseVisualStyleBackColor = true;
             this.btn_Bearbeiten.Click += new System.EventHandler(this.btn_Bearbeiten_Click);
             // 
@@ -149,16 +125,53 @@ namespace WindowsFormsApplication1
             this.label_Type.Location = new System.Drawing.Point(0, 0);
             this.label_Type.Name = "label_Type";
             this.label_Type.Padding = new System.Windows.Forms.Padding(0, 5, 0, 5);
-            this.label_Type.Size = new System.Drawing.Size(678, 37);
+            this.label_Type.Size = new System.Drawing.Size(828, 37);
             this.label_Type.TabIndex = 16;
-            this.label_Type.Text = "Wärmebedarfsdaten aus Datei";
+            this.label_Type.Text = "Wärmebedarfsdaten (Ganglinien)";
             this.label_Type.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btn_Abbrechen
+            // 
+            this.btn_Abbrechen.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btn_Abbrechen.Location = new System.Drawing.Point(593, 398);
+            this.btn_Abbrechen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btn_Abbrechen.Name = "btn_Abbrechen";
+            this.btn_Abbrechen.Size = new System.Drawing.Size(98, 31);
+            this.btn_Abbrechen.TabIndex = 18;
+            this.btn_Abbrechen.Text = "Abbrechen";
+            this.btn_Abbrechen.UseVisualStyleBackColor = true;
+            this.btn_Abbrechen.Click += new System.EventHandler(this.btn_Abbrechen_Click);
+            // 
+            // btn_OK
+            // 
+            this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btn_OK.Location = new System.Drawing.Point(713, 399);
+            this.btn_OK.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btn_OK.Name = "btn_OK";
+            this.btn_OK.Size = new System.Drawing.Size(98, 31);
+            this.btn_OK.TabIndex = 17;
+            this.btn_OK.Text = "OK";
+            this.btn_OK.UseVisualStyleBackColor = true;
+            this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
+            // 
+            // btn_Loeschen
+            // 
+            this.btn_Loeschen.Location = new System.Drawing.Point(625, 336);
+            this.btn_Loeschen.Name = "btn_Loeschen";
+            this.btn_Loeschen.Size = new System.Drawing.Size(158, 31);
+            this.btn_Loeschen.TabIndex = 20;
+            this.btn_Loeschen.Text = "Ganglinie Löschen";
+            this.btn_Loeschen.UseVisualStyleBackColor = true;
+            this.btn_Loeschen.Click += new System.EventHandler(this.btn_Loeschen_Click);
             // 
             // Wizard_Waermebedarf
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(678, 374);
+            this.ClientSize = new System.Drawing.Size(828, 443);
+            this.Controls.Add(this.btn_Loeschen);
+            this.Controls.Add(this.btn_Abbrechen);
+            this.Controls.Add(this.btn_OK);
             this.Controls.Add(this.label_Type);
             this.Controls.Add(this.btn_Bearbeiten);
             this.Controls.Add(this.Label1);
@@ -167,10 +180,8 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.btn_Entfernen);
             this.Controls.Add(this.listBox_Extern);
             this.Controls.Add(this.Label2);
-            this.Controls.Add(this.Label3);
-            this.Controls.Add(this.textBox_Name);
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "Wizard_Waermebedarf";
             this.Text = "Wärmebedarf Extern";
@@ -187,9 +198,10 @@ private System.Windows.Forms.Button btn_Hinzufuegen;
 private System.Windows.Forms.Button btn_Entfernen;
 private System.Windows.Forms.ListBox listBox_Extern;
 private System.Windows.Forms.Label Label2;
-private System.Windows.Forms.Label Label3;
-private System.Windows.Forms.TextBox textBox_Name;
         private System.Windows.Forms.Button btn_Bearbeiten;
         private System.Windows.Forms.Label label_Type;
+        private System.Windows.Forms.Button btn_Abbrechen;
+        private System.Windows.Forms.Button btn_OK;
+        private System.Windows.Forms.Button btn_Loeschen;
     }
 }

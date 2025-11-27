@@ -39,6 +39,7 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(1)) item.ID_Projekt = (int)DBReader.GetValue(1);
                 if (!DBReader.IsDBNull(2)) item.ID_Prozesswaerme = (int)DBReader.GetValue(2);
                 if (!DBReader.IsDBNull(3)) item.szProzessname = (string)DBReader.GetString(3);
+                if (!DBReader.IsDBNull(4)) item.Summe = (double)DBReader.GetValue(4);
 
                 items[rows] = item;
                 rows += 1;

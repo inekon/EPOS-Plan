@@ -12,6 +12,7 @@ namespace WindowsFormsApplication1
         public int m_ID_Projekt;
         public int m_ID_Stromverbraucher;
         public string m_szVerbraucher;
+        public double m_Summe;
 
         public Z_ProjektStromverbraucherModel()
         {
@@ -20,6 +21,7 @@ namespace WindowsFormsApplication1
             m_ID_Projekt = 0;
             m_ID_Stromverbraucher = 0;
             m_szVerbraucher = "";
+            m_Summe = 0;
         }
 
     }

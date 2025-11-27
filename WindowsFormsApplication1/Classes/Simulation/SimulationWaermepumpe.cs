@@ -93,7 +93,6 @@ namespace WindowsFormsApplication1
                 WP_Modul[i] = "";
             }
 
-
             wp_model.Clear();
             wp_kenndaten.Clear();
             for (int i = 0; i < wp_list.Count; i++)

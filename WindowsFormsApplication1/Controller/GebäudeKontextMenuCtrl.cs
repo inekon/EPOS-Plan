@@ -101,7 +101,7 @@ namespace WindowsFormsApplication1
                 ProjektCtrl projctrl = new ProjektCtrl();
 
                 frm.list_gebmodel.Clear();
-                frm.SetControls(m_szProjektname);
+ //               frm.SetControls(m_szProjektname);
                 
                 string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Gebaeude, Z_ProjektGebaeude.[ID_Projekt], " +
                     "[DBGebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +

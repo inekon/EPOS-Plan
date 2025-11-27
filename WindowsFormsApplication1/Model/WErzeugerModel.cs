@@ -33,6 +33,8 @@ namespace WindowsFormsApplication1
         public bool rendeMix;
         public int Solaranteil;
         public int ID_Kessel;
+        public int ID_BHKW;
+        public double Grenzleistung;
         /*
         public int Baujahr;
         public string Regelung;
@@ -67,6 +69,8 @@ namespace WindowsFormsApplication1
             rendeMix = false;
             Solaranteil = 0;
             ID_Kessel = 0;
+            ID_BHKW = 0;
+            Grenzleistung = 0;
         } 
     }
 

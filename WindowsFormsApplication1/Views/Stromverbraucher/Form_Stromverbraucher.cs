@@ -19,23 +19,33 @@ namespace WindowsFormsApplication1
         private int startindex = 100000;
         private SimulationStrombedarf simulation = new SimulationStrombedarf();
         private string m_szProjekt;
-    
+        private int m_ListIndex = -1;   
+
+
         public Form_Stromverbraucher()
         {
             InitializeComponent();
             listView_Strom_Auswahl.View = View.Details;
             listView_Strom_Auswahl.Columns.Add("Name", -2, HorizontalAlignment.Left);
-            listView_Strom_Auswahl.Columns.Add("ID", -2, HorizontalAlignment.Left);
             listView_Strom_Auswahl.Columns[0].Width = listView_Strom_Auswahl.ClientRectangle.Width;
         }
 
-        public void SetControls(string szProjekt)
+        public void SetControls(string szProjekt, bool bWizard=false)
         {
             Z_ProjektStromverbraucherCtrl ctrl = new Z_ProjektStromverbraucherCtrl();
             StromverbraucherCtrl ctrl_pw = new StromverbraucherCtrl();
             Z_ProjektStromverbraucherModel model = new Z_ProjektStromverbraucherModel();
 
             m_szProjekt = szProjekt;
+
+            if (bWizard)
+            {
+                btn_Abbrechen.Visible = false;
+                btn_OK.Visible = false;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.BackColor = Color.White;
+            }
+
             listView_Strom_Auswahl.Items.Clear();
             for (int i = 0; i < list_sbmodel.Count; i++)
             {
@@ -44,6 +54,12 @@ namespace WindowsFormsApplication1
                 lvitem.SubItems.Add(list_sbmodel[i].m_ID_Z.ToString());
                 listView_Strom_Auswahl.Items.Add(lvitem);
             }
+
+            if (listView_Strom_Auswahl.Items.Count > 0)
+            {
+                textBox_StromSumme.Text = ProzesssummeGesamt().ToString("F2");
+            }
+            
             btn_ErgebnisseVerbrauch.Enabled = false;
 
             listBox_Strom_DB.Items.Clear();
@@ -52,16 +68,16 @@ namespace WindowsFormsApplication1
             {
                 listBox_Strom_DB.Items.Add(ctrl_pw.items[i].m_szBezeichner);
             }
-            if (listBox_Strom_DB.Items.Count > 0) listBox_Strom_DB.SelectedIndex = 0;
+            listView_Strom_Auswahl.Select(); 
+            if (listView_Strom_Auswahl.Items.Count > 0) listView_Strom_Auswahl.Items[0] .Selected = true;
 
-            textBox_StromSumme.Text = ProzesssummeGesamt().ToString("F2");
         }
 
         private void listBox_Prozess_DB_SelectedIndexChanged(object sender, EventArgs e)
         {
             ListBox list = (ListBox)sender;
             string szName = list.Text;
-            textBox_Jahres_Verbrauch.Text = Prozesssumme(szName).ToString();
+            textBox_Jahres_Verbrauch.Text = Prozesssumme(szName).ToString("F2");
             SetProzessInfo(szName);
         }
 
@@ -100,10 +116,11 @@ namespace WindowsFormsApplication1
 
             if (indexes.Count > 0)
             {
+                m_ListIndex = indexes[0];
                 ListViewItem lvitem = listView_Strom_Auswahl.Items[indexes[0]];
-                textBox_Jahres_Verbrauch.Text = Prozesssumme(lvitem.Text).ToString("F2");
+                textBox_Jahres_Verbrauch.Text = list_sbmodel[m_ListIndex].m_Summe.ToString("F2");
                 SetProzessInfo(lvitem.Text);
-            }                                                  
+            }
         }
 
         private void btn__Hinzu_Click(object sender, EventArgs e)
@@ -122,7 +139,8 @@ namespace WindowsFormsApplication1
                 model.m_ID_Stromverbraucher = (int)rs.Read("ID");
                 model.m_ID_Projekt = m_ID_Projekt;
                 model.m_szVerbraucher = listBox_Strom_DB.Text;
-         
+                model.m_Summe = Prozesssumme(model.m_szVerbraucher);
+
                 list_sbmodel.Add(model);
 
                 ListViewItem lvitem = new ListViewItem();
@@ -164,7 +182,7 @@ namespace WindowsFormsApplication1
 
             for (int i = 0; i < listView_Strom_Auswahl.Items.Count; i++)
             {
-                summe += Prozesssumme(listView_Strom_Auswahl.Items[i].Text);
+                summe += list_sbmodel[i].m_Summe;
             }
             return summe;
         }
@@ -271,7 +289,18 @@ namespace WindowsFormsApplication1
 
         private void btn_neuerWert_Click(object sender, EventArgs e)
         {
+            ListView.SelectedIndexCollection indexes = listView_Strom_Auswahl.SelectedIndices;
+            if (indexes.Count == 0) return;
 
+            list_sbmodel[indexes[0]].m_Summe = double.Parse(textBox_Verbrauch.Text);
+            textBox_Jahres_Verbrauch.Text = textBox_Verbrauch.Text;
+            textBox_StromSumme.Text = ProzesssummeGesamt().ToString("F2");
+        }
+
+        private void textBox_Verbrauch_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
     }
 }

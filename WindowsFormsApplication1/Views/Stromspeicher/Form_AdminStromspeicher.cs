@@ -5,10 +5,12 @@ using System.Data;
 using System.Data.Common;
 using System.Data.Odbc;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Input;
 
 namespace WindowsFormsApplication1
 {
@@ -78,19 +80,36 @@ namespace WindowsFormsApplication1
 
             try
             {
+                model.m_Energie = double.Parse(textBox_Energie.Text);
+                model.m_Leistung = double.Parse(textBox_Leistung.Text);
+                model.m_Degradation = double.Parse(textBox_Degradation.Text);
+                model.m_Ladezustand = double.Parse(textBox_Ladezustand.Text);
+
                 if (m_Neu)
                 {
                     DBCommand.CommandText = "INSERT INTO TAB_Stromspeicher ( Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand ) SELECT '" + textBox_Bezeichner.Text +
-                        "' AS Ausdr1, '" + textBox_Typ.Text + "' AS Ausdr2, " + textBox_Leistung.Text + " AS Ausdr3, " + textBox_Energie.Text + " AS Ausdr4, " + textBox_Degradation.Text + " AS Ausdr5, " +
-                    textBox_Ladezustand.Text + " AS Ausdr6";
+                        "' AS Ausdr1, '" + textBox_Typ.Text + "' AS Ausdr2, " + 
+                    model.m_Leistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr3, " + 
+                    model.m_Energie.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr4, " + 
+                    model.m_Degradation.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr5, " +
+                    model.m_Ladezustand.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr6";
 
                     DBCommand.ExecuteNonQuery();
                     listBox_Stromspeicher.Items.Add(textBox_Bezeichner.Text);
                     listBox_Stromspeicher.SelectedIndex = listBox_Stromspeicher.Items.Count - 1;
+                    m_Neu = false;
                 }
                 else
                 {
-                    DBCommand.CommandText = "UPDATE Tab_Stromspeicher SET Bezeichner='" + textBox_Bezeichner.Text + "' , Typ='" + textBox_Typ.Text + "', Leistung=" + textBox_Leistung.Text + ", Energie=" + textBox_Energie.Text + ", Degradation=" + textBox_Degradation.Text + ", Ladezustand=" + textBox_Ladezustand.Text + " WHERE Bezeichner='" + listBox_Stromspeicher.Text + "'";
+                    string sql = "UPDATE Tab_Stromspeicher SET " + 
+                        "Bezeichner='" + textBox_Bezeichner.Text.ToString(CultureInfo.CreateSpecificCulture("en-US"))  + "', " +
+                        "Typ='" + textBox_Typ.Text.ToString(CultureInfo.CreateSpecificCulture("en-US"))  + "', " +
+                        "Leistung=" + model.m_Leistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
+                        "Energie=" + model.m_Energie.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
+                        "Degradation=" + model.m_Degradation.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " + 
+                        "Ladezustand=" + model.m_Ladezustand.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " " +
+                        "WHERE Bezeichner='" + listBox_Stromspeicher.Text + "'";
+                    DBCommand.CommandText = sql;    
                     DBCommand.ExecuteNonQuery();
                 }
             }
@@ -125,16 +144,15 @@ namespace WindowsFormsApplication1
             if (!rs.EOF())
             {
                 textBox_Energie.Text = rs.Read("Energie").ToString();
-                model.m_Energie = Int32.Parse(textBox_Energie.Text);
+                model.m_Energie = double.Parse(textBox_Energie.Text);
                 textBox_Leistung.Text = rs.Read("Leistung").ToString();
-                model.m_Energie = Int32.Parse(textBox_Energie.Text);
-
+                model.m_Energie = double.Parse(textBox_Energie.Text);
                 textBox_Typ.Text = (string)rs.Read("Typ");
                 model.m_szTyp = textBox_Typ.Text;
                 textBox_Degradation.Text = rs.Read("Degradation").ToString();
                 model.m_Degradation = Double.Parse(textBox_Degradation.Text);
                 textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString();
-                model.m_Ladezustand = Int32.Parse(textBox_Ladezustand.Text);
+                model.m_Ladezustand = double.Parse(textBox_Ladezustand.Text);
                 textBox_Bezeichner.Text = rs.Read("Bezeichner").ToString();
                 model.m_szBezeichner = textBox_Bezeichner.Text;
             }
@@ -156,10 +174,11 @@ namespace WindowsFormsApplication1
             {
                 m_Neu = true;
                 textBox_Bezeichner.Text = frm.m_szName;
-                textBox_Typ.Text = "";
+                textBox_Typ.Text = "Lithium-Ionen";
                 textBox_Degradation.Text = "0";
                 textBox_Ladezustand.Text = "0";
                 textBox_Leistung.Text = "0";
+                textBox_Energie.Text = "0";
             }
             return;
         }
@@ -177,7 +196,7 @@ namespace WindowsFormsApplication1
 
         private void btn_OK_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.OK;
+            DialogResult = DialogResult.OK;
             Close(); 
         }
 
@@ -218,22 +237,22 @@ namespace WindowsFormsApplication1
 
         private void textBox_Leistung_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Leistung, textBox_Leistung.Text)) { textBox_Leistung.Undo(); }
+            if (!Program.checkDouble(textBox_Leistung, textBox_Leistung.Text)) { textBox_Leistung.Undo(); }
         }
 
         private void textBox_Energie_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Energie, textBox_Energie.Text)) { textBox_Energie.Undo(); }
+            if (!Program.checkDouble(textBox_Energie, textBox_Energie.Text)) { textBox_Energie.Undo(); }
         }
 
         private void textBox_Ladezustand_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Ladezustand, textBox_Ladezustand.Text)) { textBox_Ladezustand.Undo(); }
+            if (!Program.checkDouble(textBox_Ladezustand, textBox_Ladezustand.Text)) { textBox_Ladezustand.Undo(); }
         }
 
         private void textBox_Degradation_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Degradation, textBox_Degradation.Text)) { textBox_Degradation.Undo(); }
+            if (!Program.checkDouble(textBox_Degradation, textBox_Degradation.Text)) { textBox_Degradation.Undo(); }
         }
 
     }

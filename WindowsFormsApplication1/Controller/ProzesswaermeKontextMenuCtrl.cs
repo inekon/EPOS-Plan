@@ -98,7 +98,8 @@ namespace WindowsFormsApplication1
             frm.SetControls(m_szProjektname);
 
             string sql = "SELECT Z_Projekt_Prozesswaerme.ID, Z_Projekt_Prozesswaerme.ID_Projekt, " +
-                "Z_Projekt_Prozesswaerme.ID_Prozesswaerme, Tab_Prozesswaerme.Prozessname " +
+                "Z_Projekt_Prozesswaerme.ID_Prozesswaerme, Tab_Prozesswaerme.Prozessname, " +
+                " Z_Projekt_Prozesswaerme.Summe " +
                 "FROM Z_Projekt_Prozesswaerme INNER JOIN Tab_Prozesswaerme ON " +
                 "Z_Projekt_Prozesswaerme.ID_Prozesswaerme = Tab_Prozesswaerme.ID " +
                 " where ID_Projekt=" + m_ID_Projekt;
@@ -112,7 +113,8 @@ namespace WindowsFormsApplication1
                 item.ID_Z = (int)rs.Read("ID");
                 item.ID_Projekt = m_ID_Projekt;
                 item.ID_Prozesswaerme = (int)rs.Read("ID_Prozesswaerme");
-                item.szProzessname = (string)rs.Read("Prozessname");//item.Text;
+                item.szProzessname = (string)rs.Read("Prozessname");
+                item.Summe = (double)rs.Read("Summe");
                 frm.list_pwmodel.Add(item);
             }
                 

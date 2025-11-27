@@ -29,7 +29,6 @@ namespace WindowsFormsApplication1
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Gebaeude));
-            this.listBox_Gebaeude_DB = new System.Windows.Forms.ListBox();
             this.btn_Entfernen = new System.Windows.Forms.Button();
             this.btn_Hinzu = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -63,25 +62,18 @@ namespace WindowsFormsApplication1
             this.btn_GebLoeschen_DB = new System.Windows.Forms.Button();
             this.btn_GebTypAendern_DB = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.label_Type = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // listBox_Gebaeude_DB
-            // 
-            this.listBox_Gebaeude_DB.FormattingEnabled = true;
-            this.listBox_Gebaeude_DB.ItemHeight = 17;
-            this.listBox_Gebaeude_DB.Location = new System.Drawing.Point(553, 36);
-            this.listBox_Gebaeude_DB.Name = "listBox_Gebaeude_DB";
-            this.listBox_Gebaeude_DB.Size = new System.Drawing.Size(247, 191);
-            this.listBox_Gebaeude_DB.TabIndex = 26;
-            this.listBox_Gebaeude_DB.SelectedIndexChanged += new System.EventHandler(this.listBox_Gebaeude_DB_SelectedIndexChanged);
             // 
             // btn_Entfernen
             // 
             this.btn_Entfernen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Entfernen.Location = new System.Drawing.Point(385, 126);
+            this.btn_Entfernen.Location = new System.Drawing.Point(284, 158);
             this.btn_Entfernen.Name = "btn_Entfernen";
             this.btn_Entfernen.Size = new System.Drawing.Size(74, 28);
             this.btn_Entfernen.TabIndex = 28;
@@ -92,7 +84,7 @@ namespace WindowsFormsApplication1
             // btn_Hinzu
             // 
             this.btn_Hinzu.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Hinzu.Location = new System.Drawing.Point(385, 91);
+            this.btn_Hinzu.Location = new System.Drawing.Point(284, 123);
             this.btn_Hinzu.Name = "btn_Hinzu";
             this.btn_Hinzu.Size = new System.Drawing.Size(74, 29);
             this.btn_Hinzu.TabIndex = 27;
@@ -108,7 +100,7 @@ namespace WindowsFormsApplication1
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.comboBox_Baujahr);
             this.groupBox1.Controls.Add(this.comboBox_Gebäudeart);
-            this.groupBox1.Location = new System.Drawing.Point(356, 242);
+            this.groupBox1.Location = new System.Drawing.Point(356, 334);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(283, 122);
             this.groupBox1.TabIndex = 29;
@@ -132,7 +124,7 @@ namespace WindowsFormsApplication1
             this.radioBtn_Wohngebäude.Checked = true;
             this.radioBtn_Wohngebäude.Location = new System.Drawing.Point(18, 24);
             this.radioBtn_Wohngebäude.Name = "radioBtn_Wohngebäude";
-            this.radioBtn_Wohngebäude.Size = new System.Drawing.Size(117, 23);
+            this.radioBtn_Wohngebäude.Size = new System.Drawing.Size(116, 23);
             this.radioBtn_Wohngebäude.TabIndex = 4;
             this.radioBtn_Wohngebäude.TabStop = true;
             this.radioBtn_Wohngebäude.Text = "Wohngebäude";
@@ -180,7 +172,7 @@ namespace WindowsFormsApplication1
             this.groupBox2.Controls.Add(this.textBox_TypEinheit);
             this.groupBox2.Controls.Add(this.textBox_Wohnflaeche);
             this.groupBox2.Controls.Add(this.btn_Aendern);
-            this.groupBox2.Location = new System.Drawing.Point(26, 240);
+            this.groupBox2.Location = new System.Drawing.Point(26, 262);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(310, 124);
             this.groupBox2.TabIndex = 30;
@@ -216,7 +208,7 @@ namespace WindowsFormsApplication1
             // textBox_Gebäudename
             // 
             this.textBox_Gebäudename.Enabled = false;
-            this.textBox_Gebäudename.Location = new System.Drawing.Point(126, 380);
+            this.textBox_Gebäudename.Location = new System.Drawing.Point(126, 402);
             this.textBox_Gebäudename.Name = "textBox_Gebäudename";
             this.textBox_Gebäudename.Size = new System.Drawing.Size(189, 25);
             this.textBox_Gebäudename.TabIndex = 31;
@@ -224,7 +216,7 @@ namespace WindowsFormsApplication1
             // textBox_Gebaeudeart
             // 
             this.textBox_Gebaeudeart.Enabled = false;
-            this.textBox_Gebaeudeart.Location = new System.Drawing.Point(126, 420);
+            this.textBox_Gebaeudeart.Location = new System.Drawing.Point(126, 442);
             this.textBox_Gebaeudeart.Name = "textBox_Gebaeudeart";
             this.textBox_Gebaeudeart.Size = new System.Drawing.Size(189, 25);
             this.textBox_Gebaeudeart.TabIndex = 32;
@@ -232,7 +224,7 @@ namespace WindowsFormsApplication1
             // textBox_Beschreibung
             // 
             this.textBox_Beschreibung.Enabled = false;
-            this.textBox_Beschreibung.Location = new System.Drawing.Point(126, 461);
+            this.textBox_Beschreibung.Location = new System.Drawing.Point(126, 483);
             this.textBox_Beschreibung.Multiline = true;
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
             this.textBox_Beschreibung.Size = new System.Drawing.Size(478, 80);
@@ -241,7 +233,7 @@ namespace WindowsFormsApplication1
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(35, 420);
+            this.label3.Location = new System.Drawing.Point(35, 442);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(81, 19);
             this.label3.TabIndex = 6;
@@ -250,7 +242,7 @@ namespace WindowsFormsApplication1
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(22, 380);
+            this.label4.Location = new System.Drawing.Point(22, 402);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(98, 19);
             this.label4.TabIndex = 34;
@@ -259,7 +251,7 @@ namespace WindowsFormsApplication1
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(22, 464);
+            this.label5.Location = new System.Drawing.Point(22, 486);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(91, 19);
             this.label5.TabIndex = 35;
@@ -268,7 +260,7 @@ namespace WindowsFormsApplication1
             // label_ListProjektGebaeude
             // 
             this.label_ListProjektGebaeude.AutoSize = true;
-            this.label_ListProjektGebaeude.Location = new System.Drawing.Point(22, 19);
+            this.label_ListProjektGebaeude.Location = new System.Drawing.Point(22, 45);
             this.label_ListProjektGebaeude.Name = "label_ListProjektGebaeude";
             this.label_ListProjektGebaeude.Size = new System.Drawing.Size(210, 19);
             this.label_ListProjektGebaeude.TabIndex = 6;
@@ -277,7 +269,7 @@ namespace WindowsFormsApplication1
             // label_ListGebaeudeDB
             // 
             this.label_ListGebaeudeDB.AutoSize = true;
-            this.label_ListGebaeudeDB.Location = new System.Drawing.Point(549, 14);
+            this.label_ListGebaeudeDB.Location = new System.Drawing.Point(366, 45);
             this.label_ListGebaeudeDB.Name = "label_ListGebaeudeDB";
             this.label_ListGebaeudeDB.Size = new System.Drawing.Size(101, 19);
             this.label_ListGebaeudeDB.TabIndex = 36;
@@ -285,7 +277,7 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Baujahr
             // 
-            this.textBox_Baujahr.Location = new System.Drawing.Point(295, 36);
+            this.textBox_Baujahr.Location = new System.Drawing.Point(295, 58);
             this.textBox_Baujahr.Name = "textBox_Baujahr";
             this.textBox_Baujahr.Size = new System.Drawing.Size(52, 25);
             this.textBox_Baujahr.TabIndex = 37;
@@ -294,7 +286,7 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Jahresnutzungsgrad
             // 
-            this.textBox_Jahresnutzungsgrad.Location = new System.Drawing.Point(353, 36);
+            this.textBox_Jahresnutzungsgrad.Location = new System.Drawing.Point(353, 58);
             this.textBox_Jahresnutzungsgrad.Name = "textBox_Jahresnutzungsgrad";
             this.textBox_Jahresnutzungsgrad.Size = new System.Drawing.Size(69, 25);
             this.textBox_Jahresnutzungsgrad.TabIndex = 38;
@@ -304,9 +296,9 @@ namespace WindowsFormsApplication1
             // checkBox_dezWarmwasser
             // 
             this.checkBox_dezWarmwasser.AutoSize = true;
-            this.checkBox_dezWarmwasser.Location = new System.Drawing.Point(295, 10);
+            this.checkBox_dezWarmwasser.Location = new System.Drawing.Point(284, 67);
             this.checkBox_dezWarmwasser.Name = "checkBox_dezWarmwasser";
-            this.checkBox_dezWarmwasser.Size = new System.Drawing.Size(127, 23);
+            this.checkBox_dezWarmwasser.Size = new System.Drawing.Size(126, 23);
             this.checkBox_dezWarmwasser.TabIndex = 39;
             this.checkBox_dezWarmwasser.Text = "dezWarmwasser";
             this.checkBox_dezWarmwasser.UseVisualStyleBackColor = true;
@@ -314,7 +306,7 @@ namespace WindowsFormsApplication1
             // 
             // textBox_ID_Gebaeude
             // 
-            this.textBox_ID_Gebaeude.Location = new System.Drawing.Point(428, 36);
+            this.textBox_ID_Gebaeude.Location = new System.Drawing.Point(428, 58);
             this.textBox_ID_Gebaeude.Name = "textBox_ID_Gebaeude";
             this.textBox_ID_Gebaeude.Size = new System.Drawing.Size(63, 25);
             this.textBox_ID_Gebaeude.TabIndex = 40;
@@ -324,7 +316,7 @@ namespace WindowsFormsApplication1
             // btn_Abbrechen
             // 
             this.btn_Abbrechen.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_Abbrechen.Location = new System.Drawing.Point(618, 510);
+            this.btn_Abbrechen.Location = new System.Drawing.Point(618, 532);
             this.btn_Abbrechen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Abbrechen.Name = "btn_Abbrechen";
             this.btn_Abbrechen.Size = new System.Drawing.Size(91, 31);
@@ -336,7 +328,7 @@ namespace WindowsFormsApplication1
             // btn_OK
             // 
             this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_OK.Location = new System.Drawing.Point(723, 510);
+            this.btn_OK.Location = new System.Drawing.Point(723, 532);
             this.btn_OK.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_OK.Name = "btn_OK";
             this.btn_OK.Size = new System.Drawing.Size(77, 31);
@@ -347,7 +339,9 @@ namespace WindowsFormsApplication1
             // 
             // listView_Gebaeude
             // 
-            this.listView_Gebaeude.Location = new System.Drawing.Point(26, 45);
+            this.listView_Gebaeude.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.listView_Gebaeude.HideSelection = false;
+            this.listView_Gebaeude.Location = new System.Drawing.Point(26, 67);
             this.listView_Gebaeude.Name = "listView_Gebaeude";
             this.listView_Gebaeude.Size = new System.Drawing.Size(252, 189);
             this.listView_Gebaeude.TabIndex = 44;
@@ -357,7 +351,7 @@ namespace WindowsFormsApplication1
             // btn_GebAendern_DB
             // 
             this.btn_GebAendern_DB.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_GebAendern_DB.Location = new System.Drawing.Point(645, 247);
+            this.btn_GebAendern_DB.Location = new System.Drawing.Point(646, 338);
             this.btn_GebAendern_DB.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_GebAendern_DB.Name = "btn_GebAendern_DB";
             this.btn_GebAendern_DB.Size = new System.Drawing.Size(155, 33);
@@ -369,7 +363,7 @@ namespace WindowsFormsApplication1
             // btn_Geb_Neu_DB
             // 
             this.btn_Geb_Neu_DB.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_Geb_Neu_DB.Location = new System.Drawing.Point(645, 288);
+            this.btn_Geb_Neu_DB.Location = new System.Drawing.Point(646, 372);
             this.btn_Geb_Neu_DB.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Geb_Neu_DB.Name = "btn_Geb_Neu_DB";
             this.btn_Geb_Neu_DB.Size = new System.Drawing.Size(155, 33);
@@ -381,7 +375,7 @@ namespace WindowsFormsApplication1
             // btn_GebLoeschen_DB
             // 
             this.btn_GebLoeschen_DB.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_GebLoeschen_DB.Location = new System.Drawing.Point(645, 329);
+            this.btn_GebLoeschen_DB.Location = new System.Drawing.Point(646, 406);
             this.btn_GebLoeschen_DB.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_GebLoeschen_DB.Name = "btn_GebLoeschen_DB";
             this.btn_GebLoeschen_DB.Size = new System.Drawing.Size(155, 33);
@@ -393,7 +387,7 @@ namespace WindowsFormsApplication1
             // btn_GebTypAendern_DB
             // 
             this.btn_GebTypAendern_DB.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_GebTypAendern_DB.Location = new System.Drawing.Point(645, 380);
+            this.btn_GebTypAendern_DB.Location = new System.Drawing.Point(646, 440);
             this.btn_GebTypAendern_DB.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_GebTypAendern_DB.Name = "btn_GebTypAendern_DB";
             this.btn_GebTypAendern_DB.Size = new System.Drawing.Size(155, 45);
@@ -405,19 +399,46 @@ namespace WindowsFormsApplication1
             // pictureBox1
             // 
             this.pictureBox1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.BackgroundImage")));
-            this.pictureBox1.Location = new System.Drawing.Point(26, 51);
+            this.pictureBox1.Location = new System.Drawing.Point(26, 73);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(247, 183);
             this.pictureBox1.TabIndex = 49;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Visible = false;
             // 
+            // dataGridView1
+            // 
+            this.dataGridView1.AllowUserToAddRows = false;
+            this.dataGridView1.AllowUserToDeleteRows = false;
+            this.dataGridView1.BackgroundColor = System.Drawing.Color.Silver;
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Location = new System.Drawing.Point(364, 67);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.Size = new System.Drawing.Size(436, 261);
+            this.dataGridView1.TabIndex = 75;
+            this.dataGridView1.Click += new System.EventHandler(this.listBox_Gebaeude_DB_SelectedIndexChanged);
+            // 
+            // label_Type
+            // 
+            this.label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.label_Type.Dock = System.Windows.Forms.DockStyle.Top;
+            this.label_Type.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Type.Location = new System.Drawing.Point(0, 0);
+            this.label_Type.Name = "label_Type";
+            this.label_Type.Padding = new System.Windows.Forms.Padding(0, 5, 0, 5);
+            this.label_Type.Size = new System.Drawing.Size(812, 32);
+            this.label_Type.TabIndex = 76;
+            this.label_Type.Text = "Eingabe der Energiedaten";
+            this.label_Type.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
             // Form_Gebaeude
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(812, 557);
+            this.ClientSize = new System.Drawing.Size(812, 573);
+            this.Controls.Add(this.label_Type);
+            this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.listView_Gebaeude);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.btn_GebTypAendern_DB);
@@ -442,7 +463,6 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btn_Entfernen);
             this.Controls.Add(this.btn_Hinzu);
-            this.Controls.Add(this.listBox_Gebaeude_DB);
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Name = "Form_Gebaeude";
             this.Text = "Eingabe der Gebäudedaten";
@@ -452,14 +472,13 @@ namespace WindowsFormsApplication1
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.ListBox listBox_Gebaeude_DB;
         private System.Windows.Forms.Button btn_Entfernen;
         private System.Windows.Forms.Button btn_Hinzu;
         private System.Windows.Forms.GroupBox groupBox1;
@@ -493,5 +512,7 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.Button btn_GebLoeschen_DB;
         private System.Windows.Forms.Button btn_GebTypAendern_DB;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.Label label_Type;
     }
 }

@@ -125,7 +125,7 @@ namespace WindowsFormsApplication1
                     TagTyp_W[i] = (int)ctrl_klima.items[i].m_TagTyp_W;
                     TagTyp_NW[i] = (int)ctrl_klima.items[i].m_TagTyp_NW;
                 }
-                Stundentemperatur_DB(ID_Klimaregion);
+                Stundentemperatur_aus_DB(ID_Klimaregion);
                 DBGelesen = true;
             }
 
@@ -458,7 +458,7 @@ namespace WindowsFormsApplication1
             return Waermebedarf_Max;
         }
 
-        private void Stundentemperatur_DB(int ID_Klimaregion)
+        private void Stundentemperatur_aus_DB(int ID_Klimaregion)
         {
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Solar where ID_Klimaregion=" + ID_Klimaregion + " order by ID "); 
@@ -550,10 +550,27 @@ namespace WindowsFormsApplication1
                     rs.Open("select * from Tab_Prozesswaerme where Prozessname='" + pw_list[k] + "'");
                     if (rs.Next())
                     {
+                        float pjv = 0;
+                        float jv = 0;
+                        if (m_ID_Projekt != 0) // skalieren ggf. mit geändertem Projekt Jahresverbrauch
+                        {
+                            Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
+                            ctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Prozessname") + "'");
+                            pjv = (float)ctrl.items[0].Summe; 
+                        }
                         for (int i = 0; i < 12; i++)
                         {
                             double d = (double)rs.Read("Monat_" + (i + 1).ToString());
                             monats_waerme[i] = (float)d;
+                            jv += monats_waerme[i];
+                        }
+
+                        if (pjv > 0)
+                        {
+                            for (int i = 0; i < 12; i++)
+                            {
+                                monats_waerme[i] = monats_waerme[i] * pjv / jv;
+                            }
                         }
 
                         Object objTyp = rs.Read("Typ");
@@ -566,7 +583,6 @@ namespace WindowsFormsApplication1
 
                         // Tagesverteilung für den Prozess ermitteln
                         rs_pwtyp.Open("select * from Tab_Prozesstyp where Typname='" + (string)objTyp + "'");
-                        rs.Close();
 
                         if (rs_pwtyp.Next())
                         {
@@ -582,6 +598,8 @@ namespace WindowsFormsApplication1
                         temp = com.I_strom_wochetojahr(wochen_waerme, monats_waerme, mo_anfang, mo_ende);
                         com.CSharp_I_vectoren_addieren(temp, prozesswerte);
                     }
+                    rs.Close();
+
                 }
             }
             catch (SystemException ex) { Console.Write(ex.Message); }

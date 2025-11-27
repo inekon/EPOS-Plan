@@ -83,7 +83,7 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_WaermebedarfExtern.SelectedIndices;
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            Form_Waermebedarf frm = new Form_Waermebedarf();
+            Wizard_Waermebedarf frm = new Wizard_Waermebedarf();
             
             if (indexes.Count > 0)
             {
@@ -93,7 +93,7 @@ namespace WindowsFormsApplication1
                 listView_WaermebedarfExtern.Items[indexes[0]].Remove();
                 wizctrl.Del_WaermebedarfExtern(m_ID_Projekt);
                 
-                frm.DateiListe.Clear();
+                frm.list_wbmodel.Clear();
 
                 for (int i = 0; i < listView_WaermebedarfExtern.Items.Count; i++)
                 {
@@ -116,12 +116,13 @@ namespace WindowsFormsApplication1
 
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
-            Form_Waermebedarf frm = new Form_Waermebedarf();
+            //Form_Waermebedarf frm = new Form_Waermebedarf();
+            Wizard_Waermebedarf frm = new Wizard_Waermebedarf();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
             RecordSet rs = new RecordSet();
 
-            frm.DateiListe.Clear();
+            frm.list_wbmodel.Clear();
 
             string sql = "SELECT Z_ProjektWaermebedarf.ID_Z, Z_ProjektWaermebedarf.ID_Projekt, " +
                   "Z_ProjektWaermebedarf.ID_Ganglinie, Tab_Waermebedarf.Bezeichner " +
@@ -137,7 +138,7 @@ namespace WindowsFormsApplication1
                 item.m_ID_Projekt = m_ID_Projekt;
                 item.m_ID_Ganglinie = (int)rs.Read("ID_Ganglinie");
                 item.m_szBezeichner = (string)rs.Read("Bezeichner");//item.Text;
-                frm.DateiListe.Add(item);
+                frm.list_wbmodel.Add(item);
             }
             rs.Close(); 
 
@@ -149,7 +150,7 @@ namespace WindowsFormsApplication1
             if (frm.result == DialogResult.OK)
             {
                 wizctrl.Del_WaermebedarfExtern(m_ID_Projekt);
-                wizctrl.Add_WaermebedarfExtern(m_ID_Projekt, frm.DateiListe);
+                wizctrl.Add_WaermebedarfExtern(m_ID_Projekt, frm.list_wbmodel);
                 Program.mainfrm.SetWaermebedarfExternControl(m_szProjektname);
 
                 projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");

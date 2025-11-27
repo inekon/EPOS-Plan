@@ -231,5 +231,16 @@ namespace WindowsFormsApplication1
                 listBox_Kessel_DB.Items.Add(heizkesselctrl.items[i].Name);
             }
         }
+
+        private void btn_Löschen_Click(object sender, EventArgs e)
+        {
+            if (listBox_Kessel_DB.SelectedIndex == -1) { MessageBox.Show("Bitte ein BHKW auswählen!"); return; }
+
+            RecordSet rs = new RecordSet();
+            rs.Open("Delete * from [DB-Heizung] where Name='" + listBox_Kessel_DB.Text  + "'");
+            rs.Close();
+
+            listBox_Kessel_DB.Items.RemoveAt(listBox_Kessel_DB.SelectedIndex);
+        }
     }
 }

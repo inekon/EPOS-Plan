@@ -1,16 +1,24 @@
-﻿using System;
+﻿using MathNet.Numerics.RootFinding;
+using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Data.Odbc;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
     public class BHKWCtrl : BHKWModel
     {
-        OdbcCommand DBCommand;
-  
+        public OdbcCommand DBCommand;
+        public BHKWModel model;
+        public static string[] BrennstoffartText = { "Öl", "Gas", "Biogas", "Rapsöl", "Holz/Pellet", "Sonstiges", "", "", "Flüssiggas", "", "", "Bioerdgas", "", "", "", "Strom" };
+        public static string[] LeistungText = { "kleiner 20 kW", "20 bis 40 kW", "40 bis 80 kW", "80 bis 200 kW", "200 bis 500 kW", "500 bis 800 kW", "800 bis 1200 kW", "größer 1200 kW" };
+        public static string[] LeistungFilterText = { "Ptherm LIKE '%'", "Ptherm<20", "Ptherm>=20 and Ptherm<40", "Ptherm>=40 and Ptherm<80", "Ptherm>=80 and Ptherm<200",
+                                                      "Ptherm>=200 and Ptherm<500", "Ptherm>=500 and Ptherm<800", "Ptherm>=800 and Ptherm<1200", "Ptherm>=1200" };
+
         public BHKWCtrl()
         {
             rows = 0;
@@ -23,9 +31,16 @@ namespace WindowsFormsApplication1
             DBCommand.Dispose();
         }
 
-        public void ReadAll()
+        public void ReadAll(string szFilter = "")
         {
-            DBCommand.CommandText = "select * from Tab_BHKW order by Modulname";
+            string sql;
+
+            if (szFilter == "")
+                sql = "select * from Tab_BHKW order by Bezeichner";
+            else
+                sql = "select * from Tab_BHKW where " + szFilter + " order by Bezeichner";
+
+            DBCommand.CommandText = sql;
             OdbcDataReader DBReader = DBCommand.ExecuteReader();
             items = new BHKWModel[1000];
             rows = 0;
@@ -51,6 +66,13 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(14)) item.m_CO = (int)DBReader.GetValue(14);
                 if (!DBReader.IsDBNull(15)) item.m_CO2 = (int)DBReader.GetValue(15);
                 if (!DBReader.IsDBNull(16)) item.m_Staub = (int)DBReader.GetValue(16);
+                if (!DBReader.IsDBNull(17)) item.m_szMotortyp = (string)DBReader.GetValue(17);
+                if (!DBReader.IsDBNull(18)) item.m_Grenzleistung = (double)DBReader.GetValue(18);
+                if (!DBReader.IsDBNull(19)) item.m_Kosten_Modul = (double)DBReader.GetValue(19);
+                if (!DBReader.IsDBNull(20)) item.m_Kosten_Montage = (double)DBReader.GetValue(20);
+                if (!DBReader.IsDBNull(21)) item.m_Kosten_Lieferung = (double)DBReader.GetValue(21);
+                if (!DBReader.IsDBNull(22)) item.m_Kosten_Schallschutzhaube = (double)DBReader.GetValue(22);
+                if (!DBReader.IsDBNull(23)) item.m_Kosten_Abgasreinigung = (double)DBReader.GetValue(23);
 
                 items[rows] = item;
                 item = null;
@@ -64,7 +86,7 @@ namespace WindowsFormsApplication1
         {
             DBCommand.CommandText = "select * from Tab_BHKW where ID=" + ID;
             OdbcDataReader DBReader = DBCommand.ExecuteReader();
-  
+
             rows = 0;
 
             DBReader.Read();
@@ -88,6 +110,13 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(14)) m_CO = (int)DBReader.GetValue(14);
                 if (!DBReader.IsDBNull(15)) m_CO2 = (int)DBReader.GetValue(15);
                 if (!DBReader.IsDBNull(16)) m_Staub = (int)DBReader.GetValue(16);
+                if (!DBReader.IsDBNull(17)) m_szMotortyp = (string)DBReader.GetValue(17);
+                if (!DBReader.IsDBNull(18)) m_Grenzleistung = (double)DBReader.GetValue(18);
+                if (!DBReader.IsDBNull(19)) m_Kosten_Modul = (double)DBReader.GetValue(19);
+                if (!DBReader.IsDBNull(20)) m_Kosten_Montage = (double)DBReader.GetValue(20);
+                if (!DBReader.IsDBNull(21)) m_Kosten_Lieferung = (double)DBReader.GetValue(21);
+                if (!DBReader.IsDBNull(22)) m_Kosten_Schallschutzhaube = (double)DBReader.GetValue(22);
+                if (!DBReader.IsDBNull(23)) m_Kosten_Abgasreinigung = (double)DBReader.GetValue(23);
 
                 rows = 1;
             }
@@ -97,7 +126,7 @@ namespace WindowsFormsApplication1
 
         public void ReadSingle(string szBezeichner)
         {
-            DBCommand.CommandText = "select * from Tab_BHKW where Modulname='" + szBezeichner + "'";
+            DBCommand.CommandText = "select * from Tab_BHKW where Bezeichner='" + szBezeichner + "'";
             OdbcDataReader DBReader = DBCommand.ExecuteReader();
 
             rows = 0;
@@ -123,6 +152,13 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(14)) m_CO = (int)DBReader.GetValue(14);
                 if (!DBReader.IsDBNull(15)) m_CO2 = (int)DBReader.GetValue(15);
                 if (!DBReader.IsDBNull(16)) m_Staub = (int)DBReader.GetValue(16);
+                if (!DBReader.IsDBNull(17)) m_szMotortyp = (string)DBReader.GetValue(17);
+                if (!DBReader.IsDBNull(18)) m_Grenzleistung = (double)DBReader.GetValue(18);
+                if (!DBReader.IsDBNull(19)) m_Kosten_Modul = (double)DBReader.GetValue(19);
+                if (!DBReader.IsDBNull(20)) m_Kosten_Montage = (double)DBReader.GetValue(20);
+                if (!DBReader.IsDBNull(21)) m_Kosten_Lieferung = (double)DBReader.GetValue(21);
+                if (!DBReader.IsDBNull(22)) m_Kosten_Schallschutzhaube = (double)DBReader.GetValue(22);
+                if (!DBReader.IsDBNull(23)) m_Kosten_Abgasreinigung = (double)DBReader.GetValue(23);
 
                 rows = 1;
             }
@@ -130,5 +166,59 @@ namespace WindowsFormsApplication1
             DBReader.Close();
         }
 
+        public void FillComboBox(ComboBox ctrl)
+        {
+            ctrl.Items.Clear();
+            for (int i = 0; i < rows; i++)
+            {
+                ctrl.Items.Add(items[i].m_szBezeichner);
+            }
+        }
+
+        public bool Update()
+        {
+            try
+            {
+                string sql = "UPDATE Tab_BHKW SET Beschreibung='" + model.m_szBeschreibung + "'" +
+                    ", Firma = '" + model.m_szFirma + "'" +
+                    ", Motortyp = '" + model.m_szMotortyp + "'" +
+                    ", Ptherm=" + model.m_Ptherm.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Brennstoff=" + model.m_Brennstoff +
+                    ", Wirkungsgrad=" + model.m_Wirkungsgrad.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Investition_kwel= " + model.m_Investition_KWel.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Raumbedarf= " + model.m_Raumbedarf.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Wartungskosten_kwhel= " + model.m_Wartungskosten_kWhel.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Nutzungsdauer= " + model.m_Nutzungsdauer.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", CO2= " + model.m_CO2.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", SO2= " + model.m_SO2.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", NOx= " + model.m_NOx.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", CO= " + model.m_CO.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Staub= " + model.m_Staub.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Grenzleistung= " + model.m_Grenzleistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Kosten_Modul= " + model.m_Kosten_Modul.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Kosten_Montage= " + model.m_Kosten_Montage.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Kosten_Lieferung= " + model.m_Kosten_Lieferung.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Kosten_Schallschutzhaube= " + model.m_Kosten_Schallschutzhaube.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Kosten_Abgasreinigung= " + model.m_Kosten_Abgasreinigung.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    " WHERE Bezeichner='" + model.m_szBezeichner + "'";
+
+                DBCommand.CommandText = sql;
+                DBCommand.ExecuteNonQuery();
+            }
+            catch (OdbcException sqlEx)
+            {
+                // Fehler beim Datenbankzugriff abfangen
+                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Allgemeine Fehler abfangen
+                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                return false;
+            }
+            return true;
+
+        }
     }
 }

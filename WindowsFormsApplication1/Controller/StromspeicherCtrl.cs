@@ -39,10 +39,10 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) item.m_szBezeichner = (string)DBReader.GetString(1);
                 if (!DBReader.IsDBNull(2)) item.m_szTyp = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.m_Leistung = (int)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.m_Energie = (int)DBReader.GetValue(4);
+                if (!DBReader.IsDBNull(3)) item.m_Leistung = (double)DBReader.GetValue(3);
+                if (!DBReader.IsDBNull(4)) item.m_Energie = (double)DBReader.GetValue(4);
                 if (!DBReader.IsDBNull(5)) item.m_Degradation = (double)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.m_Ladezustand = (int)DBReader.GetValue(6); ;
+                if (!DBReader.IsDBNull(6)) item.m_Ladezustand = (double)DBReader.GetValue(6); ;
 
                 items[rows] = item;
                 item = null;
@@ -66,10 +66,10 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) m_szBezeichner = (string)DBReader.GetString(1);
                 if (!DBReader.IsDBNull(2)) m_szTyp = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_Leistung = (int)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) m_Energie = (int)DBReader.GetValue(4);
+                if (!DBReader.IsDBNull(3)) m_Leistung = (double)DBReader.GetValue(3);
+                if (!DBReader.IsDBNull(4)) m_Energie = (double)DBReader.GetValue(4);
                 if (!DBReader.IsDBNull(5)) m_Degradation = (double)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) m_Ladezustand = (int)DBReader.GetValue(6); ;
+                if (!DBReader.IsDBNull(6)) m_Ladezustand = (double)DBReader.GetValue(6); ;
                 rows = 1;
             }
             DBReader.Dispose();
@@ -90,10 +90,10 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) m_szBezeichner = (string)DBReader.GetString(1);
                 if (!DBReader.IsDBNull(2)) m_szTyp = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_Leistung = (int)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) m_Energie = (int)DBReader.GetValue(4);
+                if (!DBReader.IsDBNull(3)) m_Leistung = (double)DBReader.GetValue(3);
+                if (!DBReader.IsDBNull(4)) m_Energie = (double)DBReader.GetValue(4);
                 if (!DBReader.IsDBNull(5)) m_Degradation = (double)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) m_Ladezustand = (int)DBReader.GetValue(6); ;
+                if (!DBReader.IsDBNull(6)) m_Ladezustand = (double)DBReader.GetValue(6); ;
                 rows = 1;
             }
             DBReader.Dispose();

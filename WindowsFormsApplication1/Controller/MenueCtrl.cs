@@ -49,16 +49,17 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Wizard_Komponenten(), WizardItemClass.KOMPONENTEN_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Projekt(), WizardItemClass.PROJEKT_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Klima(), WizardItemClass.KLIMA_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Gebaeude(), WizardItemClass.GEBAEUDE_ITEM));
+            frm.Add(new WizardItemClass(new Form_Gebaeude(), WizardItemClass.GEBAEUDE_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Waermebedarf(), WizardItemClass.WAERMEBEDARF_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.PROZESS_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Stromprofil(), WizardItemClass.STROMSTD_ITEM));
+            frm.Add(new WizardItemClass(new Form_Prozesswaerme(), WizardItemClass.PROZESS_ITEM));
+            frm.Add(new WizardItemClass(new Form_Stromverbraucher(), WizardItemClass.STROMSTD_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_WP(), WizardItemClass.WP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Solar(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Wizard_PV(), WizardItemClass.PV_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Sp(), WizardItemClass.SP_ITEM));
+            frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
+            frm.Add(new WizardItemClass(new Form_BHKWEing(), WizardItemClass.BHKW_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Referenz(), WizardItemClass.REFERENZ_ITEM));
 
             wizparent = new WizardParent(frm);
@@ -78,16 +79,17 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Wizard_Komponenten(), WizardItemClass.KOMPONENTEN_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Projekt(), WizardItemClass.PROJEKT_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Klima(),WizardItemClass.KLIMA_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Gebaeude(), WizardItemClass.GEBAEUDE_ITEM));
+            frm.Add(new WizardItemClass(new Form_Gebaeude(), WizardItemClass.GEBAEUDE_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Waermebedarf(), WizardItemClass.WAERMEBEDARF_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Prozess(), WizardItemClass.PROZESS_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Stromprofil(), WizardItemClass.STROMSTD_ITEM));
+            frm.Add(new WizardItemClass(new Form_Prozesswaerme(), WizardItemClass.PROZESS_ITEM));
+            frm.Add(new WizardItemClass(new Form_Stromverbraucher(), WizardItemClass.STROMSTD_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_WP(), WizardItemClass.WP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Solar(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Wizard_PV(), WizardItemClass.PV_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Sp(), WizardItemClass.SP_ITEM));
+            frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
+            frm.Add(new WizardItemClass(new Form_BHKWEing(), WizardItemClass.BHKW_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Referenz(), WizardItemClass.REFERENZ_ITEM));
 
             wizparent = new WizardParent(frm);
@@ -125,6 +127,7 @@ namespace WindowsFormsApplication1
                    frmmain.SetBeschreibung(ctrlproj.m_szBeschreibung);                
                    frmmain.SetKunde(ctrlproj.m_szKunde); 
                    frmmain.SetWPControl(frm.m_szProjekt);
+                   frmmain.SetBHKWControl(frm.m_szProjekt);
                    frmmain.SetSPControl(frm.m_szProjekt);
                    frmmain.SetHeizkesselControl(frm.m_szProjekt);
                    frmmain.SetGebaeudeControl(frm.m_szProjekt);
@@ -133,6 +136,7 @@ namespace WindowsFormsApplication1
                    frmmain.SetStrombedarfControl(frm.m_ID_Projekt);
                    frmmain.SetStromganglinieControl(frm.m_szProjekt);
                    frmmain.Add_WPKontext();
+                   frmmain.Add_BHKWKontext();
                    frmmain.Add_GebäudeKontext();
                    frmmain.Add_HeizkesselKontext();
                    frmmain.Add_WaermebedarfExternKontext();
@@ -163,6 +167,7 @@ namespace WindowsFormsApplication1
                    frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);
                    frmmain.SetBeschreibung(ctrlproj.m_szBeschreibung); 
                    frmmain.SetWPControl(ctrl.m_szProjektname);
+                   frmmain.SetBHKWControl(ctrl.m_szProjektname);
                    frmmain.SetSPControl(ctrl.m_szProjektname);
                    frmmain.SetHeizkesselControl(ctrl.m_szProjektname);
                    frmmain.SetGebaeudeControl(ctrl.m_szProjektname);
@@ -171,6 +176,7 @@ namespace WindowsFormsApplication1
                    frmmain.SetStrombedarfControl(ctrl.m_ID_Projekt);
                    frmmain.SetStromganglinieControl(frm.m_szProjekt);
                    frmmain.Add_WPKontext();
+                   frmmain.Add_BHKWKontext();
                    frmmain.Add_GebäudeKontext();
                    frmmain.Add_SpKontext();
                    frmmain.Add_HeizkesselKontext();
@@ -284,7 +290,7 @@ namespace WindowsFormsApplication1
 
        public void Stromganglinie()
        {
-           Form_Stromeinlesen frm = new Form_Stromeinlesen();
+           Form_Stromganglinie_Admin frm = new Form_Stromganglinie_Admin();
            frm.SetControls();
            frm.ShowDialog();
        }
@@ -303,7 +309,7 @@ namespace WindowsFormsApplication1
 
        public void BHKW()
        {
-           Form_BHKWEing frm = new Form_BHKWEing();
+           Form_BHKWAdmin frm = new Form_BHKWAdmin();
            frm.ShowDialog();
        }
     }

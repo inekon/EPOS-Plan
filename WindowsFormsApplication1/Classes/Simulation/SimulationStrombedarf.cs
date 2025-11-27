@@ -122,31 +122,50 @@ namespace WindowsFormsApplication1
             for (int k = 0; k < pw_list.Count; k++)
             {
                 rs.Open("select * from Tab_Stromverbraucher where Bezeichner='" + pw_list[k] + "'");
-                rs.Next();
-  
-                for (int i=0; i<12; i++)
+                if (rs.Next())
                 {
-                    double d = (double)rs.Read("Monat_" + (i + 1).ToString());
-                    monats_waerme[i] = (float)d;
-                }
-               
-                // Tagesverteilung für den Prozess ermitteln
-                rs_pwtyp.Open("select * from Tab_Stromverbrauchertyp where Typname='" + (string)rs.Read("Typ") + "'");
-                rs.Close(); 
-
-                if (rs_pwtyp.Next())
-                {
-                    for (int i = 0; i < 168; i++)
+                    float pjv = 0;
+                    float jv = 0;
+                    if (m_ID_Projekt != 0) // skalieren ggf. mit geändertem Projekt Jahresverbrauch
                     {
-                        double dw = (double)rs_pwtyp.Read((i + 1).ToString());
-                        wochen_waerme[i] = (float)dw;
+                        Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
+                        ctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Bezeichner") + "'");
+                        pjv = (float)ctrl.items[0].Summe;
                     }
-                }
-                rs_pwtyp.Close();
 
-                // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
-                temp = com.I_strom_wochetojahr(wochen_waerme, monats_waerme, mo_anfang, mo_ende);
-                com.CSharp_I_vectoren_addieren(temp, prozesswerte);
+                    for (int i = 0; i < 12; i++)
+                    {
+                        double d = (double)rs.Read("Monat_" + (i + 1).ToString());
+                        monats_waerme[i] = (float)d;
+                        jv += monats_waerme[i];
+                    }
+
+                    if (pjv > 0)
+                    {
+                        for (int i = 0; i < 12; i++)
+                        {
+                            monats_waerme[i] = monats_waerme[i] * pjv / jv;
+                        }
+                    }
+
+                    // Tagesverteilung für den Prozess ermitteln
+                    rs_pwtyp.Open("select * from Tab_Stromverbrauchertyp where Typname='" + (string)rs.Read("Typ") + "'");
+
+                    if (rs_pwtyp.Next())
+                    {
+                        for (int i = 0; i < 168; i++)
+                        {
+                            double dw = (double)rs_pwtyp.Read((i + 1).ToString());
+                            wochen_waerme[i] = (float)dw;
+                        }
+                    }
+                    rs_pwtyp.Close();
+
+                    // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
+                    temp = com.I_strom_wochetojahr(wochen_waerme, monats_waerme, mo_anfang, mo_ende);
+                    com.CSharp_I_vectoren_addieren(temp, prozesswerte);
+                }
+                rs.Close();
             }
  
         }

@@ -171,7 +171,7 @@ namespace WindowsFormsApplication1
             this.Label4.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.Label4.Location = new System.Drawing.Point(21, 28);
             this.Label4.Name = "Label4";
-            this.Label4.Size = new System.Drawing.Size(75, 15);
+            this.Label4.Size = new System.Drawing.Size(73, 15);
             this.Label4.TabIndex = 21;
             this.Label4.Text = "Soll am Tag :";
             this.Label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -211,7 +211,7 @@ namespace WindowsFormsApplication1
             this.Label6.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.Label6.Location = new System.Drawing.Point(21, 88);
             this.Label6.Name = "Label6";
-            this.Label6.Size = new System.Drawing.Size(145, 15);
+            this.Label6.Size = new System.Drawing.Size(146, 15);
             this.Label6.TabIndex = 25;
             this.Label6.Text = "Maximalraumtemperatur :";
             this.Label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -359,7 +359,7 @@ namespace WindowsFormsApplication1
             // textBox_WBVK_Fenster
             // 
             this.textBox_WBVK_Fenster.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.textBox_WBVK_Fenster.Location = new System.Drawing.Point(166, 25);
+            this.textBox_WBVK_Fenster.Location = new System.Drawing.Point(140, 24);
             this.textBox_WBVK_Fenster.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_WBVK_Fenster.Name = "textBox_WBVK_Fenster";
             this.textBox_WBVK_Fenster.Size = new System.Drawing.Size(56, 23);
@@ -379,7 +379,7 @@ namespace WindowsFormsApplication1
             // textBox_WBVK_Keller
             // 
             this.textBox_WBVK_Keller.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.textBox_WBVK_Keller.Location = new System.Drawing.Point(166, 57);
+            this.textBox_WBVK_Keller.Location = new System.Drawing.Point(140, 56);
             this.textBox_WBVK_Keller.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_WBVK_Keller.Name = "textBox_WBVK_Keller";
             this.textBox_WBVK_Keller.Size = new System.Drawing.Size(56, 23);
@@ -399,7 +399,7 @@ namespace WindowsFormsApplication1
             // textBox_WBVK_Dach
             // 
             this.textBox_WBVK_Dach.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.textBox_WBVK_Dach.Location = new System.Drawing.Point(420, 27);
+            this.textBox_WBVK_Dach.Location = new System.Drawing.Point(391, 25);
             this.textBox_WBVK_Dach.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_WBVK_Dach.Name = "textBox_WBVK_Dach";
             this.textBox_WBVK_Dach.Size = new System.Drawing.Size(56, 23);
@@ -434,7 +434,7 @@ namespace WindowsFormsApplication1
             // textBox_AnschussFenster
             // 
             this.textBox_AnschussFenster.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.textBox_AnschussFenster.Location = new System.Drawing.Point(166, 24);
+            this.textBox_AnschussFenster.Location = new System.Drawing.Point(140, 23);
             this.textBox_AnschussFenster.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_AnschussFenster.Name = "textBox_AnschussFenster";
             this.textBox_AnschussFenster.Size = new System.Drawing.Size(56, 23);
@@ -454,7 +454,7 @@ namespace WindowsFormsApplication1
             // textBox_AnschussDach
             // 
             this.textBox_AnschussDach.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.textBox_AnschussDach.Location = new System.Drawing.Point(420, 26);
+            this.textBox_AnschussDach.Location = new System.Drawing.Point(391, 24);
             this.textBox_AnschussDach.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_AnschussDach.Name = "textBox_AnschussDach";
             this.textBox_AnschussDach.Size = new System.Drawing.Size(56, 23);
@@ -474,7 +474,7 @@ namespace WindowsFormsApplication1
             // textBox_AnschussKeller
             // 
             this.textBox_AnschussKeller.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.textBox_AnschussKeller.Location = new System.Drawing.Point(166, 56);
+            this.textBox_AnschussKeller.Location = new System.Drawing.Point(140, 55);
             this.textBox_AnschussKeller.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_AnschussKeller.Name = "textBox_AnschussKeller";
             this.textBox_AnschussKeller.Size = new System.Drawing.Size(56, 23);
@@ -547,7 +547,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label35.AutoSize = true;
             this.Label35.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.Label35.Location = new System.Drawing.Point(20, 114);
+            this.Label35.Location = new System.Drawing.Point(10, 114);
             this.Label35.Name = "Label35";
             this.Label35.Size = new System.Drawing.Size(58, 15);
             this.Label35.TabIndex = 51;
@@ -625,7 +625,7 @@ namespace WindowsFormsApplication1
             this.Label37.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.Label37.Location = new System.Drawing.Point(84, 31);
             this.Label37.Name = "Label37";
-            this.Label37.Size = new System.Drawing.Size(33, 15);
+            this.Label37.Size = new System.Drawing.Size(31, 15);
             this.Label37.TabIndex = 59;
             this.Label37.Text = "Tag :";
             this.Label37.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -786,7 +786,7 @@ namespace WindowsFormsApplication1
             this.Label56.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.Label56.Location = new System.Drawing.Point(80, 32);
             this.Label56.Name = "Label56";
-            this.Label56.Size = new System.Drawing.Size(33, 15);
+            this.Label56.Size = new System.Drawing.Size(31, 15);
             this.Label56.TabIndex = 73;
             this.Label56.Text = "Tag :";
             this.Label56.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;

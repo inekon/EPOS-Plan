@@ -87,19 +87,10 @@ namespace WindowsFormsApplication1
                 {
                     wizardparent.list_stromlastmodel.RemoveAt(i);
                     listBox_Auswahl.Items.Remove(listBox_Auswahl.Text);
+                    break;
                 }
             }
             if (listBox_Auswahl.Items.Count > 0) listBox_Auswahl.SelectedIndex = 0;
-        }
-
-        private void listBox_SP_DB_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            textBox_Name.Text = listBox_Extern.Text;
-        }
-
-        private void listBox_SP_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            textBox_Name.Text = listBox_Auswahl.Text;
         }
          
     }

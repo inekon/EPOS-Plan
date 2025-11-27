@@ -25,7 +25,6 @@ namespace WindowsFormsApplication1
         public bool GetStromspeicherStatus() { return checkBox_StromSp.Checked; }
         public bool GetProzessStatus() { return checkBox_Prozess.Checked; }
  
- 
         private void Wizard_Komponenten_Shown(object sender, EventArgs e)
         {
             foreach (Form form in Application.OpenForms)
@@ -43,6 +42,8 @@ namespace WindowsFormsApplication1
         {
             checkBox_WP.Checked = value;
         }
+        
+        public bool GetWPCheckBox() { return checkBox_WP.Checked; }
         
         public void SetPVPCheckBox(bool value)
         {
@@ -64,6 +65,8 @@ namespace WindowsFormsApplication1
             checkBox_Prozess.Checked = value;
         }
 
+        public bool GetProzessCheckBox() { return checkBox_Prozess.Checked; }
+
         public void SetStromglastgangCheckBox(bool value)
         {
             checkBox_Stromlastgang.Checked = value;
@@ -74,15 +77,22 @@ namespace WindowsFormsApplication1
             checkBox_Kessel.Checked = value;
         }
 
+        public bool GetKesselCheckBox() { return checkBox_Kessel.Checked; }
+
         public void SetWBedarfDatenCheckBox(bool value)
         {
             checkBox_WBedarfDaten.Checked = value;
         }
 
+        public bool GetWBedarfDatenCheckBox() { return checkBox_WBedarfDaten.Checked; }
+
         public void SetGebaeudeCheckBox(bool value)
         {
             checkBox_Gebaeude.Checked = value;
         }
+
+        public bool GetBebaeudeCheckBox() { return checkBox_Gebaeude.Checked; }
+
         public void SetReferenzCheckBox(bool value)
         {
             checkBox_Referenz.Checked = value;
@@ -91,6 +101,11 @@ namespace WindowsFormsApplication1
         public void SetStromprofilCheckBox(bool value)
         {
             checkBox_StdStromprofil.Checked = value;
+        }
+
+        public void SetBHKWCheckBox(bool value)
+        {
+            checkBox_BHKW.Checked = value;
         }
 
         private void checkBox_WP_CheckedChanged(object sender, EventArgs e)
@@ -179,6 +194,14 @@ namespace WindowsFormsApplication1
             wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.STROMSTD_ITEM);
             wizard.aktiv = checkBox_StdStromprofil.Checked;
             ((WizardParent)parentForm).listPages[WizardItemClass.STROMSTD_ITEM] = wizard;
+        }
+
+        private void checkBox_BHKW_CheckedChanged(object sender, EventArgs e)
+        {
+            WizardItemClass wizard;
+            wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.BHKW_ITEM);
+            wizard.aktiv = checkBox_BHKW.Checked;
+            ((WizardParent)parentForm).listPages[WizardItemClass.BHKW_ITEM] = wizard;
         }
     }
 }

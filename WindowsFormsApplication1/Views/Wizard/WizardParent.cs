@@ -33,6 +33,7 @@ namespace WindowsFormsApplication1
         private int top = WizardItemClass.KOMPONENTEN_ITEM;
         private int pagecount;
         public int projektID;
+        public bool bBereitsGeladen = false;   
 
         public WizardParent()
         {
@@ -50,7 +51,7 @@ namespace WindowsFormsApplication1
         public WizardParent(List<WizardItemClass> WizardPages)
         {
             InitializeComponent();
-            wizardmode = WIZARD_MODE_NEU;
+            //wizardmode = WIZARD_MODE_NEU;
             projektID = 0;
             pagecount = 0;
             list_werzmodel.Clear();
@@ -59,7 +60,7 @@ namespace WindowsFormsApplication1
             list_stromlastmodel.Clear();
             list_stromverbrauchermodel.Clear();
             list_wbmodel.Clear();
-
+     
             listPages = WizardPages;
             listPages[WizardItemClass.KOMPONENTEN_ITEM].aktiv = true;
             listPages[WizardItemClass.PROJEKT_ITEM].aktiv = true;
@@ -75,6 +76,7 @@ namespace WindowsFormsApplication1
             listPages[WizardItemClass.WP_ITEM].aktiv = false;
             listPages[WizardItemClass.STROMSTD_ITEM].aktiv = false;
             listPages[WizardItemClass.WAERMEBEDARF_ITEM].aktiv = false;
+            listPages[WizardItemClass.BHKW_ITEM].aktiv = false;
 
             pagecount = listPages.Count();
             
@@ -118,13 +120,15 @@ namespace WindowsFormsApplication1
 
         private void WizardParent_Load(object sender, EventArgs e)
         {
-            SetProjektLabel("Projekt auswählen");
+            SetProjektLabel("bestehendes Projekt auswählen:");
             FillProjektList();
             listBox_Projekte.Visible = false;
+            button_NeuProjekt.Visible = false;
             top = -1;
             Next();
             btnBack.Enabled = false;
             btnCancel.Enabled = true;
+            if(wizardmode == WizardParent.WIZARD_MODE_NEU) button_NeuProjekt.Visible = false;
         }
         private void LoadNewForm()
         {
@@ -150,6 +154,7 @@ namespace WindowsFormsApplication1
                 {
                     listBox_Projekte.Visible = true;
                     label_Projekt.Visible = true;
+                    button_NeuProjekt.Visible = true;
                 }
             }
 
@@ -192,12 +197,17 @@ namespace WindowsFormsApplication1
                 m_Projektmodel.m_szKunde = ((Wizard_Projekt)page).GetKunde();
                 m_Projektmodel.m_Aenderungsdatum = ((Wizard_Projekt)page).GetDatum();
                 m_Projektmodel.m_Erstelldatum = ((Wizard_Projekt)page).GetErstellDatum();
-                LoadWEFromDB(m_Projektmodel.m_szProjektname);
-                LoadZGeb(m_Projektmodel.m_szProjektname);
-                LoadProzessFromDB(m_Projektmodel.m_szProjektname);
-                LoadStromlastFromDB(m_Projektmodel.m_szProjektname);
-                LoadWBedarfFromDB(m_Projektmodel.m_szProjektname);
-                LoadStromverbraucherFromDB(m_Projektmodel.m_szProjektname);
+                m_Projektmodel.m_ID_Klimaregion = ((Wizard_Projekt)page).GetIDKlimaregion();
+                if (!bBereitsGeladen)
+                {
+                    LoadWEFromDB(m_Projektmodel.m_szProjektname);
+                    LoadZGeb(m_Projektmodel.m_szProjektname);
+                    LoadProzessFromDB(m_Projektmodel.m_szProjektname);
+                    LoadStromlastFromDB(m_Projektmodel.m_szProjektname);
+                    LoadWBedarfFromDB(m_Projektmodel.m_szProjektname);
+                    LoadStromverbraucherFromDB(m_Projektmodel.m_szProjektname);
+                    bBereitsGeladen = true;
+                }
             }
 
             // Klimaregion Auswahl in Projektmodel speichern
@@ -216,6 +226,7 @@ namespace WindowsFormsApplication1
             page = listPages.ElementAt(top).wizardform;
             listBox_Projekte.Visible = false;
             label_Projekt.Visible = false;
+            button_NeuProjekt.Visible = false;
 
             if (wizardmode == WIZARD_MODE_BEARBEITEN)
             {
@@ -224,6 +235,7 @@ namespace WindowsFormsApplication1
                 {
                     listBox_Projekte.Visible = true;
                     label_Projekt.Visible = true;
+                    button_NeuProjekt.Visible = true;
                 }
                 else if (top == WizardItemClass.PROJEKT_ITEM)
                 {
@@ -240,15 +252,18 @@ namespace WindowsFormsApplication1
                 }
                 else if (top == WizardItemClass.GEBAEUDE_ITEM)
                 {
-                    ((Wizard_Gebaeude)page).SetControls(listBox_Projekte.Text);
+                    ((Form_Gebaeude)page).list_gebmodel = list_gebmodel; 
+                    ((Form_Gebaeude)page).SetControls(listBox_Projekte.Text, true);
                 }
                 else if (top == WizardItemClass.SP_ITEM)
                 {
-                    ((Wizard_Sp)page).SetControls(listBox_Projekte.Text);
+                    ((Form_Stromspeicher)page).list_werzmodel = list_werzmodel;
+                    ((Form_Stromspeicher)page).SetControls(listBox_Projekte.Text, true);
                 }
                 else if (top == WizardItemClass.PROZESS_ITEM)
                 {
-                    ((Wizard_Prozess)page).SetControls(listBox_Projekte.Text);
+                    ((Form_Prozesswaerme)page).list_pwmodel = list_prozmodel;
+                    ((Form_Prozesswaerme)page).SetControls(listBox_Projekte.Text, true);
                 }
                 else if (top == WizardItemClass.STROMLASTGANG_ITEM)
                 {
@@ -265,13 +280,19 @@ namespace WindowsFormsApplication1
                 }
                 else if (top == WizardItemClass.WAERMEBEDARF_ITEM)
                 {
-                    ((Wizard_Waermebedarf)page).SetControls(listBox_Projekte.Text);
+                    ((Wizard_Waermebedarf)page).list_wbmodel = list_wbmodel;
+                    ((Wizard_Waermebedarf)page).SetControls(listBox_Projekte.Text, true);
                 }
                 else if (top == WizardItemClass.STROMSTD_ITEM)
                 {
-                    ((Wizard_Stromprofil)page).SetControls(listBox_Projekte.Text);
+                    ((Form_Stromverbraucher)page).list_sbmodel = list_stromverbrauchermodel;
+                    ((Form_Stromverbraucher)page).SetControls(listBox_Projekte.Text, true);
                 }
-
+                else if (top == WizardItemClass.BHKW_ITEM)
+                {
+                    ((Form_BHKWEing)page).list_werzmodel = list_werzmodel;
+                    ((Form_BHKWEing)page).SetControls(listBox_Projekte.Text,true);
+                }
             }
             else
             {
@@ -283,6 +304,31 @@ namespace WindowsFormsApplication1
                     ((Wizard_Projekt)page).SetEditProjektName(true);
                     ((Wizard_Projekt)page).SetProjektbezeichner("");
                 }
+                else if (top == WizardItemClass.PROZESS_ITEM)
+                {
+                    ((Form_Prozesswaerme)page).list_pwmodel = list_prozmodel;
+                    ((Form_Prozesswaerme)page).SetControls(listBox_Projekte.Text, true);
+                }
+                else if (top == WizardItemClass.STROMSTD_ITEM)
+                {
+                    ((Form_Stromverbraucher)page).list_sbmodel = list_stromverbrauchermodel;
+                    ((Form_Stromverbraucher)page).SetControls(listBox_Projekte.Text, true);
+                }
+                else if (top == WizardItemClass.BHKW_ITEM)
+                {
+                    ((Form_BHKWEing)page).SetControls(listBox_Projekte.Text, true);
+                }
+                else if (top == WizardItemClass.WAERMEBEDARF_ITEM)
+                {
+                    ((Wizard_Waermebedarf)page).list_wbmodel = list_wbmodel;
+                    ((Wizard_Waermebedarf)page).SetControls(listBox_Projekte.Text, true);
+                }
+                else if (top == WizardItemClass.SP_ITEM)
+                {
+                    ((Form_Stromspeicher)page).list_werzmodel = list_werzmodel;
+                    ((Form_Stromspeicher)page).SetControls(listBox_Projekte.Text, true);
+                }
+
             }
 
             btnBack.Enabled = true;
@@ -385,6 +431,7 @@ namespace WindowsFormsApplication1
             ((Wizard_Komponenten)page).SetWBedarfDatenCheckBox(false);
             ((Wizard_Komponenten)page).SetGebaeudeCheckBox(false);
             ((Wizard_Komponenten)page).SetReferenzCheckBox(false);
+            ((Wizard_Komponenten)page).SetBHKWCheckBox(false);
 
             int rows = werzctrl.rows;
            
@@ -395,6 +442,7 @@ namespace WindowsFormsApplication1
                 if (werzctrl.items[rows-1].ID_PV > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.PV_TYP) ((Wizard_Komponenten)page).SetPVPCheckBox(true);
                 if (werzctrl.items[rows-1].ID_SP > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.SP_TYP) ((Wizard_Komponenten)page).SetStromSpCheckBox(true);
                 if (werzctrl.items[rows-1].ID_Kessel > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.KESSEL_TYP) ((Wizard_Komponenten)page).SetKesselCheckBox(true);
+                if (werzctrl.items[rows-1].ID_BHKW > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.BHKW_TYP) ((Wizard_Komponenten)page).SetBHKWCheckBox(true);
                 rows--;
             }
             
@@ -492,6 +540,8 @@ namespace WindowsFormsApplication1
                     item.ID_PV = werzctrl.items[n].ID_PV;
                     item.ID_Solar = werzctrl.items[n].ID_Solar;
                     item.ID_Kessel = werzctrl.items[n].ID_Kessel;
+                    item.ID_BHKW = werzctrl.items[n].ID_BHKW;
+                    item.Grenzleistung = werzctrl.items[n].Grenzleistung; 
 
                     list_werzmodel.Add(item);
                 }
@@ -502,6 +552,7 @@ namespace WindowsFormsApplication1
         {
             SetKompCheckBoxes();
             btnNext.Enabled = true;
+            bBereitsGeladen = false;
         }
 
         public void SetProjektLabel(string szLabel)
@@ -517,12 +568,33 @@ namespace WindowsFormsApplication1
         private void btnSpeichern_Click(object sender, EventArgs e)
         {
             Form pageklima = listPages.ElementAt(WizardItemClass.KLIMA_ITEM).wizardform;
-            Program.wizardctrl.Klimazone = ((Wizard_Klima)pageklima).GetKlimaname();
             Form pageproj = listPages.ElementAt(WizardItemClass.PROJEKT_ITEM).wizardform;
+            Program.wizardctrl.Klimazone = ((Wizard_Projekt)pageproj).GetKlimaname();
             Program.wizardctrl.Projektname = ((Wizard_Projekt)pageproj).GetProjektName();
             Program.wizardctrl.speichern = false;
 
-            list_prozmodel = ((Form_Prozesswaerme)listPages[WizardItemClass.PROZESS_ITEM].wizardform).list_gebmodel;
+            list_gebmodel = ((Form_Gebaeude)listPages[WizardItemClass.GEBAEUDE_ITEM].wizardform).list_gebmodel;
+            list_prozmodel = ((Form_Prozesswaerme)listPages[WizardItemClass.PROZESS_ITEM].wizardform).list_pwmodel;
+            list_wbmodel = ((Wizard_Waermebedarf)listPages[WizardItemClass.WAERMEBEDARF_ITEM].wizardform).list_wbmodel;
+
+            Form pagekomp = listPages.ElementAt(WizardItemClass.KOMPONENTEN_ITEM).wizardform;
+            if (Program.wizardctrl.Klimazone == "" && ( ((Wizard_Komponenten)pagekomp).GetBebaeudeCheckBox()
+                                                   || ((Wizard_Komponenten)pagekomp).GetKesselCheckBox()
+                                                   || ((Wizard_Komponenten)pagekomp).GetProzessCheckBox()
+                                                   || ((Wizard_Komponenten)pagekomp).GetWPCheckBox()
+                                                   || ((Wizard_Komponenten)pagekomp).GetWBedarfDatenCheckBox()))
+
+            {
+                MessageBox.Show("Bitte eine Klimazone auswählen!", "Klimazone fehlt", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if(Program.wizardctrl.Projektname=="")
+            {
+                MessageBox.Show("Bitte einen Projektnamen eingeben!", "Projektname fehlt", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             gespeichert = false;
             if (wizardmode == WIZARD_MODE_NEU)
             {
@@ -614,7 +686,7 @@ namespace WindowsFormsApplication1
             if (!listPages[WizardItemClass.SP_ITEM].aktiv && item.ID_Type == WizardItemClass.SP_TYP) return true;
             if (!listPages[WizardItemClass.PV_ITEM].aktiv && item.ID_Type == WizardItemClass.PV_TYP) return true;
             if (!listPages[WizardItemClass.WP_ITEM].aktiv && item.ID_Type == WizardItemClass.WP_TYP) return true;
-
+            if (!listPages[WizardItemClass.BHKW_ITEM].aktiv && item.ID_Type == WizardItemClass.BHKW_TYP) return true;
             return false;
         }
 
@@ -700,6 +772,7 @@ namespace WindowsFormsApplication1
                     item.ID_Projekt = projctrl.m_ID;
                     item.szProzessname = prozctrl.items[n].szProzessname;
                     item.ID_Prozesswaerme = prozctrl.items[n].ID_Prozesswaerme;
+                    item.Summe = prozctrl.items[n].Summe; 
 
                     list_prozmodel.Add(item);
                 }
@@ -778,12 +851,47 @@ namespace WindowsFormsApplication1
                     item.m_ID_Projekt = projctrl.m_ID;
                     item.m_szVerbraucher = svctrl.items[n].m_szVerbraucher;
                     item.m_ID_Stromverbraucher = svctrl.items[n].m_ID_Stromverbraucher;
+                    item.m_Summe = svctrl.items[n].m_Summe;
 
                     list_stromverbrauchermodel.Add(item);
                 }
             }
         }
 
+        private void button_NeuProjekt_Click(object sender, EventArgs e)
+        {
+            projektID = 0;
+            pagecount = listPages.Count();
 
+            listBox_Projekte.Visible = false;
+            label_Projekt.Visible = false;
+            wizardmode = WIZARD_MODE_NEU;
+            button_NeuProjekt.Visible = false;
+
+            list_werzmodel.Clear();
+            list_gebmodel.Clear();
+            list_prozmodel.Clear();
+            list_stromlastmodel.Clear();
+            list_stromverbrauchermodel.Clear();
+            list_wbmodel.Clear();
+
+            top = -1;
+            Next();
+
+            Form page = listPages.ElementAt(top).wizardform;
+            ((Wizard_Komponenten)page).SetSolarCheckBox(false);
+            ((Wizard_Komponenten)page).SetPVPCheckBox(false);
+            ((Wizard_Komponenten)page).SetWPCheckBox(false);
+            ((Wizard_Komponenten)page).SetStromSpCheckBox(false);
+            ((Wizard_Komponenten)page).SetProzessCheckBox(false);
+            ((Wizard_Komponenten)page).SetStromglastgangCheckBox(false);
+            ((Wizard_Komponenten)page).SetKesselCheckBox(false);
+            ((Wizard_Komponenten)page).SetStromprofilCheckBox(false);
+            ((Wizard_Komponenten)page).SetWBedarfDatenCheckBox(false);
+            ((Wizard_Komponenten)page).SetGebaeudeCheckBox(false);
+            ((Wizard_Komponenten)page).SetReferenzCheckBox(false);
+            ((Wizard_Komponenten)page).SetBHKWCheckBox(false);
+
+        }
     }
 }
