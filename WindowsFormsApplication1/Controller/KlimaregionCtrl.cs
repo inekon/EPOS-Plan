@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
 {
     class KlimaregionCtrl : KlimaregionModel
     {
-        OdbcCommand DBCommand;
+        public OdbcCommand DBCommand;
         private List<double> list = new List<double>();
  
         public KlimaregionCtrl()
@@ -114,6 +114,7 @@ namespace WindowsFormsApplication1
             {
                 // Allgemeine Fehler abfangen
                 Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                MessageBox.Show("Allgemeiner Fehler: " + ex.Message);
                 return false;
             }
             return true;

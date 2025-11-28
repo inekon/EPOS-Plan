@@ -2,15 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Odbc;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Windows.Documents;
 using System.Windows.Forms;
-using static System.Net.WebRequestMethods;
+using Application = System.Windows.Forms.Application;
 using File = System.IO.File;
 
 namespace WindowsFormsApplication1
@@ -30,7 +24,8 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Klimaregion where Name='" + szName +"'");
-            if (!rs.EOF()) return true;
+            if (!rs.EOF()) { rs.Close(); return true; }
+            rs.Close();
             return false;
         }
 
@@ -53,28 +48,27 @@ namespace WindowsFormsApplication1
 
                 for (int c = startSpalte; c <= stopSpalte; c++)
                 {
-                    //var colName = oWorksheet.Cells[startZeile, c].Value;
-                    xco[c - startSpalte] = new DataColumn(c.ToString(), typeof(Object));
+                   xco[c - startSpalte] = new DataColumn(c.ToString(), typeof(Object));
                 }
 
                 dt.Columns.AddRange(xco);
+               
                 var headerOffset = startZeile; //have to skip header row
                 var width = dt.Columns.Count;
                 var depth = stopZeile - startZeile;
+                
                 for (var i = 0; i <= depth; i++)
                 {
                     var row = dt.NewRow();
                     for (var j = 0; j < width; j++)
                     {
                         var currentValue = oWorksheet.Cells[i + headerOffset, j + startSpalte].Value;
-
-                        //have to decrement b/c excel is 1 based and datatable is 0 based.
                         row[j] = currentValue == null ? null : currentValue.ToString();
                     }
 
                     dt.Rows.Add(row);
                     pBar_Import.Value += 1;
-                    pBar_Import.Refresh();
+                    Application.DoEvents();
                 }
 
             }
@@ -83,6 +77,7 @@ namespace WindowsFormsApplication1
                 MessageBox.Show(ex.Message);
                 return null;
             }
+            
             oWorkbook.Close(false);
             System.Runtime.InteropServices.Marshal.ReleaseComObject(oWorkbook);
             oWorkbook = null;

@@ -107,12 +107,13 @@ namespace WindowsFormsApplication1
                             "Tab_Klimaregion.Name ='" + listBoxKlimreg.Text + "'";
 
                 rs.Open(sql);
-
                 if (rs.Next())
                 {
+                    rs.Close();
                     MessageBox.Show("Löschen nicht möglich!\nDiese Klimaregion ist dem Projekt " + rs.Read("Projektname")+ " zugeordnet!", "Hinweis");
                     return;
                 }
+                rs.Close();
 
                 KlimaregionCtrl krclass = new KlimaregionCtrl();
                 krclass.Delete(listBoxKlimreg.Text);
@@ -129,7 +130,8 @@ namespace WindowsFormsApplication1
         private void btn_Import_Click(object sender, EventArgs e)
         {
             string file = textBox_Excel.Text;
-            
+            OdbcTransaction transaction = null;
+
             if (textBox_Excel.Text != "")
             {
                 ToolsClass ctrl = new ToolsClass();
@@ -139,16 +141,26 @@ namespace WindowsFormsApplication1
                 {
                     this.Cursor = Cursors.WaitCursor;
                     pBar_Import.Visible = true;
+
+                    transaction = Program.DBConnection.BeginTransaction();
+
                     KlimaregionCtrl ctrlklimareg = new KlimaregionCtrl();
-                    ctrlklimareg.Add(m_szExcelBasName);
+                    ctrlklimareg.DBCommand.Transaction = transaction;
+                    if (!ctrlklimareg.Add(m_szExcelBasName)) { transaction.Rollback(); this.Cursor = Cursors.Default; return; }
 
                     System.Data.DataTable dt = ctrl.ReadExcel(textBox_Excel.Text, "Klima", 6, 370, 4, 11, pBar_Import);
+                    if (dt == null) { transaction.Rollback(); return; }
                     KlimadatenCtrl ctrlklimadaten = new KlimadatenCtrl();
-                    ctrlklimadaten.WritetDataTable(dt,m_szExcelBasName);
+                    ctrlklimadaten.DBCommand.Transaction = transaction;
+                    if (!ctrlklimadaten.WritetDataTable(dt, m_szExcelBasName, transaction)) { transaction.Rollback(); this.Cursor = Cursors.Default; return; }
 
                     dt = ctrl.ReadExcel(textBox_Excel.Text, "Solar", 3, 8762, 1, 1, pBar_Import);
+                    if (dt == null) return;
                     SolardatenCtrl ctrlsolardaten = new SolardatenCtrl();
-                    ctrlsolardaten.WritetDataTable(dt, m_szExcelBasName);
+                    ctrlsolardaten.DBCommand.Transaction = transaction;
+                    if (!ctrlsolardaten.WritetDataTable(dt, m_szExcelBasName, transaction)) { transaction.Rollback(); this.Cursor = Cursors.Default; return; }
+
+                    transaction.Commit();
 
                     pBar_Import.Value = 0;
                     pBar_Import.Visible = false;    

@@ -11,7 +11,8 @@ namespace WindowsFormsApplication1
 {
     class KlimadatenCtrl : KlimadatenModel
     {
-        OdbcCommand DBCommand;
+        public OdbcCommand DBCommand;
+        public OdbcCommandBuilder commandBuilder;
         public KlimadatenModel klimamodel = new KlimadatenModel();
         public List<double> list_Temperatur = new List<double>();
         public List<int> list_Tag = new List<int>();
@@ -195,42 +196,60 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool WritetDataTable(System.Data.DataTable dt, string szName)
+        public bool WritetDataTable(System.Data.DataTable dt, string szName, OdbcTransaction transaction)
         {
-            DBCommand.CommandText = "SELECT Max(ID_Klimadaten) AS Ausdr1 FROM Tab_Klimadaten";
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-            DBReader.Read();
-            int id = (int)DBReader.GetValue(0) + 1;
-            DBReader.Close();
-
-            RecordSet rs = new RecordSet();
-            rs.Open("Select ID_Klimaregion from Tab_Klimaregion where Name='" + szName + "'");  
-            rs.Next();
-            int id_ref = (int)rs.Read("ID_Klimaregion");
-            rs.Close();
-
-            OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Klimadaten", Program.DBConnection);
-            DataSet dataSet = new DataSet();
-            OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-
-            dt.Columns.Add("ID_Klimaregion", typeof(int)).SetOrdinal(0);
-            dt.Columns.Add("ID_Klimadaten", typeof(int)).SetOrdinal(0);
-
-            for (int i = 0; i < dt.Rows.Count; i++)
+            try
             {
-                DataRow dataRow = dt.Rows[i];
-                dataRow[0] = id++;
-                dataRow[1] = id_ref;
+                DBCommand.CommandText = "SELECT Max(ID_Klimadaten) AS Ausdr1 FROM Tab_Klimadaten";
+                OdbcDataReader DBReader = DBCommand.ExecuteReader();
+                DBReader.Read();
+                int id = (int)DBReader.GetValue(0) + 1;
+                DBReader.Close();
+  
+                DBCommand.CommandText = "Select ID_Klimaregion from Tab_Klimaregion where Name='" + szName + "'";
+                DBReader = DBCommand.ExecuteReader();
+                DBReader.Read();
+                int id_ref = (int)DBReader.GetValue(0);
+                DBReader.Close();
+
+                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Klimadaten", Program.DBConnection);
+                adapter.SelectCommand.Transaction = transaction;
+                DataSet dataSet = new DataSet();
+                commandBuilder = new OdbcCommandBuilder(adapter);
+
+                adapter.UpdateCommand = commandBuilder.GetUpdateCommand();
+                adapter.UpdateCommand.Transaction = transaction;
+                dt.Columns.Add("ID_Klimaregion", typeof(int)).SetOrdinal(0);
+                dt.Columns.Add("ID_Klimadaten", typeof(int)).SetOrdinal(0);
+
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    DataRow dataRow = dt.Rows[i];
+                    dataRow[0] = id++;
+                    dataRow[1] = id_ref;
+                }
+
+                dt.Columns[2].ColumnName = "Sol_Nord"; dt.Columns[3].ColumnName = "Sol_Ost";
+                dt.Columns[4].ColumnName = "Sol_Sued"; dt.Columns[5].ColumnName = "Sol_West";
+                dt.Columns[6].ColumnName = "Temperatur"; dt.Columns[7].ColumnName = "WE";
+                dt.Columns[8].ColumnName = "Tagtyp_W"; dt.Columns[9].ColumnName = "Tagtyp_NW";
+
+                dataSet.Tables.Add(dt);
+                adapter.Update(dataSet, dataSet.Tables[0].TableName);
             }
-
-            dt.Columns[2].ColumnName = "Sol_Nord"; dt.Columns[3].ColumnName = "Sol_Ost";
-            dt.Columns[4].ColumnName = "Sol_Sued"; dt.Columns[5].ColumnName = "Sol_West";
-            dt.Columns[6].ColumnName = "Temperatur"; dt.Columns[7].ColumnName = "WE";
-            dt.Columns[8].ColumnName = "Tagtyp_W"; dt.Columns[9].ColumnName = "Tagtyp_NW";
-
-            dataSet.Tables.Add(dt);
-
-            adapter.Update(dataSet, dataSet.Tables[0].TableName);
+            catch (OdbcException sqlEx)
+            {
+                // Fehler beim Datenbankzugriff abfangen
+                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                MessageBox.Show("SQL Fehler: " + sqlEx.Message);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Allgemeine Fehler abfangen
+                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                return false;
+            }
             return true;
         }
 

@@ -727,11 +727,11 @@ namespace WindowsFormsApplication1
             label_Name.Text = textBox_ProjektOpen.Text;
             SimulationStrombedarf simulationStrombedarf = new SimulationStrombedarf();
             simulationStrombedarf.Berechnung(ctrl.m_ID);
-            label_Strom.Text = simulationStrombedarf.Strombedarf_gesamt.ToString("F2") + " kWh/a";
+            label_Strom.Text = simulationStrombedarf.Strombedarf_gesamt.ToString("F2") + " MWh/a";
 
             SimulationWaermebedarf simulationWaermebedarf = new SimulationWaermebedarf();
             simulationWaermebedarf.Waermebedarf_berechnen(ctrl.m_ID, ctrl.m_ID_Klimaregion);
-            label_WBedarf.Text = simulationWaermebedarf.Waermebedarf_Gesamt.ToString("F2") + " kWh/a";
+            label_WBedarf.Text = simulationWaermebedarf.Waermebedarf_Gesamt.ToString("F2") + " MWh/a";
 
             label_Name.Left = pictureBox_Zusammenfassung.Width - label_Name.Width - 20;  
             label_WBedarf.Left = label_Name.Left + label_Name.Width - label_WBedarf.Width;
