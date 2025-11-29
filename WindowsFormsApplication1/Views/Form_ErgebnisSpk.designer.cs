@@ -126,7 +126,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label1.AutoSize = true;
             this.Label1.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label1.Location = new System.Drawing.Point(3, 32);
+            this.Label1.Location = new System.Drawing.Point(15, 30);
             this.Label1.Name = "Label1";
             this.Label1.Size = new System.Drawing.Size(220, 17);
             this.Label1.TabIndex = 0;
@@ -148,7 +148,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label2.AutoSize = true;
             this.Label2.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label2.Location = new System.Drawing.Point(1, 51);
+            this.Label2.Location = new System.Drawing.Point(5, 56);
             this.Label2.Name = "Label2";
             this.Label2.Size = new System.Drawing.Size(230, 17);
             this.Label2.TabIndex = 2;
@@ -160,7 +160,7 @@ namespace WindowsFormsApplication1
             this.tb_WaermeprBHKW.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_WaermeprBHKW.Enabled = false;
             this.tb_WaermeprBHKW.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_WaermeprBHKW.Location = new System.Drawing.Point(240, 53);
+            this.tb_WaermeprBHKW.Location = new System.Drawing.Point(240, 56);
             this.tb_WaermeprBHKW.Margin = new System.Windows.Forms.Padding(4);
             this.tb_WaermeprBHKW.Name = "tb_WaermeprBHKW";
             this.tb_WaermeprBHKW.Size = new System.Drawing.Size(84, 25);
@@ -170,7 +170,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label3.AutoSize = true;
             this.Label3.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label3.Location = new System.Drawing.Point(1, 80);
+            this.Label3.Location = new System.Drawing.Point(14, 82);
             this.Label3.Name = "Label3";
             this.Label3.Size = new System.Drawing.Size(221, 17);
             this.Label3.TabIndex = 4;
@@ -182,7 +182,7 @@ namespace WindowsFormsApplication1
             this.tb_WaermeprSpk.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_WaermeprSpk.Enabled = false;
             this.tb_WaermeprSpk.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_WaermeprSpk.Location = new System.Drawing.Point(240, 78);
+            this.tb_WaermeprSpk.Location = new System.Drawing.Point(240, 82);
             this.tb_WaermeprSpk.Margin = new System.Windows.Forms.Padding(4);
             this.tb_WaermeprSpk.Name = "tb_WaermeprSpk";
             this.tb_WaermeprSpk.Size = new System.Drawing.Size(84, 25);
@@ -192,7 +192,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label4.AutoSize = true;
             this.Label4.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label4.Location = new System.Drawing.Point(30, 129);
+            this.Label4.Location = new System.Drawing.Point(14, 129);
             this.Label4.Name = "Label4";
             this.Label4.Size = new System.Drawing.Size(233, 17);
             this.Label4.TabIndex = 6;
@@ -214,7 +214,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label7.AutoSize = true;
             this.Label7.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label7.Location = new System.Drawing.Point(336, 35);
+            this.Label7.Location = new System.Drawing.Point(327, 33);
             this.Label7.Name = "Label7";
             this.Label7.Size = new System.Drawing.Size(51, 17);
             this.Label7.TabIndex = 8;
@@ -225,7 +225,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label8.AutoSize = true;
             this.Label8.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label8.Location = new System.Drawing.Point(336, 60);
+            this.Label8.Location = new System.Drawing.Point(327, 59);
             this.Label8.Name = "Label8";
             this.Label8.Size = new System.Drawing.Size(51, 17);
             this.Label8.TabIndex = 9;
@@ -236,7 +236,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label9.AutoSize = true;
             this.Label9.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label9.Location = new System.Drawing.Point(336, 84);
+            this.Label9.Location = new System.Drawing.Point(327, 84);
             this.Label9.Name = "Label9";
             this.Label9.Size = new System.Drawing.Size(51, 17);
             this.Label9.TabIndex = 10;
@@ -247,7 +247,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label10.AutoSize = true;
             this.Label10.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label10.Location = new System.Drawing.Point(335, 156);
+            this.Label10.Location = new System.Drawing.Point(326, 153);
             this.Label10.Name = "Label10";
             this.Label10.Size = new System.Drawing.Size(51, 17);
             this.Label10.TabIndex = 11;
@@ -270,7 +270,7 @@ namespace WindowsFormsApplication1
             this.tb_Oelverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_Oelverbrauch.Enabled = false;
             this.tb_Oelverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_Oelverbrauch.Location = new System.Drawing.Point(240, 174);
+            this.tb_Oelverbrauch.Location = new System.Drawing.Point(240, 176);
             this.tb_Oelverbrauch.Margin = new System.Windows.Forms.Padding(4);
             this.tb_Oelverbrauch.Name = "tb_Oelverbrauch";
             this.tb_Oelverbrauch.Size = new System.Drawing.Size(84, 25);
@@ -280,7 +280,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label12.AutoSize = true;
             this.Label12.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label12.Location = new System.Drawing.Point(335, 180);
+            this.Label12.Location = new System.Drawing.Point(326, 180);
             this.Label12.Name = "Label12";
             this.Label12.Size = new System.Drawing.Size(51, 17);
             this.Label12.TabIndex = 14;
@@ -291,7 +291,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label13.AutoSize = true;
             this.Label13.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label13.Location = new System.Drawing.Point(71, 200);
+            this.Label13.Location = new System.Drawing.Point(71, 204);
             this.Label13.Name = "Label13";
             this.Label13.Size = new System.Drawing.Size(108, 17);
             this.Label13.TabIndex = 15;
@@ -303,7 +303,7 @@ namespace WindowsFormsApplication1
             this.tb_Biogasverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_Biogasverbrauch.Enabled = false;
             this.tb_Biogasverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_Biogasverbrauch.Location = new System.Drawing.Point(240, 198);
+            this.tb_Biogasverbrauch.Location = new System.Drawing.Point(240, 202);
             this.tb_Biogasverbrauch.Margin = new System.Windows.Forms.Padding(4);
             this.tb_Biogasverbrauch.Name = "tb_Biogasverbrauch";
             this.tb_Biogasverbrauch.Size = new System.Drawing.Size(84, 25);
@@ -313,7 +313,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label14.AutoSize = true;
             this.Label14.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label14.Location = new System.Drawing.Point(335, 204);
+            this.Label14.Location = new System.Drawing.Point(326, 206);
             this.Label14.Name = "Label14";
             this.Label14.Size = new System.Drawing.Size(51, 17);
             this.Label14.TabIndex = 17;
@@ -324,7 +324,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label15.AutoSize = true;
             this.Label15.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label15.Location = new System.Drawing.Point(71, 224);
+            this.Label15.Location = new System.Drawing.Point(71, 230);
             this.Label15.Name = "Label15";
             this.Label15.Size = new System.Drawing.Size(109, 17);
             this.Label15.TabIndex = 18;
@@ -336,7 +336,7 @@ namespace WindowsFormsApplication1
             this.tb_Rapsoelverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_Rapsoelverbrauch.Enabled = false;
             this.tb_Rapsoelverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_Rapsoelverbrauch.Location = new System.Drawing.Point(240, 222);
+            this.tb_Rapsoelverbrauch.Location = new System.Drawing.Point(240, 228);
             this.tb_Rapsoelverbrauch.Margin = new System.Windows.Forms.Padding(4);
             this.tb_Rapsoelverbrauch.Name = "tb_Rapsoelverbrauch";
             this.tb_Rapsoelverbrauch.Size = new System.Drawing.Size(84, 25);
@@ -346,7 +346,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label16.AutoSize = true;
             this.Label16.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label16.Location = new System.Drawing.Point(335, 228);
+            this.Label16.Location = new System.Drawing.Point(326, 231);
             this.Label16.Name = "Label16";
             this.Label16.Size = new System.Drawing.Size(51, 17);
             this.Label16.TabIndex = 20;
@@ -357,7 +357,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label17.AutoSize = true;
             this.Label17.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label17.Location = new System.Drawing.Point(71, 248);
+            this.Label17.Location = new System.Drawing.Point(71, 257);
             this.Label17.Name = "Label17";
             this.Label17.Size = new System.Drawing.Size(95, 17);
             this.Label17.TabIndex = 21;
@@ -369,7 +369,7 @@ namespace WindowsFormsApplication1
             this.tb_Holzverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_Holzverbrauch.Enabled = false;
             this.tb_Holzverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_Holzverbrauch.Location = new System.Drawing.Point(240, 246);
+            this.tb_Holzverbrauch.Location = new System.Drawing.Point(240, 254);
             this.tb_Holzverbrauch.Margin = new System.Windows.Forms.Padding(4);
             this.tb_Holzverbrauch.Name = "tb_Holzverbrauch";
             this.tb_Holzverbrauch.Size = new System.Drawing.Size(84, 25);
@@ -379,7 +379,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label18.AutoSize = true;
             this.Label18.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label18.Location = new System.Drawing.Point(335, 252);
+            this.Label18.Location = new System.Drawing.Point(326, 257);
             this.Label18.Name = "Label18";
             this.Label18.Size = new System.Drawing.Size(51, 17);
             this.Label18.TabIndex = 23;
@@ -390,7 +390,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label19.AutoSize = true;
             this.Label19.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label19.Location = new System.Drawing.Point(71, 272);
+            this.Label19.Location = new System.Drawing.Point(71, 284);
             this.Label19.Name = "Label19";
             this.Label19.Size = new System.Drawing.Size(129, 17);
             this.Label19.TabIndex = 24;
@@ -402,7 +402,7 @@ namespace WindowsFormsApplication1
             this.tb_Fluessiggasverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_Fluessiggasverbrauch.Enabled = false;
             this.tb_Fluessiggasverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_Fluessiggasverbrauch.Location = new System.Drawing.Point(240, 270);
+            this.tb_Fluessiggasverbrauch.Location = new System.Drawing.Point(240, 280);
             this.tb_Fluessiggasverbrauch.Margin = new System.Windows.Forms.Padding(4);
             this.tb_Fluessiggasverbrauch.Name = "tb_Fluessiggasverbrauch";
             this.tb_Fluessiggasverbrauch.Size = new System.Drawing.Size(84, 25);
@@ -412,7 +412,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label20.AutoSize = true;
             this.Label20.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label20.Location = new System.Drawing.Point(335, 276);
+            this.Label20.Location = new System.Drawing.Point(326, 282);
             this.Label20.Name = "Label20";
             this.Label20.Size = new System.Drawing.Size(51, 17);
             this.Label20.TabIndex = 26;
@@ -423,7 +423,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label21.AutoSize = true;
             this.Label21.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label21.Location = new System.Drawing.Point(71, 296);
+            this.Label21.Location = new System.Drawing.Point(71, 308);
             this.Label21.Name = "Label21";
             this.Label21.Size = new System.Drawing.Size(104, 17);
             this.Label21.TabIndex = 27;
@@ -435,7 +435,7 @@ namespace WindowsFormsApplication1
             this.tb_Stromverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_Stromverbrauch.Enabled = false;
             this.tb_Stromverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_Stromverbrauch.Location = new System.Drawing.Point(240, 294);
+            this.tb_Stromverbrauch.Location = new System.Drawing.Point(240, 306);
             this.tb_Stromverbrauch.Margin = new System.Windows.Forms.Padding(4);
             this.tb_Stromverbrauch.Name = "tb_Stromverbrauch";
             this.tb_Stromverbrauch.Size = new System.Drawing.Size(84, 25);
@@ -445,7 +445,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label22.AutoSize = true;
             this.Label22.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label22.Location = new System.Drawing.Point(335, 300);
+            this.Label22.Location = new System.Drawing.Point(326, 307);
             this.Label22.Name = "Label22";
             this.Label22.Size = new System.Drawing.Size(51, 17);
             this.Label22.TabIndex = 29;
@@ -456,7 +456,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label23.AutoSize = true;
             this.Label23.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label23.Location = new System.Drawing.Point(71, 320);
+            this.Label23.Location = new System.Drawing.Point(71, 335);
             this.Label23.Name = "Label23";
             this.Label23.Size = new System.Drawing.Size(131, 17);
             this.Label23.TabIndex = 30;
@@ -468,7 +468,7 @@ namespace WindowsFormsApplication1
             this.tb_Sonstigverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_Sonstigverbrauch.Enabled = false;
             this.tb_Sonstigverbrauch.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_Sonstigverbrauch.Location = new System.Drawing.Point(240, 318);
+            this.tb_Sonstigverbrauch.Location = new System.Drawing.Point(240, 332);
             this.tb_Sonstigverbrauch.Margin = new System.Windows.Forms.Padding(4);
             this.tb_Sonstigverbrauch.Name = "tb_Sonstigverbrauch";
             this.tb_Sonstigverbrauch.Size = new System.Drawing.Size(84, 25);
@@ -478,7 +478,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label24.AutoSize = true;
             this.Label24.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label24.Location = new System.Drawing.Point(335, 324);
+            this.Label24.Location = new System.Drawing.Point(326, 333);
             this.Label24.Name = "Label24";
             this.Label24.Size = new System.Drawing.Size(51, 17);
             this.Label24.TabIndex = 32;
@@ -488,21 +488,20 @@ namespace WindowsFormsApplication1
             // Label25
             // 
             this.Label25.AutoSize = true;
-            this.Label25.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label25.Location = new System.Drawing.Point(6, 366);
+            this.Label25.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.Label25.Location = new System.Drawing.Point(15, 381);
             this.Label25.Name = "Label25";
-            this.Label25.Size = new System.Drawing.Size(230, 13);
+            this.Label25.Size = new System.Drawing.Size(279, 17);
             this.Label25.TabIndex = 33;
             this.Label25.Text = "Wärmeproduktion der einzelnen Spitzenkessel:";
             this.Label25.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label26
             // 
-            this.Label26.AutoSize = true;
-            this.Label26.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label26.Location = new System.Drawing.Point(78, 390);
+            this.Label26.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.Label26.Location = new System.Drawing.Point(6, 408);
             this.Label26.Name = "Label26";
-            this.Label26.Size = new System.Drawing.Size(189, 13);
+            this.Label26.Size = new System.Drawing.Size(174, 41);
             this.Label26.TabIndex = 34;
             this.Label26.Text = "Gas/Biogas/Rapsöl/Holz oder Sonstige";
             this.Label26.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -511,7 +510,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label27.AutoSize = true;
             this.Label27.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label27.Location = new System.Drawing.Point(30, 420);
+            this.Label27.Location = new System.Drawing.Point(30, 459);
             this.Label27.Name = "Label27";
             this.Label27.Size = new System.Drawing.Size(46, 13);
             this.Label27.TabIndex = 35;
@@ -523,7 +522,7 @@ namespace WindowsFormsApplication1
             this.tb_K1_Gas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K1_Gas.Enabled = false;
             this.tb_K1_Gas.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K1_Gas.Location = new System.Drawing.Point(78, 414);
+            this.tb_K1_Gas.Location = new System.Drawing.Point(78, 453);
             this.tb_K1_Gas.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K1_Gas.Name = "tb_K1_Gas";
             this.tb_K1_Gas.Size = new System.Drawing.Size(72, 25);
@@ -533,7 +532,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label28.AutoSize = true;
             this.Label28.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label28.Location = new System.Drawing.Point(156, 420);
+            this.Label28.Location = new System.Drawing.Point(156, 459);
             this.Label28.Name = "Label28";
             this.Label28.Size = new System.Drawing.Size(41, 13);
             this.Label28.TabIndex = 37;
@@ -544,7 +543,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label29.AutoSize = true;
             this.Label29.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label29.Location = new System.Drawing.Point(210, 390);
+            this.Label29.Location = new System.Drawing.Point(230, 426);
             this.Label29.Name = "Label29";
             this.Label29.Size = new System.Drawing.Size(17, 13);
             this.Label29.TabIndex = 38;
@@ -554,10 +553,10 @@ namespace WindowsFormsApplication1
             // Label30
             // 
             this.Label30.AutoSize = true;
-            this.Label30.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label30.Location = new System.Drawing.Point(324, 390);
+            this.Label30.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.Label30.Location = new System.Drawing.Point(362, 422);
             this.Label30.Name = "Label30";
-            this.Label30.Size = new System.Drawing.Size(178, 13);
+            this.Label30.Size = new System.Drawing.Size(212, 17);
             this.Label30.TabIndex = 39;
             this.Label30.Text = "Jahresnutzungsgrad nach VDI 3806";
             this.Label30.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -567,7 +566,7 @@ namespace WindowsFormsApplication1
             this.tb_K1_Oel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K1_Oel.Enabled = false;
             this.tb_K1_Oel.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K1_Oel.Location = new System.Drawing.Point(204, 414);
+            this.tb_K1_Oel.Location = new System.Drawing.Point(204, 453);
             this.tb_K1_Oel.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K1_Oel.Name = "tb_K1_Oel";
             this.tb_K1_Oel.Size = new System.Drawing.Size(72, 25);
@@ -577,7 +576,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label31.AutoSize = true;
             this.Label31.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label31.Location = new System.Drawing.Point(282, 420);
+            this.Label31.Location = new System.Drawing.Point(282, 459);
             this.Label31.Name = "Label31";
             this.Label31.Size = new System.Drawing.Size(41, 13);
             this.Label31.TabIndex = 41;
@@ -589,7 +588,7 @@ namespace WindowsFormsApplication1
             this.tb_K1_Jahresnutzungsgrad.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K1_Jahresnutzungsgrad.Enabled = false;
             this.tb_K1_Jahresnutzungsgrad.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K1_Jahresnutzungsgrad.Location = new System.Drawing.Point(324, 414);
+            this.tb_K1_Jahresnutzungsgrad.Location = new System.Drawing.Point(385, 453);
             this.tb_K1_Jahresnutzungsgrad.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K1_Jahresnutzungsgrad.Name = "tb_K1_Jahresnutzungsgrad";
             this.tb_K1_Jahresnutzungsgrad.Size = new System.Drawing.Size(72, 25);
@@ -599,7 +598,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label32.AutoSize = true;
             this.Label32.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label32.Location = new System.Drawing.Point(402, 420);
+            this.Label32.Location = new System.Drawing.Point(463, 459);
             this.Label32.Name = "Label32";
             this.Label32.Size = new System.Drawing.Size(18, 13);
             this.Label32.TabIndex = 43;
@@ -610,7 +609,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label33.AutoSize = true;
             this.Label33.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label33.Location = new System.Drawing.Point(30, 444);
+            this.Label33.Location = new System.Drawing.Point(30, 483);
             this.Label33.Name = "Label33";
             this.Label33.Size = new System.Drawing.Size(46, 13);
             this.Label33.TabIndex = 44;
@@ -622,7 +621,7 @@ namespace WindowsFormsApplication1
             this.tb_K2_Gas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K2_Gas.Enabled = false;
             this.tb_K2_Gas.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K2_Gas.Location = new System.Drawing.Point(78, 438);
+            this.tb_K2_Gas.Location = new System.Drawing.Point(78, 477);
             this.tb_K2_Gas.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K2_Gas.Name = "tb_K2_Gas";
             this.tb_K2_Gas.Size = new System.Drawing.Size(72, 25);
@@ -632,7 +631,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label34.AutoSize = true;
             this.Label34.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label34.Location = new System.Drawing.Point(156, 444);
+            this.Label34.Location = new System.Drawing.Point(156, 483);
             this.Label34.Name = "Label34";
             this.Label34.Size = new System.Drawing.Size(41, 13);
             this.Label34.TabIndex = 46;
@@ -644,7 +643,7 @@ namespace WindowsFormsApplication1
             this.tb_K2_Oel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K2_Oel.Enabled = false;
             this.tb_K2_Oel.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K2_Oel.Location = new System.Drawing.Point(204, 438);
+            this.tb_K2_Oel.Location = new System.Drawing.Point(204, 477);
             this.tb_K2_Oel.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K2_Oel.Name = "tb_K2_Oel";
             this.tb_K2_Oel.Size = new System.Drawing.Size(72, 25);
@@ -654,7 +653,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label35.AutoSize = true;
             this.Label35.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label35.Location = new System.Drawing.Point(282, 444);
+            this.Label35.Location = new System.Drawing.Point(282, 483);
             this.Label35.Name = "Label35";
             this.Label35.Size = new System.Drawing.Size(41, 13);
             this.Label35.TabIndex = 48;
@@ -666,7 +665,7 @@ namespace WindowsFormsApplication1
             this.tb_K2_Jahresnutzungsgrad.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K2_Jahresnutzungsgrad.Enabled = false;
             this.tb_K2_Jahresnutzungsgrad.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K2_Jahresnutzungsgrad.Location = new System.Drawing.Point(324, 438);
+            this.tb_K2_Jahresnutzungsgrad.Location = new System.Drawing.Point(385, 477);
             this.tb_K2_Jahresnutzungsgrad.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K2_Jahresnutzungsgrad.Name = "tb_K2_Jahresnutzungsgrad";
             this.tb_K2_Jahresnutzungsgrad.Size = new System.Drawing.Size(72, 25);
@@ -676,7 +675,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label36.AutoSize = true;
             this.Label36.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label36.Location = new System.Drawing.Point(402, 444);
+            this.Label36.Location = new System.Drawing.Point(463, 483);
             this.Label36.Name = "Label36";
             this.Label36.Size = new System.Drawing.Size(18, 13);
             this.Label36.TabIndex = 50;
@@ -687,7 +686,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label37.AutoSize = true;
             this.Label37.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label37.Location = new System.Drawing.Point(30, 444);
+            this.Label37.Location = new System.Drawing.Point(30, 483);
             this.Label37.Name = "Label37";
             this.Label37.Size = new System.Drawing.Size(46, 13);
             this.Label37.TabIndex = 51;
@@ -698,7 +697,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label38.AutoSize = true;
             this.Label38.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label38.Location = new System.Drawing.Point(30, 468);
+            this.Label38.Location = new System.Drawing.Point(30, 507);
             this.Label38.Name = "Label38";
             this.Label38.Size = new System.Drawing.Size(46, 13);
             this.Label38.TabIndex = 52;
@@ -710,7 +709,7 @@ namespace WindowsFormsApplication1
             this.tb_K3_Gas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K3_Gas.Enabled = false;
             this.tb_K3_Gas.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K3_Gas.Location = new System.Drawing.Point(78, 462);
+            this.tb_K3_Gas.Location = new System.Drawing.Point(78, 501);
             this.tb_K3_Gas.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K3_Gas.Name = "tb_K3_Gas";
             this.tb_K3_Gas.Size = new System.Drawing.Size(72, 25);
@@ -720,7 +719,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label39.AutoSize = true;
             this.Label39.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label39.Location = new System.Drawing.Point(156, 468);
+            this.Label39.Location = new System.Drawing.Point(156, 507);
             this.Label39.Name = "Label39";
             this.Label39.Size = new System.Drawing.Size(41, 13);
             this.Label39.TabIndex = 54;
@@ -732,7 +731,7 @@ namespace WindowsFormsApplication1
             this.tb_K3_Oel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K3_Oel.Enabled = false;
             this.tb_K3_Oel.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K3_Oel.Location = new System.Drawing.Point(204, 462);
+            this.tb_K3_Oel.Location = new System.Drawing.Point(204, 501);
             this.tb_K3_Oel.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K3_Oel.Name = "tb_K3_Oel";
             this.tb_K3_Oel.Size = new System.Drawing.Size(72, 25);
@@ -742,7 +741,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label40.AutoSize = true;
             this.Label40.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label40.Location = new System.Drawing.Point(282, 468);
+            this.Label40.Location = new System.Drawing.Point(282, 507);
             this.Label40.Name = "Label40";
             this.Label40.Size = new System.Drawing.Size(41, 13);
             this.Label40.TabIndex = 56;
@@ -754,7 +753,7 @@ namespace WindowsFormsApplication1
             this.tb_K3_Jahresnutzungsgrad.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K3_Jahresnutzungsgrad.Enabled = false;
             this.tb_K3_Jahresnutzungsgrad.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K3_Jahresnutzungsgrad.Location = new System.Drawing.Point(324, 462);
+            this.tb_K3_Jahresnutzungsgrad.Location = new System.Drawing.Point(385, 501);
             this.tb_K3_Jahresnutzungsgrad.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K3_Jahresnutzungsgrad.Name = "tb_K3_Jahresnutzungsgrad";
             this.tb_K3_Jahresnutzungsgrad.Size = new System.Drawing.Size(72, 25);
@@ -765,7 +764,7 @@ namespace WindowsFormsApplication1
             this.tb_K4_Jahresnutzungsgrad.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K4_Jahresnutzungsgrad.Enabled = false;
             this.tb_K4_Jahresnutzungsgrad.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K4_Jahresnutzungsgrad.Location = new System.Drawing.Point(324, 486);
+            this.tb_K4_Jahresnutzungsgrad.Location = new System.Drawing.Point(385, 525);
             this.tb_K4_Jahresnutzungsgrad.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K4_Jahresnutzungsgrad.Name = "tb_K4_Jahresnutzungsgrad";
             this.tb_K4_Jahresnutzungsgrad.Size = new System.Drawing.Size(72, 25);
@@ -775,7 +774,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label42.AutoSize = true;
             this.Label42.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label42.Location = new System.Drawing.Point(30, 492);
+            this.Label42.Location = new System.Drawing.Point(30, 531);
             this.Label42.Name = "Label42";
             this.Label42.Size = new System.Drawing.Size(46, 13);
             this.Label42.TabIndex = 59;
@@ -787,7 +786,7 @@ namespace WindowsFormsApplication1
             this.tb_K4_Gas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K4_Gas.Enabled = false;
             this.tb_K4_Gas.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K4_Gas.Location = new System.Drawing.Point(78, 486);
+            this.tb_K4_Gas.Location = new System.Drawing.Point(78, 525);
             this.tb_K4_Gas.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K4_Gas.Name = "tb_K4_Gas";
             this.tb_K4_Gas.Size = new System.Drawing.Size(72, 25);
@@ -797,7 +796,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label43.AutoSize = true;
             this.Label43.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label43.Location = new System.Drawing.Point(156, 492);
+            this.Label43.Location = new System.Drawing.Point(156, 531);
             this.Label43.Name = "Label43";
             this.Label43.Size = new System.Drawing.Size(41, 13);
             this.Label43.TabIndex = 61;
@@ -809,7 +808,7 @@ namespace WindowsFormsApplication1
             this.tb_K4_Oel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K4_Oel.Enabled = false;
             this.tb_K4_Oel.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K4_Oel.Location = new System.Drawing.Point(204, 486);
+            this.tb_K4_Oel.Location = new System.Drawing.Point(204, 525);
             this.tb_K4_Oel.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K4_Oel.Name = "tb_K4_Oel";
             this.tb_K4_Oel.Size = new System.Drawing.Size(72, 25);
@@ -819,7 +818,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label44.AutoSize = true;
             this.Label44.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label44.Location = new System.Drawing.Point(282, 492);
+            this.Label44.Location = new System.Drawing.Point(282, 531);
             this.Label44.Name = "Label44";
             this.Label44.Size = new System.Drawing.Size(41, 13);
             this.Label44.TabIndex = 63;
@@ -830,7 +829,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label45.AutoSize = true;
             this.Label45.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label45.Location = new System.Drawing.Point(402, 492);
+            this.Label45.Location = new System.Drawing.Point(463, 531);
             this.Label45.Name = "Label45";
             this.Label45.Size = new System.Drawing.Size(18, 13);
             this.Label45.TabIndex = 64;
@@ -841,7 +840,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label46.AutoSize = true;
             this.Label46.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label46.Location = new System.Drawing.Point(30, 516);
+            this.Label46.Location = new System.Drawing.Point(30, 555);
             this.Label46.Name = "Label46";
             this.Label46.Size = new System.Drawing.Size(46, 13);
             this.Label46.TabIndex = 65;
@@ -853,7 +852,7 @@ namespace WindowsFormsApplication1
             this.tb_K5_Gas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K5_Gas.Enabled = false;
             this.tb_K5_Gas.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K5_Gas.Location = new System.Drawing.Point(78, 510);
+            this.tb_K5_Gas.Location = new System.Drawing.Point(78, 549);
             this.tb_K5_Gas.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K5_Gas.Name = "tb_K5_Gas";
             this.tb_K5_Gas.Size = new System.Drawing.Size(72, 25);
@@ -863,7 +862,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label47.AutoSize = true;
             this.Label47.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label47.Location = new System.Drawing.Point(156, 516);
+            this.Label47.Location = new System.Drawing.Point(156, 555);
             this.Label47.Name = "Label47";
             this.Label47.Size = new System.Drawing.Size(41, 13);
             this.Label47.TabIndex = 67;
@@ -875,7 +874,7 @@ namespace WindowsFormsApplication1
             this.tb_K5_Oel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K5_Oel.Enabled = false;
             this.tb_K5_Oel.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K5_Oel.Location = new System.Drawing.Point(204, 510);
+            this.tb_K5_Oel.Location = new System.Drawing.Point(204, 549);
             this.tb_K5_Oel.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K5_Oel.Name = "tb_K5_Oel";
             this.tb_K5_Oel.Size = new System.Drawing.Size(72, 25);
@@ -885,7 +884,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label48.AutoSize = true;
             this.Label48.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label48.Location = new System.Drawing.Point(282, 516);
+            this.Label48.Location = new System.Drawing.Point(282, 555);
             this.Label48.Name = "Label48";
             this.Label48.Size = new System.Drawing.Size(41, 13);
             this.Label48.TabIndex = 69;
@@ -897,7 +896,7 @@ namespace WindowsFormsApplication1
             this.tb_K5_Jahresnutzungsgrad.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K5_Jahresnutzungsgrad.Enabled = false;
             this.tb_K5_Jahresnutzungsgrad.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K5_Jahresnutzungsgrad.Location = new System.Drawing.Point(324, 510);
+            this.tb_K5_Jahresnutzungsgrad.Location = new System.Drawing.Point(385, 549);
             this.tb_K5_Jahresnutzungsgrad.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K5_Jahresnutzungsgrad.Name = "tb_K5_Jahresnutzungsgrad";
             this.tb_K5_Jahresnutzungsgrad.Size = new System.Drawing.Size(72, 25);
@@ -907,7 +906,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label49.AutoSize = true;
             this.Label49.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label49.Location = new System.Drawing.Point(402, 516);
+            this.Label49.Location = new System.Drawing.Point(463, 555);
             this.Label49.Name = "Label49";
             this.Label49.Size = new System.Drawing.Size(18, 13);
             this.Label49.TabIndex = 71;
@@ -918,7 +917,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label50.AutoSize = true;
             this.Label50.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label50.Location = new System.Drawing.Point(30, 516);
+            this.Label50.Location = new System.Drawing.Point(30, 555);
             this.Label50.Name = "Label50";
             this.Label50.Size = new System.Drawing.Size(46, 13);
             this.Label50.TabIndex = 72;
@@ -929,7 +928,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label51.AutoSize = true;
             this.Label51.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label51.Location = new System.Drawing.Point(30, 540);
+            this.Label51.Location = new System.Drawing.Point(30, 561);
             this.Label51.Name = "Label51";
             this.Label51.Size = new System.Drawing.Size(46, 13);
             this.Label51.TabIndex = 73;
@@ -941,7 +940,7 @@ namespace WindowsFormsApplication1
             this.tb_K6_Gas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K6_Gas.Enabled = false;
             this.tb_K6_Gas.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K6_Gas.Location = new System.Drawing.Point(78, 534);
+            this.tb_K6_Gas.Location = new System.Drawing.Point(78, 573);
             this.tb_K6_Gas.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K6_Gas.Name = "tb_K6_Gas";
             this.tb_K6_Gas.Size = new System.Drawing.Size(72, 25);
@@ -951,7 +950,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label52.AutoSize = true;
             this.Label52.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label52.Location = new System.Drawing.Point(156, 540);
+            this.Label52.Location = new System.Drawing.Point(156, 561);
             this.Label52.Name = "Label52";
             this.Label52.Size = new System.Drawing.Size(41, 13);
             this.Label52.TabIndex = 75;
@@ -963,7 +962,7 @@ namespace WindowsFormsApplication1
             this.tb_K6_Oel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K6_Oel.Enabled = false;
             this.tb_K6_Oel.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K6_Oel.Location = new System.Drawing.Point(204, 534);
+            this.tb_K6_Oel.Location = new System.Drawing.Point(204, 573);
             this.tb_K6_Oel.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K6_Oel.Name = "tb_K6_Oel";
             this.tb_K6_Oel.Size = new System.Drawing.Size(72, 25);
@@ -973,7 +972,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label53.AutoSize = true;
             this.Label53.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label53.Location = new System.Drawing.Point(282, 540);
+            this.Label53.Location = new System.Drawing.Point(282, 561);
             this.Label53.Name = "Label53";
             this.Label53.Size = new System.Drawing.Size(41, 13);
             this.Label53.TabIndex = 77;
@@ -985,7 +984,7 @@ namespace WindowsFormsApplication1
             this.tb_K6_Jahresnutzungsgrad.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_K6_Jahresnutzungsgrad.Enabled = false;
             this.tb_K6_Jahresnutzungsgrad.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_K6_Jahresnutzungsgrad.Location = new System.Drawing.Point(324, 534);
+            this.tb_K6_Jahresnutzungsgrad.Location = new System.Drawing.Point(385, 573);
             this.tb_K6_Jahresnutzungsgrad.Margin = new System.Windows.Forms.Padding(4);
             this.tb_K6_Jahresnutzungsgrad.Name = "tb_K6_Jahresnutzungsgrad";
             this.tb_K6_Jahresnutzungsgrad.Size = new System.Drawing.Size(72, 25);
@@ -995,7 +994,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label54.AutoSize = true;
             this.Label54.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label54.Location = new System.Drawing.Point(402, 540);
+            this.Label54.Location = new System.Drawing.Point(463, 561);
             this.Label54.Name = "Label54";
             this.Label54.Size = new System.Drawing.Size(18, 13);
             this.Label54.TabIndex = 79;
@@ -1006,7 +1005,7 @@ namespace WindowsFormsApplication1
             // 
             this.Label55.AutoSize = true;
             this.Label55.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label55.Location = new System.Drawing.Point(402, 468);
+            this.Label55.Location = new System.Drawing.Point(463, 507);
             this.Label55.Name = "Label55";
             this.Label55.Size = new System.Drawing.Size(18, 13);
             this.Label55.TabIndex = 80;
@@ -1016,7 +1015,7 @@ namespace WindowsFormsApplication1
             // Label56
             // 
             this.Label56.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label56.Location = new System.Drawing.Point(426, 30);
+            this.Label56.Location = new System.Drawing.Point(441, 30);
             this.Label56.Name = "Label56";
             this.Label56.Size = new System.Drawing.Size(176, 63);
             this.Label56.TabIndex = 81;
@@ -1037,21 +1036,20 @@ namespace WindowsFormsApplication1
             // Label57
             // 
             this.Label57.AutoSize = true;
-            this.Label57.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label57.Location = new System.Drawing.Point(725, 44);
+            this.Label57.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.Label57.Location = new System.Drawing.Point(721, 44);
             this.Label57.Name = "Label57";
-            this.Label57.Size = new System.Drawing.Size(22, 13);
+            this.Label57.Size = new System.Drawing.Size(26, 17);
             this.Label57.TabIndex = 83;
             this.Label57.Text = "kW";
             this.Label57.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label58
             // 
-            this.Label58.AutoSize = true;
             this.Label58.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label58.Location = new System.Drawing.Point(423, 110);
+            this.Label58.Location = new System.Drawing.Point(443, 84);
             this.Label58.Name = "Label58";
-            this.Label58.Size = new System.Drawing.Size(240, 17);
+            this.Label58.Size = new System.Drawing.Size(181, 51);
             this.Label58.TabIndex = 84;
             this.Label58.Text = "Gesamte Wärmeleistung der Heizkessel:";
             this.Label58.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1061,7 +1059,7 @@ namespace WindowsFormsApplication1
             this.tb_Max_Kesselleistung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_Max_Kesselleistung.Enabled = false;
             this.tb_Max_Kesselleistung.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_Max_Kesselleistung.Location = new System.Drawing.Point(629, 108);
+            this.tb_Max_Kesselleistung.Location = new System.Drawing.Point(629, 90);
             this.tb_Max_Kesselleistung.Margin = new System.Windows.Forms.Padding(4);
             this.tb_Max_Kesselleistung.Name = "tb_Max_Kesselleistung";
             this.tb_Max_Kesselleistung.Size = new System.Drawing.Size(90, 25);
@@ -1070,10 +1068,10 @@ namespace WindowsFormsApplication1
             // Label59
             // 
             this.Label59.AutoSize = true;
-            this.Label59.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label59.Location = new System.Drawing.Point(725, 114);
+            this.Label59.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.Label59.Location = new System.Drawing.Point(722, 94);
             this.Label59.Name = "Label59";
-            this.Label59.Size = new System.Drawing.Size(22, 13);
+            this.Label59.Size = new System.Drawing.Size(26, 17);
             this.Label59.TabIndex = 86;
             this.Label59.Text = "kW";
             this.Label59.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1083,7 +1081,7 @@ namespace WindowsFormsApplication1
             this.tb_Gasspitze.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.tb_Gasspitze.Enabled = false;
             this.tb_Gasspitze.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tb_Gasspitze.Location = new System.Drawing.Point(628, 154);
+            this.tb_Gasspitze.Location = new System.Drawing.Point(628, 139);
             this.tb_Gasspitze.Margin = new System.Windows.Forms.Padding(4);
             this.tb_Gasspitze.Name = "tb_Gasspitze";
             this.tb_Gasspitze.Size = new System.Drawing.Size(90, 25);
@@ -1092,10 +1090,10 @@ namespace WindowsFormsApplication1
             // Label61
             // 
             this.Label61.AutoSize = true;
-            this.Label61.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label61.Location = new System.Drawing.Point(725, 159);
+            this.Label61.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.Label61.Location = new System.Drawing.Point(720, 142);
             this.Label61.Name = "Label61";
-            this.Label61.Size = new System.Drawing.Size(22, 13);
+            this.Label61.Size = new System.Drawing.Size(26, 17);
             this.Label61.TabIndex = 88;
             this.Label61.Text = "kW";
             this.Label61.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1113,10 +1111,10 @@ namespace WindowsFormsApplication1
             // 
             // btn_OK
             // 
-            this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_OK.Location = new System.Drawing.Point(444, 528);
+            this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.btn_OK.Location = new System.Drawing.Point(649, 606);
             this.btn_OK.Name = "btn_OK";
-            this.btn_OK.Size = new System.Drawing.Size(84, 24);
+            this.btn_OK.Size = new System.Drawing.Size(84, 37);
             this.btn_OK.TabIndex = 90;
             this.btn_OK.Text = "OK";
             this.btn_OK.UseVisualStyleBackColor = true;
@@ -1125,7 +1123,7 @@ namespace WindowsFormsApplication1
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(423, 159);
+            this.label6.Location = new System.Drawing.Point(443, 141);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(134, 17);
             this.label6.TabIndex = 91;
@@ -1136,7 +1134,7 @@ namespace WindowsFormsApplication1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(797, 568);
+            this.ClientSize = new System.Drawing.Size(761, 672);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.tb_gesWaermebedarf);

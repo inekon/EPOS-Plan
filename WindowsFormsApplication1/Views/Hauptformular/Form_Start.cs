@@ -33,6 +33,7 @@ namespace WindowsFormsApplication1
             WindowState = FormWindowState.Maximized;
             tabControl_Wizard.DrawMode = TabDrawMode.OwnerDrawFixed;
             tabControl_Wizard.DrawItem += tabControl_Wizard_DrawItem;
+            tabControl_Wizard.TabPages[1].Enabled = false;  
         }
 
         private void tabControl_Wizard_DrawItem(object sender, DrawItemEventArgs e)
@@ -250,17 +251,7 @@ namespace WindowsFormsApplication1
 
         private void pBox_Weiter_Click(object sender, EventArgs e)
         {
-            if(textBox_ProjektOpen.Text == "bitte auswählen!")
-            {
-                //MessageBox.Show("Bitte zuerst ein Projekt auswählen!\n (<Projekt öffnen> oder <zuletzt geöffnet>)!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information); 
-                Form_Hinweis frm = new Form_Hinweis("Hinweis","Bitte zuerst ein Projekt auswählen!\r\nProjekt öffnen oder zuletzt geöffnet");
-                System.Drawing.Point p1 = pBox_Weiter.Location;
-                p1 = this.PointToScreen(p1);
-                p1.Y -= 200;
-                frm.Location = p1;
-                frm.ShowDialog();
-                return;
-            }
+  
 
             if (tabControl_Wizard.SelectedIndex >= tabControl_Wizard.TabCount-1) return;
 
@@ -822,6 +813,25 @@ namespace WindowsFormsApplication1
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
                 }
             }
+        }
+
+        private void tabControl_Wizard_Selecting(object sender, TabControlCancelEventArgs e)
+        {
+            if (e.TabPageIndex < 0) return;
+
+            if (e.TabPageIndex == 1 && textBox_ProjektOpen.Text == "bitte auswählen!")
+            {
+                e.Cancel = true;
+                //MessageBox.Show("Bitte zuerst ein Projekt auswählen!\n (<Projekt öffnen> oder <zuletzt geöffnet>)!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information); 
+                Form_Hinweis frm = new Form_Hinweis("Hinweis", "Bitte zuerst ein Projekt auswählen!\r\nProjekt öffnen oder zuletzt geöffnet");
+                System.Drawing.Point p1 = pBox_Weiter.Location;
+                p1 = this.PointToScreen(p1);
+                p1.Y -= 200;
+                frm.Location = p1;
+                frm.ShowDialog();
+            }
+
+            //e.Cancel = !e.TabPage.Enabled;
         }
     }
 }

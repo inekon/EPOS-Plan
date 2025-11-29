@@ -100,7 +100,7 @@ namespace WindowsFormsApplication1
                 wp.ReadAllFilter("ID=" + wp_list[i]);
                 WErzeugerModel model = wp.items[0];
                 wp_model.Add(model);
-                WP_Betriebsart[i] = model.Betriebsart;
+                WP_Betriebsart[i] = model.Betriebsart != null ? model.Betriebsart : "";
                 WP_Modul[i] = model.Bezeichner; 
 
                 if (model.Volumen > 0) Volumen_Pufferspeicher = model.Volumen; 

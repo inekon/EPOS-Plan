@@ -143,6 +143,16 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap PDetailSim {
+            get {
+                object obj = ResourceManager.GetObject("PDetailSim", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap PEETipp {
             get {
                 object obj = ResourceManager.GetObject("PEETipp", resourceCulture);
@@ -166,6 +176,16 @@ namespace WindowsFormsApplication1.Properties {
         internal static System.Drawing.Bitmap PHeizkessel1 {
             get {
                 object obj = ResourceManager.GetObject("PHeizkessel1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap POptimierung {
+            get {
+                object obj = ResourceManager.GetObject("POptimierung", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -216,6 +236,16 @@ namespace WindowsFormsApplication1.Properties {
         internal static System.Drawing.Bitmap PProjektZuletzt {
             get {
                 object obj = ResourceManager.GetObject("PProjektZuletzt", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap PSchnellSim {
+            get {
+                object obj = ResourceManager.GetObject("PSchnellSim", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

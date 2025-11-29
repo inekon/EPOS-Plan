@@ -833,6 +833,9 @@
     <None Include="Resources\info-1459077_1280.jpg" />
     <None Include="Resources\info-1459077_1280.png" />
     <Content Include="Resources\PDetailansicht.jpg" />
+    <None Include="Resources\PSchnellSim.jpg" />
+    <None Include="Resources\PDetailSim.jpg" />
+    <None Include="Resources\POptimierung.jpg" />
     <Content Include="Resources\PZusammenfassung.pg.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
