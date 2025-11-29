@@ -240,6 +240,7 @@ namespace WindowsFormsApplication1
                 m_szProjektname = frm.m_szProjekt;
                 m_ID_Projekt = frm.m_ID_Projekt;
                 SetTextProjekt(frm.m_szProjekt);
+                tabControl_Wizard.TabPages[1].Enabled = true;
             }
         }
 
@@ -575,6 +576,7 @@ namespace WindowsFormsApplication1
                 m_szProjektname = ctrl.m_szProjektname;
                 m_ID_Projekt = ctrl.m_ID_Projekt;
                 SetTextProjekt(m_szProjektname);
+                tabControl_Wizard.TabPages[1].Enabled = true;
             }
             
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))

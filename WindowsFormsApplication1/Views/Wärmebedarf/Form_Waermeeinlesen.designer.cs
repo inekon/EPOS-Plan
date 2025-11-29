@@ -39,6 +39,7 @@ namespace WindowsFormsApplication1
             this.btn_Loeschen = new System.Windows.Forms.Button();
             this.btn_Einlesen = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // listBox_Extern
@@ -78,23 +79,23 @@ namespace WindowsFormsApplication1
             // 
             this.textBox_Name.BackColor = System.Drawing.Color.White;
             this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Name.Location = new System.Drawing.Point(157, 253);
+            this.textBox_Name.Location = new System.Drawing.Point(157, 307);
             this.textBox_Name.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Name.Multiline = true;
             this.textBox_Name.Name = "textBox_Name";
             this.textBox_Name.ReadOnly = true;
             this.textBox_Name.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-            this.textBox_Name.Size = new System.Drawing.Size(506, 33);
+            this.textBox_Name.Size = new System.Drawing.Size(369, 74);
             this.textBox_Name.TabIndex = 9;
             // 
             // btn_Oeffnen
             // 
             this.btn_Oeffnen.Font = new System.Drawing.Font("Segoe UI", 9.75F);
-            this.btn_Oeffnen.Location = new System.Drawing.Point(589, 229);
+            this.btn_Oeffnen.Location = new System.Drawing.Point(534, 305);
             this.btn_Oeffnen.Name = "btn_Oeffnen";
-            this.btn_Oeffnen.Size = new System.Drawing.Size(74, 23);
+            this.btn_Oeffnen.Size = new System.Drawing.Size(119, 23);
             this.btn_Oeffnen.TabIndex = 15;
-            this.btn_Oeffnen.Text = "Inhalt...";
+            this.btn_Oeffnen.Text = "Inhalt anzeigen...";
             this.btn_Oeffnen.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.btn_Oeffnen.UseVisualStyleBackColor = true;
             this.btn_Oeffnen.Click += new System.EventHandler(this.btn_Oeffnen_Click);
@@ -125,9 +126,9 @@ namespace WindowsFormsApplication1
             // 
             // btn_Datei
             // 
-            this.btn_Datei.Location = new System.Drawing.Point(24, 251);
+            this.btn_Datei.Location = new System.Drawing.Point(19, 305);
             this.btn_Datei.Name = "btn_Datei";
-            this.btn_Datei.Size = new System.Drawing.Size(130, 35);
+            this.btn_Datei.Size = new System.Drawing.Size(135, 35);
             this.btn_Datei.TabIndex = 18;
             this.btn_Datei.Text = "Datei Auswählen...";
             this.btn_Datei.UseVisualStyleBackColor = true;
@@ -135,7 +136,7 @@ namespace WindowsFormsApplication1
             // 
             // btn_Loeschen
             // 
-            this.btn_Loeschen.Location = new System.Drawing.Point(23, 390);
+            this.btn_Loeschen.Location = new System.Drawing.Point(24, 214);
             this.btn_Loeschen.Name = "btn_Loeschen";
             this.btn_Loeschen.Size = new System.Drawing.Size(136, 31);
             this.btn_Loeschen.TabIndex = 19;
@@ -145,7 +146,7 @@ namespace WindowsFormsApplication1
             // 
             // btn_Einlesen
             // 
-            this.btn_Einlesen.Location = new System.Drawing.Point(24, 317);
+            this.btn_Einlesen.Location = new System.Drawing.Point(19, 346);
             this.btn_Einlesen.Name = "btn_Einlesen";
             this.btn_Einlesen.Size = new System.Drawing.Size(135, 35);
             this.btn_Einlesen.TabIndex = 20;
@@ -156,17 +157,28 @@ namespace WindowsFormsApplication1
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(198, 229);
+            this.label1.Location = new System.Drawing.Point(153, 283);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(245, 19);
             this.label1.TabIndex = 21;
             this.label1.Text = "Stundenwerte über 1 Jahr als Textdatei";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.label3.Location = new System.Drawing.Point(415, 283);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(238, 19);
+            this.label3.TabIndex = 22;
+            this.label3.Text = "Dezimaltrennzeichen muß ein \',\' sein !";
             // 
             // Form_Waermeeinlesen
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(681, 435);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btn_Einlesen);
             this.Controls.Add(this.btn_Loeschen);
@@ -200,8 +212,6 @@ private System.Windows.Forms.Button btn_Datei;
 private System.Windows.Forms.Button btn_Loeschen;
 private System.Windows.Forms.Button btn_Einlesen;
 private System.Windows.Forms.Label label1;
-
-
- 
+        private System.Windows.Forms.Label label3;
     }
 }

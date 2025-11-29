@@ -101,9 +101,10 @@ namespace WindowsFormsApplication1
             
             for (int i = 0; i < textFile.Length; i++)
             {
-                if(textFile[i].IndexOfAny(trennzeichen) > 0)
+                char lastChar = textFile[i].Substring(textFile[i].Length - 1, 1)[0];
+                if (lastChar.Equals(trennzeichen[0]) || lastChar.Equals(trennzeichen[1]))
                 {
-                    MessageBox.Show("Format Fehler:\n" + file + "\nDatei überprüfen!\nWerte müssen zeilenorientiert sein ohne Trennzeichen ',' bzw. ';'");  
+                    MessageBox.Show("Format Fehler:\n" + file + "\nDatei überprüfen!\nWerte müssen zeilenorientiert sein ohne Trennzeichen ',' bzw. ';' am Zeilenende");  
                     return false;
                 }
             }

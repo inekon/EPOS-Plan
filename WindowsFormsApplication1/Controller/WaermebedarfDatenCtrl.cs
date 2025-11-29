@@ -71,7 +71,7 @@ namespace WindowsFormsApplication1
                 {
                     WaermebedarfDatenModel item = list_GanglinieDaten.ElementAt(i);
                     string sql = "INSERT INTO Tab_WaermebedarfDaten ( ID_GanglinieDaten, Wert) SELECT " + item.m_ID_GanglinieDaten +
-                        " AS Ausdr1, " + item.m_Wert + " AS Ausdr2"; 
+                        " AS Ausdr1, " + item.m_Wert.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr2"; 
                     DBCommand.CommandText = sql;
                     DBCommand.ExecuteNonQuery();
                 }
