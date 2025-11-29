@@ -832,6 +832,7 @@
   <ItemGroup>
     <None Include="Resources\info-1459077_1280.jpg" />
     <None Include="Resources\info-1459077_1280.png" />
+    <None Include="Resources\PDelete.jpg" />
     <Content Include="Resources\PDetailansicht.jpg" />
     <None Include="Resources\PSchnellSim.jpg" />
     <None Include="Resources\PDetailSim.jpg" />

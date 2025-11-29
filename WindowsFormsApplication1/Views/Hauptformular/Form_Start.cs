@@ -833,5 +833,12 @@ namespace WindowsFormsApplication1
 
             //e.Cancel = !e.TabPage.Enabled;
         }
+
+        private void pBox_Delete_Click(object sender, EventArgs e)
+        {
+            MenueCtrl menu = new MenueCtrl();
+            menu.ProjektDelete();
+
+        }
     }
 }

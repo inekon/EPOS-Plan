@@ -55,6 +55,7 @@
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pBox_Zurueck = new System.Windows.Forms.PictureBox();
             this.pBox_Weiter = new System.Windows.Forms.PictureBox();
+            this.pBox_Delete = new System.Windows.Forms.PictureBox();
             this.pBox_Bearbeiten = new System.Windows.Forms.PictureBox();
             this.pBox_ProjektZuletzt = new System.Windows.Forms.PictureBox();
             this.pBox_ProjektOeffnen = new System.Windows.Forms.PictureBox();
@@ -86,6 +87,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Zurueck)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Weiter)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Bearbeiten)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektZuletzt)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektOeffnen)).BeginInit();
@@ -128,6 +130,7 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.pBox_Delete);
             this.tabPage1.Controls.Add(this.textBox3);
             this.tabPage1.Controls.Add(this.textBox4);
             this.tabPage1.Controls.Add(this.pBox_Bearbeiten);
@@ -461,6 +464,18 @@
             this.pBox_Weiter.TabStop = false;
             this.pBox_Weiter.Click += new System.EventHandler(this.pBox_Weiter_Click);
             // 
+            // pBox_Delete
+            // 
+            this.pBox_Delete.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PDelete;
+            this.pBox_Delete.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pBox_Delete.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pBox_Delete.Location = new System.Drawing.Point(408, 300);
+            this.pBox_Delete.Name = "pBox_Delete";
+            this.pBox_Delete.Size = new System.Drawing.Size(377, 190);
+            this.pBox_Delete.TabIndex = 56;
+            this.pBox_Delete.TabStop = false;
+            this.pBox_Delete.Click += new System.EventHandler(this.pBox_Delete_Click);
+            // 
             // pBox_Bearbeiten
             // 
             this.pBox_Bearbeiten.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektBearbeiten;
@@ -751,6 +766,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Zurueck)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Weiter)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Bearbeiten)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektZuletzt)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektOeffnen)).EndInit();
@@ -826,5 +842,6 @@
         private System.Windows.Forms.PictureBox pBoxSchnellSim;
         private System.Windows.Forms.PictureBox pBox_DetailSim;
         private System.Windows.Forms.PictureBox pBox_Optimierung;
+        private System.Windows.Forms.PictureBox pBox_Delete;
     }
 }
