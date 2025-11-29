@@ -308,24 +308,24 @@ namespace WindowsFormsApplication1
 
             try
             {
-                transaction = Program.DBConnection.BeginTransaction();
-                rs.DBCommand.Transaction = transaction;
+            //    transaction = Program.DBConnection.BeginTransaction();
+           //     rs.DBCommand.Transaction = transaction;
                 rs.Insert("INSERT INTO [DB-Heizung] (Name) SELECT '" + m_szKessel + "' AS Ausdr1");
                 rs.Close();
 
                 BrennstoffCtrl ctrl = new BrennstoffCtrl();
                 ctrl.model = InitDatensatzUpdate();
-                ctrl.DBCommand.Transaction = transaction;
+         //       ctrl.DBCommand.Transaction = transaction;
 
                 if (ctrl.Update())
                 {
-                    transaction.Commit();
+         //           transaction.Commit();
                     this.DialogResult = DialogResult.OK;
                     MessageBox.Show("Datensatz gespeichert");
                 }
                 else
                 {
-                    transaction.Rollback();
+     //               transaction.Rollback();
                     this.DialogResult = DialogResult.Cancel;
                     MessageBox.Show("Fehler beim Speichern des Datensatzes!");
                 }
@@ -337,7 +337,7 @@ namespace WindowsFormsApplication1
                 try
                 {
                     // Attempt to roll back the transaction.
-                    transaction.Rollback();
+                  //  transaction.Rollback();
                  }
                 catch
                 {
