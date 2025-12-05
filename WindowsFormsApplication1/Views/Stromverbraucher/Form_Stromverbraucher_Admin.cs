@@ -99,9 +99,9 @@ namespace WindowsFormsApplication1
             list.Add(listBox_Verbraucher_DB.Text); 
             simulation.Strombedarf_berechnen(list);
             simulation.Strombedarf_Gebaeude_gesamt = simulation.com.I_vector_summe(simulation.prozesswerte);
-            simulation.com.CSharp_I_vectoren_addieren(simulation.prozesswerte, simulation.Strombedarf);
-            simulation.com.I_monats_summe(simulation.Strombedarf, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
-            simulation.Strombedarf_Max = simulation.Maximaler_Strombedarf(simulation.Strombedarf);
+            simulation.com.CSharp_I_vectoren_addieren(simulation.prozesswerte, simulation.Strombedarf_Stundenwerte);
+            simulation.com.I_monats_summe(simulation.Strombedarf_Stundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
+            simulation.Strombedarf_Max = simulation.Maximaler_Strombedarf(simulation.Strombedarf_Stundenwerte);
             simulation.Strombedarf_gesamt = simulation.Strombedarf_Gebaeude_gesamt;
             
             Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();

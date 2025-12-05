@@ -20,12 +20,6 @@ namespace WindowsFormsApplication1
         double ChartSelBegin;
         double ChartSelEnd;
 
-        class test
-        {
-            public int A;
-            public double B;
-        }   
-
         public Form_Klimadaten()
         {
             InitializeComponent();

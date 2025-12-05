@@ -1,4 +1,5 @@
 ﻿using MathNet.Numerics.LinearAlgebra.Factorization;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -14,10 +15,13 @@ namespace WindowsFormsApplication1
         public List<string> spk_list = new List<string>();
         public int m_ID_Projekt = 0;
         public double Max_Waermebedarf;
-        public double[] Waermebedarf = new double[8760];
+        public float[] Waermebedarf = new float[8760];
+        public float[] Restwaerme = new float[8760];
 
         public int Vorgabe_Betriebsbereitschaft = 6000;
         
+        public double Waermebedarf_gesamt = 0;
+        public double Strombedarf_gesamt = 0;
         public double Maximale_Kesselleistung_Spk = 0;
         public double Stromverbrauch_Spk = 0;
         public double BruttoWaermeSpkErzeugung = 0;
@@ -73,6 +77,11 @@ namespace WindowsFormsApplication1
                 Kessel_Leistung_Spk[j] = 0;
                 Betriebsstunden[j] = 0;
             }
+
+            // Wärmebedarf gesamt
+            Waermebedarf_gesamt = 0;
+            Array.ForEach(Waermebedarf, value => Waermebedarf_gesamt += value);
+            Waermebedarf_gesamt /= 1000; // in MWh  
 
             BrennstoffCtrl brennstoffctrl = new BrennstoffCtrl();
             Anzahl = spk_list.Count;
@@ -214,7 +223,7 @@ namespace WindowsFormsApplication1
             return true;    
         }
 
-        private void Heizkessel_Simulation_Ref(double[] Waermebedarf, ref double GasSpitze, double[] s_waerme_gas, double[] s_waerme_oel,
+        private void Heizkessel_Simulation_Ref(float[] Waermebedarf, ref double GasSpitze, double[] s_waerme_gas, double[] s_waerme_oel,
                 double Max_Waermebedarf, int Anzahl, double[] Leistung, double[] Wirk_Gas, int[] Brennstoff)
         {
             double KesselLeistung;
@@ -251,13 +260,17 @@ namespace WindowsFormsApplication1
                     }
 
                     if (Brennstoff[Kessel] == 0)
+                    {
                         s_waerme_oel[Kessel] = s_waerme_oel[Kessel] + KesselLeistung;
+                    }
                     else
                     {
                         s_waerme_gas[Kessel] = s_waerme_gas[Kessel] + KesselLeistung;
                         Gasleistung = KesselLeistung / Wirk_Gas[Kessel];
                         if (Gasspitze_Kessel[Kessel] < Gasleistung) Gasspitze_Kessel[Kessel] = Gasleistung;
                     }
+
+                    Restwaerme[Stunde] = (float)waerme;
                 }
             }
         

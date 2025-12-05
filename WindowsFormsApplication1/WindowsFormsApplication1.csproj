@@ -125,6 +125,7 @@
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </Compile>
     <Compile Include="Classes\RecordSet.cs" />
+    <Compile Include="Classes\Simulation\SimulationHelper.cs" />
     <Compile Include="Classes\Simulation\Init.cs" />
     <Compile Include="Classes\Simulation\SimulationSPK.cs" />
     <Compile Include="Classes\Simulation\SimulationSSP.cs" />
@@ -149,6 +150,7 @@
     <Compile Include="Controller\KenndatenCtrl.cs" />
     <Compile Include="Controller\KenndatenKuehlungCtrl.cs" />
     <Compile Include="Controller\KlimaregionCtrl.cs" />
+    <Compile Include="Controller\KonfigurationCtrl.cs" />
     <Compile Include="Controller\ProjektGebaeudeCtrl.cs" />
     <Compile Include="Controller\ProzesswaermeKontextMenuCtrl.cs" />
     <Compile Include="Controller\SolardatenCtrl .cs" />
@@ -175,6 +177,7 @@
     <Compile Include="Controller\Z_ProjektStromverbraucherCtrl.cs" />
     <Compile Include="Model\BHKWModel.cs" />
     <Compile Include="Model\KenndatenKuehlungModel.cs" />
+    <Compile Include="Model\KonfigurationModel.cs" />
     <Compile Include="Model\ProzesswaermeModel.cs" />
     <Compile Include="Model\StromganglinieModel.cs" />
     <Compile Include="Model\StromverbraucherModel.cs" />
@@ -314,6 +317,24 @@
     <Compile Include="Views\Prozesswärme\Form_Prozesswaerme_Admin.designer.cs">
       <DependentUpon>Form_Prozesswaerme_Admin.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Simulation\Form_Simulation_Config.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Simulation\Form_Simulation_Config.Designer.cs">
+      <DependentUpon>Form_Simulation_Config.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Simulation\Form_Simulation_Detail.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Simulation\Form_Simulation_Detail.Designer.cs">
+      <DependentUpon>Form_Simulation_Detail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Simulation\Form_Simulation_Kurz.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Simulation\Form_Simulation_Kurz.Designer.cs">
+      <DependentUpon>Form_Simulation_Kurz.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Stromspeicher\Form_Stromspeicher.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -373,12 +394,6 @@
     </Compile>
     <Compile Include="Views\Stromverbraucher\Form_Stromverbraucher_Admin.designer.cs">
       <DependentUpon>Form_Stromverbraucher_Admin.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Form_ErgebnisSpk.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Form_ErgebnisSpk.designer.cs">
-      <DependentUpon>Form_ErgebnisSpk.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Kessel.cs">
       <SubType>Form</SubType>
@@ -593,6 +608,15 @@
     <EmbeddedResource Include="Views\Prozesswärme\Form_Prozesswaerme_Admin.resx">
       <DependentUpon>Form_Prozesswaerme_Admin.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_Simulation_Config.resx">
+      <DependentUpon>Form_Simulation_Config.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_Simulation_Detail.resx">
+      <DependentUpon>Form_Simulation_Detail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_Simulation_Kurz.resx">
+      <DependentUpon>Form_Simulation_Kurz.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromspeicher\Form_Stromspeicher.resx">
       <DependentUpon>Form_Stromspeicher.cs</DependentUpon>
     </EmbeddedResource>
@@ -607,9 +631,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie.resx">
       <DependentUpon>Form_Stromganglinie.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Form_ErgebnisSpk.resx">
-      <DependentUpon>Form_ErgebnisSpk.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromverbraucher.resx">
       <DependentUpon>Form_Stromverbraucher.cs</DependentUpon>

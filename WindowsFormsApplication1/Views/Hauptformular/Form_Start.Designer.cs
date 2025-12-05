@@ -42,6 +42,7 @@
             this.textBox7 = new System.Windows.Forms.TextBox();
             this.textBox8 = new System.Windows.Forms.TextBox();
             this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.btn_SimKonfig = new System.Windows.Forms.Button();
             this.label_Komponenten = new System.Windows.Forms.Label();
             this.label_Strom = new System.Windows.Forms.Label();
             this.label_WBedarf = new System.Windows.Forms.Label();
@@ -289,6 +290,7 @@
             // 
             // tabPage5
             // 
+            this.tabPage5.Controls.Add(this.btn_SimKonfig);
             this.tabPage5.Controls.Add(this.pBox_Optimierung);
             this.tabPage5.Controls.Add(this.pBox_DetailSim);
             this.tabPage5.Controls.Add(this.pBoxSchnellSim);
@@ -308,6 +310,16 @@
             this.tabPage5.UseVisualStyleBackColor = true;
             this.tabPage5.Enter += new System.EventHandler(this.tabPage5_Enter);
             // 
+            // btn_SimKonfig
+            // 
+            this.btn_SimKonfig.Location = new System.Drawing.Point(896, 360);
+            this.btn_SimKonfig.Name = "btn_SimKonfig";
+            this.btn_SimKonfig.Size = new System.Drawing.Size(259, 44);
+            this.btn_SimKonfig.TabIndex = 65;
+            this.btn_SimKonfig.Text = "Simulation Konfiguration...";
+            this.btn_SimKonfig.UseVisualStyleBackColor = true;
+            this.btn_SimKonfig.Click += new System.EventHandler(this.btn_SimKonfig_Click);
+            // 
             // label_Komponenten
             // 
             this.label_Komponenten.AutoSize = true;
@@ -319,7 +331,6 @@
             this.label_Komponenten.TabIndex = 61;
             this.label_Komponenten.Text = "Projekt";
             this.label_Komponenten.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.label_Komponenten.Click += new System.EventHandler(this.label_Komponenten_Click);
             // 
             // label_Strom
             // 
@@ -332,7 +343,6 @@
             this.label_Strom.TabIndex = 60;
             this.label_Strom.Text = "Projekt";
             this.label_Strom.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.label_Strom.Click += new System.EventHandler(this.label_Strom_Click);
             // 
             // label_WBedarf
             // 
@@ -345,7 +355,6 @@
             this.label_WBedarf.TabIndex = 59;
             this.label_WBedarf.Text = "Projekt";
             this.label_WBedarf.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.label_WBedarf.Click += new System.EventHandler(this.label_WBedarf_Click);
             // 
             // label_Name
             // 
@@ -358,7 +367,6 @@
             this.label_Name.TabIndex = 58;
             this.label_Name.Text = "Projekt";
             this.label_Name.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.label_Name.Click += new System.EventHandler(this.label_Name_Click);
             // 
             // textBox9
             // 
@@ -499,7 +507,6 @@
             this.pBox_ProjektZuletzt.TabIndex = 52;
             this.pBox_ProjektZuletzt.TabStop = false;
             this.pBox_ProjektZuletzt.Click += new System.EventHandler(this.pBox_ProjektZuletzt_Click);
-            this.pBox_ProjektZuletzt.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_ProjektZuletzt_Paint);
             // 
             // pBox_ProjektOeffnen
             // 
@@ -709,6 +716,7 @@
             this.pBox_DetailSim.Size = new System.Drawing.Size(377, 190);
             this.pBox_DetailSim.TabIndex = 63;
             this.pBox_DetailSim.TabStop = false;
+            this.pBox_DetailSim.Click += new System.EventHandler(this.pBox_DetailSim_Click);
             // 
             // pBoxSchnellSim
             // 
@@ -720,6 +728,7 @@
             this.pBoxSchnellSim.Size = new System.Drawing.Size(377, 190);
             this.pBoxSchnellSim.TabIndex = 62;
             this.pBoxSchnellSim.TabStop = false;
+            this.pBoxSchnellSim.Click += new System.EventHandler(this.pBoxSchnellSim_Click);
             // 
             // pictureBox_Zusammenfassung
             // 
@@ -731,7 +740,6 @@
             this.pictureBox_Zusammenfassung.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox_Zusammenfassung.TabIndex = 0;
             this.pictureBox_Zusammenfassung.TabStop = false;
-            this.pictureBox_Zusammenfassung.Click += new System.EventHandler(this.pictureBox_Zusammenfassung_Click);
             // 
             // Form_Start
             // 
@@ -843,5 +851,6 @@
         private System.Windows.Forms.PictureBox pBox_DetailSim;
         private System.Windows.Forms.PictureBox pBox_Optimierung;
         private System.Windows.Forms.PictureBox pBox_Delete;
+        private System.Windows.Forms.Button btn_SimKonfig;
     }
 }

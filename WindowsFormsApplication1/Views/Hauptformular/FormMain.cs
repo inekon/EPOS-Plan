@@ -1568,7 +1568,8 @@ namespace WindowsFormsApplication1
             sim.spk_list.Clear();
 
             sim.Max_Waermebedarf = simulation_wp.waermerestbedarf_gesamt;
-            sim.Waermebedarf = Array.ConvertAll(simulation_wp.waermerestbedarf_stuendlich, x => (double)x);
+            //sim.Waermebedarf = Array.ConvertAll(simulation_wp.waermerestbedarf_stuendlich, x => (double)x);
+            sim.Waermebedarf = simulation_wp.waermerestbedarf_stuendlich;
 
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
             while (rs.Next())
@@ -1713,5 +1714,7 @@ namespace WindowsFormsApplication1
                 listView_BHKW.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
             }
         }
+
+
     }
 }

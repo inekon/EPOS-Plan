@@ -171,16 +171,24 @@ namespace WindowsFormsApplication1
             {
                 RecordSet rs = new RecordSet();
                 rs.Open("select Name from [DB-Heizung] where Name='" + frmLabel.m_szName + "'");
-                if (!rs.EOF()) { MessageBox.Show("Name existiert bereits!"); rs.Close(); return; }
+                bool bExist = !rs.EOF();
                 rs.Close();
-                frm.SetControls(frmLabel.m_szName, "");
-                
-                DialogResult ret = frm.ShowDialog();
-                if (ret == DialogResult.OK)
-                { 
-                    string szKessel = frm.m_szKessel;
-                    LoadDBHeizkessel();
-                    listBox_Kessel_DB.Text = szKessel;
+
+                if (bExist)
+                {
+                    MessageBox.Show("Name existiert bereits!");
+                }
+                else
+                {
+                    frm.SetControls(frmLabel.m_szName, "");
+
+                    DialogResult ret = frm.ShowDialog();
+                    if (ret == DialogResult.OK)
+                    {
+                        string szKessel = frm.m_szKessel;
+                        LoadDBHeizkessel();
+                        listBox_Kessel_DB.Text = szKessel;
+                    }
                 }
             }
         }

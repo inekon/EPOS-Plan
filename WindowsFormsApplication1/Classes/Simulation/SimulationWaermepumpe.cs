@@ -173,7 +173,21 @@ namespace WindowsFormsApplication1
                     _Kenndaten kenndaten = wp_kenndaten[index];
 
                     result = berechne_wptherm(Temperatur[stunde], model, kenndaten );
-                    if(result[STATUS] == 0) return false;
+                    if (result[STATUS] == 0)
+                    {
+                        for (int i = 0; i < MAX_WP; i++)
+                        {
+                            Modul_WP_Strombedarf[i] = 0;
+                            Modul_WP_Waermeproduktion[i] = 0;
+                            Modul_Heizstab[i] = 0;
+                            Modul_WP_Laufzeit[i] = 0;
+                            WP_Modul[i] = "";
+                            WP_Waermeproduktion_gesamt = 0;
+                            WP_Strombedarf_gesamt = 0;
+                            Heizstab_gesamt = 0;
+                        }
+                        return false;
+                    }
 
                     // Betriebsarten Steuerung https://www.haustechnikverstehen.de/betriebsweisen-von-waermepumpen/
                     if (model.Bivalenter_Betrieb && model.Betriebsart == "Teilparallelbetrieb")

@@ -218,10 +218,10 @@ namespace WindowsFormsApplication1
             float stundl_netzverluste = 0;
             if (Netzverluste_Einheit == "%")
             {
-                stundl_netzverluste = (Waermebedarf_Gesamt * 1000 * Netzverluste) / 876000;
+                stundl_netzverluste = (Waermebedarf_Gesamt * 1000 * Netzverluste) / (float)876000;
                 Waermebedarf_Netzverluste = (Waermebedarf_Gesamt * Netzverluste) / 100;
             }
-            else stundl_netzverluste = Netzverluste / 8760;
+            else stundl_netzverluste = (float)Netzverluste / (float)8760;
 
             com.I_netzverlustec(Waermebedarf, stundl_netzverluste);
     

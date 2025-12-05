@@ -17,7 +17,6 @@ namespace WindowsFormsApplication1
         public int m_nType = WizardItemClass.BHKW_TYP;
         public int m_ID_Projekt = 0;
         private WErzeugerModel model = new WErzeugerModel();
-        private string m_szProjekt;
 
         public Form_BHKWAdmin()
         {

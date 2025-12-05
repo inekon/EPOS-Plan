@@ -23,6 +23,9 @@ namespace WindowsFormsApplication1
         public string m_szProjektname = "";
         public int status = 0;
 
+        SimulationStrombedarf simulationStrombedarf = new SimulationStrombedarf();
+        SimulationWaermebedarf simulationWaermebedarf = new SimulationWaermebedarf();
+
         public Form_Start()
         {
             InitializeComponent();
@@ -252,8 +255,6 @@ namespace WindowsFormsApplication1
 
         private void pBox_Weiter_Click(object sender, EventArgs e)
         {
-  
-
             if (tabControl_Wizard.SelectedIndex >= tabControl_Wizard.TabCount-1) return;
 
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
@@ -707,22 +708,15 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void pBox_ProjektZuletzt_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
         private void tabPage5_Enter(object sender, EventArgs e)
         {
             ProjektCtrl ctrl = new ProjektCtrl();
             ctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_ProjektOpen.Text + "'");
             
             label_Name.Text = textBox_ProjektOpen.Text;
-            SimulationStrombedarf simulationStrombedarf = new SimulationStrombedarf();
             simulationStrombedarf.Berechnung(ctrl.m_ID);
             label_Strom.Text = simulationStrombedarf.Strombedarf_gesamt.ToString("F2") + " MWh/a";
 
-            SimulationWaermebedarf simulationWaermebedarf = new SimulationWaermebedarf();
             simulationWaermebedarf.Waermebedarf_berechnen(ctrl.m_ID, ctrl.m_ID_Klimaregion);
             label_WBedarf.Text = simulationWaermebedarf.Waermebedarf_Gesamt.ToString("F2") + " MWh/a";
 
@@ -738,7 +732,6 @@ namespace WindowsFormsApplication1
 
             if (label_Komponenten.Text.StartsWith(", ")) label_Komponenten.Text = label_Komponenten.Text.Substring(2);
             label_Komponenten.Left = label_Name.Left + label_Name.Width - label_Komponenten.Width;
-
         }
 
         private void pBox_BHKW_Click(object sender, EventArgs e)
@@ -773,31 +766,6 @@ namespace WindowsFormsApplication1
             else status &= ~256;
 
             pBox_BHKW.Invalidate();
-        }
-
-        private void label_Strom_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void pictureBox_Zusammenfassung_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label_Name_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label_WBedarf_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label_Komponenten_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void pBox_BHKW_Paint(object sender, PaintEventArgs e)
@@ -840,7 +808,39 @@ namespace WindowsFormsApplication1
         {
             MenueCtrl menu = new MenueCtrl();
             menu.ProjektDelete();
+        }
 
+        private void pBoxSchnellSim_Click(object sender, EventArgs e)
+        {
+            Form_Simulation_Kurz frm = new Form_Simulation_Kurz(m_ID_Projekt);
+            frm.SetControls();
+            frm.ShowDialog();
+        }
+
+        private void btn_SimKonfig_Click(object sender, EventArgs e)
+        {
+            Form_Simulation_Config frm = new Form_Simulation_Config();
+            KonfigurationCtrl ctrl = new KonfigurationCtrl();
+
+            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            frm.Konfiguration = ctrl.model;
+            frm.SetControls(m_ID_Projekt);
+            System.Drawing.Point p1 = btn_SimKonfig.Location;
+            p1 = tabControl_Wizard.PointToScreen(p1);
+            p1.Y /= 2;
+            p1.X /= 2;
+            frm.Location = p1;
+            frm.ShowDialog();
+        }
+
+        private void pBox_DetailSim_Click(object sender, EventArgs e)
+        {
+            Form_Simulation_Detail frm = new Form_Simulation_Detail(m_ID_Projekt);
+            frm.simulation_Strombedarf = simulationStrombedarf;
+            frm.simulation_Waermebedarf = simulationWaermebedarf;
+  
+            frm.SetControls();
+            frm.ShowDialog();
         }
     }
 }

@@ -17,7 +17,7 @@ namespace WindowsFormsApplication1
         public float[] prozesswerte = new float[8760];
         public float[] temp = new float[8760];
 
-        public float[] Strombedarf = new float[8760];
+        public float[] Strombedarf_Stundenwerte = new float[8760];
         private float[] Strombedarf_sortiert = new float[8760];
         public float[] Strombedarf_Gebaeude = new float[8760];
         public float[] Stromganglinie = new float[8760];
@@ -45,7 +45,7 @@ namespace WindowsFormsApplication1
 
             m_ID_Projekt = ID_Projekt; 
             Strombedarf_berechnen();
-            com.CSharp_I_vectoren_addieren(prozesswerte, Strombedarf);
+            com.CSharp_I_vectoren_addieren(prozesswerte, Strombedarf_Stundenwerte);
             Strombedarf_Gebaeude_gesamt = com.I_vector_summe(prozesswerte);
 
 
@@ -67,20 +67,20 @@ namespace WindowsFormsApplication1
                 }
                 rs.Close();
 
-                com.CSharp_I_vectoren_addieren(Stromganglinie, Strombedarf);
+                com.CSharp_I_vectoren_addieren(Stromganglinie, Strombedarf_Stundenwerte);
                 Stromganglinie_gesamt += com.I_vector_summe(Stromganglinie);
             }
 
 
-            com.I_monats_summe(Strombedarf, Strombedarf_monat, mo_anfang, mo_ende);
+            com.I_monats_summe(Strombedarf_Stundenwerte, Strombedarf_monat, mo_anfang, mo_ende);
 
-            Strombedarf_Max = Maximaler_Strombedarf(Strombedarf);
+            Strombedarf_Max = Maximaler_Strombedarf(Strombedarf_Stundenwerte);
 
-            Strombedarf_gesamt = com.I_vector_summe(Strombedarf);
+            Strombedarf_gesamt = com.I_vector_summe(Strombedarf_Stundenwerte);
 
-            com.CSharp_I_vectoren_addieren(Strombedarf, Strombedarf_sortiert);
+            com.CSharp_I_vectoren_addieren(Strombedarf_Stundenwerte, Strombedarf_sortiert);
 
-            Dauerlinie_nicht_sortiert = Strombedarf;
+            Dauerlinie_nicht_sortiert = Strombedarf_Stundenwerte;
          
             com.I_normieren(Strombedarf_sortiert, Strombedarf_Max);
             com.I_normieren(Dauerlinie_nicht_sortiert, Strombedarf_Max);
@@ -97,7 +97,7 @@ namespace WindowsFormsApplication1
             RecordSet rs_pwtyp = new RecordSet();
             List<string> pw_list = new List<string>();
 
-            com.I_vector_init(ref Strombedarf);
+            com.I_vector_init(ref Strombedarf_Stundenwerte);
             com.I_vector_init(ref Strombedarf_sortiert);
             com.I_vector_init(ref prozesswerte);
             com.I_vector_init(ref temp);
