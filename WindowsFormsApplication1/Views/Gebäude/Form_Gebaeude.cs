@@ -557,7 +557,7 @@ namespace WindowsFormsApplication1
             GebaeudeCtrl ctrl = new GebaeudeCtrl();
             DataGridView dgv = dataGridView1;
 
-            if (dgv.CurrentRow.Cells[0].Value == null) return;
+            if (dgv.RowCount == 0) return;
 
             try
             {
