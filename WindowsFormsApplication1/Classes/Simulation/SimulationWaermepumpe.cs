@@ -24,10 +24,10 @@ namespace WindowsFormsApplication1
         public float[] WP_Waermeproduktion_stuendlich_sortiert = new float[8760];
         public float[] Heizstab_stuendlich = new float[8760];
 
-        public double WP_Strombedarf_gesamt;
-        public double WP_Waermeproduktion_gesamt;
-        public double Heizstab_gesamt;
-        public double WP_Laufzeit;
+        public double WP_Strombedarf_gesamt = 0;
+        public double WP_Waermeproduktion_gesamt = 0;
+        public double Heizstab_gesamt = 0;
+        public double WP_Laufzeit = 0;
 
         public double[] Modul_WP_Strombedarf = new double[MAX_WP];
         public double[] Modul_WP_Waermeproduktion = new double[MAX_WP];
@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
         public double Bivalenzpunkt = -100;
 
         public bool Mit_Heizstab = false;
-        public double Volumen_Pufferspeicher;
+        public double Volumen_Pufferspeicher = 0;
         private bool extrapolation = false;
         public string[] WP_Modul = new string[MAX_WP];  
 
