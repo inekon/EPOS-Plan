@@ -36,7 +36,7 @@ namespace WindowsFormsApplication1
             WindowState = FormWindowState.Maximized;
             tabControl_Wizard.DrawMode = TabDrawMode.OwnerDrawFixed;
             tabControl_Wizard.DrawItem += tabControl_Wizard_DrawItem;
-            tabControl_Wizard.TabPages[1].Enabled = false;  
+            for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = false;
         }
 
         private void tabControl_Wizard_DrawItem(object sender, DrawItemEventArgs e)
@@ -243,7 +243,7 @@ namespace WindowsFormsApplication1
                 m_szProjektname = frm.m_szProjekt;
                 m_ID_Projekt = frm.m_ID_Projekt;
                 SetTextProjekt(frm.m_szProjekt);
-                tabControl_Wizard.TabPages[1].Enabled = true;
+                for (int i = 1; i<tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
             }
         }
 
@@ -577,9 +577,9 @@ namespace WindowsFormsApplication1
                 m_szProjektname = ctrl.m_szProjektname;
                 m_ID_Projekt = ctrl.m_ID_Projekt;
                 SetTextProjekt(m_szProjektname);
-                tabControl_Wizard.TabPages[1].Enabled = true;
+                for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
             }
-            
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 Graphics g = pBox_ProjektZuletzt.CreateGraphics();
@@ -789,7 +789,7 @@ namespace WindowsFormsApplication1
         {
             if (e.TabPageIndex < 0) return;
 
-            if (e.TabPageIndex == 1 && textBox_ProjektOpen.Text == "bitte auswählen!")
+            if (e.TabPageIndex >= 1 && textBox_ProjektOpen.Text == "bitte auswählen!")
             {
                 e.Cancel = true;
                 //MessageBox.Show("Bitte zuerst ein Projekt auswählen!\n (<Projekt öffnen> oder <zuletzt geöffnet>)!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information); 
