@@ -38,7 +38,7 @@ namespace WindowsFormsApplication1
                 ProjektGebaeudeModel item = new ProjektGebaeudeModel();
 
                 if (!DBReader.IsDBNull(0)) item.ID_Projekt = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.AuswahlWohnflaeche = (double)DBReader.GetValue(1);
+                if (!DBReader.IsDBNull(1)) item.Z_AuswahlWohnflaeche = (double)DBReader.GetValue(1);
                 if (!DBReader.IsDBNull(2)) item.Einheit = (string)DBReader.GetString(2);
                 if (!DBReader.IsDBNull(3)) item.Jahresnutzungsgrad = (double)DBReader.GetValue(3);
                 if (!DBReader.IsDBNull(4)) item.DezentralWarmwasser = (bool)DBReader.GetValue(4);

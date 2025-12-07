@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
     {
         public ProjektGebaeudeModel[] items;
         public int ID_Projekt;
-        public double AuswahlWohnflaeche;
+        public double Z_AuswahlWohnflaeche;
         public string Einheit;
         public double Jahresnutzungsgrad;
         public bool DezentralWarmwasser;
@@ -70,7 +70,7 @@ namespace WindowsFormsApplication1
         {
             items = null;
             ID_Projekt = 0;
-            AuswahlWohnflaeche = 0.0;
+            Z_AuswahlWohnflaeche = 0.0;
             Einheit = "";
             Jahresnutzungsgrad = 0.0;
             DezentralWarmwasser = false;
