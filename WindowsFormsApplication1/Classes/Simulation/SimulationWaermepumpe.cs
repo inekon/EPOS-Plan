@@ -362,12 +362,6 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-
-                    if(temperatur>10)
-                    {
-                        int a = 0;
-                    }   
-
                     // Interpolation innerhalb der Kennlinie
                     for (int i = 1; i < kenndaten.anz; i++)
                     {
