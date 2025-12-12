@@ -49,6 +49,9 @@ namespace WindowsFormsApplication1
                     newRow["Abschaltpunkt"] = list[i].Abschaltpunkt;
                     newRow["Nutzungszeit"] = list[i].Nutzungszeit;
                     newRow["Grenzleistung"] = list[i].Grenzleistung;
+                    newRow["Kollektorneigung"] = list[i].Kollektorneigung;
+                    newRow["Kollektorausrichtung"] = list[i].Kollektorausrichtung;
+                    newRow["Kollektormodulanzahl"] = list[i].Kollektormodulanzahl;
 
                     newRow["ID_WP"] = DBNull.Value;
                     newRow["ID_SP"] = DBNull.Value;
@@ -56,7 +59,8 @@ namespace WindowsFormsApplication1
                     newRow["ID_KESSEL"] = DBNull.Value;
                     newRow["ID_Type"] = list[i].ID_Type;
                     newRow["ID_BHKW"] = DBNull.Value;
-                    
+                    newRow["ID_SOLAR"] = DBNull.Value;
+
                     if (list[i].ID_Type == WizardItemClass.WP_TYP || list[i].ID_Type == WizardItemClass.REF_WP_TYP)
                     {
                         newRow["ID_WP"] = list[i].ID_WP;
@@ -80,6 +84,10 @@ namespace WindowsFormsApplication1
                     else if (list[i].ID_Type == WizardItemClass.BHKW_TYP || list[i].ID_Type == WizardItemClass.BHKW_TYP)
                     {
                         newRow["ID_BHKW"] = list[i].ID_BHKW;
+                    }
+                    else if (list[i].ID_Type == WizardItemClass.SOLAR_TYP)
+                    {
+                        newRow["ID_SOLAR"] = list[i].ID_Solar;
                     }
 
                     newRow["Heizstab"] = list[i].Heizstab;

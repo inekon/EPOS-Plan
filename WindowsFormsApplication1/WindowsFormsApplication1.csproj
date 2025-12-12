@@ -154,6 +154,7 @@
     <Compile Include="Controller\ProjektGebaeudeCtrl.cs" />
     <Compile Include="Controller\ProzesswaermeKontextMenuCtrl.cs" />
     <Compile Include="Controller\SolardatenCtrl .cs" />
+    <Compile Include="Controller\SolarkollektorenCtrl.cs" />
     <Compile Include="Controller\StrombedarfKontextMenuCtrl.cs" />
     <Compile Include="Controller\StromganglinieCtrl.cs" />
     <Compile Include="Controller\StromganglinieDatenCtrl.cs" />
@@ -179,6 +180,7 @@
     <Compile Include="Model\KenndatenKuehlungModel.cs" />
     <Compile Include="Model\KonfigurationModel.cs" />
     <Compile Include="Model\ProzesswaermeModel.cs" />
+    <Compile Include="Model\SolarkollektorenModel.cs" />
     <Compile Include="Model\StromganglinieModel.cs" />
     <Compile Include="Model\StromverbraucherModel.cs" />
     <Compile Include="Controller\WPKontextMenuCtrl.cs">
@@ -334,6 +336,18 @@
     </Compile>
     <Compile Include="Views\Simulation\Form_Simulation_Kurz.Designer.cs">
       <DependentUpon>Form_Simulation_Kurz.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Solarthermie\Form_SolarDB.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Solarthermie\Form_SolarDB.designer.cs">
+      <DependentUpon>Form_SolarDB.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Solarthermie\Form_SolarKollektoren.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Solarthermie\Form_SolarKollektoren.designer.cs">
+      <DependentUpon>Form_SolarKollektoren.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Stromspeicher\Form_Stromspeicher.cs">
       <SubType>Form</SubType>
@@ -523,12 +537,6 @@
     <Compile Include="Views\Wizard\Wizard_WPItem.Designer.cs">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Wärmepumpe\Form_WPEing.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wärmepumpe\Form_WPEing.designer.cs">
-      <DependentUpon>Form_WPEing.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Wärmepumpe\Form_WP_einlesen.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -617,6 +625,12 @@
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Kurz.resx">
       <DependentUpon>Form_Simulation_Kurz.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_SolarDB.resx">
+      <DependentUpon>Form_SolarDB.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektoren.resx">
+      <DependentUpon>Form_SolarKollektoren.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromspeicher\Form_Stromspeicher.resx">
       <DependentUpon>Form_Stromspeicher.cs</DependentUpon>
     </EmbeddedResource>
@@ -701,9 +715,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_WPItem.resx">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wärmepumpe\Form_WPEing.resx">
-      <DependentUpon>Form_WPEing.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wärmepumpe\Kenndaten.resx">
       <DependentUpon>Kenndaten.cs</DependentUpon>
@@ -858,6 +869,8 @@
     <None Include="Resources\PSchnellSim.jpg" />
     <None Include="Resources\PDetailSim.jpg" />
     <None Include="Resources\POptimierung.jpg" />
+    <None Include="Resources\PProjektPV.jpg" />
+    <Content Include="Resources\PProjektSolarthermie.jpg" />
     <Content Include="Resources\PZusammenfassung.pg.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

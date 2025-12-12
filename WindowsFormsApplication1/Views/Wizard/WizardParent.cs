@@ -293,6 +293,11 @@ namespace WindowsFormsApplication1
                     ((Form_BHKWEing)page).list_werzmodel = list_werzmodel;
                     ((Form_BHKWEing)page).SetControls(listBox_Projekte.Text,true);
                 }
+                else if (top == WizardItemClass.SOLAR_ITEM)
+                {
+                    ((Form_SolarKollektoren)page).list_werzmodel = list_werzmodel;
+                    ((Form_SolarKollektoren)page).SetControls(projektID, true);
+                }
             }
             else
             {
@@ -328,7 +333,11 @@ namespace WindowsFormsApplication1
                     ((Form_Stromspeicher)page).list_werzmodel = list_werzmodel;
                     ((Form_Stromspeicher)page).SetControls(listBox_Projekte.Text, true);
                 }
-
+                else if (top == WizardItemClass.SOLAR_ITEM)
+                {
+                    ((Form_SolarKollektoren)page).list_werzmodel = list_werzmodel;
+                    ((Form_SolarKollektoren)page).SetControls(projektID, true);
+                }
             }
 
             btnBack.Enabled = true;

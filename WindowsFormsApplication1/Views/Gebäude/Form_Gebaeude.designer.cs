@@ -417,6 +417,7 @@ namespace WindowsFormsApplication1
             this.dataGridView1.Size = new System.Drawing.Size(436, 261);
             this.dataGridView1.TabIndex = 75;
             this.dataGridView1.Click += new System.EventHandler(this.listBox_Gebaeude_DB_SelectedIndexChanged);
+            this.dataGridView1.Leave += new System.EventHandler(this.dataGridView1_Leave);
             // 
             // label_Type
             // 

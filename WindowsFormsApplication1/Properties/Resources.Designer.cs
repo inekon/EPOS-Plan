@@ -243,6 +243,26 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap PProjektPV {
+            get {
+                object obj = ResourceManager.GetObject("PProjektPV", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap PProjektSolarthermie {
+            get {
+                object obj = ResourceManager.GetObject("PProjektSolarthermie", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap PProjektZuletzt {
             get {
                 object obj = ResourceManager.GetObject("PProjektZuletzt", resourceCulture);
