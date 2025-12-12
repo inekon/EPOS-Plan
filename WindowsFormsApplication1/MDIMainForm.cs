@@ -135,6 +135,12 @@ namespace WindowsFormsApplication1
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.BHKW();
         }
+
+        private void MenuItem_Solarkollektoren_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.Solarkollektoren();  
+        }
     }
 }
 

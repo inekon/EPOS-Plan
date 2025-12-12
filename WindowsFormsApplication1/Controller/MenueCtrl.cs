@@ -312,5 +312,10 @@ namespace WindowsFormsApplication1
            Form_BHKWAdmin frm = new Form_BHKWAdmin();
            frm.ShowDialog();
        }
+       public void Solarkollektoren()
+       {
+           Form_SolarKollektorenAdmin frm = new Form_SolarKollektorenAdmin();
+           frm.ShowDialog();
+       }
     }
 }
