@@ -462,6 +462,7 @@ namespace WindowsFormsApplication1
                 frm.SetControls(frmLabel.m_szName);
                 frm.m_szName = frmLabel.m_szName;
                 frm.ShowDialog();
+                SetDBList();
             }
         }
 
@@ -469,13 +470,19 @@ namespace WindowsFormsApplication1
         {
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
             if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte ein BHKW auswählen!"); return; }
-       
-            RecordSet rs = new RecordSet();
-            rs.Open("Delete * from Tab_BHKW where Bezeichner='" + (string)dataGridView1.SelectedRows[0].Cells[0].Value + "'");
-            rs.Close();
 
-            dataGridView1.Rows.RemoveAt(dataGridView1.SelectedRows[0].Index);
+            var result = MessageBox.Show("Wollen Sie wirklich das BHKW löschen?", "Löschen", MessageBoxButtons.YesNo);
+            if (result == DialogResult.Yes)
+            {
+                RecordSet rs = new RecordSet();
+                rs.Open("Delete * from Tab_BHKW where Bezeichner='" + (string)dataGridView1.SelectedRows[0].Cells[0].Value + "'");
+                rs.Close();
+
+                dataGridView1.Rows.RemoveAt(dataGridView1.SelectedRows[0].Index);
+            }
         }
+
+   
     }
 
 }

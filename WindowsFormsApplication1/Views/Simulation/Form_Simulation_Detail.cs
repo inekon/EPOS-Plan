@@ -466,12 +466,18 @@ namespace WindowsFormsApplication1
 
             if (checkBox_WP_sortiert.Checked)
             {
-                chart3.Series["Waermeproduktion"].Points.DataBindY(sim.simulation_wp.WP_Waermeproduktion_stuendlich_sortiert);
+                float[] sortedWBArray = new float[8760];
+                Array.Copy(sim.simulation_wp.WP_Waermeproduktion_stuendlich, sortedWBArray, 8760);
+                Array.Sort(sortedWBArray);
+                Array.Reverse(sortedWBArray);
+                chart3.Series["Waermeproduktion"].Points.DataBindY(sortedWBArray);
 
                 float[] sortedArray = new float[8760];
                 Array.Copy(sim.simulation_wp.Waermebedarf_stuendlich, sortedArray, 8760);
                 Array.Sort(sortedArray);
+                Array.Reverse(sortedArray);
                 chart3.Series["Waermebedarf"].Points.DataBindY(sortedArray);
+                
                 float[] sortedArrayHeizstab = new float[8760];
                 Array.Copy(temp, sortedArrayHeizstab, 8760);
                 Array.Sort(sortedArrayHeizstab);
@@ -484,5 +490,7 @@ namespace WindowsFormsApplication1
                 chart3.Series["Heizstab"].Points.DataBindY(temp);
             }
         }
+
+
     }
 }

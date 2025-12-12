@@ -69,6 +69,8 @@
             this.pBox_StromMessdaten = new System.Windows.Forms.PictureBox();
             this.pBox_StromProfilEigenes = new System.Windows.Forms.PictureBox();
             this.pBox_StdLastProfil = new System.Windows.Forms.PictureBox();
+            this.pBox_PV = new System.Windows.Forms.PictureBox();
+            this.pBox_Solarthermie = new System.Windows.Forms.PictureBox();
             this.pBox_Stromspeicher = new System.Windows.Forms.PictureBox();
             this.pBox_Heizkessel = new System.Windows.Forms.PictureBox();
             this.pBox_BHKW = new System.Windows.Forms.PictureBox();
@@ -101,6 +103,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StromMessdaten)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StromProfilEigenes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StdLastProfil)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_PV)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_Solarthermie)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Stromspeicher)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Heizkessel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_BHKW)).BeginInit();
@@ -250,6 +254,8 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.pBox_PV);
+            this.tabPage4.Controls.Add(this.pBox_Solarthermie);
             this.tabPage4.Controls.Add(this.pBox_Stromspeicher);
             this.tabPage4.Controls.Add(this.pBox_Heizkessel);
             this.tabPage4.Controls.Add(this.pBox_BHKW);
@@ -291,15 +297,15 @@
             // tabPage5
             // 
             this.tabPage5.Controls.Add(this.btn_SimKonfig);
-            this.tabPage5.Controls.Add(this.pBox_Optimierung);
-            this.tabPage5.Controls.Add(this.pBox_DetailSim);
-            this.tabPage5.Controls.Add(this.pBoxSchnellSim);
             this.tabPage5.Controls.Add(this.label_Komponenten);
             this.tabPage5.Controls.Add(this.label_Strom);
             this.tabPage5.Controls.Add(this.label_WBedarf);
             this.tabPage5.Controls.Add(this.label_Name);
             this.tabPage5.Controls.Add(this.textBox9);
             this.tabPage5.Controls.Add(this.textBox10);
+            this.tabPage5.Controls.Add(this.pBox_Optimierung);
+            this.tabPage5.Controls.Add(this.pBox_DetailSim);
+            this.tabPage5.Controls.Add(this.pBoxSchnellSim);
             this.tabPage5.Controls.Add(this.pictureBox_Zusammenfassung);
             this.tabPage5.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold);
             this.tabPage5.Location = new System.Drawing.Point(4, 30);
@@ -631,6 +637,32 @@
             this.pBox_StdLastProfil.Click += new System.EventHandler(this.pBox_StdLastProfil_Click);
             this.pBox_StdLastProfil.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_StdLastProfil_Paint);
             // 
+            // pBox_PV
+            // 
+            this.pBox_PV.BackColor = System.Drawing.Color.Transparent;
+            this.pBox_PV.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektPV;
+            this.pBox_PV.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pBox_PV.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pBox_PV.Location = new System.Drawing.Point(795, 411);
+            this.pBox_PV.Name = "pBox_PV";
+            this.pBox_PV.Size = new System.Drawing.Size(377, 190);
+            this.pBox_PV.TabIndex = 60;
+            this.pBox_PV.TabStop = false;
+            // 
+            // pBox_Solarthermie
+            // 
+            this.pBox_Solarthermie.BackColor = System.Drawing.Color.Transparent;
+            this.pBox_Solarthermie.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektSolarthermie;
+            this.pBox_Solarthermie.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pBox_Solarthermie.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pBox_Solarthermie.Location = new System.Drawing.Point(795, 207);
+            this.pBox_Solarthermie.Name = "pBox_Solarthermie";
+            this.pBox_Solarthermie.Size = new System.Drawing.Size(377, 190);
+            this.pBox_Solarthermie.TabIndex = 59;
+            this.pBox_Solarthermie.TabStop = false;
+            this.pBox_Solarthermie.Click += new System.EventHandler(this.pBox_Solarthermie_Click);
+            this.pBox_Solarthermie.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Solarthermie_Paint);
+            // 
             // pBox_Stromspeicher
             // 
             this.pBox_Stromspeicher.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PSSpeicher;
@@ -787,6 +819,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StromMessdaten)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StromProfilEigenes)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StdLastProfil)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_PV)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_Solarthermie)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Stromspeicher)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Heizkessel)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_BHKW)).EndInit();
@@ -852,5 +886,7 @@
         private System.Windows.Forms.PictureBox pBox_Optimierung;
         private System.Windows.Forms.PictureBox pBox_Delete;
         private System.Windows.Forms.Button btn_SimKonfig;
+        private System.Windows.Forms.PictureBox pBox_Solarthermie;
+        private System.Windows.Forms.PictureBox pBox_PV;
     }
 }

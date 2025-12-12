@@ -35,6 +35,9 @@ namespace WindowsFormsApplication1
         public int ID_Kessel;
         public int ID_BHKW;
         public double Grenzleistung;
+        public double Kollektorneigung;
+        public int Kollektorausrichtung;
+        public int Kollektormodulanzahl;
         /*
         public int Baujahr;
         public string Regelung;
@@ -71,7 +74,10 @@ namespace WindowsFormsApplication1
             ID_Kessel = 0;
             ID_BHKW = 0;
             Grenzleistung = 0;
-        } 
+            Kollektorneigung = 0;
+            Kollektorausrichtung = 0;
+            Kollektormodulanzahl = 0;
+    } 
     }
 
 }

@@ -190,6 +190,9 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(21)) item.ID_Kessel = (int)DBReader.GetValue(21);
                 if (!DBReader.IsDBNull(22)) item.ID_BHKW = (int)DBReader.GetValue(22);
                 if (!DBReader.IsDBNull(23)) item.Grenzleistung = (double)DBReader.GetValue(23);
+                if (!DBReader.IsDBNull(24)) item.Kollektorneigung = (double)DBReader.GetValue(24);
+                if (!DBReader.IsDBNull(25)) item.Kollektorausrichtung = (int)DBReader.GetValue(25);
+                if (!DBReader.IsDBNull(26)) item.Kollektormodulanzahl = (int)DBReader.GetValue(26);
 
                 items[rows] = item;
                 rows += 1;
@@ -232,6 +235,10 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(21)) ID_Kessel = (int)DBReader.GetValue(21);
                 if (!DBReader.IsDBNull(22)) ID_BHKW = (int)DBReader.GetValue(22);
                 if (!DBReader.IsDBNull(23)) Grenzleistung = (double)DBReader.GetValue(23);
+                if (!DBReader.IsDBNull(24)) Kollektorneigung = (double)DBReader.GetValue(24);
+                if (!DBReader.IsDBNull(25)) Kollektorausrichtung = (int)DBReader.GetValue(25);
+                if (!DBReader.IsDBNull(26)) Kollektormodulanzahl = (int)DBReader.GetValue(26);
+
 
                 rows = 1;
             }

@@ -290,6 +290,9 @@ namespace WindowsFormsApplication1
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.BHKW_TYP);
             if (werzctrl.rows > 0) status |= 256; else status &= ~256;
 
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
+            if (werzctrl.rows > 0) status |= 512; else status &= ~512;
+
             tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
         }
 
@@ -841,6 +844,57 @@ namespace WindowsFormsApplication1
   
             frm.SetControls();
             frm.ShowDialog();
+        }
+
+        private void pBox_Solarthermie_Click(object sender, EventArgs e)
+        {
+            Form_SolarKollektoren frm = new Form_SolarKollektoren();    
+            WErzeugerCtrl werzctrl = new WErzeugerCtrl();
+            WPCtrl wpctrl = new WPCtrl();
+            int id_type;
+
+            frm.list_werzmodel.Clear();
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
+            id_type = WizardItemClass.SOLAR_TYP;
+
+            WErzeugerModel item = new WErzeugerModel();
+            for (int i = 0; i < werzctrl.rows; i++)
+            {
+                frm.list_werzmodel.Add(werzctrl.items[i]);
+            }
+
+            frm.SetControls(m_ID_Projekt);
+            DialogResult result = frm.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                WizardCtrl wizctrl = new WizardCtrl();
+                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
+                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
+            }
+
+            if (frm.list_werzmodel.Count > 0)
+                status |= 512;
+            else status &= ~512;
+
+            pBox_Solarthermie.Invalidate();
+        }
+
+        private void pBox_Solarthermie_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                if ((status & 512) == 512)
+                {
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                }
+            }
         }
     }
 }
