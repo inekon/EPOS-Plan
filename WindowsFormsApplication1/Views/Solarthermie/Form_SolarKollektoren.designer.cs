@@ -560,6 +560,7 @@ namespace WindowsFormsApplication1
             this.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form_SolarKollektoren";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Eingabe der Solarkollektoren";
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form_SolarKollektoren_Paint);
             this.groupBox1.ResumeLayout(false);

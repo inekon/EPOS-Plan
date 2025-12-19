@@ -43,6 +43,7 @@
             this.MenuItem_Kessel = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Klimadaten = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Prozesswaerme = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Solarkollektoren = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Stromspeicher = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Stromverbraucher = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Stromganglinie = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,8 +51,7 @@
             this.MenuItem_WPBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MeniItem_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_WaermebedarfExtern = new System.Windows.Forms.ToolStripMenuItem();
-            this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_Solarkollektoren = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_SolThermGanglinie = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -60,8 +60,7 @@
             this.menuStrip1.BackColor = System.Drawing.Color.AliceBlue;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.Projekte,
-            this.Administration,
-            this.testToolStripMenuItem});
+            this.Administration});
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -127,6 +126,7 @@
             this.MenuItem_Klimadaten,
             this.MenuItem_Prozesswaerme,
             this.MenuItem_Solarkollektoren,
+            this.MenuItem_SolThermGanglinie,
             this.MenuItem_Stromspeicher,
             this.MenuItem_Stromverbraucher,
             this.MenuItem_Stromganglinie,
@@ -189,6 +189,13 @@
             this.MenuItem_Prozesswaerme.Text = "Prozesswärme";
             this.MenuItem_Prozesswaerme.Click += new System.EventHandler(this.MenuItem_Prozesswaerme_Click);
             // 
+            // MenuItem_Solarkollektoren
+            // 
+            this.MenuItem_Solarkollektoren.Name = "MenuItem_Solarkollektoren";
+            this.MenuItem_Solarkollektoren.Size = new System.Drawing.Size(242, 26);
+            this.MenuItem_Solarkollektoren.Text = "Solarkollektoren";
+            this.MenuItem_Solarkollektoren.Click += new System.EventHandler(this.MenuItem_Solarkollektoren_Click);
+            // 
             // MenuItem_Stromspeicher
             // 
             this.MenuItem_Stromspeicher.Name = "MenuItem_Stromspeicher";
@@ -240,20 +247,12 @@
             this.MenuItem_WaermebedarfExtern.Text = "Wärmebedarf Lastgang";
             this.MenuItem_WaermebedarfExtern.Click += new System.EventHandler(this.MenuItem_WaermebedarfExtern_Click);
             // 
-            // testToolStripMenuItem
+            // MenuItem_SolThermGanglinie
             // 
-            this.testToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.testToolStripMenuItem.Name = "testToolStripMenuItem";
-            this.testToolStripMenuItem.Size = new System.Drawing.Size(48, 25);
-            this.testToolStripMenuItem.Text = "Test";
-            this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
-            // 
-            // MenuItem_Solarkollektoren
-            // 
-            this.MenuItem_Solarkollektoren.Name = "MenuItem_Solarkollektoren";
-            this.MenuItem_Solarkollektoren.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_Solarkollektoren.Text = "Solarkollektoren";
-            this.MenuItem_Solarkollektoren.Click += new System.EventHandler(this.MenuItem_Solarkollektoren_Click);
+            this.MenuItem_SolThermGanglinie.Name = "MenuItem_SolThermGanglinie";
+            this.MenuItem_SolThermGanglinie.Size = new System.Drawing.Size(242, 26);
+            this.MenuItem_SolThermGanglinie.Text = "Solarthermieganglinie";
+            this.MenuItem_SolThermGanglinie.Click += new System.EventHandler(this.MenuItem_SolThermGanglinie_Click);
             // 
             // MDIMainForm
             // 
@@ -295,11 +294,11 @@
         private System.Windows.Forms.ToolStripMenuItem MenuItem_WaermebedarfExtern;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Prozesswaerme;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Stromverbraucher;
-        private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Stromganglinie;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Kessel;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_BHKW;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Solarkollektoren;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_SolThermGanglinie;
     }
 }
 

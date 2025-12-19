@@ -10,26 +10,25 @@ using System.IO;
 
 namespace WindowsFormsApplication1
 {
-    partial class Form_Stromganglinie : Form
+    partial class Form_Solarganglinie : Form
     {
         public int m_ID_Projekt = 0;
         public string m_szProjekt = "";
         public DialogResult result = DialogResult.Cancel;
-        public List<Z_ProjektStromganglinieModel> DateiListe = new List<Z_ProjektStromganglinieModel>();
+        public List<Z_ProjektSolarganglinieModel> DateiListe = new List<Z_ProjektSolarganglinieModel>();
  
         int startindex = 100000;
 
-        public Form_Stromganglinie()
+        public Form_Solarganglinie()
         {
             InitializeComponent();
 
-            StromganglinieCtrl ctrl = new StromganglinieCtrl();
+            SolarganglinieCtrl ctrl = new SolarganglinieCtrl();
             ctrl.ReadAll(); 
             for (int i = 0; i < ctrl.rows; i++)
             {
                 listBox_Extern.Items.Add(ctrl.items[i].m_szBezeichner);
             }
-
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
@@ -40,8 +39,8 @@ namespace WindowsFormsApplication1
 
         public void SetControls(string szProjekt)
         {
-            Z_ProjektStromganglinieCtrl ctrl = new Z_ProjektStromganglinieCtrl();
-            ctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + m_ID_Projekt);
+            Z_ProjektSolarganglinieCtrl ctrl = new Z_ProjektSolarganglinieCtrl();
+            ctrl.ReadAll("select * from Z_ProjektSolarganglinie where ID_Projekt=" + m_ID_Projekt);
 
             listBox_Auswahl.Items.Clear();
  
@@ -51,11 +50,10 @@ namespace WindowsFormsApplication1
 
                 model.m_ID_Projekt = DateiListe[i].m_ID_Projekt;
                 model.m_ID_Z = DateiListe[i].m_ID_Z;
-                model.m_szBezeichner = DateiListe[i].m_szStromganglinie;
-                model.m_ID_Ganglinie = DateiListe[i].m_ID_Stromganglinie;
+                model.m_szBezeichner = DateiListe[i].m_szSolarganglinie;
+                model.m_ID_Ganglinie = DateiListe[i].m_ID_Solarganglinie;
                 listBox_Auswahl.Items.Add(model.m_szBezeichner);
             }
-
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
@@ -70,16 +68,16 @@ namespace WindowsFormsApplication1
             
             if (listBox_Extern.Text == "") return;
 
-            string sql = "SELECT * from Tab_Stromganglinie where Bezeichner='" + listBox_Extern.Text + "'";
+            string sql = "SELECT * from Tab_Solarganglinie where Bezeichner='" + listBox_Extern.Text + "'";
             rs.Open(sql);
 
             if (rs.Next())
             {
-                Z_ProjektStromganglinieCtrl model = new Z_ProjektStromganglinieCtrl();
+                Z_ProjektSolarganglinieCtrl model = new Z_ProjektSolarganglinieCtrl();
                 model.m_ID_Z = startindex++; // noch nicht gespeichert, also noch unbekannt
-                model.m_ID_Stromganglinie = (int)rs.Read("ID");
+                model.m_ID_Solarganglinie = (int)rs.Read("ID");
                 model.m_ID_Projekt = m_ID_Projekt;
-                model.m_szStromganglinie = listBox_Extern.Text;
+                model.m_szSolarganglinie = listBox_Extern.Text;
          
                 DateiListe.Add(model);
                 listBox_Auswahl.Items.Add(listBox_Extern.Text);
@@ -95,7 +93,7 @@ namespace WindowsFormsApplication1
             {
                 for (int i = 0; i < DateiListe.Count; i++)
                 {
-                    if (DateiListe[i].m_szStromganglinie == listBox_Auswahl.Text)
+                    if (DateiListe[i].m_szSolarganglinie == listBox_Auswahl.Text)
                     {
                         DateiListe.RemoveAt(i);
                         listBox_Auswahl.Items.RemoveAt(listBox_Auswahl.SelectedIndex);
@@ -118,11 +116,11 @@ namespace WindowsFormsApplication1
         private void btn_Bearbeiten_Click(object sender, EventArgs e)
         {
             MenueCtrl ctrl = new MenueCtrl();
-            StromganglinieCtrl spctrl = new StromganglinieCtrl();
+            SolarganglinieCtrl spctrl = new SolarganglinieCtrl();
 
             listBox_Auswahl.SelectedItems.Clear();
             listBox_Extern.SelectedItems.Clear();
-            ctrl.Stromganglinie();
+            ctrl.Solarganglinie();
             listBox_Extern.Items.Clear();
             spctrl.ReadAll();
             for (int i = 0; i < spctrl.rows; i++)

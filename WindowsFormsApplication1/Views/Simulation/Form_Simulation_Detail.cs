@@ -1,14 +1,10 @@
-﻿using Microsoft.Office.Interop.Excel;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using Chart = System.Windows.Forms.DataVisualization.Charting.Chart;
 
 namespace WindowsFormsApplication1
 {
@@ -58,13 +54,24 @@ namespace WindowsFormsApplication1
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
+            listView_SimWP.View = View.Details;
+            listView_SimWP.Columns.Add("WP Modul", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Wärmeproduktion [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Stromverbrauch [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Heizstab [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Betriebsstunden [h/a]", -2, HorizontalAlignment.Left);
+            listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+
+            colorListViewHeader(ref listView_SimWP, Color.DarkBlue,Color.White);
+            colorListViewHeader(ref listView_SimSPK, Color.DarkBlue, Color.White);
         }
 
         public void SetControls()
         {
         }
         
-        private void init_Chart(System.Windows.Forms.DataVisualization.Charting.Chart chart)
+        private void init_Chart(Chart chart)
         {
             var ca = chart.ChartAreas[0];
             ca.CursorX.IsUserEnabled = true;
@@ -76,6 +83,8 @@ namespace WindowsFormsApplication1
             ca.AxisX.ScaleView.Zoomable = true;
             ca.CursorX.AutoScroll = true;
             ca.AxisX.ScrollBar.Enabled = true;
+            ca.AxisX.Minimum = 0;
+            ca.AxisY.Maximum = 100.2;
 
             chart.Series[0].BorderWidth = 2;
             chart.ChartAreas[0].AxisX.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
@@ -85,6 +94,7 @@ namespace WindowsFormsApplication1
             chart.ChartAreas[0].CursorX.LineColor = Color.Red;
             chart.ChartAreas[0].CursorY.LineColor = Color.Red;
         }
+
         private void btn_StromDetails_Click(object sender, EventArgs e)
         {
             Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();
@@ -170,10 +180,10 @@ namespace WindowsFormsApplication1
             chart1.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
 
             if (checkBox_Sortiert.Checked)
-            {
-                chart1.Series[0].Points.DataBindY(simulation_Waermebedarf.Dauerlinie);
-            }
-            else chart1.Series[0].Points.DataBindY(simulation_Waermebedarf.Dauerlinie_nicht_sortiert);
+                ConfigureXAxisWithHours(chart1, simulation_Waermebedarf.Dauerlinie);
+            else 
+                ConfigureXAxisWithMonths(chart1, simulation_Waermebedarf.Dauerlinie_nicht_sortiert);
+
             chart1.ChartAreas[0].AxisY.Maximum = 100.2;
 
             // chart füllen
@@ -195,14 +205,9 @@ namespace WindowsFormsApplication1
         private void checkBox_Sortiert_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBox_Sortiert.Checked)
-            {
-                chart1.Series[0].Points.DataBindY(simulation_Waermebedarf.Dauerlinie);
-            }
-            else chart1.Series[0].Points.DataBindY(simulation_Waermebedarf.Dauerlinie_nicht_sortiert);
-            chart1.ChartAreas[0].AxisX.Minimum = 0;
-            chart1.ChartAreas[0].AxisX.Interval = 1000;
-            chart1.ChartAreas[0].AxisY.Maximum = 100.2;
-            chart1.Series[0].BorderWidth = 2;
+                ConfigureXAxisWithHours(chart1, simulation_Waermebedarf.Dauerlinie);
+            else
+                ConfigureXAxisWithMonths(chart1, simulation_Waermebedarf.Dauerlinie_nicht_sortiert);
         }
 
         private void checkBox_StromSortiert_CheckedChanged(object sender, EventArgs e)
@@ -252,7 +257,7 @@ namespace WindowsFormsApplication1
             else
                 textBox_WB_Deckung.Text = ((b + c) / a * 100).ToString("F2");
 
-            textBox_Laufzeit.Text = (sim.simulation_wp.WP_Laufzeit / sim.simulation_wp.wp_list.Count).ToString("F0");
+
             if (sim.simulation_wp.Bivalenzpunkt != -100)
                 textBox_Bivalenzpunkt.Text = sim.simulation_wp.Bivalenzpunkt.ToString("F2");
             else
@@ -273,37 +278,23 @@ namespace WindowsFormsApplication1
             }
             textBox_MinSPKLeistung.Text = Max_Spk.ToString("F2");
 
-            for (int i = 1; i <= 5; i++)
+            for (int i = 0; i < sim.simulation_wp.wp_list.Count(); i++)
             {
-                tabPage2.Controls["textBox" + i.ToString() + "_1"].Text = (sim.simulation_wp.Modul_WP_Waermeproduktion[i - 1] / 1000).ToString("F2");
-                tabPage2.Controls["textBox" + i.ToString() + "_2"].Text = (sim.simulation_wp.Modul_WP_Strombedarf[i - 1] / 1000).ToString("F2");
-                tabPage2.Controls["textBox" + i.ToString() + "_3"].Text = (sim.simulation_wp.Modul_Heizstab[i - 1] / 1000).ToString("F2");
-                tabPage2.Controls["textBox" + i.ToString() + "_4"].Text = (sim.simulation_wp.Modul_WP_Laufzeit[i - 1]).ToString("F2");
-                tabPage2.Controls["textBox" + i.ToString() + "_Modul"].Text = sim.simulation_wp.WP_Modul[i - 1];
+                ListViewItem lvitem = new ListViewItem();
+                lvitem.Text = sim.simulation_wp.WP_Modul[i];
+                lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Waermeproduktion[i] / 1000).ToString("F2"));
+                lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Strombedarf[i] / 1000).ToString("F2"));
+                lvitem.SubItems.Add((sim.simulation_wp.Modul_Heizstab[i] / 1000).ToString("F2"));
+                lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Laufzeit[i]).ToString("F2"));
+
+                listView_SimWP.Items.Add(lvitem);
             }
+
+            listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
             // charts und Textfelder Wärmepumpe
-            chart3.ChartAreas[0].AxisX.Minimum = 0;
-            chart3.ChartAreas[0].AxisX.Interval = 1000;
-            chart3.Series["Waermebedarf"].Points.DataBindY(sim.simulation_wp.Waermebedarf_stuendlich);
-            chart3.Series["Waermebedarf"].BorderWidth = 1;
-            chart3.Series["Waermebedarf"].Color = System.Drawing.Color.Red;
-
-            float[] temp = new float[8760];
-            for (int i = 0; i < 8760; i++)
-            {
-                if (ctrl.m_WP_Heizstab)
-                {
-                    temp[i] = sim.simulation_wp.WP_Waermeproduktion_stuendlich[i] + sim.simulation_wp.Heizstab_stuendlich[i];
-                }
-                else temp[i] = 0;
-            }
-            chart3.Series["Heizstab"].Points.DataBindY(temp);
-            chart3.Series["Heizstab"].BorderWidth = 1;
-            chart3.Series["Heizstab"].Color = System.Drawing.Color.Yellow;
-            chart3.Series["Waermeproduktion"].Points.DataBindY(sim.simulation_wp.WP_Waermeproduktion_stuendlich);
-            chart3.Series["Waermeproduktion"].BorderWidth = 1;
-            chart3.Series["Waermeproduktion"].Color = System.Drawing.Color.Blue;
+            checkBox_WP_sortiert.Checked = false; 
 
             // chart Temperatur - Leistung  
             PointF[] ps_produktion_raw = new PointF[8760];
@@ -394,6 +385,7 @@ namespace WindowsFormsApplication1
 
                 listView_SimSPK.Items.Add(lvitem);
             }
+            
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
@@ -453,7 +445,106 @@ namespace WindowsFormsApplication1
 
         private void checkBox_WP_sortiert_Click(object sender, EventArgs e)
         {
+        }
+
+        private void btn_Beenden_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        public void ConfigureXAxisWithMonths(Chart chartControl, float[] Dauerlinie_nicht_sortiert)
+        {
+            // Define your custom labels in an array
+            string[] monthArray = { "1", "2", "3", "4", "5", "6", "7", "8", "8", "10", "11", "12" };
+
+            chartControl.ChartAreas[0].AxisX.CustomLabels.Clear();
+            chartControl.Annotations.Clear();
+            chartControl.Series[0].Points.Clear();
+
+            // Ensure the X-axis is set up to display labels based on the data points
+            chartControl.ChartAreas[0].AxisX.Minimum = 0;
+            chartControl.ChartAreas[0].AxisX.Maximum = monthArray.Length;
+            chartControl.ChartAreas[0].AxisX.Interval = 1; // Display a tick mark/label position every 1 unit
+
+            // Add custom labels for each data point position
+            for (int i = 0; i < monthArray.Length; i++)
+            {
+                CustomLabel lblMonth = new CustomLabel();
+                // The label will span the range from i + 0.5 to i - 0.5, centering it on the integer value
+                // This positions the label correctly under the corresponding data point
+                lblMonth.FromPosition = i;
+                lblMonth.ToPosition = i + 0.8;
+                lblMonth.Text = monthArray[i];
+                chartControl.ChartAreas[0].AxisX.CustomLabels.Add(lblMonth);
+            }
+  
+            for (int j = 0; j < 8760; j++)
+            {
+                double d = (double)j * 12 / 8760;
+                chartControl.Series[0].Points.AddXY(d, Dauerlinie_nicht_sortiert[j]);
+            }
+            chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Months;
+            chartControl.ChartAreas[0].AxisX.Title = "Monat";
+
+            return;
+        }
+
+        public void ConfigureXAxisWithHours(Chart chartControl, float[] Dauerlinie_sortiert)
+        {
+            // custom labels in array
+            string[] hourArray = { "2000", "4000", "6000", "8000" };
+            
+            chartControl.ChartAreas[0].AxisX.CustomLabels.Clear();
+            chartControl.Annotations.Clear();
+            chartControl.Series[0].Points.Clear();
+
+            // Ensure the X-axis is set up to display labels based on the data points
+            chartControl.ChartAreas[0].AxisX.Minimum = 0;
+            chartControl.ChartAreas[0].AxisX.Maximum = 8759;
+            chartControl.ChartAreas[0].AxisX.Interval = 1000; // Display a tick mark/label position every 1 unit
+            chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Number;
+            chartControl.ChartAreas[0].AxisX.Title = "Jahresstunden";
+
+            // Add custom labels for each data point position
+            for (int i = 1; i < 5; i++)
+            {
+                CustomLabel lblMonth = new CustomLabel();
+                // The label will span the range from i + 0.5 to i - 0.5, centering it on the integer value
+                // This positions the label correctly under the corresponding data point
+                lblMonth.FromPosition = i;
+                lblMonth.ToPosition = i + 24;
+                lblMonth.Text = hourArray[i-1];
+            }
+
+            for (int j = 0; j < 8760; j++)
+            {
+                chartControl.Series[0].Points.AddXY(j, Dauerlinie_sortiert[j]);
+            }
+ 
+            return;
+        }
+
+        private void checkBox_WP_sortiert_CheckedChanged(object sender, EventArgs e)
+        {
             float[] temp = new float[8760];
+
+            chart3.ChartAreas[0].AxisX.MajorGrid.Enabled = false;
+            chart3.ChartAreas[0].AxisX.MinorGrid.Enabled = false;
+            chart3.ChartAreas[0].AxisX.StripLines.Clear();
+            chart3.ChartAreas[0].AxisX.CustomLabels.Clear();
+            chart3.ChartAreas[0].AxisX.Enabled = AxisEnabled.True;
+            chart3.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;    
+            chart3.Annotations.Clear();
+            chart3.Series[0].Points.Clear();
+   
+            chart3.ChartAreas[0].AxisX.Interval = 0;
+            chart3.ChartAreas[0].AxisX.LabelStyle.Font = new System.Drawing.Font("Arial", 8);
+            chart3.ChartAreas[0].AxisX.LabelAutoFitStyle = LabelAutoFitStyles.None;
+            chart3.ChartAreas[0].AxisX.LabelStyle.Angle = 0;
+ 
+            chart3.Series["Waermebedarf"].Color = Color.Red;
+            chart3.Series["Heizstab"].Color = Color.Yellow;
+            chart3.Series["Waermeproduktion"].Color = Color.Blue;
 
             for (int i = 0; i < 8760; i++)
             {
@@ -466,6 +557,8 @@ namespace WindowsFormsApplication1
 
             if (checkBox_WP_sortiert.Checked)
             {
+                chart3.ChartAreas[0].AxisX.Title = "Jahresstunden";
+
                 float[] sortedWBArray = new float[8760];
                 Array.Copy(sim.simulation_wp.WP_Waermeproduktion_stuendlich, sortedWBArray, 8760);
                 Array.Sort(sortedWBArray);
@@ -477,20 +570,94 @@ namespace WindowsFormsApplication1
                 Array.Sort(sortedArray);
                 Array.Reverse(sortedArray);
                 chart3.Series["Waermebedarf"].Points.DataBindY(sortedArray);
-                
+
                 float[] sortedArrayHeizstab = new float[8760];
                 Array.Copy(temp, sortedArrayHeizstab, 8760);
                 Array.Sort(sortedArrayHeizstab);
                 chart3.Series["Heizstab"].Points.DataBindY(sortedArrayHeizstab);
+
+                for (int i = 0; i < 8760; i+=1000)
+                {
+                    CustomLabel cl;
+                    cl = chart3.ChartAreas[0].AxisX.CustomLabels.Add(i-500, i+500, i.ToString(), 0, LabelMarkStyle.None);
+                    StripLine stripHigh = new StripLine();
+                    stripHigh.StripWidth = 1;
+                    stripHigh.BorderDashStyle = ChartDashStyle.DashDot;
+                    stripHigh.BackColor = Color.FromArgb(255, Color.Gray);
+                    stripHigh.Interval = 0;
+                    stripHigh.IntervalOffset = i;
+                    stripHigh.TextOrientation = TextOrientation.Horizontal;
+                    chart3.ChartAreas[0].AxisX.StripLines.Add(stripHigh);
+                }
             }
             else
             {
+                chart3.ChartAreas[0].AxisX.Title = "Monat";
+
                 chart3.Series["Waermeproduktion"].Points.DataBindY(sim.simulation_wp.WP_Waermeproduktion_stuendlich);
                 chart3.Series["Waermebedarf"].Points.DataBindY(sim.simulation_wp.Waermebedarf_stuendlich);
                 chart3.Series["Heizstab"].Points.DataBindY(temp);
+
+                int[] labelArr = sim.simulation_Strombedarf.mo_anfang;
+                int n = (8760 / 24);
+
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[0] + n, labelArr[1] - n, "1", 0, LabelMarkStyle.LineSideMark);
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[1] + n, labelArr[2] - n, "2");
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[2] + n, labelArr[3] - n, "3");
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[3] + n, labelArr[4] - n, "4");
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[4] + n, labelArr[5] - n, "5");
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[5] + n, labelArr[6] - n, "6");
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[6] + n, labelArr[7] - n, "7");
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[7] + n, labelArr[8] - n, "8");
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[8] + n, labelArr[9] - n, "9");
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[9], labelArr[10], "10");
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[10], labelArr[11], "11", 0, LabelMarkStyle.None);
+                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[11], 8760, "12");
+
+                chart3.ChartAreas[0].AxisX.CustomLabels[11].RowIndex = 0;
+
+                for (int i = 0; i < 12; i++)
+                {
+                    StripLine stripLow = new StripLine();
+                    stripLow.Interval = 0;
+                    stripLow.IntervalOffset = labelArr[i];
+                    stripLow.StripWidth = 1;
+                    stripLow.BorderDashStyle = ChartDashStyle.DashDot;
+                    stripLow.BackColor = Color.FromArgb(255, Color.Gray);
+                    stripLow.TextOrientation = TextOrientation.Horizontal; 
+                    chart3.ChartAreas[0].AxisX.StripLines.Add(stripLow);
+                }
             }
         }
 
+        //List view header formatters
+        public static void colorListViewHeader(ref ListView list, Color backColor, Color foreColor)
+        {
+            list.OwnerDraw = true;
+            list.DrawColumnHeader +=
+                new DrawListViewColumnHeaderEventHandler
+                (
+                    (sender, e) => headerDraw(sender, e, backColor, foreColor)
+                );
+            list.DrawItem += new DrawListViewItemEventHandler(bodyDraw);
+        }
 
+        private static void headerDraw(object sender, DrawListViewColumnHeaderEventArgs e, Color backColor, Color foreColor)
+        {
+            using (SolidBrush backBrush = new SolidBrush(backColor))
+            {
+                e.Graphics.FillRectangle(backBrush, e.Bounds);
+            }
+
+            using (SolidBrush foreBrush = new SolidBrush(foreColor))
+            {
+                e.Graphics.DrawString(e.Header.Text, e.Font, foreBrush, e.Bounds);
+            }
+        }
+
+        private static void bodyDraw(object sender, DrawListViewItemEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
     }
 }

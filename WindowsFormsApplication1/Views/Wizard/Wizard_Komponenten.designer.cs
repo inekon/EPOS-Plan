@@ -41,7 +41,6 @@
             this.checkBox_Stromlastgang = new System.Windows.Forms.CheckBox();
             this.checkBox_Kessel = new System.Windows.Forms.CheckBox();
             this.checkBox_Gebaeude = new System.Windows.Forms.CheckBox();
-            this.checkBox_Referenz = new System.Windows.Forms.CheckBox();
             this.checkBox_WBedarfDaten = new System.Windows.Forms.CheckBox();
             this.checkBox_StdStromprofil = new System.Windows.Forms.CheckBox();
             this.checkBox_BHKW = new System.Windows.Forms.CheckBox();
@@ -189,18 +188,6 @@
             this.checkBox_Gebaeude.UseVisualStyleBackColor = true;
             this.checkBox_Gebaeude.CheckedChanged += new System.EventHandler(this.checkBox_Gebaeude_CheckedChanged);
             // 
-            // checkBox_Referenz
-            // 
-            this.checkBox_Referenz.AutoSize = true;
-            this.checkBox_Referenz.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.checkBox_Referenz.Location = new System.Drawing.Point(473, 280);
-            this.checkBox_Referenz.Name = "checkBox_Referenz";
-            this.checkBox_Referenz.Size = new System.Drawing.Size(139, 25);
-            this.checkBox_Referenz.TabIndex = 12;
-            this.checkBox_Referenz.Text = "Referenzsystem";
-            this.checkBox_Referenz.UseVisualStyleBackColor = true;
-            this.checkBox_Referenz.CheckedChanged += new System.EventHandler(this.checkBox_Referenz_CheckedChanged);
-            // 
             // checkBox_WBedarfDaten
             // 
             this.checkBox_WBedarfDaten.AutoSize = true;
@@ -247,7 +234,6 @@
             this.Controls.Add(this.checkBox_BHKW);
             this.Controls.Add(this.checkBox_StdStromprofil);
             this.Controls.Add(this.checkBox_WBedarfDaten);
-            this.Controls.Add(this.checkBox_Referenz);
             this.Controls.Add(this.checkBox_Gebaeude);
             this.Controls.Add(this.checkBox_Kessel);
             this.Controls.Add(this.checkBox_Stromlastgang);
@@ -284,7 +270,6 @@
         private System.Windows.Forms.CheckBox checkBox_Stromlastgang;
         private System.Windows.Forms.CheckBox checkBox_Kessel;
         private System.Windows.Forms.CheckBox checkBox_Gebaeude;
-        private System.Windows.Forms.CheckBox checkBox_Referenz;
         private System.Windows.Forms.CheckBox checkBox_WBedarfDaten;
         private System.Windows.Forms.CheckBox checkBox_StdStromprofil;
         private System.Windows.Forms.CheckBox checkBox_BHKW;

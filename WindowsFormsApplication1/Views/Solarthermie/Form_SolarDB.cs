@@ -18,7 +18,6 @@ namespace WindowsFormsApplication1
         }
         public void SetControls(string szName)
         {
-            RecordSet rs = new RecordSet();
             SolarkollektorenCtrl ctrl = new SolarkollektorenCtrl();
 
             if (m_mode == MODE_EDIT)

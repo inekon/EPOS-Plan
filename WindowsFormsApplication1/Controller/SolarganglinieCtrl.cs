@@ -6,20 +6,20 @@ using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
-    class StromganglinieCtrl : StromganglinieModel
+    class SolarganglinieCtrl : SolarganglinieModel
     {
         OdbcCommand DBCommand;
         OdbcDataReader DBReader;
         public int rows;
         public int max_id = 0;
 
-        public StromganglinieCtrl()
+        public SolarganglinieCtrl ()
         {
             rows = 0;
             DBCommand = Program.DBConnection.CreateCommand();
         }
 
-        ~StromganglinieCtrl()
+        ~SolarganglinieCtrl ()
         {
             rows = 0;
             DBCommand.Dispose();
@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Tab_Stromganglinie where Bezeichner= '" + szName + "'";
+                DBCommand.CommandText = "DELETE * FROM Tab_Solarganglinie where Bezeichner= '" + szName + "'";
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)
@@ -52,7 +52,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                DBCommand.CommandText = "SELECT Count(*) FROM Tab_Stromganglinie";
+                DBCommand.CommandText = "SELECT Count(*) FROM Tab_Solarganglinie";
                 OdbcDataReader DBReader = DBCommand.ExecuteReader();
                 DBReader.Read();  
                 int result = (int)DBReader.GetValue(0);
@@ -61,14 +61,14 @@ namespace WindowsFormsApplication1
                 if (result == 0) m_ID_Ganglinie = 1;
                 else
                 {
-                    DBCommand.CommandText = "SELECT Max(ID_GanglinieDaten) AS Ausdr1 FROM Tab_Stromganglinie";
+                    DBCommand.CommandText = "SELECT Max(ID_GanglinieDaten) AS Ausdr1 FROM Tab_Solarganglinie";
                     DBReader = DBCommand.ExecuteReader();
                     DBReader.Read();  
                     m_ID_Ganglinie = (int)DBReader.GetValue(0) + 1;
                     DBReader.Close();
                 }
-                DBCommand.CommandText = "INSERT INTO Tab_Stromganglinie ( ID_GanglinieDaten, Bezeichner) SELECT " + m_ID_Ganglinie +
-                    " AS Ausdr1, '" + m_szBezeichner + "' AS Ausdr2";
+                DBCommand.CommandText = "INSERT INTO Tab_Solarganglinie ( ID_GanglinieDaten, Bezeichner, Beschreibung) SELECT " + m_ID_Ganglinie +
+                    " AS Ausdr1, '" + m_szBezeichner + "' AS Ausdr2, '" + m_szBeschreibung + "' AS Ausdr3";
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)
@@ -88,18 +88,19 @@ namespace WindowsFormsApplication1
 
         public void ReadAll()
         {
-            DBCommand.CommandText = "select * from Tab_Stromganglinie order by Bezeichner";
+            DBCommand.CommandText = "select * from Tab_Solarganglinie order by Bezeichner";
             DBReader = DBCommand.ExecuteReader();
 
-            items = new StromganglinieModel[1000];
+            items = new SolarganglinieModel[1000];
             rows = 0;
             while (DBReader.Read())
             {
-                StromganglinieModel item = new StromganglinieModel();
+                SolarganglinieModel item = new SolarganglinieModel();
 
                 if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) item.m_ID_Ganglinie = (int)DBReader.GetValue(1);
                 if (!DBReader.IsDBNull(2)) item.m_szBezeichner = (string)DBReader.GetString(2);
+                if (!DBReader.IsDBNull(3)) item.m_szBeschreibung = (string)DBReader.GetString(3);
 
                 items[rows] = item;
                 rows += 1;
@@ -111,19 +112,19 @@ namespace WindowsFormsApplication1
 
         public void ReadSingle(string szBezeichner)
         {
-            DBCommand.CommandText = "select * from Tab_Stromganglinie where Bezeichner='" + szBezeichner + "'";
+            DBCommand.CommandText = "select * from Tab_Solarganglinie where Bezeichner='" + szBezeichner + "'";
             DBReader = DBCommand.ExecuteReader();
 
             rows = 0;
 
             if (DBReader.Read())
             {
-                StromganglinieModel item = new StromganglinieModel();
+                SolarganglinieModel item = new SolarganglinieModel();
 
                 if (!DBReader.IsDBNull(0)) ID = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) m_ID_Ganglinie = (int)DBReader.GetValue(1);
                 if (!DBReader.IsDBNull(2)) m_szBezeichner = (string)DBReader.GetString(2);
-
+                if (!DBReader.IsDBNull(3)) m_szBeschreibung = (string)DBReader.GetString(3);
                 rows = 1;
             }
             DBReader.Dispose();

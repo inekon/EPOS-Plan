@@ -129,7 +129,6 @@ namespace WindowsFormsApplication1
                 DBGelesen = true;
             }
 
-           
             ProjektGebaeudeCtrl ctrl = new ProjektGebaeudeCtrl();
             ctrl.ReadAll(ID_Projekt);
 

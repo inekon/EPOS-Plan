@@ -154,6 +154,8 @@
     <Compile Include="Controller\ProjektGebaeudeCtrl.cs" />
     <Compile Include="Controller\ProzesswaermeKontextMenuCtrl.cs" />
     <Compile Include="Controller\SolardatenCtrl .cs" />
+    <Compile Include="Controller\SolarganglinieCtrl.cs" />
+    <Compile Include="Controller\SolarganglinieDatenCtrl.cs" />
     <Compile Include="Controller\SolarkollektorenCtrl.cs" />
     <Compile Include="Controller\StrombedarfKontextMenuCtrl.cs" />
     <Compile Include="Controller\StromganglinieCtrl.cs" />
@@ -174,12 +176,14 @@
     <Compile Include="Controller\WaermebedarfExternKontextMenuCtrl.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Controller\Z_ProjektSolarganglinieCtrl.cs" />
     <Compile Include="Controller\Z_ProjektStromganglinieCtrl.cs" />
     <Compile Include="Controller\Z_ProjektStromverbraucherCtrl.cs" />
     <Compile Include="Model\BHKWModel.cs" />
     <Compile Include="Model\KenndatenKuehlungModel.cs" />
     <Compile Include="Model\KonfigurationModel.cs" />
     <Compile Include="Model\ProzesswaermeModel.cs" />
+    <Compile Include="Model\SolarganglinieModel.cs" />
     <Compile Include="Model\SolarkollektorenModel.cs" />
     <Compile Include="Model\StromganglinieModel.cs" />
     <Compile Include="Model\StromverbraucherModel.cs" />
@@ -207,6 +211,7 @@
     <Compile Include="Model\WErzeugerModel.cs" />
     <Compile Include="Model\ProjektModel.cs" />
     <Compile Include="Model\Z_ProjektProzesswaermeModel.cs" />
+    <Compile Include="Model\Z_ProjektSolarganglinieModel.cs" />
     <Compile Include="Model\Z_ProjektStromganglinieModel.cs" />
     <Compile Include="Model\Z_ProjektStromverbraucherModel.cs" />
     <Compile Include="Model\Z_ProjektWaermebedarfModel.cs" />
@@ -343,6 +348,18 @@
     <Compile Include="Views\Solarthermie\Form_SolarDB.designer.cs">
       <DependentUpon>Form_SolarDB.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Solarthermie\Form_Solarganglinie.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Solarthermie\Form_Solarganglinie.designer.cs">
+      <DependentUpon>Form_Solarganglinie.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Solarthermie\Form_Solarganglinie_Admin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Solarthermie\Form_Solarganglinie_Admin.designer.cs">
+      <DependentUpon>Form_Solarganglinie_Admin.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Solarthermie\Form_SolarKollektoren.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -421,29 +438,23 @@
     <Compile Include="Views\Wizard\Wizard_Kessel.Designer.cs">
       <DependentUpon>Wizard_Kessel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Wizard\Wizard_Referenz.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Referenz.designer.cs">
-      <DependentUpon>Wizard_Referenz.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Wizard\Wizard_Stromlastgang.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Stromlastgang.Designer.cs">
       <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Wizard\Wizard_Waermebedarf.cs">
+    <Compile Include="Views\Wärmebedarf\Form_AdminWaermeeinlesen.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Wizard\Wizard_Waermebedarf.designer.cs">
-      <DependentUpon>Wizard_Waermebedarf.cs</DependentUpon>
+    <Compile Include="Views\Wärmebedarf\Form_AdminWaermeeinlesen.designer.cs">
+      <DependentUpon>Form_AdminWaermeeinlesen.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Wärmebedarf\Form_Waermeeinlesen.cs">
+    <Compile Include="Views\Wärmebedarf\Form_Waermebedarf.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Wärmebedarf\Form_Waermeeinlesen.designer.cs">
-      <DependentUpon>Form_Waermeeinlesen.cs</DependentUpon>
+    <Compile Include="Views\Wärmebedarf\Form_Waermebedarf.designer.cs">
+      <DependentUpon>Form_Waermebedarf.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wärmepumpe\Form_WP.cs">
       <SubType>Form</SubType>
@@ -506,23 +517,11 @@
     <Compile Include="Views\Wizard\Wizard_PV.Designer.cs">
       <DependentUpon>Wizard_PV.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Wizard\Wizard_Solar.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Solar.designer.cs">
-      <DependentUpon>Wizard_Solar.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Wizard\Wizard_Komponenten.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Komponenten.designer.cs">
       <DependentUpon>Wizard_Komponenten.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Klima.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Klima.designer.cs">
-      <DependentUpon>Wizard_Klima.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wizard\WizardParent.cs">
       <SubType>Form</SubType>
@@ -634,6 +633,12 @@
     <EmbeddedResource Include="Views\Solarthermie\Form_SolarDB.resx">
       <DependentUpon>Form_SolarDB.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_Solarganglinie.resx">
+      <DependentUpon>Form_Solarganglinie.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_Solarganglinie_Admin.resx">
+      <DependentUpon>Form_Solarganglinie_Admin.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektoren.resx">
       <DependentUpon>Form_SolarKollektoren.cs</DependentUpon>
     </EmbeddedResource>
@@ -664,20 +669,17 @@
     <EmbeddedResource Include="Views\Wizard\Wizard_Kessel.resx">
       <DependentUpon>Wizard_Kessel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Wizard_Referenz.resx">
-      <DependentUpon>Wizard_Referenz.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Stromlastgang.resx">
       <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Wizard_Waermebedarf.resx">
-      <DependentUpon>Wizard_Waermebedarf.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_WP.resx">
       <DependentUpon>Wizard_WP.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wärmebedarf\Form_Waermeeinlesen.resx">
-      <DependentUpon>Form_Waermeeinlesen.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Wärmebedarf\Form_AdminWaermeeinlesen.resx">
+      <DependentUpon>Form_AdminWaermeeinlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmebedarf\Form_Waermebedarf.resx">
+      <DependentUpon>Form_Waermebedarf.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wärmepumpe\Form_WP.resx">
       <DependentUpon>Form_WP.cs</DependentUpon>
@@ -713,14 +715,8 @@
     <EmbeddedResource Include="Views\Wizard\Wizard_PV.resx">
       <DependentUpon>Wizard_PV.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Wizard_Solar.resx">
-      <DependentUpon>Wizard_Solar.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Komponenten.resx">
       <DependentUpon>Wizard_Komponenten.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Wizard_Klima.resx">
-      <DependentUpon>Wizard_Klima.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_WPItem.resx">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>

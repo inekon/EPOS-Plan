@@ -16,8 +16,6 @@ namespace WindowsFormsApplication1
         public int m_nType = WizardItemClass.SOLAR_TYP;
         public int m_ID_Projekt = 0;
         private WErzeugerModel model = new WErzeugerModel();
-        private bool m_bWizard = false;
-        private WizardParent wizardparent = null;
 
         public Form_SolarKollektorenAdmin ()
         {
