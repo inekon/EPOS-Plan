@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.Odbc;
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -102,70 +104,80 @@ namespace WindowsFormsApplication1
             com.I_vector_init(ref prozesswerte);
             com.I_vector_init(ref temp);
 
-            if (list == null)
+            try
             {
-                // Abfrage über gespeicherte Prozesse im Projekt
-                pw_list.Clear();
-                rs.Open("select * from Abfrage_Monatsstrom where ID_Projekt=" + m_ID_Projekt);
-                while (rs.Next())
+                if (list == null)
                 {
-                    pw_list.Add((string)rs.Read("Bezeichner").ToString());
+                    // Abfrage über gespeicherte Prozesse im Projekt
+                    pw_list.Clear();
+                    rs.Open("select * from Abfrage_Monatsstrom where ID_Projekt=" + m_ID_Projekt);
+                    while (rs.Next())
+                    {
+                        pw_list.Add((string)rs.Read("Bezeichner").ToString());
+                    }
+                    rs.Close();
                 }
-                rs.Close();
-            }
-            else
-            {
-                // über Liste mit Prozessnamen
-                pw_list = list;
-            }
-
-            for (int k = 0; k < pw_list.Count; k++)
-            {
-                rs.Open("select * from Tab_Stromverbraucher where Bezeichner='" + pw_list[k] + "'");
-                if (rs.Next())
+                else
                 {
-                    float pjv = 0;
-                    float jv = 0;
-                    if (m_ID_Projekt != 0) // skalieren ggf. mit geändertem Projekt Jahresverbrauch
-                    {
-                        Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
-                        ctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Bezeichner") + "'");
-                        pjv = (float)ctrl.items[0].Summe;
-                    }
+                    // über Liste mit Prozessnamen
+                    pw_list = list;
+                }
 
-                    for (int i = 0; i < 12; i++)
+                for (int k = 0; k < pw_list.Count; k++)
+                {
+                    rs.Open("select * from Tab_Stromverbraucher where Bezeichner='" + pw_list[k] + "'");
+                    if (rs.Next())
                     {
-                        double d = (double)rs.Read("Monat_" + (i + 1).ToString());
-                        monats_waerme[i] = (float)d;
-                        jv += monats_waerme[i];
-                    }
+                        float pjv = 0;
+                        float jv = 0;
+                        if (m_ID_Projekt != 0) // skalieren ggf. mit geändertem Projekt Jahresverbrauch
+                        {
+                            Z_ProjektStromverbraucherCtrl ctrl = new Z_ProjektStromverbraucherCtrl();
+                            ctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Bezeichner") + "'");
+                            if (ctrl.rows == 0) { MessageBox.Show("Fehler bei Ermittlung der Monatsverteilung!"); return; }
+                            pjv = (float)ctrl.items[0].m_Summe;
+                        }
 
-                    if (pjv > 0)
-                    {
                         for (int i = 0; i < 12; i++)
                         {
-                            monats_waerme[i] = monats_waerme[i] * pjv / jv;
+                            double d = (double)rs.Read("Monat_" + (i + 1).ToString());
+                            monats_waerme[i] = (float)d;
+                            jv += monats_waerme[i];
                         }
-                    }
 
-                    // Tagesverteilung für den Prozess ermitteln
-                    rs_pwtyp.Open("select * from Tab_Stromverbrauchertyp where Typname='" + (string)rs.Read("Typ") + "'");
-
-                    if (rs_pwtyp.Next())
-                    {
-                        for (int i = 0; i < 168; i++)
+                        if (pjv > 0)
                         {
-                            double dw = (double)rs_pwtyp.Read((i + 1).ToString());
-                            wochen_waerme[i] = (float)dw;
+                            for (int i = 0; i < 12; i++)
+                            {
+                                monats_waerme[i] = monats_waerme[i] * pjv / jv;
+                            }
                         }
-                    }
-                    rs_pwtyp.Close();
 
-                    // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
-                    temp = com.I_strom_wochetojahr(wochen_waerme, monats_waerme, mo_anfang, mo_ende);
-                    com.CSharp_I_vectoren_addieren(temp, prozesswerte);
+                        // Tagesverteilung für den Prozess ermitteln
+                        rs_pwtyp.Open("select * from Tab_Stromverbrauchertyp where Typname='" + (string)rs.Read("Typ") + "'");
+
+                        if (rs_pwtyp.Next())
+                        {
+                            for (int i = 0; i < 168; i++)
+                            {
+                                double dw = (double)rs_pwtyp.Read((i + 1).ToString());
+                                wochen_waerme[i] = (float)dw;
+                            }
+                        }
+                        rs_pwtyp.Close();
+
+                        // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
+                        temp = com.I_strom_wochetojahr(wochen_waerme, monats_waerme, mo_anfang, mo_ende);
+                        com.CSharp_I_vectoren_addieren(temp, prozesswerte);
+                    }
+                    rs.Close();
                 }
+            }
+            catch (SystemException ex)
+            {
                 rs.Close();
+                Console.WriteLine("Fehler in Simulation: " + ex.Message);
+                MessageBox.Show("Fehler in Simulation!");
             }
  
         }

@@ -109,9 +109,9 @@ namespace WindowsFormsApplication1
             // 
             // btn_Bearbeiten
             // 
-            this.btn_Bearbeiten.Location = new System.Drawing.Point(625, 300);
+            this.btn_Bearbeiten.Location = new System.Drawing.Point(653, 285);
             this.btn_Bearbeiten.Name = "btn_Bearbeiten";
-            this.btn_Bearbeiten.Size = new System.Drawing.Size(158, 30);
+            this.btn_Bearbeiten.Size = new System.Drawing.Size(158, 36);
             this.btn_Bearbeiten.TabIndex = 15;
             this.btn_Bearbeiten.Text = "Gamglinie einlesen...";
             this.btn_Bearbeiten.UseVisualStyleBackColor = true;
@@ -156,9 +156,9 @@ namespace WindowsFormsApplication1
             // 
             // btn_Loeschen
             // 
-            this.btn_Loeschen.Location = new System.Drawing.Point(625, 336);
+            this.btn_Loeschen.Location = new System.Drawing.Point(653, 327);
             this.btn_Loeschen.Name = "btn_Loeschen";
-            this.btn_Loeschen.Size = new System.Drawing.Size(158, 31);
+            this.btn_Loeschen.Size = new System.Drawing.Size(158, 33);
             this.btn_Loeschen.TabIndex = 20;
             this.btn_Loeschen.Text = "Ganglinie Löschen";
             this.btn_Loeschen.UseVisualStyleBackColor = true;

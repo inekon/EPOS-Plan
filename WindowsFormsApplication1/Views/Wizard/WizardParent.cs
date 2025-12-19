@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Odbc;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -64,11 +58,9 @@ namespace WindowsFormsApplication1
             listPages = WizardPages;
             listPages[WizardItemClass.KOMPONENTEN_ITEM].aktiv = true;
             listPages[WizardItemClass.PROJEKT_ITEM].aktiv = true;
-            listPages[WizardItemClass.KLIMA_ITEM].aktiv = false;  // Klima Wizard Page ausgeblendet
             listPages[WizardItemClass.GEBAEUDE_ITEM].aktiv = false;
             listPages[WizardItemClass.PROZESS_ITEM].aktiv = false;
             listPages[WizardItemClass.STROMLASTGANG_ITEM].aktiv = false;
-            listPages[WizardItemClass.REFERENZ_ITEM].aktiv = false;
             listPages[WizardItemClass.KESSEL_ITEM].aktiv = false;
             listPages[WizardItemClass.PV_ITEM].aktiv = false;
             listPages[WizardItemClass.SOLAR_ITEM].aktiv = false;
@@ -140,7 +132,7 @@ namespace WindowsFormsApplication1
             this.pnlContent.Controls.Clear();
             this.pnlContent.Controls.Add(page);
             page.Show();
-         }
+        }
 
         private void Back()
         {
@@ -210,13 +202,6 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            // Klimaregion Auswahl in Projektmodel speichern
-            if (top == WizardItemClass.KLIMA_ITEM)
-            {
-                page = listPages.ElementAt(top).wizardform;
-                m_Projektmodel.m_ID_Klimaregion = ((Wizard_Klima)page).GetIDKlimaregion();
-            }
-    
             top = GetNextUpIndex(); //nächste mögliche Seite...
             
             // nächste Seite laden...
@@ -246,10 +231,6 @@ namespace WindowsFormsApplication1
                 {
                     ((Wizard_WP)page).SetControls(listBox_Projekte.Text);
                 }
-                else if (top == WizardItemClass.KLIMA_ITEM)
-                {
-                    ((Wizard_Klima)page).SetControls(listBox_Projekte.Text);
-                }
                 else if (top == WizardItemClass.GEBAEUDE_ITEM)
                 {
                     ((Form_Gebaeude)page).list_gebmodel = list_gebmodel; 
@@ -269,19 +250,14 @@ namespace WindowsFormsApplication1
                 {
                     ((Wizard_Stromlastgang)page).SetControls(listBox_Projekte.Text);
                 }
-                else if (top == WizardItemClass.REFERENZ_ITEM)
-                {
-                    ((Wizard_Referenz)page).SetControls(listBox_Projekte.Text);
-                    ((Wizard_Referenz)page).SetWPControls(listBox_Projekte.Text);
-                }
                 else if (top == WizardItemClass.KESSEL_ITEM)
                 {
                     ((Wizard_Kessel)page).SetControls(listBox_Projekte.Text);
                 }
                 else if (top == WizardItemClass.WAERMEBEDARF_ITEM)
                 {
-                    ((Wizard_Waermebedarf)page).list_wbmodel = list_wbmodel;
-                    ((Wizard_Waermebedarf)page).SetControls(listBox_Projekte.Text, true);
+                    ((Form_Waermebedarf)page).list_wbmodel = list_wbmodel;
+                    ((Form_Waermebedarf)page).SetControls(listBox_Projekte.Text, true);
                 }
                 else if (top == WizardItemClass.STROMSTD_ITEM)
                 {
@@ -325,8 +301,8 @@ namespace WindowsFormsApplication1
                 }
                 else if (top == WizardItemClass.WAERMEBEDARF_ITEM)
                 {
-                    ((Wizard_Waermebedarf)page).list_wbmodel = list_wbmodel;
-                    ((Wizard_Waermebedarf)page).SetControls(listBox_Projekte.Text, true);
+                    ((Form_Waermebedarf)page).list_wbmodel = list_wbmodel;
+                    ((Form_Waermebedarf)page).SetControls(listBox_Projekte.Text, true);
                 }
                 else if (top == WizardItemClass.SP_ITEM)
                 {
@@ -439,7 +415,6 @@ namespace WindowsFormsApplication1
             ((Wizard_Komponenten)page).SetStromprofilCheckBox(false);
             ((Wizard_Komponenten)page).SetWBedarfDatenCheckBox(false);
             ((Wizard_Komponenten)page).SetGebaeudeCheckBox(false);
-            ((Wizard_Komponenten)page).SetReferenzCheckBox(false);
             ((Wizard_Komponenten)page).SetBHKWCheckBox(false);
 
             int rows = werzctrl.rows;
@@ -496,18 +471,6 @@ namespace WindowsFormsApplication1
                 ((Wizard_Komponenten)page).SetWBedarfDatenCheckBox(true);
             }
             rs.Close();
-
-            string sql = "SELECT Tab_Energieanlagen.ID_Projekt, Tab_Energieanlagen.ID_Type FROM Tab_Energieanlagen " +
-                         "WHERE Tab_Energieanlagen.ID_Projekt=" + projektID.ToString() +
-                         " AND ((Tab_Energieanlagen.ID_Type) = 5 OR (Tab_Energieanlagen.ID_Type) = 6 OR (Tab_Energieanlagen.ID_Type) = 7)";
-            rs = new RecordSet();
-            rs.Open(sql);
-            if (rs.Next())
-            {
-                ((Wizard_Komponenten)page).SetReferenzCheckBox(true);
-            }
-            rs.Close();
-
         }
 
         public void LoadWEFromDB(string projekt)
@@ -576,7 +539,6 @@ namespace WindowsFormsApplication1
 
         private void btnSpeichern_Click(object sender, EventArgs e)
         {
-            Form pageklima = listPages.ElementAt(WizardItemClass.KLIMA_ITEM).wizardform;
             Form pageproj = listPages.ElementAt(WizardItemClass.PROJEKT_ITEM).wizardform;
             Program.wizardctrl.Klimazone = ((Wizard_Projekt)pageproj).GetKlimaname();
             Program.wizardctrl.Projektname = ((Wizard_Projekt)pageproj).GetProjektName();
@@ -584,7 +546,7 @@ namespace WindowsFormsApplication1
 
             list_gebmodel = ((Form_Gebaeude)listPages[WizardItemClass.GEBAEUDE_ITEM].wizardform).list_gebmodel;
             list_prozmodel = ((Form_Prozesswaerme)listPages[WizardItemClass.PROZESS_ITEM].wizardform).list_pwmodel;
-            list_wbmodel = ((Wizard_Waermebedarf)listPages[WizardItemClass.WAERMEBEDARF_ITEM].wizardform).list_wbmodel;
+            list_wbmodel = ((Form_Waermebedarf)listPages[WizardItemClass.WAERMEBEDARF_ITEM].wizardform).list_wbmodel;
 
             Form pagekomp = listPages.ElementAt(WizardItemClass.KOMPONENTEN_ITEM).wizardform;
             if (Program.wizardctrl.Klimazone == "" && ( ((Wizard_Komponenten)pagekomp).GetBebaeudeCheckBox()
@@ -756,7 +718,6 @@ namespace WindowsFormsApplication1
                     item.Beschreibung = (string)rs.Read("Beschreibung");
 
                     list_gebmodel.Add(item);
-                    
                 }
             }
         }
@@ -898,9 +859,7 @@ namespace WindowsFormsApplication1
             ((Wizard_Komponenten)page).SetStromprofilCheckBox(false);
             ((Wizard_Komponenten)page).SetWBedarfDatenCheckBox(false);
             ((Wizard_Komponenten)page).SetGebaeudeCheckBox(false);
-            ((Wizard_Komponenten)page).SetReferenzCheckBox(false);
             ((Wizard_Komponenten)page).SetBHKWCheckBox(false);
-
         }
     }
 }

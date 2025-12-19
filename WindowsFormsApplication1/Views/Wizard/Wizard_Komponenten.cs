@@ -93,11 +93,6 @@ namespace WindowsFormsApplication1
 
         public bool GetBebaeudeCheckBox() { return checkBox_Gebaeude.Checked; }
 
-        public void SetReferenzCheckBox(bool value)
-        {
-            checkBox_Referenz.Checked = value;
-        }
-
         public void SetStromprofilCheckBox(bool value)
         {
             checkBox_StdStromprofil.Checked = value;
@@ -170,14 +165,6 @@ namespace WindowsFormsApplication1
             wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.GEBAEUDE_ITEM);
             wizard.aktiv = checkBox_Gebaeude.Checked;
             ((WizardParent)parentForm).listPages[WizardItemClass.GEBAEUDE_ITEM] = wizard;
-        }
-
-        private void checkBox_Referenz_CheckedChanged(object sender, EventArgs e)
-        {
-            WizardItemClass wizard;
-            wizard = ((WizardParent)parentForm).listPages.ElementAt(WizardItemClass.REFERENZ_ITEM);
-            wizard.aktiv = checkBox_Referenz.Checked;
-            ((WizardParent)parentForm).listPages[WizardItemClass.REFERENZ_ITEM] = wizard;
         }
 
         private void checkBox_WBedarfDaten_CheckedChanged(object sender, EventArgs e)

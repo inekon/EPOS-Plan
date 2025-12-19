@@ -83,7 +83,7 @@ namespace WindowsFormsApplication1
             ListView.SelectedIndexCollection indexes = listView_WaermebedarfExtern.SelectedIndices;
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
-            Wizard_Waermebedarf frm = new Wizard_Waermebedarf();
+            Form_Waermebedarf frm = new Form_Waermebedarf();
             
             if (indexes.Count > 0)
             {
@@ -117,7 +117,7 @@ namespace WindowsFormsApplication1
         private void ContextMenuItemNeu_Click(object sender, EventArgs e)
         {
             //Form_Waermebedarf frm = new Form_Waermebedarf();
-            Wizard_Waermebedarf frm = new Wizard_Waermebedarf();
+            Form_Waermebedarf frm = new Form_Waermebedarf();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
             RecordSet rs = new RecordSet();
