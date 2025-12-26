@@ -320,5 +320,11 @@ namespace WindowsFormsApplication1
            Form_SolarKollektorenAdmin frm = new Form_SolarKollektorenAdmin();
            frm.ShowDialog();
        }
+
+        public void DBUpdate()
+        {   
+            Form_Update frm = new Form_Update();
+            frm.ShowDialog();
+        }
     }
 }

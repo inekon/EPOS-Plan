@@ -44,6 +44,7 @@
             this.MenuItem_Klimadaten = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Prozesswaerme = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Solarkollektoren = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_SolThermGanglinie = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Stromspeicher = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Stromverbraucher = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Stromganglinie = new System.Windows.Forms.ToolStripMenuItem();
@@ -51,7 +52,7 @@
             this.MenuItem_WPBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MeniItem_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_WaermebedarfExtern = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_SolThermGanglinie = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Update = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -131,7 +132,8 @@
             this.MenuItem_Stromverbraucher,
             this.MenuItem_Stromganglinie,
             this.MenuItem_WP,
-            this.MenuItem_WaermebedarfExtern});
+            this.MenuItem_WaermebedarfExtern,
+            this.MenuItem_Update});
             this.Administration.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Administration.Name = "Administration";
             this.Administration.Size = new System.Drawing.Size(125, 25);
@@ -196,6 +198,13 @@
             this.MenuItem_Solarkollektoren.Text = "Solarkollektoren";
             this.MenuItem_Solarkollektoren.Click += new System.EventHandler(this.MenuItem_Solarkollektoren_Click);
             // 
+            // MenuItem_SolThermGanglinie
+            // 
+            this.MenuItem_SolThermGanglinie.Name = "MenuItem_SolThermGanglinie";
+            this.MenuItem_SolThermGanglinie.Size = new System.Drawing.Size(242, 26);
+            this.MenuItem_SolThermGanglinie.Text = "Solarthermieganglinie";
+            this.MenuItem_SolThermGanglinie.Click += new System.EventHandler(this.MenuItem_SolThermGanglinie_Click);
+            // 
             // MenuItem_Stromspeicher
             // 
             this.MenuItem_Stromspeicher.Name = "MenuItem_Stromspeicher";
@@ -247,12 +256,12 @@
             this.MenuItem_WaermebedarfExtern.Text = "Wärmebedarf Lastgang";
             this.MenuItem_WaermebedarfExtern.Click += new System.EventHandler(this.MenuItem_WaermebedarfExtern_Click);
             // 
-            // MenuItem_SolThermGanglinie
+            // MenuItem_Update
             // 
-            this.MenuItem_SolThermGanglinie.Name = "MenuItem_SolThermGanglinie";
-            this.MenuItem_SolThermGanglinie.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_SolThermGanglinie.Text = "Solarthermieganglinie";
-            this.MenuItem_SolThermGanglinie.Click += new System.EventHandler(this.MenuItem_SolThermGanglinie_Click);
+            this.MenuItem_Update.Name = "MenuItem_Update";
+            this.MenuItem_Update.Size = new System.Drawing.Size(242, 26);
+            this.MenuItem_Update.Text = "DB Update";
+            this.MenuItem_Update.Click += new System.EventHandler(this.MenuItem_Update_Click);
             // 
             // MDIMainForm
             // 
@@ -299,6 +308,7 @@
         private System.Windows.Forms.ToolStripMenuItem MenuItem_BHKW;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Solarkollektoren;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_SolThermGanglinie;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Update;
     }
 }
 

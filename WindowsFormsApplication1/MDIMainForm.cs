@@ -140,6 +140,11 @@ namespace WindowsFormsApplication1
             ctrl.Solarganglinie();
         }
 
+        private void MenuItem_Update_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.DBUpdate();
+        }
     }
 }
 
