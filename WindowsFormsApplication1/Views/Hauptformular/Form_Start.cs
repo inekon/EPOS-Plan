@@ -36,7 +36,7 @@ namespace WindowsFormsApplication1
             WindowState = FormWindowState.Maximized;
             tabControl_Wizard.DrawMode = TabDrawMode.OwnerDrawFixed;
             tabControl_Wizard.DrawItem += tabControl_Wizard_DrawItem;
-            tabControl_Wizard.TabPages[1].Enabled = false;  
+            for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = false;
         }
 
         private void tabControl_Wizard_DrawItem(object sender, DrawItemEventArgs e)
@@ -111,7 +111,7 @@ namespace WindowsFormsApplication1
 
         private void pBox_WBedarfDaten_Click(object sender, EventArgs e)
         {
-            Wizard_Waermebedarf frm = new Wizard_Waermebedarf();
+            Form_Waermebedarf frm = new Form_Waermebedarf();
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
             RecordSet rs = new RecordSet();
@@ -243,7 +243,7 @@ namespace WindowsFormsApplication1
                 m_szProjektname = frm.m_szProjekt;
                 m_ID_Projekt = frm.m_ID_Projekt;
                 SetTextProjekt(frm.m_szProjekt);
-                tabControl_Wizard.TabPages[1].Enabled = true;
+                for (int i = 1; i<tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
             }
         }
 
@@ -289,6 +289,23 @@ namespace WindowsFormsApplication1
 
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.BHKW_TYP);
             if (werzctrl.rows > 0) status |= 256; else status &= ~256;
+
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
+            Z_ProjektSolarganglinieCtrl solgctrl = new Z_ProjektSolarganglinieCtrl();
+            solgctrl.ReadAll("select * from Z_ProjektSolarganglinie where ID_Projekt=" + m_ID_Projekt.ToString());
+            
+            if (werzctrl.rows > 0 || solgctrl.rows > 0)
+            {
+                status |= 512;
+                radioButton_KollektorProfil.BackColor = Color.FromArgb(90, 0, 255, 0);
+                radioButton_Ganglinie.BackColor = Color.FromArgb(90, 0, 255, 0);
+            }
+            else
+            { 
+                status &= ~512;
+                radioButton_KollektorProfil.BackColor = Color.Transparent;
+                radioButton_Ganglinie.BackColor = Color.Transparent;
+            }
 
             tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
         }
@@ -577,9 +594,9 @@ namespace WindowsFormsApplication1
                 m_szProjektname = ctrl.m_szProjektname;
                 m_ID_Projekt = ctrl.m_ID_Projekt;
                 SetTextProjekt(m_szProjektname);
-                tabControl_Wizard.TabPages[1].Enabled = true;
+                for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
             }
-            
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 Graphics g = pBox_ProjektZuletzt.CreateGraphics();
@@ -789,7 +806,7 @@ namespace WindowsFormsApplication1
         {
             if (e.TabPageIndex < 0) return;
 
-            if (e.TabPageIndex == 1 && textBox_ProjektOpen.Text == "bitte auswählen!")
+            if (e.TabPageIndex >= 1 && textBox_ProjektOpen.Text == "bitte auswählen!")
             {
                 e.Cancel = true;
                 //MessageBox.Show("Bitte zuerst ein Projekt auswählen!\n (<Projekt öffnen> oder <zuletzt geöffnet>)!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information); 
@@ -841,6 +858,124 @@ namespace WindowsFormsApplication1
   
             frm.SetControls();
             frm.ShowDialog();
+        }
+
+        private void pBox_Solarthermie_Click(object sender, EventArgs e)
+        {
+            Form_SolarKollektoren frm = new Form_SolarKollektoren();
+            Form_Solarganglinie frm2 = new Form_Solarganglinie();
+            WErzeugerCtrl werzctrl = new WErzeugerCtrl();
+            WizardCtrl wizctrl = new WizardCtrl();
+            ProjektCtrl projctrl = new ProjektCtrl();
+            WPCtrl wpctrl = new WPCtrl();
+            Z_ProjektSolarganglinieCtrl solgctrl = new Z_ProjektSolarganglinieCtrl();
+            RecordSet rs = new RecordSet();
+
+            int id_type;
+
+            System.Drawing.Point p1 = pBox_Solarthermie.Location;
+            p1 = tabControl_Wizard.PointToScreen(p1);
+            p1.Y /= 2;
+            p1.X /= 2;
+            
+            if (radioButton_KollektorProfil.Checked)
+            {
+                frm.list_werzmodel.Clear();
+                werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
+                id_type = WizardItemClass.SOLAR_TYP;
+
+                WErzeugerModel item = new WErzeugerModel();
+                for (int i = 0; i < werzctrl.rows; i++)
+                {
+                    frm.list_werzmodel.Add(werzctrl.items[i]);
+                }
+
+                frm.SetControls(m_ID_Projekt);
+                frm.Location = p1;
+                DialogResult result = frm.ShowDialog();
+
+                if (result == DialogResult.OK)
+                {
+                    wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
+                    wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
+
+                    projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                    projctrl.m_Aenderungsdatum = DateTime.Now;
+                    projctrl.Update();
+                }
+            }
+            else
+            {
+                frm2.DateiListe.Clear();
+
+                string sql = "SELECT Z_ProjektSolarganglinie.ID_Z, Z_ProjektSolarganglinie.ID_Projekt, " +
+                      "Z_ProjektSolarganglinie.ID_Ganglinie, Tab_Solarganglinie.Bezeichner " +
+                      "FROM Z_ProjektSolarganglinie INNER JOIN Tab_Solarganglinie ON " +
+                      "Z_ProjektSolarganglinie.ID_Ganglinie = Tab_Solarganglinie.ID " +
+                      " where ID_Projekt=" + m_ID_Projekt;
+
+                rs.Open(sql);
+                while (rs.Next())
+                {
+                    Z_ProjektSolarganglinieCtrl item = new Z_ProjektSolarganglinieCtrl();
+                    item.m_ID_Z = (int)rs.Read("ID_Z");
+                    item.m_ID_Projekt = m_ID_Projekt;
+                    item.m_ID_Solarganglinie = (int)rs.Read("ID_Ganglinie");
+                    item.m_szSolarganglinie = (string)rs.Read("Bezeichner");
+                    frm2.DateiListe.Add(item);
+                }
+                rs.Close();
+
+                frm2.m_ID_Projekt = m_ID_Projekt;
+                frm2.SetControls(m_szProjektname);
+                frm2.Location = p1;
+                frm2.ShowDialog();
+
+                if (frm2.result == DialogResult.OK)
+                {
+                    wizctrl.Del_Solarganglinie(m_ID_Projekt);
+                    wizctrl.Add_Solarganglinie(m_ID_Projekt, frm2.DateiListe);
+
+                    projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                    projctrl.m_Aenderungsdatum = DateTime.Now;
+                    projctrl.Update();
+                }
+            }
+
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
+            solgctrl.ReadAll("select * from Z_ProjektSolarganglinie where ID_Projekt=" + m_ID_Projekt.ToString());
+
+            if (werzctrl.rows > 0 || solgctrl.rows > 0) 
+            {
+                radioButton_Ganglinie.BackColor = Color.FromArgb(90, 0, 255, 0);
+                radioButton_KollektorProfil.BackColor = Color.FromArgb(90, 0, 255, 0);
+                status |= 512;
+            }
+            else
+            {
+                radioButton_Ganglinie.BackColor = Color.Transparent;
+                radioButton_KollektorProfil.BackColor = Color.Transparent;
+                status &= ~512;
+            }
+    
+            pBox_Solarthermie.Invalidate();
+        }
+
+        private void pBox_Solarthermie_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                if ((status & 512) == 512)
+                {
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                }
+            }
         }
     }
 }

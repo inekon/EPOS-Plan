@@ -30,7 +30,7 @@ namespace WindowsFormsApplication1
 
         }
 
-        public void MyTestLastgang(string stromgang)
+        public float[] MyTestLastgang(string stromgang)
         {
             // stündlicher Strombedarf berechnen gemäß Profil, z.B. "Type_A"
             // in Tab_Stromverbraucher stehen die Profile
@@ -57,6 +57,7 @@ namespace WindowsFormsApplication1
                 }
                 rs.Close();
             }
+            return Stromganglinie;
         }
 
         public void StromspeicherDaten()

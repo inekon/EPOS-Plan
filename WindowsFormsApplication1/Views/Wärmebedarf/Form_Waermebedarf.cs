@@ -1,23 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.IO;
+using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
     partial class Form_Waermebedarf : Form
     {
+        public List<Z_ProjWaermebedarfModel> list_wbmodel = new List<Z_ProjWaermebedarfModel>();
+        private Z_ProjWaermebedarfModel model = new Z_ProjWaermebedarfModel();
         public int m_ID_Projekt = 0;
         public string m_szProjekt = "";
         public DialogResult result = DialogResult.Cancel;
-        public List<Z_ProjWaermebedarfModel> DateiListe = new List<Z_ProjWaermebedarfModel>();
-        public bool m_bAdmin = false;
-        int startindex = 100000;
+        private ToolsClass tool = new ToolsClass();
+        string filename = "";
+        string filebasename = "";
 
         public Form_Waermebedarf()
         {
@@ -29,39 +27,71 @@ namespace WindowsFormsApplication1
             {
                 listBox_Extern.Items.Add(ctrl.items[i].m_szBezeichner);
             }
-
         }
 
-        private void btn_OK_Click(object sender, EventArgs e)
+        public void SetControls(string projekt, bool bWizard=false)
         {
-            result = DialogResult.OK;  
-            Close();
-        }
+            if (bWizard)
+            {
+                btn_OK.Visible = false;
+                btn_Abbrechen.Visible = false;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.BackColor = Color.White;
+            }
 
-        public void SetControls(string szProjekt)
-        {
-            Z_ProjektGebGanglinieCtrl ctrl = new Z_ProjektGebGanglinieCtrl();
-            ctrl.ReadAll("select * from Z_ProjektWaermebedarf where ID_Projekt=" + m_ID_Projekt);
-
+            m_szProjekt = projekt;
+       
             listBox_Auswahl.Items.Clear();
- 
-            for (int i = 0; i < DateiListe.Count; i++)
+            for (int n = 0; n < list_wbmodel.Count; n++)
             {
-                Z_ProjWaermebedarfModel model = new Z_ProjWaermebedarfModel();
+                Z_ProjWaermebedarfModel item = new Z_ProjWaermebedarfModel();
 
-                model.m_ID_Projekt = DateiListe[i].m_ID_Projekt;
-                model.m_ID_Z = DateiListe[i].m_ID_Z;
-                model.m_szBezeichner = DateiListe[i].m_szBezeichner;
-                model.m_ID_Ganglinie = DateiListe[i].m_ID_Ganglinie;
-                listBox_Auswahl.Items.Add(model.m_szBezeichner);
+                item.m_szBezeichner = list_wbmodel[n].m_szBezeichner;
+                listBox_Auswahl.Items.Add(item.m_szBezeichner);
+                m_ID_Projekt = list_wbmodel[n].m_ID_Projekt; 
             }
+            if (listBox_Auswahl.Items.Count > 0) listBox_Auswahl.SelectedIndex = 0;
+        }
 
-            if (m_bAdmin)
+        private void btn_Hinzu_Click(object sender, EventArgs e)
+        {
+            if (listBox_Extern.Text == "") return;
+            model.m_szBezeichner = listBox_Extern.Text;
+            RecordSet rs = new RecordSet();
+
+            rs.Open("select * from Tab_Waermebedarf where Bezeichner='" + listBox_Extern.Text + "'");
+            if (!rs.EOF())
             {
-                listBox_Auswahl.Enabled = false;
-                btn_Hinzufuegen.Enabled = false;
-                btn_Entfernen.Enabled = false;
+                model.m_ID_Ganglinie = (int)rs.Read("ID");
+                model.m_ID_Projekt = m_ID_Projekt;
             }
+            rs.Close();
+
+            list_wbmodel.Add(model);
+            listBox_Auswahl.Items.Add(listBox_Extern.Text);
+            if (listBox_Extern.Items.Count > 0) listBox_Extern.SelectedIndex = listBox_Extern.Items.Count - 1;
+        }
+
+        private void btn_Entfernen_Click(object sender, EventArgs e)
+        {
+            if (listBox_Auswahl.Text == "") return;
+            model.m_szBezeichner = listBox_Auswahl.Text;
+            for (int i = 0; i < list_wbmodel.Count; i++)
+            {
+                if (list_wbmodel[i].m_szBezeichner == listBox_Auswahl.Text)
+                {
+                    list_wbmodel.RemoveAt(i);
+                    listBox_Auswahl.Items.Remove(listBox_Auswahl.Text);
+                    break;
+                }
+            }
+            if (listBox_Auswahl.Items.Count > 0) listBox_Auswahl.SelectedIndex = 0;
+        }
+        
+        private void btn_Bearbeiten_Click(object sender, EventArgs e)
+        {
+            Form_AdminWaermeeinlesen frm = new Form_AdminWaermeeinlesen();  
+            frm.ShowDialog();
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
@@ -70,71 +100,72 @@ namespace WindowsFormsApplication1
             Close();
         }
 
-        private void btn_Hinzufuegen_Click(object sender, EventArgs e)
+        private void btn_OK_Click(object sender, EventArgs e)
         {
-            RecordSet rs = new RecordSet();
-            
-            if (listBox_Extern.Text == "") return;
+            result = DialogResult.OK;
+            Close();
+        }
 
-            string sql = "SELECT * from Tab_Waermebedarf where Bezeichner='" + listBox_Extern.Text + "'";
-            rs.Open(sql);
+        private void Einlesen()
+        {
+            WaermebedarfCtrl ctrl_ganglinie = new WaermebedarfCtrl();
+            WaermebedarfDatenCtrl ctrl = new WaermebedarfDatenCtrl();
 
-            if (rs.Next())
+            // Datei schon eingelesen?
+            if (listBox_Extern.FindString(Path.GetFileNameWithoutExtension(filebasename)) != ListBox.NoMatches)
             {
-                Z_ProjWaermebedarfModel model = new Z_ProjWaermebedarfModel();
-                model.m_ID_Z = startindex++; // noch nicht gespeichert, also noch unbekannt
-                model.m_ID_Ganglinie = (int)rs.Read("ID");
-                model.m_ID_Projekt = m_ID_Projekt;
-                model.m_szBezeichner = listBox_Extern.Text;
-         
-                DateiListe.Add(model);
-                listBox_Auswahl.Items.Add(listBox_Extern.Text);
+
+                Form_Hinweis frm = new Form_Hinweis("Hinweis", "Datei ist bereits eingelesen!");
+                frm.Location = this.PointToScreen(btn_Bearbeiten.Location);
+                frm.ShowDialog();
+                return;
             }
-            rs.Close();
-        }
 
-        private void btn_Entfernen_Click(object sender, EventArgs e)
-        {
-            WaermebedarfModel model = new WaermebedarfModel();
+            // Datei in Liste einlesen 
+            if (!tool.OpenText(filename)) return;
 
-            if (listBox_Auswahl.SelectedIndex >= 0)
+            this.Cursor = Cursors.WaitCursor;
+
+            // Datensatz in DB Tab_Waermebedarf anlegen
+            ctrl_ganglinie.m_szBezeichner = Path.GetFileNameWithoutExtension(filebasename);
+            if (!ctrl_ganglinie.Insert()) return;
+
+            // Daten in DB
+            ctrl.list_GanglinieDaten.Clear();
+       
+            for (int i = 0; i < tool.textList.Count; i++)
             {
-                for (int i = 0; i < DateiListe.Count; i++)
-                {
-                    if (DateiListe[i].m_szBezeichner == listBox_Auswahl.Text)
-                    {
-                        DateiListe.RemoveAt(i);
-                        listBox_Auswahl.Items.RemoveAt(listBox_Auswahl.SelectedIndex);
-                        break;
-                    }
-                }
+                WaermebedarfDatenModel model = new WaermebedarfDatenModel();
+                model.m_ID_GanglinieDaten = ctrl_ganglinie.m_ID_Ganglinie;
+                model.m_Wert = double.Parse(tool.textList[i]);
+                ctrl.list_GanglinieDaten.Add(model);
             }
+            ctrl.Insert();
+
+            this.Cursor = Cursors.Default;
         }
 
-        private void listBox_Extern_SelectedIndexChanged(object sender, EventArgs e)
+        private void btn_Loeschen_Click(object sender, EventArgs e)
         {
-            textBox_Name.Text = listBox_Extern.Text;
-         }
+            WaermebedarfCtrl ctrl_ganglinie = new WaermebedarfCtrl();
+            Z_ProjektGebGanglinieCtrl ctrl = new Z_ProjektGebGanglinieCtrl();
+            ctrl.ReadAll("Select * from Z_ProjektWaermebedarf where Bezeichner ='" + listBox_Extern.Text + "'");
+            if (ctrl.rows > 0)
+            {
+                MessageBox.Show("Es existiert eine Projektzuordnung, Löschen nicht möglich!");
+                return;
+            }
 
-        private void listBox_Auswahl_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            textBox_Name.Text = listBox_Auswahl.Text;
-        }
+            ctrl_ganglinie.Delete(listBox_Extern.Text);
 
-        private void btn_Bearbeiten_Click(object sender, EventArgs e)
-        {
-            MenueCtrl ctrl = new MenueCtrl();
-            WaermebedarfCtrl wbctrl = new WaermebedarfCtrl();
-
-            listBox_Auswahl.SelectedItems.Clear();
-            listBox_Extern.SelectedItems.Clear();
-            ctrl.WaermebedarfExtern();
             listBox_Extern.Items.Clear();
-            wbctrl.ReadAll();
-            for (int i = 0; i < wbctrl.rows; i++)
+            listBox_Extern.SelectedItems.Clear();
+            ctrl_ganglinie.ReadAll();
+            for (int i = 0; i < ctrl_ganglinie.rows; i++)
             {
-                listBox_Extern.Items.Add(wbctrl.items[i].m_szBezeichner);
+                listBox_Extern.Items.Add(ctrl_ganglinie.items[i].m_szBezeichner);
             }
+
         }
     }
 }

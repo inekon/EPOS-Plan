@@ -92,6 +92,21 @@ namespace WindowsFormsApplication1
             }
             if (listBox_Auswahl.Items.Count > 0) listBox_Auswahl.SelectedIndex = 0;
         }
-         
+
+        private void btn_Bearbeiten_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            StromganglinieCtrl spctrl = new StromganglinieCtrl();
+
+            listBox_Auswahl.SelectedItems.Clear();
+            listBox_Extern.SelectedItems.Clear();
+            ctrl.Stromganglinie();
+            listBox_Extern.Items.Clear();
+            spctrl.ReadAll();
+            for (int i = 0; i < spctrl.rows; i++)
+            {
+                listBox_Extern.Items.Add(spctrl.items[i].m_szBezeichner);
+            }
+        }
     }
 }

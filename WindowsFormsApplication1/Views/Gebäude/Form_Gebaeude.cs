@@ -557,7 +557,7 @@ namespace WindowsFormsApplication1
             GebaeudeCtrl ctrl = new GebaeudeCtrl();
             DataGridView dgv = dataGridView1;
 
-            if (dgv.CurrentRow.Cells[0].Value == null) return;
+            if (dgv.RowCount == 0) return;
 
             try
             {
@@ -610,6 +610,11 @@ namespace WindowsFormsApplication1
                     listView_Gebaeude.Items[0].Selected = true;
                 }
             }
+        }
+
+        private void dataGridView1_Leave(object sender, EventArgs e)
+        {
+            //dataGridView1.ClearSelection();
         }
     }
 }

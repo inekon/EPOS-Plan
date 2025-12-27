@@ -98,14 +98,6 @@ namespace WindowsFormsApplication1
             ctrl.Stromverbraucher(); 
         }
 
-        private void testToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SimulationWaermepumpe wp = new SimulationWaermepumpe();
-            wp.wp_list.Add(5);
-            wp.wp_list.Add(7);
-            wp.Berechnung();    
-        }
-
         private void MenuItem_Stromganglinie_Click(object sender, EventArgs e)
         {
             MenueCtrl ctrl = new MenueCtrl();
@@ -134,6 +126,24 @@ namespace WindowsFormsApplication1
         {
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.BHKW();
+        }
+
+        private void MenuItem_Solarkollektoren_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.Solarkollektoren();  
+        }
+
+        private void MenuItem_SolThermGanglinie_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.Solarganglinie();
+        }
+
+        private void MenuItem_Update_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.DBUpdate();
         }
     }
 }
