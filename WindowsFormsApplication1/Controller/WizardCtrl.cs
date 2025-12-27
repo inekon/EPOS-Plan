@@ -49,6 +49,9 @@ namespace WindowsFormsApplication1
                     newRow["Abschaltpunkt"] = list[i].Abschaltpunkt;
                     newRow["Nutzungszeit"] = list[i].Nutzungszeit;
                     newRow["Grenzleistung"] = list[i].Grenzleistung;
+                    newRow["Kollektorneigung"] = list[i].Kollektorneigung;
+                    newRow["Kollektorausrichtung"] = list[i].Kollektorausrichtung;
+                    newRow["Kollektormodulanzahl"] = list[i].Kollektormodulanzahl;
 
                     newRow["ID_WP"] = DBNull.Value;
                     newRow["ID_SP"] = DBNull.Value;
@@ -56,7 +59,8 @@ namespace WindowsFormsApplication1
                     newRow["ID_KESSEL"] = DBNull.Value;
                     newRow["ID_Type"] = list[i].ID_Type;
                     newRow["ID_BHKW"] = DBNull.Value;
-                    
+                    newRow["ID_SOLAR"] = DBNull.Value;
+
                     if (list[i].ID_Type == WizardItemClass.WP_TYP || list[i].ID_Type == WizardItemClass.REF_WP_TYP)
                     {
                         newRow["ID_WP"] = list[i].ID_WP;
@@ -80,6 +84,10 @@ namespace WindowsFormsApplication1
                     else if (list[i].ID_Type == WizardItemClass.BHKW_TYP || list[i].ID_Type == WizardItemClass.BHKW_TYP)
                     {
                         newRow["ID_BHKW"] = list[i].ID_BHKW;
+                    }
+                    else if (list[i].ID_Type == WizardItemClass.SOLAR_TYP)
+                    {
+                        newRow["ID_SOLAR"] = list[i].ID_Solar;
                     }
 
                     newRow["Heizstab"] = list[i].Heizstab;
@@ -643,6 +651,39 @@ namespace WindowsFormsApplication1
             }
         }
 
+        public bool Add_Solarganglinie(int projektID, List<Z_ProjektSolarganglinieModel> list)
+        {
+            try
+            {
+                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektSolarganglinie", Program.DBConnection);
+                DataSet dataSet = new DataSet();
+
+                adapter.Fill(dataSet, "Z_ProjektSolarganglinie");
+
+                for (int i = 0; i < list.Count; i++)
+                {
+                    DataRow newRow = dataSet.Tables["Z_ProjektSolarganglinie"].NewRow();
+                    newRow["ID_Z"] = 1;
+                    newRow["ID_Projekt"] = projektID;
+                    newRow["ID_Ganglinie"] = list[i].m_ID_Solarganglinie;
+                    newRow["Bezeichner"] = list[i].m_szSolarganglinie;
+
+                    dataSet.Tables["Z_ProjektSolarganglinie"].Rows.Add(newRow);
+                }
+
+                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
+                adapter.Update(dataSet, "Z_ProjektSolarganglinie");
+
+                Console.WriteLine("Daten erfolgreich aktualisiert.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
+                return false;
+            }
+        }
+
         public bool Del_Stromganglinie(int projektID)
         {
             try
@@ -658,6 +699,31 @@ namespace WindowsFormsApplication1
                 }
                 OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
                 adapter.Update(dataSet, "Z_ProjektStromganglinie");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
+                return false;
+            }
+        }
+
+        public bool Del_Solarganglinie(int projektID)
+        {
+            try
+            {
+                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektSolarganglinie where ID_Projekt=" + projektID, Program.DBConnection);
+                DataSet dataSet = new DataSet();
+                adapter.Fill(dataSet, "Z_ProjektSolarganglinie");
+
+                for (int i = 0; i < dataSet.Tables["Z_ProjektSolarganglinie"].Rows.Count; i++)
+                {
+                    DataRow row = dataSet.Tables["Z_ProjektSolarganglinie"].Rows[i];
+                    row.Delete();
+                }
+                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
+                adapter.Update(dataSet, "Z_ProjektSolarganglinie");
 
                 return true;
             }

@@ -10,7 +10,7 @@ using System.IO;
 
 namespace WindowsFormsApplication1
 {
-    partial class Form_Waermeeinlesen : Form
+    partial class Form_AdminWaermeeinlesen : Form
     {
         public int m_ID_Projekt = 0;
         public string m_szProjekt = "";
@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
         string filename;
         string filebasename;
 
-        public Form_Waermeeinlesen()
+        public Form_AdminWaermeeinlesen()
         {
             InitializeComponent();
  

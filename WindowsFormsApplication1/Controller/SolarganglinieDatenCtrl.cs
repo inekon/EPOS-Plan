@@ -8,30 +8,30 @@ using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
-    public class StromganglinieDatenModel
+    public class SolarganglinieDatenModel
     {
         public int m_ID_GanglinieDaten;
         public double m_Wert;
 
-        public StromganglinieDatenModel()
+        public SolarganglinieDatenModel()
         {
             m_ID_GanglinieDaten = 0;
             m_Wert = 0;
         }
     }
 
-    class StromganglinieDatenCtrl : StromganglinieDatenModel
+    class SolarganglinieDatenCtrl : SolarganglinieDatenModel
     {
         OdbcCommand DBCommand;
 
-        public List<StromganglinieDatenModel> list_GanglinieDaten = new List<StromganglinieDatenModel>();
+        public List<SolarganglinieDatenModel> list_GanglinieDaten = new List<SolarganglinieDatenModel>();
 
-        public StromganglinieDatenCtrl()
+        public SolarganglinieDatenCtrl ()
         {
             DBCommand = Program.DBConnection.CreateCommand();
         }
 
-        ~StromganglinieDatenCtrl()
+        ~SolarganglinieDatenCtrl()
         {
             DBCommand.Dispose();
         }
@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Tab_StromganglinieDaten where ID_GanglinieDaten= '" + m_ID_GanglinieDaten + "'";
+                DBCommand.CommandText = "DELETE * FROM Tab_SolarganglinieDaten where ID_GanglinieDaten= '" + m_ID_GanglinieDaten + "'";
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)
@@ -68,8 +68,8 @@ namespace WindowsFormsApplication1
 
                 for (int i = 0; i < list_GanglinieDaten.Count; i++)
                 {
-                    StromganglinieDatenModel item = list_GanglinieDaten.ElementAt(i);
-                    string sql = "INSERT INTO Tab_StromganglinieDaten ( ID_GanglinieDaten, Wert) SELECT " + item.m_ID_GanglinieDaten +
+                    SolarganglinieDatenModel item = list_GanglinieDaten.ElementAt(i);
+                    string sql = "INSERT INTO Tab_SolarganglinieDaten ( ID_GanglinieDaten, Wert) SELECT " + item.m_ID_GanglinieDaten +
                         " AS Ausdr1, " + item.m_Wert.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr2";
                     DBCommand.CommandText = sql;
                     DBCommand.ExecuteNonQuery();

@@ -129,7 +129,6 @@ namespace WindowsFormsApplication1
                 DBGelesen = true;
             }
 
-           
             ProjektGebaeudeCtrl ctrl = new ProjektGebaeudeCtrl();
             ctrl.ReadAll(ID_Projekt);
 
@@ -139,14 +138,14 @@ namespace WindowsFormsApplication1
                 // wenn die Einheit nicht als "Wohnfläche [m²]" angegeben ist...Wohnfläche und Anzahl Bewohner berechnen
                 if (ctrl.items[i].Einheit == "Wohnfläche [m²]")
                 {
-                    ctrl.items[i].Bewohner = ctrl.items[i].AuswahlWohnflaeche / ctrl.items[i].Flaeche_Nutzer;
+                    ctrl.items[i].Bewohner = ctrl.items[i].Z_AuswahlWohnflaeche / ctrl.items[i].Flaeche_Nutzer;
                 }
                 else
                 {
                     Bewohner_und_Flaeche_berechnen(ctrl.items[i],i);
                 }
                 Anzahl_Bewohner = (int)ctrl.items[i].Bewohner;
-                Wohnflaeche = ctrl.items[i].AuswahlWohnflaeche;
+                Wohnflaeche = ctrl.items[i].Z_AuswahlWohnflaeche;
                
                 // Tagesverteilung berechnen
                 Berechnung_Gebaeude_Tageswerte(ctrl.items[i], i);
@@ -253,37 +252,41 @@ namespace WindowsFormsApplication1
 
             if (item.Einheit == "Ölverbrauch [l/a]")
             {
-                VerbrauchNeu = item.AuswahlWohnflaeche * item.Jahresnutzungsgrad * 10.08;
+                VerbrauchNeu = item.Z_AuswahlWohnflaeche * item.Jahresnutzungsgrad * 10.08;
             }
             else if (item.Einheit == "Gasverbrauch [m³/a]")
             {
-                VerbrauchNeu = item.AuswahlWohnflaeche * item.Jahresnutzungsgrad * 11.48;
+                VerbrauchNeu = item.Z_AuswahlWohnflaeche * item.Jahresnutzungsgrad * 11.48;
             }
             else if (item.Einheit == "Gasverbrauch [MWh/a] (Ho)")
             {
-                VerbrauchNeu = item.AuswahlWohnflaeche * item.Jahresnutzungsgrad / 1.1 * 1000;
+                VerbrauchNeu = item.Z_AuswahlWohnflaeche * item.Jahresnutzungsgrad / 1.1 * 1000;
             }
             else if (item.Einheit == "Brennstoffverbrauch [MWh/a]")
             {
-                VerbrauchNeu = item.AuswahlWohnflaeche * item.Jahresnutzungsgrad * 1000;
+                VerbrauchNeu = item.Z_AuswahlWohnflaeche * item.Jahresnutzungsgrad * 1000;
             }
             else if (item.Einheit == "Verbrauch  [MWh/a]")
             {
-                VerbrauchNeu = item.AuswahlWohnflaeche * 1000;
+                VerbrauchNeu = item.Z_AuswahlWohnflaeche * 1000;
             }
 
             if (item.Einheit == "Wohnfläche [m²]")
             {
-                item.Bewohner = item.AuswahlWohnflaeche / item.Flaeche_Nutzer;
+               // item.Bewohner = item.AuswahlWohnflaeche / item.Flaeche_Nutzer;
+                item.Bewohner = item.Wohnflaeche_gesamt / item.Flaeche_Nutzer;
             }
             else
             {
+                item.Z_AuswahlWohnflaeche = item.Wohnflaeche_gesamt;
+
                 Berechnung_Gebaeude_Tageswerte(item, index);
-                double FlaecheAlt = item.AuswahlWohnflaeche;
+                double FlaecheAlt = item.Wohnflaeche_gesamt;//item.AuswahlWohnflaeche;
                 double VerbrauchAlt = (BrauchwasserGeb[index] + HeizwaermebedarfGeb[index]) / 1000;
                 double FlaecheNeu = VerbrauchNeu / VerbrauchAlt * FlaecheAlt;
-                item.AuswahlWohnflaeche = FlaecheNeu;
-                item.Bewohner = item.AuswahlWohnflaeche / item.Flaeche_Nutzer;
+                item.Z_AuswahlWohnflaeche = FlaecheNeu;
+                item.Bewohner = item.Z_AuswahlWohnflaeche / item.Flaeche_Nutzer;
+   
             }
         }
 
@@ -362,7 +365,7 @@ namespace WindowsFormsApplication1
 
                 Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (float)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
                         (float)item.Fensterflaeche_Ost, Sol_S[Tag], (float)item.Fensterflaeche_Sued,
-                        (float)item.Fensterdurchlassgrad) / 100;
+                        (float)item.Fensterdurchlassgrad) /(float)100;
                 
                 SpezWaermeverluste[Tag] = com.I_SpezWaermeverlusteC((float)item.k_Wert_Außenwand, (float)item.Flaeche_Außenwand,
                         (float)item.k_Wert_Fenster, (float)item.gesamte_Fensterflaeche, (float)item.k_Wert_Dachflaeche,
@@ -392,7 +395,7 @@ namespace WindowsFormsApplication1
                         (float)item.Bauweise,
                         (float)A_Temp[Tag],
                         (float)item.Maximaleraumtemperatur,
-                        (float)item.AuswahlWohnflaeche,
+                        (float)item.Z_AuswahlWohnflaeche,
                         (float)item.Wohnflaeche) + WarmwasserBedarf[Tag];
             }
 
@@ -435,7 +438,7 @@ namespace WindowsFormsApplication1
                     (float)item.Bauweise,
                     (float)A_Temp[Tag],
                     (float)item.Maximaleraumtemperatur,
-                    (float)item.AuswahlWohnflaeche,
+                    (float)item.Z_AuswahlWohnflaeche,
                     (float)item.Wohnflaeche) + WarmwasserBedarf[Tag];
 
 

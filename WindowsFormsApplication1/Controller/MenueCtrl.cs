@@ -48,19 +48,17 @@ namespace WindowsFormsApplication1
             List<WizardItemClass> frm = new List<WizardItemClass>();
             frm.Add(new WizardItemClass(new Wizard_Komponenten(), WizardItemClass.KOMPONENTEN_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Projekt(), WizardItemClass.PROJEKT_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Klima(), WizardItemClass.KLIMA_ITEM));
             frm.Add(new WizardItemClass(new Form_Gebaeude(), WizardItemClass.GEBAEUDE_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Waermebedarf(), WizardItemClass.WAERMEBEDARF_ITEM));
+            frm.Add(new WizardItemClass(new Form_Waermebedarf(), WizardItemClass.WAERMEBEDARF_ITEM));
             frm.Add(new WizardItemClass(new Form_Prozesswaerme(), WizardItemClass.PROZESS_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromverbraucher(), WizardItemClass.STROMSTD_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_WP(), WizardItemClass.WP_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Solar(), WizardItemClass.SOLAR_ITEM));
+            frm.Add(new WizardItemClass(new Form_SolarKollektoren(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Wizard_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
             frm.Add(new WizardItemClass(new Form_BHKWEing(), WizardItemClass.BHKW_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Referenz(), WizardItemClass.REFERENZ_ITEM));
 
             wizparent = new WizardParent(frm);
             Program.wizardctrl.parentform = wizparent;
@@ -78,19 +76,17 @@ namespace WindowsFormsApplication1
             List<WizardItemClass> frm = new List<WizardItemClass>();
             frm.Add(new WizardItemClass(new Wizard_Komponenten(), WizardItemClass.KOMPONENTEN_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Projekt(), WizardItemClass.PROJEKT_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Klima(),WizardItemClass.KLIMA_ITEM));
             frm.Add(new WizardItemClass(new Form_Gebaeude(), WizardItemClass.GEBAEUDE_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Waermebedarf(), WizardItemClass.WAERMEBEDARF_ITEM));
+            frm.Add(new WizardItemClass(new Form_Waermebedarf(), WizardItemClass.WAERMEBEDARF_ITEM));
             frm.Add(new WizardItemClass(new Form_Prozesswaerme(), WizardItemClass.PROZESS_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromverbraucher(), WizardItemClass.STROMSTD_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_WP(), WizardItemClass.WP_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Solar(), WizardItemClass.SOLAR_ITEM));
+            frm.Add(new WizardItemClass(new Form_SolarKollektoren(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Wizard_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
             frm.Add(new WizardItemClass(new Form_BHKWEing(), WizardItemClass.BHKW_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Referenz(), WizardItemClass.REFERENZ_ITEM));
 
             wizparent = new WizardParent(frm);
             Program.wizardctrl.parentform = wizparent;
@@ -269,7 +265,7 @@ namespace WindowsFormsApplication1
 
        public void WaermebedarfExtern()
        {
-           Form_Waermeeinlesen frm = new Form_Waermeeinlesen();
+           Form_AdminWaermeeinlesen frm = new Form_AdminWaermeeinlesen();
            frm.SetControls(); 
            frm.ShowDialog(); 
        }
@@ -295,7 +291,14 @@ namespace WindowsFormsApplication1
            frm.ShowDialog();
        }
 
-       public void WPImport()
+       public void Solarganglinie()
+       {
+           Form_Solarganglinie_Admin frm = new Form_Solarganglinie_Admin();
+           frm.SetControls();
+           frm.ShowDialog();
+       }
+
+        public void WPImport()
        {
            Form_WP_einlesen frm = new Form_WP_einlesen();
            frm.ShowDialog();
@@ -312,5 +315,16 @@ namespace WindowsFormsApplication1
            Form_BHKWAdmin frm = new Form_BHKWAdmin();
            frm.ShowDialog();
        }
+       public void Solarkollektoren()
+       {
+           Form_SolarKollektorenAdmin frm = new Form_SolarKollektorenAdmin();
+           frm.ShowDialog();
+       }
+
+        public void DBUpdate()
+        {   
+            Form_Update frm = new Form_Update();
+            frm.ShowDialog();
+        }
     }
 }

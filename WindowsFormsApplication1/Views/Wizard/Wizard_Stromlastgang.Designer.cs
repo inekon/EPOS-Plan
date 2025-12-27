@@ -35,6 +35,7 @@
             this.btn_Entfernen = new System.Windows.Forms.Button();
             this.listBox_Extern = new System.Windows.Forms.ListBox();
             this.Label2 = new System.Windows.Forms.Label();
+            this.btn_Bearbeiten = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label_Type
@@ -118,12 +119,23 @@
             this.Label2.Text = "Stromlastgang aus DB";
             this.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // btn_Bearbeiten
+            // 
+            this.btn_Bearbeiten.Location = new System.Drawing.Point(542, 280);
+            this.btn_Bearbeiten.Name = "btn_Bearbeiten";
+            this.btn_Bearbeiten.Size = new System.Drawing.Size(97, 31);
+            this.btn_Bearbeiten.TabIndex = 21;
+            this.btn_Bearbeiten.Text = "Bearbeiten...";
+            this.btn_Bearbeiten.UseVisualStyleBackColor = true;
+            this.btn_Bearbeiten.Click += new System.EventHandler(this.btn_Bearbeiten_Click);
+            // 
             // Wizard_Stromlastgang
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(656, 368);
+            this.Controls.Add(this.btn_Bearbeiten);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.listBox_Auswahl);
             this.Controls.Add(this.btn_Hinzufuegen);
@@ -149,5 +161,6 @@
         private System.Windows.Forms.Button btn_Entfernen;
         private System.Windows.Forms.ListBox listBox_Extern;
         private System.Windows.Forms.Label Label2;
+        private System.Windows.Forms.Button btn_Bearbeiten;
     }
 }

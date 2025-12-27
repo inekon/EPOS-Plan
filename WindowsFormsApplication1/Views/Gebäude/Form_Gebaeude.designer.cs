@@ -100,9 +100,9 @@ namespace WindowsFormsApplication1
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.comboBox_Baujahr);
             this.groupBox1.Controls.Add(this.comboBox_Gebäudeart);
-            this.groupBox1.Location = new System.Drawing.Point(356, 334);
+            this.groupBox1.Location = new System.Drawing.Point(342, 334);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(283, 122);
+            this.groupBox1.Size = new System.Drawing.Size(297, 122);
             this.groupBox1.TabIndex = 29;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Filter Gebäude DB";
@@ -154,7 +154,7 @@ namespace WindowsFormsApplication1
             this.comboBox_Baujahr.FormattingEnabled = true;
             this.comboBox_Baujahr.Location = new System.Drawing.Point(109, 83);
             this.comboBox_Baujahr.Name = "comboBox_Baujahr";
-            this.comboBox_Baujahr.Size = new System.Drawing.Size(159, 25);
+            this.comboBox_Baujahr.Size = new System.Drawing.Size(183, 25);
             this.comboBox_Baujahr.TabIndex = 1;
             this.comboBox_Baujahr.SelectedIndexChanged += new System.EventHandler(this.comboBox_Baujahr_SelectedIndexChanged);
             // 
@@ -163,7 +163,7 @@ namespace WindowsFormsApplication1
             this.comboBox_Gebäudeart.FormattingEnabled = true;
             this.comboBox_Gebäudeart.Location = new System.Drawing.Point(109, 52);
             this.comboBox_Gebäudeart.Name = "comboBox_Gebäudeart";
-            this.comboBox_Gebäudeart.Size = new System.Drawing.Size(159, 25);
+            this.comboBox_Gebäudeart.Size = new System.Drawing.Size(183, 25);
             this.comboBox_Gebäudeart.TabIndex = 0;
             this.comboBox_Gebäudeart.SelectedIndexChanged += new System.EventHandler(this.comboBox_Gebäudeart_SelectedIndexChanged);
             // 
@@ -260,7 +260,7 @@ namespace WindowsFormsApplication1
             // label_ListProjektGebaeude
             // 
             this.label_ListProjektGebaeude.AutoSize = true;
-            this.label_ListProjektGebaeude.Location = new System.Drawing.Point(22, 45);
+            this.label_ListProjektGebaeude.Location = new System.Drawing.Point(28, 45);
             this.label_ListProjektGebaeude.Name = "label_ListProjektGebaeude";
             this.label_ListProjektGebaeude.Size = new System.Drawing.Size(210, 19);
             this.label_ListProjektGebaeude.TabIndex = 6;
@@ -417,6 +417,7 @@ namespace WindowsFormsApplication1
             this.dataGridView1.Size = new System.Drawing.Size(436, 261);
             this.dataGridView1.TabIndex = 75;
             this.dataGridView1.Click += new System.EventHandler(this.listBox_Gebaeude_DB_SelectedIndexChanged);
+            this.dataGridView1.Leave += new System.EventHandler(this.dataGridView1_Leave);
             // 
             // label_Type
             // 
