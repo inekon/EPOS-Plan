@@ -323,7 +323,7 @@ namespace WindowsFormsApplication1
 
         public void DBUpdate()
         {   
-            Form_Update frm = new Form_Update();
+            Form_Import frm = new Form_Import();
             frm.ShowDialog();
         }
     }

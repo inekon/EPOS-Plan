@@ -52,6 +52,8 @@
             this.textBox6 = new System.Windows.Forms.TextBox();
             this.pBox_StdLastProfil = new System.Windows.Forms.PictureBox();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.radioButton_Ganglinie = new System.Windows.Forms.RadioButton();
+            this.radioButton_KollektorProfil = new System.Windows.Forms.RadioButton();
             this.pBox_PV = new System.Windows.Forms.PictureBox();
             this.pBox_Solarthermie = new System.Windows.Forms.PictureBox();
             this.pBox_Stromspeicher = new System.Windows.Forms.PictureBox();
@@ -80,8 +82,6 @@
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pBox_Zurueck = new System.Windows.Forms.PictureBox();
             this.pBox_Weiter = new System.Windows.Forms.PictureBox();
-            this.radioButton_KollektorProfil = new System.Windows.Forms.RadioButton();
-            this.radioButton_Ganglinie = new System.Windows.Forms.RadioButton();
             this.tabControl_Wizard.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).BeginInit();
@@ -435,6 +435,28 @@
             this.tabPage4.Text = "Energieerzeuger";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
+            // radioButton_Ganglinie
+            // 
+            this.radioButton_Ganglinie.AutoSize = true;
+            this.radioButton_Ganglinie.Location = new System.Drawing.Point(909, 271);
+            this.radioButton_Ganglinie.Name = "radioButton_Ganglinie";
+            this.radioButton_Ganglinie.Size = new System.Drawing.Size(96, 25);
+            this.radioButton_Ganglinie.TabIndex = 62;
+            this.radioButton_Ganglinie.Text = "Ganglinie";
+            this.radioButton_Ganglinie.UseVisualStyleBackColor = true;
+            // 
+            // radioButton_KollektorProfil
+            // 
+            this.radioButton_KollektorProfil.AutoSize = true;
+            this.radioButton_KollektorProfil.Checked = true;
+            this.radioButton_KollektorProfil.Location = new System.Drawing.Point(909, 240);
+            this.radioButton_KollektorProfil.Name = "radioButton_KollektorProfil";
+            this.radioButton_KollektorProfil.Size = new System.Drawing.Size(67, 25);
+            this.radioButton_KollektorProfil.TabIndex = 61;
+            this.radioButton_KollektorProfil.TabStop = true;
+            this.radioButton_KollektorProfil.Text = "Profil";
+            this.radioButton_KollektorProfil.UseVisualStyleBackColor = true;
+            // 
             // pBox_PV
             // 
             this.pBox_PV.BackColor = System.Drawing.Color.Transparent;
@@ -758,7 +780,7 @@
             this.pBox_Zurueck.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PZurueck;
             this.pBox_Zurueck.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pBox_Zurueck.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pBox_Zurueck.Location = new System.Drawing.Point(32, 872);
+            this.pBox_Zurueck.Location = new System.Drawing.Point(33, 881);
             this.pBox_Zurueck.Name = "pBox_Zurueck";
             this.pBox_Zurueck.Size = new System.Drawing.Size(136, 41);
             this.pBox_Zurueck.TabIndex = 46;
@@ -770,34 +792,12 @@
             this.pBox_Weiter.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PWeiter;
             this.pBox_Weiter.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pBox_Weiter.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pBox_Weiter.Location = new System.Drawing.Point(1107, 872);
+            this.pBox_Weiter.Location = new System.Drawing.Point(1108, 881);
             this.pBox_Weiter.Name = "pBox_Weiter";
             this.pBox_Weiter.Size = new System.Drawing.Size(136, 41);
             this.pBox_Weiter.TabIndex = 45;
             this.pBox_Weiter.TabStop = false;
             this.pBox_Weiter.Click += new System.EventHandler(this.pBox_Weiter_Click);
-            // 
-            // radioButton_KollektorProfil
-            // 
-            this.radioButton_KollektorProfil.AutoSize = true;
-            this.radioButton_KollektorProfil.Checked = true;
-            this.radioButton_KollektorProfil.Location = new System.Drawing.Point(909, 240);
-            this.radioButton_KollektorProfil.Name = "radioButton_KollektorProfil";
-            this.radioButton_KollektorProfil.Size = new System.Drawing.Size(67, 25);
-            this.radioButton_KollektorProfil.TabIndex = 61;
-            this.radioButton_KollektorProfil.TabStop = true;
-            this.radioButton_KollektorProfil.Text = "Profil";
-            this.radioButton_KollektorProfil.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Ganglinie
-            // 
-            this.radioButton_Ganglinie.AutoSize = true;
-            this.radioButton_Ganglinie.Location = new System.Drawing.Point(909, 271);
-            this.radioButton_Ganglinie.Name = "radioButton_Ganglinie";
-            this.radioButton_Ganglinie.Size = new System.Drawing.Size(96, 25);
-            this.radioButton_Ganglinie.TabIndex = 62;
-            this.radioButton_Ganglinie.Text = "Ganglinie";
-            this.radioButton_Ganglinie.UseVisualStyleBackColor = true;
             // 
             // Form_Start
             // 

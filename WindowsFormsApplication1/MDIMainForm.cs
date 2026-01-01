@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 
@@ -144,6 +145,13 @@ namespace WindowsFormsApplication1
         {
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.DBUpdate();
+        }
+
+        private void MenuItem_Version_Click(object sender, EventArgs e)
+        {
+            Version currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
+            MessageBox.Show("Version: " + currentVersion.ToString());
         }
     }
 }
