@@ -62,7 +62,7 @@ namespace WindowsFormsApplication1
             // wenn die UdateDB.ini Datei existiert, dann Update starten   
             if (db.GetIniFilePath() != "")
             {
-                FormUpdate formUpdate = new FormUpdate();
+                Form_Update formUpdate = new Form_Update();
                 formUpdate.ShowDialog();
             }
 

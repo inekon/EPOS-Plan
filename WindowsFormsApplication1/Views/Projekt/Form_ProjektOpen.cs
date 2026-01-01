@@ -51,6 +51,9 @@ namespace WindowsFormsApplication1
                 lvitem.SubItems.Add(ctrl.items[i].m_szBeschreibung);
                 listView_Projekt.Items.Add(lvitem);
             }
+            listView_Projekt.Select(); 
+            if (listView_Projekt.Items.Count>0) listView_Projekt.Items[0].Selected = true;   
+            listView_Projekt.Items[0].Selected = true;
             listView_Projekt.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_Projekt.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
             ctrl = null;

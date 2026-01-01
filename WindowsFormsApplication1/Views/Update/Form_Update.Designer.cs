@@ -1,6 +1,6 @@
 ﻿namespace WindowsFormsApplication1
 {
-    partial class FormUpdate
+    partial class Form_Update
     {
         /// <summary>
         /// Required designer variable.

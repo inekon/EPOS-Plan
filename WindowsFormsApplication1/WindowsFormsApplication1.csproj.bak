@@ -433,17 +433,17 @@
     <Compile Include="Views\Stromverbraucher\Form_Stromverbraucher_Admin.designer.cs">
       <DependentUpon>Form_Stromverbraucher_Admin.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Update\FormUpdate.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Update\FormUpdate.Designer.cs">
+      <DependentUpon>FormUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Update\Form_Import.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Update\Form_Import.Designer.cs">
       <DependentUpon>Form_Import.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Update\Form_Update.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Update\Form_Update.Designer.cs">
-      <DependentUpon>Form_Update.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Kessel.cs">
       <SubType>Form</SubType>
@@ -676,11 +676,11 @@
     <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromverbraucher.resx">
       <DependentUpon>Form_Stromverbraucher.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Update\FormUpdate.resx">
+      <DependentUpon>FormUpdate.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Update\Form_Import.resx">
       <DependentUpon>Form_Import.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Update\Form_Update.resx">
-      <DependentUpon>Form_Update.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\WizardParent.resx">
       <DependentUpon>WizardParent.cs</DependentUpon>

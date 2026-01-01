@@ -12,12 +12,12 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class FormUpdate : Form
+    public partial class Form_Update : Form
     {
         public bool updateSucceeded = false;    
         private DbClass dbClass = new DbClass();
 
-        public FormUpdate()
+        public Form_Update()
         {
             InitializeComponent();
         }

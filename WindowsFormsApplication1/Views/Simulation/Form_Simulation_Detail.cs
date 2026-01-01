@@ -46,7 +46,7 @@ namespace WindowsFormsApplication1
             chart5.Series[0].Points.Clear();
 
             listView_SimSPK.View = View.Details;
-            listView_SimSPK.Columns.Add("Kessel", -2, HorizontalAlignment.Left);
+            listView_SimSPK.Columns.Add("Heizkessel", -2, HorizontalAlignment.Left);
             listView_SimSPK.Columns.Add("Name", -2, HorizontalAlignment.Left);
             listView_SimSPK.Columns.Add("Gas/Biogas/Rapsöl/Holz... [MWh/a]", -2, HorizontalAlignment.Left);
             listView_SimSPK.Columns.Add("Öl [MWh/a]", -2, HorizontalAlignment.Left);
@@ -407,11 +407,11 @@ namespace WindowsFormsApplication1
             {
                 double valkessel = sim.simulation_spk.s_waerme_Gas_Spk[i] + sim.simulation_spk.s_waerme_Oel_Spk[i];
                 if (valkessel > 0)
-                    chart5.Series[0].Points.AddXY("Kessel" + (i + 1).ToString(), valkessel);
+                    chart5.Series[0].Points.AddXY("Heizkessel" + (i + 1).ToString(), valkessel);
             }
 
             if (sim.simulation_wp.WP_Waermeproduktion_gesamt > 0)
-                chart5.Series[0].Points.AddXY("WP", sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000);
+                chart5.Series[0].Points.AddXY("Wärmepumpe", sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000);
 
             if (sim.simulation_wp.Heizstab_gesamt > 0)
                 chart5.Series[0].Points.AddXY("Heizstab", sim.simulation_wp.Heizstab_gesamt / (double)1000);
@@ -420,7 +420,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < sim.simulation_spk.spk_list.Count(); i++)
             {
                 rest = rest + sim.simulation_spk.s_waerme_Gas_Spk[i] + sim.simulation_spk.s_waerme_Oel_Spk[i];
-            }
+            } 
             rest = sim.simulation_Waermebedarf.Waermebedarf_Gesamt -
                                                         sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000 -
                                                         sim.simulation_wp.Heizstab_gesamt / 1000 -
