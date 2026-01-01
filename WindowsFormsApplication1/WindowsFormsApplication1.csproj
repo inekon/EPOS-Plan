@@ -25,8 +25,8 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>2</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>0.0.1.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -124,6 +124,7 @@
     <Compile Include="Classes\Form_Hinweis.Designer.cs">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </Compile>
+    <Compile Include="Classes\IniFileParser.cs" />
     <Compile Include="Classes\RecordSet.cs" />
     <Compile Include="Classes\Simulation\SimulationHelper.cs" />
     <Compile Include="Classes\Simulation\Init.cs" />
@@ -432,11 +433,17 @@
     <Compile Include="Views\Stromverbraucher\Form_Stromverbraucher_Admin.designer.cs">
       <DependentUpon>Form_Stromverbraucher_Admin.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Update\Form_Update.cs">
+    <Compile Include="Views\Update\FormUpdate.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Update\Form_Update.Designer.cs">
-      <DependentUpon>Form_Update.cs</DependentUpon>
+    <Compile Include="Views\Update\FormUpdate.Designer.cs">
+      <DependentUpon>FormUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Update\Form_Import.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Update\Form_Import.Designer.cs">
+      <DependentUpon>Form_Import.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Kessel.cs">
       <SubType>Form</SubType>
@@ -669,8 +676,11 @@
     <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromverbraucher.resx">
       <DependentUpon>Form_Stromverbraucher.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Update\Form_Update.resx">
-      <DependentUpon>Form_Update.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Update\FormUpdate.resx">
+      <DependentUpon>FormUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Update\Form_Import.resx">
+      <DependentUpon>Form_Import.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\WizardParent.resx">
       <DependentUpon>WizardParent.cs</DependentUpon>

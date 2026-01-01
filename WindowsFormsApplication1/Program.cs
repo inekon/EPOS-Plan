@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
             
             try
             {
-                DBConnection = db.openDB();
+                DBConnection = db.openDB("DSN=TEST");
             }
             catch (OdbcException sqlEx)
             {
@@ -58,6 +58,13 @@ namespace WindowsFormsApplication1
             ApplicationPath_Common = Path.Combine(ApplicationPath_Common, "WP-Plan");
             ApplicationPath_User = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             ApplicationPath_User = Path.Combine(ApplicationPath_User, "WP-Plan");
+
+            // wenn die UdateDB.ini Datei existiert, dann Update starten   
+            if (db.GetIniFilePath() != "")
+            {
+                FormUpdate formUpdate = new FormUpdate();
+                formUpdate.ShowDialog();
+            }
 
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);
