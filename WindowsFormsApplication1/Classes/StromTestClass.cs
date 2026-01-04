@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
 {
@@ -38,21 +36,8 @@ namespace WindowsFormsApplication1
             // in Tab_Stromverbraucher stehen die Profile
             // in Strombedarf_berechnen wird das Profil geladen und in prozesswerte
             // die stündliche Verteilung geschrieben
-            float energie_speicher_curr;
-            // max. Lade-Energie Speicher in % oder kW (muss noch berechnet werden!)
-            float energie_speicher_max=1;
-            // min. Lade-Energie Speicher in % oder kW (muss noch berechnet werden!)
-            float energie_speicher_min =0;
-            // Leistung Speicher
-            float ladeschwelle_speicher = 0;
-            // Ladeleistung in % von max.
-            float leistung_speicher_laden_max = 1;
-            float lastspitze = 0;
-            // Zeitintervall Leistungsmessung
-            float timeinter;
 
             float[] Stromganglinie = new float[8760];
-            float[] Stromganglinie_neu = new float[8760];
             Z_ProjektStromganglinieCtrl waectrl = new Z_ProjektStromganglinieCtrl();
             RecordSet rs = new RecordSet();
             waectrl.ReadAll("select * from Z_ProjektStromganglinie where Bezeichner='" + stromgang + "'");
@@ -72,33 +57,6 @@ namespace WindowsFormsApplication1
                 }
                 rs.Close();
             }
-            // prüfen ob stromspeicher ausgewählt wurde
-            energie_speicher_max = Form_Simulation_Config.textBox_Stromspeicher_Ladeenergie_min;
-            timeinter = 1;
-            for (int  i = 0; i<Stromganglinie.Length; i++)
-            {
-                if (lastspitze < Stromganglinie[i]) lastspitze = Stromganglinie[i];
-                // speicher laden bis max
-
-                // 
-                if (energie_speicher_curr < energie_speicher_max) energie_speicher_curr = Leistung_Speicher * leistung_speicher_laden_max * timeinter;
-                if (energie_speicher_curr > energie_speicher_max) energie_speicher_curr = energie_speicher_max;
-
-                if ((Stromganglinie[i] > ladeschwelle_speicher) && (Stromganglinie[i] > lastspitze - Leistung_Speicher * leistung_speicher_laden_max))
-                {
-                    // entladen
-                    energie_speicher_curr = energie_Speicher_curr - Leistung_Speicher * leistung_speicher_laden_max  * timeinter;
-                    if (energie_speicher_curr < energie_speicher_min)
-                    {
-                        energie_speicher_curr = energie_speicher_min;
-                    }
-                    Stromganglinie[i] = Stromganglinie[i] - energie_speicher_curr / timeinter;
-
-                }
-
-
-            }
-
             return Stromganglinie;
         }
 
@@ -109,9 +67,9 @@ namespace WindowsFormsApplication1
 
             // Daten für "test1" holen
             ctrl.ReadSingle(m_szStromspeicher);
-            // Nennleistung leistung_speicher
-            double Leistung_Speicher = ctrl.m_Leistung;
-            double Energie_Speicher = ctrl.m_Energie;
+
+            double Leistung = ctrl.m_Leistung;
+            double Energie = ctrl.m_Energie;
             double Ladezustand = ctrl.m_Ladezustand;
             double Degradation = ctrl.m_Degradation;
         }
