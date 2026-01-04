@@ -63,16 +63,19 @@
             this.label17 = new System.Windows.Forms.Label();
             this.btn_OK = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
-            this.textBox_Speicher_min = new System.Windows.Forms.TextBox();
+            this.textBox_Stromspeicher_Ladeenergie_min = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
-            this.comboBox_Speicher_min = new System.Windows.Forms.ComboBox();
-            this.comboBox8_Speicher_max = new System.Windows.Forms.ComboBox();
-            this.textBox_Speicher_max = new System.Windows.Forms.TextBox();
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl = new System.Windows.Forms.ComboBox();
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl = new System.Windows.Forms.ComboBox();
+            this.textBox_Stromspeicher_Ladeenergie_max = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.textBox_Speicher_Ladeschwelle = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
             this.btn_Strom_Simu_Start = new System.Windows.Forms.Button();
+            this.label20 = new System.Windows.Forms.Label();
+            this.textBox_Stromspeicher_Ladeleistung_max = new System.Windows.Forms.TextBox();
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // comboBox1
@@ -499,14 +502,14 @@
             this.label9.TabIndex = 250;
             this.label9.Text = "Stromspeicher:";
             // 
-            // textBox_Speicher_min
+            // textBox_Stromspeicher_Ladeenergie_min
             // 
-            this.textBox_Speicher_min.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Speicher_min.Location = new System.Drawing.Point(111, 475);
-            this.textBox_Speicher_min.Name = "textBox_Speicher_min";
-            this.textBox_Speicher_min.Size = new System.Drawing.Size(77, 22);
-            this.textBox_Speicher_min.TabIndex = 251;
-            this.textBox_Speicher_min.Text = "10";
+            this.textBox_Stromspeicher_Ladeenergie_min.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.textBox_Stromspeicher_Ladeenergie_min.Location = new System.Drawing.Point(182, 474);
+            this.textBox_Stromspeicher_Ladeenergie_min.Name = "textBox_Stromspeicher_Ladeenergie_min";
+            this.textBox_Stromspeicher_Ladeenergie_min.Size = new System.Drawing.Size(77, 22);
+            this.textBox_Stromspeicher_Ladeenergie_min.TabIndex = 251;
+            this.textBox_Stromspeicher_Ladeenergie_min.Text = "10";
             // 
             // label10
             // 
@@ -515,44 +518,44 @@
             this.label10.ForeColor = System.Drawing.Color.Black;
             this.label10.Location = new System.Drawing.Point(25, 475);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(30, 17);
+            this.label10.Size = new System.Drawing.Size(138, 17);
             this.label10.TabIndex = 252;
-            this.label10.Text = "Min";
+            this.label10.Text = "Minimum Ladeenergie";
             // 
-            // comboBox_Speicher_min
+            // comboBox_Stromspeicher_LadeenergieMax_auswahl
             // 
-            this.comboBox_Speicher_min.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.comboBox_Speicher_min.FormattingEnabled = true;
-            this.comboBox_Speicher_min.Items.AddRange(new object[] {
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.FormattingEnabled = true;
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Items.AddRange(new object[] {
             "%",
             "kWh/a"});
-            this.comboBox_Speicher_min.Location = new System.Drawing.Point(194, 475);
-            this.comboBox_Speicher_min.Name = "comboBox_Speicher_min";
-            this.comboBox_Speicher_min.Size = new System.Drawing.Size(68, 21);
-            this.comboBox_Speicher_min.TabIndex = 253;
-            this.comboBox_Speicher_min.Text = "%";
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Location = new System.Drawing.Point(267, 476);
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Name = "comboBox_Stromspeicher_LadeenergieMax_auswahl";
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Size = new System.Drawing.Size(68, 21);
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.TabIndex = 253;
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Text = "%";
             // 
-            // comboBox8_Speicher_max
+            // comboBox8_Stromspeicher_LadeenergieMin_auswahl
             // 
-            this.comboBox8_Speicher_max.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.comboBox8_Speicher_max.FormattingEnabled = true;
-            this.comboBox8_Speicher_max.Items.AddRange(new object[] {
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.FormattingEnabled = true;
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items.AddRange(new object[] {
             "%",
             "kWh/a"});
-            this.comboBox8_Speicher_max.Location = new System.Drawing.Point(194, 502);
-            this.comboBox8_Speicher_max.Name = "comboBox8_Speicher_max";
-            this.comboBox8_Speicher_max.Size = new System.Drawing.Size(68, 21);
-            this.comboBox8_Speicher_max.TabIndex = 254;
-            this.comboBox8_Speicher_max.Text = "%";
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Location = new System.Drawing.Point(267, 502);
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Name = "comboBox8_Stromspeicher_LadeenergieMin_auswahl";
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Size = new System.Drawing.Size(68, 21);
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.TabIndex = 254;
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text = "%";
             // 
-            // textBox_Speicher_max
+            // textBox_Stromspeicher_Ladeenergie_max
             // 
-            this.textBox_Speicher_max.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Speicher_max.Location = new System.Drawing.Point(111, 502);
-            this.textBox_Speicher_max.Name = "textBox_Speicher_max";
-            this.textBox_Speicher_max.Size = new System.Drawing.Size(77, 22);
-            this.textBox_Speicher_max.TabIndex = 255;
-            this.textBox_Speicher_max.Text = "90";
+            this.textBox_Stromspeicher_Ladeenergie_max.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.textBox_Stromspeicher_Ladeenergie_max.Location = new System.Drawing.Point(182, 502);
+            this.textBox_Stromspeicher_Ladeenergie_max.Name = "textBox_Stromspeicher_Ladeenergie_max";
+            this.textBox_Stromspeicher_Ladeenergie_max.Size = new System.Drawing.Size(77, 22);
+            this.textBox_Stromspeicher_Ladeenergie_max.TabIndex = 255;
+            this.textBox_Stromspeicher_Ladeenergie_max.Text = "90";
             // 
             // label13
             // 
@@ -561,16 +564,16 @@
             this.label13.ForeColor = System.Drawing.Color.Black;
             this.label13.Location = new System.Drawing.Point(26, 502);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(33, 17);
+            this.label13.Size = new System.Drawing.Size(141, 17);
             this.label13.TabIndex = 256;
-            this.label13.Text = "Max";
+            this.label13.Text = "Maximum Ladeenergie";
             // 
             // label18
             // 
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label18.ForeColor = System.Drawing.Color.Black;
-            this.label18.Location = new System.Drawing.Point(23, 543);
+            this.label18.Location = new System.Drawing.Point(24, 571);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(102, 17);
             this.label18.TabIndex = 258;
@@ -579,7 +582,7 @@
             // textBox_Speicher_Ladeschwelle
             // 
             this.textBox_Speicher_Ladeschwelle.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Speicher_Ladeschwelle.Location = new System.Drawing.Point(147, 542);
+            this.textBox_Speicher_Ladeschwelle.Location = new System.Drawing.Point(151, 566);
             this.textBox_Speicher_Ladeschwelle.Name = "textBox_Speicher_Ladeschwelle";
             this.textBox_Speicher_Ladeschwelle.Size = new System.Drawing.Size(77, 22);
             this.textBox_Speicher_Ladeschwelle.TabIndex = 257;
@@ -591,7 +594,7 @@
             this.label19.BackColor = System.Drawing.SystemColors.Control;
             this.label19.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label19.ForeColor = System.Drawing.Color.Black;
-            this.label19.Location = new System.Drawing.Point(233, 545);
+            this.label19.Location = new System.Drawing.Point(233, 566);
             this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(26, 17);
@@ -601,28 +604,64 @@
             // 
             // btn_Strom_Simu_Start
             // 
-            this.btn_Strom_Simu_Start.Location = new System.Drawing.Point(305, 475);
+            this.btn_Strom_Simu_Start.Location = new System.Drawing.Point(436, 502);
             this.btn_Strom_Simu_Start.Name = "btn_Strom_Simu_Start";
             this.btn_Strom_Simu_Start.Size = new System.Drawing.Size(133, 30);
             this.btn_Strom_Simu_Start.TabIndex = 260;
             this.btn_Strom_Simu_Start.Text = "Starte Simulation";
             this.btn_Strom_Simu_Start.UseVisualStyleBackColor = true;
             // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label20.ForeColor = System.Drawing.Color.Black;
+            this.label20.Location = new System.Drawing.Point(26, 534);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(142, 17);
+            this.label20.TabIndex = 261;
+            this.label20.Text = "Maximum Ladeleistung";
+            // 
+            // textBox_Stromspeicher_Ladeleistung_max
+            // 
+            this.textBox_Stromspeicher_Ladeleistung_max.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.textBox_Stromspeicher_Ladeleistung_max.Location = new System.Drawing.Point(182, 534);
+            this.textBox_Stromspeicher_Ladeleistung_max.Name = "textBox_Stromspeicher_Ladeleistung_max";
+            this.textBox_Stromspeicher_Ladeleistung_max.Size = new System.Drawing.Size(77, 22);
+            this.textBox_Stromspeicher_Ladeleistung_max.TabIndex = 262;
+            this.textBox_Stromspeicher_Ladeleistung_max.Text = "100";
+            // 
+            // comboBox7_Stromspeicher_LadeleistungMax_auswahl
+            // 
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.FormattingEnabled = true;
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items.AddRange(new object[] {
+            "%",
+            "kWh/a"});
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Location = new System.Drawing.Point(267, 534);
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Name = "comboBox7_Stromspeicher_LadeleistungMax_auswahl";
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Size = new System.Drawing.Size(68, 21);
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.TabIndex = 263;
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Text = "%";
+            // 
             // Form_Simulation_Config
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(581, 600);
+            this.Controls.Add(this.comboBox7_Stromspeicher_LadeleistungMax_auswahl);
+            this.Controls.Add(this.textBox_Stromspeicher_Ladeleistung_max);
+            this.Controls.Add(this.label20);
             this.Controls.Add(this.btn_Strom_Simu_Start);
             this.Controls.Add(this.label19);
             this.Controls.Add(this.label18);
             this.Controls.Add(this.textBox_Speicher_Ladeschwelle);
             this.Controls.Add(this.label13);
-            this.Controls.Add(this.textBox_Speicher_max);
-            this.Controls.Add(this.comboBox8_Speicher_max);
-            this.Controls.Add(this.comboBox_Speicher_min);
+            this.Controls.Add(this.textBox_Stromspeicher_Ladeenergie_max);
+            this.Controls.Add(this.comboBox8_Stromspeicher_LadeenergieMin_auswahl);
+            this.Controls.Add(this.comboBox_Stromspeicher_LadeenergieMax_auswahl);
             this.Controls.Add(this.label10);
-            this.Controls.Add(this.textBox_Speicher_min);
+            this.Controls.Add(this.textBox_Stromspeicher_Ladeenergie_min);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.btn_OK);
             this.Controls.Add(this.label17);
@@ -705,15 +744,18 @@
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Button btn_OK;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox textBox_Speicher_min;
+        private System.Windows.Forms.TextBox textBox_Stromspeicher_Ladeenergie_min;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.ComboBox comboBox_Speicher_min;
-        private System.Windows.Forms.ComboBox comboBox8_Speicher_max;
-        private System.Windows.Forms.TextBox textBox_Speicher_max;
+        private System.Windows.Forms.ComboBox comboBox_Stromspeicher_LadeenergieMax_auswahl;
+        private System.Windows.Forms.ComboBox comboBox8_Stromspeicher_LadeenergieMin_auswahl;
+        private System.Windows.Forms.TextBox textBox_Stromspeicher_Ladeenergie_max;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.TextBox textBox_Speicher_Ladeschwelle;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Button btn_Strom_Simu_Start;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.TextBox textBox_Stromspeicher_Ladeleistung_max;
+        private System.Windows.Forms.ComboBox comboBox7_Stromspeicher_LadeleistungMax_auswahl;
     }
 }
