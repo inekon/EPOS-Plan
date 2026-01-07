@@ -59,7 +59,9 @@ namespace WindowsFormsApplication1
             this.textBox_Verbrauch = new System.Windows.Forms.TextBox();
             this.Label8 = new System.Windows.Forms.Label();
             this.btn_neuerWert = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // btn_Hinzu
@@ -380,12 +382,14 @@ namespace WindowsFormsApplication1
             // 
             // groupBox1
             // 
+            this.groupBox1.BackColor = System.Drawing.Color.Khaki;
+            this.groupBox1.Controls.Add(this.pictureBox1);
             this.groupBox1.Controls.Add(this.textBox_Verbrauch);
             this.groupBox1.Controls.Add(this.Label8);
             this.groupBox1.Controls.Add(this.btn_neuerWert);
-            this.groupBox1.Location = new System.Drawing.Point(18, 256);
+            this.groupBox1.Location = new System.Drawing.Point(12, 256);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(264, 65);
+            this.groupBox1.Size = new System.Drawing.Size(316, 65);
             this.groupBox1.TabIndex = 43;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ändern des Jahresverbrauchs";
@@ -407,7 +411,7 @@ namespace WindowsFormsApplication1
             this.Label8.BackColor = System.Drawing.Color.Black;
             this.Label8.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label8.ForeColor = System.Drawing.Color.White;
-            this.Label8.Location = new System.Drawing.Point(93, 29);
+            this.Label8.Location = new System.Drawing.Point(88, 29);
             this.Label8.Name = "Label8";
             this.Label8.Size = new System.Drawing.Size(43, 19);
             this.Label8.TabIndex = 42;
@@ -417,14 +421,27 @@ namespace WindowsFormsApplication1
             // btn_neuerWert
             // 
             this.btn_neuerWert.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_neuerWert.Location = new System.Drawing.Point(142, 25);
+            this.btn_neuerWert.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btn_neuerWert.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_neuerWert.Location = new System.Drawing.Point(137, 25);
             this.btn_neuerWert.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_neuerWert.Name = "btn_neuerWert";
-            this.btn_neuerWert.Size = new System.Drawing.Size(115, 30);
+            this.btn_neuerWert.Size = new System.Drawing.Size(140, 30);
             this.btn_neuerWert.TabIndex = 43;
             this.btn_neuerWert.Text = "Übernehmen";
             this.btn_neuerWert.UseVisualStyleBackColor = true;
             this.btn_neuerWert.Click += new System.EventHandler(this.btn_neuerWert_Click);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(282, 27);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(28, 27);
+            this.pictureBox1.TabIndex = 118;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Visible = false;
             // 
             // Form_Stromverbraucher
             // 
@@ -465,6 +482,7 @@ namespace WindowsFormsApplication1
             this.Text = "Strombedarf Verwaltung";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -503,5 +521,6 @@ private System.Windows.Forms.Label Label1;
         private System.Windows.Forms.TextBox textBox_Verbrauch;
         private System.Windows.Forms.Label Label8;
         private System.Windows.Forms.Button btn_neuerWert;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

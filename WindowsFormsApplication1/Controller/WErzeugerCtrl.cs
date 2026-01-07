@@ -193,6 +193,9 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(24)) item.Kollektorneigung = (double)DBReader.GetValue(24);
                 if (!DBReader.IsDBNull(25)) item.Kollektorausrichtung = (int)DBReader.GetValue(25);
                 if (!DBReader.IsDBNull(26)) item.Kollektormodulanzahl = (int)DBReader.GetValue(26);
+                if (!DBReader.IsDBNull(27)) item.PV_Leistung = (double)DBReader.GetValue(27);
+                if (!DBReader.IsDBNull(28)) item.m_Neigung = (int)DBReader.GetValue(28);
+                if (!DBReader.IsDBNull(29)) item.m_Azimut = (int)DBReader.GetValue(29);
 
                 items[rows] = item;
                 rows += 1;
@@ -238,7 +241,9 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(24)) Kollektorneigung = (double)DBReader.GetValue(24);
                 if (!DBReader.IsDBNull(25)) Kollektorausrichtung = (int)DBReader.GetValue(25);
                 if (!DBReader.IsDBNull(26)) Kollektormodulanzahl = (int)DBReader.GetValue(26);
-
+                if (!DBReader.IsDBNull(27)) PV_Leistung = (double)DBReader.GetValue(27);
+                if (!DBReader.IsDBNull(28)) m_Neigung = (int)DBReader.GetValue(28);
+                if (!DBReader.IsDBNull(29)) m_Azimut = (int)DBReader.GetValue(29);
 
                 rows = 1;
             }

@@ -28,12 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title5 = new System.Windows.Forms.DataVisualization.Charting.Title();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title6 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea15 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series15 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title15 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea16 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series16 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title16 = new System.Windows.Forms.DataVisualization.Charting.Title();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.tabControl_Main = new System.Windows.Forms.TabControl();
             this.tabPage_Komponenten = new System.Windows.Forms.TabPage();
@@ -105,6 +105,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.button_Beenden = new System.Windows.Forms.Button();
+            this.listView_Solar = new System.Windows.Forms.ListView();
+            this.listView_PV = new System.Windows.Forms.ListView();
             this.tabControl_Main.SuspendLayout();
             this.tabPage_Komponenten.SuspendLayout();
             this.tabControl_Simulation.SuspendLayout();
@@ -118,6 +120,8 @@
             this.tabPage1.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
+            this.tabPage6.SuspendLayout();
+            this.tabPage10.SuspendLayout();
             this.tabPage11.SuspendLayout();
             this.tabPage13.SuspendLayout();
             this.tabPage14.SuspendLayout();
@@ -382,29 +386,29 @@
             // 
             // chart1
             // 
-            chartArea5.AxisX.IsLabelAutoFit = false;
-            chartArea5.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea5.AxisX.Title = "Jahresstunden";
-            chartArea5.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea5.AxisY.Title = "Wärmelast in % ";
-            chartArea5.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
-            chartArea5.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
-            chartArea5.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea5.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea5);
+            chartArea15.AxisX.IsLabelAutoFit = false;
+            chartArea15.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea15.AxisX.Title = "Jahresstunden";
+            chartArea15.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea15.AxisY.Title = "Wärmelast in % ";
+            chartArea15.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea15.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            chartArea15.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
+            chartArea15.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea15.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea15);
             this.chart1.Location = new System.Drawing.Point(6, 39);
             this.chart1.Name = "chart1";
-            series5.ChartArea = "ChartArea1";
-            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series5.Name = "Series1";
-            this.chart1.Series.Add(series5);
+            series15.ChartArea = "ChartArea1";
+            series15.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series15.Name = "Series1";
+            this.chart1.Series.Add(series15);
             this.chart1.Size = new System.Drawing.Size(472, 246);
             this.chart1.TabIndex = 25;
             this.chart1.Text = "chart1";
-            title5.Name = "Title1";
-            title5.Text = "Wärmelast Jahresganglinie ";
-            this.chart1.Titles.Add(title5);
+            title15.Name = "Title1";
+            title15.Text = "Wärmelast Jahresganglinie ";
+            this.chart1.Titles.Add(title15);
             // 
             // btn_Start
             // 
@@ -526,29 +530,29 @@
             // 
             // chart2
             // 
-            chartArea6.AxisX.IsLabelAutoFit = false;
-            chartArea6.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea6.AxisX.Title = "Jahresstunden";
-            chartArea6.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea6.AxisY.Title = "Strombedarf in % ";
-            chartArea6.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
-            chartArea6.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
-            chartArea6.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea6.Name = "ChartArea1";
-            this.chart2.ChartAreas.Add(chartArea6);
+            chartArea16.AxisX.IsLabelAutoFit = false;
+            chartArea16.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea16.AxisX.Title = "Jahresstunden";
+            chartArea16.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea16.AxisY.Title = "Strombedarf in % ";
+            chartArea16.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea16.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            chartArea16.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
+            chartArea16.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea16.Name = "ChartArea1";
+            this.chart2.ChartAreas.Add(chartArea16);
             this.chart2.Location = new System.Drawing.Point(3, 22);
             this.chart2.Name = "chart2";
-            series6.ChartArea = "ChartArea1";
-            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series6.Name = "Series1";
-            this.chart2.Series.Add(series6);
+            series16.ChartArea = "ChartArea1";
+            series16.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series16.Name = "Series1";
+            this.chart2.Series.Add(series16);
             this.chart2.Size = new System.Drawing.Size(472, 275);
             this.chart2.TabIndex = 38;
             this.chart2.Text = "chart2";
-            title6.Name = "Title1";
-            title6.Text = "Strombedarf Jahresganglinie ";
-            this.chart2.Titles.Add(title6);
+            title16.Name = "Title1";
+            title16.Text = "Strombedarf Jahresganglinie ";
+            this.chart2.Titles.Add(title16);
             // 
             // btn_Start_Strombedarf
             // 
@@ -650,9 +654,9 @@
             // tabPage9
             // 
             this.tabPage9.Controls.Add(this.listView_WaermebedarfExtern);
-            this.tabPage9.Location = new System.Drawing.Point(4, 48);
+            this.tabPage9.Location = new System.Drawing.Point(4, 26);
             this.tabPage9.Name = "tabPage9";
-            this.tabPage9.Size = new System.Drawing.Size(867, 229);
+            this.tabPage9.Size = new System.Drawing.Size(867, 251);
             this.tabPage9.TabIndex = 7;
             this.tabPage9.Text = "Wärmebedarf Einlesen";
             this.tabPage9.UseVisualStyleBackColor = true;
@@ -678,10 +682,10 @@
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.listView_BHKW);
-            this.tabPage1.Location = new System.Drawing.Point(4, 48);
+            this.tabPage1.Location = new System.Drawing.Point(4, 26);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(867, 229);
+            this.tabPage1.Size = new System.Drawing.Size(867, 251);
             this.tabPage1.TabIndex = 11;
             this.tabPage1.Text = "BHKW";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -707,10 +711,10 @@
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.listView_WP);
-            this.tabPage3.Location = new System.Drawing.Point(4, 48);
+            this.tabPage3.Location = new System.Drawing.Point(4, 26);
             this.tabPage3.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(867, 229);
+            this.tabPage3.Size = new System.Drawing.Size(867, 251);
             this.tabPage3.TabIndex = 0;
             this.tabPage3.Text = "Wärmepumpen";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -736,10 +740,10 @@
             // tabPage4
             // 
             this.tabPage4.Controls.Add(this.listView_SP);
-            this.tabPage4.Location = new System.Drawing.Point(4, 48);
+            this.tabPage4.Location = new System.Drawing.Point(4, 26);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(867, 229);
+            this.tabPage4.Size = new System.Drawing.Size(867, 251);
             this.tabPage4.TabIndex = 1;
             this.tabPage4.Text = "Stromspeicher";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -764,31 +768,33 @@
             // 
             // tabPage6
             // 
-            this.tabPage6.Location = new System.Drawing.Point(4, 48);
+            this.tabPage6.Controls.Add(this.listView_Solar);
+            this.tabPage6.Location = new System.Drawing.Point(4, 26);
             this.tabPage6.Name = "tabPage6";
             this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage6.Size = new System.Drawing.Size(867, 229);
+            this.tabPage6.Size = new System.Drawing.Size(867, 251);
             this.tabPage6.TabIndex = 2;
-            this.tabPage6.Text = "Solar";
+            this.tabPage6.Text = "Solarthermie";
             this.tabPage6.UseVisualStyleBackColor = true;
             // 
             // tabPage10
             // 
-            this.tabPage10.Location = new System.Drawing.Point(4, 48);
+            this.tabPage10.Controls.Add(this.listView_PV);
+            this.tabPage10.Location = new System.Drawing.Point(4, 26);
             this.tabPage10.Name = "tabPage10";
             this.tabPage10.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage10.Size = new System.Drawing.Size(867, 229);
+            this.tabPage10.Size = new System.Drawing.Size(867, 251);
             this.tabPage10.TabIndex = 3;
-            this.tabPage10.Text = "PV";
+            this.tabPage10.Text = "Photovoltaik";
             this.tabPage10.UseVisualStyleBackColor = true;
             // 
             // tabPage11
             // 
             this.tabPage11.Controls.Add(this.listView_Heizkessel);
-            this.tabPage11.Location = new System.Drawing.Point(4, 48);
+            this.tabPage11.Location = new System.Drawing.Point(4, 26);
             this.tabPage11.Name = "tabPage11";
             this.tabPage11.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage11.Size = new System.Drawing.Size(867, 229);
+            this.tabPage11.Size = new System.Drawing.Size(867, 251);
             this.tabPage11.TabIndex = 5;
             this.tabPage11.Text = "Heizkessel";
             this.tabPage11.UseVisualStyleBackColor = true;
@@ -814,9 +820,9 @@
             // tabPage13
             // 
             this.tabPage13.Controls.Add(this.listView_Prozesswaerme);
-            this.tabPage13.Location = new System.Drawing.Point(4, 48);
+            this.tabPage13.Location = new System.Drawing.Point(4, 26);
             this.tabPage13.Name = "tabPage13";
-            this.tabPage13.Size = new System.Drawing.Size(867, 229);
+            this.tabPage13.Size = new System.Drawing.Size(867, 251);
             this.tabPage13.TabIndex = 8;
             this.tabPage13.Text = "Prozesswärme";
             this.tabPage13.UseVisualStyleBackColor = true;
@@ -1064,6 +1070,42 @@
             this.button_Beenden.UseVisualStyleBackColor = true;
             this.button_Beenden.Click += new System.EventHandler(this.button_Beenden_Click);
             // 
+            // listView_Solar
+            // 
+            this.listView_Solar.BackColor = System.Drawing.Color.White;
+            this.listView_Solar.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.listView_Solar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.listView_Solar.FullRowSelect = true;
+            this.listView_Solar.GridLines = true;
+            this.listView_Solar.HideSelection = false;
+            this.listView_Solar.Location = new System.Drawing.Point(24, 12);
+            this.listView_Solar.MultiSelect = false;
+            this.listView_Solar.Name = "listView_Solar";
+            this.listView_Solar.Size = new System.Drawing.Size(514, 97);
+            this.listView_Solar.TabIndex = 11;
+            this.listView_Solar.UseCompatibleStateImageBehavior = false;
+            this.listView_Solar.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_Solar_MouseDown);
+            this.listView_Solar.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_Solar_MouseMove);
+            this.listView_Solar.MouseUp += new System.Windows.Forms.MouseEventHandler(this.listView_Solar_MouseUp);
+            // 
+            // listView_PV
+            // 
+            this.listView_PV.BackColor = System.Drawing.Color.White;
+            this.listView_PV.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.listView_PV.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.listView_PV.FullRowSelect = true;
+            this.listView_PV.GridLines = true;
+            this.listView_PV.HideSelection = false;
+            this.listView_PV.Location = new System.Drawing.Point(24, 12);
+            this.listView_PV.MultiSelect = false;
+            this.listView_PV.Name = "listView_PV";
+            this.listView_PV.Size = new System.Drawing.Size(514, 97);
+            this.listView_PV.TabIndex = 11;
+            this.listView_PV.UseCompatibleStateImageBehavior = false;
+            this.listView_PV.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_PV_MouseDown);
+            this.listView_PV.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_PV_MouseMove);
+            this.listView_PV.MouseUp += new System.Windows.Forms.MouseEventHandler(this.listView_PV_MouseUp);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 13F);
@@ -1096,6 +1138,8 @@
             this.tabPage1.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
+            this.tabPage6.ResumeLayout(false);
+            this.tabPage10.ResumeLayout(false);
             this.tabPage11.ResumeLayout(false);
             this.tabPage13.ResumeLayout(false);
             this.tabPage14.ResumeLayout(false);
@@ -1176,5 +1220,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.ListView listView_BHKW;
+        private System.Windows.Forms.ListView listView_Solar;
+        private System.Windows.Forms.ListView listView_PV;
     }
 }

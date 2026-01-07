@@ -438,7 +438,8 @@
             // radioButton_Ganglinie
             // 
             this.radioButton_Ganglinie.AutoSize = true;
-            this.radioButton_Ganglinie.Location = new System.Drawing.Point(909, 271);
+            this.radioButton_Ganglinie.ForeColor = System.Drawing.Color.Gray;
+            this.radioButton_Ganglinie.Location = new System.Drawing.Point(994, 240);
             this.radioButton_Ganglinie.Name = "radioButton_Ganglinie";
             this.radioButton_Ganglinie.Size = new System.Drawing.Size(96, 25);
             this.radioButton_Ganglinie.TabIndex = 62;
@@ -449,6 +450,7 @@
             // 
             this.radioButton_KollektorProfil.AutoSize = true;
             this.radioButton_KollektorProfil.Checked = true;
+            this.radioButton_KollektorProfil.ForeColor = System.Drawing.Color.Gray;
             this.radioButton_KollektorProfil.Location = new System.Drawing.Point(909, 240);
             this.radioButton_KollektorProfil.Name = "radioButton_KollektorProfil";
             this.radioButton_KollektorProfil.Size = new System.Drawing.Size(67, 25);
@@ -468,6 +470,8 @@
             this.pBox_PV.Size = new System.Drawing.Size(377, 190);
             this.pBox_PV.TabIndex = 60;
             this.pBox_PV.TabStop = false;
+            this.pBox_PV.Click += new System.EventHandler(this.pBox_PV_Click);
+            this.pBox_PV.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_PV_Paint);
             // 
             // pBox_Solarthermie
             // 

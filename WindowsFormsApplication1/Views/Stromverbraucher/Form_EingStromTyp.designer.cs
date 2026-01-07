@@ -92,16 +92,18 @@ namespace WindowsFormsApplication1
             this.st23 = new System.Windows.Forms.TextBox();
             this.Label26 = new System.Windows.Forms.Label();
             this.st24 = new System.Windows.Forms.TextBox();
-            this.btn_WocheUebernehmen = new System.Windows.Forms.Button();
             this.Label27 = new System.Windows.Forms.Label();
             this.btn_Tagkopieren = new System.Windows.Forms.Button();
             this.btn_Tageinfuegen = new System.Windows.Forms.Button();
             this.listBox_Tag = new System.Windows.Forms.ListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.btn_WocheUebernehmen = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // Label1
@@ -110,7 +112,7 @@ namespace WindowsFormsApplication1
             this.Label1.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label1.Location = new System.Drawing.Point(14, 14);
             this.Label1.Name = "Label1";
-            this.Label1.Size = new System.Drawing.Size(158, 17);
+            this.Label1.Size = new System.Drawing.Size(157, 17);
             this.Label1.TabIndex = 0;
             this.Label1.Text = "Liste der Typen in der DB:";
             this.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -131,7 +133,7 @@ namespace WindowsFormsApplication1
             this.Label2.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label2.Location = new System.Drawing.Point(245, 24);
             this.Label2.Name = "Label2";
-            this.Label2.Size = new System.Drawing.Size(228, 17);
+            this.Label2.Size = new System.Drawing.Size(227, 17);
             this.Label2.TabIndex = 3;
             this.Label2.Text = "Beschreibung des ausgewählten Typs:";
             this.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -245,6 +247,7 @@ namespace WindowsFormsApplication1
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.pictureBox1);
             this.tabPage1.Controls.Add(this.label28);
             this.tabPage1.Controls.Add(this.Label3);
             this.tabPage1.Controls.Add(this.st1);
@@ -820,25 +823,13 @@ namespace WindowsFormsApplication1
             this.st24.Size = new System.Drawing.Size(70, 22);
             this.st24.TabIndex = 165;
             // 
-            // btn_WocheUebernehmen
-            // 
-            this.btn_WocheUebernehmen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_WocheUebernehmen.Location = new System.Drawing.Point(37, 230);
-            this.btn_WocheUebernehmen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btn_WocheUebernehmen.Name = "btn_WocheUebernehmen";
-            this.btn_WocheUebernehmen.Size = new System.Drawing.Size(291, 27);
-            this.btn_WocheUebernehmen.TabIndex = 166;
-            this.btn_WocheUebernehmen.Text = "Änderungen Übernehmen";
-            this.btn_WocheUebernehmen.UseVisualStyleBackColor = true;
-            this.btn_WocheUebernehmen.Click += new System.EventHandler(this.btn_WocheUebernehmen_Click);
-            // 
             // Label27
             // 
             this.Label27.AutoSize = true;
             this.Label27.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label27.Location = new System.Drawing.Point(338, 26);
             this.Label27.Name = "Label27";
-            this.Label27.Size = new System.Drawing.Size(125, 17);
+            this.Label27.Size = new System.Drawing.Size(124, 17);
             this.Label27.TabIndex = 167;
             this.Label27.Text = "Auswahl Wochentag";
             this.Label27.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -894,6 +885,32 @@ namespace WindowsFormsApplication1
             this.tabPage2.Text = "Grafik";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // btn_WocheUebernehmen
+            // 
+            this.btn_WocheUebernehmen.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.btn_WocheUebernehmen.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btn_WocheUebernehmen.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btn_WocheUebernehmen.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_WocheUebernehmen.Location = new System.Drawing.Point(37, 230);
+            this.btn_WocheUebernehmen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.btn_WocheUebernehmen.Name = "btn_WocheUebernehmen";
+            this.btn_WocheUebernehmen.Size = new System.Drawing.Size(224, 27);
+            this.btn_WocheUebernehmen.TabIndex = 166;
+            this.btn_WocheUebernehmen.Text = "Änderungen Übernehmen";
+            this.btn_WocheUebernehmen.UseVisualStyleBackColor = true;
+            this.btn_WocheUebernehmen.Click += new System.EventHandler(this.btn_WocheUebernehmen_Click);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(266, 230);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(28, 27);
+            this.pictureBox1.TabIndex = 173;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Visible = false;
+            // 
             // Form_EingStromTyp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -918,6 +935,7 @@ namespace WindowsFormsApplication1
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -992,8 +1010,6 @@ private System.Windows.Forms.Button btn_Tageinfuegen;
 private System.Windows.Forms.ListBox listBox_Tag;
 private System.Windows.Forms.TabPage tabPage2;
 private System.Windows.Forms.Label label28;
-
-
- 
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

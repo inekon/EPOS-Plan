@@ -383,6 +383,26 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap setup {
+            get {
+                object obj = ResourceManager.GetObject("setup", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap setup_trans {
+            get {
+                object obj = ResourceManager.GetObject("setup-trans", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap speichern {
             get {
                 object obj = ResourceManager.GetObject("speichern", resourceCulture);

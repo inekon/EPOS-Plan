@@ -38,17 +38,9 @@ namespace WindowsFormsApplication1
         public double Kollektorneigung;
         public int Kollektorausrichtung;
         public int Kollektormodulanzahl;
-        /*
-        public int Baujahr;
-        public string Regelung;
-        public string Typ;
-        public string Firma;
-        
-        public int Modulkosten;
-        public int Nennleistung;
-        public string Beschreibung;
-        */
-
+        public double PV_Leistung;
+        public int m_Neigung;
+        public int m_Azimut;
 
         public WErzeugerModel()
         {
@@ -77,7 +69,10 @@ namespace WindowsFormsApplication1
             Kollektorneigung = 0;
             Kollektorausrichtung = 0;
             Kollektormodulanzahl = 0;
-    } 
+            PV_Leistung = 0.0;
+            m_Neigung = 0;
+            m_Azimut = 0;
+        } 
     }
 
 }

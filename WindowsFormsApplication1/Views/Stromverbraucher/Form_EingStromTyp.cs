@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Odbc;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
-using System.Data.Odbc;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
@@ -104,6 +105,10 @@ namespace WindowsFormsApplication1
                 arr[Tag, stunde] = dval;
                 arr_seriell[Tag * 24 + stunde] = dval;
             }
+            pictureBox1.Visible = true;
+            pictureBox1.Refresh();
+            Thread.Sleep(500);
+            pictureBox1.Visible = false;
         }
 
         private void btn_Speichern_Click(object sender, EventArgs e)

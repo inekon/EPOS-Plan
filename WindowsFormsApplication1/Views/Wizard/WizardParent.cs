@@ -274,6 +274,11 @@ namespace WindowsFormsApplication1
                     ((Form_SolarKollektoren)page).list_werzmodel = list_werzmodel;
                     ((Form_SolarKollektoren)page).SetControls(projektID, true);
                 }
+                else if (top == WizardItemClass.PV_ITEM)
+                {
+                    ((Form_PV)page).list_pvmodel = list_werzmodel;
+                    ((Form_PV)page).SetControls(listBox_Projekte.Text, true);
+                }
             }
             else
             {
@@ -313,6 +318,11 @@ namespace WindowsFormsApplication1
                 {
                     ((Form_SolarKollektoren)page).list_werzmodel = list_werzmodel;
                     ((Form_SolarKollektoren)page).SetControls(projektID, true);
+                }
+                else if (top == WizardItemClass.PV_ITEM)
+                {
+                    ((Form_PV)page).list_pvmodel = list_werzmodel;
+                    ((Form_PV)page).SetControls(listBox_Projekte.Text, true);
                 }
             }
 
@@ -492,7 +502,7 @@ namespace WindowsFormsApplication1
                     
                     item.ID = werzctrl.items[n].ID;
                     item.ID_Projekt = projctrl.m_ID;
-                    item.Bezeichner = werzctrl.items[n].Bezeichner; //(string)rs.Read("WPName");
+                    item.Bezeichner = werzctrl.items[n].Bezeichner; 
                     item.ID_Type = werzctrl.items[n].ID_Type;
                     item.Abschaltpunkt = (double)werzctrl.items[n].Abschaltpunkt;
                     item.Betriebsart = (string)werzctrl.items[n].Betriebsart;
@@ -514,6 +524,12 @@ namespace WindowsFormsApplication1
                     item.ID_Kessel = werzctrl.items[n].ID_Kessel;
                     item.ID_BHKW = werzctrl.items[n].ID_BHKW;
                     item.Grenzleistung = werzctrl.items[n].Grenzleistung; 
+                    item.Kollektorausrichtung = werzctrl.items[n].Kollektorausrichtung;
+                    item.Kollektorneigung = werzctrl.items[n].Kollektorneigung;
+                    item.Kollektormodulanzahl = werzctrl.items[n].Kollektormodulanzahl;
+                    item.m_Azimut = werzctrl.items[n].m_Azimut;
+                    item.m_Neigung = werzctrl.items[n].m_Neigung;   
+                    item.PV_Leistung = werzctrl.items[n].PV_Leistung;
 
                     list_werzmodel.Add(item);
                 }

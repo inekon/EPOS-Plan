@@ -117,7 +117,6 @@
             this.textBox_Typ.Name = "textBox_Typ";
             this.textBox_Typ.Size = new System.Drawing.Size(250, 25);
             this.textBox_Typ.TabIndex = 5;
-            this.textBox_Typ.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Typ_Validating);
             // 
             // label3
             // 

@@ -6,6 +6,7 @@ using System.Data.Odbc;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -374,7 +375,11 @@ namespace WindowsFormsApplication1
 
             list_pwmodel[indexes[0]].Summe = double.Parse(textBox_Verbrauch.Text);
             textBox_Jahres_Verbrauch.Text = textBox_Verbrauch.Text;
-            textBox_SummeProzesswaerme.Text = ProzesssummeGesamt().ToString("F2") ; 
+            textBox_SummeProzesswaerme.Text = ProzesssummeGesamt().ToString("F2") ;
+            pictureBox1.Visible = true;
+            pictureBox1.Refresh();
+            Thread.Sleep(500);
+            pictureBox1.Visible = false;
         }
  
         private void Form_Prozesswaerme_Load(object sender, EventArgs e)

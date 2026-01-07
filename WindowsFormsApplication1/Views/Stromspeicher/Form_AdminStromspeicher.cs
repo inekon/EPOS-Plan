@@ -111,6 +111,8 @@ namespace WindowsFormsApplication1
                         "WHERE Bezeichner='" + listBox_Stromspeicher.Text + "'";
                     DBCommand.CommandText = sql;    
                     DBCommand.ExecuteNonQuery();
+
+                    MessageBox.Show("Daten gespeichert!");
                 }
             }
             catch (OdbcException sqlEx)
@@ -156,7 +158,7 @@ namespace WindowsFormsApplication1
                 textBox_Bezeichner.Text = rs.Read("Bezeichner").ToString();
                 model.m_szBezeichner = textBox_Bezeichner.Text;
             }
-
+            rs.Close();
         }
 
         private void btn_Neu_Click(object sender, EventArgs e)
@@ -227,7 +229,6 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
                 return;
             }
-
         }
 
         private void textBox_Typ_Validating(object sender, CancelEventArgs e)

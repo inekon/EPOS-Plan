@@ -153,6 +153,12 @@ namespace WindowsFormsApplication1
 
             MessageBox.Show("Version: " + currentVersion.ToString());
         }
+
+        private void MenuItem_PV_Click(object sender, EventArgs e)
+        {
+            Form_AdminPV frm = new Form_AdminPV();
+            frm.ShowDialog();
+        }
     }
 }
 

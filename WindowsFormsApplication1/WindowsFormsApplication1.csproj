@@ -152,12 +152,19 @@
     <Compile Include="Controller\KenndatenKuehlungCtrl.cs" />
     <Compile Include="Controller\KlimaregionCtrl.cs" />
     <Compile Include="Controller\KonfigurationCtrl.cs" />
+    <Compile Include="Controller\PhotovoltaikCtrl.cs" />
     <Compile Include="Controller\ProjektGebaeudeCtrl.cs" />
     <Compile Include="Controller\ProzesswaermeKontextMenuCtrl.cs" />
+    <Compile Include="Controller\PVKontextMenuCtrl.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Controller\SolardatenCtrl .cs" />
     <Compile Include="Controller\SolarganglinieCtrl.cs" />
     <Compile Include="Controller\SolarganglinieDatenCtrl.cs" />
     <Compile Include="Controller\SolarkollektorenCtrl.cs" />
+    <Compile Include="Controller\SolarKontextMenuCtrl.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Controller\StrombedarfKontextMenuCtrl.cs" />
     <Compile Include="Controller\StromganglinieCtrl.cs" />
     <Compile Include="Controller\StromganglinieDatenCtrl.cs" />
@@ -183,6 +190,7 @@
     <Compile Include="Model\BHKWModel.cs" />
     <Compile Include="Model\KenndatenKuehlungModel.cs" />
     <Compile Include="Model\KonfigurationModel.cs" />
+    <Compile Include="Model\PhotovoltaikModel.cs" />
     <Compile Include="Model\ProzesswaermeModel.cs" />
     <Compile Include="Model\SolarganglinieModel.cs" />
     <Compile Include="Model\SolarkollektorenModel.cs" />
@@ -252,6 +260,18 @@
     </Compile>
     <Compile Include="Views\Heizkessel\Form_Heizkessel_Bearbeiten.designer.cs">
       <DependentUpon>Form_Heizkessel_Bearbeiten.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Photovoltaik\Form_AdminPV.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Photovoltaik\Form_AdminPV.designer.cs">
+      <DependentUpon>Form_AdminPV.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Photovoltaik\Form_PV.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Photovoltaik\Form_PV.Designer.cs">
+      <DependentUpon>Form_PV.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Prozesswärme\Form_EingDBProzess.cs">
       <SubType>Form</SubType>
@@ -524,12 +544,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Views\Wizard\Wizard_PV.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_PV.Designer.cs">
-      <DependentUpon>Wizard_PV.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Wizard\Wizard_Komponenten.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -619,6 +633,12 @@
     <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_Bearbeiten.resx">
       <DependentUpon>Form_Heizkessel_Bearbeiten.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Photovoltaik\Form_AdminPV.resx">
+      <DependentUpon>Form_AdminPV.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Photovoltaik\Form_PV.resx">
+      <DependentUpon>Form_PV.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Prozesswärme\Form_EingDBProzess.resx">
       <DependentUpon>Form_EingDBProzess.cs</DependentUpon>
     </EmbeddedResource>
@@ -666,6 +686,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromspeicher\Form_AdminStromspeicher.resx">
       <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_EingStromTyp.resx">
+      <DependentUpon>Form_EingStromTyp.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie_Admin.resx">
       <DependentUpon>Form_Stromganglinie_Admin.cs</DependentUpon>
@@ -731,9 +754,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="Views\Wizard\Wizard_PV.resx">
-      <DependentUpon>Wizard_PV.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Komponenten.resx">
       <DependentUpon>Wizard_Komponenten.cs</DependentUpon>
     </EmbeddedResource>
@@ -886,6 +906,8 @@
     <None Include="Resources\PSSpeicher.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\setup-trans.png" />
+    <None Include="Resources\setup.png" />
     <None Include="Resources\info-1459077_1280.jpg" />
     <None Include="Resources\info-1459077_1280.png" />
     <None Include="Resources\PDelete.jpg" />
@@ -897,6 +919,7 @@
     <Content Include="Resources\PProjektSolarthermie.jpg" />
     <Content Include="Resources\PZusammenfassung.pg.jpg" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
