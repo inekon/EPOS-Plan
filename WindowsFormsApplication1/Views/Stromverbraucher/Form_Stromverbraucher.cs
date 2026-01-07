@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Odbc;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
-using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
@@ -70,7 +71,7 @@ namespace WindowsFormsApplication1
             }
             listView_Strom_Auswahl.Select(); 
             if (listView_Strom_Auswahl.Items.Count > 0) listView_Strom_Auswahl.Items[0] .Selected = true;
-
+            
         }
 
         private void listBox_Prozess_DB_SelectedIndexChanged(object sender, EventArgs e)
@@ -290,11 +291,15 @@ namespace WindowsFormsApplication1
         private void btn_neuerWert_Click(object sender, EventArgs e)
         {
             ListView.SelectedIndexCollection indexes = listView_Strom_Auswahl.SelectedIndices;
-            if (indexes.Count == 0) return;
+            if (indexes.Count == 0 || textBox_Verbrauch.Text == "") return;
 
             list_sbmodel[indexes[0]].m_Summe = double.Parse(textBox_Verbrauch.Text);
             textBox_Jahres_Verbrauch.Text = textBox_Verbrauch.Text;
             textBox_StromSumme.Text = ProzesssummeGesamt().ToString("F2");
+            pictureBox1.Visible = true;
+            pictureBox1.Refresh();
+            Thread.Sleep(500);
+            pictureBox1.Visible = false;
         }
 
         private void textBox_Verbrauch_TextChanged(object sender, EventArgs e)

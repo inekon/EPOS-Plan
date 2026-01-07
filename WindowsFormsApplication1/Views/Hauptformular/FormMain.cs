@@ -123,7 +123,7 @@ namespace WindowsFormsApplication1
 
             listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-  
+
             listView_Heizkessel.View = View.Details;
             listView_Heizkessel.Columns.Add("Name", -2, HorizontalAlignment.Left);
             listView_Heizkessel.Columns.Add("Typ", -2, HorizontalAlignment.Left);
@@ -200,10 +200,33 @@ namespace WindowsFormsApplication1
             listView_BHKW.Top = -2;
             listView_BHKW.Left = -2;
 
+            listView_Solar.View = View.Details;
+            listView_Solar.Columns.Add("Name", -2, HorizontalAlignment.Left);
+            listView_Solar.Columns.Add("Hersteller", -2, HorizontalAlignment.Left);
+            listView_Solar.Columns.Add("Typ", -2, HorizontalAlignment.Left);
+            listView_Solar.Columns.Add("Kollektofläche [m²]", -2, HorizontalAlignment.Left);
+            listView_Solar.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_Solar.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            listView_Solar.Width = tabControl_Komponenten.ClientSize.Width;
+            listView_Solar.Height = tabControl_Komponenten.ClientSize.Height;
+            listView_Solar.Top = -2;
+            listView_Solar.Left = -2;
+
+            listView_PV.View = View.Details;
+            listView_PV.Columns.Add("Name", -2, HorizontalAlignment.Left);
+            listView_PV.Columns.Add("Hersteller", -2, HorizontalAlignment.Left);
+            listView_PV.Columns.Add("Leistung Anlage [W]", -2, HorizontalAlignment.Left);
+            listView_PV.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_PV.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            listView_PV.Width = tabControl_Komponenten.ClientSize.Width;
+            listView_PV.Height = tabControl_Komponenten.ClientSize.Height;
+            listView_PV.Top = -2;
+            listView_PV.Left = -2;
+
             init_Chart(chart1);
             init_Chart(chart2);
 
-         }
+        }
 
         private void init_Chart(System.Windows.Forms.DataVisualization.Charting.Chart chart)
         {
@@ -272,7 +295,7 @@ namespace WindowsFormsApplication1
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.SP_TYP + " or ID_Type=" + WizardItemClass.REF_SP_TYP + ")");
             listView_SP.Items.Clear();
-            
+
             while (rs.Next())
             {
                 ListViewItem lvitem = new ListViewItem();
@@ -384,6 +407,18 @@ namespace WindowsFormsApplication1
             ctrl.Init(listView_Stromganglinie, m_ID_Projekt, m_szProjektname);
         }
 
+        public void Add_PVKontext()
+        {
+            PVKontextMenuCtrl ctrl = new PVKontextMenuCtrl();
+            ctrl.Init(listView_PV, m_ID_Projekt, m_szProjektname);
+        }
+
+        public void Add_SolarKontext()
+        {
+            SolarKontextMenuCtrl ctrl = new SolarKontextMenuCtrl();
+            ctrl.Init(listView_Solar, m_ID_Projekt, m_szProjektname);
+        }
+
         public void SetHeizkesselControl(string Projekt)
         {
             ProjektCtrl projctrl = new ProjektCtrl();
@@ -393,7 +428,7 @@ namespace WindowsFormsApplication1
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.REF_KESSEL_TYP + " or ID_Type=" + WizardItemClass.KESSEL_TYP + ")");
 
             listView_Heizkessel.Items.Clear();
-            
+
             while (rs.Next())
             {
                 ListViewItem lvitem = new ListViewItem();
@@ -686,6 +721,18 @@ namespace WindowsFormsApplication1
             else if ((ListView)drag_control == listView_BHKW)
             {
                 BHKWKontextMenuCtrl ctrl = new BHKWKontextMenuCtrl();
+                ctrl.Init((ListView)drag_control, m_ID_Projekt, m_szProjektname);
+                ctrl.contextMenuStrip1.Items[0].PerformClick();
+            }
+            else if ((ListView)drag_control == listView_PV)
+            {
+                PVKontextMenuCtrl ctrl = new PVKontextMenuCtrl();
+                ctrl.Init((ListView)drag_control, m_ID_Projekt, m_szProjektname);
+                ctrl.contextMenuStrip1.Items[0].PerformClick();
+            }
+            else if ((ListView)drag_control == listView_Solar)
+            {
+                SolarKontextMenuCtrl ctrl = new SolarKontextMenuCtrl();
                 ctrl.Init((ListView)drag_control, m_ID_Projekt, m_szProjektname);
                 ctrl.contextMenuStrip1.Items[0].PerformClick();
             }
@@ -1199,5 +1246,115 @@ namespace WindowsFormsApplication1
             }
         }
 
+        public void SetPVControl(string Projekt)
+        {
+            ProjektCtrl projctrl = new ProjektCtrl();
+            PhotovoltaikCtrl ctrl = new PhotovoltaikCtrl();
+
+            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            RecordSet rs = new RecordSet();
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.PV_TYP + ")");
+
+            listView_PV.Items.Clear();
+
+            while (rs.Next())
+            {
+                ctrl.ReadSingle((int)rs.Read("ID_PV"));
+                ListViewItem lvitem = new ListViewItem();
+
+                lvitem.Text = (string)rs.Read("Bezeichner");
+                lvitem.SubItems.Add(ctrl.m_szFirma.ToString());
+                lvitem.SubItems.Add(((double)rs.Read("PV_Leistung")).ToString() );
+                lvitem.SubItems.Add(rs.Read("ID").ToString());
+                listView_PV.Items.Add(lvitem);
+            }
+            rs.Close();
+
+            listView_PV.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_PV.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+        }
+
+        public void SetSolarControl(string Projekt)
+        {
+            ProjektCtrl projctrl = new ProjektCtrl();
+            SolarkollektorenCtrl ctrl = new SolarkollektorenCtrl();
+
+            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            RecordSet rs = new RecordSet();
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.SOLAR_TYP + ")");
+
+            listView_Solar.Items.Clear();
+
+            while (rs.Next())
+            {
+                ctrl.ReadSingle((int)rs.Read("ID_SOLAR"));
+                ListViewItem lvitem = new ListViewItem();
+
+                lvitem.Text = (string)rs.Read("Bezeichner");
+                lvitem.SubItems.Add(ctrl.m_szFirma.ToString());
+                lvitem.SubItems.Add(ctrl.m_szKollektortyp.ToString());
+                lvitem.SubItems.Add((ctrl.m_Modulfläche * (int)rs.Read("Kollektormodulanzahl")).ToString());
+                lvitem.SubItems.Add(rs.Read("ID").ToString());
+                listView_Solar.Items.Add(lvitem);
+            }
+            rs.Close();
+
+            listView_Solar.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_Solar.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+        }
+
+        private void listView_Solar_MouseDown(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                drag_control = listView_Solar;
+                ListViewItem lvi = listView_Solar.GetItemAt(e.X, e.Y);
+
+                if (lvi != null)
+                {
+                    listView_Solar.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
+                }
+            }
+        }
+
+        private void listView_Solar_MouseMove(object sender, MouseEventArgs e)
+        {
+            this.Cursor = Cursors.Default;
+        }
+
+        private void listView_Solar_MouseUp(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                listView_Solar.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
+            }
+        }
+
+        private void listView_PV_MouseDown(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                drag_control = listView_PV;
+                ListViewItem lvi = listView_PV.GetItemAt(e.X, e.Y);
+
+                if (lvi != null)
+                {
+                    listView_PV.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
+                }
+            }
+        }
+
+        private void listView_PV_MouseMove(object sender, MouseEventArgs e)
+        {
+            this.Cursor = Cursors.Default;
+        }
+
+        private void listView_PV_MouseUp(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                listView_PV.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
+            }
+        }
     }
 }

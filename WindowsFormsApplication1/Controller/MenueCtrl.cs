@@ -55,7 +55,7 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_WP(), WizardItemClass.WP_ITEM));
             frm.Add(new WizardItemClass(new Form_SolarKollektoren(), WizardItemClass.SOLAR_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_PV(), WizardItemClass.PV_ITEM));
+            frm.Add(new WizardItemClass(new Form_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
             frm.Add(new WizardItemClass(new Form_BHKWEing(), WizardItemClass.BHKW_ITEM));
@@ -83,7 +83,7 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
             frm.Add(new WizardItemClass(new Wizard_WP(), WizardItemClass.WP_ITEM));
             frm.Add(new WizardItemClass(new Form_SolarKollektoren(), WizardItemClass.SOLAR_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_PV(), WizardItemClass.PV_ITEM));
+            frm.Add(new WizardItemClass(new Form_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
             frm.Add(new WizardItemClass(new Form_BHKWEing(), WizardItemClass.BHKW_ITEM));
@@ -131,6 +131,8 @@ namespace WindowsFormsApplication1
                    frmmain.SetProzesswaermeControl(frm.m_ID_Projekt);
                    frmmain.SetStrombedarfControl(frm.m_ID_Projekt);
                    frmmain.SetStromganglinieControl(frm.m_szProjekt);
+                   frmmain.SetPVControl(frm.m_szProjekt);
+                   frmmain.SetSolarControl(frm.m_szProjekt);
                    frmmain.Add_WPKontext();
                    frmmain.Add_BHKWKontext();
                    frmmain.Add_GebäudeKontext();
@@ -139,6 +141,9 @@ namespace WindowsFormsApplication1
                    frmmain.Add_ProzesswaermeKontext();
                    frmmain.Add_StrombedarfKontext();
                    frmmain.Add_StromganglinieKontext(); 
+                   frmmain.Add_SpKontext();
+                   frmmain.Add_PVKontext();
+                   frmmain.Add_SolarKontext();
                    frmmain.SetNetzverluste(ctrlproj.m_nNetzverluste, ctrlproj.m_szEinheit);
 
                    Program.startfrm.m_szProjektname = frm.m_szProjekt;
@@ -170,7 +175,9 @@ namespace WindowsFormsApplication1
                    frmmain.SetWaermebedarfExternControl(frm.m_szProjekt);
                    frmmain.SetProzesswaermeControl(ctrl.m_ID_Projekt);
                    frmmain.SetStrombedarfControl(ctrl.m_ID_Projekt);
-                   frmmain.SetStromganglinieControl(frm.m_szProjekt);
+                   frmmain.SetStromganglinieControl(ctrl.m_szProjektname);
+                   frmmain.SetPVControl(ctrl.m_szProjektname);
+                   frmmain.SetSolarControl(ctrl.m_szProjektname);
                    frmmain.Add_WPKontext();
                    frmmain.Add_BHKWKontext();
                    frmmain.Add_GebäudeKontext();
@@ -179,7 +186,10 @@ namespace WindowsFormsApplication1
                    frmmain.Add_WaermebedarfExternKontext();
                    frmmain.Add_ProzesswaermeKontext();
                    frmmain.Add_StrombedarfKontext();
-                   frmmain.Add_StromganglinieKontext(); 
+                   frmmain.Add_StromganglinieKontext();
+                   frmmain.Add_SpKontext();
+                   frmmain.Add_PVKontext();
+                   frmmain.Add_SolarKontext();
                    frmmain.SetNetzverluste(ctrlproj.m_nNetzverluste, ctrlproj.m_szEinheit);
 
                    Program.startfrm.m_szProjektname = ctrl.m_szProjektname;
@@ -324,6 +334,12 @@ namespace WindowsFormsApplication1
         public void DBUpdate()
         {   
             Form_Import frm = new Form_Import();
+            frm.ShowDialog();
+        }
+
+        public void PV()
+        {
+            Form_AdminPV frm = new Form_AdminPV();
             frm.ShowDialog();
         }
     }

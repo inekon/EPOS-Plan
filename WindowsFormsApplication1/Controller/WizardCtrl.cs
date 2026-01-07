@@ -52,6 +52,9 @@ namespace WindowsFormsApplication1
                     newRow["Kollektorneigung"] = list[i].Kollektorneigung;
                     newRow["Kollektorausrichtung"] = list[i].Kollektorausrichtung;
                     newRow["Kollektormodulanzahl"] = list[i].Kollektormodulanzahl;
+                    newRow["PV_Leistung"] = list[i].PV_Leistung;
+                    newRow["Neigung"] = list[i].m_Neigung;
+                    newRow["Azimut"] = list[i].m_Azimut;
 
                     newRow["ID_WP"] = DBNull.Value;
                     newRow["ID_SP"] = DBNull.Value;

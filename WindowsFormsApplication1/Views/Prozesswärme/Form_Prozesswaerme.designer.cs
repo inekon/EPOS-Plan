@@ -54,12 +54,14 @@ namespace WindowsFormsApplication1
             this.listView_Prozess_Auswahl = new System.Windows.Forms.ListView();
             this.Label1 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.textBox_Verbrauch = new System.Windows.Forms.TextBox();
             this.Label8 = new System.Windows.Forms.Label();
             this.btn_neuerWert = new System.Windows.Forms.Button();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.label_Type = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -90,7 +92,7 @@ namespace WindowsFormsApplication1
             // btn_Prozess_DBneu
             // 
             this.btn_Prozess_DBneu.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Prozess_DBneu.Location = new System.Drawing.Point(614, 410);
+            this.btn_Prozess_DBneu.Location = new System.Drawing.Point(614, 406);
             this.btn_Prozess_DBneu.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Prozess_DBneu.Name = "btn_Prozess_DBneu";
             this.btn_Prozess_DBneu.Size = new System.Drawing.Size(154, 31);
@@ -102,7 +104,7 @@ namespace WindowsFormsApplication1
             // btn_Prozess_loeschen
             // 
             this.btn_Prozess_loeschen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Prozess_loeschen.Location = new System.Drawing.Point(614, 449);
+            this.btn_Prozess_loeschen.Location = new System.Drawing.Point(614, 441);
             this.btn_Prozess_loeschen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Prozess_loeschen.Name = "btn_Prozess_loeschen";
             this.btn_Prozess_loeschen.Size = new System.Drawing.Size(154, 31);
@@ -161,7 +163,7 @@ namespace WindowsFormsApplication1
             // btn_ProzTypeDBedit
             // 
             this.btn_ProzTypeDBedit.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_ProzTypeDBedit.Location = new System.Drawing.Point(614, 488);
+            this.btn_ProzTypeDBedit.Location = new System.Drawing.Point(614, 476);
             this.btn_ProzTypeDBedit.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_ProzTypeDBedit.Name = "btn_ProzTypeDBedit";
             this.btn_ProzTypeDBedit.Size = new System.Drawing.Size(154, 31);
@@ -273,7 +275,7 @@ namespace WindowsFormsApplication1
             this.Label11.BackColor = System.Drawing.Color.Black;
             this.Label11.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label11.ForeColor = System.Drawing.Color.White;
-            this.Label11.Location = new System.Drawing.Point(299, 412);
+            this.Label11.Location = new System.Drawing.Point(297, 412);
             this.Label11.Name = "Label11";
             this.Label11.Size = new System.Drawing.Size(48, 19);
             this.Label11.TabIndex = 27;
@@ -297,7 +299,7 @@ namespace WindowsFormsApplication1
             this.Label18.BackColor = System.Drawing.Color.Black;
             this.Label18.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label18.ForeColor = System.Drawing.Color.White;
-            this.Label18.Location = new System.Drawing.Point(299, 514);
+            this.Label18.Location = new System.Drawing.Point(297, 514);
             this.Label18.Name = "Label18";
             this.Label18.Size = new System.Drawing.Size(48, 19);
             this.Label18.TabIndex = 29;
@@ -351,21 +353,34 @@ namespace WindowsFormsApplication1
             // 
             // groupBox1
             // 
+            this.groupBox1.BackColor = System.Drawing.Color.Khaki;
+            this.groupBox1.Controls.Add(this.pictureBox1);
             this.groupBox1.Controls.Add(this.textBox_Verbrauch);
             this.groupBox1.Controls.Add(this.Label8);
             this.groupBox1.Controls.Add(this.btn_neuerWert);
             this.groupBox1.Location = new System.Drawing.Point(13, 241);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(206, 90);
+            this.groupBox1.Size = new System.Drawing.Size(264, 90);
             this.groupBox1.TabIndex = 42;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ändern des Jahresverbrauchs";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(159, 54);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(28, 27);
+            this.pictureBox1.TabIndex = 119;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Visible = false;
             // 
             // textBox_Verbrauch
             // 
             this.textBox_Verbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_Verbrauch.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Verbrauch.Location = new System.Drawing.Point(37, 22);
+            this.textBox_Verbrauch.Location = new System.Drawing.Point(17, 22);
             this.textBox_Verbrauch.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Verbrauch.Name = "textBox_Verbrauch";
             this.textBox_Verbrauch.Size = new System.Drawing.Size(79, 22);
@@ -378,7 +393,7 @@ namespace WindowsFormsApplication1
             this.Label8.BackColor = System.Drawing.Color.Black;
             this.Label8.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label8.ForeColor = System.Drawing.Color.White;
-            this.Label8.Location = new System.Drawing.Point(125, 24);
+            this.Label8.Location = new System.Drawing.Point(105, 24);
             this.Label8.Name = "Label8";
             this.Label8.Size = new System.Drawing.Size(43, 19);
             this.Label8.TabIndex = 42;
@@ -388,10 +403,12 @@ namespace WindowsFormsApplication1
             // btn_neuerWert
             // 
             this.btn_neuerWert.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_neuerWert.Location = new System.Drawing.Point(37, 53);
+            this.btn_neuerWert.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btn_neuerWert.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_neuerWert.Location = new System.Drawing.Point(17, 53);
             this.btn_neuerWert.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_neuerWert.Name = "btn_neuerWert";
-            this.btn_neuerWert.Size = new System.Drawing.Size(131, 30);
+            this.btn_neuerWert.Size = new System.Drawing.Size(139, 30);
             this.btn_neuerWert.TabIndex = 43;
             this.btn_neuerWert.Text = "Übernehmen";
             this.btn_neuerWert.UseVisualStyleBackColor = true;
@@ -462,6 +479,7 @@ namespace WindowsFormsApplication1
             this.Load += new System.EventHandler(this.Form_Prozesswaerme_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -501,5 +519,6 @@ private System.Windows.Forms.Label Label1;
         private System.Windows.Forms.Button btn_neuerWert;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.Label label_Type;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

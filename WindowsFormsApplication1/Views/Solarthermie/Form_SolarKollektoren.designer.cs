@@ -33,12 +33,29 @@ namespace WindowsFormsApplication1
             this.btn_Kollektor_DB_loeschen = new System.Windows.Forms.Button();
             this.Label10 = new System.Windows.Forms.Label();
             this.textBox_Anzahl = new System.Windows.Forms.TextBox();
-            this.Label11 = new System.Windows.Forms.Label();
-            this.textBox_Kollektor_A = new System.Windows.Forms.TextBox();
-            this.Label12 = new System.Windows.Forms.Label();
             this.Label13 = new System.Windows.Forms.Label();
             this.textBox_Kollektorneigung = new System.Windows.Forms.TextBox();
             this.btn_OK = new System.Windows.Forms.Button();
+            this.listBox_Auswahl = new System.Windows.Forms.ListBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.radioButton_Sued90 = new System.Windows.Forms.RadioButton();
+            this.radioButton_SuedWest = new System.Windows.Forms.RadioButton();
+            this.radioButton_flach = new System.Windows.Forms.RadioButton();
+            this.radioButton_Sued = new System.Windows.Forms.RadioButton();
+            this.radioButton_SuedOst = new System.Windows.Forms.RadioButton();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.btn_Hinzzu = new System.Windows.Forms.Button();
+            this.btn_Entfernen = new System.Windows.Forms.Button();
+            this.groupBox_Kollektor = new System.Windows.Forms.GroupBox();
+            this.btn_Abbrechen = new System.Windows.Forms.Button();
+            this.label_Type = new System.Windows.Forms.Label();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.textBox_Name = new System.Windows.Forms.TextBox();
+            this.Label11 = new System.Windows.Forms.Label();
+            this.textBox_Kollektor_A = new System.Windows.Forms.TextBox();
             this.Label5 = new System.Windows.Forms.Label();
             this.Label6 = new System.Windows.Forms.Label();
             this.Label7 = new System.Windows.Forms.Label();
@@ -48,27 +65,13 @@ namespace WindowsFormsApplication1
             this.textBox_Firma = new System.Windows.Forms.TextBox();
             this.textBox_Modul_A = new System.Windows.Forms.TextBox();
             this.Label9 = new System.Windows.Forms.Label();
-            this.listBox_Auswahl = new System.Windows.Forms.ListBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.radioButton_Sued90 = new System.Windows.Forms.RadioButton();
-            this.radioButton_SuedWest = new System.Windows.Forms.RadioButton();
-            this.radioButton_flach = new System.Windows.Forms.RadioButton();
-            this.radioButton_Sued = new System.Windows.Forms.RadioButton();
-            this.radioButton_SuedOst = new System.Windows.Forms.RadioButton();
-            this.label1 = new System.Windows.Forms.Label();
-            this.textBox_Name = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.btn_Hinzzu = new System.Windows.Forms.Button();
-            this.btn_Entfernen = new System.Windows.Forms.Button();
-            this.groupBox_Kollektor = new System.Windows.Forms.GroupBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btn_Speichern = new System.Windows.Forms.Button();
-            this.btn_Abbrechen = new System.Windows.Forms.Button();
-            this.label_Type = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox_Kollektor.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // btn_Kollektor_DB_Edit
@@ -110,83 +113,50 @@ namespace WindowsFormsApplication1
             // Label10
             // 
             this.Label10.AutoSize = true;
-            this.Label10.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label10.Location = new System.Drawing.Point(6, 77);
+            this.Label10.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label10.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.Label10.Location = new System.Drawing.Point(6, 71);
             this.Label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.Label10.Name = "Label10";
-            this.Label10.Size = new System.Drawing.Size(119, 17);
+            this.Label10.Size = new System.Drawing.Size(92, 17);
             this.Label10.TabIndex = 13;
-            this.Label10.Text = "Anzahl Kollektoren:";
+            this.Label10.Text = "Modulanzahl:";
             this.Label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // textBox_Anzahl
             // 
             this.textBox_Anzahl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_Anzahl.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Anzahl.Location = new System.Drawing.Point(21, 98);
+            this.textBox_Anzahl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.textBox_Anzahl.Location = new System.Drawing.Point(11, 90);
             this.textBox_Anzahl.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Anzahl.Name = "textBox_Anzahl";
-            this.textBox_Anzahl.Size = new System.Drawing.Size(82, 25);
+            this.textBox_Anzahl.Size = new System.Drawing.Size(51, 25);
             this.textBox_Anzahl.TabIndex = 14;
             this.textBox_Anzahl.TextChanged += new System.EventHandler(this.textBox_Anzahl_TextChanged);
-            // 
-            // Label11
-            // 
-            this.Label11.AutoSize = true;
-            this.Label11.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label11.Location = new System.Drawing.Point(23, 576);
-            this.Label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.Label11.Name = "Label11";
-            this.Label11.Size = new System.Drawing.Size(97, 17);
-            this.Label11.TabIndex = 15;
-            this.Label11.Text = "Kollektorfläche:";
-            this.Label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // textBox_Kollektor_A
-            // 
-            this.textBox_Kollektor_A.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Kollektor_A.Enabled = false;
-            this.textBox_Kollektor_A.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kollektor_A.Location = new System.Drawing.Point(127, 574);
-            this.textBox_Kollektor_A.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Kollektor_A.Name = "textBox_Kollektor_A";
-            this.textBox_Kollektor_A.Size = new System.Drawing.Size(112, 25);
-            this.textBox_Kollektor_A.TabIndex = 16;
-            // 
-            // Label12
-            // 
-            this.Label12.AutoSize = true;
-            this.Label12.BackColor = System.Drawing.Color.Black;
-            this.Label12.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label12.ForeColor = System.Drawing.Color.White;
-            this.Label12.Location = new System.Drawing.Point(242, 578);
-            this.Label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.Label12.Name = "Label12";
-            this.Label12.Size = new System.Drawing.Size(24, 17);
-            this.Label12.TabIndex = 17;
-            this.Label12.Text = "m²";
-            this.Label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label13
             // 
             this.Label13.AutoSize = true;
-            this.Label13.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label13.Location = new System.Drawing.Point(142, 77);
+            this.Label13.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label13.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.Label13.Location = new System.Drawing.Point(117, 71);
             this.Label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.Label13.Name = "Label13";
-            this.Label13.Size = new System.Drawing.Size(61, 17);
+            this.Label13.Size = new System.Drawing.Size(84, 17);
             this.Label13.TabIndex = 18;
-            this.Label13.Text = "Neigung:";
+            this.Label13.Text = "Neigung [°]:";
             this.Label13.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // textBox_Kollektorneigung
             // 
             this.textBox_Kollektorneigung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_Kollektorneigung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kollektorneigung.Location = new System.Drawing.Point(131, 98);
+            this.textBox_Kollektorneigung.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.textBox_Kollektorneigung.Location = new System.Drawing.Point(120, 90);
             this.textBox_Kollektorneigung.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Kollektorneigung.Name = "textBox_Kollektorneigung";
-            this.textBox_Kollektorneigung.Size = new System.Drawing.Size(84, 25);
+            this.textBox_Kollektorneigung.Size = new System.Drawing.Size(57, 25);
             this.textBox_Kollektorneigung.TabIndex = 19;
             this.textBox_Kollektorneigung.TextChanged += new System.EventHandler(this.textBox_Kollektorneigung_TextChanged);
             // 
@@ -202,117 +172,10 @@ namespace WindowsFormsApplication1
             this.btn_OK.UseVisualStyleBackColor = true;
             this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
             // 
-            // Label5
-            // 
-            this.Label5.AutoSize = true;
-            this.Label5.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label5.Location = new System.Drawing.Point(23, 416);
-            this.Label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.Label5.Name = "Label5";
-            this.Label5.Size = new System.Drawing.Size(63, 17);
-            this.Label5.TabIndex = 23;
-            this.Label5.Text = "Kollektor:";
-            this.Label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // Label6
-            // 
-            this.Label6.AutoSize = true;
-            this.Label6.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label6.Location = new System.Drawing.Point(23, 447);
-            this.Label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.Label6.Name = "Label6";
-            this.Label6.Size = new System.Drawing.Size(89, 17);
-            this.Label6.TabIndex = 24;
-            this.Label6.Text = "Beschreibung:";
-            this.Label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // Label7
-            // 
-            this.Label7.AutoSize = true;
-            this.Label7.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label7.Location = new System.Drawing.Point(23, 511);
-            this.Label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.Label7.Name = "Label7";
-            this.Label7.Size = new System.Drawing.Size(67, 17);
-            this.Label7.TabIndex = 25;
-            this.Label7.Text = "Hersteller:";
-            this.Label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // Label8
-            // 
-            this.Label8.AutoSize = true;
-            this.Label8.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label8.Location = new System.Drawing.Point(23, 541);
-            this.Label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.Label8.Name = "Label8";
-            this.Label8.Size = new System.Drawing.Size(83, 17);
-            this.Label8.TabIndex = 26;
-            this.Label8.Text = "Modulfläche:";
-            this.Label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // textBox_Kollektortype
-            // 
-            this.textBox_Kollektortype.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Kollektortype.Enabled = false;
-            this.textBox_Kollektortype.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kollektortype.Location = new System.Drawing.Point(113, 413);
-            this.textBox_Kollektortype.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Kollektortype.Name = "textBox_Kollektortype";
-            this.textBox_Kollektortype.Size = new System.Drawing.Size(308, 25);
-            this.textBox_Kollektortype.TabIndex = 27;
-            // 
-            // textBox_Beschreibung
-            // 
-            this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Beschreibung.Enabled = false;
-            this.textBox_Beschreibung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Beschreibung.Location = new System.Drawing.Point(113, 445);
-            this.textBox_Beschreibung.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Beschreibung.Multiline = true;
-            this.textBox_Beschreibung.Name = "textBox_Beschreibung";
-            this.textBox_Beschreibung.Size = new System.Drawing.Size(308, 56);
-            this.textBox_Beschreibung.TabIndex = 28;
-            // 
-            // textBox_Firma
-            // 
-            this.textBox_Firma.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Firma.Enabled = false;
-            this.textBox_Firma.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Firma.Location = new System.Drawing.Point(113, 508);
-            this.textBox_Firma.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Firma.Name = "textBox_Firma";
-            this.textBox_Firma.Size = new System.Drawing.Size(308, 25);
-            this.textBox_Firma.TabIndex = 29;
-            // 
-            // textBox_Modul_A
-            // 
-            this.textBox_Modul_A.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Modul_A.Enabled = false;
-            this.textBox_Modul_A.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Modul_A.Location = new System.Drawing.Point(127, 540);
-            this.textBox_Modul_A.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Modul_A.Name = "textBox_Modul_A";
-            this.textBox_Modul_A.Size = new System.Drawing.Size(113, 25);
-            this.textBox_Modul_A.TabIndex = 30;
-            // 
-            // Label9
-            // 
-            this.Label9.AutoSize = true;
-            this.Label9.BackColor = System.Drawing.Color.Black;
-            this.Label9.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label9.ForeColor = System.Drawing.Color.White;
-            this.Label9.Location = new System.Drawing.Point(243, 544);
-            this.Label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.Label9.Name = "Label9";
-            this.Label9.Size = new System.Drawing.Size(24, 17);
-            this.Label9.TabIndex = 31;
-            this.Label9.Text = "m²";
-            this.Label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // listBox_Auswahl
             // 
             this.listBox_Auswahl.ItemHeight = 17;
-            this.listBox_Auswahl.Location = new System.Drawing.Point(21, 63);
+            this.listBox_Auswahl.Location = new System.Drawing.Point(21, 54);
             this.listBox_Auswahl.Margin = new System.Windows.Forms.Padding(4);
             this.listBox_Auswahl.Name = "listBox_Auswahl";
             this.listBox_Auswahl.Size = new System.Drawing.Size(310, 157);
@@ -326,19 +189,21 @@ namespace WindowsFormsApplication1
             this.groupBox1.Controls.Add(this.radioButton_flach);
             this.groupBox1.Controls.Add(this.radioButton_Sued);
             this.groupBox1.Controls.Add(this.radioButton_SuedOst);
-            this.groupBox1.Location = new System.Drawing.Point(9, 10);
+            this.groupBox1.Location = new System.Drawing.Point(9, 17);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(364, 60);
+            this.groupBox1.Size = new System.Drawing.Size(364, 48);
             this.groupBox1.TabIndex = 33;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Ausrichtung des Kollektors";
+            this.groupBox1.Text = "Ausrichtung";
             // 
             // radioButton_Sued90
             // 
             this.radioButton_Sued90.AutoSize = true;
+            this.radioButton_Sued90.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioButton_Sued90.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.radioButton_Sued90.Location = new System.Drawing.Point(287, 24);
             this.radioButton_Sued90.Name = "radioButton_Sued90";
-            this.radioButton_Sued90.Size = new System.Drawing.Size(71, 21);
+            this.radioButton_Sued90.Size = new System.Drawing.Size(72, 21);
             this.radioButton_Sued90.TabIndex = 4;
             this.radioButton_Sued90.TabStop = true;
             this.radioButton_Sued90.Text = "Süd 90°";
@@ -347,9 +212,11 @@ namespace WindowsFormsApplication1
             // radioButton_SuedWest
             // 
             this.radioButton_SuedWest.AutoSize = true;
+            this.radioButton_SuedWest.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioButton_SuedWest.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.radioButton_SuedWest.Location = new System.Drawing.Point(144, 24);
             this.radioButton_SuedWest.Name = "radioButton_SuedWest";
-            this.radioButton_SuedWest.Size = new System.Drawing.Size(81, 21);
+            this.radioButton_SuedWest.Size = new System.Drawing.Size(85, 21);
             this.radioButton_SuedWest.TabIndex = 3;
             this.radioButton_SuedWest.TabStop = true;
             this.radioButton_SuedWest.Text = "Süd-West";
@@ -358,9 +225,11 @@ namespace WindowsFormsApplication1
             // radioButton_flach
             // 
             this.radioButton_flach.AutoSize = true;
+            this.radioButton_flach.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioButton_flach.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.radioButton_flach.Location = new System.Drawing.Point(229, 24);
             this.radioButton_flach.Name = "radioButton_flach";
-            this.radioButton_flach.Size = new System.Drawing.Size(53, 21);
+            this.radioButton_flach.Size = new System.Drawing.Size(56, 21);
             this.radioButton_flach.TabIndex = 2;
             this.radioButton_flach.TabStop = true;
             this.radioButton_flach.Text = "flach";
@@ -369,9 +238,11 @@ namespace WindowsFormsApplication1
             // radioButton_Sued
             // 
             this.radioButton_Sued.AutoSize = true;
+            this.radioButton_Sued.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioButton_Sued.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.radioButton_Sued.Location = new System.Drawing.Point(81, 24);
             this.radioButton_Sued.Name = "radioButton_Sued";
-            this.radioButton_Sued.Size = new System.Drawing.Size(48, 21);
+            this.radioButton_Sued.Size = new System.Drawing.Size(49, 21);
             this.radioButton_Sued.TabIndex = 1;
             this.radioButton_Sued.TabStop = true;
             this.radioButton_Sued.Text = "Süd";
@@ -380,42 +251,21 @@ namespace WindowsFormsApplication1
             // radioButton_SuedOst
             // 
             this.radioButton_SuedOst.AutoSize = true;
+            this.radioButton_SuedOst.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioButton_SuedOst.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.radioButton_SuedOst.Location = new System.Drawing.Point(8, 24);
             this.radioButton_SuedOst.Name = "radioButton_SuedOst";
-            this.radioButton_SuedOst.Size = new System.Drawing.Size(73, 21);
+            this.radioButton_SuedOst.Size = new System.Drawing.Size(75, 21);
             this.radioButton_SuedOst.TabIndex = 0;
             this.radioButton_SuedOst.TabStop = true;
             this.radioButton_SuedOst.Text = "Süd-Ost";
             this.radioButton_SuedOst.UseVisualStyleBackColor = true;
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(23, 383);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(46, 17);
-            this.label1.TabIndex = 34;
-            this.label1.Text = "Name:";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // textBox_Name
-            // 
-            this.textBox_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Name.Enabled = false;
-            this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Name.Location = new System.Drawing.Point(113, 380);
-            this.textBox_Name.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Name.Name = "textBox_Name";
-            this.textBox_Name.Size = new System.Drawing.Size(308, 25);
-            this.textBox_Name.TabIndex = 35;
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(23, 42);
+            this.label2.Location = new System.Drawing.Point(23, 33);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(116, 17);
@@ -474,31 +324,22 @@ namespace WindowsFormsApplication1
             // 
             // groupBox_Kollektor
             // 
+            this.groupBox_Kollektor.BackColor = System.Drawing.Color.Khaki;
+            this.groupBox_Kollektor.Controls.Add(this.pictureBox1);
             this.groupBox_Kollektor.Controls.Add(this.btn_Speichern);
             this.groupBox_Kollektor.Controls.Add(this.textBox_Anzahl);
             this.groupBox_Kollektor.Controls.Add(this.Label10);
+            this.groupBox_Kollektor.Controls.Add(this.Label11);
             this.groupBox_Kollektor.Controls.Add(this.textBox_Kollektorneigung);
+            this.groupBox_Kollektor.Controls.Add(this.textBox_Kollektor_A);
             this.groupBox_Kollektor.Controls.Add(this.Label13);
             this.groupBox_Kollektor.Controls.Add(this.groupBox1);
-            this.groupBox_Kollektor.Location = new System.Drawing.Point(21, 227);
+            this.groupBox_Kollektor.Location = new System.Drawing.Point(21, 218);
             this.groupBox_Kollektor.Name = "groupBox_Kollektor";
-            this.groupBox_Kollektor.Size = new System.Drawing.Size(400, 135);
+            this.groupBox_Kollektor.Size = new System.Drawing.Size(400, 154);
             this.groupBox_Kollektor.TabIndex = 79;
             this.groupBox_Kollektor.TabStop = false;
-            // 
-            // btn_Speichern
-            // 
-            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
-            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_Speichern.Location = new System.Drawing.Point(238, 94);
-            this.btn_Speichern.Margin = new System.Windows.Forms.Padding(4);
-            this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.Size = new System.Drawing.Size(155, 31);
-            this.btn_Speichern.TabIndex = 81;
-            this.btn_Speichern.Text = "Übernehmen";
-            this.btn_Speichern.UseVisualStyleBackColor = true;
-            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
+            this.groupBox_Kollektor.Text = "Kollektor";
             // 
             // btn_Abbrechen
             // 
@@ -525,11 +366,211 @@ namespace WindowsFormsApplication1
             this.label_Type.Text = "Eingabe der Solarkollektoren";
             this.label_Type.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.label1);
+            this.groupBox2.Controls.Add(this.textBox_Name);
+            this.groupBox2.Controls.Add(this.Label5);
+            this.groupBox2.Controls.Add(this.Label6);
+            this.groupBox2.Controls.Add(this.Label7);
+            this.groupBox2.Controls.Add(this.Label8);
+            this.groupBox2.Controls.Add(this.textBox_Kollektortype);
+            this.groupBox2.Controls.Add(this.textBox_Beschreibung);
+            this.groupBox2.Controls.Add(this.textBox_Firma);
+            this.groupBox2.Controls.Add(this.textBox_Modul_A);
+            this.groupBox2.Controls.Add(this.Label9);
+            this.groupBox2.Location = new System.Drawing.Point(21, 378);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(400, 229);
+            this.groupBox2.TabIndex = 82;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Modul";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(16, 38);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(46, 17);
+            this.label1.TabIndex = 48;
+            this.label1.Text = "Name:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // textBox_Name
+            // 
+            this.textBox_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Name.Enabled = false;
+            this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.textBox_Name.Location = new System.Drawing.Point(106, 35);
+            this.textBox_Name.Margin = new System.Windows.Forms.Padding(5);
+            this.textBox_Name.Name = "textBox_Name";
+            this.textBox_Name.Size = new System.Drawing.Size(280, 25);
+            this.textBox_Name.TabIndex = 49;
+            // 
+            // Label11
+            // 
+            this.Label11.AutoSize = true;
+            this.Label11.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label11.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.Label11.Location = new System.Drawing.Point(222, 71);
+            this.Label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Label11.Name = "Label11";
+            this.Label11.Size = new System.Drawing.Size(136, 17);
+            this.Label11.TabIndex = 36;
+            this.Label11.Text = "Kollektorfläche [m²]:";
+            this.Label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // textBox_Kollektor_A
+            // 
+            this.textBox_Kollektor_A.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Kollektor_A.Enabled = false;
+            this.textBox_Kollektor_A.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.textBox_Kollektor_A.Location = new System.Drawing.Point(225, 90);
+            this.textBox_Kollektor_A.Margin = new System.Windows.Forms.Padding(5);
+            this.textBox_Kollektor_A.Name = "textBox_Kollektor_A";
+            this.textBox_Kollektor_A.Size = new System.Drawing.Size(85, 25);
+            this.textBox_Kollektor_A.TabIndex = 37;
+            // 
+            // Label5
+            // 
+            this.Label5.AutoSize = true;
+            this.Label5.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label5.Location = new System.Drawing.Point(16, 71);
+            this.Label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Label5.Name = "Label5";
+            this.Label5.Size = new System.Drawing.Size(63, 17);
+            this.Label5.TabIndex = 39;
+            this.Label5.Text = "Kollektor:";
+            this.Label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // Label6
+            // 
+            this.Label6.AutoSize = true;
+            this.Label6.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label6.Location = new System.Drawing.Point(16, 102);
+            this.Label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Label6.Name = "Label6";
+            this.Label6.Size = new System.Drawing.Size(89, 17);
+            this.Label6.TabIndex = 40;
+            this.Label6.Text = "Beschreibung:";
+            this.Label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // Label7
+            // 
+            this.Label7.AutoSize = true;
+            this.Label7.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label7.Location = new System.Drawing.Point(16, 166);
+            this.Label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Label7.Name = "Label7";
+            this.Label7.Size = new System.Drawing.Size(67, 17);
+            this.Label7.TabIndex = 41;
+            this.Label7.Text = "Hersteller:";
+            this.Label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // Label8
+            // 
+            this.Label8.AutoSize = true;
+            this.Label8.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label8.Location = new System.Drawing.Point(16, 196);
+            this.Label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Label8.Name = "Label8";
+            this.Label8.Size = new System.Drawing.Size(83, 17);
+            this.Label8.TabIndex = 42;
+            this.Label8.Text = "Modulfläche:";
+            this.Label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // textBox_Kollektortype
+            // 
+            this.textBox_Kollektortype.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Kollektortype.Enabled = false;
+            this.textBox_Kollektortype.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.textBox_Kollektortype.Location = new System.Drawing.Point(106, 68);
+            this.textBox_Kollektortype.Margin = new System.Windows.Forms.Padding(5);
+            this.textBox_Kollektortype.Name = "textBox_Kollektortype";
+            this.textBox_Kollektortype.Size = new System.Drawing.Size(280, 25);
+            this.textBox_Kollektortype.TabIndex = 43;
+            // 
+            // textBox_Beschreibung
+            // 
+            this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Beschreibung.Enabled = false;
+            this.textBox_Beschreibung.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.textBox_Beschreibung.Location = new System.Drawing.Point(106, 100);
+            this.textBox_Beschreibung.Margin = new System.Windows.Forms.Padding(5);
+            this.textBox_Beschreibung.Multiline = true;
+            this.textBox_Beschreibung.Name = "textBox_Beschreibung";
+            this.textBox_Beschreibung.Size = new System.Drawing.Size(280, 56);
+            this.textBox_Beschreibung.TabIndex = 44;
+            // 
+            // textBox_Firma
+            // 
+            this.textBox_Firma.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Firma.Enabled = false;
+            this.textBox_Firma.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.textBox_Firma.Location = new System.Drawing.Point(106, 164);
+            this.textBox_Firma.Margin = new System.Windows.Forms.Padding(5);
+            this.textBox_Firma.Name = "textBox_Firma";
+            this.textBox_Firma.Size = new System.Drawing.Size(280, 25);
+            this.textBox_Firma.TabIndex = 45;
+            // 
+            // textBox_Modul_A
+            // 
+            this.textBox_Modul_A.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Modul_A.Enabled = false;
+            this.textBox_Modul_A.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.textBox_Modul_A.Location = new System.Drawing.Point(106, 196);
+            this.textBox_Modul_A.Margin = new System.Windows.Forms.Padding(5);
+            this.textBox_Modul_A.Name = "textBox_Modul_A";
+            this.textBox_Modul_A.Size = new System.Drawing.Size(113, 25);
+            this.textBox_Modul_A.TabIndex = 46;
+            // 
+            // Label9
+            // 
+            this.Label9.AutoSize = true;
+            this.Label9.BackColor = System.Drawing.Color.Black;
+            this.Label9.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label9.ForeColor = System.Drawing.Color.White;
+            this.Label9.Location = new System.Drawing.Point(224, 200);
+            this.Label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Label9.Name = "Label9";
+            this.Label9.Size = new System.Drawing.Size(24, 17);
+            this.Label9.TabIndex = 47;
+            this.Label9.Text = "m²";
+            this.Label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(169, 120);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(28, 27);
+            this.pictureBox1.TabIndex = 117;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Visible = false;
+            // 
+            // btn_Speichern
+            // 
+            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_Speichern.Location = new System.Drawing.Point(10, 120);
+            this.btn_Speichern.Margin = new System.Windows.Forms.Padding(4);
+            this.btn_Speichern.Name = "btn_Speichern";
+            this.btn_Speichern.Size = new System.Drawing.Size(155, 27);
+            this.btn_Speichern.TabIndex = 81;
+            this.btn_Speichern.Text = "Übernehmen";
+            this.btn_Speichern.UseVisualStyleBackColor = true;
+            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
+            // 
             // Form_SolarKollektoren
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(825, 616);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.label_Type);
             this.Controls.Add(this.btn_Abbrechen);
             this.Controls.Add(this.groupBox_Kollektor);
@@ -538,25 +579,11 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox_Name);
             this.Controls.Add(this.listBox_Auswahl);
             this.Controls.Add(this.btn_Kollektor_DB_Edit);
             this.Controls.Add(this.btn_Kollektor_DB_neu);
             this.Controls.Add(this.btn_Kollektor_DB_loeschen);
-            this.Controls.Add(this.Label11);
-            this.Controls.Add(this.textBox_Kollektor_A);
-            this.Controls.Add(this.Label12);
             this.Controls.Add(this.btn_OK);
-            this.Controls.Add(this.Label5);
-            this.Controls.Add(this.Label6);
-            this.Controls.Add(this.Label7);
-            this.Controls.Add(this.Label8);
-            this.Controls.Add(this.textBox_Kollektortype);
-            this.Controls.Add(this.textBox_Beschreibung);
-            this.Controls.Add(this.textBox_Firma);
-            this.Controls.Add(this.textBox_Modul_A);
-            this.Controls.Add(this.Label9);
             this.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form_SolarKollektoren";
@@ -568,6 +595,9 @@ namespace WindowsFormsApplication1
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.groupBox_Kollektor.ResumeLayout(false);
             this.groupBox_Kollektor.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -579,21 +609,9 @@ private System.Windows.Forms.Button btn_Kollektor_DB_neu;
 private System.Windows.Forms.Button btn_Kollektor_DB_loeschen;
 private System.Windows.Forms.Label Label10;
 private System.Windows.Forms.TextBox textBox_Anzahl;
-private System.Windows.Forms.Label Label11;
-private System.Windows.Forms.TextBox textBox_Kollektor_A;
-private System.Windows.Forms.Label Label12;
 private System.Windows.Forms.Label Label13;
 private System.Windows.Forms.TextBox textBox_Kollektorneigung;
 private System.Windows.Forms.Button btn_OK;
-private System.Windows.Forms.Label Label5;
-private System.Windows.Forms.Label Label6;
-private System.Windows.Forms.Label Label7;
-private System.Windows.Forms.Label Label8;
-private System.Windows.Forms.TextBox textBox_Kollektortype;
-private System.Windows.Forms.TextBox textBox_Beschreibung;
-private System.Windows.Forms.TextBox textBox_Firma;
-private System.Windows.Forms.TextBox textBox_Modul_A;
-private System.Windows.Forms.Label Label9;
         private System.Windows.Forms.ListBox listBox_Auswahl;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton radioButton_Sued90;
@@ -601,8 +619,6 @@ private System.Windows.Forms.Label Label9;
         private System.Windows.Forms.RadioButton radioButton_flach;
         private System.Windows.Forms.RadioButton radioButton_Sued;
         private System.Windows.Forms.RadioButton radioButton_SuedOst;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox textBox_Name;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.DataGridView dataGridView1;
@@ -612,5 +628,20 @@ private System.Windows.Forms.Label Label9;
         private System.Windows.Forms.Button btn_Abbrechen;
         private System.Windows.Forms.Button btn_Speichern;
         private System.Windows.Forms.Label label_Type;
+        private System.Windows.Forms.Label Label11;
+        private System.Windows.Forms.TextBox textBox_Kollektor_A;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox textBox_Name;
+        private System.Windows.Forms.Label Label5;
+        private System.Windows.Forms.Label Label6;
+        private System.Windows.Forms.Label Label7;
+        private System.Windows.Forms.Label Label8;
+        private System.Windows.Forms.TextBox textBox_Kollektortype;
+        private System.Windows.Forms.TextBox textBox_Beschreibung;
+        private System.Windows.Forms.TextBox textBox_Firma;
+        private System.Windows.Forms.TextBox textBox_Modul_A;
+        private System.Windows.Forms.Label Label9;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

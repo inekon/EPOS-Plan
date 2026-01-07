@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -175,7 +176,6 @@ namespace WindowsFormsApplication1
 
             if (listBox_Auswahl.Items.Count > 0)
             {
-                textBox_Kollektor_A.Text = SummeLeistung().ToString();
                 listBox_Auswahl.SelectedIndex = 0;
             }
             else
@@ -232,6 +232,7 @@ namespace WindowsFormsApplication1
                 object beschreibungValue = rs.Read("Beschreibung");
                 textBox_Beschreibung.Text = (beschreibungValue == DBNull.Value) ? "" : (string)beschreibungValue;
                 textBox_Modul_A.Text = rs.Read("Modulflaeche").ToString();
+                textBox_Kollektor_A.Text = "";
             }
             rs.Close();
             groupBox_Kollektor.Visible = false; 
@@ -266,7 +267,7 @@ namespace WindowsFormsApplication1
                     textBox_Kollektorneigung.Text = list_werzmodel[i].Kollektorneigung.ToString();  
                     int anzahl = list_werzmodel[i].Kollektormodulanzahl;
                     textBox_Anzahl.Text = anzahl.ToString();
-                    textBox_Kollektor_A.Text = SummeLeistung().ToString();
+                    textBox_Kollektor_A.Text = (modulflaeche * anzahl).ToString();
                     int ausrichtung = list_werzmodel[i].Kollektorausrichtung;
                     switch (ausrichtung)
                     {
@@ -308,6 +309,7 @@ namespace WindowsFormsApplication1
                 textBox_Anzahl.ClearUndo();
                 return;
             }
+            textBox_Kollektor_A.Text = (double.Parse(textBox_Modul_A.Text) * Int32.Parse(textBox_Anzahl.Text)).ToString();
         }
 
         private void textBox_Kollektorneigung_TextChanged(object sender, EventArgs e)
@@ -338,6 +340,10 @@ namespace WindowsFormsApplication1
                         list_werzmodel[i].Kollektorausrichtung = 3;
                     else if (radioButton_Sued90.Checked)    
                         list_werzmodel[i].Kollektorausrichtung = 4;
+                    pictureBox1.Visible = true;
+                    pictureBox1.Refresh();
+                    Thread.Sleep(500);
+                    pictureBox1.Visible = false;
                     break;
                 }
             }
@@ -359,7 +365,6 @@ namespace WindowsFormsApplication1
             e.Graphics.DrawLine(blackPen, new Point(a+10, b+d-10), new Point(a+c-10, b+d-10));
             e.Graphics.DrawLine(blackPen, new Point(a+10, b+10), new Point(a+10, b+d-10));
             e.Graphics.DrawLine(blackPen, new Point(a+c-10, b+10), new Point(a+c-10, b+d-10));
- 
         }
 
         private void btn_Kollektor_DB_loeschen_Click(object sender, EventArgs e)
@@ -376,7 +381,6 @@ namespace WindowsFormsApplication1
 
                 dataGridView1.Rows.RemoveAt(dataGridView1.SelectedRows[0].Index);
             }
-
         }
 
         private void btn_Kollektor_DB_Edit_Click(object sender, EventArgs e)

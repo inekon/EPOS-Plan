@@ -307,6 +307,9 @@ namespace WindowsFormsApplication1
                 radioButton_Ganglinie.BackColor = Color.Transparent;
             }
 
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
+            if (werzctrl.rows > 0) status |= 1024; else status &= ~1024;
+
             tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
         }
 
@@ -327,7 +330,7 @@ namespace WindowsFormsApplication1
             frm.SetControls(m_szProjektname);
 
             string sql = "SELECT Z_Projekt_Stromverbraucher.ID, Z_Projekt_Stromverbraucher.ID_Projekt, " +
-                "Z_Projekt_Stromverbraucher.ID_Stromverbraucher, Tab_Stromverbraucher.Bezeichner " +
+                "Z_Projekt_Stromverbraucher.ID_Stromverbraucher, Z_Projekt_Stromverbraucher.Summe, Tab_Stromverbraucher.Bezeichner " +
                 "FROM Z_Projekt_Stromverbraucher INNER JOIN Tab_Stromverbraucher ON " +
                 "Z_Projekt_Stromverbraucher.ID_Stromverbraucher = Tab_Stromverbraucher.ID " +
                 " where ID_Projekt=" + m_ID_Projekt;
@@ -340,6 +343,7 @@ namespace WindowsFormsApplication1
                 item.m_ID_Projekt = m_ID_Projekt;
                 item.m_ID_Stromverbraucher = (int)rs.Read("ID_Stromverbraucher");
                 item.m_szVerbraucher = (string)rs.Read("Bezeichner");//item.Text;
+                item.m_Summe = (double)rs.Read("Summe");
                 frm.list_sbmodel.Add(item);
             }
 
@@ -967,6 +971,71 @@ namespace WindowsFormsApplication1
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 512) == 512)
+                {
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                }
+            }
+        }
+
+        private void pBox_PV_Click(object sender, EventArgs e)
+        {
+            Form_PV frm = new Form_PV();
+            WErzeugerCtrl werzctrl = new WErzeugerCtrl();
+            WPCtrl wpctrl = new WPCtrl();
+            int id_type;
+
+            frm.list_pvmodel.Clear();
+
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
+            id_type = WizardItemClass.PV_TYP;
+
+            for (int i = 0; i < werzctrl.rows; i++)
+            {
+                WErzeugerModel item = new WErzeugerModel();
+                item.ID = werzctrl.items[i].ID;
+                item.ID_PV = werzctrl.items[i].ID_PV;
+                item.ID_Type = werzctrl.items[i].ID_Type;
+                item.Bezeichner = werzctrl.items[i].Bezeichner;
+                item.PV_Leistung = werzctrl.items[i].PV_Leistung;
+                item.m_Azimut = werzctrl.items[i].m_Azimut;
+                item.m_Neigung = werzctrl.items[i].m_Neigung;
+                frm.list_pvmodel.Add(item);
+            }
+
+            frm.SetControls(m_szProjektname);
+            frm.m_nType = id_type;
+            frm.m_ID_Projekt = m_ID_Projekt;
+            frm.ShowDialog();
+
+            if (frm.DialogResult == DialogResult.OK)
+            {
+                // Datenbank aktualisieren
+                WizardCtrl wizctrl = new WizardCtrl();
+                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
+                wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_pvmodel);
+                if (frm.list_pvmodel.Count > 0)
+                    status |= 1024;
+                else status &= ~1024;
+                pBox_PV.Invalidate();
+
+                ProjektCtrl projctrl = new ProjektCtrl();
+                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.m_Aenderungsdatum = DateTime.Now;
+                projctrl.Update();
+            }
+        }
+
+        private void pBox_PV_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                if ((status & 1024) == 1024)
                 {
                     Rectangle rt = e.ClipRectangle;
                     rt.Width = rt.Width - 20;

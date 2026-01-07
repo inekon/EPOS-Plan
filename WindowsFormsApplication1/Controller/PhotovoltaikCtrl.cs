@@ -1,0 +1,137 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Odbc;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+
+namespace WindowsFormsApplication1
+{
+    class PhotovoltaikCtrl : PhotovoltaikModel
+    {
+        public OdbcCommand DBCommand;
+        public PhotovoltaikModel model = new PhotovoltaikModel();
+        public int rows;
+    
+        public PhotovoltaikCtrl ()
+        {
+            DBCommand = Program.DBConnection.CreateCommand();
+            rows = 0;
+        }
+
+        ~PhotovoltaikCtrl ()
+        {
+            DBCommand.Dispose();
+        }
+
+        public void ReadAll(string szFilter="")
+        {
+            string sql;
+
+            if (szFilter == "")
+                sql = "select * from Tab_PV order by Modulname";
+            else
+                sql = "select * from Tab_PV where " + szFilter + " order by Modulname";   
+
+            DBCommand.CommandText = sql;
+            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+
+            items = new PhotovoltaikModel[1000];
+            rows = 0;
+            while (DBReader.Read())
+            {
+                PhotovoltaikModel item = new PhotovoltaikModel();
+
+                if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
+                if (!DBReader.IsDBNull(1)) item.m_szName = DBReader.GetString(1);
+                if (!DBReader.IsDBNull(2)) item.m_szFirma = DBReader.GetString(2);
+                if (!DBReader.IsDBNull(3)) item.m_szBeschreibung = DBReader.GetString(3);
+                if (!DBReader.IsDBNull(4)) item.m_Leistung = (double)DBReader.GetValue(4);
+                if (!DBReader.IsDBNull(5)) item.m_Wirkungsgrad = (double)DBReader.GetValue(5);
+                if (!DBReader.IsDBNull(6)) item.m_U_Mpp = (double)DBReader.GetValue(6);
+                if (!DBReader.IsDBNull(7)) item.m_U_Leerlauf = (double)DBReader.GetValue(7);
+                if (!DBReader.IsDBNull(8)) item.m_I_Mpp = (double)DBReader.GetValue(8);
+                if (!DBReader.IsDBNull(9)) item.m_I_Kurzschluss = (double)DBReader.GetValue(9);
+                if (!DBReader.IsDBNull(10)) item.m_Temp_Coeff_Pmax = (double)DBReader.GetValue(10);
+                if (!DBReader.IsDBNull(11)) item.m_Laenge = (double)DBReader.GetValue(11);
+                if (!DBReader.IsDBNull(12)) item.m_Breite = (double)DBReader.GetValue(12);
+
+                items[rows] = item;
+                item = null;
+                rows += 1;
+            }
+            DBReader.Close();
+            DBReader.Dispose();
+        }
+
+        public void ReadSingle(int ID)
+        {
+            DBCommand.CommandText = "select * from Tab_PV where ID=" + ID;
+            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+
+            rows = 0;
+
+            DBReader.Read();
+
+            if (DBReader.HasRows)
+            {
+                if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
+                if (!DBReader.IsDBNull(1)) m_szName = DBReader.GetString(1);
+                if (!DBReader.IsDBNull(2)) m_szFirma = DBReader.GetString(2);
+                if (!DBReader.IsDBNull(3)) m_szBeschreibung = DBReader.GetString(3);
+                if (!DBReader.IsDBNull(4)) m_Leistung = (double)DBReader.GetValue(4);
+                if (!DBReader.IsDBNull(5)) m_Wirkungsgrad = (double)DBReader.GetValue(5);
+                if (!DBReader.IsDBNull(6)) m_U_Mpp = (double)DBReader.GetValue(6);
+                if (!DBReader.IsDBNull(7)) m_U_Leerlauf = (double)DBReader.GetValue(7);
+                if (!DBReader.IsDBNull(8)) m_I_Mpp = (double)DBReader.GetValue(8);
+                if (!DBReader.IsDBNull(9)) m_I_Kurzschluss = (double)DBReader.GetValue(9);
+                if (!DBReader.IsDBNull(10)) m_Temp_Coeff_Pmax = (double)DBReader.GetValue(10);
+                if (!DBReader.IsDBNull(11)) m_Laenge = (double)DBReader.GetValue(11);
+                if (!DBReader.IsDBNull(12)) m_Breite = (double)DBReader.GetValue(12);
+
+                rows = 1;
+            }
+            DBReader.Dispose();
+            DBReader.Close();
+        }
+
+        public bool Update()
+        {
+            try
+            {
+                string sql = "UPDATE Tab_PV SET " +
+                    " Firma = '" + model.m_szFirma + "'" +
+                    ", Beschreibung = '" + model.m_szBeschreibung + "'" +
+                    ", Leistung=" + model.m_Leistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Wirkungsgrad=" + model.m_Wirkungsgrad.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", U_Mpp=" + model.m_U_Mpp.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", U_Leerlauf=" + model.m_U_Leerlauf.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", I_Mpp=" + model.m_I_Mpp.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", I_Kurzschluss=" + model.m_I_Kurzschluss.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Temp_Coeff_Pmax=" + model.m_Temp_Coeff_Pmax.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Laenge=" + model.m_Laenge.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    ", Breite=" + model.m_Breite.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
+                    " WHERE Modulname='" + model.m_szName + "'";
+
+                DBCommand.CommandText = sql;
+                DBCommand.ExecuteNonQuery();
+            }
+            catch (OdbcException sqlEx)
+            {
+                // Fehler beim Datenbankzugriff abfangen
+                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Allgemeine Fehler abfangen
+                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                return false;
+            }
+            return true;
+
+        }
+    }
+}
