@@ -89,8 +89,6 @@ namespace WindowsFormsApplication1
                 list_werzmodel = wizardparent.list_werzmodel;
             }
 
-            SetDBList();
-
             dataGridView1.Select();
             dataGridView1.ClearSelection();
 
@@ -149,13 +147,13 @@ namespace WindowsFormsApplication1
                 model.Kollektormodulanzahl = 1;
                 model.Kollektorneigung = 30;
                 radioButton_SuedOst.Checked = true;
+
+                list_werzmodel.Add(model);
+                if (m_bWizard) wizardparent.list_werzmodel = list_werzmodel;
+                listBox_Auswahl.Items.Add(model.Bezeichner);
+                if (listBox_Auswahl.Items.Count > 0) listBox_Auswahl.SelectedIndex = listBox_Auswahl.Items.Count - 1;
             }
             rs.Close();
-
-            list_werzmodel.Add(model);
-            if (m_bWizard) wizardparent.list_werzmodel = list_werzmodel;
-            listBox_Auswahl.Items.Add(model.Bezeichner);
-            if (listBox_Auswahl.Items.Count > 0) listBox_Auswahl.SelectedIndex = listBox_Auswahl.Items.Count - 1;
         }
 
         private void btn_Entfernen_Click(object sender, EventArgs e)
@@ -423,6 +421,11 @@ namespace WindowsFormsApplication1
         private void dataGridView1_Leave(object sender, EventArgs e)
         {
             //dataGridView1.ClearSelection();
+        }
+
+        private void Form_SolarKollektoren_Load(object sender, EventArgs e)
+        {
+            SetDBList();
         }
     }
 }

@@ -112,11 +112,11 @@ namespace WindowsFormsApplication1
 
             chart5.Series[0].Points.Clear();
             if (sim.simulation_wp.WP_Waermeproduktion_gesamt > 0)
-                chart5.Series[0].Points.AddXY("WP", sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000);
+                chart5.Series[0].Points.AddXY("Wärmepumpe", sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000);
             if (sim.simulation_wp.Heizstab_gesamt > 0)
                 chart5.Series[0].Points.AddXY("Heizstab", sim.simulation_wp.Heizstab_gesamt / 1000);
             if (sim.simulation_spk.S_Waerme_spk > 0)
-                chart5.Series[0].Points.AddXY("Kessel", sim.simulation_spk.S_Waerme_spk);
+                chart5.Series[0].Points.AddXY("Heizkessel", sim.simulation_spk.S_Waerme_spk);
             if (sim.Restwaerme > 0)
                 chart5.Series[0].Points.AddXY("Rest",sim.Restwaerme);
 

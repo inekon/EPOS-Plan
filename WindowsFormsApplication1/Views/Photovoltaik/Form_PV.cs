@@ -40,7 +40,10 @@ namespace WindowsFormsApplication1
             listBox_Auswahl.Items.Clear();
             for (int i = 0; i < list_pvmodel.Count; i++)
             {
-                listBox_Auswahl.Items.Add(list_pvmodel[i].Bezeichner);
+                if (list_pvmodel[i].ID_Type == WizardItemClass.PV_TYP)
+                {
+                    listBox_Auswahl.Items.Add(list_pvmodel[i].Bezeichner);
+                }
             }
             if (listBox_Auswahl.Items.Count > 0) listBox_Auswahl.SelectedIndex = 0;
         }
@@ -51,7 +54,6 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < pvctrl.rows; i++)
             {
                 listBox_DB.Items.Add(pvctrl.items[i].m_szName);
-            
             }
 
             comboBox_Hersteller.Items.Add("Alle");

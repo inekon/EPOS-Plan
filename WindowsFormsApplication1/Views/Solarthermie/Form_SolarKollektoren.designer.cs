@@ -49,13 +49,15 @@ namespace WindowsFormsApplication1
             this.btn_Hinzzu = new System.Windows.Forms.Button();
             this.btn_Entfernen = new System.Windows.Forms.Button();
             this.groupBox_Kollektor = new System.Windows.Forms.GroupBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btn_Speichern = new System.Windows.Forms.Button();
+            this.Label11 = new System.Windows.Forms.Label();
+            this.textBox_Kollektor_A = new System.Windows.Forms.TextBox();
             this.btn_Abbrechen = new System.Windows.Forms.Button();
             this.label_Type = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.textBox_Name = new System.Windows.Forms.TextBox();
-            this.Label11 = new System.Windows.Forms.Label();
-            this.textBox_Kollektor_A = new System.Windows.Forms.TextBox();
             this.Label5 = new System.Windows.Forms.Label();
             this.Label6 = new System.Windows.Forms.Label();
             this.Label7 = new System.Windows.Forms.Label();
@@ -65,13 +67,11 @@ namespace WindowsFormsApplication1
             this.textBox_Firma = new System.Windows.Forms.TextBox();
             this.textBox_Modul_A = new System.Windows.Forms.TextBox();
             this.Label9 = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.btn_Speichern = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox_Kollektor.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // btn_Kollektor_DB_Edit
@@ -341,6 +341,55 @@ namespace WindowsFormsApplication1
             this.groupBox_Kollektor.TabStop = false;
             this.groupBox_Kollektor.Text = "Kollektor";
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(169, 120);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(28, 27);
+            this.pictureBox1.TabIndex = 117;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Visible = false;
+            // 
+            // btn_Speichern
+            // 
+            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_Speichern.Location = new System.Drawing.Point(10, 120);
+            this.btn_Speichern.Margin = new System.Windows.Forms.Padding(4);
+            this.btn_Speichern.Name = "btn_Speichern";
+            this.btn_Speichern.Size = new System.Drawing.Size(155, 27);
+            this.btn_Speichern.TabIndex = 81;
+            this.btn_Speichern.Text = "Übernehmen";
+            this.btn_Speichern.UseVisualStyleBackColor = true;
+            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
+            // 
+            // Label11
+            // 
+            this.Label11.AutoSize = true;
+            this.Label11.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label11.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.Label11.Location = new System.Drawing.Point(222, 71);
+            this.Label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Label11.Name = "Label11";
+            this.Label11.Size = new System.Drawing.Size(136, 17);
+            this.Label11.TabIndex = 36;
+            this.Label11.Text = "Kollektorfläche [m²]:";
+            this.Label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // textBox_Kollektor_A
+            // 
+            this.textBox_Kollektor_A.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Kollektor_A.Enabled = false;
+            this.textBox_Kollektor_A.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.textBox_Kollektor_A.Location = new System.Drawing.Point(225, 90);
+            this.textBox_Kollektor_A.Margin = new System.Windows.Forms.Padding(5);
+            this.textBox_Kollektor_A.Name = "textBox_Kollektor_A";
+            this.textBox_Kollektor_A.Size = new System.Drawing.Size(85, 25);
+            this.textBox_Kollektor_A.TabIndex = 37;
+            // 
             // btn_Abbrechen
             // 
             this.btn_Abbrechen.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -408,30 +457,6 @@ namespace WindowsFormsApplication1
             this.textBox_Name.Name = "textBox_Name";
             this.textBox_Name.Size = new System.Drawing.Size(280, 25);
             this.textBox_Name.TabIndex = 49;
-            // 
-            // Label11
-            // 
-            this.Label11.AutoSize = true;
-            this.Label11.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label11.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.Label11.Location = new System.Drawing.Point(222, 71);
-            this.Label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.Label11.Name = "Label11";
-            this.Label11.Size = new System.Drawing.Size(136, 17);
-            this.Label11.TabIndex = 36;
-            this.Label11.Text = "Kollektorfläche [m²]:";
-            this.Label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // textBox_Kollektor_A
-            // 
-            this.textBox_Kollektor_A.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Kollektor_A.Enabled = false;
-            this.textBox_Kollektor_A.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Kollektor_A.Location = new System.Drawing.Point(225, 90);
-            this.textBox_Kollektor_A.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Kollektor_A.Name = "textBox_Kollektor_A";
-            this.textBox_Kollektor_A.Size = new System.Drawing.Size(85, 25);
-            this.textBox_Kollektor_A.TabIndex = 37;
             // 
             // Label5
             // 
@@ -540,31 +565,6 @@ namespace WindowsFormsApplication1
             this.Label9.Text = "m²";
             this.Label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
-            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pictureBox1.Location = new System.Drawing.Point(169, 120);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(28, 27);
-            this.pictureBox1.TabIndex = 117;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Visible = false;
-            // 
-            // btn_Speichern
-            // 
-            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
-            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_Speichern.Location = new System.Drawing.Point(10, 120);
-            this.btn_Speichern.Margin = new System.Windows.Forms.Padding(4);
-            this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.Size = new System.Drawing.Size(155, 27);
-            this.btn_Speichern.TabIndex = 81;
-            this.btn_Speichern.Text = "Übernehmen";
-            this.btn_Speichern.UseVisualStyleBackColor = true;
-            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
-            // 
             // Form_SolarKollektoren
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -589,15 +589,16 @@ namespace WindowsFormsApplication1
             this.Name = "Form_SolarKollektoren";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Eingabe der Solarkollektoren";
+            this.Load += new System.EventHandler(this.Form_SolarKollektoren_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form_SolarKollektoren_Paint);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.groupBox_Kollektor.ResumeLayout(false);
             this.groupBox_Kollektor.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
