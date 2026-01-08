@@ -478,9 +478,8 @@ namespace WindowsFormsApplication1
                 frm.list_heizkesselmodel.Add(item);
             }
 
-            frm.SetControls(m_szProjektname);
+            frm.SetControls(m_ID_Projekt);
             frm.m_nType = id_type;
-            frm.m_ID_Projekt = m_ID_Projekt;
             frm.ShowDialog();
 
             if (frm.DialogResult == DialogResult.OK)

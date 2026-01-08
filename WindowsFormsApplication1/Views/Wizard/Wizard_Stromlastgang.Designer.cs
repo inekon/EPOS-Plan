@@ -46,7 +46,7 @@
             this.label_Type.Location = new System.Drawing.Point(0, 0);
             this.label_Type.Name = "label_Type";
             this.label_Type.Padding = new System.Windows.Forms.Padding(0, 5, 0, 5);
-            this.label_Type.Size = new System.Drawing.Size(656, 37);
+            this.label_Type.Size = new System.Drawing.Size(759, 37);
             this.label_Type.TabIndex = 2;
             this.label_Type.Text = "Stromlastgang";
             this.label_Type.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -55,7 +55,7 @@
             // 
             this.Label1.AutoSize = true;
             this.Label1.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label1.Location = new System.Drawing.Point(18, 86);
+            this.Label1.Location = new System.Drawing.Point(13, 86);
             this.Label1.Name = "Label1";
             this.Label1.Size = new System.Drawing.Size(146, 19);
             this.Label1.TabIndex = 15;
@@ -67,16 +67,16 @@
             this.listBox_Auswahl.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             this.listBox_Auswahl.HorizontalScrollbar = true;
             this.listBox_Auswahl.ItemHeight = 16;
-            this.listBox_Auswahl.Location = new System.Drawing.Point(22, 109);
+            this.listBox_Auswahl.Location = new System.Drawing.Point(12, 109);
             this.listBox_Auswahl.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.listBox_Auswahl.Name = "listBox_Auswahl";
-            this.listBox_Auswahl.Size = new System.Drawing.Size(249, 164);
+            this.listBox_Auswahl.Size = new System.Drawing.Size(314, 164);
             this.listBox_Auswahl.TabIndex = 16;
             // 
             // btn_Hinzufuegen
             // 
             this.btn_Hinzufuegen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Hinzufuegen.Location = new System.Drawing.Point(287, 141);
+            this.btn_Hinzufuegen.Location = new System.Drawing.Point(342, 142);
             this.btn_Hinzufuegen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Hinzufuegen.Name = "btn_Hinzufuegen";
             this.btn_Hinzufuegen.Size = new System.Drawing.Size(72, 31);
@@ -88,7 +88,7 @@
             // btn_Entfernen
             // 
             this.btn_Entfernen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Entfernen.Location = new System.Drawing.Point(287, 188);
+            this.btn_Entfernen.Location = new System.Drawing.Point(342, 189);
             this.btn_Entfernen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Entfernen.Name = "btn_Entfernen";
             this.btn_Entfernen.Size = new System.Drawing.Size(72, 31);
@@ -102,17 +102,17 @@
             this.listBox_Extern.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             this.listBox_Extern.HorizontalScrollbar = true;
             this.listBox_Extern.ItemHeight = 16;
-            this.listBox_Extern.Location = new System.Drawing.Point(375, 109);
+            this.listBox_Extern.Location = new System.Drawing.Point(429, 109);
             this.listBox_Extern.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.listBox_Extern.Name = "listBox_Extern";
-            this.listBox_Extern.Size = new System.Drawing.Size(264, 164);
+            this.listBox_Extern.Size = new System.Drawing.Size(314, 164);
             this.listBox_Extern.TabIndex = 19;
             // 
             // Label2
             // 
             this.Label2.AutoSize = true;
             this.Label2.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label2.Location = new System.Drawing.Point(371, 86);
+            this.Label2.Location = new System.Drawing.Point(425, 86);
             this.Label2.Name = "Label2";
             this.Label2.Size = new System.Drawing.Size(145, 19);
             this.Label2.TabIndex = 20;
@@ -121,7 +121,7 @@
             // 
             // btn_Bearbeiten
             // 
-            this.btn_Bearbeiten.Location = new System.Drawing.Point(542, 280);
+            this.btn_Bearbeiten.Location = new System.Drawing.Point(646, 280);
             this.btn_Bearbeiten.Name = "btn_Bearbeiten";
             this.btn_Bearbeiten.Size = new System.Drawing.Size(97, 31);
             this.btn_Bearbeiten.TabIndex = 21;
@@ -134,7 +134,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(656, 368);
+            this.ClientSize = new System.Drawing.Size(759, 368);
             this.Controls.Add(this.btn_Bearbeiten);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.listBox_Auswahl);

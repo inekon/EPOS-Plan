@@ -90,7 +90,8 @@ namespace WindowsFormsApplication1
         
         private void btn_Bearbeiten_Click(object sender, EventArgs e)
         {
-            Form_AdminWaermeeinlesen frm = new Form_AdminWaermeeinlesen();  
+            Form_AdminWaermeeinlesen frm = new Form_AdminWaermeeinlesen();
+            frm.SetControls();
             frm.ShowDialog();
         }
 

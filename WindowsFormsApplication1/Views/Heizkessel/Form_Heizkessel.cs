@@ -16,9 +16,11 @@ namespace WindowsFormsApplication1
         private WErzeugerCtrl ctrl = new WErzeugerCtrl();
         private BrennstoffCtrl heizkesselctrl = new BrennstoffCtrl();
         public List<WErzeugerModel> list_heizkesselmodel = new List<WErzeugerModel>();
-        public int m_nType = WizardItemClass.SP_TYP;
+        public int m_nType = WizardItemClass.KESSEL_TYP;
         public int m_ID_Projekt = 0;
         int startindex = 100000;
+        private bool m_bWizard = false;
+        private WizardParent wizardparent = null;
 
         public Form_Heizkessel()
         {
@@ -27,12 +29,26 @@ namespace WindowsFormsApplication1
             listBox_Kessel.Items.Clear();
         }
 
-        public void SetControls(string projekt)
+        public void SetControls(int IDProjekt, bool bWizard = false)
         {
+            m_ID_Projekt = IDProjekt;
+            if (bWizard)
+            {
+                m_bWizard = true;
+                btn_OK.Visible = false;
+                btn_Abbrechen.Visible = false;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.BackColor = Color.White;
+                wizardparent = (WizardParent)getWizardPage();
+                list_heizkesselmodel = wizardparent.list_werzmodel;
+            }
             listBox_Kessel.Items.Clear();
             for (int i = 0; i < list_heizkesselmodel.Count; i++)
             {
-                listBox_Kessel.Items.Add(list_heizkesselmodel[i].Bezeichner);
+                if (list_heizkesselmodel[i].ID_Type == WizardItemClass.KESSEL_TYP)
+                {
+                    listBox_Kessel.Items.Add(list_heizkesselmodel[i].Bezeichner);
+                }
             }
             if (listBox_Kessel.Items.Count > 0) listBox_Kessel.SelectedIndex = 0;
         }
@@ -103,18 +119,18 @@ namespace WindowsFormsApplication1
                 model.Bezeichner = listBox_Kessel_DB.Text;
 
                 list_heizkesselmodel.Add(model);
+                listBox_Kessel.Items.Add(listBox_Kessel_DB.Text);
+                if (m_bWizard) wizardparent.list_werzmodel = list_heizkesselmodel;
             }
             rs.Close();
-
-            listBox_Kessel.Items.Add(listBox_Kessel_DB.Text);
-            //if (listBox_Kessel.Items.Count > 0) listBox_Kessel.SelectedIndex = listBox_Kessel.Items.Count - 1;
         }
 
         private void btn_Kessel_Entfernen_Click(object sender, EventArgs e)
         {
             if (listBox_Kessel.SelectedIndex == -1) return;
             list_heizkesselmodel.RemoveAt(listBox_Kessel.SelectedIndex);
-            listBox_Kessel.Items.RemoveAt(listBox_Kessel.SelectedIndex); 
+            listBox_Kessel.Items.Remove(listBox_Kessel.Text);
+            if (m_bWizard) wizardparent.list_werzmodel = list_heizkesselmodel;
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
@@ -234,7 +250,7 @@ namespace WindowsFormsApplication1
 
         private void btn_Löschen_Click(object sender, EventArgs e)
         {
-            if (listBox_Kessel_DB.SelectedIndex == -1) { MessageBox.Show("Bitte ein BHKW auswählen!"); return; }
+            if (listBox_Kessel_DB.SelectedIndex == -1) { MessageBox.Show("Bitte ein Modul auswählen!"); return; }
 
             RecordSet rs = new RecordSet();
             rs.Open("Delete * from [DB-Heizung] where Name='" + listBox_Kessel_DB.Text  + "'");

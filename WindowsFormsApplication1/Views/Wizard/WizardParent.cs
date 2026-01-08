@@ -227,58 +227,6 @@ namespace WindowsFormsApplication1
                     ((Wizard_Projekt)page).SetEditProjektName(false);
                     ((Wizard_Projekt)page).SetProjektbezeichner(listBox_Projekte.Text);
                 }
-                else if (top == WizardItemClass.WP_ITEM)
-                {
-                    ((Wizard_WP)page).SetControls(listBox_Projekte.Text);
-                }
-                else if (top == WizardItemClass.GEBAEUDE_ITEM)
-                {
-                    ((Form_Gebaeude)page).list_gebmodel = list_gebmodel; 
-                    ((Form_Gebaeude)page).SetControls(listBox_Projekte.Text, true);
-                }
-                else if (top == WizardItemClass.SP_ITEM)
-                {
-                    ((Form_Stromspeicher)page).list_werzmodel = list_werzmodel;
-                    ((Form_Stromspeicher)page).SetControls(listBox_Projekte.Text, true);
-                }
-                else if (top == WizardItemClass.PROZESS_ITEM)
-                {
-                    ((Form_Prozesswaerme)page).list_pwmodel = list_prozmodel;
-                    ((Form_Prozesswaerme)page).SetControls(listBox_Projekte.Text, true);
-                }
-                else if (top == WizardItemClass.STROMLASTGANG_ITEM)
-                {
-                    ((Wizard_Stromlastgang)page).SetControls(listBox_Projekte.Text);
-                }
-                else if (top == WizardItemClass.KESSEL_ITEM)
-                {
-                    ((Wizard_Kessel)page).SetControls(listBox_Projekte.Text);
-                }
-                else if (top == WizardItemClass.WAERMEBEDARF_ITEM)
-                {
-                    ((Form_Waermebedarf)page).list_wbmodel = list_wbmodel;
-                    ((Form_Waermebedarf)page).SetControls(listBox_Projekte.Text, true);
-                }
-                else if (top == WizardItemClass.STROMSTD_ITEM)
-                {
-                    ((Form_Stromverbraucher)page).list_sbmodel = list_stromverbrauchermodel;
-                    ((Form_Stromverbraucher)page).SetControls(listBox_Projekte.Text, true);
-                }
-                else if (top == WizardItemClass.BHKW_ITEM)
-                {
-                    ((Form_BHKWEing)page).list_werzmodel = list_werzmodel;
-                    ((Form_BHKWEing)page).SetControls(listBox_Projekte.Text,true);
-                }
-                else if (top == WizardItemClass.SOLAR_ITEM)
-                {
-                    ((Form_SolarKollektoren)page).list_werzmodel = list_werzmodel;
-                    ((Form_SolarKollektoren)page).SetControls(projektID, true);
-                }
-                else if (top == WizardItemClass.PV_ITEM)
-                {
-                    ((Form_PV)page).list_pvmodel = list_werzmodel;
-                    ((Form_PV)page).SetControls(listBox_Projekte.Text, true);
-                }
             }
             else
             {
@@ -290,40 +238,60 @@ namespace WindowsFormsApplication1
                     ((Wizard_Projekt)page).SetEditProjektName(true);
                     ((Wizard_Projekt)page).SetProjektbezeichner("");
                 }
-                else if (top == WizardItemClass.PROZESS_ITEM)
-                {
-                    ((Form_Prozesswaerme)page).list_pwmodel = list_prozmodel;
-                    ((Form_Prozesswaerme)page).SetControls(listBox_Projekte.Text, true);
-                }
-                else if (top == WizardItemClass.STROMSTD_ITEM)
-                {
-                    ((Form_Stromverbraucher)page).list_sbmodel = list_stromverbrauchermodel;
-                    ((Form_Stromverbraucher)page).SetControls(listBox_Projekte.Text, true);
-                }
-                else if (top == WizardItemClass.BHKW_ITEM)
-                {
-                    ((Form_BHKWEing)page).SetControls(listBox_Projekte.Text, true);
-                }
-                else if (top == WizardItemClass.WAERMEBEDARF_ITEM)
-                {
-                    ((Form_Waermebedarf)page).list_wbmodel = list_wbmodel;
-                    ((Form_Waermebedarf)page).SetControls(listBox_Projekte.Text, true);
-                }
-                else if (top == WizardItemClass.SP_ITEM)
-                {
-                    ((Form_Stromspeicher)page).list_werzmodel = list_werzmodel;
-                    ((Form_Stromspeicher)page).SetControls(listBox_Projekte.Text, true);
-                }
-                else if (top == WizardItemClass.SOLAR_ITEM)
-                {
-                    ((Form_SolarKollektoren)page).list_werzmodel = list_werzmodel;
-                    ((Form_SolarKollektoren)page).SetControls(projektID, true);
-                }
-                else if (top == WizardItemClass.PV_ITEM)
-                {
-                    ((Form_PV)page).list_pvmodel = list_werzmodel;
-                    ((Form_PV)page).SetControls(listBox_Projekte.Text, true);
-                }
+            }
+
+            if (top == WizardItemClass.WP_ITEM)
+            {
+                ((Wizard_WP)page).SetControls(listBox_Projekte.Text);
+            }
+            else if (top == WizardItemClass.GEBAEUDE_ITEM)
+            {
+                ((Form_Gebaeude)page).list_gebmodel = list_gebmodel;
+                ((Form_Gebaeude)page).SetControls(listBox_Projekte.Text, true);
+            }
+            else if (top == WizardItemClass.SP_ITEM)
+            {
+                ((Form_Stromspeicher)page).list_werzmodel = list_werzmodel;
+                ((Form_Stromspeicher)page).SetControls(listBox_Projekte.Text, true);
+            }
+            else if (top == WizardItemClass.PROZESS_ITEM)
+            {
+                ((Form_Prozesswaerme)page).list_pwmodel = list_prozmodel;
+                ((Form_Prozesswaerme)page).SetControls(listBox_Projekte.Text, true);
+            }
+            else if (top == WizardItemClass.STROMLASTGANG_ITEM)
+            {
+                ((Wizard_Stromlastgang)page).SetControls(listBox_Projekte.Text);
+            }
+            else if (top == WizardItemClass.KESSEL_ITEM)
+            {
+                ((Form_Heizkessel)page).list_heizkesselmodel = list_werzmodel;
+                ((Form_Heizkessel)page).SetControls(projektID, true);
+            }
+            else if (top == WizardItemClass.WAERMEBEDARF_ITEM)
+            {
+                ((Form_Waermebedarf)page).list_wbmodel = list_wbmodel;
+                ((Form_Waermebedarf)page).SetControls(listBox_Projekte.Text, true);
+            }
+            else if (top == WizardItemClass.STROMSTD_ITEM)
+            {
+                ((Form_Stromverbraucher)page).list_sbmodel = list_stromverbrauchermodel;
+                ((Form_Stromverbraucher)page).SetControls(listBox_Projekte.Text, true);
+            }
+            else if (top == WizardItemClass.BHKW_ITEM)
+            {
+                ((Form_BHKWEing)page).list_werzmodel = list_werzmodel;
+                ((Form_BHKWEing)page).SetControls(listBox_Projekte.Text, true);
+            }
+            else if (top == WizardItemClass.SOLAR_ITEM)
+            {
+                ((Form_SolarKollektoren)page).list_werzmodel = list_werzmodel;
+                ((Form_SolarKollektoren)page).SetControls(projektID, true);
+            }
+            else if (top == WizardItemClass.PV_ITEM)
+            {
+                ((Form_PV)page).list_pvmodel = list_werzmodel;
+                ((Form_PV)page).SetControls(listBox_Projekte.Text, true);
             }
 
             btnBack.Enabled = true;

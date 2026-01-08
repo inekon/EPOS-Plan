@@ -57,7 +57,7 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Form_SolarKollektoren(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Form_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
+            frm.Add(new WizardItemClass(new Form_Heizkessel(), WizardItemClass.KESSEL_ITEM));
             frm.Add(new WizardItemClass(new Form_BHKWEing(), WizardItemClass.BHKW_ITEM));
 
             wizparent = new WizardParent(frm);
@@ -85,7 +85,7 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Form_SolarKollektoren(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Form_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_Kessel(), WizardItemClass.KESSEL_ITEM));
+            frm.Add(new WizardItemClass(new Form_Heizkessel(), WizardItemClass.KESSEL_ITEM));
             frm.Add(new WizardItemClass(new Form_BHKWEing(), WizardItemClass.BHKW_ITEM));
 
             wizparent = new WizardParent(frm);

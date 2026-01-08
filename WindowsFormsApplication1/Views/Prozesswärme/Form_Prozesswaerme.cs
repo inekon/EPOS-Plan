@@ -90,8 +90,7 @@ namespace WindowsFormsApplication1
 
             m_szProjekt = szProjekt;
 
-            SetDBList();
-       
+        
             listView_Prozess_Auswahl.Items.Clear(); 
             for (int i = 0; i < list_pwmodel.Count; i++)
             {
@@ -371,7 +370,7 @@ namespace WindowsFormsApplication1
         private void btn_neuerWert_Click(object sender, EventArgs e)
         {
             ListView.SelectedIndexCollection indexes = listView_Prozess_Auswahl.SelectedIndices;
-            if (indexes.Count == 0) return;
+            if (indexes.Count == 0 || textBox_Verbrauch.Text == "") return;
 
             list_pwmodel[indexes[0]].Summe = double.Parse(textBox_Verbrauch.Text);
             textBox_Jahres_Verbrauch.Text = textBox_Verbrauch.Text;
@@ -384,6 +383,7 @@ namespace WindowsFormsApplication1
  
         private void Form_Prozesswaerme_Load(object sender, EventArgs e)
         {
+            SetDBList();
             dataGridView1.ClearSelection();
 
             if (listView_Prozess_Auswahl.Items.Count > 0)
