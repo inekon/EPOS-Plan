@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Odbc;
+using System.Data.SqlClient;
 using System.IO;
+using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -160,6 +163,7 @@ namespace WindowsFormsApplication1
                     for (int i = 1; i <= anzahl; i++)
                     {
                         string sql = ini.GetValue(scripte[n], "SQL" + i.ToString());
+
                         if (sql != null)
                         {
                             try
@@ -167,11 +171,21 @@ namespace WindowsFormsApplication1
                                 OdbcCommand cmd = new OdbcCommand(sql, sourceConn);
                                 cmd.ExecuteNonQuery();
                             }
+                            catch (OdbcException ex)
+                            {
+                                szError = ex.Message;
+                                OdbcError sqlError = ex.Errors[0];
+                                if (string.Equals(sqlError.SQLState, "42S01", StringComparison.OrdinalIgnoreCase) 
+                                    || sqlError.NativeError == -1303) // Access: table existiert bereits, tritt bei CREATE TABLE auf
+                                {
+                                    continue; //  "table exists" ignorieren
+                                }
+                                else return false;
+                            }
                             catch (Exception ex)
                             {
-                                // MessageBox.Show("Fehler beim Ausführen des Scripts:\n" + ex.Message, "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                //szError = ex.Message;
-                                //return false;
+                                szError = ex.Message;
+                                return false;
                             }
                         }
                     }
