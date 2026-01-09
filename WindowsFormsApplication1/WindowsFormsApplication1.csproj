@@ -465,12 +465,6 @@
     <Compile Include="Views\Update\Form_Update.Designer.cs">
       <DependentUpon>Form_Update.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Wizard\Wizard_Kessel.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_Kessel.Designer.cs">
-      <DependentUpon>Wizard_Kessel.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Wizard\Wizard_Stromlastgang.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -707,9 +701,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\WizardParent.resx">
       <DependentUpon>WizardParent.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Wizard_Kessel.resx">
-      <DependentUpon>Wizard_Kessel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Stromlastgang.resx">
       <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>

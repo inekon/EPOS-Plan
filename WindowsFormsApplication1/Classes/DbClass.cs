@@ -76,8 +76,8 @@ namespace WindowsFormsApplication1
                                 // Fehlerausgabe
                                 //MessageBox.Show("Fehler beim Löschen aus '{tableName}': {ex.Message}");
                                 targetConn.Close(); 
-                                result = false;
-                                break; // Abbruch bei Fehler
+                                //result = false;
+                                //break; // Abbruch bei Fehler
                             }
                         }
                         done++;
@@ -124,6 +124,15 @@ namespace WindowsFormsApplication1
             if (File.Exists(Program.ApplicationPath_User + "\\UpdateDB.ini"))
             {
                 return Program.ApplicationPath_User + "\\UpdateDB.ini";
+            }
+            else return "";
+        }
+
+        public string GetDBFilePath()
+        {
+            if (File.Exists(Program.ApplicationPath_User + "\\Kenndaten.accdb"))
+            {
+                return Program.ApplicationPath_User + "\\Kenndaten.accdb";
             }
             else return "";
         }
