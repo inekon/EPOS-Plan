@@ -43,15 +43,17 @@ namespace WindowsFormsApplication1
             // duch das uodate wird die installierte DB mit der neuen überschrieben
             // die Daten aus der gesicherten DB werden in die installierte DB importiert    
 
-            string sourceConnString = @"Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=" + Program.ApplicationPath_User + "\\update.accdb";
+            string sourceConnString = @"Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=" + Program.ApplicationPath_User + "\\Kenndaten.accdb";
             string result = "";
             string targetConnStr = Program.DBConnection.ConnectionString;
 
             string szIniFile = dbClass.GetIniFilePath();
-            if (szIniFile == "")
+            string szDBFile = dbClass.GetDBFilePath(); 
+
+            if (szIniFile == "" || szDBFile == "")
             {
                 //MessageBox.Show("Die Datenbank Update Datei wurde nicht gefunden!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                result = "Die gesicherte Datenbank wurde nicht gefunden!";
+                result = "Die gesicherte Datenbank bzw. das Ini-File wurde nicht gefunden!";
                 textBox1.Text = result;
                 return result;
             }
@@ -84,6 +86,7 @@ namespace WindowsFormsApplication1
                 textBox1.Text = result;
             }
             File.Move(szIniFile, Program.ApplicationPath_User + "\\UpdateDB_" + DateTime.Now.ToString("yyyy-MM-dd") + ".ini");
+            File.Move(szDBFile, Program.ApplicationPath_User + "\\Kenndaten_" + DateTime.Now.ToString("yyyy-MM-dd") + ".accdb");
             return result;
         }
 

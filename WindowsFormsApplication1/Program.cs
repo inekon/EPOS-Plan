@@ -59,8 +59,8 @@ namespace WindowsFormsApplication1
             ApplicationPath_User = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             ApplicationPath_User = Path.Combine(ApplicationPath_User, "WP-Plan");
 
-            // wenn die UdateDB.ini Datei existiert, dann Update starten   
-            if (db.GetIniFilePath() != "")
+            // wenn die UdateDB.ini Datei und die DB existiert, dann Update starten   
+            if (db.GetIniFilePath() != "" && db.GetDBFilePath() != "")
             {
                 Form_Update formUpdate = new Form_Update();
                 formUpdate.ShowDialog();
