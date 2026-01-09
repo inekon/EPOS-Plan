@@ -85,8 +85,8 @@ namespace WindowsFormsApplication1
                 result = "Datenimport nicht vollständig.\nDialog schließen damit die Anwendung gestartet wird!\n\n" + dbClass.szError;
                 textBox1.Text = result;
             }
-        ///    File.Move(szIniFile, Program.ApplicationPath_User + "\\UpdateDB_" + DateTime.Now.ToString("yyyy-MM-dd") + ".ini");
-         //   File.Move(szDBFile, Program.ApplicationPath_User + "\\Kenndaten_" + DateTime.Now.ToString("yyyy-MM-dd") + ".accdb");
+            File.Move(szIniFile, Program.ApplicationPath_User + "\\UpdateDB_" + DateTime.Now.ToString("yyyy-MM-dd") + ".ini");
+            File.Move(szDBFile, Program.ApplicationPath_User + "\\Kenndaten_" + DateTime.Now.ToString("yyyy-MM-dd") + ".accdb");
             return result;
         }
 
