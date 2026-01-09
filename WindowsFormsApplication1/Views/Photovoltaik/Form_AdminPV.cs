@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Bezeichner: {bezeichner}");
                 listBox_PV.Items.Add(bezeichner);
             }
-            listBox_PV.SelectedIndex = 0;
+            if(listBox_PV.Items.Count > 0)  listBox_PV.SelectedIndex = 0;
         }
 
         private void btn_Speichern_Click(object sender, EventArgs e)
