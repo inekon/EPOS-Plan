@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MDIMainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.Projekte = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_ProjektNeu = new System.Windows.Forms.ToolStripMenuItem();
@@ -36,32 +37,33 @@
             this.MenuItem_zuletztGeöffnet = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_ProjektLöschen = new System.Windows.Forms.ToolStripMenuItem();
             this.Administration = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_GebBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_GebTypen = new System.Windows.Forms.ToolStripMenuItem();
+            this.Help = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Version = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.MenuItem_Lizenz = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_WaermebedarfExtern = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Prozesswaerme = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.MenuItem_Stromverbraucher = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_Stromganglinie = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.MenuItem_Klimadaten = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.MenuItem_BHKW = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_WP = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_WPBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MeniItem_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Kessel = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_PV = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Solarkollektoren = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_SolThermGanglinie = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.MenuItem_Stromspeicher = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.MenuItem_BHKW = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Klimadaten = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Update = new System.Windows.Forms.ToolStripMenuItem();
-            this.Help = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_Version = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_PV = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_GebBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_GebTypen = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -130,55 +132,66 @@
             // 
             // Administration
             // 
+            this.Administration.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.Administration.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MenuItem_Gebaeude,
-            this.MenuItem_WaermebedarfExtern,
-            this.MenuItem_Prozesswaerme,
-            this.toolStripSeparator4,
-            this.MenuItem_Stromverbraucher,
-            this.MenuItem_Stromganglinie,
-            this.toolStripSeparator3,
-            this.MenuItem_Klimadaten,
-            this.toolStripSeparator1,
-            this.MenuItem_BHKW,
-            this.MenuItem_WP,
-            this.MenuItem_Kessel,
-            this.toolStripSeparator2,
-            this.MenuItem_Solarkollektoren,
-            this.MenuItem_SolThermGanglinie,
-            this.MenuItem_PV,
-            this.toolStripSeparator5,
-            this.MenuItem_Stromspeicher,
-            this.toolStripSeparator6,
-            this.MenuItem_Update});
+            this.toolStripMenuItem1,
+            this.toolStripMenuItem2,
+            this.toolStripMenuItem3,
+            this.toolStripMenuItem6,
+            this.toolStripMenuItem7,
+            this.MenuItem_Gebaeude});
             this.Administration.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Administration.Name = "Administration";
             this.Administration.Size = new System.Drawing.Size(125, 25);
             this.Administration.Text = "Administration";
             // 
-            // MenuItem_Gebaeude
+            // Help
             // 
-            this.MenuItem_Gebaeude.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MenuItem_GebBearbeiten,
-            this.MenuItem_GebTypen});
-            this.MenuItem_Gebaeude.Name = "MenuItem_Gebaeude";
-            this.MenuItem_Gebaeude.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_Gebaeude.Text = "Gebäude";
-            this.MenuItem_Gebaeude.Click += new System.EventHandler(this.MenuItem_Gebaeude_Click);
+            this.Help.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_Version,
+            this.toolStripSeparator7,
+            this.MenuItem_Lizenz});
+            this.Help.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.Help.Name = "Help";
+            this.Help.Size = new System.Drawing.Size(54, 25);
+            this.Help.Text = "Hilfe";
             // 
-            // MenuItem_GebBearbeiten
+            // MenuItem_Version
             // 
-            this.MenuItem_GebBearbeiten.Name = "MenuItem_GebBearbeiten";
-            this.MenuItem_GebBearbeiten.Size = new System.Drawing.Size(181, 26);
-            this.MenuItem_GebBearbeiten.Text = "Bearbeiten";
-            this.MenuItem_GebBearbeiten.Click += new System.EventHandler(this.MenuItem_GebBearbeiten_Click);
+            this.MenuItem_Version.BackColor = System.Drawing.SystemColors.Control;
+            this.MenuItem_Version.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.MenuItem_Version.Name = "MenuItem_Version";
+            this.MenuItem_Version.Size = new System.Drawing.Size(132, 26);
+            this.MenuItem_Version.Text = "Version";
+            this.MenuItem_Version.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
+            this.MenuItem_Version.Click += new System.EventHandler(this.MenuItem_Version_Click);
             // 
-            // MenuItem_GebTypen
+            // toolStripSeparator7
             // 
-            this.MenuItem_GebTypen.Name = "MenuItem_GebTypen";
-            this.MenuItem_GebTypen.Size = new System.Drawing.Size(181, 26);
-            this.MenuItem_GebTypen.Text = "Gebäudetypen";
-            this.MenuItem_GebTypen.Click += new System.EventHandler(this.MenuItem_GebTypen_Click);
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(129, 6);
+            // 
+            // MenuItem_Lizenz
+            // 
+            this.MenuItem_Lizenz.Name = "MenuItem_Lizenz";
+            this.MenuItem_Lizenz.Size = new System.Drawing.Size(132, 26);
+            this.MenuItem_Lizenz.Text = "Lizenz";
+            this.MenuItem_Lizenz.Click += new System.EventHandler(this.MenuItem_Lizenz_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.BackColor = System.Drawing.SystemColors.Control;
+            this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_WaermebedarfExtern,
+            this.MenuItem_Prozesswaerme,
+            this.MenuItem_WP,
+            this.MenuItem_Kessel});
+            this.toolStripMenuItem1.Image = global::WindowsFormsApplication1.Properties.Resources.Menu1;
+            this.toolStripMenuItem1.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.toolStripMenuItem1.ImageTransparentColor = System.Drawing.SystemColors.Control;
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(273, 38);
+            this.toolStripMenuItem1.Text = "Wärmebedarf && Heizung ";
             // 
             // MenuItem_WaermebedarfExtern
             // 
@@ -193,49 +206,6 @@
             this.MenuItem_Prozesswaerme.Size = new System.Drawing.Size(242, 26);
             this.MenuItem_Prozesswaerme.Text = "Prozesswärme";
             this.MenuItem_Prozesswaerme.Click += new System.EventHandler(this.MenuItem_Prozesswaerme_Click);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(239, 6);
-            // 
-            // MenuItem_Stromverbraucher
-            // 
-            this.MenuItem_Stromverbraucher.Name = "MenuItem_Stromverbraucher";
-            this.MenuItem_Stromverbraucher.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_Stromverbraucher.Text = "Stromverbraucher";
-            this.MenuItem_Stromverbraucher.Click += new System.EventHandler(this.MenuItem_Stromverbraucher_Click);
-            // 
-            // MenuItem_Stromganglinie
-            // 
-            this.MenuItem_Stromganglinie.Name = "MenuItem_Stromganglinie";
-            this.MenuItem_Stromganglinie.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_Stromganglinie.Text = "Stromganglinie";
-            this.MenuItem_Stromganglinie.Click += new System.EventHandler(this.MenuItem_Stromganglinie_Click);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(239, 6);
-            // 
-            // MenuItem_Klimadaten
-            // 
-            this.MenuItem_Klimadaten.Name = "MenuItem_Klimadaten";
-            this.MenuItem_Klimadaten.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_Klimadaten.Text = "Klimadaten";
-            this.MenuItem_Klimadaten.Click += new System.EventHandler(this.MenuItem_Klimadaten_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(239, 6);
-            // 
-            // MenuItem_BHKW
-            // 
-            this.MenuItem_BHKW.Name = "MenuItem_BHKW";
-            this.MenuItem_BHKW.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_BHKW.Text = "BHKW";
-            this.MenuItem_BHKW.Click += new System.EventHandler(this.MenuItem_BHKW_Click);
             // 
             // MenuItem_WP
             // 
@@ -267,71 +237,141 @@
             this.MenuItem_Kessel.Text = "Heizkessel";
             this.MenuItem_Kessel.Click += new System.EventHandler(this.MenuItem_Kessel_Click);
             // 
-            // toolStripSeparator2
+            // toolStripMenuItem2
             // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(239, 6);
+            this.toolStripMenuItem2.BackColor = System.Drawing.SystemColors.Control;
+            this.toolStripMenuItem2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem5,
+            this.toolStripMenuItem4,
+            this.toolStripMenuItem8});
+            this.toolStripMenuItem2.Image = global::WindowsFormsApplication1.Properties.Resources.Menue2;
+            this.toolStripMenuItem2.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(273, 38);
+            this.toolStripMenuItem2.Text = "Strombedarf && Speicher";
+            // 
+            // toolStripMenuItem5
+            // 
+            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(206, 26);
+            this.toolStripMenuItem5.Text = "Stromverbraucher";
+            this.toolStripMenuItem5.Click += new System.EventHandler(this.MenuItem_Stromverbraucher_Click);
+            // 
+            // toolStripMenuItem4
+            // 
+            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(206, 26);
+            this.toolStripMenuItem4.Text = "Stromganglinie";
+            this.toolStripMenuItem4.Click += new System.EventHandler(this.MenuItem_Stromganglinie_Click);
+            // 
+            // toolStripMenuItem8
+            // 
+            this.toolStripMenuItem8.Name = "toolStripMenuItem8";
+            this.toolStripMenuItem8.Size = new System.Drawing.Size(206, 26);
+            this.toolStripMenuItem8.Text = "Stromspeicher";
+            this.toolStripMenuItem8.Click += new System.EventHandler(this.MenuItem_Stromspeicher_Click);
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.BackColor = System.Drawing.SystemColors.Control;
+            this.toolStripMenuItem3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_PV,
+            this.MenuItem_Solarkollektoren,
+            this.MenuItem_SolThermGanglinie,
+            this.MenuItem_BHKW});
+            this.toolStripMenuItem3.Image = global::WindowsFormsApplication1.Properties.Resources.Menu3;
+            this.toolStripMenuItem3.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(273, 38);
+            this.toolStripMenuItem3.Text = "Energiesysteme";
+            // 
+            // MenuItem_PV
+            // 
+            this.MenuItem_PV.Name = "MenuItem_PV";
+            this.MenuItem_PV.Size = new System.Drawing.Size(234, 26);
+            this.MenuItem_PV.Text = "Photovoltaik";
+            this.MenuItem_PV.Click += new System.EventHandler(this.MenuItem_PV_Click);
             // 
             // MenuItem_Solarkollektoren
             // 
             this.MenuItem_Solarkollektoren.Name = "MenuItem_Solarkollektoren";
-            this.MenuItem_Solarkollektoren.Size = new System.Drawing.Size(242, 26);
+            this.MenuItem_Solarkollektoren.Size = new System.Drawing.Size(234, 26);
             this.MenuItem_Solarkollektoren.Text = "Solarkollektoren";
             this.MenuItem_Solarkollektoren.Click += new System.EventHandler(this.MenuItem_Solarkollektoren_Click);
             // 
             // MenuItem_SolThermGanglinie
             // 
             this.MenuItem_SolThermGanglinie.Name = "MenuItem_SolThermGanglinie";
-            this.MenuItem_SolThermGanglinie.Size = new System.Drawing.Size(242, 26);
+            this.MenuItem_SolThermGanglinie.Size = new System.Drawing.Size(234, 26);
             this.MenuItem_SolThermGanglinie.Text = "Solarthermieganglinie";
             this.MenuItem_SolThermGanglinie.Click += new System.EventHandler(this.MenuItem_SolThermGanglinie_Click);
             // 
-            // toolStripSeparator5
+            // MenuItem_BHKW
             // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(239, 6);
+            this.MenuItem_BHKW.Name = "MenuItem_BHKW";
+            this.MenuItem_BHKW.Size = new System.Drawing.Size(234, 26);
+            this.MenuItem_BHKW.Text = "BHKW";
+            this.MenuItem_BHKW.Click += new System.EventHandler(this.MenuItem_BHKW_Click);
             // 
-            // MenuItem_Stromspeicher
+            // toolStripMenuItem6
             // 
-            this.MenuItem_Stromspeicher.Name = "MenuItem_Stromspeicher";
-            this.MenuItem_Stromspeicher.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_Stromspeicher.Text = "Stromspeicher";
-            this.MenuItem_Stromspeicher.Click += new System.EventHandler(this.MenuItem_Stromspeicher_Click);
+            this.toolStripMenuItem6.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_Klimadaten});
+            this.toolStripMenuItem6.Image = global::WindowsFormsApplication1.Properties.Resources.Menu4;
+            this.toolStripMenuItem6.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.toolStripMenuItem6.Name = "toolStripMenuItem6";
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(273, 38);
+            this.toolStripMenuItem6.Text = "Klimadaten && Umgebung";
             // 
-            // toolStripSeparator6
+            // MenuItem_Klimadaten
             // 
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(239, 6);
+            this.MenuItem_Klimadaten.Name = "MenuItem_Klimadaten";
+            this.MenuItem_Klimadaten.Size = new System.Drawing.Size(158, 26);
+            this.MenuItem_Klimadaten.Text = "Klimadaten";
+            this.MenuItem_Klimadaten.Click += new System.EventHandler(this.MenuItem_Klimadaten_Click);
+            // 
+            // toolStripMenuItem7
+            // 
+            this.toolStripMenuItem7.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_Update});
+            this.toolStripMenuItem7.Image = global::WindowsFormsApplication1.Properties.Resources.Menue5;
+            this.toolStripMenuItem7.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.toolStripMenuItem7.Name = "toolStripMenuItem7";
+            this.toolStripMenuItem7.Size = new System.Drawing.Size(273, 38);
+            this.toolStripMenuItem7.Text = "Daten && Import ";
             // 
             // MenuItem_Update
             // 
             this.MenuItem_Update.Name = "MenuItem_Update";
-            this.MenuItem_Update.Size = new System.Drawing.Size(242, 26);
+            this.MenuItem_Update.Size = new System.Drawing.Size(241, 26);
             this.MenuItem_Update.Text = "Datenbank importieren";
             this.MenuItem_Update.Click += new System.EventHandler(this.MenuItem_Update_Click);
             // 
-            // Help
+            // MenuItem_Gebaeude
             // 
-            this.Help.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MenuItem_Version});
-            this.Help.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.Help.Name = "Help";
-            this.Help.Size = new System.Drawing.Size(54, 25);
-            this.Help.Text = "Hilfe";
+            this.MenuItem_Gebaeude.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_GebBearbeiten,
+            this.MenuItem_GebTypen});
+            this.MenuItem_Gebaeude.Image = global::WindowsFormsApplication1.Properties.Resources.Menue6;
+            this.MenuItem_Gebaeude.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.MenuItem_Gebaeude.Name = "MenuItem_Gebaeude";
+            this.MenuItem_Gebaeude.Size = new System.Drawing.Size(273, 38);
+            this.MenuItem_Gebaeude.Text = "Gebäude";
+            this.MenuItem_Gebaeude.Click += new System.EventHandler(this.MenuItem_Gebaeude_Click);
             // 
-            // MenuItem_Version
+            // MenuItem_GebBearbeiten
             // 
-            this.MenuItem_Version.Name = "MenuItem_Version";
-            this.MenuItem_Version.Size = new System.Drawing.Size(132, 26);
-            this.MenuItem_Version.Text = "Version";
-            this.MenuItem_Version.Click += new System.EventHandler(this.MenuItem_Version_Click);
+            this.MenuItem_GebBearbeiten.Name = "MenuItem_GebBearbeiten";
+            this.MenuItem_GebBearbeiten.Size = new System.Drawing.Size(181, 26);
+            this.MenuItem_GebBearbeiten.Text = "Bearbeiten";
+            this.MenuItem_GebBearbeiten.Click += new System.EventHandler(this.MenuItem_GebBearbeiten_Click);
             // 
-            // MenuItem_PV
+            // MenuItem_GebTypen
             // 
-            this.MenuItem_PV.Name = "MenuItem_PV";
-            this.MenuItem_PV.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_PV.Text = "Photovoltaik";
-            this.MenuItem_PV.Click += new System.EventHandler(this.MenuItem_PV_Click);
+            this.MenuItem_GebTypen.Name = "MenuItem_GebTypen";
+            this.MenuItem_GebTypen.Size = new System.Drawing.Size(181, 26);
+            this.MenuItem_GebTypen.Text = "Gebäudetypen";
+            this.MenuItem_GebTypen.Click += new System.EventHandler(this.MenuItem_GebTypen_Click);
             // 
             // MDIMainForm
             // 
@@ -339,6 +379,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(762, 569);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MDIMainForm";
@@ -361,33 +402,34 @@
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ProjektOeffnen;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ProjektBearbeiten;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_zuletztGeöffnet;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_Klimadaten;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ProjektLöschen;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_WP;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_WPBearbeiten;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_Stromspeicher;
-        private System.Windows.Forms.ToolStripMenuItem MeniItem_VDI3805;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Gebaeude;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_GebBearbeiten;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_GebTypen;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_WaermebedarfExtern;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_Prozesswaerme;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_Stromverbraucher;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_Stromganglinie;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_Kessel;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_BHKW;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_Solarkollektoren;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_SolThermGanglinie;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_Update;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem Help;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Version;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_WaermebedarfExtern;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Prozesswaerme;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_WP;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_WPBearbeiten;
+        private System.Windows.Forms.ToolStripMenuItem MeniItem_VDI3805;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Kessel;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem8;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_PV;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Solarkollektoren;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_SolThermGanglinie;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_BHKW;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem6;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Klimadaten;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem7;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Update;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Lizenz;
     }
 }
 

@@ -30,6 +30,7 @@
         {
             this.tabControl_Wizard = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.pBox_ProjektDetails = new System.Windows.Forms.PictureBox();
             this.pBox_Delete = new System.Windows.Forms.PictureBox();
             this.textBox3 = new System.Windows.Forms.TextBox();
             this.textBox4 = new System.Windows.Forms.TextBox();
@@ -54,13 +55,13 @@
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.radioButton_Ganglinie = new System.Windows.Forms.RadioButton();
             this.radioButton_KollektorProfil = new System.Windows.Forms.RadioButton();
+            this.textBox7 = new System.Windows.Forms.TextBox();
+            this.textBox8 = new System.Windows.Forms.TextBox();
             this.pBox_PV = new System.Windows.Forms.PictureBox();
             this.pBox_Solarthermie = new System.Windows.Forms.PictureBox();
             this.pBox_Stromspeicher = new System.Windows.Forms.PictureBox();
             this.pBox_Heizkessel = new System.Windows.Forms.PictureBox();
             this.pBox_BHKW = new System.Windows.Forms.PictureBox();
-            this.textBox7 = new System.Windows.Forms.TextBox();
-            this.textBox8 = new System.Windows.Forms.TextBox();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.pBox_WP = new System.Windows.Forms.PictureBox();
             this.tabPage5 = new System.Windows.Forms.TabPage();
@@ -78,12 +79,12 @@
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.textBox_ProjektOpen = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.pBox_Detailansicht = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pBox_Zurueck = new System.Windows.Forms.PictureBox();
             this.pBox_Weiter = new System.Windows.Forms.PictureBox();
             this.tabControl_Wizard.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektDetails)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Bearbeiten)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektZuletzt)).BeginInit();
@@ -112,7 +113,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_DetailSim)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxSchnellSim)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_Zusammenfassung)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pBox_Detailansicht)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Zurueck)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Weiter)).BeginInit();
@@ -137,6 +137,7 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.pBox_ProjektDetails);
             this.tabPage1.Controls.Add(this.pBox_Delete);
             this.tabPage1.Controls.Add(this.textBox3);
             this.tabPage1.Controls.Add(this.textBox4);
@@ -153,6 +154,18 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Projekt";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // pBox_ProjektDetails
+            // 
+            this.pBox_ProjektDetails.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektDetails;
+            this.pBox_ProjektDetails.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pBox_ProjektDetails.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pBox_ProjektDetails.Location = new System.Drawing.Point(805, 303);
+            this.pBox_ProjektDetails.Name = "pBox_ProjektDetails";
+            this.pBox_ProjektDetails.Size = new System.Drawing.Size(377, 187);
+            this.pBox_ProjektDetails.TabIndex = 57;
+            this.pBox_ProjektDetails.TabStop = false;
+            this.pBox_ProjektDetails.Click += new System.EventHandler(this.pBox_ProjektDetails_Click);
             // 
             // pBox_Delete
             // 
@@ -417,13 +430,13 @@
             // 
             this.tabPage4.Controls.Add(this.radioButton_Ganglinie);
             this.tabPage4.Controls.Add(this.radioButton_KollektorProfil);
+            this.tabPage4.Controls.Add(this.textBox7);
+            this.tabPage4.Controls.Add(this.textBox8);
             this.tabPage4.Controls.Add(this.pBox_PV);
             this.tabPage4.Controls.Add(this.pBox_Solarthermie);
             this.tabPage4.Controls.Add(this.pBox_Stromspeicher);
             this.tabPage4.Controls.Add(this.pBox_Heizkessel);
             this.tabPage4.Controls.Add(this.pBox_BHKW);
-            this.tabPage4.Controls.Add(this.textBox7);
-            this.tabPage4.Controls.Add(this.textBox8);
             this.tabPage4.Controls.Add(this.pictureBox3);
             this.tabPage4.Controls.Add(this.pBox_WP);
             this.tabPage4.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold);
@@ -458,6 +471,28 @@
             this.radioButton_KollektorProfil.TabStop = true;
             this.radioButton_KollektorProfil.Text = "Profil";
             this.radioButton_KollektorProfil.UseVisualStyleBackColor = true;
+            // 
+            // textBox7
+            // 
+            this.textBox7.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBox7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBox7.Location = new System.Drawing.Point(20, 64);
+            this.textBox7.Name = "textBox7";
+            this.textBox7.Size = new System.Drawing.Size(530, 22);
+            this.textBox7.TabIndex = 55;
+            this.textBox7.TabStop = false;
+            this.textBox7.Text = "Wählen Sie die Energieerzeugungstechnologien für Ihr System.";
+            // 
+            // textBox8
+            // 
+            this.textBox8.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBox8.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox8.Location = new System.Drawing.Point(20, 24);
+            this.textBox8.Name = "textBox8";
+            this.textBox8.Size = new System.Drawing.Size(289, 26);
+            this.textBox8.TabIndex = 54;
+            this.textBox8.TabStop = false;
+            this.textBox8.Text = "Energieerzeuger auswählen";
             // 
             // pBox_PV
             // 
@@ -526,28 +561,6 @@
             this.pBox_BHKW.TabStop = false;
             this.pBox_BHKW.Click += new System.EventHandler(this.pBox_BHKW_Click);
             this.pBox_BHKW.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_BHKW_Paint);
-            // 
-            // textBox7
-            // 
-            this.textBox7.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.textBox7.Location = new System.Drawing.Point(20, 64);
-            this.textBox7.Name = "textBox7";
-            this.textBox7.Size = new System.Drawing.Size(530, 22);
-            this.textBox7.TabIndex = 55;
-            this.textBox7.TabStop = false;
-            this.textBox7.Text = "Wählen Sie die Energieerzeugungstechnologien für Ihr System.";
-            // 
-            // textBox8
-            // 
-            this.textBox8.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox8.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox8.Location = new System.Drawing.Point(20, 24);
-            this.textBox8.Name = "textBox8";
-            this.textBox8.Size = new System.Drawing.Size(289, 26);
-            this.textBox8.TabIndex = 54;
-            this.textBox8.TabStop = false;
-            this.textBox8.Text = "Energieerzeuger auswählen";
             // 
             // pictureBox3
             // 
@@ -756,18 +769,6 @@
             this.label1.TabIndex = 58;
             this.label1.Text = "Projekt geöffnet:";
             // 
-            // pBox_Detailansicht
-            // 
-            this.pBox_Detailansicht.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PDetailansicht;
-            this.pBox_Detailansicht.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.pBox_Detailansicht.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pBox_Detailansicht.Location = new System.Drawing.Point(475, 172);
-            this.pBox_Detailansicht.Name = "pBox_Detailansicht";
-            this.pBox_Detailansicht.Size = new System.Drawing.Size(164, 36);
-            this.pBox_Detailansicht.TabIndex = 61;
-            this.pBox_Detailansicht.TabStop = false;
-            this.pBox_Detailansicht.Click += new System.EventHandler(this.pBox_Detailansicht_Click);
-            // 
             // pictureBox2
             // 
             this.pictureBox2.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PTitel1;
@@ -810,7 +811,6 @@
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1620, 932);
             this.ControlBox = false;
-            this.Controls.Add(this.pBox_Detailansicht);
             this.Controls.Add(this.textBox_ProjektOpen);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox2);
@@ -824,6 +824,7 @@
             this.tabControl_Wizard.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektDetails)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Bearbeiten)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektZuletzt)).EndInit();
@@ -856,7 +857,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_DetailSim)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxSchnellSim)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_Zusammenfassung)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pBox_Detailansicht)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Zurueck)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Weiter)).EndInit();
@@ -903,7 +903,6 @@
         private System.Windows.Forms.PictureBox pBox_BHKW;
         private System.Windows.Forms.PictureBox pBox_Heizkessel;
         private System.Windows.Forms.PictureBox pBox_Stromspeicher;
-        private System.Windows.Forms.PictureBox pBox_Detailansicht;
         private System.Windows.Forms.PictureBox pictureBox_Zusammenfassung;
         private System.Windows.Forms.TextBox textBox9;
         private System.Windows.Forms.TextBox textBox10;
@@ -920,5 +919,6 @@
         private System.Windows.Forms.PictureBox pBox_PV;
         private System.Windows.Forms.RadioButton radioButton_Ganglinie;
         private System.Windows.Forms.RadioButton radioButton_KollektorProfil;
+        private System.Windows.Forms.PictureBox pBox_ProjektDetails;
     }
 }

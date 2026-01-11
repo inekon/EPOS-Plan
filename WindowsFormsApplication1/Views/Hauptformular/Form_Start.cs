@@ -58,7 +58,7 @@ namespace WindowsFormsApplication1
         public void SetTextProjekt(string szProjekt)
         {
             textBox_ProjektOpen.Text = szProjekt;
-            pBox_Detailansicht.Enabled = true; 
+            pBox_ProjektDetails.Enabled = true; 
         }
 
         private void pBox_Prozess_Click(object sender, EventArgs e)
@@ -625,24 +625,6 @@ namespace WindowsFormsApplication1
 
         }
 
-        private void pBox_Detailansicht_Click(object sender, EventArgs e)
-        {
-            if (textBox_ProjektOpen.Text == "bitte auswählen!")
-            {
-                //    MessageBox.Show("Bitte zuerst ein Projekt auswählen!\n (<Projekt öffnen> oder <zuletzt geöffnet>)!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                Form_Hinweis frm = new Form_Hinweis("Hinweis", "\r\nBitte zuerst ein Projekt auswählen!\r\nProjekt öffnen oder zuletzt geöffnet");
-                System.Drawing.Point p1 = pBox_Detailansicht.Location;
-                p1 = this.PointToScreen(p1);
-                frm.Location = p1;
-                frm.ShowDialog();
-                return;
-            }
-
-            MenueCtrl ctrl = new MenueCtrl();
-            if (textBox_ProjektOpen.Text == "nicht geöffnet") return;
-            ctrl.ProjektOeffnen(true);
-        }
-
         private void pBox_Gebaude_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -1044,6 +1026,24 @@ namespace WindowsFormsApplication1
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
                 }
             }
+        }
+
+        private void pBox_ProjektDetails_Click(object sender, EventArgs e)
+        {
+            if (textBox_ProjektOpen.Text == "bitte auswählen!")
+            {
+                //    MessageBox.Show("Bitte zuerst ein Projekt auswählen!\n (<Projekt öffnen> oder <zuletzt geöffnet>)!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Form_Hinweis frm = new Form_Hinweis("Hinweis", "\r\nBitte zuerst ein Projekt auswählen!\r\nProjekt öffnen oder zuletzt geöffnet");
+                System.Drawing.Point p1 = pBox_ProjektDetails.Location;
+                p1 = this.PointToScreen(p1);
+                frm.Location = p1;
+                frm.ShowDialog();
+                return;
+            }
+
+            MenueCtrl ctrl = new MenueCtrl();
+            if (textBox_ProjektOpen.Text == "nicht geöffnet") return;
+            ctrl.ProjektOeffnen(true);
         }
     }
 }

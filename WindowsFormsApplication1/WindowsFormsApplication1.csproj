@@ -902,11 +902,18 @@
     <None Include="Resources\info-1459077_1280.jpg" />
     <None Include="Resources\info-1459077_1280.png" />
     <None Include="Resources\PDelete.jpg" />
+    <None Include="Resources\Menu1.png" />
+    <None Include="Resources\Menue2.png" />
+    <None Include="Resources\Menu3.png" />
+    <None Include="Resources\Menu4.png" />
+    <None Include="Resources\Menue5.png" />
+    <None Include="Resources\Menue6.png" />
     <Content Include="Resources\PDetailansicht.jpg" />
     <None Include="Resources\PSchnellSim.jpg" />
     <None Include="Resources\PDetailSim.jpg" />
     <None Include="Resources\POptimierung.jpg" />
     <None Include="Resources\PProjektPV.jpg" />
+    <None Include="Resources\PProjektDetails.jpg" />
     <Content Include="Resources\PProjektSolarthermie.jpg" />
     <Content Include="Resources\PZusammenfassung.pg.jpg" />
   </ItemGroup>
