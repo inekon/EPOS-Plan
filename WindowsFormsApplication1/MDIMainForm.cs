@@ -150,7 +150,6 @@ namespace WindowsFormsApplication1
         private void MenuItem_Version_Click(object sender, EventArgs e)
         {
             Version currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-
             MessageBox.Show("Version: " + currentVersion.ToString());
         }
 
@@ -158,6 +157,11 @@ namespace WindowsFormsApplication1
         {
             Form_AdminPV frm = new Form_AdminPV();
             frm.ShowDialog();
+        }
+
+        private void MenuItem_Lizenz_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
