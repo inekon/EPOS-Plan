@@ -1200,7 +1200,7 @@
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.label2.ForeColor = System.Drawing.Color.Black;
-            this.label2.Location = new System.Drawing.Point(647, 242);
+            this.label2.Location = new System.Drawing.Point(644, 242);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(19, 17);
             this.label2.TabIndex = 260;
@@ -1377,7 +1377,7 @@
             this.label64.BackColor = System.Drawing.Color.White;
             this.label64.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label64.ForeColor = System.Drawing.Color.Black;
-            this.label64.Location = new System.Drawing.Point(686, 218);
+            this.label64.Location = new System.Drawing.Point(686, 213);
             this.label64.Name = "label64";
             this.label64.Size = new System.Drawing.Size(51, 17);
             this.label64.TabIndex = 196;
@@ -1717,9 +1717,9 @@
             this.label113.ForeColor = System.Drawing.Color.Black;
             this.label113.Location = new System.Drawing.Point(686, 160);
             this.label113.Name = "label113";
-            this.label113.Size = new System.Drawing.Size(26, 16);
+            this.label113.Size = new System.Drawing.Size(25, 16);
             this.label113.TabIndex = 222;
-            this.label113.Text = "KW";
+            this.label113.Text = "kW";
             this.label113.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // tb_Gasspitze
