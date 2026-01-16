@@ -15,13 +15,6 @@
         public string m_Tool_4;
         public string m_Tool_5;
         public string m_Tool_6;
-        public int m_Ladefuellstand_Min;
-        public int m_Ladefuellstand_Max;
-        public int m_Ladeleistung_Max;
-        public double m_Ladeschwellwert;
-        public string m_Ladefuellstand_Min_Auswahl;
-        public string m_Ladefuellstand_Max_Auswahl;
-        public string m_Ladeleistung_Max_Auswahl;
 
         public KonfigurationModel()
         {
@@ -38,13 +31,6 @@
             m_Tool_4 = "";
             m_Tool_5 = "";
             m_Tool_6 = "";
-            m_Ladefuellstand_Min = 0;
-            m_Ladefuellstand_Max = 0;
-            m_Ladeleistung_Max =0;
-            m_Ladeschwellwert = 0;
-            m_Ladefuellstand_Min_Auswahl = "";
-            m_Ladefuellstand_Max_Auswahl = "";
-            m_Ladeleistung_Max_Auswahl = "";
         }
     }
 }

@@ -96,12 +96,17 @@ namespace WindowsFormsApplication1
         private void btn_Simulation_Click(object sender, EventArgs e)
         {
             List<string> list = new List<string>();
-            list.Add(listBox_Verbraucher_DB.Text); 
-            simulation.Strombedarf_berechnen(list);
-            simulation.Strombedarf_Gebaeude_gesamt = simulation.com.I_vector_summe(simulation.prozesswerte);
-            simulation.com.CSharp_I_vectoren_addieren(simulation.prozesswerte, simulation.Strombedarf_Stundenwerte);
-            simulation.com.I_monats_summe(simulation.Strombedarf_Stundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
-            simulation.Strombedarf_Max = simulation.Maximaler_Strombedarf(simulation.Strombedarf_Stundenwerte);
+            float[] result = new float[8760];
+
+            list.Add(listBox_Verbraucher_DB.Text);
+            result = simulation.Stromprofil_Strombedarf_berechnen(list);
+            if (result == null) return;
+            simulation.Strombedarf_Gebaeude_gesamt = simulation.com.I_vector_summe(result);
+            //simulation.com.CSharp_I_vectoren_addieren(simulation.prozesswerte, simulation.Strombedarf_viertelStundenwerte);
+            Array.Copy(result, simulation.Strombedarf_viertelStundenwerte, result.Length);
+
+            simulation.com.I_monats_summe(simulation.Strombedarf_viertelStundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
+            simulation.Strombedarf_Max = simulation.Maximaler_Strombedarf(simulation.Strombedarf_viertelStundenwerte);
             simulation.Strombedarf_gesamt = simulation.Strombedarf_Gebaeude_gesamt;
             
             Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();

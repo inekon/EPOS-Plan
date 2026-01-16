@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
             List<string> list = new List<string>();
 
             list.Add(stromprofil);
-            sim.Strombedarf_berechnen(list);
+            sim.Stromprofil_Strombedarf_berechnen(list);
 
             // alle Prozesswerte durchlaufen
             for (int i = 0; i < 8760; i++)

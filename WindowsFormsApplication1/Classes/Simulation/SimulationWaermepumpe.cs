@@ -19,7 +19,7 @@ namespace WindowsFormsApplication1
         public double[] Heizstab_monatlich = new double[12];
         public float[] Temperatur = new float[8760];
 
-        public double[] WP_Strombedarf_stuendlich = new double[8760];
+        public float[] WP_Strombedarf_stuendlich = new float[8760];
         public float[] WP_Waermeproduktion_stuendlich = new float[8760];
         public float[] WP_Waermeproduktion_stuendlich_sortiert = new float[8760];
         public float[] Heizstab_stuendlich = new float[8760];
@@ -241,7 +241,7 @@ namespace WindowsFormsApplication1
                     {
                         WP_Waermeproduktion_stuendlich[stunde] = WP_Waermeproduktion_stuendlich[stunde] + (float)result[PTHERM];
                         WP_Waermeproduktion_gesamt += result[PTHERM];
-                        WP_Strombedarf_stuendlich[stunde] = WP_Strombedarf_stuendlich[stunde] + result[PEL];
+                        WP_Strombedarf_stuendlich[stunde] = WP_Strombedarf_stuendlich[stunde] + (float)result[PEL];
                         WP_Strombedarf_gesamt += result[PEL];
                         Modul_WP_Waermeproduktion[index] += (float)result[PTHERM];
                         Modul_WP_Strombedarf[index] += result[PEL];
@@ -256,7 +256,7 @@ namespace WindowsFormsApplication1
                     {
                         WP_Waermeproduktion_stuendlich[stunde] = WP_Waermeproduktion_stuendlich[stunde] + (float)Rest_waerme;
                         WP_Waermeproduktion_gesamt += Rest_waerme;
-                        WP_Strombedarf_stuendlich[stunde] = WP_Strombedarf_stuendlich[stunde] + Rest_waerme / result[COP];
+                        WP_Strombedarf_stuendlich[stunde] = WP_Strombedarf_stuendlich[stunde] + (float)Rest_waerme / (float)result[COP];
                         WP_Strombedarf_gesamt += Rest_waerme / result[COP];
                         Modul_WP_Waermeproduktion[index] += (float)Rest_waerme;
                         Modul_WP_Strombedarf[index] += Rest_waerme / result[COP];

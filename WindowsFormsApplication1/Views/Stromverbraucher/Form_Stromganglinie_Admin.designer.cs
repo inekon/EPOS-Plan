@@ -41,6 +41,8 @@ namespace WindowsFormsApplication1
             this.btn_Einlesen = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.comboBox_Zeitinterval = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -68,7 +70,7 @@ namespace WindowsFormsApplication1
             // btn_Hilfe
             // 
             this.btn_Hilfe.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Hilfe.Location = new System.Drawing.Point(20, 303);
+            this.btn_Hilfe.Location = new System.Drawing.Point(17, 351);
             this.btn_Hilfe.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Hilfe.Name = "btn_Hilfe";
             this.btn_Hilfe.Size = new System.Drawing.Size(98, 31);
@@ -79,7 +81,7 @@ namespace WindowsFormsApplication1
             // btn_OK
             // 
             this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_OK.Location = new System.Drawing.Point(571, 303);
+            this.btn_OK.Location = new System.Drawing.Point(568, 351);
             this.btn_OK.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_OK.Name = "btn_OK";
             this.btn_OK.Size = new System.Drawing.Size(98, 31);
@@ -92,19 +94,19 @@ namespace WindowsFormsApplication1
             // 
             this.textBox_Name.BackColor = System.Drawing.Color.White;
             this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Name.Location = new System.Drawing.Point(8, 95);
+            this.textBox_Name.Location = new System.Drawing.Point(9, 154);
             this.textBox_Name.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Name.Multiline = true;
             this.textBox_Name.Name = "textBox_Name";
             this.textBox_Name.ReadOnly = true;
             this.textBox_Name.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-            this.textBox_Name.Size = new System.Drawing.Size(257, 74);
+            this.textBox_Name.Size = new System.Drawing.Size(275, 74);
             this.textBox_Name.TabIndex = 9;
             // 
             // btn_Oeffnen
             // 
             this.btn_Oeffnen.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Oeffnen.Location = new System.Drawing.Point(8, 176);
+            this.btn_Oeffnen.Location = new System.Drawing.Point(149, 120);
             this.btn_Oeffnen.Name = "btn_Oeffnen";
             this.btn_Oeffnen.Size = new System.Drawing.Size(135, 31);
             this.btn_Oeffnen.TabIndex = 15;
@@ -116,7 +118,7 @@ namespace WindowsFormsApplication1
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label6.Location = new System.Drawing.Point(352, 316);
+            this.label6.Location = new System.Drawing.Point(349, 364);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(126, 19);
             this.label6.TabIndex = 16;
@@ -128,7 +130,7 @@ namespace WindowsFormsApplication1
             // 
             this.textBox_Ordner.Enabled = false;
             this.textBox_Ordner.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Ordner.Location = new System.Drawing.Point(152, 309);
+            this.textBox_Ordner.Location = new System.Drawing.Point(149, 357);
             this.textBox_Ordner.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_Ordner.Name = "textBox_Ordner";
             this.textBox_Ordner.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
@@ -138,7 +140,7 @@ namespace WindowsFormsApplication1
             // 
             // btn_Datei
             // 
-            this.btn_Datei.Location = new System.Drawing.Point(8, 56);
+            this.btn_Datei.Location = new System.Drawing.Point(8, 120);
             this.btn_Datei.Name = "btn_Datei";
             this.btn_Datei.Size = new System.Drawing.Size(135, 31);
             this.btn_Datei.TabIndex = 18;
@@ -148,7 +150,7 @@ namespace WindowsFormsApplication1
             // 
             // btn_Loeschen
             // 
-            this.btn_Loeschen.Location = new System.Drawing.Point(331, 236);
+            this.btn_Loeschen.Location = new System.Drawing.Point(518, 227);
             this.btn_Loeschen.Name = "btn_Loeschen";
             this.btn_Loeschen.Size = new System.Drawing.Size(147, 31);
             this.btn_Loeschen.TabIndex = 19;
@@ -158,9 +160,9 @@ namespace WindowsFormsApplication1
             // 
             // btn_Einlesen
             // 
-            this.btn_Einlesen.Location = new System.Drawing.Point(8, 224);
+            this.btn_Einlesen.Location = new System.Drawing.Point(9, 254);
             this.btn_Einlesen.Name = "btn_Einlesen";
-            this.btn_Einlesen.Size = new System.Drawing.Size(135, 31);
+            this.btn_Einlesen.Size = new System.Drawing.Size(133, 31);
             this.btn_Einlesen.TabIndex = 20;
             this.btn_Einlesen.Text = "Datei Einlesen...";
             this.btn_Einlesen.UseVisualStyleBackColor = true;
@@ -169,14 +171,17 @@ namespace WindowsFormsApplication1
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(15, 26);
+            this.label1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.label1.Location = new System.Drawing.Point(44, 35);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(245, 19);
+            this.label1.Size = new System.Drawing.Size(196, 19);
             this.label1.TabIndex = 21;
-            this.label1.Text = "Stundenwerte über 1 Jahr als Textdatei";
+            this.label1.Text = "Werte über 1 Jahr als Textdatei";
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label3);
+            this.groupBox1.Controls.Add(this.comboBox_Zeitinterval);
             this.groupBox1.Controls.Add(this.btn_Datei);
             this.groupBox1.Controls.Add(this.btn_Einlesen);
             this.groupBox1.Controls.Add(this.label1);
@@ -184,16 +189,37 @@ namespace WindowsFormsApplication1
             this.groupBox1.Controls.Add(this.btn_Oeffnen);
             this.groupBox1.Location = new System.Drawing.Point(11, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(278, 274);
+            this.groupBox1.Size = new System.Drawing.Size(292, 294);
             this.groupBox1.TabIndex = 22;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ganglinie aus Datei Einlesen";
             // 
-            // Form_Stromeinlesen
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(6, 67);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(77, 19);
+            this.label3.TabIndex = 23;
+            this.label3.Text = "Zeitinterval";
+            // 
+            // comboBox_Zeitinterval
+            // 
+            this.comboBox_Zeitinterval.FormattingEnabled = true;
+            this.comboBox_Zeitinterval.Items.AddRange(new object[] {
+            "Stundenwerte",
+            "1/4 Stundenwerte"});
+            this.comboBox_Zeitinterval.Location = new System.Drawing.Point(8, 89);
+            this.comboBox_Zeitinterval.Name = "comboBox_Zeitinterval";
+            this.comboBox_Zeitinterval.Size = new System.Drawing.Size(135, 25);
+            this.comboBox_Zeitinterval.TabIndex = 22;
+            this.comboBox_Zeitinterval.Text = "Stundenwerte";
+            // 
+            // Form_Stromganglinie_Admin
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(681, 344);
+            this.ClientSize = new System.Drawing.Size(679, 392);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btn_Loeschen);
             this.Controls.Add(this.label6);
@@ -204,7 +230,7 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.btn_OK);
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.Name = "Form_Stromeinlesen";
+            this.Name = "Form_Stromganglinie_Admin";
             this.Text = "Strombedarf Ganglinie";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
@@ -228,5 +254,7 @@ private System.Windows.Forms.Button btn_Loeschen;
 private System.Windows.Forms.Button btn_Einlesen;
 private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ComboBox comboBox_Zeitinterval;
     }
 }
