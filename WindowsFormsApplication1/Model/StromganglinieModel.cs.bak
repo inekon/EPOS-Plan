@@ -10,7 +10,6 @@ namespace WindowsFormsApplication1
         public int ID;
         public int m_ID_Ganglinie;
         public string m_szBezeichner;
-        public int m_Zeitinterval;
         public StromganglinieModel[] items;
 
         public StromganglinieModel()
@@ -18,7 +17,6 @@ namespace WindowsFormsApplication1
             ID = 0;
             m_szBezeichner = "";
             m_ID_Ganglinie = 0;
-            m_Zeitinterval = 0;
             items = null;
         }
     }

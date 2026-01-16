@@ -1,4 +1,6 @@
-﻿namespace WindowsFormsApplication1
+﻿using System;
+
+namespace WindowsFormsApplication1
 {
     internal class SimulationHelper
     {
@@ -19,52 +21,63 @@
         //Rückgabe
         public float Restwaerme;
         public float Reststrom;
+        float[] Rest_Wermebedarf_stuendlich = new float[8760];
+        float[] Rest_Strombedarf_viertelstuendlich = new float[8760 * 4];
 
         public void Do_Simulation(int ID_Projekt)
         {
-            float[] Wermebedarf = new float[8760];
-            float[] Strombedarf = new float[8760];
+            float[] temp = new float[8760*4];
             float[] Eingang = new float[2];
             float[] Ausgang = new float[2];
 
-            for (int i = 0; i < 8760; i++)
-            {
-                Wermebedarf[i] = 0;
-                Strombedarf[i] = 0;
-            }
-
+            for (int i = 0; i < 8760; i++)  Rest_Wermebedarf_stuendlich[i] = 0;
+            for (int i = 0; i < 8760*4; i++) Rest_Strombedarf_viertelstuendlich[i] = 0;
+            
             m_ID_Projekt = ID_Projekt;
+            Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
             Restwaerme = 0;
             Reststrom = simulation_Strombedarf.Strombedarf_gesamt;
-            Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
-
+            Rest_Strombedarf_viertelstuendlich = simulation_Strombedarf.Strombedarf_viertelStundenwerte;
+            Rest_Wermebedarf_stuendlich = simulation_Waermebedarf.Waermebedarf;
             Eingang = simulation_Waermebedarf.Waermebedarf;
+
             for (int i = 0; i < 4; i++)
             {
                 if (tool[i] == "Wärmepumpe")
                 {
                     Ausgang = Simulation_WP(Eingang, ctrl_konfig.model.m_WP_Heizstab);
-                    if(m_bError) Ausgang = Eingang;
+                    if (m_bError) Ausgang = Eingang;
                     Restwaerme = 0;
                     for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
-
+                    Rest_Wermebedarf_stuendlich = Ausgang;
                     Eingang = Ausgang;
-                    Reststrom += (float)simulation_wp.WP_Strombedarf_gesamt / 1000;
-                    Reststrom += (float)simulation_wp.Heizstab_gesamt/1000;
 
+                    Reststrom += (float)simulation_wp.WP_Strombedarf_gesamt / 1000;
+                    Reststrom += (float)simulation_wp.Heizstab_gesamt / 1000;
+
+                    temp = Stundenwerte_zu_viertelstunden(simulation_wp.WP_Strombedarf_stuendlich);
+                    Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
+                    temp = Stundenwerte_zu_viertelstunden(simulation_wp.Heizstab_stuendlich);
+                    Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
                 }
                 else if (tool[i] == "Spitzenkessel")
                 {
                     Ausgang = Simulation_SPK(Eingang, ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
                     Restwaerme = 0;
                     for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
+                    Rest_Wermebedarf_stuendlich = Ausgang;
                     Eingang = Ausgang;
                     Reststrom += (float)simulation_spk.Stromverbrauch_Spk;
-                }
 
+                    temp = Stundenwerte_zu_viertelstunden(simulation_spk.Strombedarf_stuendlich);
+                    Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
+                }
+                else if (tool[i] == "Stromspeicher")
+                {
+                    // Rest_Strombedarf_viertelstuendlich
+                }
             }
-  
-            Restwaerme /= 1000;
+            Restwaerme /= 1000; // in MWh
 
         }
 
@@ -112,11 +125,34 @@
             double summe = 0;
             for(int i=0;i<8760;i++) summe+= simulation_spk.Restwaerme[i];   
 
-
             return simulation_spk.Restwaerme;
         }
 
+        public float[] AddVectors(float[] array1, float[] array2)
+        {
+            if (array1.Length != array2.Length)
+                throw new ArgumentException("Arrays must be of the same length.");
 
+            float[] result = new float[array1.Length];
+            for (int i = 0; i < array1.Length; i++)
+            {
+                result[i] = array1[i] + array2[i];
+            }
+            return result;
+        }
+
+        public float[] Stundenwerte_zu_viertelstunden(float[] stundenwerte)
+        {
+            float[] viertelstundenwerte = new float[stundenwerte.Length * 4];
+            for (int i = 0; i < stundenwerte.Length; i++)
+            {
+                viertelstundenwerte[i * 4] = stundenwerte[i];
+                viertelstundenwerte[i * 4 + 1] = stundenwerte[i];
+                viertelstundenwerte[i * 4 + 2] = stundenwerte[i];
+                viertelstundenwerte[i * 4 + 3] = stundenwerte[i];
+            }
+            return viertelstundenwerte;
+        }
 
     }
 }

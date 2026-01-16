@@ -67,8 +67,8 @@ namespace WindowsFormsApplication1
                     m_ID_Ganglinie = (int)DBReader.GetValue(0) + 1;
                     DBReader.Close();
                 }
-                DBCommand.CommandText = "INSERT INTO Tab_Stromganglinie ( ID_GanglinieDaten, Bezeichner, Zeitinterval) SELECT " + m_ID_Ganglinie +
-                    " AS Ausdr1, '" + m_szBezeichner + "' AS Ausdr2, " + m_Zeitinterval + " AS Ausdr3";
+                DBCommand.CommandText = "INSERT INTO Tab_Stromganglinie ( ID_GanglinieDaten, Bezeichner) SELECT " + m_ID_Ganglinie +
+                    " AS Ausdr1, '" + m_szBezeichner + "' AS Ausdr2";
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)
@@ -100,7 +100,6 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) item.m_ID_Ganglinie = (int)DBReader.GetValue(1);
                 if (!DBReader.IsDBNull(2)) item.m_szBezeichner = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.m_Zeitinterval = (int)DBReader.GetValue(3);
 
                 items[rows] = item;
                 rows += 1;
@@ -124,7 +123,6 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(0)) ID = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) m_ID_Ganglinie = (int)DBReader.GetValue(1);
                 if (!DBReader.IsDBNull(2)) m_szBezeichner = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_Zeitinterval = (int)DBReader.GetValue(3);
 
                 rows = 1;
             }

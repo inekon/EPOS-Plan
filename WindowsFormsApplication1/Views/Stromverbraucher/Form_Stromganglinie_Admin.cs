@@ -123,7 +123,10 @@ namespace WindowsFormsApplication1
         {
             StromganglinieCtrl ctrl_ganglinie = new StromganglinieCtrl();
             StromganglinieDatenCtrl ctrl = new StromganglinieDatenCtrl();
+            int Zeitinterval = 0;
+            
             if (filebasename == "" || filebasename == null ) return;
+            
             // Datei schon eingelesen?
             if (listBox_Extern.FindString(Path.GetFileNameWithoutExtension(filebasename)) != ListBox.NoMatches)
             {
@@ -134,10 +137,32 @@ namespace WindowsFormsApplication1
             // Datei in Liste einlesen 
             if (!tool.OpenText(textBox_Name.Text)) return;
 
+            // Anzahl Daten prüfen 
+            if (comboBox_Zeitinterval.Text == "Stundenwerte") Zeitinterval = 1;
+            else if (comboBox_Zeitinterval.Text == "1/4 Stundenwerte") Zeitinterval = 4;
+            else if (comboBox_Zeitinterval.Text == "Minutenwerte") Zeitinterval = 60;
+      
+            if (comboBox_Zeitinterval.Text == "Stundenwerte" && tool.textList.Count != 8760)
+            {
+                MessageBox.Show("Anzahl der Werte stimmt nicht mit dem Zeitinterval überin!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            else if (comboBox_Zeitinterval.Text == "1/4 Stundenwerte" && tool.textList.Count != 8760*4)
+            {
+                MessageBox.Show("Anzahl der Werte stimmt nicht mit dem Zeitinterval überin!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            else if (comboBox_Zeitinterval.Text == "Minutenwerte" && tool.textList.Count != 8760*60)
+            {
+                MessageBox.Show("Anzahl der Werte stimmt nicht mit dem Zeitinterval überin!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             this.Cursor = Cursors.WaitCursor;
 
             // Datensatz in DB Tab_Waermebedarf anlegen
             ctrl_ganglinie.m_szBezeichner = Path.GetFileNameWithoutExtension(filebasename);
+            ctrl_ganglinie.m_Zeitinterval = Zeitinterval; // 1=Stundenwerte, 4=1/4 Stundenwerte, 60=Minutenwerte  
             if (!ctrl_ganglinie.Insert()) return;
 
             // Daten in DB

@@ -17,6 +17,8 @@ namespace WindowsFormsApplication1
         public double Max_Waermebedarf;
         public float[] Waermebedarf = new float[8760];
         public float[] Restwaerme = new float[8760];
+        public float[] Strombedarf_stuendlich = new float[8760];
+        public float[] Kesselleistung_stuendlich = new float[8760];
 
         public int Vorgabe_Betriebsbereitschaft = 6000;
         
@@ -78,7 +80,11 @@ namespace WindowsFormsApplication1
                 Betriebsstunden[j] = 0;
             }
 
-            // Wärmebedarf gesamt
+            Array.Clear(Restwaerme, 0, Restwaerme.Length);
+            Array.Clear(Strombedarf_stuendlich, 0, Strombedarf_stuendlich.Length);
+            Array.Clear(Kesselleistung_stuendlich, 0, Kesselleistung_stuendlich.Length);
+
+            // Wärmebedarf gesamt berechnen, in MWh
             Waermebedarf_gesamt = 0;
             Array.ForEach(Waermebedarf, value => Waermebedarf_gesamt += value);
             Waermebedarf_gesamt /= 1000; // in MWh  
@@ -125,15 +131,18 @@ namespace WindowsFormsApplication1
             {
                 Bereitschaft = Vorgabe_Betriebsbereitschaft;
                 S_Waerme_spk = S_Waerme_spk + s_waerme_Gas_Spk[i] + s_waerme_Oel_Spk[i];
+                
                 if (s_waerme_Gas_Spk[i] + s_waerme_Oel_Spk[i] > 0.0001)
                 {
                     Betriebsstunden[i] = (s_waerme_Gas_Spk[i] + s_waerme_Oel_Spk[i]) * 1000 / Kessel_Leistung_Spk[i];
                 }
+                
                 if (Betriebsstunden[i] < 0.0001) Betriebsstunden[i] = 0.0001;
                 
                 if (Kessel_Wirk_Gas_Spk[i] > 0)
                 {
                     if (i < Anzahl - 1) Bereitschaft = 8760;
+                    
                     if (Bereitschaft / Betriebsstunden[i] * Betriebsbereitschaft_Verluste[i] < 1)
                     {
                         if (Kessel_Wirk_Gas_Spk[i] < 1)
@@ -169,7 +178,10 @@ namespace WindowsFormsApplication1
                     else if (Brennstoff_Art[i] == 8)
                         Fluessiggasverbrauch_SPK = Fluessiggasverbrauch_SPK + Verbrauch;
                     else if (Brennstoff_Art[i] == 15)
+                    {
                         Stromverbrauch_Spk = Stromverbrauch_Spk + Verbrauch;
+                        Strombedarf_stuendlich = AddVectors(Strombedarf_stuendlich, Kesselleistung_stuendlich);
+                    }
 
                     BruttoWaermeSpkErzeugung = BruttoWaermeSpkErzeugung + Verbrauch;
                     Em_CO2_SPK = Em_CO2_SPK + Verbrauch * Em_CO2_SPK;
@@ -251,11 +263,13 @@ namespace WindowsFormsApplication1
                     if (waerme > Leistung[Kessel])
                     {
                         KesselLeistung = Leistung[Kessel];
+                        Kesselleistung_stuendlich[Stunde] = (float)KesselLeistung;
                         waerme -= Leistung[Kessel];
                     }
                     else
                     {
                         KesselLeistung = waerme;
+                        Kesselleistung_stuendlich[Stunde] = (float)KesselLeistung;
                         waerme = 0;
                     }
 
@@ -281,5 +295,20 @@ namespace WindowsFormsApplication1
                 GasSpitze += Gasspitze_Kessel[i];
             }
         }
+
+        public float[] AddVectors(float[] array1, float[] array2)
+        {
+            if (array1.Length != array2.Length)
+                throw new ArgumentException("Arrays must be of the same length.");
+
+            float[] result = new float[array1.Length];
+            for (int i = 0; i < array1.Length; i++)
+            {
+                result[i] = array1[i] + array2[i];
+            }
+            return result;
+        }
+
+
     }
 }

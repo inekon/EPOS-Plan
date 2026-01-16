@@ -144,7 +144,6 @@ namespace WindowsFormsApplication1
                    frmmain.Add_SpKontext();
                    frmmain.Add_PVKontext();
                    frmmain.Add_SolarKontext();
-                   frmmain.SetNetzverluste(ctrlproj.m_nNetzverluste, ctrlproj.m_szEinheit);
 
                    Program.startfrm.m_szProjektname = frm.m_szProjekt;
                    Program.startfrm.m_ID_Projekt = frm.m_ID_Projekt;
@@ -190,7 +189,6 @@ namespace WindowsFormsApplication1
                    frmmain.Add_SpKontext();
                    frmmain.Add_PVKontext();
                    frmmain.Add_SolarKontext();
-                   frmmain.SetNetzverluste(ctrlproj.m_nNetzverluste, ctrlproj.m_szEinheit);
 
                    Program.startfrm.m_szProjektname = ctrl.m_szProjektname;
                    Program.startfrm.m_ID_Projekt = ctrl.m_ID_Projekt;

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.Data.Odbc;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -62,7 +60,6 @@ namespace WindowsFormsApplication1
         {
             try
             {
-
                 NumberFormatInfo formatInfo = new NumberFormatInfo();
                 formatInfo.NumberDecimalSeparator = ","; // Komma als Dezimaltrennzeichen
 

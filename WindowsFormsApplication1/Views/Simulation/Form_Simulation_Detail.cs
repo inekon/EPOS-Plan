@@ -21,11 +21,15 @@ namespace WindowsFormsApplication1
         public double m_Waermebedarf_Gesamt;
         public double m_Strombedarf_Gesamt;
 
+        System.Drawing.Point prevPosition ;
+        ToolTip tooltip = new ToolTip();
+
         public Form_Simulation_Detail()
         {
             InitializeComponent();
             init_Chart(chart1);
-            init_Chart(chart2); 
+            init_Chart(chart2);
+            init_Chart(chart6);
         }
 
         public Form_Simulation_Detail(int iD_Projekt)
@@ -35,6 +39,7 @@ namespace WindowsFormsApplication1
   
             init_Chart(chart1);
             init_Chart(chart2);
+            init_Chart(chart6);
 
             chart5.Legends[0].LegendStyle = LegendStyle.Table;
             chart5.Legends[0].Docking = Docking.Right;
@@ -63,8 +68,8 @@ namespace WindowsFormsApplication1
             listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
-            colorListViewHeader(ref listView_SimWP, Color.DarkBlue,Color.White);
-            colorListViewHeader(ref listView_SimSPK, Color.DarkBlue, Color.White);
+            colorListViewHeader(ref listView_SimWP, Color.LightBlue,Color.Black);
+            colorListViewHeader(ref listView_SimSPK, Color.LightBlue, Color.Black);
         }
 
         public void SetControls()
@@ -74,15 +79,20 @@ namespace WindowsFormsApplication1
         private void init_Chart(Chart chart)
         {
             var ca = chart.ChartAreas[0];
+
+            // Enable cursors and selections
             ca.CursorX.IsUserEnabled = true;
             ca.CursorX.IsUserSelectionEnabled = true;
             ca.CursorY.IsUserEnabled = true;
             ca.CursorY.IsUserSelectionEnabled = true;
 
+            // Allow zooming on both axes
             ca.AxisY.ScaleView.Zoomable = true;
             ca.AxisX.ScaleView.Zoomable = true;
-            ca.CursorX.AutoScroll = true;
-            ca.AxisX.ScrollBar.Enabled = true;
+
+            ca.AxisX.ScaleView.SmallScrollSize = 1;
+
+            chart.ChartAreas[0].CursorX.Interval = 0;
             ca.AxisX.Minimum = 0;
             ca.AxisY.Maximum = 100.2;
 
@@ -193,11 +203,11 @@ namespace WindowsFormsApplication1
             chart2.Annotations.Clear();
             chart2.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
             chart2.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
+            
             if (checkBox_StromSortiert.Checked)
-            {
-                chart2.Series[0].Points.DataBindY(simulation_Strombedarf.Dauerlinie);
-            }
-            else chart2.Series[0].Points.DataBindY(simulation_Strombedarf.Dauerlinie_nicht_sortiert);
+                ConfigureXAxisWithHours(chart2, simulation_Strombedarf.Dauerlinie,4);
+            else
+                ConfigureXAxisWithMonths(chart2, simulation_Strombedarf.Dauerlinie_nicht_sortiert,4);
 
             return true;
         }
@@ -212,6 +222,7 @@ namespace WindowsFormsApplication1
 
         private void checkBox_StromSortiert_CheckedChanged(object sender, EventArgs e)
         {
+            /*
             if (checkBox_StromSortiert.Checked)
             {
                 chart2.Series[0].Points.DataBindY(simulation_Strombedarf.Dauerlinie);
@@ -221,6 +232,11 @@ namespace WindowsFormsApplication1
             chart2.ChartAreas[0].AxisX.Interval = 1000;
             chart2.ChartAreas[0].AxisY.Maximum = 100.2;
             chart2.Series[0].BorderWidth = 2;
+            */
+            if (checkBox_StromSortiert.Checked)
+                ConfigureXAxisWithHours(chart2, simulation_Strombedarf.Dauerlinie,4);
+            else
+                ConfigureXAxisWithMonths(chart2, simulation_Strombedarf.Dauerlinie_nicht_sortiert,4);
         }
 
         private void btn_Details_Click(object sender, EventArgs e)
@@ -246,7 +262,9 @@ namespace WindowsFormsApplication1
 
         private void Ergebnis_Simulation_TextundChart()
         {
+            // ********************************************************************************************/
             // Wärmepumpe
+            // ********************************************************************************************/
             textBox_WB_Deckung.Text = "";
             double a = (double)simulation_Waermebedarf.Waermebedarf_Gesamt;
             double b = (double)sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
@@ -278,6 +296,7 @@ namespace WindowsFormsApplication1
             }
             textBox_MinSPKLeistung.Text = Max_Spk.ToString("F2");
 
+            listView_SimWP.Items.Clear();
             for (int i = 0; i < sim.simulation_wp.wp_list.Count(); i++)
             {
                 ListViewItem lvitem = new ListViewItem();
@@ -294,6 +313,7 @@ namespace WindowsFormsApplication1
             listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
             // charts und Textfelder Wärmepumpe
+            checkBox_WP_sortiert.Checked = true;
             checkBox_WP_sortiert.Checked = false; 
 
             // chart Temperatur - Leistung  
@@ -314,6 +334,7 @@ namespace WindowsFormsApplication1
                 ps_produktion_raw[index].Y = sim.simulation_wp.WP_Waermeproduktion_stuendlich[n];
                 ps_bedarf_raw[index].X = ps_produktion_raw[index].X;
                 ps_bedarf_raw[index].Y = sim.simulation_wp.Waermebedarf_stuendlich[n];
+                
                 if (simulation_wp.Heizstab_stuendlich[n] > 0)
                     ps_heizstab_raw[index].Y = sim.simulation_wp.WP_Waermeproduktion_stuendlich[n] + sim.simulation_wp.Heizstab_stuendlich[n];
                 else
@@ -337,6 +358,20 @@ namespace WindowsFormsApplication1
                 ps_heizstab.SetValue(ps_heizstab_raw[n], n);
             }
 
+            // Chart Wärmepumpe Strombedarf
+            float[] temp = simulation_Strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich, sim.simulation_wp.Heizstab_stuendlich);  
+            float WPStrombedarf_Max = sim.simulation_Strombedarf.Maximaler_Strombedarf(temp); // in kWh
+            //temp = sim.simulation_Strombedarf.NormVector(temp, WPStrombedarf_Max);
+            chart6.ChartAreas[0].AxisY.Maximum = WPStrombedarf_Max + 1;
+            chart6.Annotations.Clear();
+            chart6.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
+            chart6.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
+            ConfigureXAxisWithMonths(chart6, temp, 1);
+
+            // ********************************************************************************************/
+            // Heizkessel
+            // ********************************************************************************************/
+            // Kuchendiagramm
             chart4.Series[0].ChartType = SeriesChartType.Area;
             chart4.Series[1].ChartType = SeriesChartType.Area;
             chart4.Series[2].ChartType = SeriesChartType.Area;
@@ -388,6 +423,8 @@ namespace WindowsFormsApplication1
             
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+          
+ 
         }
 
         private void Endergebniss_Simulation()
@@ -443,16 +480,12 @@ namespace WindowsFormsApplication1
             textBox_SPKDeckung.Text = (d * 100 / a).ToString("F2");
         }
 
-        private void checkBox_WP_sortiert_Click(object sender, EventArgs e)
-        {
-        }
-
         private void btn_Beenden_Click(object sender, EventArgs e)
         {
             Close();
         }
 
-        public void ConfigureXAxisWithMonths(Chart chartControl, float[] Dauerlinie_nicht_sortiert)
+        public void ConfigureXAxisWithMonths(Chart chartControl, float[] Dauerlinie_nicht_sortiert, int Interval=1)
         {
             // Define your custom labels in an array
             string[] monthArray = { "1", "2", "3", "4", "5", "6", "7", "8", "8", "10", "11", "12" };
@@ -461,12 +494,13 @@ namespace WindowsFormsApplication1
             chartControl.Annotations.Clear();
             chartControl.Series[0].Points.Clear();
 
-            // Ensure the X-axis is set up to display labels based on the data points
+            chartControl.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
+            chartControl.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
+            
             chartControl.ChartAreas[0].AxisX.Minimum = 0;
             chartControl.ChartAreas[0].AxisX.Maximum = monthArray.Length;
-            chartControl.ChartAreas[0].AxisX.Interval = 1; // Display a tick mark/label position every 1 unit
+            chartControl.ChartAreas[0].AxisX.Interval = 1;
 
-            // Add custom labels for each data point position
             for (int i = 0; i < monthArray.Length; i++)
             {
                 CustomLabel lblMonth = new CustomLabel();
@@ -478,18 +512,20 @@ namespace WindowsFormsApplication1
                 chartControl.ChartAreas[0].AxisX.CustomLabels.Add(lblMonth);
             }
   
-            for (int j = 0; j < 8760; j++)
+            for (int j = 0; j < 8760* Interval; j++)
             {
-                double d = (double)j * 12 / 8760;
+                double d = (double)j * 12 / (8760*Interval);
                 chartControl.Series[0].Points.AddXY(d, Dauerlinie_nicht_sortiert[j]);
             }
             chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Months;
             chartControl.ChartAreas[0].AxisX.Title = "Monat";
+            chartControl.ChartAreas[0].AxisX.ScaleView.Size = 12;
+            //chartControl.ChartAreas[0].AxisX.ScaleView.SmallScrollSize = 0.1;
 
             return;
         }
 
-        public void ConfigureXAxisWithHours(Chart chartControl, float[] Dauerlinie_sortiert)
+        public void ConfigureXAxisWithHours(Chart chartControl, float[] Dauerlinie_sortiert, int Interval=1)
         {
             // custom labels in array
             string[] hourArray = { "2000", "4000", "6000", "8000" };
@@ -498,28 +534,30 @@ namespace WindowsFormsApplication1
             chartControl.Annotations.Clear();
             chartControl.Series[0].Points.Clear();
 
-            // Ensure the X-axis is set up to display labels based on the data points
+            chartControl.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
+            chartControl.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
+
             chartControl.ChartAreas[0].AxisX.Minimum = 0;
-            chartControl.ChartAreas[0].AxisX.Maximum = 8759;
-            chartControl.ChartAreas[0].AxisX.Interval = 1000; // Display a tick mark/label position every 1 unit
-            chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Number;
-            chartControl.ChartAreas[0].AxisX.Title = "Jahresstunden";
+            chartControl.ChartAreas[0].AxisX.Maximum = hourArray.Length;
+            chartControl.ChartAreas[0].AxisX.Interval = 1; 
 
             // Add custom labels for each data point position
-            for (int i = 1; i < 5; i++)
+            for (int i = 0; i < hourArray.Length; i++)
             {
                 CustomLabel lblMonth = new CustomLabel();
-                // The label will span the range from i + 0.5 to i - 0.5, centering it on the integer value
-                // This positions the label correctly under the corresponding data point
                 lblMonth.FromPosition = i;
-                lblMonth.ToPosition = i + 24;
-                lblMonth.Text = hourArray[i-1];
+                lblMonth.ToPosition = i + 0.8;
+                lblMonth.Text = hourArray[i];
+                chartControl.ChartAreas[0].AxisX.CustomLabels.Add(lblMonth);
             }
 
-            for (int j = 0; j < 8760; j++)
+            for (int j = 0; j < 8760 * Interval; j++)
             {
-                chartControl.Series[0].Points.AddXY(j, Dauerlinie_sortiert[j]);
+                double d = (double)j * 4 / (8760 * Interval);
+                chartControl.Series[0].Points.AddXY(d, Dauerlinie_sortiert[j]);
             }
+            chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Hours;
+            chartControl.ChartAreas[0].AxisX.Title = "Jahresstunden";
  
             return;
         }
@@ -548,7 +586,7 @@ namespace WindowsFormsApplication1
 
             for (int i = 0; i < 8760; i++)
             {
-                if (ctrl.m_WP_Heizstab)
+                if (ctrl.model.m_WP_Heizstab)
                 {
                     temp[i] = sim.simulation_wp.WP_Waermeproduktion_stuendlich[i] + sim.simulation_wp.Heizstab_stuendlich[i];
                 }
@@ -574,6 +612,7 @@ namespace WindowsFormsApplication1
                 float[] sortedArrayHeizstab = new float[8760];
                 Array.Copy(temp, sortedArrayHeizstab, 8760);
                 Array.Sort(sortedArrayHeizstab);
+                Array.Reverse(sortedArrayHeizstab);
                 chart3.Series["Heizstab"].Points.DataBindY(sortedArrayHeizstab);
 
                 for (int i = 0; i < 8760; i+=1000)
@@ -658,6 +697,101 @@ namespace WindowsFormsApplication1
         private static void bodyDraw(object sender, DrawListViewItemEventArgs e)
         {
             e.DrawDefault = true;
+        }
+
+        private void chart2_MouseMove(object sender, MouseEventArgs e)
+        {
+            var pos = e.Location;
+            if (pos == prevPosition || checkBox_StromSortiert.Checked) return;
+            
+            prevPosition = pos;
+
+            var results = chart2.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint); 
+            
+            foreach (var result in results)
+            {
+                if (result.ChartElementType == ChartElementType.DataPoint)
+                {
+                    var yVal = result.ChartArea.AxisY.PixelPositionToValue(pos.Y);
+                    var xVal = result.ChartArea.AxisX.PixelPositionToValue(pos.X);
+                    DateTime startDatum = new DateTime(DateTime.Now.Year, 1, 1); // Start: 1. Januar 
+
+                    // Addiere diesen Wert zum Startdatum.
+                    int d = (int)(xVal * 365 * 24 * 4 / 12); // mit (int) erhält man nur vielfache von 1/4 Stunden, 15 Minuten Takt
+
+                    // auf Minuten zurückrechnen
+                    d = d * 15; 
+                    DateTime neuesDatum = startDatum.AddMinutes(d);
+                    tooltip.Show(neuesDatum.ToString("dd/MM H:mm [" + (int)yVal).ToString() + "%]" , chart2, pos.X, pos.Y - 15);
+                }
+                else
+                {
+                    tooltip.Hide(chart2);
+                }
+            }
+        }
+
+        private void chart1_MouseMove(object sender, MouseEventArgs e)
+        {
+            var pos = e.Location;
+            if (pos == prevPosition || checkBox_Sortiert.Checked) return;
+
+            prevPosition = pos;
+
+            var results = chart1.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint); 
+
+            foreach (var result in results)
+            {
+                if (result.ChartElementType == ChartElementType.DataPoint) 
+                {
+                    var yVal = result.ChartArea.AxisY.PixelPositionToValue(pos.Y);
+                    var xVal = result.ChartArea.AxisX.PixelPositionToValue(pos.X);
+                    DateTime startDatum = new DateTime(DateTime.Now.Year, 1, 1); // Start: 1. Januar 
+
+                    // Addiere diesen Wert zum Startdatum.
+                    int d = (int)(xVal * 365 * 24 * 4 / 12); // mit (int) erhält man nur vielfache von 1/4 Stunden, 15 Minuten Takt
+                    
+                    // auf Minuten zurückrechnen
+                    d = d * 15; 
+                    DateTime neuesDatum = startDatum.AddMinutes(d);
+                    
+                    tooltip.Show(neuesDatum.ToString("dd/MM H:mm [" + (int)yVal).ToString() + "%]", chart1, pos.X, pos.Y - 15);
+                }
+                else
+                {
+                    tooltip.Hide(chart1);
+                }
+            }
+        }
+
+        private void chart6_MouseMove(object sender, MouseEventArgs e)
+        {
+            var pos = e.Location;
+            if (pos == prevPosition)  return;
+
+            prevPosition = pos;
+
+            var results = chart6.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint);
+
+            foreach (var result in results)
+            {
+                if (result.ChartElementType == ChartElementType.DataPoint)
+                {
+                    var yVal = result.ChartArea.AxisY.PixelPositionToValue(pos.Y);
+                    var xVal = result.ChartArea.AxisX.PixelPositionToValue(pos.X);
+                    DateTime startDatum = new DateTime(DateTime.Now.Year, 1, 1); // Start: 1. Januar 
+
+                    // Addiere diesen Wert zum Startdatum.
+                    int d = (int)(xVal * 365 * 24 / 12); // mit (int) erhält man nur vielfache von 1 Stunden
+                    yVal = Math.Round(yVal, 2);
+                    DateTime neuesDatum = startDatum.AddHours(d);
+                    tooltip.Show(neuesDatum.ToString("dd/MM H:mm [" + yVal).ToString() + "kW]", chart6, pos.X, pos.Y - 15);
+                }
+                else
+                {
+                    tooltip.Hide(chart6);
+                }
+            }
         }
     }
 }

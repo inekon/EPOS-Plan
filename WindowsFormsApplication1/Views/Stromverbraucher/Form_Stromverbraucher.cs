@@ -202,14 +202,21 @@ namespace WindowsFormsApplication1
 
         private void btn_Simulation_Click(object sender, EventArgs e)
         {
-            simulation.m_ID_Projekt = m_ID_Projekt;
-
+            float[] result = new float[8760];
             List<string> list;
+
+            simulation.m_ID_Projekt = m_ID_Projekt;
+            
             list = listView_Strom_Auswahl.Items.Cast<ListViewItem>().Select(item => item.Text).ToList();
             
-            simulation.Strombedarf_berechnen(list);
-            simulation.Strombedarf_gesamt = simulation.com.I_vector_summe(simulation.prozesswerte);
-            simulation.com.I_monats_summe(simulation.prozesswerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
+            result = simulation.Stromprofil_Strombedarf_berechnen(list);
+            if (result == null) return;
+            simulation.Strombedarf_gesamt = simulation.com.I_vector_summe(result);
+            Array.Copy(result, simulation.Strombedarf_viertelStundenwerte, result.Length);
+            simulation.com.I_monats_summe(simulation.Strombedarf_viertelStundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
+
+            simulation.Strombedarf_Max = simulation.Maximaler_Strombedarf(simulation.Strombedarf_viertelStundenwerte);
+            simulation.Strombedarf_gesamt = simulation.Strombedarf_Gebaeude_gesamt;
 
             Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();
             frm.Init(simulation);

@@ -24,9 +24,7 @@ namespace WindowsFormsApplication1
         SimulationWaermepumpe simulation_wp = new SimulationWaermepumpe();
 
         ToolTip tt = new ToolTip();
-        double ChartSelBegin;
-        double ChartSelEnd;
-
+  
         public bool Simulation_durchgeführt = false;
 
         public void SetProjekt(string szProjekt)
@@ -65,21 +63,10 @@ namespace WindowsFormsApplication1
             textBox_Datum.Text = datum.ToString("d", CultureInfo.CreateSpecificCulture("de-DE"));
         }
 
-        public void SetNetzverluste(int nVerluste, string Einheit)
-        {
-            textBox_Netzverluste.Text = nVerluste.ToString();
-            comboBox_NetzvEinheit.Text = Einheit;
-        }
-
         public FormMain()
         {
             InitializeComponent();
             FillKlimaList();
-            SimulationWaermebedarf.Ergebnis result;
-            result = simulation_Waermebedarf.SimulationErgebis_aus_DB();
-
-            textBox_MaxWaermelast.Text = result.Waermebedarf_Max.ToString("F2");
-            textBox_Gesamt_Waermebedarf.Text = result.Gesamt_Waermebedarf.ToString("F2");
 
             tt.Draw += new DrawToolTipEventHandler(this.tt_Draw);
         }
@@ -95,9 +82,7 @@ namespace WindowsFormsApplication1
         {
             WindowState = FormWindowState.Maximized;
             Size clientsize = this.ClientSize;
-            button_Beenden.Top = ClientSize.Height - button_Beenden.Height;
-            button_Beenden.Left = ClientSize.Width - button_Beenden.Width;
-
+   
             listView_WP.View = View.Details;
             listView_WP.Columns.Add("Name", -2, HorizontalAlignment.Left);
             listView_WP.Columns.Add("Vorlauf [°C]", -2, HorizontalAlignment.Left);
@@ -222,32 +207,6 @@ namespace WindowsFormsApplication1
             listView_PV.Height = tabControl_Komponenten.ClientSize.Height;
             listView_PV.Top = -2;
             listView_PV.Left = -2;
-
-            init_Chart(chart1);
-            init_Chart(chart2);
-
-        }
-
-        private void init_Chart(System.Windows.Forms.DataVisualization.Charting.Chart chart)
-        {
-            var ca = chart.ChartAreas[0];
-            ca.CursorX.IsUserEnabled = true;
-            ca.CursorX.IsUserSelectionEnabled = true;
-            ca.CursorY.IsUserEnabled = true;
-            ca.CursorY.IsUserSelectionEnabled = true;
-
-            ca.AxisY.ScaleView.Zoomable = true;
-            ca.AxisX.ScaleView.Zoomable = true;
-            ca.CursorX.AutoScroll = true;
-            ca.AxisX.ScrollBar.Enabled = true;
-
-            chart.Series[0].BorderWidth = 2;
-            chart.ChartAreas[0].AxisX.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
-            chart.ChartAreas[0].AxisY.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
-            chart.ChartAreas[0].CursorX.LineDashStyle = ChartDashStyle.Dot;
-            chart.ChartAreas[0].CursorY.LineDashStyle = ChartDashStyle.Dot;
-            chart.ChartAreas[0].CursorX.LineColor = Color.Red;
-            chart.ChartAreas[0].CursorY.LineColor = Color.Red;
         }
 
         private void button_Beenden_Click(object sender, EventArgs e)
@@ -565,7 +524,6 @@ namespace WindowsFormsApplication1
         private void comboBox_Klima_SelectedIndexChanged(object sender, EventArgs e)
         {
             m_ID_Klimaregion = GetIDKlimaregion();
-            simulation_Waermebedarf.DBGelesen = false;
         }
 
         private int GetIDKlimaregion()
@@ -592,42 +550,6 @@ namespace WindowsFormsApplication1
             }
             rs.Close();
             return szKlimaregion;
-        }
-
-        private void btn_SimulSpeichern_Click(object sender, EventArgs e)
-        {
-            simulation_Waermebedarf.SimulationErgebis_in_DB();
-        }
-
-        private void textBox_Netzverluste_Validating(object sender, CancelEventArgs e)
-        {
-            System.Windows.Forms.TextBox tb = sender as System.Windows.Forms.TextBox;
-            if (!Program.checkInt(tb, tb.Text)) { tb.Undo(); e.Cancel = true; }
-        }
-
-        private void checkBox_Sortiert_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox_Sortiert.Checked)
-            {
-                chart1.Series[0].Points.DataBindY(simulation_Waermebedarf.Dauerlinie);
-            }
-            else chart1.Series[0].Points.DataBindY(simulation_Waermebedarf.Dauerlinie_nicht_sortiert);
-            chart1.ChartAreas[0].AxisX.Minimum = 0;
-            chart1.ChartAreas[0].AxisX.Interval = 1000;
-            chart1.ChartAreas[0].AxisY.Maximum = 100.2;
-            chart1.Series[0].BorderWidth = 2;
-        }
-
-        private void btn_Details_Click(object sender, EventArgs e)
-        {
-            Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
-            frm.Init(simulation_Waermebedarf);
-            frm.ShowDialog();
-        }
-
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-
         }
 
         private void listView_Gebaeude_DoubleClick(object sender, EventArgs e)
@@ -811,7 +733,6 @@ namespace WindowsFormsApplication1
         private void listView_SP_REF_MouseUp(object sender, MouseEventArgs e)
         {
             this.Cursor = Cursors.Default;
-
         }
 
         private void listView_SP_MouseDown(object sender, MouseEventArgs e)
@@ -826,13 +747,11 @@ namespace WindowsFormsApplication1
                     listView_SP.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
                 }
             }
-
         }
 
         private void listView_SP_MouseUp(object sender, MouseEventArgs e)
         {
             this.Cursor = Cursors.Default;
-
         }
 
         private void listView_SP_MouseMove(object sender, MouseEventArgs e)
@@ -841,7 +760,6 @@ namespace WindowsFormsApplication1
             {
                 listView_SP.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
             }
-
         }
 
         private void listView_Heizkessel_MouseDown(object sender, MouseEventArgs e)
@@ -883,7 +801,6 @@ namespace WindowsFormsApplication1
                     listView_Prozesswaerme.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
                 }
             }
-
         }
 
         private void listView_Prozesswaerme_MouseUp(object sender, MouseEventArgs e)
@@ -898,49 +815,6 @@ namespace WindowsFormsApplication1
             {
                 listView_Prozesswaerme.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
             }
-        }
-
-        private void btn_Start_Click(object sender, EventArgs e)
-        {
-            RecordSet rs = new RecordSet();
-
-            int netzverluste = Int32.Parse(textBox_Netzverluste.Text);
-
-            if (comboBox_NetzvEinheit.Text == "%" && netzverluste > 100)
-            {
-                MessageBox.Show("die Netzverluste dürfen nicht größer als 100 % sein!");
-                Simulation_durchgeführt = false;
-                return;
-            }
-
-            int nKlimaregion = GetIDKlimaregion();
-            if (nKlimaregion == 0)
-            {
-                MessageBox.Show("Klimaregion auswählen!");
-                Simulation_durchgeführt = false;
-                return;
-            }
-
-            simulation_Waermebedarf.Netzverluste = netzverluste;
-            simulation_Waermebedarf.Netzverluste_Einheit = comboBox_NetzvEinheit.Text;
-            simulation_Waermebedarf.Waermebedarf_berechnen(m_ID_Projekt, nKlimaregion);
-
-            textBox_MaxWaermelast.Text = simulation_Waermebedarf.Waermebedarf_Max.ToString("F2");
-            textBox_Gesamt_Waermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
-
-            chart1.Annotations.Clear();
-            chart1.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
-            chart1.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
-
-            if (checkBox_Sortiert.Checked)
-            {
-                chart1.Series[0].Points.DataBindY(simulation_Waermebedarf.Dauerlinie);
-            }
-            else chart1.Series[0].Points.DataBindY(simulation_Waermebedarf.Dauerlinie_nicht_sortiert);
-            chart1.ChartAreas[0].AxisY.Maximum = 100.2;
-
-            rs.Open("UPDATE Tab_Projekt SET Netzverluste=" + Int32.Parse(textBox_Netzverluste.Text) + ", Netzverluste_Einheit='" + comboBox_NetzvEinheit.Text + "' where ID=" + m_ID_Projekt);
-            rs.Close();
         }
 
         private void btn_DragDestination_MouseHover(object sender, EventArgs e)
@@ -961,43 +835,6 @@ namespace WindowsFormsApplication1
             ctrl.m_szProjektname = m_szProjektname;
             ctrl.m_ID_Klimaregion = m_ID_Klimaregion;
             ctrl.Update();
-        }
-
-        private void btn_Start_Strombedarf_Click(object sender, EventArgs e)
-        {
-            simulation_strom.Berechnung(m_ID_Projekt);
-
-            textBox_MaxStrombedarf.Text = simulation_strom.Strombedarf_Max.ToString("F2");
-            textBox_Gesamt_Strombedarf.Text = simulation_strom.Strombedarf_gesamt.ToString("F2");
-
-            chart2.Annotations.Clear();
-            chart2.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
-            chart2.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
-            if (checkBox_StromSortiert.Checked)
-            {
-                chart2.Series[0].Points.DataBindY(simulation_strom.Dauerlinie);
-            }
-            else chart2.Series[0].Points.DataBindY(simulation_strom.Dauerlinie_nicht_sortiert);
-        }
-
-        private void checkBox_StromSortiert_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox_StromSortiert.Checked)
-            {
-                chart2.Series[0].Points.DataBindY(simulation_strom.Dauerlinie);
-            }
-            else chart2.Series[0].Points.DataBindY(simulation_strom.Dauerlinie_nicht_sortiert);
-            chart2.ChartAreas[0].AxisX.Minimum = 0;
-            chart2.ChartAreas[0].AxisX.Interval = 1000;
-            chart2.ChartAreas[0].AxisY.Maximum = 100.2;
-            chart2.Series[0].BorderWidth = 2;
-        }
-
-        private void btn_StromDetails_Click(object sender, EventArgs e)
-        {
-            Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();
-            frm.Init(simulation_strom);
-            frm.ShowDialog();
         }
 
         private void btn_StromSimulSpeichern_Click(object sender, EventArgs e)
@@ -1031,45 +868,6 @@ namespace WindowsFormsApplication1
 
             listView_Strombedarf.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_Strombedarf.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-        }
-
-        private void SelectionRangeBegin(object sender, CursorEventArgs e)
-        {
-            ChartSelBegin = chart1.ChartAreas[0].CursorX.SelectionStart;
-            ChartSelEnd = chart1.ChartAreas[0].CursorX.SelectionEnd;
-        }
-
-        private void AxisScrollBarClicked(object sender, ScrollBarEventArgs e)
-        {
-            if (e.ButtonType == ScrollBarButtonType.ZoomReset)
-            {
-                chart1.Annotations.Clear();
-            }
-        }
-
-        private void chart1_Click(object sender, EventArgs e)
-        {
-            ChartSelBegin = chart1.ChartAreas[0].CursorX.Position;
-            if (!Program.HasValue(ChartSelBegin)) return;
-            if (chart1.Series[0].Points.Count == 0) return;
-
-            DateTime date = new DateTime(DateTime.Now.Year, 1, 1);
-            date = new DateTime(DateTime.Now.Year, 1, 1).AddHours(ChartSelBegin - 1);
-            string szText = date.ToString("dd.MMMM");
-
-            TextAnnotation ta2 = new TextAnnotation();
-            ta2.Text = szText;
-            ta2.AnchorX = 18;  // % of chart width
-            ta2.AnchorY = 98;  // % of chart height, from top
-            if (chart1.Annotations.Count == 0)
-            {
-                chart1.Annotations.Add(ta2);
-            }
-            else
-            {
-                chart1.Annotations[0] = ta2;
-            }
-;
         }
 
         private void listView_Strombedarf_MouseDown(object sender, MouseEventArgs e)
@@ -1356,5 +1154,6 @@ namespace WindowsFormsApplication1
                 listView_PV.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
             }
         }
+
     }
 }
