@@ -26,17 +26,18 @@ namespace WindowsFormsApplication1
 
         public void Do_Simulation(int ID_Projekt)
         {
-            float[] temp = new float[8760*4];
+            float[] temp = new float[8760 * 4];
             float[] Eingang = new float[2];
             float[] Ausgang = new float[2];
 
-            for (int i = 0; i < 8760; i++)  Rest_Wermebedarf_stuendlich[i] = 0;
-            for (int i = 0; i < 8760*4; i++) Rest_Strombedarf_viertelstuendlich[i] = 0;
-            
             m_ID_Projekt = ID_Projekt;
+
+            Array.Clear(Rest_Wermebedarf_stuendlich, 0, Rest_Wermebedarf_stuendlich.Length);
+            Array.Clear(Rest_Strombedarf_viertelstuendlich, 0, Rest_Strombedarf_viertelstuendlich.Length);
+            
             Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
             Restwaerme = 0;
-            Reststrom = simulation_Strombedarf.Strombedarf_gesamt;
+            Reststrom = simulation_Strombedarf.Strombedarf_gesamt; //MWh
             Rest_Strombedarf_viertelstuendlich = simulation_Strombedarf.Strombedarf_viertelStundenwerte;
             Rest_Wermebedarf_stuendlich = simulation_Waermebedarf.Waermebedarf;
             Eingang = simulation_Waermebedarf.Waermebedarf;
@@ -52,8 +53,8 @@ namespace WindowsFormsApplication1
                     Rest_Wermebedarf_stuendlich = Ausgang;
                     Eingang = Ausgang;
 
-                    Reststrom += (float)simulation_wp.WP_Strombedarf_gesamt / 1000;
-                    Reststrom += (float)simulation_wp.Heizstab_gesamt / 1000;
+                    Reststrom += (float)simulation_wp.WP_Strombedarf_gesamt / 1000f; // in MWh
+                    Reststrom += (float)simulation_wp.Heizstab_gesamt / 1000f; // in MWh
 
                     temp = Stundenwerte_zu_viertelstunden(simulation_wp.WP_Strombedarf_stuendlich);
                     Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
@@ -72,12 +73,13 @@ namespace WindowsFormsApplication1
                     temp = Stundenwerte_zu_viertelstunden(simulation_spk.Strombedarf_stuendlich);
                     Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
                 }
-                else if (tool[i] == "Stromspeicher")
-                {
-                    // Rest_Strombedarf_viertelstuendlich
-                }
             }
             Restwaerme /= 1000; // in MWh
+            
+            if (tool[5] == "Stromspeicher")
+            {
+                // Rest_Strombedarf_viertelstuendlich
+            }
 
         }
 
