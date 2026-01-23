@@ -1,18 +1,7 @@
-﻿using Microsoft.Office.Interop.Excel;
-using NReco.Csv;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+﻿using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Net.WebRequestMethods;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace WindowsFormsApplication1
@@ -29,6 +18,7 @@ namespace WindowsFormsApplication1
         public Form_Start()
         {
             InitializeComponent();
+            textBox_ProjektOpen.Text = MyResource.Resource.Text_Select;
         }
 
         private void Form_Start_Load(object sender, EventArgs e)
@@ -618,11 +608,9 @@ namespace WindowsFormsApplication1
                 pBox_ProjektZuletzt.Invalidate(); 
             }
 
-            //MessageBox.Show("Projekt " + m_szProjektname  + " geöffnet!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            Form_Hinweis frm = new Form_Hinweis("Hinweis", "Projekt " + m_szProjektname  + " geöffnet!");
+            Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, MyResource.Resource.Text_Projekt + " " +  m_szProjektname  + " " + MyResource.Resource.Text_Geoeffnet + "!");
             frm.Location = this.PointToScreen(tabControl_Wizard.PointToScreen(pBox_ProjektZuletzt.Location));
             frm.ShowDialog();
-
         }
 
         private void pBox_Gebaude_Paint(object sender, PaintEventArgs e)
@@ -791,19 +779,15 @@ namespace WindowsFormsApplication1
         {
             if (e.TabPageIndex < 0) return;
 
-            if (e.TabPageIndex >= 1 && textBox_ProjektOpen.Text == "bitte auswählen!")
+            if (e.TabPageIndex >= 1 && textBox_ProjektOpen.Text == MyResource.Resource.Text_Select)
             {
                 e.Cancel = true;
-                //MessageBox.Show("Bitte zuerst ein Projekt auswählen!\n (<Projekt öffnen> oder <zuletzt geöffnet>)!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information); 
-                Form_Hinweis frm = new Form_Hinweis("Hinweis", "Bitte zuerst ein Projekt auswählen!\r\nProjekt öffnen oder zuletzt geöffnet");
-                System.Drawing.Point p1 = pBox_Weiter.Location;
-                p1 = this.PointToScreen(p1);
-                p1.Y -= 200;
+               Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox1 + "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox2);
+                System.Drawing.Point p1 = tabControl_Wizard.Location;
+                p1.X += tabControl_Wizard.Width / 2 - frm.Width / 2;
                 frm.Location = p1;
                 frm.ShowDialog();
             }
-
-            //e.Cancel = !e.TabPage.Enabled;
         }
 
         private void pBox_Delete_Click(object sender, EventArgs e)
@@ -1030,10 +1014,9 @@ namespace WindowsFormsApplication1
 
         private void pBox_ProjektDetails_Click(object sender, EventArgs e)
         {
-            if (textBox_ProjektOpen.Text == "bitte auswählen!")
+            if (textBox_ProjektOpen.Text == MyResource.Resource.Text_Select)
             {
-                //    MessageBox.Show("Bitte zuerst ein Projekt auswählen!\n (<Projekt öffnen> oder <zuletzt geöffnet>)!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                Form_Hinweis frm = new Form_Hinweis("Hinweis", "\r\nBitte zuerst ein Projekt auswählen!\r\nProjekt öffnen oder zuletzt geöffnet");
+                Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox1 + "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox2);
                 System.Drawing.Point p1 = pBox_ProjektDetails.Location;
                 p1 = this.PointToScreen(p1);
                 frm.Location = p1;
@@ -1042,7 +1025,6 @@ namespace WindowsFormsApplication1
             }
 
             MenueCtrl ctrl = new MenueCtrl();
-            if (textBox_ProjektOpen.Text == "nicht geöffnet") return;
             ctrl.ProjektOeffnen(true);
         }
     }

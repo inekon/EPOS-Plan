@@ -49,9 +49,17 @@
             System.Windows.Forms.DataVisualization.Charting.Series series8 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series9 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Title title5 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea7 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series15 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series10 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series11 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series12 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series13 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series14 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title6 = new System.Windows.Forms.DataVisualization.Charting.Title();
             this.label13 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.textBox_gesStrombedarf = new System.Windows.Forms.TextBox();
@@ -183,6 +191,12 @@
             this.label7 = new System.Windows.Forms.Label();
             this.chart5 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.btn_Beenden = new System.Windows.Forms.Button();
+            this.chart7 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.checkBox_Gesamt = new System.Windows.Forms.CheckBox();
+            this.checkBox_WP = new System.Windows.Forms.CheckBox();
+            this.checkBox_Heizstab = new System.Windows.Forms.CheckBox();
+            this.checkBox_SPK = new System.Windows.Forms.CheckBox();
+            this.checkBox_Profil_Lastgang = new System.Windows.Forms.CheckBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
@@ -197,6 +211,7 @@
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart5)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chart7)).BeginInit();
             this.SuspendLayout();
             // 
             // label13
@@ -1763,6 +1778,12 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.checkBox_Profil_Lastgang);
+            this.tabPage4.Controls.Add(this.checkBox_SPK);
+            this.tabPage4.Controls.Add(this.checkBox_Heizstab);
+            this.tabPage4.Controls.Add(this.checkBox_WP);
+            this.tabPage4.Controls.Add(this.checkBox_Gesamt);
+            this.tabPage4.Controls.Add(this.chart7);
             this.tabPage4.Controls.Add(this.label63);
             this.tabPage4.Controls.Add(this.label56);
             this.tabPage4.Controls.Add(this.textBox_SPKDeckung);
@@ -1943,18 +1964,35 @@
             // 
             this.chart5.BorderlineColor = System.Drawing.Color.Black;
             this.chart5.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.DashDot;
-            chartArea6.Name = "ChartArea1";
-            this.chart5.ChartAreas.Add(chartArea6);
-            legend3.Name = "Legend1";
-            this.chart5.Legends.Add(legend3);
-            this.chart5.Location = new System.Drawing.Point(42, 273);
+            chartArea7.Area3DStyle.Inclination = 60;
+            chartArea7.Area3DStyle.LightStyle = System.Windows.Forms.DataVisualization.Charting.LightStyle.Realistic;
+            chartArea7.Area3DStyle.Rotation = 0;
+            chartArea7.Area3DStyle.WallWidth = 10;
+            chartArea7.AxisX.LabelStyle.Enabled = false;
+            chartArea7.InnerPlotPosition.Auto = false;
+            chartArea7.InnerPlotPosition.Height = 94.99999F;
+            chartArea7.InnerPlotPosition.Width = 84.6147F;
+            chartArea7.InnerPlotPosition.X = 7.69265F;
+            chartArea7.InnerPlotPosition.Y = 2.5F;
+            chartArea7.Name = "ChartArea1";
+            chartArea7.Position.Auto = false;
+            chartArea7.Position.Height = 94F;
+            chartArea7.Position.Width = 59.40855F;
+            chartArea7.Position.X = 3F;
+            chartArea7.Position.Y = 3F;
+            this.chart5.ChartAreas.Add(chartArea7);
+            legend4.Name = "Legend1";
+            legend4.Title = "Wärmebedarfsdeckung";
+            this.chart5.Legends.Add(legend4);
+            this.chart5.Location = new System.Drawing.Point(40, 268);
             this.chart5.Name = "chart5";
-            series10.ChartArea = "ChartArea1";
-            series10.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
-            series10.Legend = "Legend1";
-            series10.Name = "Series1";
-            this.chart5.Series.Add(series10);
-            this.chart5.Size = new System.Drawing.Size(477, 264);
+            series15.ChartArea = "ChartArea1";
+            series15.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
+            series15.LabelForeColor = System.Drawing.Color.Transparent;
+            series15.Legend = "Legend1";
+            series15.Name = "Series1";
+            this.chart5.Series.Add(series15);
+            this.chart5.Size = new System.Drawing.Size(422, 310);
             this.chart5.TabIndex = 228;
             this.chart5.Text = "chart5";
             // 
@@ -1968,6 +2006,131 @@
             this.btn_Beenden.Text = "Beenden";
             this.btn_Beenden.UseVisualStyleBackColor = true;
             this.btn_Beenden.Click += new System.EventHandler(this.btn_Beenden_Click);
+            // 
+            // chart7
+            // 
+            this.chart7.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.chart7.BorderlineColor = System.Drawing.Color.Black;
+            this.chart7.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.DashDotDot;
+            chartArea6.AxisX.IsLabelAutoFit = false;
+            chartArea6.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea6.AxisX.Title = "Monate";
+            chartArea6.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea6.AxisY.Title = "Strombedarf in kW";
+            chartArea6.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            chartArea6.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
+            chartArea6.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea6.Name = "ChartArea1";
+            this.chart7.ChartAreas.Add(chartArea6);
+            legend3.BackColor = System.Drawing.Color.Transparent;
+            legend3.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
+            legend3.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            legend3.IsTextAutoFit = false;
+            legend3.Name = "Legend1";
+            legend3.TitleFont = new System.Drawing.Font("Segoe UI Semibold", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chart7.Legends.Add(legend3);
+            this.chart7.Location = new System.Drawing.Point(586, 19);
+            this.chart7.Name = "chart7";
+            series10.ChartArea = "ChartArea1";
+            series10.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series10.Color = System.Drawing.Color.Red;
+            series10.Legend = "Legend1";
+            series10.LegendText = "Wärmepumpe";
+            series10.Name = "Waermepumpe";
+            series11.ChartArea = "ChartArea1";
+            series11.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series11.Color = System.Drawing.Color.Yellow;
+            series11.Legend = "Legend1";
+            series11.LegendText = "Heizstab";
+            series11.Name = "Heizstab";
+            series12.ChartArea = "ChartArea1";
+            series12.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series12.Color = System.Drawing.Color.Blue;
+            series12.Legend = "Legend1";
+            series12.LegendText = "Heizkessel";
+            series12.Name = "Heizkessel";
+            series13.ChartArea = "ChartArea1";
+            series13.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series13.Legend = "Legend1";
+            series13.LegendText = "Gesamt";
+            series13.Name = "Gesamt";
+            series14.ChartArea = "ChartArea1";
+            series14.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series14.Legend = "Legend1";
+            series14.Name = "Profil/Lastgang";
+            this.chart7.Series.Add(series10);
+            this.chart7.Series.Add(series11);
+            this.chart7.Series.Add(series12);
+            this.chart7.Series.Add(series13);
+            this.chart7.Series.Add(series14);
+            this.chart7.Size = new System.Drawing.Size(506, 440);
+            this.chart7.TabIndex = 268;
+            this.chart7.Text = "chart7";
+            title6.Name = "Title1";
+            title6.Text = "Stromverlauf Jahresganglinie ";
+            this.chart7.Titles.Add(title6);
+            this.chart7.MouseMove += new System.Windows.Forms.MouseEventHandler(this.chart7_MouseMove);
+            // 
+            // checkBox_Gesamt
+            // 
+            this.checkBox_Gesamt.AutoSize = true;
+            this.checkBox_Gesamt.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.checkBox_Gesamt.Location = new System.Drawing.Point(584, 475);
+            this.checkBox_Gesamt.Name = "checkBox_Gesamt";
+            this.checkBox_Gesamt.Size = new System.Drawing.Size(71, 21);
+            this.checkBox_Gesamt.TabIndex = 269;
+            this.checkBox_Gesamt.Text = "Gesamt";
+            this.checkBox_Gesamt.UseVisualStyleBackColor = true;
+            this.checkBox_Gesamt.CheckedChanged += new System.EventHandler(this.checkBox_Gesamt_CheckedChanged);
+            // 
+            // checkBox_WP
+            // 
+            this.checkBox_WP.AutoSize = true;
+            this.checkBox_WP.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.checkBox_WP.Location = new System.Drawing.Point(584, 495);
+            this.checkBox_WP.Name = "checkBox_WP";
+            this.checkBox_WP.Size = new System.Drawing.Size(109, 21);
+            this.checkBox_WP.TabIndex = 270;
+            this.checkBox_WP.Text = "Wärmepumpe";
+            this.checkBox_WP.UseVisualStyleBackColor = true;
+            this.checkBox_WP.CheckedChanged += new System.EventHandler(this.checkBox_WP_CheckedChanged);
+            // 
+            // checkBox_Heizstab
+            // 
+            this.checkBox_Heizstab.AutoSize = true;
+            this.checkBox_Heizstab.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.checkBox_Heizstab.Location = new System.Drawing.Point(584, 517);
+            this.checkBox_Heizstab.Name = "checkBox_Heizstab";
+            this.checkBox_Heizstab.Size = new System.Drawing.Size(77, 21);
+            this.checkBox_Heizstab.TabIndex = 271;
+            this.checkBox_Heizstab.Text = "Heizstab";
+            this.checkBox_Heizstab.UseVisualStyleBackColor = true;
+            this.checkBox_Heizstab.CheckedChanged += new System.EventHandler(this.checkBox_Heizstab_CheckedChanged);
+            // 
+            // checkBox_SPK
+            // 
+            this.checkBox_SPK.AutoSize = true;
+            this.checkBox_SPK.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.checkBox_SPK.Location = new System.Drawing.Point(584, 539);
+            this.checkBox_SPK.Name = "checkBox_SPK";
+            this.checkBox_SPK.Size = new System.Drawing.Size(87, 21);
+            this.checkBox_SPK.TabIndex = 272;
+            this.checkBox_SPK.Text = "Heizkessel";
+            this.checkBox_SPK.UseVisualStyleBackColor = true;
+            this.checkBox_SPK.CheckedChanged += new System.EventHandler(this.checkBox_SPK_CheckedChanged);
+            // 
+            // checkBox_Profil_Lastgang
+            // 
+            this.checkBox_Profil_Lastgang.AutoSize = true;
+            this.checkBox_Profil_Lastgang.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.checkBox_Profil_Lastgang.Location = new System.Drawing.Point(584, 561);
+            this.checkBox_Profil_Lastgang.Name = "checkBox_Profil_Lastgang";
+            this.checkBox_Profil_Lastgang.Size = new System.Drawing.Size(115, 21);
+            this.checkBox_Profil_Lastgang.TabIndex = 273;
+            this.checkBox_Profil_Lastgang.Text = "Profil/Lastgang";
+            this.checkBox_Profil_Lastgang.UseVisualStyleBackColor = true;
+            this.checkBox_Profil_Lastgang.CheckedChanged += new System.EventHandler(this.checkBox_Profil_Lastgang_CheckedChanged);
             // 
             // Form_Simulation_Detail
             // 
@@ -1999,6 +2162,7 @@
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart5)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chart7)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2136,5 +2300,11 @@
         private System.Windows.Forms.TabPage tabPage6;
         private System.Windows.Forms.CheckBox checkBox_WP_sortiert;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart6;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart7;
+        private System.Windows.Forms.CheckBox checkBox_SPK;
+        private System.Windows.Forms.CheckBox checkBox_Heizstab;
+        private System.Windows.Forms.CheckBox checkBox_WP;
+        private System.Windows.Forms.CheckBox checkBox_Gesamt;
+        private System.Windows.Forms.CheckBox checkBox_Profil_Lastgang;
     }
 }

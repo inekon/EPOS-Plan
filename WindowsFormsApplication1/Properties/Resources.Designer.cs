@@ -63,6 +63,16 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap germany {
+            get {
+                object obj = ResourceManager.GetObject("germany", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap germany_map_2431251_640 {
             get {
                 object obj = ResourceManager.GetObject("germany-map-2431251_640", resourceCulture);
@@ -126,16 +136,6 @@ namespace WindowsFormsApplication1.Properties {
         internal static System.Drawing.Bitmap Menu1 {
             get {
                 object obj = ResourceManager.GetObject("Menu1", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Menu11 {
-            get {
-                object obj = ResourceManager.GetObject("Menu11", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -473,6 +473,16 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap PZurueck_en {
+            get {
+                object obj = ResourceManager.GetObject("PZurueck_en", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap PZusammenfassung_pg {
             get {
                 object obj = ResourceManager.GetObject("PZusammenfassung.pg", resourceCulture);
@@ -563,19 +573,9 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Wärme_Stromerzeugung {
+        internal static System.Drawing.Bitmap usa {
             get {
-                object obj = ResourceManager.GetObject("Wärme_Stromerzeugung", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap wärmebedarf {
-            get {
-                object obj = ResourceManager.GetObject("wärmebedarf", resourceCulture);
+                object obj = ResourceManager.GetObject("usa", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -586,16 +586,6 @@ namespace WindowsFormsApplication1.Properties {
         internal static System.Drawing.Bitmap WP_Symbol {
             get {
                 object obj = ResourceManager.GetObject("WP_Symbol", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap WP_Symbol1 {
-            get {
-                object obj = ResourceManager.GetObject("WP_Symbol1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Globalization;
+
 namespace WindowsFormsApplication1.Properties {
     
     
@@ -33,5 +35,7 @@ namespace WindowsFormsApplication1.Properties {
                 return ((string)(this["KenndatenConnectionString"]));
             }
         }
+
+        public CultureInfo UserCulture { get; internal set; }
     }
 }
