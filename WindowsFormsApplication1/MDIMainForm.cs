@@ -1,11 +1,15 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -162,6 +166,29 @@ namespace WindowsFormsApplication1
         private void MenuItem_Lizenz_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void Deutsch_Click(object sender, EventArgs e)
+        {
+            var culture_de = new CultureInfo("de-DE");
+
+            // Erzwingen der deutschen Sprache
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
+            var nLanguage = (int)key.GetValue("Language", 0);
+            if (nLanguage == 0) return;
+            key.SetValue("Language", 0, RegistryValueKind.DWord);
+            Application.Restart();
+        }
+
+        private void Englisch_Click(object sender, EventArgs e)
+        {
+            var culture_de = new CultureInfo("en-US");
+
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
+            var nLanguage = (int)key.GetValue("Language", 0);
+            if (nLanguage == 1) return;
+            key.SetValue("Language", 1, RegistryValueKind.DWord);
+            Application.Restart();
         }
     }
 }

@@ -225,6 +225,16 @@
     <Compile Include="Model\Z_ProjektStromverbraucherModel.cs" />
     <Compile Include="Model\Z_ProjektWaermebedarfModel.cs" />
     <Compile Include="Model\Z_ProjGebModel.cs" />
+    <Compile Include="MyResource\Resource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resource.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Views\BHKW\Form_BHKWAdmin.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -272,6 +282,18 @@
     </Compile>
     <Compile Include="Views\Photovoltaik\Form_PV.Designer.cs">
       <DependentUpon>Form_PV.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Projekt\Form_ProjektDelete.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Projekt\Form_ProjektDelete.Designer.cs">
+      <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Projekt\Form_ProjektOpen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Projekt\Form_ProjektOpen.Designer.cs">
+      <DependentUpon>Form_ProjektOpen.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Prozesswärme\Form_EingDBProzess.cs">
       <SubType>Form</SubType>
@@ -495,18 +517,6 @@
     <Compile Include="Views\Klimadaten\Klimadaten.Designer.cs">
       <DependentUpon>Klimadaten.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Projekt\Form_ProjektOpen.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Projekt\Form_ProjektOpen.Designer.cs">
-      <DependentUpon>Form_ProjektOpen.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Projekt\Form_ProjektDelete.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Projekt\Form_ProjektDelete.Designer.cs">
-      <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Hauptformular\Form_Start.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -584,6 +594,19 @@
     <EmbeddedResource Include="Classes\Form_Hinweis.resx">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MDIMainForm.en-US.resx">
+      <DependentUpon>MDIMainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyResource\Resource.de-DE.resx" />
+    <EmbeddedResource Include="MyResource\Resource.en-US.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource.en-US.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyResource\Resource.resx">
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\BHKW\Form_BHKWAdmin.resx">
       <DependentUpon>Form_BHKWAdmin.cs</DependentUpon>
     </EmbeddedResource>
@@ -618,6 +641,9 @@
       <DependentUpon>FormMain.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Hauptformular\Form_Start.en-US.resx">
+      <DependentUpon>Form_Start.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel.resx">
       <DependentUpon>Form_Heizkessel.cs</DependentUpon>
     </EmbeddedResource>
@@ -632,6 +658,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Photovoltaik\Form_PV.resx">
       <DependentUpon>Form_PV.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Projekt\Form_ProjektDelete.en-US.resx">
+      <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Projekt\Form_ProjektDelete.resx">
+      <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Projekt\Form_ProjektOpen.en-US.resx">
+      <DependentUpon>Form_ProjektOpen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Projekt\Form_ProjektOpen.resx">
+      <DependentUpon>Form_ProjektOpen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Prozesswärme\Form_EingDBProzess.resx">
       <DependentUpon>Form_EingDBProzess.cs</DependentUpon>
@@ -720,14 +758,10 @@
     <EmbeddedResource Include="Views\Klimadaten\Klimadaten.resx">
       <DependentUpon>Klimadaten.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Projekt\Form_ProjektOpen.resx">
-      <DependentUpon>Form_ProjektOpen.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Projekt\Form_ProjektDelete.resx">
-      <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Views\Hauptformular\Form_Start.resx">
       <DependentUpon>Form_Start.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Form_Start1.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Projekt.resx">
       <DependentUpon>Wizard_Projekt.cs</DependentUpon>
@@ -737,14 +771,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <EmbeddedResource Include="Views\Wizard\Wizard_Komponenten.resx">
       <DependentUpon>Wizard_Komponenten.cs</DependentUpon>
     </EmbeddedResource>
@@ -897,6 +926,7 @@
     <None Include="Resources\PSSpeicher.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\usa.png" />
     <None Include="Resources\setup-trans.png" />
     <None Include="Resources\setup.png" />
     <None Include="Resources\info-1459077_1280.jpg" />
@@ -908,6 +938,7 @@
     <None Include="Resources\Menu4.png" />
     <None Include="Resources\Menue5.png" />
     <None Include="Resources\Menue6.png" />
+    <None Include="Resources\germany.png" />
     <Content Include="Resources\PDetailansicht.jpg" />
     <None Include="Resources\PSchnellSim.jpg" />
     <None Include="Resources\PDetailSim.jpg" />
@@ -915,6 +946,7 @@
     <None Include="Resources\PProjektPV.jpg" />
     <None Include="Resources\PProjektDetails.jpg" />
     <Content Include="Resources\PProjektSolarthermie.jpg" />
+    <None Include="Resources\PZurueck_en.jpg" />
     <Content Include="Resources\PZusammenfassung.pg.jpg" />
   </ItemGroup>
   <ItemGroup />

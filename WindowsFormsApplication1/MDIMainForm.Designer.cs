@@ -29,18 +29,18 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MDIMainForm));
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.menuToolbar = new System.Windows.Forms.MenuStrip();
             this.Projekte = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_ProjektNeu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.MenuItem_ProjektOeffnen = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.MenuItem_ProjektBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.MenuItem_zuletztGeöffnet = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.MenuItem_ProjektLöschen = new System.Windows.Forms.ToolStripMenuItem();
             this.Administration = new System.Windows.Forms.ToolStripMenuItem();
-            this.Help = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_Version = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.MenuItem_Lizenz = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_WaermebedarfExtern = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Prozesswaerme = new System.Windows.Forms.ToolStripMenuItem();
@@ -64,74 +64,96 @@
             this.MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebTypen = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuStrip1.SuspendLayout();
+            this.Help = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Version = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.MenuItem_Lizenz = new System.Windows.Forms.ToolStripMenuItem();
+            this.Deutsch = new System.Windows.Forms.ToolStripMenuItem();
+            this.Englisch = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuToolbar.SuspendLayout();
             this.SuspendLayout();
             // 
-            // menuStrip1
+            // menuToolbar
             // 
-            this.menuStrip1.BackColor = System.Drawing.Color.AliceBlue;
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            resources.ApplyResources(this.menuToolbar, "menuToolbar");
+            this.menuToolbar.BackColor = System.Drawing.Color.AliceBlue;
+            this.menuToolbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.Projekte,
             this.Administration,
-            this.Help});
-            this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(762, 29);
-            this.menuStrip1.TabIndex = 1;
-            this.menuStrip1.Text = "File";
+            this.Help,
+            this.Deutsch,
+            this.Englisch});
+            this.menuToolbar.Name = "menuToolbar";
             // 
             // Projekte
             // 
+            resources.ApplyResources(this.Projekte, "Projekte");
             this.Projekte.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MenuItem_ProjektNeu,
+            this.toolStripSeparator1,
             this.MenuItem_ProjektOeffnen,
+            this.toolStripSeparator2,
             this.MenuItem_ProjektBearbeiten,
+            this.toolStripSeparator3,
             this.MenuItem_zuletztGeöffnet,
+            this.toolStripSeparator4,
             this.MenuItem_ProjektLöschen});
-            this.Projekte.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Projekte.Name = "Projekte";
-            this.Projekte.Size = new System.Drawing.Size(71, 25);
             this.Projekte.Tag = "Projekte";
-            this.Projekte.Text = "Projekt";
             // 
             // MenuItem_ProjektNeu
             // 
+            resources.ApplyResources(this.MenuItem_ProjektNeu, "MenuItem_ProjektNeu");
             this.MenuItem_ProjektNeu.Name = "MenuItem_ProjektNeu";
-            this.MenuItem_ProjektNeu.Size = new System.Drawing.Size(187, 26);
-            this.MenuItem_ProjektNeu.Text = "Neu...";
             this.MenuItem_ProjektNeu.Click += new System.EventHandler(this.MenuItem_Neu_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            resources.ApplyResources(this.toolStripSeparator1, "toolStripSeparator1");
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
             // 
             // MenuItem_ProjektOeffnen
             // 
+            resources.ApplyResources(this.MenuItem_ProjektOeffnen, "MenuItem_ProjektOeffnen");
             this.MenuItem_ProjektOeffnen.Name = "MenuItem_ProjektOeffnen";
-            this.MenuItem_ProjektOeffnen.Size = new System.Drawing.Size(187, 26);
-            this.MenuItem_ProjektOeffnen.Text = "Öffnen...";
             this.MenuItem_ProjektOeffnen.Click += new System.EventHandler(this.MenuItem_ProjektOeffnen_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            resources.ApplyResources(this.toolStripSeparator2, "toolStripSeparator2");
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
             // 
             // MenuItem_ProjektBearbeiten
             // 
+            resources.ApplyResources(this.MenuItem_ProjektBearbeiten, "MenuItem_ProjektBearbeiten");
             this.MenuItem_ProjektBearbeiten.Name = "MenuItem_ProjektBearbeiten";
-            this.MenuItem_ProjektBearbeiten.Size = new System.Drawing.Size(187, 26);
-            this.MenuItem_ProjektBearbeiten.Text = "Bearbeiten...";
             this.MenuItem_ProjektBearbeiten.Click += new System.EventHandler(this.MenuItem_ProjektBearbeiten_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            resources.ApplyResources(this.toolStripSeparator3, "toolStripSeparator3");
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
             // 
             // MenuItem_zuletztGeöffnet
             // 
+            resources.ApplyResources(this.MenuItem_zuletztGeöffnet, "MenuItem_zuletztGeöffnet");
             this.MenuItem_zuletztGeöffnet.Name = "MenuItem_zuletztGeöffnet";
-            this.MenuItem_zuletztGeöffnet.Size = new System.Drawing.Size(187, 26);
-            this.MenuItem_zuletztGeöffnet.Text = "zuletzt geöffnet";
             this.MenuItem_zuletztGeöffnet.Click += new System.EventHandler(this.MenuItem_zuletztGeöffnet_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            resources.ApplyResources(this.toolStripSeparator4, "toolStripSeparator4");
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
             // 
             // MenuItem_ProjektLöschen
             // 
+            resources.ApplyResources(this.MenuItem_ProjektLöschen, "MenuItem_ProjektLöschen");
             this.MenuItem_ProjektLöschen.Name = "MenuItem_ProjektLöschen";
-            this.MenuItem_ProjektLöschen.Size = new System.Drawing.Size(187, 26);
-            this.MenuItem_ProjektLöschen.Text = "Löschen...";
             this.MenuItem_ProjektLöschen.Click += new System.EventHandler(this.MenuItem_ProjektLöschen_Click);
             // 
             // Administration
             // 
+            resources.ApplyResources(this.Administration, "Administration");
             this.Administration.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.Administration.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1,
@@ -140,46 +162,11 @@
             this.toolStripMenuItem6,
             this.toolStripMenuItem7,
             this.MenuItem_Gebaeude});
-            this.Administration.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Administration.Name = "Administration";
-            this.Administration.Size = new System.Drawing.Size(125, 25);
-            this.Administration.Text = "Administration";
-            // 
-            // Help
-            // 
-            this.Help.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MenuItem_Version,
-            this.toolStripSeparator7,
-            this.MenuItem_Lizenz});
-            this.Help.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.Help.Name = "Help";
-            this.Help.Size = new System.Drawing.Size(54, 25);
-            this.Help.Text = "Hilfe";
-            // 
-            // MenuItem_Version
-            // 
-            this.MenuItem_Version.BackColor = System.Drawing.SystemColors.Control;
-            this.MenuItem_Version.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.MenuItem_Version.Name = "MenuItem_Version";
-            this.MenuItem_Version.Size = new System.Drawing.Size(132, 26);
-            this.MenuItem_Version.Text = "Version";
-            this.MenuItem_Version.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
-            this.MenuItem_Version.Click += new System.EventHandler(this.MenuItem_Version_Click);
-            // 
-            // toolStripSeparator7
-            // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(129, 6);
-            // 
-            // MenuItem_Lizenz
-            // 
-            this.MenuItem_Lizenz.Name = "MenuItem_Lizenz";
-            this.MenuItem_Lizenz.Size = new System.Drawing.Size(132, 26);
-            this.MenuItem_Lizenz.Text = "Lizenz";
-            this.MenuItem_Lizenz.Click += new System.EventHandler(this.MenuItem_Lizenz_Click);
             // 
             // toolStripMenuItem1
             // 
+            resources.ApplyResources(this.toolStripMenuItem1, "toolStripMenuItem1");
             this.toolStripMenuItem1.BackColor = System.Drawing.SystemColors.Control;
             this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MenuItem_WaermebedarfExtern,
@@ -187,92 +174,78 @@
             this.MenuItem_WP,
             this.MenuItem_Kessel});
             this.toolStripMenuItem1.Image = global::WindowsFormsApplication1.Properties.Resources.Menu1;
-            this.toolStripMenuItem1.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.toolStripMenuItem1.ImageTransparentColor = System.Drawing.SystemColors.Control;
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(273, 38);
-            this.toolStripMenuItem1.Text = "Wärmebedarf && Heizung ";
             // 
             // MenuItem_WaermebedarfExtern
             // 
+            resources.ApplyResources(this.MenuItem_WaermebedarfExtern, "MenuItem_WaermebedarfExtern");
             this.MenuItem_WaermebedarfExtern.Name = "MenuItem_WaermebedarfExtern";
-            this.MenuItem_WaermebedarfExtern.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_WaermebedarfExtern.Text = "Wärmebedarf Lastgang";
             this.MenuItem_WaermebedarfExtern.Click += new System.EventHandler(this.MenuItem_WaermebedarfExtern_Click);
             // 
             // MenuItem_Prozesswaerme
             // 
+            resources.ApplyResources(this.MenuItem_Prozesswaerme, "MenuItem_Prozesswaerme");
             this.MenuItem_Prozesswaerme.Name = "MenuItem_Prozesswaerme";
-            this.MenuItem_Prozesswaerme.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_Prozesswaerme.Text = "Prozesswärme";
             this.MenuItem_Prozesswaerme.Click += new System.EventHandler(this.MenuItem_Prozesswaerme_Click);
             // 
             // MenuItem_WP
             // 
+            resources.ApplyResources(this.MenuItem_WP, "MenuItem_WP");
             this.MenuItem_WP.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MenuItem_WPBearbeiten,
             this.MeniItem_VDI3805});
             this.MenuItem_WP.Name = "MenuItem_WP";
-            this.MenuItem_WP.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_WP.Text = "Wärmepumpen";
             // 
             // MenuItem_WPBearbeiten
             // 
+            resources.ApplyResources(this.MenuItem_WPBearbeiten, "MenuItem_WPBearbeiten");
             this.MenuItem_WPBearbeiten.Name = "MenuItem_WPBearbeiten";
-            this.MenuItem_WPBearbeiten.Size = new System.Drawing.Size(231, 26);
-            this.MenuItem_WPBearbeiten.Text = "Bearbeiten";
             this.MenuItem_WPBearbeiten.Click += new System.EventHandler(this.MenuItem_WPBearbeiten_Click_1);
             // 
             // MeniItem_VDI3805
             // 
+            resources.ApplyResources(this.MeniItem_VDI3805, "MeniItem_VDI3805");
             this.MeniItem_VDI3805.Name = "MeniItem_VDI3805";
-            this.MeniItem_VDI3805.Size = new System.Drawing.Size(231, 26);
-            this.MeniItem_VDI3805.Text = "Importieren VDI 3805";
             this.MeniItem_VDI3805.Click += new System.EventHandler(this.MeniItem_VDI3805_Click);
             // 
             // MenuItem_Kessel
             // 
+            resources.ApplyResources(this.MenuItem_Kessel, "MenuItem_Kessel");
             this.MenuItem_Kessel.Name = "MenuItem_Kessel";
-            this.MenuItem_Kessel.Size = new System.Drawing.Size(242, 26);
-            this.MenuItem_Kessel.Text = "Heizkessel";
             this.MenuItem_Kessel.Click += new System.EventHandler(this.MenuItem_Kessel_Click);
             // 
             // toolStripMenuItem2
             // 
+            resources.ApplyResources(this.toolStripMenuItem2, "toolStripMenuItem2");
             this.toolStripMenuItem2.BackColor = System.Drawing.SystemColors.Control;
             this.toolStripMenuItem2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem5,
             this.toolStripMenuItem4,
             this.toolStripMenuItem8});
             this.toolStripMenuItem2.Image = global::WindowsFormsApplication1.Properties.Resources.Menue2;
-            this.toolStripMenuItem2.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(273, 38);
-            this.toolStripMenuItem2.Text = "Strombedarf && Speicher";
             // 
             // toolStripMenuItem5
             // 
+            resources.ApplyResources(this.toolStripMenuItem5, "toolStripMenuItem5");
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(206, 26);
-            this.toolStripMenuItem5.Text = "Stromverbraucher";
             this.toolStripMenuItem5.Click += new System.EventHandler(this.MenuItem_Stromverbraucher_Click);
             // 
             // toolStripMenuItem4
             // 
+            resources.ApplyResources(this.toolStripMenuItem4, "toolStripMenuItem4");
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(206, 26);
-            this.toolStripMenuItem4.Text = "Stromganglinie";
             this.toolStripMenuItem4.Click += new System.EventHandler(this.MenuItem_Stromganglinie_Click);
             // 
             // toolStripMenuItem8
             // 
+            resources.ApplyResources(this.toolStripMenuItem8, "toolStripMenuItem8");
             this.toolStripMenuItem8.Name = "toolStripMenuItem8";
-            this.toolStripMenuItem8.Size = new System.Drawing.Size(206, 26);
-            this.toolStripMenuItem8.Text = "Stromspeicher";
             this.toolStripMenuItem8.Click += new System.EventHandler(this.MenuItem_Stromspeicher_Click);
             // 
             // toolStripMenuItem3
             // 
+            resources.ApplyResources(this.toolStripMenuItem3, "toolStripMenuItem3");
             this.toolStripMenuItem3.BackColor = System.Drawing.SystemColors.Control;
             this.toolStripMenuItem3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MenuItem_PV,
@@ -280,114 +253,138 @@
             this.MenuItem_SolThermGanglinie,
             this.MenuItem_BHKW});
             this.toolStripMenuItem3.Image = global::WindowsFormsApplication1.Properties.Resources.Menu3;
-            this.toolStripMenuItem3.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(273, 38);
-            this.toolStripMenuItem3.Text = "Energiesysteme";
             // 
             // MenuItem_PV
             // 
+            resources.ApplyResources(this.MenuItem_PV, "MenuItem_PV");
             this.MenuItem_PV.Name = "MenuItem_PV";
-            this.MenuItem_PV.Size = new System.Drawing.Size(234, 26);
-            this.MenuItem_PV.Text = "Photovoltaik";
             this.MenuItem_PV.Click += new System.EventHandler(this.MenuItem_PV_Click);
             // 
             // MenuItem_Solarkollektoren
             // 
+            resources.ApplyResources(this.MenuItem_Solarkollektoren, "MenuItem_Solarkollektoren");
             this.MenuItem_Solarkollektoren.Name = "MenuItem_Solarkollektoren";
-            this.MenuItem_Solarkollektoren.Size = new System.Drawing.Size(234, 26);
-            this.MenuItem_Solarkollektoren.Text = "Solarkollektoren";
             this.MenuItem_Solarkollektoren.Click += new System.EventHandler(this.MenuItem_Solarkollektoren_Click);
             // 
             // MenuItem_SolThermGanglinie
             // 
+            resources.ApplyResources(this.MenuItem_SolThermGanglinie, "MenuItem_SolThermGanglinie");
             this.MenuItem_SolThermGanglinie.Name = "MenuItem_SolThermGanglinie";
-            this.MenuItem_SolThermGanglinie.Size = new System.Drawing.Size(234, 26);
-            this.MenuItem_SolThermGanglinie.Text = "Solarthermieganglinie";
             this.MenuItem_SolThermGanglinie.Click += new System.EventHandler(this.MenuItem_SolThermGanglinie_Click);
             // 
             // MenuItem_BHKW
             // 
+            resources.ApplyResources(this.MenuItem_BHKW, "MenuItem_BHKW");
             this.MenuItem_BHKW.Name = "MenuItem_BHKW";
-            this.MenuItem_BHKW.Size = new System.Drawing.Size(234, 26);
-            this.MenuItem_BHKW.Text = "BHKW";
             this.MenuItem_BHKW.Click += new System.EventHandler(this.MenuItem_BHKW_Click);
             // 
             // toolStripMenuItem6
             // 
+            resources.ApplyResources(this.toolStripMenuItem6, "toolStripMenuItem6");
             this.toolStripMenuItem6.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MenuItem_Klimadaten});
             this.toolStripMenuItem6.Image = global::WindowsFormsApplication1.Properties.Resources.Menu4;
-            this.toolStripMenuItem6.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.toolStripMenuItem6.Name = "toolStripMenuItem6";
-            this.toolStripMenuItem6.Size = new System.Drawing.Size(273, 38);
-            this.toolStripMenuItem6.Text = "Klimadaten && Umgebung";
             // 
             // MenuItem_Klimadaten
             // 
+            resources.ApplyResources(this.MenuItem_Klimadaten, "MenuItem_Klimadaten");
             this.MenuItem_Klimadaten.Name = "MenuItem_Klimadaten";
-            this.MenuItem_Klimadaten.Size = new System.Drawing.Size(158, 26);
-            this.MenuItem_Klimadaten.Text = "Klimadaten";
             this.MenuItem_Klimadaten.Click += new System.EventHandler(this.MenuItem_Klimadaten_Click);
             // 
             // toolStripMenuItem7
             // 
+            resources.ApplyResources(this.toolStripMenuItem7, "toolStripMenuItem7");
             this.toolStripMenuItem7.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MenuItem_Update});
             this.toolStripMenuItem7.Image = global::WindowsFormsApplication1.Properties.Resources.Menue5;
-            this.toolStripMenuItem7.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.toolStripMenuItem7.Name = "toolStripMenuItem7";
-            this.toolStripMenuItem7.Size = new System.Drawing.Size(273, 38);
-            this.toolStripMenuItem7.Text = "Daten && Import ";
             // 
             // MenuItem_Update
             // 
+            resources.ApplyResources(this.MenuItem_Update, "MenuItem_Update");
             this.MenuItem_Update.Name = "MenuItem_Update";
-            this.MenuItem_Update.Size = new System.Drawing.Size(241, 26);
-            this.MenuItem_Update.Text = "Datenbank importieren";
             this.MenuItem_Update.Click += new System.EventHandler(this.MenuItem_Update_Click);
             // 
             // MenuItem_Gebaeude
             // 
+            resources.ApplyResources(this.MenuItem_Gebaeude, "MenuItem_Gebaeude");
             this.MenuItem_Gebaeude.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MenuItem_GebBearbeiten,
             this.MenuItem_GebTypen});
             this.MenuItem_Gebaeude.Image = global::WindowsFormsApplication1.Properties.Resources.Menue6;
-            this.MenuItem_Gebaeude.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.MenuItem_Gebaeude.Name = "MenuItem_Gebaeude";
-            this.MenuItem_Gebaeude.Size = new System.Drawing.Size(273, 38);
-            this.MenuItem_Gebaeude.Text = "Gebäude";
             this.MenuItem_Gebaeude.Click += new System.EventHandler(this.MenuItem_Gebaeude_Click);
             // 
             // MenuItem_GebBearbeiten
             // 
+            resources.ApplyResources(this.MenuItem_GebBearbeiten, "MenuItem_GebBearbeiten");
             this.MenuItem_GebBearbeiten.Name = "MenuItem_GebBearbeiten";
-            this.MenuItem_GebBearbeiten.Size = new System.Drawing.Size(181, 26);
-            this.MenuItem_GebBearbeiten.Text = "Bearbeiten";
             this.MenuItem_GebBearbeiten.Click += new System.EventHandler(this.MenuItem_GebBearbeiten_Click);
             // 
             // MenuItem_GebTypen
             // 
+            resources.ApplyResources(this.MenuItem_GebTypen, "MenuItem_GebTypen");
             this.MenuItem_GebTypen.Name = "MenuItem_GebTypen";
-            this.MenuItem_GebTypen.Size = new System.Drawing.Size(181, 26);
-            this.MenuItem_GebTypen.Text = "Gebäudetypen";
             this.MenuItem_GebTypen.Click += new System.EventHandler(this.MenuItem_GebTypen_Click);
+            // 
+            // Help
+            // 
+            resources.ApplyResources(this.Help, "Help");
+            this.Help.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_Version,
+            this.toolStripSeparator7,
+            this.MenuItem_Lizenz});
+            this.Help.Name = "Help";
+            // 
+            // MenuItem_Version
+            // 
+            resources.ApplyResources(this.MenuItem_Version, "MenuItem_Version");
+            this.MenuItem_Version.BackColor = System.Drawing.SystemColors.Control;
+            this.MenuItem_Version.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.MenuItem_Version.Name = "MenuItem_Version";
+            this.MenuItem_Version.Click += new System.EventHandler(this.MenuItem_Version_Click);
+            // 
+            // toolStripSeparator7
+            // 
+            resources.ApplyResources(this.toolStripSeparator7, "toolStripSeparator7");
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            // 
+            // MenuItem_Lizenz
+            // 
+            resources.ApplyResources(this.MenuItem_Lizenz, "MenuItem_Lizenz");
+            this.MenuItem_Lizenz.Name = "MenuItem_Lizenz";
+            this.MenuItem_Lizenz.Click += new System.EventHandler(this.MenuItem_Lizenz_Click);
+            // 
+            // Deutsch
+            // 
+            resources.ApplyResources(this.Deutsch, "Deutsch");
+            this.Deutsch.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.Deutsch.Image = global::WindowsFormsApplication1.Properties.Resources.germany;
+            this.Deutsch.Name = "Deutsch";
+            this.Deutsch.Click += new System.EventHandler(this.Deutsch_Click);
+            // 
+            // Englisch
+            // 
+            resources.ApplyResources(this.Englisch, "Englisch");
+            this.Englisch.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.Englisch.Image = global::WindowsFormsApplication1.Properties.Resources.usa;
+            this.Englisch.Name = "Englisch";
+            this.Englisch.Click += new System.EventHandler(this.Englisch_Click);
             // 
             // MDIMainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(762, 569);
-            this.Controls.Add(this.menuStrip1);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Controls.Add(this.menuToolbar);
             this.IsMdiContainer = true;
-            this.MainMenuStrip = this.menuStrip1;
+            this.MainMenuStrip = this.menuToolbar;
             this.Name = "MDIMainForm";
-            this.Text = "WP-Plan";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.MDIMainForm_Load);
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
+            this.menuToolbar.ResumeLayout(false);
+            this.menuToolbar.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -395,7 +392,7 @@
 
         #endregion
 
-        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.MenuStrip menuToolbar;
         private System.Windows.Forms.ToolStripMenuItem Projekte;
         private System.Windows.Forms.ToolStripMenuItem Administration;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ProjektNeu;
@@ -430,6 +427,12 @@
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Update;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Lizenz;
+        private System.Windows.Forms.ToolStripMenuItem Deutsch;
+        private System.Windows.Forms.ToolStripMenuItem Englisch;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     }
 }
 

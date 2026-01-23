@@ -28,8 +28,8 @@ namespace WindowsFormsApplication1
             m_ID_Projekt = 0;
 
             listView_Projekt.View = View.Details;
-            listView_Projekt.Columns.Add("Name", -2, HorizontalAlignment.Left);
-            listView_Projekt.Columns.Add("Beschreibung", -2, HorizontalAlignment.Left);
+            listView_Projekt.Columns.Add(MyResource.Resource.Text_Name, -2, HorizontalAlignment.Left);
+            listView_Projekt.Columns.Add(MyResource.Resource.Text_Beschreibung, -2, HorizontalAlignment.Left);
             listView_Projekt.Columns[0].Width = listView_Projekt.ClientRectangle.Width;
         }
 

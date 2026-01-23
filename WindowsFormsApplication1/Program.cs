@@ -1,11 +1,16 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Resources;
+using System.Threading;
 using System.Windows.Forms;
+using WindowsFormsApplication1.Properties;
 
 namespace WindowsFormsApplication1
 {
@@ -19,6 +24,7 @@ namespace WindowsFormsApplication1
         public static WizardCtrl wizardctrl = null;
         public static string ApplicationPath_Common = "";
         public static string ApplicationPath_User = "";
+        public static int nLanguage = 0; // 0=de, 1=en  
 
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
@@ -26,13 +32,32 @@ namespace WindowsFormsApplication1
         [STAThread]
         static void Main()
         {
+
+            var key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
+            if (key == null)
+            {
+                key = Registry.CurrentUser.CreateSubKey(@"Software\\wp-plan");
+            }
+
+            nLanguage = (int)key.GetValue("Language", 0);
+            if (nLanguage == 0)
+            {
+                var culture_de = new CultureInfo("de-DE");
+                Thread.CurrentThread.CurrentUICulture = culture_de;
+            }
+            else
+            {
+                var culture_en = new CultureInfo("en-US");
+                Thread.CurrentThread.CurrentUICulture = culture_en;
+            }   
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
             menuectrl = new MenueCtrl();
             wizardctrl = new WizardCtrl();
             DbClass db = new DbClass();
-            
+
             try
             {
                 DBConnection = db.openDB("DSN=TEST");
@@ -66,11 +91,13 @@ namespace WindowsFormsApplication1
                 formUpdate.ShowDialog();
             }
 
+
+
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);
 
             db.closeDB();
-            Application.Exit(); 
+            Application.Exit();
         }
 
         public static bool HasValue(this double value)
