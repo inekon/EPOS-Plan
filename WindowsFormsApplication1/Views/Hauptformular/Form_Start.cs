@@ -1027,5 +1027,10 @@ namespace WindowsFormsApplication1
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.ProjektOeffnen(true);
         }
+
+        private void label33_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

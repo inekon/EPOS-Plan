@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_AdminStromspeicher));
             this.btn_Beenden = new System.Windows.Forms.Button();
             this.listBox_Stromspeicher = new System.Windows.Forms.ListBox();
             this.textBox_Bezeichner = new System.Windows.Forms.TextBox();
@@ -54,236 +55,143 @@
             // 
             // btn_Beenden
             // 
-            this.btn_Beenden.Location = new System.Drawing.Point(817, 542);
-            this.btn_Beenden.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Beenden, "btn_Beenden");
             this.btn_Beenden.Name = "btn_Beenden";
-            this.btn_Beenden.Size = new System.Drawing.Size(87, 30);
-            this.btn_Beenden.TabIndex = 0;
-            this.btn_Beenden.Text = "OK";
             this.btn_Beenden.UseVisualStyleBackColor = true;
             this.btn_Beenden.Click += new System.EventHandler(this.btn_Beenden_Click);
             // 
             // listBox_Stromspeicher
             // 
+            resources.ApplyResources(this.listBox_Stromspeicher, "listBox_Stromspeicher");
             this.listBox_Stromspeicher.FormattingEnabled = true;
-            this.listBox_Stromspeicher.ItemHeight = 17;
-            this.listBox_Stromspeicher.Location = new System.Drawing.Point(22, 22);
-            this.listBox_Stromspeicher.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.listBox_Stromspeicher.Name = "listBox_Stromspeicher";
-            this.listBox_Stromspeicher.Size = new System.Drawing.Size(201, 293);
-            this.listBox_Stromspeicher.TabIndex = 2;
             this.listBox_Stromspeicher.SelectedIndexChanged += new System.EventHandler(this.listBox_Stromspeicher_SelectedIndexChanged);
             // 
             // textBox_Bezeichner
             // 
-            this.textBox_Bezeichner.Enabled = false;
-            this.textBox_Bezeichner.Location = new System.Drawing.Point(336, 56);
-            this.textBox_Bezeichner.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.textBox_Bezeichner, "textBox_Bezeichner");
             this.textBox_Bezeichner.Name = "textBox_Bezeichner";
-            this.textBox_Bezeichner.Size = new System.Drawing.Size(250, 25);
-            this.textBox_Bezeichner.TabIndex = 3;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(243, 60);
+            resources.ApplyResources(this.label1, "label1");
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(74, 19);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "Bezeichner";
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(243, 161);
+            resources.ApplyResources(this.label2, "label2");
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(54, 19);
-            this.label2.TabIndex = 6;
-            this.label2.Text = "Energie";
             // 
             // textBox_Energie
             // 
-            this.textBox_Energie.Location = new System.Drawing.Point(336, 152);
-            this.textBox_Energie.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.textBox_Energie, "textBox_Energie");
             this.textBox_Energie.Name = "textBox_Energie";
-            this.textBox_Energie.Size = new System.Drawing.Size(110, 25);
-            this.textBox_Energie.TabIndex = 5;
             this.textBox_Energie.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Energie_Validating);
             // 
             // textBox_Typ
             // 
-            this.textBox_Typ.Location = new System.Drawing.Point(336, 88);
-            this.textBox_Typ.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.textBox_Typ, "textBox_Typ");
             this.textBox_Typ.Name = "textBox_Typ";
-            this.textBox_Typ.Size = new System.Drawing.Size(250, 25);
-            this.textBox_Typ.TabIndex = 5;
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(243, 92);
+            resources.ApplyResources(this.label3, "label3");
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(30, 19);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Typ";
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(243, 123);
+            resources.ApplyResources(this.label4, "label4");
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(61, 19);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "Leistung";
             // 
             // textBox_Leistung
             // 
-            this.textBox_Leistung.Location = new System.Drawing.Point(336, 119);
-            this.textBox_Leistung.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.textBox_Leistung, "textBox_Leistung");
             this.textBox_Leistung.Name = "textBox_Leistung";
-            this.textBox_Leistung.Size = new System.Drawing.Size(110, 25);
-            this.textBox_Leistung.TabIndex = 7;
             this.textBox_Leistung.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Leistung_Validating);
             // 
             // label5
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(243, 188);
+            resources.ApplyResources(this.label5, "label5");
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(86, 19);
-            this.label5.TabIndex = 10;
-            this.label5.Text = "Ladezustand";
             // 
             // textBox_Ladezustand
             // 
-            this.textBox_Ladezustand.Location = new System.Drawing.Point(336, 185);
-            this.textBox_Ladezustand.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.textBox_Ladezustand, "textBox_Ladezustand");
             this.textBox_Ladezustand.Name = "textBox_Ladezustand";
-            this.textBox_Ladezustand.Size = new System.Drawing.Size(110, 25);
-            this.textBox_Ladezustand.TabIndex = 9;
             this.textBox_Ladezustand.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Ladezustand_Validating);
             // 
             // label6
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(243, 220);
+            resources.ApplyResources(this.label6, "label6");
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(85, 19);
-            this.label6.TabIndex = 12;
-            this.label6.Text = "Degradation";
             // 
             // textBox_Degradation
             // 
-            this.textBox_Degradation.Location = new System.Drawing.Point(336, 216);
-            this.textBox_Degradation.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.textBox_Degradation, "textBox_Degradation");
             this.textBox_Degradation.Name = "textBox_Degradation";
-            this.textBox_Degradation.Size = new System.Drawing.Size(110, 25);
-            this.textBox_Degradation.TabIndex = 11;
             this.textBox_Degradation.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Degradation_Validating);
             // 
             // btn_Speichern
             // 
+            resources.ApplyResources(this.btn_Speichern, "btn_Speichern");
             this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
-            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_Speichern.Location = new System.Drawing.Point(339, 324);
-            this.btn_Speichern.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.Size = new System.Drawing.Size(119, 30);
-            this.btn_Speichern.TabIndex = 13;
-            this.btn_Speichern.Text = "Speichern";
             this.btn_Speichern.UseVisualStyleBackColor = true;
             this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
             // 
             // btn_Neu
             // 
-            this.btn_Neu.Location = new System.Drawing.Point(336, 249);
-            this.btn_Neu.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Neu, "btn_Neu");
             this.btn_Neu.Name = "btn_Neu";
-            this.btn_Neu.Size = new System.Drawing.Size(124, 30);
-            this.btn_Neu.TabIndex = 14;
-            this.btn_Neu.Text = "Neu...";
             this.btn_Neu.UseVisualStyleBackColor = true;
             this.btn_Neu.Click += new System.EventHandler(this.btn_Neu_Click);
             // 
             // btn_OK
             // 
-            this.btn_OK.Location = new System.Drawing.Point(499, 324);
-            this.btn_OK.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_OK, "btn_OK");
             this.btn_OK.Name = "btn_OK";
-            this.btn_OK.Size = new System.Drawing.Size(87, 30);
-            this.btn_OK.TabIndex = 15;
-            this.btn_OK.Text = "Beenden";
             this.btn_OK.UseVisualStyleBackColor = true;
             this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
             // 
             // btn_Loeschen
             // 
-            this.btn_Loeschen.Location = new System.Drawing.Point(22, 324);
-            this.btn_Loeschen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Loeschen, "btn_Loeschen");
             this.btn_Loeschen.Name = "btn_Loeschen";
-            this.btn_Loeschen.Size = new System.Drawing.Size(106, 30);
-            this.btn_Loeschen.TabIndex = 16;
-            this.btn_Loeschen.Text = "Löschen";
             this.btn_Loeschen.UseVisualStyleBackColor = true;
             this.btn_Loeschen.Click += new System.EventHandler(this.btn_Loeschen_Click);
             // 
             // label7
             // 
-            this.label7.AutoSize = true;
+            resources.ApplyResources(this.label7, "label7");
             this.label7.BackColor = System.Drawing.Color.Black;
-            this.label7.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label7.ForeColor = System.Drawing.Color.White;
-            this.label7.Location = new System.Drawing.Point(451, 122);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(29, 19);
-            this.label7.TabIndex = 17;
-            this.label7.Text = "kW";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label8
             // 
-            this.label8.AutoSize = true;
+            resources.ApplyResources(this.label8, "label8");
             this.label8.BackColor = System.Drawing.Color.Black;
-            this.label8.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label8.ForeColor = System.Drawing.Color.White;
-            this.label8.Location = new System.Drawing.Point(451, 154);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(29, 19);
-            this.label8.TabIndex = 18;
-            this.label8.Text = "kW";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label9
             // 
-            this.label9.AutoSize = true;
+            resources.ApplyResources(this.label9, "label9");
             this.label9.BackColor = System.Drawing.Color.Black;
-            this.label9.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label9.ForeColor = System.Drawing.Color.White;
-            this.label9.Location = new System.Drawing.Point(451, 188);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(20, 19);
-            this.label9.TabIndex = 19;
-            this.label9.Text = "%";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label10
             // 
-            this.label10.AutoSize = true;
+            resources.ApplyResources(this.label10, "label10");
             this.label10.BackColor = System.Drawing.Color.Black;
-            this.label10.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label10.ForeColor = System.Drawing.Color.White;
-            this.label10.Location = new System.Drawing.Point(451, 219);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(20, 19);
-            this.label10.TabIndex = 20;
-            this.label10.Text = "%";
-            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Form_AdminStromspeicher
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(614, 367);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
@@ -306,10 +214,7 @@
             this.Controls.Add(this.textBox_Bezeichner);
             this.Controls.Add(this.listBox_Stromspeicher);
             this.Controls.Add(this.btn_Beenden);
-            this.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "Form_AdminStromspeicher";
-            this.Text = "Administration Stromspeicher";
             this.Load += new System.EventHandler(this.Form_Stromspeicher_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Stromspeicher));
             this.listBox_SP = new System.Windows.Forms.ListBox();
             this.btn_Hinzu = new System.Windows.Forms.Button();
             this.btn_Entfernen = new System.Windows.Forms.Button();
@@ -57,116 +58,75 @@
             // 
             // listBox_SP
             // 
-            this.listBox_SP.Font = new System.Drawing.Font("Segoe UI", 10F);
+            resources.ApplyResources(this.listBox_SP, "listBox_SP");
             this.listBox_SP.FormattingEnabled = true;
-            this.listBox_SP.ItemHeight = 17;
-            this.listBox_SP.Location = new System.Drawing.Point(25, 92);
             this.listBox_SP.Name = "listBox_SP";
-            this.listBox_SP.Size = new System.Drawing.Size(238, 157);
-            this.listBox_SP.TabIndex = 3;
             this.listBox_SP.SelectedIndexChanged += new System.EventHandler(this.listBox_SP_SelectedIndexChanged);
             // 
             // btn_Hinzu
             // 
-            this.btn_Hinzu.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Hinzu.Location = new System.Drawing.Point(272, 120);
+            resources.ApplyResources(this.btn_Hinzu, "btn_Hinzu");
             this.btn_Hinzu.Name = "btn_Hinzu";
-            this.btn_Hinzu.Size = new System.Drawing.Size(75, 29);
-            this.btn_Hinzu.TabIndex = 5;
-            this.btn_Hinzu.Text = "<---";
             this.btn_Hinzu.UseVisualStyleBackColor = true;
             this.btn_Hinzu.Click += new System.EventHandler(this.btn_Hinzu_Click);
             // 
             // btn_Entfernen
             // 
-            this.btn_Entfernen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Entfernen.Location = new System.Drawing.Point(272, 155);
+            resources.ApplyResources(this.btn_Entfernen, "btn_Entfernen");
             this.btn_Entfernen.Name = "btn_Entfernen";
-            this.btn_Entfernen.Size = new System.Drawing.Size(75, 28);
-            this.btn_Entfernen.TabIndex = 6;
-            this.btn_Entfernen.Text = "-->";
             this.btn_Entfernen.UseVisualStyleBackColor = true;
             this.btn_Entfernen.Click += new System.EventHandler(this.btn_Entfernen_Click);
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label1.Location = new System.Drawing.Point(21, 71);
+            resources.ApplyResources(this.label1, "label1");
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(176, 19);
-            this.label1.TabIndex = 7;
-            this.label1.Text = "ausgewählte Stromspeicher";
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label2.Location = new System.Drawing.Point(353, 70);
+            resources.ApplyResources(this.label2, "label2");
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(192, 19);
-            this.label2.TabIndex = 8;
-            this.label2.Text = "Stromspeicher aus Datenbank";
             // 
             // label_Type
             // 
+            resources.ApplyResources(this.label_Type, "label_Type");
             this.label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.label_Type.Dock = System.Windows.Forms.DockStyle.Top;
-            this.label_Type.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Type.Location = new System.Drawing.Point(0, 0);
             this.label_Type.Name = "label_Type";
-            this.label_Type.Padding = new System.Windows.Forms.Padding(0, 5, 0, 5);
-            this.label_Type.Size = new System.Drawing.Size(794, 32);
-            this.label_Type.TabIndex = 23;
-            this.label_Type.Text = "Geben Sie Daten der Stromspeicher ein";
-            this.label_Type.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // btn_Abbrechen
             // 
-            this.btn_Abbrechen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Abbrechen.Location = new System.Drawing.Point(600, 453);
+            resources.ApplyResources(this.btn_Abbrechen, "btn_Abbrechen");
             this.btn_Abbrechen.Name = "btn_Abbrechen";
-            this.btn_Abbrechen.Size = new System.Drawing.Size(89, 32);
-            this.btn_Abbrechen.TabIndex = 63;
-            this.btn_Abbrechen.Text = "Abbrechen";
             this.btn_Abbrechen.UseVisualStyleBackColor = true;
             this.btn_Abbrechen.Click += new System.EventHandler(this.btn_Abbrechen_Click);
             // 
             // btn_OK
             // 
-            this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_OK.Location = new System.Drawing.Point(705, 453);
+            resources.ApplyResources(this.btn_OK, "btn_OK");
             this.btn_OK.Name = "btn_OK";
-            this.btn_OK.Size = new System.Drawing.Size(75, 32);
-            this.btn_OK.TabIndex = 62;
-            this.btn_OK.Text = "OK";
             this.btn_OK.UseVisualStyleBackColor = true;
             this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
             // 
             // btn_Bearbeiten
             // 
-            this.btn_Bearbeiten.Location = new System.Drawing.Point(357, 454);
+            resources.ApplyResources(this.btn_Bearbeiten, "btn_Bearbeiten");
             this.btn_Bearbeiten.Name = "btn_Bearbeiten";
-            this.btn_Bearbeiten.Size = new System.Drawing.Size(98, 32);
-            this.btn_Bearbeiten.TabIndex = 64;
-            this.btn_Bearbeiten.Text = "Bearbeiten...";
             this.btn_Bearbeiten.UseVisualStyleBackColor = true;
             this.btn_Bearbeiten.Click += new System.EventHandler(this.btn_Bearbeiten_Click);
             // 
             // dataGridView1
             // 
+            resources.ApplyResources(this.dataGridView1, "dataGridView1");
             this.dataGridView1.AllowUserToAddRows = false;
             this.dataGridView1.AllowUserToDeleteRows = false;
             this.dataGridView1.BackgroundColor = System.Drawing.Color.Silver;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(357, 92);
             this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(423, 350);
-            this.dataGridView1.TabIndex = 74;
             this.dataGridView1.Click += new System.EventHandler(this.dataGridView1_Click);
             // 
             // groupBox1
             // 
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.label8);
             this.groupBox1.Controls.Add(this.textBox_Ladezustand);
@@ -179,136 +139,74 @@
             this.groupBox1.Controls.Add(this.textBox_Typ);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.textBox_Name);
-            this.groupBox1.Location = new System.Drawing.Point(4, 262);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(320, 211);
-            this.groupBox1.TabIndex = 75;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Modul";
             // 
             // label6
             // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label6.Location = new System.Drawing.Point(10, 148);
+            resources.ApplyResources(this.label6, "label6");
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(123, 19);
-            this.label6.TabIndex = 34;
-            this.label6.Text = "Degradation [%/a]:";
             // 
             // label8
             // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label8.Location = new System.Drawing.Point(8, 179);
+            resources.ApplyResources(this.label8, "label8");
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(112, 19);
-            this.label8.TabIndex = 33;
-            this.label8.Text = "Ladezustand [%]:";
             // 
             // textBox_Ladezustand
             // 
-            this.textBox_Ladezustand.Enabled = false;
-            this.textBox_Ladezustand.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Ladezustand.Location = new System.Drawing.Point(133, 176);
+            resources.ApplyResources(this.textBox_Ladezustand, "textBox_Ladezustand");
             this.textBox_Ladezustand.Name = "textBox_Ladezustand";
-            this.textBox_Ladezustand.Size = new System.Drawing.Size(58, 25);
-            this.textBox_Ladezustand.TabIndex = 32;
-            this.textBox_Ladezustand.Text = "98";
             // 
             // label7
             // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label7.Location = new System.Drawing.Point(8, 118);
+            resources.ApplyResources(this.label7, "label7");
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(89, 19);
-            this.label7.TabIndex = 31;
-            this.label7.Text = "Energie [kW]:";
             // 
             // textBox_Degradation
             // 
-            this.textBox_Degradation.Enabled = false;
-            this.textBox_Degradation.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Degradation.Location = new System.Drawing.Point(133, 145);
+            resources.ApplyResources(this.textBox_Degradation, "textBox_Degradation");
             this.textBox_Degradation.Name = "textBox_Degradation";
-            this.textBox_Degradation.Size = new System.Drawing.Size(58, 25);
-            this.textBox_Degradation.TabIndex = 30;
-            this.textBox_Degradation.Text = "0,1";
             // 
             // textBox_Energie
             // 
-            this.textBox_Energie.Enabled = false;
-            this.textBox_Energie.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Energie.Location = new System.Drawing.Point(105, 115);
+            resources.ApplyResources(this.textBox_Energie, "textBox_Energie");
             this.textBox_Energie.Name = "textBox_Energie";
-            this.textBox_Energie.Size = new System.Drawing.Size(58, 25);
-            this.textBox_Energie.TabIndex = 29;
             // 
             // label5
             // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label5.Location = new System.Drawing.Point(8, 85);
+            resources.ApplyResources(this.label5, "label5");
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(96, 19);
-            this.label5.TabIndex = 28;
-            this.label5.Text = "Leistung [kW]:";
             // 
             // textBox_Leistung
             // 
-            this.textBox_Leistung.Enabled = false;
-            this.textBox_Leistung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Leistung.Location = new System.Drawing.Point(105, 82);
+            resources.ApplyResources(this.textBox_Leistung, "textBox_Leistung");
             this.textBox_Leistung.Name = "textBox_Leistung";
-            this.textBox_Leistung.Size = new System.Drawing.Size(58, 25);
-            this.textBox_Leistung.TabIndex = 27;
-            this.textBox_Leistung.Text = "10";
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label4.Location = new System.Drawing.Point(8, 54);
+            resources.ApplyResources(this.label4, "label4");
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(33, 19);
-            this.label4.TabIndex = 26;
-            this.label4.Text = "Typ:";
             // 
             // textBox_Typ
             // 
-            this.textBox_Typ.Enabled = false;
-            this.textBox_Typ.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Typ.Location = new System.Drawing.Point(105, 51);
+            resources.ApplyResources(this.textBox_Typ, "textBox_Typ");
             this.textBox_Typ.Name = "textBox_Typ";
-            this.textBox_Typ.Size = new System.Drawing.Size(204, 25);
-            this.textBox_Typ.TabIndex = 25;
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label3.Location = new System.Drawing.Point(8, 24);
+            resources.ApplyResources(this.label3, "label3");
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(48, 19);
-            this.label3.TabIndex = 24;
-            this.label3.Text = "Name:";
             // 
             // textBox_Name
             // 
-            this.textBox_Name.Enabled = false;
-            this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Name.Location = new System.Drawing.Point(105, 21);
+            resources.ApplyResources(this.textBox_Name, "textBox_Name");
             this.textBox_Name.Name = "textBox_Name";
-            this.textBox_Name.Size = new System.Drawing.Size(204, 25);
-            this.textBox_Name.TabIndex = 23;
             // 
             // Form_Stromspeicher
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(794, 498);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.btn_Bearbeiten);
@@ -322,7 +220,6 @@
             this.Controls.Add(this.listBox_SP);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Name = "Form_Stromspeicher";
-            this.Text = "Stromspeicher";
             this.Load += new System.EventHandler(this.Form_Stromspeicher_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.groupBox1.ResumeLayout(false);

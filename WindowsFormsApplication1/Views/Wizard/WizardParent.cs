@@ -112,7 +112,7 @@ namespace WindowsFormsApplication1
 
         private void WizardParent_Load(object sender, EventArgs e)
         {
-            SetProjektLabel("bestehendes Projekt auswählen:");
+            //SetProjektLabel("bestehendes Projekt auswählen:");
             FillProjektList();
             listBox_Projekte.Visible = false;
             button_NeuProjekt.Visible = false;

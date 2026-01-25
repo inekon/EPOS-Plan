@@ -90,17 +90,14 @@
             // 
             // tabControl_Main
             // 
+            resources.ApplyResources(this.tabControl_Main, "tabControl_Main");
             this.tabControl_Main.Controls.Add(this.tabPage_Komponenten);
-            this.tabControl_Main.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tabControl_Main.ItemSize = new System.Drawing.Size(66, 30);
-            this.tabControl_Main.Location = new System.Drawing.Point(12, 62);
             this.tabControl_Main.Name = "tabControl_Main";
             this.tabControl_Main.SelectedIndex = 0;
-            this.tabControl_Main.Size = new System.Drawing.Size(1390, 778);
-            this.tabControl_Main.TabIndex = 0;
             // 
             // tabPage_Komponenten
             // 
+            resources.ApplyResources(this.tabPage_Komponenten, "tabPage_Komponenten");
             this.tabPage_Komponenten.Controls.Add(this.comboBox_Klima);
             this.tabPage_Komponenten.Controls.Add(this.button1);
             this.tabPage_Komponenten.Controls.Add(this.btn_Speichern);
@@ -119,63 +116,41 @@
             this.tabPage_Komponenten.Controls.Add(this.label1);
             this.tabPage_Komponenten.Controls.Add(this.label3);
             this.tabPage_Komponenten.Controls.Add(this.label2);
-            this.tabPage_Komponenten.Location = new System.Drawing.Point(4, 34);
             this.tabPage_Komponenten.Name = "tabPage_Komponenten";
-            this.tabPage_Komponenten.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_Komponenten.Size = new System.Drawing.Size(1382, 740);
-            this.tabPage_Komponenten.TabIndex = 0;
-            this.tabPage_Komponenten.Text = "Konfiguration Projekt";
             this.tabPage_Komponenten.UseVisualStyleBackColor = true;
             // 
             // comboBox_Klima
             // 
-            this.comboBox_Klima.Font = new System.Drawing.Font("Segoe UI", 10F);
+            resources.ApplyResources(this.comboBox_Klima, "comboBox_Klima");
             this.comboBox_Klima.FormattingEnabled = true;
-            this.comboBox_Klima.Location = new System.Drawing.Point(135, 103);
             this.comboBox_Klima.Name = "comboBox_Klima";
-            this.comboBox_Klima.Size = new System.Drawing.Size(304, 25);
-            this.comboBox_Klima.TabIndex = 47;
             this.comboBox_Klima.SelectedIndexChanged += new System.EventHandler(this.comboBox_Klima_SelectedIndexChanged);
             // 
             // button1
             // 
+            resources.ApplyResources(this.button1, "button1");
             this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.button1.ForeColor = System.Drawing.Color.Black;
-            this.button1.Location = new System.Drawing.Point(10, 308);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 31);
-            this.button1.TabIndex = 52;
-            this.button1.Text = "SP";
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // btn_Speichern
             // 
+            resources.ApplyResources(this.btn_Speichern, "btn_Speichern");
             this.btn_Speichern.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_Speichern.ForeColor = System.Drawing.Color.Black;
             this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
-            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_Speichern.Location = new System.Drawing.Point(10, 250);
             this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.Size = new System.Drawing.Size(115, 30);
-            this.btn_Speichern.TabIndex = 51;
-            this.btn_Speichern.Text = "Speichern";
             this.btn_Speichern.UseVisualStyleBackColor = false;
             this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
             // 
             // btn_DragDestination
             // 
+            resources.ApplyResources(this.btn_DragDestination, "btn_DragDestination");
             this.btn_DragDestination.AllowDrop = true;
-            this.btn_DragDestination.AutoSize = true;
             this.btn_DragDestination.ForeColor = System.Drawing.Color.Black;
-            this.btn_DragDestination.Image = ((System.Drawing.Image)(resources.GetObject("btn_DragDestination.Image")));
-            this.btn_DragDestination.Location = new System.Drawing.Point(814, 23);
             this.btn_DragDestination.Name = "btn_DragDestination";
-            this.btn_DragDestination.Size = new System.Drawing.Size(33, 35);
-            this.btn_DragDestination.TabIndex = 50;
-            this.btn_DragDestination.Text = "..";
-            this.btn_DragDestination.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.btn_DragDestination.UseVisualStyleBackColor = true;
             this.btn_DragDestination.DragDrop += new System.Windows.Forms.DragEventHandler(this.button1_DragDrop);
             this.btn_DragDestination.DragEnter += new System.Windows.Forms.DragEventHandler(this.button1_DragEnter);
@@ -184,6 +159,7 @@
             // 
             // tabControl_Komponenten
             // 
+            resources.ApplyResources(this.tabControl_Komponenten, "tabControl_Komponenten");
             this.tabControl_Komponenten.Controls.Add(this.tabPage5);
             this.tabControl_Komponenten.Controls.Add(this.tabPage9);
             this.tabControl_Komponenten.Controls.Add(this.tabPage1);
@@ -195,38 +171,27 @@
             this.tabControl_Komponenten.Controls.Add(this.tabPage13);
             this.tabControl_Komponenten.Controls.Add(this.tabPage14);
             this.tabControl_Komponenten.Controls.Add(this.tabPage12);
-            this.tabControl_Komponenten.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.tabControl_Komponenten.Location = new System.Drawing.Point(485, 74);
             this.tabControl_Komponenten.Multiline = true;
             this.tabControl_Komponenten.Name = "tabControl_Komponenten";
             this.tabControl_Komponenten.SelectedIndex = 0;
-            this.tabControl_Komponenten.Size = new System.Drawing.Size(875, 281);
-            this.tabControl_Komponenten.TabIndex = 46;
             // 
             // tabPage5
             // 
+            resources.ApplyResources(this.tabPage5, "tabPage5");
             this.tabPage5.Controls.Add(this.listView_Gebaeude);
-            this.tabPage5.Location = new System.Drawing.Point(4, 48);
             this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(867, 229);
-            this.tabPage5.TabIndex = 6;
-            this.tabPage5.Text = "Gebäude";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
             // listView_Gebaeude
             // 
+            resources.ApplyResources(this.listView_Gebaeude, "listView_Gebaeude");
             this.listView_Gebaeude.BackColor = System.Drawing.Color.White;
-            this.listView_Gebaeude.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_Gebaeude.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_Gebaeude.FullRowSelect = true;
             this.listView_Gebaeude.GridLines = true;
             this.listView_Gebaeude.HideSelection = false;
-            this.listView_Gebaeude.Location = new System.Drawing.Point(16, 17);
             this.listView_Gebaeude.MultiSelect = false;
             this.listView_Gebaeude.Name = "listView_Gebaeude";
-            this.listView_Gebaeude.Size = new System.Drawing.Size(581, 133);
-            this.listView_Gebaeude.TabIndex = 14;
             this.listView_Gebaeude.UseCompatibleStateImageBehavior = false;
             this.listView_Gebaeude.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_Gebaeude_MouseDown);
             this.listView_Gebaeude.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_Gebaeude_MouseMove);
@@ -234,27 +199,21 @@
             // 
             // tabPage9
             // 
+            resources.ApplyResources(this.tabPage9, "tabPage9");
             this.tabPage9.Controls.Add(this.listView_WaermebedarfExtern);
-            this.tabPage9.Location = new System.Drawing.Point(4, 48);
             this.tabPage9.Name = "tabPage9";
-            this.tabPage9.Size = new System.Drawing.Size(867, 229);
-            this.tabPage9.TabIndex = 7;
-            this.tabPage9.Text = "Wärmebedarf Einlesen";
             this.tabPage9.UseVisualStyleBackColor = true;
             // 
             // listView_WaermebedarfExtern
             // 
+            resources.ApplyResources(this.listView_WaermebedarfExtern, "listView_WaermebedarfExtern");
             this.listView_WaermebedarfExtern.BackColor = System.Drawing.Color.White;
-            this.listView_WaermebedarfExtern.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_WaermebedarfExtern.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_WaermebedarfExtern.FullRowSelect = true;
             this.listView_WaermebedarfExtern.GridLines = true;
             this.listView_WaermebedarfExtern.HideSelection = false;
-            this.listView_WaermebedarfExtern.Location = new System.Drawing.Point(15, 12);
             this.listView_WaermebedarfExtern.MultiSelect = false;
             this.listView_WaermebedarfExtern.Name = "listView_WaermebedarfExtern";
-            this.listView_WaermebedarfExtern.Size = new System.Drawing.Size(581, 133);
-            this.listView_WaermebedarfExtern.TabIndex = 15;
             this.listView_WaermebedarfExtern.UseCompatibleStateImageBehavior = false;
             this.listView_WaermebedarfExtern.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_WaermebedarfExtern_MouseDown);
             this.listView_WaermebedarfExtern.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_WaermebedarfExtern_MouseMove);
@@ -262,28 +221,21 @@
             // 
             // tabPage1
             // 
+            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Controls.Add(this.listView_BHKW);
-            this.tabPage1.Location = new System.Drawing.Point(4, 48);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(867, 229);
-            this.tabPage1.TabIndex = 11;
-            this.tabPage1.Text = "BHKW";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // listView_BHKW
             // 
+            resources.ApplyResources(this.listView_BHKW, "listView_BHKW");
             this.listView_BHKW.BackColor = System.Drawing.Color.White;
-            this.listView_BHKW.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_BHKW.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_BHKW.FullRowSelect = true;
             this.listView_BHKW.GridLines = true;
             this.listView_BHKW.HideSelection = false;
-            this.listView_BHKW.Location = new System.Drawing.Point(15, 12);
             this.listView_BHKW.MultiSelect = false;
             this.listView_BHKW.Name = "listView_BHKW";
-            this.listView_BHKW.Size = new System.Drawing.Size(581, 133);
-            this.listView_BHKW.TabIndex = 16;
             this.listView_BHKW.UseCompatibleStateImageBehavior = false;
             this.listView_BHKW.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_BHKW_MouseDown);
             this.listView_BHKW.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_BHKW_MouseMove);
@@ -291,28 +243,21 @@
             // 
             // tabPage3
             // 
+            resources.ApplyResources(this.tabPage3, "tabPage3");
             this.tabPage3.Controls.Add(this.listView_WP);
-            this.tabPage3.Location = new System.Drawing.Point(4, 48);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(867, 229);
-            this.tabPage3.TabIndex = 0;
-            this.tabPage3.Text = "Wärmepumpen";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // listView_WP
             // 
+            resources.ApplyResources(this.listView_WP, "listView_WP");
             this.listView_WP.BackColor = System.Drawing.Color.White;
-            this.listView_WP.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_WP.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_WP.FullRowSelect = true;
             this.listView_WP.GridLines = true;
             this.listView_WP.HideSelection = false;
-            this.listView_WP.Location = new System.Drawing.Point(3, 3);
             this.listView_WP.MultiSelect = false;
             this.listView_WP.Name = "listView_WP";
-            this.listView_WP.Size = new System.Drawing.Size(597, 97);
-            this.listView_WP.TabIndex = 9;
             this.listView_WP.UseCompatibleStateImageBehavior = false;
             this.listView_WP.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_WP_MouseDown);
             this.listView_WP.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_WP_MouseMove);
@@ -320,28 +265,21 @@
             // 
             // tabPage4
             // 
+            resources.ApplyResources(this.tabPage4, "tabPage4");
             this.tabPage4.Controls.Add(this.listView_SP);
-            this.tabPage4.Location = new System.Drawing.Point(4, 48);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(867, 229);
-            this.tabPage4.TabIndex = 1;
-            this.tabPage4.Text = "Stromspeicher";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // listView_SP
             // 
+            resources.ApplyResources(this.listView_SP, "listView_SP");
             this.listView_SP.BackColor = System.Drawing.Color.White;
-            this.listView_SP.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_SP.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_SP.FullRowSelect = true;
             this.listView_SP.GridLines = true;
             this.listView_SP.HideSelection = false;
-            this.listView_SP.Location = new System.Drawing.Point(6, 13);
             this.listView_SP.MultiSelect = false;
             this.listView_SP.Name = "listView_SP";
-            this.listView_SP.Size = new System.Drawing.Size(514, 97);
-            this.listView_SP.TabIndex = 10;
             this.listView_SP.UseCompatibleStateImageBehavior = false;
             this.listView_SP.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_SP_MouseDown);
             this.listView_SP.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_SP_MouseMove);
@@ -349,28 +287,21 @@
             // 
             // tabPage6
             // 
+            resources.ApplyResources(this.tabPage6, "tabPage6");
             this.tabPage6.Controls.Add(this.listView_Solar);
-            this.tabPage6.Location = new System.Drawing.Point(4, 48);
             this.tabPage6.Name = "tabPage6";
-            this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage6.Size = new System.Drawing.Size(867, 229);
-            this.tabPage6.TabIndex = 2;
-            this.tabPage6.Text = "Solarthermie";
             this.tabPage6.UseVisualStyleBackColor = true;
             // 
             // listView_Solar
             // 
+            resources.ApplyResources(this.listView_Solar, "listView_Solar");
             this.listView_Solar.BackColor = System.Drawing.Color.White;
-            this.listView_Solar.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_Solar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_Solar.FullRowSelect = true;
             this.listView_Solar.GridLines = true;
             this.listView_Solar.HideSelection = false;
-            this.listView_Solar.Location = new System.Drawing.Point(24, 12);
             this.listView_Solar.MultiSelect = false;
             this.listView_Solar.Name = "listView_Solar";
-            this.listView_Solar.Size = new System.Drawing.Size(514, 97);
-            this.listView_Solar.TabIndex = 11;
             this.listView_Solar.UseCompatibleStateImageBehavior = false;
             this.listView_Solar.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_Solar_MouseDown);
             this.listView_Solar.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_Solar_MouseMove);
@@ -378,28 +309,21 @@
             // 
             // tabPage10
             // 
+            resources.ApplyResources(this.tabPage10, "tabPage10");
             this.tabPage10.Controls.Add(this.listView_PV);
-            this.tabPage10.Location = new System.Drawing.Point(4, 48);
             this.tabPage10.Name = "tabPage10";
-            this.tabPage10.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage10.Size = new System.Drawing.Size(867, 229);
-            this.tabPage10.TabIndex = 3;
-            this.tabPage10.Text = "Photovoltaik";
             this.tabPage10.UseVisualStyleBackColor = true;
             // 
             // listView_PV
             // 
+            resources.ApplyResources(this.listView_PV, "listView_PV");
             this.listView_PV.BackColor = System.Drawing.Color.White;
-            this.listView_PV.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_PV.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_PV.FullRowSelect = true;
             this.listView_PV.GridLines = true;
             this.listView_PV.HideSelection = false;
-            this.listView_PV.Location = new System.Drawing.Point(24, 12);
             this.listView_PV.MultiSelect = false;
             this.listView_PV.Name = "listView_PV";
-            this.listView_PV.Size = new System.Drawing.Size(514, 97);
-            this.listView_PV.TabIndex = 11;
             this.listView_PV.UseCompatibleStateImageBehavior = false;
             this.listView_PV.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_PV_MouseDown);
             this.listView_PV.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_PV_MouseMove);
@@ -407,28 +331,21 @@
             // 
             // tabPage11
             // 
+            resources.ApplyResources(this.tabPage11, "tabPage11");
             this.tabPage11.Controls.Add(this.listView_Heizkessel);
-            this.tabPage11.Location = new System.Drawing.Point(4, 48);
             this.tabPage11.Name = "tabPage11";
-            this.tabPage11.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage11.Size = new System.Drawing.Size(867, 229);
-            this.tabPage11.TabIndex = 5;
-            this.tabPage11.Text = "Heizkessel";
             this.tabPage11.UseVisualStyleBackColor = true;
             // 
             // listView_Heizkessel
             // 
+            resources.ApplyResources(this.listView_Heizkessel, "listView_Heizkessel");
             this.listView_Heizkessel.BackColor = System.Drawing.Color.White;
-            this.listView_Heizkessel.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_Heizkessel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_Heizkessel.FullRowSelect = true;
             this.listView_Heizkessel.GridLines = true;
             this.listView_Heizkessel.HideSelection = false;
-            this.listView_Heizkessel.Location = new System.Drawing.Point(6, 13);
             this.listView_Heizkessel.MultiSelect = false;
             this.listView_Heizkessel.Name = "listView_Heizkessel";
-            this.listView_Heizkessel.Size = new System.Drawing.Size(514, 97);
-            this.listView_Heizkessel.TabIndex = 12;
             this.listView_Heizkessel.UseCompatibleStateImageBehavior = false;
             this.listView_Heizkessel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_Heizkessel_MouseDown);
             this.listView_Heizkessel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_Heizkessel_MouseMove);
@@ -436,27 +353,21 @@
             // 
             // tabPage13
             // 
+            resources.ApplyResources(this.tabPage13, "tabPage13");
             this.tabPage13.Controls.Add(this.listView_Prozesswaerme);
-            this.tabPage13.Location = new System.Drawing.Point(4, 48);
             this.tabPage13.Name = "tabPage13";
-            this.tabPage13.Size = new System.Drawing.Size(867, 229);
-            this.tabPage13.TabIndex = 8;
-            this.tabPage13.Text = "Prozesswärme";
             this.tabPage13.UseVisualStyleBackColor = true;
             // 
             // listView_Prozesswaerme
             // 
+            resources.ApplyResources(this.listView_Prozesswaerme, "listView_Prozesswaerme");
             this.listView_Prozesswaerme.BackColor = System.Drawing.Color.White;
-            this.listView_Prozesswaerme.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_Prozesswaerme.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_Prozesswaerme.FullRowSelect = true;
             this.listView_Prozesswaerme.GridLines = true;
             this.listView_Prozesswaerme.HideSelection = false;
-            this.listView_Prozesswaerme.Location = new System.Drawing.Point(102, 76);
             this.listView_Prozesswaerme.MultiSelect = false;
             this.listView_Prozesswaerme.Name = "listView_Prozesswaerme";
-            this.listView_Prozesswaerme.Size = new System.Drawing.Size(514, 97);
-            this.listView_Prozesswaerme.TabIndex = 13;
             this.listView_Prozesswaerme.UseCompatibleStateImageBehavior = false;
             this.listView_Prozesswaerme.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_Prozesswaerme_MouseDown);
             this.listView_Prozesswaerme.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_Prozesswaerme_MouseMove);
@@ -464,27 +375,21 @@
             // 
             // tabPage14
             // 
+            resources.ApplyResources(this.tabPage14, "tabPage14");
             this.tabPage14.Controls.Add(this.listView_Strombedarf);
-            this.tabPage14.Location = new System.Drawing.Point(4, 48);
             this.tabPage14.Name = "tabPage14";
-            this.tabPage14.Size = new System.Drawing.Size(867, 229);
-            this.tabPage14.TabIndex = 9;
-            this.tabPage14.Text = "Strombedarf";
             this.tabPage14.UseVisualStyleBackColor = true;
             // 
             // listView_Strombedarf
             // 
+            resources.ApplyResources(this.listView_Strombedarf, "listView_Strombedarf");
             this.listView_Strombedarf.BackColor = System.Drawing.Color.White;
-            this.listView_Strombedarf.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_Strombedarf.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_Strombedarf.FullRowSelect = true;
             this.listView_Strombedarf.GridLines = true;
             this.listView_Strombedarf.HideSelection = false;
-            this.listView_Strombedarf.Location = new System.Drawing.Point(48, 47);
             this.listView_Strombedarf.MultiSelect = false;
             this.listView_Strombedarf.Name = "listView_Strombedarf";
-            this.listView_Strombedarf.Size = new System.Drawing.Size(581, 133);
-            this.listView_Strombedarf.TabIndex = 15;
             this.listView_Strombedarf.UseCompatibleStateImageBehavior = false;
             this.listView_Strombedarf.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_Strombedarf_MouseDown);
             this.listView_Strombedarf.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_Strombedarf_MouseMove);
@@ -492,27 +397,21 @@
             // 
             // tabPage12
             // 
+            resources.ApplyResources(this.tabPage12, "tabPage12");
             this.tabPage12.Controls.Add(this.listView_Stromganglinie);
-            this.tabPage12.Location = new System.Drawing.Point(4, 48);
             this.tabPage12.Name = "tabPage12";
-            this.tabPage12.Size = new System.Drawing.Size(867, 229);
-            this.tabPage12.TabIndex = 10;
-            this.tabPage12.Text = "Stromganglinie";
             this.tabPage12.UseVisualStyleBackColor = true;
             // 
             // listView_Stromganglinie
             // 
+            resources.ApplyResources(this.listView_Stromganglinie, "listView_Stromganglinie");
             this.listView_Stromganglinie.BackColor = System.Drawing.Color.White;
-            this.listView_Stromganglinie.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.listView_Stromganglinie.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.listView_Stromganglinie.FullRowSelect = true;
             this.listView_Stromganglinie.GridLines = true;
             this.listView_Stromganglinie.HideSelection = false;
-            this.listView_Stromganglinie.Location = new System.Drawing.Point(81, 65);
             this.listView_Stromganglinie.MultiSelect = false;
             this.listView_Stromganglinie.Name = "listView_Stromganglinie";
-            this.listView_Stromganglinie.Size = new System.Drawing.Size(514, 97);
-            this.listView_Stromganglinie.TabIndex = 14;
             this.listView_Stromganglinie.UseCompatibleStateImageBehavior = false;
             this.listView_Stromganglinie.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_Stromganglinie_MouseDown);
             this.listView_Stromganglinie.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView_Stromganglinie_MouseMove);
@@ -520,188 +419,120 @@
             // 
             // textBox_Beschreibung
             // 
+            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.BackColor = System.Drawing.Color.White;
             this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Beschreibung.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Beschreibung.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Beschreibung.Location = new System.Drawing.Point(135, 219);
-            this.textBox_Beschreibung.Multiline = true;
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
-            this.textBox_Beschreibung.Size = new System.Drawing.Size(304, 61);
-            this.textBox_Beschreibung.TabIndex = 45;
             // 
             // label9
             // 
-            this.label9.AutoSize = true;
+            resources.ApplyResources(this.label9, "label9");
             this.label9.BackColor = System.Drawing.Color.White;
-            this.label9.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label9.ForeColor = System.Drawing.Color.Black;
-            this.label9.Location = new System.Drawing.Point(6, 221);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(94, 19);
-            this.label9.TabIndex = 44;
-            this.label9.Text = "Beschreibung:";
             // 
             // textBox_Datum
             // 
+            resources.ApplyResources(this.textBox_Datum, "textBox_Datum");
             this.textBox_Datum.BackColor = System.Drawing.Color.White;
             this.textBox_Datum.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Datum.Enabled = false;
-            this.textBox_Datum.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Datum.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Datum.Location = new System.Drawing.Point(135, 190);
             this.textBox_Datum.Name = "textBox_Datum";
             this.textBox_Datum.ReadOnly = true;
-            this.textBox_Datum.Size = new System.Drawing.Size(116, 25);
-            this.textBox_Datum.TabIndex = 43;
             // 
             // label8
             // 
-            this.label8.AutoSize = true;
+            resources.ApplyResources(this.label8, "label8");
             this.label8.BackColor = System.Drawing.Color.White;
-            this.label8.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label8.ForeColor = System.Drawing.Color.Black;
-            this.label8.Location = new System.Drawing.Point(6, 192);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(119, 19);
-            this.label8.TabIndex = 42;
-            this.label8.Text = "Änderungsdatum:";
             // 
             // textBox_Kunde
             // 
+            resources.ApplyResources(this.textBox_Kunde, "textBox_Kunde");
             this.textBox_Kunde.BackColor = System.Drawing.Color.White;
             this.textBox_Kunde.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Kunde.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Kunde.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Kunde.Location = new System.Drawing.Point(135, 161);
             this.textBox_Kunde.Name = "textBox_Kunde";
-            this.textBox_Kunde.Size = new System.Drawing.Size(304, 25);
-            this.textBox_Kunde.TabIndex = 41;
             // 
             // label6
             // 
-            this.label6.AutoSize = true;
+            resources.ApplyResources(this.label6, "label6");
             this.label6.BackColor = System.Drawing.Color.White;
-            this.label6.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label6.ForeColor = System.Drawing.Color.Black;
-            this.label6.Location = new System.Drawing.Point(6, 163);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(51, 19);
-            this.label6.TabIndex = 40;
-            this.label6.Text = "Kunde:";
             // 
             // textBox_Bearbeiter
             // 
+            resources.ApplyResources(this.textBox_Bearbeiter, "textBox_Bearbeiter");
             this.textBox_Bearbeiter.BackColor = System.Drawing.Color.White;
             this.textBox_Bearbeiter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Bearbeiter.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox_Bearbeiter.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Bearbeiter.Location = new System.Drawing.Point(135, 132);
             this.textBox_Bearbeiter.Name = "textBox_Bearbeiter";
-            this.textBox_Bearbeiter.Size = new System.Drawing.Size(304, 25);
-            this.textBox_Bearbeiter.TabIndex = 39;
             // 
             // label5
             // 
-            this.label5.AutoSize = true;
+            resources.ApplyResources(this.label5, "label5");
             this.label5.BackColor = System.Drawing.Color.White;
-            this.label5.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label5.ForeColor = System.Drawing.Color.Black;
-            this.label5.Location = new System.Drawing.Point(6, 134);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(74, 19);
-            this.label5.TabIndex = 38;
-            this.label5.Text = "Bearbeiter:";
             // 
             // textBox_Projekt
             // 
+            resources.ApplyResources(this.textBox_Projekt, "textBox_Projekt");
             this.textBox_Projekt.BackColor = System.Drawing.Color.White;
             this.textBox_Projekt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Projekt.Enabled = false;
-            this.textBox_Projekt.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Projekt.Location = new System.Drawing.Point(135, 74);
             this.textBox_Projekt.Name = "textBox_Projekt";
             this.textBox_Projekt.ReadOnly = true;
-            this.textBox_Projekt.Size = new System.Drawing.Size(304, 25);
-            this.textBox_Projekt.TabIndex = 37;
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
+            resources.ApplyResources(this.label4, "label4");
             this.label4.BackColor = System.Drawing.Color.SteelBlue;
-            this.label4.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.ForeColor = System.Drawing.Color.White;
-            this.label4.Location = new System.Drawing.Point(485, 35);
             this.label4.Name = "label4";
-            this.label4.Padding = new System.Windows.Forms.Padding(1);
-            this.label4.Size = new System.Drawing.Size(111, 23);
-            this.label4.TabIndex = 36;
-            this.label4.Text = "Projektdaten";
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
+            resources.ApplyResources(this.label1, "label1");
             this.label1.BackColor = System.Drawing.Color.SteelBlue;
-            this.label1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(6, 35);
             this.label1.Name = "label1";
-            this.label1.Padding = new System.Windows.Forms.Padding(1);
-            this.label1.Size = new System.Drawing.Size(175, 23);
-            this.label1.TabIndex = 35;
-            this.label1.Text = "Projekteigenschaften";
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
+            resources.ApplyResources(this.label3, "label3");
             this.label3.BackColor = System.Drawing.Color.White;
-            this.label3.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label3.ForeColor = System.Drawing.Color.Black;
-            this.label3.Location = new System.Drawing.Point(6, 75);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(110, 19);
-            this.label3.TabIndex = 33;
-            this.label3.Text = "Projekt geöffnet:";
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
+            resources.ApplyResources(this.label2, "label2");
             this.label2.BackColor = System.Drawing.Color.White;
-            this.label2.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.label2.ForeColor = System.Drawing.Color.Black;
-            this.label2.Location = new System.Drawing.Point(6, 105);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(74, 19);
-            this.label2.TabIndex = 32;
-            this.label2.Text = "Klimazone:";
             // 
             // button_Beenden
             // 
-            this.button_Beenden.Font = new System.Drawing.Font("Segoe UI", 10F);
+            resources.ApplyResources(this.button_Beenden, "button_Beenden");
             this.button_Beenden.ForeColor = System.Drawing.Color.Black;
-            this.button_Beenden.Location = new System.Drawing.Point(1234, 846);
             this.button_Beenden.Name = "button_Beenden";
-            this.button_Beenden.Size = new System.Drawing.Size(168, 35);
-            this.button_Beenden.TabIndex = 34;
-            this.button_Beenden.Text = "Beenden";
             this.button_Beenden.UseVisualStyleBackColor = true;
             this.button_Beenden.Click += new System.EventHandler(this.button_Beenden_Click);
             // 
             // FormMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 13F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.ClientSize = new System.Drawing.Size(1447, 1000);
             this.ControlBox = false;
             this.Controls.Add(this.tabControl_Main);
             this.Controls.Add(this.button_Beenden);
-            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ForeColor = System.Drawing.Color.White;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "FormMain";
-            this.Text = "Detailformular";
             this.Load += new System.EventHandler(this.FormMain_Load);
             this.tabControl_Main.ResumeLayout(false);
             this.tabPage_Komponenten.ResumeLayout(false);

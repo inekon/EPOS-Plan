@@ -57,6 +57,8 @@
             this.pBox_ProjektNeu = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label33 = new System.Windows.Forms.Label();
+            this.label32 = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
             this.label25 = new System.Windows.Forms.Label();
             this.pBox_WBHinweis = new System.Windows.Forms.PictureBox();
@@ -145,7 +147,6 @@
             // 
             // tabControl_Wizard
             // 
-            resources.ApplyResources(this.tabControl_Wizard, "tabControl_Wizard");
             this.tabControl_Wizard.Controls.Add(this.tabPage1);
             this.tabControl_Wizard.Controls.Add(this.tabPage2);
             this.tabControl_Wizard.Controls.Add(this.tabPage3);
@@ -153,13 +154,13 @@
             this.tabControl_Wizard.Controls.Add(this.tabPage5);
             this.tabControl_Wizard.Controls.Add(this.tabPage6);
             this.tabControl_Wizard.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
+            resources.ApplyResources(this.tabControl_Wizard, "tabControl_Wizard");
             this.tabControl_Wizard.Name = "tabControl_Wizard";
             this.tabControl_Wizard.SelectedIndex = 0;
             this.tabControl_Wizard.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabControl_Wizard_Selecting);
             // 
             // tabPage1
             // 
-            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Controls.Add(this.label23);
             this.tabPage1.Controls.Add(this.label22);
             this.tabPage1.Controls.Add(this.label21);
@@ -185,6 +186,7 @@
             this.tabPage1.Controls.Add(this.pBox_ProjektOeffnen);
             this.tabPage1.Controls.Add(this.pBox_ProjektNeu);
             this.tabPage1.Controls.Add(this.pictureBox1);
+            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
@@ -285,8 +287,8 @@
             // 
             // pBox_ProjektDetails
             // 
-            resources.ApplyResources(this.pBox_ProjektDetails, "pBox_ProjektDetails");
             this.pBox_ProjektDetails.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektDetails;
+            resources.ApplyResources(this.pBox_ProjektDetails, "pBox_ProjektDetails");
             this.pBox_ProjektDetails.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_ProjektDetails.Name = "pBox_ProjektDetails";
             this.pBox_ProjektDetails.TabStop = false;
@@ -294,8 +296,8 @@
             // 
             // pBox_Delete
             // 
-            resources.ApplyResources(this.pBox_Delete, "pBox_Delete");
             this.pBox_Delete.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PDelete;
+            resources.ApplyResources(this.pBox_Delete, "pBox_Delete");
             this.pBox_Delete.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Delete.Name = "pBox_Delete";
             this.pBox_Delete.TabStop = false;
@@ -308,8 +310,8 @@
             // 
             // pBox_Bearbeiten
             // 
-            resources.ApplyResources(this.pBox_Bearbeiten, "pBox_Bearbeiten");
             this.pBox_Bearbeiten.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektBearbeiten;
+            resources.ApplyResources(this.pBox_Bearbeiten, "pBox_Bearbeiten");
             this.pBox_Bearbeiten.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Bearbeiten.Name = "pBox_Bearbeiten";
             this.pBox_Bearbeiten.TabStop = false;
@@ -317,8 +319,8 @@
             // 
             // pBox_ProjektZuletzt
             // 
-            resources.ApplyResources(this.pBox_ProjektZuletzt, "pBox_ProjektZuletzt");
             this.pBox_ProjektZuletzt.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektZuletzt;
+            resources.ApplyResources(this.pBox_ProjektZuletzt, "pBox_ProjektZuletzt");
             this.pBox_ProjektZuletzt.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_ProjektZuletzt.Name = "pBox_ProjektZuletzt";
             this.pBox_ProjektZuletzt.TabStop = false;
@@ -326,8 +328,8 @@
             // 
             // pBox_ProjektOeffnen
             // 
-            resources.ApplyResources(this.pBox_ProjektOeffnen, "pBox_ProjektOeffnen");
             this.pBox_ProjektOeffnen.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektOeffnen;
+            resources.ApplyResources(this.pBox_ProjektOeffnen, "pBox_ProjektOeffnen");
             this.pBox_ProjektOeffnen.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_ProjektOeffnen.Name = "pBox_ProjektOeffnen";
             this.pBox_ProjektOeffnen.TabStop = false;
@@ -335,8 +337,8 @@
             // 
             // pBox_ProjektNeu
             // 
-            resources.ApplyResources(this.pBox_ProjektNeu, "pBox_ProjektNeu");
             this.pBox_ProjektNeu.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektNeu;
+            resources.ApplyResources(this.pBox_ProjektNeu, "pBox_ProjektNeu");
             this.pBox_ProjektNeu.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_ProjektNeu.Name = "pBox_ProjektNeu";
             this.pBox_ProjektNeu.TabStop = false;
@@ -344,15 +346,16 @@
             // 
             // pictureBox1
             // 
-            resources.ApplyResources(this.pictureBox1, "pictureBox1");
             this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektname;
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
             this.pictureBox1.Cursor = System.Windows.Forms.Cursors.Default;
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
             // 
             // tabPage2
             // 
-            resources.ApplyResources(this.tabPage2, "tabPage2");
+            this.tabPage2.Controls.Add(this.label33);
+            this.tabPage2.Controls.Add(this.label32);
             this.tabPage2.Controls.Add(this.label24);
             this.tabPage2.Controls.Add(this.label25);
             this.tabPage2.Controls.Add(this.pBox_WBHinweis);
@@ -360,8 +363,24 @@
             this.tabPage2.Controls.Add(this.pBox_Prozess);
             this.tabPage2.Controls.Add(this.pBox_WBedarfDaten);
             this.tabPage2.Controls.Add(this.pBox_Gebaude);
+            resources.ApplyResources(this.tabPage2, "tabPage2");
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // label33
+            // 
+            resources.ApplyResources(this.label33, "label33");
+            this.label33.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(239)))), ((int)(((byte)(246)))), ((int)(((byte)(255)))));
+            this.label33.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(66)))), ((int)(((byte)(159)))));
+            this.label33.Name = "label33";
+            this.label33.Click += new System.EventHandler(this.label33_Click);
+            // 
+            // label32
+            // 
+            resources.ApplyResources(this.label32, "label32");
+            this.label32.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(239)))), ((int)(((byte)(246)))), ((int)(((byte)(255)))));
+            this.label32.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(66)))), ((int)(((byte)(159)))));
+            this.label32.Name = "label32";
             // 
             // label24
             // 
@@ -376,22 +395,22 @@
             // 
             // pBox_WBHinweis
             // 
-            resources.ApplyResources(this.pBox_WBHinweis, "pBox_WBHinweis");
             this.pBox_WBHinweis.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt4;
+            resources.ApplyResources(this.pBox_WBHinweis, "pBox_WBHinweis");
             this.pBox_WBHinweis.Cursor = System.Windows.Forms.Cursors.Default;
             this.pBox_WBHinweis.Name = "pBox_WBHinweis";
             this.pBox_WBHinweis.TabStop = false;
             // 
             // Label2
             // 
-            resources.ApplyResources(this.Label2, "Label2");
             this.Label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            resources.ApplyResources(this.Label2, "Label2");
             this.Label2.Name = "Label2";
             // 
             // pBox_Prozess
             // 
-            resources.ApplyResources(this.pBox_Prozess, "pBox_Prozess");
             this.pBox_Prozess.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt2;
+            resources.ApplyResources(this.pBox_Prozess, "pBox_Prozess");
             this.pBox_Prozess.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Prozess.Name = "pBox_Prozess";
             this.pBox_Prozess.TabStop = false;
@@ -400,8 +419,8 @@
             // 
             // pBox_WBedarfDaten
             // 
-            resources.ApplyResources(this.pBox_WBedarfDaten, "pBox_WBedarfDaten");
             this.pBox_WBedarfDaten.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt3;
+            resources.ApplyResources(this.pBox_WBedarfDaten, "pBox_WBedarfDaten");
             this.pBox_WBedarfDaten.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_WBedarfDaten.Name = "pBox_WBedarfDaten";
             this.pBox_WBedarfDaten.TabStop = false;
@@ -410,8 +429,8 @@
             // 
             // pBox_Gebaude
             // 
-            resources.ApplyResources(this.pBox_Gebaude, "pBox_Gebaude");
             this.pBox_Gebaude.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt1;
+            resources.ApplyResources(this.pBox_Gebaude, "pBox_Gebaude");
             this.pBox_Gebaude.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Gebaude.Name = "pBox_Gebaude";
             this.pBox_Gebaude.TabStop = false;
@@ -420,7 +439,6 @@
             // 
             // tabPage3
             // 
-            resources.ApplyResources(this.tabPage3, "tabPage3");
             this.tabPage3.Controls.Add(this.label26);
             this.tabPage3.Controls.Add(this.label27);
             this.tabPage3.Controls.Add(this.pBox_StromMessdaten);
@@ -428,6 +446,7 @@
             this.tabPage3.Controls.Add(this.Label5);
             this.tabPage3.Controls.Add(this.Label6);
             this.tabPage3.Controls.Add(this.pBox_StdLastProfil);
+            resources.ApplyResources(this.tabPage3, "tabPage3");
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
@@ -444,8 +463,8 @@
             // 
             // pBox_StromMessdaten
             // 
-            resources.ApplyResources(this.pBox_StromMessdaten, "pBox_StromMessdaten");
             this.pBox_StromMessdaten.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PStromMessdaten;
+            resources.ApplyResources(this.pBox_StromMessdaten, "pBox_StromMessdaten");
             this.pBox_StromMessdaten.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_StromMessdaten.Name = "pBox_StromMessdaten";
             this.pBox_StromMessdaten.TabStop = false;
@@ -454,8 +473,8 @@
             // 
             // pBox_StromProfilEigenes
             // 
-            resources.ApplyResources(this.pBox_StromProfilEigenes, "pBox_StromProfilEigenes");
             this.pBox_StromProfilEigenes.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PStromProfilEigenes;
+            resources.ApplyResources(this.pBox_StromProfilEigenes, "pBox_StromProfilEigenes");
             this.pBox_StromProfilEigenes.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_StromProfilEigenes.Name = "pBox_StromProfilEigenes";
             this.pBox_StromProfilEigenes.TabStop = false;
@@ -463,8 +482,8 @@
             // 
             // Label5
             // 
-            resources.ApplyResources(this.Label5, "Label5");
             this.Label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            resources.ApplyResources(this.Label5, "Label5");
             this.Label5.Name = "Label5";
             // 
             // Label6
@@ -474,8 +493,8 @@
             // 
             // pBox_StdLastProfil
             // 
-            resources.ApplyResources(this.pBox_StdLastProfil, "pBox_StdLastProfil");
             this.pBox_StdLastProfil.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PStdLastProfil;
+            resources.ApplyResources(this.pBox_StdLastProfil, "pBox_StdLastProfil");
             this.pBox_StdLastProfil.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_StdLastProfil.Name = "pBox_StdLastProfil";
             this.pBox_StdLastProfil.TabStop = false;
@@ -484,7 +503,6 @@
             // 
             // tabPage4
             // 
-            resources.ApplyResources(this.tabPage4, "tabPage4");
             this.tabPage4.Controls.Add(this.label28);
             this.tabPage4.Controls.Add(this.label29);
             this.tabPage4.Controls.Add(this.radioButton_Ganglinie);
@@ -498,6 +516,7 @@
             this.tabPage4.Controls.Add(this.pBox_BHKW);
             this.tabPage4.Controls.Add(this.pictureBox3);
             this.tabPage4.Controls.Add(this.pBox_WP);
+            resources.ApplyResources(this.tabPage4, "tabPage4");
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
@@ -530,8 +549,8 @@
             // 
             // Label7
             // 
-            resources.ApplyResources(this.Label7, "Label7");
             this.Label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            resources.ApplyResources(this.Label7, "Label7");
             this.Label7.Name = "Label7";
             // 
             // Label8
@@ -541,9 +560,9 @@
             // 
             // pBox_PV
             // 
-            resources.ApplyResources(this.pBox_PV, "pBox_PV");
             this.pBox_PV.BackColor = System.Drawing.Color.Transparent;
             this.pBox_PV.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektPV;
+            resources.ApplyResources(this.pBox_PV, "pBox_PV");
             this.pBox_PV.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_PV.Name = "pBox_PV";
             this.pBox_PV.TabStop = false;
@@ -552,9 +571,9 @@
             // 
             // pBox_Solarthermie
             // 
-            resources.ApplyResources(this.pBox_Solarthermie, "pBox_Solarthermie");
             this.pBox_Solarthermie.BackColor = System.Drawing.Color.Transparent;
             this.pBox_Solarthermie.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektSolarthermie;
+            resources.ApplyResources(this.pBox_Solarthermie, "pBox_Solarthermie");
             this.pBox_Solarthermie.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Solarthermie.Name = "pBox_Solarthermie";
             this.pBox_Solarthermie.TabStop = false;
@@ -563,8 +582,8 @@
             // 
             // pBox_Stromspeicher
             // 
-            resources.ApplyResources(this.pBox_Stromspeicher, "pBox_Stromspeicher");
             this.pBox_Stromspeicher.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PSSpeicher;
+            resources.ApplyResources(this.pBox_Stromspeicher, "pBox_Stromspeicher");
             this.pBox_Stromspeicher.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Stromspeicher.Name = "pBox_Stromspeicher";
             this.pBox_Stromspeicher.TabStop = false;
@@ -573,9 +592,9 @@
             // 
             // pBox_Heizkessel
             // 
-            resources.ApplyResources(this.pBox_Heizkessel, "pBox_Heizkessel");
             this.pBox_Heizkessel.BackColor = System.Drawing.Color.Transparent;
             this.pBox_Heizkessel.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PHeizkessel;
+            resources.ApplyResources(this.pBox_Heizkessel, "pBox_Heizkessel");
             this.pBox_Heizkessel.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Heizkessel.Name = "pBox_Heizkessel";
             this.pBox_Heizkessel.TabStop = false;
@@ -584,8 +603,8 @@
             // 
             // pBox_BHKW
             // 
-            resources.ApplyResources(this.pBox_BHKW, "pBox_BHKW");
             this.pBox_BHKW.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PBHKW;
+            resources.ApplyResources(this.pBox_BHKW, "pBox_BHKW");
             this.pBox_BHKW.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_BHKW.Name = "pBox_BHKW";
             this.pBox_BHKW.TabStop = false;
@@ -594,16 +613,16 @@
             // 
             // pictureBox3
             // 
-            resources.ApplyResources(this.pictureBox3, "pictureBox3");
             this.pictureBox3.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PEETipp;
+            resources.ApplyResources(this.pictureBox3, "pictureBox3");
             this.pictureBox3.Cursor = System.Windows.Forms.Cursors.Default;
             this.pictureBox3.Name = "pictureBox3";
             this.pictureBox3.TabStop = false;
             // 
             // pBox_WP
             // 
-            resources.ApplyResources(this.pBox_WP, "pBox_WP");
             this.pBox_WP.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PWP;
+            resources.ApplyResources(this.pBox_WP, "pBox_WP");
             this.pBox_WP.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_WP.Name = "pBox_WP";
             this.pBox_WP.TabStop = false;
@@ -612,7 +631,6 @@
             // 
             // tabPage5
             // 
-            resources.ApplyResources(this.tabPage5, "tabPage5");
             this.tabPage5.Controls.Add(this.label30);
             this.tabPage5.Controls.Add(this.label31);
             this.tabPage5.Controls.Add(this.btn_SimKonfig);
@@ -626,6 +644,7 @@
             this.tabPage5.Controls.Add(this.pBox_DetailSim);
             this.tabPage5.Controls.Add(this.pBoxSchnellSim);
             this.tabPage5.Controls.Add(this.pictureBox_Zusammenfassung);
+            resources.ApplyResources(this.tabPage5, "tabPage5");
             this.tabPage5.Name = "tabPage5";
             this.tabPage5.UseVisualStyleBackColor = true;
             this.tabPage5.Enter += new System.EventHandler(this.tabPage5_Enter);
@@ -674,8 +693,8 @@
             // 
             // Label9
             // 
-            resources.ApplyResources(this.Label9, "Label9");
             this.Label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            resources.ApplyResources(this.Label9, "Label9");
             this.Label9.Name = "Label9";
             // 
             // Label10
@@ -685,16 +704,16 @@
             // 
             // pBox_Optimierung
             // 
-            resources.ApplyResources(this.pBox_Optimierung, "pBox_Optimierung");
             this.pBox_Optimierung.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.POptimierung;
+            resources.ApplyResources(this.pBox_Optimierung, "pBox_Optimierung");
             this.pBox_Optimierung.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Optimierung.Name = "pBox_Optimierung";
             this.pBox_Optimierung.TabStop = false;
             // 
             // pBox_DetailSim
             // 
-            resources.ApplyResources(this.pBox_DetailSim, "pBox_DetailSim");
             this.pBox_DetailSim.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PDetailSim;
+            resources.ApplyResources(this.pBox_DetailSim, "pBox_DetailSim");
             this.pBox_DetailSim.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_DetailSim.Name = "pBox_DetailSim";
             this.pBox_DetailSim.TabStop = false;
@@ -702,8 +721,8 @@
             // 
             // pBoxSchnellSim
             // 
-            resources.ApplyResources(this.pBoxSchnellSim, "pBoxSchnellSim");
             this.pBoxSchnellSim.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PSchnellSim;
+            resources.ApplyResources(this.pBoxSchnellSim, "pBoxSchnellSim");
             this.pBoxSchnellSim.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBoxSchnellSim.Name = "pBoxSchnellSim";
             this.pBoxSchnellSim.TabStop = false;
@@ -711,8 +730,8 @@
             // 
             // pictureBox_Zusammenfassung
             // 
-            resources.ApplyResources(this.pictureBox_Zusammenfassung, "pictureBox_Zusammenfassung");
             this.pictureBox_Zusammenfassung.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PZusammenfassung_pg;
+            resources.ApplyResources(this.pictureBox_Zusammenfassung, "pictureBox_Zusammenfassung");
             this.pictureBox_Zusammenfassung.Name = "pictureBox_Zusammenfassung";
             this.pictureBox_Zusammenfassung.TabStop = false;
             // 
@@ -724,9 +743,9 @@
             // 
             // textBox_ProjektOpen
             // 
-            resources.ApplyResources(this.textBox_ProjektOpen, "textBox_ProjektOpen");
             this.textBox_ProjektOpen.BackColor = System.Drawing.Color.White;
             this.textBox_ProjektOpen.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.textBox_ProjektOpen, "textBox_ProjektOpen");
             this.textBox_ProjektOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.textBox_ProjektOpen.Name = "textBox_ProjektOpen";
             this.textBox_ProjektOpen.TabStop = false;
@@ -747,16 +766,16 @@
             // 
             // pictureBox2
             // 
-            resources.ApplyResources(this.pictureBox2, "pictureBox2");
             this.pictureBox2.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PTitel;
             this.pictureBox2.Cursor = System.Windows.Forms.Cursors.Default;
+            resources.ApplyResources(this.pictureBox2, "pictureBox2");
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.TabStop = false;
             // 
             // pBox_Zurueck
             // 
-            resources.ApplyResources(this.pBox_Zurueck, "pBox_Zurueck");
             this.pBox_Zurueck.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PZurueck;
+            resources.ApplyResources(this.pBox_Zurueck, "pBox_Zurueck");
             this.pBox_Zurueck.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Zurueck.Name = "pBox_Zurueck";
             this.pBox_Zurueck.TabStop = false;
@@ -764,8 +783,8 @@
             // 
             // pBox_Weiter
             // 
-            resources.ApplyResources(this.pBox_Weiter, "pBox_Weiter");
             this.pBox_Weiter.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PWeiter;
+            resources.ApplyResources(this.pBox_Weiter, "pBox_Weiter");
             this.pBox_Weiter.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Weiter.Name = "pBox_Weiter";
             this.pBox_Weiter.TabStop = false;
@@ -910,5 +929,7 @@
         private System.Windows.Forms.Label label29;
         private System.Windows.Forms.Label label30;
         private System.Windows.Forms.Label label31;
+        private System.Windows.Forms.Label label32;
+        private System.Windows.Forms.Label label33;
     }
 }

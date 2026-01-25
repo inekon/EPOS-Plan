@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Simulation_Config));
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.comboBox3 = new System.Windows.Forms.ComboBox();
@@ -85,464 +86,291 @@
             // 
             // comboBox1
             // 
+            resources.ApplyResources(this.comboBox1, "comboBox1");
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Items.AddRange(new object[] {
-            "BHKW",
-            "Wärmepumpe",
-            "Spitzenkessel",
-            "Solare Wärme"});
-            this.comboBox1.Location = new System.Drawing.Point(26, 114);
-            this.comboBox1.Margin = new System.Windows.Forms.Padding(4);
+            resources.GetString("comboBox1.Items"),
+            resources.GetString("comboBox1.Items1"),
+            resources.GetString("comboBox1.Items2"),
+            resources.GetString("comboBox1.Items3")});
             this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(179, 25);
-            this.comboBox1.TabIndex = 0;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
             // comboBox2
             // 
+            resources.ApplyResources(this.comboBox2, "comboBox2");
             this.comboBox2.FormattingEnabled = true;
             this.comboBox2.Items.AddRange(new object[] {
-            "BHKW",
-            "Wärmepumpe",
-            "Spitzenkessel",
-            "Solare Wärme"});
-            this.comboBox2.Location = new System.Drawing.Point(26, 149);
-            this.comboBox2.Margin = new System.Windows.Forms.Padding(4);
+            resources.GetString("comboBox2.Items"),
+            resources.GetString("comboBox2.Items1"),
+            resources.GetString("comboBox2.Items2"),
+            resources.GetString("comboBox2.Items3")});
             this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(179, 25);
-            this.comboBox2.TabIndex = 1;
             this.comboBox2.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
             // 
             // comboBox3
             // 
+            resources.ApplyResources(this.comboBox3, "comboBox3");
             this.comboBox3.FormattingEnabled = true;
             this.comboBox3.Items.AddRange(new object[] {
-            "BHKW",
-            "Wärmepumpe",
-            "Spitzenkessel",
-            "Solare Wärme"});
-            this.comboBox3.Location = new System.Drawing.Point(26, 185);
-            this.comboBox3.Margin = new System.Windows.Forms.Padding(4);
+            resources.GetString("comboBox3.Items"),
+            resources.GetString("comboBox3.Items1"),
+            resources.GetString("comboBox3.Items2"),
+            resources.GetString("comboBox3.Items3")});
             this.comboBox3.Name = "comboBox3";
-            this.comboBox3.Size = new System.Drawing.Size(179, 25);
-            this.comboBox3.TabIndex = 2;
             this.comboBox3.SelectedIndexChanged += new System.EventHandler(this.comboBox3_SelectedIndexChanged);
             // 
             // comboBox4
             // 
+            resources.ApplyResources(this.comboBox4, "comboBox4");
             this.comboBox4.FormattingEnabled = true;
             this.comboBox4.Items.AddRange(new object[] {
-            "BHKW",
-            "Wärmepumpe",
-            "Spitzenkessel",
-            "Solare Wärme"});
-            this.comboBox4.Location = new System.Drawing.Point(25, 218);
-            this.comboBox4.Margin = new System.Windows.Forms.Padding(4);
+            resources.GetString("comboBox4.Items"),
+            resources.GetString("comboBox4.Items1"),
+            resources.GetString("comboBox4.Items2"),
+            resources.GetString("comboBox4.Items3")});
             this.comboBox4.Name = "comboBox4";
-            this.comboBox4.Size = new System.Drawing.Size(179, 25);
-            this.comboBox4.TabIndex = 3;
             this.comboBox4.SelectedIndexChanged += new System.EventHandler(this.comboBox4_SelectedIndexChanged);
             // 
             // comboBox5
             // 
+            resources.ApplyResources(this.comboBox5, "comboBox5");
             this.comboBox5.FormattingEnabled = true;
             this.comboBox5.Items.AddRange(new object[] {
-            "Photovoltaik"});
-            this.comboBox5.Location = new System.Drawing.Point(264, 116);
-            this.comboBox5.Margin = new System.Windows.Forms.Padding(4);
+            resources.GetString("comboBox5.Items")});
             this.comboBox5.Name = "comboBox5";
-            this.comboBox5.Size = new System.Drawing.Size(179, 25);
-            this.comboBox5.TabIndex = 4;
             this.comboBox5.SelectedIndexChanged += new System.EventHandler(this.comboBox5_SelectedIndexChanged);
             // 
             // comboBox6
             // 
+            resources.ApplyResources(this.comboBox6, "comboBox6");
             this.comboBox6.FormattingEnabled = true;
             this.comboBox6.Items.AddRange(new object[] {
-            "Stromspeicher"});
-            this.comboBox6.Location = new System.Drawing.Point(267, 188);
-            this.comboBox6.Margin = new System.Windows.Forms.Padding(4);
+            resources.GetString("comboBox6.Items")});
             this.comboBox6.Name = "comboBox6";
-            this.comboBox6.Size = new System.Drawing.Size(179, 25);
-            this.comboBox6.TabIndex = 5;
             this.comboBox6.SelectedIndexChanged += new System.EventHandler(this.comboBox6_SelectedIndexChanged);
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(22, 93);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            resources.ApplyResources(this.label1, "label1");
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(104, 17);
-            this.label1.TabIndex = 6;
-            this.label1.Text = "Wärmeerzeuger:";
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(263, 97);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            resources.ApplyResources(this.label2, "label2");
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(98, 17);
-            this.label2.TabIndex = 7;
-            this.label2.Text = "Stromerzeuger:";
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(263, 168);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            resources.ApplyResources(this.label3, "label3");
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(104, 17);
-            this.label3.TabIndex = 8;
-            this.label3.Text = "Energiespeicher:";
             // 
             // checkBox1
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(209, 120);
-            this.checkBox1.Margin = new System.Windows.Forms.Padding(4);
+            resources.ApplyResources(this.checkBox1, "checkBox1");
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(15, 14);
-            this.checkBox1.TabIndex = 9;
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // checkBox2
             // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(209, 155);
-            this.checkBox2.Margin = new System.Windows.Forms.Padding(4);
+            resources.ApplyResources(this.checkBox2, "checkBox2");
             this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(15, 14);
-            this.checkBox2.TabIndex = 10;
             this.checkBox2.UseVisualStyleBackColor = true;
             this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
             // 
             // checkBox3
             // 
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.Location = new System.Drawing.Point(209, 191);
-            this.checkBox3.Margin = new System.Windows.Forms.Padding(4);
+            resources.ApplyResources(this.checkBox3, "checkBox3");
             this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(15, 14);
-            this.checkBox3.TabIndex = 11;
             this.checkBox3.UseVisualStyleBackColor = true;
             this.checkBox3.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
             // 
             // checkBox4
             // 
-            this.checkBox4.AutoSize = true;
-            this.checkBox4.Location = new System.Drawing.Point(209, 226);
-            this.checkBox4.Margin = new System.Windows.Forms.Padding(4);
+            resources.ApplyResources(this.checkBox4, "checkBox4");
             this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(15, 14);
-            this.checkBox4.TabIndex = 12;
             this.checkBox4.UseVisualStyleBackColor = true;
             this.checkBox4.CheckedChanged += new System.EventHandler(this.checkBox4_CheckedChanged);
             // 
             // checkBox5
             // 
-            this.checkBox5.AutoSize = true;
-            this.checkBox5.Location = new System.Drawing.Point(451, 124);
-            this.checkBox5.Margin = new System.Windows.Forms.Padding(4);
+            resources.ApplyResources(this.checkBox5, "checkBox5");
             this.checkBox5.Name = "checkBox5";
-            this.checkBox5.Size = new System.Drawing.Size(15, 14);
-            this.checkBox5.TabIndex = 13;
             this.checkBox5.UseVisualStyleBackColor = true;
             this.checkBox5.CheckedChanged += new System.EventHandler(this.checkBox5_CheckedChanged);
             // 
             // checkBox6
             // 
-            this.checkBox6.AutoSize = true;
-            this.checkBox6.Location = new System.Drawing.Point(451, 195);
-            this.checkBox6.Margin = new System.Windows.Forms.Padding(4);
+            resources.ApplyResources(this.checkBox6, "checkBox6");
             this.checkBox6.Name = "checkBox6";
-            this.checkBox6.Size = new System.Drawing.Size(15, 14);
-            this.checkBox6.TabIndex = 14;
             this.checkBox6.UseVisualStyleBackColor = true;
             this.checkBox6.CheckedChanged += new System.EventHandler(this.checkBox6_CheckedChanged);
             // 
             // checkBox_Heizstab
             // 
-            this.checkBox_Heizstab.Font = new System.Drawing.Font("Segoe UI Semibold", 8F);
+            resources.ApplyResources(this.checkBox_Heizstab, "checkBox_Heizstab");
             this.checkBox_Heizstab.ForeColor = System.Drawing.Color.Black;
-            this.checkBox_Heizstab.Location = new System.Drawing.Point(7, 20);
-            this.checkBox_Heizstab.Margin = new System.Windows.Forms.Padding(4);
             this.checkBox_Heizstab.Name = "checkBox_Heizstab";
-            this.checkBox_Heizstab.Size = new System.Drawing.Size(188, 43);
-            this.checkBox_Heizstab.TabIndex = 67;
-            this.checkBox_Heizstab.Text = "mit Heizstab (falls vorhanden)";
             this.checkBox_Heizstab.UseVisualStyleBackColor = true;
             // 
             // label57
             // 
-            this.label57.AutoSize = true;
+            resources.ApplyResources(this.label57, "label57");
             this.label57.BackColor = System.Drawing.SystemColors.Control;
-            this.label57.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label57.ForeColor = System.Drawing.Color.Black;
-            this.label57.Location = new System.Drawing.Point(8, 29);
-            this.label57.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label57.Name = "label57";
-            this.label57.Size = new System.Drawing.Size(126, 17);
-            this.label57.TabIndex = 196;
-            this.label57.Text = "Betriebsbereitschaft:";
-            this.label57.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // comboBox_Bereitschaft
             // 
-            this.comboBox_Bereitschaft.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            resources.ApplyResources(this.comboBox_Bereitschaft, "comboBox_Bereitschaft");
             this.comboBox_Bereitschaft.FormattingEnabled = true;
-            this.comboBox_Bereitschaft.Location = new System.Drawing.Point(136, 26);
-            this.comboBox_Bereitschaft.Margin = new System.Windows.Forms.Padding(4);
             this.comboBox_Bereitschaft.Name = "comboBox_Bereitschaft";
-            this.comboBox_Bereitschaft.Size = new System.Drawing.Size(54, 25);
-            this.comboBox_Bereitschaft.TabIndex = 195;
-            this.comboBox_Bereitschaft.Text = "6000";
             // 
             // label5
             // 
-            this.label5.AutoSize = true;
+            resources.ApplyResources(this.label5, "label5");
             this.label5.BackColor = System.Drawing.SystemColors.Control;
-            this.label5.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label5.ForeColor = System.Drawing.Color.Black;
-            this.label5.Location = new System.Drawing.Point(8, 29);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(148, 17);
-            this.label5.TabIndex = 198;
-            this.label5.Text = "Untere Leistungsgrenze:";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // textBox_untere_PGrenze
             // 
+            resources.ApplyResources(this.textBox_untere_PGrenze, "textBox_untere_PGrenze");
             this.textBox_untere_PGrenze.BackColor = System.Drawing.Color.White;
-            this.textBox_untere_PGrenze.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.textBox_untere_PGrenze.ForeColor = System.Drawing.Color.Black;
-            this.textBox_untere_PGrenze.Location = new System.Drawing.Point(157, 26);
-            this.textBox_untere_PGrenze.Margin = new System.Windows.Forms.Padding(5);
             this.textBox_untere_PGrenze.Name = "textBox_untere_PGrenze";
-            this.textBox_untere_PGrenze.Size = new System.Drawing.Size(46, 25);
-            this.textBox_untere_PGrenze.TabIndex = 199;
-            this.textBox_untere_PGrenze.Text = "50";
             // 
             // label6
             // 
-            this.label6.AutoSize = true;
+            resources.ApplyResources(this.label6, "label6");
             this.label6.BackColor = System.Drawing.SystemColors.Control;
-            this.label6.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label6.ForeColor = System.Drawing.Color.Black;
-            this.label6.Location = new System.Drawing.Point(206, 30);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(19, 17);
-            this.label6.TabIndex = 200;
-            this.label6.Text = "%";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label11
             // 
-            this.label11.AutoSize = true;
+            resources.ApplyResources(this.label11, "label11");
             this.label11.BackColor = System.Drawing.SystemColors.Control;
-            this.label11.Font = new System.Drawing.Font("Segoe UI", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label11.ForeColor = System.Drawing.Color.Black;
-            this.label11.Location = new System.Drawing.Point(21, 13);
-            this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(207, 21);
-            this.label11.TabIndex = 206;
-            this.label11.Text = "Simulationskonfiguration";
-            this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label12
             // 
-            this.label12.AutoSize = true;
+            resources.ApplyResources(this.label12, "label12");
             this.label12.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.label12.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label12.ForeColor = System.Drawing.Color.Black;
-            this.label12.Location = new System.Drawing.Point(21, 51);
-            this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(387, 17);
-            this.label12.TabIndex = 207;
-            this.label12.Text = "Erzeuger in der Reihenfolge auswählen (falls im Projekt definiert):";
-            this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label14
             // 
-            this.label14.AutoSize = true;
+            resources.ApplyResources(this.label14, "label14");
             this.label14.BackColor = System.Drawing.SystemColors.Control;
-            this.label14.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label14.ForeColor = System.Drawing.Color.Black;
-            this.label14.Location = new System.Drawing.Point(195, 30);
-            this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(27, 17);
-            this.label14.TabIndex = 210;
-            this.label14.Text = "h/a";
-            this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btn_Speichern
             // 
+            resources.ApplyResources(this.btn_Speichern, "btn_Speichern");
             this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
-            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_Speichern.Location = new System.Drawing.Point(244, 615);
             this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.Size = new System.Drawing.Size(193, 30);
-            this.btn_Speichern.TabIndex = 211;
-            this.btn_Speichern.Text = "Konfiguration speichern";
             this.btn_Speichern.UseVisualStyleBackColor = true;
             this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
             // 
             // comboBox_NetzvEinheit
             // 
-            this.comboBox_NetzvEinheit.Font = new System.Drawing.Font("Segoe UI", 8F);
+            resources.ApplyResources(this.comboBox_NetzvEinheit, "comboBox_NetzvEinheit");
             this.comboBox_NetzvEinheit.FormattingEnabled = true;
             this.comboBox_NetzvEinheit.Items.AddRange(new object[] {
-            "%",
-            "kWh/a"});
-            this.comboBox_NetzvEinheit.Location = new System.Drawing.Point(181, 25);
+            resources.GetString("comboBox_NetzvEinheit.Items"),
+            resources.GetString("comboBox_NetzvEinheit.Items1")});
             this.comboBox_NetzvEinheit.Name = "comboBox_NetzvEinheit";
-            this.comboBox_NetzvEinheit.Size = new System.Drawing.Size(68, 21);
-            this.comboBox_NetzvEinheit.TabIndex = 229;
-            this.comboBox_NetzvEinheit.Text = "%";
             // 
             // label15
             // 
-            this.label15.AutoSize = true;
-            this.label15.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            resources.ApplyResources(this.label15, "label15");
             this.label15.ForeColor = System.Drawing.Color.Black;
-            this.label15.Location = new System.Drawing.Point(12, 26);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(80, 17);
-            this.label15.TabIndex = 228;
-            this.label15.Text = "Netzverluste";
             // 
             // textBox_Netzverluste
             // 
-            this.textBox_Netzverluste.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Netzverluste.Location = new System.Drawing.Point(98, 25);
+            resources.ApplyResources(this.textBox_Netzverluste, "textBox_Netzverluste");
             this.textBox_Netzverluste.Name = "textBox_Netzverluste";
-            this.textBox_Netzverluste.Size = new System.Drawing.Size(77, 22);
-            this.textBox_Netzverluste.TabIndex = 227;
-            this.textBox_Netzverluste.Text = "10";
             // 
             // label17
             // 
-            this.label17.AutoSize = true;
+            resources.ApplyResources(this.label17, "label17");
             this.label17.BackColor = System.Drawing.SystemColors.Control;
-            this.label17.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))));
-            this.label17.Location = new System.Drawing.Point(25, 260);
-            this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(137, 21);
-            this.label17.TabIndex = 231;
-            this.label17.Text = "Voreinstellungen:";
             // 
             // btn_OK
             // 
-            this.btn_OK.Location = new System.Drawing.Point(443, 615);
+            resources.ApplyResources(this.btn_OK, "btn_OK");
             this.btn_OK.Name = "btn_OK";
-            this.btn_OK.Size = new System.Drawing.Size(103, 30);
-            this.btn_OK.TabIndex = 249;
-            this.btn_OK.Text = "Beenden";
             this.btn_OK.UseVisualStyleBackColor = true;
             this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
             // 
             // label18
             // 
-            this.label18.AutoSize = true;
-            this.label18.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            resources.ApplyResources(this.label18, "label18");
             this.label18.ForeColor = System.Drawing.Color.Black;
-            this.label18.Location = new System.Drawing.Point(10, 122);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(132, 17);
-            this.label18.TabIndex = 258;
-            this.label18.Text = "Ladeschwellwert [kW]";
             // 
             // textBox_Speicher_Ladeschwelle
             // 
-            this.textBox_Speicher_Ladeschwelle.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Speicher_Ladeschwelle.Location = new System.Drawing.Point(165, 117);
+            resources.ApplyResources(this.textBox_Speicher_Ladeschwelle, "textBox_Speicher_Ladeschwelle");
             this.textBox_Speicher_Ladeschwelle.Name = "textBox_Speicher_Ladeschwelle";
-            this.textBox_Speicher_Ladeschwelle.Size = new System.Drawing.Size(77, 22);
-            this.textBox_Speicher_Ladeschwelle.TabIndex = 257;
-            this.textBox_Speicher_Ladeschwelle.Text = "90";
             // 
             // btn_Strom_Simu_Start
             // 
-            this.btn_Strom_Simu_Start.Location = new System.Drawing.Point(334, 27);
+            resources.ApplyResources(this.btn_Strom_Simu_Start, "btn_Strom_Simu_Start");
             this.btn_Strom_Simu_Start.Name = "btn_Strom_Simu_Start";
-            this.btn_Strom_Simu_Start.Size = new System.Drawing.Size(133, 30);
-            this.btn_Strom_Simu_Start.TabIndex = 260;
-            this.btn_Strom_Simu_Start.Text = "Starte Simulation";
             this.btn_Strom_Simu_Start.UseVisualStyleBackColor = true;
             // 
             // label21
             // 
-            this.label21.AutoSize = true;
+            resources.ApplyResources(this.label21, "label21");
             this.label21.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.label21.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label21.ForeColor = System.Drawing.Color.Black;
-            this.label21.Location = new System.Drawing.Point(21, 70);
-            this.label21.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(123, 17);
-            this.label21.TabIndex = 264;
-            this.label21.Text = "Priorität absteigend";
-            this.label21.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // groupBox1
             // 
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.textBox_Netzverluste);
             this.groupBox1.Controls.Add(this.label15);
             this.groupBox1.Controls.Add(this.comboBox_NetzvEinheit);
-            this.groupBox1.Location = new System.Drawing.Point(22, 293);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(258, 73);
-            this.groupBox1.TabIndex = 265;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Wärmebedarf";
             // 
             // groupBox2
             // 
+            resources.ApplyResources(this.groupBox2, "groupBox2");
             this.groupBox2.Controls.Add(this.checkBox_Heizstab);
-            this.groupBox2.Location = new System.Drawing.Point(286, 293);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(249, 73);
-            this.groupBox2.TabIndex = 266;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Wärmepumpe";
             // 
             // groupBox3
             // 
+            resources.ApplyResources(this.groupBox3, "groupBox3");
             this.groupBox3.Controls.Add(this.label6);
             this.groupBox3.Controls.Add(this.textBox_untere_PGrenze);
             this.groupBox3.Controls.Add(this.label5);
-            this.groupBox3.Location = new System.Drawing.Point(286, 369);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(249, 73);
-            this.groupBox3.TabIndex = 266;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "BHKW";
             // 
             // groupBox4
             // 
+            resources.ApplyResources(this.groupBox4, "groupBox4");
             this.groupBox4.Controls.Add(this.comboBox_Bereitschaft);
             this.groupBox4.Controls.Add(this.label57);
             this.groupBox4.Controls.Add(this.label14);
-            this.groupBox4.Location = new System.Drawing.Point(22, 369);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(258, 73);
-            this.groupBox4.TabIndex = 267;
             this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Heizkessel";
             // 
             // groupBox5
             // 
+            resources.ApplyResources(this.groupBox5, "groupBox5");
             this.groupBox5.Controls.Add(this.comboBox7_Stromspeicher_LadeleistungMax_auswahl);
             this.groupBox5.Controls.Add(this.textBox_Stromspeicher_Ladeleistung_max);
             this.groupBox5.Controls.Add(this.label20);
@@ -555,117 +383,73 @@
             this.groupBox5.Controls.Add(this.textBox_Speicher_Ladeschwelle);
             this.groupBox5.Controls.Add(this.label10);
             this.groupBox5.Controls.Add(this.textBox_Stromspeicher_Ladeenergie_min);
-            this.groupBox5.Location = new System.Drawing.Point(22, 448);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(513, 152);
-            this.groupBox5.TabIndex = 268;
             this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "Stromspeicher";
             // 
             // comboBox7_Stromspeicher_LadeleistungMax_auswahl
             // 
-            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Font = new System.Drawing.Font("Segoe UI", 8F);
+            resources.ApplyResources(this.comboBox7_Stromspeicher_LadeleistungMax_auswahl, "comboBox7_Stromspeicher_LadeleistungMax_auswahl");
             this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.FormattingEnabled = true;
             this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items.AddRange(new object[] {
-            "%",
-            "kWh/a"});
-            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Location = new System.Drawing.Point(250, 82);
+            resources.GetString("comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items"),
+            resources.GetString("comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items1")});
             this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Name = "comboBox7_Stromspeicher_LadeleistungMax_auswahl";
-            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Size = new System.Drawing.Size(68, 21);
-            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.TabIndex = 272;
-            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Text = "%";
             // 
             // textBox_Stromspeicher_Ladeleistung_max
             // 
-            this.textBox_Stromspeicher_Ladeleistung_max.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Stromspeicher_Ladeleistung_max.Location = new System.Drawing.Point(165, 82);
+            resources.ApplyResources(this.textBox_Stromspeicher_Ladeleistung_max, "textBox_Stromspeicher_Ladeleistung_max");
             this.textBox_Stromspeicher_Ladeleistung_max.Name = "textBox_Stromspeicher_Ladeleistung_max";
-            this.textBox_Stromspeicher_Ladeleistung_max.Size = new System.Drawing.Size(77, 22);
-            this.textBox_Stromspeicher_Ladeleistung_max.TabIndex = 271;
-            this.textBox_Stromspeicher_Ladeleistung_max.Text = "100";
             // 
             // label20
             // 
-            this.label20.AutoSize = true;
-            this.label20.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            resources.ApplyResources(this.label20, "label20");
             this.label20.ForeColor = System.Drawing.Color.Black;
-            this.label20.Location = new System.Drawing.Point(9, 82);
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(142, 17);
-            this.label20.TabIndex = 270;
-            this.label20.Text = "Maximum Ladeleistung";
             // 
             // label13
             // 
-            this.label13.AutoSize = true;
-            this.label13.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            resources.ApplyResources(this.label13, "label13");
             this.label13.ForeColor = System.Drawing.Color.Black;
-            this.label13.Location = new System.Drawing.Point(9, 54);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(141, 17);
-            this.label13.TabIndex = 269;
-            this.label13.Text = "Maximum Ladeenergie";
             // 
             // textBox_Stromspeicher_Ladeenergie_max
             // 
-            this.textBox_Stromspeicher_Ladeenergie_max.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Stromspeicher_Ladeenergie_max.Location = new System.Drawing.Point(165, 54);
+            resources.ApplyResources(this.textBox_Stromspeicher_Ladeenergie_max, "textBox_Stromspeicher_Ladeenergie_max");
             this.textBox_Stromspeicher_Ladeenergie_max.Name = "textBox_Stromspeicher_Ladeenergie_max";
-            this.textBox_Stromspeicher_Ladeenergie_max.Size = new System.Drawing.Size(77, 22);
-            this.textBox_Stromspeicher_Ladeenergie_max.TabIndex = 268;
-            this.textBox_Stromspeicher_Ladeenergie_max.Text = "90";
             // 
             // comboBox8_Stromspeicher_LadeenergieMin_auswahl
             // 
-            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Font = new System.Drawing.Font("Segoe UI", 8F);
+            resources.ApplyResources(this.comboBox8_Stromspeicher_LadeenergieMin_auswahl, "comboBox8_Stromspeicher_LadeenergieMin_auswahl");
             this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.FormattingEnabled = true;
             this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items.AddRange(new object[] {
-            "%",
-            "kWh/a"});
-            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Location = new System.Drawing.Point(250, 54);
+            resources.GetString("comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items"),
+            resources.GetString("comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1")});
             this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Name = "comboBox8_Stromspeicher_LadeenergieMin_auswahl";
-            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Size = new System.Drawing.Size(68, 21);
-            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.TabIndex = 267;
-            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text = "%";
             // 
             // comboBox_Stromspeicher_LadeenergieMax_auswahl
             // 
-            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Font = new System.Drawing.Font("Segoe UI", 8F);
+            resources.ApplyResources(this.comboBox_Stromspeicher_LadeenergieMax_auswahl, "comboBox_Stromspeicher_LadeenergieMax_auswahl");
             this.comboBox_Stromspeicher_LadeenergieMax_auswahl.FormattingEnabled = true;
             this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Items.AddRange(new object[] {
-            "%",
-            "kWh/a"});
-            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Location = new System.Drawing.Point(250, 28);
+            resources.GetString("comboBox_Stromspeicher_LadeenergieMax_auswahl.Items"),
+            resources.GetString("comboBox_Stromspeicher_LadeenergieMax_auswahl.Items1")});
             this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Name = "comboBox_Stromspeicher_LadeenergieMax_auswahl";
-            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Size = new System.Drawing.Size(68, 21);
-            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.TabIndex = 266;
-            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Text = "%";
             // 
             // label10
             // 
-            this.label10.AutoSize = true;
-            this.label10.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            resources.ApplyResources(this.label10, "label10");
             this.label10.ForeColor = System.Drawing.Color.Black;
-            this.label10.Location = new System.Drawing.Point(8, 27);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(138, 17);
-            this.label10.TabIndex = 265;
-            this.label10.Text = "Minimum Ladeenergie";
             // 
             // textBox_Stromspeicher_Ladeenergie_min
             // 
-            this.textBox_Stromspeicher_Ladeenergie_min.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Stromspeicher_Ladeenergie_min.Location = new System.Drawing.Point(165, 26);
+            resources.ApplyResources(this.textBox_Stromspeicher_Ladeenergie_min, "textBox_Stromspeicher_Ladeenergie_min");
             this.textBox_Stromspeicher_Ladeenergie_min.Name = "textBox_Stromspeicher_Ladeenergie_min";
-            this.textBox_Stromspeicher_Ladeenergie_min.Size = new System.Drawing.Size(77, 22);
-            this.textBox_Stromspeicher_Ladeenergie_min.TabIndex = 264;
-            this.textBox_Stromspeicher_Ladeenergie_min.Text = "10";
             // 
             // Form_Simulation_Config
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(559, 670);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
@@ -692,11 +476,7 @@
             this.Controls.Add(this.comboBox3);
             this.Controls.Add(this.comboBox2);
             this.Controls.Add(this.comboBox1);
-            this.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form_Simulation_Config";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Simulation Konfiguration";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Wizard_Stromlastgang));
             this.label_Type = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
             this.listBox_Auswahl = new System.Windows.Forms.ListBox();
@@ -40,101 +41,56 @@
             // 
             // label_Type
             // 
+            resources.ApplyResources(this.label_Type, "label_Type");
             this.label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.label_Type.Dock = System.Windows.Forms.DockStyle.Top;
-            this.label_Type.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Type.Location = new System.Drawing.Point(0, 0);
             this.label_Type.Name = "label_Type";
-            this.label_Type.Padding = new System.Windows.Forms.Padding(0, 5, 0, 5);
-            this.label_Type.Size = new System.Drawing.Size(759, 37);
-            this.label_Type.TabIndex = 2;
-            this.label_Type.Text = "Stromlastgang";
-            this.label_Type.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // Label1
             // 
-            this.Label1.AutoSize = true;
-            this.Label1.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label1.Location = new System.Drawing.Point(13, 86);
+            resources.ApplyResources(this.Label1, "Label1");
             this.Label1.Name = "Label1";
-            this.Label1.Size = new System.Drawing.Size(146, 19);
-            this.Label1.TabIndex = 15;
-            this.Label1.Text = "Ausgewählt im Projekt";
-            this.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // listBox_Auswahl
             // 
-            this.listBox_Auswahl.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.listBox_Auswahl.HorizontalScrollbar = true;
-            this.listBox_Auswahl.ItemHeight = 16;
-            this.listBox_Auswahl.Location = new System.Drawing.Point(12, 109);
-            this.listBox_Auswahl.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.listBox_Auswahl, "listBox_Auswahl");
             this.listBox_Auswahl.Name = "listBox_Auswahl";
-            this.listBox_Auswahl.Size = new System.Drawing.Size(314, 164);
-            this.listBox_Auswahl.TabIndex = 16;
             // 
             // btn_Hinzufuegen
             // 
-            this.btn_Hinzufuegen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Hinzufuegen.Location = new System.Drawing.Point(342, 142);
-            this.btn_Hinzufuegen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Hinzufuegen, "btn_Hinzufuegen");
             this.btn_Hinzufuegen.Name = "btn_Hinzufuegen";
-            this.btn_Hinzufuegen.Size = new System.Drawing.Size(72, 31);
-            this.btn_Hinzufuegen.TabIndex = 17;
-            this.btn_Hinzufuegen.Text = "<--";
             this.btn_Hinzufuegen.UseVisualStyleBackColor = true;
             this.btn_Hinzufuegen.Click += new System.EventHandler(this.btn_Hinzu_Click);
             // 
             // btn_Entfernen
             // 
-            this.btn_Entfernen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Entfernen.Location = new System.Drawing.Point(342, 189);
-            this.btn_Entfernen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Entfernen, "btn_Entfernen");
             this.btn_Entfernen.Name = "btn_Entfernen";
-            this.btn_Entfernen.Size = new System.Drawing.Size(72, 31);
-            this.btn_Entfernen.TabIndex = 18;
-            this.btn_Entfernen.Text = "-->";
             this.btn_Entfernen.UseVisualStyleBackColor = true;
             this.btn_Entfernen.Click += new System.EventHandler(this.btn_Entfernen_Click);
             // 
             // listBox_Extern
             // 
-            this.listBox_Extern.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.listBox_Extern.HorizontalScrollbar = true;
-            this.listBox_Extern.ItemHeight = 16;
-            this.listBox_Extern.Location = new System.Drawing.Point(429, 109);
-            this.listBox_Extern.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.listBox_Extern, "listBox_Extern");
             this.listBox_Extern.Name = "listBox_Extern";
-            this.listBox_Extern.Size = new System.Drawing.Size(314, 164);
-            this.listBox_Extern.TabIndex = 19;
             // 
             // Label2
             // 
-            this.Label2.AutoSize = true;
-            this.Label2.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label2.Location = new System.Drawing.Point(425, 86);
+            resources.ApplyResources(this.Label2, "Label2");
             this.Label2.Name = "Label2";
-            this.Label2.Size = new System.Drawing.Size(145, 19);
-            this.Label2.TabIndex = 20;
-            this.Label2.Text = "Stromlastgang aus DB";
-            this.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btn_Bearbeiten
             // 
-            this.btn_Bearbeiten.Location = new System.Drawing.Point(646, 280);
+            resources.ApplyResources(this.btn_Bearbeiten, "btn_Bearbeiten");
             this.btn_Bearbeiten.Name = "btn_Bearbeiten";
-            this.btn_Bearbeiten.Size = new System.Drawing.Size(97, 31);
-            this.btn_Bearbeiten.TabIndex = 21;
-            this.btn_Bearbeiten.Text = "Bearbeiten...";
             this.btn_Bearbeiten.UseVisualStyleBackColor = true;
             this.btn_Bearbeiten.Click += new System.EventHandler(this.btn_Bearbeiten_Click);
             // 
             // Wizard_Stromlastgang
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(759, 368);
             this.Controls.Add(this.btn_Bearbeiten);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.listBox_Auswahl);
@@ -145,7 +101,6 @@
             this.Controls.Add(this.label_Type);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "Wizard_Stromlastgang";
-            this.Text = "Stromlastgang";
             this.Load += new System.EventHandler(this.Wizard_Stromlastgang_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
