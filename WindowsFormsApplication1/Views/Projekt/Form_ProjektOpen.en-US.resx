@@ -126,4 +126,7 @@
   <data name="label1.Text" xml:space="preserve">
     <value>Project selection:</value>
   </data>
+  <data name="button_Open.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

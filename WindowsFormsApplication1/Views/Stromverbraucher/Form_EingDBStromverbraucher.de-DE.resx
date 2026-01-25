@@ -117,4 +117,104 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="Label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>109, 19</value>
+  </data>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="Label2.Text" xml:space="preserve">
+    <value>Verbrauchertyp:</value>
+  </data>
+  <data name="Label10.Text" xml:space="preserve">
+    <value>April:</value>
+  </data>
+  <data name="Label18.Text" xml:space="preserve">
+    <value>August:</value>
+  </data>
+  <data name="Label3.Text" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
+  <data name="Label26.Text" xml:space="preserve">
+    <value>Dezember</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Eingabe Stromverbraucher</value>
+  </data>
+  <data name="Label6.Text" xml:space="preserve">
+    <value>Februar:</value>
+  </data>
+  <data name="Label4.Text" xml:space="preserve">
+    <value>Januar:</value>
+  </data>
+  <data name="Label17.Text" xml:space="preserve">
+    <value>Juli:</value>
+  </data>
+  <data name="Label14.Text" xml:space="preserve">
+    <value>Juni:</value>
+  </data>
+  <data name="Label12.Text" xml:space="preserve">
+    <value>Mai:</value>
+  </data>
+  <data name="Label8.Text" xml:space="preserve">
+    <value>März:</value>
+  </data>
+  <data name="Label25.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label5.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label23.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label11.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label15.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label9.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label13.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label19.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label16.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label27.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label7.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label21.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label1.Text" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="Label24.Text" xml:space="preserve">
+    <value>Novmember:</value>
+  </data>
+  <data name="Label22.Text" xml:space="preserve">
+    <value>Oktober:</value>
+  </data>
+  <data name="Label20.Text" xml:space="preserve">
+    <value>September:</value>
+  </data>
+  <data name="btn_Speichern.Text" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="btn_Speichern_Unter.Text" xml:space="preserve">
+    <value>Speichern unter</value>
+  </data>
+  <data name="btn_Ueberschreiben.Text" xml:space="preserve">
+    <value>Überschreiben</value>
+  </data>
 </root>

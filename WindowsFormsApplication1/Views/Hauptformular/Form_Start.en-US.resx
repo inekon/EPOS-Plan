@@ -295,4 +295,37 @@
   <data name="label20.Text" xml:space="preserve">
     <value>Energy planning software</value>
   </data>
+  <data name="label_Komponenten.Text" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="label_Strom.Text" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="label_WBedarf.Text" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="label_Name.Text" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="label33.Text" xml:space="preserve">
+    <value>Hint</value>
+  </data>
+  <data name="label32.Text" xml:space="preserve">
+    <value>You can enter building data manually or import it from a file.</value>
+  </data>
+  <data name="tabPage5.Text" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="radioButton_Ganglinie.Text" xml:space="preserve">
+    <value>hydrograph</value>
+  </data>
+  <data name="radioButton_KollektorProfil.Text" xml:space="preserve">
+    <value>profile</value>
+  </data>
+  <data name="textBox_ProjektOpen.Text" xml:space="preserve">
+    <value>Please select!</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Start form</value>
+  </data>
 </root>

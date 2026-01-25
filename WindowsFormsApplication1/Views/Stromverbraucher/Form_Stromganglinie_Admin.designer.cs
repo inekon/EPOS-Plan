@@ -28,6 +28,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Stromganglinie_Admin));
             this.listBox_Extern = new System.Windows.Forms.ListBox();
             this.Label2 = new System.Windows.Forms.Label();
             this.btn_Hilfe = new System.Windows.Forms.Button();
@@ -48,138 +49,81 @@ namespace WindowsFormsApplication1
             // 
             // listBox_Extern
             // 
-            this.listBox_Extern.HorizontalScrollbar = true;
-            this.listBox_Extern.ItemHeight = 17;
-            this.listBox_Extern.Location = new System.Drawing.Point(331, 33);
-            this.listBox_Extern.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.listBox_Extern, "listBox_Extern");
             this.listBox_Extern.Name = "listBox_Extern";
-            this.listBox_Extern.Size = new System.Drawing.Size(335, 191);
-            this.listBox_Extern.TabIndex = 4;
             // 
             // Label2
             // 
-            this.Label2.AutoSize = true;
-            this.Label2.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label2.Location = new System.Drawing.Point(327, 10);
+            resources.ApplyResources(this.Label2, "Label2");
             this.Label2.Name = "Label2";
-            this.Label2.Size = new System.Drawing.Size(111, 19);
-            this.Label2.TabIndex = 5;
-            this.Label2.Text = "Ganglinien in DB";
-            this.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btn_Hilfe
             // 
-            this.btn_Hilfe.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Hilfe.Location = new System.Drawing.Point(17, 351);
-            this.btn_Hilfe.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Hilfe, "btn_Hilfe");
             this.btn_Hilfe.Name = "btn_Hilfe";
-            this.btn_Hilfe.Size = new System.Drawing.Size(98, 31);
-            this.btn_Hilfe.TabIndex = 6;
-            this.btn_Hilfe.Text = "Hilfe";
             this.btn_Hilfe.UseVisualStyleBackColor = true;
             // 
             // btn_OK
             // 
-            this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_OK.Location = new System.Drawing.Point(568, 351);
-            this.btn_OK.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_OK, "btn_OK");
             this.btn_OK.Name = "btn_OK";
-            this.btn_OK.Size = new System.Drawing.Size(98, 31);
-            this.btn_OK.TabIndex = 7;
-            this.btn_OK.Text = "OK";
             this.btn_OK.UseVisualStyleBackColor = true;
             this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
             // 
             // textBox_Name
             // 
+            resources.ApplyResources(this.textBox_Name, "textBox_Name");
             this.textBox_Name.BackColor = System.Drawing.Color.White;
-            this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Name.Location = new System.Drawing.Point(9, 154);
-            this.textBox_Name.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Name.Multiline = true;
             this.textBox_Name.Name = "textBox_Name";
             this.textBox_Name.ReadOnly = true;
-            this.textBox_Name.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-            this.textBox_Name.Size = new System.Drawing.Size(275, 74);
-            this.textBox_Name.TabIndex = 9;
             // 
             // btn_Oeffnen
             // 
-            this.btn_Oeffnen.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Oeffnen.Location = new System.Drawing.Point(149, 120);
+            resources.ApplyResources(this.btn_Oeffnen, "btn_Oeffnen");
             this.btn_Oeffnen.Name = "btn_Oeffnen";
-            this.btn_Oeffnen.Size = new System.Drawing.Size(135, 31);
-            this.btn_Oeffnen.TabIndex = 15;
-            this.btn_Oeffnen.Text = "Datei bearbeiten...";
             this.btn_Oeffnen.UseVisualStyleBackColor = true;
             this.btn_Oeffnen.Click += new System.EventHandler(this.btn_Oeffnen_Click);
             // 
             // label6
             // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label6.Location = new System.Drawing.Point(349, 364);
+            resources.ApplyResources(this.label6, "label6");
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(126, 19);
-            this.label6.TabIndex = 16;
-            this.label6.Text = "Datei Basis Ordner:";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.label6.Visible = false;
             // 
             // textBox_Ordner
             // 
-            this.textBox_Ordner.Enabled = false;
-            this.textBox_Ordner.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Ordner.Location = new System.Drawing.Point(149, 357);
-            this.textBox_Ordner.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.textBox_Ordner, "textBox_Ordner");
             this.textBox_Ordner.Name = "textBox_Ordner";
-            this.textBox_Ordner.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-            this.textBox_Ordner.Size = new System.Drawing.Size(176, 25);
-            this.textBox_Ordner.TabIndex = 17;
-            this.textBox_Ordner.Visible = false;
             // 
             // btn_Datei
             // 
-            this.btn_Datei.Location = new System.Drawing.Point(8, 120);
+            resources.ApplyResources(this.btn_Datei, "btn_Datei");
             this.btn_Datei.Name = "btn_Datei";
-            this.btn_Datei.Size = new System.Drawing.Size(135, 31);
-            this.btn_Datei.TabIndex = 18;
-            this.btn_Datei.Text = "Datei Auswählen...";
             this.btn_Datei.UseVisualStyleBackColor = true;
             this.btn_Datei.Click += new System.EventHandler(this.btn_Datei_Click);
             // 
             // btn_Loeschen
             // 
-            this.btn_Loeschen.Location = new System.Drawing.Point(518, 227);
+            resources.ApplyResources(this.btn_Loeschen, "btn_Loeschen");
             this.btn_Loeschen.Name = "btn_Loeschen";
-            this.btn_Loeschen.Size = new System.Drawing.Size(147, 31);
-            this.btn_Loeschen.TabIndex = 19;
-            this.btn_Loeschen.Text = "Ganglinie Löschen";
             this.btn_Loeschen.UseVisualStyleBackColor = true;
             this.btn_Loeschen.Click += new System.EventHandler(this.btn_Loeschen_Click);
             // 
             // btn_Einlesen
             // 
-            this.btn_Einlesen.Location = new System.Drawing.Point(9, 254);
+            resources.ApplyResources(this.btn_Einlesen, "btn_Einlesen");
             this.btn_Einlesen.Name = "btn_Einlesen";
-            this.btn_Einlesen.Size = new System.Drawing.Size(133, 31);
-            this.btn_Einlesen.TabIndex = 20;
-            this.btn_Einlesen.Text = "Datei Einlesen...";
             this.btn_Einlesen.UseVisualStyleBackColor = true;
             this.btn_Einlesen.Click += new System.EventHandler(this.btn_Einlesen_Click);
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
+            resources.ApplyResources(this.label1, "label1");
             this.label1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
-            this.label1.Location = new System.Drawing.Point(44, 35);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(196, 19);
-            this.label1.TabIndex = 21;
-            this.label1.Text = "Werte über 1 Jahr als Textdatei";
             // 
             // groupBox1
             // 
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.comboBox_Zeitinterval);
             this.groupBox1.Controls.Add(this.btn_Datei);
@@ -187,39 +131,27 @@ namespace WindowsFormsApplication1
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.textBox_Name);
             this.groupBox1.Controls.Add(this.btn_Oeffnen);
-            this.groupBox1.Location = new System.Drawing.Point(11, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(292, 294);
-            this.groupBox1.TabIndex = 22;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Ganglinie aus Datei Einlesen";
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 67);
+            resources.ApplyResources(this.label3, "label3");
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(77, 19);
-            this.label3.TabIndex = 23;
-            this.label3.Text = "Zeitinterval";
             // 
             // comboBox_Zeitinterval
             // 
+            resources.ApplyResources(this.comboBox_Zeitinterval, "comboBox_Zeitinterval");
             this.comboBox_Zeitinterval.FormattingEnabled = true;
             this.comboBox_Zeitinterval.Items.AddRange(new object[] {
-            "Stundenwerte",
-            "1/4 Stundenwerte"});
-            this.comboBox_Zeitinterval.Location = new System.Drawing.Point(8, 89);
+            resources.GetString("comboBox_Zeitinterval.Items"),
+            resources.GetString("comboBox_Zeitinterval.Items1")});
             this.comboBox_Zeitinterval.Name = "comboBox_Zeitinterval";
-            this.comboBox_Zeitinterval.Size = new System.Drawing.Size(135, 25);
-            this.comboBox_Zeitinterval.TabIndex = 22;
-            this.comboBox_Zeitinterval.Text = "Stundenwerte";
             // 
             // Form_Stromganglinie_Admin
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(679, 392);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btn_Loeschen);
             this.Controls.Add(this.label6);
@@ -228,10 +160,7 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.btn_Hilfe);
             this.Controls.Add(this.btn_OK);
-            this.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "Form_Stromganglinie_Admin";
-            this.Text = "Strombedarf Ganglinie";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);

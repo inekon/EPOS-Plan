@@ -126,9 +126,6 @@
   <data name="MenuItem_ProjektNeu.Text" xml:space="preserve">
     <value>New...</value>
   </data>
-  <data name="toolStripMenuItem7.Text" xml:space="preserve">
-    <value>Data &amp;&amp; import</value>
-  </data>
   <data name="Projekte.Text" xml:space="preserve">
     <value>Project</value>
   </data>
@@ -1027,9 +1024,6 @@
   <data name="MenuItem_BHKW.Text" xml:space="preserve">
     <value>BHKW</value>
   </data>
-  <data name="toolStripMenuItem1.Text" xml:space="preserve">
-    <value>Heat requirement &amp;&amp; Heating</value>
-  </data>
   <data name="toolStripMenuItem3.Text" xml:space="preserve">
     <value>Energy systems</value>
   </data>
@@ -1046,6 +1040,15 @@
     <value>Photovoltaics</value>
   </data>
   <data name="toolStripMenuItem4.Text" xml:space="preserve">
-    <value>Current curve </value>
+    <value>Current load</value>
+  </data>
+  <data name="menuToolbar.Text" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="toolStripMenuItem7.Text" xml:space="preserve">
+    <value>Data &amp;&amp; import</value>
+  </data>
+  <data name="toolStripMenuItem1.Text" xml:space="preserve">
+    <value>Heat requirement &amp;&amp; heating</value>
   </data>
 </root>

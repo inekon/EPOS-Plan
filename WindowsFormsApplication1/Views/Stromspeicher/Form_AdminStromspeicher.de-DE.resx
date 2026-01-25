@@ -117,4 +117,52 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Administration Stromspeicher</value>
+  </data>
+  <data name="label10.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="label8.Text" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Bezeichner</value>
+  </data>
+  <data name="label9.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="label6.Text" xml:space="preserve">
+    <value>Degradation</value>
+  </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="btn_Speichern.Text" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="label5.Text" xml:space="preserve">
+    <value>Ladezustand</value>
+  </data>
+  <data name="btn_Neu.Text" xml:space="preserve">
+    <value>Neu...</value>
+  </data>
+  <data name="btn_Loeschen.Text" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Energie</value>
+  </data>
+  <data name="btn_Beenden.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

@@ -230,6 +230,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resource.resx</DependentUpon>
     </Compile>
+    <Compile Include="MyResource\Resource.en-US.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resource.en-US.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -258,6 +263,11 @@
     </Compile>
     <Compile Include="Views\Form_StromTest.Designer.cs">
       <DependentUpon>Form_StromTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Hauptformular\Form_Start1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Form_Start.resx</DependentUpon>
     </Compile>
     <Compile Include="Views\Heizkessel\Form_Heizkessel_Admin.cs">
       <SubType>Form</SubType>
@@ -594,6 +604,9 @@
     <EmbeddedResource Include="Classes\Form_Hinweis.resx">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MDIMainForm.de-DE.resx">
+      <DependentUpon>MDIMainForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MDIMainForm.en-US.resx">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -622,24 +635,66 @@
     <EmbeddedResource Include="Views\Gebäude\Form_EingGebTyp.resx">
       <DependentUpon>Form_EingGebTyp.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude.de-DE.resx">
+      <DependentUpon>Form_Gebaeude.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude.en-US.resx">
+      <DependentUpon>Form_Gebaeude.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude.resx">
       <DependentUpon>Form_Gebaeude.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude1.de-DE.resx">
+      <DependentUpon>Form_Gebaeude1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude1.en-US.resx">
+      <DependentUpon>Form_Gebaeude1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude1.resx">
       <DependentUpon>Form_Gebaeude1.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude2.de-DE.resx">
+      <DependentUpon>Form_Gebaeude2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude2.en-US.resx">
+      <DependentUpon>Form_Gebaeude2.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude2.resx">
       <DependentUpon>Form_Gebaeude2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_GebaeudetypNeu.de-DE.resx">
+      <DependentUpon>Form_GebaeudetypNeu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_GebaeudetypNeu.en-US.resx">
+      <DependentUpon>Form_GebaeudetypNeu.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Gebäude\Form_GebaeudetypNeu.resx">
       <DependentUpon>Form_GebaeudetypNeu.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_GebWohnflaeche.de-DE.resx">
+      <DependentUpon>Form_GebWohnflaeche.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_GebWohnflaeche.en-US.resx">
+      <DependentUpon>Form_GebWohnflaeche.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Gebäude\Form_GebWohnflaeche.resx">
       <DependentUpon>Form_GebWohnflaeche.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Hauptformular\FormMain.aa.resx">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Hauptformular\FormMain.de-DE.resx">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Hauptformular\FormMain.en-US.resx">
+      <DependentUpon>FormMain.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Hauptformular\FormMain.resx">
       <DependentUpon>FormMain.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Hauptformular\Form_Start.de-DE.resx">
+      <DependentUpon>Form_Start.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Hauptformular\Form_Start.en-US.resx">
       <DependentUpon>Form_Start.cs</DependentUpon>
@@ -659,11 +714,17 @@
     <EmbeddedResource Include="Views\Photovoltaik\Form_PV.resx">
       <DependentUpon>Form_PV.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Projekt\Form_ProjektDelete.de-DE.resx">
+      <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Projekt\Form_ProjektDelete.en-US.resx">
       <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Projekt\Form_ProjektDelete.resx">
       <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Projekt\Form_ProjektOpen.de-DE.resx">
+      <DependentUpon>Form_ProjektOpen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Projekt\Form_ProjektOpen.en-US.resx">
       <DependentUpon>Form_ProjektOpen.cs</DependentUpon>
@@ -686,11 +747,29 @@
     <EmbeddedResource Include="Views\Prozesswärme\Form_Prozesswaerme_Admin.resx">
       <DependentUpon>Form_Prozesswaerme_Admin.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_Simulation_Config.de-DE.resx">
+      <DependentUpon>Form_Simulation_Config.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_Simulation_Config.en-US.resx">
+      <DependentUpon>Form_Simulation_Config.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Config.resx">
       <DependentUpon>Form_Simulation_Config.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_Simulation_Detail.de-DE.resx">
+      <DependentUpon>Form_Simulation_Detail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_Simulation_Detail.en-US.resx">
+      <DependentUpon>Form_Simulation_Detail.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Detail.resx">
       <DependentUpon>Form_Simulation_Detail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_Simulation_Kurz.de-DE.resx">
+      <DependentUpon>Form_Simulation_Kurz.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_Simulation_Kurz.en-US.resx">
+      <DependentUpon>Form_Simulation_Kurz.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Kurz.resx">
       <DependentUpon>Form_Simulation_Kurz.cs</DependentUpon>
@@ -710,8 +789,26 @@
     <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektorenAdmin.resx">
       <DependentUpon>Form_SolarKollektorenAdmin.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromspeicher\Form_AdminStromspeicher.de-DE.resx">
+      <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromspeicher\Form_AdminStromspeicher.en-US.resx">
+      <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromspeicher\Form_Stromspeicher.de-DE.resx">
+      <DependentUpon>Form_Stromspeicher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromspeicher\Form_Stromspeicher.en-US.resx">
+      <DependentUpon>Form_Stromspeicher.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromspeicher\Form_Stromspeicher.resx">
       <DependentUpon>Form_Stromspeicher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromspeicher\Form_StromspeicherItemNeu.de-DE.resx">
+      <DependentUpon>Form_StromspeicherItemNeu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromspeicher\Form_StromspeicherItemNeu.en-US.resx">
+      <DependentUpon>Form_StromspeicherItemNeu.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromspeicher\Form_StromspeicherItemNeu.resx">
       <DependentUpon>Form_StromspeicherItemNeu.cs</DependentUpon>
@@ -719,8 +816,44 @@
     <EmbeddedResource Include="Views\Stromspeicher\Form_AdminStromspeicher.resx">
       <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_EingDBStromverbraucher.de-DE.resx">
+      <DependentUpon>Form_EingDBStromverbraucher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_EingDBStromverbraucher.en-US.resx">
+      <DependentUpon>Form_EingDBStromverbraucher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_EingDBStromverbraucher.resx">
+      <DependentUpon>Form_EingDBStromverbraucher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_EingStromTyp.de-DE.resx">
+      <DependentUpon>Form_EingStromTyp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_EingStromTyp.en-US.resx">
+      <DependentUpon>Form_EingStromTyp.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromverbraucher\Form_EingStromTyp.resx">
       <DependentUpon>Form_EingStromTyp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_ErgStromverbraucher.de-DE.resx">
+      <DependentUpon>Form_ErgStromverbraucher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_ErgStromverbraucher.en-US.resx">
+      <DependentUpon>Form_ErgStromverbraucher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_ErgStromverbraucher.resx">
+      <DependentUpon>Form_ErgStromverbraucher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie.de-DE.resx">
+      <DependentUpon>Form_Stromganglinie.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie.en-US.resx">
+      <DependentUpon>Form_Stromganglinie.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie_Admin.de-DE.resx">
+      <DependentUpon>Form_Stromganglinie_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie_Admin.en-US.resx">
+      <DependentUpon>Form_Stromganglinie_Admin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie_Admin.resx">
       <DependentUpon>Form_Stromganglinie_Admin.cs</DependentUpon>
@@ -728,29 +861,110 @@
     <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromganglinie.resx">
       <DependentUpon>Form_Stromganglinie.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromverbraucher.de-DE.resx">
+      <DependentUpon>Form_Stromverbraucher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromverbraucher.en-US.resx">
+      <DependentUpon>Form_Stromverbraucher.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromverbraucher.resx">
       <DependentUpon>Form_Stromverbraucher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromverbraucher_Admin.de-DE.resx">
+      <DependentUpon>Form_Stromverbraucher_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromverbraucher_Admin.en-US.resx">
+      <DependentUpon>Form_Stromverbraucher_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Stromverbraucher\Form_Stromverbraucher_Admin.resx">
+      <DependentUpon>Form_Stromverbraucher_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Update\Form_Import.de-DE.resx">
+      <DependentUpon>Form_Import.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Update\Form_Import.en-US.resx">
+      <DependentUpon>Form_Import.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Update\Form_Import.resx">
       <DependentUpon>Form_Import.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Update\Form_Update.de-DE.resx">
+      <DependentUpon>Form_Update.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Update\Form_Update.en-US.resx">
+      <DependentUpon>Form_Update.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Update\Form_Update.resx">
       <DependentUpon>Form_Update.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\WizardParent.de-DE.resx">
+      <DependentUpon>WizardParent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\WizardParent.en-US.resx">
+      <DependentUpon>WizardParent.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\WizardParent.resx">
       <DependentUpon>WizardParent.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Komponenten.de-DE.resx">
+      <DependentUpon>Wizard_Komponenten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Komponenten.en-US.resx">
+      <DependentUpon>Wizard_Komponenten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Projekt.de-DE.resx">
+      <DependentUpon>Wizard_Projekt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Projekt.en-US.resx">
+      <DependentUpon>Wizard_Projekt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Stromlastgang.de-DE.resx">
+      <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_Stromlastgang.en-US.resx">
+      <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Stromlastgang.resx">
       <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_WP.de-DE.resx">
+      <DependentUpon>Wizard_WP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_WP.en-US.resx">
+      <DependentUpon>Wizard_WP.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_WP.resx">
       <DependentUpon>Wizard_WP.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_WPItem.de-DE.resx">
+      <DependentUpon>Wizard_WPItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wizard\Wizard_WPItem.en-US.resx">
+      <DependentUpon>Wizard_WPItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmebedarf\Form_AdminWaermeeinlesen.de-DE.resx">
+      <DependentUpon>Form_AdminWaermeeinlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmebedarf\Form_AdminWaermeeinlesen.en-US.resx">
+      <DependentUpon>Form_AdminWaermeeinlesen.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wärmebedarf\Form_AdminWaermeeinlesen.resx">
       <DependentUpon>Form_AdminWaermeeinlesen.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmebedarf\Form_Waermebedarf.de-DE.resx">
+      <DependentUpon>Form_Waermebedarf.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmebedarf\Form_Waermebedarf.en-US.resx">
+      <DependentUpon>Form_Waermebedarf.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wärmebedarf\Form_Waermebedarf.resx">
       <DependentUpon>Form_Waermebedarf.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WP.de-DE.resx">
+      <DependentUpon>Form_WP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WP.en-US.resx">
+      <DependentUpon>Form_WP.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wärmepumpe\Form_WP.resx">
       <DependentUpon>Form_WP.cs</DependentUpon>
@@ -780,8 +994,29 @@
     <EmbeddedResource Include="Views\Wizard\Wizard_WPItem.resx">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WP_einlesen.de-DE.resx">
+      <DependentUpon>Form_WP_einlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WP_einlesen.en-US.resx">
+      <DependentUpon>Form_WP_einlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WP_einlesen.resx">
+      <DependentUpon>Form_WP_einlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Kenndaten.de-DE.resx">
+      <DependentUpon>Kenndaten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Kenndaten.en-US.resx">
+      <DependentUpon>Kenndaten.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wärmepumpe\Kenndaten.resx">
       <DependentUpon>Kenndaten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\WizWP.de-DE.resx">
+      <DependentUpon>WizWP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\WizWP.en-US.resx">
+      <DependentUpon>WizWP.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wärmepumpe\WizWP.resx">
       <DependentUpon>WizWP.cs</DependentUpon>
