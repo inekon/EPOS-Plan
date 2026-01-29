@@ -117,119 +117,101 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="tabPage1.Text" xml:space="preserve">
-    <value>Projekt</value>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Projekt einrichten</value>
   </data>
-  <data name="label33.Text" xml:space="preserve">
-    <value>Hinweis</value>
-  </data>
-  <data name="label32.Text" xml:space="preserve">
-    <value>Sie können Gebäudedaten manuell eingeben oder aus einer Datei importieren.</value>
-  </data>
-  <data name="label24.Text" xml:space="preserve">
-    <value>Erfassen Sie den Wärmebedarf Ihres Projekts.</value>
-  </data>
-  <data name="label25.Text" xml:space="preserve">
-    <value>Wärmebedarf definieren</value>
-  </data>
-  <data name="tabPage2.Text" xml:space="preserve">
-    <value>Wärmebedarf</value>
-  </data>
-  <data name="tabPage3.Text" xml:space="preserve">
-    <value>Strombedarf</value>
-  </data>
-  <data name="tabPage4.Text" xml:space="preserve">
-    <value>Energieerzeuger</value>
-  </data>
-  <data name="tabPage5.Text" xml:space="preserve">
-    <value>Simulation</value>
-  </data>
-  <data name="tabPage6.Text" xml:space="preserve">
-    <value>Berichte</value>
-  </data>
-  <data name="label23.Text" xml:space="preserve">
-    <value>z.B. Bürogebäude Musterstraße 123</value>
-  </data>
-  <data name="label22.Text" xml:space="preserve">
-    <value>Projektname</value>
-  </data>
-  <data name="label21.Text" xml:space="preserve">
-    <value>Geben Sie einen aussagekräftigen Namen für Ihr Projekt ein</value>
-  </data>
-  <data name="label18.Text" xml:space="preserve">
-    <value>Zeigen Sie umfassende Projektinformationen und Details an</value>
-  </data>
-  <data name="label19.Text" xml:space="preserve">
-    <value>Projekt Details</value>
-  </data>
-  <data name="label16.Text" xml:space="preserve">
-    <value>Löschen Sie ein bestehendes Projekt</value>
+  <data name="label34.Text" xml:space="preserve">
+    <value>Erfassen Sie Fläche, Dämmung und andere Parameter</value>
   </data>
   <data name="label17.Text" xml:space="preserve">
     <value>Projekt löschen</value>
   </data>
-  <data name="label14.Text" xml:space="preserve">
-    <value>Verwenden Sie eine Projektvorlage</value>
-  </data>
-  <data name="label15.Text" xml:space="preserve">
-    <value>Aus Vorlage</value>
-  </data>
-  <data name="label12.Text" xml:space="preserve">
-    <value>Greifen Sie auf kürzlich bearbeitete Projekte zu</value>
-  </data>
-  <data name="label13.Text" xml:space="preserve">
-    <value>Zuletzt geöffnet</value>
-  </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Erstellen Sie ein neues Projekt oder  öffnen Sie ein bestehendes.</value>
-  </data>
-  <data name="label3.Text" xml:space="preserve">
-    <value>Projekt einrichten</value>
-  </data>
-  <data name="label2_pBox_ProjektOeffnen.Text" xml:space="preserve">
-    <value>Laden Sie ein gespeichertes Projekt</value>
-  </data>
-  <data name="label_pBox_ProjektOeffnen.Text" xml:space="preserve">
-    <value>Projekt öffnen</value>
-  </data>
-  <data name="label2_pBox_ProjektNeu.Text" xml:space="preserve">
-    <value>Starten Sie ein komplett neues Energieprojekt</value>
-  </data>
-  <data name="label_pBox_ProjektNeu.Text" xml:space="preserve">
-    <value>Neues Projekt</value>
-  </data>
-  <data name="label26.Text" xml:space="preserve">
-    <value>Erfassen Sie den elektrischen Energiebedarf</value>
-  </data>
-  <data name="label27.Text" xml:space="preserve">
-    <value>Strombedarf definieren</value>
-  </data>
-  <data name="label28.Text" xml:space="preserve">
-    <value>Wählen Sie die Energieerzeugungstechnologien für Ihr System.</value>
-  </data>
-  <data name="label29.Text" xml:space="preserve">
-    <value>Energieerzeuger auswählen</value>
-  </data>
-  <data name="radioButton_Ganglinie.Text" xml:space="preserve">
-    <value>Ganglinie</value>
+  <data name="label23.Text" xml:space="preserve">
+    <value>z.B. Bürogebäude Musterstraße 123</value>
   </data>
   <data name="radioButton_KollektorProfil.Text" xml:space="preserve">
     <value>Profil</value>
   </data>
-  <data name="label30.Text" xml:space="preserve">
-    <value>Berechnen Sie die Energieflüsse und Systemleistung.</value>
+  <data name="label19.Text" xml:space="preserve">
+    <value>Projekt Details</value>
   </data>
-  <data name="label31.Text" xml:space="preserve">
-    <value>Simulation durchführen</value>
+  <data name="tabPage3.Text" xml:space="preserve">
+    <value>Strombedarf</value>
   </data>
-  <data name="btn_SimKonfig.Text" xml:space="preserve">
-    <value>Simulation Konfiguration...</value>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
+  <data name="label27.Text" xml:space="preserve">
+    <value>Strombedarf definieren</value>
+  </data>
+  <data name="label32.Text" xml:space="preserve">
+    <value>Sie können Gebäudedaten manuell eingeben oder aus einer Datei importieren.</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Erstellen Sie ein neues Projekt oder  öffnen Sie ein bestehendes.</value>
+  </data>
+  <data name="label29.Text" xml:space="preserve">
+    <value>Energieerzeuger auswählen</value>
+  </data>
+  <data name="label20.Text" xml:space="preserve">
+    <value>Energieplanungs-Software</value>
+  </data>
+  <data name="radioButton_Ganglinie.Text" xml:space="preserve">
+    <value>Ganglinie</value>
   </data>
   <data name="label_Komponenten.Text" xml:space="preserve">
     <value>Projekt</value>
   </data>
-  <data name="label_Strom.Text" xml:space="preserve">
-    <value>Projekt</value>
+  <data name="label36.Text" xml:space="preserve">
+    <value>Laden Sie Wärmebedarfsdaten aus einer Datei</value>
+  </data>
+  <data name="btn_SimKonfig.Text" xml:space="preserve">
+    <value>Simulation Konfiguration...</value>
+  </data>
+  <data name="label18.Text" xml:space="preserve">
+    <value>Zeigen Sie umfassende Projektinformationen und Details an</value>
+  </data>
+  <data name="label24.Text" xml:space="preserve">
+    <value>Erfassen Sie den Wärmebedarf Ihres Projekts.</value>
+  </data>
+  <data name="label38.Text" xml:space="preserve">
+    <value>Definieren Sie industrielle Prozesswärme</value>
+  </data>
+  <data name="label31.Text" xml:space="preserve">
+    <value>Simulation durchführen</value>
+  </data>
+  <data name="tabPage6.Text" xml:space="preserve">
+    <value>Berichte</value>
+  </data>
+  <data name="label12.Text" xml:space="preserve">
+    <value>Greifen Sie auf kürzlich bearbeitete Projekte zu</value>
+  </data>
+  <data name="label14.Text" xml:space="preserve">
+    <value>Verwenden Sie eine Projektvorlage</value>
+  </data>
+  <data name="tabPage4.Text" xml:space="preserve">
+    <value>Energieerzeuger</value>
+  </data>
+  <data name="label2_pBox_ProjektNeu.Text" xml:space="preserve">
+    <value>Starten Sie ein komplett neues Energieprojekt</value>
+  </data>
+  <data name="label2_pBox_ProjektOeffnen.Text" xml:space="preserve">
+    <value>Laden Sie ein gespeichertes Projekt</value>
+  </data>
+  <data name="label35.Text" xml:space="preserve">
+    <value>Gebäudedaten eingeben</value>
+  </data>
+  <data name="label_pBox_ProjektNeu.Text" xml:space="preserve">
+    <value>Neues Projekt</value>
+  </data>
+  <data name="label16.Text" xml:space="preserve">
+    <value>Löschen Sie ein bestehendes Projekt</value>
+  </data>
+  <data name="label22.Text" xml:space="preserve">
+    <value>Projektname</value>
+  </data>
+  <data name="label11.Text" xml:space="preserve">
+    <value>Projekt:</value>
   </data>
   <data name="label_WBedarf.Text" xml:space="preserve">
     <value>Projekt</value>
@@ -237,16 +219,151 @@
   <data name="label_Name.Text" xml:space="preserve">
     <value>Projekt</value>
   </data>
-  <data name="textBox_ProjektOpen.Text" xml:space="preserve">
-    <value>bitte auswählen!</value>
+  <data name="label_Strom.Text" xml:space="preserve">
+    <value>Projekt</value>
   </data>
-  <data name="label11.Text" xml:space="preserve">
-    <value>Projekt:</value>
+  <data name="tabPage5.Text" xml:space="preserve">
+    <value>Simulation</value>
   </data>
-  <data name="label20.Text" xml:space="preserve">
-    <value>Energieplanungs-Software</value>
+  <data name="label26.Text" xml:space="preserve">
+    <value>Erfassen Sie den elektrischen Energiebedarf</value>
+  </data>
+  <data name="label33.Text" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="label15.Text" xml:space="preserve">
+    <value>Aus Vorlage</value>
+  </data>
+  <data name="label28.Text" xml:space="preserve">
+    <value>Wählen Sie die Energieerzeugungstechnologien für Ihr System.</value>
+  </data>
+  <data name="label21.Text" xml:space="preserve">
+    <value>Geben Sie einen aussagekräftigen Namen für Ihr Projekt ein</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Startformular</value>
+  </data>
+  <data name="textBox_ProjektOpen.Text" xml:space="preserve">
+    <value>bitte auswählen!</value>
+  </data>
+  <data name="tabPage1.Text" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="label37.Text" xml:space="preserve">
+    <value>Daten importieren</value>
+  </data>
+  <data name="label_pBox_ProjektOeffnen.Text" xml:space="preserve">
+    <value>Projekt öffnen</value>
+  </data>
+  <data name="label25.Text" xml:space="preserve">
+    <value>Wärmebedarf definieren</value>
+  </data>
+  <data name="label39.Text" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="label30.Text" xml:space="preserve">
+    <value>Berechnen Sie die Energieflüsse und Systemleistung.</value>
+  </data>
+  <data name="label13.Text" xml:space="preserve">
+    <value>Zuletzt geöffnet</value>
+  </data>
+  <data name="label42.Text" xml:space="preserve">
+    <value>Erstellen Sie ein individuelles Stromprofil</value>
+  </data>
+  <data name="label43.Text" xml:space="preserve">
+    <value>Eigenes Profil</value>
+  </data>
+  <data name="label40.Text" xml:space="preserve">
+    <value>Verwenden Sie ein typisches Lastprofil</value>
+  </data>
+  <data name="label41.Text" xml:space="preserve">
+    <value>Standardlastprofil</value>
+  </data>
+  <data name="label44.Text" xml:space="preserve">
+    <value>Laden Sie reale Verbrauchsdaten</value>
+  </data>
+  <data name="label45.Text" xml:space="preserve">
+    <value>Messdaten importieren</value>
+  </data>
+  <data name="label50.Text" xml:space="preserve">
+    <value>Wärmeerzeugung aus Sonnenenergie</value>
+  </data>
+  <data name="label51.Text" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="label48.Text" xml:space="preserve">
+    <value>Konventionelle Wärmeerzeugung</value>
+  </data>
+  <data name="label49.Text" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="label46.Text" xml:space="preserve">
+    <value>Effitiente Wärmeerzeugung aus Umweltwärme</value>
+  </data>
+  <data name="label47.Text" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="label56.Text" xml:space="preserve">
+    <value>Stromerzeugung aus Sonnenenergie</value>
+  </data>
+  <data name="label57.Text" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="label54.Text" xml:space="preserve">
+    <value>Batteriespeicher für überschüssigen Strom</value>
+  </data>
+  <data name="label55.Text" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="label52.Text" xml:space="preserve">
+    <value>Blockheizkraftwerk für Wärme und Strom</value>
+  </data>
+  <data name="label53.Text" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="label59.Text" xml:space="preserve">
+    <value>Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus.</value>
+  </data>
+  <data name="label58.Text" xml:space="preserve">
+    <value>Tipp</value>
+  </data>
+  <data name="label64.Text" xml:space="preserve">
+    <value>Automatische Systemoptimierung</value>
+  </data>
+  <data name="label65.Text" xml:space="preserve">
+    <value>Optimierung</value>
+  </data>
+  <data name="label62.Text" xml:space="preserve">
+    <value>Präzise Jahressimulation mit allen Details</value>
+  </data>
+  <data name="label63.Text" xml:space="preserve">
+    <value>Detaillierte Simulation</value>
+  </data>
+  <data name="label60.Text" xml:space="preserve">
+    <value>Schnelle Übersicht in wenigen Sekunden</value>
+  </data>
+  <data name="label61.Text" xml:space="preserve">
+    <value>Schnellsimulation</value>
+  </data>
+  <data name="label70.Text" xml:space="preserve">
+    <value>Projektzusammenfassung</value>
+  </data>
+  <data name="label69.Text" xml:space="preserve">
+    <value>Ausgewählte Technologien:</value>
+  </data>
+  <data name="label68.Text" xml:space="preserve">
+    <value>Strombedarf:</value>
+  </data>
+  <data name="label67.Text" xml:space="preserve">
+    <value>Wärmebedarf:</value>
+  </data>
+  <data name="label66.Text" xml:space="preserve">
+    <value>Projektname:</value>
+  </data>
+  <data name="btn_Weiter.Text" xml:space="preserve">
+    <value>Weiter --&gt;</value>
+  </data>
+  <data name="btn_Zurueck.Text" xml:space="preserve">
+    <value>&lt;-- Zurück</value>
   </data>
 </root>

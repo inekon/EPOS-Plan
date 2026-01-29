@@ -197,7 +197,6 @@ namespace WindowsFormsApplication1
 
         private void SelectionRangeEnd(object sender, CursorEventArgs e)
         {
-            //MessageBox.Show("start:" + x1.ToString() + " end:" + x2.ToString() );
             if (!Program.HasValue(ChartSelBegin)) return;
             
             DateTime date = new DateTime(DateTime.Now.Year, 1, 1);

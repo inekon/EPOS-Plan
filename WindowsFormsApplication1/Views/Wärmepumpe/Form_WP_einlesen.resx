@@ -345,9 +345,6 @@
   <data name="label1.Text" xml:space="preserve">
     <value>Stufen:</value>
   </data>
-  <data name="Label13.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
   <data name="btn_Beenden.Location" type="System.Drawing.Point, System.Drawing">
     <value>633, 489</value>
   </data>
@@ -425,9 +422,6 @@
   </data>
   <data name="btn_Uebernehmen.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
-  </data>
-  <data name="textBox_Typ.TabIndex" type="System.Int32, mscorlib">
-    <value>36</value>
   </data>
   <data name="textBox_Name.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -531,6 +525,9 @@
   <data name="textBox_MaxVorlauf.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
+  <data name="btn_Uebernehmen.Text" xml:space="preserve">
+    <value>Speichern DB</value>
+  </data>
   <data name="&gt;&gt;Liste_WP.Name" xml:space="preserve">
     <value>Liste_WP</value>
   </data>
@@ -600,8 +597,8 @@
   <data name="&gt;&gt;textBox_ThLeistung.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;textBox_ThLeistung.Name" xml:space="preserve">
-    <value>textBox_ThLeistung</value>
+  <data name="textBox_Typ.TabIndex" type="System.Int32, mscorlib">
+    <value>36</value>
   </data>
   <data name="textBox_Zusatzheizung.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -696,9 +693,6 @@
   <data name="Label3.Text" xml:space="preserve">
     <value>Firma:</value>
   </data>
-  <data name="Label3.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
-  </data>
   <data name="&gt;&gt;textBox_MaxVorlauf.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -744,8 +738,8 @@
   <data name="&gt;&gt;label7.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="btn_Uebernehmen.Text" xml:space="preserve">
-    <value>Speichern DB</value>
+  <data name="Label3.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
   </data>
   <data name="&gt;&gt;textBox_Kuehlleistung.Parent" xml:space="preserve">
     <value>$this</value>
@@ -758,6 +752,9 @@
   </data>
   <data name="&gt;&gt;Label3.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_ThLeistung.Name" xml:space="preserve">
+    <value>textBox_ThLeistung</value>
   </data>
   <data name="&gt;&gt;btn_VDI3805.ZOrder" xml:space="preserve">
     <value>12</value>
@@ -830,6 +827,9 @@
   </data>
   <data name="&gt;&gt;Label13.ZOrder" xml:space="preserve">
     <value>21</value>
+  </data>
+  <data name="&gt;&gt;Label10.ZOrder" xml:space="preserve">
+    <value>17</value>
   </data>
   <data name="Label14.Location" type="System.Drawing.Point, System.Drawing">
     <value>663, 196</value>
@@ -1005,8 +1005,8 @@
   <data name="Label13.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;Label10.ZOrder" xml:space="preserve">
-    <value>17</value>
+  <data name="Label13.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
   </data>
   <data name="&gt;&gt;btn_Uebernehmen.Name" xml:space="preserve">
     <value>btn_Uebernehmen</value>
@@ -1055,8 +1055,5 @@
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
-  </metadata>
-  <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>en-US</value>
   </metadata>
 </root>

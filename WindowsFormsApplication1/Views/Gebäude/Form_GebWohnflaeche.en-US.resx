@@ -202,4 +202,7 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Enter the total living/usable area of ​​the selected building</value>
   </data>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

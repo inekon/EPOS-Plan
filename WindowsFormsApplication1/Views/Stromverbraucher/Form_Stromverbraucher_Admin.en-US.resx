@@ -166,4 +166,13 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Electricity consumer management</value>
   </data>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Label11.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label10.Text" xml:space="preserve">
+    <value>Name:</value>
+  </data>
 </root>

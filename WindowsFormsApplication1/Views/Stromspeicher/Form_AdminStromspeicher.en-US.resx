@@ -214,4 +214,22 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Administration of electricity storage</value>
   </data>
+  <data name="label10.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="label8.Text" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="label9.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="label6.Text" xml:space="preserve">
+    <value>Degradation</value>
+  </data>
+  <data name="btn_Beenden.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

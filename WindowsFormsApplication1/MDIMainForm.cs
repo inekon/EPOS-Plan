@@ -115,12 +115,6 @@ namespace WindowsFormsApplication1
             ctrl.WPImport();
         }
 
-        private void MenuItem_Kessel_Click(object sender, EventArgs e)
-        {
-            MenueCtrl ctrl = new MenueCtrl();
-            ctrl.Kessel();
-        }
-
         private void MenuItem_Gebaeude_Click(object sender, EventArgs e)
         {
             MenueCtrl ctrl = new MenueCtrl();
@@ -189,6 +183,18 @@ namespace WindowsFormsApplication1
             if (nLanguage == 1) return;
             key.SetValue("Language", 1, RegistryValueKind.DWord);
             Application.Restart();
+        }
+
+        private void MenuItem_SPKBearbeiten_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.Kessel();
+        }
+
+        private void MeniItem_SPK_VDI3805_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.SPKImport();
         }
     }
 }

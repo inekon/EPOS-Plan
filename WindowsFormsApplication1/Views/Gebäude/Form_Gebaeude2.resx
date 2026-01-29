@@ -907,7 +907,7 @@
     <value>56</value>
   </data>
   <data name="Label15.Text" xml:space="preserve">
-    <value>°C </value>
+    <value>°C</value>
   </data>
   <data name="&gt;&gt;textBox_WEAbsenkung.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1036,13 +1036,13 @@
     <value>Label50</value>
   </data>
   <data name="Label9.Text" xml:space="preserve">
-    <value>°C </value>
+    <value>°C</value>
   </data>
   <data name="Sommer_Monat_E.Size" type="System.Drawing.Size, System.Drawing">
     <value>56, 23</value>
   </data>
   <data name="Label10.Text" xml:space="preserve">
-    <value>°C </value>
+    <value>°C</value>
   </data>
   <data name="btn_Abbrechen.Location" type="System.Drawing.Point, System.Drawing">
     <value>401, 547</value>
@@ -1324,7 +1324,7 @@
     <value>142, 115</value>
   </data>
   <data name="Label14.Text" xml:space="preserve">
-    <value>°C </value>
+    <value>°C</value>
   </data>
   <data name="Label15.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -2092,7 +2092,7 @@
     <value>groupBox7</value>
   </data>
   <data name="Label8.Text" xml:space="preserve">
-    <value>°C </value>
+    <value>°C</value>
   </data>
   <data name="&gt;&gt;Label45.ZOrder" xml:space="preserve">
     <value>0</value>

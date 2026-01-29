@@ -316,4 +316,46 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Quick simulation</value>
   </data>
+  <data name="label23.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label24.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label62.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label33.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label19.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label26.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label10.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label28.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label64.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label31.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="chart5.Text" xml:space="preserve">
+    <value>chart5</value>
+  </data>
+  <data name="label22.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label81.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
 </root>

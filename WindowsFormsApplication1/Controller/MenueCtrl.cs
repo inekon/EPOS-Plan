@@ -306,7 +306,7 @@ namespace WindowsFormsApplication1
            frm.ShowDialog();
        }
 
-        public void WPImport()
+       public void WPImport()
        {
            Form_WP_einlesen frm = new Form_WP_einlesen();
            frm.ShowDialog();
@@ -338,6 +338,12 @@ namespace WindowsFormsApplication1
         public void PV()
         {
             Form_AdminPV frm = new Form_AdminPV();
+            frm.ShowDialog();
+        }
+
+        public void SPKImport()
+        {
+            Form_Heizkessel_einlesen frm = new Form_Heizkessel_einlesen();
             frm.ShowDialog();
         }
     }

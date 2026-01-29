@@ -127,16 +127,16 @@
     <value>Finish</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Heat requirement hydrograph</value>
+    <value>Heat requirement</value>
   </data>
   <data name="btn_Datei.Text" xml:space="preserve">
     <value>Select file...</value>
   </data>
   <data name="btn_Loeschen.Text" xml:space="preserve">
-    <value>Delete DB hydrograph</value>
+    <value>Delete DB curve</value>
   </data>
   <data name="Label2.Text" xml:space="preserve">
-    <value>Hydrographs from DB</value>
+    <value>Curves from DB</value>
   </data>
   <data name="btn_Oeffnen.Text" xml:space="preserve">
     <value>Show content...</value>

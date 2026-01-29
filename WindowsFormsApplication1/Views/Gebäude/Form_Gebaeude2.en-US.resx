@@ -359,4 +359,13 @@
   <data name="Label46.Text" xml:space="preserve">
     <value>DHW demand/user:</value>
   </data>
+  <data name="Label47.Text" xml:space="preserve">
+    <value>1/h</value>
+  </data>
+  <data name="btn_Speichern.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Label48.Text" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
 </root>

@@ -163,16 +163,16 @@
     <value>Ferien Ende</value>
   </data>
   <data name="Label15.Text" xml:space="preserve">
-    <value>°C </value>
+    <value>°C</value>
   </data>
   <data name="Label4.Text" xml:space="preserve">
     <value>Soll am Tag :</value>
   </data>
   <data name="Label9.Text" xml:space="preserve">
-    <value>°C </value>
+    <value>°C</value>
   </data>
   <data name="Label10.Text" xml:space="preserve">
-    <value>°C </value>
+    <value>°C</value>
   </data>
   <data name="btn_Abbrechen.Text" xml:space="preserve">
     <value>Abbrechen</value>
@@ -187,7 +187,7 @@
     <value>Winter :</value>
   </data>
   <data name="Label14.Text" xml:space="preserve">
-    <value>°C </value>
+    <value>°C</value>
   </data>
   <data name="Label33.Text" xml:space="preserve">
     <value>Winter :</value>
@@ -226,7 +226,7 @@
     <value>Abmessung Anschluß [m]</value>
   </data>
   <data name="Label8.Text" xml:space="preserve">
-    <value>°C </value>
+    <value>°C</value>
   </data>
   <data name="Label5.Text" xml:space="preserve">
     <value>Nachtabsenkung auf :</value>

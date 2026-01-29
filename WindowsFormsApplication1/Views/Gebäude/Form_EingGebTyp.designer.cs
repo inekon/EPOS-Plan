@@ -28,9 +28,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_EingGebTyp));
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.textBox_Beschreibung = new System.Windows.Forms.TextBox();
@@ -40,7 +41,6 @@ namespace WindowsFormsApplication1
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.listBox_Kurve = new System.Windows.Forms.ListBox();
             this.Label27 = new System.Windows.Forms.Label();
-            this.btn_Speichern = new System.Windows.Forms.Button();
             this.Label3 = new System.Windows.Forms.Label();
             this.st1 = new System.Windows.Forms.TextBox();
             this.Label4 = new System.Windows.Forms.Label();
@@ -89,6 +89,7 @@ namespace WindowsFormsApplication1
             this.st23 = new System.Windows.Forms.TextBox();
             this.Label26 = new System.Windows.Forms.Label();
             this.st24 = new System.Windows.Forms.TextBox();
+            this.btn_Speichern = new System.Windows.Forms.Button();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.btn_Loeschen = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
@@ -97,72 +98,42 @@ namespace WindowsFormsApplication1
             // 
             // Label1
             // 
-            this.Label1.AutoSize = true;
-            this.Label1.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label1.Location = new System.Drawing.Point(28, 9);
+            resources.ApplyResources(this.Label1, "Label1");
             this.Label1.Name = "Label1";
-            this.Label1.Size = new System.Drawing.Size(38, 13);
-            this.Label1.TabIndex = 0;
-            this.Label1.Text = "Name:";
-            this.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label2
             // 
-            this.Label2.AutoSize = true;
-            this.Label2.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label2.Location = new System.Drawing.Point(312, 15);
+            resources.ApplyResources(this.Label2, "Label2");
             this.Label2.Name = "Label2";
-            this.Label2.Size = new System.Drawing.Size(75, 13);
-            this.Label2.TabIndex = 1;
-            this.Label2.Text = "Beschreibung:";
-            this.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // textBox_Beschreibung
             // 
-            this.textBox_Beschreibung.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Beschreibung.Location = new System.Drawing.Point(315, 33);
-            this.textBox_Beschreibung.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Beschreibung.Multiline = true;
+            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
-            this.textBox_Beschreibung.Size = new System.Drawing.Size(265, 57);
-            this.textBox_Beschreibung.TabIndex = 3;
             // 
             // btn_EingneuerTyp
             // 
-            this.btn_EingneuerTyp.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_EingneuerTyp.Location = new System.Drawing.Point(315, 114);
-            this.btn_EingneuerTyp.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_EingneuerTyp, "btn_EingneuerTyp");
             this.btn_EingneuerTyp.Name = "btn_EingneuerTyp";
-            this.btn_EingneuerTyp.Size = new System.Drawing.Size(96, 33);
-            this.btn_EingneuerTyp.TabIndex = 5;
-            this.btn_EingneuerTyp.Text = "Typ hinzufügen";
             this.btn_EingneuerTyp.UseVisualStyleBackColor = true;
             this.btn_EingneuerTyp.Click += new System.EventHandler(this.btn_EingneuerTyp_Click);
             // 
             // btn_Schliessen
             // 
-            this.btn_Schliessen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Schliessen.Location = new System.Drawing.Point(582, 636);
-            this.btn_Schliessen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Schliessen, "btn_Schliessen");
             this.btn_Schliessen.Name = "btn_Schliessen";
-            this.btn_Schliessen.Size = new System.Drawing.Size(77, 31);
-            this.btn_Schliessen.TabIndex = 13;
-            this.btn_Schliessen.Text = "OK";
             this.btn_Schliessen.UseVisualStyleBackColor = true;
             this.btn_Schliessen.Click += new System.EventHandler(this.btn_Schliessen_Click);
             // 
             // listBox_Typename
             // 
-            this.listBox_Typename.ItemHeight = 17;
-            this.listBox_Typename.Location = new System.Drawing.Point(31, 26);
-            this.listBox_Typename.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.listBox_Typename, "listBox_Typename");
             this.listBox_Typename.Name = "listBox_Typename";
-            this.listBox_Typename.Size = new System.Drawing.Size(223, 140);
-            this.listBox_Typename.TabIndex = 14;
             this.listBox_Typename.SelectedIndexChanged += new System.EventHandler(this.listBox_Typename_SelectedIndexChanged);
             // 
             // groupBox1
             // 
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.listBox_Kurve);
             this.groupBox1.Controls.Add(this.Label27);
             this.groupBox1.Controls.Add(this.Label3);
@@ -213,591 +184,323 @@ namespace WindowsFormsApplication1
             this.groupBox1.Controls.Add(this.st23);
             this.groupBox1.Controls.Add(this.Label26);
             this.groupBox1.Controls.Add(this.st24);
-            this.groupBox1.Location = new System.Drawing.Point(33, 177);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(622, 243);
-            this.groupBox1.TabIndex = 15;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Stundenwerteeingabe [kW, kWh oder %]";
             // 
             // listBox_Kurve
             // 
-            this.listBox_Kurve.ItemHeight = 17;
-            this.listBox_Kurve.Location = new System.Drawing.Point(385, 53);
-            this.listBox_Kurve.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.listBox_Kurve, "listBox_Kurve");
             this.listBox_Kurve.Name = "listBox_Kurve";
-            this.listBox_Kurve.Size = new System.Drawing.Size(223, 157);
-            this.listBox_Kurve.TabIndex = 111;
             this.listBox_Kurve.SelectedIndexChanged += new System.EventHandler(this.listBox_Kurve_SelectedIndexChanged);
             // 
             // Label27
             // 
-            this.Label27.AutoSize = true;
-            this.Label27.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label27.Location = new System.Drawing.Point(382, 36);
+            resources.ApplyResources(this.Label27, "Label27");
             this.Label27.Name = "Label27";
-            this.Label27.Size = new System.Drawing.Size(138, 13);
-            this.Label27.TabIndex = 112;
-            this.Label27.Text = "Kurvenverlauf für den Tag:";
-            this.Label27.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // btn_Speichern
-            // 
-            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_Speichern.Location = new System.Drawing.Point(436, 114);
-            this.btn_Speichern.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.Size = new System.Drawing.Size(96, 33);
-            this.btn_Speichern.TabIndex = 113;
-            this.btn_Speichern.Text = "Typ Speichern";
-            this.btn_Speichern.UseVisualStyleBackColor = true;
-            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
             // 
             // Label3
             // 
-            this.Label3.AutoSize = true;
-            this.Label3.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label3.Location = new System.Drawing.Point(11, 36);
+            resources.ApplyResources(this.Label3, "Label3");
             this.Label3.Name = "Label3";
-            this.Label3.Size = new System.Drawing.Size(13, 13);
-            this.Label3.TabIndex = 63;
-            this.Label3.Text = "1";
-            this.Label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st1
             // 
-            this.st1.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st1.Location = new System.Drawing.Point(32, 36);
-            this.st1.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st1, "st1");
             this.st1.Name = "st1";
-            this.st1.Size = new System.Drawing.Size(70, 22);
-            this.st1.TabIndex = 64;
             this.st1.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label4
             // 
-            this.Label4.AutoSize = true;
-            this.Label4.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label4.Location = new System.Drawing.Point(11, 60);
+            resources.ApplyResources(this.Label4, "Label4");
             this.Label4.Name = "Label4";
-            this.Label4.Size = new System.Drawing.Size(13, 13);
-            this.Label4.TabIndex = 65;
-            this.Label4.Text = "2";
-            this.Label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st2
             // 
-            this.st2.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st2.Location = new System.Drawing.Point(32, 60);
-            this.st2.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st2, "st2");
             this.st2.Name = "st2";
-            this.st2.Size = new System.Drawing.Size(70, 22);
-            this.st2.TabIndex = 66;
             this.st2.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label5
             // 
-            this.Label5.AutoSize = true;
-            this.Label5.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label5.Location = new System.Drawing.Point(11, 83);
+            resources.ApplyResources(this.Label5, "Label5");
             this.Label5.Name = "Label5";
-            this.Label5.Size = new System.Drawing.Size(13, 13);
-            this.Label5.TabIndex = 67;
-            this.Label5.Text = "3";
-            this.Label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st3
             // 
-            this.st3.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st3.Location = new System.Drawing.Point(32, 83);
-            this.st3.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st3, "st3");
             this.st3.Name = "st3";
-            this.st3.Size = new System.Drawing.Size(70, 22);
-            this.st3.TabIndex = 68;
             this.st3.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label6
             // 
-            this.Label6.AutoSize = true;
-            this.Label6.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label6.Location = new System.Drawing.Point(11, 107);
+            resources.ApplyResources(this.Label6, "Label6");
             this.Label6.Name = "Label6";
-            this.Label6.Size = new System.Drawing.Size(13, 13);
-            this.Label6.TabIndex = 69;
-            this.Label6.Text = "4";
-            this.Label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st4
             // 
-            this.st4.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st4.Location = new System.Drawing.Point(32, 107);
-            this.st4.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st4, "st4");
             this.st4.Name = "st4";
-            this.st4.Size = new System.Drawing.Size(70, 22);
-            this.st4.TabIndex = 70;
             this.st4.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label7
             // 
-            this.Label7.AutoSize = true;
-            this.Label7.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label7.Location = new System.Drawing.Point(11, 130);
+            resources.ApplyResources(this.Label7, "Label7");
             this.Label7.Name = "Label7";
-            this.Label7.Size = new System.Drawing.Size(13, 13);
-            this.Label7.TabIndex = 71;
-            this.Label7.Text = "5";
-            this.Label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st5
             // 
-            this.st5.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st5.Location = new System.Drawing.Point(32, 130);
-            this.st5.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st5, "st5");
             this.st5.Name = "st5";
-            this.st5.Size = new System.Drawing.Size(70, 22);
-            this.st5.TabIndex = 72;
             this.st5.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label8
             // 
-            this.Label8.AutoSize = true;
-            this.Label8.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label8.Location = new System.Drawing.Point(11, 154);
+            resources.ApplyResources(this.Label8, "Label8");
             this.Label8.Name = "Label8";
-            this.Label8.Size = new System.Drawing.Size(13, 13);
-            this.Label8.TabIndex = 73;
-            this.Label8.Text = "6";
-            this.Label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st6
             // 
-            this.st6.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st6.Location = new System.Drawing.Point(32, 154);
-            this.st6.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st6, "st6");
             this.st6.Name = "st6";
-            this.st6.Size = new System.Drawing.Size(70, 22);
-            this.st6.TabIndex = 74;
             this.st6.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label9
             // 
-            this.Label9.AutoSize = true;
-            this.Label9.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label9.Location = new System.Drawing.Point(11, 177);
+            resources.ApplyResources(this.Label9, "Label9");
             this.Label9.Name = "Label9";
-            this.Label9.Size = new System.Drawing.Size(13, 13);
-            this.Label9.TabIndex = 75;
-            this.Label9.Text = "7";
-            this.Label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st7
             // 
-            this.st7.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st7.Location = new System.Drawing.Point(32, 177);
-            this.st7.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st7, "st7");
             this.st7.Name = "st7";
-            this.st7.Size = new System.Drawing.Size(70, 22);
-            this.st7.TabIndex = 76;
             this.st7.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label10
             // 
-            this.Label10.AutoSize = true;
-            this.Label10.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label10.Location = new System.Drawing.Point(11, 201);
+            resources.ApplyResources(this.Label10, "Label10");
             this.Label10.Name = "Label10";
-            this.Label10.Size = new System.Drawing.Size(13, 13);
-            this.Label10.TabIndex = 77;
-            this.Label10.Text = "8";
-            this.Label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st8
             // 
-            this.st8.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st8.Location = new System.Drawing.Point(32, 201);
-            this.st8.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st8, "st8");
             this.st8.Name = "st8";
-            this.st8.Size = new System.Drawing.Size(70, 22);
-            this.st8.TabIndex = 78;
             this.st8.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label11
             // 
-            this.Label11.AutoSize = true;
-            this.Label11.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label11.Location = new System.Drawing.Point(137, 36);
+            resources.ApplyResources(this.Label11, "Label11");
             this.Label11.Name = "Label11";
-            this.Label11.Size = new System.Drawing.Size(13, 13);
-            this.Label11.TabIndex = 79;
-            this.Label11.Text = "9";
-            this.Label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st9
             // 
-            this.st9.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st9.Location = new System.Drawing.Point(165, 36);
-            this.st9.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st9, "st9");
             this.st9.Name = "st9";
-            this.st9.Size = new System.Drawing.Size(70, 22);
-            this.st9.TabIndex = 80;
             this.st9.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label12
             // 
-            this.Label12.AutoSize = true;
-            this.Label12.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label12.Location = new System.Drawing.Point(137, 60);
+            resources.ApplyResources(this.Label12, "Label12");
             this.Label12.Name = "Label12";
-            this.Label12.Size = new System.Drawing.Size(19, 13);
-            this.Label12.TabIndex = 81;
-            this.Label12.Text = "10";
-            this.Label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st10
             // 
-            this.st10.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st10.Location = new System.Drawing.Point(165, 60);
-            this.st10.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st10, "st10");
             this.st10.Name = "st10";
-            this.st10.Size = new System.Drawing.Size(70, 22);
-            this.st10.TabIndex = 82;
             this.st10.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label13
             // 
-            this.Label13.AutoSize = true;
-            this.Label13.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label13.Location = new System.Drawing.Point(137, 83);
+            resources.ApplyResources(this.Label13, "Label13");
             this.Label13.Name = "Label13";
-            this.Label13.Size = new System.Drawing.Size(19, 13);
-            this.Label13.TabIndex = 83;
-            this.Label13.Text = "11";
-            this.Label13.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st11
             // 
-            this.st11.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st11.Location = new System.Drawing.Point(165, 83);
-            this.st11.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st11, "st11");
             this.st11.Name = "st11";
-            this.st11.Size = new System.Drawing.Size(70, 22);
-            this.st11.TabIndex = 84;
             this.st11.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label14
             // 
-            this.Label14.AutoSize = true;
-            this.Label14.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label14.Location = new System.Drawing.Point(137, 107);
+            resources.ApplyResources(this.Label14, "Label14");
             this.Label14.Name = "Label14";
-            this.Label14.Size = new System.Drawing.Size(19, 13);
-            this.Label14.TabIndex = 85;
-            this.Label14.Text = "12";
-            this.Label14.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st12
             // 
-            this.st12.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st12.Location = new System.Drawing.Point(165, 107);
-            this.st12.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st12, "st12");
             this.st12.Name = "st12";
-            this.st12.Size = new System.Drawing.Size(70, 22);
-            this.st12.TabIndex = 86;
             this.st12.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label15
             // 
-            this.Label15.AutoSize = true;
-            this.Label15.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label15.Location = new System.Drawing.Point(137, 130);
+            resources.ApplyResources(this.Label15, "Label15");
             this.Label15.Name = "Label15";
-            this.Label15.Size = new System.Drawing.Size(19, 13);
-            this.Label15.TabIndex = 87;
-            this.Label15.Text = "13";
-            this.Label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st13
             // 
-            this.st13.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st13.Location = new System.Drawing.Point(165, 130);
-            this.st13.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st13, "st13");
             this.st13.Name = "st13";
-            this.st13.Size = new System.Drawing.Size(70, 22);
-            this.st13.TabIndex = 88;
             this.st13.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label16
             // 
-            this.Label16.AutoSize = true;
-            this.Label16.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label16.Location = new System.Drawing.Point(137, 154);
+            resources.ApplyResources(this.Label16, "Label16");
             this.Label16.Name = "Label16";
-            this.Label16.Size = new System.Drawing.Size(19, 13);
-            this.Label16.TabIndex = 89;
-            this.Label16.Text = "14";
-            this.Label16.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st14
             // 
-            this.st14.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st14.Location = new System.Drawing.Point(165, 154);
-            this.st14.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st14, "st14");
             this.st14.Name = "st14";
-            this.st14.Size = new System.Drawing.Size(70, 22);
-            this.st14.TabIndex = 90;
             this.st14.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label17
             // 
-            this.Label17.AutoSize = true;
-            this.Label17.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label17.Location = new System.Drawing.Point(137, 177);
+            resources.ApplyResources(this.Label17, "Label17");
             this.Label17.Name = "Label17";
-            this.Label17.Size = new System.Drawing.Size(19, 13);
-            this.Label17.TabIndex = 91;
-            this.Label17.Text = "15";
-            this.Label17.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st15
             // 
-            this.st15.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st15.Location = new System.Drawing.Point(165, 177);
-            this.st15.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st15, "st15");
             this.st15.Name = "st15";
-            this.st15.Size = new System.Drawing.Size(70, 22);
-            this.st15.TabIndex = 92;
             this.st15.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label18
             // 
-            this.Label18.AutoSize = true;
-            this.Label18.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label18.Location = new System.Drawing.Point(137, 201);
+            resources.ApplyResources(this.Label18, "Label18");
             this.Label18.Name = "Label18";
-            this.Label18.Size = new System.Drawing.Size(19, 13);
-            this.Label18.TabIndex = 93;
-            this.Label18.Text = "16";
-            this.Label18.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st16
             // 
-            this.st16.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st16.Location = new System.Drawing.Point(165, 201);
-            this.st16.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st16, "st16");
             this.st16.Name = "st16";
-            this.st16.Size = new System.Drawing.Size(70, 22);
-            this.st16.TabIndex = 94;
             this.st16.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label19
             // 
-            this.Label19.AutoSize = true;
-            this.Label19.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label19.Location = new System.Drawing.Point(263, 36);
+            resources.ApplyResources(this.Label19, "Label19");
             this.Label19.Name = "Label19";
-            this.Label19.Size = new System.Drawing.Size(19, 13);
-            this.Label19.TabIndex = 95;
-            this.Label19.Text = "17";
-            this.Label19.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st17
             // 
-            this.st17.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st17.Location = new System.Drawing.Point(293, 33);
-            this.st17.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st17, "st17");
             this.st17.Name = "st17";
-            this.st17.Size = new System.Drawing.Size(70, 22);
-            this.st17.TabIndex = 96;
             this.st17.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label20
             // 
-            this.Label20.AutoSize = true;
-            this.Label20.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label20.Location = new System.Drawing.Point(263, 60);
+            resources.ApplyResources(this.Label20, "Label20");
             this.Label20.Name = "Label20";
-            this.Label20.Size = new System.Drawing.Size(19, 13);
-            this.Label20.TabIndex = 97;
-            this.Label20.Text = "18";
-            this.Label20.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st18
             // 
-            this.st18.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st18.Location = new System.Drawing.Point(293, 57);
-            this.st18.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st18, "st18");
             this.st18.Name = "st18";
-            this.st18.Size = new System.Drawing.Size(70, 22);
-            this.st18.TabIndex = 98;
             this.st18.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label21
             // 
-            this.Label21.AutoSize = true;
-            this.Label21.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label21.Location = new System.Drawing.Point(263, 83);
+            resources.ApplyResources(this.Label21, "Label21");
             this.Label21.Name = "Label21";
-            this.Label21.Size = new System.Drawing.Size(19, 13);
-            this.Label21.TabIndex = 99;
-            this.Label21.Text = "19";
-            this.Label21.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st19
             // 
-            this.st19.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st19.Location = new System.Drawing.Point(293, 80);
-            this.st19.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st19, "st19");
             this.st19.Name = "st19";
-            this.st19.Size = new System.Drawing.Size(70, 22);
-            this.st19.TabIndex = 100;
             this.st19.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label22
             // 
-            this.Label22.AutoSize = true;
-            this.Label22.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label22.Location = new System.Drawing.Point(263, 107);
+            resources.ApplyResources(this.Label22, "Label22");
             this.Label22.Name = "Label22";
-            this.Label22.Size = new System.Drawing.Size(19, 13);
-            this.Label22.TabIndex = 101;
-            this.Label22.Text = "20";
-            this.Label22.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st20
             // 
-            this.st20.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st20.Location = new System.Drawing.Point(293, 104);
-            this.st20.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st20, "st20");
             this.st20.Name = "st20";
-            this.st20.Size = new System.Drawing.Size(70, 22);
-            this.st20.TabIndex = 102;
             this.st20.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label23
             // 
-            this.Label23.AutoSize = true;
-            this.Label23.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label23.Location = new System.Drawing.Point(263, 130);
+            resources.ApplyResources(this.Label23, "Label23");
             this.Label23.Name = "Label23";
-            this.Label23.Size = new System.Drawing.Size(19, 13);
-            this.Label23.TabIndex = 103;
-            this.Label23.Text = "21";
-            this.Label23.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st21
             // 
-            this.st21.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st21.Location = new System.Drawing.Point(293, 128);
-            this.st21.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st21, "st21");
             this.st21.Name = "st21";
-            this.st21.Size = new System.Drawing.Size(70, 22);
-            this.st21.TabIndex = 104;
             this.st21.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label24
             // 
-            this.Label24.AutoSize = true;
-            this.Label24.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label24.Location = new System.Drawing.Point(263, 154);
+            resources.ApplyResources(this.Label24, "Label24");
             this.Label24.Name = "Label24";
-            this.Label24.Size = new System.Drawing.Size(19, 13);
-            this.Label24.TabIndex = 105;
-            this.Label24.Text = "22";
-            this.Label24.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st22
             // 
-            this.st22.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st22.Location = new System.Drawing.Point(293, 151);
-            this.st22.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st22, "st22");
             this.st22.Name = "st22";
-            this.st22.Size = new System.Drawing.Size(70, 22);
-            this.st22.TabIndex = 106;
             this.st22.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label25
             // 
-            this.Label25.AutoSize = true;
-            this.Label25.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label25.Location = new System.Drawing.Point(263, 177);
+            resources.ApplyResources(this.Label25, "Label25");
             this.Label25.Name = "Label25";
-            this.Label25.Size = new System.Drawing.Size(19, 13);
-            this.Label25.TabIndex = 107;
-            this.Label25.Text = "23";
-            this.Label25.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st23
             // 
-            this.st23.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st23.Location = new System.Drawing.Point(293, 175);
-            this.st23.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st23, "st23");
             this.st23.Name = "st23";
-            this.st23.Size = new System.Drawing.Size(70, 22);
-            this.st23.TabIndex = 108;
             this.st23.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
             // 
             // Label26
             // 
-            this.Label26.AutoSize = true;
-            this.Label26.Font = new System.Drawing.Font("Tahoma", 8F);
-            this.Label26.Location = new System.Drawing.Point(263, 201);
+            resources.ApplyResources(this.Label26, "Label26");
             this.Label26.Name = "Label26";
-            this.Label26.Size = new System.Drawing.Size(19, 13);
-            this.Label26.TabIndex = 109;
-            this.Label26.Text = "24";
-            this.Label26.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // st24
             // 
-            this.st24.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.st24.Location = new System.Drawing.Point(293, 198);
-            this.st24.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.st24, "st24");
             this.st24.Name = "st24";
-            this.st24.Size = new System.Drawing.Size(70, 22);
-            this.st24.TabIndex = 110;
             this.st24.Validating += new System.ComponentModel.CancelEventHandler(this.st1_Validating);
+            // 
+            // btn_Speichern
+            // 
+            resources.ApplyResources(this.btn_Speichern, "btn_Speichern");
+            this.btn_Speichern.Name = "btn_Speichern";
+            this.btn_Speichern.UseVisualStyleBackColor = true;
+            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
             // 
             // chart1
             // 
+            resources.ApplyResources(this.chart1, "chart1");
             this.chart1.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dot;
-            chartArea4.AxisX.Title = "Stunden";
-            chartArea4.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 8F);
-            chartArea4.AxisY.Title = "Normierte Stundenwerte";
-            chartArea4.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 8F);
-            chartArea4.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea4);
-            legend4.Enabled = false;
-            legend4.Name = "Legend1";
-            this.chart1.Legends.Add(legend4);
-            this.chart1.Location = new System.Drawing.Point(33, 426);
+            chartArea1.AxisX.Title = "Stunden";
+            chartArea1.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 8F);
+            chartArea1.AxisY.Title = "Normierte Stundenwerte";
+            chartArea1.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 8F);
+            chartArea1.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea1);
+            legend1.Enabled = false;
+            legend1.Name = "Legend1";
+            this.chart1.Legends.Add(legend1);
             this.chart1.Name = "chart1";
-            series4.ChartArea = "ChartArea1";
-            series4.Font = new System.Drawing.Font("Segoe UI", 8F);
-            series4.IsVisibleInLegend = false;
-            series4.Legend = "Legend1";
-            series4.Name = "Series1";
-            this.chart1.Series.Add(series4);
-            this.chart1.Size = new System.Drawing.Size(622, 203);
-            this.chart1.TabIndex = 16;
-            this.chart1.Text = "chart1";
+            series1.ChartArea = "ChartArea1";
+            series1.Font = new System.Drawing.Font("Segoe UI", 8F);
+            series1.IsVisibleInLegend = false;
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            this.chart1.Series.Add(series1);
             // 
             // btn_Loeschen
             // 
-            this.btn_Loeschen.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_Loeschen.Location = new System.Drawing.Point(557, 114);
-            this.btn_Loeschen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Loeschen, "btn_Loeschen");
             this.btn_Loeschen.Name = "btn_Loeschen";
-            this.btn_Loeschen.Size = new System.Drawing.Size(98, 33);
-            this.btn_Loeschen.TabIndex = 114;
-            this.btn_Loeschen.Text = "Typ Löschen";
             this.btn_Loeschen.UseVisualStyleBackColor = true;
             this.btn_Loeschen.Click += new System.EventHandler(this.btn_Loeschen_Click);
             // 
             // Form_EingGebTyp
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(671, 680);
             this.Controls.Add(this.btn_Loeschen);
             this.Controls.Add(this.chart1);
             this.Controls.Add(this.groupBox1);
@@ -808,10 +511,7 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.btn_EingneuerTyp);
             this.Controls.Add(this.btn_Schliessen);
             this.Controls.Add(this.listBox_Typename);
-            this.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "Form_EingGebTyp";
-            this.Text = "Gebäudetypen Verwaltung";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();

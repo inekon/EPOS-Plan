@@ -118,6 +118,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="label5.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
+  </data>
   <data name="tabPage_Komponenten.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 34</value>
   </data>
@@ -162,8 +165,11 @@
   <data name="&gt;&gt;textBox_Bearbeiter.Name" xml:space="preserve">
     <value>textBox_Bearbeiter</value>
   </data>
-  <data name="tabPage6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 48</value>
+  <data name="textBox_Bearbeiter.TabIndex" type="System.Int32, mscorlib">
+    <value>39</value>
+  </data>
+  <data name="textBox_Beschreibung.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
   </data>
   <data name="&gt;&gt;textBox_Beschreibung.Parent" xml:space="preserve">
     <value>tabPage_Komponenten</value>
@@ -171,20 +177,23 @@
   <data name="listView_WP.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9pt</value>
   </data>
+  <data name="&gt;&gt;tabPage5.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="&gt;&gt;textBox_Projekt.ZOrder" xml:space="preserve">
     <value>13</value>
   </data>
   <data name="&gt;&gt;comboBox_Klima.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;label5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;listView_Solar.Type" xml:space="preserve">
     <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="tabControl_Komponenten.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
-  </data>
-  <data name="listView_WaermebedarfExtern.Size" type="System.Drawing.Size, System.Drawing">
-    <value>581, 133</value>
   </data>
   <data name="label5.TabIndex" type="System.Int32, mscorlib">
     <value>38</value>
@@ -207,6 +216,9 @@
   <data name="btn_DragDestination.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="tabPage6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 48</value>
+  </data>
   <data name="&gt;&gt;tabControl_Komponenten.Parent" xml:space="preserve">
     <value>tabPage_Komponenten</value>
   </data>
@@ -215,9 +227,6 @@
   </data>
   <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 192</value>
-  </data>
-  <data name="&gt;&gt;label1.Name" xml:space="preserve">
-    <value>label1</value>
   </data>
   <data name="listView_Gebaeude.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9pt</value>
@@ -254,12 +263,6 @@
   </data>
   <data name="&gt;&gt;listView_Strombedarf.Type" xml:space="preserve">
     <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_Projekt.Parent" xml:space="preserve">
-    <value>tabPage_Komponenten</value>
-  </data>
-  <data name="listView_PV.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9pt</value>
   </data>
   <data name="&gt;&gt;btn_DragDestination.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -324,11 +327,17 @@
   <data name="label4.TabIndex" type="System.Int32, mscorlib">
     <value>36</value>
   </data>
+  <data name="&gt;&gt;label4.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
   <data name="tabControl_Komponenten.Location" type="System.Drawing.Point, System.Drawing">
     <value>485, 74</value>
   </data>
   <data name="&gt;&gt;listView_PV.Parent" xml:space="preserve">
     <value>tabPage10</value>
+  </data>
+  <data name="tabPage12.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
   </data>
   <data name="&gt;&gt;label3.ZOrder" xml:space="preserve">
     <value>16</value>
@@ -350,9 +359,6 @@
   </data>
   <data name="&gt;&gt;listView_Gebaeude.Parent" xml:space="preserve">
     <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;button_Beenden.Parent" xml:space="preserve">
-    <value>$this</value>
   </data>
   <data name="&gt;&gt;listView_Heizkessel.Parent" xml:space="preserve">
     <value>tabPage11</value>
@@ -396,9 +402,6 @@
   <data name="&gt;&gt;btn_DragDestination.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="label9.TabIndex" type="System.Int32, mscorlib">
-    <value>44</value>
-  </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Projekteigenschaften</value>
   </data>
@@ -426,9 +429,6 @@
   <data name="&gt;&gt;listView_WaermebedarfExtern.Parent" xml:space="preserve">
     <value>tabPage9</value>
   </data>
-  <data name="&gt;&gt;$this.Name" xml:space="preserve">
-    <value>FormMain</value>
-  </data>
   <data name="&gt;&gt;textBox_Datum.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -446,9 +446,6 @@
   </data>
   <data name="&gt;&gt;tabPage14.Name" xml:space="preserve">
     <value>tabPage14</value>
-  </data>
-  <data name="textBox_Projekt.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
   </data>
   <data name="listView_Heizkessel.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
@@ -480,11 +477,8 @@
   <data name="listView_BHKW.Location" type="System.Drawing.Point, System.Drawing">
     <value>15, 12</value>
   </data>
-  <data name="&gt;&gt;label2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label6.ZOrder" xml:space="preserve">
-    <value>10</value>
+  <data name="tabPage13.Size" type="System.Drawing.Size, System.Drawing">
+    <value>867, 229</value>
   </data>
   <data name="&gt;&gt;listView_BHKW.ZOrder" xml:space="preserve">
     <value>0</value>
@@ -500,9 +494,6 @@
   </data>
   <data name="tabControl_Main.ItemSize" type="System.Drawing.Size, System.Drawing">
     <value>66, 30</value>
-  </data>
-  <data name="textBox_Beschreibung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>135, 219</value>
   </data>
   <data name="&gt;&gt;tabPage1.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -534,17 +525,11 @@
   <data name="listView_Solar.Location" type="System.Drawing.Point, System.Drawing">
     <value>24, 12</value>
   </data>
-  <data name="label1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>1, 1, 1, 1</value>
-  </data>
   <data name="&gt;&gt;label4.Name" xml:space="preserve">
     <value>label4</value>
   </data>
   <data name="&gt;&gt;listView_Prozesswaerme.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="&gt;&gt;tabPage10.Name" xml:space="preserve">
-    <value>tabPage10</value>
   </data>
   <data name="label5.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -579,8 +564,11 @@
   <data name="textBox_Projekt.TabIndex" type="System.Int32, mscorlib">
     <value>37</value>
   </data>
-  <data name="&gt;&gt;label4.ZOrder" xml:space="preserve">
-    <value>14</value>
+  <data name="&gt;&gt;label5.Name" xml:space="preserve">
+    <value>label5</value>
+  </data>
+  <data name="listView_Strombedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>48, 47</value>
   </data>
   <data name="tabPage10.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 48</value>
@@ -606,8 +594,8 @@
   <data name="tabPage5.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
   </data>
-  <data name="&gt;&gt;label5.Name" xml:space="preserve">
-    <value>label5</value>
+  <data name="textBox_Beschreibung.Location" type="System.Drawing.Point, System.Drawing">
+    <value>135, 219</value>
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>175, 23</value>
@@ -669,8 +657,8 @@
   <data name="listView_Strombedarf.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9pt</value>
   </data>
-  <data name="textBox_Bearbeiter.TabIndex" type="System.Int32, mscorlib">
-    <value>39</value>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>FormMain</value>
   </data>
   <data name="&gt;&gt;listView_Strombedarf.Parent" xml:space="preserve">
     <value>tabPage14</value>
@@ -693,11 +681,17 @@
   <data name="&gt;&gt;tabControl_Main.Name" xml:space="preserve">
     <value>tabControl_Main</value>
   </data>
+  <data name="btn_DragDestination.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
+  </data>
   <data name="&gt;&gt;textBox_Beschreibung.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
   <data name="tabPage9.Text" xml:space="preserve">
     <value>Wärmebedarf Einlesen</value>
+  </data>
+  <data name="&gt;&gt;tabPage11.Parent" xml:space="preserve">
+    <value>tabControl_Komponenten</value>
   </data>
   <data name="tabPage4.Size" type="System.Drawing.Size, System.Drawing">
     <value>867, 229</value>
@@ -726,6 +720,9 @@
   <data name="&gt;&gt;tabPage14.Parent" xml:space="preserve">
     <value>tabControl_Komponenten</value>
   </data>
+  <data name="tabPage14.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
   <data name="&gt;&gt;comboBox_Klima.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
@@ -747,6 +744,9 @@
   <data name="&gt;&gt;btn_Speichern.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
+  <data name="button1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 308</value>
+  </data>
   <data name="listView_WaermebedarfExtern.Location" type="System.Drawing.Point, System.Drawing">
     <value>15, 12</value>
   </data>
@@ -760,6 +760,9 @@
     <value>tabControl_Komponenten</value>
   </data>
   <data name="tabPage5.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
+  </data>
+  <data name="tabPage4.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 3, 3, 3</value>
   </data>
   <data name="&gt;&gt;btn_DragDestination.Name" xml:space="preserve">
@@ -789,14 +792,14 @@
   <data name="label3.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label2.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="&gt;&gt;tabPage6.ZOrder" xml:space="preserve">
+    <value>5</value>
   </data>
   <data name="textBox_Datum.Size" type="System.Drawing.Size, System.Drawing">
     <value>116, 25</value>
   </data>
-  <data name="textBox_Beschreibung.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
+  <data name="label2.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="btn_DragDestination.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -813,6 +816,9 @@
         5POV9DH5Lm7XN20xcNaxBtc8P7AD9wZpGXEG/4Vxy3eXc8VyiE29Rnme9weXy6TxX4GxPxo4LnZ90Mmg
         AAAAAElFTkSuQmCC
 </value>
+  </data>
+  <data name="&gt;&gt;label9.Parent" xml:space="preserve">
+    <value>tabPage_Komponenten</value>
   </data>
   <data name="btn_Speichern.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -856,9 +862,6 @@
   <data name="&gt;&gt;tabControl_Main.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="&gt;&gt;label4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
     <value>15</value>
   </data>
@@ -880,9 +883,6 @@
   <data name="textBox_Kunde.Size" type="System.Drawing.Size, System.Drawing">
     <value>304, 25</value>
   </data>
-  <data name="tabPage13.Size" type="System.Drawing.Size, System.Drawing">
-    <value>867, 229</value>
-  </data>
   <data name="listView_PV.Size" type="System.Drawing.Size, System.Drawing">
     <value>514, 97</value>
   </data>
@@ -894,9 +894,6 @@
   </data>
   <data name="&gt;&gt;tabPage11.Name" xml:space="preserve">
     <value>tabPage11</value>
-  </data>
-  <data name="&gt;&gt;listView_PV.ZOrder" xml:space="preserve">
-    <value>0</value>
   </data>
   <data name="listView_Stromganglinie.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9pt</value>
@@ -928,8 +925,14 @@
   <data name="&gt;&gt;textBox_Kunde.Parent" xml:space="preserve">
     <value>tabPage_Komponenten</value>
   </data>
+  <data name="comboBox_Klima.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 25</value>
+  </data>
   <data name="&gt;&gt;textBox_Bearbeiter.ZOrder" xml:space="preserve">
     <value>11</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Komponenten.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="tabPage_Komponenten.Size" type="System.Drawing.Size, System.Drawing">
     <value>1382, 740</value>
@@ -946,14 +949,8 @@
   <data name="&gt;&gt;tabPage6.Parent" xml:space="preserve">
     <value>tabControl_Komponenten</value>
   </data>
-  <data name="&gt;&gt;listView_Gebaeude.Name" xml:space="preserve">
-    <value>listView_Gebaeude</value>
-  </data>
   <data name="tabPage6.Text" xml:space="preserve">
     <value>Solarthermie</value>
-  </data>
-  <data name="btn_Speichern.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="tabPage14.Size" type="System.Drawing.Size, System.Drawing">
     <value>867, 229</value>
@@ -979,9 +976,6 @@
   <data name="&gt;&gt;textBox_Kunde.Name" xml:space="preserve">
     <value>textBox_Kunde</value>
   </data>
-  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>111, 23</value>
-  </data>
   <data name="&gt;&gt;btn_Speichern.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -993,6 +987,9 @@
   </data>
   <data name="tabPage10.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
+  </data>
+  <data name="&gt;&gt;tabPage4.Parent" xml:space="preserve">
+    <value>tabControl_Komponenten</value>
   </data>
   <data name="tabPage13.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 48</value>
@@ -1015,6 +1012,9 @@
   <data name="textBox_Kunde.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
+  <data name="tabPage3.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
   <data name="&gt;&gt;button1.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -1030,8 +1030,14 @@
   <data name="&gt;&gt;listView_Solar.Parent" xml:space="preserve">
     <value>tabPage6</value>
   </data>
+  <data name="listView_SP.Size" type="System.Drawing.Size, System.Drawing">
+    <value>514, 97</value>
+  </data>
   <data name="&gt;&gt;textBox_Bearbeiter.Parent" xml:space="preserve">
     <value>tabPage_Komponenten</value>
+  </data>
+  <data name="&gt;&gt;label6.ZOrder" xml:space="preserve">
+    <value>10</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Detailformular</value>
@@ -1060,10 +1066,10 @@
   <data name="listView_Heizkessel.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 13</value>
   </data>
-  <data name="&gt;&gt;label5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>1, 1, 1, 1</value>
   </data>
-  <data name="&gt;&gt;label9.Parent" xml:space="preserve">
+  <data name="&gt;&gt;textBox_Projekt.Parent" xml:space="preserve">
     <value>tabPage_Komponenten</value>
   </data>
   <data name="&gt;&gt;listView_SP.Name" xml:space="preserve">
@@ -1075,14 +1081,17 @@
   <data name="listView_BHKW.TabIndex" type="System.Int32, mscorlib">
     <value>16</value>
   </data>
+  <data name="listView_Solar.Size" type="System.Drawing.Size, System.Drawing">
+    <value>514, 97</value>
+  </data>
   <data name="label6.Text" xml:space="preserve">
     <value>Kunde:</value>
   </data>
   <data name="&gt;&gt;listView_Solar.Name" xml:space="preserve">
     <value>listView_Solar</value>
   </data>
-  <data name="tabPage12.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
+  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>111, 23</value>
   </data>
   <data name="&gt;&gt;label3.Parent" xml:space="preserve">
     <value>tabPage_Komponenten</value>
@@ -1090,14 +1099,14 @@
   <data name="&gt;&gt;tabControl_Main.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="listView_Solar.Size" type="System.Drawing.Size, System.Drawing">
-    <value>514, 97</value>
+  <data name="textBox_Projekt.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;tabPage4.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="listView_Strombedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>48, 47</value>
+  <data name="&gt;&gt;tabPage10.Name" xml:space="preserve">
+    <value>tabPage10</value>
   </data>
   <data name="&gt;&gt;tabPage13.ZOrder" xml:space="preserve">
     <value>8</value>
@@ -1105,8 +1114,8 @@
   <data name="&gt;&gt;tabPage4.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="listView_SP.Size" type="System.Drawing.Size, System.Drawing">
-    <value>514, 97</value>
+  <data name="&gt;&gt;label4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="textBox_Projekt.Size" type="System.Drawing.Size, System.Drawing">
     <value>304, 25</value>
@@ -1114,8 +1123,8 @@
   <data name="&gt;&gt;listView_Solar.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="comboBox_Klima.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 25</value>
+  <data name="&gt;&gt;label1.Name" xml:space="preserve">
+    <value>label1</value>
   </data>
   <data name="&gt;&gt;label2.Parent" xml:space="preserve">
     <value>tabPage_Komponenten</value>
@@ -1186,20 +1195,17 @@
   <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
     <value>51, 19</value>
   </data>
-  <data name="tabPage4.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 3, 3, 3</value>
+  <data name="&gt;&gt;listView_Gebaeude.Name" xml:space="preserve">
+    <value>listView_Gebaeude</value>
   </data>
-  <data name="&gt;&gt;tabPage11.Parent" xml:space="preserve">
-    <value>tabControl_Komponenten</value>
+  <data name="listView_PV.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9pt</value>
   </data>
-  <data name="&gt;&gt;tabPage5.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="listView_WaermebedarfExtern.Size" type="System.Drawing.Size, System.Drawing">
+    <value>581, 133</value>
   </data>
-  <data name="tabPage3.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;tabPage6.ZOrder" xml:space="preserve">
-    <value>5</value>
+  <data name="label9.TabIndex" type="System.Int32, mscorlib">
+    <value>44</value>
   </data>
   <data name="label3.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -1213,9 +1219,6 @@
   <data name="&gt;&gt;textBox_Bearbeiter.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="listView_Stromganglinie.Size" type="System.Drawing.Size, System.Drawing">
-    <value>514, 97</value>
-  </data>
   <data name="&gt;&gt;tabPage10.Parent" xml:space="preserve">
     <value>tabControl_Komponenten</value>
   </data>
@@ -1225,8 +1228,8 @@
   <data name="btn_Speichern.TabIndex" type="System.Int32, mscorlib">
     <value>51</value>
   </data>
-  <data name="&gt;&gt;tabPage_Komponenten.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;button_Beenden.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="listView_Heizkessel.Size" type="System.Drawing.Size, System.Drawing">
     <value>514, 97</value>
@@ -1240,11 +1243,8 @@
   <data name="listView_Strombedarf.Size" type="System.Drawing.Size, System.Drawing">
     <value>581, 133</value>
   </data>
-  <data name="&gt;&gt;label1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="btn_DragDestination.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>TopCenter</value>
+  <data name="btn_Speichern.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="&gt;&gt;listView_WP.Name" xml:space="preserve">
     <value>listView_WP</value>
@@ -1264,20 +1264,20 @@
   <data name="label2.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="label5.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
+  <data name="listView_Stromganglinie.Size" type="System.Drawing.Size, System.Drawing">
+    <value>514, 97</value>
   </data>
-  <data name="button1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 308</value>
+  <data name="&gt;&gt;listView_PV.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
-  <data name="&gt;&gt;tabPage4.Parent" xml:space="preserve">
-    <value>tabControl_Komponenten</value>
+  <data name="&gt;&gt;label1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;label1.Parent" xml:space="preserve">
     <value>tabPage_Komponenten</value>
   </data>
-  <data name="tabPage14.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+  <data name="&gt;&gt;label2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;listView_BHKW.Type" xml:space="preserve">
     <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

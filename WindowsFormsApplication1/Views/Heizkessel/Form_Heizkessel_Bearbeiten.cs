@@ -1,5 +1,4 @@
 using System;
-using System.Data.Common;
 using System.Data.Odbc;
 using System.Windows.Forms;
 
@@ -74,14 +73,17 @@ namespace WindowsFormsApplication1
             if (rs.Read("Brennstoff") != DBNull.Value)
             {
                 int brennstoff = (int)rs.Read("Brennstoff");
-                if (brennstoff == 1) radioButton_Gas.Checked = true;
-                else if (brennstoff == 0) radioButton_Heizoel.Checked = true;
-                else if (brennstoff == 3) radioButton_Rapsoel.Checked = true;
-                else if (brennstoff == 4) radioButton_Holz.Checked = true;
-                else if (brennstoff == 8) radioButton_Fluessiggas.Checked = true;
-                else if (brennstoff == 11) radioButton_Biogas.Checked = true;
-                else if (brennstoff == 14) radioButton_Fernwaerme.Checked = true;
-                else if (brennstoff == 15) radioButton_Strom.Checked = true;
+                if (brennstoff >= 6 && brennstoff <= 9) radioButton_Heizoel.Checked = true;
+                else if (brennstoff >= 1 && brennstoff <= 3) radioButton_Gas.Checked = true;
+                else if (brennstoff == 16) radioButton_Rapsoel.Checked = true;
+                else if (brennstoff == 12) radioButton_Holz.Checked = true;
+                else if (brennstoff >= 4 && brennstoff <= 5) radioButton_Fluessiggas.Checked = true;
+                else if (brennstoff == 14) radioButton_Biogas.Checked = true;
+                else if (brennstoff == 15) radioButton_Pellets.Checked = true;
+                else if (brennstoff == 10) radioButton_Koks.Checked = true;
+                else if (brennstoff == 11) radioButton_Kohle.Checked = true;
+                else if (brennstoff == 13) radioButton_Strom.Checked = true;
+                else if (brennstoff >= 18 && brennstoff <= 22) radioButton_Bioheizöl.Checked = true;
                 else radioButton_Sonstige.Checked = true;
             }
             rs.Close();
@@ -278,15 +280,17 @@ namespace WindowsFormsApplication1
             model.Firma = textBox_Hersteller.Text;
             model.Beschreibung = textBox_Beschreibung.Text;
             model.Ptherm = double.Parse(tb_th_Leistung.Text);
-            if (radioButton_Heizoel.Checked) model.Brennstoff = 0;
+            if (radioButton_Heizoel.Checked) model.Brennstoff = 9;
             else if (radioButton_Gas.Checked) model.Brennstoff = 1;
-            else if (radioButton_Rapsoel.Checked) model.Brennstoff = 3;
-            else if (radioButton_Holz.Checked) model.Brennstoff = 4;
-            else if (radioButton_Fluessiggas.Checked) model.Brennstoff = 8;
-            else if (radioButton_Biogas.Checked) model.Brennstoff = 11;
-            else if (radioButton_Fernwaerme.Checked) model.Brennstoff = 14;
-            else if (radioButton_Strom.Checked) model.Brennstoff = 15;
-            else model.Brennstoff = 5;
+            else if (radioButton_Rapsoel.Checked) model.Brennstoff = 16;
+            else if (radioButton_Holz.Checked) model.Brennstoff = 12;
+            else if (radioButton_Fluessiggas.Checked) model.Brennstoff = 4;
+            else if (radioButton_Biogas.Checked) model.Brennstoff = 14;
+            else if (radioButton_Pellets.Checked) model.Brennstoff = 15;
+            else if (radioButton_Strom.Checked) model.Brennstoff = 13;
+            else if (radioButton_Koks.Checked) model.Brennstoff = 10;
+            else if (radioButton_Kohle.Checked) model.Brennstoff = 11;
+            else if (radioButton_Sonstige.Checked)  model.Brennstoff = 23;
             model.Wirkungsgrad_Gas = double.Parse(tb_Wirkungsgrad.Text);
             model.Wirkungsgrad_Oel = Program.convertTxt2Double(tb_Wirkungsgrad_Öl.Text);
             model.Betriebsbereitschaftverlust = double.Parse(tb_B_Verlust.Text);

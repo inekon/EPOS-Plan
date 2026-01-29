@@ -134,4 +134,79 @@
         AAAAAElFTkSuQmCC
 </value>
   </data>
+  <data name="tabPage4.Text" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Projekteigenschaften</value>
+  </data>
+  <data name="tabPage11.Text" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Projektdaten</value>
+  </data>
+  <data name="tabPage10.Text" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="tabPage9.Text" xml:space="preserve">
+    <value>Wärmebedarf Einlesen</value>
+  </data>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Projekt geöffnet:</value>
+  </data>
+  <data name="button1.Text" xml:space="preserve">
+    <value>SP</value>
+  </data>
+  <data name="btn_DragDestination.Text" xml:space="preserve">
+    <value>..</value>
+  </data>
+  <data name="label5.Text" xml:space="preserve">
+    <value>Bearbeiter:</value>
+  </data>
+  <data name="label6.Text" xml:space="preserve">
+    <value>Kunde:</value>
+  </data>
+  <data name="tabPage3.Text" xml:space="preserve">
+    <value>Wärmepumpen</value>
+  </data>
+  <data name="tabPage14.Text" xml:space="preserve">
+    <value>Strombedarf</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Detailformular</value>
+  </data>
+  <data name="tabPage12.Text" xml:space="preserve">
+    <value>Stromganglinie</value>
+  </data>
+  <data name="tabPage6.Text" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Klimazone:</value>
+  </data>
+  <data name="btn_Speichern.Text" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="tabPage5.Text" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="tabPage_Komponenten.Text" xml:space="preserve">
+    <value>Konfiguration Projekt</value>
+  </data>
+  <data name="label9.Text" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
+  <data name="tabPage1.Text" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="tabPage13.Text" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="button_Beenden.Text" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="label8.Text" xml:space="preserve">
+    <value>Änderungsdatum:</value>
+  </data>
 </root>

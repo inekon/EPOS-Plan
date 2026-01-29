@@ -127,7 +127,7 @@
     <value>Neu...</value>
   </data>
   <data name="toolStripMenuItem7.Text" xml:space="preserve">
-    <value>Daten &amp;&amp; Import </value>
+    <value>Daten &amp;&amp; Import</value>
   </data>
   <data name="Projekte.Text" xml:space="preserve">
     <value>Projekt</value>
@@ -208,7 +208,7 @@
     <value>BHKW</value>
   </data>
   <data name="toolStripMenuItem1.Text" xml:space="preserve">
-    <value>Wärmebedarf &amp;&amp; Heizung </value>
+    <value>Wärmebedarf &amp;&amp; Heizung</value>
   </data>
   <data name="toolStripMenuItem3.Text" xml:space="preserve">
     <value>Energiesysteme</value>
@@ -227,5 +227,11 @@
   </data>
   <data name="toolStripMenuItem4.Text" xml:space="preserve">
     <value>Stromganglinie</value>
+  </data>
+  <data name="MenuItem_SPKBearbeiten.Text" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="MeniItem_SPK_VDI3805.Text" xml:space="preserve">
+    <value>Importieren VDI 3805 Datei</value>
   </data>
 </root>

@@ -142,4 +142,7 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Delete Project</value>
   </data>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

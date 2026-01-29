@@ -239,7 +239,7 @@
     <value>100, 17</value>
   </data>
   <data name="label15.Text" xml:space="preserve">
-    <value>Network losses:</value>
+    <value>Network losses</value>
   </data>
   <data name="textBox_Netzverluste.Location" type="System.Drawing.Point, System.Drawing">
     <value>111, 24</value>
@@ -333,5 +333,68 @@
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Simulation configuration</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeleistung_max.Text" xml:space="preserve">
+    <value>100</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox_Bereitschaft.Text" xml:space="preserve">
+    <value>6000</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Text" xml:space="preserve">
+    <value>90</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="label14.Text" xml:space="preserve">
+    <value>Ha</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="textBox_untere_PGrenze.Text" xml:space="preserve">
+    <value>50</value>
+  </data>
+  <data name="textBox_Netzverluste.Text" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_min.Text" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Text" xml:space="preserve">
+    <value>90</value>
+  </data>
+  <data name="label6.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Text" xml:space="preserve">
+    <value>%</value>
   </data>
 </root>

@@ -394,7 +394,7 @@
     <value>125, 25</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Eingabe der gesamten Wohn-/Nutzfläche des ausgewählten Gebäudes </value>
+    <value>Eingabe der gesamten Wohn-/Nutzfläche des ausgewählten Gebäudes</value>
   </data>
   <data name="&gt;&gt;txt_Bedarfsart_Auswahl.Parent" xml:space="preserve">
     <value>groupBox2</value>

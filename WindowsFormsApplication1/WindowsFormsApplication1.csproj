@@ -124,6 +124,7 @@
     <Compile Include="Classes\Form_Hinweis.Designer.cs">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </Compile>
+    <Compile Include="Classes\Heizkesselmport.cs" />
     <Compile Include="Classes\IniFileParser.cs" />
     <Compile Include="Classes\RecordSet.cs" />
     <Compile Include="Classes\Simulation\SimulationHelper.cs" />
@@ -158,7 +159,7 @@
     <Compile Include="Controller\PVKontextMenuCtrl.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Controller\SolardatenCtrl .cs" />
+    <Compile Include="Controller\SolardatenCtrl.cs" />
     <Compile Include="Controller\SolarganglinieCtrl.cs" />
     <Compile Include="Controller\SolarganglinieDatenCtrl.cs" />
     <Compile Include="Controller\SolarkollektorenCtrl.cs" />
@@ -264,11 +265,6 @@
     <Compile Include="Views\Form_StromTest.Designer.cs">
       <DependentUpon>Form_StromTest.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Hauptformular\Form_Start1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Form_Start.resx</DependentUpon>
-    </Compile>
     <Compile Include="Views\Heizkessel\Form_Heizkessel_Admin.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -280,6 +276,12 @@
     </Compile>
     <Compile Include="Views\Heizkessel\Form_Heizkessel_Bearbeiten.designer.cs">
       <DependentUpon>Form_Heizkessel_Bearbeiten.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Heizkessel\Form_Heizkessel_einlesen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Heizkessel\Form_Heizkessel_einlesen.designer.cs">
+      <DependentUpon>Form_Heizkessel_einlesen.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Photovoltaik\Form_AdminPV.cs">
       <SubType>Form</SubType>
@@ -632,14 +634,22 @@
     <EmbeddedResource Include="Views\Form_StromTest.resx">
       <DependentUpon>Form_StromTest.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_EingGebTyp.de-DE.resx">
+      <DependentUpon>Form_EingGebTyp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Gebäude\Form_EingGebTyp.en-US.resx">
+      <DependentUpon>Form_EingGebTyp.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Gebäude\Form_EingGebTyp.resx">
       <DependentUpon>Form_EingGebTyp.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude.de-DE.resx">
       <DependentUpon>Form_Gebaeude.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude.en-US.resx">
       <DependentUpon>Form_Gebaeude.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Gebäude\Form_Gebaeude.resx">
       <DependentUpon>Form_Gebaeude.cs</DependentUpon>
@@ -680,9 +690,6 @@
     <EmbeddedResource Include="Views\Gebäude\Form_GebWohnflaeche.resx">
       <DependentUpon>Form_GebWohnflaeche.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Hauptformular\FormMain.aa.resx">
-      <DependentUpon>FormMain.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Views\Hauptformular\FormMain.de-DE.resx">
       <DependentUpon>FormMain.cs</DependentUpon>
     </EmbeddedResource>
@@ -699,14 +706,41 @@
     <EmbeddedResource Include="Views\Hauptformular\Form_Start.en-US.resx">
       <DependentUpon>Form_Start.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel.de-DE.resx">
+      <DependentUpon>Form_Heizkessel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel.en-US.resx">
+      <DependentUpon>Form_Heizkessel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel.resx">
       <DependentUpon>Form_Heizkessel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_Admin.de-DE.resx">
+      <DependentUpon>Form_Heizkessel_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_Admin.en-US.resx">
+      <DependentUpon>Form_Heizkessel_Admin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_Admin.resx">
       <DependentUpon>Form_Heizkessel_Admin.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_Bearbeiten.de-DE.resx">
+      <DependentUpon>Form_Heizkessel_Bearbeiten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_Bearbeiten.en-US.resx">
+      <DependentUpon>Form_Heizkessel_Bearbeiten.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_Bearbeiten.resx">
       <DependentUpon>Form_Heizkessel_Bearbeiten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_einlesen.de-DE.resx">
+      <DependentUpon>Form_Heizkessel_einlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_einlesen.en-US.resx">
+      <DependentUpon>Form_Heizkessel_einlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_einlesen.resx">
+      <DependentUpon>Form_Heizkessel_einlesen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Photovoltaik\Form_AdminPV.resx">
       <DependentUpon>Form_AdminPV.cs</DependentUpon>
@@ -774,17 +808,47 @@
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Kurz.resx">
       <DependentUpon>Form_Simulation_Kurz.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_SolarDB.de-DE.resx">
+      <DependentUpon>Form_SolarDB.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_SolarDB.en-US.resx">
+      <DependentUpon>Form_SolarDB.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Solarthermie\Form_SolarDB.resx">
       <DependentUpon>Form_SolarDB.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_Solarganglinie.de-DE.resx">
+      <DependentUpon>Form_Solarganglinie.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_Solarganglinie.en-US.resx">
+      <DependentUpon>Form_Solarganglinie.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Solarthermie\Form_Solarganglinie.resx">
       <DependentUpon>Form_Solarganglinie.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_Solarganglinie_Admin.de-DE.resx">
+      <DependentUpon>Form_Solarganglinie_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_Solarganglinie_Admin.en-US.resx">
+      <DependentUpon>Form_Solarganglinie_Admin.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Solarthermie\Form_Solarganglinie_Admin.resx">
       <DependentUpon>Form_Solarganglinie_Admin.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektoren.de-DE.resx">
+      <DependentUpon>Form_SolarKollektoren.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektoren.en-US.resx">
+      <DependentUpon>Form_SolarKollektoren.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektoren.resx">
       <DependentUpon>Form_SolarKollektoren.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektorenAdmin.de-DE.resx">
+      <DependentUpon>Form_SolarKollektorenAdmin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektorenAdmin.en-US.resx">
+      <DependentUpon>Form_SolarKollektorenAdmin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektorenAdmin.resx">
       <DependentUpon>Form_SolarKollektorenAdmin.cs</DependentUpon>
@@ -974,8 +1038,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Hauptformular\Form_Start.resx">
       <DependentUpon>Form_Start.cs</DependentUpon>
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Form_Start1.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_Projekt.resx">
       <DependentUpon>Wizard_Projekt.cs</DependentUpon>
@@ -1101,7 +1163,7 @@
     <None Include="Resources\Wärme_Stromerzeugung.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Unbenannt.jpg" />
+    <None Include="Resources\PGebaeude.jpg" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Unbenannt2.jpg" />
