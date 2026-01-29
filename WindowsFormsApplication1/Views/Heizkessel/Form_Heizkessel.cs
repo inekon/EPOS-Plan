@@ -61,18 +61,12 @@ namespace WindowsFormsApplication1
                 listBox_Kessel_DB.Items.Add(heizkesselctrl.items[i].Name);
             
             }
+
             comboBox_Brennstoffart.Items.Add("Alle");
-            comboBox_Brennstoffart.Items.Add("Gas");
-            comboBox_Brennstoffart.Items.Add("Öl");
-            comboBox_Brennstoffart.Items.Add("Gas Brennwert");
-            comboBox_Brennstoffart.Items.Add("Öl Brennwert");
-            comboBox_Brennstoffart.Items.Add("Biogas");
-            comboBox_Brennstoffart.Items.Add("Rapsöl");
-            comboBox_Brennstoffart.Items.Add("Holz");
-            comboBox_Brennstoffart.Items.Add("Flüssiggas");
-            comboBox_Brennstoffart.Items.Add("Sonstiges");
-            comboBox_Brennstoffart.Items.Add("Fernwärme");
-            comboBox_Brennstoffart.Items.Add("Strom");
+            for (int i = 0; i < BrennstoffCtrl.Brennstoffart_Gruppe.Length; i++)
+            {
+                comboBox_Brennstoffart.Items.Add(BrennstoffCtrl.Brennstoffart_Gruppe[i]);
+            }
 
             comboBox_Leistung.Items.Add("Alle");
             comboBox_Leistung.Items.Add("bis 50 kW");
@@ -204,19 +198,19 @@ namespace WindowsFormsApplication1
             else if (comboBox_Leistung.Text == ">500 bis 1.000 kW") szFilterLeistung = "Ptherm >=500 and Ptherm <1000";
             else if (comboBox_Leistung.Text == "über 1.000 kW") szFilterLeistung = "Ptherm >=1000";
 
-            if (comboBox_Brennstoffart.Text == "Gas") szFilter = "Brennstoff=1 and Wirkungsgrad_Gas<1";
-            else if (comboBox_Brennstoffart.Text == "Gas Brennwert") szFilter = "Brennstoff=1 and Wirkungsgrad_Gas>=1";
-            else if (comboBox_Brennstoffart.Text == "Öl") szFilter = "Brennstoff=0 and Wirkungsgrad_Öl<1";
-            else if (comboBox_Brennstoffart.Text == "Öl Brennwert") szFilter = "Brennstoff=0 and Wirkungsgrad_Öl>=1";
-            else if (comboBox_Brennstoffart.Text == "Biogas") szFilter = "Brennstoff=11";
-            else if (comboBox_Brennstoffart.Text == "Rapsöl") szFilter = "Brennstoff=3";
-            else if (comboBox_Brennstoffart.Text == "Holz") szFilter = "Brennstoff=4";
-            else if (comboBox_Brennstoffart.Text == "Flüssiggas") szFilter = "Brennstoff=8";
-            else if (comboBox_Brennstoffart.Text == "Sonstiges") szFilter = "Brennstoff=5";
-            else if (comboBox_Brennstoffart.Text == "Fernwärme") szFilter = "Brennstoff=14";
-            else if (comboBox_Brennstoffart.Text == "Strom") szFilter = "Brennstoff=15";
-            else if (comboBox_Brennstoffart.Text == "Alle") szFilter = "Brennstoff Like '%'";
 
+            if (comboBox_Brennstoffart.Text == "Gas") szFilter = "(Brennstoff >=1 and Brennstoff <=5) or Brennstoff=14";
+            else if (comboBox_Brennstoffart.Text == "Öl") szFilter = "(Brennstoff >=6 and Brennstoff <=9) or (Brennstoff >=18 and Brennstoff <=22)";
+            else if (comboBox_Brennstoffart.Text == "Koks") szFilter = "Brennstoff=10";
+            else if (comboBox_Brennstoffart.Text == "Kohle") szFilter = "Brennstoff=11";
+            else if (comboBox_Brennstoffart.Text == "Holz") szFilter = "Brennstoff=12";
+            else if (comboBox_Brennstoffart.Text == "Tierische Fette") szFilter = "Brennstoff=17";
+            else if (comboBox_Brennstoffart.Text == "Strom") szFilter = "Brennstoff=13";
+            else if (comboBox_Brennstoffart.Text == "Pellets") szFilter = "Brennstoff=15";
+            else if (comboBox_Brennstoffart.Text == "Rapsöl") szFilter = "Brennstoff=16";
+            else if (comboBox_Brennstoffart.Text == "Sonstige") szFilter = "Brennstoff=23";
+            else if (comboBox_Brennstoffart.Text == "Alle") szFilter = "Brennstoff Like '%'";
+   
             listBox_Kessel_DB.Items.Clear();
             if (szFilter == "")
                 sql = "select * from [DB-Heizung] where " + szFilterLeistung + " order by Name";

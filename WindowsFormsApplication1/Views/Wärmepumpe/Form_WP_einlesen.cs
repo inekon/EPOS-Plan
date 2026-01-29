@@ -33,7 +33,7 @@ namespace WindowsFormsApplication1
 
             Liste_WP.Items.Clear();
 
-            string szAppDataPath = Path.Combine(Program.ApplicationPath_User, "vdi");
+            string szAppDataPath = Path.Combine(Program.ApplicationPath_User, "VDI");
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
 

@@ -16,7 +16,20 @@ namespace WindowsFormsApplication1
         public BrennstoffModel model;
 
 
-        public static string[] Brennstoffart = { "Öl", "Gas", "", "Rapsöl", "Holz/Pellet", "Sonstiges", "", "", "Flüssiggas", "", "", "Biogas", "", "","Fernwärme","Strom" };
+        public static string[] Brennstoffart = { "",
+            "Stadtgas","Erdgas LL",
+            "Erdgas E","Flüssiggas (Propan)","Flüssiggas (Butan)",
+            "Heizöl S","Heizöl M","Heizöl L",
+            "Heizöl EL","Koks","Kohle",
+            "Holz","Elektrische Energie","Biogas",
+            "Pellets","Rapsöl","Tierische Fette",
+            "Heizöl Bio 5","Heizöl Bio 10","Heizöl Bio 15",
+            "Heizöl Bio 20","Heizöl EL schwefelarm","Sonstige Energieträger"
+         };
+
+        public static string[] Brennstoffart_Gruppe = { 
+            "Gas","Öl","Koks","Kohle","Holz","Pellets","Strom","Rapsöl","Tierische Fette","Sonstige"
+         };
 
         public BrennstoffCtrl()
         {
@@ -70,7 +83,6 @@ namespace WindowsFormsApplication1
 
                 items[rows] = item;
                 rows += 1;
-                item = null;
             }
             DBReader.Close();
             DBReader.Dispose();

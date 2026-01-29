@@ -52,7 +52,6 @@ namespace WindowsFormsApplication1
 
             if (szIniFile == "" || szDBFile == "")
             {
-                //MessageBox.Show("Die Datenbank Update Datei wurde nicht gefunden!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 result = "Die gesicherte Datenbank bzw. das Ini-File wurde nicht gefunden!";
                 textBox1.Text = result;
                 return result;
@@ -65,7 +64,6 @@ namespace WindowsFormsApplication1
 
             if (!dbClass.UpdateTablesStructure(ini, sourceConnString))
             {
-                //MessageBox.Show("Fehler beim Ausführen des Scripts:\n" + szError, "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 result = "Fehler beim Ausführen des Scripts:\n" + dbClass.szError;
                 textBox1.Text = result;
                 return result;
@@ -75,13 +73,11 @@ namespace WindowsFormsApplication1
 
             if (updateSucceeded)
             {
-                //MessageBox.Show("Datenbank Update erfolgreich abgeschlossen.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 result = "Datenbank Update erfolgreich abgeschlossen.";
                 textBox1.Text = result;
             }
             else
             {
-                //MessageBox.Show("Datenbank Update fehlgeschlagen.\n" + szError, "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 result = "Datenimport nicht vollständig.\nDialog schließen damit die Anwendung gestartet wird!\n\n" + dbClass.szError;
                 textBox1.Text = result;
             }

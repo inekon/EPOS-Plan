@@ -263,6 +263,16 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap PGebaeude {
+            get {
+                object obj = ResourceManager.GetObject("PGebaeude", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap PHeizkessel {
             get {
                 object obj = ResourceManager.GetObject("PHeizkessel", resourceCulture);
@@ -516,26 +526,6 @@ namespace WindowsFormsApplication1.Properties {
         internal static System.Drawing.Bitmap speichern {
             get {
                 object obj = ResourceManager.GetObject("speichern", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Unbenannt {
-            get {
-                object obj = ResourceManager.GetObject("Unbenannt", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Unbenannt1 {
-            get {
-                object obj = ResourceManager.GetObject("Unbenannt1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

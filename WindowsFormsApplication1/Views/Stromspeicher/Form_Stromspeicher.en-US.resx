@@ -173,7 +173,7 @@
     <value>Electricity storage</value>
   </data>
   <data name="btn_Hinzu.Text" xml:space="preserve">
-    <value>&lt;--</value>
+    <value>&lt;---</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
     <value>--&gt;</value>

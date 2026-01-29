@@ -244,4 +244,19 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Read in heat pumps</value>
   </data>
+  <data name="Label15.Text" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="Label14.Text" xml:space="preserve">
+    <value>kWth</value>
+  </data>
+  <data name="btn_Beenden.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Label9.Text" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>kWcool</value>
+  </data>
 </root>

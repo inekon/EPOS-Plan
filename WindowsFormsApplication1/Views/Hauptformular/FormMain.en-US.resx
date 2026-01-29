@@ -216,7 +216,7 @@
     <value>Electricity requirement</value>
   </data>
   <data name="tabPage12.Text" xml:space="preserve">
-    <value>Current hydrograph</value>
+    <value>Current loop</value>
   </data>
   <data name="label9.Size" type="System.Drawing.Size, System.Drawing">
     <value>81, 19</value>
@@ -271,5 +271,11 @@
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Detail form</value>
+  </data>
+  <data name="button1.Text" xml:space="preserve">
+    <value>SP</value>
+  </data>
+  <data name="btn_DragDestination.Text" xml:space="preserve">
+    <value>..</value>
   </data>
 </root>

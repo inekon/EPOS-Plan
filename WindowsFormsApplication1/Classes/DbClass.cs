@@ -77,10 +77,7 @@ namespace WindowsFormsApplication1
                             catch (Exception ex)
                             {
                                 // Fehlerausgabe
-                                //MessageBox.Show("Fehler beim Löschen aus '{tableName}': {ex.Message}");
                                 targetConn.Close(); 
-                                //result = false;
-                                //break; // Abbruch bei Fehler
                             }
                         }
                         done++;
@@ -113,7 +110,6 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 // Fehler im UI-Thread anzeigen
-                //MessageBox.Show("Fehler beim Import: " + ex.Message, "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             finally
@@ -289,7 +285,6 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 // Fehlerausgabe
-                //MessageBox.Show("Fehler beim Importieren in '{QuellTabelle}': {ex.Message}"); 
                 szError = "Fehler beim Importieren in '" + QuellTabelle + "'\n\n" + ex.Message;
                 return false;
             }

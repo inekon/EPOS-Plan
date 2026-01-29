@@ -136,7 +136,7 @@
     <value>Edit...</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Current hydrographs</value>
+    <value>Current loop</value>
   </data>
   <data name="Label2.Text" xml:space="preserve">
     <value>Current curve from DB</value>

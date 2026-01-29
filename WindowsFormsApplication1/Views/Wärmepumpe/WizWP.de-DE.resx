@@ -122,6 +122,36 @@
     <value>228, 19</value>
   </data>
   <data name="label7.Text" xml:space="preserve">
-    <value>Liste der Wärmepumpen im Projekt:</value>
+    <value>Liste der Wärmepumpen im Projekt</value>
+  </data>
+  <data name="label_Type.Text" xml:space="preserve">
+    <value>Geben Sie die Daten der Wärmepumpe ein</value>
+  </data>
+  <data name="btn_Abbrechen.Text" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Eintrag löschen</value>
+  </data>
+  <data name="label5.Text" xml:space="preserve">
+    <value>Neuer Eintrag</value>
+  </data>
+  <data name="btn_Löschen.Text" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Wärmepumpen Verwaltung</value>
+  </data>
+  <data name="btn_Neu.Text" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Eintrag ändern</value>
+  </data>
+  <data name="btn_Uebernehmen.Text" xml:space="preserve">
+    <value>Ändern</value>
   </data>
 </root>

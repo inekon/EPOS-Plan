@@ -1,16 +1,12 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Resources;
 using System.Threading;
 using System.Windows.Forms;
-using WindowsFormsApplication1.Properties;
 
 namespace WindowsFormsApplication1
 {
@@ -65,7 +61,7 @@ namespace WindowsFormsApplication1
             catch (OdbcException sqlEx)
             {
                 // Fehler beim Datenbankzugriff abfangen
-                MessageBox.Show("Datenbaank kann nicht geöffnet werden!\nDSN=TEST überprüfen", "Fehler");
+                MessageBox.Show("Datenbank kann nicht geöffnet werden!\nDSN=TEST überprüfen", "Fehler");
                 Console.WriteLine("SQL Fehler: " + sqlEx.Message);
                 Application.Exit();
                 return;
@@ -74,7 +70,7 @@ namespace WindowsFormsApplication1
             {
                 // Allgemeine Fehler abfangen
                 Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                MessageBox.Show("Datenbaank kann nicht geöffnet werden!\nDSN=TEST überprüfen", "Fehler");
+                MessageBox.Show("Datenbank kann nicht geöffnet werden!\nDSN=TEST überprüfen", "Fehler");
                 Application.Exit();
                 return;
             }
@@ -90,8 +86,6 @@ namespace WindowsFormsApplication1
                 Form_Update formUpdate = new Form_Update();
                 formUpdate.ShowDialog();
             }
-
-
 
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);

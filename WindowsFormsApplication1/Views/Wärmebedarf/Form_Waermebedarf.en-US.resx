@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="label_Type.Text" xml:space="preserve">
-    <value>Heat requirement data (hydrographs)</value>
+    <value>Heat requirement data (curves)</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
     <value>--&gt;</value>
@@ -133,7 +133,7 @@
     <value>External heat requirement</value>
   </data>
   <data name="btn_Loeschen.Text" xml:space="preserve">
-    <value>Delete DB hydrograph</value>
+    <value>Delete DB curve</value>
   </data>
   <data name="Label2.Text" xml:space="preserve">
     <value>Heat requirement from DB</value>
@@ -145,6 +145,6 @@
     <value>Cancel</value>
   </data>
   <data name="btn_Bearbeiten.Text" xml:space="preserve">
-    <value>Reading/Editing...</value>
+    <value>Reading/Editing..</value>
   </data>
 </root>

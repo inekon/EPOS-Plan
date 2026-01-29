@@ -48,47 +48,63 @@
             this.label_pBox_ProjektOeffnen = new System.Windows.Forms.Label();
             this.label2_pBox_ProjektNeu = new System.Windows.Forms.Label();
             this.label_pBox_ProjektNeu = new System.Windows.Forms.Label();
-            this.pBox_ProjektDetails = new System.Windows.Forms.PictureBox();
-            this.pBox_Delete = new System.Windows.Forms.PictureBox();
             this.Label4 = new System.Windows.Forms.Label();
-            this.pBox_Bearbeiten = new System.Windows.Forms.PictureBox();
-            this.pBox_ProjektZuletzt = new System.Windows.Forms.PictureBox();
-            this.pBox_ProjektOeffnen = new System.Windows.Forms.PictureBox();
-            this.pBox_ProjektNeu = new System.Windows.Forms.PictureBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label38 = new System.Windows.Forms.Label();
+            this.label39 = new System.Windows.Forms.Label();
+            this.label36 = new System.Windows.Forms.Label();
+            this.label37 = new System.Windows.Forms.Label();
+            this.label34 = new System.Windows.Forms.Label();
+            this.label35 = new System.Windows.Forms.Label();
             this.label33 = new System.Windows.Forms.Label();
             this.label32 = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
             this.label25 = new System.Windows.Forms.Label();
-            this.pBox_WBHinweis = new System.Windows.Forms.PictureBox();
             this.Label2 = new System.Windows.Forms.Label();
-            this.pBox_Prozess = new System.Windows.Forms.PictureBox();
-            this.pBox_WBedarfDaten = new System.Windows.Forms.PictureBox();
-            this.pBox_Gebaude = new System.Windows.Forms.PictureBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.label44 = new System.Windows.Forms.Label();
+            this.label45 = new System.Windows.Forms.Label();
+            this.label42 = new System.Windows.Forms.Label();
+            this.label43 = new System.Windows.Forms.Label();
+            this.label40 = new System.Windows.Forms.Label();
+            this.label41 = new System.Windows.Forms.Label();
             this.label26 = new System.Windows.Forms.Label();
             this.label27 = new System.Windows.Forms.Label();
-            this.pBox_StromMessdaten = new System.Windows.Forms.PictureBox();
-            this.pBox_StromProfilEigenes = new System.Windows.Forms.PictureBox();
             this.Label5 = new System.Windows.Forms.Label();
             this.Label6 = new System.Windows.Forms.Label();
-            this.pBox_StdLastProfil = new System.Windows.Forms.PictureBox();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.label59 = new System.Windows.Forms.Label();
+            this.label58 = new System.Windows.Forms.Label();
+            this.label56 = new System.Windows.Forms.Label();
+            this.label57 = new System.Windows.Forms.Label();
+            this.label54 = new System.Windows.Forms.Label();
+            this.label55 = new System.Windows.Forms.Label();
+            this.label52 = new System.Windows.Forms.Label();
+            this.label53 = new System.Windows.Forms.Label();
+            this.label50 = new System.Windows.Forms.Label();
+            this.label51 = new System.Windows.Forms.Label();
+            this.label48 = new System.Windows.Forms.Label();
+            this.label49 = new System.Windows.Forms.Label();
+            this.label46 = new System.Windows.Forms.Label();
+            this.label47 = new System.Windows.Forms.Label();
             this.label28 = new System.Windows.Forms.Label();
             this.label29 = new System.Windows.Forms.Label();
             this.radioButton_Ganglinie = new System.Windows.Forms.RadioButton();
             this.radioButton_KollektorProfil = new System.Windows.Forms.RadioButton();
             this.Label7 = new System.Windows.Forms.Label();
             this.Label8 = new System.Windows.Forms.Label();
-            this.pBox_PV = new System.Windows.Forms.PictureBox();
-            this.pBox_Solarthermie = new System.Windows.Forms.PictureBox();
-            this.pBox_Stromspeicher = new System.Windows.Forms.PictureBox();
-            this.pBox_Heizkessel = new System.Windows.Forms.PictureBox();
-            this.pBox_BHKW = new System.Windows.Forms.PictureBox();
-            this.pictureBox3 = new System.Windows.Forms.PictureBox();
-            this.pBox_WP = new System.Windows.Forms.PictureBox();
             this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.label70 = new System.Windows.Forms.Label();
+            this.label69 = new System.Windows.Forms.Label();
+            this.label68 = new System.Windows.Forms.Label();
+            this.label67 = new System.Windows.Forms.Label();
+            this.label66 = new System.Windows.Forms.Label();
+            this.label64 = new System.Windows.Forms.Label();
+            this.label65 = new System.Windows.Forms.Label();
+            this.label62 = new System.Windows.Forms.Label();
+            this.label63 = new System.Windows.Forms.Label();
+            this.label60 = new System.Windows.Forms.Label();
+            this.label61 = new System.Windows.Forms.Label();
             this.label30 = new System.Windows.Forms.Label();
             this.label31 = new System.Windows.Forms.Label();
             this.btn_SimKonfig = new System.Windows.Forms.Button();
@@ -98,19 +114,45 @@
             this.label_Name = new System.Windows.Forms.Label();
             this.Label9 = new System.Windows.Forms.Label();
             this.Label10 = new System.Windows.Forms.Label();
-            this.pBox_Optimierung = new System.Windows.Forms.PictureBox();
-            this.pBox_DetailSim = new System.Windows.Forms.PictureBox();
-            this.pBoxSchnellSim = new System.Windows.Forms.PictureBox();
-            this.pictureBox_Zusammenfassung = new System.Windows.Forms.PictureBox();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.textBox_ProjektOpen = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
-            this.pBox_Zurueck = new System.Windows.Forms.PictureBox();
-            this.pBox_Weiter = new System.Windows.Forms.PictureBox();
+            this.pBox_ProjektDetails = new System.Windows.Forms.PictureBox();
+            this.pBox_Delete = new System.Windows.Forms.PictureBox();
+            this.pBox_Bearbeiten = new System.Windows.Forms.PictureBox();
+            this.pBox_ProjektZuletzt = new System.Windows.Forms.PictureBox();
+            this.pBox_ProjektOeffnen = new System.Windows.Forms.PictureBox();
+            this.pBox_ProjektNeu = new System.Windows.Forms.PictureBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.pBox_WBHinweis = new System.Windows.Forms.PictureBox();
+            this.pBox_Prozess = new System.Windows.Forms.PictureBox();
+            this.pBox_WBedarfDaten = new System.Windows.Forms.PictureBox();
+            this.pBox_Gebaude = new System.Windows.Forms.PictureBox();
+            this.pBox_StromMessdaten = new System.Windows.Forms.PictureBox();
+            this.pBox_StromProfilEigenes = new System.Windows.Forms.PictureBox();
+            this.pBox_StdLastProfil = new System.Windows.Forms.PictureBox();
+            this.pBox_PV = new System.Windows.Forms.PictureBox();
+            this.pBox_Solarthermie = new System.Windows.Forms.PictureBox();
+            this.pBox_Stromspeicher = new System.Windows.Forms.PictureBox();
+            this.pBox_Heizkessel = new System.Windows.Forms.PictureBox();
+            this.pBox_BHKW = new System.Windows.Forms.PictureBox();
+            this.pictureBox3 = new System.Windows.Forms.PictureBox();
+            this.pBox_WP = new System.Windows.Forms.PictureBox();
+            this.pBox_Optimierung = new System.Windows.Forms.PictureBox();
+            this.pBox_DetailSim = new System.Windows.Forms.PictureBox();
+            this.pBoxSchnellSim = new System.Windows.Forms.PictureBox();
+            this.pictureBox_Zusammenfassung = new System.Windows.Forms.PictureBox();
+            this.btn_Weiter = new System.Windows.Forms.Button();
+            this.btn_Zurueck = new System.Windows.Forms.Button();
             this.tabControl_Wizard.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
+            this.tabPage5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektDetails)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Bearbeiten)).BeginInit();
@@ -118,16 +160,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektOeffnen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektNeu)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WBHinweis)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Prozess)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WBedarfDaten)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Gebaude)).BeginInit();
-            this.tabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StromMessdaten)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StromProfilEigenes)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StdLastProfil)).BeginInit();
-            this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_PV)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Solarthermie)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Stromspeicher)).BeginInit();
@@ -135,14 +174,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_BHKW)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WP)).BeginInit();
-            this.tabPage5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Optimierung)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_DetailSim)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxSchnellSim)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_Zusammenfassung)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pBox_Zurueck)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pBox_Weiter)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl_Wizard
@@ -210,47 +245,63 @@
             // 
             // label18
             // 
+            this.label18.Cursor = System.Windows.Forms.Cursors.Hand;
             resources.ApplyResources(this.label18, "label18");
             this.label18.ForeColor = System.Drawing.Color.DimGray;
             this.label18.Name = "label18";
+            this.label18.Click += new System.EventHandler(this.label18_Click);
             // 
             // label19
             // 
             resources.ApplyResources(this.label19, "label19");
+            this.label19.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label19.Name = "label19";
+            this.label19.Click += new System.EventHandler(this.label19_Click);
             // 
             // label16
             // 
             resources.ApplyResources(this.label16, "label16");
+            this.label16.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label16.ForeColor = System.Drawing.Color.DimGray;
             this.label16.Name = "label16";
+            this.label16.Click += new System.EventHandler(this.label16_Click);
             // 
             // label17
             // 
             resources.ApplyResources(this.label17, "label17");
+            this.label17.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label17.Name = "label17";
+            this.label17.Click += new System.EventHandler(this.label17_Click);
             // 
             // label14
             // 
             resources.ApplyResources(this.label14, "label14");
+            this.label14.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label14.ForeColor = System.Drawing.Color.DimGray;
             this.label14.Name = "label14";
+            this.label14.Click += new System.EventHandler(this.label14_Click);
             // 
             // label15
             // 
             resources.ApplyResources(this.label15, "label15");
+            this.label15.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label15.Name = "label15";
+            this.label15.Click += new System.EventHandler(this.label15_Click);
             // 
             // label12
             // 
             resources.ApplyResources(this.label12, "label12");
+            this.label12.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label12.ForeColor = System.Drawing.Color.DimGray;
             this.label12.Name = "label12";
+            this.label12.Click += new System.EventHandler(this.label12_Click);
             // 
             // label13
             // 
             resources.ApplyResources(this.label13, "label13");
+            this.label13.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label13.Name = "label13";
+            this.label13.Click += new System.EventHandler(this.label13_Click);
             // 
             // label1
             // 
@@ -268,22 +319,593 @@
             resources.ApplyResources(this.label2_pBox_ProjektOeffnen, "label2_pBox_ProjektOeffnen");
             this.label2_pBox_ProjektOeffnen.ForeColor = System.Drawing.Color.DimGray;
             this.label2_pBox_ProjektOeffnen.Name = "label2_pBox_ProjektOeffnen";
+            this.label2_pBox_ProjektOeffnen.Click += new System.EventHandler(this.label2_pBox_ProjektOeffnen_Click);
             // 
             // label_pBox_ProjektOeffnen
             // 
             resources.ApplyResources(this.label_pBox_ProjektOeffnen, "label_pBox_ProjektOeffnen");
             this.label_pBox_ProjektOeffnen.Name = "label_pBox_ProjektOeffnen";
+            this.label_pBox_ProjektOeffnen.Click += new System.EventHandler(this.label_pBox_ProjektOeffnen_Click);
             // 
             // label2_pBox_ProjektNeu
             // 
             resources.ApplyResources(this.label2_pBox_ProjektNeu, "label2_pBox_ProjektNeu");
+            this.label2_pBox_ProjektNeu.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label2_pBox_ProjektNeu.ForeColor = System.Drawing.Color.DimGray;
             this.label2_pBox_ProjektNeu.Name = "label2_pBox_ProjektNeu";
+            this.label2_pBox_ProjektNeu.Click += new System.EventHandler(this.label2_pBox_ProjektNeu_Click);
             // 
             // label_pBox_ProjektNeu
             // 
             resources.ApplyResources(this.label_pBox_ProjektNeu, "label_pBox_ProjektNeu");
+            this.label_pBox_ProjektNeu.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label_pBox_ProjektNeu.Name = "label_pBox_ProjektNeu";
+            this.label_pBox_ProjektNeu.Click += new System.EventHandler(this.label_pBox_ProjektNeu_Click);
+            // 
+            // Label4
+            // 
+            resources.ApplyResources(this.Label4, "Label4");
+            this.Label4.Name = "Label4";
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.label38);
+            this.tabPage2.Controls.Add(this.label39);
+            this.tabPage2.Controls.Add(this.label36);
+            this.tabPage2.Controls.Add(this.label37);
+            this.tabPage2.Controls.Add(this.label34);
+            this.tabPage2.Controls.Add(this.label35);
+            this.tabPage2.Controls.Add(this.label33);
+            this.tabPage2.Controls.Add(this.label32);
+            this.tabPage2.Controls.Add(this.label24);
+            this.tabPage2.Controls.Add(this.label25);
+            this.tabPage2.Controls.Add(this.Label2);
+            this.tabPage2.Controls.Add(this.pBox_WBHinweis);
+            this.tabPage2.Controls.Add(this.pBox_Prozess);
+            this.tabPage2.Controls.Add(this.pBox_WBedarfDaten);
+            this.tabPage2.Controls.Add(this.pBox_Gebaude);
+            resources.ApplyResources(this.tabPage2, "tabPage2");
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // label38
+            // 
+            resources.ApplyResources(this.label38, "label38");
+            this.label38.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label38.ForeColor = System.Drawing.Color.DimGray;
+            this.label38.Name = "label38";
+            this.label38.Click += new System.EventHandler(this.label38_Click);
+            // 
+            // label39
+            // 
+            resources.ApplyResources(this.label39, "label39");
+            this.label39.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label39.Name = "label39";
+            this.label39.Click += new System.EventHandler(this.label39_Click);
+            // 
+            // label36
+            // 
+            this.label36.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label36.ForeColor = System.Drawing.Color.DimGray;
+            resources.ApplyResources(this.label36, "label36");
+            this.label36.Name = "label36";
+            this.label36.Click += new System.EventHandler(this.label36_Click);
+            // 
+            // label37
+            // 
+            this.label37.Cursor = System.Windows.Forms.Cursors.Hand;
+            resources.ApplyResources(this.label37, "label37");
+            this.label37.Name = "label37";
+            this.label37.Click += new System.EventHandler(this.label37_Click);
+            // 
+            // label34
+            // 
+            this.label34.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label34.ForeColor = System.Drawing.Color.DimGray;
+            resources.ApplyResources(this.label34, "label34");
+            this.label34.Name = "label34";
+            this.label34.Click += new System.EventHandler(this.label34_Click);
+            // 
+            // label35
+            // 
+            this.label35.Cursor = System.Windows.Forms.Cursors.Hand;
+            resources.ApplyResources(this.label35, "label35");
+            this.label35.Name = "label35";
+            this.label35.Click += new System.EventHandler(this.label35_Click);
+            // 
+            // label33
+            // 
+            resources.ApplyResources(this.label33, "label33");
+            this.label33.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(239)))), ((int)(((byte)(246)))), ((int)(((byte)(255)))));
+            this.label33.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(66)))), ((int)(((byte)(159)))));
+            this.label33.Name = "label33";
+            // 
+            // label32
+            // 
+            resources.ApplyResources(this.label32, "label32");
+            this.label32.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(239)))), ((int)(((byte)(246)))), ((int)(((byte)(255)))));
+            this.label32.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(66)))), ((int)(((byte)(159)))));
+            this.label32.Name = "label32";
+            // 
+            // label24
+            // 
+            resources.ApplyResources(this.label24, "label24");
+            this.label24.ForeColor = System.Drawing.Color.DimGray;
+            this.label24.Name = "label24";
+            // 
+            // label25
+            // 
+            resources.ApplyResources(this.label25, "label25");
+            this.label25.Name = "label25";
+            // 
+            // Label2
+            // 
+            this.Label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            resources.ApplyResources(this.Label2, "Label2");
+            this.Label2.Name = "Label2";
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.label44);
+            this.tabPage3.Controls.Add(this.label45);
+            this.tabPage3.Controls.Add(this.label42);
+            this.tabPage3.Controls.Add(this.label43);
+            this.tabPage3.Controls.Add(this.label40);
+            this.tabPage3.Controls.Add(this.label41);
+            this.tabPage3.Controls.Add(this.label26);
+            this.tabPage3.Controls.Add(this.label27);
+            this.tabPage3.Controls.Add(this.Label5);
+            this.tabPage3.Controls.Add(this.Label6);
+            this.tabPage3.Controls.Add(this.pBox_StromMessdaten);
+            this.tabPage3.Controls.Add(this.pBox_StromProfilEigenes);
+            this.tabPage3.Controls.Add(this.pBox_StdLastProfil);
+            resources.ApplyResources(this.tabPage3, "tabPage3");
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // label44
+            // 
+            resources.ApplyResources(this.label44, "label44");
+            this.label44.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label44.ForeColor = System.Drawing.Color.DimGray;
+            this.label44.Name = "label44";
+            this.label44.Click += new System.EventHandler(this.label44_Click);
+            // 
+            // label45
+            // 
+            resources.ApplyResources(this.label45, "label45");
+            this.label45.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label45.Name = "label45";
+            this.label45.Click += new System.EventHandler(this.label45_Click);
+            // 
+            // label42
+            // 
+            resources.ApplyResources(this.label42, "label42");
+            this.label42.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label42.ForeColor = System.Drawing.Color.DimGray;
+            this.label42.Name = "label42";
+            this.label42.Click += new System.EventHandler(this.label42_Click);
+            // 
+            // label43
+            // 
+            resources.ApplyResources(this.label43, "label43");
+            this.label43.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label43.Name = "label43";
+            this.label43.Click += new System.EventHandler(this.label43_Click);
+            // 
+            // label40
+            // 
+            resources.ApplyResources(this.label40, "label40");
+            this.label40.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label40.ForeColor = System.Drawing.Color.DimGray;
+            this.label40.Name = "label40";
+            this.label40.Click += new System.EventHandler(this.label40_Click);
+            // 
+            // label41
+            // 
+            resources.ApplyResources(this.label41, "label41");
+            this.label41.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label41.Name = "label41";
+            this.label41.Click += new System.EventHandler(this.label41_Click);
+            // 
+            // label26
+            // 
+            resources.ApplyResources(this.label26, "label26");
+            this.label26.ForeColor = System.Drawing.Color.DimGray;
+            this.label26.Name = "label26";
+            // 
+            // label27
+            // 
+            resources.ApplyResources(this.label27, "label27");
+            this.label27.Name = "label27";
+            // 
+            // Label5
+            // 
+            this.Label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            resources.ApplyResources(this.Label5, "Label5");
+            this.Label5.Name = "Label5";
+            // 
+            // Label6
+            // 
+            resources.ApplyResources(this.Label6, "Label6");
+            this.Label6.Name = "Label6";
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.label59);
+            this.tabPage4.Controls.Add(this.label58);
+            this.tabPage4.Controls.Add(this.label56);
+            this.tabPage4.Controls.Add(this.label57);
+            this.tabPage4.Controls.Add(this.label54);
+            this.tabPage4.Controls.Add(this.label55);
+            this.tabPage4.Controls.Add(this.label52);
+            this.tabPage4.Controls.Add(this.label53);
+            this.tabPage4.Controls.Add(this.label50);
+            this.tabPage4.Controls.Add(this.label51);
+            this.tabPage4.Controls.Add(this.label48);
+            this.tabPage4.Controls.Add(this.label49);
+            this.tabPage4.Controls.Add(this.label46);
+            this.tabPage4.Controls.Add(this.label47);
+            this.tabPage4.Controls.Add(this.label28);
+            this.tabPage4.Controls.Add(this.label29);
+            this.tabPage4.Controls.Add(this.radioButton_Ganglinie);
+            this.tabPage4.Controls.Add(this.radioButton_KollektorProfil);
+            this.tabPage4.Controls.Add(this.Label7);
+            this.tabPage4.Controls.Add(this.Label8);
+            this.tabPage4.Controls.Add(this.pBox_PV);
+            this.tabPage4.Controls.Add(this.pBox_Solarthermie);
+            this.tabPage4.Controls.Add(this.pBox_Stromspeicher);
+            this.tabPage4.Controls.Add(this.pBox_Heizkessel);
+            this.tabPage4.Controls.Add(this.pBox_BHKW);
+            this.tabPage4.Controls.Add(this.pictureBox3);
+            this.tabPage4.Controls.Add(this.pBox_WP);
+            resources.ApplyResources(this.tabPage4, "tabPage4");
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // label59
+            // 
+            resources.ApplyResources(this.label59, "label59");
+            this.label59.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(239)))), ((int)(((byte)(246)))), ((int)(((byte)(255)))));
+            this.label59.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label59.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(36)))), ((int)(((byte)(72)))), ((int)(((byte)(169)))));
+            this.label59.Name = "label59";
+            // 
+            // label58
+            // 
+            resources.ApplyResources(this.label58, "label58");
+            this.label58.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(239)))), ((int)(((byte)(246)))), ((int)(((byte)(255)))));
+            this.label58.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label58.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(36)))), ((int)(((byte)(72)))), ((int)(((byte)(169)))));
+            this.label58.Name = "label58";
+            // 
+            // label56
+            // 
+            resources.ApplyResources(this.label56, "label56");
+            this.label56.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label56.ForeColor = System.Drawing.Color.DimGray;
+            this.label56.Name = "label56";
+            // 
+            // label57
+            // 
+            resources.ApplyResources(this.label57, "label57");
+            this.label57.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label57.Name = "label57";
+            // 
+            // label54
+            // 
+            resources.ApplyResources(this.label54, "label54");
+            this.label54.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label54.ForeColor = System.Drawing.Color.DimGray;
+            this.label54.Name = "label54";
+            // 
+            // label55
+            // 
+            resources.ApplyResources(this.label55, "label55");
+            this.label55.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label55.Name = "label55";
+            // 
+            // label52
+            // 
+            resources.ApplyResources(this.label52, "label52");
+            this.label52.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label52.ForeColor = System.Drawing.Color.DimGray;
+            this.label52.Name = "label52";
+            // 
+            // label53
+            // 
+            resources.ApplyResources(this.label53, "label53");
+            this.label53.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label53.Name = "label53";
+            // 
+            // label50
+            // 
+            resources.ApplyResources(this.label50, "label50");
+            this.label50.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label50.ForeColor = System.Drawing.Color.DimGray;
+            this.label50.Name = "label50";
+            this.label50.Click += new System.EventHandler(this.label50_Click);
+            // 
+            // label51
+            // 
+            resources.ApplyResources(this.label51, "label51");
+            this.label51.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label51.Name = "label51";
+            this.label51.Click += new System.EventHandler(this.label51_Click);
+            // 
+            // label48
+            // 
+            resources.ApplyResources(this.label48, "label48");
+            this.label48.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label48.ForeColor = System.Drawing.Color.DimGray;
+            this.label48.Name = "label48";
+            this.label48.Click += new System.EventHandler(this.label48_Click);
+            // 
+            // label49
+            // 
+            resources.ApplyResources(this.label49, "label49");
+            this.label49.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label49.Name = "label49";
+            this.label49.Click += new System.EventHandler(this.label49_Click);
+            // 
+            // label46
+            // 
+            resources.ApplyResources(this.label46, "label46");
+            this.label46.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label46.ForeColor = System.Drawing.Color.DimGray;
+            this.label46.Name = "label46";
+            this.label46.Click += new System.EventHandler(this.label46_Click);
+            // 
+            // label47
+            // 
+            resources.ApplyResources(this.label47, "label47");
+            this.label47.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label47.Name = "label47";
+            this.label47.Click += new System.EventHandler(this.label47_Click);
+            // 
+            // label28
+            // 
+            resources.ApplyResources(this.label28, "label28");
+            this.label28.ForeColor = System.Drawing.Color.DimGray;
+            this.label28.Name = "label28";
+            // 
+            // label29
+            // 
+            resources.ApplyResources(this.label29, "label29");
+            this.label29.Name = "label29";
+            // 
+            // radioButton_Ganglinie
+            // 
+            resources.ApplyResources(this.radioButton_Ganglinie, "radioButton_Ganglinie");
+            this.radioButton_Ganglinie.ForeColor = System.Drawing.Color.Gray;
+            this.radioButton_Ganglinie.Name = "radioButton_Ganglinie";
+            this.radioButton_Ganglinie.UseVisualStyleBackColor = true;
+            // 
+            // radioButton_KollektorProfil
+            // 
+            resources.ApplyResources(this.radioButton_KollektorProfil, "radioButton_KollektorProfil");
+            this.radioButton_KollektorProfil.Checked = true;
+            this.radioButton_KollektorProfil.ForeColor = System.Drawing.Color.Gray;
+            this.radioButton_KollektorProfil.Name = "radioButton_KollektorProfil";
+            this.radioButton_KollektorProfil.TabStop = true;
+            this.radioButton_KollektorProfil.UseVisualStyleBackColor = true;
+            // 
+            // Label7
+            // 
+            this.Label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            resources.ApplyResources(this.Label7, "Label7");
+            this.Label7.Name = "Label7";
+            // 
+            // Label8
+            // 
+            resources.ApplyResources(this.Label8, "Label8");
+            this.Label8.Name = "Label8";
+            // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.label70);
+            this.tabPage5.Controls.Add(this.label69);
+            this.tabPage5.Controls.Add(this.label68);
+            this.tabPage5.Controls.Add(this.label67);
+            this.tabPage5.Controls.Add(this.label66);
+            this.tabPage5.Controls.Add(this.label64);
+            this.tabPage5.Controls.Add(this.label65);
+            this.tabPage5.Controls.Add(this.label62);
+            this.tabPage5.Controls.Add(this.label63);
+            this.tabPage5.Controls.Add(this.label60);
+            this.tabPage5.Controls.Add(this.label61);
+            this.tabPage5.Controls.Add(this.label30);
+            this.tabPage5.Controls.Add(this.label31);
+            this.tabPage5.Controls.Add(this.btn_SimKonfig);
+            this.tabPage5.Controls.Add(this.label_Komponenten);
+            this.tabPage5.Controls.Add(this.label_Strom);
+            this.tabPage5.Controls.Add(this.label_WBedarf);
+            this.tabPage5.Controls.Add(this.label_Name);
+            this.tabPage5.Controls.Add(this.Label9);
+            this.tabPage5.Controls.Add(this.Label10);
+            this.tabPage5.Controls.Add(this.pBox_Optimierung);
+            this.tabPage5.Controls.Add(this.pBox_DetailSim);
+            this.tabPage5.Controls.Add(this.pBoxSchnellSim);
+            this.tabPage5.Controls.Add(this.pictureBox_Zusammenfassung);
+            resources.ApplyResources(this.tabPage5, "tabPage5");
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            this.tabPage5.Enter += new System.EventHandler(this.tabPage5_Enter);
+            // 
+            // label70
+            // 
+            resources.ApplyResources(this.label70, "label70");
+            this.label70.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(249)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            this.label70.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label70.ForeColor = System.Drawing.Color.Black;
+            this.label70.Name = "label70";
+            // 
+            // label69
+            // 
+            resources.ApplyResources(this.label69, "label69");
+            this.label69.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(249)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            this.label69.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label69.ForeColor = System.Drawing.Color.DimGray;
+            this.label69.Name = "label69";
+            // 
+            // label68
+            // 
+            resources.ApplyResources(this.label68, "label68");
+            this.label68.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(249)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            this.label68.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label68.ForeColor = System.Drawing.Color.DimGray;
+            this.label68.Name = "label68";
+            // 
+            // label67
+            // 
+            resources.ApplyResources(this.label67, "label67");
+            this.label67.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(249)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            this.label67.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label67.ForeColor = System.Drawing.Color.DimGray;
+            this.label67.Name = "label67";
+            // 
+            // label66
+            // 
+            resources.ApplyResources(this.label66, "label66");
+            this.label66.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(249)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            this.label66.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label66.ForeColor = System.Drawing.Color.DimGray;
+            this.label66.Name = "label66";
+            // 
+            // label64
+            // 
+            resources.ApplyResources(this.label64, "label64");
+            this.label64.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label64.ForeColor = System.Drawing.Color.DimGray;
+            this.label64.Name = "label64";
+            this.label64.Click += new System.EventHandler(this.label64_Click);
+            // 
+            // label65
+            // 
+            resources.ApplyResources(this.label65, "label65");
+            this.label65.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label65.Name = "label65";
+            this.label65.Click += new System.EventHandler(this.label65_Click);
+            // 
+            // label62
+            // 
+            resources.ApplyResources(this.label62, "label62");
+            this.label62.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label62.ForeColor = System.Drawing.Color.DimGray;
+            this.label62.Name = "label62";
+            this.label62.Click += new System.EventHandler(this.label62_Click);
+            // 
+            // label63
+            // 
+            resources.ApplyResources(this.label63, "label63");
+            this.label63.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label63.Name = "label63";
+            this.label63.Click += new System.EventHandler(this.label63_Click);
+            // 
+            // label60
+            // 
+            resources.ApplyResources(this.label60, "label60");
+            this.label60.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label60.ForeColor = System.Drawing.Color.DimGray;
+            this.label60.Name = "label60";
+            this.label60.Click += new System.EventHandler(this.label60_Click);
+            // 
+            // label61
+            // 
+            resources.ApplyResources(this.label61, "label61");
+            this.label61.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label61.Name = "label61";
+            this.label61.Click += new System.EventHandler(this.label61_Click);
+            // 
+            // label30
+            // 
+            resources.ApplyResources(this.label30, "label30");
+            this.label30.ForeColor = System.Drawing.Color.DimGray;
+            this.label30.Name = "label30";
+            // 
+            // label31
+            // 
+            resources.ApplyResources(this.label31, "label31");
+            this.label31.Name = "label31";
+            // 
+            // btn_SimKonfig
+            // 
+            resources.ApplyResources(this.btn_SimKonfig, "btn_SimKonfig");
+            this.btn_SimKonfig.Name = "btn_SimKonfig";
+            this.btn_SimKonfig.UseVisualStyleBackColor = true;
+            this.btn_SimKonfig.Click += new System.EventHandler(this.btn_SimKonfig_Click);
+            // 
+            // label_Komponenten
+            // 
+            resources.ApplyResources(this.label_Komponenten, "label_Komponenten");
+            this.label_Komponenten.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_Komponenten.Name = "label_Komponenten";
+            // 
+            // label_Strom
+            // 
+            resources.ApplyResources(this.label_Strom, "label_Strom");
+            this.label_Strom.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_Strom.Name = "label_Strom";
+            // 
+            // label_WBedarf
+            // 
+            resources.ApplyResources(this.label_WBedarf, "label_WBedarf");
+            this.label_WBedarf.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_WBedarf.Name = "label_WBedarf";
+            // 
+            // label_Name
+            // 
+            resources.ApplyResources(this.label_Name, "label_Name");
+            this.label_Name.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.label_Name.Name = "label_Name";
+            // 
+            // Label9
+            // 
+            this.Label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            resources.ApplyResources(this.Label9, "Label9");
+            this.Label9.Name = "Label9";
+            // 
+            // Label10
+            // 
+            resources.ApplyResources(this.Label10, "Label10");
+            this.Label10.Name = "Label10";
+            // 
+            // tabPage6
+            // 
+            resources.ApplyResources(this.tabPage6, "tabPage6");
+            this.tabPage6.Name = "tabPage6";
+            this.tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // textBox_ProjektOpen
+            // 
+            this.textBox_ProjektOpen.BackColor = System.Drawing.Color.White;
+            this.textBox_ProjektOpen.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(this.textBox_ProjektOpen, "textBox_ProjektOpen");
+            this.textBox_ProjektOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.textBox_ProjektOpen.Name = "textBox_ProjektOpen";
+            this.textBox_ProjektOpen.TabStop = false;
+            // 
+            // label11
+            // 
+            resources.ApplyResources(this.label11, "label11");
+            this.label11.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(104)))), ((int)(((byte)(118)))), ((int)(((byte)(223)))));
+            this.label11.ForeColor = System.Drawing.Color.White;
+            this.label11.Name = "label11";
+            // 
+            // label20
+            // 
+            resources.ApplyResources(this.label20, "label20");
+            this.label20.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(104)))), ((int)(((byte)(118)))), ((int)(((byte)(223)))));
+            this.label20.ForeColor = System.Drawing.Color.White;
+            this.label20.Name = "label20";
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PTitel;
+            this.pictureBox2.Cursor = System.Windows.Forms.Cursors.Default;
+            resources.ApplyResources(this.pictureBox2, "pictureBox2");
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.TabStop = false;
             // 
             // pBox_ProjektDetails
             // 
@@ -302,11 +924,6 @@
             this.pBox_Delete.Name = "pBox_Delete";
             this.pBox_Delete.TabStop = false;
             this.pBox_Delete.Click += new System.EventHandler(this.pBox_Delete_Click);
-            // 
-            // Label4
-            // 
-            resources.ApplyResources(this.Label4, "Label4");
-            this.Label4.Name = "Label4";
             // 
             // pBox_Bearbeiten
             // 
@@ -352,47 +969,6 @@
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
             // 
-            // tabPage2
-            // 
-            this.tabPage2.Controls.Add(this.label33);
-            this.tabPage2.Controls.Add(this.label32);
-            this.tabPage2.Controls.Add(this.label24);
-            this.tabPage2.Controls.Add(this.label25);
-            this.tabPage2.Controls.Add(this.pBox_WBHinweis);
-            this.tabPage2.Controls.Add(this.Label2);
-            this.tabPage2.Controls.Add(this.pBox_Prozess);
-            this.tabPage2.Controls.Add(this.pBox_WBedarfDaten);
-            this.tabPage2.Controls.Add(this.pBox_Gebaude);
-            resources.ApplyResources(this.tabPage2, "tabPage2");
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // label33
-            // 
-            resources.ApplyResources(this.label33, "label33");
-            this.label33.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(239)))), ((int)(((byte)(246)))), ((int)(((byte)(255)))));
-            this.label33.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(66)))), ((int)(((byte)(159)))));
-            this.label33.Name = "label33";
-            this.label33.Click += new System.EventHandler(this.label33_Click);
-            // 
-            // label32
-            // 
-            resources.ApplyResources(this.label32, "label32");
-            this.label32.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(239)))), ((int)(((byte)(246)))), ((int)(((byte)(255)))));
-            this.label32.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(66)))), ((int)(((byte)(159)))));
-            this.label32.Name = "label32";
-            // 
-            // label24
-            // 
-            resources.ApplyResources(this.label24, "label24");
-            this.label24.ForeColor = System.Drawing.Color.DimGray;
-            this.label24.Name = "label24";
-            // 
-            // label25
-            // 
-            resources.ApplyResources(this.label25, "label25");
-            this.label25.Name = "label25";
-            // 
             // pBox_WBHinweis
             // 
             this.pBox_WBHinweis.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt4;
@@ -401,15 +977,9 @@
             this.pBox_WBHinweis.Name = "pBox_WBHinweis";
             this.pBox_WBHinweis.TabStop = false;
             // 
-            // Label2
-            // 
-            this.Label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            resources.ApplyResources(this.Label2, "Label2");
-            this.Label2.Name = "Label2";
-            // 
             // pBox_Prozess
             // 
-            this.pBox_Prozess.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt2;
+            this.pBox_Prozess.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt3;
             resources.ApplyResources(this.pBox_Prozess, "pBox_Prozess");
             this.pBox_Prozess.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Prozess.Name = "pBox_Prozess";
@@ -419,7 +989,7 @@
             // 
             // pBox_WBedarfDaten
             // 
-            this.pBox_WBedarfDaten.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt3;
+            this.pBox_WBedarfDaten.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt2;
             resources.ApplyResources(this.pBox_WBedarfDaten, "pBox_WBedarfDaten");
             this.pBox_WBedarfDaten.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_WBedarfDaten.Name = "pBox_WBedarfDaten";
@@ -429,37 +999,13 @@
             // 
             // pBox_Gebaude
             // 
-            this.pBox_Gebaude.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt1;
+            this.pBox_Gebaude.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PGebaeude;
             resources.ApplyResources(this.pBox_Gebaude, "pBox_Gebaude");
             this.pBox_Gebaude.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Gebaude.Name = "pBox_Gebaude";
             this.pBox_Gebaude.TabStop = false;
             this.pBox_Gebaude.Click += new System.EventHandler(this.pBox_Gebaude_Click);
             this.pBox_Gebaude.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Gebaude_Paint);
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.label26);
-            this.tabPage3.Controls.Add(this.label27);
-            this.tabPage3.Controls.Add(this.pBox_StromMessdaten);
-            this.tabPage3.Controls.Add(this.pBox_StromProfilEigenes);
-            this.tabPage3.Controls.Add(this.Label5);
-            this.tabPage3.Controls.Add(this.Label6);
-            this.tabPage3.Controls.Add(this.pBox_StdLastProfil);
-            resources.ApplyResources(this.tabPage3, "tabPage3");
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // label26
-            // 
-            resources.ApplyResources(this.label26, "label26");
-            this.label26.ForeColor = System.Drawing.Color.DimGray;
-            this.label26.Name = "label26";
-            // 
-            // label27
-            // 
-            resources.ApplyResources(this.label27, "label27");
-            this.label27.Name = "label27";
             // 
             // pBox_StromMessdaten
             // 
@@ -480,17 +1026,6 @@
             this.pBox_StromProfilEigenes.TabStop = false;
             this.pBox_StromProfilEigenes.Click += new System.EventHandler(this.pBox_StromProfilEigenes_Click);
             // 
-            // Label5
-            // 
-            this.Label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            resources.ApplyResources(this.Label5, "Label5");
-            this.Label5.Name = "Label5";
-            // 
-            // Label6
-            // 
-            resources.ApplyResources(this.Label6, "Label6");
-            this.Label6.Name = "Label6";
-            // 
             // pBox_StdLastProfil
             // 
             this.pBox_StdLastProfil.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PStdLastProfil;
@@ -500,63 +1035,6 @@
             this.pBox_StdLastProfil.TabStop = false;
             this.pBox_StdLastProfil.Click += new System.EventHandler(this.pBox_StdLastProfil_Click);
             this.pBox_StdLastProfil.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_StdLastProfil_Paint);
-            // 
-            // tabPage4
-            // 
-            this.tabPage4.Controls.Add(this.label28);
-            this.tabPage4.Controls.Add(this.label29);
-            this.tabPage4.Controls.Add(this.radioButton_Ganglinie);
-            this.tabPage4.Controls.Add(this.radioButton_KollektorProfil);
-            this.tabPage4.Controls.Add(this.Label7);
-            this.tabPage4.Controls.Add(this.Label8);
-            this.tabPage4.Controls.Add(this.pBox_PV);
-            this.tabPage4.Controls.Add(this.pBox_Solarthermie);
-            this.tabPage4.Controls.Add(this.pBox_Stromspeicher);
-            this.tabPage4.Controls.Add(this.pBox_Heizkessel);
-            this.tabPage4.Controls.Add(this.pBox_BHKW);
-            this.tabPage4.Controls.Add(this.pictureBox3);
-            this.tabPage4.Controls.Add(this.pBox_WP);
-            resources.ApplyResources(this.tabPage4, "tabPage4");
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.UseVisualStyleBackColor = true;
-            // 
-            // label28
-            // 
-            resources.ApplyResources(this.label28, "label28");
-            this.label28.ForeColor = System.Drawing.Color.DimGray;
-            this.label28.Name = "label28";
-            // 
-            // label29
-            // 
-            resources.ApplyResources(this.label29, "label29");
-            this.label29.Name = "label29";
-            // 
-            // radioButton_Ganglinie
-            // 
-            resources.ApplyResources(this.radioButton_Ganglinie, "radioButton_Ganglinie");
-            this.radioButton_Ganglinie.ForeColor = System.Drawing.Color.Gray;
-            this.radioButton_Ganglinie.Name = "radioButton_Ganglinie";
-            this.radioButton_Ganglinie.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_KollektorProfil
-            // 
-            resources.ApplyResources(this.radioButton_KollektorProfil, "radioButton_KollektorProfil");
-            this.radioButton_KollektorProfil.Checked = true;
-            this.radioButton_KollektorProfil.ForeColor = System.Drawing.Color.Gray;
-            this.radioButton_KollektorProfil.Name = "radioButton_KollektorProfil";
-            this.radioButton_KollektorProfil.TabStop = true;
-            this.radioButton_KollektorProfil.UseVisualStyleBackColor = true;
-            // 
-            // Label7
-            // 
-            this.Label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            resources.ApplyResources(this.Label7, "Label7");
-            this.Label7.Name = "Label7";
-            // 
-            // Label8
-            // 
-            resources.ApplyResources(this.Label8, "Label8");
-            this.Label8.Name = "Label8";
             // 
             // pBox_PV
             // 
@@ -629,79 +1107,6 @@
             this.pBox_WP.Click += new System.EventHandler(this.pBox_WP_Click);
             this.pBox_WP.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_WP_Paint);
             // 
-            // tabPage5
-            // 
-            this.tabPage5.Controls.Add(this.label30);
-            this.tabPage5.Controls.Add(this.label31);
-            this.tabPage5.Controls.Add(this.btn_SimKonfig);
-            this.tabPage5.Controls.Add(this.label_Komponenten);
-            this.tabPage5.Controls.Add(this.label_Strom);
-            this.tabPage5.Controls.Add(this.label_WBedarf);
-            this.tabPage5.Controls.Add(this.label_Name);
-            this.tabPage5.Controls.Add(this.Label9);
-            this.tabPage5.Controls.Add(this.Label10);
-            this.tabPage5.Controls.Add(this.pBox_Optimierung);
-            this.tabPage5.Controls.Add(this.pBox_DetailSim);
-            this.tabPage5.Controls.Add(this.pBoxSchnellSim);
-            this.tabPage5.Controls.Add(this.pictureBox_Zusammenfassung);
-            resources.ApplyResources(this.tabPage5, "tabPage5");
-            this.tabPage5.Name = "tabPage5";
-            this.tabPage5.UseVisualStyleBackColor = true;
-            this.tabPage5.Enter += new System.EventHandler(this.tabPage5_Enter);
-            // 
-            // label30
-            // 
-            resources.ApplyResources(this.label30, "label30");
-            this.label30.ForeColor = System.Drawing.Color.DimGray;
-            this.label30.Name = "label30";
-            // 
-            // label31
-            // 
-            resources.ApplyResources(this.label31, "label31");
-            this.label31.Name = "label31";
-            // 
-            // btn_SimKonfig
-            // 
-            resources.ApplyResources(this.btn_SimKonfig, "btn_SimKonfig");
-            this.btn_SimKonfig.Name = "btn_SimKonfig";
-            this.btn_SimKonfig.UseVisualStyleBackColor = true;
-            this.btn_SimKonfig.Click += new System.EventHandler(this.btn_SimKonfig_Click);
-            // 
-            // label_Komponenten
-            // 
-            resources.ApplyResources(this.label_Komponenten, "label_Komponenten");
-            this.label_Komponenten.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.label_Komponenten.Name = "label_Komponenten";
-            // 
-            // label_Strom
-            // 
-            resources.ApplyResources(this.label_Strom, "label_Strom");
-            this.label_Strom.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.label_Strom.Name = "label_Strom";
-            // 
-            // label_WBedarf
-            // 
-            resources.ApplyResources(this.label_WBedarf, "label_WBedarf");
-            this.label_WBedarf.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.label_WBedarf.Name = "label_WBedarf";
-            // 
-            // label_Name
-            // 
-            resources.ApplyResources(this.label_Name, "label_Name");
-            this.label_Name.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.label_Name.Name = "label_Name";
-            // 
-            // Label9
-            // 
-            this.Label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            resources.ApplyResources(this.Label9, "Label9");
-            this.Label9.Name = "Label9";
-            // 
-            // Label10
-            // 
-            resources.ApplyResources(this.Label10, "Label10");
-            this.Label10.Name = "Label10";
-            // 
             // pBox_Optimierung
             // 
             this.pBox_Optimierung.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.POptimierung;
@@ -709,6 +1114,7 @@
             this.pBox_Optimierung.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Optimierung.Name = "pBox_Optimierung";
             this.pBox_Optimierung.TabStop = false;
+            this.pBox_Optimierung.Click += new System.EventHandler(this.pBox_Optimierung_Click);
             // 
             // pBox_DetailSim
             // 
@@ -735,60 +1141,19 @@
             this.pictureBox_Zusammenfassung.Name = "pictureBox_Zusammenfassung";
             this.pictureBox_Zusammenfassung.TabStop = false;
             // 
-            // tabPage6
+            // btn_Weiter
             // 
-            resources.ApplyResources(this.tabPage6, "tabPage6");
-            this.tabPage6.Name = "tabPage6";
-            this.tabPage6.UseVisualStyleBackColor = true;
+            resources.ApplyResources(this.btn_Weiter, "btn_Weiter");
+            this.btn_Weiter.Name = "btn_Weiter";
+            this.btn_Weiter.UseVisualStyleBackColor = true;
+            this.btn_Weiter.Click += new System.EventHandler(this.btn_Weiter_Click);
             // 
-            // textBox_ProjektOpen
+            // btn_Zurueck
             // 
-            this.textBox_ProjektOpen.BackColor = System.Drawing.Color.White;
-            this.textBox_ProjektOpen.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(this.textBox_ProjektOpen, "textBox_ProjektOpen");
-            this.textBox_ProjektOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.textBox_ProjektOpen.Name = "textBox_ProjektOpen";
-            this.textBox_ProjektOpen.TabStop = false;
-            // 
-            // label11
-            // 
-            resources.ApplyResources(this.label11, "label11");
-            this.label11.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(104)))), ((int)(((byte)(118)))), ((int)(((byte)(223)))));
-            this.label11.ForeColor = System.Drawing.Color.White;
-            this.label11.Name = "label11";
-            // 
-            // label20
-            // 
-            resources.ApplyResources(this.label20, "label20");
-            this.label20.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(104)))), ((int)(((byte)(118)))), ((int)(((byte)(223)))));
-            this.label20.ForeColor = System.Drawing.Color.White;
-            this.label20.Name = "label20";
-            // 
-            // pictureBox2
-            // 
-            this.pictureBox2.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PTitel;
-            this.pictureBox2.Cursor = System.Windows.Forms.Cursors.Default;
-            resources.ApplyResources(this.pictureBox2, "pictureBox2");
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.TabStop = false;
-            // 
-            // pBox_Zurueck
-            // 
-            this.pBox_Zurueck.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PZurueck;
-            resources.ApplyResources(this.pBox_Zurueck, "pBox_Zurueck");
-            this.pBox_Zurueck.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pBox_Zurueck.Name = "pBox_Zurueck";
-            this.pBox_Zurueck.TabStop = false;
-            this.pBox_Zurueck.Click += new System.EventHandler(this.pBox_Zurueck_Click);
-            // 
-            // pBox_Weiter
-            // 
-            this.pBox_Weiter.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PWeiter;
-            resources.ApplyResources(this.pBox_Weiter, "pBox_Weiter");
-            this.pBox_Weiter.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pBox_Weiter.Name = "pBox_Weiter";
-            this.pBox_Weiter.TabStop = false;
-            this.pBox_Weiter.Click += new System.EventHandler(this.pBox_Weiter_Click);
+            resources.ApplyResources(this.btn_Zurueck, "btn_Zurueck");
+            this.btn_Zurueck.Name = "btn_Zurueck";
+            this.btn_Zurueck.UseVisualStyleBackColor = true;
+            this.btn_Zurueck.Click += new System.EventHandler(this.btn_Zurueck_Click);
             // 
             // Form_Start
             // 
@@ -796,12 +1161,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ControlBox = false;
+            this.Controls.Add(this.btn_Zurueck);
+            this.Controls.Add(this.btn_Weiter);
             this.Controls.Add(this.label20);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.textBox_ProjektOpen);
             this.Controls.Add(this.pictureBox2);
-            this.Controls.Add(this.pBox_Zurueck);
-            this.Controls.Add(this.pBox_Weiter);
             this.Controls.Add(this.tabControl_Wizard);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "Form_Start";
@@ -809,6 +1174,15 @@
             this.tabControl_Wizard.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
+            this.tabPage5.ResumeLayout(false);
+            this.tabPage5.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektDetails)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Bearbeiten)).EndInit();
@@ -816,19 +1190,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektOeffnen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektNeu)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.tabPage2.ResumeLayout(false);
-            this.tabPage2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WBHinweis)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Prozess)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WBedarfDaten)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Gebaude)).EndInit();
-            this.tabPage3.ResumeLayout(false);
-            this.tabPage3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StromMessdaten)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StromProfilEigenes)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_StdLastProfil)).EndInit();
-            this.tabPage4.ResumeLayout(false);
-            this.tabPage4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_PV)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Solarthermie)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Stromspeicher)).EndInit();
@@ -836,15 +1204,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_BHKW)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WP)).EndInit();
-            this.tabPage5.ResumeLayout(false);
-            this.tabPage5.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Optimierung)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_DetailSim)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxSchnellSim)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_Zusammenfassung)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pBox_Zurueck)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pBox_Weiter)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -859,13 +1222,11 @@
         private System.Windows.Forms.PictureBox pBox_WBedarfDaten;
         private System.Windows.Forms.Label Label2;
         private System.Windows.Forms.PictureBox pBox_WBHinweis;
-        private System.Windows.Forms.PictureBox pBox_Weiter;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.PictureBox pBox_ProjektNeu;
         private System.Windows.Forms.PictureBox pBox_Bearbeiten;
         private System.Windows.Forms.PictureBox pBox_ProjektZuletzt;
         private System.Windows.Forms.PictureBox pBox_ProjektOeffnen;
-        private System.Windows.Forms.PictureBox pBox_Zurueck;
         private System.Windows.Forms.Label Label4;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.TextBox textBox_ProjektOpen;
@@ -931,5 +1292,44 @@
         private System.Windows.Forms.Label label31;
         private System.Windows.Forms.Label label32;
         private System.Windows.Forms.Label label33;
+        private System.Windows.Forms.Label label34;
+        private System.Windows.Forms.Label label35;
+        private System.Windows.Forms.Label label36;
+        private System.Windows.Forms.Label label37;
+        private System.Windows.Forms.Label label38;
+        private System.Windows.Forms.Label label39;
+        private System.Windows.Forms.Label label40;
+        private System.Windows.Forms.Label label41;
+        private System.Windows.Forms.Label label42;
+        private System.Windows.Forms.Label label43;
+        private System.Windows.Forms.Label label44;
+        private System.Windows.Forms.Label label45;
+        private System.Windows.Forms.Label label46;
+        private System.Windows.Forms.Label label47;
+        private System.Windows.Forms.Label label48;
+        private System.Windows.Forms.Label label49;
+        private System.Windows.Forms.Label label50;
+        private System.Windows.Forms.Label label51;
+        private System.Windows.Forms.Label label54;
+        private System.Windows.Forms.Label label55;
+        private System.Windows.Forms.Label label52;
+        private System.Windows.Forms.Label label53;
+        private System.Windows.Forms.Label label56;
+        private System.Windows.Forms.Label label57;
+        private System.Windows.Forms.Label label59;
+        private System.Windows.Forms.Label label58;
+        private System.Windows.Forms.Label label64;
+        private System.Windows.Forms.Label label65;
+        private System.Windows.Forms.Label label62;
+        private System.Windows.Forms.Label label63;
+        private System.Windows.Forms.Label label60;
+        private System.Windows.Forms.Label label61;
+        private System.Windows.Forms.Label label66;
+        private System.Windows.Forms.Label label70;
+        private System.Windows.Forms.Label label69;
+        private System.Windows.Forms.Label label68;
+        private System.Windows.Forms.Label label67;
+        private System.Windows.Forms.Button btn_Weiter;
+        private System.Windows.Forms.Button btn_Zurueck;
     }
 }

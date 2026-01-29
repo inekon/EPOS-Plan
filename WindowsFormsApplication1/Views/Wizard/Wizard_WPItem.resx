@@ -195,7 +195,7 @@
     <value>$this</value>
   </data>
   <data name="label23.Text" xml:space="preserve">
-    <value> Der bivalent-teilparallele Betrieb ist eine Mischung aus bivalent-paralleler- und 
+    <value>Der bivalent-teilparallele Betrieb ist eine Mischung aus bivalent-paralleler- und 
  Bivalent-alternativer Betriebsweise.
  Die Wärmepumpe rbeitet bis zum Bivalenzpunkt alleine und wird anschließend vom zweiten Wärmeerzeuger unterstützt. Bei Erreichen einer weiteren festgelegten  Temperatur (z.B. -2 °C) schaltet sich die Wärmepumpe ab.</value>
   </data>

@@ -12,8 +12,8 @@ namespace WindowsFormsApplication1
         public string m_szProjektname = "";
         public int status = 0;
 
-        SimulationStrombedarf simulationStrombedarf = new SimulationStrombedarf();
-        SimulationWaermebedarf simulationWaermebedarf = new SimulationWaermebedarf();
+        private SimulationStrombedarf simulationStrombedarf = new SimulationStrombedarf();
+        private SimulationWaermebedarf simulationWaermebedarf = new SimulationWaermebedarf();
 
         public Form_Start()
         {
@@ -245,68 +245,11 @@ namespace WindowsFormsApplication1
 
         private void pBox_Weiter_Click(object sender, EventArgs e)
         {
-            if (tabControl_Wizard.SelectedIndex >= tabControl_Wizard.TabCount-1) return;
-
-            WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
-            if (werzctrl.rows > 0) status |= 1; else status &= ~1;
-
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP);
-            if (werzctrl.rows > 0) status |= 2; else status &= ~2;
-
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
-            if (werzctrl.rows > 0) status |= 4; else status &= ~4;
-
-            Z_ProjGebCtrl gebCtrl = new Z_ProjGebCtrl();
-            gebCtrl.ReadAll(" select * from Z_ProjektGebaeude where ID_Projekt=" + m_ID_Projekt.ToString());
-            if (gebCtrl.rows > 0) status |= 8; else status &= ~8;
-
-            Z_ProjektGebGanglinieCtrl gebgangctrl = new Z_ProjektGebGanglinieCtrl();
-            gebgangctrl.ReadAll(" select * from Z_ProjektWaermebedarf where ID_Projekt=" + m_ID_Projekt.ToString());
-            if (gebgangctrl.rows > 0) status |= 16; else status &= ~16;
-
-            Z_ProjektProzesswaermeCtrl proctrl = new Z_ProjektProzesswaermeCtrl();
-            proctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + m_ID_Projekt.ToString());
-            if (proctrl.rows > 0) status |= 32; else status &= ~32;
-
-            Z_ProjektStromverbraucherCtrl strvctrl = new Z_ProjektStromverbraucherCtrl();
-            strvctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + m_ID_Projekt.ToString());
-            if (strvctrl.rows > 0) status |= 64; else status &= ~64;
-
-            Z_ProjektStromganglinieCtrl strgctrl = new Z_ProjektStromganglinieCtrl();
-            strgctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + m_ID_Projekt.ToString());
-            if (strgctrl.rows > 0) status |= 128; else status &= ~128;
-
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.BHKW_TYP);
-            if (werzctrl.rows > 0) status |= 256; else status &= ~256;
-
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
-            Z_ProjektSolarganglinieCtrl solgctrl = new Z_ProjektSolarganglinieCtrl();
-            solgctrl.ReadAll("select * from Z_ProjektSolarganglinie where ID_Projekt=" + m_ID_Projekt.ToString());
-            
-            if (werzctrl.rows > 0 || solgctrl.rows > 0)
-            {
-                status |= 512;
-                radioButton_KollektorProfil.BackColor = Color.FromArgb(90, 0, 255, 0);
-                radioButton_Ganglinie.BackColor = Color.FromArgb(90, 0, 255, 0);
-            }
-            else
-            { 
-                status &= ~512;
-                radioButton_KollektorProfil.BackColor = Color.Transparent;
-                radioButton_Ganglinie.BackColor = Color.Transparent;
-            }
-
-            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
-            if (werzctrl.rows > 0) status |= 1024; else status &= ~1024;
-
-            tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
         }
 
         private void pBox_Zurueck_Click(object sender, EventArgs e)
         {
-            if (tabControl_Wizard.SelectedIndex <= 0) return;
-            tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex -1;
+ 
         }
 
         private void pBox_StdLastProfil_Click(object sender, EventArgs e)
@@ -537,6 +480,13 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label48.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label49.BackColor = label48.BackColor;
+                }
+                else
+                {
+                    label48.BackColor = Color.Transparent;
+                    label49.BackColor = Color.Transparent;
                 }
             }
         }
@@ -554,6 +504,13 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label46.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label47.BackColor = label46.BackColor;
+                }
+                else
+                {
+                    label46.BackColor = Color.Transparent;
+                    label47.BackColor = Color.Transparent;
                 }
             }
         }
@@ -571,6 +528,13 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label54.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label55.BackColor = label54.BackColor;
+                }
+                else
+                {
+                    label54.BackColor = Color.Transparent;
+                    label55.BackColor = Color.Transparent;
                 }
             }
         }
@@ -599,13 +563,23 @@ namespace WindowsFormsApplication1
                 rt.Y = rt.Y + 10;
                 rt.X = rt.X + 10;
                 Program.FillRoundedRectangle(g, brush, rt, 10);
+                
+                Color bg = label12.BackColor;
+                label12.BackColor = Color.FromArgb(90, 0, 255, 0);
+                label13.BackColor = label12.BackColor;
+                label12.Refresh(); 
+                label13.Refresh();
+
                 var t = Task.Run(async delegate
                 {
                     await Task.Delay(200);
                     return 0;
                 });
                 t.Wait();
-                pBox_ProjektZuletzt.Invalidate(); 
+                pBox_ProjektZuletzt.Invalidate();
+                label12.BackColor = bg;
+                label13.BackColor = label12.BackColor;
+
             }
 
             Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, MyResource.Resource.Text_Projekt + " " +  m_szProjektname  + " " + MyResource.Resource.Text_Geoeffnet + "!");
@@ -626,6 +600,13 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label34.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label35.BackColor = label34.BackColor;
+                }
+                else
+                {
+                    label34.BackColor = Color.Transparent;
+                    label35.BackColor = Color.Transparent;
                 }
             }
         }
@@ -643,6 +624,13 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label36.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label37.BackColor = label36.BackColor;
+                }
+                else
+                {
+                    label36.BackColor = Color.Transparent;
+                    label37.BackColor = Color.Transparent;
                 }
             }
         }
@@ -655,28 +643,41 @@ namespace WindowsFormsApplication1
                 if ((status & 32) == 32)
                 {
                     Rectangle rt = e.ClipRectangle;
-                    rt.Width = rt.Width - 20;
-                    rt.Height = rt.Height - 20;
-                    rt.Y = rt.Y + 10;
-                    rt.X = rt.X + 10;
+                    rt.Width -= rt.Width;
+                    rt.Height -= rt.Height;
+                    rt.Y += rt.Y;
+                    rt.X += rt.X;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label38.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label39.BackColor = label38.BackColor;
+                }
+                else
+                {
+                    label38.BackColor = Color.Transparent;
+                    label39.BackColor = Color.Transparent;
                 }
             }
         }
 
         private void pBox_StdLastProfil_Paint(object sender, PaintEventArgs e)
         {
-            Graphics g = e.Graphics;
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 64) == 64)
                 {
                     Rectangle rt = e.ClipRectangle;
-                    rt.Width = rt.Width - 20;
-                    rt.Height = rt.Height - 20;
-                    rt.Y = rt.Y + 10;
-                    rt.X = rt.X + 10;
+                    rt.Width -= rt.Width;
+                    rt.Height -= rt.Height;
+                    rt.Y += rt.Y;
+                    rt.X += rt.X;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label40.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label41.BackColor = label40.BackColor;
+                }
+                else
+                {
+                    label40.BackColor = Color.Transparent;
+                    label41.BackColor = Color.Transparent;
                 }
             }
         }
@@ -694,6 +695,13 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label44.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label45.BackColor = label44.BackColor;
+                }
+                else
+                {
+                    label44.BackColor = Color.Transparent;
+                    label45.BackColor = Color.Transparent;
                 }
             }
         }
@@ -771,6 +779,13 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label52.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label53.BackColor = label52.BackColor;
+                }
+                else
+                {
+                    label52.BackColor = Color.Transparent;
+                    label53.BackColor = Color.Transparent;
                 }
             }
         }
@@ -943,6 +958,13 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label50.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label51.BackColor = label50.BackColor;
+                }
+                else
+                {
+                    label50.BackColor = Color.Transparent;
+                    label51.BackColor = Color.Transparent;
                 }
             }
         }
@@ -1008,7 +1030,15 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label56.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label57.BackColor = label56.BackColor;
                 }
+                else
+                {
+                    label56.BackColor = Color.Transparent;
+                    label57.BackColor = Color.Transparent;
+                }
+
             }
         }
 
@@ -1028,9 +1058,256 @@ namespace WindowsFormsApplication1
             ctrl.ProjektOeffnen(true);
         }
 
-        private void label33_Click(object sender, EventArgs e)
+        private void label_pBox_ProjektNeu_Click(object sender, EventArgs e)
+        {
+            pBox_ProjektNeu_Click(sender, e);
+        }
+
+        private void label2_pBox_ProjektNeu_Click(object sender, EventArgs e)
+        {
+            pBox_ProjektNeu_Click(sender, e);
+        }
+
+        private void label_pBox_ProjektOeffnen_Click(object sender, EventArgs e)
+        {
+            pBox_ProjektOeffnen_Click(sender, e);   
+        }
+
+        private void label2_pBox_ProjektOeffnen_Click(object sender, EventArgs e)
+        {
+            pBox_ProjektOeffnen_Click(sender, e);
+        }
+
+        private void label13_Click(object sender, EventArgs e)
+        {
+            pBox_ProjektZuletzt_Click(sender, e);   
+        }
+
+        private void label12_Click(object sender, EventArgs e)
+        {
+            pBox_ProjektZuletzt_Click(sender, e);   
+        }
+
+        private void label15_Click(object sender, EventArgs e)
+        {
+            pBox_Bearbeiten_Click(sender, e);
+        }
+
+        private void label14_Click(object sender, EventArgs e)
+        {
+            pBox_Bearbeiten_Click(sender, e);   
+        }
+
+        private void label17_Click(object sender, EventArgs e)
+        {
+            pBox_Delete_Click(sender, e);
+        }
+
+        private void label16_Click(object sender, EventArgs e)
+        {
+            pBox_Delete_Click(sender, e);
+        }
+
+        private void label19_Click(object sender, EventArgs e)
+        {
+            pBox_ProjektDetails_Click(sender, e);   
+        }
+
+        private void label18_Click(object sender, EventArgs e)
+        {
+            pBox_ProjektDetails_Click(sender, e);
+        }
+
+        private void label35_Click(object sender, EventArgs e)
+        {
+            pBox_Gebaude_Click(sender, e);  
+        }
+
+        private void label34_Click(object sender, EventArgs e)
+        {
+            pBox_Gebaude_Click(sender, e);
+        }
+
+        private void label37_Click(object sender, EventArgs e)
+        {
+            pBox_WBedarfDaten_Click(sender, e); 
+        }
+
+        private void label36_Click(object sender, EventArgs e)
+        {
+            pBox_WBedarfDaten_Click(sender, e);
+        }
+
+        private void label39_Click(object sender, EventArgs e)
+        {
+            pBox_Prozess_Click(sender, e);
+        }
+
+        private void label38_Click(object sender, EventArgs e)
+        {
+            pBox_Prozess_Click(sender, e);
+        }
+
+        private void label41_Click(object sender, EventArgs e)
+        {
+            pBox_StdLastProfil_Click(sender, e);
+        }
+
+        private void label40_Click(object sender, EventArgs e)
+        {
+            pBox_StdLastProfil_Click(sender, e);
+        }
+
+        private void label43_Click(object sender, EventArgs e)
+        {
+            pBox_StromProfilEigenes_Click(sender, e);
+        }
+
+        private void label42_Click(object sender, EventArgs e)
+        {
+            pBox_StromProfilEigenes_Click(sender, e);
+        }
+
+        private void label45_Click(object sender, EventArgs e)
+        {
+            pBox_StromMessdaten_Click(sender, e);
+        }
+
+        private void label44_Click(object sender, EventArgs e)
+        {
+            pBox_StromMessdaten_Click(sender, e);
+        }
+
+        private void label47_Click(object sender, EventArgs e)
+        {
+            pBox_WP_Click(sender, e);
+        }
+
+        private void label46_Click(object sender, EventArgs e)
+        {
+            pBox_WP_Click(sender, e);
+        }
+
+        private void label49_Click(object sender, EventArgs e)
+        {
+            pBox_Heizkessel_Click(sender, e);
+        }
+
+        private void label48_Click(object sender, EventArgs e)
+        {
+            pBox_Heizkessel_Click(sender, e);
+        }
+
+        private void label51_Click(object sender, EventArgs e)
+        {
+            pBox_Solarthermie_Click(sender, e);
+        }
+
+        private void label50_Click(object sender, EventArgs e)
+        {
+            pBox_Solarthermie_Click(sender, e);
+        }
+
+        private void label61_Click(object sender, EventArgs e)
+        {
+            pBoxSchnellSim_Click(sender, e);
+        }
+
+        private void label60_Click(object sender, EventArgs e)
+        {
+            pBoxSchnellSim_Click(sender, e);
+        }
+
+        private void label63_Click(object sender, EventArgs e)
+        {
+            pBox_DetailSim_Click(sender, e);
+        }
+
+        private void label65_Click(object sender, EventArgs e)
+        {
+            pBox_Optimierung_Click(sender, e);
+        }
+
+        private void label64_Click(object sender, EventArgs e)
+        {
+            pBox_Optimierung_Click(sender, e);
+        }
+
+        private void pBox_Optimierung_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void label62_Click(object sender, EventArgs e)
+        {
+            pBox_DetailSim_Click(sender, e);
+        }
+
+        private void btn_Weiter_Click(object sender, EventArgs e)
+        {
+            if (tabControl_Wizard.SelectedIndex >= tabControl_Wizard.TabCount - 1) return;
+
+            WErzeugerCtrl werzctrl = new WErzeugerCtrl();
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
+            if (werzctrl.rows > 0) status |= 1; else status &= ~1;
+
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP);
+            if (werzctrl.rows > 0) status |= 2; else status &= ~2;
+
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
+            if (werzctrl.rows > 0) status |= 4; else status &= ~4;
+
+            Z_ProjGebCtrl gebCtrl = new Z_ProjGebCtrl();
+            gebCtrl.ReadAll(" select * from Z_ProjektGebaeude where ID_Projekt=" + m_ID_Projekt.ToString());
+            if (gebCtrl.rows > 0) status |= 8; else status &= ~8;
+
+            Z_ProjektGebGanglinieCtrl gebgangctrl = new Z_ProjektGebGanglinieCtrl();
+            gebgangctrl.ReadAll(" select * from Z_ProjektWaermebedarf where ID_Projekt=" + m_ID_Projekt.ToString());
+            if (gebgangctrl.rows > 0) status |= 16; else status &= ~16;
+
+            Z_ProjektProzesswaermeCtrl proctrl = new Z_ProjektProzesswaermeCtrl();
+            proctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + m_ID_Projekt.ToString());
+            if (proctrl.rows > 0) status |= 32; else status &= ~32;
+
+            Z_ProjektStromverbraucherCtrl strvctrl = new Z_ProjektStromverbraucherCtrl();
+            strvctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + m_ID_Projekt.ToString());
+            if (strvctrl.rows > 0) status |= 64; else status &= ~64;
+
+            Z_ProjektStromganglinieCtrl strgctrl = new Z_ProjektStromganglinieCtrl();
+            strgctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + m_ID_Projekt.ToString());
+            if (strgctrl.rows > 0) status |= 128; else status &= ~128;
+
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.BHKW_TYP);
+            if (werzctrl.rows > 0) status |= 256; else status &= ~256;
+
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
+            Z_ProjektSolarganglinieCtrl solgctrl = new Z_ProjektSolarganglinieCtrl();
+            solgctrl.ReadAll("select * from Z_ProjektSolarganglinie where ID_Projekt=" + m_ID_Projekt.ToString());
+
+            if (werzctrl.rows > 0 || solgctrl.rows > 0)
+            {
+                status |= 512;
+                radioButton_KollektorProfil.BackColor = Color.FromArgb(90, 0, 255, 0);
+                radioButton_Ganglinie.BackColor = Color.FromArgb(90, 0, 255, 0);
+            }
+            else
+            {
+                status &= ~512;
+                radioButton_KollektorProfil.BackColor = Color.Transparent;
+                radioButton_Ganglinie.BackColor = Color.Transparent;
+            }
+
+            werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
+            if (werzctrl.rows > 0) status |= 1024; else status &= ~1024;
+
+            tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
+
+        }
+
+        private void btn_Zurueck_Click(object sender, EventArgs e)
+        {
+            if (tabControl_Wizard.SelectedIndex <= 0) return;
+            tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex - 1;
         }
     }
 }

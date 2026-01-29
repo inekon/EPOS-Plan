@@ -118,17 +118,20 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="Unbenannt" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Unbenannt.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="PProjektPV" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PProjektPV.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Unbenannt1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Unbenannt.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="WP_Symbol" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\WP_Symbol.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PProjektname" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PProjektname.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Menue6" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Menue6.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PStdLastProfil" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PStdLastProfil.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Logo125_125" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Logo125_125.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -147,9 +150,6 @@
   </data>
   <data name="usa" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\usa.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Unbenannt4" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Unbenannt4.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="PDetailansicht" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PDetailansicht.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -175,14 +175,20 @@
   <data name="Unbenannt3" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Unbenannt3.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="PStdLastProfil" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PStdLastProfil.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="PZurueck" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PZurueck.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="setup-trans" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\setup-trans.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="info-1459077_12801" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\info-1459077_1280.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PZurueck_en" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PZurueck_en.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Unbenannt2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Unbenannt2.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="PProjektZuletzt" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PProjektZuletzt.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -211,9 +217,6 @@
   <data name="PDetailSim" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PDetailSim.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="PZurueck" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PZurueck.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="germany-map-2431251_640" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\germany-map-2431251_640.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -229,8 +232,8 @@
   <data name="POptimierung" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\POptimierung.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Unbenannt2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Unbenannt2.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Unbenannt4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Unbenannt4.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Menue21" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Menue2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -243,9 +246,6 @@
   </data>
   <data name="Menu12" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Menu1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="PProjektname" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PProjektname.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="PProjektSolarthermie" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PProjektSolarthermie.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -271,10 +271,7 @@
   <data name="Menue2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Menue2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="PZurueck_en" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PZurueck_en.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="WP_Symbol" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\WP_Symbol.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="PGebaeude" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PGebaeude.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
