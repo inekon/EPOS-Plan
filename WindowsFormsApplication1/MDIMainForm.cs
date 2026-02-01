@@ -196,6 +196,18 @@ namespace WindowsFormsApplication1
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.SPKImport();
         }
+
+        private void MeniItem_PufferSp_VDI3805_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.PufferSPImport();
+        }
+
+        private void MenuItem_PufferSpBearbeiten_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.PufferSp();
+        }
     }
 }
 

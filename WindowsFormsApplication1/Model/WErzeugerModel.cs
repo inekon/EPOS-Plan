@@ -41,6 +41,7 @@ namespace WindowsFormsApplication1
         public double PV_Leistung;
         public int m_Neigung;
         public int m_Azimut;
+        public int ID_PUFFER;
 
         public WErzeugerModel()
         {
@@ -72,6 +73,7 @@ namespace WindowsFormsApplication1
             PV_Leistung = 0.0;
             m_Neigung = 0;
             m_Azimut = 0;
+            ID_PUFFER = 0;
         } 
     }
 

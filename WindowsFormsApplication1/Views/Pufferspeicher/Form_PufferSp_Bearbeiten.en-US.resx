@@ -117,130 +117,89 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="toolStripMenuItem5.Text" xml:space="preserve">
-    <value>Stromverbraucher</value>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="Label13.Size" type="System.Drawing.Size, System.Drawing">
+    <value>107, 17</value>
   </data>
-  <data name="MenuItem_GebBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
+  <data name="Label13.Text" xml:space="preserve">
+    <value>Investment costs:</value>
   </data>
-  <data name="MenuItem_ProjektNeu.Text" xml:space="preserve">
-    <value>Neu...</value>
+  <data name="groupBox3.Text" xml:space="preserve">
+    <value>Input data for calculating costs</value>
   </data>
-  <data name="toolStripMenuItem7.Text" xml:space="preserve">
-    <value>Daten &amp;&amp; Import</value>
+  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 17</value>
   </data>
-  <data name="Projekte.Text" xml:space="preserve">
-    <value>Projekt</value>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Total volume:</value>
   </data>
-  <data name="MenuItem_SolThermGanglinie.Text" xml:space="preserve">
-    <value>Solarthermieganglinie</value>
+  <data name="Label8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 17</value>
   </data>
-  <data name="MenuItem_Klimadaten.Text" xml:space="preserve">
-    <value>Klimadaten</value>
+  <data name="Label8.Text" xml:space="preserve">
+    <value>Operational readiness losses:</value>
   </data>
-  <data name="Administration.Text" xml:space="preserve">
-    <value>Administration</value>
+  <data name="groupBox2.Text" xml:space="preserve">
+    <value>Technical data</value>
   </data>
-  <data name="MenuItem_WaermebedarfExtern.Text" xml:space="preserve">
-    <value>Wärmebedarf Lastgang</value>
+  <data name="comboBox_Speichertyp.Items" xml:space="preserve">
+    <value>Solar storage</value>
   </data>
-  <data name="MenuItem_Update.Text" xml:space="preserve">
-    <value>Datenbank importieren</value>
+  <data name="comboBox_Speichertyp.Items1" xml:space="preserve">
+    <value>Buffer memory</value>
   </data>
-  <data name="MenuItem_zuletztGeöffnet.Text" xml:space="preserve">
-    <value>zuletzt geöffnet</value>
+  <data name="comboBox_Speichertyp.Items2" xml:space="preserve">
+    <value>Combination storage</value>
   </data>
-  <data name="MenuItem_Lizenz.Text" xml:space="preserve">
-    <value>Lizenz</value>
+  <data name="comboBox_Speichertyp.Location" type="System.Drawing.Point, System.Drawing">
+    <value>125, 80</value>
   </data>
-  <data name="MenuItem_ProjektLöschen.Text" xml:space="preserve">
-    <value>Löschen...</value>
+  <data name="Label1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>36, 23</value>
   </data>
-  <data name="MenuItem_Solarkollektoren.Text" xml:space="preserve">
-    <value>Solarkollektoren</value>
+  <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 17</value>
   </data>
-  <data name="MenuItem_Prozesswaerme.Text" xml:space="preserve">
-    <value>Prozesswärme</value>
+  <data name="Label1.Text" xml:space="preserve">
+    <value>Boiler name:</value>
   </data>
-  <data name="MenuItem_Gebaeude.Text" xml:space="preserve">
-    <value>Gebäude</value>
+  <data name="Label2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>27, 51</value>
   </data>
-  <data name="toolStripMenuItem8.Text" xml:space="preserve">
-    <value>Stromspeicher</value>
+  <data name="Label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 17</value>
   </data>
-  <data name="MenuItem_ProjektOeffnen.Text" xml:space="preserve">
-    <value>Öffnen...</value>
+  <data name="Label2.Text" xml:space="preserve">
+    <value>Manufacturer:</value>
   </data>
-  <data name="Deutsch.Text" xml:space="preserve">
-    <value>Deutsch</value>
+  <data name="Label3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>30, 81</value>
   </data>
-  <data name="MenuItem_WPBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
+  <data name="Label3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>86, 17</value>
   </data>
-  <data name="toolStripMenuItem6.Text" xml:space="preserve">
-    <value>Klimadaten &amp;&amp; Umgebung</value>
+  <data name="Label3.Text" xml:space="preserve">
+    <value>Storage type:</value>
+  </data>
+  <data name="textBox_Name.Location" type="System.Drawing.Point, System.Drawing">
+    <value>125, 20</value>
+  </data>
+  <data name="textBox_Hersteller.Location" type="System.Drawing.Point, System.Drawing">
+    <value>125, 51</value>
+  </data>
+  <data name="btn_Abbrechen.Text" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="btn_Speichern_Unter.Text" xml:space="preserve">
+    <value>Save as</value>
+  </data>
+  <data name="btn_Speichern.Text" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="btn_Ueberschreiben.Text" xml:space="preserve">
+    <value>Overwrite</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>WP-Plan</value>
-  </data>
-  <data name="MenuItem_Version.Text" xml:space="preserve">
-    <value>Version</value>
-  </data>
-  <data name="toolStripMenuItem2.Text" xml:space="preserve">
-    <value>Strombedarf &amp;&amp; Speicher</value>
-  </data>
-  <data name="MenuItem_WP.Text" xml:space="preserve">
-    <value>Wärmepumpen</value>
-  </data>
-  <data name="Help.Text" xml:space="preserve">
-    <value>Hilfe</value>
-  </data>
-  <data name="MeniItem_VDI3805.Text" xml:space="preserve">
-    <value>Importieren VDI 3805 Datei</value>
-  </data>
-  <data name="MenuItem_Kessel.Text" xml:space="preserve">
-    <value>Heizkessel</value>
-  </data>
-  <data name="menuToolbar.Text" xml:space="preserve">
-    <value>File</value>
-  </data>
-  <data name="MenuItem_BHKW.Text" xml:space="preserve">
-    <value>BHKW</value>
-  </data>
-  <data name="toolStripMenuItem1.Text" xml:space="preserve">
-    <value>Wärmebedarf &amp;&amp; Heizung</value>
-  </data>
-  <data name="toolStripMenuItem3.Text" xml:space="preserve">
-    <value>Energiesysteme</value>
-  </data>
-  <data name="Englisch.Text" xml:space="preserve">
-    <value>Englisch</value>
-  </data>
-  <data name="MenuItem_ProjektBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten...</value>
-  </data>
-  <data name="MenuItem_GebTypen.Text" xml:space="preserve">
-    <value>Gebäudetypen</value>
-  </data>
-  <data name="MenuItem_PV.Text" xml:space="preserve">
-    <value>Photovoltaik</value>
-  </data>
-  <data name="toolStripMenuItem4.Text" xml:space="preserve">
-    <value>Stromganglinie</value>
-  </data>
-  <data name="MenuItem_SPKBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
-  </data>
-  <data name="MeniItem_SPK_VDI3805.Text" xml:space="preserve">
-    <value>Importieren VDI 3805 Datei</value>
-  </data>
-  <data name="MeniItem_PufferSp_VDI3805.Text" xml:space="preserve">
-    <value>Importieren VDI 3805 Datei</value>
-  </data>
-  <data name="MenuItem_PufferSpBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
-  </data>
-  <data name="MenuItem_PufferSp.Text" xml:space="preserve">
-    <value>Pufferspeicher</value>
+    <value>Buffer memory edit</value>
   </data>
 </root>
