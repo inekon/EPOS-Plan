@@ -366,4 +366,10 @@
   <data name="btn_Zurueck.Text" xml:space="preserve">
     <value>&lt;-- Zurück</value>
   </data>
+  <data name="label71.Text" xml:space="preserve">
+    <value>Überschüssige Wärme aus der Heizung speichern</value>
+  </data>
+  <data name="label72.Text" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
 </root>

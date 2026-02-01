@@ -50,6 +50,8 @@
             this.MenuItem_Kessel = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_SPKBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MeniItem_SPK_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_PufferSp = new System.Windows.Forms.ToolStripMenuItem();
+            this.MeniItem_PufferSp_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,6 +74,7 @@
             this.MenuItem_Lizenz = new System.Windows.Forms.ToolStripMenuItem();
             this.Deutsch = new System.Windows.Forms.ToolStripMenuItem();
             this.Englisch = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_PufferSpBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolbar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -173,7 +176,8 @@
             this.MenuItem_WaermebedarfExtern,
             this.MenuItem_Prozesswaerme,
             this.MenuItem_WP,
-            this.MenuItem_Kessel});
+            this.MenuItem_Kessel,
+            this.MenuItem_PufferSp});
             this.toolStripMenuItem1.Image = global::WindowsFormsApplication1.Properties.Resources.Menu1;
             resources.ApplyResources(this.toolStripMenuItem1, "toolStripMenuItem1");
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
@@ -229,6 +233,20 @@
             this.MeniItem_SPK_VDI3805.Name = "MeniItem_SPK_VDI3805";
             resources.ApplyResources(this.MeniItem_SPK_VDI3805, "MeniItem_SPK_VDI3805");
             this.MeniItem_SPK_VDI3805.Click += new System.EventHandler(this.MeniItem_SPK_VDI3805_Click);
+            // 
+            // MenuItem_PufferSp
+            // 
+            this.MenuItem_PufferSp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MeniItem_PufferSp_VDI3805,
+            this.MenuItem_PufferSpBearbeiten});
+            this.MenuItem_PufferSp.Name = "MenuItem_PufferSp";
+            resources.ApplyResources(this.MenuItem_PufferSp, "MenuItem_PufferSp");
+            // 
+            // MeniItem_PufferSp_VDI3805
+            // 
+            this.MeniItem_PufferSp_VDI3805.Name = "MeniItem_PufferSp_VDI3805";
+            resources.ApplyResources(this.MeniItem_PufferSp_VDI3805, "MeniItem_PufferSp_VDI3805");
+            this.MeniItem_PufferSp_VDI3805.Click += new System.EventHandler(this.MeniItem_PufferSp_VDI3805_Click);
             // 
             // toolStripMenuItem2
             // 
@@ -389,6 +407,12 @@
             this.Englisch.Name = "Englisch";
             this.Englisch.Click += new System.EventHandler(this.Englisch_Click);
             // 
+            // MenuItem_PufferSpBearbeiten
+            // 
+            this.MenuItem_PufferSpBearbeiten.Name = "MenuItem_PufferSpBearbeiten";
+            resources.ApplyResources(this.MenuItem_PufferSpBearbeiten, "MenuItem_PufferSpBearbeiten");
+            this.MenuItem_PufferSpBearbeiten.Click += new System.EventHandler(this.MenuItem_PufferSpBearbeiten_Click);
+            // 
             // MDIMainForm
             // 
             resources.ApplyResources(this, "$this");
@@ -451,6 +475,9 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_SPKBearbeiten;
         private System.Windows.Forms.ToolStripMenuItem MeniItem_SPK_VDI3805;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_PufferSp;
+        private System.Windows.Forms.ToolStripMenuItem MeniItem_PufferSp_VDI3805;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_PufferSpBearbeiten;
     }
 }
 

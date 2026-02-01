@@ -346,5 +346,17 @@ namespace WindowsFormsApplication1
             Form_Heizkessel_einlesen frm = new Form_Heizkessel_einlesen();
             frm.ShowDialog();
         }
+
+        public void PufferSPImport()
+        {
+            Form_PufferSp_einlesen frm = new Form_PufferSp_einlesen();
+            frm.ShowDialog();
+        }
+
+        public void PufferSp()
+        {
+            Form_PufferSp_Admin frm = new Form_PufferSp_Admin();
+            frm.ShowDialog();
+        }
     }
 }

@@ -1156,4 +1156,13 @@
   <data name="MeniItem_SPK_VDI3805.Text" xml:space="preserve">
     <value>Import VDI 3805 file</value>
   </data>
+  <data name="MeniItem_PufferSp_VDI3805.Text" xml:space="preserve">
+    <value>Import VDI 3805 file</value>
+  </data>
+  <data name="MenuItem_PufferSpBearbeiten.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="MenuItem_PufferSp.Text" xml:space="preserve">
+    <value>Buffer memory</value>
+  </data>
 </root>

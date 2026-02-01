@@ -196,6 +196,7 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(27)) item.PV_Leistung = (double)DBReader.GetValue(27);
                 if (!DBReader.IsDBNull(28)) item.m_Neigung = (int)DBReader.GetValue(28);
                 if (!DBReader.IsDBNull(29)) item.m_Azimut = (int)DBReader.GetValue(29);
+                if (!DBReader.IsDBNull(30)) item.ID_PUFFER = (int)DBReader.GetValue(30);
 
                 items[rows] = item;
                 rows += 1;
@@ -244,6 +245,7 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(27)) PV_Leistung = (double)DBReader.GetValue(27);
                 if (!DBReader.IsDBNull(28)) m_Neigung = (int)DBReader.GetValue(28);
                 if (!DBReader.IsDBNull(29)) m_Azimut = (int)DBReader.GetValue(29);
+                if (!DBReader.IsDBNull(30)) ID_PUFFER = (int)DBReader.GetValue(30);
 
                 rows = 1;
             }

@@ -322,6 +322,27 @@
   <data name="tabPage3.Text" xml:space="preserve">
     <value>Electricity requirement</value>
   </data>
+  <data name="label71.Location" type="System.Drawing.Point, System.Drawing">
+    <value>490, 548</value>
+  </data>
+  <data name="label71.Size" type="System.Drawing.Size, System.Drawing">
+    <value>261, 22</value>
+  </data>
+  <data name="label71.Text" xml:space="preserve">
+    <value>Store excess heat from the heater</value>
+  </data>
+  <data name="label72.Location" type="System.Drawing.Point, System.Drawing">
+    <value>490, 527</value>
+  </data>
+  <data name="label72.Size" type="System.Drawing.Size, System.Drawing">
+    <value>122, 21</value>
+  </data>
+  <data name="label72.Text" xml:space="preserve">
+    <value>Buffer memory</value>
+  </data>
+  <data name="pBox_Pufferspeicher.Location" type="System.Drawing.Point, System.Drawing">
+    <value>412, 504</value>
+  </data>
   <data name="label59.Size" type="System.Drawing.Size, System.Drawing">
     <value>597, 21</value>
   </data>
@@ -353,7 +374,7 @@
     <value>Photovoltaics</value>
   </data>
   <data name="label54.Location" type="System.Drawing.Point, System.Drawing">
-    <value>440, 542</value>
+    <value>489, 453</value>
   </data>
   <data name="label54.Size" type="System.Drawing.Size, System.Drawing">
     <value>278, 21</value>
@@ -362,7 +383,7 @@
     <value>Battery storage for excess electricity</value>
   </data>
   <data name="label55.Location" type="System.Drawing.Point, System.Drawing">
-    <value>440, 514</value>
+    <value>490, 432</value>
   </data>
   <data name="label55.Size" type="System.Drawing.Size, System.Drawing">
     <value>141, 21</value>
@@ -599,20 +620,13 @@
   <data name="label20.Text" xml:space="preserve">
     <value>Energy planning software</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="$this.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Start form</value>
-  </data>
-  <data name="tabPage5.Text" xml:space="preserve">
-    <value>Simulation</value>
-  </data>
   <data name="btn_Weiter.Text" xml:space="preserve">
     <value>Next --&gt;</value>
   </data>
   <data name="btn_Zurueck.Text" xml:space="preserve">
     <value>&lt;-- Back</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Start form</value>
   </data>
 </root>

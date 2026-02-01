@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,130 +117,113 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="toolStripMenuItem5.Text" xml:space="preserve">
-    <value>Stromverbraucher</value>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>545, 124</value>
   </data>
-  <data name="MenuItem_GebBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
+  <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
+    <value>545, 158</value>
   </data>
-  <data name="MenuItem_ProjektNeu.Text" xml:space="preserve">
-    <value>Neu...</value>
+  <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
+    <value>346, 126</value>
   </data>
-  <data name="toolStripMenuItem7.Text" xml:space="preserve">
-    <value>Daten &amp;&amp; Import</value>
+  <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>98, 17</value>
   </data>
-  <data name="Projekte.Text" xml:space="preserve">
-    <value>Projekt</value>
+  <data name="label8.Text" xml:space="preserve">
+    <value>Standby losses:</value>
   </data>
-  <data name="MenuItem_SolThermGanglinie.Text" xml:space="preserve">
-    <value>Solarthermieganglinie</value>
+  <data name="textBox_Versluste.Location" type="System.Drawing.Point, System.Drawing">
+    <value>449, 122</value>
   </data>
-  <data name="MenuItem_Klimadaten.Text" xml:space="preserve">
-    <value>Klimadaten</value>
+  <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
+    <value>358, 89</value>
   </data>
-  <data name="Administration.Text" xml:space="preserve">
-    <value>Administration</value>
+  <data name="Label10.Size" type="System.Drawing.Size, System.Drawing">
+    <value>86, 17</value>
   </data>
-  <data name="MenuItem_WaermebedarfExtern.Text" xml:space="preserve">
-    <value>Wärmebedarf Lastgang</value>
+  <data name="Label10.Text" xml:space="preserve">
+    <value>Storage type:</value>
   </data>
-  <data name="MenuItem_Update.Text" xml:space="preserve">
-    <value>Datenbank importieren</value>
+  <data name="textBox_Typ.Location" type="System.Drawing.Point, System.Drawing">
+    <value>449, 87</value>
   </data>
-  <data name="MenuItem_zuletztGeöffnet.Text" xml:space="preserve">
-    <value>zuletzt geöffnet</value>
+  <data name="Label17.Location" type="System.Drawing.Point, System.Drawing">
+    <value>359, 160</value>
   </data>
-  <data name="MenuItem_Lizenz.Text" xml:space="preserve">
-    <value>Lizenz</value>
+  <data name="Label17.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 17</value>
   </data>
-  <data name="MenuItem_ProjektLöschen.Text" xml:space="preserve">
-    <value>Löschen...</value>
+  <data name="Label17.Text" xml:space="preserve">
+    <value>Total volume:</value>
   </data>
-  <data name="MenuItem_Solarkollektoren.Text" xml:space="preserve">
-    <value>Solarkollektoren</value>
+  <data name="textBox_Volumen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>449, 157</value>
   </data>
-  <data name="MenuItem_Prozesswaerme.Text" xml:space="preserve">
-    <value>Prozesswärme</value>
+  <data name="btn_Loeschen.Text" xml:space="preserve">
+    <value>Delete</value>
   </data>
-  <data name="MenuItem_Gebaeude.Text" xml:space="preserve">
-    <value>Gebäude</value>
+  <data name="btn_Neu.Text" xml:space="preserve">
+    <value>New...</value>
   </data>
-  <data name="toolStripMenuItem8.Text" xml:space="preserve">
-    <value>Stromspeicher</value>
+  <data name="btn_Bearbeiten.Text" xml:space="preserve">
+    <value>Edit...</value>
   </data>
-  <data name="MenuItem_ProjektOeffnen.Text" xml:space="preserve">
-    <value>Öffnen...</value>
+  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>83, 13</value>
   </data>
-  <data name="Deutsch.Text" xml:space="preserve">
-    <value>Deutsch</value>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Filter by volume:</value>
   </data>
-  <data name="MenuItem_WPBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
+  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>111, 13</value>
   </data>
-  <data name="toolStripMenuItem6.Text" xml:space="preserve">
-    <value>Klimadaten &amp;&amp; Umgebung</value>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Filter by manufacturer:</value>
+  </data>
+  <data name="comboBox_Hersteller.Size" type="System.Drawing.Size, System.Drawing">
+    <value>125, 21</value>
+  </data>
+  <data name="label18.Location" type="System.Drawing.Point, System.Drawing">
+    <value>349, 59</value>
+  </data>
+  <data name="label18.Size" type="System.Drawing.Size, System.Drawing">
+    <value>95, 19</value>
+  </data>
+  <data name="label18.Text" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="textBox_Hersteller.Location" type="System.Drawing.Point, System.Drawing">
+    <value>449, 56</value>
+  </data>
+  <data name="label16.Location" type="System.Drawing.Point, System.Drawing">
+    <value>396, 28</value>
+  </data>
+  <data name="textBox_Name.Location" type="System.Drawing.Point, System.Drawing">
+    <value>449, 25</value>
+  </data>
+  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
+    <value>192, 19</value>
+  </data>
+  <data name="label11.Text" xml:space="preserve">
+    <value>Buffer memory from database</value>
+  </data>
+  <data name="Label13.Location" type="System.Drawing.Point, System.Drawing">
+    <value>337, 194</value>
+  </data>
+  <data name="Label13.Size" type="System.Drawing.Size, System.Drawing">
+    <value>107, 17</value>
+  </data>
+  <data name="Label13.Text" xml:space="preserve">
+    <value>Investment costs:</value>
+  </data>
+  <data name="textBox_Investitionskosten.Location" type="System.Drawing.Point, System.Drawing">
+    <value>449, 192</value>
+  </data>
+  <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>547, 194</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>WP-Plan</value>
-  </data>
-  <data name="MenuItem_Version.Text" xml:space="preserve">
-    <value>Version</value>
-  </data>
-  <data name="toolStripMenuItem2.Text" xml:space="preserve">
-    <value>Strombedarf &amp;&amp; Speicher</value>
-  </data>
-  <data name="MenuItem_WP.Text" xml:space="preserve">
-    <value>Wärmepumpen</value>
-  </data>
-  <data name="Help.Text" xml:space="preserve">
-    <value>Hilfe</value>
-  </data>
-  <data name="MeniItem_VDI3805.Text" xml:space="preserve">
-    <value>Importieren VDI 3805 Datei</value>
-  </data>
-  <data name="MenuItem_Kessel.Text" xml:space="preserve">
-    <value>Heizkessel</value>
-  </data>
-  <data name="menuToolbar.Text" xml:space="preserve">
-    <value>File</value>
-  </data>
-  <data name="MenuItem_BHKW.Text" xml:space="preserve">
-    <value>BHKW</value>
-  </data>
-  <data name="toolStripMenuItem1.Text" xml:space="preserve">
-    <value>Wärmebedarf &amp;&amp; Heizung</value>
-  </data>
-  <data name="toolStripMenuItem3.Text" xml:space="preserve">
-    <value>Energiesysteme</value>
-  </data>
-  <data name="Englisch.Text" xml:space="preserve">
-    <value>Englisch</value>
-  </data>
-  <data name="MenuItem_ProjektBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten...</value>
-  </data>
-  <data name="MenuItem_GebTypen.Text" xml:space="preserve">
-    <value>Gebäudetypen</value>
-  </data>
-  <data name="MenuItem_PV.Text" xml:space="preserve">
-    <value>Photovoltaik</value>
-  </data>
-  <data name="toolStripMenuItem4.Text" xml:space="preserve">
-    <value>Stromganglinie</value>
-  </data>
-  <data name="MenuItem_SPKBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
-  </data>
-  <data name="MeniItem_SPK_VDI3805.Text" xml:space="preserve">
-    <value>Importieren VDI 3805 Datei</value>
-  </data>
-  <data name="MeniItem_PufferSp_VDI3805.Text" xml:space="preserve">
-    <value>Importieren VDI 3805 Datei</value>
-  </data>
-  <data name="MenuItem_PufferSpBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
-  </data>
-  <data name="MenuItem_PufferSp.Text" xml:space="preserve">
-    <value>Pufferspeicher</value>
+    <value>Administration buffer memory</value>
   </data>
 </root>

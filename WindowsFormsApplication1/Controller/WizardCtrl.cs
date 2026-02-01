@@ -63,6 +63,7 @@ namespace WindowsFormsApplication1
                     newRow["ID_Type"] = list[i].ID_Type;
                     newRow["ID_BHKW"] = DBNull.Value;
                     newRow["ID_SOLAR"] = DBNull.Value;
+                    newRow["ID_PUFFER"] = DBNull.Value;
 
                     if (list[i].ID_Type == WizardItemClass.WP_TYP || list[i].ID_Type == WizardItemClass.REF_WP_TYP)
                     {
@@ -91,6 +92,10 @@ namespace WindowsFormsApplication1
                     else if (list[i].ID_Type == WizardItemClass.SOLAR_TYP)
                     {
                         newRow["ID_SOLAR"] = list[i].ID_Solar;
+                    }
+                    else if (list[i].ID_Type == WizardItemClass.PUFFER_TYP)
+                    {
+                        newRow["ID_PUFFER"] = list[i].ID_PUFFER;
                     }
 
                     newRow["Heizstab"] = list[i].Heizstab;

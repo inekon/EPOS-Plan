@@ -126,6 +126,7 @@
     </Compile>
     <Compile Include="Classes\Heizkesselmport.cs" />
     <Compile Include="Classes\IniFileParser.cs" />
+    <Compile Include="Classes\PufferSpImport.cs" />
     <Compile Include="Classes\RecordSet.cs" />
     <Compile Include="Classes\Simulation\SimulationHelper.cs" />
     <Compile Include="Classes\Simulation\Init.cs" />
@@ -166,6 +167,7 @@
     <Compile Include="Controller\SolarKontextMenuCtrl.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Controller\PufferSpCtrl.cs" />
     <Compile Include="Controller\StrombedarfKontextMenuCtrl.cs" />
     <Compile Include="Controller\StromganglinieCtrl.cs" />
     <Compile Include="Controller\StromganglinieDatenCtrl.cs" />
@@ -195,6 +197,7 @@
     <Compile Include="Model\ProzesswaermeModel.cs" />
     <Compile Include="Model\SolarganglinieModel.cs" />
     <Compile Include="Model\SolarkollektorenModel.cs" />
+    <Compile Include="Model\PufferSpModel.cs" />
     <Compile Include="Model\StromganglinieModel.cs" />
     <Compile Include="Model\StromverbraucherModel.cs" />
     <Compile Include="Controller\WPKontextMenuCtrl.cs">
@@ -378,6 +381,30 @@
     </Compile>
     <Compile Include="Views\Prozesswärme\Form_Prozesswaerme_Admin.designer.cs">
       <DependentUpon>Form_Prozesswaerme_Admin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Pufferspeicher\Form_PufferSp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Pufferspeicher\Form_PufferSp.Designer.cs">
+      <DependentUpon>Form_PufferSp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Pufferspeicher\Form_PufferSp_Admin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Pufferspeicher\Form_PufferSp_Admin.Designer.cs">
+      <DependentUpon>Form_PufferSp_Admin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Pufferspeicher\Form_PufferSp_Bearbeiten.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Pufferspeicher\Form_PufferSp_Bearbeiten.designer.cs">
+      <DependentUpon>Form_PufferSp_Bearbeiten.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Pufferspeicher\Form_PufferSp_einlesen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Pufferspeicher\Form_PufferSp_einlesen.designer.cs">
+      <DependentUpon>Form_PufferSp_einlesen.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Simulation\Form_Simulation_Config.cs">
       <SubType>Form</SubType>
@@ -780,6 +807,42 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Prozesswärme\Form_Prozesswaerme_Admin.resx">
       <DependentUpon>Form_Prozesswaerme_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp.de-DE.resx">
+      <DependentUpon>Form_PufferSp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp.en-US.resx">
+      <DependentUpon>Form_PufferSp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp.resx">
+      <DependentUpon>Form_PufferSp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp_Admin.de-DE.resx">
+      <DependentUpon>Form_PufferSp_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp_Admin.en-US.resx">
+      <DependentUpon>Form_PufferSp_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp_Admin.resx">
+      <DependentUpon>Form_PufferSp_Admin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp_Bearbeiten.de-DE.resx">
+      <DependentUpon>Form_PufferSp_Bearbeiten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp_Bearbeiten.en-US.resx">
+      <DependentUpon>Form_PufferSp_Bearbeiten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp_Bearbeiten.resx">
+      <DependentUpon>Form_PufferSp_Bearbeiten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp_einlesen.de-DE.resx">
+      <DependentUpon>Form_PufferSp_einlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp_einlesen.en-US.resx">
+      <DependentUpon>Form_PufferSp_einlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp_einlesen.resx">
+      <DependentUpon>Form_PufferSp_einlesen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Config.de-DE.resx">
       <DependentUpon>Form_Simulation_Config.cs</DependentUpon>
@@ -1244,6 +1307,7 @@
     <None Include="Resources\PProjektDetails.jpg" />
     <Content Include="Resources\PProjektSolarthermie.jpg" />
     <None Include="Resources\PZurueck_en.jpg" />
+    <None Include="Resources\PPufferSpeicher.jpg" />
     <Content Include="Resources\PZusammenfassung.pg.jpg" />
   </ItemGroup>
   <ItemGroup />

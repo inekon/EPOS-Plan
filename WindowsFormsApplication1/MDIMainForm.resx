@@ -203,13 +203,13 @@
     <value>Wärmepumpen</value>
   </data>
   <data name="MenuItem_SPKBearbeiten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>231, 26</value>
+    <value>271, 26</value>
   </data>
   <data name="MenuItem_SPKBearbeiten.Text" xml:space="preserve">
     <value>Bearbeiten</value>
   </data>
   <data name="MeniItem_SPK_VDI3805.Size" type="System.Drawing.Size, System.Drawing">
-    <value>231, 26</value>
+    <value>271, 26</value>
   </data>
   <data name="MeniItem_SPK_VDI3805.Text" xml:space="preserve">
     <value>Importieren VDI 3805 Datei</value>
@@ -219,6 +219,24 @@
   </data>
   <data name="MenuItem_Kessel.Text" xml:space="preserve">
     <value>Heizkessel</value>
+  </data>
+  <data name="MeniItem_PufferSp_VDI3805.Size" type="System.Drawing.Size, System.Drawing">
+    <value>271, 26</value>
+  </data>
+  <data name="MeniItem_PufferSp_VDI3805.Text" xml:space="preserve">
+    <value>Importieren VDI 3805 Datei</value>
+  </data>
+  <data name="MenuItem_PufferSpBearbeiten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>271, 26</value>
+  </data>
+  <data name="MenuItem_PufferSpBearbeiten.Text" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="MenuItem_PufferSp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 26</value>
+  </data>
+  <data name="MenuItem_PufferSp.Text" xml:space="preserve">
+    <value>Pufferspeicher</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="toolStripMenuItem1.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
@@ -1386,6 +1404,18 @@
   <data name="&gt;&gt;MeniItem_SPK_VDI3805.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;MenuItem_PufferSp.Name" xml:space="preserve">
+    <value>MenuItem_PufferSp</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_PufferSp.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MeniItem_PufferSp_VDI3805.Name" xml:space="preserve">
+    <value>MeniItem_PufferSp_VDI3805</value>
+  </data>
+  <data name="&gt;&gt;MeniItem_PufferSp_VDI3805.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;toolStripMenuItem2.Name" xml:space="preserve">
     <value>toolStripMenuItem2</value>
   </data>
@@ -1516,6 +1546,12 @@
     <value>Englisch</value>
   </data>
   <data name="&gt;&gt;Englisch.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_PufferSpBearbeiten.Name" xml:space="preserve">
+    <value>MenuItem_PufferSpBearbeiten</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_PufferSpBearbeiten.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
