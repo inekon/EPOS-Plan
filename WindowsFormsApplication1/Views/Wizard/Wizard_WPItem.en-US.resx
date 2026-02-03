@@ -386,7 +386,7 @@
     <value>Designation</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
-    <value>Buffer memory</value>
+    <value>Buffer storage</value>
   </data>
   <data name="checkBox_rendeMIX.Text" xml:space="preserve">
     <value>Buffer storage with optimized charging system (rende MIX)</value>

@@ -146,7 +146,7 @@
     <value>Solar storage</value>
   </data>
   <data name="comboBox_Speichertyp.Items1" xml:space="preserve">
-    <value>Buffer memory</value>
+    <value>Buffer storage</value>
   </data>
   <data name="comboBox_Speichertyp.Items2" xml:space="preserve">
     <value>Combination storage</value>
@@ -200,6 +200,6 @@
     <value>Overwrite</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Buffer memory edit</value>
+    <value>Buffer storage edit</value>
   </data>
 </root>

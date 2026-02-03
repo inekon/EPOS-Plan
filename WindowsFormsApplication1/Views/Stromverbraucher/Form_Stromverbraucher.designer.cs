@@ -145,9 +145,9 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Stromname
             // 
-            resources.ApplyResources(this.textBox_Stromname, "textBox_Stromname");
             this.textBox_Stromname.BackColor = System.Drawing.Color.White;
             this.textBox_Stromname.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Stromname, "textBox_Stromname");
             this.textBox_Stromname.Name = "textBox_Stromname";
             this.textBox_Stromname.ReadOnly = true;
             // 
@@ -158,25 +158,25 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Jahres_Verbrauch
             // 
-            resources.ApplyResources(this.textBox_Jahres_Verbrauch, "textBox_Jahres_Verbrauch");
             this.textBox_Jahres_Verbrauch.BackColor = System.Drawing.Color.White;
             this.textBox_Jahres_Verbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Jahres_Verbrauch, "textBox_Jahres_Verbrauch");
             this.textBox_Jahres_Verbrauch.Name = "textBox_Jahres_Verbrauch";
             this.textBox_Jahres_Verbrauch.ReadOnly = true;
             // 
             // textBox_Beschreibung
             // 
-            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.BackColor = System.Drawing.Color.White;
             this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
             this.textBox_Beschreibung.ReadOnly = true;
             // 
             // textBox_Stromtyp
             // 
-            resources.ApplyResources(this.textBox_Stromtyp, "textBox_Stromtyp");
             this.textBox_Stromtyp.BackColor = System.Drawing.Color.White;
             this.textBox_Stromtyp.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Stromtyp, "textBox_Stromtyp");
             this.textBox_Stromtyp.Name = "textBox_Stromtyp";
             this.textBox_Stromtyp.ReadOnly = true;
             // 
@@ -206,16 +206,16 @@ namespace WindowsFormsApplication1
             // 
             // textBox_StromSumme
             // 
-            resources.ApplyResources(this.textBox_StromSumme, "textBox_StromSumme");
             this.textBox_StromSumme.BackColor = System.Drawing.Color.White;
             this.textBox_StromSumme.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_StromSumme, "textBox_StromSumme");
             this.textBox_StromSumme.Name = "textBox_StromSumme";
             this.textBox_StromSumme.ReadOnly = true;
             // 
             // listBox_Strom_DB
             // 
-            resources.ApplyResources(this.listBox_Strom_DB, "listBox_Strom_DB");
             this.listBox_Strom_DB.FormattingEnabled = true;
+            resources.ApplyResources(this.listBox_Strom_DB, "listBox_Strom_DB");
             this.listBox_Strom_DB.Name = "listBox_Strom_DB";
             this.listBox_Strom_DB.SelectedIndexChanged += new System.EventHandler(this.listBox_Prozess_DB_SelectedIndexChanged);
             // 
@@ -228,9 +228,9 @@ namespace WindowsFormsApplication1
             // 
             // listView_Strom_Auswahl
             // 
-            resources.ApplyResources(this.listView_Strom_Auswahl, "listView_Strom_Auswahl");
             this.listView_Strom_Auswahl.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listView_Strom_Auswahl.HideSelection = false;
+            resources.ApplyResources(this.listView_Strom_Auswahl, "listView_Strom_Auswahl");
             this.listView_Strom_Auswahl.Name = "listView_Strom_Auswahl";
             this.listView_Strom_Auswahl.UseCompatibleStateImageBehavior = false;
             this.listView_Strom_Auswahl.SelectedIndexChanged += new System.EventHandler(this.listView_Prozess_Auswahl_SelectedIndexChanged);
@@ -242,32 +242,32 @@ namespace WindowsFormsApplication1
             // 
             // label_Type
             // 
-            resources.ApplyResources(this.label_Type, "label_Type");
             this.label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            resources.ApplyResources(this.label_Type, "label_Type");
             this.label_Type.Name = "label_Type";
             // 
             // groupBox1
             // 
-            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.BackColor = System.Drawing.Color.Khaki;
             this.groupBox1.Controls.Add(this.pictureBox1);
             this.groupBox1.Controls.Add(this.textBox_Verbrauch);
             this.groupBox1.Controls.Add(this.Label8);
             this.groupBox1.Controls.Add(this.btn_neuerWert);
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
             // pictureBox1
             // 
-            resources.ApplyResources(this.pictureBox1, "pictureBox1");
             this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
             // 
             // textBox_Verbrauch
             // 
-            resources.ApplyResources(this.textBox_Verbrauch, "textBox_Verbrauch");
             this.textBox_Verbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Verbrauch, "textBox_Verbrauch");
             this.textBox_Verbrauch.Name = "textBox_Verbrauch";
             this.textBox_Verbrauch.TextChanged += new System.EventHandler(this.textBox_Verbrauch_TextChanged);
             // 

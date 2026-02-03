@@ -132,6 +132,7 @@ namespace WindowsFormsApplication1
                    frmmain.SetStrombedarfControl(frm.m_ID_Projekt);
                    frmmain.SetStromganglinieControl(frm.m_szProjekt);
                    frmmain.SetPVControl(frm.m_szProjekt);
+                   frmmain.SetPufferSpControl(frm.m_szProjekt);
                    frmmain.SetSolarControl(frm.m_szProjekt);
                    frmmain.Add_WPKontext();
                    frmmain.Add_BHKWKontext();
@@ -176,6 +177,7 @@ namespace WindowsFormsApplication1
                    frmmain.SetStrombedarfControl(ctrl.m_ID_Projekt);
                    frmmain.SetStromganglinieControl(ctrl.m_szProjektname);
                    frmmain.SetPVControl(ctrl.m_szProjektname);
+                   frmmain.SetPufferSpControl(ctrl.m_szProjektname);
                    frmmain.SetSolarControl(ctrl.m_szProjektname);
                    frmmain.Add_WPKontext();
                    frmmain.Add_BHKWKontext();

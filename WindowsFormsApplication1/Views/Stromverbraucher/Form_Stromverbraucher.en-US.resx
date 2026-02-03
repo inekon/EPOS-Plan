@@ -117,10 +117,22 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="btn_Hinzu.Location" type="System.Drawing.Point, System.Drawing">
+    <value>336, 127</value>
+  </data>
+  <data name="btn_Hinzu.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 33</value>
+  </data>
+  <data name="btn_Entfernen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>336, 168</value>
+  </data>
+  <data name="btn_Entfernen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 31</value>
+  </data>
   <data name="btn_Strom_DBneu.Text" xml:space="preserve">
     <value>Electricity consumer new...</value>
   </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="btn_Strom_loeschen.Location" type="System.Drawing.Point, System.Drawing">
     <value>543, 346</value>
   </data>
@@ -132,6 +144,9 @@
   </data>
   <data name="btn_ErgebnisseVerbrauch.Text" xml:space="preserve">
     <value>monthly history...</value>
+  </data>
+  <data name="Label24.Location" type="System.Drawing.Point, System.Drawing">
+    <value>419, 48</value>
   </data>
   <data name="Label24.Size" type="System.Drawing.Size, System.Drawing">
     <value>184, 19</value>
@@ -194,8 +209,17 @@
   <data name="Label19.Text" xml:space="preserve">
     <value>Total of all selected electricity requirements:</value>
   </data>
+  <data name="listBox_Strom_DB.Location" type="System.Drawing.Point, System.Drawing">
+    <value>422, 70</value>
+  </data>
+  <data name="listBox_Strom_DB.Size" type="System.Drawing.Size, System.Drawing">
+    <value>305, 174</value>
+  </data>
   <data name="btn_Abbrechen.Text" xml:space="preserve">
     <value>Cancel</value>
+  </data>
+  <data name="listView_Strom_Auswahl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>312, 178</value>
   </data>
   <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>290, 19</value>
@@ -206,37 +230,22 @@
   <data name="label_Type.Text" xml:space="preserve">
     <value>Standard power profile</value>
   </data>
-  <data name="btn_neuerWert.Text" xml:space="preserve">
-    <value>Take over</value>
+  <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 256</value>
+  </data>
+  <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>313, 65</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Changing annual consumption</value>
   </data>
+  <data name="pictureBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>280, 27</value>
+  </data>
+  <data name="btn_neuerWert.Text" xml:space="preserve">
+    <value>Take over</value>
+  </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Electricity demand management</value>
-  </data>
-  <data name="Label10.Text" xml:space="preserve">
-    <value>Name:</value>
-  </data>
-  <data name="btn_Simulation.Text" xml:space="preserve">
-    <value>Simulation...</value>
-  </data>
-  <data name="Label8.Text" xml:space="preserve">
-    <value>MWh</value>
-  </data>
-  <data name="btn_OK.Text" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="Label18.Text" xml:space="preserve">
-    <value>MW/h</value>
-  </data>
-  <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>---&gt;</value>
-  </data>
-  <data name="btn_Hinzu.Text" xml:space="preserve">
-    <value>&lt;---</value>
-  </data>
-  <data name="Label11.Text" xml:space="preserve">
-    <value>MWth</value>
   </data>
 </root>

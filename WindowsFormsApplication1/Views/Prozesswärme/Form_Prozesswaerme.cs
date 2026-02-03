@@ -21,7 +21,8 @@ namespace WindowsFormsApplication1
         private SimulationWaermebedarf simulation = new SimulationWaermebedarf();
         private string m_szProjekt;
         private int m_ListIndex = 0;
-    
+        private bool m_bWizard = false;
+
         public Form_Prozesswaerme()
         {
             InitializeComponent();
@@ -86,6 +87,7 @@ namespace WindowsFormsApplication1
                 btn_OK.Visible = false;
                 this.FormBorderStyle = FormBorderStyle.None;
                 this.BackColor = Color.White;
+                m_bWizard = true;
             }
 
             m_szProjekt = szProjekt;
@@ -270,7 +272,19 @@ namespace WindowsFormsApplication1
         private void btn_Simulation_Click(object sender, EventArgs e)
         {
             simulation.m_ID_Projekt = m_ID_Projekt;
-  
+
+            if (textBox_Prozess_Name.Text == "")
+            {
+                MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen!");
+                return;
+            }
+    
+            if (m_bWizard && textBox_Verbrauch.Text != "") // nur im Wizard Wert sofort speichern, wegen Simulation
+            {
+                Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
+                ctrl.UpdateSumme(double.Parse(textBox_Verbrauch.Text), textBox_Prozess_Name.Text, m_ID_Projekt);
+            }
+
             List<string> list;
             list = listView_Prozess_Auswahl.Items.Cast<ListViewItem>().Select(item => item.Text).ToList();
 
@@ -370,8 +384,11 @@ namespace WindowsFormsApplication1
         private void btn_neuerWert_Click(object sender, EventArgs e)
         {
             ListView.SelectedIndexCollection indexes = listView_Prozess_Auswahl.SelectedIndices;
-            if (indexes.Count == 0 || textBox_Verbrauch.Text == "") return;
-
+            if (indexes.Count == 0 || textBox_Verbrauch.Text == "")
+            {
+                MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!");
+                return;
+            }
             list_pwmodel[indexes[0]].Summe = double.Parse(textBox_Verbrauch.Text);
             textBox_Jahres_Verbrauch.Text = textBox_Verbrauch.Text;
             textBox_SummeProzesswaerme.Text = ProzesssummeGesamt().ToString("F2") ;

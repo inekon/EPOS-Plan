@@ -71,7 +71,7 @@ namespace WindowsFormsApplication1
                 NumberFormatInfo formatInfo = new NumberFormatInfo();
                 formatInfo.NumberDecimalSeparator = "."; // Komma als Dezimaltrennzeichen
 
-                DBCommand.CommandText = "INSERT INTO Tab_Kenndaten ( ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm ) SELECT " + m_ID + " AS Ausdr1, " + m_ID_WP + " AS Ausdr2, " + m_nVorlauf + " AS Ausdr3, " + m_nTemperatur + " AS Ausdr4, " + m_nCOP.ToString("N2", formatInfo) + " AS Ausdr5, " + m_nPTherm.ToString("N2", formatInfo) + " AS Ausdr6";
+                DBCommand.CommandText = "INSERT INTO Tab_Kenndaten ( ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm ) SELECT " + m_ID + " AS Ausdr1, " + m_ID_WP + " AS Ausdr2, " + m_nVorlauf + " AS Ausdr3, " + m_nTemperatur + " AS Ausdr4, " + m_nCOP.ToString("F2", formatInfo) + " AS Ausdr5, " + m_nPTherm.ToString("F2", formatInfo) + " AS Ausdr6";
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

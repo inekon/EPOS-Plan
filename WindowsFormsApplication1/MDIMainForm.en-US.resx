@@ -1163,6 +1163,6 @@
     <value>Edit</value>
   </data>
   <data name="MenuItem_PufferSp.Text" xml:space="preserve">
-    <value>Buffer memory</value>
+    <value>Buffer storage</value>
   </data>
 </root>

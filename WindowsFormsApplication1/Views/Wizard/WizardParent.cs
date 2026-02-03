@@ -258,6 +258,7 @@ namespace WindowsFormsApplication1
             {
                 ((Form_Prozesswaerme)page).list_pwmodel = list_prozmodel;
                 ((Form_Prozesswaerme)page).SetControls(listBox_Projekte.Text, true);
+                ((Form_Prozesswaerme)page).m_ID_Projekt = projektID;
             }
             else if (top == WizardItemClass.STROMLASTGANG_ITEM)
             {
@@ -277,6 +278,7 @@ namespace WindowsFormsApplication1
             {
                 ((Form_Stromverbraucher)page).list_sbmodel = list_stromverbrauchermodel;
                 ((Form_Stromverbraucher)page).SetControls(listBox_Projekte.Text, true);
+                ((Form_Stromverbraucher)page).m_ID_Projekt  = projektID;    
             }
             else if (top == WizardItemClass.BHKW_ITEM)
             {

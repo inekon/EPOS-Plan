@@ -209,4 +209,7 @@
   <data name="label8.Text" xml:space="preserve">
     <value>Änderungsdatum:</value>
   </data>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
 </root>

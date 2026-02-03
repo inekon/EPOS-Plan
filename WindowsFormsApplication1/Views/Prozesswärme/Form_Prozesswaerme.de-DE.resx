@@ -117,113 +117,76 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>545, 124</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Prozesswärme Verwaltung</value>
   </data>
-  <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>545, 158</value>
-  </data>
-  <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>346, 126</value>
-  </data>
-  <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>98, 17</value>
-  </data>
-  <data name="label8.Text" xml:space="preserve">
-    <value>Standby losses:</value>
-  </data>
-  <data name="textBox_Versluste.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 122</value>
-  </data>
-  <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
-    <value>358, 89</value>
-  </data>
-  <data name="Label10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 17</value>
+  <data name="label_Type.Text" xml:space="preserve">
+    <value>Prozesswärme</value>
   </data>
   <data name="Label10.Text" xml:space="preserve">
-    <value>Storage type:</value>
+    <value>Name:</value>
   </data>
-  <data name="textBox_Typ.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 87</value>
+  <data name="btn_Prozess_DBneu.Text" xml:space="preserve">
+    <value>Prozess in DB neu</value>
   </data>
-  <data name="Label17.Location" type="System.Drawing.Point, System.Drawing">
-    <value>359, 160</value>
+  <data name="Label12.Text" xml:space="preserve">
+    <value>jährlicher Prozesswärmebedarf:</value>
   </data>
-  <data name="Label17.Size" type="System.Drawing.Size, System.Drawing">
-    <value>85, 17</value>
+  <data name="btn_ErgebnisseVerbrauch.Text" xml:space="preserve">
+    <value>monatlicher Verlauf</value>
   </data>
-  <data name="Label17.Text" xml:space="preserve">
-    <value>Total volume:</value>
+  <data name="Label8.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
-  <data name="textBox_Volumen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 157</value>
+  <data name="Label15.Text" xml:space="preserve">
+    <value>Typ:</value>
   </data>
-  <data name="btn_Loeschen.Text" xml:space="preserve">
-    <value>Delete</value>
+  <data name="btn_Abbrechen.Text" xml:space="preserve">
+    <value>Abbrechen</value>
   </data>
-  <data name="btn_Neu.Text" xml:space="preserve">
-    <value>New...</value>
+  <data name="btn_Simulation.Text" xml:space="preserve">
+    <value>Simulation</value>
   </data>
-  <data name="btn_Bearbeiten.Text" xml:space="preserve">
-    <value>Edit...</value>
+  <data name="Label19.Text" xml:space="preserve">
+    <value>Summe aller ausgew. Prozesse:</value>
   </data>
-  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>83, 13</value>
+  <data name="btn_neuerWert.Text" xml:space="preserve">
+    <value>Übernehmen</value>
   </data>
-  <data name="label2.Text" xml:space="preserve">
-    <value>Filter by volume:</value>
+  <data name="btn_ProzTypeDBedit.Text" xml:space="preserve">
+    <value>Typ in DB ändern</value>
   </data>
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>111, 13</value>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>OK</value>
   </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Filter by manufacturer:</value>
+  <data name="Label18.Text" xml:space="preserve">
+    <value>MW/h</value>
   </data>
-  <data name="comboBox_Hersteller.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 21</value>
+  <data name="btn_Prozess_DBedit.Text" xml:space="preserve">
+    <value>Prozess in DB ändern</value>
   </data>
-  <data name="label18.Location" type="System.Drawing.Point, System.Drawing">
-    <value>349, 59</value>
+  <data name="Label1.Text" xml:space="preserve">
+    <value>Ausgewählte Prozesse im Projekt</value>
   </data>
-  <data name="label18.Size" type="System.Drawing.Size, System.Drawing">
-    <value>95, 19</value>
-  </data>
-  <data name="label18.Text" xml:space="preserve">
-    <value>Manufacturer:</value>
-  </data>
-  <data name="textBox_Hersteller.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 56</value>
-  </data>
-  <data name="label16.Location" type="System.Drawing.Point, System.Drawing">
-    <value>396, 28</value>
-  </data>
-  <data name="textBox_Name.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 25</value>
-  </data>
-  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 19</value>
-  </data>
-  <data name="label11.Text" xml:space="preserve">
-    <value>Buffer storage from database</value>
-  </data>
-  <data name="Label13.Location" type="System.Drawing.Point, System.Drawing">
-    <value>337, 194</value>
-  </data>
-  <data name="Label13.Size" type="System.Drawing.Size, System.Drawing">
-    <value>107, 17</value>
+  <data name="Label24.Text" xml:space="preserve">
+    <value>Datenbank Prozesswärme</value>
   </data>
   <data name="Label13.Text" xml:space="preserve">
-    <value>Investment costs:</value>
+    <value>Beschreibung:</value>
   </data>
-  <data name="textBox_Investitionskosten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 192</value>
+  <data name="btn_Entfernen.Text" xml:space="preserve">
+    <value>---&gt;</value>
   </data>
-  <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>547, 194</value>
+  <data name="groupBox1.Text" xml:space="preserve">
+    <value>Ändern des Jahresverbrauchs</value>
   </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Administration buffer storage</value>
+  <data name="btn_Prozess_loeschen.Text" xml:space="preserve">
+    <value>Prozess in DB löschen</value>
+  </data>
+  <data name="btn_Hinzu.Text" xml:space="preserve">
+    <value>&lt;---</value>
+  </data>
+  <data name="Label11.Text" xml:space="preserve">
+    <value>MWth</value>
   </data>
 </root>

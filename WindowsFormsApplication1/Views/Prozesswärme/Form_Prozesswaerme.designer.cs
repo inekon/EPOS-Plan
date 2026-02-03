@@ -28,6 +28,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Prozesswaerme));
             this.btn_Hinzu = new System.Windows.Forms.Button();
             this.btn_Entfernen = new System.Windows.Forms.Button();
             this.btn_Prozess_DBneu = new System.Windows.Forms.Button();
@@ -67,264 +68,145 @@ namespace WindowsFormsApplication1
             // 
             // btn_Hinzu
             // 
-            this.btn_Hinzu.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Hinzu.Location = new System.Drawing.Point(283, 112);
-            this.btn_Hinzu.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Hinzu, "btn_Hinzu");
             this.btn_Hinzu.Name = "btn_Hinzu";
-            this.btn_Hinzu.Size = new System.Drawing.Size(82, 33);
-            this.btn_Hinzu.TabIndex = 1;
-            this.btn_Hinzu.Text = "<---";
             this.btn_Hinzu.UseVisualStyleBackColor = true;
             this.btn_Hinzu.Click += new System.EventHandler(this.btn_Hinzu_Click);
             // 
             // btn_Entfernen
             // 
-            this.btn_Entfernen.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Entfernen.Location = new System.Drawing.Point(283, 153);
-            this.btn_Entfernen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Entfernen, "btn_Entfernen");
             this.btn_Entfernen.Name = "btn_Entfernen";
-            this.btn_Entfernen.Size = new System.Drawing.Size(82, 31);
-            this.btn_Entfernen.TabIndex = 2;
-            this.btn_Entfernen.Text = "--->";
             this.btn_Entfernen.UseVisualStyleBackColor = true;
             this.btn_Entfernen.Click += new System.EventHandler(this.btn_Entfernen_Click);
             // 
             // btn_Prozess_DBneu
             // 
-            this.btn_Prozess_DBneu.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Prozess_DBneu.Location = new System.Drawing.Point(614, 406);
-            this.btn_Prozess_DBneu.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Prozess_DBneu, "btn_Prozess_DBneu");
             this.btn_Prozess_DBneu.Name = "btn_Prozess_DBneu";
-            this.btn_Prozess_DBneu.Size = new System.Drawing.Size(154, 31);
-            this.btn_Prozess_DBneu.TabIndex = 3;
-            this.btn_Prozess_DBneu.Text = "Prozess in DB neu";
             this.btn_Prozess_DBneu.UseVisualStyleBackColor = true;
             this.btn_Prozess_DBneu.Click += new System.EventHandler(this.btn_Prozess_DBneu_Click);
             // 
             // btn_Prozess_loeschen
             // 
-            this.btn_Prozess_loeschen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Prozess_loeschen.Location = new System.Drawing.Point(614, 441);
-            this.btn_Prozess_loeschen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Prozess_loeschen, "btn_Prozess_loeschen");
             this.btn_Prozess_loeschen.Name = "btn_Prozess_loeschen";
-            this.btn_Prozess_loeschen.Size = new System.Drawing.Size(154, 31);
-            this.btn_Prozess_loeschen.TabIndex = 4;
-            this.btn_Prozess_loeschen.Text = "Prozess in DB löschen";
             this.btn_Prozess_loeschen.UseVisualStyleBackColor = true;
             this.btn_Prozess_loeschen.Click += new System.EventHandler(this.btn_Prozess_loeschen_Click);
             // 
             // btn_ErgebnisseVerbrauch
             // 
-            this.btn_ErgebnisseVerbrauch.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_ErgebnisseVerbrauch.Location = new System.Drawing.Point(186, 544);
-            this.btn_ErgebnisseVerbrauch.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_ErgebnisseVerbrauch, "btn_ErgebnisseVerbrauch");
             this.btn_ErgebnisseVerbrauch.Name = "btn_ErgebnisseVerbrauch";
-            this.btn_ErgebnisseVerbrauch.Size = new System.Drawing.Size(144, 31);
-            this.btn_ErgebnisseVerbrauch.TabIndex = 6;
-            this.btn_ErgebnisseVerbrauch.Text = "monatlicher Verlauf";
             this.btn_ErgebnisseVerbrauch.UseVisualStyleBackColor = true;
             this.btn_ErgebnisseVerbrauch.Click += new System.EventHandler(this.btn_ErgebnisseVerbrauch_Click);
             // 
             // btn_Simulation
             // 
-            this.btn_Simulation.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Simulation.Location = new System.Drawing.Point(344, 544);
-            this.btn_Simulation.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Simulation, "btn_Simulation");
             this.btn_Simulation.Name = "btn_Simulation";
-            this.btn_Simulation.Size = new System.Drawing.Size(119, 31);
-            this.btn_Simulation.TabIndex = 9;
-            this.btn_Simulation.Text = "Simulation";
             this.btn_Simulation.UseVisualStyleBackColor = true;
             this.btn_Simulation.Click += new System.EventHandler(this.btn_Simulation_Click);
             // 
             // btn_OK
             // 
-            this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_OK.Location = new System.Drawing.Point(681, 544);
-            this.btn_OK.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_OK, "btn_OK");
             this.btn_OK.Name = "btn_OK";
-            this.btn_OK.Size = new System.Drawing.Size(105, 31);
-            this.btn_OK.TabIndex = 10;
-            this.btn_OK.Text = "OK";
             this.btn_OK.UseVisualStyleBackColor = true;
             this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
             // 
             // Label24
             // 
-            this.Label24.AutoSize = true;
-            this.Label24.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label24.Location = new System.Drawing.Point(367, 52);
+            resources.ApplyResources(this.Label24, "Label24");
             this.Label24.Name = "Label24";
-            this.Label24.Size = new System.Drawing.Size(167, 19);
-            this.Label24.TabIndex = 12;
-            this.Label24.Text = "Datenbank Prozesswärme";
-            this.Label24.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btn_ProzTypeDBedit
             // 
-            this.btn_ProzTypeDBedit.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_ProzTypeDBedit.Location = new System.Drawing.Point(614, 476);
-            this.btn_ProzTypeDBedit.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_ProzTypeDBedit, "btn_ProzTypeDBedit");
             this.btn_ProzTypeDBedit.Name = "btn_ProzTypeDBedit";
-            this.btn_ProzTypeDBedit.Size = new System.Drawing.Size(154, 31);
-            this.btn_ProzTypeDBedit.TabIndex = 13;
-            this.btn_ProzTypeDBedit.Text = "Typ in DB ändern";
             this.btn_ProzTypeDBedit.UseVisualStyleBackColor = true;
             this.btn_ProzTypeDBedit.Click += new System.EventHandler(this.btn_ProzTypeDBedit_Click);
             // 
             // btn_Prozess_DBedit
             // 
-            this.btn_Prozess_DBedit.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Prozess_DBedit.Location = new System.Drawing.Point(614, 371);
-            this.btn_Prozess_DBedit.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Prozess_DBedit, "btn_Prozess_DBedit");
             this.btn_Prozess_DBedit.Name = "btn_Prozess_DBedit";
-            this.btn_Prozess_DBedit.Size = new System.Drawing.Size(154, 31);
-            this.btn_Prozess_DBedit.TabIndex = 15;
-            this.btn_Prozess_DBedit.Text = "Prozess in DB ändern";
             this.btn_Prozess_DBedit.UseVisualStyleBackColor = true;
             this.btn_Prozess_DBedit.Click += new System.EventHandler(this.btn_Prozess_DBedit_Click);
             // 
             // Label12
             // 
-            this.Label12.AutoSize = true;
-            this.Label12.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label12.Location = new System.Drawing.Point(12, 412);
+            resources.ApplyResources(this.Label12, "Label12");
             this.Label12.Name = "Label12";
-            this.Label12.Size = new System.Drawing.Size(197, 19);
-            this.Label12.TabIndex = 19;
-            this.Label12.Text = "jährlicher Prozesswärmebedarf:";
-            this.Label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label10
             // 
-            this.Label10.AutoSize = true;
-            this.Label10.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label10.Location = new System.Drawing.Point(11, 343);
+            resources.ApplyResources(this.Label10, "Label10");
             this.Label10.Name = "Label10";
-            this.Label10.Size = new System.Drawing.Size(48, 19);
-            this.Label10.TabIndex = 20;
-            this.Label10.Text = "Name:";
-            this.Label10.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // textBox_Prozess_Name
             // 
             this.textBox_Prozess_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Prozess_Name.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Prozess_Name.Location = new System.Drawing.Point(112, 345);
-            this.textBox_Prozess_Name.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.textBox_Prozess_Name, "textBox_Prozess_Name");
             this.textBox_Prozess_Name.Name = "textBox_Prozess_Name";
-            this.textBox_Prozess_Name.Size = new System.Drawing.Size(235, 22);
-            this.textBox_Prozess_Name.TabIndex = 21;
             // 
             // Label13
             // 
-            this.Label13.AutoSize = true;
-            this.Label13.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label13.Location = new System.Drawing.Point(11, 442);
+            resources.ApplyResources(this.Label13, "Label13");
             this.Label13.Name = "Label13";
-            this.Label13.Size = new System.Drawing.Size(94, 19);
-            this.Label13.TabIndex = 22;
-            this.Label13.Text = "Beschreibung:";
-            this.Label13.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // textBox_Jahres_Verbrauch
             // 
             this.textBox_Jahres_Verbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Jahres_Verbrauch.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Jahres_Verbrauch.Location = new System.Drawing.Point(220, 410);
-            this.textBox_Jahres_Verbrauch.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.textBox_Jahres_Verbrauch, "textBox_Jahres_Verbrauch");
             this.textBox_Jahres_Verbrauch.Name = "textBox_Jahres_Verbrauch";
-            this.textBox_Jahres_Verbrauch.Size = new System.Drawing.Size(73, 22);
-            this.textBox_Jahres_Verbrauch.TabIndex = 23;
             // 
             // textBox_Beschreibung
             // 
             this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Beschreibung.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Beschreibung.Location = new System.Drawing.Point(112, 444);
-            this.textBox_Beschreibung.Margin = new System.Windows.Forms.Padding(5);
-            this.textBox_Beschreibung.Multiline = true;
+            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
-            this.textBox_Beschreibung.Size = new System.Drawing.Size(331, 57);
-            this.textBox_Beschreibung.TabIndex = 24;
             // 
             // textBox_Prozess_Type
             // 
             this.textBox_Prozess_Type.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Prozess_Type.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Prozess_Type.Location = new System.Drawing.Point(112, 377);
-            this.textBox_Prozess_Type.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.textBox_Prozess_Type, "textBox_Prozess_Type");
             this.textBox_Prozess_Type.Name = "textBox_Prozess_Type";
-            this.textBox_Prozess_Type.Size = new System.Drawing.Size(235, 22);
-            this.textBox_Prozess_Type.TabIndex = 25;
             // 
             // Label15
             // 
-            this.Label15.AutoSize = true;
-            this.Label15.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label15.Location = new System.Drawing.Point(11, 375);
+            resources.ApplyResources(this.Label15, "Label15");
             this.Label15.Name = "Label15";
-            this.Label15.Size = new System.Drawing.Size(33, 19);
-            this.Label15.TabIndex = 26;
-            this.Label15.Text = "Typ:";
-            this.Label15.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // Label11
             // 
-            this.Label11.AutoSize = true;
+            resources.ApplyResources(this.Label11, "Label11");
             this.Label11.BackColor = System.Drawing.Color.Black;
-            this.Label11.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label11.ForeColor = System.Drawing.Color.White;
-            this.Label11.Location = new System.Drawing.Point(297, 412);
             this.Label11.Name = "Label11";
-            this.Label11.Size = new System.Drawing.Size(48, 19);
-            this.Label11.TabIndex = 27;
-            this.Label11.Text = "MWth";
-            this.Label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label19
             // 
-            this.Label19.AutoSize = true;
-            this.Label19.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label19.Location = new System.Drawing.Point(12, 512);
+            resources.ApplyResources(this.Label19, "Label19");
             this.Label19.Name = "Label19";
-            this.Label19.Size = new System.Drawing.Size(197, 19);
-            this.Label19.TabIndex = 28;
-            this.Label19.Text = "Summe aller ausgew. Prozesse:";
-            this.Label19.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // Label18
             // 
-            this.Label18.AutoSize = true;
+            resources.ApplyResources(this.Label18, "Label18");
             this.Label18.BackColor = System.Drawing.Color.Black;
-            this.Label18.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label18.ForeColor = System.Drawing.Color.White;
-            this.Label18.Location = new System.Drawing.Point(297, 514);
             this.Label18.Name = "Label18";
-            this.Label18.Size = new System.Drawing.Size(48, 19);
-            this.Label18.TabIndex = 29;
-            this.Label18.Text = "MW/h";
-            this.Label18.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // textBox_SummeProzesswaerme
             // 
             this.textBox_SummeProzesswaerme.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_SummeProzesswaerme.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_SummeProzesswaerme.Location = new System.Drawing.Point(220, 512);
-            this.textBox_SummeProzesswaerme.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.textBox_SummeProzesswaerme, "textBox_SummeProzesswaerme");
             this.textBox_SummeProzesswaerme.Name = "textBox_SummeProzesswaerme";
-            this.textBox_SummeProzesswaerme.Size = new System.Drawing.Size(73, 22);
-            this.textBox_SummeProzesswaerme.TabIndex = 30;
             // 
             // btn_Abbrechen
             // 
-            this.btn_Abbrechen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Abbrechen.Location = new System.Drawing.Point(570, 544);
-            this.btn_Abbrechen.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            resources.ApplyResources(this.btn_Abbrechen, "btn_Abbrechen");
             this.btn_Abbrechen.Name = "btn_Abbrechen";
-            this.btn_Abbrechen.Size = new System.Drawing.Size(105, 31);
-            this.btn_Abbrechen.TabIndex = 33;
-            this.btn_Abbrechen.Text = "Abbrechen";
             this.btn_Abbrechen.UseVisualStyleBackColor = true;
             this.btn_Abbrechen.Click += new System.EventHandler(this.btn_Abbrechen_Click);
             // 
@@ -333,23 +215,15 @@ namespace WindowsFormsApplication1
             this.listView_Prozess_Auswahl.FullRowSelect = true;
             this.listView_Prozess_Auswahl.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listView_Prozess_Auswahl.HideSelection = false;
-            this.listView_Prozess_Auswahl.Location = new System.Drawing.Point(13, 74);
+            resources.ApplyResources(this.listView_Prozess_Auswahl, "listView_Prozess_Auswahl");
             this.listView_Prozess_Auswahl.Name = "listView_Prozess_Auswahl";
-            this.listView_Prozess_Auswahl.Size = new System.Drawing.Size(264, 161);
-            this.listView_Prozess_Auswahl.TabIndex = 41;
             this.listView_Prozess_Auswahl.UseCompatibleStateImageBehavior = false;
             this.listView_Prozess_Auswahl.SelectedIndexChanged += new System.EventHandler(this.listView_Prozess_Auswahl_SelectedIndexChanged);
             // 
             // Label1
             // 
-            this.Label1.AutoSize = true;
-            this.Label1.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Label1.Location = new System.Drawing.Point(12, 52);
+            resources.ApplyResources(this.Label1, "Label1");
             this.Label1.Name = "Label1";
-            this.Label1.Size = new System.Drawing.Size(210, 19);
-            this.Label1.TabIndex = 37;
-            this.Label1.Text = "Ausgewählte Prozesse im Projekt";
-            this.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // groupBox1
             // 
@@ -358,59 +232,36 @@ namespace WindowsFormsApplication1
             this.groupBox1.Controls.Add(this.textBox_Verbrauch);
             this.groupBox1.Controls.Add(this.Label8);
             this.groupBox1.Controls.Add(this.btn_neuerWert);
-            this.groupBox1.Location = new System.Drawing.Point(13, 241);
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(264, 90);
-            this.groupBox1.TabIndex = 42;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Ändern des Jahresverbrauchs";
             // 
             // pictureBox1
             // 
             this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
-            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pictureBox1.Location = new System.Drawing.Point(159, 54);
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(28, 27);
-            this.pictureBox1.TabIndex = 119;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.Visible = false;
             // 
             // textBox_Verbrauch
             // 
             this.textBox_Verbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Verbrauch.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.textBox_Verbrauch.Location = new System.Drawing.Point(17, 22);
-            this.textBox_Verbrauch.Margin = new System.Windows.Forms.Padding(5);
+            resources.ApplyResources(this.textBox_Verbrauch, "textBox_Verbrauch");
             this.textBox_Verbrauch.Name = "textBox_Verbrauch";
-            this.textBox_Verbrauch.Size = new System.Drawing.Size(79, 22);
-            this.textBox_Verbrauch.TabIndex = 41;
             this.textBox_Verbrauch.TextChanged += new System.EventHandler(this.textBox_Verbrauch_TextChanged);
             // 
             // Label8
             // 
-            this.Label8.AutoSize = true;
+            resources.ApplyResources(this.Label8, "Label8");
             this.Label8.BackColor = System.Drawing.Color.Black;
-            this.Label8.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Label8.ForeColor = System.Drawing.Color.White;
-            this.Label8.Location = new System.Drawing.Point(105, 24);
             this.Label8.Name = "Label8";
-            this.Label8.Size = new System.Drawing.Size(43, 19);
-            this.Label8.TabIndex = 42;
-            this.Label8.Text = "MWh";
-            this.Label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btn_neuerWert
             // 
-            this.btn_neuerWert.Font = new System.Drawing.Font("Segoe UI", 10F);
+            resources.ApplyResources(this.btn_neuerWert, "btn_neuerWert");
             this.btn_neuerWert.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
-            this.btn_neuerWert.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_neuerWert.Location = new System.Drawing.Point(17, 53);
-            this.btn_neuerWert.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.btn_neuerWert.Name = "btn_neuerWert";
-            this.btn_neuerWert.Size = new System.Drawing.Size(139, 30);
-            this.btn_neuerWert.TabIndex = 43;
-            this.btn_neuerWert.Text = "Übernehmen";
             this.btn_neuerWert.UseVisualStyleBackColor = true;
             this.btn_neuerWert.Click += new System.EventHandler(this.btn_neuerWert_Click);
             // 
@@ -420,30 +271,20 @@ namespace WindowsFormsApplication1
             this.dataGridView1.AllowUserToDeleteRows = false;
             this.dataGridView1.BackgroundColor = System.Drawing.Color.Silver;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(371, 74);
+            resources.ApplyResources(this.dataGridView1, "dataGridView1");
             this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(412, 284);
-            this.dataGridView1.TabIndex = 74;
             this.dataGridView1.Click += new System.EventHandler(this.listBox_Prozess_DB_SelectedIndexChanged);
             // 
             // label_Type
             // 
             this.label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.label_Type.Dock = System.Windows.Forms.DockStyle.Top;
-            this.label_Type.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Type.Location = new System.Drawing.Point(0, 0);
+            resources.ApplyResources(this.label_Type, "label_Type");
             this.label_Type.Name = "label_Type";
-            this.label_Type.Padding = new System.Windows.Forms.Padding(0, 5, 0, 5);
-            this.label_Type.Size = new System.Drawing.Size(796, 35);
-            this.label_Type.TabIndex = 75;
-            this.label_Type.Text = "Prozesswärme";
-            this.label_Type.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // Form_Prozesswaerme
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(796, 584);
             this.Controls.Add(this.label_Type);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.groupBox1);
@@ -472,10 +313,7 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.Label19);
             this.Controls.Add(this.Label18);
             this.Controls.Add(this.textBox_SummeProzesswaerme);
-            this.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "Form_Prozesswaerme";
-            this.Text = "Prozesswärme Verwaltung";
             this.Load += new System.EventHandler(this.Form_Prozesswaerme_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
