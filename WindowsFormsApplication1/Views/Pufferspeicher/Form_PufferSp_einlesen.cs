@@ -10,8 +10,6 @@ namespace WindowsFormsApplication1
     {
         private PufferSpImport ctrl = new PufferSpImport();
 
-        int index = 0;
-
         public Form_PufferSp_einlesen ()
         {
             InitializeComponent();

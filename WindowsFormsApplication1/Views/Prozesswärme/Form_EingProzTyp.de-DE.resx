@@ -118,112 +118,148 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>545, 124</value>
+  <data name="Label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>273, 17</value>
   </data>
-  <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>545, 158</value>
+  <data name="Label2.Text" xml:space="preserve">
+    <value>Beschreibung des ausgewählten Prozesstyps:</value>
   </data>
-  <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>346, 126</value>
+  <data name="Label26.Text" xml:space="preserve">
+    <value>24</value>
   </data>
-  <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>98, 17</value>
+  <data name="listBox_Tag.Items2" xml:space="preserve">
+    <value>Mittwoch</value>
   </data>
-  <data name="label8.Text" xml:space="preserve">
-    <value>Standby losses:</value>
+  <data name="btn_WocheUebernehmen.Text" xml:space="preserve">
+    <value>Änderungen Übernehmen</value>
   </data>
-  <data name="textBox_Versluste.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 122</value>
+  <data name="Label8.Text" xml:space="preserve">
+    <value>6</value>
   </data>
-  <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
-    <value>358, 89</value>
+  <data name="Label1.Text" xml:space="preserve">
+    <value>Liste der Prozesstypen in der DB:</value>
   </data>
-  <data name="Label10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 17</value>
+  <data name="listBox_Tag.Items3" xml:space="preserve">
+    <value>Donnerstag</value>
   </data>
-  <data name="Label10.Text" xml:space="preserve">
-    <value>Storage type:</value>
-  </data>
-  <data name="textBox_Typ.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 87</value>
-  </data>
-  <data name="Label17.Location" type="System.Drawing.Point, System.Drawing">
-    <value>359, 160</value>
-  </data>
-  <data name="Label17.Size" type="System.Drawing.Size, System.Drawing">
-    <value>85, 17</value>
-  </data>
-  <data name="Label17.Text" xml:space="preserve">
-    <value>Total volume:</value>
-  </data>
-  <data name="textBox_Volumen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 157</value>
-  </data>
-  <data name="btn_Loeschen.Text" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="btn_Neu.Text" xml:space="preserve">
-    <value>New...</value>
-  </data>
-  <data name="btn_Bearbeiten.Text" xml:space="preserve">
-    <value>Edit...</value>
-  </data>
-  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>83, 13</value>
-  </data>
-  <data name="label2.Text" xml:space="preserve">
-    <value>Filter by volume:</value>
-  </data>
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>111, 13</value>
-  </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Filter by manufacturer:</value>
-  </data>
-  <data name="comboBox_Hersteller.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 21</value>
-  </data>
-  <data name="label18.Location" type="System.Drawing.Point, System.Drawing">
-    <value>349, 59</value>
-  </data>
-  <data name="label18.Size" type="System.Drawing.Size, System.Drawing">
-    <value>95, 19</value>
-  </data>
-  <data name="label18.Text" xml:space="preserve">
-    <value>Manufacturer:</value>
-  </data>
-  <data name="textBox_Hersteller.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 56</value>
-  </data>
-  <data name="label16.Location" type="System.Drawing.Point, System.Drawing">
-    <value>396, 28</value>
-  </data>
-  <data name="textBox_Name.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 25</value>
-  </data>
-  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 19</value>
-  </data>
-  <data name="label11.Text" xml:space="preserve">
-    <value>Buffer storage from database</value>
-  </data>
-  <data name="Label13.Location" type="System.Drawing.Point, System.Drawing">
-    <value>337, 194</value>
-  </data>
-  <data name="Label13.Size" type="System.Drawing.Size, System.Drawing">
-    <value>107, 17</value>
+  <data name="listBox_Tag.Items1" xml:space="preserve">
+    <value>Dienstag</value>
   </data>
   <data name="Label13.Text" xml:space="preserve">
-    <value>Investment costs:</value>
+    <value>11</value>
   </data>
-  <data name="textBox_Investitionskosten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 192</value>
+  <data name="Label11.Text" xml:space="preserve">
+    <value>9</value>
   </data>
-  <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>547, 194</value>
+  <data name="listBox_Tag.Items5" xml:space="preserve">
+    <value>Samstag</value>
+  </data>
+  <data name="listBox_Tag.Items" xml:space="preserve">
+    <value>Montag</value>
+  </data>
+  <data name="Label17.Text" xml:space="preserve">
+    <value>15</value>
+  </data>
+  <data name="btn_Tagkopieren.Text" xml:space="preserve">
+    <value>Tag kopieren</value>
+  </data>
+  <data name="Label23.Text" xml:space="preserve">
+    <value>21</value>
+  </data>
+  <data name="Label12.Text" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="Label4.Text" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="Label21.Text" xml:space="preserve">
+    <value>19</value>
+  </data>
+  <data name="Label5.Text" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="Label9.Text" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="Label10.Text" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="btn_Loeschen.Text" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Label6.Text" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="Label27.Text" xml:space="preserve">
+    <value>Auswahl Wochentag</value>
+  </data>
+  <data name="Label25.Text" xml:space="preserve">
+    <value>23</value>
+  </data>
+  <data name="Label14.Text" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="Label20.Text" xml:space="preserve">
+    <value>18</value>
+  </data>
+  <data name="chart1.Text" xml:space="preserve">
+    <value>Grafik Stundenwerte</value>
+  </data>
+  <data name="btn_SpeichernUnter.Text" xml:space="preserve">
+    <value>Speichern unter</value>
+  </data>
+  <data name="btn_Schliessen.Text" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="Label7.Text" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="Label24.Text" xml:space="preserve">
+    <value>22</value>
+  </data>
+  <data name="Label19.Text" xml:space="preserve">
+    <value>17</value>
+  </data>
+  <data name="btn_Neu.Text" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="btn_Speichern.Text" xml:space="preserve">
+    <value>Speichern in DB</value>
+  </data>
+  <data name="btn_Tageinfuegen.Text" xml:space="preserve">
+    <value>Tag einfügen</value>
+  </data>
+  <data name="label28.Text" xml:space="preserve">
+    <value>Stundenwerte [KW, KWh oder %]</value>
+  </data>
+  <data name="listBox_Tag.Items6" xml:space="preserve">
+    <value>Sonntag</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Administration buffer storage</value>
+    <value>Prozesstypen Stundenverteilung</value>
+  </data>
+  <data name="listBox_Tag.Items4" xml:space="preserve">
+    <value>Freitag</value>
+  </data>
+  <data name="Label15.Text" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="Label16.Text" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>Grafik</value>
+  </data>
+  <data name="Label3.Text" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="tabPage1.Text" xml:space="preserve">
+    <value>Wochenwerte</value>
+  </data>
+  <data name="Label22.Text" xml:space="preserve">
+    <value>20</value>
+  </data>
+  <data name="Label18.Text" xml:space="preserve">
+    <value>16</value>
   </data>
 </root>

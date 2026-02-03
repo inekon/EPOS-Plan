@@ -105,7 +105,7 @@ namespace WindowsFormsApplication1
                 "SELECT " + ID.ToString() + " AS Ausdr1, '" + WPName + "' AS Ausdr2,'" + Firma  + "' AS Ausdr12, '" + Beschreibung + "' AS Ausdr3, '" +
                 Typ + "' AS Ausdr4, " + Baujahr.ToString() + " AS Ausdr5, '" + Aufstellung + "' AS Ausdr6, " +
                 Nennleistung.ToString() + " AS Ausdr7, " + maxPTherm.ToString() + " AS Ausdr8, " + Heizung + " AS Ausdr9, '" +
-                Regelung + "' AS Ausdr10, " + Modulkosten.ToString() + " AS Ausdr11, " + Kuehlleistung.ToString("N2", formatInfo) + " AS Ausdr13";
+                Regelung + "' AS Ausdr10, " + Modulkosten.ToString() + " AS Ausdr11, " + Kuehlleistung.ToString("F2", formatInfo) + " AS Ausdr13";
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

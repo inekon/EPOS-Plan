@@ -10,6 +10,7 @@
 *.userosscache
 *.sln.docstates
 Kenndaten.accdb
+Kenndaten.laccdb
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

@@ -10,7 +10,6 @@ namespace WindowsFormsApplication1
     {
         private HeizkesselImport ctrl = new HeizkesselImport();
 
-        int index = 0;
         string szBrennstoffIndex = string.Empty;
         string szBrennstoffart = string.Empty;
         string szCO2 = string.Empty;

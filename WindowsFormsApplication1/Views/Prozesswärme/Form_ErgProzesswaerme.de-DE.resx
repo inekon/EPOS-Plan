@@ -118,112 +118,160 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>545, 124</value>
-  </data>
-  <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>545, 158</value>
-  </data>
-  <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>346, 126</value>
-  </data>
   <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>98, 17</value>
+    <value>140, 19</value>
   </data>
   <data name="label8.Text" xml:space="preserve">
-    <value>Standby losses:</value>
+    <value>davon Brauchwasser:</value>
   </data>
-  <data name="textBox_Versluste.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 122</value>
+  <data name="textBox_Netzverluste.Text" xml:space="preserve">
+    <value>10</value>
   </data>
-  <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
-    <value>358, 89</value>
+  <data name="label3.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
-  <data name="Label10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 17</value>
+  <data name="Label51.Text" xml:space="preserve">
+    <value>Juni:</value>
   </data>
-  <data name="Label10.Text" xml:space="preserve">
-    <value>Storage type:</value>
+  <data name="Label28.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
-  <data name="textBox_Typ.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 87</value>
+  <data name="Label57.Text" xml:space="preserve">
+    <value>November:</value>
   </data>
-  <data name="Label17.Location" type="System.Drawing.Point, System.Drawing">
-    <value>359, 160</value>
+  <data name="radioBtn_Prozesse.Text" xml:space="preserve">
+    <value>Prozesse</value>
   </data>
-  <data name="Label17.Size" type="System.Drawing.Size, System.Drawing">
-    <value>85, 17</value>
+  <data name="Label43.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
-  <data name="Label17.Text" xml:space="preserve">
-    <value>Total volume:</value>
+  <data name="radioBtn_Gebäude.Text" xml:space="preserve">
+    <value>Gebäude (incl. ext. Wärmebedarf)</value>
   </data>
-  <data name="textBox_Volumen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 157</value>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Wärmebedarf Prozess:</value>
   </data>
-  <data name="btn_Loeschen.Text" xml:space="preserve">
-    <value>Delete</value>
+  <data name="tabPage3.Text" xml:space="preserve">
+    <value>Grafik</value>
   </data>
-  <data name="btn_Neu.Text" xml:space="preserve">
-    <value>New...</value>
+  <data name="Label39.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
-  <data name="btn_Bearbeiten.Text" xml:space="preserve">
-    <value>Edit...</value>
+  <data name="Label55.Text" xml:space="preserve">
+    <value>August:</value>
   </data>
-  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>83, 13</value>
+  <data name="Label35.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
-  <data name="label2.Text" xml:space="preserve">
-    <value>Filter by volume:</value>
+  <data name="Label47.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>111, 13</value>
+  <data name="label6.Text" xml:space="preserve">
+    <value>Wärmebedarf Gebäude:</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
-    <value>Filter by manufacturer:</value>
+    <value>MWh</value>
   </data>
-  <data name="comboBox_Hersteller.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 21</value>
+  <data name="label14.Text" xml:space="preserve">
+    <value>kW</value>
   </data>
-  <data name="label18.Location" type="System.Drawing.Point, System.Drawing">
-    <value>349, 59</value>
+  <data name="btn_Hilfe.Text" xml:space="preserve">
+    <value>Hilfe</value>
   </data>
-  <data name="label18.Size" type="System.Drawing.Size, System.Drawing">
-    <value>95, 19</value>
+  <data name="radioBtn_GrafikProzesse.Text" xml:space="preserve">
+    <value>Prozesse</value>
   </data>
-  <data name="label18.Text" xml:space="preserve">
-    <value>Manufacturer:</value>
+  <data name="Label38.Text" xml:space="preserve">
+    <value>März:</value>
   </data>
-  <data name="textBox_Hersteller.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 56</value>
+  <data name="Label54.Text" xml:space="preserve">
+    <value>Juli:</value>
   </data>
-  <data name="label16.Location" type="System.Drawing.Point, System.Drawing">
-    <value>396, 28</value>
+  <data name="Label40.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
-  <data name="textBox_Name.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 25</value>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Externer Wärmebedarf:</value>
   </data>
-  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 19</value>
+  <data name="label12.Text" xml:space="preserve">
+    <value>Netzverluste:</value>
   </data>
-  <data name="label11.Text" xml:space="preserve">
-    <value>Buffer storage from database</value>
+  <data name="Label44.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
-  <data name="Label13.Location" type="System.Drawing.Point, System.Drawing">
-    <value>337, 194</value>
+  <data name="Label27.Text" xml:space="preserve">
+    <value>Januar:</value>
   </data>
-  <data name="Label13.Size" type="System.Drawing.Size, System.Drawing">
-    <value>107, 17</value>
+  <data name="Label59.Text" xml:space="preserve">
+    <value>Oktober:</value>
   </data>
-  <data name="Label13.Text" xml:space="preserve">
-    <value>Investment costs:</value>
+  <data name="Label52.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
-  <data name="textBox_Investitionskosten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>449, 192</value>
+  <data name="Label58.Text" xml:space="preserve">
+    <value>Dezember:</value>
   </data>
-  <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>547, 194</value>
+  <data name="radioBtn_GrafikGebäude.Text" xml:space="preserve">
+    <value>Gebäude (incl. ext. Wärmebedarf)</value>
+  </data>
+  <data name="label16.Text" xml:space="preserve">
+    <value>Gesamter Wärmebedarf:</value>
+  </data>
+  <data name="Label33.Text" xml:space="preserve">
+    <value>Februar:</value>
+  </data>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>Übersicht monatlich</value>
+  </data>
+  <data name="chart1.Text" xml:space="preserve">
+    <value>Grafik Prozesswärme</value>
+  </data>
+  <data name="Label56.Text" xml:space="preserve">
+    <value>Seprember:</value>
+  </data>
+  <data name="Label42.Text" xml:space="preserve">
+    <value>April:</value>
+  </data>
+  <data name="label13.Text" xml:space="preserve">
+    <value>max. Wärmelast:</value>
+  </data>
+  <data name="label15.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label46.Text" xml:space="preserve">
+    <value>Mai:</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Administration buffer storage</value>
+    <value>Simulation Ergebnisse</value>
+  </data>
+  <data name="label_Netzverluste_Einheit.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="tabPage1.Text" xml:space="preserve">
+    <value>Wärmebedarf Ergebnisse</value>
+  </data>
+  <data name="Label48.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="label5.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="groupBox1.Text" xml:space="preserve">
+    <value>monatlicher Verlauf:</value>
+  </data>
+  <data name="Label34.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label31.Text" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="Label53.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
 </root>

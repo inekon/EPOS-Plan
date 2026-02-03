@@ -111,15 +111,16 @@ namespace WindowsFormsApplication1
             // 
             // tabControl1
             // 
+            resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
-            resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             // 
             // tabPage1
             // 
+            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Controls.Add(this.label5);
             this.tabPage1.Controls.Add(this.label6);
             this.tabPage1.Controls.Add(this.textBox_WB_Gebaeude);
@@ -132,14 +133,13 @@ namespace WindowsFormsApplication1
             this.tabPage1.Controls.Add(this.label14);
             this.tabPage1.Controls.Add(this.label13);
             this.tabPage1.Controls.Add(this.textBox_MaxWaermelast);
-            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // label5
             // 
-            this.label5.BackColor = System.Drawing.Color.Black;
             resources.ApplyResources(this.label5, "label5");
+            this.label5.BackColor = System.Drawing.Color.Black;
             this.label5.ForeColor = System.Drawing.Color.White;
             this.label5.Name = "label5";
             // 
@@ -156,8 +156,8 @@ namespace WindowsFormsApplication1
             // 
             // label1
             // 
-            this.label1.BackColor = System.Drawing.Color.Black;
             resources.ApplyResources(this.label1, "label1");
+            this.label1.BackColor = System.Drawing.Color.Black;
             this.label1.ForeColor = System.Drawing.Color.White;
             this.label1.Name = "label1";
             // 
@@ -174,8 +174,8 @@ namespace WindowsFormsApplication1
             // 
             // label15
             // 
-            this.label15.BackColor = System.Drawing.Color.Black;
             resources.ApplyResources(this.label15, "label15");
+            this.label15.BackColor = System.Drawing.Color.Black;
             this.label15.ForeColor = System.Drawing.Color.White;
             this.label15.Name = "label15";
             // 
@@ -187,14 +187,14 @@ namespace WindowsFormsApplication1
             // 
             // textBox_WB_Gesamt
             // 
-            this.textBox_WB_Gesamt.ForeColor = System.Drawing.Color.DarkRed;
             resources.ApplyResources(this.textBox_WB_Gesamt, "textBox_WB_Gesamt");
+            this.textBox_WB_Gesamt.ForeColor = System.Drawing.Color.DarkRed;
             this.textBox_WB_Gesamt.Name = "textBox_WB_Gesamt";
             // 
             // label14
             // 
-            this.label14.BackColor = System.Drawing.Color.Black;
             resources.ApplyResources(this.label14, "label14");
+            this.label14.BackColor = System.Drawing.Color.Black;
             this.label14.ForeColor = System.Drawing.Color.White;
             this.label14.Name = "label14";
             // 
@@ -211,13 +211,14 @@ namespace WindowsFormsApplication1
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.groupBox1);
             resources.ApplyResources(this.tabPage2, "tabPage2");
+            this.tabPage2.Controls.Add(this.groupBox1);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.Label27);
             this.groupBox1.Controls.Add(this.Monat_1);
             this.groupBox1.Controls.Add(this.Label28);
@@ -254,7 +255,6 @@ namespace WindowsFormsApplication1
             this.groupBox1.Controls.Add(this.Label57);
             this.groupBox1.Controls.Add(this.Label58);
             this.groupBox1.Controls.Add(this.Label59);
-            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
@@ -265,8 +265,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_1
             // 
-            this.Monat_1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_1, "Monat_1");
+            this.Monat_1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_1.Name = "Monat_1";
             // 
             // Label28
@@ -278,8 +278,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_7
             // 
-            this.Monat_7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_7, "Monat_7");
+            this.Monat_7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_7.Name = "Monat_7";
             // 
             // Label31
@@ -296,8 +296,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_2
             // 
-            this.Monat_2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_2, "Monat_2");
+            this.Monat_2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_2.Name = "Monat_2";
             // 
             // Label34
@@ -309,8 +309,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_8
             // 
-            this.Monat_8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_8, "Monat_8");
+            this.Monat_8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_8.Name = "Monat_8";
             // 
             // Label35
@@ -327,8 +327,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_3
             // 
-            this.Monat_3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_3, "Monat_3");
+            this.Monat_3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_3.Name = "Monat_3";
             // 
             // Label39
@@ -340,8 +340,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_9
             // 
-            this.Monat_9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_9, "Monat_9");
+            this.Monat_9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_9.Name = "Monat_9";
             // 
             // Label40
@@ -353,8 +353,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_4
             // 
-            this.Monat_4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_4, "Monat_4");
+            this.Monat_4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_4.Name = "Monat_4";
             // 
             // Label43
@@ -366,8 +366,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_10
             // 
-            this.Monat_10.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_10, "Monat_10");
+            this.Monat_10.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_10.Name = "Monat_10";
             // 
             // Label44
@@ -384,8 +384,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_5
             // 
-            this.Monat_5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_5, "Monat_5");
+            this.Monat_5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_5.Name = "Monat_5";
             // 
             // Label47
@@ -397,8 +397,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_11
             // 
-            this.Monat_11.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_11, "Monat_11");
+            this.Monat_11.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_11.Name = "Monat_11";
             // 
             // Label48
@@ -415,8 +415,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_6
             // 
-            this.Monat_6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_6, "Monat_6");
+            this.Monat_6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_6.Name = "Monat_6";
             // 
             // Label52
@@ -428,8 +428,8 @@ namespace WindowsFormsApplication1
             // 
             // Monat_12
             // 
-            this.Monat_12.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.Monat_12, "Monat_12");
+            this.Monat_12.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Monat_12.Name = "Monat_12";
             // 
             // Label53
@@ -476,13 +476,14 @@ namespace WindowsFormsApplication1
             // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.chart1);
             resources.ApplyResources(this.tabPage3, "tabPage3");
+            this.tabPage3.Controls.Add(this.chart1);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // chart1
             // 
+            resources.ApplyResources(this.chart1, "chart1");
             chartArea1.AxisX.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
             chartArea1.AxisX.Title = "Monat";
             chartArea1.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
@@ -494,7 +495,6 @@ namespace WindowsFormsApplication1
             this.chart1.ChartAreas.Add(chartArea1);
             legend1.Name = "Legend1";
             this.chart1.Legends.Add(legend1);
-            resources.ApplyResources(this.chart1, "chart1");
             this.chart1.Name = "chart1";
             series1.ChartArea = "ChartArea1";
             series1.IsVisibleInLegend = false;

@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Data.Odbc;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -21,6 +19,7 @@ namespace WindowsFormsApplication1
         private SimulationStrombedarf simulation = new SimulationStrombedarf();
         private string m_szProjekt;
         private int m_ListIndex = -1;   
+        private bool m_bWizard = false;
 
 
         public Form_Stromverbraucher()
@@ -38,6 +37,7 @@ namespace WindowsFormsApplication1
             Z_ProjektStromverbraucherModel model = new Z_ProjektStromverbraucherModel();
 
             m_szProjekt = szProjekt;
+            m_bWizard = bWizard;    
 
             if (bWizard)
             {
@@ -70,7 +70,7 @@ namespace WindowsFormsApplication1
                 listBox_Strom_DB.Items.Add(ctrl_pw.items[i].m_szBezeichner);
             }
             listView_Strom_Auswahl.Select(); 
-            if (listView_Strom_Auswahl.Items.Count > 0) listView_Strom_Auswahl.Items[0] .Selected = true;
+            if (listView_Strom_Auswahl.Items.Count > 0) listView_Strom_Auswahl.Items[0].Selected = true;
             
         }
 
@@ -205,12 +205,25 @@ namespace WindowsFormsApplication1
             float[] result = new float[8760];
             List<string> list;
 
+            if (textBox_Stromname.Text == "")
+            {
+                MessageBox.Show("Bitte einen Entrag aus der Liste auswählen!");
+                return;
+            }
+
+            if (m_bWizard && textBox_Verbrauch.Text != "") // nur im Wizard Wert sofort speichern, wegen Simulation
+            {
+                Z_ProjektStromverbraucherCtrl ctrl = new Z_ProjektStromverbraucherCtrl();
+                ctrl.UpdateSumme(double.Parse(textBox_Verbrauch.Text), textBox_Stromname.Text, m_ID_Projekt);
+            }
+            double.Parse(textBox_Verbrauch.Text);
+
             simulation.m_ID_Projekt = m_ID_Projekt;
             
             list = listView_Strom_Auswahl.Items.Cast<ListViewItem>().Select(item => item.Text).ToList();
-            
             result = simulation.Stromprofil_Strombedarf_berechnen(list);
             if (result == null) return;
+ 
             simulation.Strombedarf_gesamt = simulation.com.I_vector_summe(result);
             Array.Copy(result, simulation.Strombedarf_viertelStundenwerte, result.Length);
             simulation.com.I_monats_summe(simulation.Strombedarf_viertelStundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
@@ -298,8 +311,11 @@ namespace WindowsFormsApplication1
         private void btn_neuerWert_Click(object sender, EventArgs e)
         {
             ListView.SelectedIndexCollection indexes = listView_Strom_Auswahl.SelectedIndices;
-            if (indexes.Count == 0 || textBox_Verbrauch.Text == "") return;
-
+            if (indexes.Count == 0 || textBox_Verbrauch.Text == "")
+            {
+                MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!");
+                return;
+            }
             list_sbmodel[indexes[0]].m_Summe = double.Parse(textBox_Verbrauch.Text);
             textBox_Jahres_Verbrauch.Text = textBox_Verbrauch.Text;
             textBox_StromSumme.Text = ProzesssummeGesamt().ToString("F2");

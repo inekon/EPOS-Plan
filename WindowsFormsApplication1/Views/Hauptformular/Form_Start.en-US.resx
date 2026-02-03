@@ -338,7 +338,7 @@
     <value>122, 21</value>
   </data>
   <data name="label72.Text" xml:space="preserve">
-    <value>Buffer memory</value>
+    <value>Buffer storage</value>
   </data>
   <data name="pBox_Pufferspeicher.Location" type="System.Drawing.Point, System.Drawing">
     <value>412, 504</value>

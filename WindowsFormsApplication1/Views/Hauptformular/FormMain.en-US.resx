@@ -140,74 +140,26 @@
   <data name="tabPage5.Text" xml:space="preserve">
     <value>Building</value>
   </data>
-  <data name="tabPage9.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 26</value>
-  </data>
-  <data name="tabPage9.Size" type="System.Drawing.Size, System.Drawing">
-    <value>867, 251</value>
-  </data>
   <data name="tabPage9.Text" xml:space="preserve">
     <value>Read heat requirement</value>
-  </data>
-  <data name="tabPage1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 26</value>
-  </data>
-  <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>867, 251</value>
   </data>
   <data name="tabPage1.Text" xml:space="preserve">
     <value>CHP</value>
   </data>
-  <data name="tabPage3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 26</value>
-  </data>
-  <data name="tabPage3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>867, 251</value>
-  </data>
   <data name="tabPage3.Text" xml:space="preserve">
     <value>Heat pumps</value>
-  </data>
-  <data name="tabPage4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 26</value>
-  </data>
-  <data name="tabPage4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>867, 251</value>
   </data>
   <data name="tabPage4.Text" xml:space="preserve">
     <value>Electricity storage</value>
   </data>
-  <data name="tabPage6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 26</value>
-  </data>
-  <data name="tabPage6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>867, 251</value>
-  </data>
   <data name="tabPage6.Text" xml:space="preserve">
     <value>Solar thermal energy</value>
-  </data>
-  <data name="tabPage10.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 26</value>
-  </data>
-  <data name="tabPage10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>867, 251</value>
   </data>
   <data name="tabPage10.Text" xml:space="preserve">
     <value>Photovoltaics</value>
   </data>
-  <data name="tabPage11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 26</value>
-  </data>
-  <data name="tabPage11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>867, 251</value>
-  </data>
   <data name="tabPage11.Text" xml:space="preserve">
     <value>Boiler</value>
-  </data>
-  <data name="tabPage13.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 26</value>
-  </data>
-  <data name="tabPage13.Size" type="System.Drawing.Size, System.Drawing">
-    <value>867, 251</value>
   </data>
   <data name="tabPage13.Text" xml:space="preserve">
     <value>Process heat</value>
@@ -272,10 +224,13 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Detail form</value>
   </data>
+  <data name="btn_DragDestination.Text" xml:space="preserve">
+    <value>..</value>
+  </data>
   <data name="button1.Text" xml:space="preserve">
     <value>SP</value>
   </data>
-  <data name="btn_DragDestination.Text" xml:space="preserve">
-    <value>..</value>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>Buffer memory</value>
   </data>
 </root>

@@ -207,6 +207,18 @@ namespace WindowsFormsApplication1
             listView_PV.Height = tabControl_Komponenten.ClientSize.Height;
             listView_PV.Top = -2;
             listView_PV.Left = -2;
+
+            listView_Pufferspeicher.View = View.Details;
+            listView_Pufferspeicher.Columns.Add("Name", -2, HorizontalAlignment.Left);
+            listView_Pufferspeicher.Columns.Add("Hersteller", -2, HorizontalAlignment.Left);
+            listView_Pufferspeicher.Columns.Add("Speichertyp", -2, HorizontalAlignment.Left);
+            listView_Pufferspeicher.Columns.Add("Volumen", -2, HorizontalAlignment.Left);
+            listView_Pufferspeicher.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_Pufferspeicher.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            listView_Pufferspeicher.Width = tabControl_Komponenten.ClientSize.Width;
+            listView_Pufferspeicher.Height = tabControl_Komponenten.ClientSize.Height;
+            listView_Pufferspeicher.Top = -2;
+            listView_Pufferspeicher.Left = -2;
         }
 
         private void button_Beenden_Click(object sender, EventArgs e)
@@ -658,6 +670,12 @@ namespace WindowsFormsApplication1
                 ctrl.Init((ListView)drag_control, m_ID_Projekt, m_szProjektname);
                 ctrl.contextMenuStrip1.Items[0].PerformClick();
             }
+            else if ((ListView)drag_control == listView_Pufferspeicher)
+            {
+                PufferSpKontextMenuCtrl ctrl = new PufferSpKontextMenuCtrl();
+                ctrl.Init((ListView)drag_control, m_ID_Projekt, m_szProjektname);
+                ctrl.contextMenuStrip1.Items[0].PerformClick();
+            }
         }
 
         private void button1_DragOver(object sender, DragEventArgs e)
@@ -1072,6 +1090,35 @@ namespace WindowsFormsApplication1
             listView_PV.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
+        public void SetPufferSpControl(string Projekt)
+        {
+            ProjektCtrl projctrl = new ProjektCtrl();
+            PufferSpCtrl ctrl = new PufferSpCtrl(); 
+                  
+            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            RecordSet rs = new RecordSet();
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.PUFFER_TYP + ")");
+
+            listView_Pufferspeicher.Items.Clear();
+
+            while (rs.Next())
+            {
+                ctrl.ReadAll("ID=" + (int)rs.Read("ID_PUFFER"));
+                ListViewItem lvitem = new ListViewItem();
+
+                lvitem.Text = (string)rs.Read("Bezeichner");
+                lvitem.SubItems.Add(ctrl.items[0].Firma);
+                lvitem.SubItems.Add(ctrl.items[0].Speichertyp);
+                lvitem.SubItems.Add(ctrl.items[0].Gesamtvolumen.ToString());
+                lvitem.SubItems.Add(rs.Read("ID").ToString());
+                listView_Pufferspeicher.Items.Add(lvitem);
+            }
+            rs.Close();
+
+            listView_Pufferspeicher.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_Pufferspeicher.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+        }
+
         public void SetSolarControl(string Projekt)
         {
             ProjektCtrl projctrl = new ProjektCtrl();
@@ -1155,5 +1202,31 @@ namespace WindowsFormsApplication1
             }
         }
 
+        private void listView_Pufferspeicher_MouseDown(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                drag_control = listView_Pufferspeicher;
+                ListViewItem lvi = listView_Pufferspeicher.GetItemAt(e.X, e.Y);
+
+                if (lvi != null)
+                {
+                    listView_Pufferspeicher.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
+                }
+            }
+        }
+
+        private void listView_Pufferspeicher_MouseMove(object sender, MouseEventArgs e)
+        {
+            this.Cursor = Cursors.Default;
+        }
+
+        private void listView_Pufferspeicher_MouseUp(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
+            {
+                listView_Pufferspeicher.DoDragDrop(tabControl_Komponenten.SelectedIndex.ToString(), DragDropEffects.Link);
+            }
+        }
     }
 }

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
@@ -22,6 +23,31 @@ namespace WindowsFormsApplication1
         {
             rows = 0;
             DBCommand.Dispose();
+        }
+
+        public bool UpdateSumme(double dSumme, string  szBezeichner, int IDProjekt)
+        {
+            try
+            {
+                NumberFormatInfo formatInfo = new NumberFormatInfo();
+                formatInfo.NumberDecimalSeparator = "."; // Komma als Dezimaltrennzeichen
+                DBCommand.CommandText = "UPDATE Z_Projekt_Stromverbraucher SET Summe=" + dSumme.ToString("F2",formatInfo) + 
+                    " WHERE Bezeichner='" + szBezeichner + "' and ID_Projekt=" + IDProjekt;
+                DBCommand.ExecuteNonQuery();
+            }
+            catch (OdbcException sqlEx)
+            {
+                // Fehler beim Datenbankzugriff abfangen
+                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Allgemeine Fehler abfangen
+                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                return false;
+            }
+            return true;
         }
 
         public void ReadAll(string sql)

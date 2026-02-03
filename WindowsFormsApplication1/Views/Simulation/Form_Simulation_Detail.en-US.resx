@@ -206,7 +206,7 @@
     <value>148, 17</value>
   </data>
   <data name="label38.Text" xml:space="preserve">
-    <value>Buffer memory capacity:</value>
+    <value>Buffer storage capacity:</value>
   </data>
   <data name="label35.Location" type="System.Drawing.Point, System.Drawing">
     <value>963, 282</value>
