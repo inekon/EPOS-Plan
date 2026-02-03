@@ -559,7 +559,8 @@ namespace WindowsFormsApplication1
                         {
                             Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
                             ctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Prozessname") + "'");
-                            pjv = (float)ctrl.items[0].Summe; 
+                            if(ctrl.rows > 0)   
+                                pjv = (float)ctrl.items[0].Summe; 
                         }
                         for (int i = 0; i < 12; i++)
                         {

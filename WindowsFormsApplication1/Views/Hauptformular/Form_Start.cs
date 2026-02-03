@@ -643,10 +643,10 @@ namespace WindowsFormsApplication1
                 if ((status & 32) == 32)
                 {
                     Rectangle rt = e.ClipRectangle;
-                    rt.Width -= rt.Width;
-                    rt.Height -= rt.Height;
-                    rt.Y += rt.Y;
-                    rt.X += rt.X;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
                     label38.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label39.BackColor = label38.BackColor;
@@ -666,10 +666,10 @@ namespace WindowsFormsApplication1
                 if ((status & 64) == 64)
                 {
                     Rectangle rt = e.ClipRectangle;
-                    rt.Width -= rt.Width;
-                    rt.Height -= rt.Height;
-                    rt.Y += rt.Y;
-                    rt.X += rt.X;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
                     label40.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label41.BackColor = label40.BackColor;
