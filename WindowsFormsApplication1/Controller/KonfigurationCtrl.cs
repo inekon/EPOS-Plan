@@ -11,10 +11,16 @@ namespace WindowsFormsApplication1
         public KonfigurationModel model = new KonfigurationModel();
         public int rows;
    
-        public KonfigurationCtrl ()
+        public KonfigurationCtrl()
         {
             DBCommand = Program.DBConnection.CreateCommand();
             rows = 0;
+        }
+
+        ~KonfigurationCtrl()
+        {
+            rows = 0;
+            DBCommand.Dispose();
         }
 
         public void ReadSingle(string sql)

@@ -14,7 +14,8 @@ namespace WindowsFormsApplication1
     {
         private PufferSpCtrl ctrl = new PufferSpCtrl();
         public int m_ID_Projekt = 0;
-  
+        public bool m_bReadOnly = false;
+
         public Form_PufferSp_Admin ()
         {
             InitializeComponent();
@@ -39,6 +40,13 @@ namespace WindowsFormsApplication1
             comboBox_Volumen.Items.Add("über 1.000 l");
             comboBox_Volumen.Text = "Alle";
             comboBox_Hersteller.Text = "Alle";   
+
+            if(m_bReadOnly)
+            {
+                btn_Neu.Enabled = false;
+                btn_Bearbeiten.Enabled = false;
+                btn_Loeschen.Enabled = false;
+            }   
         }
 
         private void SetFilter()

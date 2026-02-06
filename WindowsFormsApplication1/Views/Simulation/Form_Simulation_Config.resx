@@ -117,22 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="&gt;&gt;label2.Parent" xml:space="preserve">
+    <value>groupBox6</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="label17.Location" type="System.Drawing.Point, System.Drawing">
-    <value>25, 260</value>
+    <value>22, 372</value>
   </data>
   <data name="groupBox2.Text" xml:space="preserve">
     <value>Wärmepumpe</value>
   </data>
-  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.Name" xml:space="preserve">
-    <value>comboBox7_Stromspeicher_LadeleistungMax_auswahl</value>
+  <data name="&gt;&gt;label7.Parent" xml:space="preserve">
+    <value>groupBox_PufferSp</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="comboBox4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
-  <data name="comboBox5.Items" xml:space="preserve">
-    <value>Photovoltaik</value>
+  <data name="&gt;&gt;groupBox2.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="&gt;&gt;checkBox_Heizstab.Name" xml:space="preserve">
     <value>checkBox_Heizstab</value>
@@ -140,17 +143,17 @@
   <data name="&gt;&gt;comboBox_Bereitschaft.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="&gt;&gt;btn_Strom_Simu_Start.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;checkBox6.Name" xml:space="preserve">
-    <value>checkBox6</value>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items" xml:space="preserve">
+    <value>%</value>
   </data>
   <data name="groupBox3.Size" type="System.Drawing.Size, System.Drawing">
     <value>249, 73</value>
   </data>
   <data name="&gt;&gt;comboBox3.Name" xml:space="preserve">
     <value>comboBox3</value>
+  </data>
+  <data name="comboBox1.Items2" xml:space="preserve">
+    <value>Heizkessel</value>
   </data>
   <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Size" type="System.Drawing.Size, System.Drawing">
     <value>68, 21</value>
@@ -159,8 +162,11 @@
   <data name="label18.TabIndex" type="System.Int32, mscorlib">
     <value>258</value>
   </data>
+  <data name="&gt;&gt;label2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="checkBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 120</value>
+    <value>199, 56</value>
   </data>
   <data name="label10.TabIndex" type="System.Int32, mscorlib">
     <value>265</value>
@@ -168,14 +174,20 @@
   <data name="label20.Text" xml:space="preserve">
     <value>Maximum Ladeleistung</value>
   </data>
-  <data name="&gt;&gt;label57.Parent" xml:space="preserve">
-    <value>groupBox4</value>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>68, 21</value>
   </data>
   <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 54</value>
+  <data name="btn_Speichern.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="&gt;&gt;comboBox1.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;label20.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="checkBox5.Size" type="System.Drawing.Size, System.Drawing">
     <value>15, 14</value>
@@ -184,16 +196,16 @@
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;comboBox5.ZOrder" xml:space="preserve">
-    <value>21</value>
+    <value>0</value>
   </data>
-  <data name="comboBox_NetzvEinheit.Items" xml:space="preserve">
-    <value>%</value>
+  <data name="&gt;&gt;groupBox1.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="&gt;&gt;checkBox5.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>13</value>
   </data>
-  <data name="comboBox1.Items3" xml:space="preserve">
-    <value>Solare Wärme</value>
+  <data name="checkBox3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="comboBox_Bereitschaft.Size" type="System.Drawing.Size, System.Drawing">
     <value>54, 25</value>
@@ -204,17 +216,20 @@
   <data name="label18.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
+  <data name="checkBox4.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="&gt;&gt;label18.Name" xml:space="preserve">
     <value>label18</value>
   </data>
   <data name="groupBox2.TabIndex" type="System.Int32, mscorlib">
-    <value>266</value>
+    <value>302</value>
   </data>
   <data name="comboBox_Bereitschaft.TabIndex" type="System.Int32, mscorlib">
     <value>195</value>
   </data>
-  <data name="checkBox4.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="btn_Loeschen.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8.25pt</value>
   </data>
   <data name="&gt;&gt;comboBox3.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -223,7 +238,7 @@
     <value>100</value>
   </data>
   <data name="&gt;&gt;checkBox1.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBox6</value>
   </data>
   <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items1" xml:space="preserve">
     <value>kWh/a</value>
@@ -234,23 +249,38 @@
   <data name="label21.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
+  <data name="checkBox5.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBox2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>199, 84</value>
+  </data>
   <data name="textBox_Stromspeicher_Ladeleistung_max.Size" type="System.Drawing.Size, System.Drawing">
     <value>77, 22</value>
   </data>
-  <data name="label17.Size" type="System.Drawing.Size, System.Drawing">
-    <value>137, 21</value>
+  <data name="label13.TabIndex" type="System.Int32, mscorlib">
+    <value>269</value>
+  </data>
+  <data name="&gt;&gt;textBox_Netzverluste.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;checkBox4.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBox6</value>
   </data>
   <data name="label5.TabIndex" type="System.Int32, mscorlib">
     <value>198</value>
   </data>
+  <data name="groupBox_PufferSp.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="label6.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
   <data name="label5.Size" type="System.Drawing.Size, System.Drawing">
     <value>148, 17</value>
   </data>
-  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
-    <value>387, 17</value>
+  <data name="&gt;&gt;groupBox_PufferSp.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="textBox_Speicher_Ladeschwelle.Size" type="System.Drawing.Size, System.Drawing">
     <value>77, 22</value>
@@ -258,47 +288,50 @@
   <data name="&gt;&gt;checkBox1.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="textBox_untere_PGrenze.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
+  <data name="textBox_Stromspeicher_Ladeenergie_min.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="checkBox_Heizstab.TabIndex" type="System.Int32, mscorlib">
+    <value>67</value>
   </data>
   <data name="comboBox_Bereitschaft.Text" xml:space="preserve">
     <value>6000</value>
   </data>
-  <data name="label1.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+  <data name="&gt;&gt;label21.ZOrder" xml:space="preserve">
+    <value>8</value>
   </data>
   <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Parent" xml:space="preserve">
     <value>groupBox5</value>
   </data>
-  <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>21, 13</value>
+  <data name="&gt;&gt;bt_Hinzu.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;label17.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="checkBox1.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="&gt;&gt;btn_Strom_Simu_Start.Name" xml:space="preserve">
+    <value>btn_Strom_Simu_Start</value>
   </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 28</value>
+  <data name="&gt;&gt;label21.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="&gt;&gt;btn_OK.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;groupBox4.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>4</value>
   </data>
   <data name="&gt;&gt;textBox_Netzverluste.Name" xml:space="preserve">
     <value>textBox_Netzverluste</value>
   </data>
   <data name="&gt;&gt;comboBox6.ZOrder" xml:space="preserve">
-    <value>20</value>
+    <value>5</value>
   </data>
-  <data name="label11.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="listView1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>478, 117</value>
   </data>
   <data name="&gt;&gt;checkBox6.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>14</value>
   </data>
   <data name="label17.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI Semibold, 12pt, style=Bold, Underline</value>
@@ -310,7 +343,7 @@
     <value>checkBox4</value>
   </data>
   <data name="btn_Speichern.Location" type="System.Drawing.Point, System.Drawing">
-    <value>244, 615</value>
+    <value>460, 642</value>
   </data>
   <data name="&gt;&gt;label10.Name" xml:space="preserve">
     <value>label10</value>
@@ -324,8 +357,14 @@
   <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.ZOrder" xml:space="preserve">
     <value>11</value>
   </data>
+  <data name="bt_Hinzu.TabIndex" type="System.Int32, mscorlib">
+    <value>308</value>
+  </data>
   <data name="&gt;&gt;textBox_untere_PGrenze.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBox4.Name" xml:space="preserve">
+    <value>comboBox4</value>
   </data>
   <data name="&gt;&gt;label14.Parent" xml:space="preserve">
     <value>groupBox4</value>
@@ -333,8 +372,8 @@
   <data name="comboBox1.Items" xml:space="preserve">
     <value>BHKW</value>
   </data>
-  <data name="groupBox3.TabIndex" type="System.Int32, mscorlib">
-    <value>266</value>
+  <data name="label17.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
     <value>250, 82</value>
@@ -357,11 +396,14 @@
   <data name="&gt;&gt;comboBox6.Name" xml:space="preserve">
     <value>comboBox6</value>
   </data>
-  <data name="comboBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>179, 25</value>
+  <data name="textBox_Stromspeicher_Ladeleistung_max.TabIndex" type="System.Int32, mscorlib">
+    <value>271</value>
   </data>
   <data name="&gt;&gt;comboBox2.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBox6</value>
+  </data>
+  <data name="&gt;&gt;label11.Name" xml:space="preserve">
+    <value>label11</value>
   </data>
   <data name="&gt;&gt;groupBox1.Name" xml:space="preserve">
     <value>groupBox1</value>
@@ -369,8 +411,11 @@
   <data name="&gt;&gt;label17.Name" xml:space="preserve">
     <value>label17</value>
   </data>
-  <data name="comboBox3.Items1" xml:space="preserve">
-    <value>Wärmepumpe</value>
+  <data name="&gt;&gt;label7.Name" xml:space="preserve">
+    <value>label7</value>
+  </data>
+  <data name="&gt;&gt;label10.Parent" xml:space="preserve">
+    <value>groupBox5</value>
   </data>
   <data name="checkBox6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -379,19 +424,25 @@
     <value>4, 0, 4, 0</value>
   </data>
   <data name="&gt;&gt;comboBox4.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBox6</value>
   </data>
   <data name="comboBox4.Items3" xml:space="preserve">
-    <value>Solare Wärme</value>
+    <value>Solarthermie</value>
   </data>
   <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Name" xml:space="preserve">
     <value>textBox_Speicher_Ladeschwelle</value>
   </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Text" xml:space="preserve">
-    <value>90</value>
+  <data name="&gt;&gt;btn_Loeschen.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="label1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+  <data name="comboBox5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="comboBox_Bereitschaft.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label2.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="comboBox_NetzvEinheit.Text" xml:space="preserve">
     <value>%</value>
@@ -420,11 +471,17 @@
   <data name="textBox_untere_PGrenze.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
   </data>
+  <data name="label57.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
   <data name="&gt;&gt;label3.ZOrder" xml:space="preserve">
-    <value>17</value>
+    <value>8</value>
   </data>
   <data name="label18.Location" type="System.Drawing.Point, System.Drawing">
     <value>10, 122</value>
+  </data>
+  <data name="bt_Hinzu.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
   </data>
   <data name="&gt;&gt;label57.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -433,19 +490,19 @@
     <value>MiddleLeft</value>
   </data>
   <data name="comboBox2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>26, 149</value>
+    <value>16, 78</value>
   </data>
-  <data name="label21.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
+  <data name="label21.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="label10.Location" type="System.Drawing.Point, System.Drawing">
     <value>8, 27</value>
   </data>
-  <data name="label12.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
+  <data name="label13.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 54</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>559, 670</value>
+    <value>781, 682</value>
   </data>
   <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -454,25 +511,25 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="comboBox2.Items2" xml:space="preserve">
-    <value>Spitzenkessel</value>
+    <value>Heizkessel</value>
   </data>
   <data name="label13.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="&gt;&gt;groupBox6.Name" xml:space="preserve">
+    <value>groupBox6</value>
+  </data>
+  <data name="checkBox2.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="&gt;&gt;btn_Strom_Simu_Start.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_min.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
+  <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>374, 12</value>
   </data>
-  <data name="&gt;&gt;checkBox3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="comboBox6.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
-  <data name="groupBox5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>22, 448</value>
+  <data name="label18.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="textBox_Netzverluste.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -481,7 +538,7 @@
     <value>h/a</value>
   </data>
   <data name="checkBox5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>451, 124</value>
+    <value>200, 194</value>
   </data>
   <data name="label14.TabIndex" type="System.Int32, mscorlib">
     <value>210</value>
@@ -492,14 +549,20 @@
   <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Parent" xml:space="preserve">
     <value>groupBox5</value>
   </data>
+  <data name="&gt;&gt;groupBox6.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="label5.Location" type="System.Drawing.Point, System.Drawing">
     <value>8, 29</value>
   </data>
+  <data name="btn_OK.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
-    <value>21, 51</value>
+    <value>18, 49</value>
   </data>
   <data name="label17.Text" xml:space="preserve">
-    <value>Voreinstellungen:</value>
+    <value>Simulation Voreinstellungen:</value>
   </data>
   <data name="comboBox3.Size" type="System.Drawing.Size, System.Drawing">
     <value>179, 25</value>
@@ -513,29 +576,35 @@
   <data name="comboBox4.Items" xml:space="preserve">
     <value>BHKW</value>
   </data>
+  <data name="label5.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="comboBox3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>22, 93</value>
+    <value>12, 29</value>
   </data>
   <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.Parent" xml:space="preserve">
     <value>groupBox5</value>
   </data>
   <data name="checkBox_Heizstab.Size" type="System.Drawing.Size, System.Drawing">
-    <value>188, 43</value>
+    <value>188, 36</value>
   </data>
   <data name="checkBox_Heizstab.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="checkBox3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 191</value>
+    <value>199, 112</value>
   </data>
   <data name="comboBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>12</value>
+  </data>
+  <data name="&gt;&gt;btn_Loeschen.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="label15.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -547,31 +616,46 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;checkBox3.ZOrder" xml:space="preserve">
-    <value>14</value>
+    <value>11</value>
   </data>
-  <data name="&gt;&gt;comboBox5.Name" xml:space="preserve">
-    <value>comboBox5</value>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>250, 28</value>
   </data>
-  <data name="groupBox4.TabIndex" type="System.Int32, mscorlib">
-    <value>267</value>
+  <data name="checkBox_PufferSp.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
-  <data name="label15.Text" xml:space="preserve">
-    <value>Netzverluste</value>
+  <data name="label7.TabIndex" type="System.Int32, mscorlib">
+    <value>310</value>
   </data>
-  <data name="label13.TabIndex" type="System.Int32, mscorlib">
-    <value>269</value>
+  <data name="&gt;&gt;checkBox6.Name" xml:space="preserve">
+    <value>checkBox6</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.TabIndex" type="System.Int32, mscorlib">
+    <value>229</value>
+  </data>
+  <data name="&gt;&gt;label12.Name" xml:space="preserve">
+    <value>label12</value>
   </data>
   <data name="&gt;&gt;label15.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.ZOrder" xml:space="preserve">
-    <value>5</value>
+  <data name="groupBox4.TabIndex" type="System.Int32, mscorlib">
+    <value>304</value>
+  </data>
+  <data name="groupBox5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>283, 405</value>
+  </data>
+  <data name="&gt;&gt;checkBox_PufferSp.Name" xml:space="preserve">
+    <value>checkBox_PufferSp</value>
+  </data>
+  <data name="label3.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="checkBox_Heizstab.Text" xml:space="preserve">
     <value>mit Heizstab (falls vorhanden)</value>
   </data>
   <data name="label3.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+    <value>288</value>
   </data>
   <data name="&gt;&gt;label20.Parent" xml:space="preserve">
     <value>groupBox5</value>
@@ -579,20 +663,23 @@
   <data name="&gt;&gt;comboBox_NetzvEinheit.Parent" xml:space="preserve">
     <value>groupBox1</value>
   </data>
-  <data name="comboBox1.Items1" xml:space="preserve">
-    <value>Wärmepumpe</value>
+  <data name="&gt;&gt;label6.Parent" xml:space="preserve">
+    <value>groupBox3</value>
+  </data>
+  <data name="label7.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 6.75pt</value>
   </data>
   <data name="label3.Text" xml:space="preserve">
     <value>Energiespeicher:</value>
   </data>
-  <data name="comboBox1.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+  <data name="&gt;&gt;bt_Hinzu.Name" xml:space="preserve">
+    <value>bt_Hinzu</value>
   </data>
-  <data name="&gt;&gt;comboBox4.ZOrder" xml:space="preserve">
-    <value>22</value>
+  <data name="comboBox3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>16, 106</value>
   </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items" xml:space="preserve">
-    <value>%</value>
+  <data name="groupBox2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 560</value>
   </data>
   <data name="&gt;&gt;checkBox6.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -600,41 +687,47 @@
   <data name="label12.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
-  <data name="label15.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 26</value>
+  <data name="&gt;&gt;bt_Hinzu.Parent" xml:space="preserve">
+    <value>groupBox_PufferSp</value>
   </data>
-  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;label6.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;groupBox_PufferSp.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="label18.Text" xml:space="preserve">
     <value>Ladeschwellwert [kW]</value>
   </data>
   <data name="checkBox1.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>289</value>
   </data>
   <data name="&gt;&gt;comboBox1.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBox6</value>
   </data>
-  <data name="&gt;&gt;groupBox5.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="label11.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="bt_Hinzu.Text" xml:space="preserve">
+    <value>Hinzufügen...</value>
   </data>
   <data name="&gt;&gt;label11.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>13</value>
   </data>
   <data name="&gt;&gt;label5.Parent" xml:space="preserve">
     <value>groupBox3</value>
   </data>
-  <data name="&gt;&gt;textBox_Netzverluste.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="groupBox4.Text" xml:space="preserve">
-    <value>Heizkessel</value>
+  <data name="&gt;&gt;checkBox6.Parent" xml:space="preserve">
+    <value>groupBox6</value>
   </data>
   <data name="&gt;&gt;comboBox_NetzvEinheit.Name" xml:space="preserve">
     <value>comboBox_NetzvEinheit</value>
   </data>
-  <data name="label57.Size" type="System.Drawing.Size, System.Drawing">
-    <value>126, 17</value>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>7, 17</value>
+  </data>
+  <data name="label17.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="&gt;&gt;label18.Parent" xml:space="preserve">
     <value>groupBox5</value>
@@ -642,53 +735,59 @@
   <data name="textBox_Stromspeicher_Ladeenergie_min.Location" type="System.Drawing.Point, System.Drawing">
     <value>165, 26</value>
   </data>
-  <data name="&gt;&gt;checkBox1.Name" xml:space="preserve">
-    <value>checkBox1</value>
+  <data name="checkBox6.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btn_Loeschen.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeleistung_max.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
   </data>
-  <data name="&gt;&gt;label21.ZOrder" xml:space="preserve">
-    <value>5</value>
+  <data name="label14.Location" type="System.Drawing.Point, System.Drawing">
+    <value>195, 30</value>
   </data>
-  <data name="label57.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
+  <data name="groupBox5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>479, 152</value>
   </data>
   <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
     <value>258, 73</value>
   </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+  <data name="label7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
-  <data name="groupBox1.TabIndex" type="System.Int32, mscorlib">
-    <value>265</value>
-  </data>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>7, 17</value>
+  <data name="&gt;&gt;groupBox5.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
     <value>206, 30</value>
   </data>
+  <data name="groupBox6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>229, 276</value>
+  </data>
   <data name="label10.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="label14.Location" type="System.Drawing.Point, System.Drawing">
-    <value>195, 30</value>
+  <data name="groupBox6.Text" xml:space="preserve">
+    <value>Erzeuger &amp;&amp; Speicher</value>
   </data>
   <data name="comboBox5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>264, 116</value>
+    <value>16, 188</value>
   </data>
-  <data name="&gt;&gt;textBox_untere_PGrenze.Parent" xml:space="preserve">
-    <value>groupBox3</value>
+  <data name="label6.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label14.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
   </data>
   <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>263, 97</value>
+    <value>14, 165</value>
+  </data>
+  <data name="&gt;&gt;label7.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="checkBox_Heizstab.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="comboBox_NetzvEinheit.Location" type="System.Drawing.Point, System.Drawing">
     <value>181, 25</value>
@@ -699,23 +798,29 @@
   <data name="checkBox5.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;btn_Strom_Simu_Start.ZOrder" xml:space="preserve">
-    <value>6</value>
+  <data name="&gt;&gt;groupBox6.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="label5.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="textBox_Stromspeicher_Ladeleistung_max.TabIndex" type="System.Int32, mscorlib">
-    <value>271</value>
+  <data name="btn_Loeschen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>62, 22</value>
   </data>
   <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
   </data>
-  <data name="label11.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+  <data name="&gt;&gt;comboBox2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_Loeschen.Name" xml:space="preserve">
+    <value>btn_Loeschen</value>
   </data>
   <data name="comboBox3.Items3" xml:space="preserve">
-    <value>Solare Wärme</value>
+    <value>Solarthermie</value>
+  </data>
+  <data name="&gt;&gt;checkBox_PufferSp.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="&gt;&gt;groupBox3.Parent" xml:space="preserve">
     <value>$this</value>
@@ -729,14 +834,14 @@
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>104, 17</value>
   </data>
-  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>98, 17</value>
+  <data name="&gt;&gt;textBox_Netzverluste.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="&gt;&gt;label5.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="label21.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="label17.Size" type="System.Drawing.Size, System.Drawing">
+    <value>218, 21</value>
   </data>
   <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -744,8 +849,8 @@
   <data name="label20.TabIndex" type="System.Int32, mscorlib">
     <value>270</value>
   </data>
-  <data name="&gt;&gt;label20.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label20.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="&gt;&gt;checkBox5.Name" xml:space="preserve">
     <value>checkBox5</value>
@@ -753,11 +858,14 @@
   <data name="&gt;&gt;groupBox5.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;label11.Name" xml:space="preserve">
-    <value>label11</value>
+  <data name="textBox_Speicher_Ladeschwelle.Text" xml:space="preserve">
+    <value>90</value>
   </data>
-  <data name="checkBox5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
+  <data name="label12.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
+    <value>59, 161</value>
   </data>
   <data name="checkBox_Heizstab.Location" type="System.Drawing.Point, System.Drawing">
     <value>7, 20</value>
@@ -777,23 +885,23 @@
   <data name="comboBox_Bereitschaft.Location" type="System.Drawing.Point, System.Drawing">
     <value>136, 26</value>
   </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Text" xml:space="preserve">
-    <value>%</value>
+  <data name="&gt;&gt;label18.ZOrder" xml:space="preserve">
+    <value>7</value>
   </data>
   <data name="&gt;&gt;checkBox3.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="checkBox4.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+    <value>groupBox6</value>
   </data>
   <data name="label3.Size" type="System.Drawing.Size, System.Drawing">
     <value>104, 17</value>
+  </data>
+  <data name="groupBox3.Text" xml:space="preserve">
+    <value>BHKW</value>
   </data>
   <data name="&gt;&gt;comboBox6.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>263, 168</value>
+    <value>17, 215</value>
   </data>
   <data name="&gt;&gt;label6.Name" xml:space="preserve">
     <value>label6</value>
@@ -801,14 +909,11 @@
   <data name="comboBox2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
-  <data name="&gt;&gt;$this.Name" xml:space="preserve">
-    <value>Form_Simulation_Config</value>
-  </data>
-  <data name="&gt;&gt;checkBox6.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="label14.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="&gt;&gt;comboBox3.ZOrder" xml:space="preserve">
-    <value>23</value>
+    <value>3</value>
   </data>
   <data name="&gt;&gt;label6.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -816,8 +921,14 @@
   <data name="&gt;&gt;comboBox5.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="textBox_Netzverluste.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 22</value>
+  </data>
+  <data name="label12.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
   <data name="comboBox2.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+    <value>281</value>
   </data>
   <data name="&gt;&gt;comboBox4.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -825,11 +936,20 @@
   <data name="comboBox_NetzvEinheit.Size" type="System.Drawing.Size, System.Drawing">
     <value>68, 21</value>
   </data>
+  <data name="checkBox_PufferSp.Location" type="System.Drawing.Point, System.Drawing">
+    <value>267, 82</value>
+  </data>
+  <data name="label15.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 26</value>
+  </data>
   <data name="&gt;&gt;label21.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeenergie_max.Size" type="System.Drawing.Size, System.Drawing">
     <value>77, 22</value>
+  </data>
+  <data name="checkBox6.TabIndex" type="System.Int32, mscorlib">
+    <value>294</value>
   </data>
   <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items1" xml:space="preserve">
     <value>kWh/a</value>
@@ -840,11 +960,11 @@
   <data name="label14.Size" type="System.Drawing.Size, System.Drawing">
     <value>27, 17</value>
   </data>
-  <data name="&gt;&gt;label12.Name" xml:space="preserve">
-    <value>label12</value>
+  <data name="btn_Loeschen.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
   </data>
   <data name="checkBox5.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
+    <value>293</value>
   </data>
   <data name="label57.Location" type="System.Drawing.Point, System.Drawing">
     <value>8, 29</value>
@@ -852,8 +972,14 @@
   <data name="comboBox_NetzvEinheit.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
   </data>
+  <data name="label12.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
   <data name="label10.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="&gt;&gt;listView1.Parent" xml:space="preserve">
+    <value>groupBox_PufferSp</value>
   </data>
   <data name="checkBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -861,17 +987,14 @@
   <data name="&gt;&gt;label13.Parent" xml:space="preserve">
     <value>groupBox5</value>
   </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.TabIndex" type="System.Int32, mscorlib">
-    <value>266</value>
-  </data>
   <data name="btn_OK.Location" type="System.Drawing.Point, System.Drawing">
-    <value>443, 615</value>
+    <value>659, 642</value>
   </data>
   <data name="textBox_untere_PGrenze.Location" type="System.Drawing.Point, System.Drawing">
     <value>157, 26</value>
   </data>
-  <data name="label21.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>250, 54</value>
   </data>
   <data name="btn_Strom_Simu_Start.TabIndex" type="System.Int32, mscorlib">
     <value>260</value>
@@ -879,8 +1002,11 @@
   <data name="&gt;&gt;btn_OK.Name" xml:space="preserve">
     <value>btn_OK</value>
   </data>
-  <data name="comboBox3.Items" xml:space="preserve">
-    <value>BHKW</value>
+  <data name="listView1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 42</value>
+  </data>
+  <data name="btn_Strom_Simu_Start.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1" xml:space="preserve">
     <value>kWh/a</value>
@@ -889,7 +1015,7 @@
     <value>50</value>
   </data>
   <data name="&gt;&gt;checkBox2.ZOrder" xml:space="preserve">
-    <value>15</value>
+    <value>10</value>
   </data>
   <data name="label57.Text" xml:space="preserve">
     <value>Betriebsbereitschaft:</value>
@@ -898,10 +1024,10 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="label17.TabIndex" type="System.Int32, mscorlib">
-    <value>231</value>
+    <value>298</value>
   </data>
   <data name="checkBox2.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
+    <value>290</value>
   </data>
   <data name="label57.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -910,25 +1036,28 @@
     <value>True</value>
   </data>
   <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>22, 293</value>
+    <value>19, 405</value>
   </data>
-  <data name="label2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.Name" xml:space="preserve">
+    <value>comboBox7_Stromspeicher_LadeleistungMax_auswahl</value>
   </data>
   <data name="&gt;&gt;btn_Speichern.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>11</value>
   </data>
-  <data name="&gt;&gt;label10.Parent" xml:space="preserve">
+  <data name="label6.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.Parent" xml:space="preserve">
     <value>groupBox5</value>
   </data>
-  <data name="comboBox_Bereitschaft.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
+  <data name="btn_Strom_Simu_Start.Size" type="System.Drawing.Size, System.Drawing">
+    <value>133, 30</value>
   </data>
   <data name="&gt;&gt;label14.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
   <data name="&gt;&gt;groupBox2.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>6</value>
   </data>
   <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -942,32 +1071,53 @@
   <data name="&gt;&gt;comboBox_NetzvEinheit.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="&gt;&gt;comboBox6.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="label6.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="&gt;&gt;checkBox4.ZOrder" xml:space="preserve">
-    <value>13</value>
+    <value>12</value>
+  </data>
+  <data name="listView1.TabIndex" type="System.Int32, mscorlib">
+    <value>307</value>
   </data>
   <data name="textBox_Netzverluste.Location" type="System.Drawing.Point, System.Drawing">
     <value>98, 25</value>
   </data>
   <data name="&gt;&gt;label1.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBox6</value>
   </data>
-  <data name="&gt;&gt;label3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="btn_Loeschen.TabIndex" type="System.Int32, mscorlib">
+    <value>309</value>
+  </data>
+  <data name="comboBox1.Items3" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.TabIndex" type="System.Int32, mscorlib">
+    <value>266</value>
   </data>
   <data name="&gt;&gt;textBox_untere_PGrenze.Name" xml:space="preserve">
     <value>textBox_untere_PGrenze</value>
   </data>
+  <data name="groupBox_PufferSp.Location" type="System.Drawing.Point, System.Drawing">
+    <value>267, 109</value>
+  </data>
   <data name="btn_Speichern.TabIndex" type="System.Int32, mscorlib">
-    <value>211</value>
+    <value>297</value>
+  </data>
+  <data name="&gt;&gt;comboBox5.Parent" xml:space="preserve">
+    <value>groupBox6</value>
   </data>
   <data name="&gt;&gt;label10.ZOrder" xml:space="preserve">
     <value>10</value>
   </data>
-  <data name="comboBox1.Items2" xml:space="preserve">
-    <value>Spitzenkessel</value>
+  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
+    <value>387, 17</value>
+  </data>
+  <data name="comboBox4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 134</value>
   </data>
   <data name="&gt;&gt;label3.Name" xml:space="preserve">
     <value>label3</value>
@@ -978,38 +1128,56 @@
   <data name="btn_OK.Text" xml:space="preserve">
     <value>Beenden</value>
   </data>
+  <data name="checkBox_PufferSp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>246, 21</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_min.TabIndex" type="System.Int32, mscorlib">
+    <value>264</value>
+  </data>
   <data name="label3.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;comboBox1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;checkBox4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label17.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label15.Text" xml:space="preserve">
+    <value>Netzverluste</value>
   </data>
   <data name="label2.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
   <data name="label12.TabIndex" type="System.Int32, mscorlib">
-    <value>207</value>
+    <value>296</value>
   </data>
   <data name="&gt;&gt;label14.Name" xml:space="preserve">
     <value>label14</value>
+  </data>
+  <data name="bt_Hinzu.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8.25pt</value>
   </data>
   <data name="label15.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 17</value>
   </data>
   <data name="label11.TabIndex" type="System.Int32, mscorlib">
-    <value>206</value>
+    <value>295</value>
   </data>
-  <data name="checkBox2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 155</value>
+  <data name="comboBox6.TabIndex" type="System.Int32, mscorlib">
+    <value>285</value>
+  </data>
+  <data name="label21.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
   </data>
   <data name="comboBox5.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+    <value>284</value>
+  </data>
+  <data name="checkBox3.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="&gt;&gt;groupBox5.Name" xml:space="preserve">
     <value>groupBox5</value>
@@ -1020,29 +1188,32 @@
   <data name="label20.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;comboBox1.ZOrder" xml:space="preserve">
-    <value>25</value>
+  <data name="&gt;&gt;btn_Strom_Simu_Start.Parent" xml:space="preserve">
+    <value>groupBox5</value>
   </data>
   <data name="comboBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>26, 114</value>
+    <value>16, 50</value>
   </data>
   <data name="label17.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;label57.Name" xml:space="preserve">
-    <value>label57</value>
+  <data name="&gt;&gt;btn_OK.ZOrder" xml:space="preserve">
+    <value>9</value>
   </data>
-  <data name="comboBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>179, 25</value>
+  <data name="comboBox3.Items1" xml:space="preserve">
+    <value>Wärmepumpe</value>
   </data>
-  <data name="groupBox5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>513, 152</value>
+  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
-  <data name="checkBox3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items" xml:space="preserve">
+    <value>%</value>
   </data>
-  <data name="comboBox_NetzvEinheit.TabIndex" type="System.Int32, mscorlib">
-    <value>229</value>
+  <data name="label21.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Text" xml:space="preserve">
+    <value>%</value>
   </data>
   <data name="btn_OK.Size" type="System.Drawing.Size, System.Drawing">
     <value>103, 30</value>
@@ -1050,29 +1221,23 @@
   <data name="checkBox4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
-  <data name="&gt;&gt;groupBox1.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="bt_Hinzu.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 22</value>
   </data>
-  <data name="label21.TabIndex" type="System.Int32, mscorlib">
-    <value>264</value>
-  </data>
-  <data name="&gt;&gt;label2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_Strom_Simu_Start.Name" xml:space="preserve">
-    <value>btn_Strom_Simu_Start</value>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>Form_Simulation_Config</value>
   </data>
   <data name="groupBox5.TabIndex" type="System.Int32, mscorlib">
-    <value>268</value>
-  </data>
-  <data name="&gt;&gt;groupBox3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>305</value>
   </data>
   <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
-    <value>19</value>
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;label5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="checkBox4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 226</value>
+    <value>199, 140</value>
   </data>
   <data name="label2.Text" xml:space="preserve">
     <value>Stromerzeuger:</value>
@@ -1081,10 +1246,13 @@
     <value>Stromspeicher</value>
   </data>
   <data name="&gt;&gt;checkBox5.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBox6</value>
   </data>
   <data name="&gt;&gt;groupBox2.Name" xml:space="preserve">
     <value>groupBox2</value>
+  </data>
+  <data name="checkBox_PufferSp.Text" xml:space="preserve">
+    <value>Pufferspeicher Zuordnung einblenden</value>
   </data>
   <data name="&gt;&gt;checkBox_Heizstab.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1092,44 +1260,47 @@
   <data name="label18.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="checkBox_Heizstab.TabIndex" type="System.Int32, mscorlib">
-    <value>67</value>
+  <data name="&gt;&gt;groupBox_PufferSp.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
-  <data name="&gt;&gt;groupBox2.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;btn_Strom_Simu_Start.ZOrder" xml:space="preserve">
+    <value>6</value>
   </data>
-  <data name="groupBox3.Text" xml:space="preserve">
-    <value>BHKW</value>
+  <data name="&gt;&gt;comboBox6.Parent" xml:space="preserve">
+    <value>groupBox6</value>
+  </data>
+  <data name="&gt;&gt;label7.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Name" xml:space="preserve">
     <value>textBox_Stromspeicher_Ladeenergie_max</value>
   </data>
-  <data name="&gt;&gt;checkBox1.ZOrder" xml:space="preserve">
-    <value>16</value>
+  <data name="checkBox1.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
-  <data name="&gt;&gt;label21.Name" xml:space="preserve">
-    <value>label21</value>
+  <data name="comboBox2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>179, 25</value>
   </data>
   <data name="&gt;&gt;label20.Name" xml:space="preserve">
     <value>label20</value>
   </data>
-  <data name="comboBox6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>179, 25</value>
+  <data name="&gt;&gt;listView1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="label11.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
   </data>
   <data name="&gt;&gt;comboBox2.Name" xml:space="preserve">
     <value>comboBox2</value>
   </data>
   <data name="comboBox2.Items3" xml:space="preserve">
-    <value>Solare Wärme</value>
+    <value>Solarthermie</value>
   </data>
-  <data name="label6.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
+  <data name="textBox_untere_PGrenze.TabIndex" type="System.Int32, mscorlib">
+    <value>199</value>
   </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_min.TabIndex" type="System.Int32, mscorlib">
-    <value>264</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeleistung_max.Location" type="System.Drawing.Point, System.Drawing">
-    <value>165, 82</value>
+  <data name="label57.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label13.Size" type="System.Drawing.Size, System.Drawing">
     <value>141, 17</value>
@@ -1137,14 +1308,17 @@
   <data name="label20.Size" type="System.Drawing.Size, System.Drawing">
     <value>142, 17</value>
   </data>
-  <data name="&gt;&gt;checkBox3.Name" xml:space="preserve">
-    <value>checkBox3</value>
+  <data name="&gt;&gt;checkBox_PufferSp.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;label57.Name" xml:space="preserve">
+    <value>label57</value>
   </data>
   <data name="&gt;&gt;comboBox2.ZOrder" xml:space="preserve">
-    <value>24</value>
+    <value>2</value>
   </data>
-  <data name="&gt;&gt;btn_Speichern.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label13.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="&gt;&gt;label10.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1155,29 +1329,38 @@
   <data name="&gt;&gt;comboBox_Bereitschaft.Name" xml:space="preserve">
     <value>comboBox_Bereitschaft</value>
   </data>
-  <data name="&gt;&gt;comboBox5.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;checkBox4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="comboBox4.Items2" xml:space="preserve">
-    <value>Spitzenkessel</value>
+    <value>Heizkessel</value>
   </data>
-  <data name="textBox_untere_PGrenze.TabIndex" type="System.Int32, mscorlib">
-    <value>199</value>
+  <data name="groupBox_PufferSp.Text" xml:space="preserve">
+    <value>Pufferspeicher Zuordnung</value>
   </data>
   <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text" xml:space="preserve">
     <value>%</value>
   </data>
   <data name="comboBox4.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
+    <value>283</value>
   </data>
   <data name="label11.Text" xml:space="preserve">
-    <value>Simulationskonfiguration</value>
+    <value>Erzeuger definieren, Pufferspeicher zuordnen:</value>
   </data>
   <data name="groupBox3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>286, 369</value>
+    <value>283, 561</value>
+  </data>
+  <data name="label10.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label1.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="&gt;&gt;comboBox3.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBox6</value>
+  </data>
+  <data name="&gt;&gt;label1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Parent" xml:space="preserve">
     <value>groupBox5</value>
@@ -1185,11 +1368,17 @@
   <data name="btn_Speichern.Text" xml:space="preserve">
     <value>Konfiguration speichern</value>
   </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Parent" xml:space="preserve">
+    <value>groupBox5</value>
+  </data>
   <data name="textBox_Speicher_Ladeschwelle.Location" type="System.Drawing.Point, System.Drawing">
     <value>165, 117</value>
   </data>
   <data name="comboBox_Bereitschaft.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
+  </data>
+  <data name="&gt;&gt;comboBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;label12.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1206,17 +1395,20 @@
   <data name="label5.Text" xml:space="preserve">
     <value>Untere Leistungsgrenze:</value>
   </data>
-  <data name="&gt;&gt;textBox_untere_PGrenze.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="groupBox6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 72</value>
   </data>
   <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.TabIndex" type="System.Int32, mscorlib">
     <value>272</value>
   </data>
-  <data name="&gt;&gt;label11.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="comboBox3.Items" xml:space="preserve">
+    <value>BHKW</value>
   </data>
-  <data name="label10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 17</value>
+  <data name="comboBox1.Items1" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="btn_Loeschen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>423, 19</value>
   </data>
   <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -1231,28 +1423,40 @@
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="comboBox3.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+    <value>282</value>
   </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
+  <data name="&gt;&gt;listView1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="checkBox6.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+  <data name="groupBox3.TabIndex" type="System.Int32, mscorlib">
+    <value>303</value>
+  </data>
+  <data name="label12.Text" xml:space="preserve">
+    <value>Erzeuger in der Reihenfolge auswählen (falls im Projekt definiert).</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Wärmeerzeuger:</value>
   </data>
+  <data name="&gt;&gt;textBox_untere_PGrenze.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
   <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
+    <value>18, 11</value>
   </data>
   <data name="label15.TabIndex" type="System.Int32, mscorlib">
     <value>228</value>
   </data>
+  <data name="groupBox_PufferSp.TabIndex" type="System.Int32, mscorlib">
+    <value>312</value>
+  </data>
   <data name="&gt;&gt;btn_Speichern.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+  <data name="groupBox4.Text" xml:space="preserve">
+    <value>Heizkessel</value>
   </data>
   <data name="comboBox_NetzvEinheit.Items1" xml:space="preserve">
     <value>kWh/a</value>
@@ -1261,13 +1465,13 @@
     <value>179, 25</value>
   </data>
   <data name="&gt;&gt;groupBox3.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>5</value>
   </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
+  <data name="bt_Hinzu.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Simulation Konfiguration</value>
+  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>98, 17</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeenergie_min.Text" xml:space="preserve">
     <value>10</value>
@@ -1276,25 +1480,31 @@
     <value>textBox_Stromspeicher_Ladeenergie_min</value>
   </data>
   <data name="&gt;&gt;label17.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>10</value>
   </data>
-  <data name="textBox_Speicher_Ladeschwelle.Text" xml:space="preserve">
-    <value>90</value>
+  <data name="&gt;&gt;btn_Speichern.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="btn_Loeschen.Text" xml:space="preserve">
+    <value>Löschen</value>
   </data>
   <data name="comboBox2.Items" xml:space="preserve">
     <value>BHKW</value>
   </data>
-  <data name="comboBox4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>25, 218</value>
+  <data name="&gt;&gt;checkBox_PufferSp.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBox4.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Name" xml:space="preserve">
     <value>comboBox8_Stromspeicher_LadeenergieMin_auswahl</value>
   </data>
-  <data name="&gt;&gt;label6.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Simulation Konfiguration</value>
   </data>
-  <data name="label10.Text" xml:space="preserve">
-    <value>Minimum Ladeenergie</value>
+  <data name="&gt;&gt;bt_Hinzu.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <data name="&gt;&gt;comboBox_NetzvEinheit.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1302,11 +1512,14 @@
   <data name="&gt;&gt;groupBox3.Name" xml:space="preserve">
     <value>groupBox3</value>
   </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>(*) Änderung des  Pufferspeichers, Vorlauf, Rücklauf =&gt;Doppelclick auf entspechenden Eintrag </value>
+  </data>
   <data name="label1.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="comboBox5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
+  <data name="groupBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>301</value>
   </data>
   <data name="label13.Text" xml:space="preserve">
     <value>Maximum Ladeenergie</value>
@@ -1314,32 +1527,41 @@
   <data name="checkBox2.Size" type="System.Drawing.Size, System.Drawing">
     <value>15, 14</value>
   </data>
+  <data name="&gt;&gt;checkBox3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="checkBox3.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
+    <value>291</value>
   </data>
-  <data name="&gt;&gt;label5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>19, 17</value>
   </data>
-  <data name="comboBox3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>26, 185</value>
+  <data name="label6.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
   <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.TabIndex" type="System.Int32, mscorlib">
     <value>267</value>
   </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 21</value>
+  <data name="&gt;&gt;label3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="label6.Text" xml:space="preserve">
-    <value>%</value>
+  <data name="label15.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
-  <data name="textBox_Netzverluste.TabIndex" type="System.Int32, mscorlib">
-    <value>227</value>
+  <data name="label13.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="label11.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt, style=Bold, Underline</value>
   </data>
+  <data name="label11.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="&gt;&gt;label3.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBox6</value>
+  </data>
+  <data name="&gt;&gt;groupBox_PufferSp.Name" xml:space="preserve">
+    <value>groupBox_PufferSp</value>
   </data>
   <data name="&gt;&gt;comboBox1.Name" xml:space="preserve">
     <value>comboBox1</value>
@@ -1347,17 +1569,26 @@
   <data name="label5.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleRight</value>
   </data>
-  <data name="label12.Text" xml:space="preserve">
-    <value>Erzeuger in der Reihenfolge auswählen (falls im Projekt definiert):</value>
+  <data name="checkBox1.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
-  <data name="label13.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 54</value>
+  <data name="label2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="checkBox_PufferSp.TabIndex" type="System.Int32, mscorlib">
+    <value>313</value>
+  </data>
+  <data name="comboBox5.Items" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="textBox_untere_PGrenze.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label15.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="checkBox6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>451, 195</value>
+    <value>201, 238</value>
   </data>
   <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items" xml:space="preserve">
     <value>%</value>
@@ -1366,34 +1597,40 @@
     <value>label1</value>
   </data>
   <data name="btn_OK.TabIndex" type="System.Int32, mscorlib">
-    <value>249</value>
+    <value>299</value>
   </data>
-  <data name="&gt;&gt;label2.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="checkBox4.TabIndex" type="System.Int32, mscorlib">
+    <value>292</value>
   </data>
   <data name="btn_Speichern.Size" type="System.Drawing.Size, System.Drawing">
     <value>193, 30</value>
   </data>
   <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
-    <value>Manual</value>
+    <value>CenterScreen</value>
   </data>
-  <data name="label13.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
+  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;comboBox_Bereitschaft.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="textBox_Netzverluste.Size" type="System.Drawing.Size, System.Drawing">
-    <value>77, 22</value>
+  <data name="&gt;&gt;label21.Name" xml:space="preserve">
+    <value>label21</value>
   </data>
-  <data name="label57.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+  <data name="label7.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="comboBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>280</value>
   </data>
   <data name="&gt;&gt;label2.ZOrder" xml:space="preserve">
-    <value>18</value>
+    <value>7</value>
   </data>
   <data name="textBox_untere_PGrenze.Size" type="System.Drawing.Size, System.Drawing">
     <value>46, 25</value>
+  </data>
+  <data name="label1.TabIndex" type="System.Int32, mscorlib">
+    <value>286</value>
   </data>
   <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.ZOrder" xml:space="preserve">
     <value>8</value>
@@ -1401,14 +1638,14 @@
   <data name="&gt;&gt;comboBox_Bereitschaft.Parent" xml:space="preserve">
     <value>groupBox4</value>
   </data>
-  <data name="&gt;&gt;label18.ZOrder" xml:space="preserve">
-    <value>7</value>
+  <data name="&gt;&gt;listView1.Name" xml:space="preserve">
+    <value>listView1</value>
   </data>
   <data name="&gt;&gt;checkBox2.Parent" xml:space="preserve">
-    <value>$this</value>
+    <value>groupBox6</value>
   </data>
-  <data name="label17.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+  <data name="label7.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="&gt;&gt;label2.Name" xml:space="preserve">
     <value>label2</value>
@@ -1419,8 +1656,11 @@
   <data name="label6.TabIndex" type="System.Int32, mscorlib">
     <value>200</value>
   </data>
-  <data name="checkBox6.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="&gt;&gt;label11.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="label21.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
   </data>
   <data name="checkBox3.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1428,29 +1668,29 @@
   <data name="label57.TabIndex" type="System.Int32, mscorlib">
     <value>196</value>
   </data>
-  <data name="label6.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="label57.Size" type="System.Drawing.Size, System.Drawing">
+    <value>126, 17</value>
   </data>
-  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;groupBox4.Name" xml:space="preserve">
+    <value>groupBox4</value>
   </data>
-  <data name="label11.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
+  <data name="comboBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>179, 25</value>
   </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items" xml:space="preserve">
-    <value>%</value>
+  <data name="&gt;&gt;label17.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="btn_Strom_Simu_Start.Size" type="System.Drawing.Size, System.Drawing">
-    <value>133, 30</value>
+  <data name="checkBox5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Wärmebedarf</value>
   </data>
-  <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>19, 17</value>
+  <data name="&gt;&gt;checkBox1.Name" xml:space="preserve">
+    <value>checkBox1</value>
   </data>
   <data name="label2.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+    <value>287</value>
   </data>
   <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.ZOrder" xml:space="preserve">
     <value>4</value>
@@ -1458,8 +1698,11 @@
   <data name="label18.Size" type="System.Drawing.Size, System.Drawing">
     <value>132, 17</value>
   </data>
-  <data name="groupBox2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>286, 293</value>
+  <data name="checkBox6.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;checkBox1.ZOrder" xml:space="preserve">
+    <value>9</value>
   </data>
   <data name="label3.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -1473,8 +1716,14 @@
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
     <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;textBox_Netzverluste.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="textBox_Netzverluste.TabIndex" type="System.Int32, mscorlib">
+    <value>227</value>
+  </data>
+  <data name="&gt;&gt;textBox_untere_PGrenze.Parent" xml:space="preserve">
+    <value>groupBox3</value>
+  </data>
+  <data name="bt_Hinzu.Location" type="System.Drawing.Point, System.Drawing">
+    <value>324, 19</value>
   </data>
   <data name="&gt;&gt;label20.ZOrder" xml:space="preserve">
     <value>2</value>
@@ -1482,17 +1731,20 @@
   <data name="checkBox3.Size" type="System.Drawing.Size, System.Drawing">
     <value>15, 14</value>
   </data>
-  <data name="label6.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
+  <data name="label10.Text" xml:space="preserve">
+    <value>Minimum Ladeenergie</value>
   </data>
-  <data name="&gt;&gt;label6.Parent" xml:space="preserve">
-    <value>groupBox3</value>
+  <data name="&gt;&gt;label57.Parent" xml:space="preserve">
+    <value>groupBox4</value>
   </data>
-  <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
-    <value>4</value>
+  <data name="label1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
   <data name="&gt;&gt;label12.Parent" xml:space="preserve">
     <value>$this</value>
+  </data>
+  <data name="groupBox6.TabIndex" type="System.Int32, mscorlib">
+    <value>311</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeenergie_max.Location" type="System.Drawing.Point, System.Drawing">
     <value>165, 54</value>
@@ -1500,20 +1752,32 @@
   <data name="&gt;&gt;label15.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="&gt;&gt;groupBox4.Name" xml:space="preserve">
-    <value>groupBox4</value>
+  <data name="label14.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Text" xml:space="preserve">
-    <value>%</value>
+  <data name="textBox_Stromspeicher_Ladeleistung_max.Location" type="System.Drawing.Point, System.Drawing">
+    <value>165, 82</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="&gt;&gt;checkBox3.Name" xml:space="preserve">
+    <value>checkBox3</value>
   </data>
   <data name="label21.Size" type="System.Drawing.Size, System.Drawing">
     <value>123, 17</value>
   </data>
-  <data name="comboBox5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>179, 25</value>
+  <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
+    <value>7</value>
   </data>
-  <data name="label12.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="groupBox_PufferSp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>496, 186</value>
+  </data>
+  <data name="comboBox6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>16, 233</value>
   </data>
   <data name="&gt;&gt;groupBox1.Type" xml:space="preserve">
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1521,20 +1785,26 @@
   <data name="&gt;&gt;textBox_Netzverluste.Parent" xml:space="preserve">
     <value>groupBox1</value>
   </data>
-  <data name="&gt;&gt;btn_OK.ZOrder" xml:space="preserve">
-    <value>6</value>
+  <data name="label57.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
-  <data name="&gt;&gt;label1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;groupBox6.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="checkBox4.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;comboBox5.Name" xml:space="preserve">
+    <value>comboBox5</value>
+  </data>
+  <data name="comboBox6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>179, 25</value>
   </data>
   <data name="btn_Strom_Simu_Start.Text" xml:space="preserve">
     <value>Starte Simulation</value>
   </data>
-  <data name="&gt;&gt;label21.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="label14.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+  <data name="label21.TabIndex" type="System.Int32, mscorlib">
+    <value>300</value>
   </data>
   <data name="label14.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -1543,22 +1813,25 @@
     <value>groupBox1</value>
   </data>
   <data name="label21.Location" type="System.Drawing.Point, System.Drawing">
-    <value>21, 70</value>
+    <value>402, 49</value>
   </data>
   <data name="comboBox3.Items2" xml:space="preserve">
-    <value>Spitzenkessel</value>
+    <value>Heizkessel</value>
   </data>
   <data name="comboBox2.Items1" xml:space="preserve">
     <value>Wärmepumpe</value>
   </data>
-  <data name="&gt;&gt;comboBox4.Name" xml:space="preserve">
-    <value>comboBox4</value>
+  <data name="label7.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="&gt;&gt;btn_Loeschen.Parent" xml:space="preserve">
+    <value>groupBox_PufferSp</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeenergie_max.TabIndex" type="System.Int32, mscorlib">
     <value>268</value>
   </data>
-  <data name="&gt;&gt;comboBox2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label11.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="label2.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -1570,7 +1843,7 @@
     <value>comboBox_Stromspeicher_LadeenergieMax_auswahl</value>
   </data>
   <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>207, 21</value>
+    <value>360, 21</value>
   </data>
   <data name="&gt;&gt;label15.Name" xml:space="preserve">
     <value>label15</value>
@@ -1578,22 +1851,28 @@
   <data name="checkBox_Heizstab.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI Semibold, 8pt</value>
   </data>
-  <data name="comboBox6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>267, 188</value>
+  <data name="&gt;&gt;groupBox3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="groupBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>249, 73</value>
+    <value>258, 74</value>
   </data>
   <data name="groupBox4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>22, 369</value>
+    <value>19, 481</value>
+  </data>
+  <data name="comboBox5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>179, 25</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Text" xml:space="preserve">
+    <value>90</value>
+  </data>
+  <data name="label10.Size" type="System.Drawing.Size, System.Drawing">
+    <value>138, 17</value>
   </data>
   <data name="btn_Speichern.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
-  </metadata>
-  <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>en-US</value>
   </metadata>
 </root>

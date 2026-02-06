@@ -117,189 +117,27 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="comboBox1.Items" xml:space="preserve">
-    <value>CHP</value>
-  </data>
-  <data name="comboBox1.Items1" xml:space="preserve">
-    <value>Heat pump</value>
-  </data>
-  <data name="comboBox1.Items2" xml:space="preserve">
-    <value>Top boiler</value>
-  </data>
-  <data name="comboBox1.Items3" xml:space="preserve">
-    <value>Solar heat</value>
-  </data>
-  <data name="comboBox2.Items" xml:space="preserve">
-    <value>CHP</value>
-  </data>
-  <data name="comboBox2.Items1" xml:space="preserve">
-    <value>Heat pump</value>
-  </data>
-  <data name="comboBox2.Items2" xml:space="preserve">
-    <value>Top boiler</value>
-  </data>
-  <data name="comboBox2.Items3" xml:space="preserve">
-    <value>Solar heat</value>
-  </data>
-  <data name="comboBox3.Items" xml:space="preserve">
-    <value>CHP</value>
-  </data>
-  <data name="comboBox3.Items1" xml:space="preserve">
-    <value>Heat pump</value>
-  </data>
-  <data name="comboBox3.Items2" xml:space="preserve">
-    <value>Top boiler</value>
-  </data>
-  <data name="comboBox3.Items3" xml:space="preserve">
-    <value>Solar heat</value>
-  </data>
-  <data name="comboBox4.Items" xml:space="preserve">
-    <value>CHP</value>
-  </data>
-  <data name="comboBox4.Items1" xml:space="preserve">
-    <value>Heat pump</value>
-  </data>
-  <data name="comboBox4.Items2" xml:space="preserve">
-    <value>Top boiler</value>
-  </data>
-  <data name="comboBox4.Items3" xml:space="preserve">
-    <value>Solar heat</value>
-  </data>
-  <data name="comboBox5.Items" xml:space="preserve">
-    <value>Photovoltaics</value>
-  </data>
-  <data name="comboBox6.Items" xml:space="preserve">
-    <value>Electricity storage</value>
-  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>100, 17</value>
+  <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>367, 12</value>
   </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Heat generator:</value>
+  <data name="label7.Text" xml:space="preserve">
+    <value>(*) Change the buffer memory, forward, backward =&gt;double click on the corresponding entry</value>
   </data>
-  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>109, 17</value>
+  <data name="btn_Loeschen.Text" xml:space="preserve">
+    <value>Delete</value>
   </data>
-  <data name="label2.Text" xml:space="preserve">
-    <value>Power generator:</value>
-  </data>
-  <data name="label3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>100, 17</value>
-  </data>
-  <data name="label3.Text" xml:space="preserve">
-    <value>Energy storage:</value>
-  </data>
-  <data name="checkBox_Heizstab.Text" xml:space="preserve">
-    <value>with heating element (if available)</value>
-  </data>
-  <data name="label57.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 29</value>
-  </data>
-  <data name="label57.Size" type="System.Drawing.Size, System.Drawing">
-    <value>152, 17</value>
-  </data>
-  <data name="label57.Text" xml:space="preserve">
-    <value>Readiness for operation:</value>
-  </data>
-  <data name="comboBox_Bereitschaft.Location" type="System.Drawing.Point, System.Drawing">
-    <value>164, 26</value>
-  </data>
-  <data name="label5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 17</value>
-  </data>
-  <data name="label5.Text" xml:space="preserve">
-    <value>Lower performance limit:</value>
-  </data>
-  <data name="textBox_untere_PGrenze.Location" type="System.Drawing.Point, System.Drawing">
-    <value>161, 26</value>
-  </data>
-  <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>210, 30</value>
-  </data>
-  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>203, 21</value>
-  </data>
-  <data name="label11.Text" xml:space="preserve">
-    <value>Simulation configuration</value>
-  </data>
-  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
-    <value>330, 17</value>
-  </data>
-  <data name="label12.Text" xml:space="preserve">
-    <value>Select producers in the order (if defined in the project):</value>
-  </data>
-  <data name="label14.Location" type="System.Drawing.Point, System.Drawing">
-    <value>223, 30</value>
-  </data>
-  <data name="btn_Speichern.Text" xml:space="preserve">
-    <value>Save configuration</value>
-  </data>
-  <data name="label15.Size" type="System.Drawing.Size, System.Drawing">
-    <value>100, 17</value>
-  </data>
-  <data name="label15.Text" xml:space="preserve">
-    <value>Network losses</value>
-  </data>
-  <data name="textBox_Netzverluste.Location" type="System.Drawing.Point, System.Drawing">
-    <value>111, 24</value>
-  </data>
-  <data name="textBox_Netzverluste.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 22</value>
-  </data>
-  <data name="label17.Size" type="System.Drawing.Size, System.Drawing">
-    <value>67, 21</value>
-  </data>
-  <data name="label17.Text" xml:space="preserve">
-    <value>Presets:</value>
-  </data>
-  <data name="btn_OK.Text" xml:space="preserve">
-    <value>Finish</value>
-  </data>
-  <data name="label18.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 119</value>
-  </data>
-  <data name="label18.Size" type="System.Drawing.Size, System.Drawing">
-    <value>150, 17</value>
-  </data>
-  <data name="label18.Text" xml:space="preserve">
-    <value>Charging threshold [kW]</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>175, 117</value>
-  </data>
-  <data name="btn_Strom_Simu_Start.Location" type="System.Drawing.Point, System.Drawing">
-    <value>360, 27</value>
-  </data>
-  <data name="btn_Strom_Simu_Start.Text" xml:space="preserve">
-    <value>Start simulation</value>
-  </data>
-  <data name="label21.Size" type="System.Drawing.Size, System.Drawing">
-    <value>120, 17</value>
-  </data>
-  <data name="label21.Text" xml:space="preserve">
-    <value>Priority descending</value>
-  </data>
-  <data name="groupBox1.Text" xml:space="preserve">
-    <value>Heat requirement</value>
-  </data>
-  <data name="groupBox2.Text" xml:space="preserve">
-    <value>Heat pump</value>
-  </data>
-  <data name="groupBox3.Text" xml:space="preserve">
-    <value>CHP</value>
-  </data>
-  <data name="groupBox4.Text" xml:space="preserve">
-    <value>Boiler</value>
+  <data name="bt_Hinzu.Text" xml:space="preserve">
+    <value>Add...</value>
   </data>
   <data name="groupBox5.Text" xml:space="preserve">
     <value>Electricity storage</value>
   </data>
   <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>260, 82</value>
+    <value>261, 82</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeleistung_max.Location" type="System.Drawing.Point, System.Drawing">
-    <value>175, 82</value>
+    <value>176, 82</value>
   </data>
   <data name="label20.Size" type="System.Drawing.Size, System.Drawing">
     <value>161, 17</value>
@@ -314,13 +152,34 @@
     <value>Maximum charging energy</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeenergie_max.Location" type="System.Drawing.Point, System.Drawing">
-    <value>175, 54</value>
+    <value>176, 54</value>
   </data>
   <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>260, 54</value>
+    <value>261, 54</value>
+  </data>
+  <data name="btn_Strom_Simu_Start.Location" type="System.Drawing.Point, System.Drawing">
+    <value>356, 27</value>
+  </data>
+  <data name="btn_Strom_Simu_Start.Size" type="System.Drawing.Size, System.Drawing">
+    <value>111, 30</value>
+  </data>
+  <data name="btn_Strom_Simu_Start.Text" xml:space="preserve">
+    <value>Start simulation</value>
+  </data>
+  <data name="label18.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 118</value>
+  </data>
+  <data name="label18.Size" type="System.Drawing.Size, System.Drawing">
+    <value>150, 17</value>
+  </data>
+  <data name="label18.Text" xml:space="preserve">
+    <value>Charging threshold [kW]</value>
   </data>
   <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>260, 28</value>
+    <value>261, 28</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>176, 117</value>
   </data>
   <data name="label10.Size" type="System.Drawing.Size, System.Drawing">
     <value>161, 17</value>
@@ -329,72 +188,186 @@
     <value>Minimum charging energy</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeenergie_min.Location" type="System.Drawing.Point, System.Drawing">
-    <value>175, 26</value>
+    <value>176, 26</value>
+  </data>
+  <data name="groupBox4.Text" xml:space="preserve">
+    <value>boiler</value>
+  </data>
+  <data name="comboBox_Bereitschaft.Location" type="System.Drawing.Point, System.Drawing">
+    <value>163, 26</value>
+  </data>
+  <data name="label57.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 29</value>
+  </data>
+  <data name="label57.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 17</value>
+  </data>
+  <data name="label57.Text" xml:space="preserve">
+    <value>Readiness for operation:</value>
+  </data>
+  <data name="label14.Location" type="System.Drawing.Point, System.Drawing">
+    <value>222, 30</value>
+  </data>
+  <data name="groupBox3.Text" xml:space="preserve">
+    <value>CHP</value>
+  </data>
+  <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>211, 30</value>
+  </data>
+  <data name="textBox_untere_PGrenze.Location" type="System.Drawing.Point, System.Drawing">
+    <value>162, 26</value>
+  </data>
+  <data name="label5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>153, 17</value>
+  </data>
+  <data name="label5.Text" xml:space="preserve">
+    <value>Lower performance limit:</value>
+  </data>
+  <data name="groupBox2.Text" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="checkBox_Heizstab.Size" type="System.Drawing.Size, System.Drawing">
+    <value>232, 36</value>
+  </data>
+  <data name="checkBox_Heizstab.Text" xml:space="preserve">
+    <value>with heating element (if available)</value>
+  </data>
+  <data name="groupBox1.Text" xml:space="preserve">
+    <value>Heat requirement</value>
+  </data>
+  <data name="textBox_Netzverluste.Location" type="System.Drawing.Point, System.Drawing">
+    <value>108, 25</value>
+  </data>
+  <data name="textBox_Netzverluste.Size" type="System.Drawing.Size, System.Drawing">
+    <value>67, 22</value>
+  </data>
+  <data name="label15.Location" type="System.Drawing.Point, System.Drawing">
+    <value>5, 26</value>
+  </data>
+  <data name="label15.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 17</value>
+  </data>
+  <data name="label15.Text" xml:space="preserve">
+    <value>Network losses:</value>
+  </data>
+  <data name="label21.Location" type="System.Drawing.Point, System.Drawing">
+    <value>325, 49</value>
+  </data>
+  <data name="label21.Size" type="System.Drawing.Size, System.Drawing">
+    <value>120, 17</value>
+  </data>
+  <data name="label21.Text" xml:space="preserve">
+    <value>Priority descending</value>
+  </data>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="label17.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 21</value>
+  </data>
+  <data name="label17.Text" xml:space="preserve">
+    <value>Simulation defaults:</value>
+  </data>
+  <data name="btn_Speichern.Text" xml:space="preserve">
+    <value>Save configuration</value>
+  </data>
+  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
+    <value>308, 17</value>
+  </data>
+  <data name="label12.Text" xml:space="preserve">
+    <value>Select producers in order (if defined in the project).</value>
+  </data>
+  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
+    <value>319, 21</value>
+  </data>
+  <data name="label11.Text" xml:space="preserve">
+    <value>Define generator, assign buffer memory:</value>
+  </data>
+  <data name="label3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 17</value>
+  </data>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Energy storage:</value>
+  </data>
+  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>109, 17</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Power generator:</value>
+  </data>
+  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 17</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Heat generator:</value>
+  </data>
+  <data name="comboBox6.Items" xml:space="preserve">
+    <value>Electricity storage</value>
+  </data>
+  <data name="comboBox5.Items" xml:space="preserve">
+    <value>Photovoltaics</value>
+  </data>
+  <data name="comboBox4.Items" xml:space="preserve">
+    <value>CHP</value>
+  </data>
+  <data name="comboBox4.Items1" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="comboBox4.Items2" xml:space="preserve">
+    <value>boiler</value>
+  </data>
+  <data name="comboBox4.Items3" xml:space="preserve">
+    <value>Solar thermal energy</value>
+  </data>
+  <data name="comboBox3.Items" xml:space="preserve">
+    <value>CHP</value>
+  </data>
+  <data name="comboBox3.Items1" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="comboBox3.Items2" xml:space="preserve">
+    <value>boiler</value>
+  </data>
+  <data name="comboBox3.Items3" xml:space="preserve">
+    <value>Solar thermal energy</value>
+  </data>
+  <data name="comboBox2.Items" xml:space="preserve">
+    <value>CHP</value>
+  </data>
+  <data name="comboBox2.Items1" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="comboBox2.Items2" xml:space="preserve">
+    <value>Heater</value>
+  </data>
+  <data name="comboBox2.Items3" xml:space="preserve">
+    <value>Solar thermal energy</value>
+  </data>
+  <data name="comboBox1.Items" xml:space="preserve">
+    <value>CHP</value>
+  </data>
+  <data name="comboBox1.Items1" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="comboBox1.Items2" xml:space="preserve">
+    <value>Heater</value>
+  </data>
+  <data name="comboBox1.Items3" xml:space="preserve">
+    <value>Solar thermal energy</value>
+  </data>
+  <data name="groupBox6.Text" xml:space="preserve">
+    <value>Producer &amp;&amp; storage</value>
+  </data>
+  <data name="groupBox_PufferSp.Text" xml:space="preserve">
+    <value>Buffer memory allocation</value>
+  </data>
+  <data name="checkBox_PufferSp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>209, 21</value>
+  </data>
+  <data name="checkBox_PufferSp.Text" xml:space="preserve">
+    <value>Show buffer memory allocation</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Simulation configuration</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.Items" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeleistung_max.Text" xml:space="preserve">
-    <value>100</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="comboBox_Bereitschaft.Text" xml:space="preserve">
-    <value>6000</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Text" xml:space="preserve">
-    <value>90</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="label14.Text" xml:space="preserve">
-    <value>Ha</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="textBox_untere_PGrenze.Text" xml:space="preserve">
-    <value>50</value>
-  </data>
-  <data name="textBox_Netzverluste.Text" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_min.Text" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Text" xml:space="preserve">
-    <value>90</value>
-  </data>
-  <data name="label6.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Text" xml:space="preserve">
-    <value>%</value>
   </data>
 </root>

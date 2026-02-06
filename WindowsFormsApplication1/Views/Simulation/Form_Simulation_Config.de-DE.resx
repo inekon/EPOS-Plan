@@ -118,196 +118,214 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 21</value>
+  <data name="label21.Size" type="System.Drawing.Size, System.Drawing">
+    <value>126, 17</value>
   </data>
-  <data name="label11.Text" xml:space="preserve">
-    <value>Simulationskonfiguration</value>
+  <data name="label21.Text" xml:space="preserve">
+    <value>Priorität absteigend</value>
   </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items" xml:space="preserve">
-    <value>%</value>
+  <data name="comboBox1.Items" xml:space="preserve">
+    <value>BHKW</value>
   </data>
-  <data name="comboBox_NetzvEinheit.Items" xml:space="preserve">
-    <value>%</value>
+  <data name="comboBox1.Items1" xml:space="preserve">
+    <value>Wärmepumpe</value>
   </data>
-  <data name="comboBox_NetzvEinheit.Text" xml:space="preserve">
-    <value>%</value>
+  <data name="comboBox1.Items2" xml:space="preserve">
+    <value>Heizkessel</value>
   </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Text" xml:space="preserve">
-    <value>%</value>
+  <data name="comboBox1.Items3" xml:space="preserve">
+    <value>Solarthermie</value>
   </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text" xml:space="preserve">
-    <value>%</value>
+  <data name="comboBox2.Items" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="comboBox2.Items1" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="comboBox2.Items2" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="comboBox2.Items3" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="comboBox3.Items" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="comboBox3.Items1" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="comboBox3.Items2" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="comboBox3.Items3" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="comboBox4.Items" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="comboBox4.Items1" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="comboBox4.Items2" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="comboBox4.Items3" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="comboBox5.Items" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="comboBox6.Items" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Wärmeerzeuger:</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Stromerzeuger:</value>
+  </data>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Energiespeicher:</value>
+  </data>
+  <data name="checkBox_Heizstab.Text" xml:space="preserve">
+    <value>mit Heizstab (falls vorhanden)</value>
+  </data>
+  <data name="label57.Text" xml:space="preserve">
+    <value>Betriebsbereitschaft:</value>
+  </data>
+  <data name="comboBox_Bereitschaft.Text" xml:space="preserve">
+    <value>6000</value>
+  </data>
+  <data name="label5.Text" xml:space="preserve">
+    <value>Untere Leistungsgrenze:</value>
+  </data>
+  <data name="textBox_untere_PGrenze.Text" xml:space="preserve">
+    <value>50</value>
   </data>
   <data name="label6.Text" xml:space="preserve">
     <value>%</value>
   </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Text" xml:space="preserve">
+  <data name="label11.Text" xml:space="preserve">
+    <value>Erzeuger definieren, Pufferspeicher zuordnen:</value>
+  </data>
+  <data name="label12.Text" xml:space="preserve">
+    <value>Erzeuger in der Reihenfolge auswählen (falls im Projekt definiert).</value>
+  </data>
+  <data name="label14.Text" xml:space="preserve">
+    <value>h/a</value>
+  </data>
+  <data name="btn_Speichern.Text" xml:space="preserve">
+    <value>Konfiguration speichern</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Items" xml:space="preserve">
     <value>%</value>
   </data>
+  <data name="comboBox_NetzvEinheit.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="label15.Text" xml:space="preserve">
+    <value>Netzverluste</value>
+  </data>
+  <data name="textBox_Netzverluste.Text" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="label17.Text" xml:space="preserve">
+    <value>Simulation Voreinstellungen:</value>
+  </data>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="label18.Text" xml:space="preserve">
+    <value>Ladeschwellwert [kW]</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Text" xml:space="preserve">
+    <value>90</value>
+  </data>
+  <data name="btn_Strom_Simu_Start.Text" xml:space="preserve">
+    <value>Starte Simulation</value>
+  </data>
+  <data name="groupBox1.Text" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
+  <data name="groupBox2.Text" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="groupBox3.Text" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="groupBox4.Text" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
   <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeleistung_max.Text" xml:space="preserve">
+    <value>100</value>
+  </data>
+  <data name="label20.Text" xml:space="preserve">
+    <value>Maximum Ladeleistung</value>
+  </data>
+  <data name="label13.Text" xml:space="preserve">
+    <value>Maximum Ladeenergie</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Text" xml:space="preserve">
+    <value>90</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text" xml:space="preserve">
     <value>%</value>
   </data>
   <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items" xml:space="preserve">
     <value>%</value>
   </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_min.Text" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="textBox_Netzverluste.Text" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeleistung_max.Text" xml:space="preserve">
-    <value>100</value>
-  </data>
-  <data name="textBox_untere_PGrenze.Text" xml:space="preserve">
-    <value>50</value>
-  </data>
-  <data name="comboBox_Bereitschaft.Text" xml:space="preserve">
-    <value>6000</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Text" xml:space="preserve">
-    <value>90</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Text" xml:space="preserve">
-    <value>90</value>
-  </data>
-  <data name="btn_OK.Text" xml:space="preserve">
-    <value>Beenden</value>
-  </data>
-  <data name="label57.Text" xml:space="preserve">
-    <value>Betriebsbereitschaft:</value>
-  </data>
-  <data name="groupBox3.Text" xml:space="preserve">
-    <value>BHKW</value>
-  </data>
-  <data name="comboBox3.Items" xml:space="preserve">
-    <value>BHKW</value>
-  </data>
-  <data name="comboBox4.Items" xml:space="preserve">
-    <value>BHKW</value>
-  </data>
-  <data name="comboBox2.Items" xml:space="preserve">
-    <value>BHKW</value>
-  </data>
-  <data name="comboBox1.Items" xml:space="preserve">
-    <value>BHKW</value>
-  </data>
-  <data name="label3.Text" xml:space="preserve">
-    <value>Energiespeicher:</value>
-  </data>
-  <data name="label12.Text" xml:space="preserve">
-    <value>Erzeuger in der Reihenfolge auswählen (falls im Projekt definiert):</value>
-  </data>
-  <data name="label14.Text" xml:space="preserve">
-    <value>h/a</value>
-  </data>
-  <data name="groupBox4.Text" xml:space="preserve">
-    <value>Heizkessel</value>
-  </data>
-  <data name="btn_Speichern.Text" xml:space="preserve">
-    <value>Konfiguration speichern</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
   <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items1" xml:space="preserve">
     <value>kWh/a</value>
   </data>
-  <data name="label18.Text" xml:space="preserve">
-    <value>Ladeschwellwert [kW]</value>
-  </data>
-  <data name="label13.Text" xml:space="preserve">
-    <value>Maximum Ladeenergie</value>
-  </data>
-  <data name="label20.Text" xml:space="preserve">
-    <value>Maximum Ladeleistung</value>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Text" xml:space="preserve">
+    <value>%</value>
   </data>
   <data name="label10.Text" xml:space="preserve">
     <value>Minimum Ladeenergie</value>
   </data>
-  <data name="checkBox_Heizstab.Text" xml:space="preserve">
-    <value>mit Heizstab (falls vorhanden)</value>
-  </data>
-  <data name="label15.Text" xml:space="preserve">
-    <value>Netzverluste</value>
-  </data>
-  <data name="comboBox5.Items" xml:space="preserve">
-    <value>Photovoltaik</value>
-  </data>
-  <data name="label21.Text" xml:space="preserve">
-    <value>Priorität absteigend</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Simulation Konfiguration</value>
-  </data>
-  <data name="comboBox2.Items3" xml:space="preserve">
-    <value>Solare Wärme</value>
-  </data>
-  <data name="comboBox4.Items3" xml:space="preserve">
-    <value>Solare Wärme</value>
-  </data>
-  <data name="comboBox3.Items3" xml:space="preserve">
-    <value>Solare Wärme</value>
-  </data>
-  <data name="comboBox1.Items3" xml:space="preserve">
-    <value>Solare Wärme</value>
-  </data>
-  <data name="comboBox3.Items2" xml:space="preserve">
-    <value>Spitzenkessel</value>
-  </data>
-  <data name="comboBox4.Items2" xml:space="preserve">
-    <value>Spitzenkessel</value>
-  </data>
-  <data name="comboBox2.Items2" xml:space="preserve">
-    <value>Spitzenkessel</value>
-  </data>
-  <data name="comboBox1.Items2" xml:space="preserve">
-    <value>Spitzenkessel</value>
-  </data>
-  <data name="btn_Strom_Simu_Start.Text" xml:space="preserve">
-    <value>Starte Simulation</value>
-  </data>
-  <data name="label2.Text" xml:space="preserve">
-    <value>Stromerzeuger:</value>
-  </data>
-  <data name="comboBox6.Items" xml:space="preserve">
-    <value>Stromspeicher</value>
+  <data name="textBox_Stromspeicher_Ladeenergie_min.Text" xml:space="preserve">
+    <value>10</value>
   </data>
   <data name="groupBox5.Text" xml:space="preserve">
     <value>Stromspeicher</value>
   </data>
-  <data name="label5.Text" xml:space="preserve">
-    <value>Untere Leistungsgrenze:</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Simulation Konfiguration</value>
   </data>
-  <data name="label17.Text" xml:space="preserve">
-    <value>Voreinstellungen:</value>
+  <data name="bt_Hinzu.Text" xml:space="preserve">
+    <value>Hinzufügen...</value>
   </data>
-  <data name="groupBox1.Text" xml:space="preserve">
-    <value>Wärmebedarf</value>
+  <data name="btn_Loeschen.Text" xml:space="preserve">
+    <value>Löschen</value>
   </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Wärmeerzeuger:</value>
+  <data name="label7.Text" xml:space="preserve">
+    <value>(*) Änderung des  Pufferspeichers, Vorlauf, Rücklauf =&gt;Doppelclick auf entspechenden Eintrag </value>
   </data>
-  <data name="comboBox2.Items1" xml:space="preserve">
-    <value>Wärmepumpe</value>
+  <data name="groupBox6.Text" xml:space="preserve">
+    <value>Erzeuger &amp;&amp; Speicher</value>
   </data>
-  <data name="comboBox3.Items1" xml:space="preserve">
-    <value>Wärmepumpe</value>
+  <data name="groupBox_PufferSp.Text" xml:space="preserve">
+    <value>Pufferspeicher Zuordnung</value>
   </data>
-  <data name="comboBox4.Items1" xml:space="preserve">
-    <value>Wärmepumpe</value>
-  </data>
-  <data name="comboBox1.Items1" xml:space="preserve">
-    <value>Wärmepumpe</value>
-  </data>
-  <data name="groupBox2.Text" xml:space="preserve">
-    <value>Wärmepumpe</value>
+  <data name="checkBox_PufferSp.Text" xml:space="preserve">
+    <value>Pufferspeicher Zuordnung einblenden</value>
   </data>
 </root>

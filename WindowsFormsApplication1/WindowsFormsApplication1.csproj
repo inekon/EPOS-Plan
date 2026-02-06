@@ -190,6 +190,7 @@
     <Compile Include="Controller\WaermebedarfExternKontextMenuCtrl.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Controller\Z_ProjektPufferSpCtrl.cs" />
     <Compile Include="Controller\Z_ProjektSolarganglinieCtrl.cs" />
     <Compile Include="Controller\Z_ProjektStromganglinieCtrl.cs" />
     <Compile Include="Controller\Z_ProjektStromverbraucherCtrl.cs" />
@@ -197,6 +198,7 @@
     <Compile Include="Model\KenndatenKuehlungModel.cs" />
     <Compile Include="Model\KonfigurationModel.cs" />
     <Compile Include="Model\PhotovoltaikModel.cs" />
+    <Compile Include="Model\Z_ProjektPufferSpModel.cs" />
     <Compile Include="Model\ProzesswaermeModel.cs" />
     <Compile Include="Model\SolarganglinieModel.cs" />
     <Compile Include="Model\SolarkollektorenModel.cs" />
@@ -408,6 +410,12 @@
     </Compile>
     <Compile Include="Views\Pufferspeicher\Form_PufferSp_einlesen.designer.cs">
       <DependentUpon>Form_PufferSp_einlesen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Simulation\Form_KonfigPufferspeicher.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Simulation\Form_KonfigPufferspeicher.Designer.cs">
+      <DependentUpon>Form_KonfigPufferspeicher.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Simulation\Form_Simulation_Config.cs">
       <SubType>Form</SubType>
@@ -883,6 +891,15 @@
     <EmbeddedResource Include="Views\Pufferspeicher\Form_PufferSp_einlesen.resx">
       <DependentUpon>Form_PufferSp_einlesen.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_KonfigPufferspeicher.de-DE.resx">
+      <DependentUpon>Form_KonfigPufferspeicher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_KonfigPufferspeicher.en-US.resx">
+      <DependentUpon>Form_KonfigPufferspeicher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\Form_KonfigPufferspeicher.resx">
+      <DependentUpon>Form_KonfigPufferspeicher.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Config.de-DE.resx">
       <DependentUpon>Form_Simulation_Config.cs</DependentUpon>
     </EmbeddedResource>
@@ -1340,6 +1357,8 @@
     <None Include="Resources\Menue5.png" />
     <None Include="Resources\Menue6.png" />
     <None Include="Resources\germany.png" />
+    <Content Include="Resources\edit.ico" />
+    <Content Include="Resources\edit.png" />
     <Content Include="Resources\PDetailansicht.jpg" />
     <None Include="Resources\PSchnellSim.jpg" />
     <None Include="Resources\PDetailSim.jpg" />

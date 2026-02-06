@@ -165,8 +165,8 @@ namespace WindowsFormsApplication1
                         {
                             Z_ProjektStromverbraucherCtrl ctrl = new Z_ProjektStromverbraucherCtrl();
                             ctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Bezeichner") + "'");
-                            if (ctrl.rows == 0) { MessageBox.Show("Fehler bei Ermittlung der Monatsverteilung!"); return null; }
-                            pjv = (float)ctrl.items[0].m_Summe;
+                            if (ctrl.rows > 0)
+                                pjv = (float)ctrl.items[0].m_Summe;
                         }
 
                         for (int i = 0; i < 12; i++)
