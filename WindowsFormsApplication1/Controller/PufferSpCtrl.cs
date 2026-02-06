@@ -8,7 +8,6 @@ namespace WindowsFormsApplication1
     {
         public int rows;
         public OdbcCommand DBCommand;
-        OdbcDataReader DBReader;
         public PufferSpModel model;
         
         public PufferSpCtrl()
@@ -34,7 +33,7 @@ namespace WindowsFormsApplication1
             }
             else sql = "select * from Tab_Pufferspeicher where " + filter;
             DBCommand.CommandText = sql;
-            DBReader = DBCommand.ExecuteReader();
+            OdbcDataReader DBReader = DBCommand.ExecuteReader();
 
             items = new PufferSpModel[1000];
             rows = 0;

@@ -216,8 +216,7 @@ namespace WindowsFormsApplication1
                 Z_ProjektStromverbraucherCtrl ctrl = new Z_ProjektStromverbraucherCtrl();
                 ctrl.UpdateSumme(double.Parse(textBox_Verbrauch.Text), textBox_Stromname.Text, m_ID_Projekt);
             }
-            double.Parse(textBox_Verbrauch.Text);
-
+ 
             simulation.m_ID_Projekt = m_ID_Projekt;
             
             list = listView_Strom_Auswahl.Items.Cast<ListViewItem>().Select(item => item.Text).ToList();

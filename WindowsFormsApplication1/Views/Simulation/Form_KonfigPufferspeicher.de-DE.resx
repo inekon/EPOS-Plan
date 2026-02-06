@@ -117,44 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="button_NeuProjekt.Text" xml:space="preserve">
-    <value>New Project...</value>
-  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="label_Projekt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 194</value>
+  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>127, 17</value>
   </data>
-  <data name="label_Projekt.Size" type="System.Drawing.Size, System.Drawing">
-    <value>169, 28</value>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Erzeuger auswählen:</value>
   </data>
-  <data name="label_Projekt.Text" xml:space="preserve">
-    <value>Select existing project</value>
+  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>158, 17</value>
   </data>
-  <data name="listBox_Projekte.Size" type="System.Drawing.Size, System.Drawing">
-    <value>169, 284</value>
-  </data>
-  <data name="pnlLeft.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 654</value>
-  </data>
-  <data name="btnSpeichern.Text" xml:space="preserve">
-    <value>Save</value>
-  </data>
-  <data name="tableLayoutPanel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>827, 10</value>
-  </data>
-  <data name="pnlBottom.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1080, 57</value>
-  </data>
-  <data name="pnlContent.Location" type="System.Drawing.Point, System.Drawing">
-    <value>192, 0</value>
-  </data>
-  <data name="pnlContent.Size" type="System.Drawing.Size, System.Drawing">
-    <value>888, 654</value>
-  </data>
-  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>1080, 711</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Project Wizard</value>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Pufferspeicher auswählen:</value>
   </data>
 </root>
