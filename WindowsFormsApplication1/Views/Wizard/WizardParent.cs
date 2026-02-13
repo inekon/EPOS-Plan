@@ -680,9 +680,9 @@ namespace WindowsFormsApplication1
                 projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + projekt + "'");
 
                 string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Gebaeude, Z_ProjektGebaeude.[ID_Projekt], " +
-                    "[DBGebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
-                    "dezWarmwasserbereitung, Gebaeudeart, Beschreibung  FROM [DBGebaeude] " + 
-                    "INNER JOIN Z_ProjektGebaeude ON [DBGebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
+                    "[Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
+                    "dezWarmwasserbereitung, Gebaeudeart, Beschreibung  FROM [Tab_Gebaeude] " + 
+                    "INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
                     " where Z_ProjektGebaeude.ID_Projekt=" + projctrl.m_ID;
 
                 rs.Open(sql);

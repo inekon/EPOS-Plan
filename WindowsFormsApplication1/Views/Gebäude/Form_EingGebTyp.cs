@@ -33,7 +33,7 @@ namespace WindowsFormsApplication1
         public void SetControls()
         {
             TagVCtrl ctrl = new TagVCtrl();
-            ctrl.ReadAll("select * from DBTagV");
+            ctrl.ReadAll("select * from Tab_DBTagV");
             for (int i = 0; i < ctrl.rows; i++)
             {
                 listBox_Typename.Items.Add(ctrl.items[i].Name);  
@@ -48,11 +48,11 @@ namespace WindowsFormsApplication1
             TagVCtrl ctrl = new TagVCtrl();
 
             if (listBox_Typename.Text == "") return;
-            ctrl.ReadAll("select * from DBTagV where Name='" + listBox_Typename.Text + "'");
+            ctrl.ReadAll("select * from Tab_DBTagV where Name='" + listBox_Typename.Text + "'");
             textBox_Beschreibung.Text = ctrl.items[0].Beschreibung;
             textBox_Beschreibung.Select(0, 0); 
 
-            string sql = "SELECT Count('Verteilung') AS Ausdr1 FROM DBTagVDaten WHERE [ID_TagV]=" + ctrl.items[0].ID;
+            string sql = "SELECT Count('Verteilung') AS Ausdr1 FROM Tab_DBTagVDaten WHERE [ID_TagV]=" + ctrl.items[0].ID;
             rs.Open(sql);
             rs.Next();
 
@@ -63,7 +63,7 @@ namespace WindowsFormsApplication1
 
             Verteilung = new double[anz, 24];
 
-            rs.Open("select * from DBTagVDaten where ID_TagV=" + ctrl.items[0].ID);
+            rs.Open("select * from Tab_DBTagVDaten where ID_TagV=" + ctrl.items[0].ID);
             rs.Next();
 
             listBox_Kurve.Items.Clear();
@@ -196,23 +196,23 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from DBTagVDaten where ID_TagV=" + id_tagv, Program.DBConnection);
+                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_DBTagVDaten where ID_TagV=" + id_tagv, Program.DBConnection);
                 DataSet dataSet = new DataSet();
 
-                adapter.Fill(dataSet, "DBTagVDaten");
+                adapter.Fill(dataSet, "Tab_DBTagVDaten");
 
                 for (int n = 0; n < AnzalTagV / 24; n++)
                 {
                     for (int i = 0; i < 24; i++)
                     {
-                        DataRow row = dataSet.Tables["DBTagVDaten"].Rows[n * 24 + i];
+                        DataRow row = dataSet.Tables["Tab_DBTagVDaten"].Rows[n * 24 + i];
                         row["ID_TagV"] = id_tagv;
                         row["Verteilung"] = Verteilung[n, i];
                     }
                 }
 
                 OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "DBTagVDaten");
+                adapter.Update(dataSet, "Tab_DBTagVDaten");
    
                 return true;
             }
@@ -241,7 +241,7 @@ namespace WindowsFormsApplication1
 
                 OdbcCommand DBCommand;
                 DBCommand = Program.DBConnection.CreateCommand();
-                DBCommand.CommandText = "INSERT INTO DBTagV (Name, Beschreibung, Veraenderbar) SELECT '" + frm.m_szName + "' AS Ausdr1, '" + frm.m_szBeschreibung + "' AS Ausdr2, true as Ausdr3";
+                DBCommand.CommandText = "INSERT INTO Tab_DBTagV (Name, Beschreibung, Veraenderbar) SELECT '" + frm.m_szName + "' AS Ausdr1, '" + frm.m_szBeschreibung + "' AS Ausdr2, true as Ausdr3";
                 
                 try
                 {
@@ -255,13 +255,13 @@ namespace WindowsFormsApplication1
                 }
                 
                 RecordSet rs = new RecordSet();
-                rs.Open("select ID from DBTagV where Name='" + frm.m_szName + "'");
+                rs.Open("select ID from Tab_DBTagV where Name='" + frm.m_szName + "'");
                 rs.Next();
                 int nID = (int)rs.Read("ID");
 
                 for (int i = 0; i < 192; i++)
                 {
-                    DBCommand.CommandText = "INSERT INTO DBTagVDaten (ID_TagV, Verteilung) SELECT " + nID + " AS Ausdr1,0 AS Ausdr2";
+                    DBCommand.CommandText = "INSERT INTO Tab_DBTagVDaten (ID_TagV, Verteilung) SELECT " + nID + " AS Ausdr1,0 AS Ausdr2";
                     try
                     {
                         DBCommand.ExecuteNonQuery();
@@ -284,7 +284,7 @@ namespace WindowsFormsApplication1
 
             OdbcCommand DBCommand;
             DBCommand = Program.DBConnection.CreateCommand();
-            DBCommand.CommandText = "DELETE DBTagV.ID FROM DBTagV WHERE DBTagV.ID=" + ID_TagV;
+            DBCommand.CommandText = "DELETE Tab_DBTagV.ID FROM Tab_DBTagV WHERE Tab_DBTagV.ID=" + ID_TagV;
 
             try
             {

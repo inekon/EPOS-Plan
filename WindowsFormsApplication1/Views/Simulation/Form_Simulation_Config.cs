@@ -59,7 +59,6 @@ namespace WindowsFormsApplication1
 
             ListViewItem item = listView1.SelectedItems[0];
 
-
             ListViewHitTestInfo hit = listView1.HitTest(e.Location);
             int subItemIndex = hit.Item.SubItems.IndexOf(hit.SubItem);
             index = subItemIndex;
@@ -290,6 +289,7 @@ namespace WindowsFormsApplication1
             {
                 if (!listErzeuger.Contains(comboBox4.Text)) listErzeuger.Add(comboBox4.Text);
             }
+            if (!listErzeuger.Contains("Gesamtsystem")) listErzeuger.Add("Gesamtsystem");
         }
 
         private void button3_Click(object sender, EventArgs e)

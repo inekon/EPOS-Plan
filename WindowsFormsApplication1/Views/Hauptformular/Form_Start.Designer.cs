@@ -57,6 +57,9 @@
             this.pBox_ProjektNeu = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label73 = new System.Windows.Forms.Label();
+            this.label74 = new System.Windows.Forms.Label();
+            this.pBox_Brauchwasser = new System.Windows.Forms.PictureBox();
             this.label38 = new System.Windows.Forms.Label();
             this.label39 = new System.Windows.Forms.Label();
             this.label36 = new System.Windows.Forms.Label();
@@ -159,6 +162,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektNeu)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_Brauchwasser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WBHinweis)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Prozess)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WBedarfDaten)).BeginInit();
@@ -416,6 +420,9 @@
             // tabPage2
             // 
             resources.ApplyResources(this.tabPage2, "tabPage2");
+            this.tabPage2.Controls.Add(this.label73);
+            this.tabPage2.Controls.Add(this.label74);
+            this.tabPage2.Controls.Add(this.pBox_Brauchwasser);
             this.tabPage2.Controls.Add(this.label38);
             this.tabPage2.Controls.Add(this.label39);
             this.tabPage2.Controls.Add(this.label36);
@@ -433,6 +440,31 @@
             this.tabPage2.Controls.Add(this.pBox_Gebaude);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // label73
+            // 
+            resources.ApplyResources(this.label73, "label73");
+            this.label73.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label73.ForeColor = System.Drawing.Color.DimGray;
+            this.label73.Name = "label73";
+            this.label73.Click += new System.EventHandler(this.label73_Click);
+            // 
+            // label74
+            // 
+            resources.ApplyResources(this.label74, "label74");
+            this.label74.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label74.Name = "label74";
+            this.label74.Click += new System.EventHandler(this.label74_Click);
+            // 
+            // pBox_Brauchwasser
+            // 
+            resources.ApplyResources(this.pBox_Brauchwasser, "pBox_Brauchwasser");
+            this.pBox_Brauchwasser.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt3;
+            this.pBox_Brauchwasser.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pBox_Brauchwasser.Name = "pBox_Brauchwasser";
+            this.pBox_Brauchwasser.TabStop = false;
+            this.pBox_Brauchwasser.Click += new System.EventHandler(this.pBox_Brauchwasser_Click);
+            this.pBox_Brauchwasser.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Brauchwasser_Paint);
             // 
             // label38
             // 
@@ -1219,6 +1251,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pBox_Brauchwasser)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WBHinweis)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Prozess)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WBedarfDaten)).EndInit();
@@ -1371,5 +1404,8 @@
         private System.Windows.Forms.Label label71;
         private System.Windows.Forms.Label label72;
         private System.Windows.Forms.PictureBox pBox_Pufferspeicher;
+        private System.Windows.Forms.Label label73;
+        private System.Windows.Forms.Label label74;
+        private System.Windows.Forms.PictureBox pBox_Brauchwasser;
     }
 }

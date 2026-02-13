@@ -93,12 +93,11 @@ namespace WindowsFormsApplication1
             this.Label56 = new System.Windows.Forms.Label();
             this.Label57 = new System.Windows.Forms.Label();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.btn_Brauchwasser = new System.Windows.Forms.Button();
             this.Label45 = new System.Windows.Forms.Label();
             this.textBox_Luftwechsel = new System.Windows.Forms.TextBox();
-            this.textBox_WWNutzer = new System.Windows.Forms.TextBox();
-            this.Label46 = new System.Windows.Forms.Label();
             this.Label47 = new System.Windows.Forms.Label();
-            this.Label48 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -500,14 +499,25 @@ namespace WindowsFormsApplication1
             // groupBox7
             // 
             resources.ApplyResources(this.groupBox7, "groupBox7");
+            this.groupBox7.Controls.Add(this.label1);
+            this.groupBox7.Controls.Add(this.btn_Brauchwasser);
             this.groupBox7.Controls.Add(this.Label45);
             this.groupBox7.Controls.Add(this.textBox_Luftwechsel);
-            this.groupBox7.Controls.Add(this.textBox_WWNutzer);
-            this.groupBox7.Controls.Add(this.Label46);
             this.groupBox7.Controls.Add(this.Label47);
-            this.groupBox7.Controls.Add(this.Label48);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.TabStop = false;
+            // 
+            // label1
+            // 
+            resources.ApplyResources(this.label1, "label1");
+            this.label1.Name = "label1";
+            // 
+            // btn_Brauchwasser
+            // 
+            resources.ApplyResources(this.btn_Brauchwasser, "btn_Brauchwasser");
+            this.btn_Brauchwasser.Name = "btn_Brauchwasser";
+            this.btn_Brauchwasser.UseVisualStyleBackColor = true;
+            this.btn_Brauchwasser.Click += new System.EventHandler(this.btn_Brauchwasser_Click);
             // 
             // Label45
             // 
@@ -519,29 +529,12 @@ namespace WindowsFormsApplication1
             resources.ApplyResources(this.textBox_Luftwechsel, "textBox_Luftwechsel");
             this.textBox_Luftwechsel.Name = "textBox_Luftwechsel";
             // 
-            // textBox_WWNutzer
-            // 
-            resources.ApplyResources(this.textBox_WWNutzer, "textBox_WWNutzer");
-            this.textBox_WWNutzer.Name = "textBox_WWNutzer";
-            // 
-            // Label46
-            // 
-            resources.ApplyResources(this.Label46, "Label46");
-            this.Label46.Name = "Label46";
-            // 
             // Label47
             // 
             resources.ApplyResources(this.Label47, "Label47");
             this.Label47.BackColor = System.Drawing.Color.Black;
             this.Label47.ForeColor = System.Drawing.Color.White;
             this.Label47.Name = "Label47";
-            // 
-            // Label48
-            // 
-            resources.ApplyResources(this.Label48, "Label48");
-            this.Label48.BackColor = System.Drawing.Color.Black;
-            this.Label48.ForeColor = System.Drawing.Color.White;
-            this.Label48.Name = "Label48";
             // 
             // Form_Gebaeude2
             // 
@@ -641,12 +634,8 @@ private System.Windows.Forms.Label Label57;
 private System.Windows.Forms.GroupBox groupBox7;
 private System.Windows.Forms.Label Label45;
 private System.Windows.Forms.TextBox textBox_Luftwechsel;
-private System.Windows.Forms.TextBox textBox_WWNutzer;
-private System.Windows.Forms.Label Label46;
 private System.Windows.Forms.Label Label47;
-private System.Windows.Forms.Label Label48;
-
-
- 
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btn_Brauchwasser;
     }
 }

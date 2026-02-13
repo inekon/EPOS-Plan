@@ -372,4 +372,10 @@
   <data name="label72.Text" xml:space="preserve">
     <value>Pufferspeicher</value>
   </data>
+  <data name="label73.Text" xml:space="preserve">
+    <value>Definieren Sie ein Brauchwasserprofil</value>
+  </data>
+  <data name="label74.Text" xml:space="preserve">
+    <value>Brauchwasserwärme</value>
+  </data>
 </root>

@@ -741,5 +741,72 @@ namespace WindowsFormsApplication1
                 return false;
             }
         }
+
+        public bool Del_Projekt_Brauchwasser(int projektID, int ID = 0)
+        {
+            try
+            {
+                string sql;
+                if (ID > 0)
+                {
+                    sql = "select * from Z_Projekt_Brauchwasser where ID_Projekt=" + projektID + " and ID=" + ID;
+                }
+                else sql = "select * from Z_Projekt_Brauchwasser where ID_Projekt=" + projektID;
+
+                OdbcDataAdapter adapter = new OdbcDataAdapter(sql, Program.DBConnection);
+                DataSet dataSet = new DataSet();
+                adapter.Fill(dataSet, "Z_Projekt_Brauchwasser");
+
+                for (int i = 0; i < dataSet.Tables["Z_Projekt_Brauchwasser"].Rows.Count; i++)
+                {
+                    DataRow row = dataSet.Tables["Z_Projekt_Brauchwasser"].Rows[i];
+                    row.Delete();
+                }
+                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
+                adapter.Update(dataSet, "Z_Projekt_Brauchwasser");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
+                return false;
+            }
+
+        }
+
+        public bool Add_Projekt_Brauchwasser(int projektID, List<Z_ProjektBrauchwasserModel> list)
+        {
+            try
+            {
+                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_Projekt_Brauchwasser", Program.DBConnection);
+                DataSet dataSet = new DataSet();
+
+                adapter.Fill(dataSet, "Z_Projekt_Brauchwasser");
+
+                for (int i = 0; i < list.Count; i++)
+                {
+                    DataRow newRow = dataSet.Tables["Z_Projekt_Brauchwasser"].NewRow();
+                    newRow["ID"] = list[i].ID_Z;
+                    newRow["ID_Projekt"] = projektID;
+                    newRow["ID_Brauchwasser"] = list[i].ID_Brauchwasser;
+                    newRow["Bezeichner"] = list[i].szBezeichner;
+                    newRow["Summe"] = list[i].Summe;
+                    dataSet.Tables["Z_Projekt_Brauchwasser"].Rows.Add(newRow);
+                }
+
+                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
+                adapter.Update(dataSet, "Z_Projekt_Brauchwasser");
+
+                Console.WriteLine("Daten erfolgreich aktualisiert.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
+                return false;
+            }
+
+        }
     }
 }

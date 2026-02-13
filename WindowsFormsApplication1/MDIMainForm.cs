@@ -208,6 +208,13 @@ namespace WindowsFormsApplication1
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.PufferSp();
         }
+
+        private void MenuItem_Brauchwasser_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.Brauchwasser();
+        }
+ 
     }
 }
 

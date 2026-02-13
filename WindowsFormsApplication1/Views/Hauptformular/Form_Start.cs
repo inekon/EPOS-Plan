@@ -59,7 +59,6 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
 
             frm.list_pwmodel.Clear();
-   //         frm.SetControls(m_szProjektname);
 
             string sql = "SELECT Z_Projekt_Prozesswaerme.ID, Z_Projekt_Prozesswaerme.ID_Projekt, " +
                 "Z_Projekt_Prozesswaerme.ID_Prozesswaerme, Tab_Prozesswaerme.Prozessname, Z_Projekt_Prozesswaerme.Summe " +
@@ -159,9 +158,9 @@ namespace WindowsFormsApplication1
             //frm.SetControls(m_szProjektname);
 
             string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Gebaeude, Z_ProjektGebaeude.[ID_Projekt], " +
-                "[DBGebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
-                "dezWarmwasserbereitung, Gebaeudeart, Beschreibung  FROM [DBGebaeude] " +
-                "INNER JOIN Z_ProjektGebaeude ON [DBGebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
+                "[Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
+                "dezWarmwasserbereitung, Gebaeudeart, Beschreibung  FROM [Tab_Gebaeude] " +
+                "INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
                 " where Z_ProjektGebaeude.ID_Projekt=" + m_ID_Projekt;
 
             rs.Open(sql);
@@ -1303,8 +1302,11 @@ namespace WindowsFormsApplication1
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.PUFFER_TYP);
             if (werzctrl.rows > 0) status |= 2048; else status &= ~2048;
 
-            tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
+            Z_ProjektBrauchwasserCtrl brauchwctrl = new Z_ProjektBrauchwasserCtrl();
+            brauchwctrl.ReadAll("select * from Z_Projekt_Brauchwasser where ID_Projekt=" + m_ID_Projekt.ToString());
+            if (brauchwctrl.rows > 0) status |= 4096; else status &= ~4096;
 
+            tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
         }
 
         private void btn_Zurueck_Click(object sender, EventArgs e)
@@ -1400,6 +1402,87 @@ namespace WindowsFormsApplication1
                 }
             }
 
+        }
+
+        private void pBox_Brauchwasser_Click(object sender, EventArgs e)
+        {
+            Form_Brauchwasser frm = new Form_Brauchwasser();
+            RecordSet rs = new RecordSet();
+            WizardCtrl wizctrl = new WizardCtrl();
+            ProjektCtrl projctrl = new ProjektCtrl();
+
+            frm.list_pwmodel.Clear();
+
+            string sql = "SELECT Z_Projekt_Brauchwasser.ID, Z_Projekt_Brauchwasser.ID_Projekt, " +
+                "Z_Projekt_Brauchwasser.ID_Brauchwasser, Tab_Brauchwasser.Bezeichner, Z_Projekt_Brauchwasser.Summe " +
+                "FROM Z_Projekt_Brauchwasser INNER JOIN Tab_Brauchwasser ON " +
+                "Z_Projekt_Brauchwasser.ID_Brauchwasser = Tab_Brauchwasser.ID " +
+                " where ID_Projekt=" + m_ID_Projekt;
+
+            rs.Open(sql);
+            while (rs.Next())
+            {
+                Z_ProjektBrauchwasserModel item = new Z_ProjektBrauchwasserModel();
+                item.ID_Z = (int)rs.Read("ID");
+                item.ID_Projekt = m_ID_Projekt;
+                item.ID_Brauchwasser = (int)rs.Read("ID_Brauchwasser");
+                item.szBezeichner = (string)rs.Read("Bezeichner");
+                item.Summe = (double)rs.Read("Summe");
+                frm.list_pwmodel.Add(item);
+            }
+
+            frm.m_ID_Projekt = m_ID_Projekt;
+            frm.SetControls(m_szProjektname);
+            frm.ShowDialog();
+
+            if (frm.DialogResult == DialogResult.OK)
+            {
+                wizctrl.Del_Projekt_Brauchwasser(m_ID_Projekt);
+                wizctrl.Add_Projekt_Brauchwasser(m_ID_Projekt, frm.list_pwmodel);
+
+                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.m_Aenderungsdatum = DateTime.Now;
+                projctrl.Update();
+            }
+
+            if (frm.list_pwmodel.Count > 0)
+                status |= 4096;
+            else status &= ~4096;
+            pBox_Brauchwasser.Invalidate();
+        }
+
+        private void label74_Click(object sender, EventArgs e)
+        {
+            pBox_Brauchwasser_Click(sender, e);
+        }
+
+        private void label73_Click(object sender, EventArgs e)
+        {
+            pBox_Brauchwasser_Click(sender, e);
+        }
+
+        private void pBox_Brauchwasser_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            {
+                if ((status & 4096) == 4096)
+                {
+                    Rectangle rt = e.ClipRectangle;
+                    rt.Width = rt.Width - 20;
+                    rt.Height = rt.Height - 20;
+                    rt.Y = rt.Y + 10;
+                    rt.X = rt.X + 10;
+                    Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+                    label73.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label74.BackColor = label73.BackColor;
+                }
+                else
+                {
+                    label73.BackColor = Color.Transparent;
+                    label74.BackColor = Color.Transparent;
+                }
+            }
         }
     }
 }

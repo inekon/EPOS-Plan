@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -11,7 +12,7 @@ namespace WindowsFormsApplication1
     {
         public SimulationWaermebedarf simulation_Waermebedarf = new SimulationWaermebedarf();
         public SimulationStrombedarf simulation_Strombedarf = new SimulationStrombedarf();
-        SimulationHelper sim = new SimulationHelper();
+        SimulationControl sim = new SimulationControl();
         SimulationWaermepumpe simulation_wp = new SimulationWaermepumpe();
         KonfigurationCtrl ctrl = new KonfigurationCtrl();
         ProjektCtrl projektCtrl = new ProjektCtrl();
@@ -29,6 +30,7 @@ namespace WindowsFormsApplication1
             init_Chart(chart1);
             init_Chart(chart2);
             init_Chart(chart6);
+            init_Chart(chart8);
         }
 
         public Form_Simulation_Detail(int iD_Projekt)
@@ -40,7 +42,8 @@ namespace WindowsFormsApplication1
             init_Chart(chart2);
             init_Chart(chart6);
             init_Chart(chart7);
- 
+            init_Chart(chart8);
+
             listView_SimSPK.View = View.Details;
             listView_SimSPK.Columns.Add("Heizkessel", -2, HorizontalAlignment.Left);
             listView_SimSPK.Columns.Add("Name", -2, HorizontalAlignment.Left);
@@ -105,6 +108,12 @@ namespace WindowsFormsApplication1
 
         private void btn_Simulation_Click(object sender, EventArgs e)
         {
+            // TextBoxe leeren  
+            for (int i=0; i<tabControl1.TabCount; i++)
+            {
+                InitTextBoxen(tabControl1.TabPages[i]);
+            }
+
             m_Waermebedarf_Gesamt = simulation_Waermebedarf.Waermebedarf_Gesamt;
             m_Strombedarf_Gesamt = simulation_Strombedarf.Strombedarf_gesamt;
             textBox_gesStrombedarf.Text = m_Strombedarf_Gesamt.ToString("F2");
@@ -126,7 +135,6 @@ namespace WindowsFormsApplication1
             tool[5] = ctrl.model.m_Tool_6;
 
             if (!Energiebedarf(ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit)) return;
-
 
             // Wärmebedarf und Strombedarf Simulation durchführen
             sim.tool = tool;
@@ -177,6 +185,7 @@ namespace WindowsFormsApplication1
             textBox_Gesamt_Waermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
 
             chart1.Annotations.Clear();
+            chart1.Series[0].Points.Clear();
             chart1.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
             chart1.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
 
@@ -199,6 +208,7 @@ namespace WindowsFormsApplication1
             textBox_Gesamt_Strombedarf.Text = simulation_Strombedarf.Strombedarf_gesamt.ToString("F2");
 
             chart2.Annotations.Clear();
+            chart2.Series[0].Points.Clear();
             chart2.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
             chart2.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
 
@@ -248,7 +258,7 @@ namespace WindowsFormsApplication1
 
         private void btn_Details_Click(object sender, EventArgs e)
         {
-            Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
+            Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
             frm.Init(simulation_Waermebedarf);
             frm.ShowDialog();
         }
@@ -265,185 +275,248 @@ namespace WindowsFormsApplication1
             p1 = this.PointToScreen(p1);
             frm.Location = p1;
             frm.ShowDialog();
-        }
 
-        private void Ergebnis_Simulation_TextundChart()
-        {
-            // ********************************************************************************************/
-            // Wärmepumpe
-            // ********************************************************************************************/
-            textBox_WB_Deckung.Text = "";
-            double a = (double)simulation_Waermebedarf.Waermebedarf_Gesamt;
-            double b = (double)sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
-            double c = (double)sim.simulation_wp.Heizstab_gesamt / 1000;
-
-            if ((b / a * 100) > 100)
-                textBox_WB_Deckung.Text = "100";
-            else
-                textBox_WB_Deckung.Text = ((b + c) / a * 100).ToString("F2");
-
-
-            if (sim.simulation_wp.Bivalenzpunkt != -100)
-                textBox_Bivalenzpunkt.Text = sim.simulation_wp.Bivalenzpunkt.ToString("F2");
-            else
-                textBox_Bivalenzpunkt.Text = "-";
-
-            textBox_WPWaermebedarf.Text = (sim.simulation_wp.Waermebedarf_gesamt / 1000).ToString("F2");
-            textBox_WPRestwermebedarf.Text = (sim.simulation_wp.Waermebedarf_gesamt / 1000 - sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000 - sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
-            textBox_WPStromverbrauch.Text = (sim.simulation_wp.WP_Strombedarf_gesamt / 1000).ToString("F2");
-            textBox_HeizstabStromverbrauch.Text = (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
-            textBox_WPWaermeproduktion.Text = (sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000).ToString("F2");
-            textBox_Pufferspeicher.Text = (sim.simulation_wp.Volumen_Pufferspeicher * 1.16).ToString();
-            textBox_WPVollbenutzungsstunden.Text = (sim.simulation_wp.WP_Laufzeit / sim.simulation_wp.wp_list.Count).ToString("F0");
-
-            double Max_Spk = 0;
-            for (int i = 0; i < 8750; i++)
-            {
-                if (sim.simulation_wp.waermerestbedarf_stuendlich[i] > Max_Spk) Max_Spk = sim.simulation_wp.waermerestbedarf_stuendlich[i];
-            }
-            textBox_MinSPKLeistung.Text = Max_Spk.ToString("F2");
-
-            listView_SimWP.Items.Clear();
-            for (int i = 0; i < sim.simulation_wp.wp_list.Count(); i++)
-            {
-                ListViewItem lvitem = new ListViewItem();
-                lvitem.Text = sim.simulation_wp.WP_Modul[i];
-                lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Waermeproduktion[i] / 1000).ToString("F2"));
-                lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Strombedarf[i] / 1000).ToString("F2"));
-                lvitem.SubItems.Add((sim.simulation_wp.Modul_Heizstab[i] / 1000).ToString("F2"));
-                lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Laufzeit[i]).ToString("F2"));
-
-                listView_SimWP.Items.Add(lvitem);
-            }
-
-            listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
-            listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-
-            // charts und Textfelder Wärmepumpe
-            checkBox_WP_sortiert.Checked = true;
-            checkBox_WP_sortiert.Checked = false; 
-
-            // chart Temperatur - Leistung  
-            PointF[] ps_produktion_raw = new PointF[8760];
-            PointF[] ps_bedarf_raw = new PointF[8760];
-            PointF[] ps_heizstab_raw = new PointF[8760];
-
-            List<double> werte_produktion = new List<double>();
-            List<double> werte_bedarf = new List<double>();
-
-            // nur 1 Leistungswert Wert pro gleicher Temperatur nehmen
-            int index = 0;
-            for (int n = 0; n < 8760; n++)
-            {
-                if (werte_produktion.Contains(sim.simulation_wp.Temperatur[n])) continue;
-                double d = Math.Round(sim.simulation_wp.Temperatur[n], 1);
-                ps_produktion_raw[index].X = (float)d;
-                ps_produktion_raw[index].Y = sim.simulation_wp.WP_Waermeproduktion_stuendlich[n];
-                ps_bedarf_raw[index].X = ps_produktion_raw[index].X;
-                ps_bedarf_raw[index].Y = sim.simulation_wp.Waermebedarf_stuendlich[n];
-                
-                if (simulation_wp.Heizstab_stuendlich[n] > 0)
-                    ps_heizstab_raw[index].Y = sim.simulation_wp.WP_Waermeproduktion_stuendlich[n] + sim.simulation_wp.Heizstab_stuendlich[n];
-                else
-                    ps_heizstab_raw[index].Y = 0;
-
-                ps_heizstab_raw[index].X = ps_produktion_raw[index].X;
-                werte_produktion.Add(sim.simulation_wp.Temperatur[n]);
-                werte_bedarf.Add(sim.simulation_wp.Waermebedarf_stuendlich[n]);
-                index++;
-            }
-;
-            // Points Array nur mit der tatsächlichen Anzahl(mehrfache Werte gleicher Tempeatur filtern) füllen
-            PointF[] ps_produktion = new PointF[index];
-            PointF[] ps_bedarf = new PointF[index];
-            PointF[] ps_heizstab = new PointF[index];
-
-            for (int n = 0; n < index; n++)
-            {
-                ps_produktion.SetValue(ps_produktion_raw[n], n);
-                ps_bedarf.SetValue(ps_bedarf_raw[n], n);
-                ps_heizstab.SetValue(ps_heizstab_raw[n], n);
-            }
-
-            // Chart Wärmepumpe Strombedarf
-            float[] temp = simulation_Strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich, sim.simulation_wp.Heizstab_stuendlich);  
-            float WPStrombedarf_Max = sim.simulation_Strombedarf.Maximaler_Strombedarf(temp); // in kWh
-            //temp = sim.simulation_Strombedarf.NormVector(temp, WPStrombedarf_Max);
-            chart6.ChartAreas[0].AxisY.Maximum = WPStrombedarf_Max + 1;
-            chart6.Annotations.Clear();
-            chart6.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
-            chart6.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
-            ConfigureXAxisWithMonths(chart6);
-            for (int j = 0; j < 8760; j++)
-            {
-                double d = (double)j * 12 / (8760);
-                chart6.Series[0].Points.AddXY(d, temp[j]);
-            }
-
-            // Chart WP Wärmeproduktion über Temperaturgang
-            chart4.Series[0].ChartType = SeriesChartType.Area;
-            chart4.Series[1].ChartType = SeriesChartType.Area;
-            chart4.Series[2].ChartType = SeriesChartType.Area;
-            chart4.Series["Waermeproduktion"].Color = Color.FromArgb(100, Color.Blue);
-            chart4.Series["Waermebedarf"].Color = Color.FromArgb(140, Color.Red);
-            chart4.Series["Heizstab"].Color = Color.FromArgb(240, Color.Yellow);
-
-            chart4.Series["Heizstab"].Points.DataBindXY(ps_heizstab, "X", ps_heizstab, "Y");
-            chart4.Series["Waermeproduktion"].Points.DataBindXY(ps_produktion, "X", ps_produktion, "Y");
-            chart4.Series["Waermebedarf"].Points.DataBindXY(ps_bedarf, "X", ps_bedarf, "Y");
-
-            chart4.Series[0].Sort(PointSortOrder.Ascending, "X");
-            chart4.Series[1].Sort(PointSortOrder.Ascending, "X");
-            chart4.Series[2].Sort(PointSortOrder.Ascending, "X");
-
-            chart4.ChartAreas[0].AxisX.Interval = 4;
-            chart4.ChartAreas[0].AxisX.LabelStyle.Format = "0.0";
-            chart4.Update();
-
-            // ********************************************************************************************/
-            // Heizkessel
-            // ********************************************************************************************/
- 
-            // Textfelder Spitzenkessel
-            textBox_SPKWaermebedarfsdeckung.Text =  (sim.simulation_spk.S_Waerme_spk * 100 / simulation_Waermebedarf.Waermebedarf_Gesamt).ToString("F2");
-            textBox_SPKWaermebedarf.Text = sim.simulation_spk.Waermebedarf_gesamt.ToString("F2");
-            textBox_SPKRestwermebedarf.Text = (sim.simulation_spk.Waermebedarf_gesamt - sim.simulation_spk.S_Waerme_spk).ToString("F2");
-            tb_WaermeprSpk.Text = (sim.simulation_spk.S_Waerme_spk).ToString("F2");
-            tb_Gasverbrauch.Text = (sim.simulation_spk.Gasverbrauch_SPK).ToString("F2");
-            tb_Oelverbrauch.Text = (sim.simulation_spk.Oelverbrauch_SPK).ToString("F2");
-            tb_Biogasverbrauch.Text = (sim.simulation_spk.Biogasverbrauch_SPK).ToString("F2");
-            tb_Rapsoelverbrauch.Text = (sim.simulation_spk.Rapsoelverbrauch_SPK).ToString("F2");
-            tb_Holzverbrauch.Text = (sim.simulation_spk.Holzverbrauch_SPK).ToString("F2");
-            tb_Fluessiggasverbrauch.Text = (sim.simulation_spk.Fluessiggasverbrauch_SPK).ToString("F2");
-            tb_Stromverbrauch.Text = (sim.simulation_spk.Stromverbrauch_Spk).ToString("F2");
-            tb_Sonstigverbrauch.Text = (sim.simulation_spk.Sonstigverbrauch_SPK).ToString("F2");
-            tb_Max_Kesselleistung.Text = (sim.simulation_spk.Maximale_Kesselleistung_Spk).ToString("F2");
-            tb_Gasspitze.Text = sim.simulation_spk.Gasspitze_Spk.ToString("F2");
-  
-            listView_SimSPK.Items.Clear();
-            for (int i = 0; i < sim.simulation_spk.spk_list.Count(); i++)
-            {
-
-                ListViewItem lvitem = new ListViewItem();
-                lvitem.Text = (i + 1).ToString();
-                lvitem.SubItems.Add(sim.simulation_spk.spk_list[i]);
-                lvitem.SubItems.Add((sim.simulation_spk.s_waerme_Gas_Spk[i]).ToString("F2"));
-                lvitem.SubItems.Add((sim.simulation_spk.s_waerme_Oel_Spk[i]).ToString("F2"));
-                lvitem.SubItems.Add((sim.simulation_spk.Kessel_Wirk_Gas_Spk[i] * 100).ToString("F1"));
-
-                listView_SimSPK.Items.Add(lvitem);
-            }
-            
-            listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
-            listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-          
- 
+            ReihenfolgeTabPages();
         }
 
         private void Endergebniss_Simulation()
         {
-            Ergebnis_Simulation_TextundChart();
+            chart3.Series[0].Points.Clear();
+            chart3.Series[1].Points.Clear();
+            chart3.Series[2].Points.Clear();
+            chart4.Series[0].Points.Clear();
+            chart6.Series[0].Points.Clear();
 
+            // ********************************************************************************************/
+            // Wärmepumpe
+            // ********************************************************************************************/
+            if (sim.bSimulationWP)
+            {
+
+                chart3.ChartAreas[0].AxisX.MajorGrid.Enabled = false;
+                chart3.ChartAreas[0].AxisX.MinorGrid.Enabled = false;
+                chart3.ChartAreas[0].AxisX.StripLines.Clear();
+                chart3.ChartAreas[0].AxisX.CustomLabels.Clear();
+                chart3.ChartAreas[0].AxisX.Enabled = AxisEnabled.True;
+                chart3.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;
+                chart3.Annotations.Clear();
+                chart3.ChartAreas[0].AxisX.Interval = 0;
+                chart3.ChartAreas[0].AxisX.LabelStyle.Font = new System.Drawing.Font("Arial", 8);
+                chart3.ChartAreas[0].AxisX.LabelAutoFitStyle = LabelAutoFitStyles.None;
+                chart3.ChartAreas[0].AxisX.LabelStyle.Angle = 0;
+
+                chart3.Series["Waermebedarf"].Color = Color.Red;
+                chart3.Series["Heizstab"].Color = Color.Yellow;
+                chart3.Series["Waermeproduktion"].Color = Color.Blue;
+
+                textBox_WB_Deckung.Text = "";
+                double a = (double)simulation_Waermebedarf.Waermebedarf_Gesamt;
+                double b = (double)sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
+                double c = (double)sim.simulation_wp.Heizstab_gesamt / 1000;
+
+                if ((b / a * 100) > 100)
+                    textBox_WB_Deckung.Text = "100";
+                else
+                    textBox_WB_Deckung.Text = ((b + c) / a * 100).ToString("F2");
+
+
+                if (sim.simulation_wp.Bivalenzpunkt != -100)
+                    textBox_Bivalenzpunkt.Text = sim.simulation_wp.Bivalenzpunkt.ToString("F2");
+                else
+                    textBox_Bivalenzpunkt.Text = "-";
+
+                textBox_WPWaermebedarf.Text = (sim.simulation_wp.Waermebedarf_gesamt / 1000).ToString("F2");
+                textBox_WPRestwermebedarf.Text = (sim.simulation_wp.Waermebedarf_gesamt / 1000 - sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000 - sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
+                textBox_WPStromverbrauch.Text = (sim.simulation_wp.WP_Strombedarf_gesamt / 1000).ToString("F2");
+                textBox_HeizstabStromverbrauch.Text = (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
+                textBox_WPWaermeproduktion.Text = (sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000).ToString("F2");
+                textBox_Pufferspeicher.Text = (sim.simulation_wp.Volumen_Pufferspeicher * 1.16).ToString();
+                textBox_WPVollbenutzungsstunden.Text = (sim.simulation_wp.WP_Laufzeit / sim.simulation_wp.wp_list.Count).ToString("F0");
+
+                double Max_Spk = 0;
+                for (int i = 0; i < 8750; i++)
+                {
+                    if (sim.simulation_wp.waermerestbedarf_stuendlich[i] > Max_Spk) Max_Spk = sim.simulation_wp.waermerestbedarf_stuendlich[i];
+                }
+                textBox_MinSPKLeistung.Text = Max_Spk.ToString("F2");
+
+                listView_SimWP.Items.Clear();
+                for (int i = 0; i < sim.simulation_wp.wp_list.Count(); i++)
+                {
+                    ListViewItem lvitem = new ListViewItem();
+                    lvitem.Text = sim.simulation_wp.WP_Modul[i];
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Waermeproduktion[i] / 1000).ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Strombedarf[i] / 1000).ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_Heizstab[i] / 1000).ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Laufzeit[i]).ToString("F2"));
+
+                    listView_SimWP.Items.Add(lvitem);
+                }
+
+                listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+                listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+
+                // charts und Textfelder Wärmepumpe
+                checkBox_WP_sortiert.Checked = true;
+                checkBox_WP_sortiert.Checked = false;
+
+                // chart Temperatur - Leistung  
+                PointF[] ps_produktion_raw = new PointF[8760];
+                PointF[] ps_bedarf_raw = new PointF[8760];
+                PointF[] ps_heizstab_raw = new PointF[8760];
+
+                List<double> werte_produktion = new List<double>();
+                List<double> werte_bedarf = new List<double>();
+
+                // nur 1 Leistungswert Wert pro gleicher Temperatur nehmen
+                int index = 0;
+                for (int n = 0; n < 8760; n++)
+                {
+                    if (werte_produktion.Contains(sim.simulation_wp.Temperatur[n])) continue;
+                    double d = Math.Round(sim.simulation_wp.Temperatur[n], 1);
+                    ps_produktion_raw[index].X = (float)d;
+                    ps_produktion_raw[index].Y = sim.simulation_wp.WP_Waermeproduktion_stuendlich[n];
+                    ps_bedarf_raw[index].X = ps_produktion_raw[index].X;
+                    ps_bedarf_raw[index].Y = sim.simulation_wp.Waermebedarf_stuendlich[n];
+
+                    if (simulation_wp.Heizstab_stuendlich[n] > 0)
+                        ps_heizstab_raw[index].Y = sim.simulation_wp.WP_Waermeproduktion_stuendlich[n] + sim.simulation_wp.Heizstab_stuendlich[n];
+                    else
+                        ps_heizstab_raw[index].Y = 0;
+
+                    ps_heizstab_raw[index].X = ps_produktion_raw[index].X;
+                    werte_produktion.Add(sim.simulation_wp.Temperatur[n]);
+                    werte_bedarf.Add(sim.simulation_wp.Waermebedarf_stuendlich[n]);
+                    index++;
+                }
+    ;
+                // Points Array nur mit der tatsächlichen Anzahl(mehrfache Werte gleicher Tempeatur filtern) füllen
+                PointF[] ps_produktion = new PointF[index];
+                PointF[] ps_bedarf = new PointF[index];
+                PointF[] ps_heizstab = new PointF[index];
+
+                for (int n = 0; n < index; n++)
+                {
+                    ps_produktion.SetValue(ps_produktion_raw[n], n);
+                    ps_bedarf.SetValue(ps_bedarf_raw[n], n);
+                    ps_heizstab.SetValue(ps_heizstab_raw[n], n);
+                }
+
+                // Chart Wärmepumpe Strombedarf
+                float[] temp = simulation_Strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich, sim.simulation_wp.Heizstab_stuendlich);
+                float WPStrombedarf_Max = sim.simulation_Strombedarf.Maximaler_Strombedarf(temp); // in kWh
+                //temp = sim.simulation_Strombedarf.NormVector(temp, WPStrombedarf_Max);
+                chart6.ChartAreas[0].AxisY.Maximum = WPStrombedarf_Max + 1;
+                chart6.Annotations.Clear();
+                chart6.Series[0].Points.Clear();
+                chart6.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
+                chart6.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
+                ConfigureXAxisWithMonths(chart6);
+                for (int j = 0; j < 8760; j++)
+                {
+                    double d = (double)j * 12 / (8760);
+                    chart6.Series[0].Points.AddXY(d, temp[j]);
+                }
+
+                // Chart WP Wärmeproduktion über Temperaturgang
+                chart4.Series[0].Points.Clear();
+                chart4.Series[1].Points.Clear();
+                chart4.Series[0].Points.Clear();
+                chart4.Series[0].ChartType = SeriesChartType.Area;
+                chart4.Series[1].ChartType = SeriesChartType.Area;
+                chart4.Series[2].ChartType = SeriesChartType.Area;
+                chart4.Series["Waermeproduktion"].Color = Color.FromArgb(100, Color.Blue);
+                chart4.Series["Waermebedarf"].Color = Color.FromArgb(140, Color.Red);
+                chart4.Series["Heizstab"].Color = Color.FromArgb(240, Color.Yellow);
+
+                chart4.Series["Heizstab"].Points.DataBindXY(ps_heizstab, "X", ps_heizstab, "Y");
+                chart4.Series["Waermeproduktion"].Points.DataBindXY(ps_produktion, "X", ps_produktion, "Y");
+                chart4.Series["Waermebedarf"].Points.DataBindXY(ps_bedarf, "X", ps_bedarf, "Y");
+
+                chart4.Series[0].Sort(PointSortOrder.Ascending, "X");
+                chart4.Series[1].Sort(PointSortOrder.Ascending, "X");
+                chart4.Series[2].Sort(PointSortOrder.Ascending, "X");
+
+                chart4.ChartAreas[0].AxisX.Interval = 4;
+                chart4.ChartAreas[0].AxisX.LabelStyle.Format = "0.0";
+                chart4.Update();
+            }
+
+            // ********************************************************************************************/
+            // Heizkessel
+            // ********************************************************************************************/
+            if (sim.bSimulationKessel)
+            {
+                // Textfelder Spitzenkessel
+                textBox_SPKWaermebedarfsdeckung.Text = (sim.simulation_spk.S_Waerme_spk * 100 / simulation_Waermebedarf.Waermebedarf_Gesamt).ToString("F2");
+                textBox_SPKWaermebedarf.Text = sim.simulation_spk.Waermebedarf_gesamt.ToString("F2");
+                textBox_SPKRestwermebedarf.Text = (sim.simulation_spk.Waermebedarf_gesamt - sim.simulation_spk.S_Waerme_spk).ToString("F2");
+                tb_WaermeprSpk.Text = (sim.simulation_spk.S_Waerme_spk).ToString("F2");
+                tb_Gasverbrauch.Text = (sim.simulation_spk.Gasverbrauch_SPK).ToString("F2");
+                tb_Oelverbrauch.Text = (sim.simulation_spk.Oelverbrauch_SPK).ToString("F2");
+                tb_Biogasverbrauch.Text = (sim.simulation_spk.Biogasverbrauch_SPK).ToString("F2");
+                tb_Rapsoelverbrauch.Text = (sim.simulation_spk.Rapsoelverbrauch_SPK).ToString("F2");
+                tb_Holzverbrauch.Text = (sim.simulation_spk.Holzverbrauch_SPK).ToString("F2");
+                tb_Fluessiggasverbrauch.Text = (sim.simulation_spk.Fluessiggasverbrauch_SPK).ToString("F2");
+                tb_Stromverbrauch.Text = (sim.simulation_spk.Stromverbrauch_Spk).ToString("F2");
+                tb_Sonstigverbrauch.Text = (sim.simulation_spk.Sonstigverbrauch_SPK).ToString("F2");
+                tb_Max_Kesselleistung.Text = (sim.simulation_spk.Maximale_Kesselleistung_Spk).ToString("F2");
+                tb_Gasspitze.Text = sim.simulation_spk.Gasspitze_Spk.ToString("F2");
+
+                listView_SimSPK.Items.Clear();
+                for (int i = 0; i < sim.simulation_spk.spk_list.Count(); i++)
+                {
+
+                    ListViewItem lvitem = new ListViewItem();
+                    lvitem.Text = (i + 1).ToString();
+                    lvitem.SubItems.Add(sim.simulation_spk.spk_list[i]);
+                    lvitem.SubItems.Add((sim.simulation_spk.s_waerme_Gas_Spk[i]).ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_spk.s_waerme_Oel_Spk[i]).ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_spk.Kessel_Wirk_Gas_Spk[i] * 100).ToString("F1"));
+
+                    listView_SimSPK.Items.Add(lvitem);
+                }
+
+                listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+                listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            }
+
+            // ********************************************************************************************/
+            // Solarthermie
+            // ********************************************************************************************/
+            if (sim.bSimulationSolarthermie)
+            {
+                // Textfelder Solarthermie
+                textBox_STWaermebedarfsdeckung.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt * 100 / sim.simulation_solarthermie.Waermebedarf_gesamt).ToString("F2");
+                textBox_STWaermebedarf.Text = sim.simulation_solarthermie.Waermebedarf_gesamt.ToString("F2");
+                textBox_STRestwermebedarf.Text = (sim.simulation_solarthermie.Waermebedarf_gesamt - sim.simulation_solarthermie.Waermeproduktion_gesamt).ToString("F2");
+                tb_WaermeprST.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt).ToString("F2");
+
+                float STWaermebedarf_Max = (float)sim.simulation_solarthermie.Max_Waermebedarf; // in kWh
+                //temp = sim.simulation_Strombedarf.NormVector(sim.simulation_solarthermie.Waermeproduktion, STWaermebedarf_Max);
+                float[] temp = sim.simulation_solarthermie.Waermeproduktion;
+                chart8.Series[0].Points.Clear();
+                chart8.Series[1].Points.Clear();
+                chart8.ChartAreas[0].AxisY.Maximum = STWaermebedarf_Max + 1;
+                chart8.Annotations.Clear();
+                chart8.Series["Wärmeproduktion"].Color = Color.FromArgb(100, Color.Blue);
+                chart8.Series["Wärmebedarf"].Color = Color.FromArgb(140, Color.Red);
+                chart8.Series[0].ChartType = SeriesChartType.Line;
+                chart8.Series[1].ChartType = SeriesChartType.Line;
+                chart8.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
+                chart8.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
+                ConfigureXAxisWithMonths(chart8);
+                for (int j = 0; j < 8760; j++)
+                {
+                    double d = (double)j * 12 / (8760);
+                    chart8.Series[1].Points.AddXY(d, temp[j]);
+                    chart8.Series[0].Points.AddXY(d, (float)sim.simulation_solarthermie.Waermebedarf[j]);
+                }
+            }
+
+            // ********************************************************************************************/
+            // Ergebnisübersicht
+            // ********************************************************************************************/
             // Kuchendiagramm
             chart5.Series[0].ChartType = SeriesChartType.Pie;
             chart5.ChartAreas[0].Area3DStyle.Enable3D = false;
@@ -456,28 +529,42 @@ namespace WindowsFormsApplication1
             chart5.Series[0].Font = new Font("Arial", 10, FontStyle.Bold);
 
             chart5.Series[0].Points.Clear();
+
+            double waerme_spk = 0;
+            double waerme_wp = 0;
+            double waerme_heizstab = 0;
+            double waerme_solar = 0;
+            double rest = 0;
+            double gesamt_waerme = 0;
+
+            // Heizkessel
+            waerme_spk = 0;
             for (int i = 0; i < sim.simulation_spk.spk_list.Count(); i++)
             {
-                double valkessel = sim.simulation_spk.s_waerme_Gas_Spk[i] + sim.simulation_spk.s_waerme_Oel_Spk[i];
-                if (valkessel > 0)
-                    chart5.Series[0].Points.AddXY("Heizkessel",valkessel);
+                waerme_spk += sim.simulation_spk.s_waerme_Gas_Spk[i] + sim.simulation_spk.s_waerme_Oel_Spk[i];
             }
 
-            if (sim.simulation_wp.WP_Waermeproduktion_gesamt > 0)
-                chart5.Series[0].Points.AddXY("Wärmepumpe",sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000);
+            if (waerme_spk > 0)
+                chart5.Series[0].Points.AddXY("Heizkessel", waerme_spk);
 
-            if (sim.simulation_wp.Heizstab_gesamt > 0)
-                chart5.Series[0].Points.AddXY("Heizstab",sim.simulation_wp.Heizstab_gesamt / (double)1000);
+            // Wärmepumpe
+            waerme_wp = sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
+            if (waerme_wp > 0)
+                chart5.Series[0].Points.AddXY("Wärmepumpe", waerme_wp);
 
-            double rest = 0;
-            for (int i = 0; i < sim.simulation_spk.spk_list.Count(); i++)
-            {
-                rest = rest + sim.simulation_spk.s_waerme_Gas_Spk[i] + sim.simulation_spk.s_waerme_Oel_Spk[i];
-            } 
-            rest = sim.simulation_Waermebedarf.Waermebedarf_Gesamt -
-                                                        sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000 -
-                                                        sim.simulation_wp.Heizstab_gesamt / 1000 -
-                                                        rest;
+            waerme_heizstab = sim.simulation_wp.Heizstab_gesamt / 1000;
+            if (waerme_heizstab > 0)
+                chart5.Series[0].Points.AddXY("Heizstab", waerme_heizstab);
+
+            // Solarthermie
+            waerme_solar = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000;
+            if (waerme_solar > 0)
+                chart5.Series[0].Points.AddXY("Solarthermie", waerme_solar);
+
+            gesamt_waerme = waerme_spk + waerme_wp + waerme_heizstab + waerme_solar;
+
+
+            rest = sim.simulation_Waermebedarf.Waermebedarf_Gesamt - gesamt_waerme;
 
             if (rest >= 0.1)
             {
@@ -487,16 +574,16 @@ namespace WindowsFormsApplication1
             textBox_FinalWaermebedarf.Text = rest.ToString("F2");
             textBox_FinalStrombedarf.Text = sim.Reststrom.ToString("F2");
 
-            double a = (double)simulation_Waermebedarf.Waermebedarf_Gesamt;
-            double b = (double)sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
-            double c = (double)sim.simulation_wp.Heizstab_gesamt / 1000;
-            double d = sim.simulation_spk.S_Waerme_spk;
+            double a2 = (double)simulation_Waermebedarf.Waermebedarf_Gesamt;
+            double b2 = (double)sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
+            double c2 = (double)sim.simulation_wp.Heizstab_gesamt / 1000;
+            double d2 = sim.simulation_spk.S_Waerme_spk;
 
-            textBox_WBDeckung.Text = ((b + c) / a * 100).ToString("F2");
-            textBox_SPKDeckung.Text = (d * 100 / a).ToString("F2");
+            textBox_WBDeckung.Text = ((b2 + c2) / a2 * 100).ToString("F2");
+            textBox_SPKDeckung.Text = (d2 * 100 / a2).ToString("F2");
 
             chart5.Update();
-            
+
             chart7.Series["Gesamt"].Color = Color.Green;
             chart7.Series["Waermepumpe"].Color = Color.Orange;
             chart7.Series["Heizstab"].Color = Color.Red;
@@ -524,6 +611,8 @@ namespace WindowsFormsApplication1
             ConfigureXAxisWithMonths(chart7);
 
             checkBox_Gesamt.Checked = true;
+
+
 
         }
 
@@ -604,24 +693,6 @@ namespace WindowsFormsApplication1
         private void checkBox_WP_sortiert_CheckedChanged(object sender, EventArgs e)
         {
             float[] temp = new float[8760];
-
-            chart3.ChartAreas[0].AxisX.MajorGrid.Enabled = false;
-            chart3.ChartAreas[0].AxisX.MinorGrid.Enabled = false;
-            chart3.ChartAreas[0].AxisX.StripLines.Clear();
-            chart3.ChartAreas[0].AxisX.CustomLabels.Clear();
-            chart3.ChartAreas[0].AxisX.Enabled = AxisEnabled.True;
-            chart3.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;    
-            chart3.Annotations.Clear();
-            chart3.Series[0].Points.Clear();
-   
-            chart3.ChartAreas[0].AxisX.Interval = 0;
-            chart3.ChartAreas[0].AxisX.LabelStyle.Font = new System.Drawing.Font("Arial", 8);
-            chart3.ChartAreas[0].AxisX.LabelAutoFitStyle = LabelAutoFitStyles.None;
-            chart3.ChartAreas[0].AxisX.LabelStyle.Angle = 0;
- 
-            chart3.Series["Waermebedarf"].Color = Color.Red;
-            chart3.Series["Heizstab"].Color = Color.Yellow;
-            chart3.Series["Waermeproduktion"].Color = Color.Blue;
 
             for (int i = 0; i < 8760; i++)
             {
@@ -961,6 +1032,76 @@ namespace WindowsFormsApplication1
                     tooltip.Hide(chart7);
                 }
             }
+        }
+
+        private void chart8_MouseMove(object sender, MouseEventArgs e)
+        {
+            var pos = e.Location;
+            if (pos == prevPosition) return;
+
+            prevPosition = pos;
+
+            var results = chart8.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint);
+
+            foreach (var result in results)
+            {
+                if (result.ChartElementType == ChartElementType.DataPoint)
+                {
+                    var yVal = result.ChartArea.AxisY.PixelPositionToValue(pos.Y);
+                    var xVal = result.ChartArea.AxisX.PixelPositionToValue(pos.X);
+                    DateTime startDatum = new DateTime(DateTime.Now.Year, 1, 1); // Start: 1. Januar 
+
+                    // Addiere diesen Wert zum Startdatum.
+                    int d = (int)(xVal * 365 * 24 * 1 / 12); // mit (int) erhält man nur vielfache von 1 Stunden
+                    // auf Minuten zurückrechnen
+                    //d = d * 15;
+                    yVal = Math.Round(yVal, 2);
+                    DateTime neuesDatum = startDatum.AddHours(d);
+                    tooltip.Show(neuesDatum.ToString("dd/MM H:mm [" + yVal).ToString() + "kW]", chart8, pos.X, pos.Y - 15);
+                }
+                else
+                {
+                    tooltip.Hide(chart8);
+                }
             }
+        }
+
+        private void InitTextBoxen(TabPage page)
+        {
+            page.Controls.OfType<TextBox>().ToList().ForEach(tb => tb.Text = "");
+        }            
+
+        private void ReihenfolgeTabPages()
+        {
+            KonfigurationCtrl ctrl = new KonfigurationCtrl();
+
+            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+
+            string[] tool = new string[4];
+            tool[0] = ctrl.model.m_Tool_1;
+            tool[1] = ctrl.model.m_Tool_2;
+            tool[2] = ctrl.model.m_Tool_3;
+            tool[3] = ctrl.model.m_Tool_4;
+
+            int index = 1;
+            for (int i = 0; i < 4; i++)
+            {
+                if (tool[i] != "")
+                {
+                    var tabPage = tabControl1.TabPages.Cast<TabPage>().FirstOrDefault(tp => tp.Name == "tabPage_" + tool[i]);
+                    if (tabPage != null)
+                    {
+                        tabControl1.TabPages.Remove(tabPage);
+                        tabControl1.TabPages.Insert(index++, tabPage);
+                    }
+                }
+            }
+
+        }
+
+        private void Form_Simulation_Detail_Load(object sender, EventArgs e)
+        {
+            ReihenfolgeTabPages();
+        }
     }
 }

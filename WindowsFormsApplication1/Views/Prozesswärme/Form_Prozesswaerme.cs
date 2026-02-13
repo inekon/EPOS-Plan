@@ -13,8 +13,8 @@ namespace WindowsFormsApplication1
 {
     partial class Form_Prozesswaerme : Form
     {
-        private ProzesswaermeModel model = new ProzesswaermeModel();
-        private ProzesswaermeCtrl ctrl = new ProzesswaermeCtrl();
+        private BrauchwasserModel model = new BrauchwasserModel();
+        private BrauchwasserCtrl ctrl = new BrauchwasserCtrl();
         public List<Z_ProjektProzesswaermeModel> list_pwmodel = new List<Z_ProjektProzesswaermeModel>();
         public int m_ID_Projekt = 0;
         private int startindex = 100000;
@@ -64,13 +64,13 @@ namespace WindowsFormsApplication1
 
         private void SetDBList()
         {
-            ProzesswaermeCtrl ctrl_pw = new ProzesswaermeCtrl();
+            BrauchwasserCtrl ctrl_pw = new BrauchwasserCtrl();
             DataGridView dgv = dataGridView1;
             dgv.Rows.Clear();
             ctrl_pw.ReadAll();
             for (int i = 0; i < ctrl_pw.rows; i++)
             {
-                dgv.Rows.Add(ctrl_pw.items[i].m_szProzessname, ctrl_pw.items[i].m_szTyp);
+                dgv.Rows.Add(ctrl_pw.items[i].m_szBezeichner, ctrl_pw.items[i].m_szTyp);
                 dgv.Rows[i].DividerHeight = 1;
             }
         }
@@ -78,7 +78,7 @@ namespace WindowsFormsApplication1
         public void SetControls(string szProjekt, bool bWizard = false)
         {
             Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
-            ProzesswaermeCtrl ctrl_pw = new ProzesswaermeCtrl();
+            BrauchwasserCtrl ctrl_pw = new BrauchwasserCtrl();
             Z_ProjektProzesswaermeModel model = new Z_ProjektProzesswaermeModel();
 
             if (bWizard)
@@ -137,7 +137,7 @@ namespace WindowsFormsApplication1
         }
         private void SetProzessInfo(string szName)
         {
-            ProzesswaermeCtrl ctrl = new ProzesswaermeCtrl();
+            BrauchwasserCtrl ctrl = new BrauchwasserCtrl();
             ctrl.ReadSingle(szName);
 
             if (ctrl.rows > 0)
@@ -150,7 +150,7 @@ namespace WindowsFormsApplication1
 
         private double Prozesssumme(string szName)
         {
-            ProzesswaermeCtrl ctrl = new ProzesswaermeCtrl();
+            BrauchwasserCtrl ctrl = new BrauchwasserCtrl();
             double summe = 0;
    
             ctrl.ReadSingle(szName);

@@ -1,10 +1,6 @@
-﻿using MathNet.Numerics.LinearAlgebra.Factorization;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
+using WindowsFormsApplication1.Classes.Simulation;
 
 namespace WindowsFormsApplication1
 {
@@ -64,25 +60,7 @@ namespace WindowsFormsApplication1
             int Anzahl = 0;
             m_ID_Projekt = ID_Projekt;
 
-            Maximale_Kesselleistung_Spk = 0;
-            Stromverbrauch_Spk = 0;
-
-            for (int j = 0; j < MAX_SPK; j++)
-            {
-                s_waerme_Gas_Spk[j] = 0;
-                s_waerme_Oel_Spk[j] = 0;
-                Kessel_Wirk_Gas_Spk[j] = 0;
-                Kessel_Wirk_Oel_Spk[j] = 0;
-                Betriebsbereitschaft_Verluste[j] = 0;
-                Kessel_Name[j] = "";
-                Brennstoff_Betrieb_Spk[j] = 0;
-                Kessel_Leistung_Spk[j] = 0;
-                Betriebsstunden[j] = 0;
-            }
-
-            Array.Clear(Restwaerme, 0, Restwaerme.Length);
-            Array.Clear(Strombedarf_stuendlich, 0, Strombedarf_stuendlich.Length);
-            Array.Clear(Kesselleistung_stuendlich, 0, Kesselleistung_stuendlich.Length);
+            Init();
 
             // Wärmebedarf gesamt berechnen, in MWh
             Waermebedarf_gesamt = 0;
@@ -309,6 +287,28 @@ namespace WindowsFormsApplication1
             return result;
         }
 
+        public void Init()
+        {
+            Maximale_Kesselleistung_Spk = 0;
+            Stromverbrauch_Spk = 0;
+
+            for (int j = 0; j < MAX_SPK; j++)
+            {
+                s_waerme_Gas_Spk[j] = 0;
+                s_waerme_Oel_Spk[j] = 0;
+                Kessel_Wirk_Gas_Spk[j] = 0;
+                Kessel_Wirk_Oel_Spk[j] = 0;
+                Betriebsbereitschaft_Verluste[j] = 0;
+                Kessel_Name[j] = "";
+                Brennstoff_Betrieb_Spk[j] = 0;
+                Kessel_Leistung_Spk[j] = 0;
+                Betriebsstunden[j] = 0;
+            }
+
+            Array.Clear(Restwaerme, 0, Restwaerme.Length);
+            Array.Clear(Strombedarf_stuendlich, 0, Strombedarf_stuendlich.Length);
+            Array.Clear(Kesselleistung_stuendlich, 0, Kesselleistung_stuendlich.Length);
+        }
 
     }
 }

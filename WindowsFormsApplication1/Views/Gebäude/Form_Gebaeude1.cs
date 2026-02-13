@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
                     btn_Ueberschreiben.Enabled = true;
                     btn_NeuerDatensatz.Enabled = false; 
                     RecordSet rs = new RecordSet();
-                    rs.Open("SELECT * from DBGebaeude");
+                    rs.Open("SELECT * from Tab_Gebaeude");
                     while (rs.Next())
                     {
                         string szGebTyp = (string)rs.Read("Gebaeudename");
@@ -148,19 +148,19 @@ namespace WindowsFormsApplication1
                 "Abmessung_Anschluﬂ_Fenster_Wand,Abmessung_Anschluﬂ_Wand_Dach,Abmessung_Anschluﬂ_Auﬂenwand_Kellerdecke," +
                 "Luftwechselrate,Wochenende,Ferien,Ferienbeginn_1,Ferienende_1,Ferienbeginn_2,Ferienende_2," + 
                  "Ferienbeginn_3,Ferienende_3,Ferienbeginn_4,Ferienende_4,WW_Bedarf,spez_Waermeverbrauch,Waermebedarf," +
-                 "Baualtersklasse,Gebaeudeart,Wohngebaeude_Nicht_Wohngebaeude from DBGebaeude where Gebaeudename='" + comboBox_Name.Text + "'", Program.DBConnection);
+                 "Baualtersklasse,Gebaeudeart,Wohngebaeude_Nicht_Wohngebaeude from Tab_Gebaeude where Gebaeudename='" + comboBox_Name.Text + "'", Program.DBConnection);
             
-            adapter.Fill(ds,"DBGebaeude");
+            adapter.Fill(ds,"Tab_Gebaeude");
 
             try
             {
-                DataTable table = ds.Tables["DBGebaeude"];
+                DataTable table = ds.Tables["Tab_Gebaeude"];
                 DataRow dr = table.Rows[0];
 
                 if(Init_DataRow(dr) == null) return;
             
                 OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(ds, "DBGebaeude");
+                adapter.Update(ds, "Tab_Gebaeude");
 
                 MessageBox.Show("Geb‰ude Datensatz ist ‹berschrieben!");
             }
@@ -266,10 +266,10 @@ namespace WindowsFormsApplication1
             if (comboBox_Name.Text == "") { MessageBox.Show("Geb‰udenamen eingeben!"); return; }   
 
             DataSet ds = new DataSet();
-            OdbcDataAdapter adapter = new OdbcDataAdapter("select * from DBGebaeude where Gebaeudename='" + comboBox_Name.Text + "'", Program.DBConnection);
-            adapter.Fill(ds, "DBGebaeude");
+            OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Gebaeude where Gebaeudename='" + comboBox_Name.Text + "'", Program.DBConnection);
+            adapter.Fill(ds, "Tab_Gebaeude");
 
-            DataTable table = ds.Tables["DBGebaeude"];
+            DataTable table = ds.Tables["Tab_Gebaeude"];
             DataRow newRow = table.NewRow();
             
             newRow = Init_DataRow(newRow);
@@ -280,7 +280,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                adapter.Update(ds, "DBGebaeude");
+                adapter.Update(ds, "Tab_Gebaeude");
                 MessageBox.Show("Geb‰ude ist gespeichert!");
             }
             catch (Exception ex)

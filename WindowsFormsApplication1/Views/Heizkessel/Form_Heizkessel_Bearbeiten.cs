@@ -53,7 +53,7 @@ namespace WindowsFormsApplication1
             m_szKessel = szName;  
             textBox_Beschreibung.Text = szBeschreibung;
             
-            rs.Open("select * from [DB-Heizung] where Name='" + szName + "'");
+            rs.Open("select * from [Tab_Heizkessel] where Name='" + szName + "'");
             if (!rs.Next()) { rs.Close(); return; }
             
             textBox_Hersteller.Text = rs.GetString("Firma");
@@ -147,13 +147,13 @@ namespace WindowsFormsApplication1
                 {
                     transaction = Program.DBConnection.BeginTransaction();
                     rs.DBCommand.Transaction = transaction;
-                    rs.Open("select Name from [DB-Heizung] where Name='" + frmLabel.m_szName + "'");
+                    rs.Open("select Name from [Tab_Heizkessel] where Name='" + frmLabel.m_szName + "'");
                     if (!rs.EOF()) { MessageBox.Show("Name existiert bereits!"); rs.Close(); return; }
                     rs.Close();
                 
                     textBox_Name.Text = frmLabel.m_szName;
                     m_szKessel = frmLabel.m_szName;
-                    rs.Insert("INSERT INTO [DB-Heizung] (Name) SELECT '" + frmLabel.m_szName + "' AS Ausdr1");
+                    rs.Insert("INSERT INTO [Tab_Heizkessel] (Name) SELECT '" + frmLabel.m_szName + "' AS Ausdr1");
                     rs.Close();
 
                     BrennstoffCtrl ctrl = new BrennstoffCtrl();
@@ -314,7 +314,7 @@ namespace WindowsFormsApplication1
             {
                 transaction = Program.DBConnection.BeginTransaction();
                 rs.DBCommand.Transaction = transaction;
-                rs.Insert("INSERT INTO [DB-Heizung] (Name) SELECT '" + m_szKessel + "' AS Ausdr1");
+                rs.Insert("INSERT INTO [Tab_Heizkessel] (Name) SELECT '" + m_szKessel + "' AS Ausdr1");
                 rs.Close();
 
                 BrennstoffCtrl ctrl = new BrennstoffCtrl();

@@ -89,7 +89,7 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            rs.Open("select * from [DB-Heizung] where Name='" + textBox_Name.Text + "'");
+            rs.Open("select * from [Tab_Heizkessel] where Name='" + textBox_Name.Text + "'");
             if (rs.Next()) { MessageBox.Show("Daten bereits eingelesen!"); rs.Close(); return; }
             rs.Close();
 
@@ -97,7 +97,7 @@ namespace WindowsFormsApplication1
             {
                 transaction = Program.DBConnection.BeginTransaction();
                 rs.DBCommand.Transaction = transaction;
-                rs.Insert("INSERT INTO [DB-Heizung] (Name) SELECT '" + textBox_Name.Text + "' AS Ausdr1");
+                rs.Insert("INSERT INTO [Tab_Heizkessel] (Name) SELECT '" + textBox_Name.Text + "' AS Ausdr1");
                 rs.Close();
 
                 BrennstoffCtrl ctrl = new BrennstoffCtrl();

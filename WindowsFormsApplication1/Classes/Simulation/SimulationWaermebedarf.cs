@@ -38,16 +38,14 @@ namespace WindowsFormsApplication1
  
         
         // Brauchwasser Wärmeenergie 
-        public float[] BrauchwasserGeb = new float[100]; // pro Gebäude
-        public float[] WarmwasserBedarf = new float[365]; // pro Tag
-        public float Brauchwasser_Gesamt = 0;
+        public float[] Waermebedarf_Brauchwasser_Monat = new float[12];
+        public double Waermebedarf_Brauchwasser = 0;
 
         // Lastgang Gebäude
         public float[] Waermebedarf_Extern = new float[8760];
         public double Waermebedarf_Extern_Gesamt = 0;
 
         // Prozesswärme
-        public float[] Prozesswaerme = new float[8760];
         public float[] Waermebedarf_Prozess_Monat = new float[12];
         public double Waermebedarf_Prozess = 0;
 
@@ -73,6 +71,7 @@ namespace WindowsFormsApplication1
         public float[] monats_waerme = new float[12];
         public float[] wochen_waerme = new float[168];
         public float[] prozesswerte = new float[8760];
+        public float[] brauchwasserwerte = new float[8760];
         public float[] temp = new float[8760];
 
         public CSExeCOMServer.SimpleObject com = new CSExeCOMServer.SimpleObject();
@@ -101,7 +100,7 @@ namespace WindowsFormsApplication1
             RecordSet rs;
             
             m_ID_Projekt = ID_Projekt;
-            Brauchwasser_Gesamt = 0;         
+       
             com.I_vector_init(ref Dauerlinie);
             com.I_vector_init(ref Dauerlinie_nicht_sortiert);
             com.I_vector_init(ref Waermebedarf_Extern);
@@ -109,6 +108,7 @@ namespace WindowsFormsApplication1
             com.I_vector_init(ref Waermebedarf_Gebaeude);
             com.I_vector_init(ref Waermebedarf_sortiert);
             com.I_vector_init(ref prozesswerte);
+            com.I_vector_init(ref brauchwasserwerte);
 
             if (!DBGelesen)
             {
@@ -166,8 +166,6 @@ namespace WindowsFormsApplication1
                 // Maximaler Wärmebedarf pro Gebäude
                 MaxP[i] = Maximaler_Waermebedarf(Waermebedarf);
 
-                // Brauchwasser Wärme
-                Brauchwasser_Gesamt += BrauchwasserGeb[i] / 1000;
             }
 
             Anzahl_Gebaeude = ctrl.rows;
@@ -208,8 +206,13 @@ namespace WindowsFormsApplication1
             Prozesswaerme_berechnen();
             Waermebedarf_Prozess = com.I_vector_summe(prozesswerte);
             com.I_monats_summe(prozesswerte, Waermebedarf_Prozess_Monat, mo_anfang, mo_ende);
-
             com.CSharp_I_vectoren_addieren(prozesswerte, Waermebedarf);
+
+            // Brauchwasserwärme
+            Brauchwasserwaerme_berechnen();
+            Waermebedarf_Brauchwasser = com.I_vector_summe(brauchwasserwerte);
+            com.I_monats_summe(brauchwasserwerte, Waermebedarf_Brauchwasser_Monat, mo_anfang, mo_ende);
+            com.CSharp_I_vectoren_addieren(brauchwasserwerte, Waermebedarf);
 
             // Netzverluste 
             Waermebedarf_Gesamt = com.I_vector_summe(Waermebedarf); 
@@ -281,8 +284,9 @@ namespace WindowsFormsApplication1
                 item.Z_AuswahlWohnflaeche = item.Wohnflaeche_gesamt;
 
                 Berechnung_Gebaeude_Tageswerte(item, index);
-                double FlaecheAlt = item.Wohnflaeche_gesamt;//item.AuswahlWohnflaeche;
-                double VerbrauchAlt = (BrauchwasserGeb[index] + HeizwaermebedarfGeb[index]) / 1000;
+                double FlaecheAlt = item.Wohnflaeche_gesamt;
+//                double VerbrauchAlt = (BrauchwasserGeb[index] + HeizwaermebedarfGeb[index]) / 1000;
+                double VerbrauchAlt = HeizwaermebedarfGeb[index] / 1000;
                 double FlaecheNeu = VerbrauchNeu / VerbrauchAlt * FlaecheAlt;
                 item.Z_AuswahlWohnflaeche = FlaecheNeu;
                 item.Bewohner = item.Z_AuswahlWohnflaeche / item.Flaeche_Nutzer;
@@ -361,8 +365,6 @@ namespace WindowsFormsApplication1
             for (int Tag = 350; Tag < 365; Tag++)
             {
 
-                WarmwasserBedarf[Tag] = (float)item.WW_Bedarf * (float)item.Bewohner * 1000 / 365;
-
                 Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (float)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
                         (float)item.Fensterflaeche_Ost, Sol_S[Tag], (float)item.Fensterflaeche_Sued,
                         (float)item.Fensterdurchlassgrad) / (float)100;
@@ -396,16 +398,13 @@ namespace WindowsFormsApplication1
                         (float)A_Temp[Tag],
                         (float)item.Maximaleraumtemperatur,
                         (float)item.Z_AuswahlWohnflaeche,
-                        (float)item.Wohnflaeche) + WarmwasserBedarf[Tag];
+                        (float)item.Wohnflaeche); 
             }
 
-            BrauchwasserGeb[GebaeudeNr] = 0;
             HeizwaermebedarfGeb[GebaeudeNr] = 0;
 
             for (int Tag = 0; Tag < 365; Tag++)
             {
-                WarmwasserBedarf[Tag] = (float)item.WW_Bedarf * (float)item.Bewohner * 1000 / 365;
-
                 Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (float)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
                         (float)item.Fensterflaeche_Ost, Sol_S[Tag], (float)item.Fensterflaeche_Sued,
                         (float)item.Fensterdurchlassgrad) / 100;
@@ -439,11 +438,10 @@ namespace WindowsFormsApplication1
                     (float)A_Temp[Tag],
                     (float)item.Maximaleraumtemperatur,
                     (float)item.Z_AuswahlWohnflaeche,
-                    (float)item.Wohnflaeche) + WarmwasserBedarf[Tag];
+                    (float)item.Wohnflaeche);
 
 
-                    BrauchwasserGeb[GebaeudeNr] += WarmwasserBedarf[Tag];
-                    HeizwaermebedarfGeb[GebaeudeNr] = HeizwaermebedarfGeb[GebaeudeNr] + Heizlast[Tag] - WarmwasserBedarf[Tag];
+                HeizwaermebedarfGeb[GebaeudeNr] = HeizwaermebedarfGeb[GebaeudeNr] + Heizlast[Tag];
             }
   
         }
@@ -474,50 +472,6 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public void SimulationErgebis_in_DB()
-        {
-            OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
-
-            string sql = "update Tab_Simulation_Ergebnis " + 
-                "set Waermebedarf_Max=" + Waermebedarf_Max.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                ", Waermebedarf_Gesamt=" + Waermebedarf_Gesamt.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                ", Waermebedarf_Gebaeude=" + Waermebedarf_Gebaeude_Gesamt.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                ", Waermebedarf_Extern=" + Waermebedarf_Extern_Gesamt.ToString(CultureInfo.CreateSpecificCulture("en-US")) + 
-                ", Netzverluste=" + Waermebedarf_Netzverluste.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                ", Waermebedarf_Prozess=" + Waermebedarf_Prozess.ToString(CultureInfo.CreateSpecificCulture("en-US"));
-            
-            Cursor.Current = Cursors.WaitCursor;
-
-            try
-            {
-                DBCommand.CommandText = sql;
-                DBCommand.ExecuteNonQuery();
-                DBCommand.Dispose();
-                Cursor.Current = Cursors.Default;
-            }
-            catch (SystemException ex)
-            {
-                Console.WriteLine("Fehler in Simulation: " + ex.Message);
-                DBCommand.Dispose();
-                Cursor.Current = Cursors.Default;
-            }
-        }
-
-        public Ergebnis SimulationErgebis_aus_DB()
-        {
-            RecordSet rs = new RecordSet();
-            Ergebnis result = new Ergebnis();
- 
-            rs.Open("select * from Tab_Simulation_Ergebnis");
-            if (rs.Next())
-            {
-                result.Waermebedarf_Max = (double)rs.Read("Waermebedarf_Max");
-                result.Gesamt_Waermebedarf = (double)rs.Read("Waermebedarf_Gesamt");
-            }
-
-            return result;
-        }
-
         public void Prozesswaerme_berechnen(List<string> list = null)
         {
             RecordSet rs = new RecordSet();
@@ -526,8 +480,6 @@ namespace WindowsFormsApplication1
 
             try
             {
-
-                com.I_vector_init(ref Prozesswaerme);
                 com.I_vector_init(ref prozesswerte);
                 com.I_vector_init(ref temp);
 
@@ -535,7 +487,7 @@ namespace WindowsFormsApplication1
                 {
                     // Abfrage über gespeicherte Prozesse im Projekt
                     pw_list.Clear();
-                    rs.Open("select * from Abfrage_Monatswaerme where ID_Projekt=" + m_ID_Projekt);
+                    rs.Open("select * from Abfrage_Monatswaerme_Prozesse where ID_Projekt=" + m_ID_Projekt);
                     while (rs.Next())
                     {
                         pw_list.Add((string)rs.Read("Prozessname").ToString());
@@ -609,5 +561,94 @@ namespace WindowsFormsApplication1
             catch (SystemException ex) { Console.Write(ex.Message); }
         }
 
+        public void Brauchwasserwaerme_berechnen(List<string> list = null)
+        {
+            RecordSet rs = new RecordSet();
+            RecordSet rs_pwtyp = new RecordSet();
+            List<string> pw_list = new List<string>();
+
+            try
+            {
+
+                com.I_vector_init(ref brauchwasserwerte);
+                com.I_vector_init(ref temp);
+
+                if (list == null)
+                {
+                    // Abfrage über gespeicherte Prozesse im Projekt
+                    pw_list.Clear();
+                    rs.Open("select * from Abfrage_Monatswaerme_Brauchwasser where ID_Projekt=" + m_ID_Projekt);
+                    while (rs.Next())
+                    {
+                        pw_list.Add((string)rs.Read("Bezeichner").ToString());
+                    }
+                    rs.Close();
+                }
+                else
+                {
+                    // über Parameter Liste mit Brauchwasser Profil Namen
+                    pw_list = list;
+                }
+
+                for (int k = 0; k < pw_list.Count; k++)
+                {
+                    rs.Open("select * from Tab_Brauchwasser where Bezeichner='" + pw_list[k] + "'");
+                    if (rs.Next())
+                    {
+                        float pjv = 0;
+                        float jv = 0;
+                        if (m_ID_Projekt != 0) // skalieren ggf. mit geändertem Projekt Jahresverbrauch
+                        {
+                            Z_ProjektBrauchwasserCtrl ctrl = new Z_ProjektBrauchwasserCtrl();
+                            ctrl.ReadAll("select * from Z_Projekt_Brauchwasser where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Bezeichner") + "'");
+                            if (ctrl.rows > 0)
+                                pjv = (float)ctrl.items[0].Summe;
+                        }
+                        for (int i = 0; i < 12; i++)
+                        {
+                            double d = (double)rs.Read("Monat_" + (i + 1).ToString());
+                            monats_waerme[i] = (float)d;
+                            jv += monats_waerme[i];
+                        }
+
+                        if (pjv > 0)
+                        {
+                            for (int i = 0; i < 12; i++)
+                            {
+                                monats_waerme[i] = monats_waerme[i] * pjv / jv;
+                            }
+                        }
+
+                        Object objTyp = rs.Read("Typ");
+                        if (DBNull.Value.Equals(objTyp))
+                        {
+                            MessageBox.Show("DerTyp von Prozess " + pw_list[k] + " ist nicht definiert");
+                            rs.Close();
+                            return;
+                        }
+
+                        // Tagesverteilung für den Prozess ermitteln
+                        rs_pwtyp.Open("select * from Tab_Brauchwassertyp where Typname='" + (string)objTyp + "'");
+
+                        if (rs_pwtyp.Next())
+                        {
+                            for (int i = 0; i < 168; i++)
+                            {
+                                double dw = (double)rs_pwtyp.Read((i + 1).ToString());
+                                wochen_waerme[i] = (float)dw;
+                            }
+                        }
+                        rs_pwtyp.Close();
+
+                        // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
+                        temp = com.I_strom_wochetojahr(wochen_waerme, monats_waerme, mo_anfang, mo_ende);
+                        com.CSharp_I_vectoren_addieren(temp, brauchwasserwerte);
+                    }
+                    rs.Close();
+
+                }
+            }
+            catch (SystemException ex) { Console.Write(ex.Message); }
+        }
     }
 }

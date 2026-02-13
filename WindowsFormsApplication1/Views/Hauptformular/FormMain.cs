@@ -405,7 +405,7 @@ namespace WindowsFormsApplication1
                 ListViewItem lvitem = new ListViewItem();
                 RecordSet rs_hk = new RecordSet();
 
-                rs_hk.Open("select * from [DB-Heizung] where ID=" + rs.Read("ID_Kessel"));
+                rs_hk.Open("select * from [Tab_Heizkessel] where ID=" + rs.Read("ID_Kessel"));
 
                 if (!rs_hk.EOF())
                 {
@@ -435,8 +435,8 @@ namespace WindowsFormsApplication1
 
 
             string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Projekt, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, " +
-             "[DBGebaeude].Gebaeudename, Z_ProjektGebaeude.Einheit_Waermebedarf_Wohnflaeche, [DBGebaeude].Gebaeudeart " +
-             "FROM [DBGebaeude] INNER JOIN Z_ProjektGebaeude ON [DBGebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
+             "[Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Einheit_Waermebedarf_Wohnflaeche, [Tab_Gebaeude].Gebaeudeart " +
+             "FROM [Tab_Gebaeude] INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
              " where Z_ProjektGebaeude.ID_Projekt=" + projctrl.m_ID;
 
             RecordSet rs = new RecordSet();
@@ -496,7 +496,7 @@ namespace WindowsFormsApplication1
         {
             ProjektCtrl projctrl = new ProjektCtrl();
             Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
-            ProzesswaermeCtrl pwctrl = new ProzesswaermeCtrl();
+            BrauchwasserCtrl pwctrl = new BrauchwasserCtrl();
 
             ctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + m_ID_Projekt);
 
@@ -508,7 +508,7 @@ namespace WindowsFormsApplication1
                 for (int j = 0; j < pwctrl.rows; j++)
                 {
                     ListViewItem lvitem = new ListViewItem();
-                    lvitem.Text = pwctrl.m_szProzessname;
+                    lvitem.Text = pwctrl.m_szBezeichner;
                     lvitem.SubItems.Add(pwctrl.m_szTyp);
                     lvitem.SubItems.Add(pwctrl.m_szBeschreibung);
                     lvitem.SubItems.Add(ctrl.items[i].ID_Z.ToString());
