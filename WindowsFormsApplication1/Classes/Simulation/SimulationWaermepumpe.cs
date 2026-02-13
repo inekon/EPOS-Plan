@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using WindowsFormsApplication1.Classes.Simulation;
 
 namespace WindowsFormsApplication1
 {
@@ -84,14 +85,7 @@ namespace WindowsFormsApplication1
 
             Volumen_Pufferspeicher = 0;
 
-            for (int i = 0; i < MAX_WP; i++)
-            {
-                Modul_WP_Strombedarf[i] =0;
-                Modul_WP_Waermeproduktion[i] = 0;
-                Modul_Heizstab[i] = 0;
-                Modul_WP_Laufzeit[i] = 0;
-                WP_Modul[i] = "";
-            }
+            Init();
 
             wp_model.Clear();
             wp_kenndaten.Clear();
@@ -398,6 +392,32 @@ namespace WindowsFormsApplication1
         public static double Interp(double[] x, double[] y, double[] xq)
         {
             return y[0] +  (xq[0] - x[0]) * (y[1] - y[0]) / (x[1] - x[0]);    
+        }
+
+        public void Init()
+        {
+            for (int i = 0; i < MAX_WP; i++)
+            {
+                Modul_WP_Strombedarf[i] = 0;
+                Modul_WP_Waermeproduktion[i] = 0;
+                Modul_Heizstab[i] = 0;
+                Modul_WP_Laufzeit[i] = 0;
+                WP_Modul[i] = "";
+            }
+
+            for (int i = 0; i < 8760; i++)
+            {
+                waermerestbedarf_stuendlich[i] = 0;
+                WP_Strombedarf_stuendlich[i] = 0;
+                WP_Waermeproduktion_stuendlich[i] = 0;
+                WP_Waermeproduktion_stuendlich_sortiert[i] = 0;
+                Heizstab_stuendlich[i] = 0;
+            }
+            WP_Waermeproduktion_gesamt = 0;
+            Heizstab_gesamt = 0;
+            WP_Strombedarf_gesamt = 0;
+            WP_Laufzeit = 0;
+            Bivalenzpunkt = -100;
         }
     }
 }

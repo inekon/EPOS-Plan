@@ -349,19 +349,4 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Building data: bottles, U-values</value>
   </data>
-  <data name="Label15.Text" xml:space="preserve">
-    <value>W</value>
-  </data>
-  <data name="Label8.Text" xml:space="preserve">
-    <value>m²</value>
-  </data>
-  <data name="Label14.Text" xml:space="preserve">
-    <value>m</value>
-  </data>
-  <data name="label11.Text" xml:space="preserve">
-    <value>m</value>
-  </data>
-  <data name="Label9.Text" xml:space="preserve">
-    <value>m²</value>
-  </data>
 </root>

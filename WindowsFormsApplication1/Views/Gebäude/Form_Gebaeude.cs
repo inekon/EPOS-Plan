@@ -216,7 +216,7 @@ namespace WindowsFormsApplication1
 
             if (dataGridView1.CurrentCell.RowIndex == -1) return;
 
-            string sql = "SELECT * from [DBGebaeude] where [DBGebaeude].Gebaeudename='" + (string)dataGridView1.CurrentRow.Cells[0].Value + "'";
+            string sql = "SELECT * from [Tab_Gebaeude] where [Tab_Gebaeude].Gebaeudename='" + (string)dataGridView1.CurrentRow.Cells[0].Value + "'";
             rs.Open(sql);
 
             if (rs.Next())
@@ -301,7 +301,7 @@ namespace WindowsFormsApplication1
         private int GetIDGebaeude(string szGebaeude)
         {
             RecordSet rs = new RecordSet();
-            rs.Open("select * from [DBGebaeude] where Gebaeudename='" + szGebaeude + "'");
+            rs.Open("select * from [Tab_Gebaeude] where Gebaeudename='" + szGebaeude + "'");
             rs.Next();
             int ret = (int)rs.Read("ID");
             rs.Close();
@@ -540,7 +540,7 @@ namespace WindowsFormsApplication1
             DialogResult dialogResult = MessageBox.Show("Soll " + (string)dataGridView1.CurrentRow.Cells[0].Value + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
 
-            rs.Open("Delete * from DBGebaeude where Gebaeudename='" + (string)dataGridView1.CurrentRow.Cells[0].Value + "'");
+            rs.Open("Delete * from Tab_Gebaeude where Gebaeudename='" + (string)dataGridView1.CurrentRow.Cells[0].Value + "'");
             dgv.Rows.RemoveAt(dgv.CurrentCell.RowIndex);
             MessageBox.Show("Gebäude gelöscht!"); 
         }

@@ -117,8 +117,24 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="groupBox1.Text" xml:space="preserve">
-    <value>Raumtemperaturen</value>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="textBox_SollTag.Location" type="System.Drawing.Point, System.Drawing">
+    <value>171, 26</value>
+  </data>
+  <data name="textBox_NachtAbsenkung.Location" type="System.Drawing.Point, System.Drawing">
+    <value>171, 56</value>
+  </data>
+  <data name="textBox_MaxTemperatur.Location" type="System.Drawing.Point, System.Drawing">
+    <value>171, 86</value>
+  </data>
+  <data name="Label8.Location" type="System.Drawing.Point, System.Drawing">
+    <value>235, 28</value>
+  </data>
+  <data name="Label9.Location" type="System.Drawing.Point, System.Drawing">
+    <value>235, 58</value>
+  </data>
+  <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
+    <value>235, 88</value>
   </data>
   <data name="Label57.Text" xml:space="preserve">
     <value>Monat :</value>
@@ -131,6 +147,9 @@
   </data>
   <data name="Label13.Text" xml:space="preserve">
     <value>Soll in Ferien :</value>
+  </data>
+  <data name="Label49.Text" xml:space="preserve">
+    <value>Fenster-Wand :</value>
   </data>
   <data name="Label35.Text" xml:space="preserve">
     <value>Sommer :</value>
@@ -165,6 +184,9 @@
   <data name="Label15.Text" xml:space="preserve">
     <value>°C</value>
   </data>
+  <data name="groupBox7.Text" xml:space="preserve">
+    <value>Sonstiges</value>
+  </data>
   <data name="Label4.Text" xml:space="preserve">
     <value>Soll am Tag :</value>
   </data>
@@ -192,12 +214,6 @@
   <data name="Label33.Text" xml:space="preserve">
     <value>Winter :</value>
   </data>
-  <data name="Label46.Text" xml:space="preserve">
-    <value>WW-Bedarf/Nutzer :</value>
-  </data>
-  <data name="Label49.Text" xml:space="preserve">
-    <value>Fenster-Wand :</value>
-  </data>
   <data name="Label51.Text" xml:space="preserve">
     <value>Außenwand-Keller :</value>
   </data>
@@ -206,9 +222,6 @@
   </data>
   <data name="Label56.Text" xml:space="preserve">
     <value>Tag :</value>
-  </data>
-  <data name="groupBox7.Text" xml:space="preserve">
-    <value>Sonstiges</value>
   </data>
   <data name="Label12.Text" xml:space="preserve">
     <value>Wochenendabsenkung :</value>
@@ -219,11 +232,11 @@
   <data name="groupBox5.Text" xml:space="preserve">
     <value>Ferien Anfang</value>
   </data>
-  <data name="Label48.Text" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
   <data name="groupBox3.Text" xml:space="preserve">
     <value>Abmessung Anschluß [m]</value>
+  </data>
+  <data name="groupBox1.Text" xml:space="preserve">
+    <value>Raumtemperaturen</value>
   </data>
   <data name="Label8.Text" xml:space="preserve">
     <value>°C</value>
@@ -239,5 +252,11 @@
   </data>
   <data name="Label53.Text" xml:space="preserve">
     <value>Ostern :</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value> Brauchwasserprofile :</value>
+  </data>
+  <data name="btn_Brauchwasser.Text" xml:space="preserve">
+    <value>Brauchwasser...</value>
   </data>
 </root>

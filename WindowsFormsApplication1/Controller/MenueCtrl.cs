@@ -360,5 +360,11 @@ namespace WindowsFormsApplication1
             Form_PufferSp_Admin frm = new Form_PufferSp_Admin();
             frm.ShowDialog();
         }
+        public void Brauchwasser()
+        {
+            Form_Brauchwasser_Admin frm = new Form_Brauchwasser_Admin();
+            frm.SetControls("");
+            frm.ShowDialog();
+        }
     }
 }

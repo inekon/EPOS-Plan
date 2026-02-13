@@ -287,8 +287,8 @@ namespace WindowsFormsApplication1
 
         public float[] Stundenwerte_zu_viertelstunden(float[] stundenwerte)
         {  
-            float[] viertelstundenwerte = new float[stundenwerte.Length * 4];
-            for (int i = 0; i < stundenwerte.Length; i++)
+            float[] viertelstundenwerte = new float[8760 * 4];
+            for (int i = 0; i < 8760; i++)
             {
                 viertelstundenwerte[i * 4] = stundenwerte[i];
                 viertelstundenwerte[i * 4 + 1] = stundenwerte[i];

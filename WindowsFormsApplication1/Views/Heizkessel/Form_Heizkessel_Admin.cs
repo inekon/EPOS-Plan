@@ -51,7 +51,7 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
 
-            rs.Open("select * from [DB-Heizung] where Name='" + listBox_Kessel_DB.Text + "'");
+            rs.Open("select * from [Tab_Heizkessel] where Name='" + listBox_Kessel_DB.Text + "'");
             if (!rs.EOF())
             {
                 textBox_Kesselname.Text = (string)rs.Read("Name");
@@ -103,9 +103,9 @@ namespace WindowsFormsApplication1
 
             listBox_Kessel_DB.Items.Clear();
             if (szFilter == "")
-                sql = "select * from [DB-Heizung] where " + szFilterLeistung + " order by Name";
+                sql = "select * from [Tab_Heizkessel] where " + szFilterLeistung + " order by Name";
             else
-                sql = "select * from [DB-Heizung] where " + szFilter + " and " + szFilterLeistung + " order by Name";
+                sql = "select * from [Tab_Heizkessel] where " + szFilter + " and " + szFilterLeistung + " order by Name";
 
             rs.Open(sql);
 
@@ -162,7 +162,7 @@ namespace WindowsFormsApplication1
             if (frmLabel.result == DialogResult.OK)
             {
                 RecordSet rs = new RecordSet();
-                rs.Open("select Name from [DB-Heizung] where Name='" + frmLabel.m_szName + "'");
+                rs.Open("select Name from [Tab_Heizkessel] where Name='" + frmLabel.m_szName + "'");
                 bool bExist = !rs.EOF();
                 rs.Close();
 

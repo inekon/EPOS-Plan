@@ -29,21 +29,21 @@ namespace WindowsFormsApplication1
             string sql;
             if (szFilter != "")
             {
-                sql = "select * from [DBGebaeude] where " + szFilter + " order by Gebaeudename";
+                sql = "select * from [Tab_Gebaeude] where " + szFilter + " order by Gebaeudename";
             }
             else
             {
-                sql = "select * from [DBGebaeude] order by Gebaeudename";
+                sql = "select * from [Tab_Gebaeude] order by Gebaeudename";
             }
-            DBGebaeude(sql);
+            Tab_Gebaeude(sql);
         }
 
         public void Read(string sql)
         {
-            DBGebaeude(sql);
+            Tab_Gebaeude(sql);
         }
 
-        private void DBGebaeude(string sql)
+        private void Tab_Gebaeude(string sql)
         {
             DBCommand.CommandText = sql;
             OdbcDataReader DBReader = DBCommand.ExecuteReader();

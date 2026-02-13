@@ -22,7 +22,7 @@ namespace WindowsFormsApplication1
         {
             simulation = waermebedarf_simulation;
             textBox_WB_Gebaeude.Text = simulation.Waermebedarf_Gebaeude_Gesamt.ToString("F2");
-            textBox_Brauchwasser.Text = (simulation.Brauchwasser_Gesamt / 1000).ToString("F2");
+            textBox_Brauchwasser.Text = (simulation.Waermebedarf_Brauchwasser).ToString("F2");
             textBox_WB_Extern.Text = simulation.Waermebedarf_Extern_Gesamt.ToString("F2");
             textBox_MaxWaermelast.Text = simulation.Waermebedarf_Max.ToString("F2");
             textBox_Netzverluste.Text = simulation.Waermebedarf_Netzverluste.ToString("F2");

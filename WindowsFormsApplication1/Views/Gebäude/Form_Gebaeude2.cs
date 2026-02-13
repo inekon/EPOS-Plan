@@ -13,6 +13,8 @@ namespace WindowsFormsApplication1
     {
         public GebaeudeModel model = new GebaeudeModel();
         public DialogResult result;
+        public long m_ID_Projekt;
+        public string m_szProjektname;
 
         public Form_Gebaeude2()
         {
@@ -25,17 +27,14 @@ namespace WindowsFormsApplication1
             textBox_NachtAbsenkung.Text = model.Raumsolltemperatur_Nachtabsenkung.ToString("F2");
             textBox_MaxTemperatur.Text = model.Maximaleraumtemperatur.ToString("F2");
             textBox_WEAbsenkung.Text = model.Raumsolltemperatur_Wochenende.ToString("F2");
-            
-            
             textBox_SollFerien.Text = model.Raumsolltemperatur_Ferien.ToString("F2");
-            
-            
             textBox_WBVK_Fenster.Text = model.Waermebrueckenverlustkoeffizient_Anschluﬂ_Fenster_Wand.ToString("F2");
             textBox_WBVK_Keller.Text = model.Waermebruckenverlustkoeffizient_Anschluﬂ_Auﬂenwand_Kellerdecke.ToString("F2");
             textBox_WBVK_Dach.Text = model.Waermebrueckenverlustkoeffizient_Anschluﬂ_Wand_Dach.ToString("F2");
             textBox_AnschussFenster.Text = model.Abmessung_Anschluﬂ_Fenster_Wand.ToString("F2");
             textBox_AnschussDach.Text = model.Abmessung_Anschluﬂ_Wand_Dach.ToString("F2");
             textBox_AnschussKeller.Text = model.Abmessung_Anschluﬂ_Auﬂenwand_Kellerdecke.ToString("F2");
+            
             Winter_Tag_A.Text = model.Ferienbeginn_1.ToString("F2");
             Ostern_Tag_A.Text = model.Ferienbeginn_1.ToString("F2");
             Sommer_Tag_A.Text = model.Ferienbeginn_1.ToString("F2");
@@ -53,8 +52,7 @@ namespace WindowsFormsApplication1
             Sommer_Monat_E.Text = model.Ferienbeginn_1.ToString("F2");
             Herbst_Monat_E.Text = model.Ferienbeginn_1.ToString("F2");
             textBox_Luftwechsel.Text = model.Luftwechselrate.ToString("F2");
-            textBox_WWNutzer.Text = model.WW_Bedarf.ToString();
-
+            
             JahrestagUmrechner((int)model.Ferienbeginn_1, Winter_Tag_A, Winter_Monat_A);
             JahrestagUmrechner((int)model.Ferienende_1,Winter_Tag_E, Winter_Monat_E);
             JahrestagUmrechner((int)model.Ferienbeginn_2, Ostern_Tag_A, Ostern_Monat_A);
@@ -63,7 +61,6 @@ namespace WindowsFormsApplication1
             JahrestagUmrechner((int)model.Ferienende_3, Sommer_Tag_E, Sommer_Monat_E);
             JahrestagUmrechner((int)model.Ferienbeginn_4, Herbst_Tag_A, Herbst_Monat_A);
             JahrestagUmrechner((int)model.Ferienende_4, Herbst_Tag_E, Herbst_Monat_E);
-
         }
 
         public void JahrestagUmrechner(int jahrestag, Control Tag, Control Monat)
@@ -173,7 +170,7 @@ namespace WindowsFormsApplication1
             if (model.Ferienbeginn_1 == 0) model.Ferienbeginn_1 = 366;
             
             model.Luftwechselrate = Text2Wert(textBox_Luftwechsel.Text);
-            model.WW_Bedarf = Text2Wert(textBox_WWNutzer.Text);
+            model.WW_Bedarf = 0;
 
             result = DialogResult.OK;  
             Close();
@@ -185,6 +182,51 @@ namespace WindowsFormsApplication1
             Close();
         }
 
- 
+        private void btn_Brauchwasser_Click(object sender, EventArgs e)
+        {
+            Form_Brauchwasser frm = new Form_Brauchwasser();
+            RecordSet rs = new RecordSet();
+            WizardCtrl wizctrl = new WizardCtrl();
+            ProjektCtrl projctrl = new ProjektCtrl();
+            m_ID_Projekt = Program.startfrm.m_ID_Projekt;
+            m_szProjektname = Program.startfrm.m_szProjektname;
+
+            frm.list_pwmodel.Clear();
+
+            string sql = "SELECT Z_Projekt_Brauchwasser.ID, Z_Projekt_Brauchwasser.ID_Projekt, " +
+                "Z_Projekt_Brauchwasser.ID_Brauchwasser, Tab_Brauchwasser.Bezeichner, Z_Projekt_Brauchwasser.Summe " +
+                "FROM Z_Projekt_Brauchwasser INNER JOIN Tab_Brauchwasser ON " +
+                "Z_Projekt_Brauchwasser.ID_Brauchwasser = Tab_Brauchwasser.ID " +
+                " where ID_Projekt=" + m_ID_Projekt;
+
+            rs.Open(sql);
+            while (rs.Next())
+            {
+                Z_ProjektBrauchwasserModel item = new Z_ProjektBrauchwasserModel();
+                item.ID_Z = (int)rs.Read("ID");
+                item.ID_Projekt = (int)m_ID_Projekt;
+                item.ID_Brauchwasser = (int)rs.Read("ID_Brauchwasser");
+                item.szBezeichner = (string)rs.Read("Bezeichner");
+                item.Summe = (double)rs.Read("Summe");
+                frm.list_pwmodel.Add(item);
+            }
+
+            frm.m_ID_Projekt = Program.startfrm.m_ID_Projekt;
+            frm.SetControls(Program.startfrm.m_szProjektname);
+            frm.ShowDialog();
+
+            if (frm.DialogResult == DialogResult.OK)
+            {
+                wizctrl.Del_Projekt_Brauchwasser((int)m_ID_Projekt);
+                wizctrl.Add_Projekt_Brauchwasser((int)m_ID_Projekt, frm.list_pwmodel);
+
+                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.m_Aenderungsdatum = DateTime.Now;
+                projctrl.Update();
+            }
+
+
+
+        }
     }
 }

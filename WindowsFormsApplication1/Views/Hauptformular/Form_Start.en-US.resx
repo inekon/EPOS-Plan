@@ -220,6 +220,15 @@
   <data name="tabPage1.Text" xml:space="preserve">
     <value>Project</value>
   </data>
+  <data name="label73.Text" xml:space="preserve">
+    <value>Define a hot water profile</value>
+  </data>
+  <data name="label74.Size" type="System.Drawing.Size, System.Drawing">
+    <value>189, 21</value>
+  </data>
+  <data name="label74.Text" xml:space="preserve">
+    <value>Domestic hot water heat</value>
+  </data>
   <data name="label38.Size" type="System.Drawing.Size, System.Drawing">
     <value>226, 21</value>
   </data>
@@ -335,7 +344,7 @@
     <value>490, 527</value>
   </data>
   <data name="label72.Size" type="System.Drawing.Size, System.Drawing">
-    <value>122, 21</value>
+    <value>116, 21</value>
   </data>
   <data name="label72.Text" xml:space="preserve">
     <value>Buffer storage</value>
@@ -601,6 +610,9 @@
   </data>
   <data name="label_Name.Text" xml:space="preserve">
     <value>project</value>
+  </data>
+  <data name="tabPage5.Text" xml:space="preserve">
+    <value>simulation</value>
   </data>
   <data name="tabPage6.Text" xml:space="preserve">
     <value>Reports</value>

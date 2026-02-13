@@ -117,145 +117,86 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Label26.Text" xml:space="preserve">
-    <value>24</value>
-  </data>
-  <data name="listBox_Tag.Items2" xml:space="preserve">
-    <value>Wednesday</value>
-  </data>
-  <data name="btn_WocheUebernehmen.Text" xml:space="preserve">
-    <value>Apply changes</value>
-  </data>
-  <data name="Label8.Text" xml:space="preserve">
-    <value>6</value>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>187, 17</value>
   </data>
   <data name="Label1.Text" xml:space="preserve">
     <value>List of process types in the DB:</value>
   </data>
-  <data name="listBox_Tag.Items3" xml:space="preserve">
-    <value>Thursday</value>
-  </data>
-  <data name="listBox_Tag.Items1" xml:space="preserve">
-    <value>Tuesday</value>
-  </data>
-  <data name="Label13.Text" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="Label11.Text" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="listBox_Tag.Items5" xml:space="preserve">
-    <value>Saturday</value>
-  </data>
-  <data name="listBox_Tag.Items" xml:space="preserve">
-    <value>Monday</value>
-  </data>
-  <data name="Label17.Text" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <data name="btn_Tagkopieren.Text" xml:space="preserve">
-    <value>Copy tag</value>
-  </data>
-  <data name="Label23.Text" xml:space="preserve">
-    <value>21</value>
-  </data>
-  <data name="Label12.Text" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="Label4.Text" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="Label21.Text" xml:space="preserve">
-    <value>19</value>
-  </data>
-  <data name="Label5.Text" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="Label9.Text" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="Label10.Text" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="btn_Loeschen.Text" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="Label6.Text" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="Label27.Text" xml:space="preserve">
-    <value>Selection of the day of the week</value>
-  </data>
-  <data name="Label25.Text" xml:space="preserve">
-    <value>23</value>
-  </data>
-  <data name="Label14.Text" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="Label20.Text" xml:space="preserve">
-    <value>18</value>
-  </data>
-  <data name="chart1.Text" xml:space="preserve">
-    <value>Graphic hourly values</value>
-  </data>
-  <data name="btn_SpeichernUnter.Text" xml:space="preserve">
-    <value>Save as</value>
-  </data>
-  <data name="btn_Schliessen.Text" xml:space="preserve">
-    <value>Close</value>
+  <data name="Label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>246, 17</value>
   </data>
   <data name="Label2.Text" xml:space="preserve">
     <value>Description of the selected process type:</value>
   </data>
-  <data name="Label7.Text" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="Label24.Text" xml:space="preserve">
-    <value>22</value>
-  </data>
-  <data name="Label19.Text" xml:space="preserve">
-    <value>17</value>
-  </data>
   <data name="btn_Neu.Text" xml:space="preserve">
     <value>New</value>
+  </data>
+  <data name="btn_Loeschen.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="btn_SpeichernUnter.Text" xml:space="preserve">
+    <value>Save as</value>
   </data>
   <data name="btn_Speichern.Text" xml:space="preserve">
     <value>Save to DB</value>
   </data>
-  <data name="btn_Tageinfuegen.Text" xml:space="preserve">
-    <value>Insert tag</value>
+  <data name="btn_Schliessen.Text" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="chart1.Text" xml:space="preserve">
+    <value>Graphic hourly values</value>
+  </data>
+  <data name="label28.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 17</value>
   </data>
   <data name="label28.Text" xml:space="preserve">
     <value>Hourly values ​​[KW, KWh or %]</value>
   </data>
-  <data name="listBox_Tag.Items6" xml:space="preserve">
-    <value>Sunday</value>
+  <data name="btn_WocheUebernehmen.Text" xml:space="preserve">
+    <value>Apply changes</value>
   </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Process types hour distribution</value>
+  <data name="Label27.Size" type="System.Drawing.Size, System.Drawing">
+    <value>194, 17</value>
+  </data>
+  <data name="Label27.Text" xml:space="preserve">
+    <value>Selection of the day of the week</value>
+  </data>
+  <data name="btn_Tagkopieren.Text" xml:space="preserve">
+    <value>Copy tag</value>
+  </data>
+  <data name="btn_Tageinfuegen.Text" xml:space="preserve">
+    <value>Insert tag</value>
+  </data>
+  <data name="listBox_Tag.Items" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="listBox_Tag.Items1" xml:space="preserve">
+    <value>Tuesday</value>
+  </data>
+  <data name="listBox_Tag.Items2" xml:space="preserve">
+    <value>Wednesday</value>
+  </data>
+  <data name="listBox_Tag.Items3" xml:space="preserve">
+    <value>Thursday</value>
   </data>
   <data name="listBox_Tag.Items4" xml:space="preserve">
     <value>Friday</value>
   </data>
-  <data name="Label15.Text" xml:space="preserve">
-    <value>13</value>
+  <data name="listBox_Tag.Items5" xml:space="preserve">
+    <value>Saturday</value>
   </data>
-  <data name="Label16.Text" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="tabPage2.Text" xml:space="preserve">
-    <value>graphic</value>
-  </data>
-  <data name="Label3.Text" xml:space="preserve">
-    <value>1</value>
+  <data name="listBox_Tag.Items6" xml:space="preserve">
+    <value>Sunday</value>
   </data>
   <data name="tabPage1.Text" xml:space="preserve">
     <value>Weekly values</value>
   </data>
-  <data name="Label22.Text" xml:space="preserve">
-    <value>20</value>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>graphic</value>
   </data>
-  <data name="Label18.Text" xml:space="preserve">
-    <value>16</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Process types hour distribution</value>
   </data>
 </root>

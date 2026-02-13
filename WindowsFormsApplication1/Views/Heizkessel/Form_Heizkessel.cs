@@ -102,7 +102,7 @@ namespace WindowsFormsApplication1
            
             if (listBox_Kessel_DB.Text == "") return;
 
-            rs.Open("select * from [DB-Heizung] where Name='" + listBox_Kessel_DB.Text + "'");
+            rs.Open("select * from [Tab_Heizkessel] where Name='" + listBox_Kessel_DB.Text + "'");
             if (rs.Next())
             {
                 WErzeugerModel model = new WErzeugerModel();
@@ -143,7 +143,7 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
 
-            rs.Open("select * from [DB-Heizung] where Name='" + listBox_Kessel.Text + "'");
+            rs.Open("select * from [Tab_Heizkessel] where Name='" + listBox_Kessel.Text + "'");
             if (!rs.EOF())
             {
                 textBox_Kesselname.Text = (string)rs.Read("Name");
@@ -160,7 +160,7 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
 
-            rs.Open("select * from [DB-Heizung] where Name='" + listBox_Kessel_DB.Text + "'");
+            rs.Open("select * from [Tab_Heizkessel] where Name='" + listBox_Kessel_DB.Text + "'");
             if (!rs.EOF())
             {
                 textBox_Kesselname.Text = (string)rs.Read("Name");
@@ -213,9 +213,9 @@ namespace WindowsFormsApplication1
    
             listBox_Kessel_DB.Items.Clear();
             if (szFilter == "")
-                sql = "select * from [DB-Heizung] where " + szFilterLeistung + " order by Name";
+                sql = "select * from [Tab_Heizkessel] where " + szFilterLeistung + " order by Name";
             else
-                sql = "select * from [DB-Heizung] where " + szFilter + " and " + szFilterLeistung + " order by Name";
+                sql = "select * from [Tab_Heizkessel] where " + szFilter + " and " + szFilterLeistung + " order by Name";
 
             rs.Open(sql);
 
@@ -247,7 +247,7 @@ namespace WindowsFormsApplication1
             if (listBox_Kessel_DB.SelectedIndex == -1) { MessageBox.Show("Bitte ein Modul auswählen!"); return; }
 
             RecordSet rs = new RecordSet();
-            rs.Open("Delete * from [DB-Heizung] where Name='" + listBox_Kessel_DB.Text  + "'");
+            rs.Open("Delete * from [Tab_Heizkessel] where Name='" + listBox_Kessel_DB.Text  + "'");
             rs.Close();
 
             listBox_Kessel_DB.Items.RemoveAt(listBox_Kessel_DB.SelectedIndex);

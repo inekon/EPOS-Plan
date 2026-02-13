@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
             connString = @"Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=" + textBox_DB.Text;
 
             string[] tabellenNamen_import = {
-                "Tab_Einstellungen", "Tab_Solar","DB-Heizung","DBGebaeude", "DBTagV","DBTagVDaten","Tab_Klimaregion","Tab_Klimadaten","Tab_Projekt","Tab_Applikation",
+                "Tab_Einstellungen", "Tab_Solar","Tab_Heizkessel","Tab_Gebaeude", "Tab_DBTagV","Tab_DBTagVDaten","Tab_Klimaregion","Tab_Klimadaten","Tab_Projekt","Tab_Applikation",
                 "Tab_BHKW","Tab_Einstellungen","Tab_Typ_Energieanlagen","Tab_WP",
                 "Tab_Kenndaten","Tab_Kenndaten_Kuehlung","Tab_Prozesstyp","Tab_Prozesswaerme",
                 "Tab_Simulation_Ergebnis","Tab_Solarganglinie","Tab_SolarganglinieDaten","Tab_Solarkollektoren","Tab_Stromganglinie",
@@ -79,7 +79,7 @@ namespace WindowsFormsApplication1
                 "Tab_Applikation",
                 "Tab_Einstellungen",
                 "Tab_Kenndaten",
-                "DBTagV",
+                "Tab_DBTagV",
                 "Tab_WP",
                 "Tab_BHKW",
                 "Tab_Waermebedarf",
@@ -88,8 +88,8 @@ namespace WindowsFormsApplication1
                 "Tab_Solar",
                 "Tab_Solarganglinie",
                 "Tab_Solarkollektoren",
-                "DBGebaeude",
-                "DB-Heizung",
+                "Tab_Gebaeude",
+                "Tab_Heizkessel",
                 "Tab_Stromganglinie",
                 "Tab_Stromspeicher",
                 "Tab_Stromverbraucher",

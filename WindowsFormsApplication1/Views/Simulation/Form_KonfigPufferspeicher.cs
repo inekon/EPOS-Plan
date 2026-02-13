@@ -32,8 +32,8 @@ namespace WindowsFormsApplication1.Views.Simulation
         {
             model.Erzeuger = comboBox_Erzeuger.Text;
             model.PufferSp = comboBox_Puffer.Text;
-            model.Vorlauf = Int32.Parse(textBox_Vorlauf.Text);
-            model.Ruecklauf = Int32.Parse(textBox_Ruecklauf.Text);
+            model.Vorlauf = string.IsNullOrWhiteSpace(textBox_Vorlauf.Text) ? 0 : Int32.Parse(textBox_Vorlauf.Text);
+            model.Ruecklauf = string.IsNullOrWhiteSpace(textBox_Ruecklauf.Text) ? 0 : Int32.Parse(textBox_Ruecklauf.Text);
             this.DialogResult = DialogResult.OK;
         }
 
@@ -46,6 +46,7 @@ namespace WindowsFormsApplication1.Views.Simulation
                 textBox_Vorlauf.Text = rs.Read("Vorlauf").ToString();
             }
             rs.Close();
+            
             rs.Open("select * from Abfrage_Erzeuger_Ruecklauftemperaturen where Typ='" + comboBox_Erzeuger.Text + "' and ID_Projekt=" + m_ID_Projekt);
             if (rs.Next())
             {

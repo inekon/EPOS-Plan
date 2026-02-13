@@ -12,8 +12,8 @@ namespace WindowsFormsApplication1
 {
     partial class Form_Prozesswaerme_Admin : Form
     {
-        private ProzesswaermeModel model = new ProzesswaermeModel();
-        private ProzesswaermeCtrl ctrl = new ProzesswaermeCtrl();
+        private BrauchwasserModel model = new BrauchwasserModel();
+        private BrauchwasserCtrl ctrl = new BrauchwasserCtrl();
         public List<Z_ProjektProzesswaermeModel> list_pwmodel = new List<Z_ProjektProzesswaermeModel>();
         public int m_ID_Projekt = 0;
         private SimulationWaermebedarf simulation = new SimulationWaermebedarf();
@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
         public void SetControls(string szProjekt)
         {
             Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
-            ProzesswaermeCtrl ctrl_pw = new ProzesswaermeCtrl();
+            BrauchwasserCtrl ctrl_pw = new BrauchwasserCtrl();
             Z_ProjektProzesswaermeModel model = new Z_ProjektProzesswaermeModel();
 
             m_szProjekt = szProjekt; 
@@ -37,7 +37,7 @@ namespace WindowsFormsApplication1
             
             for (int i = 0; i < ctrl_pw.rows; i++)
             {
-                listBox_Prozess_DB.Items.Add(ctrl_pw.items[i].m_szProzessname);
+                listBox_Prozess_DB.Items.Add(ctrl_pw.items[i].m_szBezeichner);
             }
             if (listBox_Prozess_DB.Items.Count > 0) listBox_Prozess_DB.SelectedIndex = 0;
    
@@ -53,7 +53,7 @@ namespace WindowsFormsApplication1
 
         private void SetProzessInfo(string szName)
         {
-            ProzesswaermeCtrl ctrl = new ProzesswaermeCtrl();
+            BrauchwasserCtrl ctrl = new BrauchwasserCtrl();
             ctrl.ReadSingle(szName);
 
             if (ctrl.rows > 0)
@@ -66,7 +66,7 @@ namespace WindowsFormsApplication1
 
         private double Prozesssumme(string szName)
         {
-            ProzesswaermeCtrl ctrl = new ProzesswaermeCtrl();
+            BrauchwasserCtrl ctrl = new BrauchwasserCtrl();
             ctrl.ReadSingle(szName);
 
             double summe = 0;

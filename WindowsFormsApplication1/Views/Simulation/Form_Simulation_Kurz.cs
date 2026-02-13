@@ -90,7 +90,7 @@ namespace WindowsFormsApplication1
 
             //Do_Simulation( ctrl, tool, simulation_Waermebedarf, simulation_Strombedarf);
 
-            SimulationHelper sim = new SimulationHelper();
+            SimulationControl sim = new SimulationControl();
             sim.tool = tool;
             sim.Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
             sim.simulation_Waermebedarf = simulation_Waermebedarf;

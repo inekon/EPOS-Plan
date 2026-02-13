@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
         [STAThread]
         static void Main()
         {
-
+   
             var key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
             if (key == null)
             {

@@ -50,9 +50,9 @@ namespace WindowsFormsApplication1
 
             if (filter == "")
             {
-                sql = "select * from [DB-Heizung]";
+                sql = "select * from [Tab_Heizkessel]";
             }
-            else sql = "select * from [DB-Heizung] where " + filter;
+            else sql = "select * from [Tab_Heizkessel] where " + filter;
             DBCommand.CommandText = sql;
             DBReader = DBCommand.ExecuteReader();
 
@@ -93,7 +93,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM [DB-Heizung] where Name= '" + szName + "'";
+                DBCommand.CommandText = "DELETE * FROM [Tab_Heizkessel] where Name= '" + szName + "'";
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)
@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                string sql = "UPDATE [DB-Heizung] SET Beschreibung='" + model.Beschreibung + "'" +
+                string sql = "UPDATE [Tab_Heizkessel] SET Beschreibung='" + model.Beschreibung + "'" +
                     ", Firma = '" + model.Firma + "'" +
                     ", Ptherm=" + model.Ptherm.ToString(CultureInfo.CreateSpecificCulture("en-US"))  + ", Brennstoff=" + model.Brennstoff + 
                     ", Wirkungsgrad_Gas=" + model.Wirkungsgrad_Gas.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
