@@ -286,13 +286,4 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Entering the solar panels</value>
   </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Name:</value>
-  </data>
-  <data name="btn_OK.Text" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="Label9.Text" xml:space="preserve">
-    <value>m²</value>
-  </data>
 </root>

@@ -28,21 +28,29 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title4 = new System.Windows.Forms.DataVisualization.Charting.Title();
             this.listBoxKlimreg = new System.Windows.Forms.ListBox();
             this.butt_Delete = new System.Windows.Forms.Button();
-            this.btn_ExcelDatei = new System.Windows.Forms.Button();
             this.btn_Beenden = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
-            this.textBox_Excel = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.btn_Import = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.pBar_Import = new System.Windows.Forms.ProgressBar();
+            this.btn_Import = new System.Windows.Forms.Button();
+            this.textBox_Display = new System.Windows.Forms.TextBox();
+            this.comboBox_Ort = new System.Windows.Forms.ComboBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.textBox_Longitude = new System.Windows.Forms.TextBox();
+            this.textBox_Latitude = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // listBoxKlimreg
@@ -50,46 +58,37 @@
             this.listBoxKlimreg.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.listBoxKlimreg.FormattingEnabled = true;
             this.listBoxKlimreg.ItemHeight = 17;
-            this.listBoxKlimreg.Location = new System.Drawing.Point(35, 160);
+            this.listBoxKlimreg.Location = new System.Drawing.Point(21, 259);
             this.listBoxKlimreg.Margin = new System.Windows.Forms.Padding(4);
             this.listBoxKlimreg.Name = "listBoxKlimreg";
             this.listBoxKlimreg.Size = new System.Drawing.Size(200, 225);
             this.listBoxKlimreg.TabIndex = 2;
+            this.listBoxKlimreg.TabStop = false;
             this.listBoxKlimreg.SelectedIndexChanged += new System.EventHandler(this.listBoxWP_SelectedIndexChanged);
             // 
             // butt_Delete
             // 
             this.butt_Delete.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.butt_Delete.Location = new System.Drawing.Point(35, 393);
+            this.butt_Delete.Location = new System.Drawing.Point(21, 492);
             this.butt_Delete.Margin = new System.Windows.Forms.Padding(4);
             this.butt_Delete.Name = "butt_Delete";
             this.butt_Delete.Size = new System.Drawing.Size(98, 30);
             this.butt_Delete.TabIndex = 5;
+            this.butt_Delete.TabStop = false;
             this.butt_Delete.Text = "Löschen";
             this.butt_Delete.UseVisualStyleBackColor = true;
             this.butt_Delete.Click += new System.EventHandler(this.butt_Delete_Click);
-            // 
-            // btn_ExcelDatei
-            // 
-            this.btn_ExcelDatei.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_ExcelDatei.Location = new System.Drawing.Point(35, 47);
-            this.btn_ExcelDatei.Margin = new System.Windows.Forms.Padding(4);
-            this.btn_ExcelDatei.Name = "btn_ExcelDatei";
-            this.btn_ExcelDatei.Size = new System.Drawing.Size(129, 29);
-            this.btn_ExcelDatei.TabIndex = 7;
-            this.btn_ExcelDatei.Text = "Excel File...";
-            this.btn_ExcelDatei.UseVisualStyleBackColor = true;
-            this.btn_ExcelDatei.Click += new System.EventHandler(this.btn_ExcelDatei_Click);
             // 
             // btn_Beenden
             // 
             this.btn_Beenden.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.btn_Beenden.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Beenden.Location = new System.Drawing.Point(627, 455);
+            this.btn_Beenden.Location = new System.Drawing.Point(630, 536);
             this.btn_Beenden.Margin = new System.Windows.Forms.Padding(4);
             this.btn_Beenden.Name = "btn_Beenden";
             this.btn_Beenden.Size = new System.Drawing.Size(98, 28);
             this.btn_Beenden.TabIndex = 10;
+            this.btn_Beenden.TabStop = false;
             this.btn_Beenden.Text = "Beenden";
             this.btn_Beenden.UseVisualStyleBackColor = true;
             this.btn_Beenden.Click += new System.EventHandler(this.btn_Beenden_Click);
@@ -97,24 +96,11 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(501, 492);
+            this.label3.Location = new System.Drawing.Point(504, 525);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(0, 19);
             this.label3.TabIndex = 11;
-            // 
-            // textBox_Excel
-            // 
-            this.textBox_Excel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Excel.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Excel.Location = new System.Drawing.Point(172, 50);
-            this.textBox_Excel.Margin = new System.Windows.Forms.Padding(4);
-            this.textBox_Excel.Multiline = true;
-            this.textBox_Excel.Name = "textBox_Excel";
-            this.textBox_Excel.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-            this.textBox_Excel.Size = new System.Drawing.Size(541, 41);
-            this.textBox_Excel.TabIndex = 12;
-            this.textBox_Excel.WordWrap = false;
             // 
             // label1
             // 
@@ -125,25 +111,13 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(738, 28);
             this.label1.TabIndex = 13;
-            this.label1.Text = "Importieren Sie hier die Jahrestemperatur Ganglinie für die Klimaregion";
+            this.label1.Text = "Importieren Sie hier die meteorologische Datensätze (TMY)  für die Klimaregion";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // btn_Import
-            // 
-            this.btn_Import.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Import.Location = new System.Drawing.Point(35, 84);
-            this.btn_Import.Margin = new System.Windows.Forms.Padding(4);
-            this.btn_Import.Name = "btn_Import";
-            this.btn_Import.Size = new System.Drawing.Size(129, 30);
-            this.btn_Import.TabIndex = 14;
-            this.btn_Import.Text = "Daten Einlesen";
-            this.btn_Import.UseVisualStyleBackColor = true;
-            this.btn_Import.Click += new System.EventHandler(this.btn_Import_Click);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(31, 137);
+            this.label2.Location = new System.Drawing.Point(17, 236);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(202, 19);
             this.label2.TabIndex = 15;
@@ -151,57 +125,164 @@
             // 
             // chart1
             // 
-            chartArea1.AlignmentOrientation = ((System.Windows.Forms.DataVisualization.Charting.AreaAlignmentOrientations)((System.Windows.Forms.DataVisualization.Charting.AreaAlignmentOrientations.Vertical | System.Windows.Forms.DataVisualization.Charting.AreaAlignmentOrientations.Horizontal)));
-            chartArea1.AxisX.Title = "Tage";
-            chartArea1.AxisY.Title = "Temperatur [°C]";
-            chartArea1.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
-            chartArea1.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea1);
-            this.chart1.Location = new System.Drawing.Point(242, 160);
+            chartArea4.AlignmentOrientation = ((System.Windows.Forms.DataVisualization.Charting.AreaAlignmentOrientations)((System.Windows.Forms.DataVisualization.Charting.AreaAlignmentOrientations.Vertical | System.Windows.Forms.DataVisualization.Charting.AreaAlignmentOrientations.Horizontal)));
+            chartArea4.AxisX.Title = "Tage";
+            chartArea4.AxisY.Title = "Temperatur [°C]";
+            chartArea4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            chartArea4.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
+            chartArea4.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
+            chartArea4.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea4);
+            this.chart1.Location = new System.Drawing.Point(245, 241);
             this.chart1.Name = "chart1";
-            series1.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series1.IsVisibleInLegend = false;
-            series1.LabelBorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            series1.Name = "Series1";
-            series1.SmartLabelStyle.Enabled = false;
-            this.chart1.Series.Add(series1);
+            series4.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
+            series4.ChartArea = "ChartArea1";
+            series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series4.IsVisibleInLegend = false;
+            series4.LabelBorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            series4.Name = "Series1";
+            series4.SmartLabelStyle.Enabled = false;
+            this.chart1.Series.Add(series4);
             this.chart1.Size = new System.Drawing.Size(481, 282);
             this.chart1.TabIndex = 16;
+            this.chart1.TabStop = false;
             this.chart1.Text = "chart1";
-            title1.Name = "Jahrestemperatur Ganglinie";
-            title1.Text = "Jahrestemperatur Ganglinie";
-            this.chart1.Titles.Add(title1);
-            this.chart1.SelectionRangeChanging += new System.EventHandler<System.Windows.Forms.DataVisualization.Charting.CursorEventArgs>(this.SelectionRangeBegin);
-            this.chart1.SelectionRangeChanged += new System.EventHandler<System.Windows.Forms.DataVisualization.Charting.CursorEventArgs>(this.SelectionRangeEnd);
+            title4.Name = "Jahrestemperatur Ganglinie";
+            title4.Text = "Jahrestemperatur Ganglinie";
+            this.chart1.Titles.Add(title4);
+            this.chart1.AxisViewChanged += new System.EventHandler<System.Windows.Forms.DataVisualization.Charting.ViewEventArgs>(this.chart1_AxisViewChanged);
             this.chart1.AxisScrollBarClicked += new System.EventHandler<System.Windows.Forms.DataVisualization.Charting.ScrollBarEventArgs>(this.AxisScrollBarClicked);
             // 
             // pBar_Import
             // 
             this.pBar_Import.ForeColor = System.Drawing.Color.RoyalBlue;
-            this.pBar_Import.Location = new System.Drawing.Point(172, 93);
+            this.pBar_Import.Location = new System.Drawing.Point(474, 50);
             this.pBar_Import.Maximum = 9125;
             this.pBar_Import.Name = "pBar_Import";
-            this.pBar_Import.Size = new System.Drawing.Size(270, 14);
+            this.pBar_Import.Size = new System.Drawing.Size(236, 19);
             this.pBar_Import.Step = 1;
             this.pBar_Import.TabIndex = 17;
             this.pBar_Import.Visible = false;
+            // 
+            // btn_Import
+            // 
+            this.btn_Import.Location = new System.Drawing.Point(329, 45);
+            this.btn_Import.Name = "btn_Import";
+            this.btn_Import.Size = new System.Drawing.Size(139, 28);
+            this.btn_Import.TabIndex = 18;
+            this.btn_Import.TabStop = false;
+            this.btn_Import.Text = "Daten Einlesen =>";
+            this.btn_Import.UseVisualStyleBackColor = true;
+            this.btn_Import.Click += new System.EventHandler(this.btn_Import_Click);
+            // 
+            // textBox_Display
+            // 
+            this.textBox_Display.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            this.textBox_Display.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Display.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox_Display.Location = new System.Drawing.Point(10, 103);
+            this.textBox_Display.Margin = new System.Windows.Forms.Padding(4);
+            this.textBox_Display.Multiline = true;
+            this.textBox_Display.Name = "textBox_Display";
+            this.textBox_Display.ReadOnly = true;
+            this.textBox_Display.Size = new System.Drawing.Size(316, 48);
+            this.textBox_Display.TabIndex = 19;
+            this.textBox_Display.TabStop = false;
+            // 
+            // comboBox_Ort
+            // 
+            this.comboBox_Ort.FormattingEnabled = true;
+            this.comboBox_Ort.Location = new System.Drawing.Point(10, 46);
+            this.comboBox_Ort.Name = "comboBox_Ort";
+            this.comboBox_Ort.Size = new System.Drawing.Size(313, 25);
+            this.comboBox_Ort.TabIndex = 1;
+            this.comboBox_Ort.Click += new System.EventHandler(this.comboBox_Ort_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(6, 24);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(284, 19);
+            this.label4.TabIndex = 21;
+            this.label4.Text = "Region auswählen oder eingeben (z.B. Berlin):";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(6, 80);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(122, 19);
+            this.label5.TabIndex = 23;
+            this.label5.Text = "Details zur Region:";
+            // 
+            // textBox_Longitude
+            // 
+            this.textBox_Longitude.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            this.textBox_Longitude.Location = new System.Drawing.Point(407, 104);
+            this.textBox_Longitude.Name = "textBox_Longitude";
+            this.textBox_Longitude.ReadOnly = true;
+            this.textBox_Longitude.Size = new System.Drawing.Size(109, 25);
+            this.textBox_Longitude.TabIndex = 24;
+            this.textBox_Longitude.TabStop = false;
+            // 
+            // textBox_Latitude
+            // 
+            this.textBox_Latitude.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(122)))), ((int)(((byte)(255)))), ((int)(((byte)(222)))));
+            this.textBox_Latitude.Location = new System.Drawing.Point(600, 104);
+            this.textBox_Latitude.Name = "textBox_Latitude";
+            this.textBox_Latitude.ReadOnly = true;
+            this.textBox_Latitude.Size = new System.Drawing.Size(109, 25);
+            this.textBox_Latitude.TabIndex = 26;
+            this.textBox_Latitude.TabStop = false;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(333, 105);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(74, 19);
+            this.label6.TabIndex = 27;
+            this.label6.Text = "Longitude:";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(536, 106);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(62, 19);
+            this.label7.TabIndex = 28;
+            this.label7.Text = "Latitude:";
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.label6);
+            this.groupBox1.Controls.Add(this.label7);
+            this.groupBox1.Controls.Add(this.pBar_Import);
+            this.groupBox1.Controls.Add(this.btn_Import);
+            this.groupBox1.Controls.Add(this.textBox_Latitude);
+            this.groupBox1.Controls.Add(this.textBox_Display);
+            this.groupBox1.Controls.Add(this.textBox_Longitude);
+            this.groupBox1.Controls.Add(this.comboBox_Ort);
+            this.groupBox1.Controls.Add(this.label5);
+            this.groupBox1.Controls.Add(this.label4);
+            this.groupBox1.Location = new System.Drawing.Point(8, 37);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(720, 163);
+            this.groupBox1.TabIndex = 29;
+            this.groupBox1.TabStop = false;
             // 
             // Form_Klimadaten
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(738, 496);
-            this.Controls.Add(this.pBar_Import);
+            this.ClientSize = new System.Drawing.Size(738, 571);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.chart1);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.btn_Import);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox_Excel);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.btn_Beenden);
-            this.Controls.Add(this.btn_ExcelDatei);
             this.Controls.Add(this.butt_Delete);
             this.Controls.Add(this.listBoxKlimreg);
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
@@ -212,6 +293,8 @@
             this.Text = "Klimadaten";
             this.Load += new System.EventHandler(this.Form_Klimadaten_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -221,14 +304,21 @@
 
         private System.Windows.Forms.ListBox listBoxKlimreg;
         private System.Windows.Forms.Button butt_Delete;
-        private System.Windows.Forms.Button btn_ExcelDatei;
         private System.Windows.Forms.Button btn_Beenden;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox textBox_Excel;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button btn_Import;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.ProgressBar pBar_Import;
+        private System.Windows.Forms.Button btn_Import;
+        private System.Windows.Forms.TextBox textBox_Display;
+        private System.Windows.Forms.ComboBox comboBox_Ort;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox textBox_Longitude;
+        private System.Windows.Forms.TextBox textBox_Latitude;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }

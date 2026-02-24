@@ -49,8 +49,6 @@ namespace WindowsFormsApplication1
                     newRow["Abschaltpunkt"] = list[i].Abschaltpunkt;
                     newRow["Nutzungszeit"] = list[i].Nutzungszeit;
                     newRow["Grenzleistung"] = list[i].Grenzleistung;
-                    newRow["Kollektorneigung"] = list[i].Kollektorneigung;
-                    newRow["Kollektorausrichtung"] = list[i].Kollektorausrichtung;
                     newRow["Kollektormodulanzahl"] = list[i].Kollektormodulanzahl;
                     newRow["PV_Leistung"] = list[i].PV_Leistung;
                     newRow["Neigung"] = list[i].m_Neigung;

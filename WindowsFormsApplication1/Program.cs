@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -28,7 +29,7 @@ namespace WindowsFormsApplication1
         [STAThread]
         static void Main()
         {
-   
+              
             var key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
             if (key == null)
             {

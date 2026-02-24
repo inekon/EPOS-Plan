@@ -796,11 +796,16 @@ namespace WindowsFormsApplication1
             if (e.TabPageIndex >= 1 && textBox_ProjektOpen.Text == MyResource.Resource.Text_Select)
             {
                 e.Cancel = true;
-               Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox1 + "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox2);
+                Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox1 + "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox2);
                 System.Drawing.Point p1 = tabControl_Wizard.Location;
                 p1.X += tabControl_Wizard.Width / 2 - frm.Width / 2;
                 frm.Location = p1;
                 frm.ShowDialog();
+            }
+            else
+            {
+                if(e.TabPageIndex >= 1 && e.TabPageIndex <= 3)
+                    UpdateWizardSymbole();
             }
         }
 
@@ -1246,6 +1251,13 @@ namespace WindowsFormsApplication1
         {
             if (tabControl_Wizard.SelectedIndex >= tabControl_Wizard.TabCount - 1) return;
 
+            UpdateWizardSymbole();
+
+            tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
+        }
+
+        private void UpdateWizardSymbole()
+        {
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
             if (werzctrl.rows > 0) status |= 1; else status &= ~1;
@@ -1305,8 +1317,6 @@ namespace WindowsFormsApplication1
             Z_ProjektBrauchwasserCtrl brauchwctrl = new Z_ProjektBrauchwasserCtrl();
             brauchwctrl.ReadAll("select * from Z_Projekt_Brauchwasser where ID_Projekt=" + m_ID_Projekt.ToString());
             if (brauchwctrl.rows > 0) status |= 4096; else status &= ~4096;
-
-            tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
         }
 
         private void btn_Zurueck_Click(object sender, EventArgs e)

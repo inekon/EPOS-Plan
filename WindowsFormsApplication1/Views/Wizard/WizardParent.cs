@@ -494,8 +494,6 @@ namespace WindowsFormsApplication1
                     item.ID_Kessel = werzctrl.items[n].ID_Kessel;
                     item.ID_BHKW = werzctrl.items[n].ID_BHKW;
                     item.Grenzleistung = werzctrl.items[n].Grenzleistung; 
-                    item.Kollektorausrichtung = werzctrl.items[n].Kollektorausrichtung;
-                    item.Kollektorneigung = werzctrl.items[n].Kollektorneigung;
                     item.Kollektormodulanzahl = werzctrl.items[n].Kollektormodulanzahl;
                     item.m_Azimut = werzctrl.items[n].m_Azimut;
                     item.m_Neigung = werzctrl.items[n].m_Neigung;   

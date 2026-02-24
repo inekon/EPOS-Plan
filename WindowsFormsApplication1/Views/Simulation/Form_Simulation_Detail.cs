@@ -21,7 +21,14 @@ namespace WindowsFormsApplication1
         public double m_Waermebedarf_Gesamt;
         public double m_Strombedarf_Gesamt;
 
-        Point prevPosition ;
+        private float[] temp_profil;
+        private float[] temp_wp;
+        private float[] temp_hs;
+        private float[] temp_hk;
+        private float[] temp_ges;
+
+
+        Point prevPosition;
         ToolTip tooltip = new ToolTip();
 
         public Form_Simulation_Detail()
@@ -31,18 +38,20 @@ namespace WindowsFormsApplication1
             init_Chart(chart2);
             init_Chart(chart6);
             init_Chart(chart8);
+            chart8.MouseWheel += Chart8_MouseWheel;
         }
 
         public Form_Simulation_Detail(int iD_Projekt)
         {
             InitializeComponent();
             m_ID_Projekt = iD_Projekt;
-  
+
             init_Chart(chart1);
             init_Chart(chart2);
             init_Chart(chart6);
             init_Chart(chart7);
-            init_Chart(chart8);
+//            init_Chart(chart8);
+            chart8.MouseWheel += Chart8_MouseWheel;
 
             listView_SimSPK.View = View.Details;
             listView_SimSPK.Columns.Add("Heizkessel", -2, HorizontalAlignment.Left);
@@ -62,14 +71,14 @@ namespace WindowsFormsApplication1
             listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
-            colorListViewHeader(ref listView_SimWP, Color.LightBlue,Color.Black);
+            colorListViewHeader(ref listView_SimWP, Color.LightBlue, Color.Black);
             colorListViewHeader(ref listView_SimSPK, Color.LightBlue, Color.Black);
         }
 
         public void SetControls()
         {
         }
-        
+
         private void init_Chart(Chart chart)
         {
             var ca = chart.ChartAreas[0];
@@ -109,7 +118,7 @@ namespace WindowsFormsApplication1
         private void btn_Simulation_Click(object sender, EventArgs e)
         {
             // TextBoxe leeren  
-            for (int i=0; i<tabControl1.TabCount; i++)
+            for (int i = 0; i < tabControl1.TabCount; i++)
             {
                 InitTextBoxen(tabControl1.TabPages[i]);
             }
@@ -126,6 +135,7 @@ namespace WindowsFormsApplication1
                 MessageBox.Show("Bitte zuerst die Konfiguration festlegen.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
             string[] tool = new string[6];
             tool[0] = ctrl.model.m_Tool_1;
             tool[1] = ctrl.model.m_Tool_2;
@@ -176,11 +186,11 @@ namespace WindowsFormsApplication1
             // Wärmebedarf Simulation
             simulation_Waermebedarf.Waermebedarf_berechnen(m_ID_Projekt, nKlimaregion);
             simulation_Strombedarf.m_ID_Projekt = m_ID_Projekt;
-            
+
             // Strombedarf Simulation
             simulation_Strombedarf.Berechnung(m_ID_Projekt);
 
-            // chart füllen   
+            // chart Wärmebedarf füllen   
             textBox_MaxWaermelast.Text = simulation_Waermebedarf.Waermebedarf_Max.ToString("F2");
             textBox_Gesamt_Waermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
 
@@ -203,7 +213,7 @@ namespace WindowsFormsApplication1
 
             chart1.ChartAreas[0].AxisY.Maximum = 100.2;
 
-            // chart füllen
+            // chart Strombedarf füllen
             textBox_MaxStrombedarf.Text = simulation_Strombedarf.Strombedarf_Max.ToString("F2");
             textBox_Gesamt_Strombedarf.Text = simulation_Strombedarf.Strombedarf_gesamt.ToString("F2");
 
@@ -213,16 +223,24 @@ namespace WindowsFormsApplication1
             chart2.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
 
             if (checkBox_StromSortiert.Checked)
-                ConfigureXAxisWithHours(chart2, simulation_Strombedarf.Dauerlinie, 4);
+            {
+                ConfigureXAxisWithHours2(chart2, 4);
+                for (int j = 0; j < 8760 * 4; j += 4)
+                {
+                    double d = (double)j * 12 / (8760);
+                    chart2.Series[0].Points.AddXY(d, simulation_Strombedarf.Dauerlinie[j]);
+                }
+            }
             else
             {
                 ConfigureXAxisWithMonths(chart2);
-                for (int j = 0; j < 8760*4; j++)
+                for (int j = 0; j < 8760 * 4; j += 10)
                 {
                     double d = (double)j * 12 / (8760);
-                    chart1.Series[0].Points.AddXY(d, simulation_Strombedarf.Dauerlinie_nicht_sortiert[j]);
+                    chart2.Series[0].Points.AddXY(d, simulation_Strombedarf.Dauerlinie_nicht_sortiert[j]);
                 }
             }
+
             return true;
         }
 
@@ -292,18 +310,26 @@ namespace WindowsFormsApplication1
             // ********************************************************************************************/
             if (sim.bSimulationWP)
             {
-
-                chart3.ChartAreas[0].AxisX.MajorGrid.Enabled = false;
-                chart3.ChartAreas[0].AxisX.MinorGrid.Enabled = false;
+                chart3.Annotations.Clear();
                 chart3.ChartAreas[0].AxisX.StripLines.Clear();
                 chart3.ChartAreas[0].AxisX.CustomLabels.Clear();
+                chart3.Series[0].BorderWidth = 2;
+
+                chart3.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.Black;
+                chart3.ChartAreas[0].AxisX.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
+                chart3.ChartAreas[0].AxisY.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
+
+                chart3.ChartAreas[0].CursorX.LineDashStyle = ChartDashStyle.Dot;
+                chart3.ChartAreas[0].CursorY.LineDashStyle = ChartDashStyle.Dot;
+                chart3.ChartAreas[0].CursorX.LineColor = Color.Red;
+                chart3.ChartAreas[0].CursorY.LineColor = Color.Red;
+
                 chart3.ChartAreas[0].AxisX.Enabled = AxisEnabled.True;
-                chart3.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;
-                chart3.Annotations.Clear();
                 chart3.ChartAreas[0].AxisX.Interval = 0;
                 chart3.ChartAreas[0].AxisX.LabelStyle.Font = new System.Drawing.Font("Arial", 8);
                 chart3.ChartAreas[0].AxisX.LabelAutoFitStyle = LabelAutoFitStyles.None;
                 chart3.ChartAreas[0].AxisX.LabelStyle.Angle = 0;
+                chart3.ChartAreas[0].AxisX.LineWidth = 1;
 
                 chart3.Series["Waermebedarf"].Color = Color.Red;
                 chart3.Series["Heizstab"].Color = Color.Yellow;
@@ -421,7 +447,7 @@ namespace WindowsFormsApplication1
                 // Chart WP Wärmeproduktion über Temperaturgang
                 chart4.Series[0].Points.Clear();
                 chart4.Series[1].Points.Clear();
-                chart4.Series[0].Points.Clear();
+                chart4.Series[2].Points.Clear();
                 chart4.Series[0].ChartType = SeriesChartType.Area;
                 chart4.Series[1].ChartType = SeriesChartType.Area;
                 chart4.Series[2].ChartType = SeriesChartType.Area;
@@ -437,8 +463,9 @@ namespace WindowsFormsApplication1
                 chart4.Series[1].Sort(PointSortOrder.Ascending, "X");
                 chart4.Series[2].Sort(PointSortOrder.Ascending, "X");
 
-                chart4.ChartAreas[0].AxisX.Interval = 4;
                 chart4.ChartAreas[0].AxisX.LabelStyle.Format = "0.0";
+                chart4.ChartAreas[0].AxisX.Interval = 5;
+
                 chart4.Update();
             }
 
@@ -448,18 +475,26 @@ namespace WindowsFormsApplication1
             if (sim.bSimulationKessel)
             {
                 // Textfelder Spitzenkessel
-                textBox_SPKWaermebedarfsdeckung.Text = (sim.simulation_spk.S_Waerme_spk * 100 / simulation_Waermebedarf.Waermebedarf_Gesamt).ToString("F2");
+                if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
+                    textBox_SPKWaermebedarfsdeckung.Text = (sim.simulation_spk.S_Waerme_spk * 100 / simulation_Waermebedarf.Waermebedarf_Gesamt).ToString("F2");
+                else
+                    textBox_SPKWaermebedarfsdeckung.Text = "0";
                 textBox_SPKWaermebedarf.Text = sim.simulation_spk.Waermebedarf_gesamt.ToString("F2");
                 textBox_SPKRestwermebedarf.Text = (sim.simulation_spk.Waermebedarf_gesamt - sim.simulation_spk.S_Waerme_spk).ToString("F2");
                 tb_WaermeprSpk.Text = (sim.simulation_spk.S_Waerme_spk).ToString("F2");
+
                 tb_Gasverbrauch.Text = (sim.simulation_spk.Gasverbrauch_SPK).ToString("F2");
                 tb_Oelverbrauch.Text = (sim.simulation_spk.Oelverbrauch_SPK).ToString("F2");
-                tb_Biogasverbrauch.Text = (sim.simulation_spk.Biogasverbrauch_SPK).ToString("F2");
+                tb_Koks.Text = (sim.simulation_spk.Koks_SPK).ToString("F2");
                 tb_Rapsoelverbrauch.Text = (sim.simulation_spk.Rapsoelverbrauch_SPK).ToString("F2");
                 tb_Holzverbrauch.Text = (sim.simulation_spk.Holzverbrauch_SPK).ToString("F2");
-                tb_Fluessiggasverbrauch.Text = (sim.simulation_spk.Fluessiggasverbrauch_SPK).ToString("F2");
+                tb_Kohle.Text = (sim.simulation_spk.Kohle_SPK).ToString("F2");
                 tb_Stromverbrauch.Text = (sim.simulation_spk.Stromverbrauch_Spk).ToString("F2");
                 tb_Sonstigverbrauch.Text = (sim.simulation_spk.Sonstigverbrauch_SPK).ToString("F2");
+                tb_Pellets.Text = (sim.simulation_spk.Pellets_SPK).ToString("F2");
+                tb_Koks.Text = (sim.simulation_spk.Koks_SPK).ToString("F2");
+                tb_TierischeFette.Text = (sim.simulation_spk.TierischeFette_SPK).ToString("F2");
+
                 tb_Max_Kesselleistung.Text = (sim.simulation_spk.Maximale_Kesselleistung_Spk).ToString("F2");
                 tb_Gasspitze.Text = sim.simulation_spk.Gasspitze_Spk.ToString("F2");
 
@@ -487,14 +522,19 @@ namespace WindowsFormsApplication1
             if (sim.bSimulationSolarthermie)
             {
                 // Textfelder Solarthermie
-                textBox_STWaermebedarfsdeckung.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt * 100 / sim.simulation_solarthermie.Waermebedarf_gesamt).ToString("F2");
-                textBox_STWaermebedarf.Text = sim.simulation_solarthermie.Waermebedarf_gesamt.ToString("F2");
-                textBox_STRestwermebedarf.Text = (sim.simulation_solarthermie.Waermebedarf_gesamt - sim.simulation_solarthermie.Waermeproduktion_gesamt).ToString("F2");
-                tb_WaermeprST.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt).ToString("F2");
+                if (sim.simulation_solarthermie.Waermebedarf_gesamt > 0)
+                    textBox_STWaermebedarfsdeckung.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt * 100 / sim.simulation_solarthermie.Waermebedarf_gesamt).ToString("F2");
+                else
+                    textBox_STWaermebedarfsdeckung.Text = "";
+                textBox_STWaermebedarf.Text = (sim.simulation_solarthermie.Waermebedarf_gesamt / 1000).ToString("F2");
+                textBox_STRestwermebedarf.Text = ((sim.simulation_solarthermie.Waermebedarf_gesamt - sim.simulation_solarthermie.Waermeproduktion_gesamt) / 1000).ToString("F2");
+                tb_WaermeprST.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000).ToString("F2");
+                textBox_Ueberschuss.Text = (sim.simulation_solarthermie.ueberschuss / 1000).ToString("F2");
 
                 float STWaermebedarf_Max = (float)sim.simulation_solarthermie.Max_Waermebedarf; // in kWh
                 //temp = sim.simulation_Strombedarf.NormVector(sim.simulation_solarthermie.Waermeproduktion, STWaermebedarf_Max);
-                float[] temp = sim.simulation_solarthermie.Waermeproduktion;
+
+                float[] temp = Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermeproduktion, x => (float)x);
                 chart8.Series[0].Points.Clear();
                 chart8.Series[1].Points.Clear();
                 chart8.ChartAreas[0].AxisY.Maximum = STWaermebedarf_Max + 1;
@@ -505,10 +545,40 @@ namespace WindowsFormsApplication1
                 chart8.Series[1].ChartType = SeriesChartType.Line;
                 chart8.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
                 chart8.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
-                ConfigureXAxisWithMonths(chart8);
+    
+              //  ConfigureXAxisWithMonths(chart8);
+                chart8.Series[0].XValueType = ChartValueType.DateTime;
+                chart8.Series[1].XValueType = ChartValueType.DateTime;
+                chart8.ChartAreas[0].AxisX.LabelStyle.Format = "%M";
+                // 1. Das Format auf "Monatszahl" setzen
+
+
+                // 2. Sicherstellen, dass die Abstände in Monaten gerechnet werden
+                chart8.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Months;
+                // Gitterlinien so verschieben, dass sie zwischen den Monaten liegen
+                chart8.ChartAreas[0].AxisX.MajorGrid.IntervalOffset = +0.5;
+                //chart8.ChartAreas[0].AxisY.MajorTickMark.IntervalOffset = -0.5;
+                chart8.ChartAreas[0].AxisX.Maximum = new DateTime(2026, 12, 1).ToOADate();
+
+                // 3. Alle 1 Monat eine Zahl anzeigen
+                chart8.ChartAreas[0].AxisX.Interval = 1;
+
+                chart8.ChartAreas[0].CursorX.IsUserEnabled = true;
+                chart8.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+
+                // Scrollbar aktivieren
+                chart8.ChartAreas[0].AxisX.ScrollBar.Enabled = true;
+
+                chart8.ChartAreas[0].CursorX.IsUserEnabled = true;
+                chart8.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+                chart8.ChartAreas[0].AxisX.ScaleView.Zoomable = true;
+
+
+                DateTime dt = new DateTime(2026, 1, 1);
                 for (int j = 0; j < 8760; j++)
                 {
-                    double d = (double)j * 12 / (8760);
+                    //double d = (double)j * 12 / (8760);
+                    DateTime d=dt.AddHours(j); 
                     chart8.Series[1].Points.AddXY(d, temp[j]);
                     chart8.Series[0].Points.AddXY(d, (float)sim.simulation_solarthermie.Waermebedarf[j]);
                 }
@@ -578,9 +648,11 @@ namespace WindowsFormsApplication1
             double b2 = (double)sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
             double c2 = (double)sim.simulation_wp.Heizstab_gesamt / 1000;
             double d2 = sim.simulation_spk.S_Waerme_spk;
+            double e2 = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000;
 
             textBox_WBDeckung.Text = ((b2 + c2) / a2 * 100).ToString("F2");
             textBox_SPKDeckung.Text = (d2 * 100 / a2).ToString("F2");
+            textBox_STDeckung.Text = (e2 * 100 / a2).ToString("F2");
 
             chart5.Update();
 
@@ -596,23 +668,21 @@ namespace WindowsFormsApplication1
             chart7.Series["Heizkessel"].ChartType = SeriesChartType.Line;
             chart7.Series["Profil/Lastgang"].ChartType = SeriesChartType.Line;
 
-            float[] temp_profil = sim.simulation_Strombedarf.Strombedarf_viertelStundenwerte;
-            float[] temp_wp = sim.Stundenwerte_zu_viertelstunden(sim.simulation_wp.WP_Strombedarf_stuendlich);
-            float[] temp_hs = sim.Stundenwerte_zu_viertelstunden(sim.simulation_wp.Heizstab_stuendlich);
-            float[] temp_hk = sim.Stundenwerte_zu_viertelstunden(sim.simulation_spk.Strombedarf_stuendlich);
-            float[] temp_ges = new float[8760 * 4];
+            temp_profil = sim.simulation_Strombedarf.Strombedarf_viertelStundenwerte;
+            temp_wp = sim.Stundenwerte_zu_viertelstunden(sim.simulation_wp.WP_Strombedarf_stuendlich);
+            temp_hs = sim.Stundenwerte_zu_viertelstunden(sim.simulation_wp.Heizstab_stuendlich);
+            temp_hk = sim.Stundenwerte_zu_viertelstunden(sim.simulation_spk.Strombedarf_stuendlich);
+            temp_ges = new float[8760 * 4];
+
             for (int i = 0; i < 8760 * 4; i++)
             {
                 temp_ges[i] = temp_wp[i] + temp_hs[i] + temp_hk[i] + temp_profil[i];
             }
             chart7.ChartAreas[0].AxisY.Maximum = temp_ges.Max();
 
-
             ConfigureXAxisWithMonths(chart7);
 
             checkBox_Gesamt.Checked = true;
-
-
 
         }
 
@@ -632,7 +702,7 @@ namespace WindowsFormsApplication1
 
             chartControl.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
             chartControl.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
-            
+
             chartControl.ChartAreas[0].AxisX.Minimum = 0;
             chartControl.ChartAreas[0].AxisX.Maximum = monthArray.Length;
             chartControl.ChartAreas[0].AxisX.Interval = 1;
@@ -649,15 +719,15 @@ namespace WindowsFormsApplication1
             chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Months;
             chartControl.ChartAreas[0].AxisX.Title = "Monat";
             chartControl.ChartAreas[0].AxisX.ScaleView.Size = 12;
- 
+
             return;
         }
 
-        public void ConfigureXAxisWithHours(Chart chartControl, float[] Dauerlinie_sortiert, int Interval=1)
+        public void ConfigureXAxisWithHours(Chart chartControl, float[] Dauerlinie_sortiert, int Interval = 1)
         {
             // custom labels in array
             string[] hourArray = { "2000", "4000", "6000", "8000" };
-            
+
             chartControl.ChartAreas[0].AxisX.CustomLabels.Clear();
             chartControl.Annotations.Clear();
             chartControl.Series[0].Points.Clear();
@@ -667,7 +737,7 @@ namespace WindowsFormsApplication1
 
             chartControl.ChartAreas[0].AxisX.Minimum = 0;
             chartControl.ChartAreas[0].AxisX.Maximum = hourArray.Length;
-            chartControl.ChartAreas[0].AxisX.Interval = 1; 
+            chartControl.ChartAreas[0].AxisX.Interval = 1;
 
             // Add custom labels for each data point position
             for (int i = 0; i < hourArray.Length; i++)
@@ -686,13 +756,47 @@ namespace WindowsFormsApplication1
             }
             chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Hours;
             chartControl.ChartAreas[0].AxisX.Title = "Jahresstunden";
- 
+
+            return;
+        }
+
+        public void ConfigureXAxisWithHours2(Chart chartControl, int Interval = 1)
+        {
+            // custom labels in array
+            string[] hourArray = { "2000", "4000", "6000", "8000" };
+
+            chartControl.ChartAreas[0].AxisX.CustomLabels.Clear();
+            chartControl.Annotations.Clear();
+
+            chartControl.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
+            chartControl.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
+
+            chartControl.ChartAreas[0].AxisX.Minimum = 0;
+            chartControl.ChartAreas[0].AxisX.Maximum = hourArray.Length;
+            chartControl.ChartAreas[0].AxisX.Interval = 1;
+
+            // Add custom labels for each data point position
+            for (int i = 0; i < hourArray.Length; i++)
+            {
+                CustomLabel lblMonth = new CustomLabel();
+                lblMonth.FromPosition = i;
+                lblMonth.ToPosition = i + 0.8;
+                lblMonth.Text = hourArray[i];
+                chartControl.ChartAreas[0].AxisX.CustomLabels.Add(lblMonth);
+            }
+
+            chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Hours;
+            chartControl.ChartAreas[0].AxisX.Title = "Jahresstunden";
+
             return;
         }
 
         private void checkBox_WP_sortiert_CheckedChanged(object sender, EventArgs e)
         {
             float[] temp = new float[8760];
+
+            chart3.ChartAreas[0].AxisX.CustomLabels.Clear();
+            chart3.ChartAreas[0].AxisX.StripLines.Clear();
 
             for (int i = 0; i < 8760; i++)
             {
@@ -705,77 +809,60 @@ namespace WindowsFormsApplication1
 
             if (checkBox_WP_sortiert.Checked)
             {
-                chart3.ChartAreas[0].AxisX.Title = "Jahresstunden";
-
                 float[] sortedWBArray = new float[8760];
                 Array.Copy(sim.simulation_wp.WP_Waermeproduktion_stuendlich, sortedWBArray, 8760);
                 Array.Sort(sortedWBArray);
                 Array.Reverse(sortedWBArray);
-                chart3.Series["Waermeproduktion"].Points.DataBindY(sortedWBArray);
 
                 float[] sortedArray = new float[8760];
                 Array.Copy(sim.simulation_wp.Waermebedarf_stuendlich, sortedArray, 8760);
                 Array.Sort(sortedArray);
                 Array.Reverse(sortedArray);
-                chart3.Series["Waermebedarf"].Points.DataBindY(sortedArray);
 
                 float[] sortedArrayHeizstab = new float[8760];
                 Array.Copy(temp, sortedArrayHeizstab, 8760);
                 Array.Sort(sortedArrayHeizstab);
                 Array.Reverse(sortedArrayHeizstab);
-                chart3.Series["Heizstab"].Points.DataBindY(sortedArrayHeizstab);
 
-                for (int i = 0; i < 8760; i+=1000)
+
+                chart3.Series[0].Points.Clear();
+                chart3.Series[1].Points.Clear();
+                chart3.Series[2].Points.Clear();
+                ConfigureXAxisWithHours2(chart3);
+
+                for (int j = 0; j < 8760; j++)
                 {
-                    CustomLabel cl;
-                    cl = chart3.ChartAreas[0].AxisX.CustomLabels.Add(i-500, i+500, i.ToString(), 0, LabelMarkStyle.None);
-                    StripLine stripHigh = new StripLine();
-                    stripHigh.StripWidth = 1;
-                    stripHigh.BorderDashStyle = ChartDashStyle.DashDot;
-                    stripHigh.BackColor = Color.FromArgb(255, Color.Gray);
-                    stripHigh.Interval = 0;
-                    stripHigh.IntervalOffset = i;
-                    stripHigh.TextOrientation = TextOrientation.Horizontal;
-                    chart3.ChartAreas[0].AxisX.StripLines.Add(stripHigh);
+                    double d = (double)j * 12 / (8760);
+                    chart3.Series["Waermebedarf"].Points.AddXY(d, sortedArray[j]);
+                    chart3.Series["Waermeproduktion"].Points.AddXY(d, sortedWBArray[j]);
+                    chart3.Series["Heizstab"].Points.AddXY(d, sortedArrayHeizstab[j]);
                 }
+
+                // Gitterlinien für die X-Achse (vertikale Linien)
+                chart3.ChartAreas[0].AxisX.MajorGrid.Enabled = true; // Falls sie mal weg sind
+                chart3.ChartAreas[0].AxisX.MajorGrid.LineColor = Color.LightGray; // Dezente Farbe
+                chart3.ChartAreas[0].AxisX.MajorGrid.LineDashStyle = ChartDashStyle.Dash; // Gestrichelt statt durchgezogen
+                chart3.ChartAreas[0].AxisX.MajorGrid.LineWidth = 1;
+
+                // Gitterlinien für die Y-Achse (horizontale Linien)
+                chart3.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;
+                chart3.ChartAreas[0].AxisY.MajorGrid.LineDashStyle = ChartDashStyle.Dot; // Gepunktet für die Y-Ebene
             }
             else
             {
-                chart3.ChartAreas[0].AxisX.Title = "Monat";
+                chart3.Series[0].Points.Clear();
+                chart3.Series[1].Points.Clear();
+                chart3.Series[2].Points.Clear();
+                ConfigureXAxisWithMonths(chart3);
 
-                chart3.Series["Waermeproduktion"].Points.DataBindY(sim.simulation_wp.WP_Waermeproduktion_stuendlich);
-                chart3.Series["Waermebedarf"].Points.DataBindY(sim.simulation_wp.Waermebedarf_stuendlich);
-                chart3.Series["Heizstab"].Points.DataBindY(temp);
-
-                int[] labelArr = sim.simulation_Strombedarf.mo_anfang;
-                int n = (8760 / 24);
-
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[0] + n, labelArr[1] - n, "1", 0, LabelMarkStyle.LineSideMark);
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[1] + n, labelArr[2] - n, "2");
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[2] + n, labelArr[3] - n, "3");
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[3] + n, labelArr[4] - n, "4");
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[4] + n, labelArr[5] - n, "5");
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[5] + n, labelArr[6] - n, "6");
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[6] + n, labelArr[7] - n, "7");
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[7] + n, labelArr[8] - n, "8");
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[8] + n, labelArr[9] - n, "9");
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[9], labelArr[10], "10");
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[10], labelArr[11], "11", 0, LabelMarkStyle.None);
-                chart3.ChartAreas[0].AxisX.CustomLabels.Add(labelArr[11], 8760, "12");
-
-                chart3.ChartAreas[0].AxisX.CustomLabels[11].RowIndex = 0;
-
-                for (int i = 0; i < 12; i++)
+                for (int j = 0; j < 8760; j++)
                 {
-                    StripLine stripLow = new StripLine();
-                    stripLow.Interval = 0;
-                    stripLow.IntervalOffset = labelArr[i];
-                    stripLow.StripWidth = 1;
-                    stripLow.BorderDashStyle = ChartDashStyle.DashDot;
-                    stripLow.BackColor = Color.FromArgb(255, Color.Gray);
-                    stripLow.TextOrientation = TextOrientation.Horizontal; 
-                    chart3.ChartAreas[0].AxisX.StripLines.Add(stripLow);
+                    double d = (double)j * 12 / (8760);
+                    chart3.Series["Waermeproduktion"].Points.AddXY(d, sim.simulation_wp.WP_Waermeproduktion_stuendlich[j]);
+                    chart3.Series["Waermebedarf"].Points.AddXY(d, sim.simulation_wp.Waermebedarf_stuendlich[j]);
+                    chart3.Series["Heizstab"].Points.AddXY(d, temp[j]);
                 }
+                chart3.ChartAreas[0].AxisX.Title = "Monat";
             }
         }
 
@@ -813,11 +900,11 @@ namespace WindowsFormsApplication1
         {
             var pos = e.Location;
             if (pos == prevPosition || checkBox_StromSortiert.Checked) return;
-            
+
             prevPosition = pos;
 
-            var results = chart2.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint); 
-            
+            var results = chart2.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint);
+
             foreach (var result in results)
             {
                 if (result.ChartElementType == ChartElementType.DataPoint)
@@ -830,9 +917,9 @@ namespace WindowsFormsApplication1
                     int d = (int)(xVal * 365 * 24 * 4 / 12); // mit (int) erhält man nur vielfache von 1/4 Stunden, 15 Minuten Takt
 
                     // auf Minuten zurückrechnen
-                    d = d * 15; 
+                    d = d * 15;
                     DateTime neuesDatum = startDatum.AddMinutes(d);
-                    tooltip.Show(neuesDatum.ToString("dd/MM H:mm [" + (int)yVal).ToString() + "%]" , chart2, pos.X, pos.Y - 15);
+                    tooltip.Show(neuesDatum.ToString("dd/MM H:mm [" + (int)yVal).ToString() + "%]", chart2, pos.X, pos.Y - 15);
                 }
                 else
                 {
@@ -848,11 +935,11 @@ namespace WindowsFormsApplication1
 
             prevPosition = pos;
 
-            var results = chart1.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint); 
+            var results = chart1.HitTest(pos.X, pos.Y, false, ChartElementType.DataPoint);
 
             foreach (var result in results)
             {
-                if (result.ChartElementType == ChartElementType.DataPoint) 
+                if (result.ChartElementType == ChartElementType.DataPoint)
                 {
                     var yVal = result.ChartArea.AxisY.PixelPositionToValue(pos.Y);
                     var xVal = result.ChartArea.AxisX.PixelPositionToValue(pos.X);
@@ -860,11 +947,11 @@ namespace WindowsFormsApplication1
 
                     // Addiere diesen Wert zum Startdatum.
                     int d = (int)(xVal * 365 * 24 * 4 / 12); // mit (int) erhält man nur vielfache von 1/4 Stunden, 15 Minuten Takt
-                    
+
                     // auf Minuten zurückrechnen
-                    d = d * 15; 
+                    d = d * 15;
                     DateTime neuesDatum = startDatum.AddMinutes(d);
-                    
+
                     tooltip.Show(neuesDatum.ToString("dd/MM H:mm [" + (int)yVal).ToString() + "%]", chart1, pos.X, pos.Y - 15);
                 }
                 else
@@ -877,7 +964,7 @@ namespace WindowsFormsApplication1
         private void chart6_MouseMove(object sender, MouseEventArgs e)
         {
             var pos = e.Location;
-            if (pos == prevPosition)  return;
+            if (pos == prevPosition) return;
 
             prevPosition = pos;
 
@@ -906,22 +993,14 @@ namespace WindowsFormsApplication1
 
         private void checkBox_Gesamt_CheckedChanged(object sender, EventArgs e)
         {
-            if(checkBox_Gesamt.Checked)
-            { 
-                float[] temp_wp = sim.Stundenwerte_zu_viertelstunden(sim.simulation_wp.WP_Strombedarf_stuendlich);
-                float[] temp_hs = sim.Stundenwerte_zu_viertelstunden(sim.simulation_wp.Heizstab_stuendlich);
-                float[] temp_hk = sim.Stundenwerte_zu_viertelstunden(sim.simulation_spk.Strombedarf_stuendlich);
-                float[] temp_profil = sim.simulation_Strombedarf.Strombedarf_viertelStundenwerte;
-                float[] temp_ges = new float[8760 * 4];
+            if (checkBox_Gesamt.Checked)
+            {
                 for (int i = 0; i < 8760 * 4; i++)
                 {
                     temp_ges[i] = temp_wp[i] + temp_hs[i] + temp_hk[i] + temp_profil[i];
-                }
+                    double d = (double)i * 12 / (8760 * 4);
+                    chart7.Series["Gesamt"].Points.AddXY(d, temp_ges[i]);
 
-                for (int j = 0; j < 8760 * 4; j++)
-                {
-                    double d = (double)j * 12 / (8760 * 4);
-                    chart7.Series["Gesamt"].Points.AddXY(d, temp_ges[j]);
                 }
             }
             else
@@ -1020,7 +1099,7 @@ namespace WindowsFormsApplication1
                     DateTime startDatum = new DateTime(DateTime.Now.Year, 1, 1); // Start: 1. Januar 
 
                     // Addiere diesen Wert zum Startdatum.
-                    int d = (int)(xVal * 365 * 24 *4/ 12); // mit (int) erhält man nur vielfache von 1 Stunden
+                    int d = (int)(xVal * 365 * 24 * 4 / 12); // mit (int) erhält man nur vielfache von 1 Stunden
                     // auf Minuten zurückrechnen
                     d = d * 15;
                     yVal = Math.Round(yVal, 2);
@@ -1036,6 +1115,7 @@ namespace WindowsFormsApplication1
 
         private void chart8_MouseMove(object sender, MouseEventArgs e)
         {
+
             var pos = e.Location;
             if (pos == prevPosition) return;
 
@@ -1049,15 +1129,12 @@ namespace WindowsFormsApplication1
                 {
                     var yVal = result.ChartArea.AxisY.PixelPositionToValue(pos.Y);
                     var xVal = result.ChartArea.AxisX.PixelPositionToValue(pos.X);
-                    DateTime startDatum = new DateTime(DateTime.Now.Year, 1, 1); // Start: 1. Januar 
-
-                    // Addiere diesen Wert zum Startdatum.
-                    int d = (int)(xVal * 365 * 24 * 1 / 12); // mit (int) erhält man nur vielfache von 1 Stunden
-                    // auf Minuten zurückrechnen
-                    //d = d * 15;
+   
                     yVal = Math.Round(yVal, 2);
-                    DateTime neuesDatum = startDatum.AddHours(d);
-                    tooltip.Show(neuesDatum.ToString("dd/MM H:mm [" + yVal).ToString() + "kW]", chart8, pos.X, pos.Y - 15);
+
+                    // Umwandlung in ein DateTime Objekt
+                    DateTime dateValue = DateTime.FromOADate(xVal);
+                    tooltip.Show(dateValue.ToString("dd/MM H:mm [" + yVal).ToString() + "kW]", chart8, pos.X, pos.Y - 15);
                 }
                 else
                 {
@@ -1069,7 +1146,7 @@ namespace WindowsFormsApplication1
         private void InitTextBoxen(TabPage page)
         {
             page.Controls.OfType<TextBox>().ToList().ForEach(tb => tb.Text = "");
-        }            
+        }
 
         private void ReihenfolgeTabPages()
         {
@@ -1102,6 +1179,43 @@ namespace WindowsFormsApplication1
         private void Form_Simulation_Detail_Load(object sender, EventArgs e)
         {
             ReihenfolgeTabPages();
+        }
+
+        private void Chart8_MouseWheel(object sender, MouseEventArgs e)
+        {
+            var xAxis = chart8.ChartAreas[0].AxisX;
+            double xMin = xAxis.ScaleView.ViewMinimum;
+            double xMax = xAxis.ScaleView.ViewMaximum;
+
+            // Fallback auf Gesamtbereich
+            if (double.IsNaN(xMin)) xMin = xAxis.Minimum;
+            if (double.IsNaN(xMax)) xMax = xAxis.Maximum;
+
+            double range = xMax - xMin;
+            double zoomFactor = 0.3; // 30% Zoom-Stärke
+
+            // Mausposition in X-Wert umrechnen (Zoom auf Cursor)
+            double mouseX = xAxis.PixelPositionToValue(e.Location.X);
+            double ratio = (mouseX - xMin) / range;
+
+            if (e.Delta > 0) // Zoom IN
+            {
+                if (range < 0.01) return; // Zoom-Limit
+                double newRange = range * (1 - zoomFactor);
+                xAxis.ScaleView.Zoom(mouseX - newRange * ratio, mouseX + newRange * (1 - ratio));
+            }
+            else // Zoom OUT
+            {
+                double newRange = range * (1 + zoomFactor);
+                double left = mouseX - newRange * ratio;
+                double right = mouseX + newRange * (1 - ratio);
+
+                if (left <= xAxis.Minimum && right >= xAxis.Maximum)
+                    xAxis.ScaleView.ZoomReset();
+                else
+                    xAxis.ScaleView.Zoom(left, right);
+            }
+  
         }
     }
 }

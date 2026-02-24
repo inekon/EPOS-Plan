@@ -118,8 +118,8 @@ namespace WindowsFormsApplication1
                 item.ID_Type = werzctrl.items[i].ID_Type;
                 item.Bezeichner = werzctrl.items[i].Bezeichner;
                 item.Kollektormodulanzahl = werzctrl.items[i].Kollektormodulanzahl;
-                item.Kollektorneigung = werzctrl.items[i].Kollektorneigung;
-                item.Kollektorausrichtung = werzctrl.items[i].Kollektorausrichtung; 
+                item.m_Neigung = (int)werzctrl.items[i].m_Neigung;
+                item.m_Azimut = werzctrl.items[i].m_Azimut; 
 
                 frm.list_werzmodel.Add(item);
             }

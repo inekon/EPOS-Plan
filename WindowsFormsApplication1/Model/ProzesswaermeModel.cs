@@ -5,9 +5,9 @@ using System.Text;
 
 namespace WindowsFormsApplication1
 {
-    public class BrauchwasserModel
+    public class ProzesswaermeModel
     {
-        public BrauchwasserModel[] items;
+        public ProzesswaermeModel[] items;
 
         public int m_ID;
         public string m_szProzessname;
@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
         public string m_szBeschreibung;
         public double[] m_Monat; 
 
-        public BrauchwasserModel()
+        public ProzesswaermeModel()
         {
             m_ID = 0;
             m_szProzessname = "";

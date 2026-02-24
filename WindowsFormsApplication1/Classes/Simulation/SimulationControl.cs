@@ -176,12 +176,12 @@ namespace WindowsFormsApplication1
             }
             rs.Close();
 
-            simulation_solarthermie.Waermebedarf = Waermebedarf;
-    
+            simulation_solarthermie.Waermebedarf = Array.ConvertAll<float, double>(Waermebedarf, x => (double)x);
+
             // Simulation starten
             simulation_solarthermie.Berechnung(m_ID_Projekt);
 
-            return simulation_solarthermie.Restwaerme;
+            return Array.ConvertAll<double, float>(simulation_solarthermie.Restwaerme, x => (float)x);
         }
 
         public float[] AddVectors(float[] array1, float[] array2)

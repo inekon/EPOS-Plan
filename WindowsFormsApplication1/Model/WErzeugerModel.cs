@@ -35,8 +35,6 @@ namespace WindowsFormsApplication1
         public int ID_Kessel;
         public int ID_BHKW;
         public double Grenzleistung;
-        public double Kollektorneigung;
-        public int Kollektorausrichtung;
         public int Kollektormodulanzahl;
         public double PV_Leistung;
         public int m_Neigung;
@@ -67,8 +65,6 @@ namespace WindowsFormsApplication1
             ID_Kessel = 0;
             ID_BHKW = 0;
             Grenzleistung = 0;
-            Kollektorneigung = 0;
-            Kollektorausrichtung = 0;
             Kollektormodulanzahl = 0;
             PV_Leistung = 0.0;
             m_Neigung = 0;

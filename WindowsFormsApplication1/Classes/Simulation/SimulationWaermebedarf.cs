@@ -110,7 +110,7 @@ namespace WindowsFormsApplication1
             com.I_vector_init(ref prozesswerte);
             com.I_vector_init(ref brauchwasserwerte);
 
-            if (!DBGelesen)
+          //  if (!DBGelesen)
             {
                 KlimadatenCtrl ctrl_klima = new KlimadatenCtrl();
                 ctrl_klima.ReadAll(ID_Klimaregion);
