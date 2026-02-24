@@ -51,7 +51,8 @@ namespace WindowsFormsApplication1
             {
                 if (!DBReader.IsDBNull(0)) m_ID_Klimaregion = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) m_szName = DBReader.GetString(1);
-
+                if (!DBReader.IsDBNull(2)) Longitude = (double)DBReader.GetValue(2);
+                if (!DBReader.IsDBNull(3)) Latitude = (double)DBReader.GetValue(3);
 
                 rows = 1;
             }
@@ -81,7 +82,7 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool Add(string szName)
+        public bool Add(string szName, double Longitude, double Latitude)
         {
             try
             {
@@ -101,7 +102,11 @@ namespace WindowsFormsApplication1
                     DBReader.Close();
                 }
 
-                DBCommand.CommandText = "INSERT INTO TAB_Klimaregion ( ID_Klimaregion, Name ) SELECT " + m_ID_Klimaregion + " AS Ausdr1, '" + szName + "'";
+                DBCommand.CommandText = "INSERT INTO TAB_Klimaregion ( ID_Klimaregion, Name, Longitude, Latitude) " +
+                    "SELECT " +
+                     m_ID_Klimaregion + " AS Ausdr1, '" + szName + "' AS Ausdr2," +
+                     Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture) + " AS Ausdr3," +
+                     Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture) + " AS Ausdr4";
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

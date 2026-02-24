@@ -18,6 +18,7 @@ namespace WindowsFormsApplication1
         public bool m_WE;
         public double m_TagTyp_W;
         public double m_TagTyp_NW;
+        public double m_Globalstrahlung;
 
         public int rows;
               
@@ -33,6 +34,7 @@ namespace WindowsFormsApplication1
             m_WE = false;
             m_TagTyp_W = 0;
             m_TagTyp_NW = 0;
+            m_Globalstrahlung = 0;  
             rows = 0;
         }
     }
@@ -43,6 +45,15 @@ namespace WindowsFormsApplication1
         public int m_ID;
         public int m_ID_Klimaregion;
         public double Außen_Temp;
+        public double Sol_Nord;
+        public double Sol_Ost;
+        public double Sol_Sued;
+        public double Sol_West;
+        public double Globalstrahlung;
+        public double Direktstrahlung;
+        public double Diffusstrahlung;
+        public double Sonnenwinkel;
+
         public int rows;
 
         public SolardatenModel()
@@ -50,6 +61,14 @@ namespace WindowsFormsApplication1
             m_ID = 0;
             m_ID_Klimaregion = 0;
             Außen_Temp = 0;
+            Sol_Nord = 0;
+            Sol_Ost = 0;
+            Sol_Sued = 0;
+            Sol_West = 0;
+            Globalstrahlung= 0;
+            Direktstrahlung = 0;
+            Diffusstrahlung = 0;
+            Sonnenwinkel = 0;
             rows = 0;
         }
     }

@@ -203,7 +203,7 @@
     <Compile Include="Classes\Simulation\SimulationWaermebedarf.cs" />
     <Compile Include="Classes\Simulation\SimulationWaermepumpe.cs" />
     <Compile Include="Classes\StromTestClass.cs" />
-    <Compile Include="Classes\TemperaturService.cs" />
+    <Compile Include="Classes\SolarPVGISCalculator.cs" />
     <Compile Include="Classes\WaermepumpenImport.cs" />
     <Compile Include="Controller\ApplikationCtrl.cs" />
     <Compile Include="Controller\BHKWCtrl.cs" />
@@ -225,6 +225,7 @@
     <Compile Include="Controller\KonfigurationCtrl.cs" />
     <Compile Include="Controller\PhotovoltaikCtrl.cs" />
     <Compile Include="Controller\ProjektGebaeudeCtrl.cs" />
+    <Compile Include="Controller\ProzesswaermeCtrl.cs" />
     <Compile Include="Controller\ProzesswaermeKontextMenuCtrl.cs" />
     <Compile Include="Controller\PufferSpKontextMenuCtrl.cs">
       <SubType>Form</SubType>
@@ -268,6 +269,7 @@
     <Compile Include="Model\KenndatenKuehlungModel.cs" />
     <Compile Include="Model\KonfigurationModel.cs" />
     <Compile Include="Model\PhotovoltaikModel.cs" />
+    <Compile Include="Model\ProzesswaermeModel.cs" />
     <Compile Include="Model\Z_ProjektBrauchwasserModel.cs" />
     <Compile Include="Model\Z_ProjektPufferSpModel.cs" />
     <Compile Include="Model\SolarganglinieModel.cs" />

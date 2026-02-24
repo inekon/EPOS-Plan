@@ -1106,12 +1106,15 @@ namespace WindowsFormsApplication1
                 ctrl.ReadAll("ID=" + (int)rs.Read("ID_PUFFER"));
                 ListViewItem lvitem = new ListViewItem();
 
-                lvitem.Text = (string)rs.Read("Bezeichner");
-                lvitem.SubItems.Add(ctrl.items[0].Firma);
-                lvitem.SubItems.Add(ctrl.items[0].Speichertyp);
-                lvitem.SubItems.Add(ctrl.items[0].Gesamtvolumen.ToString());
-                lvitem.SubItems.Add(rs.Read("ID").ToString());
-                listView_Pufferspeicher.Items.Add(lvitem);
+                if (ctrl.rows > 0)
+                {
+                    lvitem.Text = (string)rs.Read("Bezeichner");
+                    lvitem.SubItems.Add(ctrl.items[0].Firma);
+                    lvitem.SubItems.Add(ctrl.items[0].Speichertyp);
+                    lvitem.SubItems.Add(ctrl.items[0].Gesamtvolumen.ToString());
+                    lvitem.SubItems.Add(rs.Read("ID").ToString());
+                    listView_Pufferspeicher.Items.Add(lvitem);
+                }
             }
             rs.Close();
 

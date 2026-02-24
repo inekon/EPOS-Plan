@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
 using WindowsFormsApplication1.Classes.Simulation;
 
@@ -28,11 +29,14 @@ namespace WindowsFormsApplication1
         double Verbrauch = 0;
         public double Gasverbrauch_SPK = 0;
         public double Oelverbrauch_SPK = 0;
-        public double Biogasverbrauch_SPK = 0;
         public double Rapsoelverbrauch_SPK = 0;
         public double Holzverbrauch_SPK = 0;
         public double Sonstigverbrauch_SPK = 0;
-        public double Fluessiggasverbrauch_SPK = 0;
+        public double Koks_SPK = 0;
+        public double Kohle_SPK = 0;    
+        public double Pellets_SPK = 0;
+        public double TierischeFette_SPK = 0;
+
 
         public double Em_CO2_SPK = 0;
         public double Em_CO_SPK = 0;
@@ -69,7 +73,10 @@ namespace WindowsFormsApplication1
 
             BrennstoffCtrl brennstoffctrl = new BrennstoffCtrl();
             Anzahl = spk_list.Count;
-            
+            // wenn keine Kessel definiert simd ist die Restwärme == Wärmebedarf
+            if (Anzahl == 0) { Restwaerme = Waermebedarf; return true; }
+
+            // Voreinstellungen
             for (int i = 0; i < Anzahl; i++)
             {
                 brennstoffctrl.ReadAll("Name='" + spk_list[i] + "'");
@@ -83,28 +90,12 @@ namespace WindowsFormsApplication1
                 Betriebsbereitschaft_Verluste[i] = brennstoffctrl.items[0].Betriebsbereitschaftverlust;
                 Maximale_Kesselleistung_Spk = Maximale_Kesselleistung_Spk + Kessel_Leistung_Spk[i];
             }
-            Gasspitze_Spk = 0;
             
-            Heizkessel_Simulation_Ref(Waermebedarf, ref Gasspitze_Spk, s_waerme_Gas_Spk, s_waerme_Oel_Spk,
+            // Wärmeproduktion berechnen
+            Heizkessel_Simulation(Waermebedarf, ref Gasspitze_Spk, s_waerme_Gas_Spk, s_waerme_Oel_Spk,
                 Max_Waermebedarf, Anzahl, Kessel_Leistung_Spk, Kessel_Wirk_Gas_Spk, Brennstoff_Betrieb_Spk);
 
-            BruttoWaermeSpkErzeugung = 0;
-            S_Waerme_spk = 0;
-            Gasverbrauch_SPK = 0;
-            Oelverbrauch_SPK = 0;
-            Biogasverbrauch_SPK = 0;
-            Rapsoelverbrauch_SPK = 0;
-            Holzverbrauch_SPK = 0;
-            Sonstigverbrauch_SPK = 0;
-            Fluessiggasverbrauch_SPK = 0;
-            Stromverbrauch_Spk = 0;
-            Em_CO2_SPK = 0;
-            Em_CO_SPK = 0;
-            Em_SO2_SPK = 0;
-            Em_NOX_SPK = 0;
-            Em_Staub_SPK = 0;
-            Verbrauch = 0;
-
+            // Wirkungsgrad, Betriebsbereitschaft und Verbrauch nach Brennstoffart zuordnen
             for (int i = 0; i < Anzahl; i++)
             {
                 Bereitschaft = Vorgabe_Betriebsbereitschaft;
@@ -141,26 +132,40 @@ namespace WindowsFormsApplication1
                         Verbrauch = s_waerme_Gas_Spk[i] + Betriebsbereitschaft_Verluste[i] * Kessel_Leistung_Spk[i] * (8760 - Betriebsstunden[i]) / 1000;
                     }
 
-                    if (Brennstoff_Art[i] == 1)
+                    // Gas
+                    if (Brennstoff_Art[i] >= 1 && Brennstoff_Art[i] <= 5)
                         Gasverbrauch_SPK = Gasverbrauch_SPK + Verbrauch;
-                    else if (Brennstoff_Art[i] == 0)
+                    //Öl
+                    else if ((Brennstoff_Art[i] >= 6 && Brennstoff_Art[i] <=9) || (Brennstoff_Art[i] >= 18 && Brennstoff_Art[i] <= 22))
                         Oelverbrauch_SPK = Oelverbrauch_SPK + Verbrauch;
+                    // Koks              
+                    else if (Brennstoff_Art[i] == 10)
+                        Koks_SPK = Koks_SPK + Verbrauch;
+                    // Kohle
                     else if (Brennstoff_Art[i] == 11)
-                        Biogasverbrauch_SPK = Biogasverbrauch_SPK + Verbrauch;
-                    else if (Brennstoff_Art[i] == 3)
-                        Rapsoelverbrauch_SPK = Rapsoelverbrauch_SPK + Verbrauch;
-                    else if (Brennstoff_Art[i] == 4)
+                        Kohle_SPK = Kohle_SPK + Verbrauch;
+                    // Holz
+                    else if (Brennstoff_Art[i] == 12)
                         Holzverbrauch_SPK = Holzverbrauch_SPK + Verbrauch;
-                    else if (Brennstoff_Art[i] == 5)
-                        Sonstigverbrauch_SPK = Sonstigverbrauch_SPK + Verbrauch;
-                    else if (Brennstoff_Art[i] == 8)
-                        Fluessiggasverbrauch_SPK = Fluessiggasverbrauch_SPK + Verbrauch;
-                    else if (Brennstoff_Art[i] == 15)
+                    // Tierische Fette
+                    else if (Brennstoff_Art[i] == 17)
+                        TierischeFette_SPK = TierischeFette_SPK + Verbrauch;
+                    // Strom
+                    else if (Brennstoff_Art[i] == 13)
                     {
-                        Stromverbrauch_Spk = Stromverbrauch_Spk + Verbrauch;
+                        Stromverbrauch_Spk = Stromverbrauch_Spk + S_Waerme_spk;
                         Strombedarf_stuendlich = AddVectors(Strombedarf_stuendlich, Kesselleistung_stuendlich);
                     }
-
+                    // Pellets
+                    else if (Brennstoff_Art[i] == 15)
+                        Pellets_SPK = Pellets_SPK + Verbrauch;
+                    // Rapsöl
+                    else if (Brennstoff_Art[i] == 16)
+                        Rapsoelverbrauch_SPK = Rapsoelverbrauch_SPK + Verbrauch;
+                    // Sonstige
+                    else if (Brennstoff_Art[i] == 5)
+                        Sonstigverbrauch_SPK = Sonstigverbrauch_SPK + Verbrauch;
+                    
                     BruttoWaermeSpkErzeugung = BruttoWaermeSpkErzeugung + Verbrauch;
                     Em_CO2_SPK = Em_CO2_SPK + Verbrauch * Em_CO2_SPK;
                     Em_SO2_SPK = Em_SO2_SPK + Verbrauch * Em_SO2_SPK;
@@ -170,8 +175,6 @@ namespace WindowsFormsApplication1
                 }
                 else if (Kessel_Wirk_Oel_Spk[i] > 0)
                 {
-                    // Bereitschaft = 6000;
-                    // aus Excel - nur Heizkessel -> if(projekt.Sheets("SpKessel_Daten").Cells(30, 2) = "Ja" Then Bereitschaft = 8760#
                     if (i < Anzahl - 1) Bereitschaft = 8760;
                     
                     if (Bereitschaft / Betriebsstunden[i] * Betriebsbereitschaft_Verluste[i] < 1)
@@ -201,6 +204,7 @@ namespace WindowsFormsApplication1
                     Em_Staub_SPK = Em_Staub_SPK + Verbrauch * Em_Staub_SPK;
                 }
 
+                // Emissionen bzgl. MWh
                 Em_CO2_SPK = Em_CO2_SPK / 1000;
                 Em_SO2_SPK = Em_SO2_SPK / 1000;
                 Em_NOX_SPK = Em_NOX_SPK / 1000;
@@ -213,7 +217,7 @@ namespace WindowsFormsApplication1
             return true;    
         }
 
-        private void Heizkessel_Simulation_Ref(float[] Waermebedarf, ref double GasSpitze, double[] s_waerme_gas, double[] s_waerme_oel,
+        private void Heizkessel_Simulation(float[] Waermebedarf, ref double GasSpitze, double[] s_waerme_gas, double[] s_waerme_oel,
                 double Max_Waermebedarf, int Anzahl, double[] Leistung, double[] Wirk_Gas, int[] Brennstoff)
         {
             double KesselLeistung;
@@ -304,6 +308,29 @@ namespace WindowsFormsApplication1
                 Kessel_Leistung_Spk[j] = 0;
                 Betriebsstunden[j] = 0;
             }
+
+            BruttoWaermeSpkErzeugung = 0;
+            S_Waerme_spk = 0;
+
+            Gasverbrauch_SPK = 0;
+            Oelverbrauch_SPK = 0;
+            Rapsoelverbrauch_SPK = 0;
+            Holzverbrauch_SPK = 0;
+            Sonstigverbrauch_SPK = 0;
+            Stromverbrauch_Spk = 0;
+            Kohle_SPK = 0;
+            Koks_SPK = 0;
+            Pellets_SPK = 0;
+            TierischeFette_SPK = 0;
+
+            Em_CO2_SPK = 0;
+            Em_CO_SPK = 0;
+            Em_SO2_SPK = 0;
+            Em_NOX_SPK = 0;
+            Em_Staub_SPK = 0;
+
+            Verbrauch = 0;
+            Gasspitze_Spk = 0;
 
             Array.Clear(Restwaerme, 0, Restwaerme.Length);
             Array.Clear(Strombedarf_stuendlich, 0, Strombedarf_stuendlich.Length);

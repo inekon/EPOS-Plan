@@ -29,12 +29,14 @@ namespace WindowsFormsApplication1
             DBCommand.Dispose();
         }
 
-        public void ReadAll()
+        public void ReadAll(string sql = "")
         {
-            DBCommand.CommandText = "select * from Tab_Solar order by ID";
+            if(string.IsNullOrEmpty(sql))
+                DBCommand.CommandText = "select * from Tab_Solar order by ID";
+            else DBCommand.CommandText = sql;
             OdbcDataReader DBReader = DBCommand.ExecuteReader();
 
-            items = new SolardatenModel[1000];
+            items = new SolardatenModel[1000000];
             rows = 0;
             while (DBReader.Read())
             {
@@ -43,7 +45,15 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) item.m_ID_Klimaregion = (int)DBReader.GetValue(1);
                 if (!DBReader.IsDBNull(2)) item.Außen_Temp = (double)DBReader.GetValue(2);
-            
+                if (!DBReader.IsDBNull(3)) item.Sol_Nord = (double)DBReader.GetValue(3);
+                if (!DBReader.IsDBNull(4)) item.Sol_Ost = (double)DBReader.GetValue(4);
+                if (!DBReader.IsDBNull(5)) item.Sol_Sued = (double)DBReader.GetValue(5);
+                if (!DBReader.IsDBNull(6)) item.Sol_West = (double)DBReader.GetValue(6);
+                if (!DBReader.IsDBNull(7)) item.Globalstrahlung = (double)DBReader.GetValue(7);
+                if (!DBReader.IsDBNull(8)) item.Direktstrahlung = (double)DBReader.GetValue(8);
+                if (!DBReader.IsDBNull(9)) item.Diffusstrahlung = (double)DBReader.GetValue(9);
+                if (!DBReader.IsDBNull(10)) item.Sonnenwinkel = (double)DBReader.GetValue(10);
+
                 items[rows] = item;
                 item = null;
                 rows += 1;
@@ -54,10 +64,10 @@ namespace WindowsFormsApplication1
 
         public void ReadAll(int ID_Klimaregion)
         {
-            DBCommand.CommandText = "select * from Tab_Klimadaten where ID_Klimaregion=" + ID_Klimaregion + " order by ID_Klimadaten";
+            DBCommand.CommandText = "select * from Tab_Solar where ID_Klimaregion=" + ID_Klimaregion + " order by ID";
             OdbcDataReader DBReader = DBCommand.ExecuteReader();
 
-            items = new SolardatenModel[1000];
+            items = new SolardatenModel[1000000];
             rows = 0;
             while (DBReader.Read())
             {
@@ -67,6 +77,14 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) item.m_ID_Klimaregion = (int)DBReader.GetValue(1);
                 if (!DBReader.IsDBNull(2)) item.Außen_Temp = (double)DBReader.GetValue(2);
+                if (!DBReader.IsDBNull(3)) item.Sol_Nord = (double)DBReader.GetValue(3);
+                if (!DBReader.IsDBNull(4)) item.Sol_Ost = (double)DBReader.GetValue(4);
+                if (!DBReader.IsDBNull(5)) item.Sol_Sued = (double)DBReader.GetValue(5);
+                if (!DBReader.IsDBNull(6)) item.Sol_West = (double)DBReader.GetValue(6);
+                if (!DBReader.IsDBNull(7)) item.Globalstrahlung = (double)DBReader.GetValue(7);
+                if (!DBReader.IsDBNull(8)) item.Direktstrahlung = (double)DBReader.GetValue(8);
+                if (!DBReader.IsDBNull(9)) item.Diffusstrahlung = (double)DBReader.GetValue(9);
+                if (!DBReader.IsDBNull(10)) item.Sonnenwinkel = (double)DBReader.GetValue(10);
 
                 list_Temperatur.Add(item.Außen_Temp);
                 list_Tag.Add(rows+1);
@@ -81,7 +99,6 @@ namespace WindowsFormsApplication1
 
         public bool Insert(int ID_Klimaregion, List<SolardatenModel> list)
         {
-       
             try
             {
                 DBCommand.CommandText = "SELECT Count(*) FROM Tab_Solar";
@@ -128,6 +145,7 @@ namespace WindowsFormsApplication1
             }
             return true;
         }
+
         public bool WritetDataTable(System.Data.DataTable dt, string szName, OdbcTransaction transaction)
         {
             try

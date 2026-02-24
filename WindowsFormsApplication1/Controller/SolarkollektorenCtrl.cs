@@ -58,6 +58,8 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(12)) item.m_Kdfu  = (double)DBReader.GetValue(12);
                 if (!DBReader.IsDBNull(13)) item.m_Ertrag = (double)DBReader.GetValue(13);
                 if (!DBReader.IsDBNull(14)) item.m_Kosten = (double)DBReader.GetValue(14);
+                if (!DBReader.IsDBNull(15)) item.m_Vorlauf = (int)DBReader.GetValue(15);
+                if (!DBReader.IsDBNull(16)) item.m_Ruecklauf = (int)DBReader.GetValue(16);
 
                 items[rows] = item;
                 item = null;
@@ -93,6 +95,8 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(12)) m_Kdfu = (double)DBReader.GetValue(12);
                 if (!DBReader.IsDBNull(13)) m_Ertrag = (double)DBReader.GetValue(13);
                 if (!DBReader.IsDBNull(14)) m_Kosten = (double)DBReader.GetValue(14);
+                if (!DBReader.IsDBNull(15)) m_Vorlauf = (int)DBReader.GetValue(15);
+                if (!DBReader.IsDBNull(16)) m_Ruecklauf = (int)DBReader.GetValue(16);
 
                 rows = 1;
             }

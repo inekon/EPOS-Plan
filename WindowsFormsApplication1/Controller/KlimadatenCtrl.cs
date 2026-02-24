@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
             DBCommand.CommandText = "select * from Tab_Klimadaten order by ID_Klimadaten";
             OdbcDataReader DBReader = DBCommand.ExecuteReader();
 
-            items = new KlimadatenModel[1000];
+            items = new KlimadatenModel[100000];
             rows = 0;
             while (DBReader.Read())
             {
@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
             DBCommand.CommandText = "select * from Tab_Klimadaten where ID_Klimaregion=" + ID_Klimaregion + " order by ID_Klimadaten";
             OdbcDataReader DBReader = DBCommand.ExecuteReader();
 
-            items = new KlimadatenModel[1000];
+            items = new KlimadatenModel[100000];
             rows = 0;
             while (DBReader.Read())
             {
@@ -81,6 +81,7 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(7)) item.m_WE = (bool)DBReader.GetValue(7);
                 if (!DBReader.IsDBNull(8)) item.m_TagTyp_W = (double)DBReader.GetValue(8);
                 if (!DBReader.IsDBNull(9)) item.m_TagTyp_NW = (double)DBReader.GetValue(9);
+                if (!DBReader.IsDBNull(10)) item.m_Globalstrahlung = (double)DBReader.GetValue(10);
 
                 list_Temperatur.Add(item.m_nTemperatur);
                 list_Tag.Add(rows+1);

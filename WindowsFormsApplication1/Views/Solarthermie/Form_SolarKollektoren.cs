@@ -143,10 +143,9 @@ namespace WindowsFormsApplication1
             {
                 model.ID_Solar = (int)rs.Read("ID");
                 model.ID_Type = WizardItemClass.SOLAR_TYP;
-                model.Kollektorausrichtung = 0;
+                model.m_Azimut = 0;
                 model.Kollektormodulanzahl = 1;
-                model.Kollektorneigung = 30;
-                radioButton_SuedOst.Checked = true;
+                model.m_Neigung = 0;
 
                 list_werzmodel.Add(model);
                 if (m_bWizard) wizardparent.list_werzmodel = list_werzmodel;
@@ -253,7 +252,7 @@ namespace WindowsFormsApplication1
                 textBox_Firma.Text = (firma == DBNull.Value) ? "" : (string)firma;
                 object beschreibungValue = rs.Read("Beschreibung");
                 textBox_Beschreibung.Text = (beschreibungValue == DBNull.Value) ? "" : (string)beschreibungValue;
-                modulflaeche = (double)rs.Read("Modulflaeche");
+                modulflaeche = (double)rs.Read("Aperturflaeche");
                 textBox_Modul_A.Text = modulflaeche.ToString();
             }
             rs.Close();
@@ -262,30 +261,12 @@ namespace WindowsFormsApplication1
             {
                 if (list_werzmodel[i].Bezeichner == listBox_Auswahl.Text && list_werzmodel[i].ID_Type == WizardItemClass.SOLAR_TYP)
                 {
-                    textBox_Kollektorneigung.Text = list_werzmodel[i].Kollektorneigung.ToString();  
+                    textBox_Kollektorneigung.Text = list_werzmodel[i].m_Neigung.ToString();  
                     int anzahl = list_werzmodel[i].Kollektormodulanzahl;
                     textBox_Anzahl.Text = anzahl.ToString();
                     textBox_Kollektor_A.Text = (modulflaeche * anzahl).ToString();
-                    int ausrichtung = list_werzmodel[i].Kollektorausrichtung;
-                    switch (ausrichtung)
-                    {
-                        case 0:
-                            radioButton_SuedOst.Checked = true;
-                            break;
-                        case 1:
-                            radioButton_Sued.Checked = true;
-                            break;
-                        case 2:
-                            radioButton_SuedWest.Checked = true;
-                            break;
-                        case 3:
-                            radioButton_flach.Checked = true;
-                            break;
-                        case 4:
-                            radioButton_Sued90.Checked = true;
-                            break;
-                    }
-
+                    int ausrichtung = list_werzmodel[i].m_Azimut;
+                    textBox_Azimut.Text = ausrichtung.ToString();
                     break;
                 }
             }
@@ -327,17 +308,8 @@ namespace WindowsFormsApplication1
                 if (list_werzmodel[i].Bezeichner == listBox_Auswahl.Text && list_werzmodel[i].ID_Type == WizardItemClass.SOLAR_TYP)
                 {
                     list_werzmodel[i].Kollektormodulanzahl = textBox_Anzahl.Text == "" ? 0 : Int32.Parse(textBox_Anzahl.Text);
-                    list_werzmodel[i].Kollektorneigung = textBox_Kollektorneigung.Text == "" ? 0 : Int32.Parse(textBox_Kollektorneigung.Text);
-                    if(radioButton_SuedOst.Checked)
-                        list_werzmodel[i].Kollektorausrichtung = 0;
-                    else if (radioButton_Sued.Checked)
-                        list_werzmodel[i].Kollektorausrichtung = 1;
-                    else if (radioButton_SuedWest.Checked)
-                        list_werzmodel[i].Kollektorausrichtung = 2;
-                    else if (radioButton_flach.Checked)
-                        list_werzmodel[i].Kollektorausrichtung = 3;
-                    else if (radioButton_Sued90.Checked)    
-                        list_werzmodel[i].Kollektorausrichtung = 4;
+                    list_werzmodel[i].m_Neigung = textBox_Kollektorneigung.Text == "" ? 0 : Int32.Parse(textBox_Kollektorneigung.Text);
+                    list_werzmodel[i].m_Azimut = textBox_Azimut.Text == "" ? 0 : Int32.Parse(textBox_Azimut.Text);
                     pictureBox1.Visible = true;
                     pictureBox1.Refresh();
                     Thread.Sleep(500);
