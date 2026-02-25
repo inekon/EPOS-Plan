@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace WindowsFormsApplication1
 {
@@ -31,16 +32,6 @@ namespace WindowsFormsApplication1
         Point prevPosition;
         ToolTip tooltip = new ToolTip();
 
-        public Form_Simulation_Detail()
-        {
-            InitializeComponent();
-            init_Chart(chart1);
-            init_Chart(chart2);
-            init_Chart(chart6);
-            init_Chart(chart8);
-            chart8.MouseWheel += Chart8_MouseWheel;
-        }
-
         public Form_Simulation_Detail(int iD_Projekt)
         {
             InitializeComponent();
@@ -50,8 +41,15 @@ namespace WindowsFormsApplication1
             init_Chart(chart2);
             init_Chart(chart6);
             init_Chart(chart7);
-//            init_Chart(chart8);
+            
             chart8.MouseWheel += Chart8_MouseWheel;
+            chart8.MouseEnter += (s, e) => chart8.Focus();
+
+            // Tooltip, einmalig beim Laden der Daten setzen
+            foreach (var s in chart8.Series)
+            {
+                s.ToolTip = "#VALX{dd/MM H:mm} [#VALY{0.00} kW]";
+            }
 
             listView_SimSPK.View = View.Details;
             listView_SimSPK.Columns.Add("Heizkessel", -2, HorizontalAlignment.Left);
@@ -77,6 +75,39 @@ namespace WindowsFormsApplication1
 
         public void SetControls()
         {
+        }
+
+        private void ReihenfolgeTabPages()
+        {
+            KonfigurationCtrl ctrl = new KonfigurationCtrl();
+
+            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+
+            string[] tool = new string[4];
+            tool[0] = ctrl.model.m_Tool_1;
+            tool[1] = ctrl.model.m_Tool_2;
+            tool[2] = ctrl.model.m_Tool_3;
+            tool[3] = ctrl.model.m_Tool_4;
+
+            int index = 1;
+            for (int i = 0; i < 4; i++)
+            {
+                if (tool[i] != "")
+                {
+                    var tabPage = tabControl1.TabPages.Cast<TabPage>().FirstOrDefault(tp => tp.Name == "tabPage_" + tool[i]);
+                    if (tabPage != null)
+                    {
+                        tabControl1.TabPages.Remove(tabPage);
+                        tabControl1.TabPages.Insert(index++, tabPage);
+                    }
+                }
+            }
+
+        }
+
+        private void Form_Simulation_Detail_Load(object sender, EventArgs e)
+        {
+            ReihenfolgeTabPages();
         }
 
         private void init_Chart(Chart chart)
@@ -541,8 +572,8 @@ namespace WindowsFormsApplication1
                 chart8.Annotations.Clear();
                 chart8.Series["Wärmeproduktion"].Color = Color.FromArgb(100, Color.Blue);
                 chart8.Series["Wärmebedarf"].Color = Color.FromArgb(140, Color.Red);
-                chart8.Series[0].ChartType = SeriesChartType.Line;
-                chart8.Series[1].ChartType = SeriesChartType.Line;
+                chart8.Series[0].ChartType = SeriesChartType.FastLine;
+                chart8.Series[1].ChartType = SeriesChartType.FastLine;
                 chart8.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
                 chart8.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
     
@@ -573,6 +604,10 @@ namespace WindowsFormsApplication1
                 chart8.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
                 chart8.ChartAreas[0].AxisX.ScaleView.Zoomable = true;
 
+                // Erlaubt das Versetzen der Labels in zwei Zeilen
+                chart8.ChartAreas[0].AxisX.LabelStyle.IsStaggered = true;
+                chart8.ChartAreas[0].AxisX.IsLabelAutoFit = true;
+                chart8.ChartAreas[0].AxisX.LabelAutoFitStyle = LabelAutoFitStyles.StaggeredLabels | LabelAutoFitStyles.LabelsAngleStep30;
 
                 DateTime dt = new DateTime(2026, 1, 1);
                 for (int j = 0; j < 8760; j++)
@@ -582,6 +617,12 @@ namespace WindowsFormsApplication1
                     chart8.Series[1].Points.AddXY(d, temp[j]);
                     chart8.Series[0].Points.AddXY(d, (float)sim.simulation_solarthermie.Waermebedarf[j]);
                 }
+                chart8.Invalidate(); // Markiert das Chart als "muss neu gezeichnet werden"
+                // Erzwingt die Berechnung aller internen Werte (auch für Tooltips)
+                chart1.ChartAreas[0].RecalculateAxesScale();
+                chart8.Update();     // Erzwingt das sofortige Zeichnen im Speicher
+                                     // Nachdem die Punkte hinzugefügt wurden:
+   
             }
 
             // ********************************************************************************************/
@@ -1115,7 +1156,6 @@ namespace WindowsFormsApplication1
 
         private void chart8_MouseMove(object sender, MouseEventArgs e)
         {
-
             var pos = e.Location;
             if (pos == prevPosition) return;
 
@@ -1128,13 +1168,21 @@ namespace WindowsFormsApplication1
                 if (result.ChartElementType == ChartElementType.DataPoint)
                 {
                     var yVal = result.ChartArea.AxisY.PixelPositionToValue(pos.Y);
+                    yVal = yVal > 0.01 ? yVal : 0; // Werte unter 0.01 kW als 0 anzeigen
                     var xVal = result.ChartArea.AxisX.PixelPositionToValue(pos.X);
    
                     yVal = Math.Round(yVal, 2);
 
                     // Umwandlung in ein DateTime Objekt
                     DateTime dateValue = DateTime.FromOADate(xVal);
-                    tooltip.Show(dateValue.ToString("dd/MM H:mm [" + yVal).ToString() + "kW]", chart8, pos.X, pos.Y - 15);
+                    string newText = $"{dateValue:dd/MM H:mm} [{yVal:N2} kW]";
+
+                    if (chart8.Series[0].ToolTip != newText)
+                    {
+                        chart8.Series[0].ToolTip = newText;
+                        tooltip.SetToolTip(chart8, newText );
+                    }
+                    break; // Nur den ersten Treffer verarbeiten
                 }
                 else
                 {
@@ -1148,39 +1196,6 @@ namespace WindowsFormsApplication1
             page.Controls.OfType<TextBox>().ToList().ForEach(tb => tb.Text = "");
         }
 
-        private void ReihenfolgeTabPages()
-        {
-            KonfigurationCtrl ctrl = new KonfigurationCtrl();
-
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
-
-            string[] tool = new string[4];
-            tool[0] = ctrl.model.m_Tool_1;
-            tool[1] = ctrl.model.m_Tool_2;
-            tool[2] = ctrl.model.m_Tool_3;
-            tool[3] = ctrl.model.m_Tool_4;
-
-            int index = 1;
-            for (int i = 0; i < 4; i++)
-            {
-                if (tool[i] != "")
-                {
-                    var tabPage = tabControl1.TabPages.Cast<TabPage>().FirstOrDefault(tp => tp.Name == "tabPage_" + tool[i]);
-                    if (tabPage != null)
-                    {
-                        tabControl1.TabPages.Remove(tabPage);
-                        tabControl1.TabPages.Insert(index++, tabPage);
-                    }
-                }
-            }
-
-        }
-
-        private void Form_Simulation_Detail_Load(object sender, EventArgs e)
-        {
-            ReihenfolgeTabPages();
-        }
-
         private void Chart8_MouseWheel(object sender, MouseEventArgs e)
         {
             var xAxis = chart8.ChartAreas[0].AxisX;
@@ -1192,7 +1207,7 @@ namespace WindowsFormsApplication1
             if (double.IsNaN(xMax)) xMax = xAxis.Maximum;
 
             double range = xMax - xMin;
-            double zoomFactor = 0.3; // 30% Zoom-Stärke
+            double zoomFactor = 0.30; // 30% Zoom-Stärke
 
             // Mausposition in X-Wert umrechnen (Zoom auf Cursor)
             double mouseX = xAxis.PixelPositionToValue(e.Location.X);
@@ -1215,7 +1230,30 @@ namespace WindowsFormsApplication1
                 else
                     xAxis.ScaleView.Zoom(left, right);
             }
-  
+
+            // Nach dem Zoom prüfen wir die neue Größe des Sichtfeldes
+            double currentSize = xAxis.ScaleView.Size;
+
+            // Wenn die Größe NaN ist, sehen wir das ganze Jahr (12 Monate)
+            if (double.IsNaN(currentSize)) currentSize = xAxis.Maximum - xAxis.Minimum;
+            // 30 Tage als Schwellenwert
+            if (currentSize <= 31)
+            {
+                // Zoom ist tiefer als 1 Monat -> Tage anzeigen
+                xAxis.LabelStyle.Format = "dd.MM.";
+                xAxis.IntervalType = DateTimeIntervalType.Days;
+                xAxis.Interval = currentSize < 7 ? 1 : 2; // Bei sehr tiefem Zoom jeden Tag, sonst alle 2 Tage
+                chart8.ChartAreas[0].AxisX.Title = "Tage";
+            }
+            else
+            {
+                // Zoom ist weit draußen -> Monatszahlen anzeigen (wie gewünscht)
+                xAxis.LabelStyle.Format = "%M";
+                xAxis.IntervalType = DateTimeIntervalType.Months;
+                xAxis.Interval = 1;
+                chart8.ChartAreas[0].AxisX.Title = "Monate";
+            }
         }
+
     }
 }
