@@ -1236,6 +1236,7 @@ namespace WindowsFormsApplication1
 
             // Wenn die Größe NaN ist, sehen wir das ganze Jahr (12 Monate)
             if (double.IsNaN(currentSize)) currentSize = xAxis.Maximum - xAxis.Minimum;
+            
             // 30 Tage als Schwellenwert
             if (currentSize <= 31)
             {
