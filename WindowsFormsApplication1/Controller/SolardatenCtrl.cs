@@ -14,6 +14,7 @@ namespace WindowsFormsApplication1
         public OdbcCommand DBCommand;
         public SolardatenModel Solarmodel = new SolardatenModel();
         public List<double> list_Temperatur = new List<double>();
+        public List<double> list_Sonnenwinkel = new List<double>();
         public List<int> list_Tag = new List<int>();
         public string Klimazone;
   
@@ -87,6 +88,7 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(10)) item.Sonnenwinkel = (double)DBReader.GetValue(10);
 
                 list_Temperatur.Add(item.Außen_Temp);
+                list_Sonnenwinkel.Add(item.Sonnenwinkel); 
                 list_Tag.Add(rows+1);
                 items[rows] = item;
                 item = null;

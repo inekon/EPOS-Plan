@@ -45,8 +45,15 @@ namespace WindowsFormsApplication1
                 comboBox_Ort.Items.Add(line);
             }
 
-            chart1.Series.Clear();
-            var ca = chart1.ChartAreas[0];
+            initChart(chart1);
+            initChart(chart2);
+            chart2.ChartAreas[0].AxisY.MajorGrid.Interval = 10;
+        }
+
+        private void initChart(Chart chart)
+        {
+            chart.Series.Clear();
+            var ca = chart.ChartAreas[0];
             ca.CursorX.IsUserEnabled = false;
             ca.CursorX.IsUserSelectionEnabled = false;
             ca.CursorY.IsUserEnabled = false;
@@ -58,7 +65,7 @@ namespace WindowsFormsApplication1
             ca.AxisX.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
             ca.AxisY.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
         }
-
+        
         private void listBoxWP_SelectedIndexChanged(object sender, EventArgs e)
         {
             m_szOrtName = listBoxKlimreg.Text;
@@ -91,8 +98,6 @@ namespace WindowsFormsApplication1
             series.ChartType = SeriesChartType.Line;
             yAxis = ctrl.list_Temperatur;
             xAxis = ctrl.list_Tag;  
-    
-   
             ConfigureXAxisWithMonths(chart1);
 
             for (int j = 0; j < 8760; j++)
@@ -106,6 +111,34 @@ namespace WindowsFormsApplication1
             chart1.Series[0].IsValueShownAsLabel = false;
             chart1.Series[0].BorderWidth = 2;
             chart1.Update();
+
+            if (chart2.Series.Count == 0)
+            {
+                series = new Series("Sonnenwinkel");
+                chart2.Series.Add(series);
+            }
+            else
+            {
+                series = chart2.Series[0];
+                chart2.Series[0].Points.Clear();
+            }
+            series.ChartType = SeriesChartType.Line;
+            yAxis = ctrl.list_Sonnenwinkel;
+            xAxis = ctrl.list_Tag;
+            ConfigureXAxisWithMonths(chart2);
+
+            for (int j = 0; j < 8760; j++)
+            {
+                double d = (double)j * 12 / (8760);
+                chart2.Series[0].Points.AddXY(d, yAxis[j]);
+            }
+            chart2.Series[0].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Yes;
+            chart2.Series[0].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
+            chart2.Series[0].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
+            chart2.Series[0].IsValueShownAsLabel = false;
+            chart2.Series[0].BorderWidth = 2;
+            chart2.Update();
+
         }
 
         private void butt_Delete_Click(object sender, EventArgs e)
