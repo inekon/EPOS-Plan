@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 
 // --- DATENMODELL FÜR NOMINATIM (GEOCODING) ---
@@ -102,10 +103,25 @@ public class PVGIS_EPW_Downloader
         // startyear/endyear: Zeitraum aus dem das TRY gebildet wird (z.B. 2005-2020)
         string url = $"https://re.jrc.ec.europa.eu/api/tmy?lat={lat.ToString().Replace(',', '.')}&lon={lon.ToString().Replace(',', '.')}&usepv=1&peakpower=1&loss=0&angle=0&aspect={Azimut}&outputformat=json&startyear=2005&endyear=2020";
 
+        string jsonString = "";
         var response = await client.GetAsync(url);
-        response.EnsureSuccessStatusCode();
-
-        string jsonString = await response.Content.ReadAsStringAsync();
+        if (response.IsSuccessStatusCode)
+        {
+            jsonString = await response.Content.ReadAsStringAsync(); ;
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+        {
+            // GEZIELT den 400er abgreifen
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            MessageBox.Show($"Simulation konnte nicht gestartet werden: {errorMsg}", "Eingabefehler");
+            return null;
+        }
+        else
+        {
+        // Alle anderen Fehler (500, 404, etc.)
+            MessageBox.Show($"Serverfehler: {response.ReasonPhrase}");
+            return null;
+        }
 
         // Deserialisierung des JSON in C# Objekte
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -233,7 +249,7 @@ public static class SolarCalculator
                 GlobalIrradiance = group.Average(x => x.GlobalIrradiance),
                 DirectIrradiance = group.Average(x => x.DirectIrradiance),
                 DiffuseIrradiance = group.Average(x => x.DiffuseIrradiance),
-                Sonnenwinkel = group.Max(x => x.Sonnenwinkel) 
+                Sonnenwinkel = group.Max(x => x.Sonnenwinkel)
             })
             .ToList();
     }
@@ -275,6 +291,39 @@ public static class SolarCalculator
         double refl = ghi * 0.2 * (1.0 - Math.Cos(sR)) / 2.0;
 
         return Math.Max(0, beam + diff + refl);
+    }
+
+
+    public static double CalculateTimeOffset(double lat, double lon, DateTime date)
+    {
+        int dayOfYear = date.DayOfYear;
+
+        // 1. Zeitgleichung (Equation of Time) in Minuten
+        double b = 2.0 * Math.PI * (dayOfYear - 1) / 365.0;
+        double eot = 229.18 * (0.000075 + 0.001868 * Math.Cos(b) - 0.032077 * Math.Sin(b)
+                        - 0.014615 * Math.Cos(2 * b) - 0.040849 * Math.Sin(2 * b));
+
+        // 2. Sonnendeklination (Neigung der Erdachse)
+        double declination = 23.45 * Math.Sin(Deg2Rad * (360.0 / 365.0 * (dayOfYear - 81)));
+
+        // 3. Stundenwinkel bei Sonnenaufgang (h = -0.83° für Lichtbrechung)
+        double cosOmega = (Math.Sin(-0.83 * Deg2Rad) - Math.Sin(lat * Deg2Rad) * Math.Sin(declination * Deg2Rad))
+                            / (Math.Cos(lat * Deg2Rad) * Math.Cos(declination * Deg2Rad));
+
+        // Prüfung auf Polartag/nacht
+        double omega = 0;
+        bool sunNeverSets = cosOmega < -1;
+        bool sunNeverRises = cosOmega > 1;
+        if (!sunNeverSets && !sunNeverRises) omega = Math.Acos(cosOmega) * Rad2Deg;
+
+        // 4. Mittagszeit in UTC (Solar Noon)
+        // 720 Minuten = 12:00 Uhr
+        double solarNoonUTC = 720 - (4 * lon) - eot;
+
+
+        double EquationOfTime = eot;
+        double SolarOffsetMinutes = (4 * lon) + eot; // Totaler Versatz UTC -> Sonnenzeit
+        return SolarOffsetMinutes;
     }
 
 }
