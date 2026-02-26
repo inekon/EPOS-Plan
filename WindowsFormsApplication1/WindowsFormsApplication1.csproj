@@ -179,6 +179,7 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\ChartInteractor.cs" />
     <Compile Include="Classes\CsvReader.cs" />
     <Compile Include="Classes\FileDlgClass.cs" />
     <Compile Include="Classes\Form3Src.cs">

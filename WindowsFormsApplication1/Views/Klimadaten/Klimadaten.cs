@@ -15,6 +15,7 @@ namespace WindowsFormsApplication1
     public partial class Form_Klimadaten : Form
     {
         private string m_szOrtName;
+        private ChartInteractor _chartManager;
 
         public Form_Klimadaten()
         {
@@ -54,16 +55,18 @@ namespace WindowsFormsApplication1
         {
             chart.Series.Clear();
             var ca = chart.ChartAreas[0];
-            ca.CursorX.IsUserEnabled = false;
-            ca.CursorX.IsUserSelectionEnabled = false;
-            ca.CursorY.IsUserEnabled = false;
-            ca.CursorY.IsUserSelectionEnabled = false;
+            ca.CursorX.IsUserEnabled = true;
+            ca.CursorX.IsUserSelectionEnabled = true;
+            ca.CursorY.IsUserEnabled = true;
+            ca.CursorY.IsUserSelectionEnabled = true;
             ca.AxisY.ScaleView.Zoomable = true;
             ca.AxisX.ScaleView.Zoomable = true;
             ca.CursorX.AutoScroll = true;
             ca.CursorX.IsUserSelectionEnabled = true;
             ca.AxisX.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
             ca.AxisY.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
+            ca.AxisX.ScaleView.MinSize = 0;
+            ca.CursorX.Interval = 0;
         }
         
         private void listBoxWP_SelectedIndexChanged(object sender, EventArgs e)
@@ -99,12 +102,13 @@ namespace WindowsFormsApplication1
             yAxis = ctrl.list_Temperatur;
             xAxis = ctrl.list_Tag;  
             ConfigureXAxisWithMonths(chart1);
-
+            
             for (int j = 0; j < 8760; j++)
             {
                 double d = (double)j * 12 / (8760);
                 chart1.Series[0].Points.AddXY(d, yAxis[j]);
             }
+            
             chart1.Series[0].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Yes;
             chart1.Series[0].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
             chart1.Series[0].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
@@ -125,13 +129,41 @@ namespace WindowsFormsApplication1
             series.ChartType = SeriesChartType.Line;
             yAxis = ctrl.list_Sonnenwinkel;
             xAxis = ctrl.list_Tag;
-            ConfigureXAxisWithMonths(chart2);
 
+            // ConfigureXAxisWithMonths
+            chart2.Series[0].XValueType = ChartValueType.DateTime;
+            
+            // 1. Das Format auf "Monatszahl" setzen
+            chart2.ChartAreas[0].AxisX.LabelStyle.Format = "%M";
+
+            // 2. Sicherstellen, dass die Abstände in Monaten gerechnet werden
+            chart2.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Months;
+            
+            // Gitterlinien so verschieben, dass sie zwischen den Monaten liegen
+            chart2.ChartAreas[0].AxisX.MajorGrid.IntervalOffset = +0.5;
+            
+            //chart8.ChartAreas[0].AxisY.MajorTickMark.IntervalOffset = -0.5;
+            chart2.ChartAreas[0].AxisX.Maximum = new DateTime(2026, 12, 1).ToOADate();
+
+            // 3. Alle 1 Monat eine Zahl anzeigen
+            chart2.ChartAreas[0].AxisX.Interval = 1;
+
+            DateTime dt = new DateTime(2026, 1, 1);
             for (int j = 0; j < 8760; j++)
             {
-                double d = (double)j * 12 / (8760);
+                DateTime d = dt.AddHours(j);
+                double offset = SolarCalculator.CalculateTimeOffset(ctrlregion.Latitude, ctrlregion.Longitude, d.Date);
+                d = d.AddHours((int)((double)(offset/60.0))+1);
                 chart2.Series[0].Points.AddXY(d, yAxis[j]);
+                ;
             }
+            chart2.Invalidate(); // Markiert das Chart als "muss neu gezeichnet werden"
+                                 // Erzwingt die Berechnung aller internen Werte (auch für Tooltips)
+            chart2.ChartAreas[0].RecalculateAxesScale();
+            chart2.Update();     // Erzwingt das sofortige Zeichnen im Speicher
+                                 // Nachdem die Punkte hinzugefügt wurden:
+
+
             chart2.Series[0].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Yes;
             chart2.Series[0].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
             chart2.Series[0].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
@@ -139,6 +171,8 @@ namespace WindowsFormsApplication1
             chart2.Series[0].BorderWidth = 2;
             chart2.Update();
 
+            _chartManager = new ChartInteractor(chart2);
+            _chartManager.szToolTipUnit = "°";
         }
 
         private void butt_Delete_Click(object sender, EventArgs e)
@@ -247,6 +281,9 @@ namespace WindowsFormsApplication1
             pBar_Import.Maximum = 7;
             pBar_Import.Value = 1;
             pBar_Import.Visible = true;
+            textBox_Display.Text = "";
+            textBox_Latitude.Text = "";
+            textBox_Longitude.Text = "";
 
             // Koordinaten für den Ort ermitteln
             var (Success, Lat, Lon, DisplayName) = await PVGIS_EPW_Downloader.GetCoordinatesAsync(comboBox_Ort.Text);
@@ -259,6 +296,8 @@ namespace WindowsFormsApplication1
 
             // TMY Daten von PVGIS herunterladen, berechnen nach Ost, Süd, West, Nord und in Listen speichern
             List<TmyHourlyData> tmyHourlyList = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 0);
+            if (tmyHourlyList == null) { pBar_Import.Visible = false; return; } 
+            
             List<TmyHourlyData> tmyHourlyList_ost = new List<TmyHourlyData>();
             List<TmyHourlyData> tmyHourlyList_sued = new List<TmyHourlyData>();
             List<TmyHourlyData> tmyHourlyList_west = new List<TmyHourlyData>();
