@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
     public partial class Form_Klimadaten : Form
     {
         private string m_szOrtName;
-        private ChartInteractor _chartManager;
+        private ChartMouseWheel _chartManager;
 
         public Form_Klimadaten()
         {
@@ -147,7 +147,7 @@ namespace WindowsFormsApplication1
 
             // 3. Alle 1 Monat eine Zahl anzeigen
             chart2.ChartAreas[0].AxisX.Interval = 1;
-
+            
             DateTime dt = new DateTime(2026, 1, 1);
             for (int j = 0; j < 8760; j++)
             {
@@ -163,7 +163,6 @@ namespace WindowsFormsApplication1
             chart2.Update();     // Erzwingt das sofortige Zeichnen im Speicher
                                  // Nachdem die Punkte hinzugefügt wurden:
 
-
             chart2.Series[0].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Yes;
             chart2.Series[0].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
             chart2.Series[0].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
@@ -171,7 +170,7 @@ namespace WindowsFormsApplication1
             chart2.Series[0].BorderWidth = 2;
             chart2.Update();
 
-            _chartManager = new ChartInteractor(chart2);
+            _chartManager = new ChartMouseWheel(chart2);
             _chartManager.szToolTipUnit = "°";
         }
 

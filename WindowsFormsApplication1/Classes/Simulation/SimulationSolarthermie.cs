@@ -19,15 +19,20 @@ namespace WindowsFormsApplication1
         public double[] Waermebedarf = new double[8760];
         public double[] Restwaerme = new double[8760];
         public double[] Waermeproduktion = new double[8760];
+        public double[] Ueberschuss = new double[8760];
         public double[] tempRestwaerme = new double[8760];
         public double[] tempWaermeproduktion = new double[8760];
         public double[] tempUeberschuss = new double[8760];
         public double[] strahlung = new double[8760];
+        public double[] sonnen_azimut = new double[8760]; 
+        public double[] wirk = new double[8760];
 
         public double Lon = 0;
         public double Lat = 0;
         public double wirkungsgrad = 0.8;
         public double ueberschuss = 0;
+
+        int index = 0;
 
         public bool Berechnung(int ID_Projekt)
         {
@@ -78,26 +83,37 @@ namespace WindowsFormsApplication1
                 // Schleife Solardaten auslesen und Orts- und Tageszeit und Neigungsabhängige Strahlungsleistung bestimmen
                 SolardatenCtrl ctrldat = new SolardatenCtrl();
                 ctrldat.ReadAll("select * from Tab_Solar where ID_Klimaregion=" + nID_Klimaregion + " order by ID");
-                
+
+                index = 0;
                 for (int i = 0; i < ctrldat.rows; i++)
                 {
-                   strahlung[i] = SolarCalculator.CalculateHourly(Lon, Lat, nNeigung, nAzimuth, ctrldat.items[i].Globalstrahlung,
-                   ctrldat.items[i].Direktstrahlung, ctrldat.items[i].Diffusstrahlung, ctrldat.items[i].Außen_Temp, i / 24, i % 24);
+                    strahlung[i] = SolarCalculator.CalculateHourly(Lon, Lat, nNeigung, nAzimuth, ctrldat.items[i].Globalstrahlung,
+                    ctrldat.items[i].Direktstrahlung, ctrldat.items[i].Diffusstrahlung, ctrldat.items[i].Außen_Temp, i / 24, i % 24);
+                    sonnen_azimut[i] = SolarCalculator.sonnen_azimut;
+
                 }
 
-                // Simulation Solarthermie durchführen
-                (tempWaermeproduktion, tempRestwaerme, tempUeberschuss) = BerechneSolarthermie(Waermebedarf, strahlung, nFlaeche * nAnzahl, wirkungsgrad);
-                for (int j = 0; j < tempWaermeproduktion.Length; j++)
+                double k1 = ctrlsol.m_k1;
+                double k2 = ctrlsol.m_k2;
+                double Leitungsverluste = 0.92;
+                double kdir50 = ctrlsol.m_Kdir;
+                double tStorage = 50;
+                double ta = 0;
+                double Neigung = nNeigung;
+                double h0 = ctrlsol.m_h0;
+
+                for (int i = 0; i < ctrldat.rows; i++)
                 {
-                    Waermeproduktion[j] += tempWaermeproduktion[j];
-                    Restwaerme[j] += tempRestwaerme[j];
-                    ueberschuss += tempUeberschuss[j];
+                    ta = ctrldat.items[i].Außen_Temp;
+                    double cosTheta = GetProjectionFactor(ctrldat.items[i].Sonnenwinkel, sonnen_azimut[i], nNeigung, nAzimuth);
+                    cosTheta = cosTheta * 180 / Math.PI;
+                    (Waermeproduktion[i], Restwaerme[i], Ueberschuss[i]) = BerechneSolarthermie(Waermebedarf[i], strahlung[i], nFlaeche * nAnzahl, h0, k1, k2, kdir50, tStorage, ta, Neigung, cosTheta, Leitungsverluste);
                 }
             }
 
             // Gesamtproduktion berechnen   
             Array.ForEach(Waermeproduktion, value => Waermeproduktion_gesamt += value);
-
+            Array.ForEach(Ueberschuss, value => ueberschuss += value);
             return true;
         }
 
@@ -114,30 +130,82 @@ namespace WindowsFormsApplication1
             Waermeproduktion_gesamt = 0;
         }
 
-        public (double[] produktion, double[] restbedarf, double[] ueberschuss) BerechneSolarthermie(
-                double[] waermebedarf, double[] strahlung, double flaeche, double wirkungsgrad)
+        public (double produktion, double restbedarf, double ueberschuss) BerechneSolarthermie(double waermebedarf, double strahlung, double flaeche, double h0, double k1, double k2, double kdir50, double tStorage, double ta, double Neigung, double cosTheta, double Leitungsverluste)
         {
-            int stunden = 8760;
-            double[] produktion = new double[stunden];
-            double[] restbedarf = new double[stunden];
-            double[] ueberschuss = new double[stunden];
+            double produktion;
+            double restbedarf;
+            double ueberschuss;
 
-            for (int i = 0; i < stunden; i++)
-            {
-                // Berechnung der potenziellen Produktion in Watt (bzw. Wh pro Stunde)
-                 
-                double potenzielleErzeugung = flaeche * wirkungsgrad * strahlung[i] / 1000; //kW
+            // Berechnung der potenziellen Produktion in Watt (bzw. Wh pro Stunde)
+            double wirkungsgrad = CalculateThermalPower(strahlung, ta, tStorage, cosTheta, h0, k1, k2, kdir50);
+            double potenzielleErzeugung = flaeche * wirkungsgrad; 
+   
+            potenzielleErzeugung /= 1000; // kW
+ 
+            // Wir können nicht mehr produzieren, als aktuell benötigt wird 
+            // (vorausgesetzt es gibt keinen Speicher in dieser Basissimulation)
+            produktion = Math.Min(potenzielleErzeugung, waermebedarf);
+            ueberschuss = Math.Max(0, potenzielleErzeugung - waermebedarf);
 
-                // Wir können nicht mehr produzieren, als aktuell benötigt wird 
-                // (vorausgesetzt es gibt keinen Speicher in dieser Basissimulation)
-                produktion[i] = Math.Min(potenzielleErzeugung, waermebedarf[i]);
-                ueberschuss[i] = Math.Max(0, potenzielleErzeugung - waermebedarf[i]);
-
-                // Der verbleibende Bedarf
-                restbedarf[i] = Math.Max(0, waermebedarf[i] - produktion[i]);
-            }
-
+            // Der verbleibende Bedarf
+            restbedarf = Math.Max(0, waermebedarf - produktion);
             return (produktion, restbedarf, ueberschuss);
+        }
+
+        // Add this helper method to the SolarCalculator class or as a private static method in the same file
+        public double Clamp(double value, double min, double max)
+        {
+            if (value < min) return min;
+            if (value > max) return max;
+            return value;
+        }
+
+        public double CalculateThermalPower(double gTilted, double tAmb, double tStorage,
+                                    double cosTheta, double h0, double a1, double a2, double kDir50)
+        {
+            if (gTilted <= 0) return 0;
+
+            // 1. Berechnung des IAM (Incident Angle Modifier) aus Kdir(50)
+            // b0 ist der physikalische Parameter für die Glascharakteristik
+            double thetaRad = Math.Acos(Clamp(cosTheta, 0, 1));
+            double b0 = (1.0 - kDir50) / (1.0 / Math.Cos(50.0 * (Math.PI / 180.0)) - 1.0);
+
+            // IAM Faktor: Korrekturwert zwischen 0.0 und 1.0
+            double iam = 1.0 - b0 * (1.0 / Math.Cos(thetaRad) - 1.0);
+            iam = Clamp(iam, 0.0, 1.0);
+
+            // 2. Deine Wirkungsgrad-Formel (angepasst um den Winkel-Korrekturfaktor iam)
+            // h0 wird durch iam reduziert, da weniger Licht den Absorber erreicht.
+            double h0_effektiv = h0 * iam;
+            double dT = tStorage - tAmb;
+
+            // Deine Formel: h0_eff - (a1 * dT / G) - (a2 * dT² / G)
+            double aktuellerWirkungsgrad = h0_effektiv - (a1 * dT / gTilted) - (a2 * dT * dT / gTilted);
+    
+            // 3. Umrechnung in Leistung (Watt pro m²)
+            double leistungProQuadratmeter = gTilted * aktuellerWirkungsgrad;
+
+            // 4. Physikalische Plausibilität: Wenn Verluste > Gewinn, dann keine Leistung
+            if (leistungProQuadratmeter < 0) leistungProQuadratmeter = 0;
+
+            return leistungProQuadratmeter;
+        }
+
+        public double GetProjectionFactor(double sunAlphaDeg, double sunAzimuthDeg,
+                                         double moduleTiltDeg, double moduleAzimuthDeg)
+        {
+            double a = sunAlphaDeg * Math.PI / 180.0;
+            double b = moduleTiltDeg * Math.PI / 180.0;
+            double gs = sunAzimuthDeg * Math.PI / 180.0;
+            gs = sunAzimuthDeg; 
+            double gm = moduleAzimuthDeg * Math.PI / 180.0;
+
+            // Der Kosinus des Einfallswinkels (Theta)
+            double cosTheta = Math.Sin(a) * Math.Cos(b) +
+                              Math.Cos(a) * Math.Sin(b) * Math.Cos(gs - gm);
+
+            // Wenn cosTheta < 0, steht die Sonne hinter dem Modul
+            return Math.Max(0, cosTheta);
         }
     }
 
