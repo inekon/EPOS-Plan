@@ -183,6 +183,7 @@ public static class SolarCalculator
     private const double Deg2Rad = Math.PI / 180.0;
     private const double Rad2Deg = 180.0 / Math.PI;
     public static double sonnenwinkel;
+    public static double sonnen_azimut;
 
     /// <param name="dni">Gb(n) - Direct Normal Irradiance aus PVGIS</param>
     /// <param name="dhi">Gd(h) - Diffuse Horizontal Irradiance aus PVGIS</param>
@@ -209,6 +210,7 @@ public static class SolarCalculator
                            (Math.Cos(alpha) * Math.Cos(Lat * Deg2Rad));
         double gammaS = Math.Acos(Clamp(cosGammaS, -1.0, 1.0));
         if (omega < 0) gammaS = -gammaS;
+        sonnen_azimut = gammaS;
 
         // 3. Einfallswinkel auf Modul
         double cosTheta = Math.Sin(alpha) * Math.Cos(Tilt * Deg2Rad) +

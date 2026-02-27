@@ -11,14 +11,15 @@ namespace WindowsFormsApplication1
     using System.Windows.Forms;
     using System.Windows.Forms.DataVisualization.Charting;
 
-    public class ChartInteractor
+    public class ChartMouseWheel
     {
         public string szToolTipUnit = "";
         private readonly Chart _chart;
         private readonly ToolTip _toolTip = new ToolTip();
         private DataPoint _lastPoint = null;
+        public bool UseYearlyHourAxis { get; set; } = true;
 
-        public ChartInteractor(Chart chart)
+        public ChartMouseWheel(Chart chart)
         {
             _chart = chart;
             InitializeSettings();
@@ -101,25 +102,6 @@ namespace WindowsFormsApplication1
                 xAxis.IntervalType = DateTimeIntervalType.Months;
                 xAxis.Interval = 1;
                 _chart.ChartAreas[0].AxisX.Title = "Monate";
-            }
-        }
-
-        private void UpdateAxisLabels(Axis xAxis)
-        {
-            double currentSize = xAxis.ScaleView.Size;
-            if (double.IsNaN(currentSize)) currentSize = xAxis.Maximum - xAxis.Minimum;
-
-            if (currentSize <= 31) // Weniger als 1 Monat
-            {
-                xAxis.LabelStyle.Format = "dd.MM.";
-                xAxis.LabelStyle.IsStaggered = true;
-                xAxis.Title = "Tage";
-            }
-            else
-            {
-                xAxis.LabelStyle.Format = "%M";
-                xAxis.LabelStyle.IsStaggered = false;
-                xAxis.Title = "Monate";
             }
         }
 
