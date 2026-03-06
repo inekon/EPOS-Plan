@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-using System.Windows.Media;
+//using System.Windows.Media;
 using Color = System.Drawing.Color;
 using HorizontalAlignment = System.Windows.Forms.HorizontalAlignment;
 
@@ -1016,16 +1016,22 @@ namespace WindowsFormsApplication1
             var x = ScottPlot.Generate.Consecutive(8760);
 
             // --- LINKS: Energie-Flächen (kWh) ---
-            var f1 = formsPlot1.Plot.Add.FillY(x, sim.simulation_solarthermie.Waermebedarf, new double[sim.simulation_solarthermie.Waermebedarf.Length]);
-            f1.FillStyle.Color = ScottPlot.Colors.Gray.WithAlpha(0.1);
+            formsPlot1.Plot.FigureBackground.Color = ScottPlot.Colors.White;
+            formsPlot1.Plot.DataBackground.Color = ScottPlot.Colors.White;
+            //var f1 = formsPlot1.Plot.Add.FillY(x, sim.simulation_solarthermie.Waermebedarf, new double[sim.simulation_solarthermie.Waermebedarf.Length]);
+            var f1 = formsPlot1.Plot.Add.Signal(sim.simulation_solarthermie.Waermebedarf);
+            f1.Color = Colors.Red;
+            f1.LineStyle.Width = 1;
             f1.LegendText = "Bedarf";
-
+            
             var f2 = formsPlot1.Plot.Add.FillY(x, res.Solar, new double[res.Solar.Length]);
-            f2.FillStyle.Color = ScottPlot.Colors.Green.WithAlpha(0.6);
+            f2.FillStyle.Color = ScottPlot.Colors.Green;
+            f2.LineStyle.Width = 0;
             f2.LegendText = "Solar-Deckung";
-
+    
             var f3 = formsPlot1.Plot.Add.FillY(x, res.Rest, new double[res.Rest.Length] );
-            f3.FillStyle.Color = ScottPlot.Colors.Red.WithAlpha(0.5);
+            f3.FillStyle.Color = ScottPlot.Colors.Blue.WithAlpha(0.5);
+            f3.LineStyle.Width = 0;
             f3.LegendText = $"Nachheizung ({res.Deckung:F1}%)";
 
             // --- RECHTS: Speicher-Temperatur (°C) ---
