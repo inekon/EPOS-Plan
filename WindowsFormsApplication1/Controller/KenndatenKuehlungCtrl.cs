@@ -68,10 +68,10 @@ namespace WindowsFormsApplication1
                     DBReader.Close();
                 }
 
-                NumberFormatInfo formatInfo = new NumberFormatInfo();
-                formatInfo.NumberDecimalSeparator = "."; // Komma als Dezimaltrennzeichen
-
-                DBCommand.CommandText = "INSERT INTO Tab_Kenndaten_Kuehlung ( ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, Last ) SELECT " + m_ID + " AS Ausdr1, " + m_ID_WP + " AS Ausdr2, " + m_nVorlauf + " AS Ausdr3, " + m_nTemperatur + " AS Ausdr4, " + m_nCOP.ToString("F2", formatInfo) + " AS Ausdr5, " + m_nPkuehl.ToString("F2", formatInfo) + " AS Ausdr6, " + m_nLast.ToString() + " AS Ausdr7";
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    INSERT INTO Tab_Kenndaten_Kuehlung (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, Last) 
+                    SELECT {m_ID}, {m_ID_WP}, {m_nVorlauf}, {m_nTemperatur}, {m_nCOP:F2}, {m_nPkuehl:F2}, {m_nLast}");
+                
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)
@@ -93,7 +93,14 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                DBCommand.CommandText = "UPDATE Tab_Kenndaten_Kuehlung SET ID_WP=" + m_ID_WP + "', Vorlauf=" + m_nVorlauf + ", Temperatur=" + m_nTemperatur + ", COP=" + m_nCOP + ", Ptherm=" + m_nPkuehl;
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    UPDATE Tab_Kenndaten_Kuehlung 
+                    SET ID_WP = {m_ID_WP}, 
+                        Vorlauf = {m_nVorlauf}, 
+                        Temperatur = {m_nTemperatur}, 
+                        COP = {m_nCOP:F2}, 
+                        Pkuehl = {m_nPkuehl:F2}");
+
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

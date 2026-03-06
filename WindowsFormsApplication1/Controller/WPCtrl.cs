@@ -31,12 +31,22 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                string sql = "UPDATE Tab_WP SET Firma='" + Firma + "', Beschreibung='" + Beschreibung + "', " +
-                "Typ='" + Typ + "', Baujahr=" + Baujahr.ToString() + ", Aufstellung='" + Aufstellung + "', " +
-                "Nennleistung=" + Nennleistung.ToString() + ", maxPTherm=" + maxPTherm.ToString() + ", " +
-                "Heizung=" + Heizung.ToString() + ", Regelung='" + Regelung + "', Modulkosten=" + Modulkosten.ToString() + 
-                " WHERE WPName='" + WPName + "'";
-            
+               string sql = FormattableString.Invariant($@"
+                    UPDATE Tab_WP 
+                    SET 
+                        Firma = '{Firma}', 
+                        Beschreibung = '{Beschreibung}', 
+                        Typ = '{Typ}', 
+                        Baujahr = {Baujahr}, 
+                        Aufstellung = '{Aufstellung}', 
+                        Nennleistung = {Nennleistung}, 
+                        maxPTherm = {maxPTherm}, 
+                        Heizung = {Heizung}, 
+                        Regelung = '{Regelung}', 
+                        Modulkosten = {Modulkosten} 
+                    WHERE 
+                        WPName = '{WPName}'");
+
                 DBCommand.CommandText = sql;
                 DBCommand.ExecuteNonQuery();
             }
@@ -97,15 +107,28 @@ namespace WindowsFormsApplication1
                     DBReader.Close();
                 }
 
-                NumberFormatInfo formatInfo = new NumberFormatInfo();
-                formatInfo.NumberDecimalSeparator = "."; // Komma als Dezimaltrennzeichen
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    INSERT INTO TAB_WP 
+                    (
+                        ID_WP, WPName, Firma, Beschreibung, Typ, 
+                        Baujahr, Aufstellung, Nennleistung, maxPTherm, 
+                        Heizung, Regelung, Modulkosten, Kuehlleistung
+                    ) 
+                    SELECT 
+                        {ID}, 
+                        '{WPName}', 
+                        '{Firma}', 
+                        '{Beschreibung}', 
+                        '{Typ}', 
+                        {Baujahr}, 
+                        '{Aufstellung}', 
+                        {Nennleistung}, 
+                        {maxPTherm}, 
+                        {Heizung}, 
+                        '{Regelung}', 
+                        {Modulkosten}, 
+                        {Kuehlleistung:F2}");
 
-                DBCommand.CommandText = "INSERT INTO TAB_WP ( ID_WP, WPName, Firma, Beschreibung, Typ, Baujahr, Aufstellung," +
-                "Nennleistung, maxPTherm, Heizung, Regelung, Modulkosten, Kuehlleistung )" +
-                "SELECT " + ID.ToString() + " AS Ausdr1, '" + WPName + "' AS Ausdr2,'" + Firma  + "' AS Ausdr12, '" + Beschreibung + "' AS Ausdr3, '" +
-                Typ + "' AS Ausdr4, " + Baujahr.ToString() + " AS Ausdr5, '" + Aufstellung + "' AS Ausdr6, " +
-                Nennleistung.ToString() + " AS Ausdr7, " + maxPTherm.ToString() + " AS Ausdr8, " + Heizung + " AS Ausdr9, '" +
-                Regelung + "' AS Ausdr10, " + Modulkosten.ToString() + " AS Ausdr11, " + Kuehlleistung.ToString("F2", formatInfo) + " AS Ausdr13";
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

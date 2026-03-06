@@ -179,30 +179,32 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                string sql = "UPDATE Tab_BHKW SET Beschreibung='" + model.m_szBeschreibung + "'" +
-                    ", Firma = '" + model.m_szFirma + "'" +
-                    ", Motortyp = '" + model.m_szMotortyp + "'" +
-                    ", Ptherm=" + model.m_Ptherm.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Brennstoff=" + model.m_Brennstoff +
-                    ", Wirkungsgrad=" + model.m_Wirkungsgrad.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Investition_kwel= " + model.m_Investition_KWel.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Raumbedarf= " + model.m_Raumbedarf.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Wartungskosten_kwhel= " + model.m_Wartungskosten_kWhel.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Nutzungsdauer= " + model.m_Nutzungsdauer.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", CO2= " + model.m_CO2.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", SO2= " + model.m_SO2.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", NOx= " + model.m_NOx.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", CO= " + model.m_CO.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Staub= " + model.m_Staub.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Grenzleistung= " + model.m_Grenzleistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Kosten_Modul= " + model.m_Kosten_Modul.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Kosten_Montage= " + model.m_Kosten_Montage.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Kosten_Lieferung= " + model.m_Kosten_Lieferung.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Kosten_Schallschutzhaube= " + model.m_Kosten_Schallschutzhaube.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Kosten_Abgasreinigung= " + model.m_Kosten_Abgasreinigung.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    " WHERE Bezeichner='" + model.m_szBezeichner + "'";
+               FormattableString sql = $@"
+                    UPDATE Tab_BHKW SET 
+                        Beschreibung = '{model.m_szBeschreibung}',
+                        Firma = '{model.m_szFirma}',
+                        Motortyp = '{model.m_szMotortyp}',
+                        Ptherm = {model.m_Ptherm:0.00},
+                        Brennstoff = {model.m_Brennstoff},
+                        Wirkungsgrad = {model.m_Wirkungsgrad:0.00},
+                        Investition_kwel = {model.m_Investition_KWel:0.00},
+                        Raumbedarf = {model.m_Raumbedarf:0.00},
+                        Wartungskosten_kwhel = {model.m_Wartungskosten_kWhel:0.00},
+                        Nutzungsdauer = {model.m_Nutzungsdauer:0.00},
+                        CO2 = {model.m_CO2:0.00},
+                        SO2 = {model.m_SO2:0.00},
+                        NOx = {model.m_NOx:0.00},
+                        CO = {model.m_CO:0.00},
+                        Staub = {model.m_Staub:0.00},
+                        Grenzleistung = {model.m_Grenzleistung:0.00},
+                        Kosten_Modul = {model.m_Kosten_Modul:0.00},
+                        Kosten_Montage = {model.m_Kosten_Montage:0.00},
+                        Kosten_Lieferung = {model.m_Kosten_Lieferung:0.00},
+                        Kosten_Schallschutzhaube = {model.m_Kosten_Schallschutzhaube:0.00},
+                        Kosten_Abgasreinigung = {model.m_Kosten_Abgasreinigung:0.00}
+                    WHERE Bezeichner = '{model.m_szBezeichner}';";
 
-                DBCommand.CommandText = sql;
+                DBCommand.CommandText = sql.ToString(CultureInfo.InvariantCulture);
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

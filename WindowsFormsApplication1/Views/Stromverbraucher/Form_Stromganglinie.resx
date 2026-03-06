@@ -136,10 +136,6 @@
   <data name="&gt;&gt;Label2.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 4, 3, 4</value>
-  </data>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="Label2.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -149,6 +145,9 @@
   </data>
   <data name="&gt;&gt;listBox_Extern.Type" xml:space="preserve">
     <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="listBox_Extern.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
   </data>
   <data name="&gt;&gt;btn_Bearbeiten.ZOrder" xml:space="preserve">
     <value>0</value>
@@ -183,7 +182,7 @@
   <data name="&gt;&gt;listBox_Auswahl.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="textBox_Name.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="btn_Abbrechen.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="&gt;&gt;listBox_Auswahl.ZOrder" xml:space="preserve">
@@ -191,9 +190,6 @@
   </data>
   <data name="btn_Hilfe.Text" xml:space="preserve">
     <value>Hilfe</value>
-  </data>
-  <data name="listBox_Extern.Location" type="System.Drawing.Point, System.Drawing">
-    <value>401, 36</value>
   </data>
   <data name="btn_Entfernen.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -204,6 +200,7 @@
   <data name="listBox_Extern.HorizontalScrollbar" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="btn_OK.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
   </data>
@@ -222,8 +219,8 @@
   <data name="btn_Entfernen.Text" xml:space="preserve">
     <value>--&gt;</value>
   </data>
-  <data name="Label3.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
+  <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 4, 3, 4</value>
   </data>
   <data name="btn_Hinzufuegen.Text" xml:space="preserve">
     <value>&lt;--</value>
@@ -238,19 +235,16 @@
     <value>OK</value>
   </data>
   <data name="&gt;&gt;btn_OK.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>8</value>
   </data>
   <data name="btn_Entfernen.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
   </data>
-  <data name="Label1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
+  <data name="textBox_Name.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
     <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="btn_Bearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten...</value>
   </data>
   <data name="btn_Entfernen.Location" type="System.Drawing.Point, System.Drawing">
     <value>300, 117</value>
@@ -279,6 +273,9 @@
   <data name="&gt;&gt;Label2.Name" xml:space="preserve">
     <value>Label2</value>
   </data>
+  <data name="&gt;&gt;btn_Hilfe.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="btn_OK.Location" type="System.Drawing.Point, System.Drawing">
     <value>567, 304</value>
   </data>
@@ -306,11 +303,17 @@
   <data name="btn_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
     <value>97, 31</value>
   </data>
+  <data name="&gt;&gt;btn_Abbrechen.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
   <data name="&gt;&gt;Label3.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btn_Bearbeiten.Parent" xml:space="preserve">
     <value>$this</value>
+  </data>
+  <data name="Label3.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
   </data>
   <data name="btn_Hilfe.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -323,9 +326,6 @@
   </data>
   <data name="listBox_Auswahl.HorizontalScrollbar" type="System.Boolean, mscorlib">
     <value>True</value>
-  </data>
-  <data name="&gt;&gt;Label3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;btn_Hinzufuegen.Parent" xml:space="preserve">
     <value>$this</value>
@@ -341,9 +341,6 @@
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>678, 345</value>
-  </data>
-  <data name="Label1.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
   </data>
   <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>146, 19</value>
@@ -381,8 +378,8 @@
   <data name="btn_Abbrechen.Text" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
-  <data name="&gt;&gt;Label2.ZOrder" xml:space="preserve">
-    <value>7</value>
+  <data name="Label3.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
   </data>
   <data name="&gt;&gt;btn_Abbrechen.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -390,7 +387,7 @@
   <data name="&gt;&gt;btn_Hilfe.Name" xml:space="preserve">
     <value>btn_Hilfe</value>
   </data>
-  <data name="btn_Abbrechen.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="Label1.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="btn_Bearbeiten.Location" type="System.Drawing.Point, System.Drawing">
@@ -399,8 +396,8 @@
   <data name="btn_Abbrechen.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
   </data>
-  <data name="listBox_Extern.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+  <data name="btn_Bearbeiten.Text" xml:space="preserve">
+    <value>Bearbeiten...</value>
   </data>
   <data name="btn_Hilfe.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -408,8 +405,8 @@
   <data name="btn_OK.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="&gt;&gt;btn_Abbrechen.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;Label3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="btn_Hilfe.Location" type="System.Drawing.Point, System.Drawing">
     <value>23, 304</value>
@@ -417,8 +414,8 @@
   <data name="Label3.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;btn_Hilfe.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Label1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
   <data name="btn_Hinzufuegen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
@@ -426,8 +423,11 @@
   <data name="btn_Abbrechen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
   </data>
-  <data name="Label3.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
+  <data name="listBox_Extern.Location" type="System.Drawing.Point, System.Drawing">
+    <value>401, 36</value>
+  </data>
+  <data name="&gt;&gt;btn_Abbrechen.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="&gt;&gt;Label3.ZOrder" xml:space="preserve">
     <value>10</value>
@@ -495,8 +495,8 @@
   <data name="btn_Hinzufuegen.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="&gt;&gt;btn_Abbrechen.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="&gt;&gt;Label2.ZOrder" xml:space="preserve">
+    <value>7</value>
   </data>
   <data name="&gt;&gt;btn_Bearbeiten.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -506,8 +506,5 @@
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
-  </metadata>
-  <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>de-DE</value>
   </metadata>
 </root>

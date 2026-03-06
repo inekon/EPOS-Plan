@@ -29,10 +29,13 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                NumberFormatInfo formatInfo = new NumberFormatInfo();
-                formatInfo.NumberDecimalSeparator = "."; // Komma als Dezimaltrennzeichen
-                DBCommand.CommandText = "UPDATE Z_Projekt_Stromverbraucher SET Summe=" + dSumme.ToString("F2",formatInfo) + 
-                    " WHERE Bezeichner='" + szBezeichner + "' and ID_Projekt=" + IDProjekt;
+    
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    UPDATE Z_Projekt_Stromverbraucher 
+                    SET Summe = {dSumme:F2} 
+                    WHERE Bezeichner = '{szBezeichner}' 
+                      AND ID_Projekt = {IDProjekt}");
+                
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

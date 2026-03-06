@@ -117,26 +117,45 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Name:</value>
-  </data>
-  <data name="Label6.Text" xml:space="preserve">
-    <value>Description:</value>
+  <data name="btn_Kollektor_DB_Edit.Text" xml:space="preserve">
+    <value>Change collector in DB...</value>
   </data>
   <data name="btn_Kollektor_DB_neu.Text" xml:space="preserve">
     <value>New collector in DB...</value>
   </data>
-  <data name="Label9.Text" xml:space="preserve">
-    <value>m²</value>
+  <data name="btn_Kollektor_DB_loeschen.Text" xml:space="preserve">
+    <value>Delete collector in DB</value>
   </data>
-  <data name="btn_OK.Text" xml:space="preserve">
-    <value>OK</value>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="Label11.Size" type="System.Drawing.Size, System.Drawing">
+    <value>93, 17</value>
+  </data>
+  <data name="Label11.Text" xml:space="preserve">
+    <value>Collector area:</value>
+  </data>
+  <data name="Label5.Text" xml:space="preserve">
+    <value>Collector:</value>
+  </data>
+  <data name="Label6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 17</value>
+  </data>
+  <data name="Label6.Text" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="Label7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 17</value>
   </data>
   <data name="Label7.Text" xml:space="preserve">
     <value>Manufacturer:</value>
   </data>
-  <data name="btn_Kollektor_DB_loeschen.Text" xml:space="preserve">
-    <value>Delete collector in DB</value>
+  <data name="Label8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 17</value>
+  </data>
+  <data name="Label8.Text" xml:space="preserve">
+    <value>Apertur area:</value>
+  </data>
+  <data name="label3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 17</value>
   </data>
   <data name="label3.Text" xml:space="preserve">
     <value>Selection in DB:</value>
@@ -144,25 +163,10 @@
   <data name="btn_Abbrechen.Text" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="Label5.Text" xml:space="preserve">
-    <value>Collector:</value>
-  </data>
-  <data name="Label8.Text" xml:space="preserve">
-    <value>Module area:</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Entering the solar panels</value>
-  </data>
   <data name="label_Type.Text" xml:space="preserve">
     <value>Entering the solar panels</value>
   </data>
-  <data name="Label12.Text" xml:space="preserve">
-    <value>m²</value>
-  </data>
-  <data name="Label11.Text" xml:space="preserve">
-    <value>Collector area:</value>
-  </data>
-  <data name="btn_Kollektor_DB_Edit.Text" xml:space="preserve">
-    <value>Change collector in DB...</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Administration Solar panels</value>
   </data>
 </root>

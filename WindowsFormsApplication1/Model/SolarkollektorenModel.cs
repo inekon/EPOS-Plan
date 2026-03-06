@@ -20,10 +20,8 @@ namespace WindowsFormsApplication1
         public double m_h0;
         public double m_k1;
         public double m_k2;
-        public double m_C;
         public double m_Kdir;
         public double m_Kdfu;
-        public double m_Ertrag;
         public double m_Kosten;
         public double m_Vorlauf;
         public double m_Ruecklauf;
@@ -41,10 +39,8 @@ namespace WindowsFormsApplication1
             m_h0 = 0;
             m_k1 = 0;
             m_k2 = 0;
-            m_C = 0;
             m_Kdir = 0;
             m_Kdfu = 0;
-            m_Ertrag = 0;
             m_Kosten = 0;
             m_Vorlauf = 0;  
             m_Ruecklauf = 0;

@@ -35,13 +35,27 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                DBCommand.CommandText =
-                "UPDATE Tab_Energieanlagen SET ID_Projekt=" + ID_Projekt + "', Bezeichner='" + Bezeichner + "'" +
-                " ID_Type=" + ID_Type + ", ID_WP=" + ID_WP + "' Betriebsart='" + Betriebsart + "'" +
-                " Sperrung=" + Sperrung + ", Sperrzeit_von=" + Sperrzeit_von + " Sperrzeit_bis=" + Sperrzeit_bis +
-                " Vorlauf=" + Vorlauf + ", Ruecklauf=" + Ruecklauf + " Bivalenter_Betrieb=" + Bivalenter_Betrieb +
-                " Abschaltpunkt=" + Abschaltpunkt + ", Nutzungszeit=" + Nutzungszeit + ", ID_SP=" + ID_SP +
-                " ID_PV=" + ID_PV + ", ID_Solar=" + ID_Solar;
+
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    UPDATE Tab_Energieanlagen 
+                    SET 
+                        ID_Projekt = {ID_Projekt}, 
+                        Bezeichner = '{Bezeichner}', 
+                        ID_Type = {ID_Type}, 
+                        ID_WP = {ID_WP}, 
+                        Betriebsart = '{Betriebsart}', 
+                        Sperrung = {Sperrung}, 
+                        Sperrzeit_von = {Sperrzeit_von}, 
+                        Sperrzeit_bis = {Sperrzeit_bis}, 
+                        Vorlauf = {Vorlauf}, 
+                        Ruecklauf = {Ruecklauf}, 
+                        Bivalenter_Betrieb = {Bivalenter_Betrieb}, 
+                        Abschaltpunkt = {Abschaltpunkt}, 
+                        Nutzungszeit = {Nutzungszeit}, 
+                        ID_SP = {ID_SP}, 
+                        ID_PV = {ID_PV}, 
+                        ID_Solar = {ID_Solar}");
+
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)
@@ -122,16 +136,34 @@ namespace WindowsFormsApplication1
                     DBReader.Close();
                 }
 
-                DBCommand.CommandText =
-                    "INSERT INTO TAB_WP ( ID,ID_Projekt,Bezeichner,ID_Type,ID_WP,Betriebsart,Sperrung," +
-                    "Sperrzeit_von,Sperrzeit_bis,Vorlauf,Ruecklauf,Bivalenter_Betrieb,Abschaltpunkt,Nutzungszeit," +
-                    "ID_SP,ID_WP,ID_Solar) SELECT " + ID + " AS Ausdr1, " + ID_Projekt + " AS Ausdr2, '" +
-                    Bezeichner + "' AS Ausdr3, " + ID_Type + " AS Ausdr4 , " + ID_WP + " AS Ausdr5, '" + Betriebsart + "' AS Ausdr6, " +
-                    Sperrung + " AS Ausdr7, " + Sperrzeit_von + " AS Ausdr8, " + Sperrzeit_bis + " AS Ausdr9, "
-                    + Vorlauf + " AS Ausdr10, " + Ruecklauf + " AS Ausdr11, " + Bivalenter_Betrieb + " AS Ausdr12," +
-                    + Abschaltpunkt + " AS Ausdr13, " + Nutzungszeit + " AS Ausdr14, " + ID_SP + " AS Ausdr15," +
-                    + ID_PV + " AS Ausdr16," + ID_Solar + " AS Ausdr17";
-                 DBCommand.ExecuteNonQuery();
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    INSERT INTO TAB_WP 
+                    (
+                        ID, ID_Projekt, Bezeichner, ID_Type, ID_WP, 
+                        Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis, 
+                        Vorlauf, Ruecklauf, Bivalenter_Betrieb, Abschaltpunkt, 
+                        Nutzungszeit, ID_SP, ID_PV, ID_Solar
+                    ) 
+                    SELECT 
+                        {ID}, 
+                        {ID_Projekt}, 
+                        '{Bezeichner}', 
+                        {ID_Type}, 
+                        {ID_WP}, 
+                        '{Betriebsart}', 
+                        {Sperrung}, 
+                        {Sperrzeit_von}, 
+                        {Sperrzeit_bis}, 
+                        {Vorlauf}, 
+                        {Ruecklauf}, 
+                        {Bivalenter_Betrieb}, 
+                        {Abschaltpunkt}, 
+                        {Nutzungszeit}, 
+                        {ID_SP}, 
+                        {ID_PV}, 
+                        {ID_Solar}");
+
+                DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)
             {

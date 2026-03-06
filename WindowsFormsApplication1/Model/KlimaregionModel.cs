@@ -12,6 +12,7 @@ namespace WindowsFormsApplication1
         public string m_szName;
         public double Longitude;
         public double Latitude;
+        public string Details;
         public int rows;
 
         public KlimaregionModel()
@@ -20,12 +21,9 @@ namespace WindowsFormsApplication1
             m_ID_Klimaregion = 0;
             m_szName = "";
             Longitude = 0;
-            Latitude = 0;    
+            Latitude = 0;
+            Details = "";
             rows = 0;
         }
-
-
     }
-
- 
 }

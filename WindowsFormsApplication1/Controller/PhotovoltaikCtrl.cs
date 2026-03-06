@@ -101,19 +101,22 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                string sql = "UPDATE Tab_PV SET " +
-                    " Firma = '" + model.m_szFirma + "'" +
-                    ", Beschreibung = '" + model.m_szBeschreibung + "'" +
-                    ", Leistung=" + model.m_Leistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Wirkungsgrad=" + model.m_Wirkungsgrad.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", U_Mpp=" + model.m_U_Mpp.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", U_Leerlauf=" + model.m_U_Leerlauf.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", I_Mpp=" + model.m_I_Mpp.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", I_Kurzschluss=" + model.m_I_Kurzschluss.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Temp_Coeff_Pmax=" + model.m_Temp_Coeff_Pmax.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Laenge=" + model.m_Laenge.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Breite=" + model.m_Breite.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    " WHERE Modulname='" + model.m_szName + "'";
+                string sql = FormattableString.Invariant($@"
+                    UPDATE Tab_PV 
+                    SET 
+                        Firma = '{model.m_szFirma}', 
+                        Beschreibung = '{model.m_szBeschreibung}', 
+                        Leistung = {model.m_Leistung}, 
+                        Wirkungsgrad = {model.m_Wirkungsgrad}, 
+                        U_Mpp = {model.m_U_Mpp}, 
+                        U_Leerlauf = {model.m_U_Leerlauf}, 
+                        I_Mpp = {model.m_I_Mpp}, 
+                        I_Kurzschluss = {model.m_I_Kurzschluss}, 
+                        Temp_Coeff_Pmax = {model.m_Temp_Coeff_Pmax}, 
+                        Laenge = {model.m_Laenge}, 
+                        Breite = {model.m_Breite} 
+                    WHERE 
+                        Modulname = '{model.m_szName}'");
 
                 DBCommand.CommandText = sql;
                 DBCommand.ExecuteNonQuery();

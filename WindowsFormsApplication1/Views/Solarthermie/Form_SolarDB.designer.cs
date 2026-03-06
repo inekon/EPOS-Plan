@@ -43,21 +43,15 @@ namespace WindowsFormsApplication1
             this.textBox_h0 = new System.Windows.Forms.TextBox();
             this.Label14 = new System.Windows.Forms.Label();
             this.Label15 = new System.Windows.Forms.Label();
-            this.Label16 = new System.Windows.Forms.Label();
             this.textBox_k1 = new System.Windows.Forms.TextBox();
             this.Label17 = new System.Windows.Forms.Label();
             this.textBox_k2 = new System.Windows.Forms.TextBox();
             this.Label18 = new System.Windows.Forms.Label();
-            this.textBox_C = new System.Windows.Forms.TextBox();
-            this.Label19 = new System.Windows.Forms.Label();
             this.Label20 = new System.Windows.Forms.Label();
             this.Label21 = new System.Windows.Forms.Label();
-            this.Label22 = new System.Windows.Forms.Label();
             this.textBox_Kdir = new System.Windows.Forms.TextBox();
             this.textBox_Kdiff = new System.Windows.Forms.TextBox();
-            this.textBox_Ertrag = new System.Windows.Forms.TextBox();
             this.Label23 = new System.Windows.Forms.Label();
-            this.Label24 = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.Label3 = new System.Windows.Forms.Label();
@@ -155,11 +149,6 @@ namespace WindowsFormsApplication1
             resources.ApplyResources(this.Label15, "Label15");
             this.Label15.Name = "Label15";
             // 
-            // Label16
-            // 
-            resources.ApplyResources(this.Label16, "Label16");
-            this.Label16.Name = "Label16";
-            // 
             // textBox_k1
             // 
             resources.ApplyResources(this.textBox_k1, "textBox_k1");
@@ -184,18 +173,6 @@ namespace WindowsFormsApplication1
             resources.ApplyResources(this.Label18, "Label18");
             this.Label18.Name = "Label18";
             // 
-            // textBox_C
-            // 
-            resources.ApplyResources(this.textBox_C, "textBox_C");
-            this.textBox_C.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_C.Name = "textBox_C";
-            this.textBox_C.TextChanged += new System.EventHandler(this.textBox_C_TextChanged);
-            // 
-            // Label19
-            // 
-            resources.ApplyResources(this.Label19, "Label19");
-            this.Label19.Name = "Label19";
-            // 
             // Label20
             // 
             resources.ApplyResources(this.Label20, "Label20");
@@ -205,11 +182,6 @@ namespace WindowsFormsApplication1
             // 
             resources.ApplyResources(this.Label21, "Label21");
             this.Label21.Name = "Label21";
-            // 
-            // Label22
-            // 
-            resources.ApplyResources(this.Label22, "Label22");
-            this.Label22.Name = "Label22";
             // 
             // textBox_Kdir
             // 
@@ -225,22 +197,10 @@ namespace WindowsFormsApplication1
             this.textBox_Kdiff.Name = "textBox_Kdiff";
             this.textBox_Kdiff.TextChanged += new System.EventHandler(this.textBox_Kdiff_TextChanged);
             // 
-            // textBox_Ertrag
-            // 
-            resources.ApplyResources(this.textBox_Ertrag, "textBox_Ertrag");
-            this.textBox_Ertrag.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox_Ertrag.Name = "textBox_Ertrag";
-            this.textBox_Ertrag.TextChanged += new System.EventHandler(this.textBox_Ertrag_TextChanged);
-            // 
             // Label23
             // 
             resources.ApplyResources(this.Label23, "Label23");
             this.Label23.Name = "Label23";
-            // 
-            // Label24
-            // 
-            resources.ApplyResources(this.Label24, "Label24");
-            this.Label24.Name = "Label24";
             // 
             // Label1
             // 
@@ -322,21 +282,15 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.textBox_h0);
             this.Controls.Add(this.Label14);
             this.Controls.Add(this.Label15);
-            this.Controls.Add(this.Label16);
             this.Controls.Add(this.textBox_k1);
             this.Controls.Add(this.Label17);
             this.Controls.Add(this.textBox_k2);
             this.Controls.Add(this.Label18);
-            this.Controls.Add(this.textBox_C);
-            this.Controls.Add(this.Label19);
             this.Controls.Add(this.Label20);
             this.Controls.Add(this.Label21);
-            this.Controls.Add(this.Label22);
             this.Controls.Add(this.textBox_Kdir);
             this.Controls.Add(this.textBox_Kdiff);
-            this.Controls.Add(this.textBox_Ertrag);
             this.Controls.Add(this.Label23);
-            this.Controls.Add(this.Label24);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.Label3);
@@ -370,21 +324,15 @@ private System.Windows.Forms.Label Label12;
 private System.Windows.Forms.TextBox textBox_h0;
 private System.Windows.Forms.Label Label14;
 private System.Windows.Forms.Label Label15;
-private System.Windows.Forms.Label Label16;
 private System.Windows.Forms.TextBox textBox_k1;
 private System.Windows.Forms.Label Label17;
 private System.Windows.Forms.TextBox textBox_k2;
 private System.Windows.Forms.Label Label18;
-private System.Windows.Forms.TextBox textBox_C;
-private System.Windows.Forms.Label Label19;
 private System.Windows.Forms.Label Label20;
 private System.Windows.Forms.Label Label21;
-private System.Windows.Forms.Label Label22;
 private System.Windows.Forms.TextBox textBox_Kdir;
 private System.Windows.Forms.TextBox textBox_Kdiff;
-private System.Windows.Forms.TextBox textBox_Ertrag;
 private System.Windows.Forms.Label Label23;
-private System.Windows.Forms.Label Label24;
 private System.Windows.Forms.Label Label1;
 private System.Windows.Forms.Label Label2;
 private System.Windows.Forms.Label Label3;

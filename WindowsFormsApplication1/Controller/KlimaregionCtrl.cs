@@ -30,7 +30,9 @@ namespace WindowsFormsApplication1
 
                 if (!DBReader.IsDBNull(0)) item.m_ID_Klimaregion = (int)DBReader.GetValue(0);
                 if (!DBReader.IsDBNull(1)) item.m_szName = DBReader.GetString(1);
-
+                if (!DBReader.IsDBNull(2)) item.Latitude = (double)DBReader.GetValue(2);
+                if (!DBReader.IsDBNull(3)) item.Longitude = (double)DBReader.GetValue(3);
+                if (!DBReader.IsDBNull(4)) item.Details = DBReader.GetString(4);
 
                 items[rows] = item;
                 item = null;
@@ -53,6 +55,7 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(1)) m_szName = DBReader.GetString(1);
                 if (!DBReader.IsDBNull(2)) Longitude = (double)DBReader.GetValue(2);
                 if (!DBReader.IsDBNull(3)) Latitude = (double)DBReader.GetValue(3);
+                if (!DBReader.IsDBNull(4)) Details = DBReader.GetString(4);
 
                 rows = 1;
             }
@@ -63,7 +66,7 @@ namespace WindowsFormsApplication1
         public bool Delete(string szName)
         {
             try
-            {
+            {DBCommand.CommandText =
                 DBCommand.CommandText = "DELETE * FROM Tab_Klimaregion where Name= '" + szName + "'";
                 DBCommand.ExecuteNonQuery();
             }
@@ -82,7 +85,7 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool Add(string szName, double Longitude, double Latitude)
+        public bool Add(string szName, double Longitude, double Latitude, string Details)
         {
             try
             {
@@ -102,11 +105,14 @@ namespace WindowsFormsApplication1
                     DBReader.Close();
                 }
 
-                DBCommand.CommandText = "INSERT INTO TAB_Klimaregion ( ID_Klimaregion, Name, Longitude, Latitude) " +
-                    "SELECT " +
-                     m_ID_Klimaregion + " AS Ausdr1, '" + szName + "' AS Ausdr2," +
-                     Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture) + " AS Ausdr3," +
-                     Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture) + " AS Ausdr4";
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    INSERT INTO TAB_Klimaregion (ID_Klimaregion, Name, Longitude, Latitude, Details) 
+                    SELECT 
+                        {m_ID_Klimaregion}, 
+                        '{szName}', 
+                        {Longitude}, 
+                        {Latitude}, 
+                        '{Details}'");
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

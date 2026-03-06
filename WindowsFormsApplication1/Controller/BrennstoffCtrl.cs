@@ -115,24 +115,27 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                string sql = "UPDATE [Tab_Heizkessel] SET Beschreibung='" + model.Beschreibung + "'" +
-                    ", Firma = '" + model.Firma + "'" +
-                    ", Ptherm=" + model.Ptherm.ToString(CultureInfo.CreateSpecificCulture("en-US"))  + ", Brennstoff=" + model.Brennstoff + 
-                    ", Wirkungsgrad_Gas=" + model.Wirkungsgrad_Gas.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Wirkungsgrad_Öl= " + model.Wirkungsgrad_Oel.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Investitionskosten= " + model.Investitionskosten.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Raumbedarf= " + model.Raumbedarf.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Wartungskosten= " + model.Wartungskosten.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Nutzungsdauer= " + model.Nutzungsdauer.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", CO2= " + model.CO2.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", SO2= " + model.SO2.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", NOx= " + model.NOx.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", CO= " + model.CO.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Staub= " + model.Staub.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Betriebsbereitschaftverlust= " + model.Betriebsbereitschaftverlust.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    " WHERE Name='" + model.Name + "'";
-                
-                DBCommand.CommandText = sql;
+                FormattableString sql = $@"
+                    UPDATE [Tab_Heizkessel] SET 
+                        Beschreibung = '{model.Beschreibung}',
+                        Firma = '{model.Firma}',
+                        Ptherm = {model.Ptherm:0.####},
+                        Brennstoff = {model.Brennstoff},
+                        Wirkungsgrad_Gas = {model.Wirkungsgrad_Gas:0.####},
+                        Wirkungsgrad_Öl = {model.Wirkungsgrad_Oel:0.####},
+                        Investitionskosten = {model.Investitionskosten:0.####},
+                        Raumbedarf = {model.Raumbedarf:0.####},
+                        Wartungskosten = {model.Wartungskosten:0.####},
+                        Nutzungsdauer = {model.Nutzungsdauer:0.####},
+                        CO2 = {model.CO2:0.####},
+                        SO2 = {model.SO2:0.####},
+                        NOx = {model.NOx:0.####},
+                        CO = {model.CO:0.####},
+                        Staub = {model.Staub:0.####},
+                        Betriebsbereitschaftverlust = {model.Betriebsbereitschaftverlust:0.####}
+                    WHERE Name = '{model.Name}';";
+
+                DBCommand.CommandText = sql.ToString(CultureInfo.InvariantCulture) ;
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

@@ -67,8 +67,11 @@ namespace WindowsFormsApplication1
                     m_ID_Ganglinie = (int)DBReader.GetValue(0) + 1;
                     DBReader.Close();
                 }
-                DBCommand.CommandText = "INSERT INTO Tab_Stromganglinie ( ID_GanglinieDaten, Bezeichner, Zeitinterval) SELECT " + m_ID_Ganglinie +
-                    " AS Ausdr1, '" + m_szBezeichner + "' AS Ausdr2, " + m_Zeitinterval + " AS Ausdr3";
+                
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    INSERT INTO Tab_Stromganglinie (ID_GanglinieDaten, Bezeichner, Zeitinterval) 
+                    SELECT {m_ID_Ganglinie}, '{m_szBezeichner}', {m_Zeitinterval}");
+                
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

@@ -118,51 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="$this.Text" xml:space="preserve">
-    <value>Eingabe der Solarkollektoren</value>
-  </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Name:</value>
-  </data>
-  <data name="Label6.Text" xml:space="preserve">
-    <value>Beschreibung:</value>
-  </data>
-  <data name="btn_Kollektor_DB_neu.Text" xml:space="preserve">
-    <value>Kollektor in DB neu...</value>
-  </data>
-  <data name="Label9.Text" xml:space="preserve">
-    <value>m²</value>
-  </data>
-  <data name="btn_OK.Text" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="Label7.Text" xml:space="preserve">
-    <value>Hersteller:</value>
-  </data>
-  <data name="btn_Kollektor_DB_loeschen.Text" xml:space="preserve">
-    <value>Kollektor in DB löschen</value>
-  </data>
-  <data name="label3.Text" xml:space="preserve">
-    <value>Auswahl in DB:</value>
-  </data>
-  <data name="btn_Abbrechen.Text" xml:space="preserve">
-    <value>Abbrechen</value>
-  </data>
-  <data name="Label5.Text" xml:space="preserve">
-    <value>Kollektor:</value>
-  </data>
-  <data name="Label8.Text" xml:space="preserve">
-    <value>Modulfläche:</value>
-  </data>
-  <data name="label_Type.Text" xml:space="preserve">
-    <value>Eingabe der Solarkollektoren</value>
-  </data>
-  <data name="Label12.Text" xml:space="preserve">
-    <value>m²</value>
-  </data>
-  <data name="Label11.Text" xml:space="preserve">
-    <value>Kollektorfläche:</value>
-  </data>
-  <data name="btn_Kollektor_DB_Edit.Text" xml:space="preserve">
-    <value>Kollektor in DB ändern...</value>
+    <value>Administration Solarkollektoren</value>
   </data>
 </root>

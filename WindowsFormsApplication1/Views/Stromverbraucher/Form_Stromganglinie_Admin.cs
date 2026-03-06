@@ -17,15 +17,15 @@ namespace WindowsFormsApplication1
         public DialogResult result = DialogResult.Cancel;
         public List<StromganglinieModel> DateiListe = new List<StromganglinieModel>();
         private ToolsClass tool = new ToolsClass();
-        string filename;
-        string filebasename;
+        string filename = "";
+        string filebasename = "";
+        string szAppDataPath = "";
 
         public Form_Stromganglinie_Admin ()
         {
             InitializeComponent();
- 
-            string szPath = Path.Combine(Program.ApplicationPath_User, "Strom");
-            textBox_Ordner.Text = szPath;
+
+            szAppDataPath = Path.Combine(Program.ApplicationPath_User, "Strom");
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
@@ -50,8 +50,7 @@ namespace WindowsFormsApplication1
                 DateiListe.Add(model);
             }
 
-            string szAppDataPath = Path.Combine(Program.ApplicationPath_User, "Strom");
-            textBox_Ordner.Text = szAppDataPath;
+            szAppDataPath = Path.Combine(Program.ApplicationPath_User, "Strom");
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
@@ -60,26 +59,11 @@ namespace WindowsFormsApplication1
             Close();
         }
 
-        private void GetDateiInfo(string dateiname)
-        {
-            textBox_Name.Text = dateiname + ".txt";
-            string szPath = Path.Combine(Program.ApplicationPath_User, "Strom");
-            szPath = Path.Combine(szPath, dateiname);
-        }
-
-        private void btn_Oeffnen_Click(object sender, EventArgs e)
-        {
-            ToolsClass tool = new ToolsClass();
-
-            string szAppDataPath = Path.Combine(Program.ApplicationPath_User, "Strom");
-            szAppDataPath = Path.Combine(szAppDataPath, textBox_Name.Text);
-            tool.OpenFileWithDefaultApp(szAppDataPath);
-        }
-
         private void btn_Loeschen_Click(object sender, EventArgs e)
         {
             StromganglinieCtrl ctrl_ganglinie = new StromganglinieCtrl();
             Z_ProjektStromganglinieCtrl ctrl = new Z_ProjektStromganglinieCtrl();
+            
             ctrl.ReadAll("Select * from Z_ProjektStromganglinie where Bezeichner ='" + listBox_Extern.Text + "'");
             if (ctrl.rows > 0)
             {
@@ -91,11 +75,15 @@ namespace WindowsFormsApplication1
             SetControls(); 
         }
 
-        private void btn_Datei_Click(object sender, EventArgs e)
+        private void btn_Einlesen_Click(object sender, EventArgs e)
         {
+            StromganglinieCtrl ctrl_ganglinie = new StromganglinieCtrl();
+            StromganglinieDatenCtrl ctrl = new StromganglinieDatenCtrl();
+            int Zeitinterval = 0;
+
             OpenFileDialog openFileDialog = new OpenFileDialog();
 
-            openFileDialog.InitialDirectory = textBox_Ordner.Text;
+            openFileDialog.InitialDirectory = szAppDataPath;
             openFileDialog.Filter = "(*.txt)|*.txt";
             openFileDialog.FilterIndex = 1;
             openFileDialog.RestoreDirectory = true;
@@ -107,24 +95,17 @@ namespace WindowsFormsApplication1
 
                 try
                 {
-                    string szQuelle = Path.Combine(textBox_Ordner.Text, filebasename);
-                    if (!File.Exists(textBox_Ordner.Text + "\\" + filebasename))
+                    string szQuelle = Path.Combine(szAppDataPath, filebasename);
+                    if (!File.Exists(szQuelle))
                     {
-                        File.Copy(filename, textBox_Ordner.Text + "\\" + filebasename, true);
+                        File.Copy(filename, szQuelle, true);
                     }
-                    textBox_Name.Text = textBox_Ordner.Text + "\\" + filebasename;
                 }
                 catch { }
             }
             openFileDialog = null;
-        }
 
-        private void btn_Einlesen_Click(object sender, EventArgs e)
-        {
-            StromganglinieCtrl ctrl_ganglinie = new StromganglinieCtrl();
-            StromganglinieDatenCtrl ctrl = new StromganglinieDatenCtrl();
-            int Zeitinterval = 0;
-            
+
             if (filebasename == "" || filebasename == null ) return;
             
             // Datei schon eingelesen?
@@ -135,7 +116,7 @@ namespace WindowsFormsApplication1
             }
 
             // Datei in Liste einlesen 
-            if (!tool.OpenText(textBox_Name.Text)) return;
+            if (!tool.OpenText(szAppDataPath + "\\" + filebasename)) return;
 
             // Anzahl Daten prüfen 
             if (comboBox_Zeitinterval.Text == "Stundenwerte") Zeitinterval = 1;

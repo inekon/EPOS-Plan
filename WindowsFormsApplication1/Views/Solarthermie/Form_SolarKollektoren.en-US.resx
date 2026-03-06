@@ -127,11 +127,17 @@
     <value>Delete collector in DB</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 71</value>
+  </data>
   <data name="Label10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>136, 17</value>
+    <value>65, 17</value>
   </data>
   <data name="Label10.Text" xml:space="preserve">
-    <value>Number of modules:</value>
+    <value>Modules:</value>
+  </data>
+  <data name="textBox_Anzahl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>10, 89</value>
   </data>
   <data name="Label13.Location" type="System.Drawing.Point, System.Drawing">
     <value>167, 71</value>
@@ -145,56 +151,20 @@
   <data name="textBox_Kollektorneigung.Location" type="System.Drawing.Point, System.Drawing">
     <value>170, 90</value>
   </data>
-  <data name="radioButton_Sued90.Location" type="System.Drawing.Point, System.Drawing">
-    <value>319, 24</value>
-  </data>
-  <data name="radioButton_Sued90.Size" type="System.Drawing.Size, System.Drawing">
-    <value>85, 21</value>
-  </data>
-  <data name="radioButton_Sued90.Text" xml:space="preserve">
-    <value>South 90°</value>
-  </data>
-  <data name="radioButton_SuedWest.Location" type="System.Drawing.Point, System.Drawing">
-    <value>162, 24</value>
-  </data>
-  <data name="radioButton_SuedWest.Size" type="System.Drawing.Size, System.Drawing">
-    <value>98, 21</value>
-  </data>
-  <data name="radioButton_SuedWest.Text" xml:space="preserve">
-    <value>South-West</value>
-  </data>
-  <data name="radioButton_flach.Location" type="System.Drawing.Point, System.Drawing">
-    <value>266, 24</value>
-  </data>
-  <data name="radioButton_flach.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 21</value>
-  </data>
-  <data name="radioButton_flach.Text" xml:space="preserve">
-    <value>flat</value>
-  </data>
-  <data name="radioButton_Sued.Location" type="System.Drawing.Point, System.Drawing">
-    <value>96, 24</value>
-  </data>
-  <data name="radioButton_Sued.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 21</value>
-  </data>
-  <data name="radioButton_Sued.Text" xml:space="preserve">
-    <value>South</value>
-  </data>
-  <data name="radioButton_SuedOst.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 24</value>
-  </data>
-  <data name="radioButton_SuedOst.Size" type="System.Drawing.Size, System.Drawing">
-    <value>92, 21</value>
-  </data>
-  <data name="radioButton_SuedOst.Text" xml:space="preserve">
-    <value>South-East</value>
+  <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>14, 20</value>
   </data>
   <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
     <value>405, 48</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Alignment</value>
+  </data>
+  <data name="textBox_Azimut.Location" type="System.Drawing.Point, System.Drawing">
+    <value>232, 17</value>
+  </data>
+  <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>157, 20</value>
   </data>
   <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
     <value>22, 33</value>
@@ -217,32 +187,35 @@
   <data name="btn_Entfernen.Text" xml:space="preserve">
     <value>Remove --&gt;</value>
   </data>
-  <data name="btn_Speichern.Text" xml:space="preserve">
-    <value>Take over</value>
-  </data>
-  <data name="Label11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>258, 71</value>
-  </data>
-  <data name="Label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>128, 17</value>
-  </data>
-  <data name="Label11.Text" xml:space="preserve">
-    <value>Collector area [m²]:</value>
-  </data>
-  <data name="textBox_Kollektor_A.Location" type="System.Drawing.Point, System.Drawing">
-    <value>261, 90</value>
-  </data>
   <data name="groupBox_Kollektor.Size" type="System.Drawing.Size, System.Drawing">
     <value>420, 154</value>
   </data>
   <data name="groupBox_Kollektor.Text" xml:space="preserve">
     <value>collector</value>
   </data>
+  <data name="btn_Speichern.Text" xml:space="preserve">
+    <value>Take over</value>
+  </data>
+  <data name="Label11.Location" type="System.Drawing.Point, System.Drawing">
+    <value>77, 71</value>
+  </data>
+  <data name="Label11.Size" type="System.Drawing.Size, System.Drawing">
+    <value>120, 17</value>
+  </data>
+  <data name="Label11.Text" xml:space="preserve">
+    <value>Apertur area [m²]:</value>
+  </data>
+  <data name="textBox_Aperturflaeche.Location" type="System.Drawing.Point, System.Drawing">
+    <value>80, 89</value>
+  </data>
   <data name="btn_Abbrechen.Text" xml:space="preserve">
     <value>Cancel</value>
   </data>
   <data name="label_Type.Text" xml:space="preserve">
     <value>Entering the solar panels</value>
+  </data>
+  <data name="groupBox2.Text" xml:space="preserve">
+    <value>Module</value>
   </data>
   <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
     <value>52, 38</value>
@@ -275,13 +248,42 @@
     <value>12, 196</value>
   </data>
   <data name="Label8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 17</value>
+    <value>85, 17</value>
   </data>
   <data name="Label8.Text" xml:space="preserve">
-    <value>Module area:</value>
+    <value>Apertur area:</value>
   </data>
-  <data name="groupBox2.Text" xml:space="preserve">
-    <value>Module</value>
+  <data name="textBox1.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="textBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="textBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>57, 25</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="label12.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label12.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt, style=Bold</value>
+  </data>
+  <data name="label12.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label12.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
+    <value>88, 17</value>
+  </data>
+  <data name="label12.Text" xml:space="preserve">
+    <value>Elevation [°]:</value>
+  </data>
+  <data name="label12.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Entering the solar panels</value>

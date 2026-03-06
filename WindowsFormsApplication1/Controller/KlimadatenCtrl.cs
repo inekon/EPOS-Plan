@@ -171,13 +171,24 @@ namespace WindowsFormsApplication1
                 {
                     KlimadatenModel item = list.ElementAt(i);
                                    
-                    DBCommand.CommandText = "INSERT INTO TAB_Klimadaten ( ID_Klimadaten, ID_Klimaregion, Sol_Nord, Sol_Ost," +
-                        "Sol_Sued, Sol_West, Temperatur, WE, TagTyp_W, TagTyp_NW ) SELECT " + m_ID_Klimadaten +
-                        " AS Ausdr1, " + ID_Klimaregion + " AS Ausdr2, " + item.m_Sol_Nord.ToString("N5", formatInfo) + " AS Ausdr3," +
-                        item.m_Sol_Ost.ToString("N5", formatInfo) + " AS Ausdr4, " + item.m_Sol_Sued.ToString("N5", formatInfo) + " AS Ausdr5," +
-                        item.m_Sol_West.ToString("N5", formatInfo) + " AS Ausdr6, " + item.m_nTemperatur.ToString("N5",formatInfo)  + " AS Ausdr7," +
-                        item.m_WE.ToString() + " AS Ausdr8, " + item.m_TagTyp_W.ToString("N5", formatInfo) + " AS Ausdr9, " +
-                        item.m_TagTyp_NW.ToString("N5", formatInfo) + " AS Ausdr10"; 
+                    DBCommand.CommandText = FormattableString.Invariant($@"
+                        INSERT INTO TAB_Klimadaten 
+                        (
+                            ID_Klimadaten, ID_Klimaregion, Sol_Nord, Sol_Ost, Sol_Sued, 
+                            Sol_West, Temperatur, WE, TagTyp_W, TagTyp_NW
+                        ) 
+                        SELECT 
+                            {m_ID_Klimadaten}, 
+                            {ID_Klimaregion}, 
+                            {item.m_Sol_Nord:N5}, 
+                            {item.m_Sol_Ost:N5}, 
+                            {item.m_Sol_Sued:N5}, 
+                            {item.m_Sol_West:N5}, 
+                            {item.m_nTemperatur:N5}, 
+                            {item.m_WE}, 
+                            {item.m_TagTyp_W:N5}, 
+                            {item.m_TagTyp_NW:N5}");
+
                     DBCommand.ExecuteNonQuery();
                     m_ID_Klimadaten += 1;
                 }

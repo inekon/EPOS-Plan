@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
@@ -29,7 +30,15 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                DBCommand.CommandText = "UPDATE Tab_Applikation SET Projektname='" + m_szProjektname + "', ID_Projekt=" + m_ID_Projekt + ", Beschreibung='" + m_szBeschreibung + "', Icon='" + m_icon + "' WHERE ID=" + 1;
+                FormattableString sql = $@"
+                    UPDATE Tab_Applikation SET 
+                        Projektname = '{m_szProjektname}', 
+                        ID_Projekt = {m_ID_Projekt}, 
+                        Beschreibung = '{m_szBeschreibung}', 
+                        Icon = '{m_icon}' 
+                    WHERE ID = 1;";
+                
+                DBCommand.CommandText = sql.ToString(CultureInfo.InvariantCulture);
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

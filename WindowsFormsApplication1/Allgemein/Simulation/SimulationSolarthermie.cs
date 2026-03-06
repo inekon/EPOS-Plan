@@ -29,10 +29,7 @@ namespace WindowsFormsApplication1
 
         public double Lon = 0;
         public double Lat = 0;
-        public double wirkungsgrad = 0.8;
         public double ueberschuss = 0;
-
-        int index = 0;
 
         public bool Berechnung(int ID_Projekt)
         {
@@ -52,12 +49,14 @@ namespace WindowsFormsApplication1
             // geo Koordinaten auslesen
             KlimaregionCtrl ctrlklima = new KlimaregionCtrl();
             ctrlklima.ReadSingle("select * from Tab_Klimaregion where ID_Klimaregion=" + nID_Klimaregion);
+            
             if (ctrlklima.rows > 0)
             {
                 Lon = ctrlklima.Longitude;
                 Lat = ctrlklima.Latitude;
             }
 
+            // Arrays und Vaiablen initialisieren
             Init();
 
             // Wärmebedarf gesamt berechnen
@@ -80,24 +79,27 @@ namespace WindowsFormsApplication1
                 ctrlsol.ReadSingle(nId);
                 double nFlaeche = ctrlsol.m_Aperturfläche;
 
-                // Schleife Solardaten auslesen und Orts- und Tageszeit und Neigungsabhängige Strahlungsleistung bestimmen
+                // Schleife Solardaten auslesen und Orts- und Tageszeit und neigungsabhängige Strahlungsleistung bestimmen
                 SolardatenCtrl ctrldat = new SolardatenCtrl();
                 ctrldat.ReadAll("select * from Tab_Solar where ID_Klimaregion=" + nID_Klimaregion + " order by ID");
 
-                index = 0;
                 for (int i = 0; i < ctrldat.rows; i++)
                 {
                     strahlung[i] = SolarCalculator.CalculateHourly(Lon, Lat, nNeigung, nAzimuth, ctrldat.items[i].Globalstrahlung,
                     ctrldat.items[i].Direktstrahlung, ctrldat.items[i].Diffusstrahlung, ctrldat.items[i].Außen_Temp, i / 24, i % 24);
                     sonnen_azimut[i] = SolarCalculator.sonnen_azimut;
-
                 }
 
                 double k1 = ctrlsol.m_k1;
                 double k2 = ctrlsol.m_k2;
                 double Leitungsverluste = 0.92;
                 double kdir50 = ctrlsol.m_Kdir;
+                // kann bzgl. Modulneigung genauer betrachtet werden, siehe KI
+                
                 double tStorage = 50;
+                // wenn man das detailierter will muss mam die Temperatur zum und von einem Puffer im Zusammenhang mit der
+                // Umgebungstemperatur und ggf. mit dem Kollektortyp kalkulieren. Siehe KI
+                
                 double ta = 0;
                 double Neigung = nNeigung;
                 double h0 = ctrlsol.m_h0;
@@ -105,8 +107,9 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < ctrldat.rows; i++)
                 {
                     ta = ctrldat.items[i].Außen_Temp;
+                    // cosTheta ist der Winkel zwischen senkrechte (90 Grad) und Sonnenwinkel über Horizont
                     double cosTheta = GetProjectionFactor(ctrldat.items[i].Sonnenwinkel, sonnen_azimut[i], nNeigung, nAzimuth);
-                    cosTheta = cosTheta * 180 / Math.PI;
+                    cosTheta = cosTheta * 180 / Math.PI; // Bogenmaß
                     (Waermeproduktion[i], Restwaerme[i], Ueberschuss[i]) = BerechneSolarthermie(Waermebedarf[i], strahlung[i], nFlaeche * nAnzahl, h0, k1, k2, kdir50, tStorage, ta, Neigung, cosTheta, Leitungsverluste);
                 }
             }
@@ -114,6 +117,7 @@ namespace WindowsFormsApplication1
             // Gesamtproduktion berechnen   
             Array.ForEach(Waermeproduktion, value => Waermeproduktion_gesamt += value);
             Array.ForEach(Ueberschuss, value => ueberschuss += value);
+            
             return true;
         }
 
@@ -174,8 +178,8 @@ namespace WindowsFormsApplication1
             double iam = 1.0 - b0 * (1.0 / Math.Cos(thetaRad) - 1.0);
             iam = Clamp(iam, 0.0, 1.0);
 
-            // 2. Deine Wirkungsgrad-Formel (angepasst um den Winkel-Korrekturfaktor iam)
-            // h0 wird durch iam reduziert, da weniger Licht den Absorber erreicht.
+            // 2. Wirkungsgrad-Formel (angepasst um den Winkel-Korrekturfaktor IAM)
+            // h0 wird durch IAM reduziert, da weniger Licht den Absorber erreicht.
             double h0_effektiv = h0 * iam;
             double dT = tStorage - tAmb;
 
@@ -197,8 +201,8 @@ namespace WindowsFormsApplication1
             double a = sunAlphaDeg * Math.PI / 180.0;
             double b = moduleTiltDeg * Math.PI / 180.0;
             double gs = sunAzimuthDeg * Math.PI / 180.0;
-            gs = sunAzimuthDeg; 
             double gm = moduleAzimuthDeg * Math.PI / 180.0;
+            gs = sunAzimuthDeg;
 
             // Der Kosinus des Einfallswinkels (Theta)
             double cosTheta = Math.Sin(a) * Math.Cos(b) +

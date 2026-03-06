@@ -105,24 +105,13 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void listBox_Extern_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            textBox_Name.Text = listBox_Extern.Text;
-         }
-
-        private void listBox_Auswahl_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            textBox_Name.Text = listBox_Auswahl.Text;
-        }
-
         private void btn_Bearbeiten_Click(object sender, EventArgs e)
         {
-            MenueCtrl ctrl = new MenueCtrl();
+            Form_Stromganglinie_Admin frm = new Form_Stromganglinie_Admin();
             StromganglinieCtrl spctrl = new StromganglinieCtrl();
 
             listBox_Auswahl.SelectedItems.Clear();
-            listBox_Extern.SelectedItems.Clear();
-            ctrl.Stromganglinie();
+            frm.ShowDialog();
             listBox_Extern.Items.Clear();
             spctrl.ReadAll();
             for (int i = 0; i < spctrl.rows; i++)

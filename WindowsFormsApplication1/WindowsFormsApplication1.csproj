@@ -92,14 +92,41 @@
     <Reference Include="CSExeCOMServer">
       <HintPath>..\CSExeCOMServer.exe</HintPath>
     </Reference>
+    <Reference Include="HarfBuzzSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\HarfBuzzSharp.8.3.1.1\lib\net462\HarfBuzzSharp.dll</HintPath>
+    </Reference>
     <Reference Include="MathNet.Numerics, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathNet.Numerics.5.0.0\lib\net48\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=10.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.10.0.2\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
+    <Reference Include="OpenTK, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.3.1.0\lib\net20\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.GLControl, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.GLControl.3.1.0\lib\net20\OpenTK.GLControl.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="ScottPlot, Version=5.1.57.0, Culture=neutral, PublicKeyToken=86698dc10387c39e, processorArchitecture=MSIL">
+      <HintPath>..\packages\ScottPlot.5.1.57\lib\net462\ScottPlot.dll</HintPath>
+    </Reference>
+    <Reference Include="ScottPlot.WinForms, Version=5.1.57.0, Culture=neutral, PublicKeyToken=86698dc10387c39e, processorArchitecture=MSIL">
+      <HintPath>..\packages\ScottPlot.WinForms.5.1.57\lib\net462\ScottPlot.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp, Version=3.119.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\SkiaSharp.3.119.0\lib\net462\SkiaSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp.HarfBuzz, Version=3.119.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\SkiaSharp.HarfBuzz.3.119.0\lib\net462\SkiaSharp.HarfBuzz.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp.Views.Desktop.Common, Version=3.119.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\SkiaSharp.Views.Desktop.Common.3.119.0\lib\net462\SkiaSharp.Views.Desktop.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp.Views.WindowsForms, Version=3.119.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\SkiaSharp.Views.WindowsForms.3.119.0\lib\net462\SkiaSharp.Views.WindowsForms.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
@@ -179,33 +206,36 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\ChartMouseWheel.cs" />
-    <Compile Include="Classes\CsvReader.cs" />
-    <Compile Include="Classes\FileDlgClass.cs" />
-    <Compile Include="Classes\Form3Src.cs">
+    <Compile Include="Allgemein\Chart\ChartMouseWheel.cs" />
+    <Compile Include="Allgemein\Chart\ChartManager.cs" />
+    <Compile Include="Allgemein\CsvReader.cs" />
+    <Compile Include="Allgemein\FileDlgClass.cs" />
+    <Compile Include="Allgemein\Form3Src.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Classes\Form_Hinweis.cs">
+    <Compile Include="Allgemein\Form_Hinweis.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Classes\Form_Hinweis.Designer.cs">
+    <Compile Include="Allgemein\Form_Hinweis.Designer.cs">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </Compile>
-    <Compile Include="Classes\Heizkesselmport.cs" />
-    <Compile Include="Classes\IniFileParser.cs" />
-    <Compile Include="Classes\PufferSpImport.cs" />
-    <Compile Include="Classes\RecordSet.cs" />
-    <Compile Include="Classes\Simulation\SimulationControl.cs" />
-    <Compile Include="Classes\Simulation\Init.cs" />
-    <Compile Include="Classes\Simulation\SimulationSolarthermie.cs" />
-    <Compile Include="Classes\Simulation\SimulationSPK.cs" />
-    <Compile Include="Classes\Simulation\SimulationSSP.cs" />
-    <Compile Include="Classes\Simulation\SimulationStrombedarf.cs" />
-    <Compile Include="Classes\Simulation\SimulationWaermebedarf.cs" />
-    <Compile Include="Classes\Simulation\SimulationWaermepumpe.cs" />
-    <Compile Include="Classes\StromTestClass.cs" />
-    <Compile Include="Classes\SolarPVGISCalculator.cs" />
-    <Compile Include="Classes\WaermepumpenImport.cs" />
+    <Compile Include="Allgemein\Import\Heizkesselmport.cs" />
+    <Compile Include="Allgemein\IniFileParser.cs" />
+    <Compile Include="Allgemein\Import\PufferSpImport.cs" />
+    <Compile Include="Allgemein\RecordSet.cs" />
+    <Compile Include="Allgemein\Simulation\SimulationControl.cs" />
+    <Compile Include="Allgemein\Simulation\Init.cs" />
+    <Compile Include="Allgemein\Simulation\SimulationSolarthermie.cs" />
+    <Compile Include="Allgemein\Simulation\SimulationSPK.cs" />
+    <Compile Include="Allgemein\Simulation\SimulationSSP.cs" />
+    <Compile Include="Allgemein\Simulation\SimulationStrombedarf.cs" />
+    <Compile Include="Allgemein\Simulation\SimulationWaermebedarf.cs" />
+    <Compile Include="Allgemein\Simulation\SimulationWaermepumpe.cs" />
+    <Compile Include="Allgemein\Import\Solarkollektorenlmport.cs" />
+    <Compile Include="Allgemein\SolarProSim.cs" />
+    <Compile Include="Allgemein\StromTestClass.cs" />
+    <Compile Include="Allgemein\SolarPVGISCalculator.cs" />
+    <Compile Include="Allgemein\Import\WaermepumpenImport.cs" />
     <Compile Include="Controller\ApplikationCtrl.cs" />
     <Compile Include="Controller\BHKWCtrl.cs" />
     <Compile Include="Controller\BHKWKontextMenuCtrl.cs">
@@ -568,6 +598,12 @@
     <Compile Include="Views\Solarthermie\Form_SolarKollektorenAdmin.designer.cs">
       <DependentUpon>Form_SolarKollektorenAdmin.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Solarthermie\Form_SolarKollektoren_einlesen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Solarthermie\Form_SolarKollektoren_einlesen.Designer.cs">
+      <DependentUpon>Form_SolarKollektoren_einlesen.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Stromspeicher\Form_Stromspeicher.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -683,9 +719,9 @@
       <DependentUpon>Wizard_Projekt.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\WPModel.cs" />
-    <Compile Include="Classes\DbClass.cs" />
-    <Compile Include="Classes\MDIHelperClass.cs" />
-    <Compile Include="Classes\ToolsClass.cs" />
+    <Compile Include="Allgemein\DbClass.cs" />
+    <Compile Include="Allgemein\MDIHelperClass.cs" />
+    <Compile Include="Allgemein\ToolsClass.cs" />
     <Compile Include="Controller\MenueCtrl.cs" />
     <Compile Include="MDIMainForm.cs">
       <SubType>Form</SubType>
@@ -713,7 +749,7 @@
     <Compile Include="Views\Wizard\WizardParent.designer.cs">
       <DependentUpon>WizardParent.cs</DependentUpon>
     </Compile>
-    <Compile Include="Classes\WizardItemClass.cs" />
+    <Compile Include="Allgemein\WizardItemClass.cs" />
     <Compile Include="Views\Wizard\Wizard_WP.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -744,11 +780,12 @@
     <Compile Include="Views\Wärmepumpe\WizWP.designer.cs">
       <DependentUpon>WizWP.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Classes\Form_Hinweis.resx">
+    <EmbeddedResource Include="Allgemein\Form_Hinweis.resx">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MDIMainForm.de-DE.resx">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MDIMainForm.en-US.resx">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
@@ -1091,6 +1128,9 @@
     <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektorenAdmin.resx">
       <DependentUpon>Form_SolarKollektorenAdmin.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Solarthermie\Form_SolarKollektoren_einlesen.resx">
+      <DependentUpon>Form_SolarKollektoren_einlesen.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Stromspeicher\Form_AdminStromspeicher.de-DE.resx">
       <DependentUpon>Form_AdminStromspeicher.cs</DependentUpon>
     </EmbeddedResource>
@@ -1283,6 +1323,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MDIMainForm.resx">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -1323,6 +1364,7 @@
       <DependentUpon>WizWP.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -1496,7 +1538,13 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets'))" />
+    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Linux.NoDependencies.3.119.0\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Linux.NoDependencies.3.119.0\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets'))" />
+    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.macOS.3.119.0\build\net462\SkiaSharp.NativeAssets.macOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.macOS.3.119.0\build\net462\SkiaSharp.NativeAssets.macOS.targets'))" />
+    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Win32.3.119.0\build\net462\SkiaSharp.NativeAssets.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Win32.3.119.0\build\net462\SkiaSharp.NativeAssets.Win32.targets'))" />
   </Target>
+  <Import Project="..\packages\SkiaSharp.NativeAssets.Linux.NoDependencies.3.119.0\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Linux.NoDependencies.3.119.0\build\net462\SkiaSharp.NativeAssets.Linux.NoDependencies.targets')" />
+  <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.3.119.0\build\net462\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.3.119.0\build\net462\SkiaSharp.NativeAssets.macOS.targets')" />
+  <Import Project="..\packages\SkiaSharp.NativeAssets.Win32.3.119.0\build\net462\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Win32.3.119.0\build\net462\SkiaSharp.NativeAssets.Win32.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

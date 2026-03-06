@@ -90,11 +90,23 @@ namespace WindowsFormsApplication1
                     DBReader.Close();
                 }
 
-                DBCommand.CommandText = "INSERT INTO TAB_Projekt ( ID, Projektname, Bearbeiter, Beschreibung, Kunde, " +
-                    "Aenderungsdatum, ID_Klimaregion, ID_Gebaeude, Erstelldatum ) SELECT " + m_ID + " AS Ausdr1, '" +
-                    m_szProjektname + "' AS Ausdr2, '" + m_szBearbeiter + "' AS Ausdr3, '" + m_szKunde + "' AS Ausdr4, '" +
-                    m_szBeschreibung + "' AS Ausdr5, '" + m_Aenderungsdatum + "' AS Ausdr6, " + m_ID_Klimaregion + " AS Ausdr7, " +
-                    m_ID_Gebaeude + " AS Ausdr8, '" + m_Erstelldatum + "' AS Ausdr7, " + m_ID_Klimaregion + " AS Ausdr7";
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    INSERT INTO TAB_Projekt 
+                    (
+                        ID, Projektname, Bearbeiter, Beschreibung, Kunde, 
+                        Aenderungsdatum, ID_Klimaregion, ID_Gebaeude, Erstelldatum
+                    ) 
+                    SELECT 
+                        {m_ID}, 
+                        '{m_szProjektname}', 
+                        '{m_szBearbeiter}', 
+                        '{m_szBeschreibung}', 
+                        '{m_szKunde}', 
+                        '{m_Aenderungsdatum}', 
+                        {m_ID_Klimaregion}, 
+                        {m_ID_Gebaeude}, 
+                        '{m_Erstelldatum}'");
+
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

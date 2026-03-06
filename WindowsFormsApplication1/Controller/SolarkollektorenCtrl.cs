@@ -53,13 +53,11 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(7)) item.m_h0 = (double)DBReader.GetValue(7);
                 if (!DBReader.IsDBNull(8)) item.m_k1= (double)DBReader.GetValue(8);
                 if (!DBReader.IsDBNull(9)) item.m_k2 = (double)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) item.m_C = (double)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) item.m_Kdir = (double)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(12)) item.m_Kdfu  = (double)DBReader.GetValue(12);
-                if (!DBReader.IsDBNull(13)) item.m_Ertrag = (double)DBReader.GetValue(13);
-                if (!DBReader.IsDBNull(14)) item.m_Kosten = (double)DBReader.GetValue(14);
-                if (!DBReader.IsDBNull(15)) item.m_Vorlauf = (int)DBReader.GetValue(15);
-                if (!DBReader.IsDBNull(16)) item.m_Ruecklauf = (int)DBReader.GetValue(16);
+                if (!DBReader.IsDBNull(10)) item.m_Kdir = (double)DBReader.GetValue(10);
+                if (!DBReader.IsDBNull(11)) item.m_Kdfu  = (double)DBReader.GetValue(11);
+                if (!DBReader.IsDBNull(12)) item.m_Kosten = (double)DBReader.GetValue(12);
+                if (!DBReader.IsDBNull(13)) item.m_Vorlauf = (int)DBReader.GetValue(13);
+                if (!DBReader.IsDBNull(14)) item.m_Ruecklauf = (int)DBReader.GetValue(14);
 
                 items[rows] = item;
                 item = null;
@@ -90,13 +88,11 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(7)) m_h0 = (double)DBReader.GetValue(7);
                 if (!DBReader.IsDBNull(8)) m_k1 = (double)DBReader.GetValue(8);
                 if (!DBReader.IsDBNull(9)) m_k2 = (double)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) m_C = (double)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) m_Kdir = (double)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(12)) m_Kdfu = (double)DBReader.GetValue(12);
-                if (!DBReader.IsDBNull(13)) m_Ertrag = (double)DBReader.GetValue(13);
-                if (!DBReader.IsDBNull(14)) m_Kosten = (double)DBReader.GetValue(14);
-                if (!DBReader.IsDBNull(15)) m_Vorlauf = (int)DBReader.GetValue(15);
-                if (!DBReader.IsDBNull(16)) m_Ruecklauf = (int)DBReader.GetValue(16);
+                if (!DBReader.IsDBNull(10)) m_Kdir = (double)DBReader.GetValue(10);
+                if (!DBReader.IsDBNull(11)) m_Kdfu = (double)DBReader.GetValue(11);
+                if (!DBReader.IsDBNull(12)) m_Kosten = (double)DBReader.GetValue(12);
+                if (!DBReader.IsDBNull(13)) m_Vorlauf = (int)DBReader.GetValue(13);
+                if (!DBReader.IsDBNull(14)) m_Ruecklauf = (int)DBReader.GetValue(14);
 
                 rows = 1;
             }
@@ -108,23 +104,23 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                string sql = "UPDATE Tab_Solarkollektoren SET " +
-                    " Firma = '" + model.m_szFirma + "'" +
-                    ", Beschreibung = '" + model.m_szBeschreibung + "'" +
-                    ", Kollektortyp = '" + model.m_szKollektortyp + "'" +
-                    ", Modulflaeche=" + model.m_Modulfläche.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Aperturfläche=" + model.m_Aperturfläche.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", h0= " + model.m_h0.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", k1= " + model.m_k1.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", k2= " + model.m_k2.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", C= " + model.m_C.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Kdir= " + model.m_Kdir.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Kdfu= " + model.m_Kdfu.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Ertrag= " + model.m_Ertrag.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Investitionskosten= " + model.m_Kosten.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    " WHERE Kollektorname='" + model.m_szKollektorname + "'";
+               FormattableString sql = $@"UPDATE Tab_Solarkollektoren SET 
+                    Firma = '{model.m_szFirma}', 
+                    Beschreibung = '{model.m_szBeschreibung}', 
+                    Kollektortyp = '{model.m_szKollektortyp}', 
+                    Modulflaeche = {model.m_Modulfläche}, 
+                    Aperturflaeche = {model.m_Aperturfläche}, 
+                    h0 = {model.m_h0}, 
+                    k1 = {model.m_k1}, 
+                    k2 = {model.m_k2}, 
+                    Kdir = {model.m_Kdir}, 
+                    Kdfu = {model.m_Kdfu}, 
+                    Investitionskosten = {model.m_Kosten} 
+                    WHERE Kollektorname = '{model.m_szKollektorname}'";
 
-                DBCommand.CommandText = sql;
+                string commandText = sql.ToString(CultureInfo.InvariantCulture);
+
+                DBCommand.CommandText = commandText;
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)
