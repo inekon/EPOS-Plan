@@ -33,11 +33,6 @@ namespace WindowsFormsApplication1
             this.Label2 = new System.Windows.Forms.Label();
             this.btn_Hilfe = new System.Windows.Forms.Button();
             this.btn_OK = new System.Windows.Forms.Button();
-            this.textBox_Name = new System.Windows.Forms.TextBox();
-            this.btn_Oeffnen = new System.Windows.Forms.Button();
-            this.label6 = new System.Windows.Forms.Label();
-            this.textBox_Ordner = new System.Windows.Forms.TextBox();
-            this.btn_Datei = new System.Windows.Forms.Button();
             this.btn_Loeschen = new System.Windows.Forms.Button();
             this.btn_Einlesen = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -70,37 +65,6 @@ namespace WindowsFormsApplication1
             this.btn_OK.UseVisualStyleBackColor = true;
             this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
             // 
-            // textBox_Name
-            // 
-            resources.ApplyResources(this.textBox_Name, "textBox_Name");
-            this.textBox_Name.BackColor = System.Drawing.Color.White;
-            this.textBox_Name.Name = "textBox_Name";
-            this.textBox_Name.ReadOnly = true;
-            // 
-            // btn_Oeffnen
-            // 
-            resources.ApplyResources(this.btn_Oeffnen, "btn_Oeffnen");
-            this.btn_Oeffnen.Name = "btn_Oeffnen";
-            this.btn_Oeffnen.UseVisualStyleBackColor = true;
-            this.btn_Oeffnen.Click += new System.EventHandler(this.btn_Oeffnen_Click);
-            // 
-            // label6
-            // 
-            resources.ApplyResources(this.label6, "label6");
-            this.label6.Name = "label6";
-            // 
-            // textBox_Ordner
-            // 
-            resources.ApplyResources(this.textBox_Ordner, "textBox_Ordner");
-            this.textBox_Ordner.Name = "textBox_Ordner";
-            // 
-            // btn_Datei
-            // 
-            resources.ApplyResources(this.btn_Datei, "btn_Datei");
-            this.btn_Datei.Name = "btn_Datei";
-            this.btn_Datei.UseVisualStyleBackColor = true;
-            this.btn_Datei.Click += new System.EventHandler(this.btn_Datei_Click);
-            // 
             // btn_Loeschen
             // 
             resources.ApplyResources(this.btn_Loeschen, "btn_Loeschen");
@@ -123,14 +87,11 @@ namespace WindowsFormsApplication1
             // 
             // groupBox1
             // 
-            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.comboBox_Zeitinterval);
-            this.groupBox1.Controls.Add(this.btn_Datei);
             this.groupBox1.Controls.Add(this.btn_Einlesen);
             this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.textBox_Name);
-            this.groupBox1.Controls.Add(this.btn_Oeffnen);
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
@@ -141,11 +102,11 @@ namespace WindowsFormsApplication1
             // 
             // comboBox_Zeitinterval
             // 
-            resources.ApplyResources(this.comboBox_Zeitinterval, "comboBox_Zeitinterval");
             this.comboBox_Zeitinterval.FormattingEnabled = true;
             this.comboBox_Zeitinterval.Items.AddRange(new object[] {
             resources.GetString("comboBox_Zeitinterval.Items"),
             resources.GetString("comboBox_Zeitinterval.Items1")});
+            resources.ApplyResources(this.comboBox_Zeitinterval, "comboBox_Zeitinterval");
             this.comboBox_Zeitinterval.Name = "comboBox_Zeitinterval";
             // 
             // Form_Stromganglinie_Admin
@@ -154,8 +115,6 @@ namespace WindowsFormsApplication1
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btn_Loeschen);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.textBox_Ordner);
             this.Controls.Add(this.listBox_Extern);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.btn_Hilfe);
@@ -174,11 +133,6 @@ namespace WindowsFormsApplication1
 private System.Windows.Forms.Label Label2;
 private System.Windows.Forms.Button btn_Hilfe;
 private System.Windows.Forms.Button btn_OK;
-private System.Windows.Forms.TextBox textBox_Name;
-private System.Windows.Forms.Button btn_Oeffnen;
-private System.Windows.Forms.Label label6;
-private System.Windows.Forms.TextBox textBox_Ordner;
-private System.Windows.Forms.Button btn_Datei;
 private System.Windows.Forms.Button btn_Loeschen;
 private System.Windows.Forms.Button btn_Einlesen;
 private System.Windows.Forms.Label label1;

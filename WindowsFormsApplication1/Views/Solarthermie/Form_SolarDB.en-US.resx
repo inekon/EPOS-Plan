@@ -142,44 +142,8 @@
   <data name="Label8.Text" xml:space="preserve">
     <value>Aperture area:</value>
   </data>
-  <data name="Label9.Size" type="System.Drawing.Size, System.Drawing">
-    <value>25, 17</value>
-  </data>
-  <data name="Label9.Text" xml:space="preserve">
-    <value>h0:</value>
-  </data>
-  <data name="Label15.Size" type="System.Drawing.Size, System.Drawing">
-    <value>24, 17</value>
-  </data>
-  <data name="Label15.Text" xml:space="preserve">
-    <value>k2:</value>
-  </data>
-  <data name="Label16.Size" type="System.Drawing.Size, System.Drawing">
-    <value>19, 17</value>
-  </data>
-  <data name="Label16.Text" xml:space="preserve">
-    <value>C:</value>
-  </data>
-  <data name="Label20.Size" type="System.Drawing.Size, System.Drawing">
-    <value>35, 17</value>
-  </data>
-  <data name="Label20.Text" xml:space="preserve">
-    <value>Kdir:</value>
-  </data>
-  <data name="Label21.Size" type="System.Drawing.Size, System.Drawing">
-    <value>38, 17</value>
-  </data>
-  <data name="Label21.Text" xml:space="preserve">
-    <value>Kdiff:</value>
-  </data>
-  <data name="Label22.Location" type="System.Drawing.Point, System.Drawing">
-    <value>314, 266</value>
-  </data>
-  <data name="Label22.Size" type="System.Drawing.Size, System.Drawing">
-    <value>39, 17</value>
-  </data>
-  <data name="Label22.Text" xml:space="preserve">
-    <value>Yield:</value>
+  <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>99, 17</value>
   </data>
   <data name="Label1.Text" xml:space="preserve">
     <value>Collector name:</value>
@@ -205,11 +169,11 @@
   <data name="Label4.Location" type="System.Drawing.Point, System.Drawing">
     <value>35, 150</value>
   </data>
+  <data name="Label4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>92, 17</value>
+  </data>
   <data name="Label4.Text" xml:space="preserve">
     <value>Collector type:</value>
-  </data>
-  <data name="Label25.Location" type="System.Drawing.Point, System.Drawing">
-    <value>304, 355</value>
   </data>
   <data name="Label25.Size" type="System.Drawing.Size, System.Drawing">
     <value>107, 17</value>
@@ -219,32 +183,5 @@
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Collector Edit</value>
-  </data>
-  <data name="Label12.Text" xml:space="preserve">
-    <value>m²</value>
-  </data>
-  <data name="Label11.Text" xml:space="preserve">
-    <value>m²</value>
-  </data>
-  <data name="Label17.Text" xml:space="preserve">
-    <value>W/(m²*K)</value>
-  </data>
-  <data name="Label14.Text" xml:space="preserve">
-    <value>k1 :</value>
-  </data>
-  <data name="Label19.Text" xml:space="preserve">
-    <value>kJ/(m²*K)</value>
-  </data>
-  <data name="Label26.Text" xml:space="preserve">
-    <value>€</value>
-  </data>
-  <data name="Label24.Text" xml:space="preserve">
-    <value>kWh/(m²*a)</value>
-  </data>
-  <data name="Label18.Text" xml:space="preserve">
-    <value>W/(m²*K²)</value>
-  </data>
-  <data name="Label23.Text" xml:space="preserve">
-    <value>50°</value>
   </data>
 </root>

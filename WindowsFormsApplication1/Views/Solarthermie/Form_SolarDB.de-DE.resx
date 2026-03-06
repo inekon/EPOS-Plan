@@ -118,88 +118,91 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>102, 17</value>
-  </data>
-  <data name="Label1.Text" xml:space="preserve">
-    <value>Kollektorname :</value>
-  </data>
-  <data name="Label12.Text" xml:space="preserve">
-    <value>m²</value>
-  </data>
-  <data name="Label11.Text" xml:space="preserve">
-    <value>m²</value>
-  </data>
-  <data name="Label3.Text" xml:space="preserve">
-    <value>Beschreibung :</value>
-  </data>
-  <data name="Label23.Text" xml:space="preserve">
-    <value>50°</value>
-  </data>
-  <data name="Label21.Text" xml:space="preserve">
-    <value>Kdiff :</value>
-  </data>
-  <data name="Label17.Text" xml:space="preserve">
-    <value>W/(m²*K)</value>
+  <data name="Label7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>87, 17</value>
   </data>
   <data name="Label7.Text" xml:space="preserve">
     <value>Modulfläche :</value>
   </data>
-  <data name="Label22.Text" xml:space="preserve">
-    <value>Ertrag :</value>
-  </data>
-  <data name="Label20.Text" xml:space="preserve">
-    <value>Kdir :</value>
-  </data>
-  <data name="btn_Speichern.Text" xml:space="preserve">
-    <value>Speichern</value>
-  </data>
-  <data name="btn_Abbrechen.Text" xml:space="preserve">
-    <value>Abbrechen</value>
-  </data>
-  <data name="btn_Speichern_Unter.Text" xml:space="preserve">
-    <value>Speichern unter</value>
-  </data>
-  <data name="btn_Überschreiben.Text" xml:space="preserve">
-    <value>Überschreiben</value>
-  </data>
-  <data name="Label16.Text" xml:space="preserve">
-    <value>C :</value>
+  <data name="Label8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>93, 17</value>
   </data>
   <data name="Label8.Text" xml:space="preserve">
     <value>Aperturfläche :</value>
   </data>
-  <data name="Label15.Text" xml:space="preserve">
-    <value>k2 :</value>
-  </data>
-  <data name="Label14.Text" xml:space="preserve">
-    <value>k1 :</value>
-  </data>
-  <data name="Label19.Text" xml:space="preserve">
-    <value>kJ/(m²*K)</value>
-  </data>
-  <data name="Label25.Text" xml:space="preserve">
-    <value>Investitionskosten :</value>
-  </data>
-  <data name="Label26.Text" xml:space="preserve">
-    <value>€</value>
-  </data>
-  <data name="Label24.Text" xml:space="preserve">
-    <value>kWh/(m²*a)</value>
+  <data name="Label9.Size" type="System.Drawing.Size, System.Drawing">
+    <value>29, 17</value>
   </data>
   <data name="Label9.Text" xml:space="preserve">
     <value>h0 :</value>
   </data>
+  <data name="Label14.Size" type="System.Drawing.Size, System.Drawing">
+    <value>28, 17</value>
+  </data>
+  <data name="Label14.Text" xml:space="preserve">
+    <value>k1 :</value>
+  </data>
+  <data name="Label15.Size" type="System.Drawing.Size, System.Drawing">
+    <value>28, 17</value>
+  </data>
+  <data name="Label15.Text" xml:space="preserve">
+    <value>k2 :</value>
+  </data>
+  <data name="Label20.Size" type="System.Drawing.Size, System.Drawing">
+    <value>39, 17</value>
+  </data>
+  <data name="Label20.Text" xml:space="preserve">
+    <value>Kdir :</value>
+  </data>
+  <data name="Label21.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 17</value>
+  </data>
+  <data name="Label21.Text" xml:space="preserve">
+    <value>Kdiff :</value>
+  </data>
+  <data name="Label23.Size" type="System.Drawing.Size, System.Drawing">
+    <value>27, 17</value>
+  </data>
+  <data name="Label23.Text" xml:space="preserve">
+    <value>50°</value>
+  </data>
+  <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>99, 17</value>
+  </data>
+  <data name="Label1.Text" xml:space="preserve">
+    <value>Kollektorname :</value>
+  </data>
+  <data name="Label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>71, 17</value>
+  </data>
   <data name="Label2.Text" xml:space="preserve">
     <value>Hersteller :</value>
   </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Kollektor Bearbeiten</value>
+  <data name="Label3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>93, 17</value>
+  </data>
+  <data name="Label3.Text" xml:space="preserve">
+    <value>Beschreibung :</value>
+  </data>
+  <data name="Label4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>92, 17</value>
   </data>
   <data name="Label4.Text" xml:space="preserve">
     <value>Kollektortype :</value>
   </data>
-  <data name="Label18.Text" xml:space="preserve">
-    <value>W/(m²*K²)</value>
+  <data name="Label25.Location" type="System.Drawing.Point, System.Drawing">
+    <value>356, 300</value>
+  </data>
+  <data name="Label25.Size" type="System.Drawing.Size, System.Drawing">
+    <value>117, 17</value>
+  </data>
+  <data name="Label25.Text" xml:space="preserve">
+    <value>Investitionskosten :</value>
+  </data>
+  <data name="textBox_Kosten.Location" type="System.Drawing.Point, System.Drawing">
+    <value>359, 322</value>
+  </data>
+  <data name="Label26.Location" type="System.Drawing.Point, System.Drawing">
+    <value>445, 326</value>
   </data>
 </root>

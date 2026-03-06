@@ -49,10 +49,21 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                DBCommand.CommandText = "INSERT INTO Z_ProjektPufferSp (ID_Projekt, Erzeuger, Pufferspeicher, " +
-                        "Vorlauf, Ruecklauf, Prioritaet ) SELECT " + ID_Projekt + " AS Ausdr2, '" + 
-                        Erzeuger + "' AS Ausdr3, '" + PufferSp + "' AS Ausdr4, " +
-                        Vorlauf + " AS Ausdr5, " + Ruecklauf  + " AS Ausdr6, " + Prioritaet + " AS Ausdr7";
+   
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    INSERT INTO Z_ProjektPufferSp 
+                    (
+                        ID_Projekt, Erzeuger, Pufferspeicher, 
+                        Vorlauf, Ruecklauf, Prioritaet
+                    ) 
+                    SELECT 
+                        {ID_Projekt}, 
+                        '{Erzeuger}', 
+                        '{PufferSp}', 
+                        {Vorlauf}, 
+                        {Ruecklauf}, 
+                        {Prioritaet}");
+                
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

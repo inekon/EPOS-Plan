@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -15,7 +16,6 @@ namespace WindowsFormsApplication1
     public partial class Form_Klimadaten : Form
     {
         private string m_szOrtName;
-        private ChartMouseWheel _chartManager;
 
         public Form_Klimadaten()
         {
@@ -53,6 +53,9 @@ namespace WindowsFormsApplication1
 
         private void initChart(Chart chart)
         {
+
+
+
             chart.Series.Clear();
             var ca = chart.ChartAreas[0];
             ca.CursorX.IsUserEnabled = true;
@@ -62,13 +65,14 @@ namespace WindowsFormsApplication1
             ca.AxisY.ScaleView.Zoomable = true;
             ca.AxisX.ScaleView.Zoomable = true;
             ca.CursorX.AutoScroll = true;
-            ca.CursorX.IsUserSelectionEnabled = true;
             ca.AxisX.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
             ca.AxisY.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
             ca.AxisX.ScaleView.MinSize = 0;
             ca.CursorX.Interval = 0;
+            ca.CursorX.SelectionColor = Color.FromArgb(100, 100, 0, 0);
+            ca.CursorY.SelectionColor = Color.FromArgb(100, 100, 0, 0);
         }
-        
+
         private void listBoxWP_SelectedIndexChanged(object sender, EventArgs e)
         {
             m_szOrtName = listBoxKlimreg.Text;
@@ -77,104 +81,52 @@ namespace WindowsFormsApplication1
 
         private void CreateChart()
         {
-            List<int> xAxis = new List<int>();
             List<Double> yAxis = new List<Double>();
             KlimaregionCtrl ctrlregion = new KlimaregionCtrl();
             SolardatenCtrl ctrl = new SolardatenCtrl();
-            Series series;
 
             ctrlregion.ReadSingle("Select * from Tab_Klimaregion where Name = '" + m_szOrtName + "'");
+            textBox_Display.Text = ctrlregion.Details.ToString();
+            textBox_Bezeichnung.Text = ctrlregion.m_szName.ToString();   
+            textBox_Latitude.Text = ctrlregion.Latitude.ToString();
+            textBox_Longitude.Text = ctrlregion.Longitude.ToString();
             int ID_Klimaregion = ctrlregion.m_ID_Klimaregion;
 
             ctrl.ReadAll(ID_Klimaregion);
 
-            if (chart1.Series.Count == 0)
-            {
-                series = new Series("Jahrestemperatur");
-                chart1.Series.Add(series);
-            }
-            else
-            {
-                series = chart1.Series[0];
-                chart1.Series[0].Points.Clear();
-            }
-            series.ChartType = SeriesChartType.Line;
+            // Chart Temperaturverlauf
             yAxis = ctrl.list_Temperatur;
-            xAxis = ctrl.list_Tag;  
-            ConfigureXAxisWithMonths(chart1);
-            
-            for (int j = 0; j < 8760; j++)
-            {
-                double d = (double)j * 12 / (8760);
-                chart1.Series[0].Points.AddXY(d, yAxis[j]);
-            }
-            
-            chart1.Series[0].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Yes;
-            chart1.Series[0].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
-            chart1.Series[0].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
-            chart1.Series[0].IsValueShownAsLabel = false;
-            chart1.Series[0].BorderWidth = 2;
-            chart1.Update();
 
-            if (chart2.Series.Count == 0)
-            {
-                series = new Series("Sonnenwinkel");
-                chart2.Series.Add(series);
-            }
-            else
-            {
-                series = chart2.Series[0];
-                chart2.Series[0].Points.Clear();
-            }
-            series.ChartType = SeriesChartType.Line;
+            ChartManager _chartManager = new ChartManager(chart1);
+            _chartManager.YMaxValue = yAxis.ToArray().Max();
+            _chartManager.YMinValue = yAxis.ToArray().Min();
+            _chartManager.XAxisAsNumber = false;
+            _chartManager.XAxisTitle = "Jahresstunden";
+            _chartManager.YAxisTitle = "Temperatur";
+            _chartManager.toolTipUnit = "°C";
+            _chartManager.ChartTitle = "Jahrestemperatur Verlauf";
+            _chartManager.MitLegende = false;
+            _chartManager.Init();
+            _chartManager.AddSeries("Temperatur", Color.Blue, Array.ConvertAll<double, float>(yAxis.ToArray(), x => (float)x));
+
+            // Chart Sonnenwinkel
             yAxis = ctrl.list_Sonnenwinkel;
-            xAxis = ctrl.list_Tag;
 
-            // ConfigureXAxisWithMonths
-            chart2.Series[0].XValueType = ChartValueType.DateTime;
-            
-            // 1. Das Format auf "Monatszahl" setzen
-            chart2.ChartAreas[0].AxisX.LabelStyle.Format = "%M";
-
-            // 2. Sicherstellen, dass die Abstände in Monaten gerechnet werden
-            chart2.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Months;
-            
-            // Gitterlinien so verschieben, dass sie zwischen den Monaten liegen
-            chart2.ChartAreas[0].AxisX.MajorGrid.IntervalOffset = +0.5;
-            
-            //chart8.ChartAreas[0].AxisY.MajorTickMark.IntervalOffset = -0.5;
-            chart2.ChartAreas[0].AxisX.Maximum = new DateTime(2026, 12, 1).ToOADate();
-
-            // 3. Alle 1 Monat eine Zahl anzeigen
-            chart2.ChartAreas[0].AxisX.Interval = 1;
-            
-            DateTime dt = new DateTime(2026, 1, 1);
-            for (int j = 0; j < 8760; j++)
-            {
-                DateTime d = dt.AddHours(j);
-                double offset = SolarCalculator.CalculateTimeOffset(ctrlregion.Latitude, ctrlregion.Longitude, d.Date);
-                d = d.AddHours((int)((double)(offset/60.0))+1);
-                chart2.Series[0].Points.AddXY(d, yAxis[j]);
-                ;
-            }
-            chart2.Invalidate(); // Markiert das Chart als "muss neu gezeichnet werden"
-                                 // Erzwingt die Berechnung aller internen Werte (auch für Tooltips)
-            chart2.ChartAreas[0].RecalculateAxesScale();
-            chart2.Update();     // Erzwingt das sofortige Zeichnen im Speicher
-                                 // Nachdem die Punkte hinzugefügt wurden:
-
-            chart2.Series[0].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Yes;
-            chart2.Series[0].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
-            chart2.Series[0].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
-            chart2.Series[0].IsValueShownAsLabel = false;
-            chart2.Series[0].BorderWidth = 2;
-            chart2.Update();
-
-            _chartManager = new ChartMouseWheel(chart2);
-            _chartManager.szToolTipUnit = "°";
+            ChartManager _chartManager2 = new ChartManager(chart2);
+            _chartManager2.YMaxValue = yAxis.ToArray().Max();
+            _chartManager2.YMinValue = 0;
+            _chartManager2.XAxisAsNumber = false;
+            _chartManager2.XAxisTitle = "Jahresstunden";
+            _chartManager2.YAxisTitle = "Sonnenwinkel";
+            _chartManager2.toolTipUnit = "°";
+            _chartManager2.ChartTitle = "Sonnenwinkel Verlauf";
+            _chartManager2.MitLegende = false;
+            _chartManager2.Init();
+            _chartManager2.AddSeries("Sonnenwinkel", Color.Orange, Array.ConvertAll<double, float>(yAxis.ToArray(), x => (float)x));
+ 
         }
 
-        private void butt_Delete_Click(object sender, EventArgs e)
+        private void btn_Delete_Click(object sender, EventArgs e)
         {
             RecordSet rs = new RecordSet();
             
@@ -229,42 +181,6 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public void ConfigureXAxisWithMonths(Chart chartControl)
-        {
-            // Define your custom labels in an array
-            string[] monthArray = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
-
-            chartControl.ChartAreas[0].AxisX.CustomLabels.Clear();
-            //chartControl.Annotations.Clear();
-            //chartControl.Series[0].Points.Clear();
-
-            chartControl.ChartAreas[0].AxisX.ScaleView.ZoomReset(0);
-            chartControl.ChartAreas[0].AxisY.ScaleView.ZoomReset(0);
-
-            chartControl.ChartAreas[0].AxisX.Minimum = 0;
-            chartControl.ChartAreas[0].AxisX.Maximum = monthArray.Length;
-            chartControl.ChartAreas[0].AxisX.Interval = 1;
-
-            for (int i = 0; i < monthArray.Length; i++)
-            {
-                CustomLabel lblMonth = new CustomLabel();
-                lblMonth.FromPosition = i;
-                lblMonth.ToPosition = i + 0.8;
-                lblMonth.Text = monthArray[i];
-                chartControl.ChartAreas[0].AxisX.CustomLabels.Add(lblMonth);
-            }
-
-            chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Months;
-            chartControl.ChartAreas[0].AxisX.Title = "Monat";
-            chartControl.ChartAreas[0].AxisX.ScaleView.Size = 12;
-
-            return;
-        }
-
-        private void comboBox_Ort_Click(object sender, EventArgs e)
-        {
-        }
-
         private async void btn_Import_Click(object sender, EventArgs e)
         {
             KlimaregionCtrl ctrlklimareg = new KlimaregionCtrl();
@@ -274,24 +190,39 @@ namespace WindowsFormsApplication1
             // PVGIS nutzt Punkt als Dezimaltrenner, daher muss die InvariantCulture verwendet werden
             var culture = CultureInfo.InvariantCulture;
 
-            // wenn in DB schon vorhanden, dann nicht importieren
-            if (listBoxKlimreg.FindString(comboBox_Ort.Text) != -1) return;
-
             pBar_Import.Maximum = 7;
             pBar_Import.Value = 1;
-            pBar_Import.Visible = true;
             textBox_Display.Text = "";
-            textBox_Latitude.Text = "";
-            textBox_Longitude.Text = "";
+            bool Success; double Lat; double Lon; string DisplayName; string Listbezeichner;
 
-            // Koordinaten für den Ort ermitteln
-            var (Success, Lat, Lon, DisplayName) = await PVGIS_EPW_Downloader.GetCoordinatesAsync(comboBox_Ort.Text);
-            if (!Success) { pBar_Import.Visible = false; MessageBox.Show("Der Ort '" + comboBox_Ort.Text + "'konnte nicht ermittelt werden..."); return; }  
+            if (comboBox_Ort.Text != "")
+            {
+                // Koordinaten für den Ort ermitteln
+                // wenn in DB schon vorhanden, dann nicht importieren
+                if (listBoxKlimreg.FindString(comboBox_Ort.Text) != -1) return;
+                pBar_Import.Visible = true;
+                (Success, Lat, Lon, DisplayName) = await PVGIS_EPW_Downloader.GetCoordinatesAsync(comboBox_Ort.Text);
+                if (!Success) { pBar_Import.Visible = false; MessageBox.Show("Der Ort '" + comboBox_Ort.Text + "'konnte nicht ermittelt werden..."); return; }
+                Listbezeichner = comboBox_Ort.Text; 
+            }
+            else
+            {
+                // Eingabe überprüfen
+                if (textBox_Latitude.Text == "" || textBox_Longitude.Text == "" || textBox_Bezeichnung.Text == "") { MessageBox.Show("Eingaben überprüfen!"); textBox_Bezeichnung.Focus(); return; }
+                pBar_Import.Visible = true;
+                textBox_Longitude.Text = textBox_Longitude.Text.Replace('.', ','); 
+                Lon = Convert.ToDouble(textBox_Longitude.Text);
+                textBox_Latitude.Text = textBox_Latitude.Text.Replace('.', ',');
+                Lat = Convert.ToDouble(textBox_Latitude.Text);
+                DisplayName = "";
+                Listbezeichner = textBox_Bezeichnung.Text;
+            }
 
             pBar_Import.Value += 1;
             textBox_Display.Text = DisplayName;
             textBox_Latitude.Text = Lat.ToString();
             textBox_Longitude.Text = Lon.ToString();
+
 
             // TMY Daten von PVGIS herunterladen, berechnen nach Ost, Süd, West, Nord und in Listen speichern
             List<TmyHourlyData> tmyHourlyList = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 0);
@@ -304,6 +235,7 @@ namespace WindowsFormsApplication1
 
             // Anzeige der Datenquelle in der GUI
             textBox_Display.Text = PVGIS_EPW_Downloader.meteoDb + ": " + textBox_Display.Text;
+            DisplayName = textBox_Display.Text; 
 
             // PVGIS Parameter für Solarberechnung:
             // <param name="dni">Gb(n) aus TMY</param>
@@ -345,8 +277,8 @@ namespace WindowsFormsApplication1
             pBar_Import.Value += 1; pBar_Import.Update();
 
             // Tabelle Klimaregion schreiben
-            if (!ctrlklimareg.Add(comboBox_Ort.Text, Lon, Lat)) return;
-            ctrlklimareg.ReadSingle("SELECT * FROM Tab_Klimaregion where Name = '" + comboBox_Ort.Text + "'");
+            if (!ctrlklimareg.Add(Listbezeichner, Lon, Lat, DisplayName)) return;
+            ctrlklimareg.ReadSingle("SELECT * FROM Tab_Klimaregion where Name = '" + Listbezeichner + "'");
             int id = ctrlklimareg.m_ID_Klimaregion;
             if (id == 0) return;
 
@@ -354,7 +286,7 @@ namespace WindowsFormsApplication1
 
             // Tabelle Solar (Stundenwerte) schreiben
             AccessRepository repo = new AccessRepository(db);
-            repo.SaveTmyData(tmyHourlyList, comboBox_Ort.Text,"Tab_Solar", id);
+            repo.SaveTmyData(tmyHourlyList, Listbezeichner, "Tab_Solar", id);
 
             // Tageswerte für Tabelle_Klimadaten
             var daylist = SolarCalculator.GetDailyAverages(tmyHourlyList);
@@ -403,45 +335,18 @@ namespace WindowsFormsApplication1
             };
             return 0;
         }
-
-        private void chart1_AxisViewChanged(object sender, ViewEventArgs e)
+          
+        private void textBox_Longitude_TextChanged(object sender, EventArgs e)
         {
-            // Wir interessieren uns nur für die X-Achse
-            if (e.Axis.AxisName == AxisName.X)
-            {
-                double startValue = e.Axis.ScaleView.ViewMinimum;
-                double endValue = e.Axis.ScaleView.ViewMaximum;
-
-                TextAnnotation ta ;
-    
-                if (chart1.Annotations.Count == 0)
-                {
-                    ta = new TextAnnotation();
-                    chart1.Annotations.Add(ta);
-                }
-                else
-                {
-                    ta= (TextAnnotation)chart1.Annotations[0];
-                }
-                ta.AnchorX = 18;  // % der chart width, von links
-                ta.AnchorY = 98;  // % der chart height, von oben
-
-                // Prüfen, ob wir im "Total-View" sind oder gezoomt haben
-                if (startValue == 0 && endValue ==12)
-                {
-                    ta.Text = "Anzeige: Ganzes Jahr";
-                }
-                else
-                {
-                    // Umrechnung Index -> Datum
-                    int year = DateTime.Now.Year;
-                    DateTime startDate = new DateTime(year, 1, 1).AddHours((int)((startValue/12)*8760));
-                    DateTime endDate = new DateTime(year, 1, 1).AddHours((int)Math.Min(8759, (endValue/12)*8760));
-                    ta.Text = $"Bereich: {startDate:dd.MM.} bis {endDate:dd.MM.yyyy}";
-                }
-            }
+            TextBox tb = sender as TextBox;
+            if (!Program.checkDouble(tb, tb.Text)) tb.Clear();
         }
 
+        private void textBox_Latitude_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (!Program.checkDouble(tb, tb.Text)) tb.Clear();
+        }
     }
 
 }

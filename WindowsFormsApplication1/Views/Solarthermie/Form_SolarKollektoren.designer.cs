@@ -39,6 +39,8 @@ namespace WindowsFormsApplication1
             this.btn_OK = new System.Windows.Forms.Button();
             this.listBox_Auswahl = new System.Windows.Forms.ListBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.textBox_Azimut = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
@@ -48,7 +50,7 @@ namespace WindowsFormsApplication1
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btn_Speichern = new System.Windows.Forms.Button();
             this.Label11 = new System.Windows.Forms.Label();
-            this.textBox_Kollektor_A = new System.Windows.Forms.TextBox();
+            this.textBox_Aperturflaeche = new System.Windows.Forms.TextBox();
             this.btn_Abbrechen = new System.Windows.Forms.Button();
             this.label_Type = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -61,10 +63,8 @@ namespace WindowsFormsApplication1
             this.textBox_Kollektortype = new System.Windows.Forms.TextBox();
             this.textBox_Beschreibung = new System.Windows.Forms.TextBox();
             this.textBox_Firma = new System.Windows.Forms.TextBox();
-            this.textBox_Modul_A = new System.Windows.Forms.TextBox();
+            this.textBox_Modul_Apertur = new System.Windows.Forms.TextBox();
             this.Label9 = new System.Windows.Forms.Label();
-            this.textBox_Azimut = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox_Kollektor.SuspendLayout();
@@ -101,8 +101,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Anzahl
             // 
-            this.textBox_Anzahl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_Anzahl, "textBox_Anzahl");
+            this.textBox_Anzahl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_Anzahl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.textBox_Anzahl.Name = "textBox_Anzahl";
             this.textBox_Anzahl.TextChanged += new System.EventHandler(this.textBox_Anzahl_TextChanged);
@@ -115,8 +115,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Kollektorneigung
             // 
-            this.textBox_Kollektorneigung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_Kollektorneigung, "textBox_Kollektorneigung");
+            this.textBox_Kollektorneigung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_Kollektorneigung.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.textBox_Kollektorneigung.Name = "textBox_Kollektorneigung";
             this.textBox_Kollektorneigung.TextChanged += new System.EventHandler(this.textBox_Kollektorneigung_TextChanged);
@@ -136,13 +136,26 @@ namespace WindowsFormsApplication1
             // 
             // groupBox1
             // 
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.textBox_Azimut);
             this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Controls.Add(this.textBox_Kollektorneigung);
             this.groupBox1.Controls.Add(this.Label13);
-            resources.ApplyResources(this.groupBox1, "groupBox1");
+            this.groupBox1.Controls.Add(this.textBox_Kollektorneigung);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
+            // 
+            // textBox_Azimut
+            // 
+            resources.ApplyResources(this.textBox_Azimut, "textBox_Azimut");
+            this.textBox_Azimut.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Azimut.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.textBox_Azimut.Name = "textBox_Azimut";
+            // 
+            // label4
+            // 
+            resources.ApplyResources(this.label4, "label4");
+            this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.label4.Name = "label4";
             // 
             // label2
             // 
@@ -156,11 +169,11 @@ namespace WindowsFormsApplication1
             // 
             // dataGridView1
             // 
+            resources.ApplyResources(this.dataGridView1, "dataGridView1");
             this.dataGridView1.AllowUserToAddRows = false;
             this.dataGridView1.AllowUserToDeleteRows = false;
             this.dataGridView1.BackgroundColor = System.Drawing.Color.Silver;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            resources.ApplyResources(this.dataGridView1, "dataGridView1");
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.Click += new System.EventHandler(this.dataGridView1_Click);
             this.dataGridView1.Leave += new System.EventHandler(this.dataGridView1_Leave);
@@ -181,22 +194,22 @@ namespace WindowsFormsApplication1
             // 
             // groupBox_Kollektor
             // 
+            resources.ApplyResources(this.groupBox_Kollektor, "groupBox_Kollektor");
             this.groupBox_Kollektor.BackColor = System.Drawing.Color.Khaki;
             this.groupBox_Kollektor.Controls.Add(this.pictureBox1);
             this.groupBox_Kollektor.Controls.Add(this.btn_Speichern);
             this.groupBox_Kollektor.Controls.Add(this.textBox_Anzahl);
             this.groupBox_Kollektor.Controls.Add(this.Label10);
             this.groupBox_Kollektor.Controls.Add(this.Label11);
-            this.groupBox_Kollektor.Controls.Add(this.textBox_Kollektor_A);
+            this.groupBox_Kollektor.Controls.Add(this.textBox_Aperturflaeche);
             this.groupBox_Kollektor.Controls.Add(this.groupBox1);
-            resources.ApplyResources(this.groupBox_Kollektor, "groupBox_Kollektor");
             this.groupBox_Kollektor.Name = "groupBox_Kollektor";
             this.groupBox_Kollektor.TabStop = false;
             // 
             // pictureBox1
             // 
-            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
             resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
             // 
@@ -214,11 +227,11 @@ namespace WindowsFormsApplication1
             this.Label11.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.Label11.Name = "Label11";
             // 
-            // textBox_Kollektor_A
+            // textBox_Aperturflaeche
             // 
-            this.textBox_Kollektor_A.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_Kollektor_A, "textBox_Kollektor_A");
-            this.textBox_Kollektor_A.Name = "textBox_Kollektor_A";
+            resources.ApplyResources(this.textBox_Aperturflaeche, "textBox_Aperturflaeche");
+            this.textBox_Aperturflaeche.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Aperturflaeche.Name = "textBox_Aperturflaeche";
             // 
             // btn_Abbrechen
             // 
@@ -229,12 +242,13 @@ namespace WindowsFormsApplication1
             // 
             // label_Type
             // 
-            this.label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             resources.ApplyResources(this.label_Type, "label_Type");
+            this.label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.label_Type.Name = "label_Type";
             // 
             // groupBox2
             // 
+            resources.ApplyResources(this.groupBox2, "groupBox2");
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Controls.Add(this.textBox_Name);
             this.groupBox2.Controls.Add(this.Label5);
@@ -244,9 +258,8 @@ namespace WindowsFormsApplication1
             this.groupBox2.Controls.Add(this.textBox_Kollektortype);
             this.groupBox2.Controls.Add(this.textBox_Beschreibung);
             this.groupBox2.Controls.Add(this.textBox_Firma);
-            this.groupBox2.Controls.Add(this.textBox_Modul_A);
+            this.groupBox2.Controls.Add(this.textBox_Modul_Apertur);
             this.groupBox2.Controls.Add(this.Label9);
-            resources.ApplyResources(this.groupBox2, "groupBox2");
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.TabStop = false;
             // 
@@ -257,8 +270,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Name
             // 
-            this.textBox_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_Name, "textBox_Name");
+            this.textBox_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_Name.Name = "textBox_Name";
             // 
             // Label5
@@ -283,27 +296,27 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Kollektortype
             // 
-            this.textBox_Kollektortype.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_Kollektortype, "textBox_Kollektortype");
+            this.textBox_Kollektortype.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_Kollektortype.Name = "textBox_Kollektortype";
             // 
             // textBox_Beschreibung
             // 
-            this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
+            this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
             // 
             // textBox_Firma
             // 
-            this.textBox_Firma.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(this.textBox_Firma, "textBox_Firma");
+            this.textBox_Firma.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox_Firma.Name = "textBox_Firma";
             // 
-            // textBox_Modul_A
+            // textBox_Modul_Apertur
             // 
-            this.textBox_Modul_A.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_Modul_A, "textBox_Modul_A");
-            this.textBox_Modul_A.Name = "textBox_Modul_A";
+            resources.ApplyResources(this.textBox_Modul_Apertur, "textBox_Modul_Apertur");
+            this.textBox_Modul_Apertur.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_Modul_Apertur.Name = "textBox_Modul_Apertur";
             // 
             // Label9
             // 
@@ -311,19 +324,6 @@ namespace WindowsFormsApplication1
             this.Label9.BackColor = System.Drawing.Color.Black;
             this.Label9.ForeColor = System.Drawing.Color.White;
             this.Label9.Name = "Label9";
-            // 
-            // textBox_Azimut
-            // 
-            this.textBox_Azimut.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_Azimut, "textBox_Azimut");
-            this.textBox_Azimut.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.textBox_Azimut.Name = "textBox_Azimut";
-            // 
-            // label4
-            // 
-            resources.ApplyResources(this.label4, "label4");
-            this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.label4.Name = "label4";
             // 
             // Form_SolarKollektoren
             // 
@@ -380,7 +380,7 @@ private System.Windows.Forms.Button btn_OK;
         private System.Windows.Forms.Button btn_Speichern;
         private System.Windows.Forms.Label label_Type;
         private System.Windows.Forms.Label Label11;
-        private System.Windows.Forms.TextBox textBox_Kollektor_A;
+        private System.Windows.Forms.TextBox textBox_Aperturflaeche;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox textBox_Name;
@@ -391,7 +391,7 @@ private System.Windows.Forms.Button btn_OK;
         private System.Windows.Forms.TextBox textBox_Kollektortype;
         private System.Windows.Forms.TextBox textBox_Beschreibung;
         private System.Windows.Forms.TextBox textBox_Firma;
-        private System.Windows.Forms.TextBox textBox_Modul_A;
+        private System.Windows.Forms.TextBox textBox_Modul_Apertur;
         private System.Windows.Forms.Label Label9;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.TextBox textBox_Azimut;

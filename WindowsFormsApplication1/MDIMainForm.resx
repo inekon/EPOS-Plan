@@ -284,11 +284,35 @@
   <data name="toolStripMenuItem2.Text" xml:space="preserve">
     <value>Strombedarf &amp;&amp; Speicher</value>
   </data>
+  <data name="MenuItem_PV_Import.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 26</value>
+  </data>
+  <data name="MenuItem_PV_Import.Text" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="MenuItem_PC_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 26</value>
+  </data>
+  <data name="MenuItem_PC_Bearbeiten.Text" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
   <data name="MenuItem_PV.Size" type="System.Drawing.Size, System.Drawing">
     <value>234, 26</value>
   </data>
   <data name="MenuItem_PV.Text" xml:space="preserve">
     <value>Photovoltaik</value>
+  </data>
+  <data name="MenuItem_ST_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>196, 26</value>
+  </data>
+  <data name="MenuItem_ST_Bearbeiten.Text" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="MenuItem_ST_Import.Size" type="System.Drawing.Size, System.Drawing">
+    <value>196, 26</value>
+  </data>
+  <data name="MenuItem_ST_Import.Text" xml:space="preserve">
+    <value>Import VDI 3805</value>
   </data>
   <data name="MenuItem_Solarkollektoren.Size" type="System.Drawing.Size, System.Drawing">
     <value>234, 26</value>
@@ -318,7 +342,7 @@
     <value>Energiesysteme</value>
   </data>
   <data name="MenuItem_Klimadaten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>158, 26</value>
+    <value>180, 26</value>
   </data>
   <data name="MenuItem_Klimadaten.Text" xml:space="preserve">
     <value>Klimadaten</value>
@@ -1362,34 +1386,10 @@
   <data name="&gt;&gt;toolStripMenuItem1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;MenuItem_WaermebedarfExtern.Name" xml:space="preserve">
-    <value>MenuItem_WaermebedarfExtern</value>
+  <data name="&gt;&gt;MenuItem_Brauchwasser.Name" xml:space="preserve">
+    <value>MenuItem_Brauchwasser</value>
   </data>
-  <data name="&gt;&gt;MenuItem_WaermebedarfExtern.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;MenuItem_Prozesswaerme.Name" xml:space="preserve">
-    <value>MenuItem_Prozesswaerme</value>
-  </data>
-  <data name="&gt;&gt;MenuItem_Prozesswaerme.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;MenuItem_WP.Name" xml:space="preserve">
-    <value>MenuItem_WP</value>
-  </data>
-  <data name="&gt;&gt;MenuItem_WP.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;MenuItem_WPBearbeiten.Name" xml:space="preserve">
-    <value>MenuItem_WPBearbeiten</value>
-  </data>
-  <data name="&gt;&gt;MenuItem_WPBearbeiten.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;MeniItem_VDI3805.Name" xml:space="preserve">
-    <value>MeniItem_VDI3805</value>
-  </data>
-  <data name="&gt;&gt;MeniItem_VDI3805.Type" xml:space="preserve">
+  <data name="&gt;&gt;MenuItem_Brauchwasser.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;MenuItem_Kessel.Name" xml:space="preserve">
@@ -1410,6 +1410,12 @@
   <data name="&gt;&gt;MeniItem_SPK_VDI3805.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;MenuItem_Prozesswaerme.Name" xml:space="preserve">
+    <value>MenuItem_Prozesswaerme</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_Prozesswaerme.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;MenuItem_PufferSp.Name" xml:space="preserve">
     <value>MenuItem_PufferSp</value>
   </data>
@@ -1426,6 +1432,30 @@
     <value>MenuItem_PufferSpBearbeiten</value>
   </data>
   <data name="&gt;&gt;MenuItem_PufferSpBearbeiten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_WaermebedarfExtern.Name" xml:space="preserve">
+    <value>MenuItem_WaermebedarfExtern</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_WaermebedarfExtern.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_WP.Name" xml:space="preserve">
+    <value>MenuItem_WP</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_WP.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_WPBearbeiten.Name" xml:space="preserve">
+    <value>MenuItem_WPBearbeiten</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_WPBearbeiten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MeniItem_VDI3805.Name" xml:space="preserve">
+    <value>MeniItem_VDI3805</value>
+  </data>
+  <data name="&gt;&gt;MeniItem_VDI3805.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;toolStripMenuItem2.Name" xml:space="preserve">
@@ -1462,6 +1492,18 @@
     <value>MenuItem_PV</value>
   </data>
   <data name="&gt;&gt;MenuItem_PV.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_PV_Import.Name" xml:space="preserve">
+    <value>MenuItem_PV_Import</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_PV_Import.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_PC_Bearbeiten.Name" xml:space="preserve">
+    <value>MenuItem_PC_Bearbeiten</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_PC_Bearbeiten.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;MenuItem_Solarkollektoren.Name" xml:space="preserve">
@@ -1560,10 +1602,16 @@
   <data name="&gt;&gt;Englisch.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;MenuItem_Brauchwasser.Name" xml:space="preserve">
-    <value>MenuItem_Brauchwasser</value>
+  <data name="&gt;&gt;MenuItem_ST_Bearbeiten.Name" xml:space="preserve">
+    <value>MenuItem_ST_Bearbeiten</value>
   </data>
-  <data name="&gt;&gt;MenuItem_Brauchwasser.Type" xml:space="preserve">
+  <data name="&gt;&gt;MenuItem_ST_Bearbeiten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_ST_Import.Name" xml:space="preserve">
+    <value>MenuItem_ST_Import</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_ST_Import.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">

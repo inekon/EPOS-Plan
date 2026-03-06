@@ -42,23 +42,26 @@
             this.MenuItem_ProjektLöschen = new System.Windows.Forms.ToolStripMenuItem();
             this.Administration = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_WaermebedarfExtern = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_Prozesswaerme = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_WP = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_WPBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
-            this.MeniItem_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Brauchwasser = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Kessel = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_SPKBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MeniItem_SPK_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Prozesswaerme = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_PufferSp = new System.Windows.Forms.ToolStripMenuItem();
             this.MeniItem_PufferSp_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_PufferSpBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_WaermebedarfExtern = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_WP = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_WPBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
+            this.MeniItem_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_PV = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_PV_Import = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_PC_Bearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Solarkollektoren = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_SolThermGanglinie = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_BHKW = new System.Windows.Forms.ToolStripMenuItem();
@@ -75,7 +78,8 @@
             this.MenuItem_Lizenz = new System.Windows.Forms.ToolStripMenuItem();
             this.Deutsch = new System.Windows.Forms.ToolStripMenuItem();
             this.Englisch = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_Brauchwasser = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_ST_Bearbeiten = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_ST_Import = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolbar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -184,37 +188,11 @@
             resources.ApplyResources(this.toolStripMenuItem1, "toolStripMenuItem1");
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             // 
-            // MenuItem_WaermebedarfExtern
+            // MenuItem_Brauchwasser
             // 
-            this.MenuItem_WaermebedarfExtern.Name = "MenuItem_WaermebedarfExtern";
-            resources.ApplyResources(this.MenuItem_WaermebedarfExtern, "MenuItem_WaermebedarfExtern");
-            this.MenuItem_WaermebedarfExtern.Click += new System.EventHandler(this.MenuItem_WaermebedarfExtern_Click);
-            // 
-            // MenuItem_Prozesswaerme
-            // 
-            this.MenuItem_Prozesswaerme.Name = "MenuItem_Prozesswaerme";
-            resources.ApplyResources(this.MenuItem_Prozesswaerme, "MenuItem_Prozesswaerme");
-            this.MenuItem_Prozesswaerme.Click += new System.EventHandler(this.MenuItem_Prozesswaerme_Click);
-            // 
-            // MenuItem_WP
-            // 
-            this.MenuItem_WP.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MenuItem_WPBearbeiten,
-            this.MeniItem_VDI3805});
-            this.MenuItem_WP.Name = "MenuItem_WP";
-            resources.ApplyResources(this.MenuItem_WP, "MenuItem_WP");
-            // 
-            // MenuItem_WPBearbeiten
-            // 
-            this.MenuItem_WPBearbeiten.Name = "MenuItem_WPBearbeiten";
-            resources.ApplyResources(this.MenuItem_WPBearbeiten, "MenuItem_WPBearbeiten");
-            this.MenuItem_WPBearbeiten.Click += new System.EventHandler(this.MenuItem_WPBearbeiten_Click_1);
-            // 
-            // MeniItem_VDI3805
-            // 
-            this.MeniItem_VDI3805.Name = "MeniItem_VDI3805";
-            resources.ApplyResources(this.MeniItem_VDI3805, "MeniItem_VDI3805");
-            this.MeniItem_VDI3805.Click += new System.EventHandler(this.MeniItem_VDI3805_Click);
+            this.MenuItem_Brauchwasser.Name = "MenuItem_Brauchwasser";
+            resources.ApplyResources(this.MenuItem_Brauchwasser, "MenuItem_Brauchwasser");
+            this.MenuItem_Brauchwasser.Click += new System.EventHandler(this.MenuItem_Brauchwasser_Click);
             // 
             // MenuItem_Kessel
             // 
@@ -236,6 +214,12 @@
             resources.ApplyResources(this.MeniItem_SPK_VDI3805, "MeniItem_SPK_VDI3805");
             this.MeniItem_SPK_VDI3805.Click += new System.EventHandler(this.MeniItem_SPK_VDI3805_Click);
             // 
+            // MenuItem_Prozesswaerme
+            // 
+            this.MenuItem_Prozesswaerme.Name = "MenuItem_Prozesswaerme";
+            resources.ApplyResources(this.MenuItem_Prozesswaerme, "MenuItem_Prozesswaerme");
+            this.MenuItem_Prozesswaerme.Click += new System.EventHandler(this.MenuItem_Prozesswaerme_Click);
+            // 
             // MenuItem_PufferSp
             // 
             this.MenuItem_PufferSp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -255,6 +239,32 @@
             this.MenuItem_PufferSpBearbeiten.Name = "MenuItem_PufferSpBearbeiten";
             resources.ApplyResources(this.MenuItem_PufferSpBearbeiten, "MenuItem_PufferSpBearbeiten");
             this.MenuItem_PufferSpBearbeiten.Click += new System.EventHandler(this.MenuItem_PufferSpBearbeiten_Click);
+            // 
+            // MenuItem_WaermebedarfExtern
+            // 
+            this.MenuItem_WaermebedarfExtern.Name = "MenuItem_WaermebedarfExtern";
+            resources.ApplyResources(this.MenuItem_WaermebedarfExtern, "MenuItem_WaermebedarfExtern");
+            this.MenuItem_WaermebedarfExtern.Click += new System.EventHandler(this.MenuItem_WaermebedarfExtern_Click);
+            // 
+            // MenuItem_WP
+            // 
+            this.MenuItem_WP.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_WPBearbeiten,
+            this.MeniItem_VDI3805});
+            this.MenuItem_WP.Name = "MenuItem_WP";
+            resources.ApplyResources(this.MenuItem_WP, "MenuItem_WP");
+            // 
+            // MenuItem_WPBearbeiten
+            // 
+            this.MenuItem_WPBearbeiten.Name = "MenuItem_WPBearbeiten";
+            resources.ApplyResources(this.MenuItem_WPBearbeiten, "MenuItem_WPBearbeiten");
+            this.MenuItem_WPBearbeiten.Click += new System.EventHandler(this.MenuItem_WPBearbeiten_Click);
+            // 
+            // MeniItem_VDI3805
+            // 
+            this.MeniItem_VDI3805.Name = "MeniItem_VDI3805";
+            resources.ApplyResources(this.MeniItem_VDI3805, "MeniItem_VDI3805");
+            this.MeniItem_VDI3805.Click += new System.EventHandler(this.MeniItem_VDI3805_Click);
             // 
             // toolStripMenuItem2
             // 
@@ -299,15 +309,31 @@
             // 
             // MenuItem_PV
             // 
+            this.MenuItem_PV.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_PV_Import,
+            this.MenuItem_PC_Bearbeiten});
             this.MenuItem_PV.Name = "MenuItem_PV";
             resources.ApplyResources(this.MenuItem_PV, "MenuItem_PV");
-            this.MenuItem_PV.Click += new System.EventHandler(this.MenuItem_PV_Click);
+            // 
+            // MenuItem_PV_Import
+            // 
+            this.MenuItem_PV_Import.Name = "MenuItem_PV_Import";
+            resources.ApplyResources(this.MenuItem_PV_Import, "MenuItem_PV_Import");
+            this.MenuItem_PV_Import.Click += new System.EventHandler(this.MenuItem_PV_Import_Click);
+            // 
+            // MenuItem_PC_Bearbeiten
+            // 
+            this.MenuItem_PC_Bearbeiten.Name = "MenuItem_PC_Bearbeiten";
+            resources.ApplyResources(this.MenuItem_PC_Bearbeiten, "MenuItem_PC_Bearbeiten");
+            this.MenuItem_PC_Bearbeiten.Click += new System.EventHandler(this.MenuItem_PV_Bearbeiten_Click);
             // 
             // MenuItem_Solarkollektoren
             // 
+            this.MenuItem_Solarkollektoren.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenuItem_ST_Bearbeiten,
+            this.MenuItem_ST_Import});
             this.MenuItem_Solarkollektoren.Name = "MenuItem_Solarkollektoren";
             resources.ApplyResources(this.MenuItem_Solarkollektoren, "MenuItem_Solarkollektoren");
-            this.MenuItem_Solarkollektoren.Click += new System.EventHandler(this.MenuItem_Solarkollektoren_Click);
             // 
             // MenuItem_SolThermGanglinie
             // 
@@ -415,11 +441,17 @@
             this.Englisch.Name = "Englisch";
             this.Englisch.Click += new System.EventHandler(this.Englisch_Click);
             // 
-            // MenuItem_Brauchwasser
+            // MenuItem_ST_Bearbeiten
             // 
-            this.MenuItem_Brauchwasser.Name = "MenuItem_Brauchwasser";
-            resources.ApplyResources(this.MenuItem_Brauchwasser, "MenuItem_Brauchwasser");
-            this.MenuItem_Brauchwasser.Click += new System.EventHandler(this.MenuItem_Brauchwasser_Click);
+            this.MenuItem_ST_Bearbeiten.Name = "MenuItem_ST_Bearbeiten";
+            resources.ApplyResources(this.MenuItem_ST_Bearbeiten, "MenuItem_ST_Bearbeiten");
+            this.MenuItem_ST_Bearbeiten.Click += new System.EventHandler(this.MenuItem_ST_Bearbeiten_Click);
+            // 
+            // MenuItem_ST_Import
+            // 
+            this.MenuItem_ST_Import.Name = "MenuItem_ST_Import";
+            resources.ApplyResources(this.MenuItem_ST_Import, "MenuItem_ST_Import");
+            this.MenuItem_ST_Import.Click += new System.EventHandler(this.MenuItem_ST_Import_Click);
             // 
             // MDIMainForm
             // 
@@ -487,6 +519,10 @@
         private System.Windows.Forms.ToolStripMenuItem MeniItem_PufferSp_VDI3805;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_PufferSpBearbeiten;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Brauchwasser;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_PV_Import;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_PC_Bearbeiten;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_ST_Bearbeiten;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_ST_Import;
     }
 }
 

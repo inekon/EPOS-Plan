@@ -60,14 +60,14 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                NumberFormatInfo formatInfo = new NumberFormatInfo();
-                formatInfo.NumberDecimalSeparator = ","; // Komma als Dezimaltrennzeichen
-
                 for (int i = 0; i < list_GanglinieDaten.Count; i++)
                 {
                     StromganglinieDatenModel item = list_GanglinieDaten.ElementAt(i);
-                    string sql = "INSERT INTO Tab_StromganglinieDaten ( ID_GanglinieDaten, Wert) SELECT " + item.m_ID_GanglinieDaten +
-                        " AS Ausdr1, " + item.m_Wert.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr2";
+     
+                    string sql = FormattableString.Invariant($@"
+                        INSERT INTO Tab_StromganglinieDaten (ID_Ganglinie, Wert) 
+                        SELECT {item.m_ID_GanglinieDaten}, {item.m_Wert}");
+
                     DBCommand.CommandText = sql;
                     DBCommand.ExecuteNonQuery();
                 }

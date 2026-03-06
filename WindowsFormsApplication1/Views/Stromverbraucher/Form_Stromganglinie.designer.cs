@@ -35,10 +35,7 @@ namespace WindowsFormsApplication1
             this.btn_Entfernen = new System.Windows.Forms.Button();
             this.listBox_Extern = new System.Windows.Forms.ListBox();
             this.Label2 = new System.Windows.Forms.Label();
-            this.btn_Hilfe = new System.Windows.Forms.Button();
             this.btn_OK = new System.Windows.Forms.Button();
-            this.Label3 = new System.Windows.Forms.Label();
-            this.textBox_Name = new System.Windows.Forms.TextBox();
             this.btn_Abbrechen = new System.Windows.Forms.Button();
             this.btn_Bearbeiten = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -52,7 +49,6 @@ namespace WindowsFormsApplication1
             // 
             resources.ApplyResources(this.listBox_Auswahl, "listBox_Auswahl");
             this.listBox_Auswahl.Name = "listBox_Auswahl";
-            this.listBox_Auswahl.SelectedIndexChanged += new System.EventHandler(this.listBox_Auswahl_SelectedIndexChanged);
             // 
             // btn_Hinzufuegen
             // 
@@ -72,18 +68,11 @@ namespace WindowsFormsApplication1
             // 
             resources.ApplyResources(this.listBox_Extern, "listBox_Extern");
             this.listBox_Extern.Name = "listBox_Extern";
-            this.listBox_Extern.SelectedIndexChanged += new System.EventHandler(this.listBox_Extern_SelectedIndexChanged);
             // 
             // Label2
             // 
             resources.ApplyResources(this.Label2, "Label2");
             this.Label2.Name = "Label2";
-            // 
-            // btn_Hilfe
-            // 
-            resources.ApplyResources(this.btn_Hilfe, "btn_Hilfe");
-            this.btn_Hilfe.Name = "btn_Hilfe";
-            this.btn_Hilfe.UseVisualStyleBackColor = true;
             // 
             // btn_OK
             // 
@@ -91,18 +80,6 @@ namespace WindowsFormsApplication1
             this.btn_OK.Name = "btn_OK";
             this.btn_OK.UseVisualStyleBackColor = true;
             this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
-            // 
-            // Label3
-            // 
-            resources.ApplyResources(this.Label3, "Label3");
-            this.Label3.Name = "Label3";
-            // 
-            // textBox_Name
-            // 
-            resources.ApplyResources(this.textBox_Name, "textBox_Name");
-            this.textBox_Name.BackColor = System.Drawing.Color.White;
-            this.textBox_Name.Name = "textBox_Name";
-            this.textBox_Name.ReadOnly = true;
             // 
             // btn_Abbrechen
             // 
@@ -130,10 +107,7 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.btn_Entfernen);
             this.Controls.Add(this.listBox_Extern);
             this.Controls.Add(this.Label2);
-            this.Controls.Add(this.btn_Hilfe);
             this.Controls.Add(this.btn_OK);
-            this.Controls.Add(this.Label3);
-            this.Controls.Add(this.textBox_Name);
             this.Name = "Form_Stromganglinie";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -148,10 +122,7 @@ private System.Windows.Forms.Button btn_Hinzufuegen;
 private System.Windows.Forms.Button btn_Entfernen;
 private System.Windows.Forms.ListBox listBox_Extern;
 private System.Windows.Forms.Label Label2;
-private System.Windows.Forms.Button btn_Hilfe;
 private System.Windows.Forms.Button btn_OK;
-private System.Windows.Forms.Label Label3;
-private System.Windows.Forms.TextBox textBox_Name;
 private System.Windows.Forms.Button btn_Abbrechen;
         private System.Windows.Forms.Button btn_Bearbeiten;
     }

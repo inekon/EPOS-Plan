@@ -366,5 +366,16 @@ namespace WindowsFormsApplication1
             frm.SetControls("");
             frm.ShowDialog();
         }
+
+        public void PVImport()
+        {
+
+        }
+
+        public void SolarThermieImport()
+        {
+            Form_SolarKollektoren_einlesen frm = new Form_SolarKollektoren_einlesen();
+            frm.ShowDialog();
+        }
     }
 }

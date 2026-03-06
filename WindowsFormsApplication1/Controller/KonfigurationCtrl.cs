@@ -62,27 +62,33 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                string sql;
-                sql = "INSERT INTO TAB_Einstellungen ( ID_Projekt, BHKW_Grenzleistung, Netzverluste, NetzverlusteEinheit, " +
-                    " WP_Heizstab, Kessel_Betriebsbereitschaft," +
-                      " Tool_1, Tool_2, Tool_3, Tool_4, Tool_5, Tool_6,Ladefuellstand_Min,Ladefuellstand_Max,Ladeleistung_Max," +
-                      "Ladefuellstand_Min_Auswahl, Ladefuellstand_Max_Auswahl, Ladeleistung_Max_Auswahl,Ladeschwellwert) SELECT " +
-                    ID_Projekt.ToString() + " AS Ausdr1, " + model.m_BHKW_Grenzleistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdruck2, " +
-                    model.m_Netzverluste.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr3, '" +
-                    model.m_szNetzverlusteEinheit + "' AS Ausdruck4, " +
-                    model.m_WP_Heizstab + " AS Ausdruck5, " +
-                    model.m_Kessel_Betriebsbereitschaft.ToString() + " AS Ausdr6, '" +
-                    model.m_Tool_1.ToString() + "' AS Ausdr7, '" + model.m_Tool_2.ToString() + "' AS Ausdruck8, '" +
-                    model.m_Tool_3.ToString() + "' AS Ausdr9, '" + model.m_Tool_4.ToString() + "' AS Ausdruck10, '" +
-                    model.m_Tool_5.ToString() + "' AS Ausdr11, '" + model.m_Tool_6.ToString() + "' AS Ausdruck12, " +
-                    model.m_Ladefuellstand_Min.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr13, " +
-                    model.m_Ladefuellstand_Max.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr14, " +
-                    model.m_Ladeleistung_Max.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr15, '" +
-                    model.m_Ladefuellstand_Min_Auswahl + "' AS Ausdr16, '" +
-                    model.m_Ladefuellstand_Max_Auswahl + "' AS Ausdr17, '" +
-                    model.m_Ladeleistung_Max_Auswahl + "' AS Ausdr18, " +
-                    model.m_Ladeschwellwert.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr19";
-                
+                string sql = FormattableString.Invariant($@"
+                    INSERT INTO TAB_Einstellungen 
+                    (
+                        ID_Projekt, BHKW_Grenzleistung, Netzverluste, NetzverlusteEinheit, 
+                        WP_Heizstab, Kessel_Betriebsbereitschaft, 
+                        Tool_1, Tool_2, Tool_3, Tool_4, Tool_5, Tool_6,
+                        Ladefuellstand_Min, Ladefuellstand_Max, Ladeleistung_Max,
+                        Ladefuellstand_Min_Auswahl, Ladefuellstand_Max_Auswahl, 
+                        Ladeleistung_Max_Auswahl, Ladeschwellwert
+                    ) 
+                    SELECT 
+                        {ID_Projekt}, 
+                        {model.m_BHKW_Grenzleistung}, 
+                        {model.m_Netzverluste}, 
+                        '{model.m_szNetzverlusteEinheit}', 
+                        {model.m_WP_Heizstab}, 
+                        {model.m_Kessel_Betriebsbereitschaft}, 
+                        '{model.m_Tool_1}', '{model.m_Tool_2}', '{model.m_Tool_3}', 
+                        '{model.m_Tool_4}', '{model.m_Tool_5}', '{model.m_Tool_6}',
+                        {model.m_Ladefuellstand_Min}, 
+                        {model.m_Ladefuellstand_Max}, 
+                        {model.m_Ladeleistung_Max}, 
+                        '{model.m_Ladefuellstand_Min_Auswahl}', 
+                        '{model.m_Ladefuellstand_Max_Auswahl}', 
+                        '{model.m_Ladeleistung_Max_Auswahl}', 
+                        {model.m_Ladeschwellwert}");
+
                 DBCommand.CommandText = sql;
                 DBCommand.ExecuteNonQuery();
             }

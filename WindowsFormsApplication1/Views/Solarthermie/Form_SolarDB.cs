@@ -46,10 +46,8 @@ namespace WindowsFormsApplication1
             textBox_h0.Text = model.m_h0.ToString();
             textBox_k1.Text = model.m_k1.ToString();
             textBox_k2.Text = model.m_k2.ToString();
-            textBox_C.Text = model.m_C.ToString();
             textBox_Kdir.Text = model.m_Kdir.ToString();
             textBox_Kdiff.Text = model.m_Kdfu.ToString();
-            textBox_Ertrag.Text = model.m_Ertrag.ToString();
             textBox_Kosten.Text = model.m_Kosten.ToString();
         }
 
@@ -167,13 +165,11 @@ namespace WindowsFormsApplication1
             model.m_h0 = double.Parse(textBox_h0.Text); 
             model.m_k1 = double.Parse(textBox_k1.Text);
             model.m_k2 = double.Parse(textBox_k2.Text);
-            model.m_C = double.Parse(textBox_C.Text);
             model.m_Kdir = double.Parse(textBox_Kdir.Text);
             model.m_Kdfu = double.Parse(textBox_Kdiff.Text);
-            model.m_Ertrag = double.Parse(textBox_Ertrag.Text);
             model.m_Kosten = double.Parse(textBox_Kosten.Text);
+            
             return model;
-
         }
 
         private void btn_Speichern_Click(object sender, EventArgs e)

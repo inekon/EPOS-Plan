@@ -82,21 +82,26 @@ namespace WindowsFormsApplication1
 
                 if (m_Neu)
                 {
-                    DBCommand.CommandText = "INSERT INTO TAB_PV ( Modulname, Firma, Beschreibung, Leistung, Wirkungsgrad," +
-                        " U_Mpp, U_Leerlauf, I_Mpp, I_Kurzschluss, Temp_Koeffizient, Laenge, Breite ) SELECT '" + 
-                    textBox_Bezeichner.Text + "' AS Ausdr1, '" +
-                    textBox_Firma.Text + "' AS Ausdr2, '" +
-                    textBox_Beschreibung.Text + "' AS Ausdr3, " +
-                    model.m_Leistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr4, " + 
-                    model.m_Wirkungsgrad.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr5, " + 
-                    model.m_U_Mpp.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr6, " +
-                    model.m_U_Leerlauf.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr7, " +
-                    model.m_I_Mpp.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr8, " +
-                    model.m_I_Kurzschluss.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr9, " +
-                    model.m_Temp_Coeff_Pmax.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr10, " +
-                    model.m_Laenge.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr11, " +
-                    model.m_Breite.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr12";
+                    string sql = FormattableString.Invariant($@"
+                        INSERT INTO TAB_PV ( 
+                            Modulname, Firma, Beschreibung, Leistung, Wirkungsgrad,
+                            U_Mpp, U_Leerlauf, I_Mpp, I_Kurzschluss, Temp_Koeffizient, Laenge, Breite 
+                        ) 
+                        SELECT 
+                            '{textBox_Bezeichner.Text}' AS Ausdr1, 
+                            '{textBox_Firma.Text}' AS Ausdr2, 
+                            '{textBox_Beschreibung.Text}' AS Ausdr3, 
+                            {model.m_Leistung} AS Ausdr4, 
+                            {model.m_Wirkungsgrad} AS Ausdr5, 
+                            {model.m_U_Mpp} AS Ausdr6, 
+                            {model.m_U_Leerlauf} AS Ausdr7, 
+                            {model.m_I_Mpp} AS Ausdr8, 
+                            {model.m_I_Kurzschluss} AS Ausdr9, 
+                            {model.m_Temp_Coeff_Pmax} AS Ausdr10, 
+                            {model.m_Laenge} AS Ausdr11, 
+                            {model.m_Breite} AS Ausdr12;");
 
+                    DBCommand.CommandText = sql; 
                     DBCommand.ExecuteNonQuery();
                     listBox_PV.Items.Add(textBox_Bezeichner.Text);
                     listBox_PV.SelectedIndex = listBox_PV.Items.Count - 1;
@@ -104,20 +109,22 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    string sql = "UPDATE Tab_PV SET " + 
-                        "Modulname='" + textBox_Bezeichner.Text + "', " +
-                        "Firma='" + textBox_Firma.Text + "', " +
-                        "Beschreibung='" + textBox_Beschreibung.Text + "', " +
-                        "Leistung=" + model.m_Leistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
-                        "Wirkungsgrad=" + model.m_Wirkungsgrad.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
-                        "U_Mpp=" + model.m_U_Mpp.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " + 
-                        "U_Leerlauf=" + model.m_U_Leerlauf.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
-                        "I_Mpp=" + model.m_I_Mpp.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
-                        "I_Kurzschluss=" + model.m_I_Kurzschluss.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
-                        "Temp_Koeffizient=" + model.m_Temp_Coeff_Pmax.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
-                        "Laenge=" + model.m_Laenge.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
-                        "Breite=" + model.m_Breite.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " " +
-                        "WHERE Modulname='" + listBox_PV.Text + "'";
+                    string sql = FormattableString.Invariant($@"
+                        UPDATE Tab_PV SET 
+                            Modulname = '{textBox_Bezeichner.Text}', 
+                            Firma = '{textBox_Firma.Text}', 
+                            Beschreibung = '{textBox_Beschreibung.Text}', 
+                            Leistung = {model.m_Leistung}, 
+                            Wirkungsgrad = {model.m_Wirkungsgrad}, 
+                            U_Mpp = {model.m_U_Mpp}, 
+                            U_Leerlauf = {model.m_U_Leerlauf}, 
+                            I_Mpp = {model.m_I_Mpp}, 
+                            I_Kurzschluss = {model.m_I_Kurzschluss}, 
+                            Temp_Koeffizient = {model.m_Temp_Coeff_Pmax}, 
+                            Laenge = {model.m_Laenge}, 
+                            Breite = {model.m_Breite}
+                        WHERE Modulname = '{listBox_PV.Text}';");
+
                     DBCommand.CommandText = sql;    
                     DBCommand.ExecuteNonQuery();
                     

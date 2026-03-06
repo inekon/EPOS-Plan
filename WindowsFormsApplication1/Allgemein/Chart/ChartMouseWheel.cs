@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
 {
-    using System;
-    using System.Drawing;
-    using System.Windows.Forms;
-    using System.Windows.Forms.DataVisualization.Charting;
 
     public class ChartMouseWheel
     {
@@ -17,7 +12,7 @@ namespace WindowsFormsApplication1
         private readonly Chart _chart;
         private readonly ToolTip _toolTip = new ToolTip();
         private DataPoint _lastPoint = null;
-        public bool UseYearlyHourAxis { get; set; } = true;
+        public bool UseYearlyHourAxis { get; set; } = false;
 
         public ChartMouseWheel(Chart chart)
         {
@@ -113,12 +108,21 @@ namespace WindowsFormsApplication1
             {
                 var point = result.Series.Points[result.PointIndex];
                 if (point == _lastPoint) return;
-
                 _lastPoint = point;
-                DateTime xDate = DateTime.FromOADate(point.XValue);
-                double yVal = point.YValues[0] > 0.01 ? point.YValues[0] : 0;
 
-                _toolTip.SetToolTip(_chart, $"{xDate:dd/MM H:mm}\n[{yVal:N2}{szToolTipUnit}]");
+                if (UseYearlyHourAxis)
+                {
+                    
+                    DateTime xDate = DateTime.FromOADate(point.XValue);
+                    double yVal = point.YValues[0] > 0.01 ? point.YValues[0] : 0;
+
+                    _toolTip.SetToolTip(_chart, $"{xDate:dd/MM H:mm}\n[{yVal:N2}{szToolTipUnit}]");
+                }
+                else
+                {
+                    double yVal = point.YValues[0] > 0.01 ? point.YValues[0] : 0;
+                    _toolTip.SetToolTip(_chart, $"{point.XValue}\n[{yVal:N2}{szToolTipUnit}]");
+                }
             }
             else
             {

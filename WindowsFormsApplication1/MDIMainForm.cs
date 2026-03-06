@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
             menu.ProjektOeffnen();
         }
 
-        private void MenuItem_WPBearbeiten_Click_1(object sender, EventArgs e)
+        private void MenuItem_WPBearbeiten_Click(object sender, EventArgs e)
         {
             MenueCtrl menu = new MenueCtrl();
             menu.WP_Administration();
@@ -127,12 +127,6 @@ namespace WindowsFormsApplication1
             ctrl.BHKW();
         }
 
-        private void MenuItem_Solarkollektoren_Click(object sender, EventArgs e)
-        {
-            MenueCtrl ctrl = new MenueCtrl();
-            ctrl.Solarkollektoren();  
-        }
-
         private void MenuItem_SolThermGanglinie_Click(object sender, EventArgs e)
         {
             MenueCtrl ctrl = new MenueCtrl();
@@ -149,12 +143,6 @@ namespace WindowsFormsApplication1
         {
             Version currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             MessageBox.Show("Version: " + currentVersion.ToString());
-        }
-
-        private void MenuItem_PV_Click(object sender, EventArgs e)
-        {
-            Form_AdminPV frm = new Form_AdminPV();
-            frm.ShowDialog();
         }
 
         private void MenuItem_Lizenz_Click(object sender, EventArgs e)
@@ -214,7 +202,30 @@ namespace WindowsFormsApplication1
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.Brauchwasser();
         }
- 
+
+        private void MenuItem_PV_Bearbeiten_Click(object sender, EventArgs e)
+        {
+            Form_AdminPV frm = new Form_AdminPV();
+            frm.ShowDialog();
+        }
+
+        private void MenuItem_PV_Import_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.PVImport();
+        }
+
+        private void MenuItem_ST_Bearbeiten_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.Solarkollektoren();
+        }
+
+        private void MenuItem_ST_Import_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.SolarThermieImport();
+        }
     }
 }
 

@@ -126,7 +126,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll(szFilter);
             for (int i = 0; i < ctrl.rows; i++)
             {
-                dgv.Rows.Add(ctrl.items[i].m_szKollektorname, ctrl.items[i].m_szFirma + "\nKollektortyp: " + ctrl.items[i].m_szKollektortyp + "\nModulfläche: " + ctrl.items[i].m_Modulfläche + " m²");
+                dgv.Rows.Add(ctrl.items[i].m_szKollektorname, ctrl.items[i].m_szFirma + "\nKollektortyp: " + ctrl.items[i].m_szKollektortyp + "\nModulfläche: " + ctrl.items[i].m_Modulfläche + " m²" + "\nAperturfläche: " + ctrl.items[i].m_Aperturfläche + " m²");
                 dgv.Rows[i].DividerHeight = 5;
             }
         }
@@ -177,7 +177,7 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                textBox_Kollektor_A.Text = "0"; ;
+                textBox_Aperturflaeche.Text = "0"; ;
                 if (dataGridView1.Rows.Count > 0)
                 {
                     dataGridView1.Rows[0].Selected = true;
@@ -228,8 +228,8 @@ namespace WindowsFormsApplication1
                 textBox_Firma.Text = (firma == DBNull.Value) ? "" : (string)firma;
                 object beschreibungValue = rs.Read("Beschreibung");
                 textBox_Beschreibung.Text = (beschreibungValue == DBNull.Value) ? "" : (string)beschreibungValue;
-                textBox_Modul_A.Text = rs.Read("Modulflaeche").ToString();
-                textBox_Kollektor_A.Text = "";
+                textBox_Modul_Apertur.Text = rs.Read("Aperturflaeche").ToString();
+                textBox_Aperturflaeche.Text = rs.Read("Aperturflaeche").ToString();
             }
             rs.Close();
             groupBox_Kollektor.Visible = false; 
@@ -253,7 +253,7 @@ namespace WindowsFormsApplication1
                 object beschreibungValue = rs.Read("Beschreibung");
                 textBox_Beschreibung.Text = (beschreibungValue == DBNull.Value) ? "" : (string)beschreibungValue;
                 modulflaeche = (double)rs.Read("Aperturflaeche");
-                textBox_Modul_A.Text = modulflaeche.ToString();
+                textBox_Modul_Apertur.Text = modulflaeche.ToString();
             }
             rs.Close();
 
@@ -264,7 +264,7 @@ namespace WindowsFormsApplication1
                     textBox_Kollektorneigung.Text = list_werzmodel[i].m_Neigung.ToString();  
                     int anzahl = list_werzmodel[i].Kollektormodulanzahl;
                     textBox_Anzahl.Text = anzahl.ToString();
-                    textBox_Kollektor_A.Text = (modulflaeche * anzahl).ToString();
+                    textBox_Aperturflaeche.Text = (modulflaeche * anzahl).ToString();
                     int ausrichtung = list_werzmodel[i].m_Azimut;
                     textBox_Azimut.Text = ausrichtung.ToString();
                     break;
@@ -288,7 +288,7 @@ namespace WindowsFormsApplication1
                 textBox_Anzahl.ClearUndo();
                 return;
             }
-            textBox_Kollektor_A.Text = (double.Parse(textBox_Modul_A.Text) * Int32.Parse(textBox_Anzahl.Text)).ToString();
+            textBox_Aperturflaeche.Text = (double.Parse(textBox_Modul_Apertur.Text) * Int32.Parse(textBox_Anzahl.Text)).ToString();
         }
 
         private void textBox_Kollektorneigung_TextChanged(object sender, EventArgs e)
@@ -399,5 +399,7 @@ namespace WindowsFormsApplication1
         {
             SetDBList();
         }
+
+
     }
 }

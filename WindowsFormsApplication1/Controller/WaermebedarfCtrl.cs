@@ -66,8 +66,11 @@ namespace WindowsFormsApplication1
                     m_ID_Ganglinie = (int)DBReader.GetValue(0) + 1;
                     DBReader.Close();
                 }
-                DBCommand.CommandText = "INSERT INTO Tab_Waermebedarf ( ID_GanglinieDaten, Bezeichner) SELECT " + m_ID_Ganglinie +
-                    " AS Ausdr1, '" + m_szBezeichner + "' AS Ausdr2";
+    
+                DBCommand.CommandText = FormattableString.Invariant($@"
+                    INSERT INTO Tab_Waermebedarf (ID_GanglinieDaten, Bezeichner) 
+                    SELECT {m_ID_Ganglinie}, '{m_szBezeichner}'");
+
                 DBCommand.ExecuteNonQuery();
             }
             catch (OdbcException sqlEx)

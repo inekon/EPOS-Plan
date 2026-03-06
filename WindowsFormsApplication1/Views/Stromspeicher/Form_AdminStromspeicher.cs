@@ -87,13 +87,19 @@ namespace WindowsFormsApplication1
 
                 if (m_Neu)
                 {
-                    DBCommand.CommandText = "INSERT INTO TAB_Stromspeicher ( Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand ) SELECT '" + textBox_Bezeichner.Text +
-                        "' AS Ausdr1, '" + textBox_Typ.Text + "' AS Ausdr2, " + 
-                    model.m_Leistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr3, " + 
-                    model.m_Energie.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr4, " + 
-                    model.m_Degradation.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr5, " +
-                    model.m_Ladezustand.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " AS Ausdr6";
+                    string sql = FormattableString.Invariant($@"
+                        INSERT INTO TAB_Stromspeicher ( 
+                            Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand 
+                        ) 
+                        SELECT 
+                            '{textBox_Bezeichner.Text}' AS Ausdr1, 
+                            '{textBox_Typ.Text}' AS Ausdr2, 
+                            {model.m_Leistung} AS Ausdr3, 
+                            {model.m_Energie} AS Ausdr4, 
+                            {model.m_Degradation} AS Ausdr5, 
+                            {model.m_Ladezustand} AS Ausdr6;");
 
+                    DBCommand.CommandText = sql;
                     DBCommand.ExecuteNonQuery();
                     listBox_Stromspeicher.Items.Add(textBox_Bezeichner.Text);
                     listBox_Stromspeicher.SelectedIndex = listBox_Stromspeicher.Items.Count - 1;
@@ -101,14 +107,16 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    string sql = "UPDATE Tab_Stromspeicher SET " + 
-                        "Bezeichner='" + textBox_Bezeichner.Text.ToString(CultureInfo.CreateSpecificCulture("en-US"))  + "', " +
-                        "Typ='" + textBox_Typ.Text.ToString(CultureInfo.CreateSpecificCulture("en-US"))  + "', " +
-                        "Leistung=" + model.m_Leistung.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
-                        "Energie=" + model.m_Energie.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " +
-                        "Degradation=" + model.m_Degradation.ToString(CultureInfo.CreateSpecificCulture("en-US")) + ", " + 
-                        "Ladezustand=" + model.m_Ladezustand.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " " +
-                        "WHERE Bezeichner='" + listBox_Stromspeicher.Text + "'";
+                    string sql = FormattableString.Invariant($@"
+                        UPDATE Tab_Stromspeicher SET 
+                            Bezeichner = '{textBox_Bezeichner.Text}', 
+                            Typ = '{textBox_Typ.Text}', 
+                            Leistung = {model.m_Leistung}, 
+                            Energie = {model.m_Energie}, 
+                            Degradation = {model.m_Degradation}, 
+                            Ladezustand = {model.m_Ladezustand} 
+                        WHERE Bezeichner = '{listBox_Stromspeicher.Text}';"); ;
+                    
                     DBCommand.CommandText = sql;    
                     DBCommand.ExecuteNonQuery();
 

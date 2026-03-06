@@ -92,7 +92,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll(szFilter);
             for (int i = 0; i < ctrl.rows; i++)
             {
-                dgv.Rows.Add(ctrl.items[i].m_szKollektorname, ctrl.items[i].m_szFirma + "\nKollektortyp: " + ctrl.items[i].m_szKollektortyp + "\nModulfläche: " + ctrl.items[i].m_Modulfläche + " m²");
+                dgv.Rows.Add(ctrl.items[i].m_szKollektorname, ctrl.items[i].m_szFirma + "\nKollektortyp: " + ctrl.items[i].m_szKollektortyp + "\nAperturfläche: " + ctrl.items[i].m_Aperturfläche + " m²");
                 dgv.Rows[i].DividerHeight = 5;
             }
         }
@@ -114,6 +114,7 @@ namespace WindowsFormsApplication1
                 object beschreibungValue = rs.Read("Beschreibung");
                 textBox_Beschreibung.Text = (beschreibungValue == DBNull.Value) ? "" : (string)beschreibungValue;
                 textBox_Modul_A.Text = rs.Read("Modulflaeche").ToString();
+                textBox_Modul_A.Text = rs.Read("Aperturflaeche").ToString();
             }
             rs.Close();
         }
@@ -190,5 +191,6 @@ namespace WindowsFormsApplication1
             dataGridView1.Select();
             dataGridView1.ClearSelection();
         }
+          
     }
 }
