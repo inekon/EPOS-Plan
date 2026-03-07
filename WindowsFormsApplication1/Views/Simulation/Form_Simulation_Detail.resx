@@ -1719,75 +1719,6 @@
   <data name="&gt;&gt;tabPage_Heizkessel.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="trackBarNeigung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>129, 596</value>
-  </data>
-  <data name="trackBarNeigung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>250, 45</value>
-  </data>
-  <data name="trackBarNeigung.TabIndex" type="System.Int32, mscorlib">
-    <value>279</value>
-  </data>
-  <data name="&gt;&gt;trackBarNeigung.Name" xml:space="preserve">
-    <value>trackBarNeigung</value>
-  </data>
-  <data name="&gt;&gt;trackBarNeigung.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TrackBar, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;trackBarNeigung.Parent" xml:space="preserve">
-    <value>tabPage_Solarthermie</value>
-  </data>
-  <data name="&gt;&gt;trackBarNeigung.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="labelNeigung.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="labelNeigung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 572</value>
-  </data>
-  <data name="labelNeigung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>63, 21</value>
-  </data>
-  <data name="labelNeigung.TabIndex" type="System.Int32, mscorlib">
-    <value>278</value>
-  </data>
-  <data name="labelNeigung.Text" xml:space="preserve">
-    <value>label88</value>
-  </data>
-  <data name="&gt;&gt;labelNeigung.Name" xml:space="preserve">
-    <value>labelNeigung</value>
-  </data>
-  <data name="&gt;&gt;labelNeigung.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;labelNeigung.Parent" xml:space="preserve">
-    <value>tabPage_Solarthermie</value>
-  </data>
-  <data name="&gt;&gt;labelNeigung.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="formsPlot1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>385, 425</value>
-  </data>
-  <data name="formsPlot1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>577, 216</value>
-  </data>
-  <data name="formsPlot1.TabIndex" type="System.Int32, mscorlib">
-    <value>277</value>
-  </data>
-  <data name="&gt;&gt;formsPlot1.Name" xml:space="preserve">
-    <value>formsPlot1</value>
-  </data>
-  <data name="&gt;&gt;formsPlot1.Type" xml:space="preserve">
-    <value>ScottPlot.WinForms.FormsPlot, ScottPlot.WinForms, Version=5.1.57.0, Culture=neutral, PublicKeyToken=86698dc10387c39e</value>
-  </data>
-  <data name="&gt;&gt;formsPlot1.Parent" xml:space="preserve">
-    <value>tabPage_Solarthermie</value>
-  </data>
-  <data name="&gt;&gt;formsPlot1.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
   <data name="label83.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -1822,7 +1753,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;label83.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>0</value>
   </data>
   <data name="label82.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1855,7 +1786,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;label82.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>1</value>
   </data>
   <data name="textBox_Ueberschuss.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -1879,7 +1810,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;textBox_Ueberschuss.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>2</value>
   </data>
   <data name="chart8.Location" type="System.Drawing.Point, System.Drawing">
     <value>385, 30</value>
@@ -1903,7 +1834,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;chart8.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>3</value>
   </data>
   <data name="label23.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1936,7 +1867,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;label23.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>4</value>
   </data>
   <data name="textBox_STWaermebedarfsdeckung.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -1960,7 +1891,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;textBox_STWaermebedarfsdeckung.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>5</value>
   </data>
   <data name="label24.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1993,7 +1924,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;label24.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>6</value>
   </data>
   <data name="label48.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2026,7 +1957,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;label48.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>7</value>
   </data>
   <data name="textBox_STWaermebedarf.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -2050,7 +1981,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;textBox_STWaermebedarf.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>8</value>
   </data>
   <data name="label49.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2083,7 +2014,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;label49.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>9</value>
   </data>
   <data name="label50.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -2116,7 +2047,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;label50.ZOrder" xml:space="preserve">
-    <value>13</value>
+    <value>10</value>
   </data>
   <data name="label51.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2149,7 +2080,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;label51.ZOrder" xml:space="preserve">
-    <value>14</value>
+    <value>11</value>
   </data>
   <data name="textBox_STRestwermebedarf.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -2176,7 +2107,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;textBox_STRestwermebedarf.ZOrder" xml:space="preserve">
-    <value>15</value>
+    <value>12</value>
   </data>
   <data name="label52.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -2209,7 +2140,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;label52.ZOrder" xml:space="preserve">
-    <value>16</value>
+    <value>13</value>
   </data>
   <data name="tb_WaermeprST.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -2239,7 +2170,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;tb_WaermeprST.ZOrder" xml:space="preserve">
-    <value>17</value>
+    <value>14</value>
   </data>
   <data name="label53.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2275,7 +2206,7 @@
     <value>tabPage_Solarthermie</value>
   </data>
   <data name="&gt;&gt;label53.ZOrder" xml:space="preserve">
-    <value>18</value>
+    <value>15</value>
   </data>
   <data name="tabPage_Solarthermie.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 30</value>
