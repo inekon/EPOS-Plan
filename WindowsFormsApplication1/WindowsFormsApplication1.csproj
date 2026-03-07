@@ -232,7 +232,6 @@
     <Compile Include="Allgemein\Simulation\SimulationWaermebedarf.cs" />
     <Compile Include="Allgemein\Simulation\SimulationWaermepumpe.cs" />
     <Compile Include="Allgemein\Import\Solarkollektorenlmport.cs" />
-    <Compile Include="Allgemein\SolarProSim.cs" />
     <Compile Include="Allgemein\StromTestClass.cs" />
     <Compile Include="Allgemein\SolarPVGISCalculator.cs" />
     <Compile Include="Allgemein\Import\WaermepumpenImport.cs" />

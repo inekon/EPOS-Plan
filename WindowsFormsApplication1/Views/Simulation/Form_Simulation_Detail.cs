@@ -40,8 +40,6 @@ namespace WindowsFormsApplication1
         private double[] solarErtrag = new double[8760];
         private double[] gebaeudeBedarf = new double[8760];
         private double[] tAussen = new double[8760];
-        private SolarProSim testsimulation = new SolarProSim();
-
 
         public Form_Simulation_Detail(int iD_Projekt)
         {
@@ -189,7 +187,6 @@ namespace WindowsFormsApplication1
 
             // Tool Simulation WP, SPK usw. durchführen
             sim.Do_Simulation(m_ID_Projekt);
-            PufferTest();
             Endergebniss_Simulation();
         }
 
@@ -984,93 +981,6 @@ namespace WindowsFormsApplication1
             page.Controls.OfType<TextBox>().ToList().ForEach(tb => tb.Text = "");
         }
 
-        private void PufferTest()
-        {
-            // Slider Einstellungen (0.0 bis 3.0 Neigung)
-            trackBarNeigung.Minimum = 0;
-            trackBarNeigung.Maximum = 30;
-            trackBarNeigung.Value = 12; // Startwert 1.2
-
-
-
-            // Event-Handler
-
-            trackBarNeigung.Scroll += (s, e) => UpdateUI();
-            UpdateUI();
-        }
-
-        private void UpdateUI()
-        {
-            double neigung = trackBarNeigung.Value / 10.0;
-            labelNeigung.Text = $"Heizkurve Neigung: {neigung:F1}";
-            gebaeudeBedarf = sim.simulation_solarthermie.Waermebedarf;
-            tAussen = Array.ConvertAll(sim.simulation_Waermebedarf.Stundentemperatur, x => (double)x); 
-            solarErtrag = sim.simulation_solarthermie.Waermeproduktion;
-            var res = testsimulation.Berechne(solarErtrag, gebaeudeBedarf, tAussen, 800.0 / 1.16, neigung);
-            RenderChart(res);
-        }
-
-        private void RenderChart(SolarProSim.Result res)
-        {
-            formsPlot1.Plot.Clear();
-            var x = ScottPlot.Generate.Consecutive(8760);
-
-            // --- LINKS: Energie-Flächen (kWh) ---
-            formsPlot1.Plot.FigureBackground.Color = ScottPlot.Colors.White;
-            formsPlot1.Plot.DataBackground.Color = ScottPlot.Colors.White;
-            //var f1 = formsPlot1.Plot.Add.FillY(x, sim.simulation_solarthermie.Waermebedarf, new double[sim.simulation_solarthermie.Waermebedarf.Length]);
-            var f1 = formsPlot1.Plot.Add.Signal(sim.simulation_solarthermie.Waermebedarf);
-            f1.Color = Colors.Red;
-            f1.LineStyle.Width = 1;
-            f1.LegendText = "Bedarf";
-            
-            var f2 = formsPlot1.Plot.Add.FillY(x, res.Solar, new double[res.Solar.Length]);
-            f2.FillStyle.Color = ScottPlot.Colors.Green;
-            f2.LineStyle.Width = 0;
-            f2.LegendText = "Solar-Deckung";
-    
-            var f3 = formsPlot1.Plot.Add.FillY(x, res.Rest, new double[res.Rest.Length] );
-            f3.FillStyle.Color = ScottPlot.Colors.Blue.WithAlpha(0.5);
-            f3.LineStyle.Width = 0;
-            f3.LegendText = $"Nachheizung ({res.Deckung:F1}%)";
-
-            // --- RECHTS: Speicher-Temperatur (°C) ---
-            var sig = formsPlot1.Plot.Add.Signal(res.TSpeicherOben);
-            sig.Axes.YAxis = formsPlot1.Plot.Axes.Right;
-            sig.Color = ScottPlot.Colors.Orange.WithAlpha(0.8);
-            sig.LineWidth = 1.5f;
-            sig.LegendText = "Temp. Speicher Oben (°C)";
-
-            // --- ACHSEN-KONFIGURATION ---
-            formsPlot1.Plot.Axes.SetLimits(0, 8760, 0, gebaeudeBedarf.Max() * 1.2, formsPlot1.Plot.Axes.Bottom, formsPlot1.Plot.Axes.Left);
-            formsPlot1.Plot.Axes.SetLimitsY(20, 95, formsPlot1.Plot.Axes.Right); // Temperatur-Skala rechts
-
-            // Interaktion & Sperre
-            //formsPlot1.Interaction.Disable();
-            formsPlot1.UserInputProcessor.Disable();
-            formsPlot1.Plot.Axes.Rules.Clear();
-            //
-            //
-            //formsPlot1.Plot.Axes.Rules.Add(new ScottPlot.AxisRules.LockedHorizontal(formsPlot1.Plot.Axes.Bottom));
-            //formsPlot1.Plot.Axes.Rules.Add(new ScottPlot.AxisRules.LockedHorizontal(formsPlot1.Plot.Axes.Bottom));
-
-
-            // Styling
-            formsPlot1.Plot.YLabel("Energie (kWh)");
-            //formsPlot1.Plot.Axes.Right.LabelText = "Temperatur (°C)";
-            // Den Text für die rechte Achse setzen
-            formsPlot1.Plot.Axes.Right.Label.Text = "Temperatur (°C)";
-
-            // Optional: Die Schriftgröße oder Farbe anpassen
-            formsPlot1.Plot.Axes.Right.Label.FontSize = 14;
-            formsPlot1.Plot.Axes.Right.Label.ForeColor = ScottPlot.Colors.Orange;
-
-            formsPlot1.Plot.ShowLegend(Alignment.UpperRight);
-
-            formsPlot1.Refresh();
-        }
-
-        private void GenerateDummyData() { /* ... wie zuvor ... */ }
     }
 
 }
