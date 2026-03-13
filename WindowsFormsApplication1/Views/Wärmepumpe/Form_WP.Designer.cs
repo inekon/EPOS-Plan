@@ -77,6 +77,7 @@
             this.textBox_Kuehlung = new System.Windows.Forms.TextBox();
             this.radioButton_Waerme = new System.Windows.Forms.RadioButton();
             this.radioButton_Kuehlung = new System.Windows.Forms.RadioButton();
+            this.btn_Katalog = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -103,8 +104,8 @@
             // 
             // textBox_Nennleistung
             // 
-            resources.ApplyResources(this.textBox_Nennleistung, "textBox_Nennleistung");
             this.textBox_Nennleistung.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            resources.ApplyResources(this.textBox_Nennleistung, "textBox_Nennleistung");
             this.textBox_Nennleistung.Name = "textBox_Nennleistung";
             // 
             // label32
@@ -136,8 +137,8 @@
             // 
             // textBox_Beschreibung
             // 
-            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
             // 
             // label27
@@ -179,7 +180,6 @@
             // 
             // chart1
             // 
-            resources.ApplyResources(this.chart1, "chart1");
             chartArea1.AxisX.LineColor = System.Drawing.Color.DimGray;
             chartArea1.AxisX.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
             chartArea1.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gray;
@@ -192,6 +192,7 @@
             this.chart1.ChartAreas.Add(chartArea1);
             legend1.Name = "Legend1";
             this.chart1.Legends.Add(legend1);
+            resources.ApplyResources(this.chart1, "chart1");
             this.chart1.Name = "chart1";
             series1.ChartArea = "ChartArea1";
             series1.Legend = "Legend1";
@@ -202,15 +203,15 @@
             // 
             // label33
             // 
-            resources.ApplyResources(this.label33, "label33");
             this.label33.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label33, "label33");
             this.label33.ForeColor = System.Drawing.Color.White;
             this.label33.Name = "label33";
             // 
             // listBox_WP
             // 
-            resources.ApplyResources(this.listBox_WP, "listBox_WP");
             this.listBox_WP.FormattingEnabled = true;
+            resources.ApplyResources(this.listBox_WP, "listBox_WP");
             this.listBox_WP.Name = "listBox_WP";
             this.listBox_WP.SelectedIndexChanged += new System.EventHandler(this.listBox_WP_SelectedIndexChanged);
             // 
@@ -232,14 +233,14 @@
             // 
             // textBox_Heizstab
             // 
-            resources.ApplyResources(this.textBox_Heizstab, "textBox_Heizstab");
             this.textBox_Heizstab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            resources.ApplyResources(this.textBox_Heizstab, "textBox_Heizstab");
             this.textBox_Heizstab.Name = "textBox_Heizstab";
             // 
             // label4
             // 
-            resources.ApplyResources(this.label4, "label4");
             this.label4.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label4, "label4");
             this.label4.ForeColor = System.Drawing.Color.White;
             this.label4.Name = "label4";
             // 
@@ -274,8 +275,8 @@
             // 
             // label5
             // 
-            resources.ApplyResources(this.label5, "label5");
             this.label5.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label5, "label5");
             this.label5.ForeColor = System.Drawing.Color.White;
             this.label5.Name = "label5";
             // 
@@ -291,40 +292,40 @@
             // 
             // label1
             // 
-            resources.ApplyResources(this.label1, "label1");
             this.label1.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            resources.ApplyResources(this.label1, "label1");
             this.label1.Name = "label1";
             // 
             // tabControl1
             // 
-            resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
+            resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             // 
             // tabPage1
             // 
-            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Controls.Add(this.chart1);
+            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
-            resources.ApplyResources(this.tabPage2, "tabPage2");
             this.tabPage2.Controls.Add(this.chart2);
+            resources.ApplyResources(this.tabPage2, "tabPage2");
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // chart2
             // 
-            resources.ApplyResources(this.chart2, "chart2");
             chartArea2.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
             chartArea2.Name = "ChartArea1";
             this.chart2.ChartAreas.Add(chartArea2);
             legend2.Name = "Legend1";
             this.chart2.Legends.Add(legend2);
+            resources.ApplyResources(this.chart2, "chart2");
             this.chart2.Name = "chart2";
             series2.ChartArea = "ChartArea1";
             series2.Legend = "Legend1";
@@ -334,8 +335,8 @@
             // 
             // label7
             // 
-            resources.ApplyResources(this.label7, "label7");
             this.label7.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label7, "label7");
             this.label7.ForeColor = System.Drawing.Color.White;
             this.label7.Name = "label7";
             // 
@@ -346,8 +347,8 @@
             // 
             // textBox_Kuehlung
             // 
-            resources.ApplyResources(this.textBox_Kuehlung, "textBox_Kuehlung");
             this.textBox_Kuehlung.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            resources.ApplyResources(this.textBox_Kuehlung, "textBox_Kuehlung");
             this.textBox_Kuehlung.Name = "textBox_Kuehlung";
             // 
             // radioButton_Waerme
@@ -368,11 +369,19 @@
             this.radioButton_Kuehlung.UseVisualStyleBackColor = false;
             this.radioButton_Kuehlung.CheckedChanged += new System.EventHandler(this.radioButton_Kuehlung_CheckedChanged);
             // 
+            // btn_Katalog
+            // 
+            resources.ApplyResources(this.btn_Katalog, "btn_Katalog");
+            this.btn_Katalog.Name = "btn_Katalog";
+            this.btn_Katalog.UseVisualStyleBackColor = true;
+            this.btn_Katalog.Click += new System.EventHandler(this.btn_Katalog_Click);
+            // 
             // Form_WP
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ControlBox = false;
+            this.Controls.Add(this.btn_Katalog);
             this.Controls.Add(this.radioButton_Kuehlung);
             this.Controls.Add(this.radioButton_Waerme);
             this.Controls.Add(this.label7);
@@ -466,5 +475,6 @@
         private System.Windows.Forms.TextBox textBox_Kuehlung;
         private System.Windows.Forms.RadioButton radioButton_Waerme;
         private System.Windows.Forms.RadioButton radioButton_Kuehlung;
+        private System.Windows.Forms.Button btn_Katalog;
     }
 }

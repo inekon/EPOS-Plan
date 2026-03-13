@@ -356,7 +356,7 @@ namespace WindowsFormsApplication1
 
         private void pBox_WP_Click(object sender, EventArgs e)
         {
-            WizWP frm = new WizWP();
+            Form_WPAuswahl frm = new Form_WPAuswahl();
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
             WPCtrl wpctrl = new WPCtrl();
             int id_type;

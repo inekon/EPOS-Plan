@@ -25,6 +25,9 @@ namespace WindowsFormsApplication1
         public int Modulkosten;
         public string Leistungsstufen;
         public double Kuehlleistung;
+        public int MaxVorlauf;
+        public int MinVorlauf;
+        public string Bauart;
         
         public WPModel()
         {
@@ -43,6 +46,9 @@ namespace WindowsFormsApplication1
             Modulkosten = 0;
             Leistungsstufen = "";
             Kuehlleistung = 0;
+            MaxVorlauf = 0;
+            MinVorlauf = 0;
+            Bauart = "";
         } 
     }
 

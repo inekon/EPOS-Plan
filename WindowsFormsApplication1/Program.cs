@@ -190,6 +190,46 @@ namespace WindowsFormsApplication1
 
             path.CloseFigure();
             return path;
+
+        }
+
+        public static class UICharacters
+        {
+
+            // Benutzung: btnParse.Text = $"{UICharacters.Search} Vorschau";
+            // --- Datei-Operationen ---
+            public const string OpenFile = "📂"; // \U0001F4C2
+            public const string Save = "💾"; // \U0001F4BE
+            public const string Settings = "⚙";  // \u2699
+            public const string Trash = "🗑";  // \U0001F5D1
+            public const string Refresh = "🔄"; // \U0001F504
+            public const string Export = "📤"; // \U0001F4E4
+
+            // --- PV-Technik & Details ---
+            public const string Energy = "⚡";  // \u26A1
+            public const string Sun = "☀️";  // \u2600
+            public const string Temp = "🌡️";  // \U0001F321
+            public const string Chart = "📊";  // \U0001F4CA
+            public const string Geometry = "📐";  // \U0001F4D0
+            public const string Eco = "🌿";  // \U0001F33F
+            public const string Bifacial = "💎";  // \U0001F48E (Oft für hochwertige/bifaziale Zellen genutzt)
+
+            // --- Status & Navigation ---
+            public const string Search = "🔍";  // \U0001F50D
+            public const string Success = "✅";  // \u2705
+            public const string Cancel = "❌";  // \u274C
+            public const string Info = "ℹ";   // \u2139
+            public const string Warning = "⚠️";  // \u26A0
+            public const string Link = "🔗";  // \U0001F517
+            public const string Web = "🌐";  // \U0001F310
+
+            // --- Listen-Steuerung ---
+            public const string MoveUp = "⬆";   // \u2B06
+            public const string MoveDown = "⬇";   // \u2B07
+            public const string Add = "➕";   // \u2795
+            public const string Remove = "➖";   // \u2796
         }
     }
+
+    
 }

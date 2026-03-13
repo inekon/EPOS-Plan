@@ -21,6 +21,7 @@ namespace WindowsFormsApplication1
         public string szCOP;
         public string szKuehlung;
         public string szKuehlleistung;
+        public string szBauart;
         public List<string> x;
   
         public _attrribute()
@@ -36,6 +37,7 @@ namespace WindowsFormsApplication1
             szCOP = "";
             szKuehlung = "";
             szKuehlleistung = "";
+            szBauart = "";
             x = new List<string>();
         }
 
@@ -45,7 +47,7 @@ namespace WindowsFormsApplication1
     {
         public List<_attrribute> _list = new List<_attrribute>();
         static string[] _Aufstellung = { "innen", "außen", "innen/außen", "innen Eck" };
-
+        static string[] _Bauart = { "Kompakt", "Split" };
 
         public void Import(string filename)
         {
@@ -65,6 +67,7 @@ namespace WindowsFormsApplication1
             string szFirma = "";
             string szAufstellung = "";
             string wptyp = "";
+            string szBauart = "";
             int stufen = 0;
 
             _attrribute dat = null;
@@ -90,7 +93,11 @@ namespace WindowsFormsApplication1
                 }
                 else if (startTagWPWaermeDef)
                 {
-                    if (csvReader[0] == "450")
+                    if (csvReader[0] == "400")
+                    {
+                        szBauart = csvReader[2];
+                    }
+                    else if (csvReader[0] == "450")
                     {
                         szAufstellung = _Aufstellung[Int32.Parse(csvReader[1])-1];
                         DatenGefunden = false;
@@ -112,6 +119,7 @@ namespace WindowsFormsApplication1
                         temp.szCOP = csvReader[31];
                         temp.szKuehlung = csvReader[19];
                         temp.szKuehlleistung = csvReader[20];
+                        temp.szBauart = szBauart;
 
                         DatenGefunden = false;
                         DatenUebernehmen = false;
@@ -169,6 +177,7 @@ namespace WindowsFormsApplication1
                         dat.szMaxVorlauf = temp.szMaxVorlauf;
                         dat.szCOP = temp.szCOP;
                         dat.szKuehlleistung = temp.szKuehlleistung; 
+                        dat.szBauart = temp.szBauart;   
                         dat.x = temp.x;
                         _list.Add(dat);
 

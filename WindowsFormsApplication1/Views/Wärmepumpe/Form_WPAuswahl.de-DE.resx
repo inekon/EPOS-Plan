@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,37 +117,33 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="label_Type.Text" xml:space="preserve">
-    <value>Enter the heat pump data</value>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="listView_WP.Size" type="System.Drawing.Size, System.Drawing">
+    <value>645, 159</value>
   </data>
-  <data name="btn_Abbrechen.Text" xml:space="preserve">
-    <value>Cancel</value>
+  <data name="btn_OK.Location" type="System.Drawing.Point, System.Drawing">
+    <value>582, 256</value>
   </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Delete entry</value>
+  <data name="btn_Abbrechen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>487, 256</value>
   </data>
-  <data name="label5.Text" xml:space="preserve">
-    <value>New entry</value>
-  </data>
-  <data name="btn_Löschen.Text" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="btn_OK.Text" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Heat pump management</value>
-  </data>
-  <data name="label7.Text" xml:space="preserve">
-    <value>List of heat pumps in the project</value>
+  <data name="label_Type.Size" type="System.Drawing.Size, System.Drawing">
+    <value>669, 32</value>
   </data>
   <data name="btn_Neu.Text" xml:space="preserve">
-    <value>New</value>
-  </data>
-  <data name="label4.Text" xml:space="preserve">
-    <value>Change entry</value>
+    <value>Neu..</value>
   </data>
   <data name="btn_Uebernehmen.Text" xml:space="preserve">
-    <value>Change</value>
+    <value>Ändern..</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>669, 299</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="$this.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
+    <value>CenterScreen</value>
   </data>
 </root>

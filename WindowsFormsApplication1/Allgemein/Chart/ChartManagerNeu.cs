@@ -1,18 +1,17 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
-namespace WindowsFormsApplication1
+namespace WindowsFormsApplication1 // Bitte an deinen Namespace anpassen
 {
-    internal class ChartManager
+    internal class ChartManagerNeu
     {
         // --- Konfigurations-Variablen ---
-        public int MaxXVALUE = 8760;
         public double YMaxValue = 0;
         public double YMinValue = 0;
         public bool XAxisAsNumber = false;
-        public bool IsXYChart = false; // Für XY-Charts (z.B. Temperatur)
+        public bool IsXYChart = false; // Neu: F�r XY-Charts (z.B. Temperatur)
         public bool WheelZoomed = true;
         public string toolTipUnit = "";
         public string XAxisTitle = "Zeitverlauf (Jahresstunden)";
@@ -20,13 +19,14 @@ namespace WindowsFormsApplication1
         public string ChartTitle = "";
         public bool MitChartBorder = false;
         public bool MitLegende = false;
-        public bool MitViertelStunde = false;
+        public bool IsQuarterHourly = false;
+        public int MaxXVALUE = 8760;
         public bool AreaLine = false;
 
         public Chart _chart = null;
-        public ChartMouseWheel2 _chartWheelManager;
+        public ChartMouseWheel2Neu _chartWheelManager;
 
-        public ChartManager(Chart chart)
+        public ChartManagerNeu(Chart chart)
         {
             _chart = chart;
         }
@@ -48,12 +48,12 @@ namespace WindowsFormsApplication1
                 _chart.Legends.Add(leg);
             }
 
-            // --- PLATZ FÜR LEGENDE ---
+            // --- PLATZ F�R LEGENDE ---
             ca.InnerPlotPosition.Auto = false;
             ca.InnerPlotPosition.X = 12;
             ca.InnerPlotPosition.Y = 8;
             ca.InnerPlotPosition.Width = 85;
-            ca.InnerPlotPosition.Height = MitLegende ? 70 : 75;
+            ca.InnerPlotPosition.Height = MitLegende ? 70 : 80;
 
             // --- TITEL ---
             _chart.Titles.Clear();
@@ -67,6 +67,8 @@ namespace WindowsFormsApplication1
             ca.BackSecondaryColor = Color.White;
 
             // --- RAHMEN ---
+//            _chart.BorderlineDashStyle = MitChartBorder ? ChartDashStyle.Solid : ChartDashStyle.None;
+            // Die korrekte Zuweisung f�r das Chart-Control
             _chart.BorderlineDashStyle = MitChartBorder ? System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid : System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
             _chart.BorderlineWidth = MitChartBorder ? 1 : 0;
             ca.BorderDashStyle = ChartDashStyle.DashDot;
@@ -92,7 +94,7 @@ namespace WindowsFormsApplication1
             ca.AxisX.LabelStyle.ForeColor = Color.FromArgb(64, 64, 64);
             ca.AxisX.MajorGrid.LineDashStyle = ChartDashStyle.Solid;
             ca.AxisX.MajorGrid.LineColor = Color.FromArgb(140, 140, 140);
-
+            
             // Cursor aktivieren
             ca.CursorX.IsUserEnabled = true;
             ca.CursorX.IsUserSelectionEnabled = true;
@@ -102,14 +104,14 @@ namespace WindowsFormsApplication1
             ca.CursorY.SelectionColor = Color.FromArgb(120, 0, 120, 215);
 
             // --- FORMATIERUNG NACH MODUS ---
-            if (IsXYChart) FormatXAxisAsXY(ca);
+            if (IsXYChart) FormatXAxisAsXY();
             else if (XAxisAsNumber) FormatXAxisWithNumber();
             else FormatXAxisWithDate();
 
             // --- WHEEL ZOOM ---
             if (WheelZoomed)
             {
-                _chartWheelManager = new ChartMouseWheel2(_chart, MitViertelStunde);
+                _chartWheelManager = new ChartMouseWheel2Neu(_chart, IsQuarterHourly);
                 _chartWheelManager.szToolTipUnit = toolTipUnit;
                 _chartWheelManager.IsNumericAxis = XAxisAsNumber || IsXYChart;
                 _chartWheelManager.IsXYMode = IsXYChart;
@@ -119,7 +121,7 @@ namespace WindowsFormsApplication1
             _chart.Invalidate();
         }
 
-        // --- Hinzufügen von Serien (XY-Modus für Temperatur) ---
+        // --- Hinzuf�gen von Serien (XY-Modus f�r Temperatur) ---
         public void AddSeries(string seriesName, Color color, PointF[] points, int borderWidth = 0)
         {
             Series series = _chart.Series.Add(seriesName);
@@ -133,7 +135,7 @@ namespace WindowsFormsApplication1
             series.Sort(PointSortOrder.Ascending, "X");
         }
 
-        // --- Hinzufügen von Serien (Zeitreihen-Modus) ---
+        // --- Hinzuf�gen von Serien (Zeitreihen-Modus) ---
         public void AddSeries(string seriesName, Color color, float[] arr)
         {
             Series series = _chart.Series.Add(seriesName);
@@ -151,61 +153,31 @@ namespace WindowsFormsApplication1
                 DateTime dt = new DateTime(DateTime.Now.Year, 1, 1);
                 for (int j = 0; j < Math.Min(arr.Length, MaxXVALUE); j++)
                 {
-                    DateTime d = MitViertelStunde ? dt.AddMinutes(j * 15) : dt.AddHours(j);
+                    DateTime d = IsQuarterHourly ? dt.AddMinutes(j * 15) : dt.AddHours(j);
                     series.Points.AddXY(d, arr[j]);
                 }
             }
         }
 
-        public void FormatXAxisAsXY(ChartArea ca)
+        private void FormatXAxisAsXY()
         {
-            ca.AxisX.CustomLabels.Clear();
+            ChartArea ca = _chart.ChartAreas[0];
             ca.AxisX.Title = XAxisTitle;
             ca.AxisX.LabelStyle.Format = "0";
             ca.AxisX.Interval = 5;
             ca.AxisX.MajorGrid.Interval = 5;
-
-            // --- NULLGRAD-LINIE HERVORHEBEN ---
-            ca.AxisX.StripLines.Clear(); // Alte Linien entfernen
-            StripLine zeroLine = new StripLine
-            {
-                IntervalOffset = 0,               // Position bei 0
-                Interval = 0,                     // Nur einmal zeichnen
-                BorderColor = Color.FromArgb(180, Color.DimGray), // Dezent aber sichtbar
-                BorderDashStyle = ChartDashStyle.Solid,
-                BorderWidth = 2,
-                Text = "0°C",                     // Kleine Beschriftung an der Linie
-                TextAlignment = StringAlignment.Far,
-                TextLineAlignment = StringAlignment.Near,
-                ForeColor = Color.FromArgb(180, Color.DimGray), 
-                Font = new Font("Segoe UI", 8, FontStyle.Bold)
-            };
-            ca.AxisX.StripLines.Add(zeroLine);
         }
 
         private void FormatXAxisWithNumber()
         {
             ChartArea ca = _chart.ChartAreas[0];
             ca.AxisX.CustomLabels.Clear();
-
-            // WICHTIG: Format zurücksetzen, sonst versucht er die Zahl als Datum zu interpretieren
-            ca.AxisX.LabelStyle.Format = "0";
-            ca.AxisX.IntervalType = DateTimeIntervalType.Number;
-            ca.AxisX.IntervalOffsetType = DateTimeIntervalType.Number;
-
             ca.AxisX.Minimum = 0;
-            // Deine Logik für die Max-Werte
-            ca.AxisX.Maximum = MitViertelStunde ? (8760 * 4) - 1 : 8760;
-
+            ca.AxisX.Maximum = IsQuarterHourly ? (8760 * 4) - 1 : 8759;
+            ca.AxisX.IntervalType = DateTimeIntervalType.Number;
             ca.AxisX.Title = XAxisTitle;
-
-            // Intervalle festlegen
-            double mainInterval = MitViertelStunde ? 8000 : 2000;
-            ca.AxisX.Interval = mainInterval;
-            ca.AxisX.MajorGrid.Interval = mainInterval;
-
-            // ScaleView anpassen
-            ca.AxisX.ScaleView.Size = double.NaN; // Reset Zoom auf volle Breite
+            ca.AxisX.Interval = IsQuarterHourly ? 8000 : 2000;
+            ca.AxisX.ScaleView.Size = MaxXVALUE;
         }
 
         private void FormatXAxisWithDate()
@@ -241,7 +213,7 @@ namespace WindowsFormsApplication1
         }
     }
 
-    public class ChartMouseWheel2
+    public class ChartMouseWheel2Neu
     {
         public string szToolTipUnit = "";
         public bool IsNumericAxis { get; set; } = false;
@@ -254,7 +226,7 @@ namespace WindowsFormsApplication1
         private DataPoint _lastPoint = null;
         public bool IsQuarterHourly = false;
 
-        public ChartMouseWheel2(Chart chart, bool viertelstunde)
+        public ChartMouseWheel2Neu(Chart chart, bool viertelstunde)
         {
             _chart = chart;
             IsQuarterHourly = viertelstunde;
@@ -285,7 +257,6 @@ namespace WindowsFormsApplication1
 
             if (e.Delta < 0 && newRange >= (xAxis.Maximum - xAxis.Minimum)) xAxis.ScaleView.ZoomReset();
             else xAxis.ScaleView.Zoom(newMin, newMax);
-            UpdateVisuals(xAxis);
         }
 
         public void HandleMouseMove(object sender, MouseEventArgs e)
@@ -301,71 +272,6 @@ namespace WindowsFormsApplication1
                 _toolTip.SetToolTip(_chart, $"{xVal}\nWert: {point.YValues[0]:N2} {szToolTipUnit}");
             }
             else { _toolTip.Hide(_chart); _lastPoint = null; }
-        }
-        
-        private void UpdateVisuals(Axis xAxis)
-        {
-            double viewSize = xAxis.ScaleView.Size;
-
-            // Falls viewSize NaN oder 0 ist (Zoom Reset), berechnen wir die volle Range
-            if (double.IsNaN(viewSize) || viewSize <= 0)
-                viewSize = xAxis.Maximum - xAxis.Minimum;
-
-            if (IsXYMode)
-            {
-                // Bei Temperatur-Charts (XY) behalten wir das feste 5-Grad-Raster bei,
-                // außer man zoomt extrem weit rein:
-                xAxis.Interval = (viewSize < 10) ? 1 : 5;
-                xAxis.MajorGrid.Interval = xAxis.Interval;
-                return;
-            }
-
-            if (IsNumericAxis)
-            {
-                // Logik für die 8760 Stunden-Achse
-                xAxis.LabelStyle.Format = "0"; // Sicherstellen, dass hier kein Datumstext kommt
-                double mainInterval;
-                if (viewSize <= 72) mainInterval = 24;          // 3 Tage -> 24h Schritte
-                else if (viewSize <= 500) mainInterval = 168;   // ~3 Wochen -> Wochenschnitte
-                else if (viewSize <= 2500) mainInterval = 720;  // Monate
-                else mainInterval = 2000;                       // Übersicht
-
-                xAxis.Interval = mainInterval;
-                xAxis.MajorGrid.Interval = mainInterval;
-            }
-            else
-            {
-                // --- REAKTIVIERTE DATUMS-LOGIK ---
-                // viewSize ist bei Datumswerten in Tagen angegeben (OADate)
-
-                if (viewSize <= 2.0) // Weniger als 2 Tage Sichtbar
-                {
-                    xAxis.LabelStyle.Format = "HH:mm";
-                    xAxis.IntervalType = DateTimeIntervalType.Hours;
-                    xAxis.Interval = 6; // Alle 6 Stunden ein Label
-                }
-                else if (viewSize <= 21.0) // Weniger als 3 Wochen
-                {
-                    xAxis.LabelStyle.Format = "dd.MM.";
-                    xAxis.IntervalType = DateTimeIntervalType.Days;
-                    xAxis.Interval = 2; // Alle 2 Tage
-                }
-                else if (viewSize <= 60.0) // Bis zu 2 Monate
-                {
-                    xAxis.LabelStyle.Format = "dd.MM.";
-                    xAxis.IntervalType = DateTimeIntervalType.Days;
-                    xAxis.Interval = 7; // Wochenschnitte
-                }
-                else // Fernansicht (Standard)
-                {
-                    xAxis.LabelStyle.Format = "MMM";
-                    xAxis.IntervalType = DateTimeIntervalType.Months;
-                    xAxis.Interval = 1;
-                }
-
-                xAxis.MajorGrid.IntervalType = xAxis.IntervalType;
-                xAxis.MajorGrid.Interval = xAxis.Interval;
-            }
         }
     }
 }

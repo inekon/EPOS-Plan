@@ -320,5 +320,6 @@ namespace WindowsFormsApplication1
         {
             if (!Program.checkInt(textBox_Breite, textBox_Breite.Text)) { textBox_Breite.Undo(); }
         }
+
     }
 }

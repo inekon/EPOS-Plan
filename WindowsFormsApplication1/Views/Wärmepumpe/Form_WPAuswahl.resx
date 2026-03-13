@@ -126,14 +126,12 @@
   <data name="btn_Abbrechen.Text" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Eintrag löschen</value>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="textBox_WP.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;btn_Uebernehmen.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="&gt;&gt;btn_Abbrechen.Name" xml:space="preserve">
-    <value>btn_Abbrechen</value>
+    <value>8</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="textBox_WP.Size" type="System.Drawing.Size, System.Drawing">
@@ -142,27 +140,23 @@
   <data name="&gt;&gt;btn_Löschen.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="textBox_WP.TabIndex" type="System.Int32, mscorlib">
     <value>54</value>
   </data>
-  <data name="&gt;&gt;listView_WP.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;btn_Abbrechen.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;btn_Neu.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="label7.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="&gt;&gt;textBox_WP.Name" xml:space="preserve">
-    <value>textBox_WP</value>
+  <data name="&gt;&gt;label_Type.Name" xml:space="preserve">
+    <value>label_Type</value>
   </data>
   <data name="&gt;&gt;label_Type.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="label5.Text" xml:space="preserve">
-    <value>Neuer Eintrag</value>
+  <data name="$this.AutoScroll" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="label7.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -173,69 +167,60 @@
   <data name="btn_Uebernehmen.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="&gt;&gt;label4.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
   <data name="btn_Abbrechen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>89, 27</value>
+    <value>89, 35</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="btn_OK.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="&gt;&gt;btn_Löschen.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>5</value>
   </data>
   <data name="&gt;&gt;textBox_WP.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="btn_Neu.Location" type="System.Drawing.Point, System.Drawing">
-    <value>158, 352</value>
+  <data name="label_Type.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
   </data>
-  <data name="&gt;&gt;label4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;listView_WP.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
-  <data name="listView_WP.Size" type="System.Drawing.Size, System.Drawing">
-    <value>559, 159</value>
+  <data name="label_Type.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12pt, style=Bold</value>
   </data>
   <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
     <value>225, 19</value>
   </data>
+  <data name="listView_WP.Size" type="System.Drawing.Size, System.Drawing">
+    <value>559, 159</value>
+  </data>
+  <data name="btn_Neu.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
   <data name="&gt;&gt;label7.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="label1.TabIndex" type="System.Int32, mscorlib">
-    <value>50</value>
-  </data>
-  <data name="pictureBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 45</value>
-  </data>
-  <data name="listView_WP.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 187</value>
-  </data>
-  <data name="label_Type.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="&gt;&gt;btn_Neu.ZOrder" xml:space="preserve">
+  <data name="listView_WP.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
   </data>
-  <data name="btn_Löschen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>158, 385</value>
+  <data name="listView_WP.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 81</value>
+  </data>
+  <data name="btn_Abbrechen.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="&gt;&gt;btn_Neu.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <data name="btn_Löschen.Text" xml:space="preserve">
     <value>Löschen</value>
   </data>
-  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>130, 21</value>
-  </data>
-  <data name="label1.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12pt</value>
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="label_Type.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Top</value>
   </data>
   <data name="label_Type.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 5, 0, 5</value>
-  </data>
-  <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>22, 420</value>
   </data>
   <data name="btn_OK.Text" xml:space="preserve">
     <value>OK</value>
@@ -244,13 +229,10 @@
     <value>1</value>
   </data>
   <data name="label_Type.Size" type="System.Drawing.Size, System.Drawing">
-    <value>583, 32</value>
+    <value>581, 32</value>
   </data>
   <data name="btn_Uebernehmen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 27</value>
-  </data>
-  <data name="$this.AutoScroll" type="System.Boolean, mscorlib">
-    <value>True</value>
+    <value>105, 35</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
     <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -261,11 +243,8 @@
   <data name="&gt;&gt;btn_OK.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="label4.TabIndex" type="System.Int32, mscorlib">
-    <value>52</value>
-  </data>
   <data name="&gt;&gt;label_Type.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>7</value>
   </data>
   <data name="label7.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -273,17 +252,11 @@
   <data name="&gt;&gt;textBox_WP.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>130, 21</value>
+  <data name="&gt;&gt;textBox_WP.Name" xml:space="preserve">
+    <value>textBox_WP</value>
   </data>
   <data name="textBox_WP.Location" type="System.Drawing.Point, System.Drawing">
-    <value>299, 72</value>
-  </data>
-  <data name="&gt;&gt;label1.Name" xml:space="preserve">
-    <value>label1</value>
-  </data>
-  <data name="label4.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12pt</value>
+    <value>331, 46</value>
   </data>
   <data name="&gt;&gt;btn_Neu.Name" xml:space="preserve">
     <value>btn_Neu</value>
@@ -297,26 +270,26 @@
   <data name="&gt;&gt;label_Type.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label4.ZOrder" xml:space="preserve">
-    <value>6</value>
+  <data name="label_Type.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
   </data>
-  <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>22, 387</value>
+  <data name="btn_Löschen.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
-  <data name="&gt;&gt;label4.Name" xml:space="preserve">
-    <value>label4</value>
-  </data>
-  <data name="&gt;&gt;listView_WP.ZOrder" xml:space="preserve">
-    <value>10</value>
+  <data name="label_Type.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
   </data>
   <data name="textBox_WP.Visible" type="System.Boolean, mscorlib">
     <value>False</value>
   </data>
-  <data name="&gt;&gt;pictureBox1.Name" xml:space="preserve">
-    <value>pictureBox1</value>
+  <data name="&gt;&gt;btn_Abbrechen.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
-  <data name="label5.TabIndex" type="System.Int32, mscorlib">
-    <value>56</value>
+  <data name="&gt;&gt;btn_Abbrechen.Name" xml:space="preserve">
+    <value>btn_Abbrechen</value>
+  </data>
+  <data name="btn_OK.TabIndex" type="System.Int32, mscorlib">
+    <value>58</value>
   </data>
   <data name="&gt;&gt;btn_Löschen.Parent" xml:space="preserve">
     <value>$this</value>
@@ -324,35 +297,23 @@
   <data name="btn_Löschen.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
   </data>
-  <data name="&gt;&gt;pictureBox1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
   <data name="label7.Text" xml:space="preserve">
     <value>Liste der Wärmepumpen im Projekt</value>
-  </data>
-  <data name="btn_Neu.TabIndex" type="System.Int32, mscorlib">
-    <value>55</value>
-  </data>
-  <data name="&gt;&gt;label_Type.Name" xml:space="preserve">
-    <value>label_Type</value>
   </data>
   <data name="btn_Neu.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="btn_Abbrechen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>391, 493</value>
+    <value>401, 256</value>
   </data>
-  <data name="&gt;&gt;pictureBox1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>581, 299</value>
   </data>
-  <data name="pictureBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>152, 110</value>
+  <data name="btn_OK.Location" type="System.Drawing.Point, System.Drawing">
+    <value>496, 256</value>
   </data>
-  <data name="&gt;&gt;label5.Name" xml:space="preserve">
-    <value>label5</value>
-  </data>
-  <data name="&gt;&gt;label1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="btn_Uebernehmen.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
   </data>
   <data name="btn_Abbrechen.TabIndex" type="System.Int32, mscorlib">
     <value>59</value>
@@ -360,74 +321,59 @@
   <data name="&gt;&gt;btn_OK.Name" xml:space="preserve">
     <value>btn_OK</value>
   </data>
-  <data name="&gt;&gt;label5.Parent" xml:space="preserve">
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>6, 13</value>
+  </data>
+  <data name="&gt;&gt;btn_Neu.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;$this.Name" xml:space="preserve">
-    <value>WizWP</value>
-  </data>
-  <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
   <data name="btn_OK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 27</value>
+    <value>75, 35</value>
+  </data>
+  <data name="btn_Uebernehmen.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
   <data name="btn_Uebernehmen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>158, 418</value>
-  </data>
-  <data name="label_Type.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+    <value>239, 256</value>
   </data>
   <data name="&gt;&gt;label7.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="label_Type.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>TopCenter</value>
+  <data name="btn_Uebernehmen.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
-  <data name="btn_OK.Location" type="System.Drawing.Point, System.Drawing">
-    <value>496, 493</value>
-  </data>
-  <data name="&gt;&gt;btn_Abbrechen.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label7.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="btn_Löschen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 27</value>
+    <value>103, 35</value>
   </data>
   <data name="btn_Abbrechen.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="&gt;&gt;btn_Löschen.Name" xml:space="preserve">
-    <value>btn_Löschen</value>
+  <data name="&gt;&gt;listView_WP.ZOrder" xml:space="preserve">
+    <value>6</value>
   </data>
   <data name="btn_Neu.Text" xml:space="preserve">
-    <value>Neu</value>
+    <value>Neu...</value>
   </data>
   <data name="&gt;&gt;btn_Uebernehmen.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="label_Type.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="btn_OK.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="listView_WP.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>Form_WPAuswahl</value>
   </data>
-  <data name="&gt;&gt;label5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_Abbrechen.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="label4.Text" xml:space="preserve">
-    <value>Eintrag ändern</value>
-  </data>
-  <data name="&gt;&gt;pictureBox1.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="btn_Löschen.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="textBox_WP.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt</value>
-  </data>
-  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>583, 532</value>
   </data>
   <data name="&gt;&gt;label7.Name" xml:space="preserve">
     <value>label7</value>
@@ -435,73 +381,61 @@
   <data name="btn_Uebernehmen.TabIndex" type="System.Int32, mscorlib">
     <value>28</value>
   </data>
-  <data name="&gt;&gt;label1.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="btn_Neu.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
   </data>
   <data name="&gt;&gt;label7.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>4</value>
   </data>
   <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 165</value>
+    <value>8, 59</value>
   </data>
-  <data name="label_Type.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12pt, style=Bold</value>
+  <data name="btn_Neu.TabIndex" type="System.Int32, mscorlib">
+    <value>55</value>
   </data>
-  <data name="label5.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12pt</value>
+  <data name="&gt;&gt;listView_WP.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="btn_Uebernehmen.Text" xml:space="preserve">
-    <value>Ändern</value>
+    <value>Ändern...</value>
   </data>
   <data name="btn_Neu.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 27</value>
+    <value>93, 35</value>
   </data>
-  <data name="&gt;&gt;btn_Neu.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="btn_Löschen.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
   </data>
-  <data name="label5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>130, 21</value>
-  </data>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>6, 13</value>
-  </data>
-  <data name="label5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>22, 354</value>
-  </data>
-  <data name="&gt;&gt;label5.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="btn_Neu.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="listView_WP.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
+  </data>
+  <data name="btn_Neu.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 256</value>
   </data>
   <data name="&gt;&gt;btn_Uebernehmen.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;textBox_WP.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>3</value>
   </data>
-  <data name="textBox_WP.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="pictureBox1.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
-    <value>Zoom</value>
-  </data>
-  <data name="&gt;&gt;listView_WP.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;btn_Löschen.Name" xml:space="preserve">
+    <value>btn_Löschen</value>
   </data>
   <data name="&gt;&gt;btn_Abbrechen.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="pictureBox1.TabIndex" type="System.Int32, mscorlib">
-    <value>57</value>
+  <data name="label7.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
-  <data name="btn_OK.TabIndex" type="System.Int32, mscorlib">
-    <value>58</value>
+  <data name="btn_Löschen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>120, 256</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
   <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>en-US</value>
+    <value>de-DE</value>
   </metadata>
 </root>

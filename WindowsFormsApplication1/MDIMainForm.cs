@@ -109,16 +109,10 @@ namespace WindowsFormsApplication1
             ctrl.Stromganglinie();
         }
 
-        private void MeniItem_VDI3805_Click(object sender, EventArgs e)
+        private void MenuItem_WP_VDI3805_Click(object sender, EventArgs e)
         {
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.WPImport();
-        }
-
-        private void MenuItem_Gebaeude_Click(object sender, EventArgs e)
-        {
-            MenueCtrl ctrl = new MenueCtrl();
-            ctrl.GebaeudeBearbeiten();
         }
 
         private void MenuItem_BHKW_Click(object sender, EventArgs e)
@@ -179,12 +173,6 @@ namespace WindowsFormsApplication1
             ctrl.Kessel();
         }
 
-        private void MeniItem_SPK_VDI3805_Click(object sender, EventArgs e)
-        {
-            MenueCtrl ctrl = new MenueCtrl();
-            ctrl.SPKImport();
-        }
-
         private void MeniItem_PufferSp_VDI3805_Click(object sender, EventArgs e)
         {
             MenueCtrl ctrl = new MenueCtrl();
@@ -225,6 +213,36 @@ namespace WindowsFormsApplication1
         {
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.SolarThermieImport();
+        }
+        
+        private void MenuItem_Import_Heizkessel_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.SPKImport();
+        }
+
+        private void MenuItem_Kessel_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.Kessel();
+        }
+
+        private void MenuItem_PufferSp_Click(object sender, EventArgs e)
+        {
+            MenueCtrl ctrl = new MenueCtrl();
+            ctrl.PufferSp();
+        }
+
+        private void MenuItem_WP_Click(object sender, EventArgs e)
+        {
+            MenueCtrl menu = new MenueCtrl();
+            menu.WP_Administration();
+        }
+
+        private void MenuItem_PV_Import_Click_1(object sender, EventArgs e)
+        {
+            Main_PV_Test frm = new Main_PV_Test();
+            frm.ShowDialog();
         }
     }
 }

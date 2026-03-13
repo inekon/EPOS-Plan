@@ -105,6 +105,7 @@ namespace WindowsFormsApplication1
             double pd = Program.convertTxt2Double(ctrl._list[index].szThLeistung);
             wpctrl.Nennleistung = (int)pd;
             wpctrl.Typ = ctrl._list[index].szWPTyp;
+            wpctrl.Bauart = ctrl._list[index].szBauart; 
 
             if (ctrl._list[index].szElektrZuheizung != "")
             {

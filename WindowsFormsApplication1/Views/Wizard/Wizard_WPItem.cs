@@ -61,6 +61,8 @@ namespace WindowsFormsApplication1
             comboBox_Betriebsart.Items.Add("Teilparallelbetrieb");
         }
 
+        public void SetWPCombox(string wpname) { listBox_WP.Text = wpname; }
+
         public void FillVorlaufCombo(string wpname)
         {
             WPCtrl wpctrl = new WPCtrl();
@@ -343,6 +345,14 @@ namespace WindowsFormsApplication1
         {
             TextBox tb = sender as TextBox;
             if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void btn_Katalog_Click(object sender, EventArgs e)
+        {
+            Form_WpFilterAuswahl frmauswahl = new Form_WpFilterAuswahl();
+            DialogResult result = frmauswahl.ShowDialog();
+            if (result != DialogResult.OK) return;
+            listBox_WP.Text = frmauswahl.SelectedWP.Bezeichnung;
         }
     }
 }
