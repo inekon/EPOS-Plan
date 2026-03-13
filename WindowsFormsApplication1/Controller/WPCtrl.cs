@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Data.Odbc;
 using System.Windows.Forms;
-using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -112,7 +108,7 @@ namespace WindowsFormsApplication1
                     (
                         ID_WP, WPName, Firma, Beschreibung, Typ, 
                         Baujahr, Aufstellung, Nennleistung, maxPTherm, 
-                        Heizung, Regelung, Modulkosten, Kuehlleistung
+                        Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung
                     ) 
                     SELECT 
                         {ID}, 
@@ -127,6 +123,7 @@ namespace WindowsFormsApplication1
                         {Heizung}, 
                         '{Regelung}', 
                         {Modulkosten}, 
+                        '{Bauart}',
                         {Kuehlleistung:F2}");
 
                 DBCommand.ExecuteNonQuery();
@@ -177,6 +174,43 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(10)) item.Regelung = (string)DBReader.GetValue(10);
                 if (!DBReader.IsDBNull(11)) item.Modulkosten = (int)DBReader.GetValue(11);
                 if (!DBReader.IsDBNull(17)) item.Kuehlleistung = (double)DBReader.GetValue(17);
+                if (!DBReader.IsDBNull(18)) item.Bauart = DBReader.GetString(18);
+
+                items[rows] = item;
+                rows += 1;
+                item = null;
+            }
+            DBReader.Dispose();
+            DBReader.Close();
+        }
+
+        public void ReadAll_MitMinMaxVorlauf(string sql)
+        {
+            DBCommand.CommandText = sql;
+            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+
+            items = new WPModel[1000];
+            rows = 0;
+            while (DBReader.Read())
+            {
+                WPModel item = new WPModel();
+
+                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
+                if (!DBReader.IsDBNull(1)) item.WPName = DBReader.GetString(1);
+                if (!DBReader.IsDBNull(2)) item.Firma = DBReader.GetString(2);
+                if (!DBReader.IsDBNull(3)) item.Beschreibung = (string)DBReader.GetValue(3);
+                if (!DBReader.IsDBNull(4)) item.Typ = (string)DBReader.GetValue(4);
+                if (!DBReader.IsDBNull(5)) item.Baujahr = (int)DBReader.GetValue(5);
+                if (!DBReader.IsDBNull(6)) item.Aufstellung = (string)DBReader.GetValue(6);
+                if (!DBReader.IsDBNull(7)) item.Nennleistung = (int)DBReader.GetValue(7);
+                if (!DBReader.IsDBNull(8)) item.maxPTherm = (int)DBReader.GetValue(8);
+                if (!DBReader.IsDBNull(9)) item.Heizung = (int)DBReader.GetValue(9);
+                if (!DBReader.IsDBNull(10)) item.Regelung = (string)DBReader.GetValue(10);
+                if (!DBReader.IsDBNull(11)) item.Modulkosten = (int)DBReader.GetValue(11);
+                if (!DBReader.IsDBNull(12)) item.Kuehlleistung = (double)DBReader.GetValue(12);
+                if (!DBReader.IsDBNull(13)) item.MaxVorlauf = (int)DBReader.GetValue(13);
+                if (!DBReader.IsDBNull(14)) item.MinVorlauf = (int)DBReader.GetValue(14);
+                if (!DBReader.IsDBNull(15)) item.Bauart = DBReader.GetString(15);
 
                 items[rows] = item;
                 rows += 1;
@@ -205,6 +239,8 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(9)) Heizung = (int)DBReader.GetValue(9);
                 if (!DBReader.IsDBNull(10)) Regelung = (string)DBReader.GetValue(10);
                 if (!DBReader.IsDBNull(11)) Modulkosten = (int)DBReader.GetValue(11);
+                if (!DBReader.IsDBNull(17)) Kuehlleistung = (double)DBReader.GetValue(17);
+                if (!DBReader.IsDBNull(18)) Bauart = DBReader.GetString(18);
 
                 rows = 1;
             }

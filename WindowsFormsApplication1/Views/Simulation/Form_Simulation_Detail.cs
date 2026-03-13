@@ -36,11 +36,6 @@ namespace WindowsFormsApplication1
 
         Point prevPosition;
 
-
-        private double[] solarErtrag = new double[8760];
-        private double[] gebaeudeBedarf = new double[8760];
-        private double[] tAussen = new double[8760];
-
         public Form_Simulation_Detail(int iD_Projekt)
         {
             InitializeComponent();
@@ -333,7 +328,7 @@ namespace WindowsFormsApplication1
             if (sim.bSimulationWP)
             {
                 // Chart Wärmepumpe Wärmerbedarf und Produktion
-                 _chartManager[3] = new ChartManager(chart3);
+                _chartManager[3] = new ChartManager(chart3);
                 _chartManager[3].YMaxValue = sim.simulation_Waermebedarf.Waermebedarf.Max();
                 _chartManager[3].YMinValue = 0;
                 _chartManager[3].XAxisAsNumber = false;
@@ -430,7 +425,7 @@ namespace WindowsFormsApplication1
                     ps_bedarf_raw[index].X = ps_produktion_raw[index].X;
                     ps_bedarf_raw[index].Y = sim.simulation_wp.Waermebedarf_stuendlich[n];
 
-                    if (simulation_wp.Heizstab_stuendlich[n] > 0)
+                    if (sim.simulation_wp.Heizstab_stuendlich[n] > 0)
                         ps_heizstab_raw[index].Y = sim.simulation_wp.WP_Waermeproduktion_stuendlich[n] + sim.simulation_wp.Heizstab_stuendlich[n];
                     else
                         ps_heizstab_raw[index].Y = 0;
@@ -453,31 +448,20 @@ namespace WindowsFormsApplication1
                     ps_heizstab.SetValue(ps_heizstab_raw[n], n);
                 }
 
-                // Chart WP Wärmeproduktion über Temperaturgang
-                chart4.Series["Waermeproduktion"].Points.Clear();
-                chart4.Series["Waermebedarf"].Points.Clear();
-                chart4.Series["Heizstab"].Points.Clear();
-      
-                chart4.Series["Waermeproduktion"].ChartType = SeriesChartType.Area;
-                chart4.Series["Waermebedarf"].ChartType = SeriesChartType.Area;
-                chart4.Series["Heizstab"].ChartType = SeriesChartType.Area;
-                
-                chart4.Series["Waermeproduktion"].Color = Color.FromArgb(100, Color.Blue);
-                chart4.Series["Waermebedarf"].Color = Color.FromArgb(140, Color.Red);
-                chart4.Series["Heizstab"].Color = Color.FromArgb(240, Color.Yellow);
+                // ChartManager instanziieren
+                _chartManager[4] = new ChartManager(chart4);
+                _chartManager[4].ChartTitle = "Leistung über Außentemperatur";
+                _chartManager[4].XAxisTitle = "Temperatur [°C]";
+                _chartManager[4].YAxisTitle = "Leistung [kW]";
+                _chartManager[4].IsXYChart = true;
+                _chartManager[4].AreaLine = true; // Area Chart Effekt
+                _chartManager[4].MitLegende = true;
+                _chartManager[4].Init();
 
-                chart4.Series["Heizstab"].Points.DataBindXY(ps_heizstab, "X", ps_heizstab, "Y");
-                chart4.Series["Waermeproduktion"].Points.DataBindXY(ps_produktion, "X", ps_produktion, "Y");
-                chart4.Series["Waermebedarf"].Points.DataBindXY(ps_bedarf, "X", ps_bedarf, "Y");
-
-                chart4.Series["Waermeproduktion"].Sort(PointSortOrder.Ascending, "X");
-                chart4.Series["Waermebedarf"].Sort(PointSortOrder.Ascending, "X");
-                chart4.Series["Heizstab"].Sort(PointSortOrder.Ascending, "X");
-
-                chart4.ChartAreas[0].AxisX.LabelStyle.Format = "0.0";
-                chart4.ChartAreas[0].AxisX.Interval = 5;
-
-                chart4.Update();
+                // Daten hinzufügen (gefilterte PointF[] Arrays)
+                _chartManager[4].AddSeries("Wärmebedarf", Color.FromArgb(120, Color.Red), ps_bedarf, 0);
+                _chartManager[4].AddSeries("Heizstab", Color.FromArgb(120, Color.Yellow), ps_heizstab, 0);
+                _chartManager[4].AddSeries("Wärmeproduktion", Color.FromArgb(120, Color.Blue), ps_produktion, 0);
             }
 
             // ********************************************************************************************/
@@ -553,6 +537,7 @@ namespace WindowsFormsApplication1
                 _chartManager[8].ChartTitle = "Wärmelast Jahresganglinie";
                 _chartManager[8].MitLegende = true;
                 _chartManager[8].MitChartBorder = true;
+                _chartManager[8].AreaLine = false;
                 _chartManager[8].Init();
                 _chartManager[8].AddSeries("Waermebedarf", Color.Red, Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermebedarf, x => (float)x));
                 _chartManager[8].AddSeries("Wärmeproduktion", Color.Blue, Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermeproduktion, x => (float)x));
@@ -650,7 +635,7 @@ namespace WindowsFormsApplication1
             _chartManager[7].ChartTitle = "Strombedarf, Stromverbrauch Jahresganglinie";
             _chartManager[7].MitLegende = true;
             _chartManager[7].MaxXVALUE = 8760 * 4;
-            _chartManager[7].IsQuarterHourly = true;    
+            _chartManager[7].MitViertelStunde = true;    
             _chartManager[7].Init();
             _chartManager[7].AddSeries("Gesamt", Color.Green, temp_ges);
             _chartManager[7].AddSeries("Waermepumpe", Color.Orange, temp_wp);
@@ -772,6 +757,8 @@ namespace WindowsFormsApplication1
 
         private void checkBox_WP_sortiert_CheckedChanged(object sender, EventArgs e)
         {
+            if (!sim.bSimulationWP) return;
+
             float[] temp = new float[8760];
 
             for (int i = 0; i < 8760; i++)

@@ -15,6 +15,8 @@
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <PublishUrl>c:\deploy\myapplication\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -30,8 +32,6 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -206,8 +206,13 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Allgemein\CECDataService.cs" />
     <Compile Include="Allgemein\Chart\ChartMouseWheel.cs" />
     <Compile Include="Allgemein\Chart\ChartManager.cs" />
+    <Compile Include="Allgemein\Chart\Form_ChartZoom.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Allgemein\Chart\TextBoxExtensionsClass.cs" />
     <Compile Include="Allgemein\CsvReader.cs" />
     <Compile Include="Allgemein\FileDlgClass.cs" />
     <Compile Include="Allgemein\Form3Src.cs">
@@ -222,6 +227,7 @@
     <Compile Include="Allgemein\Import\Heizkesselmport.cs" />
     <Compile Include="Allgemein\IniFileParser.cs" />
     <Compile Include="Allgemein\Import\PufferSpImport.cs" />
+    <Compile Include="Allgemein\PVModule.cs" />
     <Compile Include="Allgemein\RecordSet.cs" />
     <Compile Include="Allgemein\Simulation\SimulationControl.cs" />
     <Compile Include="Allgemein\Simulation\Init.cs" />
@@ -235,6 +241,7 @@
     <Compile Include="Allgemein\StromTestClass.cs" />
     <Compile Include="Allgemein\SolarPVGISCalculator.cs" />
     <Compile Include="Allgemein\Import\WaermepumpenImport.cs" />
+    <Compile Include="Allgemein\UnifiedModule.cs" />
     <Compile Include="Controller\ApplikationCtrl.cs" />
     <Compile Include="Controller\BHKWCtrl.cs" />
     <Compile Include="Controller\BHKWKontextMenuCtrl.cs">
@@ -429,11 +436,26 @@
     <Compile Include="Views\Photovoltaik\Form_AdminPV.designer.cs">
       <DependentUpon>Form_AdminPV.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Photovoltaik\Form_ModuleDetailDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Photovoltaik\Form_ModuleDetailDialog.Designer.cs">
+      <DependentUpon>Form_ModuleDetailDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Photovoltaik\Form_PV.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Photovoltaik\Form_PV.Designer.cs">
       <DependentUpon>Form_PV.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Photovoltaik\Form_PV_Test.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Photovoltaik\Form_PV_Test.Designer.cs">
+      <DependentUpon>Form_PV_Test.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Photovoltaik\MainForm.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Projekt\Form_ProjektDelete.cs">
       <SubType>Form</SubType>
@@ -749,17 +771,17 @@
       <DependentUpon>WizardParent.cs</DependentUpon>
     </Compile>
     <Compile Include="Allgemein\WizardItemClass.cs" />
-    <Compile Include="Views\Wizard\Wizard_WP.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Wizard\Wizard_WP.designer.cs">
-      <DependentUpon>Wizard_WP.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Wizard\Wizard_WPItem.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_WPItem.Designer.cs">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Wärmepumpe\Form_WPFilterAuswahl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Wärmepumpe\Form_WPFilterAuswahl.Designer.cs">
+      <DependentUpon>Form_WPFilterAuswahl.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wärmepumpe\Form_WP_einlesen.cs">
       <SubType>Form</SubType>
@@ -773,22 +795,20 @@
     <Compile Include="Views\Wärmepumpe\Kenndaten.Designer.cs">
       <DependentUpon>Kenndaten.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Wärmepumpe\WizWP.cs">
+    <Compile Include="Views\Wärmepumpe\Form_WPAuswahl.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Wärmepumpe\WizWP.designer.cs">
-      <DependentUpon>WizWP.cs</DependentUpon>
+    <Compile Include="Views\Wärmepumpe\Form_WPAuswahl.designer.cs">
+      <DependentUpon>Form_WPAuswahl.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="Allgemein\Form_Hinweis.resx">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MDIMainForm.de-DE.resx">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MDIMainForm.en-US.resx">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MyResource\Resource.de-DE.resx" />
     <EmbeddedResource Include="MyResource\Resource.en-US.resx">
@@ -941,6 +961,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Photovoltaik\Form_PV.resx">
       <DependentUpon>Form_PV.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Photovoltaik\Form_PV_Test.resx">
+      <DependentUpon>Form_PV_Test.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Photovoltaik\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Projekt\Form_ProjektDelete.de-DE.resx">
       <DependentUpon>Form_ProjektDelete.cs</DependentUpon>
@@ -1268,15 +1294,6 @@
     <EmbeddedResource Include="Views\Wizard\Wizard_Stromlastgang.resx">
       <DependentUpon>Wizard_Stromlastgang.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Wizard_WP.de-DE.resx">
-      <DependentUpon>Wizard_WP.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Wizard_WP.en-US.resx">
-      <DependentUpon>Wizard_WP.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wizard\Wizard_WP.resx">
-      <DependentUpon>Wizard_WP.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\Wizard_WPItem.de-DE.resx">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>
     </EmbeddedResource>
@@ -1335,6 +1352,9 @@
     <EmbeddedResource Include="Views\Wizard\Wizard_WPItem.resx">
       <DependentUpon>Wizard_WPItem.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WPFilterAuswahl.resx">
+      <DependentUpon>Form_WPFilterAuswahl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wärmepumpe\Form_WP_einlesen.de-DE.resx">
       <DependentUpon>Form_WP_einlesen.cs</DependentUpon>
     </EmbeddedResource>
@@ -1353,14 +1373,14 @@
     <EmbeddedResource Include="Views\Wärmepumpe\Kenndaten.resx">
       <DependentUpon>Kenndaten.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wärmepumpe\WizWP.de-DE.resx">
-      <DependentUpon>WizWP.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WPAuswahl.de-DE.resx">
+      <DependentUpon>Form_WPAuswahl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wärmepumpe\WizWP.en-US.resx">
-      <DependentUpon>WizWP.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WPAuswahl.en-US.resx">
+      <DependentUpon>Form_WPAuswahl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Wärmepumpe\WizWP.resx">
-      <DependentUpon>WizWP.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Wärmepumpe\Form_WPAuswahl.resx">
+      <DependentUpon>Form_WPAuswahl.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="OpenTK.dll.config" />
@@ -1516,6 +1536,10 @@
     <None Include="Resources\Menue5.png" />
     <None Include="Resources\Menue6.png" />
     <None Include="Resources\germany.png" />
+    <None Include="Resources\catalog.png" />
+    <None Include="Resources\catalog.ico" />
+    <None Include="Resources\catalog_add.ico" />
+    <None Include="Resources\catalog_edit.ico" />
     <Content Include="Resources\edit.ico" />
     <Content Include="Resources\edit.png" />
     <Content Include="Resources\PDetailansicht.jpg" />

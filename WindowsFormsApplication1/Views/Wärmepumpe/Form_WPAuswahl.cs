@@ -9,11 +9,13 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class WizWP : Form
+    public partial class Form_WPAuswahl : Form
     {
         public List<WErzeugerModel> list_werzmodel = new List<WErzeugerModel>();
-        
-        public WizWP()
+        private WizardParent wizardparent = null;
+        private bool m_bWizard = false;
+
+        public Form_WPAuswahl()
         {
             InitializeComponent();
  
@@ -24,56 +26,78 @@ namespace WindowsFormsApplication1
             listView_WP.Columns.Add("Betriebsart", -2, HorizontalAlignment.Left);
         }
 
-        public void SetControls(string projekt)
+        public void SetControls(string projekt, bool bWizard = false)
         {
-                
-                listView_WP.Items.Clear();
+            if (bWizard)
+            {
+                m_bWizard = true;
+                btn_OK.Visible = false;
+                btn_Abbrechen.Visible = false;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.BackColor = Color.White;
+                wizardparent = (WizardParent)getWizardPage();
+                list_werzmodel = wizardparent.list_werzmodel;
+            }
+
+
+            listView_WP.Items.Clear();
    
-                for (int n = 0; n < list_werzmodel.Count; n++)
+            for (int n = 0; n < list_werzmodel.Count; n++)
+            {
+                WErzeugerModel item = new WErzeugerModel();
+                ListViewItem lvitem = new ListViewItem();
+
+                if (list_werzmodel[n].ID_Type == WizardItemClass.WP_TYP)
                 {
-                    WErzeugerModel item = new WErzeugerModel();
-                    ListViewItem lvitem = new ListViewItem();
+                    item.Bezeichner = list_werzmodel[n].Bezeichner;
+                    item.Abschaltpunkt = (double)list_werzmodel[n].Abschaltpunkt;
+                    item.Betriebsart = (string)list_werzmodel[n].Betriebsart;
+                    item.Bivalenter_Betrieb = list_werzmodel[n].Bivalenter_Betrieb;
+                    item.Nutzungszeit = list_werzmodel[n].Nutzungszeit;
+                    item.Ruecklauf = list_werzmodel[n].Ruecklauf;
+                    item.Sperrung = list_werzmodel[n].Sperrung;
+                    item.Sperrzeit_bis = list_werzmodel[n].Sperrzeit_bis;
+                    item.Sperrzeit_von = list_werzmodel[n].Sperrzeit_von;
+                    item.Vorlauf = list_werzmodel[n].Vorlauf;
+                    item.Heizstab = list_werzmodel[n].Heizstab;
+                    item.Volumen = list_werzmodel[n].Volumen;
+                    item.rendeMix = list_werzmodel[n].rendeMix;
+                    item.Solaranteil = list_werzmodel[n].Solaranteil;
+                    item.ID_WP = list_werzmodel[n].ID_WP;
 
-                    if (list_werzmodel[n].ID_Type == WizardItemClass.WP_TYP)
-                    {
-                        item.Bezeichner = list_werzmodel[n].Bezeichner;
-                        item.Abschaltpunkt = (double)list_werzmodel[n].Abschaltpunkt;
-                        item.Betriebsart = (string)list_werzmodel[n].Betriebsart;
-                        item.Bivalenter_Betrieb = list_werzmodel[n].Bivalenter_Betrieb;
-                        item.Nutzungszeit = list_werzmodel[n].Nutzungszeit;
-                        item.Ruecklauf = list_werzmodel[n].Ruecklauf;
-                        item.Sperrung = list_werzmodel[n].Sperrung;
-                        item.Sperrzeit_bis = list_werzmodel[n].Sperrzeit_bis;
-                        item.Sperrzeit_von = list_werzmodel[n].Sperrzeit_von;
-                        item.Vorlauf = list_werzmodel[n].Vorlauf;
-                        item.Heizstab = list_werzmodel[n].Heizstab;
-                        item.Volumen = list_werzmodel[n].Volumen;
-                        item.rendeMix = list_werzmodel[n].rendeMix;
-                        item.Solaranteil = list_werzmodel[n].Solaranteil;
-                        item.ID_WP = list_werzmodel[n].ID_WP;
+                    WPCtrl wpctrl = new WPCtrl();
+                    wpctrl.ReadAll("ID_WP=" + item.ID_WP);
+                    item.Regelung = wpctrl.items[0].Regelung;
+                    item.Nennleistung = wpctrl.items[0].Nennleistung;
+                    item.Modulkosten = wpctrl.items[0].Modulkosten;
+                    item.Baujahr = wpctrl.items[0].Baujahr;
+                    item.Beschreibung = wpctrl.items[0].Beschreibung;
+                    item.Firma = wpctrl.items[0].Firma;
+                    item.Typ = wpctrl.items[0].Typ;
+                    item.Heizung = wpctrl.items[0].Heizung;
 
+                    lvitem.Text = item.Bezeichner;
+                    lvitem.SubItems.Add(item.Vorlauf.ToString());
+                    lvitem.SubItems.Add(item.Ruecklauf.ToString());
+                    lvitem.SubItems.Add(item.Betriebsart);
 
-                        WPCtrl wpctrl = new WPCtrl();
-                        wpctrl.ReadAll("ID_WP=" + item.ID_WP);
-                        item.Regelung = wpctrl.items[0].Regelung;
-                        item.Nennleistung = wpctrl.items[0].Nennleistung;
-                        item.Modulkosten = wpctrl.items[0].Modulkosten;
-                        item.Baujahr = wpctrl.items[0].Baujahr;
-                        item.Beschreibung = wpctrl.items[0].Beschreibung;
-                        item.Firma = wpctrl.items[0].Firma;
-                        item.Typ = wpctrl.items[0].Typ;
-                        item.Heizung = wpctrl.items[0].Heizung;
-
-                        lvitem.Text = item.Bezeichner;
-                        lvitem.SubItems.Add(item.Vorlauf.ToString());
-                        lvitem.SubItems.Add(item.Ruecklauf.ToString());
-                        lvitem.SubItems.Add(item.Betriebsart);
-
-                        listView_WP.Items.Add(lvitem);
-                    }
+                    listView_WP.Items.Add(lvitem);
                 }
-                listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
-                listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            }
+            listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_WP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+        }
+
+        private Form getWizardPage()
+        {
+            foreach (Form form in Application.OpenForms)
+            {
+                if (form.Name == "WizardParent")
+                {
+                    return form;
+                }
+            }
+            return null;
         }
 
         private void listView_WP_SelectedIndexChanged(object sender, EventArgs e)
@@ -98,6 +122,7 @@ namespace WindowsFormsApplication1
                 wpname = listView_WP.Items[n].SubItems[0].Text;
                 listView_WP.Items[indexes[0]].Remove();
                 list_werzmodel.RemoveAt(n);
+                if (m_bWizard) wizardparent.list_werzmodel = list_werzmodel;
             }
         }
 
@@ -179,6 +204,7 @@ namespace WindowsFormsApplication1
                 if (!frm.CloseWithOK) return;
                 
                 list_werzmodel[index] = frm.m_werzitemlist[index];
+                if (m_bWizard) wizardparent.list_werzmodel = list_werzmodel;
 
                 ListViewItem lvitem;
                 lvitem = listView_WP.Items[n];
@@ -191,12 +217,18 @@ namespace WindowsFormsApplication1
 
         private void btn_Neu_Click(object sender, EventArgs e)
         {
+            Form_WpFilterAuswahl frmauswahl = new Form_WpFilterAuswahl();
+            DialogResult result =frmauswahl.ShowDialog();
+            if (result != DialogResult.OK) return;
+
             Wizard_WPItem frm = new Wizard_WPItem();
+            frm.SetWPCombox(frmauswahl.SelectedWP.Bezeichnung);
             frm.ShowDialog();
             if (!frm.CloseWithOK) return;
             frm.item.ID_Type = 1; 
 
             list_werzmodel.Add(frm.item);
+            if (m_bWizard) wizardparent.list_werzmodel = list_werzmodel;
 
             ListViewItem lvitem = new ListViewItem();
       
@@ -248,5 +280,6 @@ namespace WindowsFormsApplication1
             DialogResult = DialogResult.Cancel;
             Close();
         }
+ 
     }
 }

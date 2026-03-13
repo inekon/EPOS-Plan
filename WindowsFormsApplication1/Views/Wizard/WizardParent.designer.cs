@@ -35,6 +35,7 @@
             this.listBox_Projekte = new System.Windows.Forms.ListBox();
             this.pictureBox_App = new System.Windows.Forms.PictureBox();
             this.pnlBottom = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.btnSpeichern = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.btnCancel = new System.Windows.Forms.Button();
@@ -44,13 +45,14 @@
             this.pnlLeft.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_App)).BeginInit();
             this.pnlBottom.SuspendLayout();
+            this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnlLeft
             // 
-            resources.ApplyResources(this.pnlLeft, "pnlLeft");
             this.pnlLeft.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            resources.ApplyResources(this.pnlLeft, "pnlLeft");
             this.pnlLeft.Controls.Add(this.button_NeuProjekt);
             this.pnlLeft.Controls.Add(this.label_Projekt);
             this.pnlLeft.Controls.Add(this.listBox_Projekte);
@@ -59,8 +61,8 @@
             // 
             // button_NeuProjekt
             // 
-            resources.ApplyResources(this.button_NeuProjekt, "button_NeuProjekt");
             this.button_NeuProjekt.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            resources.ApplyResources(this.button_NeuProjekt, "button_NeuProjekt");
             this.button_NeuProjekt.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.button_NeuProjekt.Name = "button_NeuProjekt";
             this.button_NeuProjekt.UseVisualStyleBackColor = false;
@@ -68,15 +70,15 @@
             // 
             // label_Projekt
             // 
-            resources.ApplyResources(this.label_Projekt, "label_Projekt");
             this.label_Projekt.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            resources.ApplyResources(this.label_Projekt, "label_Projekt");
             this.label_Projekt.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.label_Projekt.Name = "label_Projekt";
             // 
             // listBox_Projekte
             // 
-            resources.ApplyResources(this.listBox_Projekte, "listBox_Projekte");
             this.listBox_Projekte.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            resources.ApplyResources(this.listBox_Projekte, "listBox_Projekte");
             this.listBox_Projekte.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.listBox_Projekte.FormattingEnabled = true;
             this.listBox_Projekte.Name = "listBox_Projekte";
@@ -84,19 +86,25 @@
             // 
             // pictureBox_App
             // 
-            resources.ApplyResources(this.pictureBox_App, "pictureBox_App");
             this.pictureBox_App.Image = global::WindowsFormsApplication1.Properties.Resources.LogoInekon;
+            resources.ApplyResources(this.pictureBox_App, "pictureBox_App");
             this.pictureBox_App.Name = "pictureBox_App";
             this.pictureBox_App.TabStop = false;
             this.pictureBox_App.Click += new System.EventHandler(this.pictureBox_App_Click);
             // 
             // pnlBottom
             // 
-            resources.ApplyResources(this.pnlBottom, "pnlBottom");
             this.pnlBottom.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.pnlBottom.Controls.Add(this.btnSpeichern);
+            this.pnlBottom.Controls.Add(this.tableLayoutPanel2);
             this.pnlBottom.Controls.Add(this.tableLayoutPanel1);
+            resources.ApplyResources(this.pnlBottom, "pnlBottom");
             this.pnlBottom.Name = "pnlBottom";
+            // 
+            // tableLayoutPanel2
+            // 
+            resources.ApplyResources(this.tableLayoutPanel2, "tableLayoutPanel2");
+            this.tableLayoutPanel2.Controls.Add(this.btnSpeichern, 0, 0);
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             // 
             // btnSpeichern
             // 
@@ -154,6 +162,7 @@
             this.pnlLeft.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_App)).EndInit();
             this.pnlBottom.ResumeLayout(false);
+            this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -174,6 +183,7 @@
         private System.Windows.Forms.Button btnBack;
         private System.Windows.Forms.Button btnSpeichern;
         private System.Windows.Forms.Button button_NeuProjekt;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
     }
 }
 

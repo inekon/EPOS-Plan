@@ -53,7 +53,7 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Form_Prozesswaerme(), WizardItemClass.PROZESS_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromverbraucher(), WizardItemClass.STROMSTD_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_WP(), WizardItemClass.WP_ITEM));
+            frm.Add(new WizardItemClass(new Form_WPAuswahl(), WizardItemClass.WP_ITEM));
             frm.Add(new WizardItemClass(new Form_SolarKollektoren(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Form_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));
@@ -81,7 +81,7 @@ namespace WindowsFormsApplication1
             frm.Add(new WizardItemClass(new Form_Prozesswaerme(), WizardItemClass.PROZESS_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromverbraucher(), WizardItemClass.STROMSTD_ITEM));
             frm.Add(new WizardItemClass(new Wizard_Stromlastgang(), WizardItemClass.STROMLASTGANG_ITEM));
-            frm.Add(new WizardItemClass(new Wizard_WP(), WizardItemClass.WP_ITEM));
+            frm.Add(new WizardItemClass(new Form_WPAuswahl(), WizardItemClass.WP_ITEM));
             frm.Add(new WizardItemClass(new Form_SolarKollektoren(), WizardItemClass.SOLAR_ITEM));
             frm.Add(new WizardItemClass(new Form_PV(), WizardItemClass.PV_ITEM));
             frm.Add(new WizardItemClass(new Form_Stromspeicher(), WizardItemClass.SP_ITEM));

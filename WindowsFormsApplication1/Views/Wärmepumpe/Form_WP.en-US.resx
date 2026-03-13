@@ -290,28 +290,4 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Heat pump database</value>
   </data>
-  <data name="chart1.Text" xml:space="preserve">
-    <value>COP</value>
-  </data>
-  <data name="label4.Text" xml:space="preserve">
-    <value>kW</value>
-  </data>
-  <data name="tabPage1.Text" xml:space="preserve">
-    <value>COP</value>
-  </data>
-  <data name="label6.Text" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="btn_Beenden.Text" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="label5.Text" xml:space="preserve">
-    <value>kW</value>
-  </data>
-  <data name="label7.Text" xml:space="preserve">
-    <value>kW</value>
-  </data>
-  <data name="label33.Text" xml:space="preserve">
-    <value>€</value>
-  </data>
 </root>

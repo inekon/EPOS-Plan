@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Wizard_WPItem));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.btn_Beenden = new System.Windows.Forms.Button();
             this.btn_Abbrechen = new System.Windows.Forms.Button();
             this.label23 = new System.Windows.Forms.Label();
@@ -107,6 +107,7 @@
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.btn_Katalog = new System.Windows.Forms.Button();
             this.groupBox3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -133,20 +134,20 @@
             // 
             // label23
             // 
-            resources.ApplyResources(this.label23, "label23");
             this.label23.BackColor = System.Drawing.Color.Aqua;
+            resources.ApplyResources(this.label23, "label23");
             this.label23.Name = "label23";
             // 
             // label22
             // 
-            resources.ApplyResources(this.label22, "label22");
             this.label22.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            resources.ApplyResources(this.label22, "label22");
             this.label22.Name = "label22";
             // 
             // label21
             // 
-            resources.ApplyResources(this.label21, "label21");
             this.label21.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            resources.ApplyResources(this.label21, "label21");
             this.label21.Name = "label21";
             // 
             // label20
@@ -167,15 +168,15 @@
             // 
             // label17
             // 
-            resources.ApplyResources(this.label17, "label17");
             this.label17.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label17, "label17");
             this.label17.ForeColor = System.Drawing.Color.White;
             this.label17.Name = "label17";
             // 
             // textBox_PHeizstab
             // 
-            resources.ApplyResources(this.textBox_PHeizstab, "textBox_PHeizstab");
             this.textBox_PHeizstab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            resources.ApplyResources(this.textBox_PHeizstab, "textBox_PHeizstab");
             this.textBox_PHeizstab.Name = "textBox_PHeizstab";
             // 
             // label7
@@ -186,27 +187,27 @@
             // 
             // groupBox3
             // 
-            resources.ApplyResources(this.groupBox3, "groupBox3");
             this.groupBox3.Controls.Add(this.label11);
             this.groupBox3.Controls.Add(this.label10);
             this.groupBox3.Controls.Add(this.label9);
             this.groupBox3.Controls.Add(this.comboBox_Ruecklauf);
             this.groupBox3.Controls.Add(this.label8);
             this.groupBox3.Controls.Add(this.comboBox_Vorlauf);
+            resources.ApplyResources(this.groupBox3, "groupBox3");
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.TabStop = false;
             // 
             // label11
             // 
-            resources.ApplyResources(this.label11, "label11");
             this.label11.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label11, "label11");
             this.label11.ForeColor = System.Drawing.Color.White;
             this.label11.Name = "label11";
             // 
             // label10
             // 
-            resources.ApplyResources(this.label10, "label10");
             this.label10.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label10, "label10");
             this.label10.ForeColor = System.Drawing.Color.White;
             this.label10.Name = "label10";
             // 
@@ -217,8 +218,8 @@
             // 
             // comboBox_Ruecklauf
             // 
-            resources.ApplyResources(this.comboBox_Ruecklauf, "comboBox_Ruecklauf");
             this.comboBox_Ruecklauf.FormattingEnabled = true;
+            resources.ApplyResources(this.comboBox_Ruecklauf, "comboBox_Ruecklauf");
             this.comboBox_Ruecklauf.Name = "comboBox_Ruecklauf";
             // 
             // label8
@@ -228,8 +229,8 @@
             // 
             // comboBox_Vorlauf
             // 
-            resources.ApplyResources(this.comboBox_Vorlauf, "comboBox_Vorlauf");
             this.comboBox_Vorlauf.FormattingEnabled = true;
+            resources.ApplyResources(this.comboBox_Vorlauf, "comboBox_Vorlauf");
             this.comboBox_Vorlauf.Name = "comboBox_Vorlauf";
             // 
             // textBox_Abschalttemp
@@ -239,8 +240,8 @@
             // 
             // label_AbschalttemperaturEinheit
             // 
-            resources.ApplyResources(this.label_AbschalttemperaturEinheit, "label_AbschalttemperaturEinheit");
             this.label_AbschalttemperaturEinheit.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label_AbschalttemperaturEinheit, "label_AbschalttemperaturEinheit");
             this.label_AbschalttemperaturEinheit.ForeColor = System.Drawing.Color.White;
             this.label_AbschalttemperaturEinheit.Name = "label_AbschalttemperaturEinheit";
             // 
@@ -256,8 +257,8 @@
             // 
             // comboBox_Betriebsart
             // 
-            resources.ApplyResources(this.comboBox_Betriebsart, "comboBox_Betriebsart");
             this.comboBox_Betriebsart.FormattingEnabled = true;
+            resources.ApplyResources(this.comboBox_Betriebsart, "comboBox_Betriebsart");
             this.comboBox_Betriebsart.Name = "comboBox_Betriebsart";
             this.comboBox_Betriebsart.SelectedIndexChanged += new System.EventHandler(this.comboBox_Betriebsart_SelectedIndexChanged);
             // 
@@ -304,7 +305,6 @@
             // 
             // groupBox1
             // 
-            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.checkBox_rendeMIX);
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.label5);
@@ -315,6 +315,7 @@
             this.groupBox1.Controls.Add(this.textBox_Anteil);
             this.groupBox1.Controls.Add(this.textBox_Kapazität);
             this.groupBox1.Controls.Add(this.textBox_Volumen);
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
@@ -326,22 +327,22 @@
             // 
             // label6
             // 
-            resources.ApplyResources(this.label6, "label6");
             this.label6.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label6, "label6");
             this.label6.ForeColor = System.Drawing.Color.White;
             this.label6.Name = "label6";
             // 
             // label5
             // 
-            resources.ApplyResources(this.label5, "label5");
             this.label5.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label5, "label5");
             this.label5.ForeColor = System.Drawing.Color.White;
             this.label5.Name = "label5";
             // 
             // label4
             // 
-            resources.ApplyResources(this.label4, "label4");
             this.label4.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label4, "label4");
             this.label4.ForeColor = System.Drawing.Color.White;
             this.label4.Name = "label4";
             // 
@@ -384,8 +385,8 @@
             // 
             // listBox_WP
             // 
-            resources.ApplyResources(this.listBox_WP, "listBox_WP");
             this.listBox_WP.FormattingEnabled = true;
+            resources.ApplyResources(this.listBox_WP, "listBox_WP");
             this.listBox_WP.Name = "listBox_WP";
             this.listBox_WP.SelectedIndexChanged += new System.EventHandler(this.listBox_WP_SelectedIndexChanged);
             // 
@@ -407,21 +408,20 @@
             // 
             // label34
             // 
-            resources.ApplyResources(this.label34, "label34");
             this.label34.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label34, "label34");
             this.label34.ForeColor = System.Drawing.Color.White;
             this.label34.Name = "label34";
             // 
             // label35
             // 
-            resources.ApplyResources(this.label35, "label35");
             this.label35.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label35, "label35");
             this.label35.ForeColor = System.Drawing.Color.White;
             this.label35.Name = "label35";
             // 
             // groupBox2
             // 
-            resources.ApplyResources(this.groupBox2, "groupBox2");
             this.groupBox2.Controls.Add(this.label15);
             this.groupBox2.Controls.Add(this.textBox_Baujahr);
             this.groupBox2.Controls.Add(this.textBox_Leistungsstufen);
@@ -442,6 +442,7 @@
             this.groupBox2.Controls.Add(this.label25);
             this.groupBox2.Controls.Add(this.label30);
             this.groupBox2.Controls.Add(this.textBox_Nennleistung);
+            resources.ApplyResources(this.groupBox2, "groupBox2");
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.TabStop = false;
             // 
@@ -452,22 +453,22 @@
             // 
             // textBox_Baujahr
             // 
-            resources.ApplyResources(this.textBox_Baujahr, "textBox_Baujahr");
             this.textBox_Baujahr.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.textBox_Baujahr, "textBox_Baujahr");
             this.textBox_Baujahr.Name = "textBox_Baujahr";
             this.textBox_Baujahr.ReadOnly = true;
             // 
             // textBox_Leistungsstufen
             // 
-            resources.ApplyResources(this.textBox_Leistungsstufen, "textBox_Leistungsstufen");
             this.textBox_Leistungsstufen.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.textBox_Leistungsstufen, "textBox_Leistungsstufen");
             this.textBox_Leistungsstufen.Name = "textBox_Leistungsstufen";
             this.textBox_Leistungsstufen.ReadOnly = true;
             // 
             // textBox_Waermepumpentyp
             // 
-            resources.ApplyResources(this.textBox_Waermepumpentyp, "textBox_Waermepumpentyp");
             this.textBox_Waermepumpentyp.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.textBox_Waermepumpentyp, "textBox_Waermepumpentyp");
             this.textBox_Waermepumpentyp.Name = "textBox_Waermepumpentyp";
             this.textBox_Waermepumpentyp.ReadOnly = true;
             // 
@@ -480,15 +481,15 @@
             // 
             // label36
             // 
-            resources.ApplyResources(this.label36, "label36");
             this.label36.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label36, "label36");
             this.label36.ForeColor = System.Drawing.Color.White;
             this.label36.Name = "label36";
             // 
             // label33
             // 
-            resources.ApplyResources(this.label33, "label33");
             this.label33.BackColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.label33, "label33");
             this.label33.ForeColor = System.Drawing.Color.White;
             this.label33.Name = "label33";
             // 
@@ -499,8 +500,8 @@
             // 
             // textBox_Modulkosten
             // 
-            resources.ApplyResources(this.textBox_Modulkosten, "textBox_Modulkosten");
             this.textBox_Modulkosten.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.textBox_Modulkosten, "textBox_Modulkosten");
             this.textBox_Modulkosten.Name = "textBox_Modulkosten";
             this.textBox_Modulkosten.ReadOnly = true;
             // 
@@ -516,8 +517,8 @@
             // 
             // textBox_Beschreibung
             // 
-            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
             this.textBox_Beschreibung.ReadOnly = true;
             // 
@@ -528,8 +529,8 @@
             // 
             // textBox_Hersteller
             // 
-            resources.ApplyResources(this.textBox_Hersteller, "textBox_Hersteller");
             this.textBox_Hersteller.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.textBox_Hersteller, "textBox_Hersteller");
             this.textBox_Hersteller.Name = "textBox_Hersteller";
             this.textBox_Hersteller.ReadOnly = true;
             // 
@@ -550,68 +551,76 @@
             // 
             // textBox_Nennleistung
             // 
-            resources.ApplyResources(this.textBox_Nennleistung, "textBox_Nennleistung");
             this.textBox_Nennleistung.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            resources.ApplyResources(this.textBox_Nennleistung, "textBox_Nennleistung");
             this.textBox_Nennleistung.Name = "textBox_Nennleistung";
             this.textBox_Nennleistung.ReadOnly = true;
             // 
             // tabControl1
             // 
-            resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
+            resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             // 
             // tabPage1
             // 
-            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Controls.Add(this.chart1);
+            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // chart1
             // 
+            chartArea3.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea3.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea3);
+            legend3.Name = "Legend1";
+            this.chart1.Legends.Add(legend3);
             resources.ApplyResources(this.chart1, "chart1");
-            chartArea1.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea1.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.chart1.Legends.Add(legend1);
             this.chart1.Name = "chart1";
-            series1.ChartArea = "ChartArea1";
-            series1.Legend = "Legend1";
-            series1.MarkerBorderWidth = 3;
-            series1.Name = "Series1";
-            this.chart1.Series.Add(series1);
+            series3.ChartArea = "ChartArea1";
+            series3.Legend = "Legend1";
+            series3.MarkerBorderWidth = 3;
+            series3.Name = "Series1";
+            this.chart1.Series.Add(series3);
             // 
             // tabPage2
             // 
-            resources.ApplyResources(this.tabPage2, "tabPage2");
             this.tabPage2.Controls.Add(this.chart2);
+            resources.ApplyResources(this.tabPage2, "tabPage2");
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // chart2
             // 
+            chartArea4.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea4.Name = "ChartArea1";
+            this.chart2.ChartAreas.Add(chartArea4);
+            legend4.Name = "Legend1";
+            this.chart2.Legends.Add(legend4);
             resources.ApplyResources(this.chart2, "chart2");
-            chartArea2.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea2.Name = "ChartArea1";
-            this.chart2.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.chart2.Legends.Add(legend2);
             this.chart2.Name = "chart2";
-            series2.ChartArea = "ChartArea1";
-            series2.Legend = "Legend1";
-            series2.MarkerBorderWidth = 3;
-            series2.Name = "Series1";
-            this.chart2.Series.Add(series2);
+            series4.ChartArea = "ChartArea1";
+            series4.Legend = "Legend1";
+            series4.MarkerBorderWidth = 3;
+            series4.Name = "Series1";
+            this.chart2.Series.Add(series4);
+            // 
+            // btn_Katalog
+            // 
+            resources.ApplyResources(this.btn_Katalog, "btn_Katalog");
+            this.btn_Katalog.Name = "btn_Katalog";
+            this.btn_Katalog.UseVisualStyleBackColor = true;
+            this.btn_Katalog.Click += new System.EventHandler(this.btn_Katalog_Click);
             // 
             // Wizard_WPItem
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ControlBox = false;
+            this.Controls.Add(this.btn_Katalog);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.label35);
@@ -735,5 +744,6 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Button btn_Katalog;
     }
 }

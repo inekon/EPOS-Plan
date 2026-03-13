@@ -242,7 +242,8 @@ namespace WindowsFormsApplication1
 
             if (top == WizardItemClass.WP_ITEM)
             {
-                ((Wizard_WP)page).SetControls(listBox_Projekte.Text);
+                ((Form_WPAuswahl)page).list_werzmodel = list_werzmodel;
+                ((Form_WPAuswahl)page).SetControls(listBox_Projekte.Text, true);
             }
             else if (top == WizardItemClass.GEBAEUDE_ITEM)
             {
@@ -845,5 +846,7 @@ namespace WindowsFormsApplication1
             ((Wizard_Komponenten)page).SetGebaeudeCheckBox(false);
             ((Wizard_Komponenten)page).SetBHKWCheckBox(false);
         }
+
+  
     }
 }

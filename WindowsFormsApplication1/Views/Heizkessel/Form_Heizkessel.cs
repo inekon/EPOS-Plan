@@ -78,11 +78,6 @@ namespace WindowsFormsApplication1
             comboBox_Brennstoffart.Text = "Alle";   
         }
 
-        private void listBox_Kessel_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private Form getWizardPage()
         {
             foreach (Form form in Application.OpenForms)
