@@ -40,6 +40,10 @@ namespace WindowsFormsApplication1
             _btnReset.ForeColor = Color.White;
             _bottomPanel.BackColor = Color.FromArgb(230, 235, 240);
             _dgvModules.RowHeadersVisible = false;
+            btnSelect.MakeSmoothButton(btnSelect.Height / 4);
+            btnCancel.MakeSmoothButton(btnCancel.Height / 4);
+            btnSelect.FlatAppearance.BorderSize = 0;
+            btnCancel.FlatAppearance.BorderSize = 0;
         }
 
         // Hilfsmethode für flüssigeres Zeichnen beim Resizen

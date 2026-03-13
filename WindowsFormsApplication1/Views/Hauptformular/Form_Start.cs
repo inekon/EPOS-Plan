@@ -27,6 +27,10 @@ namespace WindowsFormsApplication1
             tabControl_Wizard.DrawMode = TabDrawMode.OwnerDrawFixed;
             tabControl_Wizard.DrawItem += tabControl_Wizard_DrawItem;
             for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = false;
+            btn_Weiter.MakeSmoothButton(btn_Weiter.Height / 4);
+            btn_Zurueck.MakeSmoothButton(btn_Zurueck.Height / 4);
+            btn_Weiter.BackColor = Color.LightGray;
+            btn_Zurueck.BackColor = Color.LightGray;
         }
 
         private void tabControl_Wizard_DrawItem(object sender, DrawItemEventArgs e)
