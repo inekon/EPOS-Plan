@@ -653,6 +653,7 @@
             this.listView_SimWP.MultiSelect = false;
             this.listView_SimWP.Name = "listView_SimWP";
             this.listView_SimWP.UseCompatibleStateImageBehavior = false;
+            this.listView_SimWP.MouseDown += new System.Windows.Forms.MouseEventHandler(this.listView_SimWP_MouseDown);
             // 
             // label43
             // 

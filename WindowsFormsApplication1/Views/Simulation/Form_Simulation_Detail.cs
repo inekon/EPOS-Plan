@@ -418,7 +418,7 @@ namespace WindowsFormsApplication1
                 int index = 0;
                 for (int n = 0; n < 8760; n++)
                 {
-                    if (werte_produktion.Contains(sim.simulation_wp.Temperatur[n])) continue;
+                    //if (werte_produktion.Contains(sim.simulation_wp.Temperatur[n])) continue;
                     double d = Math.Round(sim.simulation_wp.Temperatur[n], 1);
                     ps_produktion_raw[index].X = (float)d;
                     ps_produktion_raw[index].Y = sim.simulation_wp.WP_Waermeproduktion_stuendlich[n];
@@ -456,6 +456,7 @@ namespace WindowsFormsApplication1
                 _chartManager[4].IsXYChart = true;
                 _chartManager[4].AreaLine = true; // Area Chart Effekt
                 _chartManager[4].MitLegende = true;
+                _chartManager[4].YMaxValue = sim.simulation_wp.Waermebedarf_stuendlich.Max();   
                 _chartManager[4].Init();
 
                 // Daten hinzufügen (gefilterte PointF[] Arrays)
@@ -968,6 +969,38 @@ namespace WindowsFormsApplication1
             page.Controls.OfType<TextBox>().ToList().ForEach(tb => tb.Text = "");
         }
 
+        private void listView_SimWP_MouseDown(object sender, MouseEventArgs e)
+        {
+            // Wir prüfen, ob es ein Doppelklick (2 Klicks) mit der linken Maustaste war
+            if (e.Clicks == 2 && e.Button == MouseButtons.Left)
+            {
+
+                Form_WPAuswahl frm = new Form_WPAuswahl();
+                WErzeugerCtrl werzctrl = new WErzeugerCtrl();
+                WPCtrl wpctrl = new WPCtrl();
+                int id_type;
+
+                frm.list_werzmodel.Clear();
+                werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP);
+                id_type = WizardItemClass.WP_TYP;
+
+                WErzeugerModel item = new WErzeugerModel();
+                for (int i = 0; i < werzctrl.rows; i++)
+                {
+                    frm.list_werzmodel.Add(werzctrl.items[i]);
+                }
+
+                frm.SetControls(Program.startfrm.m_szProjektname);
+                DialogResult result = frm.ShowDialog();
+
+                if (result == DialogResult.OK)
+                {
+                    WizardCtrl wizctrl = new WizardCtrl();
+                    wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
+                    wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
+                }
+            }
+        }
     }
 
 }

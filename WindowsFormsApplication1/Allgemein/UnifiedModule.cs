@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
         public double Imp { get; set; }           // A
         public double Vmp { get; set; }           // V
         public string Bifacial { get; set; }
-        public int Year { get; set; }
+        public int Date { get; set; }
 
         // ── Konstruktoren ──────────────────────────────────────────────
 
@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1
                 Vmp = m.V_mp_ref,
                 // Ternärer Operator bleibt gleich
                 Bifacial = (m.Bifacial == "1" || m.Bifacial.Equals("true", StringComparison.OrdinalIgnoreCase)) ? "Ja" : "Nein",
-                Year = m.Year,
+                Date = m.Date,
             };
         }
 

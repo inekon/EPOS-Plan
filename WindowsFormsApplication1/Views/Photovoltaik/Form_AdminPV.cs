@@ -85,7 +85,7 @@ namespace WindowsFormsApplication1
                     string sql = FormattableString.Invariant($@"
                         INSERT INTO TAB_PV ( 
                             Modulname, Firma, Beschreibung, Leistung, Wirkungsgrad,
-                            U_Mpp, U_Leerlauf, I_Mpp, I_Kurzschluss, Temp_Koeffizient, Laenge, Breite 
+                            U_Mpp, U_Leerlauf, I_Mpp, I_Kurzschluss, gamma_PMP, Laenge, Breite 
                         ) 
                         SELECT 
                             '{textBox_Bezeichner.Text}' AS Ausdr1, 
@@ -120,7 +120,7 @@ namespace WindowsFormsApplication1
                             U_Leerlauf = {model.m_U_Leerlauf}, 
                             I_Mpp = {model.m_I_Mpp}, 
                             I_Kurzschluss = {model.m_I_Kurzschluss}, 
-                            Temp_Koeffizient = {model.m_Temp_Coeff_Pmax}, 
+                            gamma_PMP = {model.m_Temp_Coeff_Pmax}, 
                             Laenge = {model.m_Laenge}, 
                             Breite = {model.m_Breite}
                         WHERE Modulname = '{listBox_PV.Text}';");
@@ -167,11 +167,11 @@ namespace WindowsFormsApplication1
                 model.m_szBeschreibung = textBox_Beschreibung.Text;
                 textBox_Firma.Text = (string)rs.Read("Firma");
                 model.m_szFirma = textBox_Firma.Text;
-                textBox_Wirkungsgrad.Text = rs.Read("Wirkungsgrad").ToString();
+                textBox_Wirkungsgrad.Text = Convert.ToDouble(rs.Read("Wirkungsgrad")).ToString("F2");
                 model.m_Wirkungsgrad = Program.convertTxt2Double(textBox_Wirkungsgrad.Text);
-                textBox_Leistung.Text = rs.Read("Leistung").ToString();
+                textBox_Leistung.Text = Convert.ToDouble(rs.Read("Leistung")).ToString("F2");
                 model.m_Leistung = Program.convertTxt2Double(textBox_Leistung.Text);
-                
+               
                 textBox_ULeerlauf.Text = rs.Read("U_Leerlauf").ToString();
                 model.m_U_Leerlauf = Program.convertTxt2Double(textBox_ULeerlauf.Text);
                 textBox_UMpp.Text = rs.Read("U_Mpp").ToString();
@@ -180,12 +180,13 @@ namespace WindowsFormsApplication1
                 model.m_I_Mpp = Program.convertTxt2Double(textBox_IMpp.Text);
                 textBox_IKurzschluss.Text = rs.Read("I_Kurzschluss").ToString();
                 model.m_I_Kurzschluss = Program.convertTxt2Double(textBox_IKurzschluss.Text);
-                textBox_TempKoeff.Text = rs.Read("Temp_Koeffizient").ToString();
+                textBox_TempKoeff.Text = rs.Read("gamma_PMP").ToString();
                 model.m_Temp_Coeff_Pmax = Program.convertTxt2Double(textBox_TempKoeff.Text);
                 textBox_Laenge.Text = rs.Read("Laenge").ToString();
                 model.m_Laenge = Program.convertTxt2Double(textBox_Laenge.Text);
                 textBox_Breite.Text = rs.Read("Breite").ToString();
                 model.m_Breite = Program.convertTxt2Double(textBox_Breite.Text);
+                
             }
             rs.Close();
         }

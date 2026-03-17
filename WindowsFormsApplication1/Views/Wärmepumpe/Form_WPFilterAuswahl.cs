@@ -17,9 +17,12 @@ namespace WindowsFormsApplication1
         public Form_WpFilterAuswahl()
         {
             InitializeComponent();
+            
             dgv.Visible = false; // Erstmal verstecken
+            
             AttachEvents();
             LoadData();
+            
             txtSucheBezeichnung.SetPlaceholder("🔍  Suchen…");
             btnSelect.FlatStyle = FlatStyle.Flat;
             btnSelect.FlatAppearance.BorderSize = 0; // Entfernt den Rahmen
@@ -248,7 +251,10 @@ namespace WindowsFormsApplication1
             ResetFilter();
         }
 
-  
+        private void btnSelect_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 
     public class WPData

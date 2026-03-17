@@ -77,8 +77,23 @@ namespace WindowsFormsApplication1
             ca.AxisY.LabelStyle.Format = "N0";
             ca.AxisY.IsLabelAutoFit = false;
             double range = (YMaxValue != 0 ? YMaxValue : 100) - YMinValue;
-            double interval = Math.Max(1, Math.Ceiling(range / 10));
+            //double interval = Math.Max(1, Math.Ceiling(range / 10));
+            // Wenn du maximal 10 Labels willst:
+            // Wir teilen die Range durch 10. 
+            // Math.Max(1, ...) verhindert ein Intervall von 0 (Endlosschleife/Crash)
+            //double interval = range / 10.0;
+            double interval = CalculateNiceInterval(range, 8);
+            //interval = Math.Ceiling(interval / 5.0) * 5.0;
             ca.AxisY.Interval = interval;
+            if (interval < 1.0)
+            {
+                // Zeige 1 oder 2 Nachkommastellen, wenn das Intervall klein ist
+                ca.AxisY.LabelStyle.Format = "N1";
+            }
+            else
+            {
+                ca.AxisY.LabelStyle.Format = "N0";
+            }
             ca.AxisY.Maximum = YMaxValue != 0 ? YMaxValue : double.NaN;
             ca.AxisY.Minimum = YMinValue;
             ca.AxisY.ScaleView.Zoomable = true;
@@ -117,6 +132,27 @@ namespace WindowsFormsApplication1
 
             _chart.Series.Clear();
             _chart.Invalidate();
+        }
+
+        private double CalculateNiceInterval(double range, int targetLabels)
+        {
+            if (range <= 0) return 1;
+
+            // Grobe Schätzung des Intervalls
+            double rawInterval = range / targetLabels;
+
+            // Magnitude bestimmen (Zehnerpotenz)
+            // Beispiel: bei 137 ist log10 ca. 2.13 -> floor ist 2 -> 10^2 = 100
+            double exponent = Math.Floor(Math.Log10(rawInterval));
+            double fraction = rawInterval / Math.Pow(10, exponent);
+
+            double niceFraction;
+            if (fraction < 1.5) niceFraction = 1;      // Schritte wie 10, 100, 1000
+            else if (fraction < 3) niceFraction = 2;   // Schritte wie 20, 200, 2000
+            else if (fraction < 7) niceFraction = 5;   // Schritte wie 50, 500, 5000
+            else niceFraction = 10;                    // Nächste Zehnerpotenz
+
+            return niceFraction * Math.Pow(10, exponent);
         }
 
         // --- Hinzufügen von Serien (XY-Modus für Temperatur) ---

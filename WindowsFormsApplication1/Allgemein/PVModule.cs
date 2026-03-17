@@ -10,6 +10,7 @@ namespace WindowsFormsApplication1
     public class PVModule
     {
         public string Name         { get; set; } = string.Empty;
+        public string Manufacturer { get; set; } = string.Empty;
         public string Technology   { get; set; } = string.Empty;
         public string Bifacial     { get; set; } = string.Empty;
         public double STC          { get; set; }
@@ -18,29 +19,26 @@ namespace WindowsFormsApplication1
         public double Length       { get; set; }
         public double Width        { get; set; }
         public int    N_s          { get; set; }
-        public int    N_p          { get; set; }
-        public double T_NOCT       { get; set; }
         public double I_sc_ref     { get; set; }
         public double V_oc_ref     { get; set; }
         public double I_mp_ref     { get; set; }
         public double V_mp_ref     { get; set; }
         public double alpha_sc     { get; set; }
         public double beta_oc      { get; set; }
-        public double gamma_r      { get; set; }
+        public double T_NOCT       { get; set; }
         public double a_ref        { get; set; }
         public double I_L_ref      { get; set; }
         public double I_o_ref      { get; set; }
         public double R_s          { get; set; }
         public double R_sh_ref     { get; set; }
-        public double R_sh_0       { get; set; }
-        public double R_sh_exp     { get; set; }
-        public double EgRef        { get; set; }
-        public double dEgdT        { get; set; }
-        public int    cells_in_series { get; set; }
+        public double Adjust       { get; set; }
+        public double gamma_pmp    { get; set; }
+        public string BIPV { get; set; } = string.Empty;
         public string Version      { get; set; } = string.Empty;
+        public int    Date         { get; set; }
 
-        public string Manufacturer => ExtractManufacturer(Name);
-        public int    Year         => ExtractYear(Name);
+        //public string Manufacturer => ExtractManufacturer(Name);
+        //public int    Year         => ExtractYear(Name);
         public double Efficiency   => A_c > 0 ? STC / (A_c * 1000.0) * 100.0 : 0.0;
 
         private static string ExtractManufacturer(string name)

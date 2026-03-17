@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Rectangle = System.Drawing.Rectangle;
@@ -27,10 +28,15 @@ namespace WindowsFormsApplication1
             tabControl_Wizard.DrawMode = TabDrawMode.OwnerDrawFixed;
             tabControl_Wizard.DrawItem += tabControl_Wizard_DrawItem;
             for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = false;
-            btn_Weiter.MakeSmoothButton(btn_Weiter.Height / 4);
-            btn_Zurueck.MakeSmoothButton(btn_Zurueck.Height / 4);
+            btn_Weiter.MakeSmoothButton(6);
+            btn_Zurueck.MakeSmoothButton(6);
             btn_Weiter.BackColor = Color.LightGray;
             btn_Zurueck.BackColor = Color.LightGray;
+            
+            label_Haus.Text = "\uE80F";
+            label_Haus.Parent = pictureBox2;
+            label_Haus.BackColor = Color.Transparent;
+            label_Haus.Location = new Point(30, (pictureBox2.Height -label_Haus.Height)/2); // Achtung: Location ist jetzt relativ zum Panel!
         }
 
         private void tabControl_Wizard_DrawItem(object sender, DrawItemEventArgs e)
@@ -238,6 +244,8 @@ namespace WindowsFormsApplication1
                 SetTextProjekt(frm.m_szProjekt);
                 for (int i = 1; i<tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
             }
+            label_ProjektStatus.Text = "✔";
+            label_ProjektStatus.ForeColor = Color.Green;
         }
 
         private void pBox_Bearbeiten_Click(object sender, EventArgs e)
@@ -473,16 +481,43 @@ namespace WindowsFormsApplication1
         private void pBox_Heizkessel_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 1) == 1)
                 {
+                    // --- DEIN BESTEHENDER CODE FÜR DAS RECHTECK ---
                     Rectangle rt = e.ClipRectangle;
                     rt.Width = rt.Width - 20;
                     rt.Height = rt.Height - 20;
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
+
+                    // 1. Grüne Fläche zeichnen (wie gewohnt)
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
+
+                    // --- DEIN BESTEHENDER CODE FÜR DIE LABELS ---
                     label48.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label49.BackColor = label48.BackColor;
                 }
@@ -497,6 +532,8 @@ namespace WindowsFormsApplication1
         private void pBox_WP_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 2) == 2)
@@ -507,6 +544,27 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
+
                     label46.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label47.BackColor = label46.BackColor;
                 }
@@ -521,7 +579,9 @@ namespace WindowsFormsApplication1
         private void pBox_Stromspeicher_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 162, 232)))
             {
                 if ((status & 4) == 4)
                 {
@@ -531,7 +591,27 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
-                    label54.BackColor = Color.FromArgb(90, 0, 255, 0);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
+                    label54.BackColor = Color.FromArgb(90, 0, 162, 232);
                     label55.BackColor = label54.BackColor;
                 }
                 else
@@ -555,6 +635,8 @@ namespace WindowsFormsApplication1
                 m_ID_Projekt = ctrl.m_ID_Projekt;
                 SetTextProjekt(m_szProjektname);
                 for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
+                label_ProjektStatus.Text = "✔";
+                label_ProjektStatus.ForeColor = Color.Green;   
             }
 
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
@@ -593,6 +675,8 @@ namespace WindowsFormsApplication1
         private void pBox_Gebaude_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 8) == 8)
@@ -603,6 +687,26 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
                     label34.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label35.BackColor = label34.BackColor;
                 }
@@ -617,6 +721,8 @@ namespace WindowsFormsApplication1
         private void pBox_WBedarfDaten_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 16) == 16)
@@ -627,6 +733,26 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
                     label36.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label37.BackColor = label36.BackColor;
                 }
@@ -641,6 +767,8 @@ namespace WindowsFormsApplication1
         private void pBox_Prozess_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 32) == 32)
@@ -651,6 +779,26 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
                     label38.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label39.BackColor = label38.BackColor;
                 }
@@ -664,6 +812,9 @@ namespace WindowsFormsApplication1
 
         private void pBox_StdLastProfil_Paint(object sender, PaintEventArgs e)
         {
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 64) == 64)
@@ -674,6 +825,26 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
                     label40.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label41.BackColor = label40.BackColor;
                 }
@@ -688,6 +859,7 @@ namespace WindowsFormsApplication1
         private void pBox_StromMessdaten_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 128) == 128)
@@ -698,6 +870,26 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
                     label44.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label45.BackColor = label44.BackColor;
                 }
@@ -772,6 +964,8 @@ namespace WindowsFormsApplication1
         private void pBox_BHKW_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 256) == 256)
@@ -782,6 +976,26 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
                     label52.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label53.BackColor = label52.BackColor;
                 }
@@ -956,6 +1170,8 @@ namespace WindowsFormsApplication1
         private void pBox_Solarthermie_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 512) == 512)
@@ -966,6 +1182,26 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
                     label50.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label51.BackColor = label50.BackColor;
                 }
@@ -1028,6 +1264,8 @@ namespace WindowsFormsApplication1
         private void pBox_PV_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 1024) == 1024)
@@ -1038,6 +1276,26 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
                     label56.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label57.BackColor = label56.BackColor;
                 }
@@ -1396,7 +1654,9 @@ namespace WindowsFormsApplication1
         private void pBox_Pufferspeicher_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
+            using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 162, 232)))
             {
                 if ((status & 2048) == 2048)
                 {
@@ -1406,7 +1666,27 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
-                    label71.BackColor = Color.FromArgb(90, 0, 255, 0);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
+                    label71.BackColor = Color.FromArgb(90, 0, 162, 232);
                     label72.BackColor = label71.BackColor;
                 }
                 else
@@ -1478,6 +1758,8 @@ namespace WindowsFormsApplication1
         private void pBox_Brauchwasser_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias; // Sorgt für glatte Kurven am Balken
+
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
                 if ((status & 4096) == 4096)
@@ -1488,6 +1770,26 @@ namespace WindowsFormsApplication1
                     rt.Y = rt.Y + 10;
                     rt.X = rt.X + 10;
                     Program.FillRoundedRectangle(e.Graphics, brush, rt, 10);
+
+                    // --- NEU: DER BLAUE BALKEN LINKS ---
+                    int barWidth = 7; // Breite des Balkens
+                    int radius = 10;   // Gleicher Radius wie bei deiner FillRoundedRectangle
+
+                    using (GraphicsPath path = new GraphicsPath())
+                    {
+                        // Wir definieren die Form des Balkens links bündig im Rechteck 'rt'
+                        path.AddArc(rt.X, rt.Y, radius * 2, radius * 2, 180, 90); // Oben links
+                        path.AddLine(rt.X + radius, rt.Y, rt.X + barWidth, rt.Y); // Kante oben
+                        path.AddLine(rt.X + barWidth, rt.Y, rt.X + barWidth, rt.Bottom); // Gerade Kante rechts
+                        path.AddLine(rt.X + barWidth, rt.Bottom, rt.X + radius, rt.Bottom); // Kante unten
+                        path.AddArc(rt.X, rt.Bottom - radius * 2, radius * 2, radius * 2, 90, 90); // Unten links
+                        path.CloseFigure();
+
+                        using (Brush blueBrush = new SolidBrush(Color.FromArgb(255, 0, 150, 230)))
+                        {
+                            g.FillPath(blueBrush, path);
+                        }
+                    }
                     label73.BackColor = Color.FromArgb(90, 0, 255, 0);
                     label74.BackColor = label73.BackColor;
                 }
