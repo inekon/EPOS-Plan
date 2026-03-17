@@ -8,7 +8,6 @@ namespace WindowsFormsApplication1
     public class Form_ChartZoom : Form
     {
         public Chart ZoomChart { get; private set; }
-        private ChartManager _manager;
 
         public Form_ChartZoom(string title)
         {

@@ -54,9 +54,13 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(7)) item.m_U_Leerlauf = (double)DBReader.GetValue(7);
                 if (!DBReader.IsDBNull(8)) item.m_I_Mpp = (double)DBReader.GetValue(8);
                 if (!DBReader.IsDBNull(9)) item.m_I_Kurzschluss = (double)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) item.m_Temp_Coeff_Pmax = (double)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) item.m_Laenge = (double)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(12)) item.m_Breite = (double)DBReader.GetValue(12);
+                if (!DBReader.IsDBNull(10)) item.m_alpha_SC = (double)DBReader.GetValue(10);
+                if (!DBReader.IsDBNull(11)) item.m_beta_OC = (double)DBReader.GetValue(11);
+                if (!DBReader.IsDBNull(12)) item.m_Temp_Coeff_Pmax = (double)DBReader.GetValue(12);
+                if (!DBReader.IsDBNull(13)) item.m_T_NOCT = (double)DBReader.GetValue(13);
+                if (!DBReader.IsDBNull(14)) item.m_Laenge = (double)DBReader.GetValue(14);
+                if (!DBReader.IsDBNull(15)) item.m_Breite = (double)DBReader.GetValue(15);
+
 
                 items[rows] = item;
                 item = null;
@@ -87,9 +91,12 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(7)) m_U_Leerlauf = (double)DBReader.GetValue(7);
                 if (!DBReader.IsDBNull(8)) m_I_Mpp = (double)DBReader.GetValue(8);
                 if (!DBReader.IsDBNull(9)) m_I_Kurzschluss = (double)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) m_Temp_Coeff_Pmax = (double)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) m_Laenge = (double)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(12)) m_Breite = (double)DBReader.GetValue(12);
+                if (!DBReader.IsDBNull(10)) m_alpha_SC = (double)DBReader.GetValue(10);
+                if (!DBReader.IsDBNull(11)) m_beta_OC = (double)DBReader.GetValue(11);
+                if (!DBReader.IsDBNull(12)) m_Temp_Coeff_Pmax = (double)DBReader.GetValue(12);
+                if (!DBReader.IsDBNull(13)) m_T_NOCT= (double)DBReader.GetValue(13);
+                if (!DBReader.IsDBNull(14)) m_Laenge = (double)DBReader.GetValue(14);
+                if (!DBReader.IsDBNull(15)) m_Breite = (double)DBReader.GetValue(15);
 
                 rows = 1;
             }
@@ -112,7 +119,10 @@ namespace WindowsFormsApplication1
                         U_Leerlauf = {model.m_U_Leerlauf}, 
                         I_Mpp = {model.m_I_Mpp}, 
                         I_Kurzschluss = {model.m_I_Kurzschluss}, 
-                        Temp_Coeff_Pmax = {model.m_Temp_Coeff_Pmax}, 
+                        alpha_SC= {model.m_I_Kurzschluss}, 
+                        beta_OC= {model.m_I_Kurzschluss}, 
+                        gamma_PMP = {model.m_Temp_Coeff_Pmax}, 
+                        T_NOCT == {model.m_I_Kurzschluss}, 
                         Laenge = {model.m_Laenge}, 
                         Breite = {model.m_Breite} 
                     WHERE 

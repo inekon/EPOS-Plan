@@ -46,9 +46,7 @@
             this.textBox_Azimut = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.textBox_AnlagenLeistung = new System.Windows.Forms.TextBox();
-            this.groupBox_Eigenschaften = new System.Windows.Forms.GroupBox();
             this.label_Type = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label18 = new System.Windows.Forms.Label();
             this.textBox_Beschreibung = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
@@ -57,11 +55,14 @@
             this.textBox_Hersteller = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.textBox_Name = new System.Windows.Forms.TextBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.btn_Speichern = new System.Windows.Forms.Button();
-            this.groupBox_Eigenschaften.SuspendLayout();
-            this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.label5 = new System.Windows.Forms.Label();
+            this.textBox_Gesamtleistung = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.panel1.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // label11
@@ -78,26 +79,26 @@
             // btn__Entfernen
             // 
             this.btn__Entfernen.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn__Entfernen.Location = new System.Drawing.Point(346, 140);
+            this.btn__Entfernen.Location = new System.Drawing.Point(353, 140);
             this.btn__Entfernen.Margin = new System.Windows.Forms.Padding(4);
             this.btn__Entfernen.Name = "btn__Entfernen";
             this.btn__Entfernen.Size = new System.Drawing.Size(88, 37);
             this.btn__Entfernen.TabIndex = 88;
             this.btn__Entfernen.TabStop = false;
-            this.btn__Entfernen.Text = "-->";
+            this.btn__Entfernen.Text = "▶";
             this.btn__Entfernen.UseVisualStyleBackColor = true;
             this.btn__Entfernen.Click += new System.EventHandler(this.btn_Entfernen_Click);
             // 
             // btn__Hinzu
             // 
             this.btn__Hinzu.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn__Hinzu.Location = new System.Drawing.Point(346, 94);
+            this.btn__Hinzu.Location = new System.Drawing.Point(338, 94);
             this.btn__Hinzu.Margin = new System.Windows.Forms.Padding(4);
             this.btn__Hinzu.Name = "btn__Hinzu";
             this.btn__Hinzu.Size = new System.Drawing.Size(88, 38);
             this.btn__Hinzu.TabIndex = 87;
             this.btn__Hinzu.TabStop = false;
-            this.btn__Hinzu.Text = "<---";
+            this.btn__Hinzu.Text = "◀";
             this.btn__Hinzu.UseVisualStyleBackColor = true;
             this.btn__Hinzu.Click += new System.EventHandler(this.btn_Hinzu_Click);
             // 
@@ -142,7 +143,7 @@
             // btn_Abbrechen
             // 
             this.btn_Abbrechen.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_Abbrechen.Location = new System.Drawing.Point(540, 551);
+            this.btn_Abbrechen.Location = new System.Drawing.Point(543, 536);
             this.btn_Abbrechen.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btn_Abbrechen.Name = "btn_Abbrechen";
             this.btn_Abbrechen.Size = new System.Drawing.Size(90, 34);
@@ -154,7 +155,7 @@
             // btn_OK
             // 
             this.btn_OK.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.btn_OK.Location = new System.Drawing.Point(648, 551);
+            this.btn_OK.Location = new System.Drawing.Point(656, 536);
             this.btn_OK.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btn_OK.Name = "btn_OK";
             this.btn_OK.Size = new System.Drawing.Size(90, 34);
@@ -166,7 +167,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(515, 255);
+            this.label2.Location = new System.Drawing.Point(449, 252);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(137, 17);
@@ -176,7 +177,7 @@
             // comboBox_Hersteller
             // 
             this.comboBox_Hersteller.FormattingEnabled = true;
-            this.comboBox_Hersteller.Location = new System.Drawing.Point(518, 276);
+            this.comboBox_Hersteller.Location = new System.Drawing.Point(452, 273);
             this.comboBox_Hersteller.Margin = new System.Windows.Forms.Padding(4);
             this.comboBox_Hersteller.Name = "comboBox_Hersteller";
             this.comboBox_Hersteller.Size = new System.Drawing.Size(228, 25);
@@ -188,7 +189,7 @@
             // 
             this.label3.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.label3.Location = new System.Drawing.Point(4, 26);
+            this.label3.Location = new System.Drawing.Point(8, 10);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(85, 24);
@@ -198,31 +199,32 @@
             // textBox_Neigung
             // 
             this.textBox_Neigung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Neigung.Location = new System.Drawing.Point(89, 24);
+            this.textBox_Neigung.Location = new System.Drawing.Point(93, 8);
             this.textBox_Neigung.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Neigung.Name = "textBox_Neigung";
-            this.textBox_Neigung.Size = new System.Drawing.Size(40, 25);
-            this.textBox_Neigung.TabIndex = 2;
+            this.textBox_Neigung.Size = new System.Drawing.Size(46, 25);
+            this.textBox_Neigung.TabIndex = 1;
             this.textBox_Neigung.Text = "10";
+            this.textBox_Neigung.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.textBox_Neigung.TextChanged += new System.EventHandler(this.textBox_Neigung_TextChanged);
             // 
             // btn_Bearbeiten
             // 
-            this.btn_Bearbeiten.Location = new System.Drawing.Point(565, 316);
+            this.btn_Bearbeiten.Location = new System.Drawing.Point(452, 312);
             this.btn_Bearbeiten.Name = "btn_Bearbeiten";
-            this.btn_Bearbeiten.Size = new System.Drawing.Size(172, 32);
+            this.btn_Bearbeiten.Size = new System.Drawing.Size(134, 32);
             this.btn_Bearbeiten.TabIndex = 6;
-            this.btn_Bearbeiten.Text = "Modul in DB Bearbeiten...";
+            this.btn_Bearbeiten.Text = "Modul Bearbeiten...";
             this.btn_Bearbeiten.UseVisualStyleBackColor = true;
             this.btn_Bearbeiten.Click += new System.EventHandler(this.btn_Bearbeiten_Click);
             // 
             // btn_Löschen
             // 
-            this.btn_Löschen.Location = new System.Drawing.Point(565, 355);
+            this.btn_Löschen.Location = new System.Drawing.Point(612, 312);
             this.btn_Löschen.Name = "btn_Löschen";
-            this.btn_Löschen.Size = new System.Drawing.Size(172, 28);
+            this.btn_Löschen.Size = new System.Drawing.Size(134, 32);
             this.btn_Löschen.TabIndex = 7;
-            this.btn_Löschen.Text = "Modul in DB Löschen";
+            this.btn_Löschen.Text = "Modul Löschen";
             this.btn_Löschen.UseVisualStyleBackColor = true;
             this.btn_Löschen.Click += new System.EventHandler(this.btn_Löschen_Click);
             // 
@@ -230,7 +232,7 @@
             // 
             this.label6.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.label6.Location = new System.Drawing.Point(160, 25);
+            this.label6.Location = new System.Drawing.Point(9, 36);
             this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(78, 24);
@@ -240,12 +242,13 @@
             // textBox_Azimut
             // 
             this.textBox_Azimut.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Azimut.Location = new System.Drawing.Point(237, 24);
+            this.textBox_Azimut.Location = new System.Drawing.Point(93, 35);
             this.textBox_Azimut.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Azimut.Name = "textBox_Azimut";
-            this.textBox_Azimut.Size = new System.Drawing.Size(40, 25);
-            this.textBox_Azimut.TabIndex = 3;
+            this.textBox_Azimut.Size = new System.Drawing.Size(46, 25);
+            this.textBox_Azimut.TabIndex = 32;
             this.textBox_Azimut.Text = "10";
+            this.textBox_Azimut.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.textBox_Azimut.TextChanged += new System.EventHandler(this.textBox_Azimut_TextChanged);
             // 
             // label7
@@ -253,42 +256,24 @@
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.label7.Location = new System.Drawing.Point(5, 55);
+            this.label7.Location = new System.Drawing.Point(177, 10);
             this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(154, 17);
+            this.label7.Size = new System.Drawing.Size(105, 17);
             this.label7.TabIndex = 115;
-            this.label7.Text = "Anlagen Leistung [kW]:";
+            this.label7.Text = "Anzahl Module:";
             // 
             // textBox_AnlagenLeistung
             // 
             this.textBox_AnlagenLeistung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_AnlagenLeistung.Location = new System.Drawing.Point(159, 54);
+            this.textBox_AnlagenLeistung.Location = new System.Drawing.Point(180, 34);
             this.textBox_AnlagenLeistung.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_AnlagenLeistung.Name = "textBox_AnlagenLeistung";
             this.textBox_AnlagenLeistung.Size = new System.Drawing.Size(67, 25);
-            this.textBox_AnlagenLeistung.TabIndex = 4;
+            this.textBox_AnlagenLeistung.TabIndex = 3;
             this.textBox_AnlagenLeistung.Text = "10";
+            this.textBox_AnlagenLeistung.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.textBox_AnlagenLeistung.TextChanged += new System.EventHandler(this.textBox_AnlagenLeistung_TextChanged);
-            // 
-            // groupBox_Eigenschaften
-            // 
-            this.groupBox_Eigenschaften.BackColor = System.Drawing.Color.Khaki;
-            this.groupBox_Eigenschaften.Controls.Add(this.pictureBox1);
-            this.groupBox_Eigenschaften.Controls.Add(this.btn_Speichern);
-            this.groupBox_Eigenschaften.Controls.Add(this.label7);
-            this.groupBox_Eigenschaften.Controls.Add(this.textBox_Neigung);
-            this.groupBox_Eigenschaften.Controls.Add(this.textBox_AnlagenLeistung);
-            this.groupBox_Eigenschaften.Controls.Add(this.label3);
-            this.groupBox_Eigenschaften.Controls.Add(this.textBox_Azimut);
-            this.groupBox_Eigenschaften.Controls.Add(this.label6);
-            this.groupBox_Eigenschaften.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox_Eigenschaften.Location = new System.Drawing.Point(21, 255);
-            this.groupBox_Eigenschaften.Name = "groupBox_Eigenschaften";
-            this.groupBox_Eigenschaften.Size = new System.Drawing.Size(310, 120);
-            this.groupBox_Eigenschaften.TabIndex = 117;
-            this.groupBox_Eigenschaften.TabStop = false;
-            this.groupBox_Eigenschaften.Text = "PV Anlage Eigenschaften";
             // 
             // label_Type
             // 
@@ -303,28 +288,11 @@
             this.label_Type.Text = "Eingabe der Photovoltaik Anlagendaten";
             this.label_Type.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.label18);
-            this.groupBox1.Controls.Add(this.textBox_Beschreibung);
-            this.groupBox1.Controls.Add(this.label14);
-            this.groupBox1.Controls.Add(this.textBox_Leistung);
-            this.groupBox1.Controls.Add(this.label15);
-            this.groupBox1.Controls.Add(this.textBox_Hersteller);
-            this.groupBox1.Controls.Add(this.label16);
-            this.groupBox1.Controls.Add(this.textBox_Name);
-            this.groupBox1.Location = new System.Drawing.Point(20, 384);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(414, 178);
-            this.groupBox1.TabIndex = 119;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Modul";
-            // 
             // label18
             // 
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label18.Location = new System.Drawing.Point(9, 47);
+            this.label18.Location = new System.Drawing.Point(5, 37);
             this.label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(94, 19);
@@ -335,7 +303,7 @@
             // 
             this.textBox_Beschreibung.Enabled = false;
             this.textBox_Beschreibung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Beschreibung.Location = new System.Drawing.Point(106, 47);
+            this.textBox_Beschreibung.Location = new System.Drawing.Point(102, 37);
             this.textBox_Beschreibung.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Beschreibung.Multiline = true;
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
@@ -348,30 +316,31 @@
             // 
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label14.Location = new System.Drawing.Point(9, 142);
+            this.label14.Location = new System.Drawing.Point(5, 132);
             this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(140, 19);
+            this.label14.Size = new System.Drawing.Size(141, 19);
             this.label14.TabIndex = 104;
-            this.label14.Text = "Modul Leistung [kW]:";
+            this.label14.Text = "Modul Leistung [KW]:";
             // 
             // textBox_Leistung
             // 
             this.textBox_Leistung.Enabled = false;
             this.textBox_Leistung.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Leistung.Location = new System.Drawing.Point(173, 141);
+            this.textBox_Leistung.Location = new System.Drawing.Point(150, 131);
             this.textBox_Leistung.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Leistung.Name = "textBox_Leistung";
             this.textBox_Leistung.Size = new System.Drawing.Size(67, 25);
             this.textBox_Leistung.TabIndex = 103;
             this.textBox_Leistung.TabStop = false;
             this.textBox_Leistung.Text = "10";
+            this.textBox_Leistung.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // label15
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label15.Location = new System.Drawing.Point(9, 111);
+            this.label15.Location = new System.Drawing.Point(5, 101);
             this.label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(70, 19);
@@ -382,7 +351,7 @@
             // 
             this.textBox_Hersteller.Enabled = false;
             this.textBox_Hersteller.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Hersteller.Location = new System.Drawing.Point(106, 110);
+            this.textBox_Hersteller.Location = new System.Drawing.Point(102, 100);
             this.textBox_Hersteller.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Hersteller.Name = "textBox_Hersteller";
             this.textBox_Hersteller.Size = new System.Drawing.Size(206, 25);
@@ -393,7 +362,7 @@
             // 
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.label16.Location = new System.Drawing.Point(9, 20);
+            this.label16.Location = new System.Drawing.Point(5, 10);
             this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(48, 19);
@@ -404,46 +373,99 @@
             // 
             this.textBox_Name.Enabled = false;
             this.textBox_Name.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.textBox_Name.Location = new System.Drawing.Point(106, 18);
+            this.textBox_Name.Location = new System.Drawing.Point(102, 8);
             this.textBox_Name.Margin = new System.Windows.Forms.Padding(4);
             this.textBox_Name.Name = "textBox_Name";
             this.textBox_Name.Size = new System.Drawing.Size(300, 25);
             this.textBox_Name.TabIndex = 99;
             this.textBox_Name.TabStop = false;
             // 
-            // pictureBox1
+            // panel1
             // 
-            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.setup_trans;
-            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pictureBox1.Location = new System.Drawing.Point(155, 87);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(28, 27);
-            this.pictureBox1.TabIndex = 116;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Visible = false;
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.textBox_AnlagenLeistung);
+            this.panel1.Controls.Add(this.label6);
+            this.panel1.Controls.Add(this.label7);
+            this.panel1.Controls.Add(this.textBox_Azimut);
+            this.panel1.Controls.Add(this.textBox_Neigung);
+            this.panel1.Controls.Add(this.label3);
+            this.panel1.Location = new System.Drawing.Point(22, 273);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(308, 71);
+            this.panel1.TabIndex = 120;
+            this.panel1.Leave += new System.EventHandler(this.panel1_Leave);
             // 
-            // btn_Speichern
+            // label1
             // 
-            this.btn_Speichern.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
-            this.btn_Speichern.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_Speichern.Location = new System.Drawing.Point(11, 86);
-            this.btn_Speichern.Margin = new System.Windows.Forms.Padding(4);
-            this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.Size = new System.Drawing.Size(140, 28);
-            this.btn_Speichern.TabIndex = 5;
-            this.btn_Speichern.Text = "Übernehmen";
-            this.btn_Speichern.UseVisualStyleBackColor = true;
-            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(20, 255);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(154, 17);
+            this.label1.TabIndex = 121;
+            this.label1.Text = "PV Anlage Eigenschaften:";
+            // 
+            // panel2
+            // 
+            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.label5);
+            this.panel2.Controls.Add(this.textBox_Gesamtleistung);
+            this.panel2.Controls.Add(this.label18);
+            this.panel2.Controls.Add(this.textBox_Beschreibung);
+            this.panel2.Controls.Add(this.textBox_Name);
+            this.panel2.Controls.Add(this.label14);
+            this.panel2.Controls.Add(this.label16);
+            this.panel2.Controls.Add(this.textBox_Leistung);
+            this.panel2.Controls.Add(this.textBox_Hersteller);
+            this.panel2.Controls.Add(this.label15);
+            this.panel2.Location = new System.Drawing.Point(22, 375);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(411, 191);
+            this.panel2.TabIndex = 122;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.label5.Location = new System.Drawing.Point(5, 160);
+            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(140, 19);
+            this.label5.TabIndex = 108;
+            this.label5.Text = "Gesamtleistung [KW]:";
+            // 
+            // textBox_Gesamtleistung
+            // 
+            this.textBox_Gesamtleistung.Enabled = false;
+            this.textBox_Gesamtleistung.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.textBox_Gesamtleistung.Location = new System.Drawing.Point(150, 159);
+            this.textBox_Gesamtleistung.Margin = new System.Windows.Forms.Padding(4);
+            this.textBox_Gesamtleistung.Name = "textBox_Gesamtleistung";
+            this.textBox_Gesamtleistung.Size = new System.Drawing.Size(67, 25);
+            this.textBox_Gesamtleistung.TabIndex = 107;
+            this.textBox_Gesamtleistung.TabStop = false;
+            this.textBox_Gesamtleistung.Text = "10";
+            this.textBox_Gesamtleistung.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(22, 356);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(133, 17);
+            this.label4.TabIndex = 123;
+            this.label4.Text = "Modul Eigenschaften:";
             // 
             // Form_PV
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(762, 594);
-            this.Controls.Add(this.groupBox1);
+            this.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.ClientSize = new System.Drawing.Size(762, 582);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.panel2);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.label_Type);
-            this.Controls.Add(this.groupBox_Eigenschaften);
             this.Controls.Add(this.btn_Löschen);
             this.Controls.Add(this.btn_Bearbeiten);
             this.Controls.Add(this.label2);
@@ -462,11 +484,10 @@
             this.Text = "Verwaltung Photovoltaik Module";
             this.Load += new System.EventHandler(this.Form_PV_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form_PV_Paint);
-            this.groupBox_Eigenschaften.ResumeLayout(false);
-            this.groupBox_Eigenschaften.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -489,12 +510,9 @@
         private System.Windows.Forms.Button btn_Löschen;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox textBox_Azimut;
-        private System.Windows.Forms.Button btn_Speichern;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox textBox_AnlagenLeistung;
-        private System.Windows.Forms.GroupBox groupBox_Eigenschaften;
         private System.Windows.Forms.Label label_Type;
-        private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.TextBox textBox_Beschreibung;
         private System.Windows.Forms.Label label14;
@@ -503,6 +521,11 @@
         private System.Windows.Forms.TextBox textBox_Hersteller;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox textBox_Name;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox textBox_Gesamtleistung;
     }
 }

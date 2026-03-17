@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using WindowsFormsApplication1.Classes.Simulation;
 
@@ -84,6 +85,7 @@ namespace WindowsFormsApplication1
             Cursor.Current = Cursors.WaitCursor;
 
             Volumen_Pufferspeicher = 0;
+            List<double> biv = new List<double>();
 
             Init();
 
@@ -225,10 +227,10 @@ namespace WindowsFormsApplication1
                     }
 
                     // Bivalenzpunkt ermitteln
-                    if (result[PTHERM] < Rest_waerme)
-                    {
-                        if (Temperatur[stunde] > Bivalenzpunkt) Bivalenzpunkt = Temperatur[stunde];
-                    }
+                    //if (result[PTHERM] < Rest_waerme)
+                    //{
+                    //    if (Temperatur[stunde] > Bivalenzpunkt) { Bivalenzpunkt = Temperatur[stunde];}
+                    //}
 
                     // Leistungsdaten der WP auswerten  
                     if (result[PTHERM] < Rest_waerme)
@@ -262,6 +264,12 @@ namespace WindowsFormsApplication1
                     }
 
                 } // end alle WP    
+
+                // dient zum späteren Bivalenzpunkt ermitteln
+                if ( Rest_waerme > 0)
+                {
+                    biv.Add(Temperatur[stunde]);
+                }
 
                 // Heizstab mit einbeziehen 
                 for (int index = 0; index < wp_model.Count; index++)
@@ -299,6 +307,9 @@ namespace WindowsFormsApplication1
             waermerestbedarf_gesamt = Waermebedarf_gesamt - WP_Waermeproduktion_gesamt - Heizstab_gesamt;
 
             Cursor.Current = Cursors.Default;
+
+            if (biv.Count > 0)
+                Bivalenzpunkt = biv.Max();
             return true;
         }
 

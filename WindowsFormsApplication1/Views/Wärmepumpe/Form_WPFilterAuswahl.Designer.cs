@@ -568,6 +568,7 @@
             this.btnSelect.TabIndex = 0;
             this.btnSelect.Text = "✔ Auswahl übernehmen";
             this.btnSelect.UseVisualStyleBackColor = false;
+            this.btnSelect.Click += new System.EventHandler(this.btnSelect_Click);
             // 
             // Form_WpFilterAuswahl
             // 

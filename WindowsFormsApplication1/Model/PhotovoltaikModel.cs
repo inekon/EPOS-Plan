@@ -17,7 +17,10 @@ namespace WindowsFormsApplication1
         public double m_U_Leerlauf;
         public double m_I_Mpp;
         public double m_I_Kurzschluss;
+        public double m_alpha_SC;
+        public double m_beta_OC;
         public double m_Temp_Coeff_Pmax;
+        public double m_T_NOCT;
         public double m_Laenge;
         public double m_Breite;
 
@@ -37,7 +40,10 @@ namespace WindowsFormsApplication1
             m_U_Leerlauf = 0.0;
             m_I_Mpp = 0.0;
             m_I_Kurzschluss = 0.0;
+            m_alpha_SC = 0.0;
+            m_beta_OC = 0.0;
             m_Temp_Coeff_Pmax = 0.0;
+            m_T_NOCT = 0.0;
             m_Laenge = 0.0;
             m_Breite = 0.0;
         }

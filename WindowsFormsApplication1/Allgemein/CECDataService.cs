@@ -108,7 +108,8 @@ namespace WindowsFormsApplication1
                     var trimmed = line.Trim();
                     if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#")) continue;
                     if (trimmed.IndexOf("Source", StringComparison.OrdinalIgnoreCase) >= 0) continue;
-
+                    if (trimmed.IndexOf("[0]", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                   
                     if (!headerFound)
                     {
                         dataLines.Add(line);
@@ -118,7 +119,8 @@ namespace WindowsFormsApplication1
 
                     if (dataLines.Count == 1 && (trimmed.IndexOf("Units", StringComparison.OrdinalIgnoreCase) >= 0 || IsUnitsRow(trimmed)))
                         continue;
-
+ 
+                    
                     dataLines.Add(line);
                 }
 
@@ -141,9 +143,11 @@ namespace WindowsFormsApplication1
 
                     string GetF(int idx) => (idx >= 0 && idx < fields.Length) ? fields[idx].Trim() : "";
 
+                    DateTime dateTime = DateTime.Parse(fields[26], CultureInfo.InvariantCulture);
                     var mod = new PVModule
                     {
                         Name = GetF(GetCol("name")),
+                        Manufacturer = GetF(GetCol("manufacturer")),
                         Technology = GetF(GetCol("technology")),
                         Bifacial = GetF(GetCol("bifacial")),
                         STC = SafeD(GetF(GetCol("stc"))),
@@ -156,6 +160,11 @@ namespace WindowsFormsApplication1
                         V_oc_ref = SafeD(GetF(GetCol("v_oc_ref"))),
                         I_mp_ref = SafeD(GetF(GetCol("i_mp_ref"))),
                         V_mp_ref = SafeD(GetF(GetCol("v_mp_ref"))),
+                        alpha_sc = SafeD(GetF(GetCol("alpha_sc"))),
+                        beta_oc = SafeD(GetF(GetCol("beta_oc"))),
+                        gamma_pmp = SafeD(GetF(GetCol("gamma_pmp"))),
+                        T_NOCT = SafeD(GetF(GetCol("t_noct"))),
+                        Date = dateTime.Year,
                         // ... füge hier weitere Felder nach Bedarf hinzu
                     };
                     _allModules.Add(mod);
@@ -209,7 +218,7 @@ namespace WindowsFormsApplication1
             _allModules.Select(m => m.Manufacturer).Distinct().OrderBy(x => x);
 
         public IEnumerable<int> GetYears() =>
-            _allModules.Select(m => m.Year).Where(y => y > 1990).Distinct().OrderBy(x => x);
+            _allModules.Select(m => m.Date).Where(y => y > 1990).Distinct().OrderBy(x => x);
 
         public IEnumerable<string> GetTechnologies() =>
             _allModules.Select(m => m.Technology).Distinct().OrderBy(x => x);

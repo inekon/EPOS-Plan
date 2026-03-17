@@ -46,6 +46,8 @@ namespace WindowsFormsApplication1
                 }
             }
             if (listBox_Auswahl.Items.Count > 0) listBox_Auswahl.SelectedIndex = 0;
+
+            textBox_Gesamtleistung.Text = UpdateGesamtleistung().ToString();
         }
 
         private void Form_PV_Load(object sender, EventArgs e)
@@ -115,6 +117,20 @@ namespace WindowsFormsApplication1
             if (m_bWizard) wizardparent.list_werzmodel = list_pvmodel;
         }
 
+        private void UpdateProerties()
+        {
+            for (int i = 0; i < list_pvmodel.Count; i++)
+            {
+                if (list_pvmodel[i].Bezeichner == listBox_Auswahl.Text && list_pvmodel[i].ID_Type == WizardItemClass.PV_TYP)
+                {
+                    list_pvmodel[i].m_Neigung = textBox_Neigung.Text == "" ? 0 : Int32.Parse(textBox_Neigung.Text);
+                    list_pvmodel[i].m_Azimut = textBox_Azimut.Text == "" ? 0 : Int32.Parse(textBox_Azimut.Text);
+                    list_pvmodel[i].PV_Leistung = textBox_AnlagenLeistung.Text == "" ? 0 : double.Parse(textBox_AnlagenLeistung.Text);
+                    break;
+                }
+            }
+        }
+
         private void btn_OK_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.OK;
@@ -149,10 +165,10 @@ namespace WindowsFormsApplication1
                     textBox_Neigung.Text = list_pvmodel[i].m_Neigung.ToString();
                     textBox_Azimut.Text = list_pvmodel[i].m_Azimut.ToString();
                     textBox_AnlagenLeistung.Text = list_pvmodel[i].PV_Leistung.ToString("F2");
-                    groupBox_Eigenschaften.Visible = true;
+                    panel1.Visible = true;
                 }
             }
-            groupBox_Eigenschaften.Visible = true;
+            panel1.Visible = true;
         }
 
         private void listBox_DB_SelectedIndexChanged(object sender, EventArgs e)
@@ -167,11 +183,11 @@ namespace WindowsFormsApplication1
                 textBox_Hersteller.Text = (string)rs.Read("Firma");
                 double kl = (double)rs.Read("Leistung");
                 textBox_Leistung.Text = kl.ToString("F2");
-                groupBox_Eigenschaften.Visible = false; 
+                panel1.Visible = false; 
 
             }
             rs.Close();
-            groupBox_Eigenschaften.Visible = false;
+            panel1.Visible = false;
         }
 
         private void comboBox_Leistung_SelectedIndexChanged(object sender, EventArgs e)
@@ -239,10 +255,6 @@ namespace WindowsFormsApplication1
                     list_pvmodel[i].m_Neigung = textBox_Neigung.Text == "" ? 0 : Int32.Parse(textBox_Neigung.Text);
                     list_pvmodel[i].m_Azimut = textBox_Azimut.Text == "" ? 0 : Int32.Parse(textBox_Azimut.Text);
                     list_pvmodel[i].PV_Leistung = textBox_AnlagenLeistung.Text == "" ? 0 : double.Parse(textBox_AnlagenLeistung.Text);
-                    pictureBox1.Visible = true;
-                    pictureBox1.Refresh();
-                    Thread.Sleep(500);
-                    pictureBox1.Visible = false;
                     break;
                 }
             }
@@ -276,6 +288,7 @@ namespace WindowsFormsApplication1
                 textBox_AnlagenLeistung.ClearUndo();
                 return;
             }
+            textBox_Gesamtleistung.Text = UpdateGesamtleistung().ToString();
         }
 
         private void Form_PV_Paint(object sender, PaintEventArgs e)
@@ -285,16 +298,44 @@ namespace WindowsFormsApplication1
             blackPen.DashPattern = dashValues;
 
             int a, b, c, d;
-            a = groupBox_Eigenschaften.Left;
-            b = groupBox_Eigenschaften.Top;
-            c = groupBox_Eigenschaften.Width;
-            d = groupBox_Eigenschaften.Height;
+            a = panel1.Left;
+            b = panel1.Top;
+            c = panel1.Width;
+            d = panel1.Height;
 
             e.Graphics.DrawLine(blackPen, new Point(a + 10, b + 10), new Point(a + c - 10, b + 10));
             e.Graphics.DrawLine(blackPen, new Point(a + 10, b + d - 10), new Point(a + c - 10, b + d - 10));
             e.Graphics.DrawLine(blackPen, new Point(a + 10, b + 10), new Point(a + 10, b + d - 10));
             e.Graphics.DrawLine(blackPen, new Point(a + c - 10, b + 10), new Point(a + c - 10, b + d - 10));
+        }
 
+        private void panel1_Leave(object sender, EventArgs e)
+        {
+            UpdateProerties();
+            textBox_Gesamtleistung.Text = UpdateGesamtleistung().ToString(); 
+        }
+
+        private double UpdateGesamtleistung()
+        {
+            RecordSet rs = new RecordSet();
+            double gesamtleistung = 0;
+            double modulleistung = 0;
+
+            for (int i = 0; i < list_pvmodel.Count; i++)
+            {
+                if (list_pvmodel[i].ID_Type == WizardItemClass.PV_TYP)
+                {
+                    rs.Open("select * from Tab_PV where Modulname='" + list_pvmodel[i].Bezeichner + "'");
+                    if (!rs.EOF())
+                    {
+                        modulleistung = (double)rs.Read("Leistung");
+                    }
+                    rs.Close();
+
+                    gesamtleistung += (double)(list_pvmodel[i].PV_Leistung * modulleistung);
+                }
+            }
+            return gesamtleistung;
         }
     }
 
