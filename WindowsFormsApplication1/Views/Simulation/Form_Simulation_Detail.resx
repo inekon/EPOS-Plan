@@ -4141,7 +4141,7 @@
     <value>NoControl</value>
   </data>
   <data name="label55.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 222</value>
+    <value>1077, 188</value>
   </data>
   <data name="label55.Size" type="System.Drawing.Size, System.Drawing">
     <value>19, 17</value>
@@ -4151,6 +4151,9 @@
   </data>
   <data name="label55.Text" xml:space="preserve">
     <value>%</value>
+  </data>
+  <data name="label55.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;label55.Name" xml:space="preserve">
     <value>label55</value>
@@ -4168,13 +4171,16 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_STDeckung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>156, 219</value>
+    <value>1024, 185</value>
   </data>
   <data name="textBox_STDeckung.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 25</value>
   </data>
   <data name="textBox_STDeckung.TabIndex" type="System.Int32, mscorlib">
     <value>276</value>
+  </data>
+  <data name="textBox_STDeckung.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;textBox_STDeckung.Name" xml:space="preserve">
     <value>textBox_STDeckung</value>
@@ -4198,7 +4204,7 @@
     <value>NoControl</value>
   </data>
   <data name="label58.Location" type="System.Drawing.Point, System.Drawing">
-    <value>41, 222</value>
+    <value>909, 188</value>
   </data>
   <data name="label58.Size" type="System.Drawing.Size, System.Drawing">
     <value>85, 17</value>
@@ -4208,6 +4214,9 @@
   </data>
   <data name="label58.Text" xml:space="preserve">
     <value>Solarthermie:</value>
+  </data>
+  <data name="label58.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;label58.Name" xml:space="preserve">
     <value>label58</value>
@@ -4231,7 +4240,7 @@
     <value>NoControl</value>
   </data>
   <data name="label54.Location" type="System.Drawing.Point, System.Drawing">
-    <value>494, 241</value>
+    <value>367, 208</value>
   </data>
   <data name="label54.Size" type="System.Drawing.Size, System.Drawing">
     <value>85, 17</value>
@@ -4261,7 +4270,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="checkBox_Profil_Lastgang.Location" type="System.Drawing.Point, System.Drawing">
-    <value>959, 615</value>
+    <value>829, 582</value>
   </data>
   <data name="checkBox_Profil_Lastgang.Size" type="System.Drawing.Size, System.Drawing">
     <value>115, 21</value>
@@ -4291,7 +4300,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="checkBox_SPK.Location" type="System.Drawing.Point, System.Drawing">
-    <value>853, 615</value>
+    <value>723, 582</value>
   </data>
   <data name="checkBox_SPK.Size" type="System.Drawing.Size, System.Drawing">
     <value>87, 21</value>
@@ -4321,7 +4330,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="checkBox_Heizstab.Location" type="System.Drawing.Point, System.Drawing">
-    <value>743, 615</value>
+    <value>613, 582</value>
   </data>
   <data name="checkBox_Heizstab.Size" type="System.Drawing.Size, System.Drawing">
     <value>77, 21</value>
@@ -4351,7 +4360,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="checkBox_WP.Location" type="System.Drawing.Point, System.Drawing">
-    <value>619, 615</value>
+    <value>489, 582</value>
   </data>
   <data name="checkBox_WP.Size" type="System.Drawing.Size, System.Drawing">
     <value>109, 21</value>
@@ -4381,7 +4390,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="checkBox_Gesamt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>521, 615</value>
+    <value>391, 582</value>
   </data>
   <data name="checkBox_Gesamt.Size" type="System.Drawing.Size, System.Drawing">
     <value>71, 21</value>
@@ -4405,7 +4414,7 @@
     <value>8</value>
   </data>
   <data name="chart7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>497, 268</value>
+    <value>370, 235</value>
   </data>
   <data name="chart7.Size" type="System.Drawing.Size, System.Drawing">
     <value>597, 341</value>
@@ -4428,34 +4437,34 @@
   <data name="&gt;&gt;chart7.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="label63.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label_WBDeckung.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label63.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="label_WBDeckung.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt, style=Underline</value>
   </data>
-  <data name="label63.Location" type="System.Drawing.Point, System.Drawing">
-    <value>48, 304</value>
+  <data name="label_WBDeckung.Location" type="System.Drawing.Point, System.Drawing">
+    <value>48, 208</value>
   </data>
-  <data name="label63.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_WBDeckung.Size" type="System.Drawing.Size, System.Drawing">
     <value>146, 17</value>
   </data>
-  <data name="label63.TabIndex" type="System.Int32, mscorlib">
+  <data name="label_WBDeckung.TabIndex" type="System.Int32, mscorlib">
     <value>267</value>
   </data>
-  <data name="label63.Text" xml:space="preserve">
+  <data name="label_WBDeckung.Text" xml:space="preserve">
     <value>Wärmebedarfsdeckung:</value>
   </data>
-  <data name="&gt;&gt;label63.Name" xml:space="preserve">
-    <value>label63</value>
+  <data name="&gt;&gt;label_WBDeckung.Name" xml:space="preserve">
+    <value>label_WBDeckung</value>
   </data>
-  <data name="&gt;&gt;label63.Type" xml:space="preserve">
+  <data name="&gt;&gt;label_WBDeckung.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label63.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label_WBDeckung.Parent" xml:space="preserve">
     <value>tabPage_Ergebnis</value>
   </data>
-  <data name="&gt;&gt;label63.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label_WBDeckung.ZOrder" xml:space="preserve">
     <value>10</value>
   </data>
   <data name="label56.AutoSize" type="System.Boolean, mscorlib">
@@ -4465,7 +4474,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label56.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 194</value>
+    <value>1077, 160</value>
   </data>
   <data name="label56.Size" type="System.Drawing.Size, System.Drawing">
     <value>19, 17</value>
@@ -4475,6 +4484,9 @@
   </data>
   <data name="label56.Text" xml:space="preserve">
     <value>%</value>
+  </data>
+  <data name="label56.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;label56.Name" xml:space="preserve">
     <value>label56</value>
@@ -4492,13 +4504,16 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_SPKDeckung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>156, 191</value>
+    <value>1024, 157</value>
   </data>
   <data name="textBox_SPKDeckung.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 25</value>
   </data>
   <data name="textBox_SPKDeckung.TabIndex" type="System.Int32, mscorlib">
     <value>265</value>
+  </data>
+  <data name="textBox_SPKDeckung.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;textBox_SPKDeckung.Name" xml:space="preserve">
     <value>textBox_SPKDeckung</value>
@@ -4519,7 +4534,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label57.Location" type="System.Drawing.Point, System.Drawing">
-    <value>41, 194</value>
+    <value>909, 160</value>
   </data>
   <data name="label57.Size" type="System.Drawing.Size, System.Drawing">
     <value>88, 17</value>
@@ -4529,6 +4544,9 @@
   </data>
   <data name="label57.Text" xml:space="preserve">
     <value>Spitzenkessel:</value>
+  </data>
+  <data name="label57.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;label57.Name" xml:space="preserve">
     <value>label57</value>
@@ -4549,7 +4567,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label40.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 165</value>
+    <value>1077, 131</value>
   </data>
   <data name="label40.Size" type="System.Drawing.Size, System.Drawing">
     <value>19, 17</value>
@@ -4559,6 +4577,9 @@
   </data>
   <data name="label40.Text" xml:space="preserve">
     <value>%</value>
+  </data>
+  <data name="label40.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;label40.Name" xml:space="preserve">
     <value>label40</value>
@@ -4576,13 +4597,16 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_WBDeckung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>156, 162</value>
+    <value>1024, 128</value>
   </data>
   <data name="textBox_WBDeckung.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 25</value>
   </data>
   <data name="textBox_WBDeckung.TabIndex" type="System.Int32, mscorlib">
     <value>262</value>
+  </data>
+  <data name="textBox_WBDeckung.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;textBox_WBDeckung.Name" xml:space="preserve">
     <value>textBox_WBDeckung</value>
@@ -4603,7 +4627,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label45.Location" type="System.Drawing.Point, System.Drawing">
-    <value>41, 165</value>
+    <value>909, 131</value>
   </data>
   <data name="label45.Size" type="System.Drawing.Size, System.Drawing">
     <value>93, 17</value>
@@ -4613,6 +4637,9 @@
   </data>
   <data name="label45.Text" xml:space="preserve">
     <value>Wärmepumpe:</value>
+  </data>
+  <data name="label45.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;label45.Name" xml:space="preserve">
     <value>label45</value>
@@ -4858,16 +4885,19 @@
     <value>23</value>
   </data>
   <data name="chart5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>40, 344</value>
+    <value>660, 15</value>
   </data>
   <data name="chart5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>383, 265</value>
+    <value>383, 196</value>
   </data>
   <data name="chart5.TabIndex" type="System.Int32, mscorlib">
     <value>228</value>
   </data>
   <data name="chart5.Text" xml:space="preserve">
     <value>chart5</value>
+  </data>
+  <data name="chart5.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;chart5.Name" xml:space="preserve">
     <value>chart5</value>

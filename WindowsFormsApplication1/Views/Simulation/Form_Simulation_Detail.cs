@@ -33,6 +33,12 @@ namespace WindowsFormsApplication1
         private float[] temp_hs;
         private float[] temp_hk;
         private float[] temp_ges;
+
+        double waerme_spk = 0;
+        double waerme_wp = 0;
+        double waerme_heizstab = 0;
+        double waerme_solar = 0;
+        double gesamt_waerme = 0;
         double restwaermebedarf = 0;
 
         Point prevPosition;
@@ -562,13 +568,6 @@ namespace WindowsFormsApplication1
 
             chart5.Series[0].Points.Clear();
 
-            double waerme_spk = 0;
-            double waerme_wp = 0;
-            double waerme_heizstab = 0;
-            double waerme_solar = 0;
-            
-            double gesamt_waerme = 0;
-
             // Heizkessel
             waerme_spk = 0;
             for (int i = 0; i < sim.simulation_spk.spk_list.Count(); i++)
@@ -1058,8 +1057,53 @@ namespace WindowsFormsApplication1
             return path;
         }
 
+        public void DrawMultiDonutChart(Graphics g, Rectangle rect, double[] values, Color[] colors)
+        {
+            if (values == null || values.Length == 0) return;
+
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            float thickness = rect.Width * 0.2f;
+            double startAngle = -90; // Start oben (12 Uhr)
+
+            // Gesamtstrom/-wärme berechnen (sollte 100 ergeben, falls es Prozente sind)
+            double total = values.Sum();
+            if (total == 0) return;
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (values[i] <= 0) continue; // Überspringe Quellen mit 0%
+
+                double sweepAngle = (values[i] / total) * 360f;
+
+                using (Pen segmentPen = new Pen(colors[i], thickness))
+                {
+                    // Zeichne das Segment
+                    g.DrawArc(segmentPen,
+                              rect.X + thickness / 2, rect.Y + thickness / 2,
+                              rect.Width - thickness, rect.Height - thickness,
+                              (float)startAngle, (float)sweepAngle);
+                }
+
+                startAngle += sweepAngle; // Den Startpunkt für die nächste Quelle verschieben
+            }
+
+            // Optional: Text in die Mitte (z.B. "100% Gedeckt")
+            using (Font font = new Font("Segoe UI", rect.Width * 0.12f, FontStyle.Bold))
+            {
+                string centerText = "100%";
+                SizeF size = g.MeasureString(centerText, font);
+                g.DrawString(centerText, font, Brushes.Black,
+                             rect.X + (rect.Width - size.Width) / 2,
+                             rect.Y + (rect.Height - size.Height) / 2);
+            }
+        }
+
         private void tabPage_Ergebnis_Paint(object sender, PaintEventArgs e)
         {
+            // A. Hintergrund des Formulars (Hellgrau für den Kontrast)
+            e.Graphics.Clear(Color.FromArgb(240, 240, 240));
+
+
             // Kachel für Strom
             DrawKPICard(e.Graphics, new Rectangle(20, 50, 220, 80),
                         "Reststrombedarf", sim.Reststrom.ToString("F2"), "MWh/a", Color.DodgerBlue);
@@ -1068,7 +1112,81 @@ namespace WindowsFormsApplication1
             DrawKPICard(e.Graphics, new Rectangle(260, 50, 220, 80),
                         "Restwärmebedarf", restwaermebedarf.ToString("F2"), "MWh/a", Color.SeaGreen);
 
- 
+            Color[] palette = new Color[] {
+                ColorTranslator.FromHtml("#2ECC71"), // WP
+                ColorTranslator.FromHtml("#E67E22"), // Solar
+                ColorTranslator.FromHtml("#F1C40F"), // Stab
+                ColorTranslator.FromHtml("#95A5A6"), // Kessel
+                ColorTranslator.FromHtml("#3498DB")  // Rest
+            };
+            /*
+            double waerme_spk = 0;
+            double waerme_wp = 0;
+            double waerme_heizstab = 0;
+            double waerme_solar = 0;
+            double gesamt_waerme = 0;
+            double restwaermebedarf = 0;
+            */
+            double[] werte = new double[] { waerme_wp, waerme_solar, waerme_heizstab, waerme_spk, restwaermebedarf }; // Beispielwerte in %
+
+            // Aufruf der Funktion auf einer weißen Kachel
+      //      DrawMultiDonutChart(e.Graphics, new Rectangle(50, label_WBDeckung.Top, 150, 150), werte, palette);
+
+   
+   
+            // B. Bereich für die Diagramm-Kachel definieren
+            // (X=20, Y=150, Breite=220, Höhe=300)
+            Rectangle kachelBereich = new Rectangle(20, label_WBDeckung.Top + label_WBDeckung.Height +10, 220, 300);
+
+            // C. Die weiße Kachel zeichnen (mit der Funktion von vorhin)
+            DrawKPICard(e.Graphics, kachelBereich, "Wärmedeckung", "", "", Color.SeaGreen);
+
+            // D. Den Donut + Dynamische Legende darin aufrufen
+            // Wir geben der Funktion ein etwas kleineres "Innen-Rechteck", damit Abstände zum Rand bleiben
+            Rectangle chartInnenBereich = new Rectangle(kachelBereich.X + 10, kachelBereich.Y + 40,
+                                                       kachelBereich.Width - 20, kachelBereich.Height - 50);
+
+            // Die Namen deiner 5 möglichen Quellen
+            string[] quellenNamen = { "Wärmepumpe", "Solarthermie", "Heizstab", "Spitzenkessel", "Restwärme" }
+            ;
+            DrawChartWithDynamicLegend(e.Graphics, chartInnenBereich, werte, quellenNamen, palette);
+  
+            
+        }
+
+        public void DrawChartWithDynamicLegend(Graphics g, Rectangle area, double[] values, string[] names, Color[] colors)
+        {
+            // 1. Den Donut-Chart im oberen Teil der Kachel zeichnen
+            Rectangle chartRect = new Rectangle(area.X + (area.Width - 120) / 2, area.Y + 10, 120, 120);
+            DrawMultiDonutChart(g, chartRect, values, colors);
+
+            // 2. Dynamische Legende darunter
+            int yOffset = chartRect.Bottom + 20;
+            Font legendFont = new Font("Segoe UI", 9, FontStyle.Regular);
+            int itemsFound = 0;
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                // Nur anzeigen, wenn der Wert > 0 ist
+                if (values[i] > 0)
+                {
+                    int x = area.X + 10;
+                    int y = yOffset + (itemsFound * 22); // 22px Zeilenabstand
+
+                    // Kleiner farbiger Indikator-Punkt
+                    using (SolidBrush b = new SolidBrush(colors[i]))
+                    {
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        g.FillEllipse(b, x, y + 3, 10, 10);
+                    }
+
+                    // Text: "Name: 85,0%"
+                    string legendText = $"{names[i]}: {values[i]:0.0}%";
+                    g.DrawString(legendText, legendFont, Brushes.DimGray, x + 20, y);
+
+                    itemsFound++;
+                }
+            }
         }
     }
 
