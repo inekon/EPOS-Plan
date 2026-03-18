@@ -249,14 +249,14 @@
             // label13
             // 
             resources.ApplyResources(this.label13, "label13");
-            this.label13.BackColor = System.Drawing.SystemColors.Control;
+            this.label13.BackColor = System.Drawing.Color.Transparent;
             this.label13.ForeColor = System.Drawing.Color.Black;
             this.label13.Name = "label13";
             // 
             // label9
             // 
             resources.ApplyResources(this.label9, "label9");
-            this.label9.BackColor = System.Drawing.SystemColors.Control;
+            this.label9.BackColor = System.Drawing.Color.Transparent;
             this.label9.ForeColor = System.Drawing.Color.Black;
             this.label9.Name = "label9";
             // 
@@ -270,14 +270,14 @@
             // label10
             // 
             resources.ApplyResources(this.label10, "label10");
-            this.label10.BackColor = System.Drawing.SystemColors.Control;
+            this.label10.BackColor = System.Drawing.Color.Transparent;
             this.label10.ForeColor = System.Drawing.Color.Black;
             this.label10.Name = "label10";
             // 
             // label47
             // 
             resources.ApplyResources(this.label47, "label47");
-            this.label47.BackColor = System.Drawing.SystemColors.Control;
+            this.label47.BackColor = System.Drawing.Color.Transparent;
             this.label47.ForeColor = System.Drawing.Color.Black;
             this.label47.Name = "label47";
             // 
@@ -291,7 +291,7 @@
             // label62
             // 
             resources.ApplyResources(this.label62, "label62");
-            this.label62.BackColor = System.Drawing.SystemColors.Control;
+            this.label62.BackColor = System.Drawing.Color.Transparent;
             this.label62.ForeColor = System.Drawing.Color.Black;
             this.label62.Name = "label62";
             // 
@@ -304,9 +304,9 @@
             // 
             // btn_Simulation
             // 
-            this.btn_Simulation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.btn_Simulation.ForeColor = System.Drawing.Color.Black;
+            this.btn_Simulation.BackColor = System.Drawing.Color.MediumBlue;
             resources.ApplyResources(this.btn_Simulation, "btn_Simulation");
+            this.btn_Simulation.ForeColor = System.Drawing.Color.White;
             this.btn_Simulation.Name = "btn_Simulation";
             this.btn_Simulation.UseVisualStyleBackColor = false;
             this.btn_Simulation.Click += new System.EventHandler(this.btn_Simulation_Click);
@@ -324,6 +324,7 @@
             // 
             // tabPage_Bedarf
             // 
+            this.tabPage_Bedarf.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tabPage_Bedarf.Controls.Add(this.checkBox_StromSortiert);
             this.tabPage_Bedarf.Controls.Add(this.label17);
             this.tabPage_Bedarf.Controls.Add(this.label18);
@@ -351,22 +352,22 @@
             this.tabPage_Bedarf.Controls.Add(this.chart1);
             resources.ApplyResources(this.tabPage_Bedarf, "tabPage_Bedarf");
             this.tabPage_Bedarf.Name = "tabPage_Bedarf";
-            this.tabPage_Bedarf.UseVisualStyleBackColor = true;
             // 
             // checkBox_StromSortiert
             // 
             resources.ApplyResources(this.checkBox_StromSortiert, "checkBox_StromSortiert");
+            this.checkBox_StromSortiert.BackColor = System.Drawing.Color.White;
             this.checkBox_StromSortiert.Checked = true;
             this.checkBox_StromSortiert.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox_StromSortiert.ForeColor = System.Drawing.Color.Black;
             this.checkBox_StromSortiert.Name = "checkBox_StromSortiert";
-            this.checkBox_StromSortiert.UseVisualStyleBackColor = true;
+            this.checkBox_StromSortiert.UseVisualStyleBackColor = false;
             this.checkBox_StromSortiert.CheckedChanged += new System.EventHandler(this.checkBox_StromSortiert_CheckedChanged);
             this.checkBox_StromSortiert.Click += new System.EventHandler(this.checkBox_StromSortiert_CheckedChanged);
             // 
             // label17
             // 
-            this.label17.BackColor = System.Drawing.SystemColors.Control;
+            this.label17.BackColor = System.Drawing.Color.Transparent;
             resources.ApplyResources(this.label17, "label17");
             this.label17.ForeColor = System.Drawing.Color.Black;
             this.label17.Name = "label17";
@@ -384,7 +385,7 @@
             // 
             // label19
             // 
-            this.label19.BackColor = System.Drawing.SystemColors.Control;
+            this.label19.BackColor = System.Drawing.Color.Transparent;
             resources.ApplyResources(this.label19, "label19");
             this.label19.ForeColor = System.Drawing.Color.Black;
             this.label19.Name = "label19";
@@ -429,33 +430,36 @@
             // checkBox_Sortiert
             // 
             resources.ApplyResources(this.checkBox_Sortiert, "checkBox_Sortiert");
+            this.checkBox_Sortiert.BackColor = System.Drawing.Color.White;
             this.checkBox_Sortiert.Checked = true;
             this.checkBox_Sortiert.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox_Sortiert.ForeColor = System.Drawing.Color.Black;
             this.checkBox_Sortiert.Name = "checkBox_Sortiert";
-            this.checkBox_Sortiert.UseVisualStyleBackColor = true;
+            this.checkBox_Sortiert.UseVisualStyleBackColor = false;
             this.checkBox_Sortiert.CheckedChanged += new System.EventHandler(this.checkBox_Sortiert_CheckedChanged);
             this.checkBox_Sortiert.Click += new System.EventHandler(this.checkBox_Sortiert_CheckedChanged);
             // 
             // btn_StromDetails
             // 
+            this.btn_StromDetails.BackColor = System.Drawing.SystemColors.Control;
             resources.ApplyResources(this.btn_StromDetails, "btn_StromDetails");
             this.btn_StromDetails.ForeColor = System.Drawing.Color.Black;
             this.btn_StromDetails.Name = "btn_StromDetails";
-            this.btn_StromDetails.UseVisualStyleBackColor = true;
+            this.btn_StromDetails.UseVisualStyleBackColor = false;
             this.btn_StromDetails.Click += new System.EventHandler(this.btn_StromDetails_Click);
             // 
             // btn_Details
             // 
+            this.btn_Details.BackColor = System.Drawing.SystemColors.Control;
             resources.ApplyResources(this.btn_Details, "btn_Details");
             this.btn_Details.ForeColor = System.Drawing.Color.Black;
             this.btn_Details.Name = "btn_Details";
-            this.btn_Details.UseVisualStyleBackColor = true;
+            this.btn_Details.UseVisualStyleBackColor = false;
             this.btn_Details.Click += new System.EventHandler(this.btn_Details_Click);
             // 
             // label15
             // 
-            this.label15.BackColor = System.Drawing.SystemColors.Control;
+            this.label15.BackColor = System.Drawing.Color.Transparent;
             resources.ApplyResources(this.label15, "label15");
             this.label15.ForeColor = System.Drawing.Color.Black;
             this.label15.Name = "label15";
@@ -473,7 +477,7 @@
             // 
             // label14
             // 
-            this.label14.BackColor = System.Drawing.SystemColors.Control;
+            this.label14.BackColor = System.Drawing.Color.Transparent;
             resources.ApplyResources(this.label14, "label14");
             this.label14.ForeColor = System.Drawing.Color.Black;
             this.label14.Name = "label14";
@@ -517,6 +521,7 @@
             // 
             // tabPage_Wärmepumpe
             // 
+            this.tabPage_Wärmepumpe.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tabPage_Wärmepumpe.Controls.Add(this.tabControl2);
             this.tabPage_Wärmepumpe.Controls.Add(this.listView_SimWP);
             this.tabPage_Wärmepumpe.Controls.Add(this.label43);
@@ -552,7 +557,6 @@
             this.tabPage_Wärmepumpe.Controls.Add(this.chart4);
             resources.ApplyResources(this.tabPage_Wärmepumpe, "tabPage_Wärmepumpe");
             this.tabPage_Wärmepumpe.Name = "tabPage_Wärmepumpe";
-            this.tabPage_Wärmepumpe.UseVisualStyleBackColor = true;
             // 
             // tabControl2
             // 
@@ -687,7 +691,7 @@
             // label42
             // 
             resources.ApplyResources(this.label42, "label42");
-            this.label42.BackColor = System.Drawing.Color.White;
+            this.label42.BackColor = System.Drawing.Color.Transparent;
             this.label42.ForeColor = System.Drawing.Color.Black;
             this.label42.Name = "label42";
             // 
@@ -791,7 +795,7 @@
             // label27
             // 
             resources.ApplyResources(this.label27, "label27");
-            this.label27.BackColor = System.Drawing.Color.White;
+            this.label27.BackColor = System.Drawing.Color.Transparent;
             this.label27.ForeColor = System.Drawing.Color.Black;
             this.label27.Name = "label27";
             // 
@@ -881,6 +885,7 @@
             // 
             // tabPage_Heizkessel
             // 
+            this.tabPage_Heizkessel.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tabPage_Heizkessel.Controls.Add(this.label86);
             this.tabPage_Heizkessel.Controls.Add(this.tb_TierischeFette);
             this.tabPage_Heizkessel.Controls.Add(this.label87);
@@ -934,12 +939,11 @@
             this.tabPage_Heizkessel.Controls.Add(this.tb_Gasverbrauch);
             resources.ApplyResources(this.tabPage_Heizkessel, "tabPage_Heizkessel");
             this.tabPage_Heizkessel.Name = "tabPage_Heizkessel";
-            this.tabPage_Heizkessel.UseVisualStyleBackColor = true;
             // 
             // label86
             // 
             resources.ApplyResources(this.label86, "label86");
-            this.label86.BackColor = System.Drawing.Color.White;
+            this.label86.BackColor = System.Drawing.Color.Transparent;
             this.label86.ForeColor = System.Drawing.Color.Black;
             this.label86.Name = "label86";
             // 
@@ -954,14 +958,14 @@
             // label87
             // 
             resources.ApplyResources(this.label87, "label87");
-            this.label87.BackColor = System.Drawing.Color.White;
+            this.label87.BackColor = System.Drawing.Color.Transparent;
             this.label87.ForeColor = System.Drawing.Color.Black;
             this.label87.Name = "label87";
             // 
             // label84
             // 
             resources.ApplyResources(this.label84, "label84");
-            this.label84.BackColor = System.Drawing.Color.White;
+            this.label84.BackColor = System.Drawing.Color.Transparent;
             this.label84.ForeColor = System.Drawing.Color.Black;
             this.label84.Name = "label84";
             // 
@@ -976,7 +980,7 @@
             // label85
             // 
             resources.ApplyResources(this.label85, "label85");
-            this.label85.BackColor = System.Drawing.Color.White;
+            this.label85.BackColor = System.Drawing.Color.Transparent;
             this.label85.ForeColor = System.Drawing.Color.Black;
             this.label85.Name = "label85";
             // 
@@ -1012,13 +1016,13 @@
             // label6
             // 
             resources.ApplyResources(this.label6, "label6");
-            this.label6.BackColor = System.Drawing.Color.White;
+            this.label6.BackColor = System.Drawing.Color.Transparent;
             this.label6.ForeColor = System.Drawing.Color.Black;
             this.label6.Name = "label6";
             // 
             // label4
             // 
-            this.label4.BackColor = System.Drawing.Color.White;
+            this.label4.BackColor = System.Drawing.Color.Transparent;
             resources.ApplyResources(this.label4, "label4");
             this.label4.ForeColor = System.Drawing.Color.Black;
             this.label4.Name = "label4";
@@ -1051,14 +1055,14 @@
             // label46
             // 
             resources.ApplyResources(this.label46, "label46");
-            this.label46.BackColor = System.Drawing.Color.White;
+            this.label46.BackColor = System.Drawing.Color.Transparent;
             this.label46.ForeColor = System.Drawing.Color.Black;
             this.label46.Name = "label46";
             // 
             // label59
             // 
             resources.ApplyResources(this.label59, "label59");
-            this.label59.BackColor = System.Drawing.Color.White;
+            this.label59.BackColor = System.Drawing.Color.Transparent;
             this.label59.ForeColor = System.Drawing.Color.Black;
             this.label59.Name = "label59";
             // 
@@ -1073,35 +1077,35 @@
             // label60
             // 
             resources.ApplyResources(this.label60, "label60");
-            this.label60.BackColor = System.Drawing.SystemColors.Control;
+            this.label60.BackColor = System.Drawing.Color.Transparent;
             this.label60.ForeColor = System.Drawing.Color.Black;
             this.label60.Name = "label60";
             // 
             // label61
             // 
             resources.ApplyResources(this.label61, "label61");
-            this.label61.BackColor = System.Drawing.Color.White;
+            this.label61.BackColor = System.Drawing.Color.Transparent;
             this.label61.ForeColor = System.Drawing.Color.Black;
             this.label61.Name = "label61";
             // 
             // label64
             // 
             resources.ApplyResources(this.label64, "label64");
-            this.label64.BackColor = System.Drawing.Color.White;
+            this.label64.BackColor = System.Drawing.Color.Transparent;
             this.label64.ForeColor = System.Drawing.Color.Black;
             this.label64.Name = "label64";
             // 
             // label65
             // 
             resources.ApplyResources(this.label65, "label65");
-            this.label65.BackColor = System.Drawing.Color.White;
+            this.label65.BackColor = System.Drawing.Color.Transparent;
             this.label65.ForeColor = System.Drawing.Color.Black;
             this.label65.Name = "label65";
             // 
             // label66
             // 
             resources.ApplyResources(this.label66, "label66");
-            this.label66.BackColor = System.Drawing.Color.White;
+            this.label66.BackColor = System.Drawing.Color.Transparent;
             this.label66.ForeColor = System.Drawing.Color.Black;
             this.label66.Name = "label66";
             // 
@@ -1116,14 +1120,14 @@
             // label67
             // 
             resources.ApplyResources(this.label67, "label67");
-            this.label67.BackColor = System.Drawing.Color.White;
+            this.label67.BackColor = System.Drawing.Color.Transparent;
             this.label67.ForeColor = System.Drawing.Color.Black;
             this.label67.Name = "label67";
             // 
             // label68
             // 
             resources.ApplyResources(this.label68, "label68");
-            this.label68.BackColor = System.Drawing.Color.White;
+            this.label68.BackColor = System.Drawing.Color.Transparent;
             this.label68.ForeColor = System.Drawing.Color.Black;
             this.label68.Name = "label68";
             // 
@@ -1138,14 +1142,14 @@
             // label69
             // 
             resources.ApplyResources(this.label69, "label69");
-            this.label69.BackColor = System.Drawing.Color.White;
+            this.label69.BackColor = System.Drawing.Color.Transparent;
             this.label69.ForeColor = System.Drawing.Color.Black;
             this.label69.Name = "label69";
             // 
             // label70
             // 
             resources.ApplyResources(this.label70, "label70");
-            this.label70.BackColor = System.Drawing.Color.White;
+            this.label70.BackColor = System.Drawing.Color.Transparent;
             this.label70.ForeColor = System.Drawing.Color.Black;
             this.label70.Name = "label70";
             // 
@@ -1160,14 +1164,14 @@
             // label71
             // 
             resources.ApplyResources(this.label71, "label71");
-            this.label71.BackColor = System.Drawing.Color.White;
+            this.label71.BackColor = System.Drawing.Color.Transparent;
             this.label71.ForeColor = System.Drawing.Color.Black;
             this.label71.Name = "label71";
             // 
             // label72
             // 
             resources.ApplyResources(this.label72, "label72");
-            this.label72.BackColor = System.Drawing.Color.White;
+            this.label72.BackColor = System.Drawing.Color.Transparent;
             this.label72.ForeColor = System.Drawing.Color.Black;
             this.label72.Name = "label72";
             // 
@@ -1182,14 +1186,14 @@
             // label73
             // 
             resources.ApplyResources(this.label73, "label73");
-            this.label73.BackColor = System.Drawing.Color.White;
+            this.label73.BackColor = System.Drawing.Color.Transparent;
             this.label73.ForeColor = System.Drawing.Color.Black;
             this.label73.Name = "label73";
             // 
             // label74
             // 
             resources.ApplyResources(this.label74, "label74");
-            this.label74.BackColor = System.Drawing.Color.White;
+            this.label74.BackColor = System.Drawing.Color.Transparent;
             this.label74.ForeColor = System.Drawing.Color.Black;
             this.label74.Name = "label74";
             // 
@@ -1204,14 +1208,14 @@
             // label75
             // 
             resources.ApplyResources(this.label75, "label75");
-            this.label75.BackColor = System.Drawing.Color.White;
+            this.label75.BackColor = System.Drawing.Color.Transparent;
             this.label75.ForeColor = System.Drawing.Color.Black;
             this.label75.Name = "label75";
             // 
             // label76
             // 
             resources.ApplyResources(this.label76, "label76");
-            this.label76.BackColor = System.Drawing.Color.White;
+            this.label76.BackColor = System.Drawing.Color.Transparent;
             this.label76.ForeColor = System.Drawing.Color.Black;
             this.label76.Name = "label76";
             // 
@@ -1226,14 +1230,14 @@
             // label77
             // 
             resources.ApplyResources(this.label77, "label77");
-            this.label77.BackColor = System.Drawing.Color.White;
+            this.label77.BackColor = System.Drawing.Color.Transparent;
             this.label77.ForeColor = System.Drawing.Color.Black;
             this.label77.Name = "label77";
             // 
             // label78
             // 
             resources.ApplyResources(this.label78, "label78");
-            this.label78.BackColor = System.Drawing.Color.White;
+            this.label78.BackColor = System.Drawing.Color.Transparent;
             this.label78.ForeColor = System.Drawing.Color.Black;
             this.label78.Name = "label78";
             // 
@@ -1248,21 +1252,21 @@
             // label79
             // 
             resources.ApplyResources(this.label79, "label79");
-            this.label79.BackColor = System.Drawing.Color.White;
+            this.label79.BackColor = System.Drawing.Color.Transparent;
             this.label79.ForeColor = System.Drawing.Color.Black;
             this.label79.Name = "label79";
             // 
             // label80
             // 
             resources.ApplyResources(this.label80, "label80");
-            this.label80.BackColor = System.Drawing.SystemColors.Control;
+            this.label80.BackColor = System.Drawing.Color.Transparent;
             this.label80.ForeColor = System.Drawing.Color.Black;
             this.label80.Name = "label80";
             // 
             // label112
             // 
             resources.ApplyResources(this.label112, "label112");
-            this.label112.BackColor = System.Drawing.Color.White;
+            this.label112.BackColor = System.Drawing.Color.Transparent;
             this.label112.ForeColor = System.Drawing.Color.Black;
             this.label112.Name = "label112";
             // 
@@ -1277,7 +1281,7 @@
             // label113
             // 
             resources.ApplyResources(this.label113, "label113");
-            this.label113.BackColor = System.Drawing.Color.White;
+            this.label113.BackColor = System.Drawing.Color.Transparent;
             this.label113.ForeColor = System.Drawing.Color.Black;
             this.label113.Name = "label113";
             // 
@@ -1292,7 +1296,7 @@
             // label114
             // 
             resources.ApplyResources(this.label114, "label114");
-            this.label114.BackColor = System.Drawing.Color.White;
+            this.label114.BackColor = System.Drawing.Color.Transparent;
             this.label114.ForeColor = System.Drawing.Color.Black;
             this.label114.Name = "label114";
             // 
@@ -1306,6 +1310,7 @@
             // 
             // tabPage_Solarthermie
             // 
+            this.tabPage_Solarthermie.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tabPage_Solarthermie.Controls.Add(this.label83);
             this.tabPage_Solarthermie.Controls.Add(this.label82);
             this.tabPage_Solarthermie.Controls.Add(this.textBox_Ueberschuss);
@@ -1324,12 +1329,11 @@
             this.tabPage_Solarthermie.Controls.Add(this.label53);
             resources.ApplyResources(this.tabPage_Solarthermie, "tabPage_Solarthermie");
             this.tabPage_Solarthermie.Name = "tabPage_Solarthermie";
-            this.tabPage_Solarthermie.UseVisualStyleBackColor = true;
             // 
             // label83
             // 
             resources.ApplyResources(this.label83, "label83");
-            this.label83.BackColor = System.Drawing.Color.White;
+            this.label83.BackColor = System.Drawing.Color.Transparent;
             this.label83.ForeColor = System.Drawing.Color.Black;
             this.label83.Name = "label83";
             // 
@@ -1412,13 +1416,13 @@
             // label49
             // 
             resources.ApplyResources(this.label49, "label49");
-            this.label49.BackColor = System.Drawing.Color.White;
+            this.label49.BackColor = System.Drawing.Color.Transparent;
             this.label49.ForeColor = System.Drawing.Color.Black;
             this.label49.Name = "label49";
             // 
             // label50
             // 
-            this.label50.BackColor = System.Drawing.Color.White;
+            this.label50.BackColor = System.Drawing.Color.Transparent;
             resources.ApplyResources(this.label50, "label50");
             this.label50.ForeColor = System.Drawing.Color.Black;
             this.label50.Name = "label50";
@@ -1438,7 +1442,7 @@
             // 
             // label52
             // 
-            this.label52.BackColor = System.Drawing.Color.White;
+            this.label52.BackColor = System.Drawing.Color.Transparent;
             resources.ApplyResources(this.label52, "label52");
             this.label52.ForeColor = System.Drawing.Color.Black;
             this.label52.Name = "label52";
@@ -1454,12 +1458,13 @@
             // label53
             // 
             resources.ApplyResources(this.label53, "label53");
-            this.label53.BackColor = System.Drawing.Color.White;
+            this.label53.BackColor = System.Drawing.Color.Transparent;
             this.label53.ForeColor = System.Drawing.Color.Black;
             this.label53.Name = "label53";
             // 
             // tabPage_Ergebnis
             // 
+            this.tabPage_Ergebnis.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tabPage_Ergebnis.Controls.Add(this.label55);
             this.tabPage_Ergebnis.Controls.Add(this.textBox_STDeckung);
             this.tabPage_Ergebnis.Controls.Add(this.label58);
@@ -1487,7 +1492,7 @@
             this.tabPage_Ergebnis.Controls.Add(this.chart5);
             resources.ApplyResources(this.tabPage_Ergebnis, "tabPage_Ergebnis");
             this.tabPage_Ergebnis.Name = "tabPage_Ergebnis";
-            this.tabPage_Ergebnis.UseVisualStyleBackColor = true;
+            this.tabPage_Ergebnis.Paint += new System.Windows.Forms.PaintEventHandler(this.tabPage_Ergebnis_Paint);
             // 
             // label55
             // 
@@ -1739,6 +1744,7 @@
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.White;
             this.Controls.Add(this.btn_Beenden);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.btn_Konfiguration);

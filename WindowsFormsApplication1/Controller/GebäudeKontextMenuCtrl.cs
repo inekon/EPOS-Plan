@@ -123,6 +123,7 @@ namespace WindowsFormsApplication1
                     item.DezentralWarmwasser = (bool)rs.Read("dezWarmwasserbereitung");
                     item.Gebaeudeart = (string)rs.Read("Gebaeudeart");
                     item.Beschreibung = (string)rs.Read("Beschreibung");
+                    item.Baualtersklasse = (string)rs.Read("Baualtersklasse");
 
                     frm.list_gebmodel.Add(item);
                 }

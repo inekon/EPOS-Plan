@@ -384,6 +384,12 @@
   <data name="&gt;&gt;btn_Konfiguration.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
+  <data name="btn_Simulation.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="btn_Simulation.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 9.75pt, style=Bold</value>
+  </data>
   <data name="btn_Simulation.Location" type="System.Drawing.Point, System.Drawing">
     <value>30, 64</value>
   </data>
@@ -4135,7 +4141,7 @@
     <value>NoControl</value>
   </data>
   <data name="label55.Location" type="System.Drawing.Point, System.Drawing">
-    <value>204, 202</value>
+    <value>209, 222</value>
   </data>
   <data name="label55.Size" type="System.Drawing.Size, System.Drawing">
     <value>19, 17</value>
@@ -4162,10 +4168,10 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_STDeckung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>158, 199</value>
+    <value>156, 219</value>
   </data>
   <data name="textBox_STDeckung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>42, 25</value>
+    <value>47, 25</value>
   </data>
   <data name="textBox_STDeckung.TabIndex" type="System.Int32, mscorlib">
     <value>276</value>
@@ -4192,7 +4198,7 @@
     <value>NoControl</value>
   </data>
   <data name="label58.Location" type="System.Drawing.Point, System.Drawing">
-    <value>36, 202</value>
+    <value>41, 222</value>
   </data>
   <data name="label58.Size" type="System.Drawing.Size, System.Drawing">
     <value>85, 17</value>
@@ -4225,7 +4231,7 @@
     <value>NoControl</value>
   </data>
   <data name="label54.Location" type="System.Drawing.Point, System.Drawing">
-    <value>494, 217</value>
+    <value>494, 241</value>
   </data>
   <data name="label54.Size" type="System.Drawing.Size, System.Drawing">
     <value>85, 17</value>
@@ -4255,7 +4261,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="checkBox_Profil_Lastgang.Location" type="System.Drawing.Point, System.Drawing">
-    <value>935, 241</value>
+    <value>959, 615</value>
   </data>
   <data name="checkBox_Profil_Lastgang.Size" type="System.Drawing.Size, System.Drawing">
     <value>115, 21</value>
@@ -4285,7 +4291,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="checkBox_SPK.Location" type="System.Drawing.Point, System.Drawing">
-    <value>829, 241</value>
+    <value>853, 615</value>
   </data>
   <data name="checkBox_SPK.Size" type="System.Drawing.Size, System.Drawing">
     <value>87, 21</value>
@@ -4315,7 +4321,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="checkBox_Heizstab.Location" type="System.Drawing.Point, System.Drawing">
-    <value>719, 241</value>
+    <value>743, 615</value>
   </data>
   <data name="checkBox_Heizstab.Size" type="System.Drawing.Size, System.Drawing">
     <value>77, 21</value>
@@ -4345,7 +4351,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="checkBox_WP.Location" type="System.Drawing.Point, System.Drawing">
-    <value>595, 241</value>
+    <value>619, 615</value>
   </data>
   <data name="checkBox_WP.Size" type="System.Drawing.Size, System.Drawing">
     <value>109, 21</value>
@@ -4375,7 +4381,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="checkBox_Gesamt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>497, 241</value>
+    <value>521, 615</value>
   </data>
   <data name="checkBox_Gesamt.Size" type="System.Drawing.Size, System.Drawing">
     <value>71, 21</value>
@@ -4429,7 +4435,7 @@
     <value>Segoe UI, 9.75pt, style=Underline</value>
   </data>
   <data name="label63.Location" type="System.Drawing.Point, System.Drawing">
-    <value>41, 241</value>
+    <value>48, 304</value>
   </data>
   <data name="label63.Size" type="System.Drawing.Size, System.Drawing">
     <value>146, 17</value>
@@ -4459,7 +4465,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label56.Location" type="System.Drawing.Point, System.Drawing">
-    <value>204, 174</value>
+    <value>209, 194</value>
   </data>
   <data name="label56.Size" type="System.Drawing.Size, System.Drawing">
     <value>19, 17</value>
@@ -4486,10 +4492,10 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_SPKDeckung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>158, 171</value>
+    <value>156, 191</value>
   </data>
   <data name="textBox_SPKDeckung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>42, 25</value>
+    <value>47, 25</value>
   </data>
   <data name="textBox_SPKDeckung.TabIndex" type="System.Int32, mscorlib">
     <value>265</value>
@@ -4513,7 +4519,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label57.Location" type="System.Drawing.Point, System.Drawing">
-    <value>36, 174</value>
+    <value>41, 194</value>
   </data>
   <data name="label57.Size" type="System.Drawing.Size, System.Drawing">
     <value>88, 17</value>
@@ -4543,7 +4549,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label40.Location" type="System.Drawing.Point, System.Drawing">
-    <value>204, 145</value>
+    <value>209, 165</value>
   </data>
   <data name="label40.Size" type="System.Drawing.Size, System.Drawing">
     <value>19, 17</value>
@@ -4570,10 +4576,10 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_WBDeckung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>158, 142</value>
+    <value>156, 162</value>
   </data>
   <data name="textBox_WBDeckung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>42, 25</value>
+    <value>47, 25</value>
   </data>
   <data name="textBox_WBDeckung.TabIndex" type="System.Int32, mscorlib">
     <value>262</value>
@@ -4597,7 +4603,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label45.Location" type="System.Drawing.Point, System.Drawing">
-    <value>36, 145</value>
+    <value>41, 165</value>
   </data>
   <data name="label45.Size" type="System.Drawing.Size, System.Drawing">
     <value>93, 17</value>
@@ -4624,7 +4630,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>36, 102</value>
+    <value>520, 114</value>
   </data>
   <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
     <value>115, 22</value>
@@ -4637,6 +4643,9 @@
   </data>
   <data name="label8.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
+  </data>
+  <data name="label8.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;label8.Name" xml:space="preserve">
     <value>label8</value>
@@ -4657,7 +4666,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>246, 107</value>
+    <value>730, 119</value>
   </data>
   <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
     <value>51, 17</value>
@@ -4667,6 +4676,9 @@
   </data>
   <data name="label11.Text" xml:space="preserve">
     <value>MWh/a</value>
+  </data>
+  <data name="label11.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;label11.Name" xml:space="preserve">
     <value>label11</value>
@@ -4687,13 +4699,16 @@
     <value>Segoe UI, 9.75pt, style=Bold</value>
   </data>
   <data name="textBox_FinalStrombedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>158, 104</value>
+    <value>642, 116</value>
   </data>
   <data name="textBox_FinalStrombedarf.Size" type="System.Drawing.Size, System.Drawing">
     <value>84, 25</value>
   </data>
   <data name="textBox_FinalStrombedarf.TabIndex" type="System.Int32, mscorlib">
     <value>258</value>
+  </data>
+  <data name="textBox_FinalStrombedarf.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;textBox_FinalStrombedarf.Name" xml:space="preserve">
     <value>textBox_FinalStrombedarf</value>
@@ -4711,7 +4726,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
-    <value>36, 75</value>
+    <value>520, 87</value>
   </data>
   <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
     <value>114, 22</value>
@@ -4724,6 +4739,9 @@
   </data>
   <data name="label12.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
+  </data>
+  <data name="label12.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;label12.Name" xml:space="preserve">
     <value>label12</value>
@@ -4744,7 +4762,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="label39.Location" type="System.Drawing.Point, System.Drawing">
-    <value>246, 79</value>
+    <value>730, 91</value>
   </data>
   <data name="label39.Size" type="System.Drawing.Size, System.Drawing">
     <value>51, 17</value>
@@ -4754,6 +4772,9 @@
   </data>
   <data name="label39.Text" xml:space="preserve">
     <value>MWh/a</value>
+  </data>
+  <data name="label39.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;label39.Name" xml:space="preserve">
     <value>label39</value>
@@ -4774,13 +4795,16 @@
     <value>Segoe UI, 9.75pt, style=Bold</value>
   </data>
   <data name="textBox_FinalWaermebedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>158, 76</value>
+    <value>642, 88</value>
   </data>
   <data name="textBox_FinalWaermebedarf.Size" type="System.Drawing.Size, System.Drawing">
     <value>84, 25</value>
   </data>
   <data name="textBox_FinalWaermebedarf.TabIndex" type="System.Int32, mscorlib">
     <value>255</value>
+  </data>
+  <data name="textBox_FinalWaermebedarf.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;textBox_FinalWaermebedarf.Name" xml:space="preserve">
     <value>textBox_FinalWaermebedarf</value>
@@ -4801,7 +4825,7 @@
     <value>Segoe UI, 12pt, style=Bold, Underline</value>
   </data>
   <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>40, 32</value>
+    <value>524, 44</value>
   </data>
   <data name="label7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4818,6 +4842,9 @@
   <data name="label7.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleRight</value>
   </data>
+  <data name="label7.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
   <data name="&gt;&gt;label7.Name" xml:space="preserve">
     <value>label7</value>
   </data>
@@ -4831,10 +4858,10 @@
     <value>23</value>
   </data>
   <data name="chart5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>40, 268</value>
+    <value>40, 344</value>
   </data>
   <data name="chart5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>422, 341</value>
+    <value>383, 265</value>
   </data>
   <data name="chart5.TabIndex" type="System.Int32, mscorlib">
     <value>228</value>
