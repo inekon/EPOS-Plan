@@ -211,7 +211,7 @@
             this.checkBox_WP = new System.Windows.Forms.CheckBox();
             this.checkBox_Gesamt = new System.Windows.Forms.CheckBox();
             this.chart7 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.label63 = new System.Windows.Forms.Label();
+            this.label_WBDeckung = new System.Windows.Forms.Label();
             this.label56 = new System.Windows.Forms.Label();
             this.textBox_SPKDeckung = new System.Windows.Forms.TextBox();
             this.label57 = new System.Windows.Forms.Label();
@@ -1475,7 +1475,7 @@
             this.tabPage_Ergebnis.Controls.Add(this.checkBox_WP);
             this.tabPage_Ergebnis.Controls.Add(this.checkBox_Gesamt);
             this.tabPage_Ergebnis.Controls.Add(this.chart7);
-            this.tabPage_Ergebnis.Controls.Add(this.label63);
+            this.tabPage_Ergebnis.Controls.Add(this.label_WBDeckung);
             this.tabPage_Ergebnis.Controls.Add(this.label56);
             this.tabPage_Ergebnis.Controls.Add(this.textBox_SPKDeckung);
             this.tabPage_Ergebnis.Controls.Add(this.label57);
@@ -1520,41 +1520,45 @@
             // checkBox_Profil_Lastgang
             // 
             resources.ApplyResources(this.checkBox_Profil_Lastgang, "checkBox_Profil_Lastgang");
+            this.checkBox_Profil_Lastgang.BackColor = System.Drawing.Color.Transparent;
             this.checkBox_Profil_Lastgang.Name = "checkBox_Profil_Lastgang";
-            this.checkBox_Profil_Lastgang.UseVisualStyleBackColor = true;
+            this.checkBox_Profil_Lastgang.UseVisualStyleBackColor = false;
             this.checkBox_Profil_Lastgang.CheckedChanged += new System.EventHandler(this.checkBox_Profil_Lastgang_CheckedChanged);
             // 
             // checkBox_SPK
             // 
             resources.ApplyResources(this.checkBox_SPK, "checkBox_SPK");
+            this.checkBox_SPK.BackColor = System.Drawing.Color.Transparent;
             this.checkBox_SPK.Name = "checkBox_SPK";
-            this.checkBox_SPK.UseVisualStyleBackColor = true;
+            this.checkBox_SPK.UseVisualStyleBackColor = false;
             this.checkBox_SPK.CheckedChanged += new System.EventHandler(this.checkBox_SPK_CheckedChanged);
             // 
             // checkBox_Heizstab
             // 
             resources.ApplyResources(this.checkBox_Heizstab, "checkBox_Heizstab");
+            this.checkBox_Heizstab.BackColor = System.Drawing.Color.Transparent;
             this.checkBox_Heizstab.Name = "checkBox_Heizstab";
-            this.checkBox_Heizstab.UseVisualStyleBackColor = true;
+            this.checkBox_Heizstab.UseVisualStyleBackColor = false;
             this.checkBox_Heizstab.CheckedChanged += new System.EventHandler(this.checkBox_Heizstab_CheckedChanged);
             // 
             // checkBox_WP
             // 
             resources.ApplyResources(this.checkBox_WP, "checkBox_WP");
+            this.checkBox_WP.BackColor = System.Drawing.Color.Transparent;
             this.checkBox_WP.Name = "checkBox_WP";
-            this.checkBox_WP.UseVisualStyleBackColor = true;
+            this.checkBox_WP.UseVisualStyleBackColor = false;
             this.checkBox_WP.CheckedChanged += new System.EventHandler(this.checkBox_WP_CheckedChanged);
             // 
             // checkBox_Gesamt
             // 
             resources.ApplyResources(this.checkBox_Gesamt, "checkBox_Gesamt");
+            this.checkBox_Gesamt.BackColor = System.Drawing.Color.Transparent;
             this.checkBox_Gesamt.Name = "checkBox_Gesamt";
-            this.checkBox_Gesamt.UseVisualStyleBackColor = true;
+            this.checkBox_Gesamt.UseVisualStyleBackColor = false;
             this.checkBox_Gesamt.CheckedChanged += new System.EventHandler(this.checkBox_Gesamt_CheckedChanged);
             // 
             // chart7
             // 
-            this.chart7.BackColor = System.Drawing.Color.WhiteSmoke;
             this.chart7.BorderlineColor = System.Drawing.Color.Black;
             this.chart7.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.DashDotDot;
             chartArea7.AxisX.IsLabelAutoFit = false;
@@ -1613,11 +1617,11 @@
             title7.Text = "Stromverlauf Jahresganglinie ";
             this.chart7.Titles.Add(title7);
             // 
-            // label63
+            // label_WBDeckung
             // 
-            resources.ApplyResources(this.label63, "label63");
-            this.label63.ForeColor = System.Drawing.Color.Black;
-            this.label63.Name = "label63";
+            resources.ApplyResources(this.label_WBDeckung, "label_WBDeckung");
+            this.label_WBDeckung.ForeColor = System.Drawing.Color.Black;
+            this.label_WBDeckung.Name = "label_WBDeckung";
             // 
             // label56
             // 
@@ -1896,7 +1900,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox textBox_SPKWaermebedarfsdeckung;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label63;
+        private System.Windows.Forms.Label label_WBDeckung;
         private System.Windows.Forms.Label label56;
         private System.Windows.Forms.TextBox textBox_SPKDeckung;
         private System.Windows.Forms.Label label57;
