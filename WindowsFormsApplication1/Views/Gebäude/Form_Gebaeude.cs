@@ -231,6 +231,7 @@ namespace WindowsFormsApplication1
                 model.Gebaeudename = (string)dataGridView1.CurrentRow.Cells[0].Value;
                 model.Gebaeudeart = (string)rs.Read("Typ");
                 model.Beschreibung = (string)rs.Read("Beschreibung");
+                model.Baualtersklasse = (string)rs.Read("Baualtersklasse");
 
                 list_gebmodel.Add(model);
 
@@ -474,7 +475,6 @@ namespace WindowsFormsApplication1
             }
             else
             {
-     //           dataGridView1.ClearSelection();
                 return;
             }
 
@@ -492,6 +492,7 @@ namespace WindowsFormsApplication1
                     checkBox_dezWarmwasser.Checked = list_gebmodel[i].DezentralWarmwasser;
                     textBox_Gebaeudeart.Text = list_gebmodel[i].Gebaeudeart;
                     textBox_Beschreibung.Text = list_gebmodel[i].Beschreibung;
+                    textBox_Baujahr.Text = list_gebmodel[i].Baualtersklasse;    
                     break;
                 }
             }

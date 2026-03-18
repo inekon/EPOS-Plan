@@ -1,8 +1,8 @@
 ﻿using MathNet.Numerics;
-using ScottPlot;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -33,6 +33,7 @@ namespace WindowsFormsApplication1
         private float[] temp_hs;
         private float[] temp_hk;
         private float[] temp_ges;
+        double restwaermebedarf = 0;
 
         Point prevPosition;
 
@@ -565,7 +566,7 @@ namespace WindowsFormsApplication1
             double waerme_wp = 0;
             double waerme_heizstab = 0;
             double waerme_solar = 0;
-            double rest = 0;
+            
             double gesamt_waerme = 0;
 
             // Heizkessel
@@ -594,14 +595,14 @@ namespace WindowsFormsApplication1
 
             gesamt_waerme = waerme_spk + waerme_wp + waerme_heizstab + waerme_solar;
 
-            rest = sim.simulation_Waermebedarf.Waermebedarf_Gesamt - gesamt_waerme;
+            restwaermebedarf = sim.simulation_Waermebedarf.Waermebedarf_Gesamt - gesamt_waerme;
 
-            if (rest >= 0.1)
+            if (restwaermebedarf >= 0.1)
             {
-                chart5.Series[0].Points.AddXY("Restbedarf", rest);
+                chart5.Series[0].Points.AddXY("Restbedarf", restwaermebedarf);
             }
 
-            textBox_FinalWaermebedarf.Text = rest.ToString("F2");
+            textBox_FinalWaermebedarf.Text = restwaermebedarf.ToString("F2");
             textBox_FinalStrombedarf.Text = sim.Reststrom.ToString("F2");
 
             double a2 = (double)simulation_Waermebedarf.Waermebedarf_Gesamt;
@@ -649,6 +650,11 @@ namespace WindowsFormsApplication1
             _chartManager[7]._chart.Series["Profil/Lastgang"].Enabled = false;
 
             checkBox_Gesamt.Checked = true;
+
+
+  
+
+
         }
 
         private void btn_Beenden_Click(object sender, EventArgs e)
@@ -1000,6 +1006,69 @@ namespace WindowsFormsApplication1
                     wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
                 }
             }
+        }
+
+        public void DrawKPICard(Graphics g, Rectangle rect, string title, string value, string unit, Color accentColor)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+
+            // 1. Schatten zeichnen (leicht versetzt und transparent)
+            Rectangle shadowRect = new Rectangle(rect.X + 3, rect.Y + 3, rect.Width, rect.Height);
+            using (GraphicsPath shadowPath = GetRoundedRectPath(shadowRect, 10))
+            using (PathGradientBrush shadowBrush = new PathGradientBrush(shadowPath))
+            {
+                shadowBrush.CenterColor = Color.FromArgb(40, Color.Black);
+                shadowBrush.SurroundColors = new Color[] { Color.Transparent };
+                g.FillPath(shadowBrush, shadowPath);
+            }
+
+            // 2. Die weiße Kachel selbst
+            using (GraphicsPath path = GetRoundedRectPath(rect, 10))
+            {
+                g.FillPath(Brushes.White, path);
+                // Optional: Ein feiner Rand in der Akzentfarbe oben
+                using (Pen accentPen = new Pen(accentColor, 4))
+                {
+                    g.DrawLine(accentPen, rect.X + 10, rect.Y, rect.X + rect.Width - 10, rect.Y);
+                }
+            }
+
+            // 3. Texte platzieren
+            Font titleFont = new Font("Segoe UI", 9, FontStyle.Regular);
+            Font valueFont = new Font("Segoe UI", 16, FontStyle.Bold);
+            Font unitFont = new Font("Segoe UI", 8, FontStyle.Italic);
+
+            g.DrawString(title.ToUpper(), titleFont, Brushes.Gray, rect.X + 15, rect.Y + 15);
+            g.DrawString(value, valueFont, Brushes.Black, rect.X + 15, rect.Y + 35);
+
+            // Einheit hinter den Wert schreiben
+            SizeF valueSize = g.MeasureString(value, valueFont);
+            g.DrawString(unit, unitFont, Brushes.DimGray, rect.X + 15 + valueSize.Width + 5, rect.Y + 45);
+        }
+
+        // Hilfsfunktion für abgerundete Ecken
+        private GraphicsPath GetRoundedRectPath(Rectangle rect, int radius)
+        {
+            GraphicsPath path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        private void tabPage_Ergebnis_Paint(object sender, PaintEventArgs e)
+        {
+            // Kachel für Strom
+            DrawKPICard(e.Graphics, new Rectangle(20, 50, 220, 80),
+                        "Reststrombedarf", sim.Reststrom.ToString("F2"), "MWh/a", Color.DodgerBlue);
+
+            // Kachel für Wärme
+            DrawKPICard(e.Graphics, new Rectangle(260, 50, 220, 80),
+                        "Restwärmebedarf", restwaermebedarf.ToString("F2"), "MWh/a", Color.SeaGreen);
+
+ 
         }
     }
 

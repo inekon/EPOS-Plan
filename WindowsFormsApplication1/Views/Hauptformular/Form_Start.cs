@@ -168,7 +168,7 @@ namespace WindowsFormsApplication1
             //frm.SetControls(m_szProjektname);
 
             string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Gebaeude, Z_ProjektGebaeude.[ID_Projekt], " +
-                "[Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
+                "[Tab_Gebaeude].Gebaeudename, [Tab_Gebaeude].Baualtersklasse, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
                 "dezWarmwasserbereitung, Gebaeudeart, Beschreibung  FROM [Tab_Gebaeude] " +
                 "INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
                 " where Z_ProjektGebaeude.ID_Projekt=" + m_ID_Projekt;
@@ -187,6 +187,7 @@ namespace WindowsFormsApplication1
                 item.DezentralWarmwasser = (bool)rs.Read("dezWarmwasserbereitung");
                 item.Gebaeudeart = (string)rs.Read("Gebaeudeart");
                 item.Beschreibung = (string)rs.Read("Beschreibung");
+                item.Baualtersklasse = (string)rs.Read("Baualtersklasse");
 
                 frm.list_gebmodel.Add(item);
             }
