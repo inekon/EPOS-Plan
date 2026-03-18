@@ -1061,36 +1061,58 @@ namespace WindowsFormsApplication1
         {
             if (values == null || values.Length == 0) return;
 
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            float thickness = rect.Width * 0.2f;
-            double startAngle = -90; // Start oben (12 Uhr)
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-            // Gesamtstrom/-wärme berechnen (sollte 100 ergeben, falls es Prozente sind)
+            float outerRadius = rect.Width / 2f;
+            float thickness = rect.Width * 0.2f;
+            float innerRadius = outerRadius - thickness;
+            PointF center = new PointF(rect.X + outerRadius, rect.Y + outerRadius);
+
+            double currentAngle = -90;
+            float gapDegrees = 2.0f; // Der Spalt in Grad (wirkt jetzt überall gleichmäßig)
+
             double total = values.Sum();
             if (total == 0) return;
 
+            int activeSegments = values.Count(v => v > 0);
+
             for (int i = 0; i < values.Length; i++)
             {
-                if (values[i] <= 0) continue; // Überspringe Quellen mit 0%
+                if (values[i] <= 0) continue;
 
-                double sweepAngle = (values[i] / total) * 360f;
+                double sweepAngle = (values[i] / total) * 360.0;
 
-                using (Pen segmentPen = new Pen(colors[i], thickness))
+                // Berechne Start und Ende unter Berücksichtigung des Spalts
+                float startAngle = (float)(currentAngle + (activeSegments > 1 ? gapDegrees / 2.0 : 0));
+                float drawSweep = (float)(sweepAngle - (activeSegments > 1 ? gapDegrees : 0));
+
+                using (System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath())
                 {
-                    // Zeichne das Segment
-                    g.DrawArc(segmentPen,
-                              rect.X + thickness / 2, rect.Y + thickness / 2,
-                              rect.Width - thickness, rect.Height - thickness,
-                              (float)startAngle, (float)sweepAngle);
-                }
+                    // Wir bauen das Ringsegment aus zwei Bögen auf
+                    // 1. Äußerer Bogen
+                    path.AddArc(rect, startAngle, drawSweep);
 
-                startAngle += sweepAngle; // Den Startpunkt für die nächste Quelle verschieben
+                    // 2. Innerer Bogen (in Gegenrichtung, damit der Pfad geschlossen wird)
+                    RectangleF innerRect = new RectangleF(
+                        center.X - innerRadius, center.Y - innerRadius,
+                        innerRadius * 2, innerRadius * 2);
+                    path.AddArc(innerRect, startAngle + drawSweep, -drawSweep);
+
+                    path.CloseFigure();
+
+                    using (SolidBrush brush = new SolidBrush(colors[i]))
+                    {
+                        g.FillPath(brush, path);
+                    }
+                }
+                currentAngle += sweepAngle;
             }
 
-            // Optional: Text in die Mitte (z.B. "100% Gedeckt")
+           
+            // Text in die Mitte (z.B. "100%")
             using (Font font = new Font("Segoe UI", rect.Width * 0.12f, FontStyle.Bold))
             {
-                string centerText = "100%";
+                string centerText = ((gesamt_waerme - restwaermebedarf)*100/ gesamt_waerme).ToString("F2");
                 SizeF size = g.MeasureString(centerText, font);
                 g.DrawString(centerText, font, Brushes.Black,
                              rect.X + (rect.Width - size.Width) / 2,
@@ -1127,7 +1149,11 @@ namespace WindowsFormsApplication1
             double gesamt_waerme = 0;
             double restwaermebedarf = 0;
             */
-            double[] werte = new double[] { waerme_wp, waerme_solar, waerme_heizstab, waerme_spk, restwaermebedarf }; // Beispielwerte in %
+            double[] werte = new double[] { waerme_wp*100/ sim.simulation_Waermebedarf.Waermebedarf_Gesamt,
+                                            waerme_solar*100/ sim.simulation_Waermebedarf.Waermebedarf_Gesamt,
+                                            waerme_heizstab*100/sim.simulation_Waermebedarf.Waermebedarf_Gesamt,
+                                            waerme_spk*100/ sim.simulation_Waermebedarf.Waermebedarf_Gesamt,
+                                            restwaermebedarf*100/ sim.simulation_Waermebedarf.Waermebedarf_Gesamt }; // Beispielwerte in %
 
             // Aufruf der Funktion auf einer weißen Kachel
       //      DrawMultiDonutChart(e.Graphics, new Rectangle(50, label_WBDeckung.Top, 150, 150), werte, palette);
