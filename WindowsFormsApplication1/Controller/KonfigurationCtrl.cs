@@ -10,7 +10,16 @@ namespace WindowsFormsApplication1
         public OdbcCommand DBCommand;
         public KonfigurationModel model = new KonfigurationModel();
         public int rows;
-   
+
+        public enum Energieerzeuger
+        {
+            BHKW = 0,
+            HEIZKESSEL = 1,
+            PHOTOVOLTAIK = 2,
+            SOLARTHERMIE = 3,
+            WAERMEPUMPE = 4
+        }
+
         public KonfigurationCtrl()
         {
             DBCommand = Program.DBConnection.CreateCommand();

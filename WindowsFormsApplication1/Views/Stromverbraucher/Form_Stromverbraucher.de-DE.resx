@@ -131,7 +131,7 @@
     <value>Ausgewählte Strombedarfe im Projekt</value>
   </data>
   <data name="btn_Hinzu.Text" xml:space="preserve">
-    <value>&lt;---</value>
+    <value>◀</value>
   </data>
   <data name="btn_neuerWert.Text" xml:space="preserve">
     <value>Übernehmen</value>
@@ -188,7 +188,7 @@
     <value>Stromverbraucher neu...</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>---&gt;</value>
+    <value>▶</value>
   </data>
   <data name="Label12.Text" xml:space="preserve">
     <value>jährlicher Strombedarf:</value>

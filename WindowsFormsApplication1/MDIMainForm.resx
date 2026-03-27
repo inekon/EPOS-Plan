@@ -294,7 +294,7 @@
     <value>Energiesysteme</value>
   </data>
   <data name="MenuItem_Klimadaten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 26</value>
+    <value>158, 26</value>
   </data>
   <data name="MenuItem_Klimadaten.Text" xml:space="preserve">
     <value>Klimadaten</value>
@@ -332,11 +332,11 @@
   <data name="MeniItem_VDI3805.Text" xml:space="preserve">
     <value>Import Wärmepumpen VDI 3805</value>
   </data>
-  <data name="MenuItem_PV_Import.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="MenuItem_PV_Import_CEC.Size" type="System.Drawing.Size, System.Drawing">
     <value>308, 26</value>
   </data>
-  <data name="MenuItem_PV_Import.Text" xml:space="preserve">
-    <value>Import Photovoltaik</value>
+  <data name="MenuItem_PV_Import_CEC.Text" xml:space="preserve">
+    <value>Import Photovoltaik CEC/Pan</value>
   </data>
   <data name="MenuItem_ST_Import.Size" type="System.Drawing.Size, System.Drawing">
     <value>308, 26</value>
@@ -1512,10 +1512,10 @@
   <data name="&gt;&gt;MeniItem_VDI3805.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;MenuItem_PV_Import.Name" xml:space="preserve">
-    <value>MenuItem_PV_Import</value>
+  <data name="&gt;&gt;MenuItem_PV_Import_CEC.Name" xml:space="preserve">
+    <value>MenuItem_PV_Import_CEC</value>
   </data>
-  <data name="&gt;&gt;MenuItem_PV_Import.Type" xml:space="preserve">
+  <data name="&gt;&gt;MenuItem_PV_Import_CEC.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;MenuItem_ST_Import.Name" xml:space="preserve">

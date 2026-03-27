@@ -160,6 +160,11 @@ namespace WindowsFormsApplication1
                 btnBack.Enabled = false;
             }
 
+            if (top > WizardItemClass.PROJEKT_ITEM)
+            {
+                btnSpeichern.Enabled = true;
+            }
+
             if (top >= pagecount)
             {
                 btnCancel.Enabled = false;
@@ -173,9 +178,7 @@ namespace WindowsFormsApplication1
 
             // Bevor die nächste Seite geladen wird...
             if (wizardmode == WIZARD_MODE_BEARBEITEN && listBox_Projekte.SelectedIndex == -1 )
-            {
                 btnNext.Enabled = false;
-            }
             else btnNext.Enabled = true;
 
 
@@ -190,6 +193,7 @@ namespace WindowsFormsApplication1
                 m_Projektmodel.m_Aenderungsdatum = ((Wizard_Projekt)page).GetDatum();
                 m_Projektmodel.m_Erstelldatum = ((Wizard_Projekt)page).GetErstellDatum();
                 m_Projektmodel.m_ID_Klimaregion = ((Wizard_Projekt)page).GetIDKlimaregion();
+                
                 if (!bBereitsGeladen)
                 {
                     LoadWEFromDB(m_Projektmodel.m_szProjektname);
@@ -208,6 +212,12 @@ namespace WindowsFormsApplication1
             LoadNewForm();
 
             // nachdem die nächste Seite geladen wurde...
+
+            if (top > WizardItemClass.PROJEKT_ITEM)
+            {
+                btnSpeichern.Enabled = true;
+            }
+
             page = listPages.ElementAt(top).wizardform;
             listBox_Projekte.Visible = false;
             label_Projekt.Visible = false;
@@ -533,6 +543,7 @@ namespace WindowsFormsApplication1
             list_prozmodel = ((Form_Prozesswaerme)listPages[WizardItemClass.PROZESS_ITEM].wizardform).list_pwmodel;
             list_wbmodel = ((Form_Waermebedarf)listPages[WizardItemClass.WAERMEBEDARF_ITEM].wizardform).list_wbmodel;
 
+            /*
             Form pagekomp = listPages.ElementAt(WizardItemClass.KOMPONENTEN_ITEM).wizardform;
             if (Program.wizardctrl.Klimazone == "" && ( ((Wizard_Komponenten)pagekomp).GetBebaeudeCheckBox()
                                                    || ((Wizard_Komponenten)pagekomp).GetKesselCheckBox()
@@ -543,13 +554,27 @@ namespace WindowsFormsApplication1
             {
                 MessageBox.Show("Bitte eine Klimazone auswählen!", "Klimazone fehlt", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
+            }*/
+
+            if(Program.wizardctrl.Klimazone == "")
+            {
+                MessageBox.Show("Bitte eine Klimazone auswählen!", "Klimazone fehlt", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            if(Program.wizardctrl.Projektname=="")
+            if (Program.wizardctrl.Projektname=="")
             {
                 MessageBox.Show("Bitte einen Projektnamen eingeben!", "Projektname fehlt", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+
+            m_Projektmodel.m_szProjektname = ((Wizard_Projekt)pageproj).GetProjektName();
+            m_Projektmodel.m_szBeschreibung = ((Wizard_Projekt)pageproj).GetBeschreibung();
+            m_Projektmodel.m_szBearbeiter = ((Wizard_Projekt)pageproj).GetBearbeiter();
+            m_Projektmodel.m_szKunde = ((Wizard_Projekt)pageproj).GetKunde();
+            m_Projektmodel.m_Aenderungsdatum = ((Wizard_Projekt)pageproj).GetDatum();
+            m_Projektmodel.m_Erstelldatum = ((Wizard_Projekt)pageproj).GetErstellDatum();
+            m_Projektmodel.m_ID_Klimaregion = ((Wizard_Projekt)pageproj).GetIDKlimaregion();
 
             gespeichert = false;
             if (wizardmode == WIZARD_MODE_NEU)

@@ -239,7 +239,13 @@ namespace WindowsFormsApplication1
             menu.WP_Administration();
         }
 
-        private void MenuItem_PV_Import_Click_1(object sender, EventArgs e)
+        private void MenuItem_PV_Import_CEC_Click(object sender, EventArgs e)
+        {
+            Main_PV_Test frm = new Main_PV_Test();
+            frm.ShowDialog();
+        }
+
+        private void MenuItem_PV_Import_PAN_Click(object sender, EventArgs e)
         {
             Main_PV_Test frm = new Main_PV_Test();
             frm.ShowDialog();

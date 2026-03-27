@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Globalization;
+using System.IO;
 using System.Windows.Forms;
+using static Humanizer.In;
 
 namespace WindowsFormsApplication1
 {
@@ -246,7 +248,6 @@ namespace WindowsFormsApplication1
             com.I_heapsort(Waermebedarf_sortiert, Dauerlinie); // absteigend sortiert
 
             Array.Reverse(Dauerlinie);
-
         }
 
         private void Bewohner_und_Flaeche_berechnen(ProjektGebaeudeModel item, int index)

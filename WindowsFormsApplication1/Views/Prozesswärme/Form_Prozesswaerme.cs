@@ -58,8 +58,13 @@ namespace WindowsFormsApplication1
 
             dgv.BackgroundColor = Color.White;
             dgv.GridColor = Color.White;
-            dgv.Columns[1].DefaultCellStyle.BackColor = Color.GreenYellow;
-            dgv.DefaultCellStyle.BackColor = Color.FromArgb(255, 215, 159, 57);
+            //dgv.Columns[1].DefaultCellStyle.BackColor = Color.GreenYellow;
+            //dgv.DefaultCellStyle.BackColor = Color.FromArgb(255, 215, 159, 57);
+			
+			// Grundfarbe für alle Zeilen
+            dgv.RowsDefaultCellStyle.BackColor = Color.White;
+            // Farbe für jede zweite Zeile (Zebra)
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
         }
 
         private void SetDBList()

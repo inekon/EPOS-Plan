@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -22,6 +24,7 @@ namespace WindowsFormsApplication1
         public bool MitLegende = false;
         public bool MitViertelStunde = false;
         public bool AreaLine = false;
+        public Color BackColor = Color.FromArgb(122, 255, 222);
 
         public Chart _chart = null;
         public ChartMouseWheel2 _chartWheelManager;
@@ -62,7 +65,7 @@ namespace WindowsFormsApplication1
             _chart.Titles.Add(mainTitle);
 
             // --- HINTERGRUND ---
-            ca.BackColor = Color.FromArgb(122, 255, 222);
+            ca.BackColor = BackColor;
             ca.BackGradientStyle = GradientStyle.DiagonalLeft;
             ca.BackSecondaryColor = Color.White;
 
@@ -213,7 +216,7 @@ namespace WindowsFormsApplication1
                 Text = "0°C",                     // Kleine Beschriftung an der Linie
                 TextAlignment = StringAlignment.Far,
                 TextLineAlignment = StringAlignment.Near,
-                ForeColor = Color.FromArgb(180, Color.DimGray), 
+                ForeColor = Color.FromArgb(180, Color.DimGray),
                 Font = new Font("Segoe UI", 8, FontStyle.Bold)
             };
             ca.AxisX.StripLines.Add(zeroLine);
@@ -338,7 +341,7 @@ namespace WindowsFormsApplication1
             }
             else { _toolTip.Hide(_chart); _lastPoint = null; }
         }
-        
+
         private void UpdateVisuals(Axis xAxis)
         {
             double viewSize = xAxis.ScaleView.Size;
@@ -403,5 +406,163 @@ namespace WindowsFormsApplication1
                 xAxis.MajorGrid.Interval = xAxis.Interval;
             }
         }
+    }
+
+    public class DonutChartDrawer
+    {
+        public static void DrawMultiDonutChart(Graphics g, Rectangle rect, double[] values, double deckung, Color[] colors)
+        {
+            if (values == null || values.Length == 0) return;
+
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+            float outerRadius = rect.Width / 2f;
+            float thickness = rect.Width * 0.2f;
+            float innerRadius = outerRadius - thickness;
+            PointF center = new PointF(rect.X + outerRadius, rect.Y + outerRadius);
+
+            double currentAngle = -90;
+            float gapDegrees = 2.0f; // Der Spalt in Grad (wirkt jetzt überall gleichmäßig)
+
+            double total = values.Sum();
+            if (total == 0) return;
+
+            int activeSegments = values.Count(v => v > 0);
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (values[i] <= 0) continue;
+
+                double sweepAngle = (values[i] / total) * 360.0;
+
+                // Berechne Start und Ende unter Berücksichtigung des Spalts
+                float startAngle = (float)(currentAngle + (activeSegments > 1 ? gapDegrees / 2.0 : 0));
+                float drawSweep = (float)(sweepAngle - (activeSegments > 1 ? gapDegrees : 0));
+
+                using (System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath())
+                {
+                    // Wir bauen das Ringsegment aus zwei Bögen auf
+                    // 1. Äußerer Bogen
+                    path.AddArc(rect, startAngle, drawSweep);
+
+                    // 2. Innerer Bogen (in Gegenrichtung, damit der Pfad geschlossen wird)
+                    RectangleF innerRect = new RectangleF(
+                        center.X - innerRadius, center.Y - innerRadius,
+                        innerRadius * 2, innerRadius * 2);
+                    path.AddArc(innerRect, startAngle + drawSweep, -drawSweep);
+
+                    path.CloseFigure();
+
+                    using (SolidBrush brush = new SolidBrush(colors[i]))
+                    {
+                        g.FillPath(brush, path);
+                    }
+                }
+                currentAngle += sweepAngle;
+            }
+
+
+            // Text in die Mitte (z.B. "100%")
+            using (Font font = new Font("Segoe UI", rect.Width * 0.12f, FontStyle.Bold))
+            {
+                string centerText = deckung.ToString("F2");
+                SizeF size = g.MeasureString(centerText, font);
+                g.DrawString(centerText, font, Brushes.Black,
+                             rect.X + (rect.Width - size.Width) / 2,
+                             rect.Y + (rect.Height - size.Height) / 2);
+            }
+        }
+
+        public static void DrawChartWithDynamicLegend(Graphics g, Rectangle area, double[] values, double deckung, string[] names, Color[] colors)
+        {
+            // 1. Den Donut-Chart im oberen Teil der Kachel zeichnen
+            Rectangle chartRect = new Rectangle(area.X + (area.Width - 120) / 2, area.Y + 10, 120, 120);
+            DrawMultiDonutChart(g, chartRect, values, deckung, colors);
+
+            // 2. Dynamische Legende darunter
+            int yOffset = chartRect.Bottom + 20;
+            Font legendFont = new Font("Segoe UI", 9, FontStyle.Regular);
+            int itemsFound = 0;
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                // Nur anzeigen, wenn der Wert > 0 ist
+                if (values[i] > 0)
+                {
+                    int x = area.X + 10;
+                    int y = yOffset + (itemsFound * 22); // 22px Zeilenabstand
+
+                    // Kleiner farbiger Indikator-Punkt
+                    using (SolidBrush b = new SolidBrush(colors[i]))
+                    {
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        g.FillEllipse(b, x, y + 3, 10, 10);
+                    }
+
+                    // Text: "Name: 85,0%"
+                    string legendText = $"{names[i]}: {values[i]:0.00}%";
+                    g.DrawString(legendText, legendFont, Brushes.DimGray, x + 20, y);
+
+                    itemsFound++;
+                }
+            }
+        }
+
+    }
+
+    public class Kacheln
+    {
+
+        public static void DrawKPICard(Graphics g, Rectangle rect, string title, string value, string unit, Color accentColor)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+
+            // 1. Schatten zeichnen (leicht versetzt und transparent)
+            Rectangle shadowRect = new Rectangle(rect.X + 3, rect.Y + 3, rect.Width, rect.Height);
+            using (GraphicsPath shadowPath = GetRoundedRectPath(shadowRect, 10))
+            using (PathGradientBrush shadowBrush = new PathGradientBrush(shadowPath))
+            {
+                shadowBrush.CenterColor = Color.FromArgb(40, Color.Black);
+                shadowBrush.SurroundColors = new Color[] { Color.Transparent };
+                g.FillPath(shadowBrush, shadowPath);
+            }
+
+            // 2. Die weiße Kachel selbst
+            using (GraphicsPath path = GetRoundedRectPath(rect, 10))
+            {
+                g.FillPath(Brushes.White, path);
+                // Optional: Ein feiner Rand in der Akzentfarbe oben
+                using (Pen accentPen = new Pen(accentColor, 4))
+                {
+                    g.DrawLine(accentPen, rect.X + 10, rect.Y, rect.X + rect.Width - 10, rect.Y);
+                }
+            }
+
+            // 3. Texte platzieren
+            Font titleFont = new Font("Segoe UI", 9, FontStyle.Regular);
+            Font valueFont = new Font("Segoe UI", 16, FontStyle.Bold);
+            Font unitFont = new Font("Segoe UI", 8, FontStyle.Bold);
+
+            g.DrawString(title.ToUpper(), titleFont, Brushes.Gray, rect.X + 15, rect.Y + 15);
+            g.DrawString(value, valueFont, Brushes.Black, rect.X + 15, rect.Y + 35);
+
+            // Einheit hinter den Wert schreiben
+            SizeF valueSize = g.MeasureString(value, valueFont);
+            g.DrawString(unit, unitFont, Brushes.DimGray, rect.X + 15 + valueSize.Width + 5, rect.Y + 45);
+        }
+
+        // Hilfsfunktion für abgerundete Ecken
+        private static GraphicsPath GetRoundedRectPath(Rectangle rect, int radius)
+        {
+            GraphicsPath path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+
     }
 }

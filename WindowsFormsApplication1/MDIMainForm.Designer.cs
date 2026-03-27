@@ -66,7 +66,7 @@
             this.MenuItem_Import_Heizkessel = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_PufferSp_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
             this.MeniItem_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenuItem_PV_Import = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_PV_Import_CEC = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_ST_Import = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
@@ -321,7 +321,7 @@
             this.MenuItem_Import_Heizkessel,
             this.MenuItem_PufferSp_VDI3805,
             this.MeniItem_VDI3805,
-            this.MenuItem_PV_Import,
+            this.MenuItem_PV_Import_CEC,
             this.MenuItem_ST_Import});
             this.MenuItem_DatImport.Image = global::WindowsFormsApplication1.Properties.Resources.Menue5;
             resources.ApplyResources(this.MenuItem_DatImport, "MenuItem_DatImport");
@@ -351,11 +351,11 @@
             resources.ApplyResources(this.MeniItem_VDI3805, "MeniItem_VDI3805");
             this.MeniItem_VDI3805.Click += new System.EventHandler(this.MenuItem_WP_VDI3805_Click);
             // 
-            // MenuItem_PV_Import
+            // MenuItem_PV_Import_CEC
             // 
-            this.MenuItem_PV_Import.Name = "MenuItem_PV_Import";
-            resources.ApplyResources(this.MenuItem_PV_Import, "MenuItem_PV_Import");
-            this.MenuItem_PV_Import.Click += new System.EventHandler(this.MenuItem_PV_Import_Click_1);
+            this.MenuItem_PV_Import_CEC.Name = "MenuItem_PV_Import_CEC";
+            resources.ApplyResources(this.MenuItem_PV_Import_CEC, "MenuItem_PV_Import_CEC");
+            this.MenuItem_PV_Import_CEC.Click += new System.EventHandler(this.MenuItem_PV_Import_CEC_Click);
             // 
             // MenuItem_ST_Import
             // 
@@ -493,7 +493,7 @@
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Import_Heizkessel;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_PufferSp_VDI3805;
         private System.Windows.Forms.ToolStripMenuItem MeniItem_VDI3805;
-        private System.Windows.Forms.ToolStripMenuItem MenuItem_PV_Import;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_PV_Import_CEC;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ST_Import;
     }
 }

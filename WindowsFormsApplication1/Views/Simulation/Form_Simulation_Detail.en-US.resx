@@ -158,7 +158,7 @@
     <value>Configuration...</value>
   </data>
   <data name="btn_Simulation.Text" xml:space="preserve">
-    <value>Start simulation =&gt;</value>
+    <value>Start simulation ▶</value>
   </data>
   <data name="checkBox_StromSortiert.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 21</value>
@@ -195,9 +195,6 @@
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>max. heat load</value>
-  </data>
-  <data name="tabPage1.Text" xml:space="preserve">
-    <value>Heat/electricity requirements</value>
   </data>
   <data name="checkBox_WP_sortiert.Size" type="System.Drawing.Size, System.Drawing">
     <value>59, 17</value>
@@ -365,8 +362,23 @@
   <data name="label21.Text" xml:space="preserve">
     <value>Heat requirement coverage:</value>
   </data>
-  <data name="tabPage2.Text" xml:space="preserve">
-    <value>Heat pump</value>
+  <data name="label86.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 17</value>
+  </data>
+  <data name="label86.Text" xml:space="preserve">
+    <value>Animal fats:</value>
+  </data>
+  <data name="tb_TierischeFette.Location" type="System.Drawing.Point, System.Drawing">
+    <value>208, 272</value>
+  </data>
+  <data name="label87.Location" type="System.Drawing.Point, System.Drawing">
+    <value>295, 274</value>
+  </data>
+  <data name="tb_Pellets.Location" type="System.Drawing.Point, System.Drawing">
+    <value>208, 188</value>
+  </data>
+  <data name="label85.Location" type="System.Drawing.Point, System.Drawing">
+    <value>295, 190</value>
   </data>
   <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
     <value>660, 242</value>
@@ -453,7 +465,7 @@
     <value>702, 213</value>
   </data>
   <data name="label65.Location" type="System.Drawing.Point, System.Drawing">
-    <value>296, 52</value>
+    <value>295, 52</value>
   </data>
   <data name="label66.Size" type="System.Drawing.Size, System.Drawing">
     <value>106, 17</value>
@@ -462,22 +474,22 @@
     <value>Oil consumption:</value>
   </data>
   <data name="tb_Oelverbrauch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 76</value>
+    <value>208, 76</value>
   </data>
   <data name="label67.Location" type="System.Drawing.Point, System.Drawing">
-    <value>296, 78</value>
+    <value>295, 78</value>
   </data>
   <data name="label68.Size" type="System.Drawing.Size, System.Drawing">
-    <value>129, 17</value>
+    <value>40, 17</value>
   </data>
   <data name="label68.Text" xml:space="preserve">
-    <value>Biogas consumption:</value>
+    <value>Coke:</value>
   </data>
-  <data name="tb_Biogasverbrauch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 104</value>
+  <data name="tb_Koks.Location" type="System.Drawing.Point, System.Drawing">
+    <value>208, 104</value>
   </data>
   <data name="label69.Location" type="System.Drawing.Point, System.Drawing">
-    <value>296, 106</value>
+    <value>295, 106</value>
   </data>
   <data name="label70.Size" type="System.Drawing.Size, System.Drawing">
     <value>166, 17</value>
@@ -486,10 +498,10 @@
     <value>Rapeseed oil consumption:</value>
   </data>
   <data name="tb_Rapsoelverbrauch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 132</value>
+    <value>208, 216</value>
   </data>
   <data name="label71.Location" type="System.Drawing.Point, System.Drawing">
-    <value>296, 134</value>
+    <value>295, 134</value>
   </data>
   <data name="label72.Size" type="System.Drawing.Size, System.Drawing">
     <value>125, 17</value>
@@ -498,22 +510,22 @@
     <value>Wood consumption:</value>
   </data>
   <data name="tb_Holzverbrauch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 160</value>
+    <value>208, 160</value>
   </data>
   <data name="label73.Location" type="System.Drawing.Point, System.Drawing">
-    <value>296, 162</value>
+    <value>295, 162</value>
   </data>
   <data name="label74.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 17</value>
+    <value>34, 17</value>
   </data>
   <data name="label74.Text" xml:space="preserve">
-    <value>LPG consumption:</value>
+    <value>Coal</value>
   </data>
-  <data name="tb_Fluessiggasverbrauch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 188</value>
+  <data name="tb_Kohle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>208, 132</value>
   </data>
   <data name="label75.Location" type="System.Drawing.Point, System.Drawing">
-    <value>296, 190</value>
+    <value>295, 302</value>
   </data>
   <data name="label76.Size" type="System.Drawing.Size, System.Drawing">
     <value>126, 17</value>
@@ -522,10 +534,10 @@
     <value>Power consumption:</value>
   </data>
   <data name="tb_Stromverbrauch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 216</value>
+    <value>208, 244</value>
   </data>
   <data name="label77.Location" type="System.Drawing.Point, System.Drawing">
-    <value>296, 218</value>
+    <value>295, 218</value>
   </data>
   <data name="label78.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 17</value>
@@ -534,10 +546,10 @@
     <value>Other fuels:</value>
   </data>
   <data name="tb_Sonstigverbrauch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 244</value>
+    <value>208, 301</value>
   </data>
   <data name="label79.Location" type="System.Drawing.Point, System.Drawing">
-    <value>296, 246</value>
+    <value>295, 246</value>
   </data>
   <data name="label80.Size" type="System.Drawing.Size, System.Drawing">
     <value>291, 17</value>
@@ -567,10 +579,7 @@
     <value>702, 188</value>
   </data>
   <data name="tb_Gasverbrauch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>209, 48</value>
-  </data>
-  <data name="tabPage3.Text" xml:space="preserve">
-    <value>Peak load boiler</value>
+    <value>208, 48</value>
   </data>
   <data name="checkBox_Profil_Lastgang.Size" type="System.Drawing.Size, System.Drawing">
     <value>137, 21</value>
@@ -602,15 +611,6 @@
   <data name="checkBox_Gesamt.Text" xml:space="preserve">
     <value>In total</value>
   </data>
-  <data name="label63.Location" type="System.Drawing.Point, System.Drawing">
-    <value>37, 143</value>
-  </data>
-  <data name="label63.Size" type="System.Drawing.Size, System.Drawing">
-    <value>171, 17</value>
-  </data>
-  <data name="label63.Text" xml:space="preserve">
-    <value>Heat requirement coverage:</value>
-  </data>
   <data name="label57.Size" type="System.Drawing.Size, System.Drawing">
     <value>71, 17</value>
   </data>
@@ -633,9 +633,6 @@
     <value>57, 21</value>
   </data>
   <data name="label7.Text" xml:space="preserve">
-    <value>Result</value>
-  </data>
-  <data name="tabPage4.Text" xml:space="preserve">
     <value>Result</value>
   </data>
   <data name="btn_Beenden.Text" xml:space="preserve">

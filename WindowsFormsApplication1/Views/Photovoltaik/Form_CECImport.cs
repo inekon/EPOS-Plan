@@ -1,9 +1,13 @@
-﻿using System;
+﻿using Json.Schema.Generation.Intents;
+using System;
 using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
+using System.Numerics;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,14 +17,17 @@ namespace WindowsFormsApplication1
     public partial class Main_PV_Test : Form
     {
         public CECDataService _cecSvc = new CECDataService();
+        public PanDataService _panSvc = new PanDataService();
         private BindingSource _moduleBindingSource = new BindingSource();
         public List<PVModule> listPVModules = new List<PVModule>();
         public UnifiedModule pvum = new UnifiedModule();
 
+        private bool m_bCEC = true;
+
         public Main_PV_Test()
         {
             InitializeComponent();
-   
+
             // Erst nach Initialisierung die Distance setzen (vermeidet Exception)
             this.Load += (s, e) =>
             {
@@ -69,7 +76,7 @@ namespace WindowsFormsApplication1
             _dgvModules.EditMode = DataGridViewEditMode.EditProgrammatically; // Deaktiviert das automatische Öffnen von Editoren
             _dgvModules.MultiSelect = false; // Verhindert die Auswahl mehrerer Zeilen (auch mit Strg/Shift)
 
-            statusStrip1.Items[0].Text = "Bereit. Bitte CEC Datenbank laden.";
+            statusStrip1.Items[0].Text = "Bereit. Bitte CEC Datenbank oder PAN Datei laden.";
         }
 
         // Hilfsmethode für flüssigeres Zeichnen beim Resizen
@@ -87,6 +94,7 @@ namespace WindowsFormsApplication1
 
         private async void _btnCEC_Click(object sender, EventArgs e)
         {
+            m_bCEC = true;
             await LoadCecAsync();
             PopulateFilters();
             statusStrip1.Items[0].Text = $"Filter Auswahl ({_dgvModules.RowCount} Module gefunden)";
@@ -113,9 +121,11 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                // 1. Die "hässlichen" Rohdaten laden
-                // (Ich nehme an, _cecSvc ist dein Dienst, der die CEC-Datei eingelesen hat)
-                listPVModules = (List<PVModule>)_cecSvc.AllModules;
+                // Die Rohdaten laden
+                if (m_bCEC)
+                    listPVModules = (List<PVModule>)_cecSvc.AllModules;
+                else
+                   listPVModules = (List<PVModule>)_panSvc.AllModules;
 
                 if (listPVModules == null || listPVModules.Count == 0)
                 {
@@ -123,14 +133,13 @@ namespace WindowsFormsApplication1
                     return;
                 }
 
-                // 2. Umwandeln in die "schönen" UnifiedModules
-                // Hier wird die FromCec-Methode für jedes Modul aufgerufen.
+                // Umwandeln in die "schönen" UnifiedModules
+                // Hier wird die FromPanCec-Methode für jedes Modul aufgerufen.
                 // Dabei wird Pmp = I * V berechnet und in die neue Liste geschrieben.
-                List<UnifiedModule> displayList = listPVModules
-                    .Select(m => UnifiedModule.FromCec(m))
-                    .ToList();
+                List<UnifiedModule> displayList;
+                displayList = listPVModules.Select(m => UnifiedModule.FromPanCec(m)).ToList();
 
-                // 3. NUR die displayList an das Grid binden
+                // NUR die displayList an das Grid binden
                 // Die BindingSource sorgt dafür, dass das Grid die Änderung mitbekommt.
                 _moduleBindingSource.DataSource = displayList;
 
@@ -145,15 +154,29 @@ namespace WindowsFormsApplication1
 
         private void PopulateFilters()
         {
-            var allMfg = _cecSvc.GetManufacturers().Where(x => !string.IsNullOrEmpty(x))
-                .OrderBy(x => x);
-            var allTech = _cecSvc.GetTechnologies().Where(x => !string.IsNullOrEmpty(x))
-                .OrderBy(x => x);
             comboBox_Hersteller.Items.Clear(); comboBox_Hersteller.Items.Add("(alle)");
-            foreach (var m in allMfg) comboBox_Hersteller.Items.Add(m);
-            comboBox_Hersteller.SelectedIndex = 0;
             comboBox_Technologie.Items.Clear(); comboBox_Technologie.Items.Add("(alle)");
-            foreach (var t in allTech) comboBox_Technologie.Items.Add(t);
+
+            if (m_bCEC)
+            {
+                var allMfg = _cecSvc.GetManufacturers().Where(x => !string.IsNullOrEmpty(x))
+                    .OrderBy(x => x);
+                var allTech = _cecSvc.GetTechnologies().Where(x => !string.IsNullOrEmpty(x))
+                    .OrderBy(x => x);
+                foreach (var m in allMfg) comboBox_Hersteller.Items.Add(m);
+                foreach(var t in allTech) comboBox_Technologie.Items.Add(t);
+            }
+            else
+            {
+                var allMfg = _panSvc.GetManufacturers().Where(x => !string.IsNullOrEmpty(x))
+                    .OrderBy(x => x);
+                var allTech = _panSvc.GetTechnologies().Where(x => !string.IsNullOrEmpty(x))
+                    .OrderBy(x => x);
+                foreach (var m in allMfg) comboBox_Hersteller.Items.Add(m);
+                foreach (var t in allTech) comboBox_Technologie.Items.Add(t);
+            }
+  
+            comboBox_Hersteller.SelectedIndex = 0;
             comboBox_Technologie.SelectedIndex = 0;
         }
 
@@ -202,12 +225,13 @@ namespace WindowsFormsApplication1
                 return nameMatch && mfgMatch && techMatch && pmpMatch && effMatch;
             }).ToList();
 
-            // 4. Umwandeln in UnifiedModules (für das Grid)
+   
+            // Umwandeln in UnifiedModules (für das Grid)
             var filteredUnified = filteredRaw
-                .Select(m => UnifiedModule.FromCec(m))
+                .Select(m => UnifiedModule.FromPanCec(m))
                 .ToList();
 
-            // 5. BindingSource aktualisieren
+            // BindingSource aktualisieren
             _moduleBindingSource.DataSource = filteredUnified;
 
             // UI Feedback
@@ -276,6 +300,15 @@ namespace WindowsFormsApplication1
             // Verhindert das automatische Erzeugen aller Properties als Spalten
             _dgvModules.AutoGenerateColumns = false;
             _dgvModules.Columns.Clear();
+
+            // Spalte: Quelle
+            _dgvModules.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                DataPropertyName = "Database",
+                HeaderText = "Quelle",
+                Name = "colName",
+                Width = 50,
+            });
 
             // Spalte: Modellname
             _dgvModules.Columns.Add(new DataGridViewTextBoxColumn
@@ -375,21 +408,29 @@ namespace WindowsFormsApplication1
             textBox_4.Text = um.Pmp.ToString("F2");
             textBox_5.Text = um.Efficiency.ToString("F2");
             textBox_6.Text = um.Bifacial;
-            textBox_7.Text = um.CecModule.A_c.ToString("F2");
-            textBox_8.Text = um.CecModule.Length.ToString();
-            textBox_9.Text = um.CecModule.Width.ToString();
+            textBox_7.Text = um.Database == "CEC" ? um.CecModule.A_c.ToString("F2") : um.PanModule.Area.ToString("F2");
+            textBox_8.Text = um.Database == "CEC" ? um.CecModule.Length.ToString() : um.PanModule.Height.ToString("F2");
+            textBox_9.Text = um.Database == "CEC" ? um.CecModule.Width.ToString() : um.PanModule.Width.ToString("F2");
             textBox_10.Text = um.Date.ToString();
             textBox_11.Text = um.Isc.ToString();
             textBox_12.Text = um.Voc.ToString();
             textBox_13.Text = um.Imp.ToString();
             textBox_14.Text = um.Vmp.ToString();
             textBox_15.Text = um.Pmp.ToString();
-            textBox_16.Text = um.CecModule.alpha_sc.ToString();
-            textBox_17.Text = um.CecModule.beta_oc.ToString();
-            textBox_18.Text = um.CecModule.gamma_pmp.ToString();
-            textBox_19.Text = um.CecModule.STC.ToString();
-            textBox_20.Text = um.CecModule.PTC.ToString();
-            textBox_21.Text = um.CecModule.T_NOCT.ToString();
+            textBox_16.Text = um.Database == "CEC" ? um.CecModule.alpha_sc.ToString() : "-";//um.PanModule.muISC.ToString();
+            textBox_17.Text = um.Database == "CEC" ? um.CecModule.beta_oc.ToString() : "-"; //um.PanModule.muVocSpec.ToString();
+            textBox_18.Text = um.Database == "CEC" ? um.CecModule.gamma_pmp.ToString() : um.PanModule.muPmpReq.ToString();
+            textBox_19.Text = um.Database == "CEC" ? um.CecModule.STC.ToString() : um.PanModule.PNom.ToString();
+
+            if (um.Database == "PAN")
+            {
+                double tempVerlust = (um.PanModule.muPmpReq / 100.0) * (45 - 25); // -0.00394 * 20 = -0.0788
+                double pPTC = um.PanModule.PNom * (1 + tempVerlust);
+                textBox_20.Text = pPTC.ToString();
+            }
+            else textBox_20.Text = um.CecModule.PTC.ToString();
+            textBox_21.Text = um.Database == "CEC" ? um.CecModule.T_NOCT.ToString() : "-";
+            
         }
 
         private void btnSelect_Click(object sender, EventArgs e)
@@ -415,6 +456,7 @@ namespace WindowsFormsApplication1
                 rs.Close();
 
                 PhotovoltaikCtrl ctrl = new PhotovoltaikCtrl();
+                
                 ctrl.model = InitDatensatzUpdate();
                 ctrl.DBCommand.Transaction = transaction;
 
@@ -459,14 +501,51 @@ namespace WindowsFormsApplication1
             model.m_U_Leerlauf = pvum.Voc;
             model.m_I_Mpp = pvum.Imp;
             model.m_I_Kurzschluss = pvum.Isc;
-            model.m_alpha_SC = pvum.CecModule.alpha_sc;
-            model.m_beta_OC = pvum.CecModule.beta_oc;
-            model.m_Temp_Coeff_Pmax = pvum.CecModule.gamma_pmp;
-            model.m_T_NOCT = pvum.CecModule.T_NOCT;
-            model.m_Laenge = pvum.CecModule.Length;
-            model.m_Breite = pvum.CecModule.Width;
-
+            
+            if (pvum.Database =="CEC")
+            { 
+                model.m_alpha_SC = pvum.CecModule.alpha_sc;
+                model.m_beta_OC = pvum.CecModule.beta_oc;
+                model.m_Temp_Coeff_Pmax = pvum.CecModule.gamma_pmp;
+                model.m_T_NOCT = pvum.CecModule.T_NOCT;
+                model.m_Laenge = pvum.CecModule.Length;
+                model.m_Breite = pvum.CecModule.Width;
+            }
+            else {
+                model.m_alpha_SC = 0;//pvum.PanModule.muISC;
+                model.m_beta_OC = 0;//pvum.PanModule.muVocSpec;
+                model.m_Temp_Coeff_Pmax = pvum.PanModule.muPmpReq;
+                model.m_T_NOCT = 0;
+                model.m_Laenge = pvum.PanModule.Height;
+                model.m_Breite = pvum.PanModule.Width;
+            }
             return model;
+        }
+
+        private void _btnPAN_Click(object sender, EventArgs e)
+        {
+            m_bCEC = false;
+
+            string dateiPfad = "";
+
+            string szAppDataPath = Path.Combine(Program.ApplicationPath_User, "PAN");
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            openFileDialog.InitialDirectory = szAppDataPath;
+            openFileDialog.Filter = "(*.pan)|*.pan";
+            openFileDialog.FilterIndex = 1;
+            openFileDialog.RestoreDirectory = true;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                dateiPfad = openFileDialog.FileName;
+                string inhalt = File.ReadAllText(dateiPfad, Encoding.Default);
+                PanModule m = PanDataService.ParsePan(inhalt);
+
+                RefreshModuleGrid();
+                PopulateFilters();
+            }
         }
 
     }
@@ -496,7 +575,6 @@ namespace WindowsFormsApplication1
                 new Rectangle(20, 0, this.Width, this.Height),
                 this.ForeColor, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
         }
- 
- 
+  
     }
 }

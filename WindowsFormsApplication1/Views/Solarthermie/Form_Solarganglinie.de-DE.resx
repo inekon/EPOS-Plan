@@ -127,7 +127,7 @@
     <value>Abbrechen</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>--&gt;</value>
+    <value>▶</value>
   </data>
   <data name="label4.Text" xml:space="preserve">
     <value>Beschreibung:</value>
@@ -145,6 +145,6 @@
     <value>Ausgewählt im Projekt</value>
   </data>
   <data name="btn_Hinzufuegen.Text" xml:space="preserve">
-    <value>&lt;--</value>
+    <value>◀</value>
   </data>
 </root>

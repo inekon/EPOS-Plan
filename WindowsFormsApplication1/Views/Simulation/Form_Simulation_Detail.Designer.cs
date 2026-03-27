@@ -60,9 +60,6 @@
             System.Windows.Forms.DataVisualization.Charting.Series series12 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series13 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Title title7 = new System.Windows.Forms.DataVisualization.Charting.Title();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea8 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series14 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.label13 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.textBox_gesStrombedarf = new System.Windows.Forms.TextBox();
@@ -200,10 +197,17 @@
             this.label52 = new System.Windows.Forms.Label();
             this.tb_WaermeprST = new System.Windows.Forms.TextBox();
             this.label53 = new System.Windows.Forms.Label();
+            this.tabPage_PV = new System.Windows.Forms.TabPage();
+            this.label12 = new System.Windows.Forms.Label();
+            this.label39 = new System.Windows.Forms.Label();
+            this.textBox_PVUeberschuss = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.textBox_PVStrom = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
             this.tabPage_Ergebnis = new System.Windows.Forms.TabPage();
-            this.label55 = new System.Windows.Forms.Label();
-            this.textBox_STDeckung = new System.Windows.Forms.TextBox();
-            this.label58 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.checkBox_PV = new System.Windows.Forms.CheckBox();
+            this.btn_Zusamenfassung = new System.Windows.Forms.Button();
             this.label54 = new System.Windows.Forms.Label();
             this.checkBox_Profil_Lastgang = new System.Windows.Forms.CheckBox();
             this.checkBox_SPK = new System.Windows.Forms.CheckBox();
@@ -212,21 +216,10 @@
             this.checkBox_Gesamt = new System.Windows.Forms.CheckBox();
             this.chart7 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.label_WBDeckung = new System.Windows.Forms.Label();
-            this.label56 = new System.Windows.Forms.Label();
-            this.textBox_SPKDeckung = new System.Windows.Forms.TextBox();
-            this.label57 = new System.Windows.Forms.Label();
-            this.label40 = new System.Windows.Forms.Label();
-            this.textBox_WBDeckung = new System.Windows.Forms.TextBox();
-            this.label45 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.textBox_FinalStrombedarf = new System.Windows.Forms.TextBox();
-            this.label12 = new System.Windows.Forms.Label();
-            this.label39 = new System.Windows.Forms.Label();
-            this.textBox_FinalWaermebedarf = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.chart5 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.btn_Beenden = new System.Windows.Forms.Button();
+            this.label40 = new System.Windows.Forms.Label();
+            this.textBox_PVStrombedarfsdeckung = new System.Windows.Forms.TextBox();
+            this.label45 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage_Bedarf.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
@@ -241,9 +234,9 @@
             this.tabPage_Heizkessel.SuspendLayout();
             this.tabPage_Solarthermie.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart8)).BeginInit();
+            this.tabPage_PV.SuspendLayout();
             this.tabPage_Ergebnis.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart7)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chart5)).BeginInit();
             this.SuspendLayout();
             // 
             // label13
@@ -317,6 +310,7 @@
             this.tabControl1.Controls.Add(this.tabPage_Wärmepumpe);
             this.tabControl1.Controls.Add(this.tabPage_Heizkessel);
             this.tabControl1.Controls.Add(this.tabPage_Solarthermie);
+            this.tabControl1.Controls.Add(this.tabPage_PV);
             this.tabControl1.Controls.Add(this.tabPage_Ergebnis);
             resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Name = "tabControl1";
@@ -324,7 +318,7 @@
             // 
             // tabPage_Bedarf
             // 
-            this.tabPage_Bedarf.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tabPage_Bedarf.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(249)))));
             this.tabPage_Bedarf.Controls.Add(this.checkBox_StromSortiert);
             this.tabPage_Bedarf.Controls.Add(this.label17);
             this.tabPage_Bedarf.Controls.Add(this.label18);
@@ -521,7 +515,7 @@
             // 
             // tabPage_Wärmepumpe
             // 
-            this.tabPage_Wärmepumpe.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tabPage_Wärmepumpe.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(249)))));
             this.tabPage_Wärmepumpe.Controls.Add(this.tabControl2);
             this.tabPage_Wärmepumpe.Controls.Add(this.listView_SimWP);
             this.tabPage_Wärmepumpe.Controls.Add(this.label43);
@@ -885,7 +879,7 @@
             // 
             // tabPage_Heizkessel
             // 
-            this.tabPage_Heizkessel.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tabPage_Heizkessel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(249)))));
             this.tabPage_Heizkessel.Controls.Add(this.label86);
             this.tabPage_Heizkessel.Controls.Add(this.tb_TierischeFette);
             this.tabPage_Heizkessel.Controls.Add(this.label87);
@@ -1310,7 +1304,7 @@
             // 
             // tabPage_Solarthermie
             // 
-            this.tabPage_Solarthermie.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tabPage_Solarthermie.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(249)))));
             this.tabPage_Solarthermie.Controls.Add(this.label83);
             this.tabPage_Solarthermie.Controls.Add(this.label82);
             this.tabPage_Solarthermie.Controls.Add(this.textBox_Ueberschuss);
@@ -1327,6 +1321,7 @@
             this.tabPage_Solarthermie.Controls.Add(this.label52);
             this.tabPage_Solarthermie.Controls.Add(this.tb_WaermeprST);
             this.tabPage_Solarthermie.Controls.Add(this.label53);
+            this.tabPage_Solarthermie.ForeColor = System.Drawing.Color.Black;
             resources.ApplyResources(this.tabPage_Solarthermie, "tabPage_Solarthermie");
             this.tabPage_Solarthermie.Name = "tabPage_Solarthermie";
             // 
@@ -1462,12 +1457,67 @@
             this.label53.ForeColor = System.Drawing.Color.Black;
             this.label53.Name = "label53";
             // 
+            // tabPage_PV
+            // 
+            this.tabPage_PV.Controls.Add(this.label40);
+            this.tabPage_PV.Controls.Add(this.textBox_PVStrombedarfsdeckung);
+            this.tabPage_PV.Controls.Add(this.label45);
+            this.tabPage_PV.Controls.Add(this.label12);
+            this.tabPage_PV.Controls.Add(this.label39);
+            this.tabPage_PV.Controls.Add(this.textBox_PVUeberschuss);
+            this.tabPage_PV.Controls.Add(this.label8);
+            this.tabPage_PV.Controls.Add(this.textBox_PVStrom);
+            this.tabPage_PV.Controls.Add(this.label11);
+            resources.ApplyResources(this.tabPage_PV, "tabPage_PV");
+            this.tabPage_PV.Name = "tabPage_PV";
+            this.tabPage_PV.UseVisualStyleBackColor = true;
+            // 
+            // label12
+            // 
+            resources.ApplyResources(this.label12, "label12");
+            this.label12.BackColor = System.Drawing.Color.Transparent;
+            this.label12.ForeColor = System.Drawing.Color.Black;
+            this.label12.Name = "label12";
+            // 
+            // label39
+            // 
+            resources.ApplyResources(this.label39, "label39");
+            this.label39.ForeColor = System.Drawing.Color.Black;
+            this.label39.Name = "label39";
+            // 
+            // textBox_PVUeberschuss
+            // 
+            resources.ApplyResources(this.textBox_PVUeberschuss, "textBox_PVUeberschuss");
+            this.textBox_PVUeberschuss.Name = "textBox_PVUeberschuss";
+            // 
+            // label8
+            // 
+            this.label8.BackColor = System.Drawing.Color.Transparent;
+            resources.ApplyResources(this.label8, "label8");
+            this.label8.ForeColor = System.Drawing.Color.Black;
+            this.label8.Name = "label8";
+            // 
+            // textBox_PVStrom
+            // 
+            this.textBox_PVStrom.BackColor = System.Drawing.Color.White;
+            this.textBox_PVStrom.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_PVStrom, "textBox_PVStrom");
+            this.textBox_PVStrom.ForeColor = System.Drawing.Color.Black;
+            this.textBox_PVStrom.Name = "textBox_PVStrom";
+            // 
+            // label11
+            // 
+            resources.ApplyResources(this.label11, "label11");
+            this.label11.BackColor = System.Drawing.Color.Transparent;
+            this.label11.ForeColor = System.Drawing.Color.Black;
+            this.label11.Name = "label11";
+            // 
             // tabPage_Ergebnis
             // 
             this.tabPage_Ergebnis.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tabPage_Ergebnis.Controls.Add(this.label55);
-            this.tabPage_Ergebnis.Controls.Add(this.textBox_STDeckung);
-            this.tabPage_Ergebnis.Controls.Add(this.label58);
+            this.tabPage_Ergebnis.Controls.Add(this.label7);
+            this.tabPage_Ergebnis.Controls.Add(this.checkBox_PV);
+            this.tabPage_Ergebnis.Controls.Add(this.btn_Zusamenfassung);
             this.tabPage_Ergebnis.Controls.Add(this.label54);
             this.tabPage_Ergebnis.Controls.Add(this.checkBox_Profil_Lastgang);
             this.tabPage_Ergebnis.Controls.Add(this.checkBox_SPK);
@@ -1476,40 +1526,33 @@
             this.tabPage_Ergebnis.Controls.Add(this.checkBox_Gesamt);
             this.tabPage_Ergebnis.Controls.Add(this.chart7);
             this.tabPage_Ergebnis.Controls.Add(this.label_WBDeckung);
-            this.tabPage_Ergebnis.Controls.Add(this.label56);
-            this.tabPage_Ergebnis.Controls.Add(this.textBox_SPKDeckung);
-            this.tabPage_Ergebnis.Controls.Add(this.label57);
-            this.tabPage_Ergebnis.Controls.Add(this.label40);
-            this.tabPage_Ergebnis.Controls.Add(this.textBox_WBDeckung);
-            this.tabPage_Ergebnis.Controls.Add(this.label45);
-            this.tabPage_Ergebnis.Controls.Add(this.label8);
-            this.tabPage_Ergebnis.Controls.Add(this.label11);
-            this.tabPage_Ergebnis.Controls.Add(this.textBox_FinalStrombedarf);
-            this.tabPage_Ergebnis.Controls.Add(this.label12);
-            this.tabPage_Ergebnis.Controls.Add(this.label39);
-            this.tabPage_Ergebnis.Controls.Add(this.textBox_FinalWaermebedarf);
-            this.tabPage_Ergebnis.Controls.Add(this.label7);
-            this.tabPage_Ergebnis.Controls.Add(this.chart5);
             resources.ApplyResources(this.tabPage_Ergebnis, "tabPage_Ergebnis");
+            this.tabPage_Ergebnis.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(249)))));
             this.tabPage_Ergebnis.Name = "tabPage_Ergebnis";
             this.tabPage_Ergebnis.Paint += new System.Windows.Forms.PaintEventHandler(this.tabPage_Ergebnis_Paint);
             // 
-            // label55
+            // label7
             // 
-            resources.ApplyResources(this.label55, "label55");
-            this.label55.ForeColor = System.Drawing.Color.Black;
-            this.label55.Name = "label55";
+            resources.ApplyResources(this.label7, "label7");
+            this.label7.ForeColor = System.Drawing.Color.Black;
+            this.label7.Name = "label7";
             // 
-            // textBox_STDeckung
+            // checkBox_PV
             // 
-            resources.ApplyResources(this.textBox_STDeckung, "textBox_STDeckung");
-            this.textBox_STDeckung.Name = "textBox_STDeckung";
+            resources.ApplyResources(this.checkBox_PV, "checkBox_PV");
+            this.checkBox_PV.BackColor = System.Drawing.Color.Transparent;
+            this.checkBox_PV.ForeColor = System.Drawing.Color.Black;
+            this.checkBox_PV.Name = "checkBox_PV";
+            this.checkBox_PV.UseVisualStyleBackColor = false;
+            this.checkBox_PV.CheckedChanged += new System.EventHandler(this.checkBox_PV_CheckedChanged);
             // 
-            // label58
+            // btn_Zusamenfassung
             // 
-            resources.ApplyResources(this.label58, "label58");
-            this.label58.ForeColor = System.Drawing.Color.Black;
-            this.label58.Name = "label58";
+            resources.ApplyResources(this.btn_Zusamenfassung, "btn_Zusamenfassung");
+            this.btn_Zusamenfassung.ForeColor = System.Drawing.Color.Black;
+            this.btn_Zusamenfassung.Name = "btn_Zusamenfassung";
+            this.btn_Zusamenfassung.UseVisualStyleBackColor = true;
+            this.btn_Zusamenfassung.Click += new System.EventHandler(this.btn_Zusammenfassung_Click);
             // 
             // label54
             // 
@@ -1521,6 +1564,7 @@
             // 
             resources.ApplyResources(this.checkBox_Profil_Lastgang, "checkBox_Profil_Lastgang");
             this.checkBox_Profil_Lastgang.BackColor = System.Drawing.Color.Transparent;
+            this.checkBox_Profil_Lastgang.ForeColor = System.Drawing.Color.Black;
             this.checkBox_Profil_Lastgang.Name = "checkBox_Profil_Lastgang";
             this.checkBox_Profil_Lastgang.UseVisualStyleBackColor = false;
             this.checkBox_Profil_Lastgang.CheckedChanged += new System.EventHandler(this.checkBox_Profil_Lastgang_CheckedChanged);
@@ -1529,6 +1573,7 @@
             // 
             resources.ApplyResources(this.checkBox_SPK, "checkBox_SPK");
             this.checkBox_SPK.BackColor = System.Drawing.Color.Transparent;
+            this.checkBox_SPK.ForeColor = System.Drawing.Color.Black;
             this.checkBox_SPK.Name = "checkBox_SPK";
             this.checkBox_SPK.UseVisualStyleBackColor = false;
             this.checkBox_SPK.CheckedChanged += new System.EventHandler(this.checkBox_SPK_CheckedChanged);
@@ -1537,6 +1582,7 @@
             // 
             resources.ApplyResources(this.checkBox_Heizstab, "checkBox_Heizstab");
             this.checkBox_Heizstab.BackColor = System.Drawing.Color.Transparent;
+            this.checkBox_Heizstab.ForeColor = System.Drawing.Color.Black;
             this.checkBox_Heizstab.Name = "checkBox_Heizstab";
             this.checkBox_Heizstab.UseVisualStyleBackColor = false;
             this.checkBox_Heizstab.CheckedChanged += new System.EventHandler(this.checkBox_Heizstab_CheckedChanged);
@@ -1545,6 +1591,7 @@
             // 
             resources.ApplyResources(this.checkBox_WP, "checkBox_WP");
             this.checkBox_WP.BackColor = System.Drawing.Color.Transparent;
+            this.checkBox_WP.ForeColor = System.Drawing.Color.Black;
             this.checkBox_WP.Name = "checkBox_WP";
             this.checkBox_WP.UseVisualStyleBackColor = false;
             this.checkBox_WP.CheckedChanged += new System.EventHandler(this.checkBox_WP_CheckedChanged);
@@ -1553,6 +1600,7 @@
             // 
             resources.ApplyResources(this.checkBox_Gesamt, "checkBox_Gesamt");
             this.checkBox_Gesamt.BackColor = System.Drawing.Color.Transparent;
+            this.checkBox_Gesamt.ForeColor = System.Drawing.Color.Black;
             this.checkBox_Gesamt.Name = "checkBox_Gesamt";
             this.checkBox_Gesamt.UseVisualStyleBackColor = false;
             this.checkBox_Gesamt.CheckedChanged += new System.EventHandler(this.checkBox_Gesamt_CheckedChanged);
@@ -1623,22 +1671,12 @@
             this.label_WBDeckung.ForeColor = System.Drawing.Color.Black;
             this.label_WBDeckung.Name = "label_WBDeckung";
             // 
-            // label56
+            // btn_Beenden
             // 
-            resources.ApplyResources(this.label56, "label56");
-            this.label56.ForeColor = System.Drawing.Color.Black;
-            this.label56.Name = "label56";
-            // 
-            // textBox_SPKDeckung
-            // 
-            resources.ApplyResources(this.textBox_SPKDeckung, "textBox_SPKDeckung");
-            this.textBox_SPKDeckung.Name = "textBox_SPKDeckung";
-            // 
-            // label57
-            // 
-            resources.ApplyResources(this.label57, "label57");
-            this.label57.ForeColor = System.Drawing.Color.Black;
-            this.label57.Name = "label57";
+            resources.ApplyResources(this.btn_Beenden, "btn_Beenden");
+            this.btn_Beenden.Name = "btn_Beenden";
+            this.btn_Beenden.UseVisualStyleBackColor = true;
+            this.btn_Beenden.Click += new System.EventHandler(this.btn_Beenden_Click);
             // 
             // label40
             // 
@@ -1646,103 +1684,16 @@
             this.label40.ForeColor = System.Drawing.Color.Black;
             this.label40.Name = "label40";
             // 
-            // textBox_WBDeckung
+            // textBox_PVStrombedarfsdeckung
             // 
-            resources.ApplyResources(this.textBox_WBDeckung, "textBox_WBDeckung");
-            this.textBox_WBDeckung.Name = "textBox_WBDeckung";
+            resources.ApplyResources(this.textBox_PVStrombedarfsdeckung, "textBox_PVStrombedarfsdeckung");
+            this.textBox_PVStrombedarfsdeckung.Name = "textBox_PVStrombedarfsdeckung";
             // 
             // label45
             // 
             resources.ApplyResources(this.label45, "label45");
             this.label45.ForeColor = System.Drawing.Color.Black;
             this.label45.Name = "label45";
-            // 
-            // label8
-            // 
-            this.label8.BackColor = System.Drawing.Color.White;
-            resources.ApplyResources(this.label8, "label8");
-            this.label8.ForeColor = System.Drawing.Color.Black;
-            this.label8.Name = "label8";
-            // 
-            // label11
-            // 
-            resources.ApplyResources(this.label11, "label11");
-            this.label11.ForeColor = System.Drawing.Color.Black;
-            this.label11.Name = "label11";
-            // 
-            // textBox_FinalStrombedarf
-            // 
-            this.textBox_FinalStrombedarf.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
-            resources.ApplyResources(this.textBox_FinalStrombedarf, "textBox_FinalStrombedarf");
-            this.textBox_FinalStrombedarf.ForeColor = System.Drawing.Color.Black;
-            this.textBox_FinalStrombedarf.Name = "textBox_FinalStrombedarf";
-            // 
-            // label12
-            // 
-            this.label12.BackColor = System.Drawing.Color.White;
-            resources.ApplyResources(this.label12, "label12");
-            this.label12.ForeColor = System.Drawing.Color.Black;
-            this.label12.Name = "label12";
-            // 
-            // label39
-            // 
-            resources.ApplyResources(this.label39, "label39");
-            this.label39.ForeColor = System.Drawing.Color.Black;
-            this.label39.Name = "label39";
-            // 
-            // textBox_FinalWaermebedarf
-            // 
-            this.textBox_FinalWaermebedarf.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
-            resources.ApplyResources(this.textBox_FinalWaermebedarf, "textBox_FinalWaermebedarf");
-            this.textBox_FinalWaermebedarf.ForeColor = System.Drawing.Color.Black;
-            this.textBox_FinalWaermebedarf.Name = "textBox_FinalWaermebedarf";
-            // 
-            // label7
-            // 
-            resources.ApplyResources(this.label7, "label7");
-            this.label7.BackColor = System.Drawing.SystemColors.Control;
-            this.label7.ForeColor = System.Drawing.Color.Black;
-            this.label7.Name = "label7";
-            // 
-            // chart5
-            // 
-            this.chart5.BorderlineColor = System.Drawing.Color.Black;
-            this.chart5.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.DashDot;
-            chartArea8.Area3DStyle.Inclination = 60;
-            chartArea8.Area3DStyle.LightStyle = System.Windows.Forms.DataVisualization.Charting.LightStyle.Realistic;
-            chartArea8.Area3DStyle.Rotation = 0;
-            chartArea8.Area3DStyle.WallWidth = 10;
-            chartArea8.AxisX.LabelStyle.Enabled = false;
-            chartArea8.InnerPlotPosition.Auto = false;
-            chartArea8.InnerPlotPosition.Height = 94.99999F;
-            chartArea8.InnerPlotPosition.Width = 84.6147F;
-            chartArea8.InnerPlotPosition.X = 7.69265F;
-            chartArea8.InnerPlotPosition.Y = 2.5F;
-            chartArea8.Name = "ChartArea1";
-            chartArea8.Position.Auto = false;
-            chartArea8.Position.Height = 94F;
-            chartArea8.Position.Width = 59.40855F;
-            chartArea8.Position.X = 3F;
-            chartArea8.Position.Y = 3F;
-            this.chart5.ChartAreas.Add(chartArea8);
-            legend5.Name = "Legend1";
-            legend5.Title = "Wärmebedarfsdeckung";
-            this.chart5.Legends.Add(legend5);
-            resources.ApplyResources(this.chart5, "chart5");
-            this.chart5.Name = "chart5";
-            series14.ChartArea = "ChartArea1";
-            series14.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Pie;
-            series14.LabelForeColor = System.Drawing.Color.Transparent;
-            series14.Legend = "Legend1";
-            series14.Name = "Series1";
-            this.chart5.Series.Add(series14);
-            // 
-            // btn_Beenden
-            // 
-            resources.ApplyResources(this.btn_Beenden, "btn_Beenden");
-            this.btn_Beenden.Name = "btn_Beenden";
-            this.btn_Beenden.UseVisualStyleBackColor = true;
-            this.btn_Beenden.Click += new System.EventHandler(this.btn_Beenden_Click);
             // 
             // Form_Simulation_Detail
             // 
@@ -1774,10 +1725,11 @@
             this.tabPage_Solarthermie.ResumeLayout(false);
             this.tabPage_Solarthermie.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart8)).EndInit();
+            this.tabPage_PV.ResumeLayout(false);
+            this.tabPage_PV.PerformLayout();
             this.tabPage_Ergebnis.ResumeLayout(false);
             this.tabPage_Ergebnis.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart7)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chart5)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1889,24 +1841,10 @@
         private System.Windows.Forms.TextBox textBox_SPKWaermebedarf;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TabPage tabPage_Ergebnis;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart5;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.TextBox textBox_FinalStrombedarf;
-        private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.Label label39;
-        private System.Windows.Forms.TextBox textBox_FinalWaermebedarf;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox textBox_SPKWaermebedarfsdeckung;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label_WBDeckung;
-        private System.Windows.Forms.Label label56;
-        private System.Windows.Forms.TextBox textBox_SPKDeckung;
-        private System.Windows.Forms.Label label57;
-        private System.Windows.Forms.Label label40;
-        private System.Windows.Forms.TextBox textBox_WBDeckung;
-        private System.Windows.Forms.Label label45;
         private System.Windows.Forms.Button btn_Beenden;
         private System.Windows.Forms.ListView listView_SimWP;
         private System.Windows.Forms.TabControl tabControl2;
@@ -1936,9 +1874,6 @@
         private System.Windows.Forms.Label label53;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart8;
         private System.Windows.Forms.Label label54;
-        private System.Windows.Forms.Label label55;
-        private System.Windows.Forms.TextBox textBox_STDeckung;
-        private System.Windows.Forms.Label label58;
         private System.Windows.Forms.TextBox textBox_Ueberschuss;
         private System.Windows.Forms.Label label82;
         private System.Windows.Forms.Label label83;
@@ -1948,5 +1883,18 @@
         private System.Windows.Forms.Label label84;
         private System.Windows.Forms.TextBox tb_Pellets;
         private System.Windows.Forms.Label label85;
+        private System.Windows.Forms.TabPage tabPage_PV;
+        private System.Windows.Forms.Button btn_Zusamenfassung;
+        private System.Windows.Forms.CheckBox checkBox_PV;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox textBox_PVStrom;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label label39;
+        private System.Windows.Forms.TextBox textBox_PVUeberschuss;
+        private System.Windows.Forms.Label label40;
+        private System.Windows.Forms.TextBox textBox_PVStrombedarfsdeckung;
+        private System.Windows.Forms.Label label45;
     }
 }

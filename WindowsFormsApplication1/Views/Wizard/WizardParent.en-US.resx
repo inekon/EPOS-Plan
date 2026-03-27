@@ -117,8 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="button_NeuProjekt.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="button_NeuProjekt.Text" xml:space="preserve">
     <value>New Project...</value>
+  </data>
+  <data name="label_Projekt.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="label_Projekt.Location" type="System.Drawing.Point, System.Drawing">
@@ -133,20 +140,50 @@
   <data name="listBox_Projekte.Size" type="System.Drawing.Size, System.Drawing">
     <value>169, 284</value>
   </data>
+  <data name="pictureBox_App.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="pnlLeft.Size" type="System.Drawing.Size, System.Drawing">
     <value>192, 648</value>
   </data>
-  <data name="pnlBottom.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 648</value>
+  <data name="btnSpeichern.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
   </data>
-  <data name="pnlBottom.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1080, 70</value>
+  <data name="btnSpeichern.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Emoji, 9.75pt</value>
   </data>
-  <data name="btnSpeichern.Location" type="System.Drawing.Point, System.Drawing">
-    <value>625, 21</value>
+  <data name="btnSpeichern.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btnSpeichern.Size" type="System.Drawing.Size, System.Drawing">
+    <value>188, 38</value>
   </data>
   <data name="btnSpeichern.Text" xml:space="preserve">
     <value>Save</value>
+  </data>
+  <data name="tableLayoutPanel2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>627, 10</value>
+  </data>
+  <data name="tableLayoutPanel2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>200, 50</value>
+  </data>
+  <data name="btnCancel.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btnCancel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>79, 38</value>
+  </data>
+  <data name="btnNext.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btnNext.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 38</value>
+  </data>
+  <data name="btnBack.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btnBack.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 38</value>
   </data>
   <data name="tableLayoutPanel1.Location" type="System.Drawing.Point, System.Drawing">
     <value>827, 10</value>
@@ -154,14 +191,11 @@
   <data name="tableLayoutPanel1.Size" type="System.Drawing.Size, System.Drawing">
     <value>243, 50</value>
   </data>
-  <data name="btnCancel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 38</value>
+  <data name="pnlBottom.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 648</value>
   </data>
-  <data name="btnNext.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 38</value>
-  </data>
-  <data name="btnBack.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 38</value>
+  <data name="pnlBottom.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1080, 70</value>
   </data>
   <data name="pnlContent.Location" type="System.Drawing.Point, System.Drawing">
     <value>192, 0</value>

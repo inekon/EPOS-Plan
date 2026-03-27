@@ -182,10 +182,10 @@
     <value>Selection in DB:</value>
   </data>
   <data name="btn_Hinzzu.Text" xml:space="preserve">
-    <value>&lt;-- Add</value>
+    <value>◀ Add</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>Remove --&gt;</value>
+    <value>Remove ▶</value>
   </data>
   <data name="groupBox_Kollektor.Size" type="System.Drawing.Size, System.Drawing">
     <value>420, 154</value>

@@ -254,13 +254,12 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Allgemein\CECDataService.cs" />
-    <Compile Include="Allgemein\Chart\ChartMouseWheel.cs" />
-    <Compile Include="Allgemein\Chart\ChartManager.cs" />
-    <Compile Include="Allgemein\Chart\Form_ChartZoom.cs">
+    <Compile Include="Allgemein\Import\CEC\CECDataService.cs" />
+    <Compile Include="Allgemein\GrafikTools\ChartManager.cs" />
+    <Compile Include="Allgemein\GrafikTools\Form_ChartZoom.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Allgemein\Chart\TextBoxExtensionsClass.cs" />
+    <Compile Include="Allgemein\GrafikTools\TextBoxExtensionsClass.cs" />
     <Compile Include="Allgemein\CsvReader.cs" />
     <Compile Include="Allgemein\FileDlgClass.cs" />
     <Compile Include="Allgemein\Form3Src.cs">
@@ -272,24 +271,27 @@
     <Compile Include="Allgemein\Form_Hinweis.Designer.cs">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </Compile>
-    <Compile Include="Allgemein\Import\Heizkesselmport.cs" />
+    <Compile Include="Allgemein\Import\VDI 3805\Heizkesselmport.cs" />
+    <Compile Include="Allgemein\Import\Pan\PanDataService.cs" />
+    <Compile Include="Allgemein\Import\Pan\PanModule.cs" />
     <Compile Include="Allgemein\IniFileParser.cs" />
-    <Compile Include="Allgemein\Import\PufferSpImport.cs" />
-    <Compile Include="Allgemein\PVModule.cs" />
+    <Compile Include="Allgemein\Import\VDI 3805\PufferSpImport.cs" />
+    <Compile Include="Allgemein\Import\CEC\PVModule.cs" />
     <Compile Include="Allgemein\RecordSet.cs" />
     <Compile Include="Allgemein\Simulation\SimulationControl.cs" />
     <Compile Include="Allgemein\Simulation\Init.cs" />
+    <Compile Include="Allgemein\Simulation\SimulationPV.cs" />
     <Compile Include="Allgemein\Simulation\SimulationSolarthermie.cs" />
     <Compile Include="Allgemein\Simulation\SimulationSPK.cs" />
     <Compile Include="Allgemein\Simulation\SimulationSSP.cs" />
     <Compile Include="Allgemein\Simulation\SimulationStrombedarf.cs" />
     <Compile Include="Allgemein\Simulation\SimulationWaermebedarf.cs" />
     <Compile Include="Allgemein\Simulation\SimulationWaermepumpe.cs" />
-    <Compile Include="Allgemein\Import\Solarkollektorenlmport.cs" />
+    <Compile Include="Allgemein\Import\VDI 3805\Solarkollektorenlmport.cs" />
     <Compile Include="Allgemein\StromTestClass.cs" />
     <Compile Include="Allgemein\SolarPVGISCalculator.cs" />
-    <Compile Include="Allgemein\Import\WaermepumpenImport.cs" />
-    <Compile Include="Allgemein\UnifiedModule.cs" />
+    <Compile Include="Allgemein\Import\VDI 3805\WaermepumpenImport.cs" />
+    <Compile Include="Allgemein\Import\CEC\UnifiedModule.cs" />
     <Compile Include="Controller\ApplikationCtrl.cs" />
     <Compile Include="Controller\BHKWCtrl.cs" />
     <Compile Include="Controller\BHKWKontextMenuCtrl.cs">
@@ -401,17 +403,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resource.en-US.resx</DependentUpon>
     </Compile>
-    <Compile Include="Nullable\AllowNullAttribute.cs" />
-    <Compile Include="Nullable\DisallowNullAttribute.cs" />
-    <Compile Include="Nullable\DoesNotReturnAttribute.cs" />
-    <Compile Include="Nullable\DoesNotReturnIfAttribute.cs" />
-    <Compile Include="Nullable\MaybeNullAttribute.cs" />
-    <Compile Include="Nullable\MaybeNullWhenAttribute.cs" />
-    <Compile Include="Nullable\MemberNotNullAttribute.cs" />
-    <Compile Include="Nullable\MemberNotNullWhenAttribute.cs" />
-    <Compile Include="Nullable\NotNullAttribute.cs" />
-    <Compile Include="Nullable\NotNullIfNotNullAttribute.cs" />
-    <Compile Include="Nullable\NotNullWhenAttribute.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -638,6 +629,12 @@
     </Compile>
     <Compile Include="Views\Simulation\Form_Simulation_Kurz.Designer.cs">
       <DependentUpon>Form_Simulation_Kurz.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Simulation\DashboardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Simulation\DashboardForm.Designer.cs">
+      <DependentUpon>DashboardForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Solarthermie\Form_SolarDB.cs">
       <SubType>Form</SubType>
@@ -872,6 +869,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\BHKW\Form_BHKWAdmin.resx">
       <DependentUpon>Form_BHKWAdmin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\BHKW\Form_BHKWEing.en-US.resx">
+      <DependentUpon>Form_BHKWEing.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\BHKW\Form_BHKWEing.resx">
       <DependentUpon>Form_BHKWEing.cs</DependentUpon>
@@ -1129,12 +1129,14 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Config.de-DE.resx">
       <DependentUpon>Form_Simulation_Config.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Config.en-US.resx">
       <DependentUpon>Form_Simulation_Config.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Config.resx">
       <DependentUpon>Form_Simulation_Config.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Detail.de-DE.resx">
       <DependentUpon>Form_Simulation_Detail.cs</DependentUpon>
@@ -1154,6 +1156,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\Form_Simulation_Kurz.resx">
       <DependentUpon>Form_Simulation_Kurz.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\DashboardForm.resx">
+      <DependentUpon>DashboardForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Solarthermie\Form_SolarDB.de-DE.resx">
       <DependentUpon>Form_SolarDB.cs</DependentUpon>
@@ -1570,6 +1575,7 @@
     <None Include="Resources\PSSpeicher.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\save-icon-36513.png" />
     <None Include="Resources\usa.png" />
     <None Include="Resources\setup-trans.png" />
     <None Include="Resources\setup.png" />

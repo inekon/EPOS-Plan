@@ -70,8 +70,10 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnSelect = new System.Windows.Forms.Button();
             this._cecloadPanel = new System.Windows.Forms.Panel();
+            this._btnPAN = new System.Windows.Forms.Button();
             this._btnCEC = new System.Windows.Forms.Button();
             this._filterPanel = new System.Windows.Forms.Panel();
+            this.label28 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
@@ -89,7 +91,6 @@
             this._btnFilter = new System.Windows.Forms.Button();
             this._btnReset = new System.Windows.Forms.Button();
             this._headerPanel = new WindowsFormsApplication1.HeaderGradientPanel();
-            this.label28 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this._splitContainer)).BeginInit();
             this._splitContainer.Panel1.SuspendLayout();
             this._splitContainer.Panel2.SuspendLayout();
@@ -424,11 +425,11 @@
             // 
             // textBox_18
             // 
-            this.textBox_18.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_18.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_18.ForeColor = System.Drawing.Color.RoyalBlue;
             this.textBox_18.Location = new System.Drawing.Point(176, 187);
             this.textBox_18.Name = "textBox_18";
-            this.textBox_18.Size = new System.Drawing.Size(277, 25);
+            this.textBox_18.Size = new System.Drawing.Size(277, 18);
             this.textBox_18.TabIndex = 40;
             // 
             // label27
@@ -443,11 +444,11 @@
             // 
             // textBox_20
             // 
-            this.textBox_20.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_20.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_20.ForeColor = System.Drawing.Color.RoyalBlue;
             this.textBox_20.Location = new System.Drawing.Point(176, 235);
             this.textBox_20.Name = "textBox_20";
-            this.textBox_20.Size = new System.Drawing.Size(277, 25);
+            this.textBox_20.Size = new System.Drawing.Size(277, 18);
             this.textBox_20.TabIndex = 38;
             // 
             // label25
@@ -462,11 +463,11 @@
             // 
             // textBox_19
             // 
-            this.textBox_19.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_19.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_19.ForeColor = System.Drawing.Color.RoyalBlue;
             this.textBox_19.Location = new System.Drawing.Point(176, 211);
             this.textBox_19.Name = "textBox_19";
-            this.textBox_19.Size = new System.Drawing.Size(277, 25);
+            this.textBox_19.Size = new System.Drawing.Size(277, 18);
             this.textBox_19.TabIndex = 36;
             // 
             // label17
@@ -481,11 +482,11 @@
             // 
             // textBox_17
             // 
-            this.textBox_17.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_17.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_17.ForeColor = System.Drawing.Color.RoyalBlue;
             this.textBox_17.Location = new System.Drawing.Point(176, 163);
             this.textBox_17.Name = "textBox_17";
-            this.textBox_17.Size = new System.Drawing.Size(277, 25);
+            this.textBox_17.Size = new System.Drawing.Size(277, 18);
             this.textBox_17.TabIndex = 34;
             // 
             // label18
@@ -500,11 +501,11 @@
             // 
             // textBox_16
             // 
-            this.textBox_16.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_16.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_16.ForeColor = System.Drawing.Color.RoyalBlue;
             this.textBox_16.Location = new System.Drawing.Point(176, 141);
             this.textBox_16.Name = "textBox_16";
-            this.textBox_16.Size = new System.Drawing.Size(277, 25);
+            this.textBox_16.Size = new System.Drawing.Size(277, 18);
             this.textBox_16.TabIndex = 32;
             // 
             // label19
@@ -519,11 +520,11 @@
             // 
             // textBox_15
             // 
-            this.textBox_15.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_15.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_15.ForeColor = System.Drawing.Color.RoyalBlue;
             this.textBox_15.Location = new System.Drawing.Point(176, 119);
             this.textBox_15.Name = "textBox_15";
-            this.textBox_15.Size = new System.Drawing.Size(277, 25);
+            this.textBox_15.Size = new System.Drawing.Size(277, 18);
             this.textBox_15.TabIndex = 30;
             // 
             // label20
@@ -538,11 +539,11 @@
             // 
             // textBox_14
             // 
-            this.textBox_14.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_14.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_14.ForeColor = System.Drawing.Color.RoyalBlue;
             this.textBox_14.Location = new System.Drawing.Point(176, 95);
             this.textBox_14.Name = "textBox_14";
-            this.textBox_14.Size = new System.Drawing.Size(277, 25);
+            this.textBox_14.Size = new System.Drawing.Size(277, 18);
             this.textBox_14.TabIndex = 28;
             // 
             // label21
@@ -557,11 +558,11 @@
             // 
             // textBox_13
             // 
-            this.textBox_13.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_13.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_13.ForeColor = System.Drawing.Color.RoyalBlue;
             this.textBox_13.Location = new System.Drawing.Point(176, 71);
             this.textBox_13.Name = "textBox_13";
-            this.textBox_13.Size = new System.Drawing.Size(277, 25);
+            this.textBox_13.Size = new System.Drawing.Size(277, 18);
             this.textBox_13.TabIndex = 26;
             // 
             // label22
@@ -576,11 +577,11 @@
             // 
             // textBox_12
             // 
-            this.textBox_12.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_12.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_12.ForeColor = System.Drawing.Color.RoyalBlue;
             this.textBox_12.Location = new System.Drawing.Point(176, 47);
             this.textBox_12.Name = "textBox_12";
-            this.textBox_12.Size = new System.Drawing.Size(277, 25);
+            this.textBox_12.Size = new System.Drawing.Size(277, 18);
             this.textBox_12.TabIndex = 24;
             // 
             // label23
@@ -595,11 +596,11 @@
             // 
             // textBox_11
             // 
-            this.textBox_11.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox_11.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox_11.ForeColor = System.Drawing.Color.RoyalBlue;
             this.textBox_11.Location = new System.Drawing.Point(176, 23);
             this.textBox_11.Name = "textBox_11";
-            this.textBox_11.Size = new System.Drawing.Size(277, 25);
+            this.textBox_11.Size = new System.Drawing.Size(277, 18);
             this.textBox_11.TabIndex = 22;
             // 
             // label24
@@ -702,12 +703,26 @@
             // 
             // _cecloadPanel
             // 
+            this._cecloadPanel.Controls.Add(this._btnPAN);
             this._cecloadPanel.Controls.Add(this._btnCEC);
             this._cecloadPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this._cecloadPanel.Location = new System.Drawing.Point(0, 60);
             this._cecloadPanel.Name = "_cecloadPanel";
             this._cecloadPanel.Size = new System.Drawing.Size(1216, 44);
             this._cecloadPanel.TabIndex = 1;
+            // 
+            // _btnPAN
+            // 
+            this._btnPAN.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(130)))), ((int)(((byte)(90)))));
+            this._btnPAN.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this._btnPAN.ForeColor = System.Drawing.Color.White;
+            this._btnPAN.Location = new System.Drawing.Point(130, 8);
+            this._btnPAN.Name = "_btnPAN";
+            this._btnPAN.Size = new System.Drawing.Size(100, 28);
+            this._btnPAN.TabIndex = 4;
+            this._btnPAN.Text = "🌿 PAN laden ▶";
+            this._btnPAN.UseVisualStyleBackColor = false;
+            this._btnPAN.Click += new System.EventHandler(this._btnPAN_Click);
             // 
             // _btnCEC
             // 
@@ -718,7 +733,7 @@
             this._btnCEC.Name = "_btnCEC";
             this._btnCEC.Size = new System.Drawing.Size(100, 28);
             this._btnCEC.TabIndex = 3;
-            this._btnCEC.Text = "🌐 CEC laden";
+            this._btnCEC.Text = "🌐 CEC laden ▶";
             this._btnCEC.UseVisualStyleBackColor = false;
             this._btnCEC.Click += new System.EventHandler(this._btnCEC_Click);
             // 
@@ -748,6 +763,16 @@
             this._filterPanel.Name = "_filterPanel";
             this._filterPanel.Size = new System.Drawing.Size(1216, 102);
             this._filterPanel.TabIndex = 1;
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.ForeColor = System.Drawing.Color.Black;
+            this.label28.Location = new System.Drawing.Point(385, 18);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(242, 13);
+            this.label28.TabIndex = 16;
+            this.label28.Text = "\"   Wildcards: * = beliebig viele    ? = ein Zeichen\"";
             // 
             // label16
             // 
@@ -933,17 +958,7 @@
             this._headerPanel.Name = "_headerPanel";
             this._headerPanel.Size = new System.Drawing.Size(1216, 60);
             this._headerPanel.TabIndex = 2;
-            this._headerPanel.Text = "PV-Modul Import - CEC";
-            // 
-            // label28
-            // 
-            this.label28.AutoSize = true;
-            this.label28.ForeColor = System.Drawing.Color.Black;
-            this.label28.Location = new System.Drawing.Point(385, 18);
-            this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(242, 13);
-            this.label28.TabIndex = 16;
-            this.label28.Text = "\"   Wildcards: * = beliebig viele    ? = ein Zeichen\"";
+            this._headerPanel.Text = "Import - CEC und PAN Module";
             // 
             // Main_PV_Test
             // 
@@ -954,7 +969,7 @@
             this.Controls.Add(this._headerPanel);
             this.Controls.Add(this._bottomPanel);
             this.Name = "Main_PV_Test";
-            this.Text = "PV-Import";
+            this.Text = "Photovoltaik Module Import";
             this._splitContainer.Panel1.ResumeLayout(false);
             this._splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this._splitContainer)).EndInit();
@@ -1058,5 +1073,6 @@
         private System.Windows.Forms.TextBox textBox_18;
         private System.Windows.Forms.Label label27;
         private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.Button _btnPAN;
     }
 }

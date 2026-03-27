@@ -400,7 +400,7 @@
     <value>252</value>
   </data>
   <data name="btn_Simulation.Text" xml:space="preserve">
-    <value>Simulation starten =&gt;</value>
+    <value>Simulation starten ▶</value>
   </data>
   <data name="&gt;&gt;btn_Simulation.Name" xml:space="preserve">
     <value>btn_Simulation</value>
@@ -4131,103 +4131,406 @@
   <data name="&gt;&gt;tabPage_Solarthermie.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="label55.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label40.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label55.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="label40.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
-  <data name="label55.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label40.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label55.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1077, 188</value>
+  <data name="label40.Location" type="System.Drawing.Point, System.Drawing">
+    <value>314, 139</value>
   </data>
-  <data name="label55.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label40.Size" type="System.Drawing.Size, System.Drawing">
     <value>19, 17</value>
   </data>
-  <data name="label55.TabIndex" type="System.Int32, mscorlib">
-    <value>277</value>
+  <data name="label40.TabIndex" type="System.Int32, mscorlib">
+    <value>282</value>
   </data>
-  <data name="label55.Text" xml:space="preserve">
+  <data name="label40.Text" xml:space="preserve">
     <value>%</value>
   </data>
-  <data name="label55.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
+  <data name="&gt;&gt;label40.Name" xml:space="preserve">
+    <value>label40</value>
   </data>
-  <data name="&gt;&gt;label55.Name" xml:space="preserve">
-    <value>label55</value>
-  </data>
-  <data name="&gt;&gt;label55.Type" xml:space="preserve">
+  <data name="&gt;&gt;label40.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label55.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
+  <data name="&gt;&gt;label40.Parent" xml:space="preserve">
+    <value>tabPage_PV</value>
   </data>
-  <data name="&gt;&gt;label55.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label40.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="textBox_STDeckung.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="textBox_PVStrombedarfsdeckung.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
-  <data name="textBox_STDeckung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1024, 185</value>
+  <data name="textBox_PVStrombedarfsdeckung.Location" type="System.Drawing.Point, System.Drawing">
+    <value>269, 136</value>
   </data>
-  <data name="textBox_STDeckung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 25</value>
+  <data name="textBox_PVStrombedarfsdeckung.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 25</value>
   </data>
-  <data name="textBox_STDeckung.TabIndex" type="System.Int32, mscorlib">
-    <value>276</value>
+  <data name="textBox_PVStrombedarfsdeckung.TabIndex" type="System.Int32, mscorlib">
+    <value>281</value>
   </data>
-  <data name="textBox_STDeckung.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
+  <data name="&gt;&gt;textBox_PVStrombedarfsdeckung.Name" xml:space="preserve">
+    <value>textBox_PVStrombedarfsdeckung</value>
   </data>
-  <data name="&gt;&gt;textBox_STDeckung.Name" xml:space="preserve">
-    <value>textBox_STDeckung</value>
-  </data>
-  <data name="&gt;&gt;textBox_STDeckung.Type" xml:space="preserve">
+  <data name="&gt;&gt;textBox_PVStrombedarfsdeckung.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;textBox_STDeckung.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
+  <data name="&gt;&gt;textBox_PVStrombedarfsdeckung.Parent" xml:space="preserve">
+    <value>tabPage_PV</value>
   </data>
-  <data name="&gt;&gt;textBox_STDeckung.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;textBox_PVStrombedarfsdeckung.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="label58.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label45.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label58.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="label45.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
-  <data name="label58.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label45.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label58.Location" type="System.Drawing.Point, System.Drawing">
-    <value>909, 188</value>
+  <data name="label45.Location" type="System.Drawing.Point, System.Drawing">
+    <value>113, 139</value>
   </data>
-  <data name="label58.Size" type="System.Drawing.Size, System.Drawing">
-    <value>85, 17</value>
+  <data name="label45.Size" type="System.Drawing.Size, System.Drawing">
+    <value>140, 17</value>
   </data>
-  <data name="label58.TabIndex" type="System.Int32, mscorlib">
-    <value>275</value>
+  <data name="label45.TabIndex" type="System.Int32, mscorlib">
+    <value>280</value>
   </data>
-  <data name="label58.Text" xml:space="preserve">
-    <value>Solarthermie:</value>
+  <data name="label45.Text" xml:space="preserve">
+    <value>Strombedarfsdeckung:</value>
   </data>
-  <data name="label58.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
+  <data name="&gt;&gt;label45.Name" xml:space="preserve">
+    <value>label45</value>
   </data>
-  <data name="&gt;&gt;label58.Name" xml:space="preserve">
-    <value>label58</value>
-  </data>
-  <data name="&gt;&gt;label58.Type" xml:space="preserve">
+  <data name="&gt;&gt;label45.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label58.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label45.Parent" xml:space="preserve">
+    <value>tabPage_PV</value>
+  </data>
+  <data name="&gt;&gt;label45.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="label12.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label12.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 9.75pt</value>
+  </data>
+  <data name="label12.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
+    <value>359, 98</value>
+  </data>
+  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
+    <value>48, 16</value>
+  </data>
+  <data name="label12.TabIndex" type="System.Int32, mscorlib">
+    <value>279</value>
+  </data>
+  <data name="label12.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label12.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label12.Name" xml:space="preserve">
+    <value>label12</value>
+  </data>
+  <data name="&gt;&gt;label12.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label12.Parent" xml:space="preserve">
+    <value>tabPage_PV</value>
+  </data>
+  <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="label39.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label39.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label39.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label39.Location" type="System.Drawing.Point, System.Drawing">
+    <value>188, 96</value>
+  </data>
+  <data name="label39.Size" type="System.Drawing.Size, System.Drawing">
+    <value>73, 17</value>
+  </data>
+  <data name="label39.TabIndex" type="System.Int32, mscorlib">
+    <value>278</value>
+  </data>
+  <data name="label39.Text" xml:space="preserve">
+    <value>Überschuß:</value>
+  </data>
+  <data name="&gt;&gt;label39.Name" xml:space="preserve">
+    <value>label39</value>
+  </data>
+  <data name="&gt;&gt;label39.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label39.Parent" xml:space="preserve">
+    <value>tabPage_PV</value>
+  </data>
+  <data name="&gt;&gt;label39.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="textBox_PVUeberschuss.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="textBox_PVUeberschuss.Location" type="System.Drawing.Point, System.Drawing">
+    <value>269, 93</value>
+  </data>
+  <data name="textBox_PVUeberschuss.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 25</value>
+  </data>
+  <data name="textBox_PVUeberschuss.TabIndex" type="System.Int32, mscorlib">
+    <value>277</value>
+  </data>
+  <data name="&gt;&gt;textBox_PVUeberschuss.Name" xml:space="preserve">
+    <value>textBox_PVUeberschuss</value>
+  </data>
+  <data name="&gt;&gt;textBox_PVUeberschuss.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_PVUeberschuss.Parent" xml:space="preserve">
+    <value>tabPage_PV</value>
+  </data>
+  <data name="&gt;&gt;textBox_PVUeberschuss.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="label8.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label8.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
+    <value>24, 39</value>
+  </data>
+  <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>239, 39</value>
+  </data>
+  <data name="label8.TabIndex" type="System.Int32, mscorlib">
+    <value>264</value>
+  </data>
+  <data name="label8.Text" xml:space="preserve">
+    <value>Gesamte Stromerzeugung der Module:</value>
+  </data>
+  <data name="label8.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label8.Name" xml:space="preserve">
+    <value>label8</value>
+  </data>
+  <data name="&gt;&gt;label8.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label8.Parent" xml:space="preserve">
+    <value>tabPage_PV</value>
+  </data>
+  <data name="&gt;&gt;label8.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="textBox_PVStrom.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="textBox_PVStrom.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="textBox_PVStrom.Location" type="System.Drawing.Point, System.Drawing">
+    <value>269, 47</value>
+  </data>
+  <data name="textBox_PVStrom.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="textBox_PVStrom.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 25</value>
+  </data>
+  <data name="textBox_PVStrom.TabIndex" type="System.Int32, mscorlib">
+    <value>265</value>
+  </data>
+  <data name="&gt;&gt;textBox_PVStrom.Name" xml:space="preserve">
+    <value>textBox_PVStrom</value>
+  </data>
+  <data name="&gt;&gt;textBox_PVStrom.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_PVStrom.Parent" xml:space="preserve">
+    <value>tabPage_PV</value>
+  </data>
+  <data name="&gt;&gt;textBox_PVStrom.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="label11.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label11.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 9.75pt</value>
+  </data>
+  <data name="label11.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
+    <value>359, 52</value>
+  </data>
+  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
+    <value>48, 16</value>
+  </data>
+  <data name="label11.TabIndex" type="System.Int32, mscorlib">
+    <value>266</value>
+  </data>
+  <data name="label11.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label11.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label11.Name" xml:space="preserve">
+    <value>label11</value>
+  </data>
+  <data name="&gt;&gt;label11.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label11.Parent" xml:space="preserve">
+    <value>tabPage_PV</value>
+  </data>
+  <data name="&gt;&gt;label11.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="tabPage_PV.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <data name="tabPage_PV.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1162, 668</value>
+  </data>
+  <data name="tabPage_PV.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="tabPage_PV.Text" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="&gt;&gt;tabPage_PV.Name" xml:space="preserve">
+    <value>tabPage_PV</value>
+  </data>
+  <data name="&gt;&gt;tabPage_PV.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_PV.Parent" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
+  <data name="&gt;&gt;tabPage_PV.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="label7.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label7.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label7.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
+    <value>567, 52</value>
+  </data>
+  <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>161, 17</value>
+  </data>
+  <data name="label7.TabIndex" type="System.Int32, mscorlib">
+    <value>280</value>
+  </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>Photovoltaik/Solarthermie:</value>
+  </data>
+  <data name="&gt;&gt;label7.Name" xml:space="preserve">
+    <value>label7</value>
+  </data>
+  <data name="&gt;&gt;label7.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label7.Parent" xml:space="preserve">
     <value>tabPage_Ergebnis</value>
   </data>
-  <data name="&gt;&gt;label58.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label7.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="checkBox_PV.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBox_PV.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="checkBox_PV.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBox_PV.Location" type="System.Drawing.Point, System.Drawing">
+    <value>829, 609</value>
+  </data>
+  <data name="checkBox_PV.Size" type="System.Drawing.Size, System.Drawing">
+    <value>98, 21</value>
+  </data>
+  <data name="checkBox_PV.TabIndex" type="System.Int32, mscorlib">
+    <value>279</value>
+  </data>
+  <data name="checkBox_PV.Text" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="&gt;&gt;checkBox_PV.Name" xml:space="preserve">
+    <value>checkBox_PV</value>
+  </data>
+  <data name="&gt;&gt;checkBox_PV.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBox_PV.Parent" xml:space="preserve">
+    <value>tabPage_Ergebnis</value>
+  </data>
+  <data name="&gt;&gt;checkBox_PV.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="btn_Zusamenfassung.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Emoji, 12pt</value>
+  </data>
+  <data name="btn_Zusamenfassung.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btn_Zusamenfassung.Location" type="System.Drawing.Point, System.Drawing">
+    <value>569, 71</value>
+  </data>
+  <data name="btn_Zusamenfassung.Size" type="System.Drawing.Size, System.Drawing">
+    <value>214, 36</value>
+  </data>
+  <data name="btn_Zusamenfassung.TabIndex" type="System.Int32, mscorlib">
+    <value>278</value>
+  </data>
+  <data name="btn_Zusamenfassung.Text" xml:space="preserve">
+    <value>ℹ️ Zur Autarkie-Analyse...</value>
+  </data>
+  <data name="&gt;&gt;btn_Zusamenfassung.Name" xml:space="preserve">
+    <value>btn_Zusamenfassung</value>
+  </data>
+  <data name="&gt;&gt;btn_Zusamenfassung.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_Zusamenfassung.Parent" xml:space="preserve">
+    <value>tabPage_Ergebnis</value>
+  </data>
+  <data name="&gt;&gt;btn_Zusamenfassung.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
   <data name="label54.AutoSize" type="System.Boolean, mscorlib">
@@ -4243,13 +4546,13 @@
     <value>367, 208</value>
   </data>
   <data name="label54.Size" type="System.Drawing.Size, System.Drawing">
-    <value>85, 17</value>
+    <value>152, 17</value>
   </data>
   <data name="label54.TabIndex" type="System.Int32, mscorlib">
     <value>274</value>
   </data>
   <data name="label54.Text" xml:space="preserve">
-    <value>Strombedarf:</value>
+    <value>Strombedarf/Erzeugung:</value>
   </data>
   <data name="&gt;&gt;label54.Name" xml:space="preserve">
     <value>label54</value>
@@ -4467,450 +4770,6 @@
   <data name="&gt;&gt;label_WBDeckung.ZOrder" xml:space="preserve">
     <value>10</value>
   </data>
-  <data name="label56.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label56.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label56.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1077, 160</value>
-  </data>
-  <data name="label56.Size" type="System.Drawing.Size, System.Drawing">
-    <value>19, 17</value>
-  </data>
-  <data name="label56.TabIndex" type="System.Int32, mscorlib">
-    <value>266</value>
-  </data>
-  <data name="label56.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="label56.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;label56.Name" xml:space="preserve">
-    <value>label56</value>
-  </data>
-  <data name="&gt;&gt;label56.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label56.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;label56.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="textBox_SPKDeckung.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="textBox_SPKDeckung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1024, 157</value>
-  </data>
-  <data name="textBox_SPKDeckung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 25</value>
-  </data>
-  <data name="textBox_SPKDeckung.TabIndex" type="System.Int32, mscorlib">
-    <value>265</value>
-  </data>
-  <data name="textBox_SPKDeckung.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;textBox_SPKDeckung.Name" xml:space="preserve">
-    <value>textBox_SPKDeckung</value>
-  </data>
-  <data name="&gt;&gt;textBox_SPKDeckung.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_SPKDeckung.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;textBox_SPKDeckung.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="label57.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label57.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label57.Location" type="System.Drawing.Point, System.Drawing">
-    <value>909, 160</value>
-  </data>
-  <data name="label57.Size" type="System.Drawing.Size, System.Drawing">
-    <value>88, 17</value>
-  </data>
-  <data name="label57.TabIndex" type="System.Int32, mscorlib">
-    <value>264</value>
-  </data>
-  <data name="label57.Text" xml:space="preserve">
-    <value>Spitzenkessel:</value>
-  </data>
-  <data name="label57.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;label57.Name" xml:space="preserve">
-    <value>label57</value>
-  </data>
-  <data name="&gt;&gt;label57.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label57.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;label57.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="label40.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label40.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label40.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1077, 131</value>
-  </data>
-  <data name="label40.Size" type="System.Drawing.Size, System.Drawing">
-    <value>19, 17</value>
-  </data>
-  <data name="label40.TabIndex" type="System.Int32, mscorlib">
-    <value>263</value>
-  </data>
-  <data name="label40.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="label40.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;label40.Name" xml:space="preserve">
-    <value>label40</value>
-  </data>
-  <data name="&gt;&gt;label40.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label40.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;label40.ZOrder" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="textBox_WBDeckung.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="textBox_WBDeckung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1024, 128</value>
-  </data>
-  <data name="textBox_WBDeckung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 25</value>
-  </data>
-  <data name="textBox_WBDeckung.TabIndex" type="System.Int32, mscorlib">
-    <value>262</value>
-  </data>
-  <data name="textBox_WBDeckung.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;textBox_WBDeckung.Name" xml:space="preserve">
-    <value>textBox_WBDeckung</value>
-  </data>
-  <data name="&gt;&gt;textBox_WBDeckung.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_WBDeckung.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;textBox_WBDeckung.ZOrder" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <data name="label45.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label45.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label45.Location" type="System.Drawing.Point, System.Drawing">
-    <value>909, 131</value>
-  </data>
-  <data name="label45.Size" type="System.Drawing.Size, System.Drawing">
-    <value>93, 17</value>
-  </data>
-  <data name="label45.TabIndex" type="System.Int32, mscorlib">
-    <value>261</value>
-  </data>
-  <data name="label45.Text" xml:space="preserve">
-    <value>Wärmepumpe:</value>
-  </data>
-  <data name="label45.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;label45.Name" xml:space="preserve">
-    <value>label45</value>
-  </data>
-  <data name="&gt;&gt;label45.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label45.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;label45.ZOrder" xml:space="preserve">
-    <value>16</value>
-  </data>
-  <data name="label8.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>520, 114</value>
-  </data>
-  <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>115, 22</value>
-  </data>
-  <data name="label8.TabIndex" type="System.Int32, mscorlib">
-    <value>260</value>
-  </data>
-  <data name="label8.Text" xml:space="preserve">
-    <value>Reststrombedarf:</value>
-  </data>
-  <data name="label8.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
-  </data>
-  <data name="label8.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;label8.Name" xml:space="preserve">
-    <value>label8</value>
-  </data>
-  <data name="&gt;&gt;label8.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label8.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;label8.ZOrder" xml:space="preserve">
-    <value>17</value>
-  </data>
-  <data name="label11.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label11.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>730, 119</value>
-  </data>
-  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>51, 17</value>
-  </data>
-  <data name="label11.TabIndex" type="System.Int32, mscorlib">
-    <value>259</value>
-  </data>
-  <data name="label11.Text" xml:space="preserve">
-    <value>MWh/a</value>
-  </data>
-  <data name="label11.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;label11.Name" xml:space="preserve">
-    <value>label11</value>
-  </data>
-  <data name="&gt;&gt;label11.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label11.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;label11.ZOrder" xml:space="preserve">
-    <value>18</value>
-  </data>
-  <data name="textBox_FinalStrombedarf.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="textBox_FinalStrombedarf.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt, style=Bold</value>
-  </data>
-  <data name="textBox_FinalStrombedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>642, 116</value>
-  </data>
-  <data name="textBox_FinalStrombedarf.Size" type="System.Drawing.Size, System.Drawing">
-    <value>84, 25</value>
-  </data>
-  <data name="textBox_FinalStrombedarf.TabIndex" type="System.Int32, mscorlib">
-    <value>258</value>
-  </data>
-  <data name="textBox_FinalStrombedarf.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;textBox_FinalStrombedarf.Name" xml:space="preserve">
-    <value>textBox_FinalStrombedarf</value>
-  </data>
-  <data name="&gt;&gt;textBox_FinalStrombedarf.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_FinalStrombedarf.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;textBox_FinalStrombedarf.ZOrder" xml:space="preserve">
-    <value>19</value>
-  </data>
-  <data name="label12.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
-    <value>520, 87</value>
-  </data>
-  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 22</value>
-  </data>
-  <data name="label12.TabIndex" type="System.Int32, mscorlib">
-    <value>257</value>
-  </data>
-  <data name="label12.Text" xml:space="preserve">
-    <value>Restwärmebedarf:</value>
-  </data>
-  <data name="label12.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
-  </data>
-  <data name="label12.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;label12.Name" xml:space="preserve">
-    <value>label12</value>
-  </data>
-  <data name="&gt;&gt;label12.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label12.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
-    <value>20</value>
-  </data>
-  <data name="label39.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label39.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label39.Location" type="System.Drawing.Point, System.Drawing">
-    <value>730, 91</value>
-  </data>
-  <data name="label39.Size" type="System.Drawing.Size, System.Drawing">
-    <value>51, 17</value>
-  </data>
-  <data name="label39.TabIndex" type="System.Int32, mscorlib">
-    <value>256</value>
-  </data>
-  <data name="label39.Text" xml:space="preserve">
-    <value>MWh/a</value>
-  </data>
-  <data name="label39.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;label39.Name" xml:space="preserve">
-    <value>label39</value>
-  </data>
-  <data name="&gt;&gt;label39.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label39.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;label39.ZOrder" xml:space="preserve">
-    <value>21</value>
-  </data>
-  <data name="textBox_FinalWaermebedarf.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="textBox_FinalWaermebedarf.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt, style=Bold</value>
-  </data>
-  <data name="textBox_FinalWaermebedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>642, 88</value>
-  </data>
-  <data name="textBox_FinalWaermebedarf.Size" type="System.Drawing.Size, System.Drawing">
-    <value>84, 25</value>
-  </data>
-  <data name="textBox_FinalWaermebedarf.TabIndex" type="System.Int32, mscorlib">
-    <value>255</value>
-  </data>
-  <data name="textBox_FinalWaermebedarf.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;textBox_FinalWaermebedarf.Name" xml:space="preserve">
-    <value>textBox_FinalWaermebedarf</value>
-  </data>
-  <data name="&gt;&gt;textBox_FinalWaermebedarf.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_FinalWaermebedarf.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;textBox_FinalWaermebedarf.ZOrder" xml:space="preserve">
-    <value>22</value>
-  </data>
-  <data name="label7.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label7.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12pt, style=Bold, Underline</value>
-  </data>
-  <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>524, 44</value>
-  </data>
-  <data name="label7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>76, 21</value>
-  </data>
-  <data name="label7.TabIndex" type="System.Int32, mscorlib">
-    <value>229</value>
-  </data>
-  <data name="label7.Text" xml:space="preserve">
-    <value>Ergebnis</value>
-  </data>
-  <data name="label7.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
-  <data name="label7.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;label7.Name" xml:space="preserve">
-    <value>label7</value>
-  </data>
-  <data name="&gt;&gt;label7.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label7.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;label7.ZOrder" xml:space="preserve">
-    <value>23</value>
-  </data>
-  <data name="chart5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>660, 15</value>
-  </data>
-  <data name="chart5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>383, 196</value>
-  </data>
-  <data name="chart5.TabIndex" type="System.Int32, mscorlib">
-    <value>228</value>
-  </data>
-  <data name="chart5.Text" xml:space="preserve">
-    <value>chart5</value>
-  </data>
-  <data name="chart5.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;chart5.Name" xml:space="preserve">
-    <value>chart5</value>
-  </data>
-  <data name="&gt;&gt;chart5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.DataVisualization.Charting.Chart, System.Windows.Forms.DataVisualization, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35</value>
-  </data>
-  <data name="&gt;&gt;chart5.Parent" xml:space="preserve">
-    <value>tabPage_Ergebnis</value>
-  </data>
-  <data name="&gt;&gt;chart5.ZOrder" xml:space="preserve">
-    <value>24</value>
-  </data>
   <data name="tabPage_Ergebnis.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt</value>
   </data>
@@ -4936,7 +4795,7 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_Ergebnis.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="tabControl1.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI Semibold, 12pt, style=Bold</value>

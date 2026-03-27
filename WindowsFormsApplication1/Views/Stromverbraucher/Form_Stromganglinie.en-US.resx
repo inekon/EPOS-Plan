@@ -124,10 +124,10 @@
     <value>Help</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>--&gt;</value>
+    <value>▶</value>
   </data>
   <data name="btn_Hinzufuegen.Text" xml:space="preserve">
-    <value>&lt;--</value>
+    <value>◀</value>
   </data>
   <data name="btn_OK.Text" xml:space="preserve">
     <value>OK</value>

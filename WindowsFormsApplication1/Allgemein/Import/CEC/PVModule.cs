@@ -9,6 +9,8 @@ namespace WindowsFormsApplication1
     /// </summary>
     public class PVModule
     {
+        public PanModule Source;
+        public string Database { get; set; } = string.Empty;
         public string Name         { get; set; } = string.Empty;
         public string Manufacturer { get; set; } = string.Empty;
         public string Technology   { get; set; } = string.Empty;
@@ -37,8 +39,6 @@ namespace WindowsFormsApplication1
         public string Version      { get; set; } = string.Empty;
         public int    Date         { get; set; }
 
-        //public string Manufacturer => ExtractManufacturer(Name);
-        //public int    Year         => ExtractYear(Name);
         public double Efficiency   => A_c > 0 ? STC / (A_c * 1000.0) * 100.0 : 0.0;
 
         private static string ExtractManufacturer(string name)
