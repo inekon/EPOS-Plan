@@ -109,7 +109,7 @@
             // btnSpeichern
             // 
             resources.ApplyResources(this.btnSpeichern, "btnSpeichern");
-            this.btnSpeichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            this.btnSpeichern.Image = global::WindowsFormsApplication1.Properties.Resources.save_icon_36513;
             this.btnSpeichern.Name = "btnSpeichern";
             this.btnSpeichern.UseVisualStyleBackColor = true;
             this.btnSpeichern.Click += new System.EventHandler(this.btnSpeichern_Click);
@@ -117,9 +117,9 @@
             // tableLayoutPanel1
             // 
             resources.ApplyResources(this.tableLayoutPanel1, "tableLayoutPanel1");
-            this.tableLayoutPanel1.Controls.Add(this.btnCancel, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.btnNext, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.btnBack, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnCancel, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnNext, 2, 0);
+            this.tableLayoutPanel1.Controls.Add(this.btnBack, 1, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             // 
             // btnCancel

@@ -199,7 +199,7 @@
     <value>2</value>
   </data>
   <data name="btn_Hinzufuegen.Text" xml:space="preserve">
-    <value>&lt;--</value>
+    <value>◀</value>
   </data>
   <data name="&gt;&gt;btn_Hinzufuegen.Name" xml:space="preserve">
     <value>btn_Hinzufuegen</value>
@@ -229,7 +229,7 @@
     <value>3</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>--&gt;</value>
+    <value>▶</value>
   </data>
   <data name="&gt;&gt;btn_Entfernen.Name" xml:space="preserve">
     <value>btn_Entfernen</value>

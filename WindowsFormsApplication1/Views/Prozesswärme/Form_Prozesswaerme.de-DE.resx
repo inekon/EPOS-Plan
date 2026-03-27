@@ -175,7 +175,7 @@
     <value>Beschreibung:</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>---&gt;</value>
+    <value>▶</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Ändern des Jahresverbrauchs</value>
@@ -184,7 +184,7 @@
     <value>Prozess in DB löschen</value>
   </data>
   <data name="btn_Hinzu.Text" xml:space="preserve">
-    <value>&lt;---</value>
+    <value>◀</value>
   </data>
   <data name="Label11.Text" xml:space="preserve">
     <value>MWth</value>

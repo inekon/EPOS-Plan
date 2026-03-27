@@ -949,7 +949,7 @@
     <value>24</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>---&gt;</value>
+    <value>▶</value>
   </data>
   <data name="&gt;&gt;textBox_Prozess_Type.ZOrder" xml:space="preserve">
     <value>22</value>
@@ -1075,7 +1075,7 @@
     <value>$this</value>
   </data>
   <data name="btn_Hinzu.Text" xml:space="preserve">
-    <value>&lt;---</value>
+    <value>◀</value>
   </data>
   <data name="Label1.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>

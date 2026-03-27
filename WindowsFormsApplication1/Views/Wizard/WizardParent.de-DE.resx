@@ -120,22 +120,4 @@
   <data name="label_Projekt.Text" xml:space="preserve">
     <value>bestehendes Projekt auswählen</value>
   </data>
-  <data name="btnNext.Text" xml:space="preserve">
-    <value>&amp;Next &gt;</value>
-  </data>
-  <data name="btnBack.Text" xml:space="preserve">
-    <value>&lt; &amp;Back</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Projekt Wizard</value>
-  </data>
-  <data name="btnSpeichern.Text" xml:space="preserve">
-    <value>Speichern</value>
-  </data>
-  <data name="btnCancel.Text" xml:space="preserve">
-    <value>&amp;Cancel</value>
-  </data>
-  <data name="button_NeuProjekt.Text" xml:space="preserve">
-    <value>Neues Projekt...</value>
-  </data>
 </root>

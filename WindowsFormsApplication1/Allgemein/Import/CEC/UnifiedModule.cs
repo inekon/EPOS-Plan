@@ -12,6 +12,7 @@ namespace WindowsFormsApplication1
         // C# 7.3: 'set' statt 'init'
         public string Database { get; set; } = "";  // "CEC", "Sandia" oder "PAN"
         public PVModule CecModule { get; set; }
+        public PanModule PanModule { get; set; }
 
         // ── Gemeinsame Anzeigespalten ──────────────────────────────────
         public string Name { get; set; }
@@ -29,13 +30,14 @@ namespace WindowsFormsApplication1
 
         // ── Konstruktoren ──────────────────────────────────────────────
 
-        public static UnifiedModule FromCec(PVModule m)
+        public static UnifiedModule FromPanCec(PVModule m)
         {
             // C# 7.3: Expliziter Typname bei 'new'
             return new UnifiedModule()
             {
-                Database = "CEC",
+                Database = m.Database,
                 CecModule = m,
+                PanModule = m.Source, // Falls die PVModule-Instanz eine Referenz zum Original PanModule enthält
                 Name = m.Name,
                 Manufacturer = m.Manufacturer,
                 Technology = m.Technology,
@@ -56,5 +58,6 @@ namespace WindowsFormsApplication1
         {
             return Name;
         }
+  
     }
 }

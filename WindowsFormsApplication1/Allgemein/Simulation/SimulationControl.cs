@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
     internal class SimulationControl
     {
-       
+        // Simulationen Deklaration
         public SimulationWaermepumpe simulation_wp = new SimulationWaermepumpe();
         public SimulationSPK simulation_spk = new SimulationSPK();
         public SimulationSolarthermie simulation_solarthermie = new SimulationSolarthermie();
+        public SimulationPV simulation_pv = new SimulationPV(); 
 
         private bool m_bError = false;
 
@@ -23,13 +25,13 @@ namespace WindowsFormsApplication1
         // Rückgabe
         public float Restwaerme;
         public float Reststrom;
-        float[] Rest_Wermebedarf_stuendlich = new float[8760];
-        float[] Rest_Strombedarf_viertelstuendlich = new float[8760 * 4];
+        public float[] Rest_Wermebedarf_stuendlich = new float[8760];
+        public float[] Rest_Strombedarf_viertelstuendlich = new float[8760 * 4];
 
         public bool bSimulationWP = false;
         public bool bSimulationKessel = false;
         public bool bSimulationSolarthermie = false;
-
+        public bool bSimulationPV = false;
 
         public void Do_Simulation(int ID_Projekt)
         {
@@ -45,6 +47,7 @@ namespace WindowsFormsApplication1
             simulation_wp.Init();
             simulation_solarthermie.Init();
             simulation_spk.Init();
+            simulation_pv.Init();
 
             Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
             Restwaerme = 0;
@@ -55,6 +58,7 @@ namespace WindowsFormsApplication1
             bSimulationWP = false;
             bSimulationKessel = false;
             bSimulationSolarthermie = false;
+            bSimulationPV = false;  
 
             // Startpunkt der Simulation ist der Wärmebedarf    
             Eingang = simulation_Waermebedarf.Waermebedarf;
@@ -104,7 +108,20 @@ namespace WindowsFormsApplication1
 
                     bSimulationSolarthermie = true;
                 }
+   
             }
+
+            if(tool[4] == "Photovoltaik")
+            {
+                temp = Simulation_Photovoltaik_Ctrl(Rest_Strombedarf_viertelstuendlich);
+                Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
+
+       
+                Reststrom = Rest_Strombedarf_viertelstuendlich.Sum() / 4000;
+
+                bSimulationPV = true;
+            }
+
 
             Restwaerme /= 1000; // in MWh
             
@@ -197,6 +214,21 @@ namespace WindowsFormsApplication1
             return result;
         }
 
+        public float[] SubVectors(float[] array1, float[] array2)
+        {
+            if (array1.Length != array2.Length)
+                throw new ArgumentException("Arrays must be of the same length.");
+
+            float[] result = new float[array1.Length];
+            for (int i = 0; i < array1.Length; i++)
+            {
+                if (array1[i] >= array2[i])
+                    result[i] = array1[i] - array2[i];
+                else result[i] = 0; 
+            }
+            return result;
+        }
+
         public float[] Stundenwerte_zu_viertelstunden(float[] stundenwerte)
         {
             float[] viertelstundenwerte = new float[stundenwerte.Length * 4];
@@ -208,6 +240,57 @@ namespace WindowsFormsApplication1
                 viertelstundenwerte[i * 4 + 3] = stundenwerte[i];
             }
             return viertelstundenwerte;
+        }
+
+        private float[] Simulation_Photovoltaik_Ctrl(float[] Strombedarf)
+        {
+            RecordSet rs = new RecordSet();
+
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
+
+            simulation_pv.photovoltaik_list.Clear();
+            while (rs.Next())
+            {
+                simulation_pv.photovoltaik_list.Add((int)rs.Read("ID_PV"));
+            }
+            rs.Close();
+
+            simulation_pv.Strombedarf = Strombedarf;
+
+            // Simulation starten
+            float[] temp = simulation_pv.Berechnung(m_ID_Projekt);
+
+            TestePVAnlage();
+
+
+            return temp;
+        }
+
+        public void TestePVAnlage()
+        {
+            // Test-Parameter für eine 10 kWp Anlage
+            double testStrahlung = 1000.0; // W/m² (STC-Bedingung)
+            double flaeche = 50.0;          // ca. 50m² für 10 kWp
+            double wirkungsgrad = 0.20;     // 20% Wirkungsgrad
+            double tempKoeff = -0.004;      // -0.4%/K
+            double tAmb = 25.0;             // 25°C Luft
+            double cosTheta = 1.0;          // Sonne steht perfekt senkrecht
+            double strombedarf = 100.0;     // Hoher Bedarf, damit wir Produktion nicht kappen
+
+            var ergebnis = simulation_pv.BerechnePV(strombedarf, testStrahlung, flaeche, wirkungsgrad, tempKoeff, tAmb, cosTheta);
+
+            Console.WriteLine($"--- PV TESTLAUF ---");
+            Console.WriteLine($"Potenzielle Produktion: {ergebnis.produktion} kW");
+
+            if (ergebnis.produktion < 8.0)
+            {
+                Console.WriteLine("WARNUNG: Der Wert ist zu niedrig für 10kWp bei 1000W/m²!");
+                Console.WriteLine("Prüfe: Ist h0 wirklich 0.20? Wird flaeche korrekt übergeben?");
+            }
+            else
+            {
+                Console.WriteLine("ERGEBNIS OK: Die Formel arbeitet physikalisch korrekt.");
+            }
         }
 
     }

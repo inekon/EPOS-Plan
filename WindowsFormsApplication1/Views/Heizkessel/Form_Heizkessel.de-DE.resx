@@ -125,7 +125,7 @@
     <value>Leistung [kW]:</value>
   </data>
   <data name="btn_Kessel_Hinzu.Text" xml:space="preserve">
-    <value>&lt;---</value>
+    <value>◀</value>
   </data>
   <data name="btn_OK.Text" xml:space="preserve">
     <value>OK</value>
@@ -167,7 +167,7 @@
     <value>Filtern nach Leistung:</value>
   </data>
   <data name="btn_Kessel_Entfernen.Text" xml:space="preserve">
-    <value>--&gt;</value>
+    <value>▶</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Filtern nach Brennstoffart:</value>

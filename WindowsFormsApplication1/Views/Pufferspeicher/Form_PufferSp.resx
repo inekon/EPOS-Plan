@@ -195,9 +195,6 @@
   <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
     <value>129, 17</value>
   </data>
-  <data name="listBox_Pufferspeicher.HorizontalScrollbar" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
   <data name="Label10.Text" xml:space="preserve">
     <value>Speichertyp:</value>
   </data>
@@ -212,6 +209,9 @@
   </data>
   <data name="label_Type.Size" type="System.Drawing.Size, System.Drawing">
     <value>774, 32</value>
+  </data>
+  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
+    <value>191, 19</value>
   </data>
   <data name="label12.TabIndex" type="System.Int32, mscorlib">
     <value>85</value>
@@ -292,7 +292,7 @@
     <value>97, 53</value>
   </data>
   <data name="btn_PufferSp_Hinzu.Text" xml:space="preserve">
-    <value>&lt;---</value>
+    <value>◀</value>
   </data>
   <data name="textBox_Volumen.Location" type="System.Drawing.Point, System.Drawing">
     <value>148, 150</value>
@@ -351,8 +351,8 @@
   <data name="&gt;&gt;label18.Name" xml:space="preserve">
     <value>label18</value>
   </data>
-  <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 38</value>
+  <data name="&gt;&gt;textBox_Typ.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>Filtern nach Hersteller:</value>
@@ -678,9 +678,6 @@
   <data name="&gt;&gt;label_Type.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="&gt;&gt;label2.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
   <data name="&gt;&gt;label_Type.Name" xml:space="preserve">
     <value>label_Type</value>
   </data>
@@ -713,6 +710,9 @@
   </data>
   <data name="&gt;&gt;btn_Bearbeiten.Parent" xml:space="preserve">
     <value>$this</value>
+  </data>
+  <data name="listBox_Pufferspeicher.HorizontalScrollbar" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="comboBox_Volumen.TabIndex" type="System.Int32, mscorlib">
     <value>134</value>
@@ -837,9 +837,6 @@
   <data name="&gt;&gt;btn_Bearbeiten.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;textBox_Typ.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;listBox_Pufferspeicher_DB.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
@@ -848,6 +845,9 @@
   </data>
   <data name="label7.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
+  </data>
+  <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 38</value>
   </data>
   <data name="&gt;&gt;btn_PufferSp_Hinzu.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -987,8 +987,8 @@
   <data name="&gt;&gt;Label17.Parent" xml:space="preserve">
     <value>groupBox1</value>
   </data>
-  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>191, 19</value>
+  <data name="&gt;&gt;label2.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="&gt;&gt;comboBox_Hersteller.ZOrder" xml:space="preserve">
     <value>3</value>
@@ -1021,7 +1021,7 @@
     <value>8</value>
   </data>
   <data name="btn_PufferSp_Entfernen.Text" xml:space="preserve">
-    <value>--&gt;</value>
+    <value>▶</value>
   </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Modul</value>
@@ -1108,6 +1108,6 @@
     <value>True</value>
   </metadata>
   <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>en-US</value>
+    <value>de-DE</value>
   </metadata>
 </root>

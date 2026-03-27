@@ -146,6 +146,7 @@ namespace WindowsFormsApplication1
                     DateTime dateTime = DateTime.Parse(fields[26], CultureInfo.InvariantCulture);
                     var mod = new PVModule
                     {
+                        Database = "CEC",  
                         Name = GetF(GetCol("name")),
                         Manufacturer = GetF(GetCol("manufacturer")),
                         Technology = GetF(GetCol("technology")),

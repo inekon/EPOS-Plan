@@ -182,9 +182,9 @@
     <value>Gesamtvolumen:</value>
   </data>
   <data name="btn_PufferSp_Entfernen.Text" xml:space="preserve">
-    <value>--&gt;</value>
+    <value>▶</value>
   </data>
   <data name="btn_PufferSp_Hinzu.Text" xml:space="preserve">
-    <value>&lt;---</value>
+    <value>◀</value>
   </data>
 </root>

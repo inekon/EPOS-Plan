@@ -119,10 +119,10 @@ namespace WindowsFormsApplication1
                         U_Leerlauf = {model.m_U_Leerlauf}, 
                         I_Mpp = {model.m_I_Mpp}, 
                         I_Kurzschluss = {model.m_I_Kurzschluss}, 
-                        alpha_SC= {model.m_I_Kurzschluss}, 
-                        beta_OC= {model.m_I_Kurzschluss}, 
-                        gamma_PMP = {model.m_Temp_Coeff_Pmax}, 
-                        T_NOCT == {model.m_I_Kurzschluss}, 
+                        alpha_SC= {SqlVal(model.m_alpha_SC)}, 
+                        beta_OC= {SqlVal(model.m_beta_OC)}, 
+                        gamma_PMP = {SqlVal(model.m_Temp_Coeff_Pmax)}, 
+                        T_NOCT = {SqlVal(model.m_T_NOCT)}, 
                         Laenge = {model.m_Laenge}, 
                         Breite = {model.m_Breite} 
                     WHERE 
@@ -145,6 +145,12 @@ namespace WindowsFormsApplication1
             }
             return true;
 
+        }
+
+        private string SqlVal(double value)
+        {
+            // Wenn 0, dann SQL NULL, sonst den Invariant-String des Wertes
+            return value == 0 ? "NULL" : value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }

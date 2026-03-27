@@ -169,7 +169,7 @@
     <value>88</value>
   </data>
   <data name="btn_Kessel_Entfernen.Text" xml:space="preserve">
-    <value>--&gt;</value>
+    <value>▶</value>
   </data>
   <data name="&gt;&gt;btn_Kessel_Entfernen.Name" xml:space="preserve">
     <value>btn_Kessel_Entfernen</value>
@@ -199,7 +199,7 @@
     <value>87</value>
   </data>
   <data name="btn_Kessel_Hinzu.Text" xml:space="preserve">
-    <value>&lt;---</value>
+    <value>◀</value>
   </data>
   <data name="&gt;&gt;btn_Kessel_Hinzu.Name" xml:space="preserve">
     <value>btn_Kessel_Hinzu</value>

@@ -1383,10 +1383,10 @@
 </value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>--&gt;</value>
+    <value>▶</value>
   </data>
   <data name="btn_Hinzu.Text" xml:space="preserve">
-    <value>&lt;---</value>
+    <value>◀</value>
   </data>
   <data name="radioBtn_Sonstige.Text" xml:space="preserve">
     <value>Gewerbe+Sonstige</value>

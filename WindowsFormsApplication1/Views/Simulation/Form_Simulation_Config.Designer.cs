@@ -31,7 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Simulation_Config));
             this.label7 = new System.Windows.Forms.Label();
             this.btn_Loeschen = new System.Windows.Forms.Button();
-            this.bt_Hinzu = new System.Windows.Forms.Button();
+            this.btn_Hinzu = new System.Windows.Forms.Button();
             this.listView1 = new System.Windows.Forms.ListView();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.comboBox7_Stromspeicher_LadeleistungMax_auswahl = new System.Windows.Forms.ComboBox();
@@ -81,15 +81,16 @@
             this.comboBox3 = new System.Windows.Forms.ComboBox();
             this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.groupBox_Tools = new System.Windows.Forms.GroupBox();
             this.groupBox_PufferSp = new System.Windows.Forms.GroupBox();
             this.checkBox_PufferSp = new System.Windows.Forms.CheckBox();
+            this.lblStatus = new System.Windows.Forms.Label();
             this.groupBox5.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            this.groupBox6.SuspendLayout();
+            this.groupBox_Tools.SuspendLayout();
             this.groupBox_PufferSp.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -105,14 +106,14 @@
             resources.ApplyResources(this.btn_Loeschen, "btn_Loeschen");
             this.btn_Loeschen.Name = "btn_Loeschen";
             this.btn_Loeschen.UseVisualStyleBackColor = true;
-            this.btn_Loeschen.Click += new System.EventHandler(this.button4_Click);
+            this.btn_Loeschen.Click += new System.EventHandler(this.btn_Loeschen_Click);
             // 
-            // bt_Hinzu
+            // btn_Hinzu
             // 
-            resources.ApplyResources(this.bt_Hinzu, "bt_Hinzu");
-            this.bt_Hinzu.Name = "bt_Hinzu";
-            this.bt_Hinzu.UseVisualStyleBackColor = true;
-            this.bt_Hinzu.Click += new System.EventHandler(this.button3_Click);
+            resources.ApplyResources(this.btn_Hinzu, "btn_Hinzu");
+            this.btn_Hinzu.Name = "btn_Hinzu";
+            this.btn_Hinzu.UseVisualStyleBackColor = true;
+            this.btn_Hinzu.Click += new System.EventHandler(this.btn_Hinzu_Click);
             // 
             // listView1
             // 
@@ -122,11 +123,11 @@
             this.listView1.OwnerDraw = true;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.DrawColumnHeader += new System.Windows.Forms.DrawListViewColumnHeaderEventHandler(this.listView1_DrawColumnHeader);
+            this.listView1.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listView1_DrawItem);
             this.listView1.DrawSubItem += new System.Windows.Forms.DrawListViewSubItemEventHandler(this.listView1_DrawSubItem);
             // 
             // groupBox5
             // 
-            resources.ApplyResources(this.groupBox5, "groupBox5");
             this.groupBox5.Controls.Add(this.comboBox7_Stromspeicher_LadeleistungMax_auswahl);
             this.groupBox5.Controls.Add(this.textBox_Stromspeicher_Ladeleistung_max);
             this.groupBox5.Controls.Add(this.label20);
@@ -139,6 +140,7 @@
             this.groupBox5.Controls.Add(this.textBox_Speicher_Ladeschwelle);
             this.groupBox5.Controls.Add(this.label10);
             this.groupBox5.Controls.Add(this.textBox_Stromspeicher_Ladeenergie_min);
+            resources.ApplyResources(this.groupBox5, "groupBox5");
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.TabStop = false;
             // 
@@ -184,9 +186,10 @@
             // 
             // btn_Strom_Simu_Start
             // 
+            this.btn_Strom_Simu_Start.BackColor = System.Drawing.Color.LightGreen;
             resources.ApplyResources(this.btn_Strom_Simu_Start, "btn_Strom_Simu_Start");
             this.btn_Strom_Simu_Start.Name = "btn_Strom_Simu_Start";
-            this.btn_Strom_Simu_Start.UseVisualStyleBackColor = true;
+            this.btn_Strom_Simu_Start.UseVisualStyleBackColor = false;
             // 
             // label18
             // 
@@ -221,10 +224,10 @@
             // 
             // groupBox4
             // 
-            resources.ApplyResources(this.groupBox4, "groupBox4");
             this.groupBox4.Controls.Add(this.comboBox_Bereitschaft);
             this.groupBox4.Controls.Add(this.label57);
             this.groupBox4.Controls.Add(this.label14);
+            resources.ApplyResources(this.groupBox4, "groupBox4");
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.TabStop = false;
             // 
@@ -250,10 +253,10 @@
             // 
             // groupBox3
             // 
-            resources.ApplyResources(this.groupBox3, "groupBox3");
             this.groupBox3.Controls.Add(this.label6);
             this.groupBox3.Controls.Add(this.textBox_untere_PGrenze);
             this.groupBox3.Controls.Add(this.label5);
+            resources.ApplyResources(this.groupBox3, "groupBox3");
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.TabStop = false;
             // 
@@ -266,8 +269,8 @@
             // 
             // textBox_untere_PGrenze
             // 
-            resources.ApplyResources(this.textBox_untere_PGrenze, "textBox_untere_PGrenze");
             this.textBox_untere_PGrenze.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.textBox_untere_PGrenze, "textBox_untere_PGrenze");
             this.textBox_untere_PGrenze.ForeColor = System.Drawing.Color.Black;
             this.textBox_untere_PGrenze.Name = "textBox_untere_PGrenze";
             // 
@@ -280,8 +283,8 @@
             // 
             // groupBox2
             // 
-            resources.ApplyResources(this.groupBox2, "groupBox2");
             this.groupBox2.Controls.Add(this.checkBox_Heizstab);
+            resources.ApplyResources(this.groupBox2, "groupBox2");
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.TabStop = false;
             // 
@@ -294,10 +297,10 @@
             // 
             // groupBox1
             // 
-            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.textBox_Netzverluste);
             this.groupBox1.Controls.Add(this.label15);
             this.groupBox1.Controls.Add(this.comboBox_NetzvEinheit);
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
@@ -343,8 +346,8 @@
             // 
             // btn_Speichern
             // 
+            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.save_icon_36513;
             resources.ApplyResources(this.btn_Speichern, "btn_Speichern");
-            this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
             this.btn_Speichern.Name = "btn_Speichern";
             this.btn_Speichern.UseVisualStyleBackColor = true;
             this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
@@ -422,98 +425,69 @@
             // 
             // comboBox6
             // 
-            resources.ApplyResources(this.comboBox6, "comboBox6");
             this.comboBox6.FormattingEnabled = true;
-            this.comboBox6.Items.AddRange(new object[] {
-            resources.GetString("comboBox6.Items")});
+            resources.ApplyResources(this.comboBox6, "comboBox6");
             this.comboBox6.Name = "comboBox6";
-            this.comboBox6.SelectedIndexChanged += new System.EventHandler(this.comboBox6_SelectedIndexChanged);
+            this.comboBox6.SelectedIndexChanged += new System.EventHandler(this.comboBox5_SelectedIndexChanged);
             // 
             // comboBox5
             // 
-            resources.ApplyResources(this.comboBox5, "comboBox5");
             this.comboBox5.FormattingEnabled = true;
-            this.comboBox5.Items.AddRange(new object[] {
-            resources.GetString("comboBox5.Items")});
+            resources.ApplyResources(this.comboBox5, "comboBox5");
             this.comboBox5.Name = "comboBox5";
-            this.comboBox5.SelectedIndexChanged += new System.EventHandler(this.comboBox5_SelectedIndexChanged);
             // 
             // comboBox4
             // 
-            resources.ApplyResources(this.comboBox4, "comboBox4");
             this.comboBox4.FormattingEnabled = true;
-            this.comboBox4.Items.AddRange(new object[] {
-            resources.GetString("comboBox4.Items"),
-            resources.GetString("comboBox4.Items1"),
-            resources.GetString("comboBox4.Items2"),
-            resources.GetString("comboBox4.Items3")});
+            resources.ApplyResources(this.comboBox4, "comboBox4");
             this.comboBox4.Name = "comboBox4";
-            this.comboBox4.SelectedIndexChanged += new System.EventHandler(this.comboBox4_SelectedIndexChanged);
             // 
             // comboBox3
             // 
-            resources.ApplyResources(this.comboBox3, "comboBox3");
             this.comboBox3.FormattingEnabled = true;
-            this.comboBox3.Items.AddRange(new object[] {
-            resources.GetString("comboBox3.Items"),
-            resources.GetString("comboBox3.Items1"),
-            resources.GetString("comboBox3.Items2"),
-            resources.GetString("comboBox3.Items3")});
+            resources.ApplyResources(this.comboBox3, "comboBox3");
             this.comboBox3.Name = "comboBox3";
-            this.comboBox3.SelectedIndexChanged += new System.EventHandler(this.comboBox3_SelectedIndexChanged);
             // 
             // comboBox2
             // 
-            resources.ApplyResources(this.comboBox2, "comboBox2");
             this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Items.AddRange(new object[] {
-            resources.GetString("comboBox2.Items"),
-            resources.GetString("comboBox2.Items1"),
-            resources.GetString("comboBox2.Items2"),
-            resources.GetString("comboBox2.Items3")});
+            resources.ApplyResources(this.comboBox2, "comboBox2");
             this.comboBox2.Name = "comboBox2";
-            this.comboBox2.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
             // 
             // comboBox1
             // 
-            resources.ApplyResources(this.comboBox1, "comboBox1");
             this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            resources.GetString("comboBox1.Items"),
-            resources.GetString("comboBox1.Items1"),
-            resources.GetString("comboBox1.Items2"),
-            resources.GetString("comboBox1.Items3")});
+            resources.ApplyResources(this.comboBox1, "comboBox1");
             this.comboBox1.Name = "comboBox1";
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
-            // groupBox6
+            // groupBox_Tools
             // 
-            resources.ApplyResources(this.groupBox6, "groupBox6");
-            this.groupBox6.Controls.Add(this.comboBox5);
-            this.groupBox6.Controls.Add(this.comboBox1);
-            this.groupBox6.Controls.Add(this.comboBox2);
-            this.groupBox6.Controls.Add(this.comboBox3);
-            this.groupBox6.Controls.Add(this.comboBox4);
-            this.groupBox6.Controls.Add(this.comboBox6);
-            this.groupBox6.Controls.Add(this.label1);
-            this.groupBox6.Controls.Add(this.label2);
-            this.groupBox6.Controls.Add(this.label3);
-            this.groupBox6.Controls.Add(this.checkBox1);
-            this.groupBox6.Controls.Add(this.checkBox2);
-            this.groupBox6.Controls.Add(this.checkBox3);
-            this.groupBox6.Controls.Add(this.checkBox4);
-            this.groupBox6.Controls.Add(this.checkBox5);
-            this.groupBox6.Controls.Add(this.checkBox6);
-            this.groupBox6.Name = "groupBox6";
-            this.groupBox6.TabStop = false;
+            this.groupBox_Tools.Controls.Add(this.comboBox5);
+            this.groupBox_Tools.Controls.Add(this.comboBox1);
+            this.groupBox_Tools.Controls.Add(this.comboBox2);
+            this.groupBox_Tools.Controls.Add(this.comboBox3);
+            this.groupBox_Tools.Controls.Add(this.comboBox4);
+            this.groupBox_Tools.Controls.Add(this.comboBox6);
+            this.groupBox_Tools.Controls.Add(this.label1);
+            this.groupBox_Tools.Controls.Add(this.label2);
+            this.groupBox_Tools.Controls.Add(this.label3);
+            this.groupBox_Tools.Controls.Add(this.checkBox1);
+            this.groupBox_Tools.Controls.Add(this.checkBox2);
+            this.groupBox_Tools.Controls.Add(this.checkBox3);
+            this.groupBox_Tools.Controls.Add(this.checkBox4);
+            this.groupBox_Tools.Controls.Add(this.checkBox5);
+            this.groupBox_Tools.Controls.Add(this.checkBox6);
+            resources.ApplyResources(this.groupBox_Tools, "groupBox_Tools");
+            this.groupBox_Tools.Name = "groupBox_Tools";
+            this.groupBox_Tools.TabStop = false;
             // 
             // groupBox_PufferSp
             // 
-            resources.ApplyResources(this.groupBox_PufferSp, "groupBox_PufferSp");
             this.groupBox_PufferSp.Controls.Add(this.listView1);
             this.groupBox_PufferSp.Controls.Add(this.label7);
-            this.groupBox_PufferSp.Controls.Add(this.bt_Hinzu);
+            this.groupBox_PufferSp.Controls.Add(this.btn_Hinzu);
             this.groupBox_PufferSp.Controls.Add(this.btn_Loeschen);
+            resources.ApplyResources(this.groupBox_PufferSp, "groupBox_PufferSp");
             this.groupBox_PufferSp.Name = "groupBox_PufferSp";
             this.groupBox_PufferSp.TabStop = false;
             // 
@@ -524,13 +498,19 @@
             this.checkBox_PufferSp.UseVisualStyleBackColor = true;
             this.checkBox_PufferSp.CheckedChanged += new System.EventHandler(this.checkBox_PufferSp_CheckedChanged);
             // 
+            // lblStatus
+            // 
+            resources.ApplyResources(this.lblStatus, "lblStatus");
+            this.lblStatus.Name = "lblStatus";
+            // 
             // Form_Simulation_Config
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.checkBox_PufferSp);
             this.Controls.Add(this.groupBox_PufferSp);
-            this.Controls.Add(this.groupBox6);
+            this.Controls.Add(this.groupBox_Tools);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
@@ -552,8 +532,8 @@
             this.groupBox2.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.groupBox6.ResumeLayout(false);
-            this.groupBox6.PerformLayout();
+            this.groupBox_Tools.ResumeLayout(false);
+            this.groupBox_Tools.PerformLayout();
             this.groupBox_PufferSp.ResumeLayout(false);
             this.groupBox_PufferSp.PerformLayout();
             this.ResumeLayout(false);
@@ -565,7 +545,7 @@
 
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button btn_Loeschen;
-        private System.Windows.Forms.Button bt_Hinzu;
+        private System.Windows.Forms.Button btn_Hinzu;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.ComboBox comboBox7_Stromspeicher_LadeleistungMax_auswahl;
@@ -615,8 +595,9 @@
         private System.Windows.Forms.ComboBox comboBox3;
         private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.GroupBox groupBox_Tools;
         private System.Windows.Forms.GroupBox groupBox_PufferSp;
         private System.Windows.Forms.CheckBox checkBox_PufferSp;
+        private System.Windows.Forms.Label lblStatus;
     }
 }

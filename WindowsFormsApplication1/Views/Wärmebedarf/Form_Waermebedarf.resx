@@ -220,7 +220,7 @@
     <value>3</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>--&gt;</value>
+    <value>▶</value>
   </data>
   <data name="&gt;&gt;listBox_Extern.ZOrder" xml:space="preserve">
     <value>9</value>
@@ -229,7 +229,7 @@
     <value>3, 4, 3, 4</value>
   </data>
   <data name="btn_Hinzufuegen.Text" xml:space="preserve">
-    <value>&lt;--</value>
+    <value>◀</value>
   </data>
   <data name="label_Type.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Top</value>

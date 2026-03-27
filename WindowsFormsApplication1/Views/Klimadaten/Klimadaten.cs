@@ -32,6 +32,7 @@ namespace WindowsFormsApplication1
 
             comboBox_Ort.Items.Clear();
 
+
             string szPath = Path.Combine(Program.ApplicationPath_User, "Ortsliste");
 
             // Windows-1252 ist der Standard für deutsche Textdateien, 
@@ -106,6 +107,7 @@ namespace WindowsFormsApplication1
             _chartManager.toolTipUnit = "°C";
             _chartManager.ChartTitle = "Jahrestemperatur Verlauf";
             _chartManager.MitLegende = false;
+            _chartManager.BackColor = Color.FromArgb(245, 247, 249);
             _chartManager.Init();
             _chartManager.AddSeries("Temperatur", Color.Blue, Array.ConvertAll<double, float>(yAxis.ToArray(), x => (float)x));
 
@@ -121,6 +123,7 @@ namespace WindowsFormsApplication1
             _chartManager2.toolTipUnit = "°";
             _chartManager2.ChartTitle = "Sonnenwinkel Verlauf";
             _chartManager2.MitLegende = false;
+            _chartManager2.BackColor = Color.FromArgb(245, 247, 249);
             _chartManager2.Init();
             _chartManager2.AddSeries("Sonnenwinkel", Color.Orange, Array.ConvertAll<double, float>(yAxis.ToArray(), x => (float)x));
  
@@ -346,6 +349,22 @@ namespace WindowsFormsApplication1
         {
             TextBox tb = sender as TextBox;
             if (!Program.checkDouble(tb, tb.Text)) tb.Clear();
+        }
+
+        private void panel_KlimaGraph_Paint(object sender, PaintEventArgs e)
+        {
+            Control p = (Control)sender;
+            // Zeichne nur den farbigen Akzentbalken oben (z.B. Blau für Klima)
+            using (SolidBrush b = new SolidBrush(Color.DodgerBlue))
+            {
+                e.Graphics.FillRectangle(b, 0, 0, p.Width, 5);
+            }
+
+            // Optional: Ein ganz feiner Rahmen, falls Schatten zu schwer ist
+            using (Pen pen = new Pen(Color.FromArgb(220, 220, 220)))
+            {
+                e.Graphics.DrawRectangle(pen, 0, 0, p.Width - 1, p.Height - 1);
+            }
         }
     }
 

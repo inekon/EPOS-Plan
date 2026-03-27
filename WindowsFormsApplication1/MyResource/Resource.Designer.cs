@@ -61,6 +61,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to BHKW.
+        /// </summary>
+        public static string KONFIG_BHKW {
+            get {
+                return ResourceManager.GetString("KONFIG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gesamtsystem.
+        /// </summary>
+        public static string KONFIG_GESAMTSYSTEM {
+            get {
+                return ResourceManager.GetString("KONFIG_GESAMTSYSTEM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Heizkessel.
+        /// </summary>
+        public static string KONFIG_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("KONFIG_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Photovoltaik.
+        /// </summary>
+        public static string KONFIG_PHOTOVOLTAIK {
+            get {
+                return ResourceManager.GetString("KONFIG_PHOTOVOLTAIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solarthermie.
+        /// </summary>
+        public static string KONFIG_SOLARTHERMIE {
+            get {
+                return ResourceManager.GetString("KONFIG_SOLARTHERMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stromspeicher.
+        /// </summary>
+        public static string KONFIG_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("KONFIG_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wärmepumpe.
+        /// </summary>
+        public static string KONFIG_WAERMEPUMPE {
+            get {
+                return ResourceManager.GetString("KONFIG_WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ausgewählt.
         /// </summary>
         public static string Text_Ausgewaehlt {

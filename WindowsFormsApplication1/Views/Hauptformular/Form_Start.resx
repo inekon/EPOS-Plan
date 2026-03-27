@@ -844,7 +844,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_ProjektNeu.Location" type="System.Drawing.Point, System.Drawing">
-    <value>16, 104</value>
+    <value>17, 104</value>
   </data>
   <data name="pBox_ProjektNeu.Size" type="System.Drawing.Size, System.Drawing">
     <value>377, 190</value>

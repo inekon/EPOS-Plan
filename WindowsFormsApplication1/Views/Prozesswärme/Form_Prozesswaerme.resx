@@ -136,7 +136,7 @@
     <value>1</value>
   </data>
   <data name="btn_Hinzu.Text" xml:space="preserve">
-    <value>&lt;---</value>
+    <value>◀</value>
   </data>
   <data name="&gt;&gt;btn_Hinzu.Name" xml:space="preserve">
     <value>btn_Hinzu</value>
@@ -166,7 +166,7 @@
     <value>2</value>
   </data>
   <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>---&gt;</value>
+    <value>▶</value>
   </data>
   <data name="&gt;&gt;btn_Entfernen.Name" xml:space="preserve">
     <value>btn_Entfernen</value>

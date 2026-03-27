@@ -55,8 +55,28 @@ namespace WindowsFormsApplication1
 
             dgv.BackgroundColor = Color.White;
             dgv.GridColor = Color.White;
-            dgv.Columns[1].DefaultCellStyle.BackColor = Color.GreenYellow;
-            dgv.DefaultCellStyle.BackColor = Color.FromArgb(255, 215, 159, 57);
+            //dgv.Columns[1].DefaultCellStyle.BackColor = Color.GreenYellow;
+            //dgv.DefaultCellStyle.BackColor = Color.FromArgb(255, 215, 159, 57);
+
+            // Grundfarbe für alle Zeilen
+            dgv.RowsDefaultCellStyle.BackColor = Color.White;
+            // Farbe für jede zweite Zeile (Zebra)
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
+            dgv.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            // Erlaubt eigene Farben für den Header (sonst bleibt er Windows-Grau)
+            dgv.EnableHeadersVisualStyles = false;
+
+            // Hintergrundfarbe festlegen (ein kräftiges "BHKW-Blau")
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(51, 102, 153);
+
+            // Schriftfarbe auf Weiß setzen (für den Kontrast zum dunklen Blau)
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+
+            // Der Text bestimmt die Breite (sehr genau, kann aber bei viel Text flackern)
+            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+
+            // ODER: Die Spalten teilen sich den verfügbaren Platz gleichmäßig auf (füllt das ganze Grid aus)
+            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             SetGebaeudeDB();
 

@@ -61,9 +61,10 @@ namespace WindowsFormsApplication1
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
             listView_SimWP.View = View.Details;
-            listView_SimWP.Columns.Add("WP Modul", -2, HorizontalAlignment.Left);
-            listView_SimWP.Columns.Add("Wärmeproduktion [MWh/a]", -2, HorizontalAlignment.Left);
-            listView_SimWP.Columns.Add("Stromverbrauch [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Modul", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Leistung [kW]", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Wärmeprod.[MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Stromverbr. [MWh/a]", -2, HorizontalAlignment.Left);
             listView_SimWP.Columns.Add("Heizstab [MWh/a]", -2, HorizontalAlignment.Left);
             listView_SimWP.Columns.Add("Betriebsstunden [h/a]", -2, HorizontalAlignment.Left);
             listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
@@ -190,6 +191,8 @@ namespace WindowsFormsApplication1
             // Tool Simulation WP, SPK usw. durchführen
             sim.Do_Simulation(m_ID_Projekt);
             Endergebniss_Simulation();
+
+            tabPage_Ergebnis.Invalidate();
         }
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
@@ -398,6 +401,7 @@ namespace WindowsFormsApplication1
                 {
                     ListViewItem lvitem = new ListViewItem();
                     lvitem.Text = sim.simulation_wp.WP_Modul[i];
+                    lvitem.SubItems.Add(sim.simulation_wp.wp_model[i].Grenzleistung.ToString("F2"));
                     lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Waermeproduktion[i] / 1000).ToString("F2"));
                     lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Strombedarf[i] / 1000).ToString("F2"));
                     lvitem.SubItems.Add((sim.simulation_wp.Modul_Heizstab[i] / 1000).ToString("F2"));
@@ -532,7 +536,7 @@ namespace WindowsFormsApplication1
                 textBox_STWaermebedarf.Text = (sim.simulation_solarthermie.Waermebedarf_gesamt / 1000).ToString("F2");
                 textBox_STRestwermebedarf.Text = ((sim.simulation_solarthermie.Waermebedarf_gesamt - sim.simulation_solarthermie.Waermeproduktion_gesamt) / 1000).ToString("F2");
                 tb_WaermeprST.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000).ToString("F2");
-                textBox_Ueberschuss.Text = (sim.simulation_solarthermie.ueberschuss / 1000).ToString("F2");
+                textBox_Ueberschuss.Text = (sim.simulation_solarthermie.ueberschuss_summe / 1000).ToString("F2");
 
                 // Chart Solarthermie Wärmerbedarf und Produktion
                 _chartManager[8] = new ChartManager(chart8);
@@ -552,21 +556,18 @@ namespace WindowsFormsApplication1
             }
 
             // ********************************************************************************************/
+            // PV
+            // ********************************************************************************************/
+
+            textBox_PVStrom.Text = (sim.simulation_pv.Stromproduktion.Sum() / 1000.0).ToString("F2");
+            textBox_PVUeberschuss.Text = (sim.simulation_pv.Ueberschuss.Sum() / 1000.0).ToString("F2");
+            textBox_PVStrombedarfsdeckung.Text = (sim.simulation_pv.Stromproduktion.Sum() * 100 / sim.simulation_pv.Strombedarf_stuendlich.Sum()).ToString("F2");
+
+
+            // ********************************************************************************************/
             // Ergebnisübersicht
             // ********************************************************************************************/
-            
-            // Kuchendiagramm
-            chart5.Series[0].ChartType = SeriesChartType.Pie;
-            chart5.ChartAreas[0].Area3DStyle.Enable3D = false;
-            chart5.Series[0].IsValueShownAsLabel = false;
-            chart5.Series[0]["PieLabelStyle"] = "Disabled";
-            chart5.BorderlineColor = Color.Black;
-            chart5.Series[0].BorderColor = Color.Black;
-            chart5.Series[0].BorderWidth = 1;
-            chart5.Series[0].LabelForeColor = Color.Black;
-            chart5.Series[0].Font = new System.Drawing.Font(new System.Drawing.FontFamily("Arial"), 10, System.Drawing.FontStyle.Bold);
 
-            chart5.Series[0].Points.Clear();
 
             // Heizkessel
             waerme_spk = 0;
@@ -575,46 +576,17 @@ namespace WindowsFormsApplication1
                 waerme_spk += sim.simulation_spk.s_waerme_Gas_Spk[i] + sim.simulation_spk.s_waerme_Oel_Spk[i];
             }
 
-            if (waerme_spk > 0)
-                chart5.Series[0].Points.AddXY("Heizkessel", waerme_spk);
-
             // Wärmepumpe
             waerme_wp = sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
-            if (waerme_wp > 0)
-                chart5.Series[0].Points.AddXY("Wärmepumpe", waerme_wp);
 
             waerme_heizstab = sim.simulation_wp.Heizstab_gesamt / 1000;
-            if (waerme_heizstab > 0)
-                chart5.Series[0].Points.AddXY("Heizstab", waerme_heizstab);
 
             // Solarthermie
             waerme_solar = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000;
-            if (waerme_solar > 0)
-                chart5.Series[0].Points.AddXY("Solarthermie", waerme_solar);
 
             gesamt_waerme = waerme_spk + waerme_wp + waerme_heizstab + waerme_solar;
 
             restwaermebedarf = sim.simulation_Waermebedarf.Waermebedarf_Gesamt - gesamt_waerme;
-
-            if (restwaermebedarf >= 0.1)
-            {
-                chart5.Series[0].Points.AddXY("Restbedarf", restwaermebedarf);
-            }
-
-            textBox_FinalWaermebedarf.Text = restwaermebedarf.ToString("F2");
-            textBox_FinalStrombedarf.Text = sim.Reststrom.ToString("F2");
-
-            double a2 = (double)simulation_Waermebedarf.Waermebedarf_Gesamt;
-            double b2 = (double)sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
-            double c2 = (double)sim.simulation_wp.Heizstab_gesamt / 1000;
-            double d2 = sim.simulation_spk.S_Waerme_spk;
-            double e2 = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000;
-
-            textBox_WBDeckung.Text = ((b2 + c2) / a2 * 100).ToString("F2");
-            textBox_SPKDeckung.Text = (d2 * 100 / a2).ToString("F2");
-            textBox_STDeckung.Text = (e2 * 100 / a2).ToString("F2");
-
-            chart5.Update();
 
             // Chart Strombedarf und Stromverbrauch Übersicht
             temp_profil = sim.simulation_Strombedarf.Strombedarf_viertelStundenwerte;
@@ -643,17 +615,16 @@ namespace WindowsFormsApplication1
             _chartManager[7].AddSeries("Heizstab", Color.Yellow, temp_hs);
             _chartManager[7].AddSeries("Heizkessel", Color.Blue, temp_hk);
             _chartManager[7].AddSeries("Profil/Lastgang", Color.Brown, temp_profil);
+            // _chartManager[7].AddSeries("Rest", Color.Black, sim.Rest_Strombedarf_viertelstuendlich);
+            _chartManager[7].AddSeries("PV", Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
+            // _chartManager[7].AddSeries("Überschuss", Color.Magenta, sim.simulation_pv.Ueberschuss_viertelstunde);
             _chartManager[7]._chart.Series["Waermepumpe"].Enabled = false;
             _chartManager[7]._chart.Series["Heizstab"].Enabled = false;
             _chartManager[7]._chart.Series["Heizkessel"].Enabled = false;
             _chartManager[7]._chart.Series["Profil/Lastgang"].Enabled = false;
+            _chartManager[7]._chart.Series["PV"].Enabled = false;
 
             checkBox_Gesamt.Checked = true;
-
-
-  
-
-
         }
 
         private void btn_Beenden_Click(object sender, EventArgs e)
@@ -976,10 +947,9 @@ namespace WindowsFormsApplication1
 
         private void listView_SimWP_MouseDown(object sender, MouseEventArgs e)
         {
-            // Wir prüfen, ob es ein Doppelklick (2 Klicks) mit der linken Maustaste war
+            // Prüfen, ob es ein Doppelklick (2 Klicks) mit der linken Maustaste war
             if (e.Clicks == 2 && e.Button == MouseButtons.Left)
             {
-
                 Form_WPAuswahl frm = new Form_WPAuswahl();
                 WErzeugerCtrl werzctrl = new WErzeugerCtrl();
                 WPCtrl wpctrl = new WPCtrl();
@@ -1006,214 +976,129 @@ namespace WindowsFormsApplication1
                 }
             }
         }
-
-        public void DrawKPICard(Graphics g, Rectangle rect, string title, string value, string unit, Color accentColor)
-        {
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-
-            // 1. Schatten zeichnen (leicht versetzt und transparent)
-            Rectangle shadowRect = new Rectangle(rect.X + 3, rect.Y + 3, rect.Width, rect.Height);
-            using (GraphicsPath shadowPath = GetRoundedRectPath(shadowRect, 10))
-            using (PathGradientBrush shadowBrush = new PathGradientBrush(shadowPath))
-            {
-                shadowBrush.CenterColor = Color.FromArgb(40, Color.Black);
-                shadowBrush.SurroundColors = new Color[] { Color.Transparent };
-                g.FillPath(shadowBrush, shadowPath);
-            }
-
-            // 2. Die weiße Kachel selbst
-            using (GraphicsPath path = GetRoundedRectPath(rect, 10))
-            {
-                g.FillPath(Brushes.White, path);
-                // Optional: Ein feiner Rand in der Akzentfarbe oben
-                using (Pen accentPen = new Pen(accentColor, 4))
-                {
-                    g.DrawLine(accentPen, rect.X + 10, rect.Y, rect.X + rect.Width - 10, rect.Y);
-                }
-            }
-
-            // 3. Texte platzieren
-            Font titleFont = new Font("Segoe UI", 9, FontStyle.Regular);
-            Font valueFont = new Font("Segoe UI", 16, FontStyle.Bold);
-            Font unitFont = new Font("Segoe UI", 8, FontStyle.Italic);
-
-            g.DrawString(title.ToUpper(), titleFont, Brushes.Gray, rect.X + 15, rect.Y + 15);
-            g.DrawString(value, valueFont, Brushes.Black, rect.X + 15, rect.Y + 35);
-
-            // Einheit hinter den Wert schreiben
-            SizeF valueSize = g.MeasureString(value, valueFont);
-            g.DrawString(unit, unitFont, Brushes.DimGray, rect.X + 15 + valueSize.Width + 5, rect.Y + 45);
-        }
-
-        // Hilfsfunktion für abgerundete Ecken
-        private GraphicsPath GetRoundedRectPath(Rectangle rect, int radius)
-        {
-            GraphicsPath path = new GraphicsPath();
-            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
-            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
-            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
-            path.CloseFigure();
-            return path;
-        }
-
-        public void DrawMultiDonutChart(Graphics g, Rectangle rect, double[] values, Color[] colors)
-        {
-            if (values == null || values.Length == 0) return;
-
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-
-            float outerRadius = rect.Width / 2f;
-            float thickness = rect.Width * 0.2f;
-            float innerRadius = outerRadius - thickness;
-            PointF center = new PointF(rect.X + outerRadius, rect.Y + outerRadius);
-
-            double currentAngle = -90;
-            float gapDegrees = 2.0f; // Der Spalt in Grad (wirkt jetzt überall gleichmäßig)
-
-            double total = values.Sum();
-            if (total == 0) return;
-
-            int activeSegments = values.Count(v => v > 0);
-
-            for (int i = 0; i < values.Length; i++)
-            {
-                if (values[i] <= 0) continue;
-
-                double sweepAngle = (values[i] / total) * 360.0;
-
-                // Berechne Start und Ende unter Berücksichtigung des Spalts
-                float startAngle = (float)(currentAngle + (activeSegments > 1 ? gapDegrees / 2.0 : 0));
-                float drawSweep = (float)(sweepAngle - (activeSegments > 1 ? gapDegrees : 0));
-
-                using (System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath())
-                {
-                    // Wir bauen das Ringsegment aus zwei Bögen auf
-                    // 1. Äußerer Bogen
-                    path.AddArc(rect, startAngle, drawSweep);
-
-                    // 2. Innerer Bogen (in Gegenrichtung, damit der Pfad geschlossen wird)
-                    RectangleF innerRect = new RectangleF(
-                        center.X - innerRadius, center.Y - innerRadius,
-                        innerRadius * 2, innerRadius * 2);
-                    path.AddArc(innerRect, startAngle + drawSweep, -drawSweep);
-
-                    path.CloseFigure();
-
-                    using (SolidBrush brush = new SolidBrush(colors[i]))
-                    {
-                        g.FillPath(brush, path);
-                    }
-                }
-                currentAngle += sweepAngle;
-            }
-
-           
-            // Text in die Mitte (z.B. "100%")
-            using (Font font = new Font("Segoe UI", rect.Width * 0.12f, FontStyle.Bold))
-            {
-                string centerText = ((gesamt_waerme - restwaermebedarf)*100/ gesamt_waerme).ToString("F2");
-                SizeF size = g.MeasureString(centerText, font);
-                g.DrawString(centerText, font, Brushes.Black,
-                             rect.X + (rect.Width - size.Width) / 2,
-                             rect.Y + (rect.Height - size.Height) / 2);
-            }
-        }
-
+  
         private void tabPage_Ergebnis_Paint(object sender, PaintEventArgs e)
         {
-            // A. Hintergrund des Formulars (Hellgrau für den Kontrast)
+            // Hintergrund des Formulars (Hellgrau für den Kontrast)
             e.Graphics.Clear(Color.FromArgb(240, 240, 240));
 
 
             // Kachel für Strom
-            DrawKPICard(e.Graphics, new Rectangle(20, 50, 220, 80),
+            Kacheln.DrawKPICard(e.Graphics, new Rectangle(20, 50, 220, 80),
                         "Reststrombedarf", sim.Reststrom.ToString("F2"), "MWh/a", Color.DodgerBlue);
 
             // Kachel für Wärme
-            DrawKPICard(e.Graphics, new Rectangle(260, 50, 220, 80),
+            Kacheln.DrawKPICard(e.Graphics, new Rectangle(260, 50, 220, 80),
                         "Restwärmebedarf", restwaermebedarf.ToString("F2"), "MWh/a", Color.SeaGreen);
 
+            // Donat Chart Farben (WP, Solar, Heizstab, Kessel, Rest)
             Color[] palette = new Color[] {
                 ColorTranslator.FromHtml("#2ECC71"), // WP
                 ColorTranslator.FromHtml("#E67E22"), // Solar
-                ColorTranslator.FromHtml("#F1C40F"), // Stab
+                ColorTranslator.FromHtml("#F1C40F"), // Heizstab
                 ColorTranslator.FromHtml("#95A5A6"), // Kessel
                 ColorTranslator.FromHtml("#3498DB")  // Rest
             };
-            /*
-            double waerme_spk = 0;
-            double waerme_wp = 0;
-            double waerme_heizstab = 0;
-            double waerme_solar = 0;
-            double gesamt_waerme = 0;
-            double restwaermebedarf = 0;
-            */
-            double[] werte = new double[] { waerme_wp*100/ sim.simulation_Waermebedarf.Waermebedarf_Gesamt,
-                                            waerme_solar*100/ sim.simulation_Waermebedarf.Waermebedarf_Gesamt,
-                                            waerme_heizstab*100/sim.simulation_Waermebedarf.Waermebedarf_Gesamt,
-                                            waerme_spk*100/ sim.simulation_Waermebedarf.Waermebedarf_Gesamt,
-                                            restwaermebedarf*100/ sim.simulation_Waermebedarf.Waermebedarf_Gesamt }; // Beispielwerte in %
+  
+            double[] werteArr_Prozent = new double[] { 0,0,0,0,0 };
+            double wb_gesamt = 0;
+            double werz_gesamt = 0;
 
-            // Aufruf der Funktion auf einer weißen Kachel
-      //      DrawMultiDonutChart(e.Graphics, new Rectangle(50, label_WBDeckung.Top, 150, 150), werte, palette);
+            if (sim.simulation_Waermebedarf != null)
+            {
+                wb_gesamt = sim.simulation_Waermebedarf.Waermebedarf_Gesamt;
+                werteArr_Prozent = new double[] { waerme_wp * 100/ wb_gesamt,
+                                            waerme_solar* 100/ wb_gesamt,
+                                            waerme_heizstab * 100 / wb_gesamt,
+                                            waerme_spk * 100 / wb_gesamt,
+                                            restwaermebedarf * 100 / wb_gesamt };
+                
+                werz_gesamt = waerme_wp + waerme_solar + waerme_heizstab + waerme_spk;
+            }
 
-   
-   
-            // B. Bereich für die Diagramm-Kachel definieren
+            // Bereich für die Diagramm-Kachel definieren
             // (X=20, Y=150, Breite=220, Höhe=300)
             Rectangle kachelBereich = new Rectangle(20, label_WBDeckung.Top + label_WBDeckung.Height +10, 220, 300);
 
-            // C. Die weiße Kachel zeichnen (mit der Funktion von vorhin)
-            DrawKPICard(e.Graphics, kachelBereich, "Wärmedeckung", "", "", Color.SeaGreen);
+            // Die weiße Kachel zeichnen (mit der Funktion von vorhin)
+            Kacheln.DrawKPICard(e.Graphics, kachelBereich, "Wärmedeckung", "", "", Color.SeaGreen);
 
-            // D. Den Donut + Dynamische Legende darin aufrufen
-            // Wir geben der Funktion ein etwas kleineres "Innen-Rechteck", damit Abstände zum Rand bleiben
+            // Den Donut + Dynamische Legende darin aufrufen
+            // Der Funktion ein etwas kleineres "Innen-Rechteck" geben, damit Abstände zum Rand bleiben
             Rectangle chartInnenBereich = new Rectangle(kachelBereich.X + 10, kachelBereich.Y + 40,
                                                        kachelBereich.Width - 20, kachelBereich.Height - 50);
 
-            // Die Namen deiner 5 möglichen Quellen
-            string[] quellenNamen = { "Wärmepumpe", "Solarthermie", "Heizstab", "Spitzenkessel", "Restwärme" }
-            ;
-            DrawChartWithDynamicLegend(e.Graphics, chartInnenBereich, werte, quellenNamen, palette);
-  
-            
+            // Die Namen der 5 möglichen Quellen
+            string[] quellenNamen = { "Wärmepumpe", "Solarthermie", "Heizstab", "Spitzenkessel", "Restwärme" };
+
+            DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, chartInnenBereich, werteArr_Prozent, werz_gesamt * 100 / wb_gesamt, quellenNamen, palette);
         }
 
-        public void DrawChartWithDynamicLegend(Graphics g, Rectangle area, double[] values, string[] names, Color[] colors)
+        private void btn_Zusammenfassung_Click(object sender, EventArgs e)
         {
-            // 1. Den Donut-Chart im oberen Teil der Kachel zeichnen
-            Rectangle chartRect = new Rectangle(area.X + (area.Width - 120) / 2, area.Y + 10, 120, 120);
-            DrawMultiDonutChart(g, chartRect, values, colors);
+            WErzeugerCtrl ctrl = new WErzeugerCtrl();
+            DashboardForm frm = new DashboardForm();
+            int id = 0;
+            double speicherKWh = 0; //Standardwert, z.B. 5 kWh
 
-            // 2. Dynamische Legende darunter
-            int yOffset = chartRect.Bottom + 20;
-            Font legendFont = new Font("Segoe UI", 9, FontStyle.Regular);
-            int itemsFound = 0;
-
-            for (int i = 0; i < values.Length; i++)
+            // alle Sromspeicher zum Projekt durchgehen und Leistung aufsummieren (oder direkt aus sim-Objekt, falls dort schon vorhanden)
+            ctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
+            for(int i=0; i<ctrl.rows; i++)
             {
-                // Nur anzeigen, wenn der Wert > 0 ist
-                if (values[i] > 0)
+                id = ctrl.items[i].ID_SP;
+                RecordSet rs = new RecordSet();
+                rs.Open("select * from Tab_Stromspeicher where ID=" + id);
+                if (rs.Next())
                 {
-                    int x = area.X + 10;
-                    int y = yOffset + (itemsFound * 22); // 22px Zeilenabstand
-
-                    // Kleiner farbiger Indikator-Punkt
-                    using (SolidBrush b = new SolidBrush(colors[i]))
-                    {
-                        g.SmoothingMode = SmoothingMode.AntiAlias;
-                        g.FillEllipse(b, x, y + 3, 10, 10);
-                    }
-
-                    // Text: "Name: 85,0%"
-                    string legendText = $"{names[i]}: {values[i]:0.0}%";
-                    g.DrawString(legendText, legendFont, Brushes.DimGray, x + 20, y);
-
-                    itemsFound++;
+                    speicherKWh += (double)rs.Read("Energie");
                 }
+                rs.Close();
+            }
+            if (speicherKWh == 0) frm.speicherKWh = 5; else  frm.speicherKWh = speicherKWh;
+            frm.Init();
+
+            // 1. Die echte Produktion übergeben
+            float[] temp = new float[8760];
+            for (int i = 0; i < 8760; i++)
+            {
+                temp[i] = sim.simulation_pv.Stromproduktion[i] + sim.simulation_pv.Ueberschuss[i];
+            }
+            frm.pvProd = temp;
+
+            // 2. Den ECHTEN Bedarf übergeben (OHNE Abzug der Produktion)
+            // Nimm hier direkt das Array mit dem Hausverbrauch + WP-Verbrauch
+            frm.stromBedarf = sim.simulation_pv.Strombedarf_stuendlich;
+
+            // 3. Solarthermie (deine temp-Logik war okay, wenn du Erzeugung + Überschuss willst)
+            float[] tempST = new float[8760];
+            for (int i = 0; i < 8760; i++)
+            {
+                tempST[i] = (float)(sim.simulation_solarthermie.Waermeproduktion[i] + sim.simulation_solarthermie.Ueberschuss[i]);
+            }
+            frm.stProd = tempST;
+
+            frm.waermeBedarf = Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermebedarf, x => (float)x);
+
+            // Wichtig: Den Speicherwert aus dem sim-Objekt oder dem Standard-Vorgabewert setzen
+            // frm.speicherKWh = ... 
+
+            frm.UpdateSimulationData();
+            frm.ShowDialog();
+        }
+
+        private void checkBox_PV_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox_PV.Checked)
+            {
+                _chartManager[7]._chart.Series["PV"].Enabled = true;
+            }
+            else
+            {
+                _chartManager[7]._chart.Series["PV"].Enabled = false;
             }
         }
+
+  
     }
 
 }

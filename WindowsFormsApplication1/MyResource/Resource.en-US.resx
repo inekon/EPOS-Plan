@@ -147,4 +147,29 @@
   <data name="Text_nicht_geoffnet" xml:space="preserve">
     <value>not opened</value>
   </data>
+  <data name="KONFIG_BHKW" xml:space="preserve">
+    <value>CHP</value>
+  </data>
+  <data name="KONFIG_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="KONFIG_PHOTOVOLTAIK" xml:space="preserve">
+    <value>Photovoltaics</value>
+  </data>
+  <data name="KONFIG_SOLARTHERMIE" xml:space="preserve">
+    <value>Solar thermal energy</value>
+  </data>
+  <data name="KONFIG_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="KONFIG_GESAMTSYSTEM" xml:space="preserve">
+    <value>Overall system</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="KONFIG_STROMSPEICHER" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="KONFIG_STROMSPEICHER" xml:space="preserve">
+    <value>Electricity storage</value>
+  </data>
 </root>

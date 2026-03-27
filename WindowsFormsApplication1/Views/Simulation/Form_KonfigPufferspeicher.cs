@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using static WindowsFormsApplication1.Form_Simulation_Config;
 
 namespace WindowsFormsApplication1.Views.Simulation
 {

@@ -147,4 +147,25 @@
   <data name="Text_nicht_geoffnet" xml:space="preserve">
     <value>nicht geöffnet</value>
   </data>
+  <data name="KONFIG_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="KONFIG_HEIZKESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="KONFIG_PHOTOVOLTAIK" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="KONFIG_SOLARTHERMIE" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="KONFIG_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="KONFIG_GESAMTSYSTEM" xml:space="preserve">
+    <value>Gesamtsystem</value>
+  </data>
+  <data name="KONFIG_STROMSPEICHER" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
 </root>

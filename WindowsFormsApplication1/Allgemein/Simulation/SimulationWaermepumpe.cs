@@ -36,7 +36,7 @@ namespace WindowsFormsApplication1
         public double[] Modul_Heizstab = new double[MAX_WP];
         public double[] Modul_WP_Laufzeit = new double[MAX_WP];
 
-        private List<WErzeugerModel> wp_model = new List<WErzeugerModel>();
+        public List<WErzeugerModel> wp_model = new List<WErzeugerModel>();
         private List<_Kenndaten> wp_kenndaten = new List<_Kenndaten>();
         private string[] WP_Betriebsart = new string[MAX_WP];
         private int[] WP_Heizung = new int[MAX_WP];
@@ -95,7 +95,7 @@ namespace WindowsFormsApplication1
             {
                 wp.ReadAllFilter("ID=" + wp_list[i]);
                 WErzeugerModel model = wp.items[0];
-                wp_model.Add(model);
+         
                 WP_Betriebsart[i] = model.Betriebsart != null ? model.Betriebsart : "";
                 WP_Modul[i] = model.Bezeichner; 
 
@@ -104,9 +104,12 @@ namespace WindowsFormsApplication1
                 rs.Open("select * from Tab_WP where ID_WP=" + model.ID_WP);
                 if (rs.Next())
                 {
+                    model.Grenzleistung = (int)rs.Read("Nennleistung");
                     WP_Heizung[i] = (int)rs.Read("Heizung");
                 }
                 rs.Close();
+
+                wp_model.Add(model);
 
                 _Kenndaten item = new _Kenndaten();
                 item.Vorlauf = model.Vorlauf;
