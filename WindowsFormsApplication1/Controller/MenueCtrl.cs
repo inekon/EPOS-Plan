@@ -118,6 +118,7 @@ namespace WindowsFormsApplication1
                    frmmain.SetProjekt(frm.m_szProjekt);
                    frmmain.SetIDProjekt(frm.m_ID_Projekt);
                    frmmain.SetKlima(frm.m_szKlimaregion);
+                   Program.startfrm.SetKlima(frm.m_szKlimaregion);
                    frmmain.SetBearbeiter(ctrlproj.m_szBearbeiter);
                    frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);
                    frmmain.SetBeschreibung(ctrlproj.m_szBeschreibung);                
@@ -163,6 +164,7 @@ namespace WindowsFormsApplication1
                    frmmain.SetProjekt(ctrl.m_szProjektname);
                    frmmain.SetIDProjekt(ctrl.m_ID_Projekt);
                    frmmain.SetKlima(frmmain.GetKlimaregion(ctrlproj.m_ID_Klimaregion));
+                   Program.startfrm.SetKlima(frmmain.GetKlimaregion(ctrlproj.m_ID_Klimaregion)); 
                    frmmain.SetBearbeiter(ctrlproj.m_szBearbeiter);
                    frmmain.SetKunde(ctrlproj.m_szKunde);
                    frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);

@@ -79,13 +79,14 @@ namespace WindowsFormsApplication1
                 model.m_Temp_Coeff_Pmax = textBox_TempKoeff.Text == "" ? 0.0 : double.Parse(textBox_TempKoeff.Text);
                 model.m_Laenge = textBox_Laenge.Text == "" ? 0.0 : double.Parse(textBox_Laenge.Text);   
                 model.m_Breite = textBox_Breite.Text == "" ? 0.0 : double.Parse(textBox_Breite.Text);
+                model.m_Modulkosten = textBox_Modulkosten.Text == "" ? 0.0 : double.Parse(textBox_Modulkosten.Text);
 
                 if (m_Neu)
                 {
                     string sql = FormattableString.Invariant($@"
                         INSERT INTO TAB_PV ( 
                             Modulname, Firma, Beschreibung, Leistung, Wirkungsgrad,
-                            U_Mpp, U_Leerlauf, I_Mpp, I_Kurzschluss, gamma_PMP, Laenge, Breite 
+                            U_Mpp, U_Leerlauf, I_Mpp, I_Kurzschluss, gamma_PMP, Laenge, Breite, Modulkosten 
                         ) 
                         SELECT 
                             '{textBox_Bezeichner.Text}' AS Ausdr1, 
@@ -99,7 +100,8 @@ namespace WindowsFormsApplication1
                             {model.m_I_Kurzschluss} AS Ausdr9, 
                             {model.m_Temp_Coeff_Pmax} AS Ausdr10, 
                             {model.m_Laenge} AS Ausdr11, 
-                            {model.m_Breite} AS Ausdr12;");
+                            {model.m_Breite} AS Ausdr12,
+                            {model.m_Modulkosten} AS Ausdr13;");
 
                     DBCommand.CommandText = sql; 
                     DBCommand.ExecuteNonQuery();
@@ -122,7 +124,8 @@ namespace WindowsFormsApplication1
                             I_Kurzschluss = {model.m_I_Kurzschluss}, 
                             gamma_PMP = {model.m_Temp_Coeff_Pmax}, 
                             Laenge = {model.m_Laenge}, 
-                            Breite = {model.m_Breite}
+                            Breite = {model.m_Breite},
+                            Modulkosten = {model.m_Modulkosten}
                         WHERE Modulname = '{listBox_PV.Text}';");
 
                     DBCommand.CommandText = sql;    
@@ -186,7 +189,9 @@ namespace WindowsFormsApplication1
                 model.m_Laenge = Program.convertTxt2Double(textBox_Laenge.Text);
                 textBox_Breite.Text = rs.Read("Breite").ToString();
                 model.m_Breite = Program.convertTxt2Double(textBox_Breite.Text);
-                
+                textBox_Modulkosten.Text = rs.Read("Modulkosten").ToString();
+                model.m_Modulkosten = Program.convertTxt2Double(textBox_Modulkosten.Text);
+
             }
             rs.Close();
         }
@@ -217,6 +222,7 @@ namespace WindowsFormsApplication1
                 textBox_TempKoeff.Text = "0";
                 textBox_Laenge.Text = "0";
                 textBox_Breite.Text = "0";
+                textBox_Modulkosten.Text = "0"; 
             }
             return;
         }
@@ -237,6 +243,7 @@ namespace WindowsFormsApplication1
             textBox_TempKoeff.Text = "";
             textBox_Laenge.Text = "";
             textBox_Breite.Text = "";
+            textBox_Modulkosten.Text = "0";
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
@@ -322,5 +329,9 @@ namespace WindowsFormsApplication1
             if (!Program.checkInt(textBox_Breite, textBox_Breite.Text)) { textBox_Breite.Undo(); }
         }
 
+        private void textBox_Modulkosten_Validating(object sender, CancelEventArgs e)
+        {
+            if (!Program.checkDouble(textBox_Modulkosten, textBox_Modulkosten.Text)) { textBox_Modulkosten.Undo(); }
+        }
     }
 }

@@ -184,6 +184,7 @@ namespace WindowsFormsApplication1
             textBox_Energie.Text = "";
             textBox_Degradation.Text = "";
             textBox_Ladezustand.Text = "";
+            textBox_Modulkosten.Text = "0";
 
             rs.Open("select * from Tab_Stromspeicher where Bezeichner='" + listBox_SP.Text + "'");
             if (!rs.EOF())
@@ -192,8 +193,9 @@ namespace WindowsFormsApplication1
                 textBox_Typ.Text = (string)rs.Read("Typ");
                 textBox_Leistung.Text = rs.Read("Leistung").ToString();
                 textBox_Energie.Text = rs.Read("Energie").ToString();
-                textBox_Degradation.Text = rs.Read("Degradation").ToString(); ;
-                textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString(); ;
+                textBox_Degradation.Text = rs.Read("Degradation").ToString();
+                textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString();
+                textBox_Modulkosten.Text = rs.Read("Modulkosten").ToString();
             }
             rs.Close();
 
@@ -256,6 +258,11 @@ namespace WindowsFormsApplication1
             if (!Program.checkInt(textBox_Ladezustand, textBox_Ladezustand.Text)) { textBox_Ladezustand.Undo(); }
         }
 
+        private void textBox_Modulkosten_Validating(object sender, CancelEventArgs e)
+        {
+            if (!Program.checkInt(textBox_Modulkosten, textBox_Modulkosten.Text)) { textBox_Modulkosten.Undo(); }
+        }
+
         private void btn_OK_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.OK;
@@ -290,8 +297,9 @@ namespace WindowsFormsApplication1
                 textBox_Typ.Text = (string)rs.Read("Typ");
                 textBox_Leistung.Text = rs.Read("Leistung").ToString();
                 textBox_Energie.Text = rs.Read("Energie").ToString();
-                textBox_Degradation.Text = rs.Read("Degradation").ToString(); ;
-                textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString(); ;
+                textBox_Degradation.Text = rs.Read("Degradation").ToString();
+                textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString();
+                textBox_Modulkosten.Text = rs.Read("Modulkosten").ToString();
             }
             rs.Close();
 

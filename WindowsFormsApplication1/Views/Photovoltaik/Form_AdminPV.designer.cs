@@ -68,6 +68,9 @@
             this.textBox_Breite = new System.Windows.Forms.TextBox();
             this.label21 = new System.Windows.Forms.Label();
             this.textBox_Firma = new System.Windows.Forms.TextBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.label23 = new System.Windows.Forms.Label();
+            this.textBox_Modulkosten = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btn_Beenden
@@ -309,10 +312,31 @@
             resources.ApplyResources(this.textBox_Firma, "textBox_Firma");
             this.textBox_Firma.Name = "textBox_Firma";
             // 
+            // label22
+            // 
+            resources.ApplyResources(this.label22, "label22");
+            this.label22.BackColor = System.Drawing.Color.Black;
+            this.label22.ForeColor = System.Drawing.Color.White;
+            this.label22.Name = "label22";
+            // 
+            // label23
+            // 
+            resources.ApplyResources(this.label23, "label23");
+            this.label23.Name = "label23";
+            // 
+            // textBox_Modulkosten
+            // 
+            resources.ApplyResources(this.textBox_Modulkosten, "textBox_Modulkosten");
+            this.textBox_Modulkosten.Name = "textBox_Modulkosten";
+            this.textBox_Modulkosten.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Modulkosten_Validating);
+            // 
             // Form_AdminPV
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label22);
+            this.Controls.Add(this.label23);
+            this.Controls.Add(this.textBox_Modulkosten);
             this.Controls.Add(this.label21);
             this.Controls.Add(this.textBox_Firma);
             this.Controls.Add(this.label19);
@@ -400,5 +424,8 @@
         private System.Windows.Forms.TextBox textBox_Breite;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.TextBox textBox_Firma;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.TextBox textBox_Modulkosten;
     }
 }

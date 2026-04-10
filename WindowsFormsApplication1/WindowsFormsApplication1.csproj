@@ -260,7 +260,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Allgemein\GrafikTools\TextBoxExtensionsClass.cs" />
-    <Compile Include="Allgemein\CsvReader.cs" />
+    <Compile Include="Allgemein\Import\CsvReader.cs" />
     <Compile Include="Allgemein\FileDlgClass.cs" />
     <Compile Include="Allgemein\Form3Src.cs">
       <SubType>Form</SubType>
@@ -274,10 +274,31 @@
     <Compile Include="Allgemein\Import\VDI 3805\Heizkesselmport.cs" />
     <Compile Include="Allgemein\Import\Pan\PanDataService.cs" />
     <Compile Include="Allgemein\Import\Pan\PanModule.cs" />
-    <Compile Include="Allgemein\IniFileParser.cs" />
+    <Compile Include="Allgemein\Import\IniFileParser.cs" />
     <Compile Include="Allgemein\Import\VDI 3805\PufferSpImport.cs" />
     <Compile Include="Allgemein\Import\CEC\PVModule.cs" />
+    <Compile Include="Views\Simulation\NavigatorStrom.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Simulation\NavigatorStrom.Designer.cs">
+      <DependentUpon>NavigatorStrom.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Simulation\NavigatorUebersicht.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Simulation\NavigatorUebersicht.Designer.cs">
+      <DependentUpon>NavigatorUebersicht.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Simulation\NavigatorWaerme.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Simulation\NavigatorWaerme.Designer.cs">
+      <DependentUpon>NavigatorWaerme.cs</DependentUpon>
+    </Compile>
     <Compile Include="Allgemein\RecordSet.cs" />
+    <Compile Include="Allgemein\GrafikTools\RoundedPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Allgemein\Simulation\SimulationControl.cs" />
     <Compile Include="Allgemein\Simulation\Init.cs" />
     <Compile Include="Allgemein\Simulation\SimulationPV.cs" />
@@ -292,6 +313,7 @@
     <Compile Include="Allgemein\SolarPVGISCalculator.cs" />
     <Compile Include="Allgemein\Import\VDI 3805\WaermepumpenImport.cs" />
     <Compile Include="Allgemein\Import\CEC\UnifiedModule.cs" />
+    <Compile Include="Views\Simulation\TabNavigationManager.cs" />
     <Compile Include="Controller\ApplikationCtrl.cs" />
     <Compile Include="Controller\BHKWCtrl.cs" />
     <Compile Include="Controller\BHKWKontextMenuCtrl.cs">
@@ -479,6 +501,20 @@
     </Compile>
     <Compile Include="Views\Heizkessel\Form_Heizkessel_einlesen.designer.cs">
       <DependentUpon>Form_Heizkessel_einlesen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Kosten\Class1.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Views\Kosten\CostRow.cs" />
+    <Compile Include="Views\Kosten\Form_Kosten.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Kosten\Form_Kosten.Designer.cs">
+      <DependentUpon>Form_Kosten.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Kosten\Helper.cs" />
+    <Compile Include="Views\Kosten\SectionPanel.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Views\Photovoltaik\Form_AdminPV.cs">
       <SubType>Form</SubType>
@@ -851,6 +887,15 @@
     <EmbeddedResource Include="Allgemein\Form_Hinweis.resx">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\NavigatorStrom.resx">
+      <DependentUpon>NavigatorStrom.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\NavigatorUebersicht.resx">
+      <DependentUpon>NavigatorUebersicht.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Simulation\NavigatorWaerme.resx">
+      <DependentUpon>NavigatorWaerme.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MDIMainForm.de-DE.resx">
       <DependentUpon>MDIMainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -1005,6 +1050,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Heizkessel\Form_Heizkessel_einlesen.resx">
       <DependentUpon>Form_Heizkessel_einlesen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Kosten\Form_Kosten.resx">
+      <DependentUpon>Form_Kosten.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Photovoltaik\Form_AdminPV.en-US.resx">
+      <DependentUpon>Form_AdminPV.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Photovoltaik\Form_AdminPV.resx">
       <DependentUpon>Form_AdminPV.cs</DependentUpon>
@@ -1435,7 +1486,6 @@
       <DependentUpon>Form_WPAuswahl.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -1595,6 +1645,8 @@
     <None Include="Resources\catalog_edit.ico" />
     <Content Include="Resources\edit.ico" />
     <Content Include="Resources\edit.png" />
+    <None Include="Resources\Klimaregion_bild.png" />
+    <None Include="Resources\globe.png" />
     <Content Include="Resources\PDetailansicht.jpg" />
     <None Include="Resources\PSchnellSim.jpg" />
     <None Include="Resources\PDetailSim.jpg" />
