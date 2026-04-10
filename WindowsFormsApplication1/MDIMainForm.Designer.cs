@@ -77,6 +77,7 @@
             this.MenuItem_Lizenz = new System.Windows.Forms.ToolStripMenuItem();
             this.Deutsch = new System.Windows.Forms.ToolStripMenuItem();
             this.Englisch = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Kosten = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolbar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -322,7 +323,8 @@
             this.MenuItem_PufferSp_VDI3805,
             this.MeniItem_VDI3805,
             this.MenuItem_PV_Import_CEC,
-            this.MenuItem_ST_Import});
+            this.MenuItem_ST_Import,
+            this.MenuItem_Kosten});
             this.MenuItem_DatImport.Image = global::WindowsFormsApplication1.Properties.Resources.Menue5;
             resources.ApplyResources(this.MenuItem_DatImport, "MenuItem_DatImport");
             this.MenuItem_DatImport.Name = "MenuItem_DatImport";
@@ -428,6 +430,12 @@
             this.Englisch.Name = "Englisch";
             this.Englisch.Click += new System.EventHandler(this.Englisch_Click);
             // 
+            // MenuItem_Kosten
+            // 
+            this.MenuItem_Kosten.Name = "MenuItem_Kosten";
+            resources.ApplyResources(this.MenuItem_Kosten, "MenuItem_Kosten");
+            this.MenuItem_Kosten.Click += new System.EventHandler(this.MenuItem_Kosten_Click);
+            // 
             // MDIMainForm
             // 
             resources.ApplyResources(this, "$this");
@@ -495,6 +503,7 @@
         private System.Windows.Forms.ToolStripMenuItem MeniItem_VDI3805;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_PV_Import_CEC;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ST_Import;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Kosten;
     }
 }
 

@@ -52,6 +52,8 @@
             this.textBox_Typ = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.textBox_Name = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.textBox_Modulkosten = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -89,8 +91,8 @@
             // 
             // label_Type
             // 
-            resources.ApplyResources(this.label_Type, "label_Type");
             this.label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            resources.ApplyResources(this.label_Type, "label_Type");
             this.label_Type.Name = "label_Type";
             // 
             // btn_Abbrechen
@@ -116,17 +118,18 @@
             // 
             // dataGridView1
             // 
-            resources.ApplyResources(this.dataGridView1, "dataGridView1");
             this.dataGridView1.AllowUserToAddRows = false;
             this.dataGridView1.AllowUserToDeleteRows = false;
             this.dataGridView1.BackgroundColor = System.Drawing.Color.Silver;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            resources.ApplyResources(this.dataGridView1, "dataGridView1");
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.Click += new System.EventHandler(this.dataGridView1_Click);
             // 
             // groupBox1
             // 
-            resources.ApplyResources(this.groupBox1, "groupBox1");
+            this.groupBox1.Controls.Add(this.label9);
+            this.groupBox1.Controls.Add(this.textBox_Modulkosten);
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.label8);
             this.groupBox1.Controls.Add(this.textBox_Ladezustand);
@@ -139,6 +142,7 @@
             this.groupBox1.Controls.Add(this.textBox_Typ);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.textBox_Name);
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
@@ -202,6 +206,17 @@
             resources.ApplyResources(this.textBox_Name, "textBox_Name");
             this.textBox_Name.Name = "textBox_Name";
             // 
+            // label9
+            // 
+            resources.ApplyResources(this.label9, "label9");
+            this.label9.Name = "label9";
+            // 
+            // textBox_Modulkosten
+            // 
+            resources.ApplyResources(this.textBox_Modulkosten, "textBox_Modulkosten");
+            this.textBox_Modulkosten.Name = "textBox_Modulkosten";
+            this.textBox_Modulkosten.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Modulkosten_Validating);
+            // 
             // Form_Stromspeicher
             // 
             resources.ApplyResources(this, "$this");
@@ -254,5 +269,7 @@
         private System.Windows.Forms.TextBox textBox_Typ;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBox_Name;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox textBox_Modulkosten;
     }
 }

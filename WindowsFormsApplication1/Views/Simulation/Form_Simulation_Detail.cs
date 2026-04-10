@@ -1,5 +1,4 @@
-﻿using MathNet.Numerics;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -21,18 +20,12 @@ namespace WindowsFormsApplication1
         SimulationControl sim = new SimulationControl();
         KonfigurationCtrl ctrl = new KonfigurationCtrl();
         ProjektCtrl projektCtrl = new ProjektCtrl();
-        ChartManager[] _chartManager = new ChartManager[9];
+        ChartManager[] _chartManager = new ChartManager[10];
         ToolTip tooltip = new ToolTip();
 
         public int m_ID_Projekt;
         public double m_Waermebedarf_Gesamt;
         public double m_Strombedarf_Gesamt;
-
-        private float[] temp_profil;
-        private float[] temp_wp;
-        private float[] temp_hs;
-        private float[] temp_hk;
-        private float[] temp_ges;
 
         double waerme_spk = 0;
         double waerme_wp = 0;
@@ -42,6 +35,8 @@ namespace WindowsFormsApplication1
         double restwaermebedarf = 0;
 
         Point prevPosition;
+
+        private TabNavigationManager _navManager; // Global im Formular speichern
 
         public Form_Simulation_Detail(int iD_Projekt)
         {
@@ -72,6 +67,9 @@ namespace WindowsFormsApplication1
 
             colorListViewHeader(ref listView_SimWP, Color.LightBlue, Color.Black);
             colorListViewHeader(ref listView_SimSPK, Color.LightBlue, Color.Black);
+
+            // Initialisiere die Navigation für TabPage 1 (z.B. dein Solar-Tab)
+            _navManager = new TabNavigationManager(tabPage_Ergebnis, sim);
         }
 
         public void SetControls()
@@ -192,7 +190,7 @@ namespace WindowsFormsApplication1
             sim.Do_Simulation(m_ID_Projekt);
             Endergebniss_Simulation();
 
-            tabPage_Ergebnis.Invalidate();
+ 
         }
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
@@ -536,7 +534,7 @@ namespace WindowsFormsApplication1
                 textBox_STWaermebedarf.Text = (sim.simulation_solarthermie.Waermebedarf_gesamt / 1000).ToString("F2");
                 textBox_STRestwermebedarf.Text = ((sim.simulation_solarthermie.Waermebedarf_gesamt - sim.simulation_solarthermie.Waermeproduktion_gesamt) / 1000).ToString("F2");
                 tb_WaermeprST.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000).ToString("F2");
-                textBox_Ueberschuss.Text = (sim.simulation_solarthermie.ueberschuss_summe / 1000).ToString("F2");
+                textBox_Ueberschuss.Text = (sim.simulation_solarthermie.Ueberschuss_summe / 1000).ToString("F2");
 
                 // Chart Solarthermie Wärmerbedarf und Produktion
                 _chartManager[8] = new ChartManager(chart8);
@@ -558,16 +556,38 @@ namespace WindowsFormsApplication1
             // ********************************************************************************************/
             // PV
             // ********************************************************************************************/
-
             textBox_PVStrom.Text = (sim.simulation_pv.Stromproduktion.Sum() / 1000.0).ToString("F2");
             textBox_PVUeberschuss.Text = (sim.simulation_pv.Ueberschuss.Sum() / 1000.0).ToString("F2");
             textBox_PVStrombedarfsdeckung.Text = (sim.simulation_pv.Stromproduktion.Sum() * 100 / sim.simulation_pv.Strombedarf_stuendlich.Sum()).ToString("F2");
+            textBox_PVStrombedarf.Text = (sim.simulation_pv.Strombedarf.Sum() / 4000.0).ToString("F2");
+            textBox_PVReststrombedarf.Text = (sim.simulation_pv.Reststrom_viertelstunde.Sum() / 4000.0).ToString("F2");
 
+            _chartManager[9] = new ChartManager(chart_PV);
+            _chartManager[9].YMaxValue = sim.simulation_pv.Strombedarf.Max() * 1.1;
+            _chartManager[9].YMinValue = 0;
+            _chartManager[9].XAxisAsNumber = false;
+            _chartManager[9].XAxisTitle = "Monate";
+            _chartManager[9].YAxisTitle = "Leistung";
+            _chartManager[9].toolTipUnit = "kW";
+            _chartManager[9].ChartTitle = "Strombedarf, Photovoltaik Jahresganglinie";
+            _chartManager[9].MitLegende = true;
+            _chartManager[9].MaxXVALUE = 8760 * 4;
+            _chartManager[9].MitViertelStunde = true;
+            _chartManager[9].Init();
+            // NUR DER SPEICHER geht auf die rechte Achse (true = Sekundärachse kWh)
+            _chartManager[9].AddSeries("Speicherfüllstand", Color.FromArgb(120, 130, 140), sim.simulation_pv.Speicherfuellstand_viertelstunde);
+            _chartManager[9].AddSeries("Überschuss", Color.Yellow, sim.simulation_pv.Ueberschuss_viertelstunde);
+            _chartManager[9].AddSeries("Strombedarf", Color.Red, sim.simulation_pv.Strombedarf);
+            _chartManager[9].AddSeries("Photovoltaik", Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
+            _chartManager[9]._chart.Series["Überschuss"].Enabled = false;
+            _chartManager[9]._chart.Series["Speicherfüllstand"].Enabled = false;
+            checkBox_Ueberschuss.Checked = false;
+            checkBox_Speicherzustand.Checked = false;
+            textBox_MaxPSolar.Text =  sim.simulation_pv.MaxPSolar.ToString("F2");
 
             // ********************************************************************************************/
             // Ergebnisübersicht
             // ********************************************************************************************/
-
 
             // Heizkessel
             waerme_spk = 0;
@@ -578,53 +598,14 @@ namespace WindowsFormsApplication1
 
             // Wärmepumpe
             waerme_wp = sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
-
             waerme_heizstab = sim.simulation_wp.Heizstab_gesamt / 1000;
 
             // Solarthermie
             waerme_solar = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000;
-
             gesamt_waerme = waerme_spk + waerme_wp + waerme_heizstab + waerme_solar;
-
             restwaermebedarf = sim.simulation_Waermebedarf.Waermebedarf_Gesamt - gesamt_waerme;
 
-            // Chart Strombedarf und Stromverbrauch Übersicht
-            temp_profil = sim.simulation_Strombedarf.Strombedarf_viertelStundenwerte;
-            temp_wp = sim.Stundenwerte_zu_viertelstunden(sim.simulation_wp.WP_Strombedarf_stuendlich);
-            temp_hs = sim.Stundenwerte_zu_viertelstunden(sim.simulation_wp.Heizstab_stuendlich);
-            temp_hk = sim.Stundenwerte_zu_viertelstunden(sim.simulation_spk.Strombedarf_stuendlich);
-            temp_ges = new float[8760 * 4];
-
-            for (int i = 0; i < 8760 * 4; i++) temp_ges[i] = temp_wp[i] + temp_hs[i] + temp_hk[i] + temp_profil[i];
-            float[] temp_leer = new float[8760 * 4];
-
-            _chartManager[7] = new ChartManager(chart7);
-            _chartManager[7].YMaxValue = temp_ges.Max() + 1;
-            _chartManager[7].YMinValue = 0;
-            _chartManager[7].XAxisAsNumber = false;
-            _chartManager[7].XAxisTitle = "Monate";
-            _chartManager[7].YAxisTitle = "Leistung";
-            _chartManager[7].toolTipUnit = "kW";
-            _chartManager[7].ChartTitle = "Strombedarf, Stromverbrauch Jahresganglinie";
-            _chartManager[7].MitLegende = true;
-            _chartManager[7].MaxXVALUE = 8760 * 4;
-            _chartManager[7].MitViertelStunde = true;    
-            _chartManager[7].Init();
-            _chartManager[7].AddSeries("Gesamt", Color.Green, temp_ges);
-            _chartManager[7].AddSeries("Waermepumpe", Color.Orange, temp_wp);
-            _chartManager[7].AddSeries("Heizstab", Color.Yellow, temp_hs);
-            _chartManager[7].AddSeries("Heizkessel", Color.Blue, temp_hk);
-            _chartManager[7].AddSeries("Profil/Lastgang", Color.Brown, temp_profil);
-            // _chartManager[7].AddSeries("Rest", Color.Black, sim.Rest_Strombedarf_viertelstuendlich);
-            _chartManager[7].AddSeries("PV", Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
-            // _chartManager[7].AddSeries("Überschuss", Color.Magenta, sim.simulation_pv.Ueberschuss_viertelstunde);
-            _chartManager[7]._chart.Series["Waermepumpe"].Enabled = false;
-            _chartManager[7]._chart.Series["Heizstab"].Enabled = false;
-            _chartManager[7]._chart.Series["Heizkessel"].Enabled = false;
-            _chartManager[7]._chart.Series["Profil/Lastgang"].Enabled = false;
-            _chartManager[7]._chart.Series["PV"].Enabled = false;
-
-            checkBox_Gesamt.Checked = true;
+            _navManager.RefreshActivePage();
         }
 
         private void btn_Beenden_Click(object sender, EventArgs e)
@@ -734,57 +715,58 @@ namespace WindowsFormsApplication1
 
         private void checkBox_WP_sortiert_CheckedChanged(object sender, EventArgs e)
         {
-            if (!sim.bSimulationWP) return;
+            if (sim == null || !sim.bSimulationWP) return;
 
-            float[] temp = new float[8760];
-
+            // 1. Hilfsarray für Heizstab vorbereiten
+            float[] tempHeizstab = new float[8760];
             for (int i = 0; i < 8760; i++)
             {
-                if (ctrl.model.m_WP_Heizstab)
-                {
-                    temp[i] = sim.simulation_wp.WP_Waermeproduktion_stuendlich[i] + sim.simulation_wp.Heizstab_stuendlich[i];
-                }
-                else temp[i] = 0;
+                tempHeizstab[i] = ctrl.model.m_WP_Heizstab ?
+                    (sim.simulation_wp.WP_Waermeproduktion_stuendlich[i] + sim.simulation_wp.Heizstab_stuendlich[i]) : 0;
             }
+
+            // Manager referenzieren für bessere Lesbarkeit
+            var manager = _chartManager[3];
 
             if (checkBox_WP_sortiert.Checked)
             {
-                float[] sortedWBArray = new float[8760];
-                Array.Copy(sim.simulation_wp.WP_Waermeproduktion_stuendlich, sortedWBArray, 8760);
+                // --- SORTIERTER MODUS (Numerische X-Achse) ---
+                float[] sortedWBArray = (float[])sim.simulation_wp.WP_Waermeproduktion_stuendlich.Clone();
                 Array.Sort(sortedWBArray);
                 Array.Reverse(sortedWBArray);
 
-                float[] sortedArray = new float[8760];
-                Array.Copy(sim.simulation_wp.Waermebedarf_stuendlich, sortedArray, 8760);
-                Array.Sort(sortedArray);
-                Array.Reverse(sortedArray);
+                float[] sortedBedarf = (float[])sim.simulation_wp.Waermebedarf_stuendlich.Clone();
+                Array.Sort(sortedBedarf);
+                Array.Reverse(sortedBedarf);
 
-                float[] sortedArrayHeizstab = new float[8760];
-                Array.Copy(temp, sortedArrayHeizstab, 8760);
-                Array.Sort(sortedArrayHeizstab);
-                Array.Reverse(sortedArrayHeizstab);
+                float[] sortedHeizstab = (float[])tempHeizstab.Clone();
+                Array.Sort(sortedHeizstab);
+                Array.Reverse(sortedHeizstab);
 
-                _chartManager[3].XAxisAsNumber = true;
-                _chartManager[3].HardReset();
-                _chartManager[3].Init();
-                _chartManager[3].AddSeries("Wärmebedarf", Color.Red, sortedArray);
-                _chartManager[3].AddSeries("Heizstab", Color.Yellow, sortedArrayHeizstab);
-                _chartManager[3].AddSeries("Wärmeproduktion", Color.Blue, sortedWBArray);
-    
+                manager.XAxisAsNumber = true; // Wichtig für Init()
+                manager.HardReset();
+                manager.Init();
+
+                manager.AddSeries("Wärmebedarf", Color.Red, sortedBedarf);
+                manager.AddSeries("Heizstab", Color.Yellow, sortedHeizstab);
+                manager.AddSeries("Wärmeproduktion", Color.Blue, sortedWBArray);
             }
             else
             {
-                _chartManager[3].XAxisAsNumber = false;
-                _chartManager[3].HardReset();
-                _chartManager[3].Init();
-                _chartManager[3].AddSeries("Wärmebedarf", Color.Red, sim.simulation_wp.Waermebedarf_stuendlich);
-                _chartManager[3].AddSeries("Heizstab", Color.Yellow, temp);
-                _chartManager[3].AddSeries("Wärmeproduktion", Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich);
-     
+                // --- CHRONOLOGISCHER MODUS (Datum X-Achse) ---
+                manager.XAxisAsNumber = false;
+                manager.HardReset();
+                manager.Init(); // Hier wird FormatXAxisWithDate() aufgerufen
 
+                manager.AddSeries("Wärmebedarf", Color.Red, sim.simulation_wp.Waermebedarf_stuendlich);
+                manager.AddSeries("Heizstab", Color.Yellow, tempHeizstab);
+                manager.AddSeries("Wärmeproduktion", Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich);
             }
-        }
 
+            // Skalierung erzwingen
+            //manager.UpdateYScaleBasedOnVisibleSeries();
+            manager._chart.Invalidate();
+        }
         //List view header formatters
         public static void colorListViewHeader(ref ListView list, Color backColor, Color foreColor)
         {
@@ -880,65 +862,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void checkBox_Gesamt_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox_Gesamt.Checked)
-            {
-                _chartManager[7]._chart.Series["Gesamt"].Enabled = true;
-            }
-            else
-            {
-                _chartManager[7]._chart.Series["Gesamt"].Enabled = false;
-            }
-        }
 
-        private void checkBox_WP_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox_WP.Checked)
-            {
-                _chartManager[7]._chart.Series["Waermepumpe"].Enabled = true;
-            }
-            else
-            {
-                _chartManager[7]._chart.Series["Waermepumpe"].Enabled = false;
-            }
-        }
-
-        private void checkBox_Heizstab_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox_Heizstab.Checked)
-            {
-                _chartManager[7]._chart.Series["Heizstab"].Enabled = true;
-            }
-            else
-            {
-                _chartManager[7]._chart.Series["Heizstab"].Enabled = false;
-            }
-        }
-
-        private void checkBox_SPK_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox_SPK.Checked)
-            {
-                _chartManager[7]._chart.Series["Heizkessel"].Enabled = true;
-            }
-            else
-            {
-                _chartManager[7]._chart.Series["Heizkessel"].Enabled = false;
-            }
-        }
-
-        private void checkBox_Profil_Lastgang_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox_Profil_Lastgang.Checked)
-            {
-                _chartManager[7]._chart.Series["Profil/Lastgang"].Enabled = true;
-            }
-            else
-            {
-                _chartManager[7]._chart.Series["Profil/Lastgang"].Enabled = false;
-            }
-        }
                 
         private void InitTextBoxen(TabPage page)
         {
@@ -977,128 +901,88 @@ namespace WindowsFormsApplication1
             }
         }
   
-        private void tabPage_Ergebnis_Paint(object sender, PaintEventArgs e)
+ 
+
+        private void checkBox_Ueberschuss_CheckedChanged(object sender, EventArgs e)
         {
-            // Hintergrund des Formulars (Hellgrau für den Kontrast)
-            e.Graphics.Clear(Color.FromArgb(240, 240, 240));
-
-
-            // Kachel für Strom
-            Kacheln.DrawKPICard(e.Graphics, new Rectangle(20, 50, 220, 80),
-                        "Reststrombedarf", sim.Reststrom.ToString("F2"), "MWh/a", Color.DodgerBlue);
-
-            // Kachel für Wärme
-            Kacheln.DrawKPICard(e.Graphics, new Rectangle(260, 50, 220, 80),
-                        "Restwärmebedarf", restwaermebedarf.ToString("F2"), "MWh/a", Color.SeaGreen);
-
-            // Donat Chart Farben (WP, Solar, Heizstab, Kessel, Rest)
-            Color[] palette = new Color[] {
-                ColorTranslator.FromHtml("#2ECC71"), // WP
-                ColorTranslator.FromHtml("#E67E22"), // Solar
-                ColorTranslator.FromHtml("#F1C40F"), // Heizstab
-                ColorTranslator.FromHtml("#95A5A6"), // Kessel
-                ColorTranslator.FromHtml("#3498DB")  // Rest
-            };
-  
-            double[] werteArr_Prozent = new double[] { 0,0,0,0,0 };
-            double wb_gesamt = 0;
-            double werz_gesamt = 0;
-
-            if (sim.simulation_Waermebedarf != null)
+            // 1. Serie im Chart suchen und umschalten
+            if (chart_PV.Series.IndexOf("Überschuss") != -1)
             {
-                wb_gesamt = sim.simulation_Waermebedarf.Waermebedarf_Gesamt;
-                werteArr_Prozent = new double[] { waerme_wp * 100/ wb_gesamt,
-                                            waerme_solar* 100/ wb_gesamt,
-                                            waerme_heizstab * 100 / wb_gesamt,
-                                            waerme_spk * 100 / wb_gesamt,
-                                            restwaermebedarf * 100 / wb_gesamt };
-                
-                werz_gesamt = waerme_wp + waerme_solar + waerme_heizstab + waerme_spk;
+                chart_PV.Series["Überschuss"].Enabled = checkBox_Ueberschuss.Checked;
             }
 
-            // Bereich für die Diagramm-Kachel definieren
-            // (X=20, Y=150, Breite=220, Höhe=300)
-            Rectangle kachelBereich = new Rectangle(20, label_WBDeckung.Top + label_WBDeckung.Height +10, 220, 300);
-
-            // Die weiße Kachel zeichnen (mit der Funktion von vorhin)
-            Kacheln.DrawKPICard(e.Graphics, kachelBereich, "Wärmedeckung", "", "", Color.SeaGreen);
-
-            // Den Donut + Dynamische Legende darin aufrufen
-            // Der Funktion ein etwas kleineres "Innen-Rechteck" geben, damit Abstände zum Rand bleiben
-            Rectangle chartInnenBereich = new Rectangle(kachelBereich.X + 10, kachelBereich.Y + 40,
-                                                       kachelBereich.Width - 20, kachelBereich.Height - 50);
-
-            // Die Namen der 5 möglichen Quellen
-            string[] quellenNamen = { "Wärmepumpe", "Solarthermie", "Heizstab", "Spitzenkessel", "Restwärme" };
-
-            DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, chartInnenBereich, werteArr_Prozent, werz_gesamt * 100 / wb_gesamt, quellenNamen, palette);
+            // 2. Skalierung über den Manager korrigieren
+           // _chartManager[9].UpdateYScaleBasedOnVisibleSeries();
         }
 
-        private void btn_Zusammenfassung_Click(object sender, EventArgs e)
+        private void checkBox_Speicherzustand_CheckedChanged(object sender, EventArgs e)
         {
-            WErzeugerCtrl ctrl = new WErzeugerCtrl();
-            DashboardForm frm = new DashboardForm();
-            int id = 0;
-            double speicherKWh = 0; //Standardwert, z.B. 5 kWh
+            double neueMax = 0;
 
-            // alle Sromspeicher zum Projekt durchgehen und Leistung aufsummieren (oder direkt aus sim-Objekt, falls dort schon vorhanden)
-            ctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
-            for(int i=0; i<ctrl.rows; i++)
+            _chartManager[9]._chart.Series["Speicherfüllstand"].Enabled = checkBox_Speicherzustand.Checked;
+
+            if (checkBox_Speicherzustand.Checked)
             {
-                id = ctrl.items[i].ID_SP;
-                RecordSet rs = new RecordSet();
-                rs.Open("select * from Tab_Stromspeicher where ID=" + id);
-                if (rs.Next())
-                {
-                    speicherKWh += (double)rs.Read("Energie");
-                }
-                rs.Close();
-            }
-            if (speicherKWh == 0) frm.speicherKWh = 5; else  frm.speicherKWh = speicherKWh;
-            frm.Init();
-
-            // 1. Die echte Produktion übergeben
-            float[] temp = new float[8760];
-            for (int i = 0; i < 8760; i++)
-            {
-                temp[i] = sim.simulation_pv.Stromproduktion[i] + sim.simulation_pv.Ueberschuss[i];
-            }
-            frm.pvProd = temp;
-
-            // 2. Den ECHTEN Bedarf übergeben (OHNE Abzug der Produktion)
-            // Nimm hier direkt das Array mit dem Hausverbrauch + WP-Verbrauch
-            frm.stromBedarf = sim.simulation_pv.Strombedarf_stuendlich;
-
-            // 3. Solarthermie (deine temp-Logik war okay, wenn du Erzeugung + Überschuss willst)
-            float[] tempST = new float[8760];
-            for (int i = 0; i < 8760; i++)
-            {
-                tempST[i] = (float)(sim.simulation_solarthermie.Waermeproduktion[i] + sim.simulation_solarthermie.Ueberschuss[i]);
-            }
-            frm.stProd = tempST;
-
-            frm.waermeBedarf = Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermebedarf, x => (float)x);
-
-            // Wichtig: Den Speicherwert aus dem sim-Objekt oder dem Standard-Vorgabewert setzen
-            // frm.speicherKWh = ... 
-
-            frm.UpdateSimulationData();
-            frm.ShowDialog();
-        }
-
-        private void checkBox_PV_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox_PV.Checked)
-            {
-                _chartManager[7]._chart.Series["PV"].Enabled = true;
+                neueMax = sim.Stundenwerte_zu_viertelstunden(sim.simulation_pv.Speicherfuellstand).Max() * 1.1;//sim.simulation_pv.Strombedarf.Max() + 1;
+                if (neueMax < 10) neueMax = 10; // Minimum setzen, damit die Achse nicht zu klein wird
             }
             else
-            {
-                _chartManager[7]._chart.Series["PV"].Enabled = false;
-            }
-        }
+                neueMax = sim.simulation_pv.Strombedarf.Max() * 1.1;
 
-  
+            // Nur die Achse updaten ohne die Daten zu löschen:
+            var ca = _chartManager[9]._chart.ChartAreas[0];
+
+            ca.AxisY.Maximum = neueMax; // Den oben berechneten Wert direkt setzen
+            ca.AxisY.Interval = 0;      // Auf Auto stellen
+
+            // 2. Prüfen, ob die Serie existiert
+            if (_chartManager[9]._chart.Series.IndexOf("Speicherfüllstand") != -1)
+            {
+                var s = _chartManager[9]._chart.Series["Speicherfüllstand"];
+                bool anzeigen = checkBox_Speicherzustand.Checked;
+
+                s.Enabled = anzeigen;
+
+                if (anzeigen)
+                {
+                    // --- SPEZIALFALL: Y2-ACHSE AKTIVIEREN ---
+                    s.YAxisType = AxisType.Secondary; // Serie nach rechts binden
+                    ca.AxisY2.Enabled = AxisEnabled.True;
+
+                    // Optik der rechten Achse
+                    ca.AxisY2.Title = "Speicher [kWh]";
+                    ca.AxisY2.TitleForeColor = Color.Black;
+                    ca.AxisY2.LabelStyle.ForeColor = Color.Black;
+                    ca.AxisY2.MajorGrid.Enabled = false; // Gitter nur links lassen
+
+                    // Skalierung berechnen (falls nicht automatisch gewünscht)
+                    if (s.Points.Count > 0)
+                    {
+                        double maxVal = s.Points.Max(p => p.YValues[0]);
+                        ca.AxisY2.Maximum = maxVal > 0 ? maxVal * 1.1 : 10;
+                    }
+
+                    // Den inneren Bereich schrumpfen, damit rechts Platz für die 2. Achse ist
+                    ca.InnerPlotPosition.Auto = false;
+                    ca.InnerPlotPosition.X = 10;      // Start links
+                    ca.InnerPlotPosition.Width = 75;  // Vorher ca. 85, jetzt weniger für Y2-Platz
+                    ca.InnerPlotPosition.Y = 8;
+                    ca.InnerPlotPosition.Height = 75;
+
+                    // Sicherstellen, dass die Achse nicht abgeschnitten wird
+                    ca.AxisY2.LabelStyle.Enabled = true;
+
+                }
+                else
+                {
+                    // Y2-Achse wieder verstecken, wenn Speicher aus
+                    ca.AxisY2.Enabled = AxisEnabled.False;
+                }
+            }
+
+            ca.RecalculateAxesScale();
+            _chartManager[9]._chart.Invalidate();
+        }
     }
 
 }

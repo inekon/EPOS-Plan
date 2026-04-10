@@ -31,17 +31,20 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Start));
             this.tabControl_Wizard = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.label23 = new System.Windows.Forms.Label();
-            this.label22 = new System.Windows.Forms.Label();
+            this.panel_Klimaregion = new WindowsFormsApplication1.RoundedPanel();
             this.label21 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
-            this.label19 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
-            this.label17 = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
-            this.label13 = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.comboBox_Klimaregion = new System.Windows.Forms.ComboBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.label2_pBox_ProjektDetails = new System.Windows.Forms.Label();
+            this.label_pBox_ProjektDetails = new System.Windows.Forms.Label();
+            this.label2_pBox_Delete = new System.Windows.Forms.Label();
+            this.label_pBox_Delete = new System.Windows.Forms.Label();
+            this.label2_pBox_Bearbeiten = new System.Windows.Forms.Label();
+            this.label_pBox_Bearbeiten = new System.Windows.Forms.Label();
+            this.label2_pBox_ProjektZuletzt = new System.Windows.Forms.Label();
+            this.label_pBox_ProjektZuletzt = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2_pBox_ProjektOeffnen = new System.Windows.Forms.Label();
@@ -55,33 +58,32 @@
             this.pBox_ProjektZuletzt = new System.Windows.Forms.PictureBox();
             this.pBox_ProjektOeffnen = new System.Windows.Forms.PictureBox();
             this.pBox_ProjektNeu = new System.Windows.Forms.PictureBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.label73 = new System.Windows.Forms.Label();
-            this.label74 = new System.Windows.Forms.Label();
-            this.pBox_Brauchwasser = new System.Windows.Forms.PictureBox();
-            this.label38 = new System.Windows.Forms.Label();
-            this.label39 = new System.Windows.Forms.Label();
-            this.label36 = new System.Windows.Forms.Label();
-            this.label37 = new System.Windows.Forms.Label();
-            this.label34 = new System.Windows.Forms.Label();
-            this.label35 = new System.Windows.Forms.Label();
+            this.label2_pBox_Brauchwasser = new System.Windows.Forms.Label();
+            this.label_pBox_Brauchwasser = new System.Windows.Forms.Label();
+            this.label2_pBox_Prozess = new System.Windows.Forms.Label();
+            this.label_pBox_Prozess = new System.Windows.Forms.Label();
+            this.label2_pBox_WBedarfDaten = new System.Windows.Forms.Label();
+            this.label_pBox_WBedarfDaten = new System.Windows.Forms.Label();
+            this.label2_pBox_Gebaude = new System.Windows.Forms.Label();
+            this.label_pBox_Gebaude = new System.Windows.Forms.Label();
             this.label33 = new System.Windows.Forms.Label();
             this.label32 = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
             this.label25 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
+            this.pBox_Brauchwasser = new System.Windows.Forms.PictureBox();
             this.pBox_WBHinweis = new System.Windows.Forms.PictureBox();
             this.pBox_Prozess = new System.Windows.Forms.PictureBox();
             this.pBox_WBedarfDaten = new System.Windows.Forms.PictureBox();
             this.pBox_Gebaude = new System.Windows.Forms.PictureBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.label44 = new System.Windows.Forms.Label();
-            this.label45 = new System.Windows.Forms.Label();
-            this.label42 = new System.Windows.Forms.Label();
-            this.label43 = new System.Windows.Forms.Label();
-            this.label40 = new System.Windows.Forms.Label();
-            this.label41 = new System.Windows.Forms.Label();
+            this.label2_pBox_StromMessdaten = new System.Windows.Forms.Label();
+            this.label_pBox_StromMessdaten = new System.Windows.Forms.Label();
+            this.label2_pBox_StromProfilEigenes = new System.Windows.Forms.Label();
+            this.label_pBox_StromProfilEigenes = new System.Windows.Forms.Label();
+            this.label2_pBox_StdLastProfil = new System.Windows.Forms.Label();
+            this.label_pBox_StdLastProfil = new System.Windows.Forms.Label();
             this.label26 = new System.Windows.Forms.Label();
             this.label27 = new System.Windows.Forms.Label();
             this.Label5 = new System.Windows.Forms.Label();
@@ -102,8 +104,8 @@
             this.label53 = new System.Windows.Forms.Label();
             this.label50 = new System.Windows.Forms.Label();
             this.label51 = new System.Windows.Forms.Label();
-            this.label48 = new System.Windows.Forms.Label();
-            this.label49 = new System.Windows.Forms.Label();
+            this.label2_pBox_Heizkessel = new System.Windows.Forms.Label();
+            this.label_pBox_Heizkessel = new System.Windows.Forms.Label();
             this.label46 = new System.Windows.Forms.Label();
             this.label47 = new System.Windows.Forms.Label();
             this.label28 = new System.Windows.Forms.Label();
@@ -130,11 +132,11 @@
             this.label65 = new System.Windows.Forms.Label();
             this.label62 = new System.Windows.Forms.Label();
             this.label63 = new System.Windows.Forms.Label();
+            this.btn_SimKonfig = new System.Windows.Forms.Button();
             this.label60 = new System.Windows.Forms.Label();
             this.label61 = new System.Windows.Forms.Label();
             this.label30 = new System.Windows.Forms.Label();
             this.label31 = new System.Windows.Forms.Label();
-            this.btn_SimKonfig = new System.Windows.Forms.Button();
             this.label_Komponenten = new System.Windows.Forms.Label();
             this.label_Strom = new System.Windows.Forms.Label();
             this.label_WBedarf = new System.Windows.Forms.Label();
@@ -146,6 +148,7 @@
             this.pBoxSchnellSim = new System.Windows.Forms.PictureBox();
             this.pictureBox_Zusammenfassung = new System.Windows.Forms.PictureBox();
             this.tabPage6 = new System.Windows.Forms.TabPage();
+            this.btn_Kosten = new System.Windows.Forms.Button();
             this.textBox_ProjektOpen = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
@@ -156,13 +159,15 @@
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.tabControl_Wizard.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.panel_Klimaregion.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektDetails)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Bearbeiten)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektZuletzt)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektOeffnen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektNeu)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Brauchwasser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_WBHinweis)).BeginInit();
@@ -187,6 +192,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_DetailSim)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxSchnellSim)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_Zusammenfassung)).BeginInit();
+            this.tabPage6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
@@ -206,17 +212,15 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.label23);
-            this.tabPage1.Controls.Add(this.label22);
-            this.tabPage1.Controls.Add(this.label21);
-            this.tabPage1.Controls.Add(this.label18);
-            this.tabPage1.Controls.Add(this.label19);
-            this.tabPage1.Controls.Add(this.label16);
-            this.tabPage1.Controls.Add(this.label17);
-            this.tabPage1.Controls.Add(this.label14);
-            this.tabPage1.Controls.Add(this.label15);
-            this.tabPage1.Controls.Add(this.label12);
-            this.tabPage1.Controls.Add(this.label13);
+            this.tabPage1.Controls.Add(this.panel_Klimaregion);
+            this.tabPage1.Controls.Add(this.label2_pBox_ProjektDetails);
+            this.tabPage1.Controls.Add(this.label_pBox_ProjektDetails);
+            this.tabPage1.Controls.Add(this.label2_pBox_Delete);
+            this.tabPage1.Controls.Add(this.label_pBox_Delete);
+            this.tabPage1.Controls.Add(this.label2_pBox_Bearbeiten);
+            this.tabPage1.Controls.Add(this.label_pBox_Bearbeiten);
+            this.tabPage1.Controls.Add(this.label2_pBox_ProjektZuletzt);
+            this.tabPage1.Controls.Add(this.label_pBox_ProjektZuletzt);
             this.tabPage1.Controls.Add(this.label1);
             this.tabPage1.Controls.Add(this.label3);
             this.tabPage1.Controls.Add(this.label2_pBox_ProjektOeffnen);
@@ -230,88 +234,112 @@
             this.tabPage1.Controls.Add(this.pBox_ProjektZuletzt);
             this.tabPage1.Controls.Add(this.pBox_ProjektOeffnen);
             this.tabPage1.Controls.Add(this.pBox_ProjektNeu);
-            this.tabPage1.Controls.Add(this.pictureBox1);
             resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // label23
+            // panel_Klimaregion
             // 
-            resources.ApplyResources(this.label23, "label23");
-            this.label23.ForeColor = System.Drawing.Color.DimGray;
-            this.label23.Name = "label23";
-            // 
-            // label22
-            // 
-            resources.ApplyResources(this.label22, "label22");
-            this.label22.ForeColor = System.Drawing.Color.DimGray;
-            this.label22.Name = "label22";
+            this.panel_Klimaregion.Controls.Add(this.label21);
+            this.panel_Klimaregion.Controls.Add(this.pictureBox1);
+            this.panel_Klimaregion.Controls.Add(this.panel1);
+            this.panel_Klimaregion.Controls.Add(this.label22);
+            this.panel_Klimaregion.CornerRadius = 9;
+            resources.ApplyResources(this.panel_Klimaregion, "panel_Klimaregion");
+            this.panel_Klimaregion.Name = "panel_Klimaregion";
             // 
             // label21
             // 
             resources.ApplyResources(this.label21, "label21");
-            this.label21.ForeColor = System.Drawing.Color.DimGray;
             this.label21.Name = "label21";
             // 
-            // label18
+            // pictureBox1
             // 
-            this.label18.Cursor = System.Windows.Forms.Cursors.Hand;
-            resources.ApplyResources(this.label18, "label18");
-            this.label18.ForeColor = System.Drawing.Color.DimGray;
-            this.label18.Name = "label18";
-            this.label18.Click += new System.EventHandler(this.label18_Click);
+            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.globe;
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.TabStop = false;
             // 
-            // label19
+            // panel1
             // 
-            resources.ApplyResources(this.label19, "label19");
-            this.label19.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label19.Name = "label19";
-            this.label19.Click += new System.EventHandler(this.label19_Click);
+            this.panel1.BackColor = System.Drawing.Color.DodgerBlue;
+            this.panel1.Controls.Add(this.comboBox_Klimaregion);
+            resources.ApplyResources(this.panel1, "panel1");
+            this.panel1.Name = "panel1";
             // 
-            // label16
+            // comboBox_Klimaregion
             // 
-            resources.ApplyResources(this.label16, "label16");
-            this.label16.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label16.ForeColor = System.Drawing.Color.DimGray;
-            this.label16.Name = "label16";
-            this.label16.Click += new System.EventHandler(this.label16_Click);
+            resources.ApplyResources(this.comboBox_Klimaregion, "comboBox_Klimaregion");
+            this.comboBox_Klimaregion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox_Klimaregion.FormattingEnabled = true;
+            this.comboBox_Klimaregion.Name = "comboBox_Klimaregion";
+            this.comboBox_Klimaregion.SelectedIndexChanged += new System.EventHandler(this.comboBox_Klimaregion_SelectedIndexChanged);
+            this.comboBox_Klimaregion.DropDownClosed += new System.EventHandler(this.comboBox_Klimaregion_DropDownClosed);
             // 
-            // label17
+            // label22
             // 
-            resources.ApplyResources(this.label17, "label17");
-            this.label17.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label17.Name = "label17";
-            this.label17.Click += new System.EventHandler(this.label17_Click);
+            resources.ApplyResources(this.label22, "label22");
+            this.label22.Name = "label22";
             // 
-            // label14
+            // label2_pBox_ProjektDetails
             // 
-            resources.ApplyResources(this.label14, "label14");
-            this.label14.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label14.ForeColor = System.Drawing.Color.DimGray;
-            this.label14.Name = "label14";
-            this.label14.Click += new System.EventHandler(this.label14_Click);
+            this.label2_pBox_ProjektDetails.Cursor = System.Windows.Forms.Cursors.Hand;
+            resources.ApplyResources(this.label2_pBox_ProjektDetails, "label2_pBox_ProjektDetails");
+            this.label2_pBox_ProjektDetails.ForeColor = System.Drawing.Color.DimGray;
+            this.label2_pBox_ProjektDetails.Name = "label2_pBox_ProjektDetails";
+            this.label2_pBox_ProjektDetails.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label15
+            // label_pBox_ProjektDetails
             // 
-            resources.ApplyResources(this.label15, "label15");
-            this.label15.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label15.Name = "label15";
-            this.label15.Click += new System.EventHandler(this.label15_Click);
+            resources.ApplyResources(this.label_pBox_ProjektDetails, "label_pBox_ProjektDetails");
+            this.label_pBox_ProjektDetails.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label_pBox_ProjektDetails.Name = "label_pBox_ProjektDetails";
+            this.label_pBox_ProjektDetails.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label12
+            // label2_pBox_Delete
             // 
-            resources.ApplyResources(this.label12, "label12");
-            this.label12.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label12.ForeColor = System.Drawing.Color.DimGray;
-            this.label12.Name = "label12";
-            this.label12.Click += new System.EventHandler(this.label12_Click);
+            resources.ApplyResources(this.label2_pBox_Delete, "label2_pBox_Delete");
+            this.label2_pBox_Delete.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_Delete.ForeColor = System.Drawing.Color.DimGray;
+            this.label2_pBox_Delete.Name = "label2_pBox_Delete";
+            this.label2_pBox_Delete.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label13
+            // label_pBox_Delete
             // 
-            resources.ApplyResources(this.label13, "label13");
-            this.label13.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label13.Name = "label13";
-            this.label13.Click += new System.EventHandler(this.label13_Click);
+            resources.ApplyResources(this.label_pBox_Delete, "label_pBox_Delete");
+            this.label_pBox_Delete.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label_pBox_Delete.Name = "label_pBox_Delete";
+            this.label_pBox_Delete.Click += new System.EventHandler(this.CentralControl_Click);
+            // 
+            // label2_pBox_Bearbeiten
+            // 
+            resources.ApplyResources(this.label2_pBox_Bearbeiten, "label2_pBox_Bearbeiten");
+            this.label2_pBox_Bearbeiten.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_Bearbeiten.ForeColor = System.Drawing.Color.DimGray;
+            this.label2_pBox_Bearbeiten.Name = "label2_pBox_Bearbeiten";
+            this.label2_pBox_Bearbeiten.Click += new System.EventHandler(this.CentralControl_Click);
+            // 
+            // label_pBox_Bearbeiten
+            // 
+            resources.ApplyResources(this.label_pBox_Bearbeiten, "label_pBox_Bearbeiten");
+            this.label_pBox_Bearbeiten.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label_pBox_Bearbeiten.Name = "label_pBox_Bearbeiten";
+            this.label_pBox_Bearbeiten.Click += new System.EventHandler(this.CentralControl_Click);
+            // 
+            // label2_pBox_ProjektZuletzt
+            // 
+            resources.ApplyResources(this.label2_pBox_ProjektZuletzt, "label2_pBox_ProjektZuletzt");
+            this.label2_pBox_ProjektZuletzt.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_ProjektZuletzt.ForeColor = System.Drawing.Color.DimGray;
+            this.label2_pBox_ProjektZuletzt.Name = "label2_pBox_ProjektZuletzt";
+            this.label2_pBox_ProjektZuletzt.Click += new System.EventHandler(this.CentralControl_Click);
+            // 
+            // label_pBox_ProjektZuletzt
+            // 
+            resources.ApplyResources(this.label_pBox_ProjektZuletzt, "label_pBox_ProjektZuletzt");
+            this.label_pBox_ProjektZuletzt.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label_pBox_ProjektZuletzt.Name = "label_pBox_ProjektZuletzt";
+            this.label_pBox_ProjektZuletzt.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // label1
             // 
@@ -329,13 +357,13 @@
             resources.ApplyResources(this.label2_pBox_ProjektOeffnen, "label2_pBox_ProjektOeffnen");
             this.label2_pBox_ProjektOeffnen.ForeColor = System.Drawing.Color.DimGray;
             this.label2_pBox_ProjektOeffnen.Name = "label2_pBox_ProjektOeffnen";
-            this.label2_pBox_ProjektOeffnen.Click += new System.EventHandler(this.label2_pBox_ProjektOeffnen_Click);
+            this.label2_pBox_ProjektOeffnen.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // label_pBox_ProjektOeffnen
             // 
             resources.ApplyResources(this.label_pBox_ProjektOeffnen, "label_pBox_ProjektOeffnen");
             this.label_pBox_ProjektOeffnen.Name = "label_pBox_ProjektOeffnen";
-            this.label_pBox_ProjektOeffnen.Click += new System.EventHandler(this.label_pBox_ProjektOeffnen_Click);
+            this.label_pBox_ProjektOeffnen.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // label2_pBox_ProjektNeu
             // 
@@ -343,14 +371,14 @@
             this.label2_pBox_ProjektNeu.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label2_pBox_ProjektNeu.ForeColor = System.Drawing.Color.DimGray;
             this.label2_pBox_ProjektNeu.Name = "label2_pBox_ProjektNeu";
-            this.label2_pBox_ProjektNeu.Click += new System.EventHandler(this.label2_pBox_ProjektNeu_Click);
+            this.label2_pBox_ProjektNeu.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // label_pBox_ProjektNeu
             // 
             resources.ApplyResources(this.label_pBox_ProjektNeu, "label_pBox_ProjektNeu");
             this.label_pBox_ProjektNeu.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label_pBox_ProjektNeu.Name = "label_pBox_ProjektNeu";
-            this.label_pBox_ProjektNeu.Click += new System.EventHandler(this.label_pBox_ProjektNeu_Click);
+            this.label_pBox_ProjektNeu.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // pBox_ProjektDetails
             // 
@@ -359,7 +387,7 @@
             this.pBox_ProjektDetails.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_ProjektDetails.Name = "pBox_ProjektDetails";
             this.pBox_ProjektDetails.TabStop = false;
-            this.pBox_ProjektDetails.Click += new System.EventHandler(this.pBox_ProjektDetails_Click);
+            this.pBox_ProjektDetails.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // pBox_Delete
             // 
@@ -368,7 +396,7 @@
             this.pBox_Delete.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Delete.Name = "pBox_Delete";
             this.pBox_Delete.TabStop = false;
-            this.pBox_Delete.Click += new System.EventHandler(this.pBox_Delete_Click);
+            this.pBox_Delete.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // Label4
             // 
@@ -382,7 +410,7 @@
             this.pBox_Bearbeiten.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Bearbeiten.Name = "pBox_Bearbeiten";
             this.pBox_Bearbeiten.TabStop = false;
-            this.pBox_Bearbeiten.Click += new System.EventHandler(this.pBox_Bearbeiten_Click);
+            this.pBox_Bearbeiten.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // pBox_ProjektZuletzt
             // 
@@ -391,7 +419,7 @@
             this.pBox_ProjektZuletzt.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_ProjektZuletzt.Name = "pBox_ProjektZuletzt";
             this.pBox_ProjektZuletzt.TabStop = false;
-            this.pBox_ProjektZuletzt.Click += new System.EventHandler(this.pBox_ProjektZuletzt_Click);
+            this.pBox_ProjektZuletzt.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // pBox_ProjektOeffnen
             // 
@@ -400,7 +428,7 @@
             this.pBox_ProjektOeffnen.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_ProjektOeffnen.Name = "pBox_ProjektOeffnen";
             this.pBox_ProjektOeffnen.TabStop = false;
-            this.pBox_ProjektOeffnen.Click += new System.EventHandler(this.pBox_ProjektOeffnen_Click);
+            this.pBox_ProjektOeffnen.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // pBox_ProjektNeu
             // 
@@ -410,32 +438,24 @@
             this.pBox_ProjektNeu.Name = "pBox_ProjektNeu";
             this.pBox_ProjektNeu.TabStop = false;
             this.pBox_ProjektNeu.Tag = "";
-            this.pBox_ProjektNeu.Click += new System.EventHandler(this.pBox_ProjektNeu_Click);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PProjektname;
-            resources.ApplyResources(this.pictureBox1, "pictureBox1");
-            this.pictureBox1.Cursor = System.Windows.Forms.Cursors.Default;
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.TabStop = false;
+            this.pBox_ProjektNeu.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.label73);
-            this.tabPage2.Controls.Add(this.label74);
-            this.tabPage2.Controls.Add(this.pBox_Brauchwasser);
-            this.tabPage2.Controls.Add(this.label38);
-            this.tabPage2.Controls.Add(this.label39);
-            this.tabPage2.Controls.Add(this.label36);
-            this.tabPage2.Controls.Add(this.label37);
-            this.tabPage2.Controls.Add(this.label34);
-            this.tabPage2.Controls.Add(this.label35);
+            this.tabPage2.Controls.Add(this.label2_pBox_Brauchwasser);
+            this.tabPage2.Controls.Add(this.label_pBox_Brauchwasser);
+            this.tabPage2.Controls.Add(this.label2_pBox_Prozess);
+            this.tabPage2.Controls.Add(this.label_pBox_Prozess);
+            this.tabPage2.Controls.Add(this.label2_pBox_WBedarfDaten);
+            this.tabPage2.Controls.Add(this.label_pBox_WBedarfDaten);
+            this.tabPage2.Controls.Add(this.label2_pBox_Gebaude);
+            this.tabPage2.Controls.Add(this.label_pBox_Gebaude);
             this.tabPage2.Controls.Add(this.label33);
             this.tabPage2.Controls.Add(this.label32);
             this.tabPage2.Controls.Add(this.label24);
             this.tabPage2.Controls.Add(this.label25);
             this.tabPage2.Controls.Add(this.Label2);
+            this.tabPage2.Controls.Add(this.pBox_Brauchwasser);
             this.tabPage2.Controls.Add(this.pBox_WBHinweis);
             this.tabPage2.Controls.Add(this.pBox_Prozess);
             this.tabPage2.Controls.Add(this.pBox_WBedarfDaten);
@@ -444,75 +464,65 @@
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // label73
+            // label2_pBox_Brauchwasser
             // 
-            this.label73.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label73.ForeColor = System.Drawing.Color.DimGray;
-            resources.ApplyResources(this.label73, "label73");
-            this.label73.Name = "label73";
-            this.label73.Click += new System.EventHandler(this.label73_Click);
+            this.label2_pBox_Brauchwasser.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_Brauchwasser.ForeColor = System.Drawing.Color.DimGray;
+            resources.ApplyResources(this.label2_pBox_Brauchwasser, "label2_pBox_Brauchwasser");
+            this.label2_pBox_Brauchwasser.Name = "label2_pBox_Brauchwasser";
+            this.label2_pBox_Brauchwasser.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label74
+            // label_pBox_Brauchwasser
             // 
-            resources.ApplyResources(this.label74, "label74");
-            this.label74.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label74.Name = "label74";
-            this.label74.Click += new System.EventHandler(this.label74_Click);
+            resources.ApplyResources(this.label_pBox_Brauchwasser, "label_pBox_Brauchwasser");
+            this.label_pBox_Brauchwasser.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label_pBox_Brauchwasser.Name = "label_pBox_Brauchwasser";
+            this.label_pBox_Brauchwasser.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // pBox_Brauchwasser
+            // label2_pBox_Prozess
             // 
-            this.pBox_Brauchwasser.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt3;
-            resources.ApplyResources(this.pBox_Brauchwasser, "pBox_Brauchwasser");
-            this.pBox_Brauchwasser.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pBox_Brauchwasser.Name = "pBox_Brauchwasser";
-            this.pBox_Brauchwasser.TabStop = false;
-            this.pBox_Brauchwasser.Click += new System.EventHandler(this.pBox_Brauchwasser_Click);
-            this.pBox_Brauchwasser.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Brauchwasser_Paint);
+            resources.ApplyResources(this.label2_pBox_Prozess, "label2_pBox_Prozess");
+            this.label2_pBox_Prozess.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_Prozess.ForeColor = System.Drawing.Color.DimGray;
+            this.label2_pBox_Prozess.Name = "label2_pBox_Prozess";
+            this.label2_pBox_Prozess.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label38
+            // label_pBox_Prozess
             // 
-            resources.ApplyResources(this.label38, "label38");
-            this.label38.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label38.ForeColor = System.Drawing.Color.DimGray;
-            this.label38.Name = "label38";
-            this.label38.Click += new System.EventHandler(this.label38_Click);
+            resources.ApplyResources(this.label_pBox_Prozess, "label_pBox_Prozess");
+            this.label_pBox_Prozess.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label_pBox_Prozess.Name = "label_pBox_Prozess";
+            this.label_pBox_Prozess.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label39
+            // label2_pBox_WBedarfDaten
             // 
-            resources.ApplyResources(this.label39, "label39");
-            this.label39.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label39.Name = "label39";
-            this.label39.Click += new System.EventHandler(this.label39_Click);
+            this.label2_pBox_WBedarfDaten.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_WBedarfDaten.ForeColor = System.Drawing.Color.DimGray;
+            resources.ApplyResources(this.label2_pBox_WBedarfDaten, "label2_pBox_WBedarfDaten");
+            this.label2_pBox_WBedarfDaten.Name = "label2_pBox_WBedarfDaten";
+            this.label2_pBox_WBedarfDaten.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label36
+            // label_pBox_WBedarfDaten
             // 
-            this.label36.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label36.ForeColor = System.Drawing.Color.DimGray;
-            resources.ApplyResources(this.label36, "label36");
-            this.label36.Name = "label36";
-            this.label36.Click += new System.EventHandler(this.label36_Click);
+            this.label_pBox_WBedarfDaten.Cursor = System.Windows.Forms.Cursors.Hand;
+            resources.ApplyResources(this.label_pBox_WBedarfDaten, "label_pBox_WBedarfDaten");
+            this.label_pBox_WBedarfDaten.Name = "label_pBox_WBedarfDaten";
+            this.label_pBox_WBedarfDaten.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label37
+            // label2_pBox_Gebaude
             // 
-            this.label37.Cursor = System.Windows.Forms.Cursors.Hand;
-            resources.ApplyResources(this.label37, "label37");
-            this.label37.Name = "label37";
-            this.label37.Click += new System.EventHandler(this.label37_Click);
+            this.label2_pBox_Gebaude.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_Gebaude.ForeColor = System.Drawing.Color.DimGray;
+            resources.ApplyResources(this.label2_pBox_Gebaude, "label2_pBox_Gebaude");
+            this.label2_pBox_Gebaude.Name = "label2_pBox_Gebaude";
+            this.label2_pBox_Gebaude.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label34
+            // label_pBox_Gebaude
             // 
-            this.label34.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label34.ForeColor = System.Drawing.Color.DimGray;
-            resources.ApplyResources(this.label34, "label34");
-            this.label34.Name = "label34";
-            this.label34.Click += new System.EventHandler(this.label34_Click);
-            // 
-            // label35
-            // 
-            this.label35.Cursor = System.Windows.Forms.Cursors.Hand;
-            resources.ApplyResources(this.label35, "label35");
-            this.label35.Name = "label35";
-            this.label35.Click += new System.EventHandler(this.label35_Click);
+            this.label_pBox_Gebaude.Cursor = System.Windows.Forms.Cursors.Hand;
+            resources.ApplyResources(this.label_pBox_Gebaude, "label_pBox_Gebaude");
+            this.label_pBox_Gebaude.Name = "label_pBox_Gebaude";
+            this.label_pBox_Gebaude.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // label33
             // 
@@ -545,6 +555,16 @@
             resources.ApplyResources(this.Label2, "Label2");
             this.Label2.Name = "Label2";
             // 
+            // pBox_Brauchwasser
+            // 
+            this.pBox_Brauchwasser.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt3;
+            resources.ApplyResources(this.pBox_Brauchwasser, "pBox_Brauchwasser");
+            this.pBox_Brauchwasser.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pBox_Brauchwasser.Name = "pBox_Brauchwasser";
+            this.pBox_Brauchwasser.TabStop = false;
+            this.pBox_Brauchwasser.Click += new System.EventHandler(this.CentralControl_Click);
+            this.pBox_Brauchwasser.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Brauchwasser_Paint);
+            // 
             // pBox_WBHinweis
             // 
             this.pBox_WBHinweis.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.Unbenannt4;
@@ -560,7 +580,7 @@
             this.pBox_Prozess.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Prozess.Name = "pBox_Prozess";
             this.pBox_Prozess.TabStop = false;
-            this.pBox_Prozess.Click += new System.EventHandler(this.pBox_Prozess_Click);
+            this.pBox_Prozess.Click += new System.EventHandler(this.CentralControl_Click);
             this.pBox_Prozess.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Prozess_Paint);
             // 
             // pBox_WBedarfDaten
@@ -570,7 +590,7 @@
             this.pBox_WBedarfDaten.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_WBedarfDaten.Name = "pBox_WBedarfDaten";
             this.pBox_WBedarfDaten.TabStop = false;
-            this.pBox_WBedarfDaten.Click += new System.EventHandler(this.pBox_WBedarfDaten_Click);
+            this.pBox_WBedarfDaten.Click += new System.EventHandler(this.CentralControl_Click);
             this.pBox_WBedarfDaten.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_WBedarfDaten_Paint);
             // 
             // pBox_Gebaude
@@ -580,17 +600,17 @@
             this.pBox_Gebaude.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Gebaude.Name = "pBox_Gebaude";
             this.pBox_Gebaude.TabStop = false;
-            this.pBox_Gebaude.Click += new System.EventHandler(this.pBox_Gebaude_Click);
+            this.pBox_Gebaude.Click += new System.EventHandler(this.CentralControl_Click);
             this.pBox_Gebaude.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Gebaude_Paint);
             // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.label44);
-            this.tabPage3.Controls.Add(this.label45);
-            this.tabPage3.Controls.Add(this.label42);
-            this.tabPage3.Controls.Add(this.label43);
-            this.tabPage3.Controls.Add(this.label40);
-            this.tabPage3.Controls.Add(this.label41);
+            this.tabPage3.Controls.Add(this.label2_pBox_StromMessdaten);
+            this.tabPage3.Controls.Add(this.label_pBox_StromMessdaten);
+            this.tabPage3.Controls.Add(this.label2_pBox_StromProfilEigenes);
+            this.tabPage3.Controls.Add(this.label_pBox_StromProfilEigenes);
+            this.tabPage3.Controls.Add(this.label2_pBox_StdLastProfil);
+            this.tabPage3.Controls.Add(this.label_pBox_StdLastProfil);
             this.tabPage3.Controls.Add(this.label26);
             this.tabPage3.Controls.Add(this.label27);
             this.tabPage3.Controls.Add(this.Label5);
@@ -602,50 +622,50 @@
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // label44
+            // label2_pBox_StromMessdaten
             // 
-            resources.ApplyResources(this.label44, "label44");
-            this.label44.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label44.ForeColor = System.Drawing.Color.DimGray;
-            this.label44.Name = "label44";
-            this.label44.Click += new System.EventHandler(this.label44_Click);
+            resources.ApplyResources(this.label2_pBox_StromMessdaten, "label2_pBox_StromMessdaten");
+            this.label2_pBox_StromMessdaten.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_StromMessdaten.ForeColor = System.Drawing.Color.DimGray;
+            this.label2_pBox_StromMessdaten.Name = "label2_pBox_StromMessdaten";
+            this.label2_pBox_StromMessdaten.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label45
+            // label_pBox_StromMessdaten
             // 
-            resources.ApplyResources(this.label45, "label45");
-            this.label45.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label45.Name = "label45";
-            this.label45.Click += new System.EventHandler(this.label45_Click);
+            resources.ApplyResources(this.label_pBox_StromMessdaten, "label_pBox_StromMessdaten");
+            this.label_pBox_StromMessdaten.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label_pBox_StromMessdaten.Name = "label_pBox_StromMessdaten";
+            this.label_pBox_StromMessdaten.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label42
+            // label2_pBox_StromProfilEigenes
             // 
-            resources.ApplyResources(this.label42, "label42");
-            this.label42.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label42.ForeColor = System.Drawing.Color.DimGray;
-            this.label42.Name = "label42";
-            this.label42.Click += new System.EventHandler(this.label42_Click);
+            resources.ApplyResources(this.label2_pBox_StromProfilEigenes, "label2_pBox_StromProfilEigenes");
+            this.label2_pBox_StromProfilEigenes.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_StromProfilEigenes.ForeColor = System.Drawing.Color.DimGray;
+            this.label2_pBox_StromProfilEigenes.Name = "label2_pBox_StromProfilEigenes";
+            this.label2_pBox_StromProfilEigenes.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label43
+            // label_pBox_StromProfilEigenes
             // 
-            resources.ApplyResources(this.label43, "label43");
-            this.label43.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label43.Name = "label43";
-            this.label43.Click += new System.EventHandler(this.label43_Click);
+            resources.ApplyResources(this.label_pBox_StromProfilEigenes, "label_pBox_StromProfilEigenes");
+            this.label_pBox_StromProfilEigenes.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label_pBox_StromProfilEigenes.Name = "label_pBox_StromProfilEigenes";
+            this.label_pBox_StromProfilEigenes.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label40
+            // label2_pBox_StdLastProfil
             // 
-            resources.ApplyResources(this.label40, "label40");
-            this.label40.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label40.ForeColor = System.Drawing.Color.DimGray;
-            this.label40.Name = "label40";
-            this.label40.Click += new System.EventHandler(this.label40_Click);
+            resources.ApplyResources(this.label2_pBox_StdLastProfil, "label2_pBox_StdLastProfil");
+            this.label2_pBox_StdLastProfil.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_StdLastProfil.ForeColor = System.Drawing.Color.DimGray;
+            this.label2_pBox_StdLastProfil.Name = "label2_pBox_StdLastProfil";
+            this.label2_pBox_StdLastProfil.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label41
+            // label_pBox_StdLastProfil
             // 
-            resources.ApplyResources(this.label41, "label41");
-            this.label41.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label41.Name = "label41";
-            this.label41.Click += new System.EventHandler(this.label41_Click);
+            resources.ApplyResources(this.label_pBox_StdLastProfil, "label_pBox_StdLastProfil");
+            this.label_pBox_StdLastProfil.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label_pBox_StdLastProfil.Name = "label_pBox_StdLastProfil";
+            this.label_pBox_StdLastProfil.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // label26
             // 
@@ -676,7 +696,7 @@
             this.pBox_StromMessdaten.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_StromMessdaten.Name = "pBox_StromMessdaten";
             this.pBox_StromMessdaten.TabStop = false;
-            this.pBox_StromMessdaten.Click += new System.EventHandler(this.pBox_StromMessdaten_Click);
+            this.pBox_StromMessdaten.Click += new System.EventHandler(this.CentralControl_Click);
             this.pBox_StromMessdaten.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_StromMessdaten_Paint);
             // 
             // pBox_StromProfilEigenes
@@ -686,7 +706,7 @@
             this.pBox_StromProfilEigenes.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_StromProfilEigenes.Name = "pBox_StromProfilEigenes";
             this.pBox_StromProfilEigenes.TabStop = false;
-            this.pBox_StromProfilEigenes.Click += new System.EventHandler(this.pBox_StromProfilEigenes_Click);
+            this.pBox_StromProfilEigenes.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // pBox_StdLastProfil
             // 
@@ -695,7 +715,7 @@
             this.pBox_StdLastProfil.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_StdLastProfil.Name = "pBox_StdLastProfil";
             this.pBox_StdLastProfil.TabStop = false;
-            this.pBox_StdLastProfil.Click += new System.EventHandler(this.pBox_StdLastProfil_Click);
+            this.pBox_StdLastProfil.Click += new System.EventHandler(this.CentralControl_Click);
             this.pBox_StdLastProfil.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_StdLastProfil_Paint);
             // 
             // tabPage4
@@ -712,8 +732,8 @@
             this.tabPage4.Controls.Add(this.label53);
             this.tabPage4.Controls.Add(this.label50);
             this.tabPage4.Controls.Add(this.label51);
-            this.tabPage4.Controls.Add(this.label48);
-            this.tabPage4.Controls.Add(this.label49);
+            this.tabPage4.Controls.Add(this.label2_pBox_Heizkessel);
+            this.tabPage4.Controls.Add(this.label_pBox_Heizkessel);
             this.tabPage4.Controls.Add(this.label46);
             this.tabPage4.Controls.Add(this.label47);
             this.tabPage4.Controls.Add(this.label28);
@@ -823,20 +843,20 @@
             this.label51.Name = "label51";
             this.label51.Click += new System.EventHandler(this.label51_Click);
             // 
-            // label48
+            // label2_pBox_Heizkessel
             // 
-            resources.ApplyResources(this.label48, "label48");
-            this.label48.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label48.ForeColor = System.Drawing.Color.DimGray;
-            this.label48.Name = "label48";
-            this.label48.Click += new System.EventHandler(this.label48_Click);
+            resources.ApplyResources(this.label2_pBox_Heizkessel, "label2_pBox_Heizkessel");
+            this.label2_pBox_Heizkessel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label2_pBox_Heizkessel.ForeColor = System.Drawing.Color.DimGray;
+            this.label2_pBox_Heizkessel.Name = "label2_pBox_Heizkessel";
+            this.label2_pBox_Heizkessel.Click += new System.EventHandler(this.CentralControl_Click);
             // 
-            // label49
+            // label_pBox_Heizkessel
             // 
-            resources.ApplyResources(this.label49, "label49");
-            this.label49.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label49.Name = "label49";
-            this.label49.Click += new System.EventHandler(this.label49_Click);
+            resources.ApplyResources(this.label_pBox_Heizkessel, "label_pBox_Heizkessel");
+            this.label_pBox_Heizkessel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label_pBox_Heizkessel.Name = "label_pBox_Heizkessel";
+            this.label_pBox_Heizkessel.Click += new System.EventHandler(this.CentralControl_Click);
             // 
             // label46
             // 
@@ -941,7 +961,7 @@
             this.pBox_Heizkessel.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pBox_Heizkessel.Name = "pBox_Heizkessel";
             this.pBox_Heizkessel.TabStop = false;
-            this.pBox_Heizkessel.Click += new System.EventHandler(this.pBox_Heizkessel_Click);
+            this.pBox_Heizkessel.Click += new System.EventHandler(this.CentralControl_Click);
             this.pBox_Heizkessel.Paint += new System.Windows.Forms.PaintEventHandler(this.pBox_Heizkessel_Paint);
             // 
             // pBox_BHKW
@@ -983,11 +1003,11 @@
             this.tabPage5.Controls.Add(this.label65);
             this.tabPage5.Controls.Add(this.label62);
             this.tabPage5.Controls.Add(this.label63);
+            this.tabPage5.Controls.Add(this.btn_SimKonfig);
             this.tabPage5.Controls.Add(this.label60);
             this.tabPage5.Controls.Add(this.label61);
             this.tabPage5.Controls.Add(this.label30);
             this.tabPage5.Controls.Add(this.label31);
-            this.tabPage5.Controls.Add(this.btn_SimKonfig);
             this.tabPage5.Controls.Add(this.label_Komponenten);
             this.tabPage5.Controls.Add(this.label_Strom);
             this.tabPage5.Controls.Add(this.label_WBedarf);
@@ -1073,6 +1093,15 @@
             this.label63.Name = "label63";
             this.label63.Click += new System.EventHandler(this.label63_Click);
             // 
+            // btn_SimKonfig
+            // 
+            this.btn_SimKonfig.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(this.btn_SimKonfig, "btn_SimKonfig");
+            this.btn_SimKonfig.Name = "btn_SimKonfig";
+            this.btn_SimKonfig.TabStop = false;
+            this.btn_SimKonfig.UseVisualStyleBackColor = true;
+            this.btn_SimKonfig.Click += new System.EventHandler(this.btn_SimKonfig_Click);
+            // 
             // label60
             // 
             resources.ApplyResources(this.label60, "label60");
@@ -1098,13 +1127,6 @@
             // 
             resources.ApplyResources(this.label31, "label31");
             this.label31.Name = "label31";
-            // 
-            // btn_SimKonfig
-            // 
-            resources.ApplyResources(this.btn_SimKonfig, "btn_SimKonfig");
-            this.btn_SimKonfig.Name = "btn_SimKonfig";
-            this.btn_SimKonfig.UseVisualStyleBackColor = true;
-            this.btn_SimKonfig.Click += new System.EventHandler(this.btn_SimKonfig_Click);
             // 
             // label_Komponenten
             // 
@@ -1177,9 +1199,17 @@
             // 
             // tabPage6
             // 
+            this.tabPage6.Controls.Add(this.btn_Kosten);
             resources.ApplyResources(this.tabPage6, "tabPage6");
             this.tabPage6.Name = "tabPage6";
             this.tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // btn_Kosten
+            // 
+            resources.ApplyResources(this.btn_Kosten, "btn_Kosten");
+            this.btn_Kosten.Name = "btn_Kosten";
+            this.btn_Kosten.UseVisualStyleBackColor = true;
+            this.btn_Kosten.Click += new System.EventHandler(this.btn_Kosten_Click);
             // 
             // textBox_ProjektOpen
             // 
@@ -1259,13 +1289,16 @@
             this.tabControl_Wizard.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.panel_Klimaregion.ResumeLayout(false);
+            this.panel_Klimaregion.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektDetails)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Bearbeiten)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektZuletzt)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektOeffnen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektNeu)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Brauchwasser)).EndInit();
@@ -1294,6 +1327,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBox_DetailSim)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBoxSchnellSim)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_Zusammenfassung)).EndInit();
+            this.tabPage6.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -1309,11 +1343,9 @@
         private System.Windows.Forms.PictureBox pBox_WBedarfDaten;
         private System.Windows.Forms.Label Label2;
         private System.Windows.Forms.PictureBox pBox_WBHinweis;
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.PictureBox pBox_ProjektNeu;
         private System.Windows.Forms.PictureBox pBox_Bearbeiten;
         private System.Windows.Forms.PictureBox pBox_ProjektZuletzt;
-        private System.Windows.Forms.PictureBox pBox_ProjektOeffnen;
         private System.Windows.Forms.Label Label4;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.TextBox textBox_ProjektOpen;
@@ -1357,18 +1389,15 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.Label label18;
-        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label label2_pBox_ProjektZuletzt;
+        private System.Windows.Forms.Label label_pBox_ProjektZuletzt;
+        private System.Windows.Forms.Label label2_pBox_Bearbeiten;
+        private System.Windows.Forms.Label label_pBox_Bearbeiten;
+        private System.Windows.Forms.Label label2_pBox_Delete;
+        private System.Windows.Forms.Label label_pBox_Delete;
+        private System.Windows.Forms.Label label2_pBox_ProjektDetails;
+        private System.Windows.Forms.Label label_pBox_ProjektDetails;
         private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.Label label23;
-        private System.Windows.Forms.Label label22;
-        private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.Label label26;
@@ -1379,22 +1408,22 @@
         private System.Windows.Forms.Label label31;
         private System.Windows.Forms.Label label32;
         private System.Windows.Forms.Label label33;
-        private System.Windows.Forms.Label label34;
-        private System.Windows.Forms.Label label35;
-        private System.Windows.Forms.Label label36;
-        private System.Windows.Forms.Label label37;
-        private System.Windows.Forms.Label label38;
-        private System.Windows.Forms.Label label39;
-        private System.Windows.Forms.Label label40;
-        private System.Windows.Forms.Label label41;
-        private System.Windows.Forms.Label label42;
-        private System.Windows.Forms.Label label43;
-        private System.Windows.Forms.Label label44;
-        private System.Windows.Forms.Label label45;
+        private System.Windows.Forms.Label label2_pBox_Gebaude;
+        private System.Windows.Forms.Label label_pBox_Gebaude;
+        private System.Windows.Forms.Label label2_pBox_WBedarfDaten;
+        private System.Windows.Forms.Label label_pBox_WBedarfDaten;
+        private System.Windows.Forms.Label label2_pBox_Prozess;
+        private System.Windows.Forms.Label label_pBox_Prozess;
+        private System.Windows.Forms.Label label2_pBox_StdLastProfil;
+        private System.Windows.Forms.Label label_pBox_StdLastProfil;
+        private System.Windows.Forms.Label label2_pBox_StromProfilEigenes;
+        private System.Windows.Forms.Label label_pBox_StromProfilEigenes;
+        private System.Windows.Forms.Label label2_pBox_StromMessdaten;
+        private System.Windows.Forms.Label label_pBox_StromMessdaten;
         private System.Windows.Forms.Label label46;
         private System.Windows.Forms.Label label47;
-        private System.Windows.Forms.Label label48;
-        private System.Windows.Forms.Label label49;
+        private System.Windows.Forms.Label label2_pBox_Heizkessel;
+        private System.Windows.Forms.Label label_pBox_Heizkessel;
         private System.Windows.Forms.Label label50;
         private System.Windows.Forms.Label label51;
         private System.Windows.Forms.Label label54;
@@ -1421,10 +1450,18 @@
         private System.Windows.Forms.Label label71;
         private System.Windows.Forms.Label label72;
         private System.Windows.Forms.PictureBox pBox_Pufferspeicher;
-        private System.Windows.Forms.Label label73;
-        private System.Windows.Forms.Label label74;
+        private System.Windows.Forms.Label label2_pBox_Brauchwasser;
+        private System.Windows.Forms.Label label_pBox_Brauchwasser;
         private System.Windows.Forms.PictureBox pBox_Brauchwasser;
         private System.Windows.Forms.Label label_Haus;
         private System.Windows.Forms.Label label_ProjektStatus;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.ComboBox comboBox_Klimaregion;
+        private System.Windows.Forms.PictureBox pBox_ProjektOeffnen;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Button btn_Kosten;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Label label21;
+        private WindowsFormsApplication1.RoundedPanel panel_Klimaregion;
     }
 }

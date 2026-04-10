@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace WindowsFormsApplication1
 {
-    internal class SimulationControl
+    public  class SimulationControl
     {
         // Simulationen Deklaration
         public SimulationWaermepumpe simulation_wp = new SimulationWaermepumpe();
@@ -68,6 +68,10 @@ namespace WindowsFormsApplication1
                 if (tool[i] == "Wärmepumpe")
                 {
                     Ausgang = Simulation_WP_Ctrl(Eingang, ctrl_konfig.model.m_WP_Heizstab);
+                    
+                    double x = Ausgang.Sum();
+                    double x2 = Eingang.Sum();
+
                     if (m_bError) Ausgang = Eingang;
                     Restwaerme = 0;
                     for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
@@ -101,6 +105,11 @@ namespace WindowsFormsApplication1
                 else if (tool[i] == "Solarthermie")
                 {
                     Ausgang = Simulation_Solarthermie_Ctrl(Eingang);
+
+
+                    double x = Ausgang.Sum();
+                    double x2 = Eingang.Sum();
+
                     Restwaerme = 0;
                     for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
                     Rest_Wermebedarf_stuendlich = Ausgang;

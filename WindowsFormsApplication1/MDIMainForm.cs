@@ -1,15 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -249,6 +241,19 @@ namespace WindowsFormsApplication1
         {
             Main_PV_Test frm = new Main_PV_Test();
             frm.ShowDialog();
+        }
+
+        private void MenuItem_Kosten_Click(object sender, EventArgs e)
+        {
+            int id = Program.startfrm.m_ID_Projekt;
+            if (id != 0)
+            {
+                using (var form = new Form_Kosten(id))
+                {
+                    form.ShowDialog(); // Öffnet das Fenster als modaler Dialog
+                }
+            }
+            else MessageBox.Show("Projekt auswählen!");
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    class KonfigurationCtrl : KonfigurationModel
+    public class KonfigurationCtrl : KonfigurationModel
     {
         public OdbcCommand DBCommand;
         public KonfigurationModel model = new KonfigurationModel();

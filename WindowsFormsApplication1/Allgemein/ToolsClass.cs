@@ -113,24 +113,26 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public void OpenFileWithDefaultApp(string filePath)
+        public bool OpenFileWithDefaultApp(string filePath)
         {
             // Überprüfen Sie, ob die Datei existiert
             if (!System.IO.File.Exists(filePath))
             {
                 // Fehlerbehandlung: Datei nicht gefunden
-                return;
+                return false;
             }
 
             try
             {
                 // Startet die Datei mit der Standardanwendung des Systems.
                 Process.Start(filePath);
+                return true;
             }
             catch (Exception ex)
             {
                 // Fehlerbehandlung für den Fall, dass kein Programm zum Öffnen der Datei vorhanden ist.
                 Console.WriteLine("Fehler beim Öffnen der Datei: " + ex.Message);
+                return false;
             }
         }
     }

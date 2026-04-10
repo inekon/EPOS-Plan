@@ -84,12 +84,13 @@ namespace WindowsFormsApplication1
                 model.m_Leistung = double.Parse(textBox_Leistung.Text);
                 model.m_Degradation = double.Parse(textBox_Degradation.Text);
                 model.m_Ladezustand = double.Parse(textBox_Ladezustand.Text);
+                model.m_Modulkosten = double.Parse(textBox_Modulkosten.Text);   
 
                 if (m_Neu)
                 {
                     string sql = FormattableString.Invariant($@"
                         INSERT INTO TAB_Stromspeicher ( 
-                            Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand 
+                            Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten
                         ) 
                         SELECT 
                             '{textBox_Bezeichner.Text}' AS Ausdr1, 
@@ -97,7 +98,8 @@ namespace WindowsFormsApplication1
                             {model.m_Leistung} AS Ausdr3, 
                             {model.m_Energie} AS Ausdr4, 
                             {model.m_Degradation} AS Ausdr5, 
-                            {model.m_Ladezustand} AS Ausdr6;");
+                            {model.m_Modulkosten} AS Ausdr6, 
+                            {model.m_Ladezustand} AS Ausdr7;");
 
                     DBCommand.CommandText = sql;
                     DBCommand.ExecuteNonQuery();
@@ -114,7 +116,8 @@ namespace WindowsFormsApplication1
                             Leistung = {model.m_Leistung}, 
                             Energie = {model.m_Energie}, 
                             Degradation = {model.m_Degradation}, 
-                            Ladezustand = {model.m_Ladezustand} 
+                            Ladezustand = {model.m_Ladezustand},
+                            Modulkosten = {model.m_Modulkosten}
                         WHERE Bezeichner = '{listBox_Stromspeicher.Text}';"); ;
                     
                     DBCommand.CommandText = sql;    
@@ -163,6 +166,8 @@ namespace WindowsFormsApplication1
                 model.m_Degradation = Double.Parse(textBox_Degradation.Text);
                 textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString();
                 model.m_Ladezustand = double.Parse(textBox_Ladezustand.Text);
+                textBox_Modulkosten.Text = rs.Read("Modulkosten").ToString();
+                model.m_Modulkosten = Double.Parse(textBox_Modulkosten.Text);
                 textBox_Bezeichner.Text = rs.Read("Bezeichner").ToString();
                 model.m_szBezeichner = textBox_Bezeichner.Text;
             }
@@ -187,6 +192,7 @@ namespace WindowsFormsApplication1
                 textBox_Typ.Text = "Lithium-Ionen";
                 textBox_Degradation.Text = "0";
                 textBox_Ladezustand.Text = "0";
+                textBox_Modulkosten.Text = "0";
                 textBox_Leistung.Text = "0";
                 textBox_Energie.Text = "0";
             }

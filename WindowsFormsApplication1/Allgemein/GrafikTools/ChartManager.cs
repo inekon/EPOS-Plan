@@ -52,11 +52,26 @@ namespace WindowsFormsApplication1
             }
 
             // --- PLATZ FÜR LEGENDE ---
+            // --- DYNAMISCHE POSITIONIERUNG ---
             ca.InnerPlotPosition.Auto = false;
-            ca.InnerPlotPosition.X = 12;
-            ca.InnerPlotPosition.Y = 8;
-            ca.InnerPlotPosition.Width = 85;
-            ca.InnerPlotPosition.Height = MitLegende ? 70 : 75;
+
+            // 1. X-Position (Abstand links): 
+            // Je schmaler das Chart, desto mehr Prozent brauchen wir für die Y-Achsen-Zahlen
+            ca.InnerPlotPosition.X = _chart.Width < 300 ? 18 : 12;
+
+            // 2. Y-Position (Abstand oben): 
+            ca.InnerPlotPosition.Y = _chart.Height < 300 ? 10 : 7;
+
+            // 3. Breite:
+            ca.InnerPlotPosition.Width = _chart.Width < 300 ? 78 : 85;
+
+            // 4. Höhe (Das ist der entscheidende Teil für den Leerraum):
+            // Wir berechnen einen Puffer für die Legende und Achse
+            float bottomSpace = 15; // Standard-Puffer in Prozent
+            //if (MitLegende) bottomSpace += 10; // Mehr Platz wenn Legende da
+            if (_chart.Height < 300) bottomSpace += 5; // Extra-Puffer bei sehr kleinen Grafiken
+
+            ca.InnerPlotPosition.Height = 100 - ca.InnerPlotPosition.Y - bottomSpace;
 
             // --- TITEL ---
             _chart.Titles.Clear();
@@ -133,11 +148,33 @@ namespace WindowsFormsApplication1
                 _chartWheelManager.IsXYMode = IsXYChart;
             }
 
+            // Position der gesamten ChartArea (inklusive Achsenbeschriftung) im Control
+            ca.Position.Auto = true; // Oder manuell auf ca.Position = new ElementPosition(0, 0, 100, 100);
+
             _chart.Series.Clear();
             _chart.Invalidate();
         }
 
-        private double CalculateNiceInterval(double range, int targetLabels)
+        public void RefreshChart()
+        {
+            if (_chart == null || _chart.ChartAreas.Count == 0) return;
+
+            ChartArea ca = _chart.ChartAreas[0];
+
+            // 1. Achsen-Reset (Wichtig gegen FormatException)
+            ca.AxisX.ScaleView.ZoomReset();
+            ca.AxisX.IntervalType = DateTimeIntervalType.Auto;
+            ca.AxisX.Interval = 0;
+            ca.AxisX.LabelStyle.Format = "";
+
+            // 2. Initialisierung neu aufrufen (setzt Titel, Farben, Achsen-Grundwerte)
+            this.Init();
+
+            // 3. Neuzeichnen erzwingen
+            _chart.Invalidate();
+        }
+
+        public double CalculateNiceInterval(double range, int targetLabels)
         {
             if (range <= 0) return 1;
 
@@ -475,34 +512,58 @@ namespace WindowsFormsApplication1
 
         public static void DrawChartWithDynamicLegend(Graphics g, Rectangle area, double[] values, double deckung, string[] names, Color[] colors)
         {
-            // 1. Den Donut-Chart im oberen Teil der Kachel zeichnen
-            Rectangle chartRect = new Rectangle(area.X + (area.Width - 120) / 2, area.Y + 10, 120, 120);
+            // Donut etwas kleiner machen für die niedrige Kachel
+            int chartSize = Math.Min(area.Height - 20, 100);
+            int padding = 10;
+
+            Rectangle chartRect = new Rectangle(
+                area.X + padding,
+                area.Y + (area.Height - chartSize) / 2,
+                chartSize,
+                chartSize
+            );
+
+            // Donut zeichnen
             DrawMultiDonutChart(g, chartRect, values, deckung, colors);
 
-            // 2. Dynamische Legende darunter
-            int yOffset = chartRect.Bottom + 20;
-            Font legendFont = new Font("Segoe UI", 9, FontStyle.Regular);
+            // 2. Legende rechts daneben positionieren
+            // Wir starten rechts vom Chart + ein wenig Abstand
+            int legendStartX = chartRect.Right + 15;
+            int legendStartY = area.Y + 40; // Start-Höhe der Legende
+
+            Font legendFont = new Font("Segoe UI", 8.5f, FontStyle.Regular);
             int itemsFound = 0;
 
             for (int i = 0; i < values.Length; i++)
             {
                 // Nur anzeigen, wenn der Wert > 0 ist
-                if (values[i] > 0)
+                if (values[i] > 0.01) // 0.01 statt 0 fängt Rundungsfehler ab
                 {
-                    int x = area.X + 10;
-                    int y = yOffset + (itemsFound * 22); // 22px Zeilenabstand
+                    int x = legendStartX;
+                    int y = legendStartY + (itemsFound * 20); // 20px Zeilenabstand (etwas kompakter)
 
-                    // Kleiner farbiger Indikator-Punkt
+                    // Kleiner farbiger Indikator-Punkt (Antialiasing für Rundheit)
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
                     using (SolidBrush b = new SolidBrush(colors[i]))
                     {
-                        g.SmoothingMode = SmoothingMode.AntiAlias;
-                        g.FillEllipse(b, x, y + 3, 10, 10);
+                        g.FillEllipse(b, x, y + 4, 8, 8); // Etwas kleinerer Punkt
                     }
 
-                    // Text: "Name: 85,0%"
-                    string legendText = $"{names[i]}: {values[i]:0.00}%";
-                    g.DrawString(legendText, legendFont, Brushes.DimGray, x + 20, y);
+                    // Text: Name und Wert
+                    // Wir nutzen DimGray für einen moderneren Look
+                    string legendText = $"{names[i]}";
+                    string valueText = $"{values[i]:0.0}%";
 
+                    // Name zeichnen
+                    g.DrawString(legendText, legendFont, Brushes.DimGray, x + 15, y);
+
+                    // Den Prozentwert etwas versetzt oder direkt dahinter zeichnen
+                    // Optional: Den Wert fett machen oder in einer zweiten Spalte
+                    g.DrawString(valueText, new Font(legendFont, FontStyle.Bold), Brushes.Gray, x + 15, y + 12);
+
+                    itemsFound++;
+
+                    // Abstand für den nächsten Block (da wir jetzt Name und Wert untereinander oder versetzt haben)
                     itemsFound++;
                 }
             }
@@ -510,48 +571,53 @@ namespace WindowsFormsApplication1
 
     }
 
+ 
     public class Kacheln
     {
-
         public static void DrawKPICard(Graphics g, Rectangle rect, string title, string value, string unit, Color accentColor)
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
-            // 1. Schatten zeichnen (leicht versetzt und transparent)
-            Rectangle shadowRect = new Rectangle(rect.X + 3, rect.Y + 3, rect.Width, rect.Height);
-            using (GraphicsPath shadowPath = GetRoundedRectPath(shadowRect, 10))
+            // 1. Dezentere Schatten
+            Rectangle shadowRect = new Rectangle(rect.X + 2, rect.Y + 2, rect.Width, rect.Height);
+            using (GraphicsPath shadowPath = GetRoundedRectPath(shadowRect, 6)) // Kleinerer Radius
             using (PathGradientBrush shadowBrush = new PathGradientBrush(shadowPath))
             {
-                shadowBrush.CenterColor = Color.FromArgb(40, Color.Black);
+                shadowBrush.CenterColor = Color.FromArgb(30, Color.Black);
                 shadowBrush.SurroundColors = new Color[] { Color.Transparent };
                 g.FillPath(shadowBrush, shadowPath);
             }
 
-            // 2. Die weiße Kachel selbst
-            using (GraphicsPath path = GetRoundedRectPath(rect, 10))
+            // 2. Weiße Karte
+            using (GraphicsPath path = GetRoundedRectPath(rect, 6))
             {
                 g.FillPath(Brushes.White, path);
-                // Optional: Ein feiner Rand in der Akzentfarbe oben
-                using (Pen accentPen = new Pen(accentColor, 4))
+                using (Pen accentPen = new Pen(accentColor, 3))
                 {
-                    g.DrawLine(accentPen, rect.X + 10, rect.Y, rect.X + rect.Width - 10, rect.Y);
+                    // Akzentlinie direkt am oberen Rand
+                    g.DrawLine(accentPen, rect.X + 6, rect.Y, rect.X + rect.Width - 6, rect.Y);
                 }
             }
 
-            // 3. Texte platzieren
-            Font titleFont = new Font("Segoe UI", 9, FontStyle.Regular);
-            Font valueFont = new Font("Segoe UI", 16, FontStyle.Bold);
-            Font unitFont = new Font("Segoe UI", 8, FontStyle.Bold);
+            // 3. Kompakte Texte
+            Font titleFont = new Font("Segoe UI", 7.5f, FontStyle.Bold);
+            Font valueFont = new Font("Segoe UI", 13f, FontStyle.Bold);
+            Font unitFont = new Font("Segoe UI", 7f, FontStyle.Regular);
 
-            g.DrawString(title.ToUpper(), titleFont, Brushes.Gray, rect.X + 15, rect.Y + 15);
-            g.DrawString(value, valueFont, Brushes.Black, rect.X + 15, rect.Y + 35);
+            // Titel ganz oben (Y + 8)
+            g.DrawString(title.ToUpper(), titleFont, Brushes.Gray, rect.X + 10, rect.Y + 8);
 
-            // Einheit hinter den Wert schreiben
-            SizeF valueSize = g.MeasureString(value, valueFont);
-            g.DrawString(unit, unitFont, Brushes.DimGray, rect.X + 15 + valueSize.Width + 5, rect.Y + 45);
+            // Wert direkt darunter (Y + 24)
+            if (!string.IsNullOrEmpty(value))
+            {
+                g.DrawString(value, valueFont, Brushes.Black, rect.X + 10, rect.Y + 24);
+
+                // Einheit direkt hinter dem Wert messen
+                SizeF valueSize = g.MeasureString(value, valueFont);
+                g.DrawString(unit, unitFont, Brushes.DimGray, rect.X + 12 + valueSize.Width, rect.Y + 30);
+            }
         }
 
-        // Hilfsfunktion für abgerundete Ecken
         private static GraphicsPath GetRoundedRectPath(Rectangle rect, int radius)
         {
             GraphicsPath path = new GraphicsPath();
@@ -562,7 +628,7 @@ namespace WindowsFormsApplication1
             path.CloseFigure();
             return path;
         }
-
-
     }
+
+
 }

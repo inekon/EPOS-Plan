@@ -23,6 +23,7 @@ namespace WindowsFormsApplication1
         public double m_T_NOCT;
         public double m_Laenge;
         public double m_Breite;
+        public double m_Modulkosten;
 
 
         public PhotovoltaikModel[] items;
@@ -46,6 +47,7 @@ namespace WindowsFormsApplication1
             m_T_NOCT = 0.0;
             m_Laenge = 0.0;
             m_Breite = 0.0;
+            m_Modulkosten = 0.0;    
         }
     }
 }

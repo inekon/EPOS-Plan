@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Media.Animation;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace WindowsFormsApplication1
@@ -15,11 +17,17 @@ namespace WindowsFormsApplication1
 
         private SimulationStrombedarf simulationStrombedarf = new SimulationStrombedarf();
         private SimulationWaermebedarf simulationWaermebedarf = new SimulationWaermebedarf();
-                 
+
+        // Definition des Dictionarys
+        // Key: Name des Controls oder ein Tag
+        // Value: Die Methode, die aufgerufen werden soll
+        private Dictionary<string, Action<object, EventArgs>> _clickEvents;
+
         public Form_Start()
         {
             InitializeComponent();
             textBox_ProjektOpen.Text = MyResource.Resource.Text_Select;
+            InitEventDictionary();
         }
 
         private void Form_Start_Load(object sender, EventArgs e)
@@ -32,11 +40,23 @@ namespace WindowsFormsApplication1
             btn_Zurueck.MakeSmoothButton(6);
             btn_Weiter.BackColor = Color.LightGray;
             btn_Zurueck.BackColor = Color.LightGray;
-            
+            btn_SimKonfig.MakeSmoothButton(6);
+            btn_SimKonfig.BackColor = Color.LightGray;
+  
             label_Haus.Text = "\uE80F";
             label_Haus.Parent = pictureBox2;
             label_Haus.BackColor = Color.Transparent;
             label_Haus.Location = new Point(30, (pictureBox2.Height -label_Haus.Height)/2); // Achtung: Location ist jetzt relativ zum Panel!
+
+            // DropDownStyle auf DropDownList
+            comboBox_Klimaregion.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox_Klimaregion.FlatStyle = FlatStyle.Popup;
+            // Hintergrundfarbe auf Weiß setzen
+            comboBox_Klimaregion.BackColor = Color.White;
+            // Textfarbe auf Schwarz
+            comboBox_Klimaregion.ForeColor = Color.Black;
+            ComboBox_Klimaregion();
+            comboBox_Klimaregion.SetPlaceholder("Bitte zuerst ein Projekt auswählen.");
         }
 
         private void tabControl_Wizard_DrawItem(object sender, DrawItemEventArgs e)
@@ -75,7 +95,7 @@ namespace WindowsFormsApplication1
                 "FROM Z_Projekt_Prozesswaerme INNER JOIN Tab_Prozesswaerme ON " +
                 "Z_Projekt_Prozesswaerme.ID_Prozesswaerme = Tab_Prozesswaerme.ID " +
                 " where ID_Projekt=" + m_ID_Projekt;
-          
+
             rs.Open(sql);
             while (rs.Next())
             {
@@ -163,7 +183,7 @@ namespace WindowsFormsApplication1
             WizardCtrl wizctrl = new WizardCtrl();
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            
+
             frm.list_gebmodel.Clear();
             //frm.SetControls(m_szProjektname);
 
@@ -216,7 +236,7 @@ namespace WindowsFormsApplication1
         {
             MenueCtrl menu = new MenueCtrl();
             menu.ProjektNeu();
-            
+
             ApplikationCtrl ctrl_app = new ApplikationCtrl();
             ProjektCtrl ctrl_projekt = new ProjektCtrl();
 
@@ -226,8 +246,13 @@ namespace WindowsFormsApplication1
             ctrl_app.m_ID_Projekt = ctrl_projekt.m_ID;
             ctrl_app.m_szProjektname = ctrl_projekt.m_szProjektname;
             ctrl_app.Update();
-            
+
             SetTextProjekt(Program.wizardctrl.Projektname);
+        }
+
+        public void SetKlima(string szKlima)
+        {
+            comboBox_Klimaregion.Text = szKlima;
         }
 
         private void pBox_ProjektOeffnen_Click(object sender, EventArgs e)
@@ -243,25 +268,63 @@ namespace WindowsFormsApplication1
                 m_szProjektname = frm.m_szProjekt;
                 m_ID_Projekt = frm.m_ID_Projekt;
                 SetTextProjekt(frm.m_szProjekt);
-                for (int i = 1; i<tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
+                for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
             }
             label_ProjektStatus.Text = "✔";
             label_ProjektStatus.ForeColor = Color.Green;
+            comboBox_Klimaregion.Text = GetProjektKlimaregion(m_ID_Projekt);
+        }
+
+        public string GetKlimaregion(int ID_Klimaregion)
+        {
+            RecordSet rs = new RecordSet();
+            string szKlimaregion = "";
+            rs.Open("select * from Tab_Klimaregion where ID_Klimaregion = " + ID_Klimaregion);
+            if (rs.Next())
+            {
+                szKlimaregion = (string)rs.Read("Name");
+            }
+            rs.Close();
+            return szKlimaregion;
+        }
+
+        public int GetKlimaregion(string szKlimaregion)
+        {
+            RecordSet rs = new RecordSet();
+            int IDKlimaregion = 0;
+            rs.Open("select * from Tab_Klimaregion where Name = '" + szKlimaregion + "'");
+            if (rs.Next())
+            {
+                IDKlimaregion = (int)rs.Read("ID_Klimaregion");
+            }
+            rs.Close();
+            return IDKlimaregion;
+        }
+        public string GetProjektKlimaregion(int ID_Projekt)
+        {
+            RecordSet rs = new RecordSet();
+  
+            string szKlimaregion = "";
+            rs.Open("select * from Tab_Projekt where ID = " + ID_Projekt);
+            if (rs.Next())
+            {
+                int id = (int)rs.Read("ID_Klimaregion");
+                rs.Close();
+                rs.Open("select * from Tab_Klimaregion where ID_Klimaregion = " + id);
+                if (rs.Next())
+                {
+                    szKlimaregion = (string)rs.Read("Name");
+                }
+            }
+ 
+            rs.Close();
+            return szKlimaregion;
         }
 
         private void pBox_Bearbeiten_Click(object sender, EventArgs e)
         {
             MenueCtrl menu = new MenueCtrl();
             menu.ProjektBearbeiten();
-        }
-
-        private void pBox_Weiter_Click(object sender, EventArgs e)
-        {
-        }
-
-        private void pBox_Zurueck_Click(object sender, EventArgs e)
-        {
- 
         }
 
         private void pBox_StdLastProfil_Click(object sender, EventArgs e)
@@ -281,6 +344,7 @@ namespace WindowsFormsApplication1
                 " where ID_Projekt=" + m_ID_Projekt;
 
             rs.Open(sql);
+            
             while (rs.Next())
             {
                 Z_ProjektStromverbraucherModel item = new Z_ProjektStromverbraucherModel();
@@ -411,7 +475,7 @@ namespace WindowsFormsApplication1
 
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
             id_type = WizardItemClass.KESSEL_TYP;
-            
+
             for (int i = 0; i < werzctrl.rows; i++)
             {
                 WErzeugerModel item = new WErzeugerModel();
@@ -519,13 +583,13 @@ namespace WindowsFormsApplication1
                     }
 
                     // --- DEIN BESTEHENDER CODE FÜR DIE LABELS ---
-                    label48.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label49.BackColor = label48.BackColor;
+                    label2_pBox_Heizkessel.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_Heizkessel.BackColor = label2_pBox_Heizkessel.BackColor;
                 }
                 else
                 {
-                    label48.BackColor = Color.Transparent;
-                    label49.BackColor = Color.Transparent;
+                    label2_pBox_Heizkessel.BackColor = Color.Transparent;
+                    label_pBox_Heizkessel.BackColor = Color.Transparent;
                 }
             }
         }
@@ -629,7 +693,7 @@ namespace WindowsFormsApplication1
 
             ctrl.ReadSingle("Select * from Tab_Applikation where ID=1");
 
-            // falls zuletzt geöffnetes Projekt gelöscht wurde
+            // falls zuletzt geöffnetes Projekt nicht gelöscht wurde
             if (ctrl.m_szProjektname != "")
             {
                 m_szProjektname = ctrl.m_szProjektname;
@@ -637,7 +701,8 @@ namespace WindowsFormsApplication1
                 SetTextProjekt(m_szProjektname);
                 for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
                 label_ProjektStatus.Text = "✔";
-                label_ProjektStatus.ForeColor = Color.Green;   
+                label_ProjektStatus.ForeColor = Color.Green;
+                comboBox_Klimaregion.Text = GetProjektKlimaregion(m_ID_Projekt); 
             }
 
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
@@ -649,12 +714,12 @@ namespace WindowsFormsApplication1
                 rt.Y = rt.Y + 10;
                 rt.X = rt.X + 10;
                 Program.FillRoundedRectangle(g, brush, rt, 10);
-                
-                Color bg = label12.BackColor;
-                label12.BackColor = Color.FromArgb(90, 0, 255, 0);
-                label13.BackColor = label12.BackColor;
-                label12.Refresh(); 
-                label13.Refresh();
+
+                Color bg = pBox_ProjektZuletzt.BackColor;
+                label_pBox_ProjektZuletzt.BackColor = Color.FromArgb(90, 0, 255, 0);
+                label2_pBox_ProjektZuletzt.BackColor = label_pBox_ProjektZuletzt.BackColor;
+                label_pBox_ProjektZuletzt.Refresh();
+                label2_pBox_ProjektZuletzt.Refresh();
 
                 var t = Task.Run(async delegate
                 {
@@ -663,15 +728,16 @@ namespace WindowsFormsApplication1
                 });
                 t.Wait();
                 pBox_ProjektZuletzt.Invalidate();
-                label12.BackColor = bg;
-                label13.BackColor = label12.BackColor;
+                label_pBox_ProjektZuletzt.BackColor = bg;
+                label2_pBox_ProjektZuletzt.BackColor = label_pBox_ProjektZuletzt.BackColor;
 
             }
 
-            Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, MyResource.Resource.Text_Projekt + " " +  m_szProjektname  + " " + MyResource.Resource.Text_Geoeffnet + "!");
+            Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, MyResource.Resource.Text_Projekt + " " + m_szProjektname + " " + MyResource.Resource.Text_Geoeffnet + "!");
             frm.Location = this.PointToScreen(tabControl_Wizard.PointToScreen(pBox_ProjektZuletzt.Location));
             frm.ShowDialog();
         }
+
 
         private void pBox_Gebaude_Paint(object sender, PaintEventArgs e)
         {
@@ -708,13 +774,13 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label34.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label35.BackColor = label34.BackColor;
+                    label2_pBox_Gebaude.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_Gebaude.BackColor = label2_pBox_Gebaude.BackColor;
                 }
                 else
                 {
-                    label34.BackColor = Color.Transparent;
-                    label35.BackColor = Color.Transparent;
+                    label2_pBox_Gebaude.BackColor = Color.Transparent;
+                    label_pBox_Gebaude.BackColor = Color.Transparent;
                 }
             }
         }
@@ -754,13 +820,13 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label36.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label37.BackColor = label36.BackColor;
+                    label2_pBox_WBedarfDaten.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_WBedarfDaten.BackColor = label2_pBox_WBedarfDaten.BackColor;
                 }
                 else
                 {
-                    label36.BackColor = Color.Transparent;
-                    label37.BackColor = Color.Transparent;
+                    label2_pBox_WBedarfDaten.BackColor = Color.Transparent;
+                    label_pBox_WBedarfDaten.BackColor = Color.Transparent;
                 }
             }
         }
@@ -800,13 +866,13 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label38.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label39.BackColor = label38.BackColor;
+                    label2_pBox_Prozess.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_Prozess.BackColor = label2_pBox_Prozess.BackColor;
                 }
                 else
                 {
-                    label38.BackColor = Color.Transparent;
-                    label39.BackColor = Color.Transparent;
+                    label2_pBox_Prozess.BackColor = Color.Transparent;
+                    label_pBox_Prozess.BackColor = Color.Transparent;
                 }
             }
         }
@@ -846,13 +912,13 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label40.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label41.BackColor = label40.BackColor;
+                    label2_pBox_StdLastProfil.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_StdLastProfil.BackColor = label2_pBox_StdLastProfil.BackColor;
                 }
                 else
                 {
-                    label40.BackColor = Color.Transparent;
-                    label41.BackColor = Color.Transparent;
+                    label2_pBox_StdLastProfil.BackColor = Color.Transparent;
+                    label_pBox_StdLastProfil.BackColor = Color.Transparent;
                 }
             }
         }
@@ -891,13 +957,13 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label44.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label45.BackColor = label44.BackColor;
+                    label2_pBox_StromMessdaten.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_StromMessdaten.BackColor = label2_pBox_StromMessdaten.BackColor;
                 }
                 else
                 {
-                    label44.BackColor = Color.Transparent;
-                    label45.BackColor = Color.Transparent;
+                    label2_pBox_StromMessdaten.BackColor = Color.Transparent;
+                    label_pBox_StromMessdaten.BackColor = Color.Transparent;
                 }
             }
         }
@@ -1015,7 +1081,9 @@ namespace WindowsFormsApplication1
             if (e.TabPageIndex >= 1 && textBox_ProjektOpen.Text == MyResource.Resource.Text_Select)
             {
                 e.Cancel = true;
-                Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox1 + "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox2);
+                Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, 
+                    "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox1 + "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox2);
+                
                 System.Drawing.Point p1 = tabControl_Wizard.Location;
                 p1.X += tabControl_Wizard.Width / 2 - frm.Width / 2;
                 frm.Location = p1;
@@ -1023,8 +1091,8 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                if(e.TabPageIndex >= 1 && e.TabPageIndex <= 3)
-                    UpdateWizardSymbole();
+               //if(e.TabPageIndex >= 1 && e.TabPageIndex <= 3)
+               //     UpdateWizardSymbole();
             }
         }
 
@@ -1325,126 +1393,6 @@ namespace WindowsFormsApplication1
             ctrl.ProjektOeffnen(true);
         }
 
-        private void label_pBox_ProjektNeu_Click(object sender, EventArgs e)
-        {
-            pBox_ProjektNeu_Click(sender, e);
-        }
-
-        private void label2_pBox_ProjektNeu_Click(object sender, EventArgs e)
-        {
-            pBox_ProjektNeu_Click(sender, e);
-        }
-
-        private void label_pBox_ProjektOeffnen_Click(object sender, EventArgs e)
-        {
-            pBox_ProjektOeffnen_Click(sender, e);   
-        }
-
-        private void label2_pBox_ProjektOeffnen_Click(object sender, EventArgs e)
-        {
-            pBox_ProjektOeffnen_Click(sender, e);
-        }
-
-        private void label13_Click(object sender, EventArgs e)
-        {
-            pBox_ProjektZuletzt_Click(sender, e);   
-        }
-
-        private void label12_Click(object sender, EventArgs e)
-        {
-            pBox_ProjektZuletzt_Click(sender, e);   
-        }
-
-        private void label15_Click(object sender, EventArgs e)
-        {
-            pBox_Bearbeiten_Click(sender, e);
-        }
-
-        private void label14_Click(object sender, EventArgs e)
-        {
-            pBox_Bearbeiten_Click(sender, e);   
-        }
-
-        private void label17_Click(object sender, EventArgs e)
-        {
-            pBox_Delete_Click(sender, e);
-        }
-
-        private void label16_Click(object sender, EventArgs e)
-        {
-            pBox_Delete_Click(sender, e);
-        }
-
-        private void label19_Click(object sender, EventArgs e)
-        {
-            pBox_ProjektDetails_Click(sender, e);   
-        }
-
-        private void label18_Click(object sender, EventArgs e)
-        {
-            pBox_ProjektDetails_Click(sender, e);
-        }
-
-        private void label35_Click(object sender, EventArgs e)
-        {
-            pBox_Gebaude_Click(sender, e);  
-        }
-
-        private void label34_Click(object sender, EventArgs e)
-        {
-            pBox_Gebaude_Click(sender, e);
-        }
-
-        private void label37_Click(object sender, EventArgs e)
-        {
-            pBox_WBedarfDaten_Click(sender, e); 
-        }
-
-        private void label36_Click(object sender, EventArgs e)
-        {
-            pBox_WBedarfDaten_Click(sender, e);
-        }
-
-        private void label39_Click(object sender, EventArgs e)
-        {
-            pBox_Prozess_Click(sender, e);
-        }
-
-        private void label38_Click(object sender, EventArgs e)
-        {
-            pBox_Prozess_Click(sender, e);
-        }
-
-        private void label41_Click(object sender, EventArgs e)
-        {
-            pBox_StdLastProfil_Click(sender, e);
-        }
-
-        private void label40_Click(object sender, EventArgs e)
-        {
-            pBox_StdLastProfil_Click(sender, e);
-        }
-
-        private void label43_Click(object sender, EventArgs e)
-        {
-            pBox_StromProfilEigenes_Click(sender, e);
-        }
-
-        private void label42_Click(object sender, EventArgs e)
-        {
-            pBox_StromProfilEigenes_Click(sender, e);
-        }
-
-        private void label45_Click(object sender, EventArgs e)
-        {
-            pBox_StromMessdaten_Click(sender, e);
-        }
-
-        private void label44_Click(object sender, EventArgs e)
-        {
-            pBox_StromMessdaten_Click(sender, e);
-        }
-
         private void label47_Click(object sender, EventArgs e)
         {
             pBox_WP_Click(sender, e);
@@ -1453,16 +1401,6 @@ namespace WindowsFormsApplication1
         private void label46_Click(object sender, EventArgs e)
         {
             pBox_WP_Click(sender, e);
-        }
-
-        private void label49_Click(object sender, EventArgs e)
-        {
-            pBox_Heizkessel_Click(sender, e);
-        }
-
-        private void label48_Click(object sender, EventArgs e)
-        {
-            pBox_Heizkessel_Click(sender, e);
         }
 
         private void label51_Click(object sender, EventArgs e)
@@ -1791,15 +1729,117 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label73.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label74.BackColor = label73.BackColor;
+                    label2_pBox_Brauchwasser.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_Brauchwasser.BackColor = label2_pBox_Brauchwasser.BackColor;
                 }
                 else
                 {
-                    label73.BackColor = Color.Transparent;
-                    label74.BackColor = Color.Transparent;
+                    label2_pBox_Brauchwasser.BackColor = Color.Transparent;
+                    label_pBox_Brauchwasser.BackColor = Color.Transparent;
                 }
             }
+        }
+
+        private void ComboBox_Klimaregion()
+        {
+            ProjektCtrl projctrl = new ProjektCtrl();
+            if (m_szProjektname != "")
+            {
+                comboBox_Klimaregion.Text = m_szProjektname;
+            }
+            KlimaregionCtrl ctrl = new KlimaregionCtrl();
+            ctrl.ReadAll();
+            for (int i = 0; i < ctrl.rows; i++)
+            {
+                comboBox_Klimaregion.Items.Add(ctrl.items[i].m_szName);
+            }
+        }
+
+        private void comboBox_Klimaregion_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ProjektCtrl ctrl_projekt = new ProjektCtrl();
+            KlimaregionCtrl ctrl_klimaregion = new KlimaregionCtrl();
+
+            this.ActiveControl = null;
+            if (string.IsNullOrEmpty(m_szProjektname) || string.IsNullOrEmpty(comboBox_Klimaregion.Text)) return;
+            
+            ctrl_projekt.ReadSingle("Select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+            ctrl_projekt.m_ID_Klimaregion = GetKlimaregion(comboBox_Klimaregion.Text);
+            ctrl_projekt.Update(); 
+        }
+
+        private void btn_Kosten_Click(object sender, EventArgs e)
+        {
+            using (var form = new Form_Kosten(m_ID_Projekt))
+            {
+                form.m_ID_Projekt = m_ID_Projekt;
+                form.ShowDialog(); // Öffnet das Fenster als modaler Dialog
+            }
+        }
+
+        private void InitEventDictionary()
+        {
+            _clickEvents = new Dictionary<string, Action<object, EventArgs>>
+            {
+                { "pBox_ProjektNeu", pBox_ProjektNeu_Click },
+                { "label_pBox_ProjektNeu", pBox_ProjektNeu_Click },
+                { "label2_pBox_ProjektNeu", pBox_ProjektNeu_Click },
+                { "pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
+                { "label_pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
+                { "label2_pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
+                { "pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
+                { "label_pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
+                { "label2_pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
+                { "pBox_Bearbeiten", pBox_Bearbeiten_Click },
+                { "label_pBox_Bearbeiten", pBox_Bearbeiten_Click },
+                { "label2_pBox_Bearbeiten", pBox_Bearbeiten_Click },
+                { "pBox_Delete", pBox_Delete_Click },
+                { "label_pBox_Delete", pBox_Delete_Click },
+                { "label2_pBox_Delete", pBox_Delete_Click },
+                { "pBox_ProjektDetails", pBox_ProjektDetails_Click },
+                { "label_pBox_ProjektDetails", pBox_ProjektDetails_Click },
+                { "label2_pBox_ProjektDetails", pBox_ProjektDetails_Click },
+                { "pBox_Gebaude", pBox_Gebaude_Click },
+                { "label_pBox_Gebaude", pBox_Gebaude_Click },
+                { "label2_pBox_Gebaude", pBox_Gebaude_Click },
+                { "pBox_WBedarfDaten", pBox_WBedarfDaten_Click },
+                { "label_pBox_WBedarfDaten", pBox_WBedarfDaten_Click },
+                { "label2_pBox_WBedarfDaten", pBox_WBedarfDaten_Click },
+                { "pBox_Prozess", pBox_Prozess_Click },
+                { "label_pBox_Prozess", pBox_Prozess_Click },
+                { "label2_pBox_Prozess", pBox_Prozess_Click },
+                { "pBox_Brauchwasser", pBox_Brauchwasser_Click },
+                { "label_pBox_Brauchwasser", pBox_Brauchwasser_Click },
+                { "label2_pBox_Brauchwasser", pBox_Brauchwasser_Click },
+                { "pBox_StdLastProfil", pBox_StdLastProfil_Click },
+                { "label_pBox_StdLastProfil", pBox_StdLastProfil_Click },
+                { "label2_pBox_StdLastProfil", pBox_StdLastProfil_Click },
+                { "pBox_StromProfilEigenes", pBox_StromProfilEigenes_Click },
+                { "label_pBox_StromProfilEigenes", pBox_StromProfilEigenes_Click },
+                { "label2_pBox_StromProfilEigenes", pBox_StromProfilEigenes_Click },
+                { "pBox_StromMessdaten", pBox_StromMessdaten_Click },
+                { "label_pBox_StromMessdaten", pBox_StromMessdaten_Click },
+                { "label2_pBox_StromMessdaten", pBox_StromMessdaten_Click },
+                { "pBox_Heizkessel", pBox_Heizkessel_Click },
+                { "label_pBox_Heizkessel", pBox_Heizkessel_Click },
+                { "label2_pBox_Heizkessel", pBox_Heizkessel_Click },
+            };
+        }
+
+        private void CentralControl_Click(object sender, EventArgs e)
+        {
+            Control ctrl = sender as Control;
+            if (ctrl != null && _clickEvents.ContainsKey(ctrl.Name))
+            {
+                // Hier wird die im Dictionary hinterlegte Funktion direkt ausgeführt
+                _clickEvents[ctrl.Name](sender, e);
+            }
+        }
+
+        private void comboBox_Klimaregion_DropDownClosed(object sender, EventArgs e)
+        {
+            // Schiebt den Fokus auf das Parent-Element (z.B. das Panel oder die Form)
+            this.ActiveControl = null;
         }
     }
 }
