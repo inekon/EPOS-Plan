@@ -14,6 +14,7 @@ namespace WindowsFormsApplication1
         public int m_ID_Projekt = 0;
         public string m_szProjektname = "";
         public int status = 0;
+        private bool bUpdateWizardSymbole = false;
 
         private SimulationStrombedarf simulationStrombedarf = new SimulationStrombedarf();
         private SimulationWaermebedarf simulationWaermebedarf = new SimulationWaermebedarf();
@@ -702,7 +703,8 @@ namespace WindowsFormsApplication1
                 for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
                 label_ProjektStatus.Text = "✔";
                 label_ProjektStatus.ForeColor = Color.Green;
-                comboBox_Klimaregion.Text = GetProjektKlimaregion(m_ID_Projekt); 
+                comboBox_Klimaregion.Text = GetProjektKlimaregion(m_ID_Projekt);
+                UpdateWizardSymbole();
             }
 
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
@@ -1091,8 +1093,8 @@ namespace WindowsFormsApplication1
             }
             else
             {
-               //if(e.TabPageIndex >= 1 && e.TabPageIndex <= 3)
-               //     UpdateWizardSymbole();
+                //if(e.TabPageIndex >= 1 && e.TabPageIndex <= 3)
+                if (!bUpdateWizardSymbole) { UpdateWizardSymbole(); bUpdateWizardSymbole = true; }
             }
         }
 
@@ -1453,6 +1455,7 @@ namespace WindowsFormsApplication1
             if (tabControl_Wizard.SelectedIndex >= tabControl_Wizard.TabCount - 1) return;
 
             UpdateWizardSymbole();
+            bUpdateWizardSymbole = true;
 
             tabControl_Wizard.SelectedIndex = tabControl_Wizard.SelectedIndex + 1;
         }

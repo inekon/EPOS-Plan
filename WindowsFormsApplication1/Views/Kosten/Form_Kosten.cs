@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -14,7 +13,7 @@ namespace WindowsFormsApplication1
         private readonly Color NavyMid = Color.FromArgb(26, 50, 97);
         private readonly Color Accent = Color.FromArgb(59, 130, 246);
         private readonly Color Surface = Color.FromArgb(248, 249, 252);
- 
+
         public Dictionary<string, NumericUpDown> _Inputs = new Dictionary<string, NumericUpDown>();
         public int m_ID_Projekt = 0;
 
@@ -27,21 +26,6 @@ namespace WindowsFormsApplication1
             this.BackColor = Surface;
             this.tabInvest.BackColor = Surface;
 
-            AddErzeugerList();
-            InitErzeugerCtrl();
-            AddInfrastrukturList();
-            InitInfrastrukturCtrl();
-            AddZinsZuschuss();
-            AddNahwaermenetzList();
-            InitNahwaermenetzCtrl();
-            AddSonstigeList();
-            InitSonstigeCtrl();
-            AddMassnahmenList();
-            InitMassnahmenCtrl();
-
-            LoadDatenAusDictionary();
-            LoadModulKostenKomponenten();
-
             // Alle NumericUpDowns an die Rechenmethode binden
             foreach (var num in _Inputs.Values)
             {
@@ -51,308 +35,27 @@ namespace WindowsFormsApplication1
             // Einmal initial aufrufen, damit beim Start 0 oder die Startwerte da stehen
             Gesamtkosten();
 
-            if ((Program.startfrm.status & 0x2) == 0x2) panel_WP.Visible = true; else panel_WP.Visible = false;
-            if ((Program.startfrm.status & 0x1) == 0x1) panel_Heizkessel.Visible = true; else panel_Heizkessel.Visible = false;
-            if ((Program.startfrm.status & 0x4) == 0x4) panel_Stromspeicher.Visible = true; else panel_Stromspeicher.Visible = false;
-            if ((Program.startfrm.status & 256) == 256) panel_BHKW.Visible = true; else panel_BHKW.Visible = false;
-            if ((Program.startfrm.status & 512) == 512) panel_Solarthermie.Visible = true; else panel_Solarthermie.Visible = false;
-            if ((Program.startfrm.status & 1024) == 1024) panel_Photovoltaik.Visible = true; else panel_Photovoltaik.Visible = false;
-            if ((Program.startfrm.status & 2048) == 2048) panel_Pufferspeicher.Visible = true; else panel_Pufferspeicher.Visible = false;
-
-        }
-
-        private void AddErzeugerList()
-        {
-            _Inputs.Add("BHKW", num1);
-            _Inputs.Add("BHKW_Nutzungsdauer", num2);
-            _Inputs.Add("BHKW_Zinsreduktion", num3);
-            _Inputs.Add("Wärmepumpe", num4);
-            _Inputs.Add("Wärmepumpe_Nutzungsdauer", num5);
-            _Inputs.Add("Wärmepumpe_Zinsreduktion", num6);
-            _Inputs.Add("Heizkessel", num7);
-            _Inputs.Add("Heizkessel_Nutzungsdauer", num8);
-            _Inputs.Add("Heizkessel_Zinsreduktion", num9);
-            _Inputs.Add("Stromspeicher", num10);
-            _Inputs.Add("Stromspeicher_Nutzungsdauer", num11);
-            _Inputs.Add("Stromspeicher_Zinsreduktion", num12);
-            _Inputs.Add("Photovoltaik", num13);
-            _Inputs.Add("Photovoltaik_Nutzungsdauer", num14);
-            _Inputs.Add("Photovoltaik_Zinsreduktion", num15);
-            _Inputs.Add("Solarthermie", num16);
-            _Inputs.Add("Solarthermie_Nutzungsdauer", num17);
-            _Inputs.Add("Solarthermie_Zinsreduktion", num18);
-            _Inputs.Add("Pufferspeicher", num19);
-            _Inputs.Add("Pufferspeicher_Nutzungsdauer", num20);
-            _Inputs.Add("Pufferspeicher_Zinsreduktion", num21);
-        }
-
-        private void AddNahwaermenetzList()
-        {
-            _Inputs.Add("NW_Verteilernetz", num37);
-            _Inputs.Add("NW_Verteilernetz_Nutzungsdauer", num38);
-            _Inputs.Add("NW_Hausanschluss", num39);
-            _Inputs.Add("NW_Hausanschluss_Nutzungsdauer", num40);
-            _Inputs.Add("NW_Hausstation", num41);
-            _Inputs.Add("NW_Hausstation_Nutzungsdauer", num42);
-            _Inputs.Add("Anzahl_Hausstationen", num43);
-        }
-
-        private void InitNahwaermenetzCtrl()
-        {
-            _Inputs["NW_Verteilernetz"].Maximum = 9999;
-            _Inputs["NW_Verteilernetz"].ThousandsSeparator = true;
-            _Inputs["NW_Hausanschluss"].Maximum = 9999;
-            _Inputs["NW_Hausanschluss"].ThousandsSeparator = true;
-            _Inputs["NW_Hausstation"].Maximum = 9999;
-            _Inputs["NW_Hausstation"].ThousandsSeparator = true;
-            _Inputs["Anzahl_Hausstationen"].Maximum = 99;
-        }
-
-        private void AddSonstigeList()
-        {
-            _Inputs.Add("Sonstige1", num44);
-            _Inputs.Add("Sonstige1_Nutzungsdauer", num45);
-            _Inputs.Add("Sonstige2", num46);
-            _Inputs.Add("Sonstige2_Nutzungsdauer", num47);
-            _Inputs.Add("Sonstige3", num48);
-            _Inputs.Add("Sonstige3_Nutzungsdauer", num49);
-        }
-
-        private void InitSonstigeCtrl()
-        {
-            _Inputs["Sonstige1"].Maximum = 99999;
-            _Inputs["Sonstige1"].ThousandsSeparator = true;
-            _Inputs["Sonstige2"].Maximum = 99999;
-            _Inputs["Sonstige2"].ThousandsSeparator = true;
-            _Inputs["Sonstige3"].Maximum = 99999;
-            _Inputs["Sonstige3"].ThousandsSeparator = true;
-        }
-
-        private void InitErzeugerCtrl()
-        {
-            _Inputs["BHKW"].Maximum = 99999;
-            _Inputs["BHKW"].ThousandsSeparator = true;
-            _Inputs["BHKW_Zinsreduktion"].DecimalPlaces = 1;
-            _Inputs["BHKW_Zinsreduktion"].Increment = 0.1m;
-            _Inputs["Wärmepumpe"].Maximum = 99999;
-            _Inputs["Wärmepumpe"].ThousandsSeparator = true;
-            _Inputs["Wärmepumpe_Zinsreduktion"].DecimalPlaces = 1;
-            _Inputs["Wärmepumpe_Zinsreduktion"].Increment = 0.1m;
-            _Inputs["Heizkessel"].Maximum = 99999;
-            _Inputs["Heizkessel"].ThousandsSeparator = true;
-            _Inputs["Heizkessel_Zinsreduktion"].DecimalPlaces = 1;
-            _Inputs["Heizkessel_Zinsreduktion"].Increment = 0.1m;
-            _Inputs["Stromspeicher"].Maximum = 99999;
-            _Inputs["Stromspeicher"].ThousandsSeparator = true;
-            _Inputs["Stromspeicher_Zinsreduktion"].DecimalPlaces = 1;
-            _Inputs["Stromspeicher_Zinsreduktion"].Increment = 0.1m;
-            _Inputs["Photovoltaik"].Maximum = 99999;
-            _Inputs["Photovoltaik"].ThousandsSeparator = true;
-            _Inputs["Photovoltaik_Zinsreduktion"].DecimalPlaces = 1;
-            _Inputs["Photovoltaik_Zinsreduktion"].Increment = 0.1m;
-            _Inputs["Solarthermie"].Maximum = 99999;
-            _Inputs["Solarthermie"].ThousandsSeparator = true;
-            _Inputs["Solarthermie_Zinsreduktion"].DecimalPlaces = 1;
-            _Inputs["Solarthermie_Zinsreduktion"].Increment = 0.1m;
-            _Inputs["Pufferspeicher"].Maximum = 99999;
-            _Inputs["Pufferspeicher"].ThousandsSeparator = true;
-            _Inputs["Pufferspeicher_Zinsreduktion"].DecimalPlaces = 1;
-            _Inputs["Pufferspeicher_Zinsreduktion"].Increment = 0.1m;
-        }
-
-        private void AddInfrastrukturList()
-        {
-            _Inputs.Add("Heizraum", num22);
-            _Inputs.Add("Heizraum_Nutzungsdauer", num23);
-            _Inputs.Add("Heizungstechnik", num24);
-            _Inputs.Add("Heizungstechnik_Nutzungsdauer", num25);
-            _Inputs.Add("Schornstein", num26);
-            _Inputs.Add("Schornstein_Nutzungsdauer", num27);
-            _Inputs.Add("Abgasanlage", num28);
-            _Inputs.Add("Abgasanlage_Nutzungsdauer", num29);
-            _Inputs.Add("Heizöllagerung", num30);
-            _Inputs.Add("Heizöllagerung_Nutzungsdauer", num31);
-            _Inputs.Add("Erdgasanschluss", num32);
-            _Inputs.Add("Erdgasanschluss_Nutzungsdauer", num33);
-            _Inputs.Add("Stromeinspeisung", num34);
-            _Inputs.Add("Stromeinspeisung_Nutzungsdauer", num35);
-            _Inputs.Add("Raumbedarf", num36);
-        }
-
-
-        private void InitInfrastrukturCtrl()
-        {
-            _Inputs["Heizraum"].Maximum = 99999;
-            _Inputs["Heizungstechnik"].Maximum = 99999;
-            _Inputs["Schornstein"].Maximum = 99999;
-            _Inputs["Abgasanlage"].Maximum = 99999;
-            _Inputs["Heizöllagerung"].Maximum = 99999;
-            _Inputs["Erdgasanschluss"].Maximum = 99999;
-            _Inputs["Stromeinspeisung"].Maximum = 99999;
-            _Inputs["Raumbedarf"].Maximum = 999;
-        }
-
-        private void AddMassnahmenList()
-        {
-            _Inputs.Add("Baumassnahmen", num50);
-            _Inputs.Add("Baumassnahmen_Nutzungsdauer", num51);
-            _Inputs.Add("Nebenkosten", num52);
-            _Inputs.Add("Nebenkosten_Nutzungsdauer", num53);
-            _Inputs.Add("Planungskosten", num54);
-            _Inputs.Add("Planungskosten_Nutzungsdauer", num55);
-        }
-
-        private void InitMassnahmenCtrl()
-        {
-            _Inputs["Baumassnahmen"].Maximum = 99999;
-            _Inputs["Baumassnahmen"].ThousandsSeparator = true;
-            _Inputs["Nebenkosten"].Maximum = 99999;
-            _Inputs["Nebenkosten"].ThousandsSeparator = true;
-            _Inputs["Planungskosten"].Maximum = 99999;
-            _Inputs["Planungskosten"].ThousandsSeparator = true;
-        }
-
-        private void AddZinsZuschuss()
-        {
-            _Inputs.Add("Zinssatz", num_Zinssatz);
-            _Inputs.Add("Zuschuss", num_Zuschuss);
-            _Inputs["Zinssatz"].DecimalPlaces = 1;
-            _Inputs["Zinssatz"].Increment = 0.1m;
-            _Inputs["Zuschuss"].DecimalPlaces = 1;
-            _Inputs["Zuschuss"].Increment = 0.1m;
-        }
+            if ((Program.startfrm.status & 0x2) == 0x2) listBox_Erzeuger.Items.Add("Wärmepumpe");
+            if ((Program.startfrm.status & 0x1) == 0x1) listBox_Erzeuger.Items.Add("Heizkessel");
+            if ((Program.startfrm.status & 0x4) == 0x4) listBox_Erzeuger.Items.Add("Stromspeicher");
+            if ((Program.startfrm.status & 256) == 256) listBox_Erzeuger.Items.Add("BHKW");
+            if ((Program.startfrm.status & 512) == 512) listBox_Erzeuger.Items.Add("Solarthermie");
+            if ((Program.startfrm.status & 1024) == 1024) listBox_Erzeuger.Items.Add("Photovoltaik");
+            if ((Program.startfrm.status & 2048) == 2048) listBox_Erzeuger.Items.Add("Pufferspeicher");
+         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if(SaveDatenAusDictionary(m_ID_Projekt))
-                MessageBox.Show("Daten gespeichert");
-            else
-                MessageBox.Show("Daten nicht gespeichert!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
             DialogResult = DialogResult.OK;
             Close();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;  
-            Close();    
+            DialogResult = DialogResult.Cancel;
+            Close();
         }
 
-        // DATEN LADEN
-        public void LoadDatenAusDictionary()
-        {
-            string dbPath = GetDBPath();
-            string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
-
-            using (OleDbConnection conn = new OleDbConnection(connString))
-            {
-                conn.Open();
-
-                // Wir holen die Werte über einen Join von Stamm (Bezeichnung) und Projektwerten
-                string sql = @"SELECT
-                                Tab_KostenStamm.Bezeichnung,
-                                Tab_KostenStamm.Default,
-                                Tab_ProjektWerte.EingegebenerWert
-                            FROM
-                                Tab_KostenStamm
-                                LEFT JOIN Tab_ProjektWerte ON Tab_KostenStamm.StammID = Tab_ProjektWerte.StammID";
-
-                using (OleDbCommand cmd = new OleDbCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@pid", m_ID_Projekt);
-                    using (OleDbDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            string bez = reader["Bezeichnung"].ToString();
-                            decimal wert = reader["EingegebenerWert"] == DBNull.Value ? Convert.ToDecimal(reader["Default"]) : Convert.ToDecimal(reader["EingegebenerWert"]);
-
-                            // Prüfen, ob dieser Datenbank-Bezeichner in deinem Dictionary existiert
-                            if (_Inputs.ContainsKey(bez))
-                            {
-                                _Inputs[bez].Value = wert;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // DATEN SPEICHERN
-        public bool SaveDatenAusDictionary(int projektID)
-        {
-            string dbPath = GetDBPath();
-            string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
-
-            // Transaktion außerhalb deklarieren, damit wir sie im catch-Block erreichen
-            OleDbTransaction trans = null;
-
-            try
-            {
-                using (OleDbConnection conn = new OleDbConnection(connString))
-                {
-                    conn.Open();
-                    // 1. Transaktion starten
-                    trans = conn.BeginTransaction();
-
-                    foreach (var entry in _Inputs)
-                    {
-                        string bez = entry.Key;
-                        double wertFuerDB = Convert.ToDouble(entry.Value.Value);
-
-                        // UPDATE Logik
-                        string sql = @"UPDATE Tab_ProjektWerte 
-                               INNER JOIN Tab_KostenStamm ON Tab_ProjektWerte.StammID = Tab_KostenStamm.StammID
-                               SET Tab_ProjektWerte.EingegebenerWert = @wert
-                               WHERE Tab_ProjektWerte.ProjektID = @pid 
-                               AND Tab_KostenStamm.Bezeichnung = @bez";
-
-                        using (OleDbCommand cmd = new OleDbCommand(sql, conn, trans)) // <--- Transaktion übergeben
-                        {
-                            cmd.Parameters.Add("@wert", OleDbType.Double).Value = wertFuerDB;
-                            cmd.Parameters.AddWithValue("@pid", projektID);
-                            cmd.Parameters.AddWithValue("@bez", bez);
-
-                            if (cmd.ExecuteNonQuery() == 0)
-                            {
-                                // INSERT Logik
-                                string insSql = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, EingegebenerWert)
-                                          SELECT @pid, StammID, @wert 
-                                          FROM Tab_KostenStamm 
-                                          WHERE Bezeichnung = @bez";
-
-                                using (OleDbCommand insCmd = new OleDbCommand(insSql, conn, trans)) // <--- Transaktion übergeben
-                                {
-                                    insCmd.Parameters.AddWithValue("@pid", projektID);
-                                    insCmd.Parameters.AddWithValue("@wert", wertFuerDB);
-                                    insCmd.Parameters.AddWithValue("@bez", bez);
-
-                                    insCmd.ExecuteNonQuery();
-                                }
-                            }
-                        }
-                    }
-
-                    // 2. Wenn alles erfolgreich war: Bestätigen
-                    trans.Commit();
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                // 3. Im Fehlerfall: Alles rückgängig machen
-                try
-                {
-                    if (trans != null) trans.Rollback();
-                }
-                catch { /* Ignorieren, falls Rollback selbst fehlschlägt */ }
-
-                // Optional: Loggen oder Fehlermeldung
-                // MessageBox.Show("Fehler beim Speichern. Die Änderungen wurden nicht übernommen: " + ex.Message);
-                return false;
-            }
-        }
-        
         private string GetDBPath()
         {
             string db = "";
@@ -369,49 +72,426 @@ namespace WindowsFormsApplication1
 
         private void Gesamtkosten()
         {
-            decimal sum = 0; // Nutze decimal für Geldwerte (Präzision!)
+            decimal sum = 0;
 
+            // 1. Statische Werte aus dem Dictionary (Zinssatz/Zuschuss ignorieren wir für die Summe)
             foreach (var entry in _Inputs)
             {
-                string key = entry.Key;
-
-                // Prüfe, ob der Key NICHT "Nutzungsdauer" und NICHT "Zins" enthält
-                // Wir rechnen nur die reinen Kosten-Keys zusammen
-                if (!key.Contains("_Nutzungsdauer") && !key.Contains("_Zins") && !key.Contains("Zinssatz") && !key.Contains("Zuschuss"))
+                if (!entry.Key.Contains("Zins") && !entry.Key.Contains("Zuschuss") && !entry.Key.Contains("Nutzungsdauer"))
                 {
                     sum += entry.Value.Value;
                 }
             }
 
-            // Anzeige mit Tausendertrenner und Euro-Zeichen
-            label_Gesamt.Text = $"{sum:N2}";
+            // 2. Dynamische Werte aus den UserControls im FlowLayoutPanel
+            foreach (Control c in flpContainer.Controls)
+            {
+                if (c is ucKostenZeile zeile)
+                {
+                    sum += zeile.Daten.Betrag;
+                }
+            }
+
+            label_Gesamt.Text = $"{sum:N2} €";
         }
 
-        private void LoadModulKostenKomponenten()
+        // Beispiel: Wenn links eine Komponente (z.B. BHKW) gewählt wird
+        private void UpdateDetailPanel(string komponente, List<KostenPosition> faktoren)
         {
-            RecordSet rs = new RecordSet();
-            rs.Open("Select * from Abfrage_Kosten_WP where ID_Projekt=" + m_ID_Projekt);
-            if (rs.Next()) _Inputs["Wärmepumpe"].Value = Convert.ToDecimal(rs.Read("Gesamt"));
-            rs.Close();
-            rs.Open("Select * from Abfrage_Kosten_BHKW where ID_Projekt=" + m_ID_Projekt);
-            if (rs.Next()) _Inputs["BHKW"].Value = Convert.ToDecimal(rs.Read("Gesamt"));
-            rs.Close();
-            rs.Open("Select * from Abfrage_Kosten_Heizkessel where ID_Projekt=" + m_ID_Projekt);
-            if (rs.Next()) _Inputs["Heizkessel"].Value = Convert.ToDecimal(rs.Read("Gesamt"));
-            rs.Close();
-            rs.Open("Select * from Abfrage_Kosten_Pufferspeicher where ID_Projekt=" + m_ID_Projekt);
-            if (rs.Next()) _Inputs["Pufferspeicher"].Value = Convert.ToDecimal(rs.Read("Gesamt"));
-            rs.Close();
-            rs.Open("Select * from Abfrage_Kosten_Stromspeicher where ID_Projekt=" + m_ID_Projekt);
-            if (rs.Next()) _Inputs["Stromspeicher"].Value = Convert.ToDecimal(rs.Read("Gesamt"));
-            rs.Close();
-            rs.Open("Select * from Abfrage_Kosten_Photovoltaik where ID_Projekt=" + m_ID_Projekt);
-            if (rs.Next()) _Inputs["Photovoltaik"].Value = Convert.ToDecimal(rs.Read("Gesamt"));
-            rs.Close();
-            rs.Open("Select * from Abfrage_Kosten_Solarthermie where ID_Projekt=" + m_ID_Projekt);
-            if (rs.Next()) _Inputs["Solarthermie"].Value = Convert.ToDecimal(rs.Read("Gesamt"));
-            rs.Close();
+            flpContainer.Controls.Clear();
+            flpContainer.SuspendLayout();
 
+            // 1. Berechne die verfügbare Innenbreite exakt
+            // ClientSize.Width zieht die Scrollbar bereits automatisch ab.
+            int targetWidth = flpContainer.ClientSize.Width - flpContainer.Padding.Left - flpContainer.Padding.Right;
+
+            // Falls du einen kleinen Sicherheitsabstand zum rechten Rand willst (z.B. 5 Pixel):
+            targetWidth -= 5;
+
+            string aktuelleGruppe = "";
+
+            foreach (var f in faktoren)
+            {
+                if (f.Gruppenname != aktuelleGruppe)
+                {
+                    aktuelleGruppe = f.Gruppenname;
+
+                    // Blaues Gruppen-Label
+                    Label groupTitle = new Label
+                    {
+                        AutoSize = false,
+                        Text = aktuelleGruppe.ToUpper(),
+                        Font = new Font(this.Font, FontStyle.Bold),
+                        BackColor = Color.FromArgb(20, 40, 80),
+                        ForeColor = Color.White,
+                        // WICHTIG: Nutze exakt targetWidth
+                        Size = new Size(targetWidth, 30),
+                        TextAlign = ContentAlignment.MiddleLeft,
+                        Margin = new Padding(0, 10, 0, 0)
+                        
+                    };
+                    flpContainer.Controls.Add(groupTitle);
+                    // Spalten-Header
+                    Panel columnHeader = CreateColumnHeader();
+                    // WICHTIG: Auch hier exakt targetWidth
+                    columnHeader.Width = targetWidth;
+                    flpContainer.Controls.Add(columnHeader);
+                }
+
+                var zeile = new ucKostenZeile(f);
+                zeile.Width = targetWidth;
+
+                // Das Event abfangen
+                zeile.ValueChanged += (s, e) =>
+                {
+                    // 1. Datenbank für genau diese StammID updaten
+                    UpdateSingleRowInDatabase(zeile.Daten);
+
+                    // 2. UI Summe aktualisieren
+                    Gesamtkosten();
+                };
+
+                if (f.IsMainComponent)
+                {
+                    zeile.BackColor = Color.LightSteelBlue;
+                    zeile.Font = new Font(zeile.Font, FontStyle.Bold);
+                    zeile.Margin = new Padding(0, 1, 0, 5);
+                }
+
+                zeile.DeleteRequested += Zeile_DeleteRequested;
+                flpContainer.Controls.Add(zeile);
+            }
+
+            flpContainer.ResumeLayout();
+        }
+
+        private void Zeile_DeleteRequested(object sender, EventArgs e)
+        {
+            int StammID = 0;
+
+            if (sender is ucKostenZeile zeile)
+            {
+                StammID = zeile.Daten.StammID;
+                // 1. Event-Handler abmelden (saubere Speicherverwaltung)
+                zeile.DeleteRequested -= Zeile_DeleteRequested;
+
+                // 2. Aus dem FlowLayoutPanel entfernen
+                flpContainer.Controls.Remove(zeile);
+
+                // 3. Das Control endgültig zerstören
+                zeile.Dispose();
+
+                // 4. Optional: Gesamtsumme neu berechnen
+                //UpdateTotalSum();
+
+                string dbPath = GetDBPath();
+                string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
+
+                // Transaktion außerhalb deklarieren, damit wir sie im catch-Block erreichen
+                OleDbTransaction trans = null;
+
+                try
+                {
+                    using (OleDbConnection conn = new OleDbConnection(connString))
+                    {
+                        conn.Open();
+                        // 1. Transaktion starten
+                        trans = conn.BeginTransaction();
+
+                        // INSERT Logik
+                        string insSql = @"DELETE * FROM Tab_ProjektWerte
+                                          WHERE ProjektID = @pid and StammID=@stid";
+
+                        using (OleDbCommand insCmd = new OleDbCommand(insSql, conn, trans)) // <--- Transaktion übergeben
+                        {
+                            insCmd.Parameters.AddWithValue("@pid", m_ID_Projekt);
+                            insCmd.Parameters.AddWithValue("@stid", StammID);
+             
+
+                            insCmd.ExecuteNonQuery();
+                        }
+
+
+                        // 2. Wenn alles erfolgreich war: Bestätigen
+                        trans.Commit();
+                    }
+
+ 
+                }
+                catch (Exception ex)
+                {
+                    // 3. Im Fehlerfall: Alles rückgängig machen
+                    try
+                    {
+                        if (trans != null) trans.Rollback();
+                    }
+                    catch { /* Ignorieren, falls Rollback selbst fehlschlägt */ }
+
+                }
+            }
+        }
+
+        private Panel CreateColumnHeader()
+        {
+            Panel p = new Panel
+            {
+                Size = new Size(flpContainer.Width - 25, 20),
+                BackColor = Color.LightGray,
+                Margin = new Padding(0, 0, 0, 5)
+            };
+
+            // Beispielhafte Labels (Breiten müssen denen im UserControl entsprechen!)
+            p.Controls.Add(new Label { Text = "Komponente", Location = new Point(5, 2), Width = 150, Font = new Font(this.Font, FontStyle.Regular) });
+            p.Controls.Add(new Label { Text = "Kosten [€]", Location = new Point(160, 2), Width = 80, Font = new Font(this.Font, FontStyle.Regular) });
+            p.Controls.Add(new Label { Text = "Einheit", Location = new Point(250, 2), Width = 50, Font = new Font(this.Font, FontStyle.Regular) });
+            p.Controls.Add(new Label { Text = "Nutzungsdauer [a]", Location = new Point(310, 2), Width = 100, Font = new Font(this.Font, FontStyle.Regular) });
+
+            return p;
+        }
+
+        private void listBox_Erzeuger_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            flpContainer.Visible = true;
+            btn_Hinzu.Enabled = true;
+
+            string komponente = listBox_Erzeuger.Text;
+            string kategorie = tabMain.SelectedTab.Text;
+
+            EnsureMainComponentExists(m_ID_Projekt, kategorie, komponente, 30);
+            LoadKostenFaktoren(m_ID_Projekt, kategorie, komponente);
+        }
+
+        public void LoadKostenFaktoren(int projektID, string kategorie, string komponente)
+        {
+            List<KostenPosition> geladeneFaktoren = new List<KostenPosition>();
+
+            string dbPath = GetDBPath();
+            string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
+
+            using (OleDbConnection conn = new OleDbConnection(connString))
+            {
+                try
+                {
+                    conn.Open();
+
+                    // SQL: Wir nutzen konsequent Parameter (?) statt Variablen im String
+                    // Das Feld 'Gruppe' muss in deiner 'Abfrage_Kostenfaktoren' 
+                    // jetzt auf Tab_ProjektWerte.Gruppe verweisen!
+                    string sql = @"
+                SELECT  ID,
+                        ProjektID,
+                        StammID,
+                        KategorieName,
+                        Komponente,
+                        Bezeichnung,
+                        Gruppe, 
+                        EingegebenerWert,
+                        Nutzungsdauer,
+                        Einheit,
+                        IsMainComponent
+                FROM Abfrage_Kostenfaktoren
+                WHERE (KategorieName = ?) 
+                  AND (Komponente = ?)
+                  AND (ProjektID = ?)";
+
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        // WICHTIG: Die Reihenfolge der Parameter muss exakt dem SQL entsprechen
+                        cmd.Parameters.Add("?", OleDbType.VarWChar).Value = kategorie;
+                        cmd.Parameters.Add("?", OleDbType.VarWChar).Value = komponente;
+                        cmd.Parameters.Add("?", OleDbType.Integer).Value = projektID;
+
+                        using (OleDbDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                geladeneFaktoren.Add(new KostenPosition
+                                {
+                                    ID = Convert.ToInt32(reader["ID"]),
+                                    Name = reader["Bezeichnung"].ToString(),
+                                    Betrag = reader["EingegebenerWert"] != DBNull.Value
+                                             ? Convert.ToDecimal(reader["EingegebenerWert"])
+                                             : 0,
+                                    Einheit = reader["Einheit"].ToString(),
+                                    Nutzungsdauer = Convert.ToInt32(reader["Nutzungsdauer"]),
+                                    IsMainComponent = Convert.ToBoolean(reader["IsMainComponent"]),
+                                    // Hier wird die projekt-spezifische Gruppe geladen:
+                                    Gruppenname = reader["Gruppe"] != DBNull.Value ? reader["Gruppe"].ToString() : "Allgemein",
+                                    StammID = Convert.ToInt32(reader["StammID"])
+                                });
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Fehler beim Laden der Faktoren: " + ex.Message);
+                }
+            }
+
+            // UI aktualisieren
+            UpdateDetailPanel(komponente, geladeneFaktoren);
+        }
+
+        private void EnsureMainComponentExists(int projektID, string kategorie, string komponente, decimal externeKosten)
+        {
+            try
+            {
+                string dbPath = GetDBPath();
+                string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
+
+                using (OleDbConnection conn = new OleDbConnection(connString))
+                {
+                    conn.Open();
+                    int stammID = 0;
+
+                    // --- SCHRITT 1: Stammdaten prüfen/anlegen ---
+                    // Suche StammID für den Namen und IsMainComponent
+                    string sqlStamm = $@"SELECT StammID FROM Abfrage_Kostenfaktoren 
+                             WHERE Komponente = '{komponente}' and Bezeichnung = '{komponente}' AND IsMainComponent = True";
+
+                    using (OleDbCommand cmd = new OleDbCommand(sqlStamm, conn))
+                    {
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            stammID = Convert.ToInt32(result);
+                        }
+                    }
+
+                    // --- SCHRITT 2: Projektdaten prüfen/anlegen ---
+                    string sqlCheckProjekt = $@"SELECT COUNT(*) FROM Tab_ProjektWerte 
+                                   WHERE ProjektID = {projektID} AND StammID = {stammID}";
+
+                    using (OleDbCommand cmd = new OleDbCommand(sqlCheckProjekt, conn))
+                    {
+                        int exists = (int)cmd.ExecuteScalar();
+
+                        if (exists == 0)
+                        {
+                            // Punkt statt Komma für SQL
+                            string betragSql = externeKosten.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+                            string sqlInsertWert = $@"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, EingegebenerWert, Nutzungsdauer) 
+                                         VALUES ({projektID}, {stammID}, {betragSql}, 0)";
+
+                            using (OleDbCommand cmdIns = new OleDbCommand(sqlInsertWert, conn))
+                            {
+                                cmdIns.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Fehler beim Initialisieren der Hauptkomponente: " + ex.Message);
+            }
+        }
+
+        private void btn_Hinzu_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string dbPath = GetDBPath();
+                string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
+
+                using (OleDbConnection conn = new OleDbConnection(connString))
+                {
+                    conn.Open();
+
+                    // 1. Eingabemaske öffnen
+                    Form_KostenfaktorItem frm = new Form_KostenfaktorItem();
+                    if (frm.ShowDialog() != DialogResult.OK) return;
+
+                    // 2. Werte aus dem Dialog abrufen
+                    int stammID = frm.gewählteID;
+                    int nutzungsdauer = Convert.ToInt32(frm.Nutzungsdauer);
+                    double betrag = Convert.ToDouble(frm.Wert);
+                    string einheit = frm.Einheit;
+                    string gewaehlteGruppe = frm.Gruppe.Trim(); // Gruppe aus der ComboBox
+
+                    if (string.IsNullOrEmpty(gewaehlteGruppe)) gewaehlteGruppe = "Allgemein";
+
+                    // 3. Gruppe in den Katalog aufnehmen, falls sie neu ist ("Lern-Funktion")
+                    string sqlKatalog = @"INSERT INTO Tab_GruppenKatalog (GruppenName) 
+                                  SELECT ? FROM (SELECT COUNT(*) FROM Tab_GruppenKatalog WHERE GruppenName = ?) AS CheckTbl 
+                                  WHERE CheckTbl.[Expr1000] = 0";
+                    // Hinweis: Das obige SQL ist ein "Insert if not exists" Trick für Access. 
+                    // Alternativ einfach ein Try-Catch um ein normales INSERT machen.
+
+                    try
+                    {
+                        using (OleDbCommand cmdKat = new OleDbCommand("INSERT INTO Tab_GruppenKatalog (GruppenName) VALUES (?)", conn))
+                        {
+                            cmdKat.Parameters.Add("?", OleDbType.VarWChar).Value = gewaehlteGruppe;
+                            cmdKat.ExecuteNonQuery();
+                        }
+                    }
+                    catch { /* Ignorieren, wenn Gruppe schon existiert (Duplicate Key) */ }
+
+                    // 4. INSERT in Tab_ProjektWerte (inklusive der projekt-spezifischen Gruppe)
+                    string sqlInsert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, EingegebenerWert, Nutzungsdauer, Einheit, Gruppe) 
+                                VALUES (?, ?, ?, ?, ?, ?)";
+
+                    using (OleDbCommand cmdIns = new OleDbCommand(sqlInsert, conn))
+                    {
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = m_ID_Projekt;
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = stammID;
+                        cmdIns.Parameters.Add("?", OleDbType.Double).Value = betrag;
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = nutzungsdauer;
+                        cmdIns.Parameters.Add("?", OleDbType.VarWChar).Value = einheit;
+                        cmdIns.Parameters.Add("?", OleDbType.VarWChar).Value = gewaehlteGruppe;
+
+                        cmdIns.ExecuteNonQuery();
+                    }
+                }
+
+                // 5. UI aktualisieren
+                LoadKostenFaktoren(m_ID_Projekt, tabMain.SelectedTab.Text, listBox_Erzeuger.Text);
+                Gesamtkosten();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Fehler beim Hinzufügen: " + ex.Message);
+            }
+        }
+
+        private void UpdateSingleRowInDatabase(KostenPosition pos)
+        {
+            // Sicherheitscheck: Ohne ID kein Update
+            if (pos.ID <= 0) return;
+
+            try
+            {
+                string dbPath = GetDBPath();
+                string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};";
+
+                using (OleDbConnection conn = new OleDbConnection(connString))
+                {
+                    conn.Open();
+                    // filtern NUR noch nach der eindeutigen ID
+                    string sql = @"UPDATE Tab_ProjektWerte 
+                           SET EingegebenerWert = @wert, 
+                               Nutzungsdauer = @dauer 
+                           WHERE ID = @id";
+
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        // Parameter-Reihenfolge einhalten:
+                        cmd.Parameters.Add("@wert", OleDbType.Double).Value = (double)pos.Betrag;
+                        cmd.Parameters.Add("@dauer", OleDbType.Integer).Value = pos.Nutzungsdauer;
+                        cmd.Parameters.Add("@id", OleDbType.Integer).Value = pos.ID;
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Fehler beim Speichern: " + ex.Message);
+            }
         }
     }
+
 }

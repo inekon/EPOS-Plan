@@ -148,11 +148,29 @@ namespace WindowsFormsApplication1
                 _chartWheelManager.IsXYMode = IsXYChart;
             }
 
+            _chart.AxisScrollBarClicked += chart1_AxisScrollBarClicked;
+
             // Position der gesamten ChartArea (inklusive Achsenbeschriftung) im Control
             ca.Position.Auto = true; // Oder manuell auf ca.Position = new ElementPosition(0, 0, 100, 100);
 
             _chart.Series.Clear();
             _chart.Invalidate();
+        }
+
+        private void chart1_AxisScrollBarClicked(object sender, ScrollBarEventArgs e)
+        {
+            // Prüfen, ob der Reset-Button (das Kreissymbol) geklickt wurde
+            if (e.ButtonType == ScrollBarButtonType.ZoomReset)
+            {
+                // Deine Logik, wenn der Zoom zurückgesetzt wird
+                Console.WriteLine("Zoom wurde über den Scrollbar-Button zurückgesetzt.");
+
+                // Optional: Standardverhalten verhindern, wenn du den Reset selbst steuern willst
+                // e.IsHandled = true; 
+                // _chart.ChartAreas[0].RecalculateAxesScale();
+                // _chart.Invalidate();
+             //   _chartWheelManager.UpdateVisuals(_chart.ChartAreas[0].AxisX);
+            }
         }
 
         public void RefreshChart()
@@ -379,7 +397,7 @@ namespace WindowsFormsApplication1
             else { _toolTip.Hide(_chart); _lastPoint = null; }
         }
 
-        private void UpdateVisuals(Axis xAxis)
+        public void UpdateVisuals(Axis xAxis)
         {
             double viewSize = xAxis.ScaleView.Size;
 

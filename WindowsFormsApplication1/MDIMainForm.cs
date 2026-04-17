@@ -255,6 +255,12 @@ namespace WindowsFormsApplication1
             }
             else MessageBox.Show("Projekt auswählen!");
         }
+
+        private void kostenAdminToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form_KostenAdmin frm = new Form_KostenAdmin();  
+            frm.ShowDialog();
+        }
     }
 }
 

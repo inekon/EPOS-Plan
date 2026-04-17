@@ -240,6 +240,7 @@
             // 
             // panel_Klimaregion
             // 
+            this.panel_Klimaregion.BackColor = System.Drawing.Color.WhiteSmoke;
             this.panel_Klimaregion.Controls.Add(this.label21);
             this.panel_Klimaregion.Controls.Add(this.pictureBox1);
             this.panel_Klimaregion.Controls.Add(this.panel1);
