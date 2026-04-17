@@ -445,6 +445,8 @@ namespace WindowsFormsApplication1
 
                         cmdIns.ExecuteNonQuery();
                     }
+
+                    UpdateKomponentenIDInStammdaten(stammID, tabMain.SelectedIndex+1, listBox_Erzeuger.SelectedIndex+1);
                 }
 
                 // 5. UI aktualisieren
@@ -455,6 +457,46 @@ namespace WindowsFormsApplication1
             {
                 MessageBox.Show("Fehler beim Hinzufügen: " + ex.Message);
             }
+        }
+
+        public bool UpdateKomponentenIDInStammdaten(int stammID, int kategorieID, int neueKomponentenID)
+        {
+            bool erfolgreich = false;
+            string dbPath = GetDBPath(); // Deine Methode zum Pfad finden
+            string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
+
+            // SQL: Suche den Eintrag basierend auf StammID UND KategorieName
+            // und setze die neue KomponentenID
+            string sql = @"UPDATE Tab_Kostenfaktor 
+                   SET KomponentenID = ? 
+                   WHERE StammID = ? AND KategorieID = ?";
+
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(connString))
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        // Parameter in der Reihenfolge der Fragezeichen (?)
+                        cmd.Parameters.Add("?", OleDbType.Integer).Value = neueKomponentenID;
+                        cmd.Parameters.Add("?", OleDbType.Integer).Value = stammID;
+                        cmd.Parameters.Add("?", OleDbType.Integer).Value = kategorieID;
+
+                        int zeilen = cmd.ExecuteNonQuery();
+
+                        // Wenn mindestens eine Zeile geändert wurde, war es erfolgreich
+                        erfolgreich = (zeilen > 0);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Fehler beim Aktualisieren der Stammdaten: " + ex.Message);
+                erfolgreich = false;
+            }
+
+            return erfolgreich;
         }
 
         private void UpdateSingleRowInDatabase(KostenPosition pos)
