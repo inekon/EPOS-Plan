@@ -277,6 +277,30 @@
     <Compile Include="Allgemein\Import\IniFileParser.cs" />
     <Compile Include="Allgemein\Import\VDI 3805\PufferSpImport.cs" />
     <Compile Include="Allgemein\Import\CEC\PVModule.cs" />
+    <Compile Include="Views\Kosten\Form_KostenfaktorItem.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Kosten\Form_KostenfaktorItem.Designer.cs">
+      <DependentUpon>Form_KostenfaktorItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Kosten\Form_KostenAdmin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Kosten\Form_KostenAdmin.Designer.cs">
+      <DependentUpon>Form_KostenAdmin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Kosten\Form_KostenItemNeu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Kosten\Form_KostenItemNeu.Designer.cs">
+      <DependentUpon>Form_KostenItemNeu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Kosten\ucKostenItem.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Kosten\ucKostenItem.Designer.cs">
+      <DependentUpon>ucKostenItem.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Simulation\NavigatorStrom.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -502,10 +526,6 @@
     <Compile Include="Views\Heizkessel\Form_Heizkessel_einlesen.designer.cs">
       <DependentUpon>Form_Heizkessel_einlesen.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Kosten\Class1.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Views\Kosten\CostRow.cs" />
     <Compile Include="Views\Kosten\Form_Kosten.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -886,6 +906,21 @@
     </Compile>
     <EmbeddedResource Include="Allgemein\Form_Hinweis.resx">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Kosten\Form_KostenfaktorItem.resx">
+      <DependentUpon>Form_KostenfaktorItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Kosten\Form_KostenAdmin.resx">
+      <DependentUpon>Form_KostenAdmin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Kosten\Form_KostenItemNeu.de-DE.resx">
+      <DependentUpon>Form_KostenItemNeu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Kosten\Form_KostenItemNeu.resx">
+      <DependentUpon>Form_KostenItemNeu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Kosten\ucKostenItem.resx">
+      <DependentUpon>ucKostenItem.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\NavigatorStrom.resx">
       <DependentUpon>NavigatorStrom.cs</DependentUpon>

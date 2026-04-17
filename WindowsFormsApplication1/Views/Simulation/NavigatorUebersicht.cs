@@ -34,7 +34,7 @@ namespace WindowsFormsApplication1
             // --- WICHTIG: Erst Spalten definieren ---
             dataGridView1.Columns.Clear();
 
-            // Wir lassen AutoGenerateColumns weg oder auf true
+            // AutoGenerateColumns weglassen oder auf true
             // dataGridView1.AutoGenerateColumns = true; 
 
             // Spalte 0

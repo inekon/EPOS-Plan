@@ -350,6 +350,12 @@
   <data name="MenuItem_Kosten.Text" xml:space="preserve">
     <value>Kosten</value>
   </data>
+  <data name="kostenAdminToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>308, 26</value>
+  </data>
+  <data name="kostenAdminToolStripMenuItem.Text" xml:space="preserve">
+    <value>Kosten Admin</value>
+  </data>
   <data name="MenuItem_DatImport.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
   </data>
@@ -1530,6 +1536,12 @@
   <data name="&gt;&gt;MenuItem_ST_Import.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;MenuItem_Kosten.Name" xml:space="preserve">
+    <value>MenuItem_Kosten</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_Kosten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;MenuItem_Gebaeude.Name" xml:space="preserve">
     <value>MenuItem_Gebaeude</value>
   </data>
@@ -1584,10 +1596,10 @@
   <data name="&gt;&gt;Englisch.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;MenuItem_Kosten.Name" xml:space="preserve">
-    <value>MenuItem_Kosten</value>
+  <data name="&gt;&gt;kostenAdminToolStripMenuItem.Name" xml:space="preserve">
+    <value>kostenAdminToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;MenuItem_Kosten.Type" xml:space="preserve">
+  <data name="&gt;&gt;kostenAdminToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
