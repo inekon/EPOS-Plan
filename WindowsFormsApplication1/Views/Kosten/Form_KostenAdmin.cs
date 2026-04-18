@@ -64,7 +64,7 @@ namespace WindowsFormsApplication1
         private void LoadKostenfaktoren(int kategorieId)
         {
             lvwKostenfaktoren.Items.Clear();
-            string sql = $"SELECT StammID, Bezeichnung FROM Tab_Kostenfaktor WHERE KategorieID = {kategorieId} and IsMainComponent=False ORDER BY Bezeichnung";
+            string sql = $"SELECT StammID, Bezeichnung FROM Tab_Kostenfaktor where IsMainComponent=False ORDER BY Bezeichnung";
             DataTable dt = GetDataTable(sql);
 
             foreach (DataRow row in dt.Rows)
@@ -107,7 +107,7 @@ namespace WindowsFormsApplication1
             if (frmLabel.result == DialogResult.OK)
             {
                 string neueBezeichnung = frmLabel.m_szName;
-                string insSql = @"INSERT INTO Tab_Kostenfaktor (KategorieID, Bezeichnung) Values (aktuelleKategorieID, neueBezeichnung)";
+                string insSql = @"INSERT INTO Tab_Kostenfaktor (Bezeichnung) Values (neueBezeichnung)";
 
                 using (OleDbConnection conn = new OleDbConnection(connString))
                 {
@@ -117,7 +117,7 @@ namespace WindowsFormsApplication1
 
                     using (OleDbCommand insCmd = new OleDbCommand(insSql, conn, trans)) // <--- Transaktion übergeben
                     {
-                        insCmd.Parameters.AddWithValue("@KategorieID", aktuelleKategorieID);
+           
                         insCmd.Parameters.AddWithValue("@Bezeichnung", neueBezeichnung);
 
                         insCmd.ExecuteNonQuery();
