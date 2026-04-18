@@ -37,11 +37,11 @@ namespace WindowsFormsApplication1
 
             if ((Program.startfrm.status & 0x2) == 0x2) listBox_Erzeuger.Items.Add("Wärmepumpe");
             if ((Program.startfrm.status & 0x1) == 0x1) listBox_Erzeuger.Items.Add("Heizkessel");
-            if ((Program.startfrm.status & 0x4) == 0x4) listBox_Erzeuger.Items.Add("Stromspeicher");
-            if ((Program.startfrm.status & 256) == 256) listBox_Erzeuger.Items.Add("BHKW");
-            if ((Program.startfrm.status & 512) == 512) listBox_Erzeuger.Items.Add("Solarthermie");
             if ((Program.startfrm.status & 1024) == 1024) listBox_Erzeuger.Items.Add("Photovoltaik");
+            if ((Program.startfrm.status & 512) == 512) listBox_Erzeuger.Items.Add("Solarthermie");
+            if ((Program.startfrm.status & 0x4) == 0x4) listBox_Erzeuger.Items.Add("Stromspeicher");
             if ((Program.startfrm.status & 2048) == 2048) listBox_Erzeuger.Items.Add("Pufferspeicher");
+            if ((Program.startfrm.status & 256) == 256) listBox_Erzeuger.Items.Add("BHKW");
          }
 
         private void button2_Click(object sender, EventArgs e)
@@ -414,16 +414,17 @@ namespace WindowsFormsApplication1
                     if (string.IsNullOrEmpty(gewaehlteGruppe)) gewaehlteGruppe = "Allgemein";
 
                     // 3. Gruppe in den Katalog aufnehmen, falls sie neu ist ("Lern-Funktion")
-                    string sqlKatalog = @"INSERT INTO Tab_GruppenKatalog (GruppenName) 
-                                  SELECT ? FROM (SELECT COUNT(*) FROM Tab_GruppenKatalog WHERE GruppenName = ?) AS CheckTbl 
+                    string sqlKatalog = @"INSERT INTO Tab_KostenGruppenKatalog (GruppenName) 
+                                  SELECT ? FROM (SELECT COUNT(*) FROM Tab_KostenGruppenKatalog WHERE GruppenName = ?) AS CheckTbl 
                                   WHERE CheckTbl.[Expr1000] = 0";
                     // Hinweis: Das obige SQL ist ein "Insert if not exists" Trick für Access. 
                     // Alternativ einfach ein Try-Catch um ein normales INSERT machen.
 
                     try
                     {
-                        using (OleDbCommand cmdKat = new OleDbCommand("INSERT INTO Tab_GruppenKatalog (GruppenName) VALUES (?)", conn))
+                        using (OleDbCommand cmdKat = new OleDbCommand(sqlKatalog, conn))
                         {
+                            cmdKat.Parameters.Add("?", OleDbType.VarWChar).Value = gewaehlteGruppe;
                             cmdKat.Parameters.Add("?", OleDbType.VarWChar).Value = gewaehlteGruppe;
                             cmdKat.ExecuteNonQuery();
                         }
@@ -431,8 +432,8 @@ namespace WindowsFormsApplication1
                     catch { /* Ignorieren, wenn Gruppe schon existiert (Duplicate Key) */ }
 
                     // 4. INSERT in Tab_ProjektWerte (inklusive der projekt-spezifischen Gruppe)
-                    string sqlInsert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, EingegebenerWert, Nutzungsdauer, Einheit, Gruppe) 
-                                VALUES (?, ?, ?, ?, ?, ?)";
+                    string sqlInsert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, EingegebenerWert, Nutzungsdauer, Einheit, Gruppe, KomponentenID, KategorieID) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
                     using (OleDbCommand cmdIns = new OleDbCommand(sqlInsert, conn))
                     {
@@ -442,11 +443,12 @@ namespace WindowsFormsApplication1
                         cmdIns.Parameters.Add("?", OleDbType.Integer).Value = nutzungsdauer;
                         cmdIns.Parameters.Add("?", OleDbType.VarWChar).Value = einheit;
                         cmdIns.Parameters.Add("?", OleDbType.VarWChar).Value = gewaehlteGruppe;
-
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = GetKomponentenID(listBox_Erzeuger.Text);
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = tabMain.SelectedIndex+1;
                         cmdIns.ExecuteNonQuery();
                     }
 
-                    UpdateKomponentenIDInStammdaten(stammID, tabMain.SelectedIndex+1, listBox_Erzeuger.SelectedIndex+1);
+                    //GetOrCloneStammIDWithKomponente(stammID, tabMain.SelectedIndex+1, listBox_Erzeuger.SelectedIndex+1);
                 }
 
                 // 5. UI aktualisieren
@@ -459,44 +461,65 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public bool UpdateKomponentenIDInStammdaten(int stammID, int kategorieID, int neueKomponentenID)
+        private int GetKomponentenID(string Erzeuger)
+        { 
+            switch (Erzeuger)
+            {
+                case "Wärmepumpe": return 1;
+                case "Heizkessel": return 2;
+                case "Photovoltaik": return 3;
+                case "Solarthermie": return 4;
+                case "Stromspeicher": return 5;
+                case "Pufferspeicher": return 6;
+                case "BHKW": return 7;
+                default: return 0; // Oder eine andere Standard-ID für "Unbekannt"
+            }
+        }
+
+        public int GetOrCloneStammIDWithKomponente(int alteStammID, int kategorieID, int neueKomponentenID)
         {
-            bool erfolgreich = false;
-            string dbPath = GetDBPath(); // Deine Methode zum Pfad finden
+            string dbPath = GetDBPath();
             string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
 
-            // SQL: Suche den Eintrag basierend auf StammID UND KategorieName
-            // und setze die neue KomponentenID
-            string sql = @"UPDATE Tab_Kostenfaktor 
-                   SET KomponentenID = ? 
-                   WHERE StammID = ? AND KategorieID = ?";
-
-            try
+            using (OleDbConnection conn = new OleDbConnection(connString))
             {
-                using (OleDbConnection conn = new OleDbConnection(connString))
+                conn.Open();
+
+                // 1. Prüfen, ob genau dieser Faktor schon für diese Komponente existiert
+                string sqlCheck = "SELECT StammID FROM Tab_Kostenfaktor WHERE Bezeichnung = (SELECT Bezeichnung FROM Tab_Kostenfaktor WHERE StammID = ?) AND KategorieID = ? AND KomponentenID = ?";
+                using (OleDbCommand cmdCheck = new OleDbCommand(sqlCheck, conn))
                 {
-                    conn.Open();
-                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    cmdCheck.Parameters.Add("?", OleDbType.Integer).Value = alteStammID;
+                    cmdCheck.Parameters.Add("?", OleDbType.Integer).Value = kategorieID;
+                    cmdCheck.Parameters.Add("?", OleDbType.Integer).Value = neueKomponentenID;
+
+                    object result = cmdCheck.ExecuteScalar();
+                    if (result != null)
                     {
-                        // Parameter in der Reihenfolge der Fragezeichen (?)
-                        cmd.Parameters.Add("?", OleDbType.Integer).Value = neueKomponentenID;
-                        cmd.Parameters.Add("?", OleDbType.Integer).Value = stammID;
-                        cmd.Parameters.Add("?", OleDbType.Integer).Value = kategorieID;
+                        // Existiert schon! Gib die gefundene StammID zurück.
+                        return Convert.ToInt32(result);
+                    }
+                }
 
-                        int zeilen = cmd.ExecuteNonQuery();
+                // 2. Falls nicht: Neuen Datensatz als Kopie anlegen (Clonen)
+                // Wir kopieren alle relevanten Felder, setzen aber die neue KomponentenID
+                string sqlClone = @"INSERT INTO Tab_Kostenfaktor (Bezeichnung, Einheit, KategorieID, KomponentenID, IsMainComponent, Gruppe)
+                            SELECT Bezeichnung, Einheit, KategorieID, ?, IsMainComponent, Gruppe
+                            FROM Tab_Kostenfaktor WHERE StammID = ?";
 
-                        // Wenn mindestens eine Zeile geändert wurde, war es erfolgreich
-                        erfolgreich = (zeilen > 0);
+                using (OleDbCommand cmdClone = new OleDbCommand(sqlClone, conn))
+                {
+                    cmdClone.Parameters.Add("?", OleDbType.Integer).Value = neueKomponentenID;
+                    cmdClone.Parameters.Add("?", OleDbType.Integer).Value = alteStammID;
+                    cmdClone.ExecuteNonQuery();
+
+                    // 3. Die neue AutoWert-StammID abrufen
+                    using (OleDbCommand cmdId = new OleDbCommand("SELECT @@IDENTITY", conn))
+                    {
+                        return (int)cmdId.ExecuteScalar();
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Fehler beim Aktualisieren der Stammdaten: " + ex.Message);
-                erfolgreich = false;
-            }
-
-            return erfolgreich;
         }
 
         private void UpdateSingleRowInDatabase(KostenPosition pos)
