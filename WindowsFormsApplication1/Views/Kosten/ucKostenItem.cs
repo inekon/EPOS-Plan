@@ -18,12 +18,17 @@ public partial class ucKostenZeile : UserControl
         this.Daten = pos;
         lblName.Text = pos.Name;
         lblEinheit.Text = pos.Einheit;
-        numBetrag.Value = pos.Betrag;
-        numDauer.Value = pos.Nutzungsdauer;
+
+        numBetrag.DecimalPlaces = 2; // Erlaubt zwei Nachkommastellen
+        numBetrag.Increment = 1M;  // Schritte beim Klicken
+        numDauer.DecimalPlaces = 2; // Erlaubt zwei Nachkommastellen
+        numDauer.Increment = 0.5M;  // Schritte beim Klicken
+        numBetrag.Value = (decimal)pos.Betrag;
+        numDauer.Value = (decimal)pos.Nutzungsdauer;
 
         // Events abfangen, um Änderungen zurück ins Objekt zu schreiben
-        numBetrag.ValueChanged += (s, e) => { pos.Betrag = numBetrag.Value; OnValueChanged(); };
-        numDauer.ValueChanged += (s, e) => { pos.Nutzungsdauer = (int)numDauer.Value; OnValueChanged(); };
+        numBetrag.ValueChanged += (s, e) => { pos.Betrag = (decimal)numBetrag.Value; OnValueChanged(); };
+        numDauer.ValueChanged += (s, e) => { pos.Nutzungsdauer = (decimal)numDauer.Value; OnValueChanged(); };
 
         // Abstand: Links=0, Oben=2, Rechts=0, Unten=2
         this.Margin = new Padding(0, 2, 0, 0);
@@ -63,8 +68,9 @@ public class KostenPosition
     public string Gruppe { get; set; } // z.B. "Infrastruktur"
     public decimal Betrag { get; set; }
     public string Einheit { get; set; }
-    public int Nutzungsdauer { get; set; }
+    public decimal Nutzungsdauer { get; set; }
     public string Gruppenname { get; set; }
     public bool IsMainComponent { get; set; }
     public int StammID { get; set; } // Optional: Verweis auf die Stammdaten, falls benötigt    
+    public string Komponente { get; set; }
 }

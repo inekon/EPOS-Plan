@@ -30,24 +30,17 @@
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlGlobal = new System.Windows.Forms.Panel();
-            this.num_Zuschuss = new System.Windows.Forms.NumericUpDown();
-            this.label2 = new System.Windows.Forms.Label();
-            this.num_Zinssatz = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
             this.pnlFooter = new System.Windows.Forms.Panel();
-            this.button2 = new System.Windows.Forms.Button();
-            this.label_Gesamt = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
+            this.btn_OK = new System.Windows.Forms.Button();
+            this.label_ErzeugerGesamt = new System.Windows.Forms.Label();
             this.panel1_space = new System.Windows.Forms.Panel();
+            this.label_Gesamt = new System.Windows.Forms.Label();
             this.tabMain.SuspendLayout();
             this.tabInvest.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.pnlHeader.SuspendLayout();
-            this.pnlGlobal.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.num_Zuschuss)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.num_Zinssatz)).BeginInit();
             this.pnlFooter.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -203,97 +196,44 @@
             // pnlGlobal
             // 
             this.pnlGlobal.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(50)))), ((int)(((byte)(97)))));
-            this.pnlGlobal.Controls.Add(this.num_Zuschuss);
-            this.pnlGlobal.Controls.Add(this.label2);
-            this.pnlGlobal.Controls.Add(this.num_Zinssatz);
-            this.pnlGlobal.Controls.Add(this.label1);
             this.pnlGlobal.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlGlobal.Location = new System.Drawing.Point(0, 52);
             this.pnlGlobal.Name = "pnlGlobal";
             this.pnlGlobal.Size = new System.Drawing.Size(1015, 43);
             this.pnlGlobal.TabIndex = 2;
             // 
-            // num_Zuschuss
-            // 
-            this.num_Zuschuss.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.num_Zuschuss.Location = new System.Drawing.Point(370, 12);
-            this.num_Zuschuss.Name = "num_Zuschuss";
-            this.num_Zuschuss.Size = new System.Drawing.Size(66, 25);
-            this.num_Zuschuss.TabIndex = 4;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.ForeColor = System.Drawing.Color.White;
-            this.label2.Location = new System.Drawing.Point(222, 15);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(142, 17);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Zuschuss BAFA/KFW [€]";
-            // 
-            // num_Zinssatz
-            // 
-            this.num_Zinssatz.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.num_Zinssatz.Location = new System.Drawing.Point(107, 12);
-            this.num_Zinssatz.Name = "num_Zinssatz";
-            this.num_Zinssatz.Size = new System.Drawing.Size(66, 25);
-            this.num_Zinssatz.TabIndex = 2;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(28, 15);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(77, 17);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Zinssatz [%]";
-            // 
             // pnlFooter
             // 
             this.pnlFooter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(31)))), ((int)(((byte)(61)))));
-            this.pnlFooter.Controls.Add(this.button2);
             this.pnlFooter.Controls.Add(this.label_Gesamt);
-            this.pnlFooter.Controls.Add(this.label15);
+            this.pnlFooter.Controls.Add(this.btn_OK);
+            this.pnlFooter.Controls.Add(this.label_ErzeugerGesamt);
             this.pnlFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.pnlFooter.Location = new System.Drawing.Point(0, 786);
             this.pnlFooter.Name = "pnlFooter";
             this.pnlFooter.Size = new System.Drawing.Size(1015, 53);
             this.pnlFooter.TabIndex = 3;
             // 
-            // button2
+            // btn_OK
             // 
-            this.button2.Location = new System.Drawing.Point(915, 12);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 33);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "OK";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.btn_OK.Location = new System.Drawing.Point(915, 12);
+            this.btn_OK.Name = "btn_OK";
+            this.btn_OK.Size = new System.Drawing.Size(75, 33);
+            this.btn_OK.TabIndex = 3;
+            this.btn_OK.Text = "OK";
+            this.btn_OK.UseVisualStyleBackColor = true;
+            this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
             // 
-            // label_Gesamt
+            // label_ErzeugerGesamt
             // 
-            this.label_Gesamt.AutoSize = true;
-            this.label_Gesamt.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Gesamt.ForeColor = System.Drawing.Color.White;
-            this.label_Gesamt.Location = new System.Drawing.Point(185, 16);
-            this.label_Gesamt.Name = "label_Gesamt";
-            this.label_Gesamt.Size = new System.Drawing.Size(19, 21);
-            this.label_Gesamt.TabIndex = 1;
-            this.label_Gesamt.Text = "0";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.ForeColor = System.Drawing.Color.White;
-            this.label15.Location = new System.Drawing.Point(19, 16);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(165, 21);
-            this.label15.TabIndex = 0;
-            this.label15.Text = "Investition Gesamt [€]:";
+            this.label_ErzeugerGesamt.AutoSize = true;
+            this.label_ErzeugerGesamt.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_ErzeugerGesamt.ForeColor = System.Drawing.Color.White;
+            this.label_ErzeugerGesamt.Location = new System.Drawing.Point(18, 16);
+            this.label_ErzeugerGesamt.Name = "label_ErzeugerGesamt";
+            this.label_ErzeugerGesamt.Size = new System.Drawing.Size(19, 21);
+            this.label_ErzeugerGesamt.TabIndex = 1;
+            this.label_ErzeugerGesamt.Text = "0";
             // 
             // panel1_space
             // 
@@ -302,6 +242,17 @@
             this.panel1_space.Name = "panel1_space";
             this.panel1_space.Size = new System.Drawing.Size(1015, 15);
             this.panel1_space.TabIndex = 1;
+            // 
+            // label_Gesamt
+            // 
+            this.label_Gesamt.AutoSize = true;
+            this.label_Gesamt.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Gesamt.ForeColor = System.Drawing.Color.White;
+            this.label_Gesamt.Location = new System.Drawing.Point(281, 16);
+            this.label_Gesamt.Name = "label_Gesamt";
+            this.label_Gesamt.Size = new System.Drawing.Size(19, 21);
+            this.label_Gesamt.TabIndex = 5;
+            this.label_Gesamt.Text = "0";
             // 
             // Form_Kosten
             // 
@@ -323,10 +274,6 @@
             this.panel1.ResumeLayout(false);
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
-            this.pnlGlobal.ResumeLayout(false);
-            this.pnlGlobal.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.num_Zuschuss)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.num_Zinssatz)).EndInit();
             this.pnlFooter.ResumeLayout(false);
             this.pnlFooter.PerformLayout();
             this.ResumeLayout(false);
@@ -340,14 +287,9 @@
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Panel pnlGlobal;
         private System.Windows.Forms.Panel pnlFooter;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown num_Zuschuss;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.NumericUpDown num_Zinssatz;
         private System.Windows.Forms.TabPage tabEnergie;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Label label_Gesamt;
+        private System.Windows.Forms.Button btn_OK;
+        private System.Windows.Forms.Label label_ErzeugerGesamt;
         private System.Windows.Forms.Panel panel1_space;
         private System.Windows.Forms.FlowLayoutPanel flpContainer;
         private System.Windows.Forms.Panel panel2;
@@ -357,5 +299,6 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btn_Hinzu;
+        private System.Windows.Forms.Label label_Gesamt;
     }
 }
