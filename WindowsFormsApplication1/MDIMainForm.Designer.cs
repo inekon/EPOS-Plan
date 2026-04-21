@@ -69,6 +69,9 @@
             this.MenuItem_PV_Import_CEC = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_ST_Import = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Kosten = new System.Windows.Forms.ToolStripMenuItem();
+            this.kostenAdminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_UpdateDBStruktur = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_ScriptGenerator = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebTypen = new System.Windows.Forms.ToolStripMenuItem();
@@ -78,7 +81,6 @@
             this.MenuItem_Lizenz = new System.Windows.Forms.ToolStripMenuItem();
             this.Deutsch = new System.Windows.Forms.ToolStripMenuItem();
             this.Englisch = new System.Windows.Forms.ToolStripMenuItem();
-            this.kostenAdminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolbar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -326,7 +328,9 @@
             this.MenuItem_PV_Import_CEC,
             this.MenuItem_ST_Import,
             this.MenuItem_Kosten,
-            this.kostenAdminToolStripMenuItem});
+            this.kostenAdminToolStripMenuItem,
+            this.MenuItem_UpdateDBStruktur,
+            this.MenuItem_ScriptGenerator});
             this.MenuItem_DatImport.Image = global::WindowsFormsApplication1.Properties.Resources.Menue5;
             resources.ApplyResources(this.MenuItem_DatImport, "MenuItem_DatImport");
             this.MenuItem_DatImport.Name = "MenuItem_DatImport";
@@ -372,6 +376,24 @@
             this.MenuItem_Kosten.Name = "MenuItem_Kosten";
             resources.ApplyResources(this.MenuItem_Kosten, "MenuItem_Kosten");
             this.MenuItem_Kosten.Click += new System.EventHandler(this.MenuItem_Kosten_Click);
+            // 
+            // kostenAdminToolStripMenuItem
+            // 
+            this.kostenAdminToolStripMenuItem.Name = "kostenAdminToolStripMenuItem";
+            resources.ApplyResources(this.kostenAdminToolStripMenuItem, "kostenAdminToolStripMenuItem");
+            this.kostenAdminToolStripMenuItem.Click += new System.EventHandler(this.kostenAdminToolStripMenuItem_Click);
+            // 
+            // MenuItem_UpdateDBStruktur
+            // 
+            this.MenuItem_UpdateDBStruktur.Name = "MenuItem_UpdateDBStruktur";
+            resources.ApplyResources(this.MenuItem_UpdateDBStruktur, "MenuItem_UpdateDBStruktur");
+            this.MenuItem_UpdateDBStruktur.Click += new System.EventHandler(this.MenuItem_UpdateDBStruktur_Click);
+            // 
+            // MenuItem_ScriptGenerator
+            // 
+            this.MenuItem_ScriptGenerator.Name = "MenuItem_ScriptGenerator";
+            resources.ApplyResources(this.MenuItem_ScriptGenerator, "MenuItem_ScriptGenerator");
+            this.MenuItem_ScriptGenerator.Click += new System.EventHandler(this.MenuItem_ScriptGenerator_Click);
             // 
             // MenuItem_Gebaeude
             // 
@@ -437,12 +459,6 @@
             this.Englisch.Image = global::WindowsFormsApplication1.Properties.Resources.usa;
             this.Englisch.Name = "Englisch";
             this.Englisch.Click += new System.EventHandler(this.Englisch_Click);
-            // 
-            // kostenAdminToolStripMenuItem
-            // 
-            this.kostenAdminToolStripMenuItem.Name = "kostenAdminToolStripMenuItem";
-            resources.ApplyResources(this.kostenAdminToolStripMenuItem, "kostenAdminToolStripMenuItem");
-            this.kostenAdminToolStripMenuItem.Click += new System.EventHandler(this.kostenAdminToolStripMenuItem_Click);
             // 
             // MDIMainForm
             // 
@@ -513,6 +529,8 @@
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ST_Import;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Kosten;
         private System.Windows.Forms.ToolStripMenuItem kostenAdminToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_UpdateDBStruktur;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_ScriptGenerator;
     }
 }
 

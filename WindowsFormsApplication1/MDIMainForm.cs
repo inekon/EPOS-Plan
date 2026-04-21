@@ -261,6 +261,18 @@ namespace WindowsFormsApplication1
             Form_KostenAdmin frm = new Form_KostenAdmin();  
             frm.ShowDialog();
         }
+
+        private void MenuItem_UpdateDBStruktur_Click(object sender, EventArgs e)
+        {
+            UpdateDatabaseFromScript update = new UpdateDatabaseFromScript();
+            update.UpdateDatabase(Application.StartupPath + @"\UpdateScript.txt");
+        }
+
+        private void MenuItem_ScriptGenerator_Click(object sender, EventArgs e)
+        {
+            Form_ScriptGenerator frm = new Form_ScriptGenerator();  
+            frm.ShowDialog();   
+        }
     }
 }
 

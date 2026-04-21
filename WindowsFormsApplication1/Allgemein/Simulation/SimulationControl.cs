@@ -10,6 +10,7 @@ namespace WindowsFormsApplication1
         public SimulationSPK simulation_spk = new SimulationSPK();
         public SimulationSolarthermie simulation_solarthermie = new SimulationSolarthermie();
         public SimulationPV simulation_pv = new SimulationPV(); 
+        public SimulationSSP simulation_ssp = new SimulationSSP();
 
         private bool m_bError = false;
 
@@ -32,6 +33,7 @@ namespace WindowsFormsApplication1
         public bool bSimulationKessel = false;
         public bool bSimulationSolarthermie = false;
         public bool bSimulationPV = false;
+        public bool bSimulationSSP = false;
 
         public void Do_Simulation(int ID_Projekt)
         {
@@ -106,10 +108,6 @@ namespace WindowsFormsApplication1
                 {
                     Ausgang = Simulation_Solarthermie_Ctrl(Eingang);
 
-
-                    double x = Ausgang.Sum();
-                    double x2 = Eingang.Sum();
-
                     Restwaerme = 0;
                     for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
                     Rest_Wermebedarf_stuendlich = Ausgang;
@@ -125,7 +123,7 @@ namespace WindowsFormsApplication1
                 temp = Simulation_Photovoltaik_Ctrl(Rest_Strombedarf_viertelstuendlich);
                 Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
 
-       
+                // Reststrom gesamt in MHh
                 Reststrom = Rest_Strombedarf_viertelstuendlich.Sum() / 4000;
 
                 bSimulationPV = true;
@@ -137,8 +135,15 @@ namespace WindowsFormsApplication1
             if (tool[5] == "Stromspeicher")
             {
                 // Rest_Strombedarf_viertelstuendlich
-            }
 
+                temp = Simulation_Stromspeicher_Ctrl(Rest_Strombedarf_viertelstuendlich);
+                Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
+
+                // Reststrom gesamt in MHh
+                Reststrom = Rest_Strombedarf_viertelstuendlich.Sum() / 4000;
+
+                bSimulationSSP = true;
+            }
         }
 
         private float[] Simulation_WP_Ctrl(float[] Waermebedarf, bool bHeizstab)
@@ -271,7 +276,6 @@ namespace WindowsFormsApplication1
 
             TestePVAnlage();
 
-
             return temp;
         }
 
@@ -300,6 +304,26 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("ERGEBNIS OK: Die Formel arbeitet physikalisch korrekt.");
             }
+        }
+
+        private float[] Simulation_Stromspeicher_Ctrl(float[] Strombedarf)
+        {
+            RecordSet rs = new RecordSet();
+
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
+
+            simulation_ssp.stromspeicher_list.Clear();
+            while (rs.Next())
+            {
+                simulation_ssp.stromspeicher_list.Add((int)rs.Read("ID_SP"));
+            }
+            rs.Close();
+
+            simulation_ssp.Strombedarf = Strombedarf;
+
+            // Simulation starten
+            float[] temp = simulation_ssp.Berechnung(m_ID_Projekt);
+            return temp;
         }
 
     }

@@ -463,8 +463,8 @@ namespace WindowsFormsApplication1
                                              ? Convert.ToDecimal(reader["EingegebenerWert"])
                                              : 0,
                                     Einheit = reader["Einheit"].ToString(),
-                                    Nutzungsdauer = reader["EingegebenerWert"] != DBNull.Value
-                                             ? Convert.ToDecimal(reader["Nutzuingsdauer"])
+                                    Nutzungsdauer = reader["Nutzungsdauer"] != DBNull.Value
+                                             ? Convert.ToDecimal(reader["Nutzungsdauer"])
                                              : 0,
                                     IsMainComponent = Convert.ToBoolean(reader["IsMainComponent"]),
                                     // Hier wird die projekt-spezifische Gruppe geladen:

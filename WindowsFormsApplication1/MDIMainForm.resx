@@ -121,48 +121,6 @@
     <value>19, 19</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="MenuItem_ProjektNeu.Size" type="System.Drawing.Size, System.Drawing">
-    <value>187, 26</value>
-  </data>
-  <data name="MenuItem_ProjektNeu.Text" xml:space="preserve">
-    <value>Neu...</value>
-  </data>
-  <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 6</value>
-  </data>
-  <data name="MenuItem_ProjektOeffnen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>187, 26</value>
-  </data>
-  <data name="MenuItem_ProjektOeffnen.Text" xml:space="preserve">
-    <value>Öffnen...</value>
-  </data>
-  <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 6</value>
-  </data>
-  <data name="MenuItem_ProjektBearbeiten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>187, 26</value>
-  </data>
-  <data name="MenuItem_ProjektBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten...</value>
-  </data>
-  <data name="toolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 6</value>
-  </data>
-  <data name="MenuItem_zuletztGeöffnet.Size" type="System.Drawing.Size, System.Drawing">
-    <value>187, 26</value>
-  </data>
-  <data name="MenuItem_zuletztGeöffnet.Text" xml:space="preserve">
-    <value>zuletzt geöffnet</value>
-  </data>
-  <data name="toolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 6</value>
-  </data>
-  <data name="MenuItem_ProjektLöschen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>187, 26</value>
-  </data>
-  <data name="MenuItem_ProjektLöschen.Text" xml:space="preserve">
-    <value>Löschen...</value>
-  </data>
   <data name="Projekte.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt</value>
   </data>
@@ -171,42 +129,6 @@
   </data>
   <data name="Projekte.Text" xml:space="preserve">
     <value>Projekt</value>
-  </data>
-  <data name="MenuItem_Brauchwasser.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 26</value>
-  </data>
-  <data name="MenuItem_Brauchwasser.Text" xml:space="preserve">
-    <value>Brauchwasser</value>
-  </data>
-  <data name="MenuItem_Kessel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 26</value>
-  </data>
-  <data name="MenuItem_Kessel.Text" xml:space="preserve">
-    <value>Heizkessel</value>
-  </data>
-  <data name="MenuItem_Prozesswaerme.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 26</value>
-  </data>
-  <data name="MenuItem_Prozesswaerme.Text" xml:space="preserve">
-    <value>Prozesswärme</value>
-  </data>
-  <data name="MenuItem_PufferSp.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 26</value>
-  </data>
-  <data name="MenuItem_PufferSp.Text" xml:space="preserve">
-    <value>Pufferspeicher</value>
-  </data>
-  <data name="MenuItem_WaermebedarfExtern.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 26</value>
-  </data>
-  <data name="MenuItem_WaermebedarfExtern.Text" xml:space="preserve">
-    <value>Wärmebedarf Lastgang</value>
-  </data>
-  <data name="MenuItem_WP.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 26</value>
-  </data>
-  <data name="MenuItem_WP.Text" xml:space="preserve">
-    <value>Wärmepumpen</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="MenuItem_WBundHeizung.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
@@ -221,24 +143,6 @@
   <data name="MenuItem_WBundHeizung.Text" xml:space="preserve">
     <value>Wärmebedarf &amp;&amp; Heizung</value>
   </data>
-  <data name="MenuItem_Stromverbraucher.Size" type="System.Drawing.Size, System.Drawing">
-    <value>206, 26</value>
-  </data>
-  <data name="MenuItem_Stromverbraucher.Text" xml:space="preserve">
-    <value>Stromverbraucher</value>
-  </data>
-  <data name="MenuItem_Stromganglinie.Size" type="System.Drawing.Size, System.Drawing">
-    <value>206, 26</value>
-  </data>
-  <data name="MenuItem_Stromganglinie.Text" xml:space="preserve">
-    <value>Stromganglinie</value>
-  </data>
-  <data name="MenuItem_Stromspeicher.Size" type="System.Drawing.Size, System.Drawing">
-    <value>206, 26</value>
-  </data>
-  <data name="MenuItem_Stromspeicher.Text" xml:space="preserve">
-    <value>Stromspeicher</value>
-  </data>
   <data name="MenuItem_StromBedarfundSp.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
   </data>
@@ -248,42 +152,6 @@
   <data name="MenuItem_StromBedarfundSp.Text" xml:space="preserve">
     <value>Strombedarf &amp;&amp; Speicher</value>
   </data>
-  <data name="MenuItem_PC_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>154, 26</value>
-  </data>
-  <data name="MenuItem_PC_Bearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
-  </data>
-  <data name="MenuItem_PV.Size" type="System.Drawing.Size, System.Drawing">
-    <value>234, 26</value>
-  </data>
-  <data name="MenuItem_PV.Text" xml:space="preserve">
-    <value>Photovoltaik</value>
-  </data>
-  <data name="MenuItem_ST_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>154, 26</value>
-  </data>
-  <data name="MenuItem_ST_Bearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
-  </data>
-  <data name="MenuItem_Solarkollektoren.Size" type="System.Drawing.Size, System.Drawing">
-    <value>234, 26</value>
-  </data>
-  <data name="MenuItem_Solarkollektoren.Text" xml:space="preserve">
-    <value>Solarkollektoren</value>
-  </data>
-  <data name="MenuItem_SolThermGanglinie.Size" type="System.Drawing.Size, System.Drawing">
-    <value>234, 26</value>
-  </data>
-  <data name="MenuItem_SolThermGanglinie.Text" xml:space="preserve">
-    <value>Solarthermieganglinie</value>
-  </data>
-  <data name="MenuItem_BHKW.Size" type="System.Drawing.Size, System.Drawing">
-    <value>234, 26</value>
-  </data>
-  <data name="MenuItem_BHKW.Text" xml:space="preserve">
-    <value>BHKW</value>
-  </data>
   <data name="MenuItem_Energiesysteme.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
   </data>
@@ -292,12 +160,6 @@
   </data>
   <data name="MenuItem_Energiesysteme.Text" xml:space="preserve">
     <value>Energiesysteme</value>
-  </data>
-  <data name="MenuItem_Klimadaten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>158, 26</value>
-  </data>
-  <data name="MenuItem_Klimadaten.Text" xml:space="preserve">
-    <value>Klimadaten</value>
   </data>
   <data name="MenuItem_Klima.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
@@ -356,6 +218,18 @@
   <data name="kostenAdminToolStripMenuItem.Text" xml:space="preserve">
     <value>Kosten Admin</value>
   </data>
+  <data name="MenuItem_UpdateDBStruktur.Size" type="System.Drawing.Size, System.Drawing">
+    <value>308, 26</value>
+  </data>
+  <data name="MenuItem_UpdateDBStruktur.Text" xml:space="preserve">
+    <value>Update Datenbank Struktur</value>
+  </data>
+  <data name="MenuItem_ScriptGenerator.Size" type="System.Drawing.Size, System.Drawing">
+    <value>308, 26</value>
+  </data>
+  <data name="MenuItem_ScriptGenerator.Text" xml:space="preserve">
+    <value>Sript Generator</value>
+  </data>
   <data name="MenuItem_DatImport.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
   </data>
@@ -364,18 +238,6 @@
   </data>
   <data name="MenuItem_DatImport.Text" xml:space="preserve">
     <value>Daten &amp;&amp; Import</value>
-  </data>
-  <data name="MenuItem_GebBearbeiten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 26</value>
-  </data>
-  <data name="MenuItem_GebBearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten</value>
-  </data>
-  <data name="MenuItem_GebTypen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 26</value>
-  </data>
-  <data name="MenuItem_GebTypen.Text" xml:space="preserve">
-    <value>Gebäudetypen</value>
   </data>
   <data name="MenuItem_Gebaeude.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
@@ -394,24 +256,6 @@
   </data>
   <data name="Administration.Text" xml:space="preserve">
     <value>Administration</value>
-  </data>
-  <data name="MenuItem_Version.Size" type="System.Drawing.Size, System.Drawing">
-    <value>132, 26</value>
-  </data>
-  <data name="MenuItem_Version.Text" xml:space="preserve">
-    <value>Version</value>
-  </data>
-  <data name="MenuItem_Version.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
-    <value>TextBeforeImage</value>
-  </data>
-  <data name="toolStripSeparator7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>129, 6</value>
-  </data>
-  <data name="MenuItem_Lizenz.Size" type="System.Drawing.Size, System.Drawing">
-    <value>132, 26</value>
-  </data>
-  <data name="MenuItem_Lizenz.Text" xml:space="preserve">
-    <value>Lizenz</value>
   </data>
   <data name="Help.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt</value>
@@ -470,6 +314,174 @@
   </data>
   <data name="&gt;&gt;menuToolbar.ZOrder" xml:space="preserve">
     <value>0</value>
+  </data>
+  <data name="MenuItem_ProjektNeu.Size" type="System.Drawing.Size, System.Drawing">
+    <value>187, 26</value>
+  </data>
+  <data name="MenuItem_ProjektNeu.Text" xml:space="preserve">
+    <value>Neu...</value>
+  </data>
+  <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 6</value>
+  </data>
+  <data name="MenuItem_ProjektOeffnen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>187, 26</value>
+  </data>
+  <data name="MenuItem_ProjektOeffnen.Text" xml:space="preserve">
+    <value>Öffnen...</value>
+  </data>
+  <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 6</value>
+  </data>
+  <data name="MenuItem_ProjektBearbeiten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>187, 26</value>
+  </data>
+  <data name="MenuItem_ProjektBearbeiten.Text" xml:space="preserve">
+    <value>Bearbeiten...</value>
+  </data>
+  <data name="toolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 6</value>
+  </data>
+  <data name="MenuItem_zuletztGeöffnet.Size" type="System.Drawing.Size, System.Drawing">
+    <value>187, 26</value>
+  </data>
+  <data name="MenuItem_zuletztGeöffnet.Text" xml:space="preserve">
+    <value>zuletzt geöffnet</value>
+  </data>
+  <data name="toolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 6</value>
+  </data>
+  <data name="MenuItem_ProjektLöschen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>187, 26</value>
+  </data>
+  <data name="MenuItem_ProjektLöschen.Text" xml:space="preserve">
+    <value>Löschen...</value>
+  </data>
+  <data name="MenuItem_Brauchwasser.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 26</value>
+  </data>
+  <data name="MenuItem_Brauchwasser.Text" xml:space="preserve">
+    <value>Brauchwasser</value>
+  </data>
+  <data name="MenuItem_Kessel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 26</value>
+  </data>
+  <data name="MenuItem_Kessel.Text" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="MenuItem_Prozesswaerme.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 26</value>
+  </data>
+  <data name="MenuItem_Prozesswaerme.Text" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="MenuItem_PufferSp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 26</value>
+  </data>
+  <data name="MenuItem_PufferSp.Text" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="MenuItem_WaermebedarfExtern.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 26</value>
+  </data>
+  <data name="MenuItem_WaermebedarfExtern.Text" xml:space="preserve">
+    <value>Wärmebedarf Lastgang</value>
+  </data>
+  <data name="MenuItem_WP.Size" type="System.Drawing.Size, System.Drawing">
+    <value>242, 26</value>
+  </data>
+  <data name="MenuItem_WP.Text" xml:space="preserve">
+    <value>Wärmepumpen</value>
+  </data>
+  <data name="MenuItem_Stromverbraucher.Size" type="System.Drawing.Size, System.Drawing">
+    <value>206, 26</value>
+  </data>
+  <data name="MenuItem_Stromverbraucher.Text" xml:space="preserve">
+    <value>Stromverbraucher</value>
+  </data>
+  <data name="MenuItem_Stromganglinie.Size" type="System.Drawing.Size, System.Drawing">
+    <value>206, 26</value>
+  </data>
+  <data name="MenuItem_Stromganglinie.Text" xml:space="preserve">
+    <value>Stromganglinie</value>
+  </data>
+  <data name="MenuItem_Stromspeicher.Size" type="System.Drawing.Size, System.Drawing">
+    <value>206, 26</value>
+  </data>
+  <data name="MenuItem_Stromspeicher.Text" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="MenuItem_PV.Size" type="System.Drawing.Size, System.Drawing">
+    <value>234, 26</value>
+  </data>
+  <data name="MenuItem_PV.Text" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="MenuItem_PC_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 26</value>
+  </data>
+  <data name="MenuItem_PC_Bearbeiten.Text" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="MenuItem_Solarkollektoren.Size" type="System.Drawing.Size, System.Drawing">
+    <value>234, 26</value>
+  </data>
+  <data name="MenuItem_Solarkollektoren.Text" xml:space="preserve">
+    <value>Solarkollektoren</value>
+  </data>
+  <data name="MenuItem_ST_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 26</value>
+  </data>
+  <data name="MenuItem_ST_Bearbeiten.Text" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="MenuItem_SolThermGanglinie.Size" type="System.Drawing.Size, System.Drawing">
+    <value>234, 26</value>
+  </data>
+  <data name="MenuItem_SolThermGanglinie.Text" xml:space="preserve">
+    <value>Solarthermieganglinie</value>
+  </data>
+  <data name="MenuItem_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>234, 26</value>
+  </data>
+  <data name="MenuItem_BHKW.Text" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="MenuItem_Klimadaten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>158, 26</value>
+  </data>
+  <data name="MenuItem_Klimadaten.Text" xml:space="preserve">
+    <value>Klimadaten</value>
+  </data>
+  <data name="MenuItem_GebBearbeiten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>181, 26</value>
+  </data>
+  <data name="MenuItem_GebBearbeiten.Text" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="MenuItem_GebTypen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>181, 26</value>
+  </data>
+  <data name="MenuItem_GebTypen.Text" xml:space="preserve">
+    <value>Gebäudetypen</value>
+  </data>
+  <data name="MenuItem_Version.Size" type="System.Drawing.Size, System.Drawing">
+    <value>132, 26</value>
+  </data>
+  <data name="MenuItem_Version.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="MenuItem_Version.TextImageRelation" type="System.Windows.Forms.TextImageRelation, System.Windows.Forms">
+    <value>TextBeforeImage</value>
+  </data>
+  <data name="toolStripSeparator7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>129, 6</value>
+  </data>
+  <data name="MenuItem_Lizenz.Size" type="System.Drawing.Size, System.Drawing">
+    <value>132, 26</value>
+  </data>
+  <data name="MenuItem_Lizenz.Text" xml:space="preserve">
+    <value>Lizenz</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -1542,6 +1554,24 @@
   <data name="&gt;&gt;MenuItem_Kosten.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;kostenAdminToolStripMenuItem.Name" xml:space="preserve">
+    <value>kostenAdminToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;kostenAdminToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_UpdateDBStruktur.Name" xml:space="preserve">
+    <value>MenuItem_UpdateDBStruktur</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_UpdateDBStruktur.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_ScriptGenerator.Name" xml:space="preserve">
+    <value>MenuItem_ScriptGenerator</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_ScriptGenerator.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;MenuItem_Gebaeude.Name" xml:space="preserve">
     <value>MenuItem_Gebaeude</value>
   </data>
@@ -1594,12 +1624,6 @@
     <value>Englisch</value>
   </data>
   <data name="&gt;&gt;Englisch.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;kostenAdminToolStripMenuItem.Name" xml:space="preserve">
-    <value>kostenAdminToolStripMenuItem</value>
-  </data>
-  <data name="&gt;&gt;kostenAdminToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
