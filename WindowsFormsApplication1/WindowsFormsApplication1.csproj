@@ -277,6 +277,7 @@
     <Compile Include="Allgemein\Import\IniFileParser.cs" />
     <Compile Include="Allgemein\Import\VDI 3805\PufferSpImport.cs" />
     <Compile Include="Allgemein\Import\CEC\PVModule.cs" />
+    <Compile Include="Allgemein\Update\UpdateDatabaseFromScript.cs" />
     <Compile Include="Views\Kosten\Form_KostenfaktorItem.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -799,6 +800,12 @@
     </Compile>
     <Compile Include="Views\Update\Form_Update.Designer.cs">
       <DependentUpon>Form_Update.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Update\ScriptGenerator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Update\ScriptGenerator.Designer.cs">
+      <DependentUpon>ScriptGenerator.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Wizard\Wizard_Stromlastgang.cs">
       <SubType>Form</SubType>
@@ -1401,6 +1408,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Update\Form_Update.resx">
       <DependentUpon>Form_Update.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Update\ScriptGenerator.resx">
+      <DependentUpon>ScriptGenerator.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\WizardParent.de-DE.resx">
       <DependentUpon>WizardParent.cs</DependentUpon>
