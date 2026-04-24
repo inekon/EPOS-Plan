@@ -130,7 +130,7 @@
             // 
             // Form_ScriptGenerator
             // 
-            this.ClientSize = new System.Drawing.Size(334, 511);
+            this.ClientSize = new System.Drawing.Size(336, 511);
             this.Controls.Add(this.btnCopy);
             this.Controls.Add(this.lblTyp);
             this.Controls.Add(this.lblFeldNeu);

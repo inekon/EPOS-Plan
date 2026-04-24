@@ -278,6 +278,12 @@
     <Compile Include="Allgemein\Import\VDI 3805\PufferSpImport.cs" />
     <Compile Include="Allgemein\Import\CEC\PVModule.cs" />
     <Compile Include="Allgemein\Update\UpdateDatabaseFromScript.cs" />
+    <Compile Include="Views\Kosten\Form_CaseEingabe.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Kosten\Form_CaseEingabe.Designer.cs">
+      <DependentUpon>Form_CaseEingabe.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Kosten\Form_KostenfaktorItem.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -913,6 +919,9 @@
     </Compile>
     <EmbeddedResource Include="Allgemein\Form_Hinweis.resx">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Kosten\Form_CaseEingabe.resx">
+      <DependentUpon>Form_CaseEingabe.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Kosten\Form_KostenfaktorItem.resx">
       <DependentUpon>Form_KostenfaktorItem.cs</DependentUpon>

@@ -31,17 +31,29 @@
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlGlobal = new System.Windows.Forms.Panel();
             this.pnlFooter = new System.Windows.Forms.Panel();
+            this.label_Gesamt = new System.Windows.Forms.Label();
             this.btn_OK = new System.Windows.Forms.Button();
             this.label_ErzeugerGesamt = new System.Windows.Forms.Label();
             this.panel1_space = new System.Windows.Forms.Panel();
-            this.label_Gesamt = new System.Windows.Forms.Label();
+            this.panel4 = new System.Windows.Forms.Panel();
+            this.listBox_Betriebskosten = new System.Windows.Forms.ListBox();
+            this.panel5 = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
+            this.panel6 = new System.Windows.Forms.Panel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.flpContainer_Betriebskosten = new System.Windows.Forms.FlowLayoutPanel();
+            this.btn_Hinzu_Betriebskosten = new System.Windows.Forms.Button();
             this.tabMain.SuspendLayout();
             this.tabInvest.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel1.SuspendLayout();
+            this.tabWartung.SuspendLayout();
             this.pnlHeader.SuspendLayout();
             this.pnlFooter.SuspendLayout();
+            this.panel4.SuspendLayout();
+            this.panel5.SuspendLayout();
+            this.panel6.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabMain
@@ -57,6 +69,7 @@
             this.tabMain.SelectedIndex = 0;
             this.tabMain.Size = new System.Drawing.Size(1015, 676);
             this.tabMain.TabIndex = 0;
+            this.tabMain.SelectedIndexChanged += new System.EventHandler(this.tabMain_SelectedIndexChanged);
             // 
             // tabInvest
             // 
@@ -157,6 +170,9 @@
             // 
             // tabWartung
             // 
+            this.tabWartung.Controls.Add(this.panel4);
+            this.tabWartung.Controls.Add(this.panel6);
+            this.tabWartung.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.tabWartung.Location = new System.Drawing.Point(4, 30);
             this.tabWartung.Name = "tabWartung";
             this.tabWartung.Size = new System.Drawing.Size(1007, 642);
@@ -214,6 +230,17 @@
             this.pnlFooter.Size = new System.Drawing.Size(1015, 53);
             this.pnlFooter.TabIndex = 3;
             // 
+            // label_Gesamt
+            // 
+            this.label_Gesamt.AutoSize = true;
+            this.label_Gesamt.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Gesamt.ForeColor = System.Drawing.Color.White;
+            this.label_Gesamt.Location = new System.Drawing.Point(393, 16);
+            this.label_Gesamt.Name = "label_Gesamt";
+            this.label_Gesamt.Size = new System.Drawing.Size(19, 21);
+            this.label_Gesamt.TabIndex = 5;
+            this.label_Gesamt.Text = "0";
+            // 
             // btn_OK
             // 
             this.btn_OK.Location = new System.Drawing.Point(915, 12);
@@ -243,16 +270,90 @@
             this.panel1_space.Size = new System.Drawing.Size(1015, 15);
             this.panel1_space.TabIndex = 1;
             // 
-            // label_Gesamt
+            // panel4
             // 
-            this.label_Gesamt.AutoSize = true;
-            this.label_Gesamt.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Gesamt.ForeColor = System.Drawing.Color.White;
-            this.label_Gesamt.Location = new System.Drawing.Point(281, 16);
-            this.label_Gesamt.Name = "label_Gesamt";
-            this.label_Gesamt.Size = new System.Drawing.Size(19, 21);
-            this.label_Gesamt.TabIndex = 5;
-            this.label_Gesamt.Text = "0";
+            this.panel4.BackColor = System.Drawing.Color.LightGray;
+            this.panel4.Controls.Add(this.listBox_Betriebskosten);
+            this.panel4.Controls.Add(this.panel5);
+            this.panel4.Location = new System.Drawing.Point(17, 18);
+            this.panel4.Name = "panel4";
+            this.panel4.Size = new System.Drawing.Size(355, 200);
+            this.panel4.TabIndex = 40;
+            // 
+            // listBox_Betriebskosten
+            // 
+            this.listBox_Betriebskosten.FormattingEnabled = true;
+            this.listBox_Betriebskosten.ItemHeight = 17;
+            this.listBox_Betriebskosten.Location = new System.Drawing.Point(6, 37);
+            this.listBox_Betriebskosten.Name = "listBox_Betriebskosten";
+            this.listBox_Betriebskosten.Size = new System.Drawing.Size(342, 157);
+            this.listBox_Betriebskosten.TabIndex = 37;
+            this.listBox_Betriebskosten.SelectedIndexChanged += new System.EventHandler(this.listBox_Betriebskosten_SelectedIndexChanged);
+            // 
+            // panel5
+            // 
+            this.panel5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(50)))), ((int)(((byte)(97)))));
+            this.panel5.Controls.Add(this.label1);
+            this.panel5.ForeColor = System.Drawing.Color.White;
+            this.panel5.Location = new System.Drawing.Point(6, 7);
+            this.panel5.Name = "panel5";
+            this.panel5.Size = new System.Drawing.Size(343, 25);
+            this.panel5.TabIndex = 38;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(8, 3);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(104, 17);
+            this.label1.TabIndex = 35;
+            this.label1.Text = "Energieerzeuger";
+            // 
+            // panel6
+            // 
+            this.panel6.BackColor = System.Drawing.Color.LightGray;
+            this.panel6.Controls.Add(this.btn_Hinzu_Betriebskosten);
+            this.panel6.Controls.Add(this.flpContainer_Betriebskosten);
+            this.panel6.Controls.Add(this.label2);
+            this.panel6.Location = new System.Drawing.Point(387, 18);
+            this.panel6.Name = "panel6";
+            this.panel6.Size = new System.Drawing.Size(606, 618);
+            this.panel6.TabIndex = 41;
+            // 
+            // label2
+            // 
+            this.label2.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(209, 246);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(205, 74);
+            this.label2.TabIndex = 0;
+            this.label2.Text = "Energieerzeuger auswählen";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // flpContainer_Betriebskosten
+            // 
+            this.flpContainer_Betriebskosten.AutoScroll = true;
+            this.flpContainer_Betriebskosten.BackColor = System.Drawing.SystemColors.Control;
+            this.flpContainer_Betriebskosten.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.flpContainer_Betriebskosten.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flpContainer_Betriebskosten.Location = new System.Drawing.Point(6, 8);
+            this.flpContainer_Betriebskosten.Name = "flpContainer_Betriebskosten";
+            this.flpContainer_Betriebskosten.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            this.flpContainer_Betriebskosten.Size = new System.Drawing.Size(594, 560);
+            this.flpContainer_Betriebskosten.TabIndex = 37;
+            this.flpContainer_Betriebskosten.Visible = false;
+            this.flpContainer_Betriebskosten.WrapContents = false;
+            // 
+            // btn_Hinzu_Betriebskosten
+            // 
+            this.btn_Hinzu_Betriebskosten.Enabled = false;
+            this.btn_Hinzu_Betriebskosten.Location = new System.Drawing.Point(6, 574);
+            this.btn_Hinzu_Betriebskosten.Name = "btn_Hinzu_Betriebskosten";
+            this.btn_Hinzu_Betriebskosten.Size = new System.Drawing.Size(163, 33);
+            this.btn_Hinzu_Betriebskosten.TabIndex = 4;
+            this.btn_Hinzu_Betriebskosten.Text = "➕ Position Hinzufügen";
+            this.btn_Hinzu_Betriebskosten.UseVisualStyleBackColor = true;
+            this.btn_Hinzu_Betriebskosten.Click += new System.EventHandler(this.btn_Hinzu_Betriebskosten_Click);
             // 
             // Form_Kosten
             // 
@@ -272,10 +373,15 @@
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             this.panel1.ResumeLayout(false);
+            this.tabWartung.ResumeLayout(false);
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
             this.pnlFooter.ResumeLayout(false);
             this.pnlFooter.PerformLayout();
+            this.panel4.ResumeLayout(false);
+            this.panel5.ResumeLayout(false);
+            this.panel5.PerformLayout();
+            this.panel6.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -300,5 +406,13 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btn_Hinzu;
         private System.Windows.Forms.Label label_Gesamt;
+        private System.Windows.Forms.Panel panel4;
+        private System.Windows.Forms.ListBox listBox_Betriebskosten;
+        private System.Windows.Forms.Panel panel5;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Panel panel6;
+        private System.Windows.Forms.FlowLayoutPanel flpContainer_Betriebskosten;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btn_Hinzu_Betriebskosten;
     }
 }

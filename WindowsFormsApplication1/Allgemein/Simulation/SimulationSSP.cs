@@ -8,21 +8,12 @@ namespace WindowsFormsApplication1
         public List<int> stromspeicher_list = new List<int>();
         public int m_ID_Projekt = 0;
 
-        // Input-Arrays (15-Minuten-Werte vom Lastprofil)
+        // Input-Arrays
         public float[] Strombedarf = new float[8760 * 4];
 
         public float[] Berechnung(int ID_Projekt)
         {
-            /*
-                        SimulationStrombedarf simStrom = new SimulationStrombedarf();
-                        simStrom.Berechnung(ID_Projekt);
-
-                        for (int i = 0; i < 8760; i++)
-                        {
-                            double value = simStrom.Stromganglinie[i];
-                        }
-            */
-            /* in Strombedarf werden die 15-Minuten-Werte des Strombedarfs gespeichert, die aus der SimulationStrombedarf-Klasse berechnet werden. */
+            /* in Strombedarf sind 15-Minuten-Werte des Strombedarfs gespeichert */
 
             WErzeugerCtrl ctrl = new WErzeugerCtrl();
             RecordSet rs = new RecordSet();
@@ -45,9 +36,18 @@ namespace WindowsFormsApplication1
                 MaxLadeLeistungKW = SpeicherKapazitaetKWh;
             }
 
-            return Strombedarf;
+            // hier wird die eigentliche Simulation des Strombedarfs mit den vorhandenen Stromspeichern durchgeführt
+            for (int i = 0; i < 8760 * 4; i++)
+            {
+                double value = Strombedarf[i];
+
+
+
+            }
+            return Strombedarf; // den korrigierten Wert zurückgeben, der den Strombedarf unter Berücksichtigung der Stromspeicher darstellt
         }
     }
-
-
 }
+
+
+

@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using MathNet.Numerics.Distributions;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
@@ -17,10 +18,17 @@ namespace WindowsFormsApplication1
         public Dictionary<string, NumericUpDown> _Inputs = new Dictionary<string, NumericUpDown>();
         public int m_ID_Projekt = 0;
 
+        private FlowLayoutPanel flp = null;
+        private string kategorie = "";
+
         public Form_Kosten(int IDProjekt)
         {
             InitializeComponent(); // Lädt die Designer-Struktur
+   
             m_ID_Projekt = IDProjekt;
+            tabMain.SelectedIndex = 0;
+            kategorie = tabMain.TabPages[0].Text;
+            flp = flpContainer;
 
             // UI verfeinern
             this.BackColor = Surface;
@@ -29,13 +37,18 @@ namespace WindowsFormsApplication1
             // Einmal initial aufrufen, damit beim Start 0 oder die Startwerte da stehen
             Gesamtkosten();
 
-            if ((Program.startfrm.status & 0x2) == 0x2) listBox_Erzeuger.Items.Add("Wärmepumpe");
-            if ((Program.startfrm.status & 0x1) == 0x1) listBox_Erzeuger.Items.Add("Heizkessel");
-            if ((Program.startfrm.status & 1024) == 1024) listBox_Erzeuger.Items.Add("Photovoltaik");
-            if ((Program.startfrm.status & 512) == 512) listBox_Erzeuger.Items.Add("Solarthermie");
-            if ((Program.startfrm.status & 0x4) == 0x4) listBox_Erzeuger.Items.Add("Stromspeicher");
-            if ((Program.startfrm.status & 2048) == 2048) listBox_Erzeuger.Items.Add("Pufferspeicher");
-            if ((Program.startfrm.status & 256) == 256) listBox_Erzeuger.Items.Add("BHKW");
+            if ((Program.startfrm.status & 0x2) == 0x2) { listBox_Erzeuger.Items.Add("Wärmepumpe"); listBox_Betriebskosten.Items.Add("Wärmepumpe"); }
+            if ((Program.startfrm.status & 0x1) == 0x1) { listBox_Erzeuger.Items.Add("Heizkessel"); listBox_Betriebskosten.Items.Add("Heizkessel"); }
+            if ((Program.startfrm.status & 1024) == 1024) { listBox_Erzeuger.Items.Add("Photovoltaik"); listBox_Betriebskosten.Items.Add("Photovoltaik"); }
+            if ((Program.startfrm.status & 512) == 512) { listBox_Erzeuger.Items.Add("Solarthermie"); listBox_Betriebskosten.Items.Add("Solarthermie"); }
+            if ((Program.startfrm.status & 0x4) == 0x4) { listBox_Erzeuger.Items.Add("Stromspeicher"); listBox_Betriebskosten.Items.Add("Stromspeicher"); }
+            if ((Program.startfrm.status & 2048) == 2048) { listBox_Erzeuger.Items.Add("Pufferspeicher"); listBox_Betriebskosten.Items.Add("Pufferspeicher"); }
+            if ((Program.startfrm.status & 256) == 256) { listBox_Erzeuger.Items.Add("BHKW"); listBox_Betriebskosten.Items.Add("BHKW"); }
+
+            // Im Konstruktor deines Hauptformulars:
+            typeof(FlowLayoutPanel).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+                null, flp, new object[] { true });
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
@@ -65,7 +78,7 @@ namespace WindowsFormsApplication1
             decimal summeSelektion = 0;
 
             // Die Summe der AKTUELLEN Selektion direkt aus den Controls lesen (Live-Werte)
-            foreach (Control c in flpContainer.Controls)
+            foreach (Control c in flp.Controls)
             {
                 if (c is ucKostenZeile zeile)
                 {
@@ -77,7 +90,9 @@ namespace WindowsFormsApplication1
             // Summe aller ANDEREN Komponenten aus der Datenbank
             // und live berechnete summeSelektion dazu addieren.
             RecordSet rs = new RecordSet();
-            rs.Open($"SELECT Komponente, Summe FROM Abfrage_KostenKomponenten WHERE ProjektID = {m_ID_Projekt}");
+            string sql = $"SELECT Komponente, Summe FROM Abfrage_KostenKomponenten WHERE ProjektID = {m_ID_Projekt}";
+            
+            rs.Open(sql);
 
             while (rs.Next())
             {
@@ -95,7 +110,11 @@ namespace WindowsFormsApplication1
             summeGesamt += summeSelektion;
 
             // Anzeige aktualisieren
-            label_ErzeugerGesamt.Text = $"Kosten {aktuelleSelektion}: {summeSelektion:N2} €";
+            if(aktuelleSelektion != "")
+                label_ErzeugerGesamt.Text = $"{kategorie} ({aktuelleSelektion}): {summeSelektion:N2} €";
+            else
+                label_ErzeugerGesamt.Text = "-";
+
             label_Gesamt.Text = $"PROJEKT GESAMT: {summeGesamt:N2} €";
 
             label_ErzeugerGesamt.Refresh();
@@ -105,12 +124,12 @@ namespace WindowsFormsApplication1
         // Beispiel: Wenn links eine Komponente (z.B. BHKW) gewählt wird
         private void UpdateDetailPanel(string komponente, List<KostenPosition> faktoren)
         {
-            flpContainer.Controls.Clear();
-            flpContainer.SuspendLayout();
+            flp.Controls.Clear();
+            flp.SuspendLayout();
 
             // Berechnung verfügbare Innenbreite
             // ClientSize.Width zieht die Scrollbar bereits automatisch ab.
-            int targetWidth = flpContainer.ClientSize.Width - flpContainer.Padding.Left - flpContainer.Padding.Right;
+            int targetWidth = flp.ClientSize.Width - flp.Padding.Left - flp.Padding.Right;
 
             // Falls ein kleiner Sicherheitsabstand zum rechten Rand sein soll (z.B. 5 Pixel):
             targetWidth -= 5;
@@ -138,11 +157,35 @@ namespace WindowsFormsApplication1
                         Text = aktuelleGruppe.ToUpper(),
                         Font = new Font(this.Font, FontStyle.Bold),
                         ForeColor = Color.White,
-                        AutoSize = false,
-                        Dock = DockStyle.Fill, // Nimmt den restlichen Platz ein
-                        TextAlign = ContentAlignment.MiddleLeft,
-                        Padding = new Padding(5, 0, 0, 0)
+                        AutoSize = true, // Wichtig: Passt sich dem Text an
+                        Location = new Point(5, 7), // Ein bisschen Padding von oben/links
+                        TextAlign = ContentAlignment.MiddleLeft
+
                     };
+
+                    Button btnTest = null;
+                    // Der Button erscheint nur in der Hauptgruppe (z.B. "Wärmepumpe")
+                    if (f.IsMainComponent)
+                    {
+                        btnTest = new Button
+                        {
+                            Text = "🔄 Planwert übernehmen...",
+                            Height = 20,
+                            Width = 160,
+                            AutoSize = false,
+                            FlatStyle = FlatStyle.Flat,
+                            ForeColor = Color.White,
+                            BackColor = Color.FromArgb(0, 120, 215), // Blau für "Aktion"
+                            Cursor = Cursors.Hand,
+                            Font = new Font("Segoe UI", 8, FontStyle.Bold),
+                            // Positionierung rechts vom Text:
+                            Location = new Point(groupTitle.PreferredWidth + 20, 5)
+                        };
+                        btnTest.FlatAppearance.BorderSize = 0;
+
+                        // Den EventHandler anhängen (Logik siehe unten)
+                        btnTest.Click += (s, e) => btnTest_KostenUebernahme_Click(komponente);
+                    }
 
                     // Der Lösch-Button (-)
                     Button btnDeleteGroup = new Button
@@ -157,18 +200,23 @@ namespace WindowsFormsApplication1
                         Tag = aktuelleGruppe, // Speichert den Gruppennamen für das Event
                         Font = new Font("Arial", 10, FontStyle.Bold)
                     };
+
                     btnDeleteGroup.FlatAppearance.BorderSize = 0;
                     btnDeleteGroup.Click += btnDeleteGroup_Click; // Event verknüpfen
 
                     // Controls zum Header-Panel hinzufügen
                     headerPanel.Controls.Add(groupTitle);
+                    if (btnTest != null)
+                    {
+                        headerPanel.Controls.Add(btnTest);
+                    }
                     headerPanel.Controls.Add(btnDeleteGroup);
                     Panel columnHeader = CreateColumnHeader(aktuelleGruppe);
                     // WICHTIG: Auch hier exakt targetWidth
                     columnHeader.Width = targetWidth;
                    
-                    flpContainer.Controls.Add(headerPanel);
-                    flpContainer.Controls.Add(columnHeader);
+                    flp.Controls.Add(headerPanel);
+                    flp.Controls.Add(columnHeader);
                 }
 
                 var zeile = new ucKostenZeile(f);
@@ -188,15 +236,16 @@ namespace WindowsFormsApplication1
                 if (f.IsMainComponent)
                 {
                     zeile.BackColor = Color.LightSteelBlue;
-                    zeile.Font = new Font(zeile.Font, FontStyle.Bold);
-                    zeile.Margin = new Padding(0, 1, 0, 5);
+                    //zeile.Font = new Font(zeile.Font, FontStyle.Bold);
+                    zeile.Margin = new Padding(0, 1, 0, 1);
                 }
                 zeile.DeleteRequested += Zeile_DeleteRequested;
-                zeile.Daten.Komponente = listBox_Erzeuger.Text; 
-                flpContainer.Controls.Add(zeile);
+                zeile.Daten.Komponente = komponente; //listBox_Erzeuger.Text; 
+                zeile.Height = 25;
+                
+                flp.Controls.Add(zeile);
             }
-
-            flpContainer.ResumeLayout();
+            flp.ResumeLayout();
         }
 
         private void btnDeleteGroup_Click(object sender, EventArgs e)
@@ -328,7 +377,7 @@ namespace WindowsFormsApplication1
                 zeile.DeleteRequested -= Zeile_DeleteRequested;
 
                 // 2. Aus dem FlowLayoutPanel entfernen
-                flpContainer.Controls.Remove(zeile);
+                flp.Controls.Remove(zeile);
 
                 // 3. Das Control endgültig zerstören
                 zeile.Dispose();
@@ -394,6 +443,7 @@ namespace WindowsFormsApplication1
             p.Controls.Add(new Label { Text = "Kosten [€]", Location = new Point(160, 2), Width = 80, Font = new Font(this.Font, FontStyle.Regular) });
             p.Controls.Add(new Label { Text = "Einheit", Location = new Point(250, 2), Width = 50, Font = new Font(this.Font, FontStyle.Regular) });
             p.Controls.Add(new Label { Text = "Nutzungsdauer [a]", Location = new Point(310, 2), Width = 100, Font = new Font(this.Font, FontStyle.Regular) });
+            p.Controls.Add(new Label { Text = "Worst/Best", Location = new Point(420, 2), Width = 100, Font = new Font(this.Font, FontStyle.Regular) });
 
             return p;
         }
@@ -404,14 +454,14 @@ namespace WindowsFormsApplication1
             btn_Hinzu.Enabled = true;
 
             string komponente = listBox_Erzeuger.Text;
-            string kategorie = tabMain.SelectedTab.Text;
+            //string kategorie = tabMain.SelectedTab.Text;
 
-            EnsureMainComponentExists(m_ID_Projekt, kategorie, komponente, 30);
-            LoadKostenFaktoren(m_ID_Projekt, kategorie, komponente);
+            EnsureMainComponentExists(m_ID_Projekt, komponente, 0);
+            LoadKostenFaktoren(m_ID_Projekt, komponente);
             Gesamtkosten(listBox_Erzeuger.Text);
         }
 
-        public void LoadKostenFaktoren(int projektID, string kategorie, string komponente)
+        public void LoadKostenFaktoren(int projektID, string komponente)
         {
             List<KostenPosition> geladeneFaktoren = new List<KostenPosition>();
 
@@ -436,6 +486,8 @@ namespace WindowsFormsApplication1
                         Bezeichnung,
                         Gruppe, 
                         EingegebenerWert,
+                        WorstCase,
+                        BestCase,
                         Nutzungsdauer,
                         Einheit,
                         IsMainComponent
@@ -458,18 +510,28 @@ namespace WindowsFormsApplication1
                                 geladeneFaktoren.Add(new KostenPosition
                                 {
                                     ID = Convert.ToInt32(reader["ID"]),
+                                    
                                     Name = reader["Bezeichnung"].ToString(),
+                                    
                                     Betrag = reader["EingegebenerWert"] != DBNull.Value
                                              ? Convert.ToDecimal(reader["EingegebenerWert"])
                                              : 0,
                                     Einheit = reader["Einheit"].ToString(),
+                                    
                                     Nutzungsdauer = reader["Nutzungsdauer"] != DBNull.Value
                                              ? Convert.ToDecimal(reader["Nutzungsdauer"])
                                              : 0,
+                                    
                                     IsMainComponent = Convert.ToBoolean(reader["IsMainComponent"]),
+                                    
                                     // Hier wird die projekt-spezifische Gruppe geladen:
                                     Gruppenname = reader["Gruppe"] != DBNull.Value ? reader["Gruppe"].ToString() : "Allgemein",
-                                    StammID = Convert.ToInt32(reader["StammID"])
+                                    
+                                    StammID = Convert.ToInt32(reader["StammID"]),
+
+                                    // BestCase & WorstCase
+                                    BestCase = reader["BestCase"] != DBNull.Value ? Convert.ToDecimal(reader["BestCase"]) : 0,
+                                    WorstCase = reader["WorstCase"] != DBNull.Value ? Convert.ToDecimal(reader["WorstCase"]) : 0
                                 });
                             }
                         }
@@ -485,7 +547,7 @@ namespace WindowsFormsApplication1
             UpdateDetailPanel(komponente, geladeneFaktoren);
         }
 
-        private void EnsureMainComponentExists(int projektID, string kategorie, string komponente, decimal externeKosten)
+        private void EnsureMainComponentExists(int projektID, string komponente, decimal externeKosten)
         {
             try
             {
@@ -521,15 +583,32 @@ namespace WindowsFormsApplication1
 
                         if (exists == 0)
                         {
-                            // Punkt statt Komma für SQL
-                            string betragSql = externeKosten.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
-                            string sqlInsertWert = $@"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, EingegebenerWert, Nutzungsdauer) 
-                                         VALUES ({projektID}, {stammID}, {betragSql}, 0)";
-
-                            using (OleDbCommand cmdIns = new OleDbCommand(sqlInsertWert, conn))
+                            // --- NEU: Kosten aus dem Technik-Modul holen, falls externeKosten 0 sind ---
+                            decimal initialeKosten = externeKosten;
+                            if (initialeKosten == 0)
                             {
-                                cmdIns.ExecuteNonQuery();
+                                initialeKosten = (decimal)GetModulKosten(projektID, komponente);
+                            }
+
+                            // Punkt statt Komma für SQL
+                            string betragSql = initialeKosten.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+                            string sqlInsertWert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, 
+                                                    KategorieID, EingegebenerWert, Nutzungsdauer, Einheit) 
+                                                    VALUES (?, ?, ?, ?, ?, 0, ?)";
+
+                            using (OleDbCommand cmdInsert = new OleDbCommand(sqlInsertWert, conn))
+                            {
+                                // Die Reihenfolge der Parameter MUSS exakt wie im SQL oben sein!
+                                cmdInsert.Parameters.AddWithValue("@p1", projektID);
+                                cmdInsert.Parameters.AddWithValue("@p2", stammID);
+                                cmdInsert.Parameters.AddWithValue("@p3", GetKomponentenID(komponente));
+                                cmdInsert.Parameters.AddWithValue("@p4", tabMain.SelectedIndex + 1);
+                                cmdInsert.Parameters.AddWithValue("@p5", betragSql); // Hier das Dezimal-Objekt übergeben, kein String!
+                                cmdInsert.Parameters.AddWithValue("@p6", "€");    // Einheit als Text
+
+                                cmdInsert.ExecuteNonQuery();
                             }
                         }
                     }
@@ -542,6 +621,11 @@ namespace WindowsFormsApplication1
         }
 
         private void btn_Hinzu_Click(object sender, EventArgs e)
+        {
+            AddKostenItem(listBox_Erzeuger.Text);
+        }
+
+        private  void AddKostenItem(string komponenete)
         {
             try
             {
@@ -595,14 +679,14 @@ namespace WindowsFormsApplication1
                         cmdIns.Parameters.Add("?", OleDbType.Double).Value = nutzungsdauer;
                         cmdIns.Parameters.Add("?", OleDbType.VarWChar).Value = einheit;
                         cmdIns.Parameters.Add("?", OleDbType.VarWChar).Value = gewaehlteGruppe;
-                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = GetKomponentenID(listBox_Erzeuger.Text);
-                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = tabMain.SelectedIndex+1;
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = GetKomponentenID(komponenete);
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = tabMain.SelectedIndex + 1;
                         cmdIns.ExecuteNonQuery();
                     }
                 }
 
                 // UI aktualisieren
-                LoadKostenFaktoren(m_ID_Projekt, tabMain.SelectedTab.Text, listBox_Erzeuger.Text);
+                LoadKostenFaktoren(m_ID_Projekt,komponenete);
                 Gesamtkosten();
             }
             catch (Exception ex)
@@ -641,17 +725,25 @@ namespace WindowsFormsApplication1
                     conn.Open();
                     // filtern NUR noch nach der eindeutigen ID
                     string sql = @"UPDATE Tab_ProjektWerte 
-                           SET EingegebenerWert = @wert, 
-                               Nutzungsdauer = @dauer 
-                           WHERE ID = @id";
+                           SET EingegebenerWert = ?, 
+                               BestCase = ?, 
+                               WorstCase = ?,
+                               Nutzungsdauer = ? 
+                           WHERE ID = ?";
 
                     using (OleDbCommand cmd = new OleDbCommand(sql, conn))
                     {
                         // Parameter-Reihenfolge einhalten:
-                        cmd.Parameters.Add("@wert", OleDbType.Double).Value = (double)pos.Betrag;
-                        cmd.Parameters.Add("@dauer", OleDbType.Double).Value = (double)pos.Nutzungsdauer;
-                        cmd.Parameters.Add("@id", OleDbType.Integer).Value = pos.ID;
-
+                        // 1. EingegebenerWert
+                        cmd.Parameters.Add("?", OleDbType.Double).Value = (double)pos.Betrag;
+                        // 2. BestCase (Wichtig: Hier war dein Fehler!)
+                        cmd.Parameters.Add("?", OleDbType.Double).Value = (double)pos.BestCase;
+                        // 3. WorstCase
+                        cmd.Parameters.Add("?", OleDbType.Double).Value = (double)pos.WorstCase;
+                        // 4. Nutzungsdauer
+                        cmd.Parameters.Add("?", OleDbType.Double).Value = (double)pos.Nutzungsdauer;
+                        // 5. WHERE ID (Der letzte Parameter im SQL muss auch als letztes hinzugefügt werden)
+                        cmd.Parameters.Add("?", OleDbType.Integer).Value = pos.ID;
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -661,6 +753,96 @@ namespace WindowsFormsApplication1
                 MessageBox.Show("Fehler beim Speichern: " + ex.Message);
             }
         }
+
+        private void listBox_Betriebskosten_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            flpContainer_Betriebskosten.Visible = true;
+            btn_Hinzu_Betriebskosten.Enabled = true;
+
+            string komponente = listBox_Betriebskosten.Text;
+   
+            EnsureMainComponentExists(m_ID_Projekt,komponente, 0);
+            LoadKostenFaktoren(m_ID_Projekt, komponente);
+            Gesamtkosten(listBox_Betriebskosten.Text);
+        }
+
+        private void btn_Hinzu_Betriebskosten_Click(object sender, EventArgs e)
+        {
+            AddKostenItem(listBox_Betriebskosten.Text);
+        }
+
+        private void tabMain_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            kategorie = tabMain.SelectedTab.Text;
+            if (kategorie == "Investitionskosten")
+            {
+                flp = flpContainer;
+                Gesamtkosten(listBox_Erzeuger.Text);
+            }
+            else if (kategorie == "Betriebskosten")
+            {
+                flp = flpContainer_Betriebskosten;
+                Gesamtkosten(listBox_Betriebskosten.Text);
+            }
+        }
+
+        private void btnTest_KostenUebernahme_Click(string komponente)
+        {
+            // 1. Wert aus dem Technik-Modul abrufen
+             decimal technikKosten = (decimal)GetModulKosten(m_ID_Projekt, komponente);
+
+            if (technikKosten == 0)
+            {
+                if (MessageBox.Show("Es wurden 0,00 € in der Technik gefunden. Trotzdem übernehmen?",
+                    "Hinweis", MessageBoxButtons.YesNo) == DialogResult.No) return;
+            }
+
+            // 2. Suche die "MainComponent" Zeile in der UI, um sie sofort zu aktualisieren
+            ucKostenZeile mainZeile = null;
+            foreach (Control c in flp.Controls)
+            {
+                if (c is ucKostenZeile zeile && zeile.Daten.IsMainComponent)
+                {
+                    mainZeile = zeile;
+                    break;
+                }
+            }
+
+            if (mainZeile != null)
+            {
+                // Wert im UserControl setzen (das löst dort intern das UI-Update aus)
+                mainZeile.Daten.Betrag = technikKosten;
+
+                mainZeile.SetBerechnetenWert(technikKosten);
+                // Manuelles UI-Refresh des UserControls (falls nötig)
+                //mainZeile.UpdateDisplay(); 
+
+                // 3. In die Datenbank schreiben
+                UpdateSingleRowInDatabase(mainZeile.Daten);
+
+                // 4. Gesamtsummen im Formular neu berechnen
+                Gesamtkosten(komponente);
+
+                MessageBox.Show($"Der Wert für '{komponente}' wurde erfolgreich auf {technikKosten:N2} € aktualisiert.",
+                    "Update erfolgreich", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private double GetModulKosten(int projektID, string komponente)
+        {
+            double Summe=0;
+            RecordSet rs = new RecordSet();
+            string sql = "SELECT Abfrage_ProjektKostenKomponenten.ID_Projekt, Abfrage_ProjektKostenKomponenten.Gesamt,Tab_Typ_Energieanlagen.Bezeichner" +
+                " FROM Abfrage_ProjektKostenKomponenten INNER JOIN Tab_Typ_Energieanlagen ON Abfrage_ProjektKostenKomponenten.ID_Type = Tab_Typ_Energieanlagen.ID" +
+                " where Abfrage_ProjektKostenKomponenten.ID_Projekt=" + projektID + " and Tab_Typ_Energieanlagen.Bezeichner='" + komponente + "'";
+            rs.Open(sql);
+            if (rs.Next())
+                Summe = (double)rs.Read("Gesamt");
+            rs.Close();
+
+            return Summe;
+        }
+
     }
 
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -33,6 +34,8 @@ namespace WindowsFormsApplication1
         {
             string dbPath = GetDBPath();
             string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};";
+
+            AnalysiereAbhaengigkeiten();
 
             // --- START-LOG ---
             LogResult("========================================", "");
@@ -257,6 +260,91 @@ namespace WindowsFormsApplication1
             {
                 // Falls das Logging selbst fehlschlägt (z.B. keine Schreibrechte), 
                 // unterdrücken wir den Fehler, um das Update nicht zu blockieren.
+            }
+        }
+
+         public List<RelationInfo> GetBeziehungsListe()
+        {
+            List<RelationInfo> liste = new List<RelationInfo>();
+            string dbPath = GetDBPath();
+            string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};";
+
+            using (OleDbConnection conn = new OleDbConnection(connString))
+            {
+                conn.Open();
+                var schemaTable = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Foreign_Keys, null);
+
+                if (schemaTable != null)
+                {
+                    foreach (System.Data.DataRow row in schemaTable.Rows)
+                    {
+                        liste.Add(new RelationInfo
+                        {
+                            MasterTable = row["PK_TABLE_NAME"].ToString(),
+                            ForeignTable = row["FK_TABLE_NAME"].ToString(),
+                            MasterColumn = row["PK_COLUMN_NAME"].ToString(),
+                            ForeignColumn = row["FK_COLUMN_NAME"].ToString(),
+                            Name = row["FK_NAME"].ToString()
+                        });
+                    }
+                }
+            }
+            return liste;
+        }
+        public void AnalysiereAbhaengigkeiten()
+        {
+            var relations = GetBeziehungsListe(); // Liste aller Master-Detail Paare
+            var tabellenLevel = new Dictionary<string, int>();
+
+            // Alle Tabellen initial auf Level 0 setzen
+            foreach (var rel in relations)
+            {
+                if (!tabellenLevel.ContainsKey(rel.MasterTable)) tabellenLevel[rel.MasterTable] = 0;
+                if (!tabellenLevel.ContainsKey(rel.ForeignTable)) tabellenLevel[rel.ForeignTable] = 0;
+            }
+
+            // Level berechnen (Einfacher Algorithmus: Level = Max(Level des Masters + 1))
+            // Diesen Loop ein paar Mal durchlaufen, um Verschachtelungen zu finden
+            for (int i = 0; i < 5; i++)
+            {
+                foreach (var rel in relations)
+                {
+                    if (tabellenLevel[rel.ForeignTable] <= tabellenLevel[rel.MasterTable])
+                    {
+                        tabellenLevel[rel.ForeignTable] = tabellenLevel[rel.MasterTable] + 1;
+                    }
+                }
+            }
+
+            // Ausgabe nach Level sortiert
+            foreach (var entry in tabellenLevel.OrderBy(x => x.Value))
+            {
+                Console.WriteLine($"Level {entry.Value}: {entry.Key}");
+            }
+
+            ZeigeHierarchie(relations, tabellenLevel);
+        }
+
+        public void ZeigeHierarchie(List<RelationInfo> relations, Dictionary<string, int> tabellenLevel)
+        {
+            LogResult("ANALYSE", "--- Detaillierte Baumstruktur ---");
+
+            foreach (var entry in tabellenLevel.OrderBy(x => x.Value))
+            {
+                string tabName = entry.Key;
+                int level = entry.Value;
+
+                // Einrücken für die Optik
+                string indent = new string(' ', level * 4);
+
+                // Finde heraus, wer der "Vater" dieser Tabelle ist (falls vorhanden)
+                var eltern = relations.Where(r => r.ForeignTable.Equals(tabName, StringComparison.OrdinalIgnoreCase))
+                                      .Select(r => r.MasterTable)
+                                      .Distinct();
+
+                string elternInfo = eltern.Any() ? " [Hängt ab von: " + string.Join(", ", eltern) + "]" : " [Stammdaten / Wurzel]";
+
+                LogResult("STRUKTUR", $"{indent}Level {level}: {tabName}{elternInfo}");
             }
         }
     }
