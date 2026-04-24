@@ -27,11 +27,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.lblName = new System.Windows.Forms.Label();
             this.numBetrag = new System.Windows.Forms.NumericUpDown();
             this.numDauer = new System.Windows.Forms.NumericUpDown();
             this.lblEinheit = new System.Windows.Forms.Label();
             this.btn_Delete = new System.Windows.Forms.Button();
+            this.btnOpenCases = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numBetrag)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numDauer)).BeginInit();
             this.SuspendLayout();
@@ -90,10 +93,23 @@
             this.btn_Delete.UseVisualStyleBackColor = true;
             this.btn_Delete.Click += new System.EventHandler(this.btnDelete_Click);
             // 
+            // btnOpenCases
+            // 
+            this.btnOpenCases.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.btnOpenCases.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnOpenCases.Location = new System.Drawing.Point(365, 5);
+            this.btnOpenCases.Name = "btnOpenCases";
+            this.btnOpenCases.Size = new System.Drawing.Size(33, 21);
+            this.btnOpenCases.TabIndex = 49;
+            this.btnOpenCases.Text = "+/-";
+            this.btnOpenCases.UseVisualStyleBackColor = true;
+            this.btnOpenCases.Click += new System.EventHandler(this.btnOpenCases_Click);
+            // 
             // ucKostenZeile
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.btnOpenCases);
             this.Controls.Add(this.btn_Delete);
             this.Controls.Add(this.lblEinheit);
             this.Controls.Add(this.lblName);
@@ -116,5 +132,7 @@
         private System.Windows.Forms.NumericUpDown numDauer;
         private System.Windows.Forms.Label lblEinheit;
     private System.Windows.Forms.Button btn_Delete;
+    private System.Windows.Forms.Button btnOpenCases;
+    private System.Windows.Forms.ToolTip toolTip1;
 }
 
