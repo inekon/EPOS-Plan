@@ -767,21 +767,23 @@ namespace WindowsFormsApplication1
 
         private void SaveBrennstoffToDb(ProjektBrennstoff b)
         {
-            // Prüfen, ob für dieses Projekt und diesen Brennstoff-Stamm bereits ein Eintrag existiert
-            string checkSql = $"SELECT ID FROM Tab_Brennstoff_Projekt WHERE ID_Projekt = {m_ID_Projekt} AND ID_Stamm = {b.StammID}";
             string finalSql = "";
 
             try
             {
-                RecordSet rs = new RecordSet();
-                rs.Open(checkSql);
-
                 // Dezimalzahlen für SQL formatieren (Punkt statt Komma)
                 string gp = b.ProjektGrundpreis.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
                 string ap = b.ProjektArbeitspreis.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
                 string lp = b.ProjektLeistungspreis.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
 
-                if (rs.Next())
+                // Prüfen, ob für dieses Projekt und diesen Brennstoff-Stamm bereits ein Eintrag existiert
+                string sqlCheck = "SELECT COUNT(*) FROM Tab_Brennstoff_Projekt WHERE ID_Projekt = ? AND ID_Stamm = ?";
+
+                int exists = Convert.ToInt32(DataRepository.ExecuteScalar(sqlCheck,
+                    new OleDbParameter("@p1", m_ID_Projekt),
+                    new OleDbParameter("@s1", b.StammID)));
+
+                if (exists > 0)
                 {
                     // UPDATE: Datensatz existiert bereits
                     finalSql = $@"UPDATE Tab_Brennstoff_Projekt SET 
@@ -797,7 +799,6 @@ namespace WindowsFormsApplication1
                     finalSql = $@"INSERT INTO Tab_Brennstoff_Projekt (ID_Projekt, ID_Stamm, Grundpreis, Arbeitspreis, Leistungspreis, [Bezug]) 
                           VALUES ({m_ID_Projekt}, {b.StammID}, {gp}, {ap}, {lp}, '{b.Bezug}')";
                 }
-                rs.Close();  
                 DataRepository.ExecuteSQL(finalSql);
             }
             catch (Exception ex)
@@ -813,62 +814,59 @@ namespace WindowsFormsApplication1
 
             // Dein SQL-Statement (Access-kompatibel mit Klammern für den JOIN)
             string sql = $@"
-            SELECT 
-                S.ID, 
-                K.Gruppe AS KatName, 
-                S.[Name], 
-                S.Einheit, 
-                S.PreisEinheit,
-                S.Hi, 
-                S.Hs, 
-                S.Standard_Grundpreis, 
-                S.Standard_Arbeitspreis,
-                S.Standard_Leistungspreis,
-                P.Grundpreis,
-                P.Arbeitspreis, 
-                P.Leistungspreis, 
-                P.[Bezug]
-            FROM (Tab_Brennstoff_Stamm AS S 
-            INNER JOIN Tab_BrennstoffKategorien AS K ON S.ID_Kategorie = K.ID) 
-            LEFT JOIN Tab_Brennstoff_Projekt AS P ON (S.ID = P.ID_Stamm AND P.ID_Projekt = {projektID})
-            ORDER BY K.Gruppe, S.[Name];";
+                SELECT 
+                    S.ID, 
+                    K.Gruppe AS KatName, 
+                    S.[Name], 
+                    S.Einheit, 
+                    S.PreisEinheit,
+                    S.Hi, 
+                    S.Hs, 
+                    S.Standard_Grundpreis, 
+                    S.Standard_Arbeitspreis,
+                    S.Standard_Leistungspreis,
+                    P.Grundpreis,
+                    P.Arbeitspreis, 
+                    P.Leistungspreis, 
+                    P.[Bezug]
+                FROM (Tab_Brennstoff_Stamm AS S 
+                INNER JOIN Tab_BrennstoffKategorien AS K ON S.ID_Kategorie = K.ID) 
+                LEFT JOIN Tab_Brennstoff_Projekt AS P ON (S.ID = P.ID_Stamm AND P.ID_Projekt = {projektID})
+                ORDER BY K.Gruppe, S.[Name];";
 
             try
             {
-                RecordSet rs = new RecordSet();
-                rs.Open(sql);
+                OleDbParameter[] p = { new OleDbParameter("id", projektID) };
+                DataTable dt = DataRepository.GetDataTable(sql, p);
 
-                while (rs.Next())
+                for (int i = 0; i < dt.Rows.Count; i++)
                 {
                     var b = new ProjektBrennstoff();
 
                     // Stammdaten
-                    b.StammID = Convert.ToInt32(rs.Read("ID"));
-                    b.Name = rs.Read("Name").ToString();
-                    b.Einheit = rs.Read("Einheit").ToString();
-                    b.PreisEinheit = rs.Read("PreisEinheit").ToString();
-                    b.Hi = Convert.ToDouble(rs.Read("Hi") ?? 0);
-                    b.Hs = Convert.ToDouble(rs.Read("Hs") ?? 0);
-                    b.Kategorie = rs.Read("KatName").ToString();
-                    b.DefaultArbeitspreis = Convert.ToDouble(rs.Read("Standard_Arbeitspreis") ?? 0);
+                    DataRow dr = dt.Rows[i];
+                    b.StammID = Convert.ToInt32(dr["ID"]);
+                    b.Name = dr["Name"].ToString();
+                    b.Einheit = dr["Einheit"].ToString();
+                    b.PreisEinheit = dr["PreisEinheit"].ToString();
+                    b.Hi = Convert.ToDouble(dr["Hi"] ?? 0);
+                    b.Hs = Convert.ToDouble(dr["Hs"] ?? 0);
+                    b.Kategorie = dr["KatName"].ToString();
+                    b.DefaultArbeitspreis = Convert.ToDouble(dr["Standard_Arbeitspreis"] ?? 0);
 
                     // Projektspezifische Daten (können NULL sein wegen LEFT JOIN)
-                    object pArbeit = rs.Read("Arbeitspreis");
-                    object pGrund = rs.Read("Grundpreis");
-                    object pLeist = rs.Read("Leistungspreis");
-                    //object pAktiv = rs.Read("Aktiv");
-                    object pBezug = rs.Read("Bezug");
+                    object pArbeit = dr["Arbeitspreis"];
+                    object pGrund = dr["Grundpreis"];
+                    object pLeist = dr["Leistungspreis"];
+                    object pBezug = dr["Bezug"];
 
                     b.ProjektArbeitspreis = pArbeit != DBNull.Value ? Convert.ToDouble(pArbeit) : 0;
                     b.ProjektGrundpreis = pGrund != DBNull.Value ? Convert.ToDouble(pGrund) : 0;
                     b.ProjektLeistungspreis = pLeist != DBNull.Value ? Convert.ToDouble(pLeist) : 0;
-
-                    //b.Aktiv = pAktiv != DBNull.Value ? Convert.ToBoolean(pAktiv) : false;
                     b.Bezug = pBezug != DBNull.Value ? pBezug.ToString() : "Hi"; // Default Hi
 
                     liste.Add(b);
                 }
-                rs.Close(); 
             }
             catch (Exception ex)
             {

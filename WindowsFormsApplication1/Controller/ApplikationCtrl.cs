@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@icon", m_icon ?? "")
             };
 
-            return DbClass.ExecuteSQL(sql, parameters);
+            return DataRepository.ExecuteSQL(sql, parameters);
         }
 
         private void FillModelFromRow(ApplikationModel target, DataRow row)

@@ -135,7 +135,6 @@ namespace WindowsFormsApplication1
             if (tool[5] == "Stromspeicher")
             {
                 // Rest_Strombedarf_viertelstuendlich
-
                 temp = Simulation_Stromspeicher_Ctrl(Rest_Strombedarf_viertelstuendlich);
                 Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
 
