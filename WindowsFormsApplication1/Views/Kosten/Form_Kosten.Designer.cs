@@ -26,34 +26,38 @@
             this.btn_Hinzu = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.tabWartung = new System.Windows.Forms.TabPage();
-            this.tabEnergie = new System.Windows.Forms.TabPage();
-            this.pnlHeader = new System.Windows.Forms.Panel();
-            this.lblTitle = new System.Windows.Forms.Label();
-            this.pnlGlobal = new System.Windows.Forms.Panel();
-            this.pnlFooter = new System.Windows.Forms.Panel();
-            this.label_Gesamt = new System.Windows.Forms.Label();
-            this.btn_OK = new System.Windows.Forms.Button();
-            this.label_ErzeugerGesamt = new System.Windows.Forms.Label();
-            this.panel1_space = new System.Windows.Forms.Panel();
             this.panel4 = new System.Windows.Forms.Panel();
             this.listBox_Betriebskosten = new System.Windows.Forms.ListBox();
             this.panel5 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.panel6 = new System.Windows.Forms.Panel();
-            this.label2 = new System.Windows.Forms.Label();
-            this.flpContainer_Betriebskosten = new System.Windows.Forms.FlowLayoutPanel();
             this.btn_Hinzu_Betriebskosten = new System.Windows.Forms.Button();
+            this.flpContainer_Betriebskosten = new System.Windows.Forms.FlowLayoutPanel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.tabEnergie = new System.Windows.Forms.TabPage();
+            this.panel7 = new System.Windows.Forms.Panel();
+            this.cmbFilterKategorie = new System.Windows.Forms.ComboBox();
+            this.flpContainer_Energiekosten = new System.Windows.Forms.FlowLayoutPanel();
+            this.pnlHeader = new System.Windows.Forms.Panel();
+            this.lblTitle = new System.Windows.Forms.Label();
+            this.pnlFooter = new System.Windows.Forms.Panel();
+            this.label_Gesamt = new System.Windows.Forms.Label();
+            this.btn_OK = new System.Windows.Forms.Button();
+            this.label_ErzeugerGesamt = new System.Windows.Forms.Label();
+            this.panel1_space = new System.Windows.Forms.Panel();
             this.tabMain.SuspendLayout();
             this.tabInvest.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.tabWartung.SuspendLayout();
-            this.pnlHeader.SuspendLayout();
-            this.pnlFooter.SuspendLayout();
             this.panel4.SuspendLayout();
             this.panel5.SuspendLayout();
             this.panel6.SuspendLayout();
+            this.tabEnergie.SuspendLayout();
+            this.panel7.SuspendLayout();
+            this.pnlHeader.SuspendLayout();
+            this.pnlFooter.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabMain
@@ -63,11 +67,11 @@
             this.tabMain.Controls.Add(this.tabEnergie);
             this.tabMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabMain.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.tabMain.Location = new System.Drawing.Point(0, 110);
+            this.tabMain.Location = new System.Drawing.Point(0, 67);
             this.tabMain.Margin = new System.Windows.Forms.Padding(10);
             this.tabMain.Name = "tabMain";
             this.tabMain.SelectedIndex = 0;
-            this.tabMain.Size = new System.Drawing.Size(1015, 676);
+            this.tabMain.Size = new System.Drawing.Size(1015, 732);
             this.tabMain.TabIndex = 0;
             this.tabMain.SelectedIndexChanged += new System.EventHandler(this.tabMain_SelectedIndexChanged);
             // 
@@ -81,7 +85,7 @@
             this.tabInvest.Location = new System.Drawing.Point(4, 30);
             this.tabInvest.Name = "tabInvest";
             this.tabInvest.Padding = new System.Windows.Forms.Padding(3);
-            this.tabInvest.Size = new System.Drawing.Size(1007, 642);
+            this.tabInvest.Size = new System.Drawing.Size(1007, 698);
             this.tabInvest.TabIndex = 0;
             this.tabInvest.Text = "Investitionskosten";
             // 
@@ -132,7 +136,7 @@
             this.flpContainer.Location = new System.Drawing.Point(393, 26);
             this.flpContainer.Name = "flpContainer";
             this.flpContainer.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
-            this.flpContainer.Size = new System.Drawing.Size(594, 560);
+            this.flpContainer.Size = new System.Drawing.Size(594, 607);
             this.flpContainer.TabIndex = 36;
             this.flpContainer.Visible = false;
             this.flpContainer.WrapContents = false;
@@ -144,13 +148,13 @@
             this.panel1.Controls.Add(this.label3);
             this.panel1.Location = new System.Drawing.Point(387, 18);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(606, 618);
+            this.panel1.Size = new System.Drawing.Size(606, 665);
             this.panel1.TabIndex = 39;
             // 
             // btn_Hinzu
             // 
             this.btn_Hinzu.Enabled = false;
-            this.btn_Hinzu.Location = new System.Drawing.Point(6, 574);
+            this.btn_Hinzu.Location = new System.Drawing.Point(6, 621);
             this.btn_Hinzu.Name = "btn_Hinzu";
             this.btn_Hinzu.Size = new System.Drawing.Size(163, 33);
             this.btn_Hinzu.TabIndex = 4;
@@ -175,100 +179,9 @@
             this.tabWartung.Font = new System.Drawing.Font("Segoe UI", 9.75F);
             this.tabWartung.Location = new System.Drawing.Point(4, 30);
             this.tabWartung.Name = "tabWartung";
-            this.tabWartung.Size = new System.Drawing.Size(1007, 642);
+            this.tabWartung.Size = new System.Drawing.Size(1007, 698);
             this.tabWartung.TabIndex = 1;
             this.tabWartung.Text = "Betriebskosten";
-            // 
-            // tabEnergie
-            // 
-            this.tabEnergie.Location = new System.Drawing.Point(4, 30);
-            this.tabEnergie.Name = "tabEnergie";
-            this.tabEnergie.Size = new System.Drawing.Size(1007, 642);
-            this.tabEnergie.TabIndex = 2;
-            this.tabEnergie.Text = "Energiekosten";
-            this.tabEnergie.UseVisualStyleBackColor = true;
-            // 
-            // pnlHeader
-            // 
-            this.pnlHeader.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(31)))), ((int)(((byte)(61)))));
-            this.pnlHeader.Controls.Add(this.lblTitle);
-            this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlHeader.Location = new System.Drawing.Point(0, 0);
-            this.pnlHeader.Name = "pnlHeader";
-            this.pnlHeader.Size = new System.Drawing.Size(1015, 52);
-            this.pnlHeader.TabIndex = 1;
-            // 
-            // lblTitle
-            // 
-            this.lblTitle.AutoSize = true;
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
-            this.lblTitle.ForeColor = System.Drawing.Color.White;
-            this.lblTitle.Location = new System.Drawing.Point(17, 13);
-            this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(175, 25);
-            this.lblTitle.TabIndex = 0;
-            this.lblTitle.Text = "Kostenverwaltung";
-            // 
-            // pnlGlobal
-            // 
-            this.pnlGlobal.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(50)))), ((int)(((byte)(97)))));
-            this.pnlGlobal.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlGlobal.Location = new System.Drawing.Point(0, 52);
-            this.pnlGlobal.Name = "pnlGlobal";
-            this.pnlGlobal.Size = new System.Drawing.Size(1015, 43);
-            this.pnlGlobal.TabIndex = 2;
-            // 
-            // pnlFooter
-            // 
-            this.pnlFooter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(31)))), ((int)(((byte)(61)))));
-            this.pnlFooter.Controls.Add(this.label_Gesamt);
-            this.pnlFooter.Controls.Add(this.btn_OK);
-            this.pnlFooter.Controls.Add(this.label_ErzeugerGesamt);
-            this.pnlFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlFooter.Location = new System.Drawing.Point(0, 786);
-            this.pnlFooter.Name = "pnlFooter";
-            this.pnlFooter.Size = new System.Drawing.Size(1015, 53);
-            this.pnlFooter.TabIndex = 3;
-            // 
-            // label_Gesamt
-            // 
-            this.label_Gesamt.AutoSize = true;
-            this.label_Gesamt.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Gesamt.ForeColor = System.Drawing.Color.White;
-            this.label_Gesamt.Location = new System.Drawing.Point(393, 16);
-            this.label_Gesamt.Name = "label_Gesamt";
-            this.label_Gesamt.Size = new System.Drawing.Size(19, 21);
-            this.label_Gesamt.TabIndex = 5;
-            this.label_Gesamt.Text = "0";
-            // 
-            // btn_OK
-            // 
-            this.btn_OK.Location = new System.Drawing.Point(915, 12);
-            this.btn_OK.Name = "btn_OK";
-            this.btn_OK.Size = new System.Drawing.Size(75, 33);
-            this.btn_OK.TabIndex = 3;
-            this.btn_OK.Text = "OK";
-            this.btn_OK.UseVisualStyleBackColor = true;
-            this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
-            // 
-            // label_ErzeugerGesamt
-            // 
-            this.label_ErzeugerGesamt.AutoSize = true;
-            this.label_ErzeugerGesamt.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_ErzeugerGesamt.ForeColor = System.Drawing.Color.White;
-            this.label_ErzeugerGesamt.Location = new System.Drawing.Point(18, 16);
-            this.label_ErzeugerGesamt.Name = "label_ErzeugerGesamt";
-            this.label_ErzeugerGesamt.Size = new System.Drawing.Size(19, 21);
-            this.label_ErzeugerGesamt.TabIndex = 1;
-            this.label_ErzeugerGesamt.Text = "0";
-            // 
-            // panel1_space
-            // 
-            this.panel1_space.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel1_space.Location = new System.Drawing.Point(0, 95);
-            this.panel1_space.Name = "panel1_space";
-            this.panel1_space.Size = new System.Drawing.Size(1015, 15);
-            this.panel1_space.TabIndex = 1;
             // 
             // panel4
             // 
@@ -317,8 +230,33 @@
             this.panel6.Controls.Add(this.label2);
             this.panel6.Location = new System.Drawing.Point(387, 18);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(606, 618);
+            this.panel6.Size = new System.Drawing.Size(606, 665);
             this.panel6.TabIndex = 41;
+            // 
+            // btn_Hinzu_Betriebskosten
+            // 
+            this.btn_Hinzu_Betriebskosten.Enabled = false;
+            this.btn_Hinzu_Betriebskosten.Location = new System.Drawing.Point(6, 621);
+            this.btn_Hinzu_Betriebskosten.Name = "btn_Hinzu_Betriebskosten";
+            this.btn_Hinzu_Betriebskosten.Size = new System.Drawing.Size(163, 33);
+            this.btn_Hinzu_Betriebskosten.TabIndex = 4;
+            this.btn_Hinzu_Betriebskosten.Text = "➕ Position Hinzufügen";
+            this.btn_Hinzu_Betriebskosten.UseVisualStyleBackColor = true;
+            this.btn_Hinzu_Betriebskosten.Click += new System.EventHandler(this.btn_Hinzu_Betriebskosten_Click);
+            // 
+            // flpContainer_Betriebskosten
+            // 
+            this.flpContainer_Betriebskosten.AutoScroll = true;
+            this.flpContainer_Betriebskosten.BackColor = System.Drawing.SystemColors.Control;
+            this.flpContainer_Betriebskosten.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.flpContainer_Betriebskosten.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flpContainer_Betriebskosten.Location = new System.Drawing.Point(6, 8);
+            this.flpContainer_Betriebskosten.Name = "flpContainer_Betriebskosten";
+            this.flpContainer_Betriebskosten.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            this.flpContainer_Betriebskosten.Size = new System.Drawing.Size(594, 607);
+            this.flpContainer_Betriebskosten.TabIndex = 37;
+            this.flpContainer_Betriebskosten.Visible = false;
+            this.flpContainer_Betriebskosten.WrapContents = false;
             // 
             // label2
             // 
@@ -330,30 +268,122 @@
             this.label2.Text = "Energieerzeuger auswählen";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // flpContainer_Betriebskosten
+            // tabEnergie
             // 
-            this.flpContainer_Betriebskosten.AutoScroll = true;
-            this.flpContainer_Betriebskosten.BackColor = System.Drawing.SystemColors.Control;
-            this.flpContainer_Betriebskosten.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.flpContainer_Betriebskosten.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flpContainer_Betriebskosten.Location = new System.Drawing.Point(6, 8);
-            this.flpContainer_Betriebskosten.Name = "flpContainer_Betriebskosten";
-            this.flpContainer_Betriebskosten.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
-            this.flpContainer_Betriebskosten.Size = new System.Drawing.Size(594, 560);
-            this.flpContainer_Betriebskosten.TabIndex = 37;
-            this.flpContainer_Betriebskosten.Visible = false;
-            this.flpContainer_Betriebskosten.WrapContents = false;
+            this.tabEnergie.Controls.Add(this.panel7);
+            this.tabEnergie.Location = new System.Drawing.Point(4, 30);
+            this.tabEnergie.Name = "tabEnergie";
+            this.tabEnergie.Size = new System.Drawing.Size(1007, 698);
+            this.tabEnergie.TabIndex = 2;
+            this.tabEnergie.Text = "Energiekosten";
+            this.tabEnergie.UseVisualStyleBackColor = true;
             // 
-            // btn_Hinzu_Betriebskosten
+            // panel7
             // 
-            this.btn_Hinzu_Betriebskosten.Enabled = false;
-            this.btn_Hinzu_Betriebskosten.Location = new System.Drawing.Point(6, 574);
-            this.btn_Hinzu_Betriebskosten.Name = "btn_Hinzu_Betriebskosten";
-            this.btn_Hinzu_Betriebskosten.Size = new System.Drawing.Size(163, 33);
-            this.btn_Hinzu_Betriebskosten.TabIndex = 4;
-            this.btn_Hinzu_Betriebskosten.Text = "➕ Position Hinzufügen";
-            this.btn_Hinzu_Betriebskosten.UseVisualStyleBackColor = true;
-            this.btn_Hinzu_Betriebskosten.Click += new System.EventHandler(this.btn_Hinzu_Betriebskosten_Click);
+            this.panel7.BackColor = System.Drawing.Color.LightGray;
+            this.panel7.Controls.Add(this.cmbFilterKategorie);
+            this.panel7.Controls.Add(this.flpContainer_Energiekosten);
+            this.panel7.Location = new System.Drawing.Point(8, 12);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(978, 666);
+            this.panel7.TabIndex = 42;
+            // 
+            // cmbFilterKategorie
+            // 
+            this.cmbFilterKategorie.BackColor = System.Drawing.Color.White;
+            this.cmbFilterKategorie.FormattingEnabled = true;
+            this.cmbFilterKategorie.Location = new System.Drawing.Point(6, 5);
+            this.cmbFilterKategorie.Name = "cmbFilterKategorie";
+            this.cmbFilterKategorie.Size = new System.Drawing.Size(206, 29);
+            this.cmbFilterKategorie.TabIndex = 38;
+            this.cmbFilterKategorie.SelectedIndexChanged += new System.EventHandler(this.cmbFilterKategorie_SelectedIndexChanged);
+            // 
+            // flpContainer_Energiekosten
+            // 
+            this.flpContainer_Energiekosten.AutoScroll = true;
+            this.flpContainer_Energiekosten.BackColor = System.Drawing.SystemColors.Control;
+            this.flpContainer_Energiekosten.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.flpContainer_Energiekosten.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flpContainer_Energiekosten.Location = new System.Drawing.Point(6, 40);
+            this.flpContainer_Energiekosten.Name = "flpContainer_Energiekosten";
+            this.flpContainer_Energiekosten.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            this.flpContainer_Energiekosten.Size = new System.Drawing.Size(966, 619);
+            this.flpContainer_Energiekosten.TabIndex = 37;
+            this.flpContainer_Energiekosten.Visible = false;
+            this.flpContainer_Energiekosten.WrapContents = false;
+            // 
+            // pnlHeader
+            // 
+            this.pnlHeader.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(31)))), ((int)(((byte)(61)))));
+            this.pnlHeader.Controls.Add(this.lblTitle);
+            this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlHeader.Location = new System.Drawing.Point(0, 0);
+            this.pnlHeader.Name = "pnlHeader";
+            this.pnlHeader.Size = new System.Drawing.Size(1015, 52);
+            this.pnlHeader.TabIndex = 1;
+            // 
+            // lblTitle
+            // 
+            this.lblTitle.AutoSize = true;
+            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
+            this.lblTitle.ForeColor = System.Drawing.Color.White;
+            this.lblTitle.Location = new System.Drawing.Point(17, 13);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Size = new System.Drawing.Size(175, 25);
+            this.lblTitle.TabIndex = 0;
+            this.lblTitle.Text = "Kostenverwaltung";
+            // 
+            // pnlFooter
+            // 
+            this.pnlFooter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(31)))), ((int)(((byte)(61)))));
+            this.pnlFooter.Controls.Add(this.label_Gesamt);
+            this.pnlFooter.Controls.Add(this.btn_OK);
+            this.pnlFooter.Controls.Add(this.label_ErzeugerGesamt);
+            this.pnlFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlFooter.Location = new System.Drawing.Point(0, 799);
+            this.pnlFooter.Name = "pnlFooter";
+            this.pnlFooter.Size = new System.Drawing.Size(1015, 40);
+            this.pnlFooter.TabIndex = 3;
+            // 
+            // label_Gesamt
+            // 
+            this.label_Gesamt.AutoSize = true;
+            this.label_Gesamt.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Gesamt.ForeColor = System.Drawing.Color.White;
+            this.label_Gesamt.Location = new System.Drawing.Point(393, 8);
+            this.label_Gesamt.Name = "label_Gesamt";
+            this.label_Gesamt.Size = new System.Drawing.Size(19, 21);
+            this.label_Gesamt.TabIndex = 5;
+            this.label_Gesamt.Text = "0";
+            // 
+            // btn_OK
+            // 
+            this.btn_OK.Location = new System.Drawing.Point(915, 4);
+            this.btn_OK.Name = "btn_OK";
+            this.btn_OK.Size = new System.Drawing.Size(75, 33);
+            this.btn_OK.TabIndex = 3;
+            this.btn_OK.Text = "OK";
+            this.btn_OK.UseVisualStyleBackColor = true;
+            this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
+            // 
+            // label_ErzeugerGesamt
+            // 
+            this.label_ErzeugerGesamt.AutoSize = true;
+            this.label_ErzeugerGesamt.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_ErzeugerGesamt.ForeColor = System.Drawing.Color.White;
+            this.label_ErzeugerGesamt.Location = new System.Drawing.Point(18, 8);
+            this.label_ErzeugerGesamt.Name = "label_ErzeugerGesamt";
+            this.label_ErzeugerGesamt.Size = new System.Drawing.Size(19, 21);
+            this.label_ErzeugerGesamt.TabIndex = 1;
+            this.label_ErzeugerGesamt.Text = "0";
+            // 
+            // panel1_space
+            // 
+            this.panel1_space.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel1_space.Location = new System.Drawing.Point(0, 52);
+            this.panel1_space.Name = "panel1_space";
+            this.panel1_space.Size = new System.Drawing.Size(1015, 15);
+            this.panel1_space.TabIndex = 1;
             // 
             // Form_Kosten
             // 
@@ -362,7 +392,6 @@
             this.ClientSize = new System.Drawing.Size(1015, 839);
             this.Controls.Add(this.tabMain);
             this.Controls.Add(this.panel1_space);
-            this.Controls.Add(this.pnlGlobal);
             this.Controls.Add(this.pnlHeader);
             this.Controls.Add(this.pnlFooter);
             this.Name = "Form_Kosten";
@@ -374,14 +403,16 @@
             this.panel2.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.tabWartung.ResumeLayout(false);
-            this.pnlHeader.ResumeLayout(false);
-            this.pnlHeader.PerformLayout();
-            this.pnlFooter.ResumeLayout(false);
-            this.pnlFooter.PerformLayout();
             this.panel4.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
             this.panel5.PerformLayout();
             this.panel6.ResumeLayout(false);
+            this.tabEnergie.ResumeLayout(false);
+            this.panel7.ResumeLayout(false);
+            this.pnlHeader.ResumeLayout(false);
+            this.pnlHeader.PerformLayout();
+            this.pnlFooter.ResumeLayout(false);
+            this.pnlFooter.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -391,7 +422,6 @@
         private System.Windows.Forms.TabPage tabWartung;
         private System.Windows.Forms.Panel pnlHeader;
         private System.Windows.Forms.Label lblTitle;
-        private System.Windows.Forms.Panel pnlGlobal;
         private System.Windows.Forms.Panel pnlFooter;
         private System.Windows.Forms.TabPage tabEnergie;
         private System.Windows.Forms.Button btn_OK;
@@ -414,5 +444,8 @@
         private System.Windows.Forms.FlowLayoutPanel flpContainer_Betriebskosten;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btn_Hinzu_Betriebskosten;
+        private System.Windows.Forms.Panel panel7;
+        private System.Windows.Forms.FlowLayoutPanel flpContainer_Energiekosten;
+        private System.Windows.Forms.ComboBox cmbFilterKategorie;
     }
 }

@@ -118,7 +118,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Del_Projekt_Prozess(m_ID_Projekt);
                 wizctrl.Add_Projekt_Prozess(m_ID_Projekt, frm.list_pwmodel);
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
@@ -165,7 +165,7 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Del_WaermebedarfExtern(m_ID_Projekt);
                 wizctrl.Add_WaermebedarfExtern(m_ID_Projekt, frm.list_wbmodel);
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
 
@@ -227,7 +227,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Del_Projekt_ZuordungGebäude(m_ID_Projekt);
                 wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, frm.list_gebmodel);
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
@@ -242,12 +242,14 @@ namespace WindowsFormsApplication1
             ProjektCtrl ctrl_projekt = new ProjektCtrl();
 
             if (Program.wizardctrl.Projektname == "") return;
-            ctrl_projekt.ReadSingle("Select * from Tab_Projekt where Projektname='" + Program.wizardctrl.Projektname + "'");
+            ctrl_projekt.ReadSingle(Program.wizardctrl.Projektname);
 
             ctrl_app.m_ID_Projekt = ctrl_projekt.m_ID;
             ctrl_app.m_szProjektname = ctrl_projekt.m_szProjektname;
             ctrl_app.Update();
 
+            m_szProjektname = ctrl_projekt.m_szProjektname;
+            m_ID_Projekt = ctrl_projekt.m_ID;
             SetTextProjekt(Program.wizardctrl.Projektname);
         }
 
@@ -259,9 +261,6 @@ namespace WindowsFormsApplication1
         private void pBox_ProjektOeffnen_Click(object sender, EventArgs e)
         {
             Form_ProjektOpen frm = new Form_ProjektOpen();
-            ApplikationCtrl ctrl = new ApplikationCtrl();
-
-            ctrl.ReadSingle("Select * from Tab_Applikation where ID=1");
 
             DialogResult ret = frm.ShowDialog();
             if (ret == DialogResult.OK)
@@ -366,7 +365,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Del_Projekt_Stromverbraucher(m_ID_Projekt);
                 wizctrl.Add_Projekt_Stromverbraucher(m_ID_Projekt, frm.list_sbmodel);
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
@@ -421,7 +420,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Del_Stromganglinie(m_ID_Projekt);
                 wizctrl.Add_Stromganglinie(m_ID_Projekt, frm.DateiListe);
   
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
@@ -504,7 +503,7 @@ namespace WindowsFormsApplication1
                 pBox_Heizkessel.Invalidate();
 
                 ProjektCtrl projctrl = new ProjektCtrl();
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
@@ -692,8 +691,7 @@ namespace WindowsFormsApplication1
         {
             ApplikationCtrl ctrl = new ApplikationCtrl();
 
-            ctrl.ReadSingle("Select * from Tab_Applikation where ID=1");
-
+            ctrl.ReadSingle();
             // falls zuletzt geöffnetes Projekt nicht gelöscht wurde
             if (ctrl.m_szProjektname != "")
             {
@@ -706,6 +704,7 @@ namespace WindowsFormsApplication1
                 comboBox_Klimaregion.Text = GetProjektKlimaregion(m_ID_Projekt);
                 UpdateWizardSymbole();
             }
+            else { MessageBox.Show("Das zuletzt geöffnete Projekt ist gelöscht!"); return; }
 
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
@@ -732,7 +731,6 @@ namespace WindowsFormsApplication1
                 pBox_ProjektZuletzt.Invalidate();
                 label_pBox_ProjektZuletzt.BackColor = bg;
                 label2_pBox_ProjektZuletzt.BackColor = label_pBox_ProjektZuletzt.BackColor;
-
             }
 
             Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, MyResource.Resource.Text_Projekt + " " + m_szProjektname + " " + MyResource.Resource.Text_Geoeffnet + "!");
@@ -973,7 +971,7 @@ namespace WindowsFormsApplication1
         private void tabPage5_Enter(object sender, EventArgs e)
         {
             ProjektCtrl ctrl = new ProjektCtrl();
-            ctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_ProjektOpen.Text + "'");
+            ctrl.ReadSingle(textBox_ProjektOpen.Text);
             
             label_Name.Text = textBox_ProjektOpen.Text;
             simulationStrombedarf.Berechnung(ctrl.m_ID);
@@ -1101,7 +1099,15 @@ namespace WindowsFormsApplication1
         private void pBox_Delete_Click(object sender, EventArgs e)
         {
             MenueCtrl menu = new MenueCtrl();
-            menu.ProjektDelete();
+            string szProjekt = menu.ProjektDelete();
+            if(szProjekt == textBox_ProjektOpen.Text)
+            {
+                textBox_ProjektOpen.Text = "bitte auswählen!";
+                label_ProjektStatus.ForeColor = Color.FromArgb(192,0,0);
+                label_ProjektStatus.Text = "⚠";
+                comboBox_Klimaregion.Text = "";
+            }
+            
         }
 
         private void pBoxSchnellSim_Click(object sender, EventArgs e)
@@ -1176,7 +1182,7 @@ namespace WindowsFormsApplication1
                     wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
                     wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
 
-                    projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                    projctrl.ReadSingle(m_szProjektname);
                     projctrl.m_Aenderungsdatum = DateTime.Now;
                     projctrl.Update();
                 }
@@ -1213,7 +1219,7 @@ namespace WindowsFormsApplication1
                     wizctrl.Del_Solarganglinie(m_ID_Projekt);
                     wizctrl.Add_Solarganglinie(m_ID_Projekt, frm2.DateiListe);
 
-                    projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                    projctrl.ReadSingle(m_szProjektname);
                     projctrl.m_Aenderungsdatum = DateTime.Now;
                     projctrl.Update();
                 }
@@ -1326,7 +1332,7 @@ namespace WindowsFormsApplication1
                 pBox_PV.Invalidate();
 
                 ProjektCtrl projctrl = new ProjektCtrl();
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
@@ -1676,7 +1682,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Del_Projekt_Brauchwasser(m_ID_Projekt);
                 wizctrl.Add_Projekt_Brauchwasser(m_ID_Projekt, frm.list_pwmodel);
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
@@ -1766,7 +1772,7 @@ namespace WindowsFormsApplication1
             this.ActiveControl = null;
             if (string.IsNullOrEmpty(m_szProjektname) || string.IsNullOrEmpty(comboBox_Klimaregion.Text)) return;
             
-            ctrl_projekt.ReadSingle("Select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+            ctrl_projekt.ReadSingle(m_szProjektname);
             ctrl_projekt.m_ID_Klimaregion = GetKlimaregion(comboBox_Klimaregion.Text);
             ctrl_projekt.Update(); 
         }

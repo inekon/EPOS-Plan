@@ -13,7 +13,6 @@ namespace WindowsFormsApplication1
     partial class Form_Brauchwasser_Admin : Form
     {
         private BrauchwasserModel model = new BrauchwasserModel();
-        private BrauchwasserCtrl ctrl = new BrauchwasserCtrl();
         public List<Z_ProjektProzesswaermeModel> list_pwmodel = new List<Z_ProjektProzesswaermeModel>();
         public int m_ID_Projekt = 0;
         private SimulationWaermebedarf simulation = new SimulationWaermebedarf();

@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
 
             int netzverluste = (int)ctrl.model.m_Netzverluste;
 
-            projektCtrl.ReadSingle("select * from Tab_Projekt where ID=" + m_ID_Projekt);   
+            projektCtrl.ReadSingle(m_ID_Projekt);   
             int nKlimaregion = projektCtrl.m_ID_Klimaregion;
             if (nKlimaregion == 0)
             {

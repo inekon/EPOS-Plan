@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
         public string m_szKunde;
         public DateTime m_Aenderungsdatum;
         public int m_ID_Klimaregion;
-        public int m_ID_Gebaeude;
+       // public int m_ID_Gebaeude;
         public int rows;
         public DateTime m_Erstelldatum;
         public string m_szEinheit;
@@ -34,10 +34,7 @@ namespace WindowsFormsApplication1
             m_szKunde = "";
             m_Aenderungsdatum = DateTime.Now;
             m_ID_Klimaregion = 0;
-            m_ID_Gebaeude = 0;
             m_Erstelldatum = DateTime.Now;
-            m_szEinheit = "";
-            m_nNetzverluste = 0;
             rows = 0;
         }
  

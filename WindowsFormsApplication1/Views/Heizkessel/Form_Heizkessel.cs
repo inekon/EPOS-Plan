@@ -143,7 +143,7 @@ namespace WindowsFormsApplication1
             {
                 textBox_Kesselname.Text = (string)rs.Read("Name");
                 textBox_Kesselbeschreibung.Text = (string)rs.Read("Beschreibung");
-                textBox_Kesseltyp.Text = BrennstoffCtrl.Brennstoffart[(int)rs.Read("Brennstoff")].ToString();
+                textBox_Kesseltyp.Text = BrennstoffCtrl.Brennstoffart[(int)rs.Read("Brennstoff")-1].ToString();
                 double kl = (double)rs.Read("Ptherm");
                 textBox_Kesselleistung.Text = kl.ToString("F2");
                 textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
@@ -160,7 +160,7 @@ namespace WindowsFormsApplication1
             {
                 textBox_Kesselname.Text = (string)rs.Read("Name");
                 textBox_Kesselbeschreibung.Text = (string)rs.Read("Beschreibung");
-                textBox_Kesseltyp.Text = BrennstoffCtrl.Brennstoffart[(int)rs.Read("Brennstoff")].ToString();
+                textBox_Kesseltyp.Text = BrennstoffCtrl.Brennstoffart[(int)rs.Read("Brennstoff")-1].ToString();
                 double kl = (double)rs.Read("Ptherm");
                 textBox_Kesselleistung.Text = kl.ToString("F2");
                 textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");

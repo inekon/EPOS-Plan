@@ -107,7 +107,7 @@ namespace WindowsFormsApplication1
                 
                 wizctrl.Add_Stromganglinie(m_ID_Projekt, waelist);
                 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetGebaeudeControl(m_szProjektname);
@@ -152,7 +152,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Add_Stromganglinie(m_ID_Projekt, frm.DateiListe);
                 Program.mainfrm.SetWaermebedarfExternControl(m_szProjektname);
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetStromganglinieControl(m_szProjektname);

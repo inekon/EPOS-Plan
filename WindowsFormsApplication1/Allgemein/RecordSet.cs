@@ -1,11 +1,5 @@
-﻿using Microsoft.Office.Interop.Excel;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
+﻿using System;
 using System.Data.Odbc;
-using System.Linq;
-using System.Text;
 
 namespace WindowsFormsApplication1
 {
@@ -76,21 +70,6 @@ namespace WindowsFormsApplication1
                 DBReader.Close();
                 DBReader.Dispose();
             }
-        }
-
-        public void CreateDataAdapter()
-        {
-  
-            OdbcCommand cmd = Program.DBConnection.CreateCommand();
-            cmd.CommandText = "INSERT INTO Tab_Typ_Energieanlagen (ID,Bezeichner) VALUES (?,'test')";
-            //OdbcParameter par =  cmd.CreateParameter();
-            //par.ParameterName = "ID";
-            cmd.Parameters.Add("@id", OdbcType.Int).Value = 10;
-            
-            cmd.Connection = Program.DBConnection;
-            cmd.ExecuteNonQuery();
-
-            return;
         }
 
      }

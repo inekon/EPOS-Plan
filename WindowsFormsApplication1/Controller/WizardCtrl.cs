@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
-using System.Data;
 using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class WizardCtrl
     {
+        public WizardParent parentform;
         public bool speichern;
         public string Projektname;
         public string Klimazone;
-        public WizardParent parentform;
 
         public WizardCtrl()
         {
@@ -22,789 +18,318 @@ namespace WindowsFormsApplication1
             Klimazone = "";
         }
 
-        public bool Add_WP_Waermeerzeuger(int projektID, List<WErzeugerModel> list)
+        private object GetIdForType(WErzeugerModel item, int targetType, object value)
         {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen", Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                WErzeugerCtrl ctrl = new WErzeugerCtrl();
-
-                adapter.Fill(dataSet, "Tab_Energieanlagen");
-                int maxID = ctrl.GetMaxID() + 1;
-
-                for (int i = 0; i < list.Count; i++)
-                {
-                    DataRow newRow = dataSet.Tables["Tab_Energieanlagen"].NewRow();
-                    newRow["ID"] = maxID++;
-                    newRow["ID_Projekt"] = projektID;
-                    newRow["Bezeichner"] = list[i].Bezeichner;
-                    newRow["Betriebsart"] = list[i].Betriebsart;
-                    newRow["Sperrung"] = list[i].Sperrung;
-                    newRow["Sperrzeit_von"] = list[i].Sperrzeit_von;
-                    newRow["Sperrzeit_bis"] = list[i].Sperrzeit_bis;
-                    newRow["Vorlauf"] = list[i].Vorlauf;
-                    newRow["Rücklauf"] = list[i].Ruecklauf;
-                    newRow["Bivalenter_Betrieb"] = list[i].Bivalenter_Betrieb;
-                    newRow["Abschaltpunkt"] = list[i].Abschaltpunkt;
-                    newRow["Nutzungszeit"] = list[i].Nutzungszeit;
-                    newRow["Grenzleistung"] = list[i].Grenzleistung;
-                    newRow["Kollektormodulanzahl"] = list[i].Kollektormodulanzahl;
-                    newRow["PV_Leistung"] = list[i].PV_Leistung;
-                    newRow["Neigung"] = list[i].m_Neigung;
-                    newRow["Azimut"] = list[i].m_Azimut;
-
-                    newRow["ID_WP"] = DBNull.Value;
-                    newRow["ID_SP"] = DBNull.Value;
-                    newRow["ID_PV"] = DBNull.Value;
-                    newRow["ID_KESSEL"] = DBNull.Value;
-                    newRow["ID_Type"] = list[i].ID_Type;
-                    newRow["ID_BHKW"] = DBNull.Value;
-                    newRow["ID_SOLAR"] = DBNull.Value;
-                    newRow["ID_PUFFER"] = DBNull.Value;
-
-                    if (list[i].ID_Type == WizardItemClass.WP_TYP || list[i].ID_Type == WizardItemClass.REF_WP_TYP)
-                    {
-                        newRow["ID_WP"] = list[i].ID_WP;
-                    }
-                    else if (list[i].ID_Type == WizardItemClass.SOLAR_TYP || list[i].ID_Type == WizardItemClass.REF_SOLAR_TYP)
-                    {
-                        newRow["ID_Solar"] = list[i].ID_Solar;
-                    }
-                    else if (list[i].ID_Type == WizardItemClass.PV_TYP || list[i].ID_Type == WizardItemClass.REF_PV_TYP)
-                    {
-                        newRow["ID_PV"] = list[i].ID_PV;
-                    }
-                    else if (list[i].ID_Type == WizardItemClass.SP_TYP || list[i].ID_Type == WizardItemClass.REF_SP_TYP)
-                    {
-                        newRow["ID_SP"] = list[i].ID_SP;
-                    }
-                    else if (list[i].ID_Type == WizardItemClass.KESSEL_TYP || list[i].ID_Type == WizardItemClass.REF_KESSEL_TYP)
-                    {
-                        newRow["ID_KESSEL"] = list[i].ID_Kessel;
-                    }
-                    else if (list[i].ID_Type == WizardItemClass.BHKW_TYP || list[i].ID_Type == WizardItemClass.BHKW_TYP)
-                    {
-                        newRow["ID_BHKW"] = list[i].ID_BHKW;
-                    }
-                    else if (list[i].ID_Type == WizardItemClass.SOLAR_TYP)
-                    {
-                        newRow["ID_SOLAR"] = list[i].ID_Solar;
-                    }
-                    else if (list[i].ID_Type == WizardItemClass.PUFFER_TYP)
-                    {
-                        newRow["ID_PUFFER"] = list[i].ID_PUFFER;
-                    }
-
-                    newRow["Heizstab"] = list[i].Heizstab;
-                    newRow["Volumen"] = list[i].Volumen;
-                    newRow["rendeMix"] = list[i].rendeMix;
-                    newRow["Solaranteil"] = list[i].Solaranteil;
-
-                    dataSet.Tables["Tab_Energieanlagen"].Rows.Add(newRow);
-                }
-
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Tab_Energieanlagen");
-
-                Console.WriteLine("Daten erfolgreich aktualisiert.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-
+            return (item.ID_Type == targetType) ? value : DBNull.Value;
         }
 
         public bool Del_Projekt_Waermeerzeuger(int projektID)
         {
-            ExecuteTransaction(Program.DBConnection.ConnectionString, projektID );
-            return true;
-        }
-
-        public static void ExecuteTransaction(string connectionString, int projektID)
-        {
-            using (OdbcConnection connection = new OdbcConnection(connectionString))
-            {
-                OdbcCommand command = new OdbcCommand();
-                OdbcTransaction transaction = null;
-
-                // Set the Connection to the new OdbcConnection.
-                command.Connection = connection;
-
-                // Open the connection and execute the transaction.
-                try
-                {
-                    connection.Open();
-
-                    OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID, Program.DBConnection);
-                    adapter.SelectCommand.Transaction = transaction;
-                    
-                    DataSet dataSet = new DataSet();
-                    adapter.Fill(dataSet, "Tab_Energieanlagen");
-
-                    // Start a local transaction
-                    transaction = connection.BeginTransaction();
-
-                    // Assign transaction object for a pending local transaction.
-                    //command.Connection = connection;
-                    command.Transaction = transaction;
-
-                    for (int i = 0; i < dataSet.Tables["Tab_Energieanlagen"].Rows.Count; i++)
-                    {
-                        DataRow row = dataSet.Tables["Tab_Energieanlagen"].Rows[i];
-                        row.Delete();
-                    }
-                    OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                    adapter.Update(dataSet, "Tab_Energieanlagen");
-
-                    // Commit the transaction.
-                    transaction.Commit();
-                    Console.WriteLine("Both records are written to database.");
-                    connection.Close(); 
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    try
-                    {
-                        // Attempt to roll back the transaction.
-                        transaction.Rollback();
-                    }
-                    catch
-                    {
-                        // Do nothing here; transaction is not active.
-                    }
-                }
-                // The connection is automatically closed when the
-                // code exits the using block.
-            }
-        }
-
-        public bool Del_Projekt_ZuordungGebäude(int projektID)
-        {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektGebaeude where ID_Projekt=" + projektID, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Z_ProjektGebaeude");
-
-                for (int i = 0; i < dataSet.Tables["Z_ProjektGebaeude"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Z_ProjektGebaeude"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_ProjektGebaeude");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-
-        }
-
-        public bool Del_Projekt_ZuordungGebäude(int projektID, int ID)
-        {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektGebaeude where ID_Projekt=" + projektID + " and ID=" + ID, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Z_ProjektGebaeude");
-
-                for (int i = 0; i < dataSet.Tables["Z_ProjektGebaeude"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Z_ProjektGebaeude"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_ProjektGebaeude");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-
-        }
-
-        public bool Add_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list)
-        {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektGebaeude", Program.DBConnection);
-                DataSet dataSet = new DataSet();
-
-                adapter.Fill(dataSet, "Z_ProjektGebaeude");
- 
-                for (int i = 0; i < list.Count; i++)
-                {
-                    DataRow newRow = dataSet.Tables["Z_ProjektGebaeude"].NewRow();
-                    newRow["ID"] = 1;
-                    newRow["ID_Projekt"] = projektID;
-                    newRow["ID_Gebaeude"] = list[i].ID_Gebaeude;
-                    newRow["Wohnflaeche_Waermebedarf"] = list[i].Wohnflaeche;
-                    newRow["Einheit_Waermebedarf_Wohnflaeche"] = list[i].Einheit;
-                    newRow["Jahresnutzungsgrad"] = list[i].Jahresnutzungsgrad;
-                    newRow["dezWarmwasserbereitung"] = list[i].DezentralWarmwasser;
-
-                    dataSet.Tables["Z_ProjektGebaeude"].Rows.Add(newRow);
-                }
-
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_ProjektGebaeude");
-
-                Console.WriteLine("Daten erfolgreich aktualisiert.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-
-        }
-
-        public bool Del_Projekt_ID_Waermeerzeuger(int projektID, int ID_Waermeerzeuger)
-        {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID + " and ID=" + ID_Waermeerzeuger, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Tab_Energieanlagen");
-
-                for (int i = 0; i < dataSet.Tables["Tab_Energieanlagen"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Tab_Energieanlagen"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Tab_Energieanlagen");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
+            return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
         }
 
         public bool Del_Projekt_Waermeerzeuger(int projektID, int nType)
         {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen where ID_Projekt=" + projektID + " and ID_Type=" + nType, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Tab_Energieanlagen");
-
-                for (int i = 0; i < dataSet.Tables["Tab_Energieanlagen"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Tab_Energieanlagen"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Tab_Energieanlagen");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
+            return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@type", nType) });
         }
 
-        public bool Add_SP(int projektID, List<StromspeicherModel> list)
+        public bool Del_Projekt_ID_Waermeerzeuger(int projektID, int ID_Waermeerzeuger)
         {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Energieanlagen", Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                WErzeugerCtrl ctrl = new WErzeugerCtrl();
-
-                adapter.Fill(dataSet, "Tab_Energieanlagen");
-                int maxID = ctrl.GetMaxID() + 1;
-
-                for (int i = 0; i < list.Count; i++)
-                {
-                    DataRow newRow = dataSet.Tables["Tab_Energieanlagen"].NewRow();
-                    newRow["ID"] = maxID++;
-                    newRow["ID_Projekt"] = projektID;
-                    newRow["Bezeichner"] = list[i].m_szBezeichner;
-                    newRow["ID_Type"] = 4;
-                    newRow["ID_WP"] = DBNull.Value;
-                    newRow["Betriebsart"] = DBNull.Value;
-                    newRow["Sperrung"] = DBNull.Value;
-                    newRow["Sperrzeit_von"] = DBNull.Value;
-                    newRow["Sperrzeit_bis"] = DBNull.Value;
-                    newRow["Vorlauf"] = DBNull.Value;
-                    newRow["Rücklauf"] = DBNull.Value;
-                    newRow["Bivalenter_Betrieb"] = DBNull.Value;
-                    newRow["Abschaltpunkt"] = DBNull.Value;
-                    newRow["Nutzungszeit"] = DBNull.Value;
-                    newRow["ID_SP"] = list[i].m_ID;
-                    newRow["ID_PV"] = DBNull.Value;
-                    newRow["ID_Solar"] = DBNull.Value;
-                    newRow["Heizstab"] = DBNull.Value;
-                    newRow["Volumen"] = DBNull.Value;
-                    newRow["rendeMix"] = DBNull.Value;
-                    newRow["Solaranteil"] = DBNull.Value;
-
-                    dataSet.Tables["Tab_Energieanlagen"].Rows.Add(newRow);
-                }
-
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Tab_Energieanlagen");
-
-                Console.WriteLine("Daten erfolgreich aktualisiert.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-
+            return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID = ?",
+                new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@id", ID_Waermeerzeuger) });
         }
 
-        public bool Add_Projekt(int projektID, ProjektModel model)
+        public bool Del_Projekt_ZuordungGebäude(int projektID)
         {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Projekt", Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                ProjektCtrl ctrl = new ProjektCtrl();
-
-                adapter.Fill(dataSet, "Tab_Projekt");
-
-                DataRow newRow = dataSet.Tables["Tab_Projekt"].NewRow();
-
-                newRow["ID"] = projektID;
-                newRow["Projektname"] = model.m_szProjektname;
-                newRow["Bearbeiter"] = model.m_szBearbeiter;
-                newRow["Beschreibung"] = model.m_szBeschreibung;
-                newRow["Kunde"] = model.m_szKunde;
-                newRow["Aenderungsdatum"] = model.m_Aenderungsdatum;
-                newRow["ID_Klimaregion"] = model.m_ID_Klimaregion;
-
-                dataSet.Tables["Tab_Projekt"].Rows.Add(newRow);
-
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Tab_Projekt");
-
-                Console.WriteLine("Daten erfolgreich aktualisiert.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
+            return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektGebaeude WHERE ID_Projekt = ?",
+                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
         }
 
-        public bool Update_Projekt(int projektID, ProjektModel model)
+        public bool Del_Projekt_ZuordungGebäude(int projektID, int ID)
         {
-            try
-            {
-                ProjektCtrl projctrl = new ProjektCtrl();
-                projctrl.ReadSingle("select * from Tab_Projekt where ID=" + projektID);
-                projctrl.m_Aenderungsdatum = DateTime.Now;
-                projctrl.m_ID_Klimaregion = model.m_ID_Klimaregion;
-                projctrl.m_szBearbeiter = model.m_szBearbeiter;
-                projctrl.m_szKunde = model.m_szKunde;
-                projctrl.m_szBeschreibung = model.m_szBeschreibung;
-                projctrl.Update();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-        }
-
-        public bool Add_WaermebedarfExtern(int projektID, List<Z_ProjWaermebedarfModel> list)
-        {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektWaermebedarf", Program.DBConnection);
-                DataSet dataSet = new DataSet();
-
-                adapter.Fill(dataSet, "Z_ProjektWaermebedarf");
-
-                for (int i = 0; i < list.Count; i++)
-                {
-                    DataRow newRow = dataSet.Tables["Z_ProjektWaermebedarf"].NewRow();
-                    newRow["ID_Z"] = 1;
-                    newRow["ID_Projekt"] = projektID;
-                    newRow["ID_Ganglinie"] = list[i].m_ID_Ganglinie;
-                    newRow["Bezeichner"] = list[i].m_szBezeichner;  
-
-                    dataSet.Tables["Z_ProjektWaermebedarf"].Rows.Add(newRow);
-                }
-
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_ProjektWaermebedarf");
-
-                Console.WriteLine("Daten erfolgreich aktualisiert.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
+            return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektGebaeude WHERE ID_Projekt = ? AND ID = ?",
+                new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@id", ID) });
         }
 
         public bool Del_WaermebedarfExtern(int projektID)
         {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektWaermebedarf where ID_Projekt=" + projektID, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Z_ProjektWaermebedarf");
-
-                for (int i = 0; i < dataSet.Tables["Z_ProjektWaermebedarf"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Z_ProjektWaermebedarf"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_ProjektWaermebedarf");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
+            return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektWaermebedarf WHERE ID_Projekt = ?",
+                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
         }
 
-        public bool Del_Projekt_Prozess(int projektID, int ID=0)
+        public bool Del_Projekt_Prozess(int projektID, int ID = 0)
         {
-            try
-            {
-                string sql;
-                if (ID > 0)
-                {
-                    sql = "select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + projektID + " and ID=" + ID;
-                }
-                else sql = "select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + projektID;
+            string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ? AND ID = ?"
+                                  : "DELETE FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ?";
 
-                OdbcDataAdapter adapter = new OdbcDataAdapter(sql, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Z_Projekt_Prozesswaerme");
+            List<OleDbParameter> ps = new List<OleDbParameter> { new OleDbParameter("@pID", projektID) };
+            if (ID > 0) ps.Add(new OleDbParameter("@id", ID));
 
-                for (int i = 0; i < dataSet.Tables["Z_Projekt_Prozesswaerme"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Z_Projekt_Prozesswaerme"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_Projekt_Prozesswaerme");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-
-        }
-
-        public bool Add_Projekt_Prozess(int projektID, List<Z_ProjektProzesswaermeModel> list)
-        {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_Projekt_Prozesswaerme", Program.DBConnection);
-                DataSet dataSet = new DataSet();
-
-                adapter.Fill(dataSet, "Z_Projekt_Prozesswaerme");
-
-                for (int i = 0; i < list.Count; i++)
-                {
-                    DataRow newRow = dataSet.Tables["Z_Projekt_Prozesswaerme"].NewRow();
-                    newRow["ID"] = list[i].ID_Z;
-                    newRow["ID_Projekt"] = projektID;
-                    newRow["ID_Prozesswaerme"] = list[i].ID_Prozesswaerme;
-                    newRow["Bezeichner"] = list[i].szProzessname;
-                    newRow["Summe"] = list[i].Summe;
-                    dataSet.Tables["Z_Projekt_Prozesswaerme"].Rows.Add(newRow);
-                }
-
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_Projekt_Prozesswaerme");
-
-                Console.WriteLine("Daten erfolgreich aktualisiert.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-
-        }
-
-        public bool Del_Projekt_Stromverbraucher(int projektID, int ID = 0)
-        {
-            try
-            {
-                string sql;
-                if (ID > 0)
-                {
-                    sql = "select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + projektID + " and ID=" + ID;
-                }
-                else sql = "select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + projektID;
-
-                OdbcDataAdapter adapter = new OdbcDataAdapter(sql, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Z_Projekt_Stromverbraucher");
-
-                for (int i = 0; i < dataSet.Tables["Z_Projekt_Stromverbraucher"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Z_Projekt_Stromverbraucher"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_Projekt_Stromverbraucher");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-
-        }
-
-        public bool Add_Projekt_Stromverbraucher(int projektID, List<Z_ProjektStromverbraucherModel> list)
-        {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_Projekt_Stromverbraucher", Program.DBConnection);
-                DataSet dataSet = new DataSet();
-
-                adapter.Fill(dataSet, "Z_Projekt_Stromverbraucher");
-
-                for (int i = 0; i < list.Count; i++)
-                {
-                    DataRow newRow = dataSet.Tables["Z_Projekt_Stromverbraucher"].NewRow();
-                    newRow["ID"] = list[i].m_ID_Z;
-                    newRow["ID_Projekt"] = projektID;
-                    newRow["ID_Stromverbraucher"] = list[i].m_ID_Stromverbraucher;
-                    newRow["Bezeichner"] = list[i].m_szVerbraucher; 
-                    newRow["Summe"] = list[i].m_Summe;
-
-                    dataSet.Tables["Z_Projekt_Stromverbraucher"].Rows.Add(newRow);
-                }
-
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_Projekt_Stromverbraucher");
-
-                Console.WriteLine("Daten erfolgreich aktualisiert.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-
-        }
-
-        public bool Add_Stromganglinie(int projektID, List<Z_ProjektStromganglinieModel> list)
-        {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektStromganglinie", Program.DBConnection);
-                DataSet dataSet = new DataSet();
-
-                adapter.Fill(dataSet, "Z_ProjektStromganglinie");
-
-                for (int i = 0; i < list.Count; i++)
-                {
-                    DataRow newRow = dataSet.Tables["Z_ProjektStromganglinie"].NewRow();
-                    newRow["ID_Z"] = 1;
-                    newRow["ID_Projekt"] = projektID;
-                    newRow["ID_Ganglinie"] = list[i].m_ID_Stromganglinie;
-                    newRow["Bezeichner"] = list[i].m_szStromganglinie;
-
-                    dataSet.Tables["Z_ProjektStromganglinie"].Rows.Add(newRow);
-                }
-
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_ProjektStromganglinie");
-
-                Console.WriteLine("Daten erfolgreich aktualisiert.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-        }
-
-        public bool Add_Solarganglinie(int projektID, List<Z_ProjektSolarganglinieModel> list)
-        {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektSolarganglinie", Program.DBConnection);
-                DataSet dataSet = new DataSet();
-
-                adapter.Fill(dataSet, "Z_ProjektSolarganglinie");
-
-                for (int i = 0; i < list.Count; i++)
-                {
-                    DataRow newRow = dataSet.Tables["Z_ProjektSolarganglinie"].NewRow();
-                    newRow["ID_Z"] = 1;
-                    newRow["ID_Projekt"] = projektID;
-                    newRow["ID_Ganglinie"] = list[i].m_ID_Solarganglinie;
-                    newRow["Bezeichner"] = list[i].m_szSolarganglinie;
-
-                    dataSet.Tables["Z_ProjektSolarganglinie"].Rows.Add(newRow);
-                }
-
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_ProjektSolarganglinie");
-
-                Console.WriteLine("Daten erfolgreich aktualisiert.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
+            return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 
         public bool Del_Stromganglinie(int projektID)
         {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektStromganglinie where ID_Projekt=" + projektID, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Z_ProjektStromganglinie");
-
-                for (int i = 0; i < dataSet.Tables["Z_ProjektStromganglinie"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Z_ProjektStromganglinie"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_ProjektStromganglinie");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
+            return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektStromganglinie WHERE ID_Projekt = ?",
+                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
         }
 
         public bool Del_Solarganglinie(int projektID)
         {
-            try
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_ProjektSolarganglinie where ID_Projekt=" + projektID, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Z_ProjektSolarganglinie");
+            return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektSolarganglinie WHERE ID_Projekt = ?",
+                new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
+        }
 
-                for (int i = 0; i < dataSet.Tables["Z_ProjektSolarganglinie"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Z_ProjektSolarganglinie"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_ProjektSolarganglinie");
+        public bool Del_Projekt_Stromverbraucher(int projektID, int ID = 0)
+        {
+            string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Stromverbraucher WHERE ID_Projekt = ? AND ID = ?"
+                                  : "DELETE FROM Z_Projekt_Stromverbraucher WHERE ID_Projekt = ?";
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
+            List<OleDbParameter> ps = new List<OleDbParameter> { new OleDbParameter("@pID", projektID) };
+            if (ID > 0) ps.Add(new OleDbParameter("@id", ID));
+
+            return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 
         public bool Del_Projekt_Brauchwasser(int projektID, int ID = 0)
         {
-            try
+            string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Brauchwasser WHERE ID_Projekt = ? AND ID = ?"
+                                  : "DELETE FROM Z_Projekt_Brauchwasser WHERE ID_Projekt = ?";
+
+            List<OleDbParameter> ps = new List<OleDbParameter> { new OleDbParameter("@pID", projektID) };
+            if (ID > 0) ps.Add(new OleDbParameter("@id", ID));
+
+            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+        }
+
+        public bool Add_WP_Waermeerzeuger(int projektID, List<WErzeugerModel> list)
+        {
+            int nextID = DataRepository.GetMaxID("Tab_Energieanlagen", "ID") + 1;
+            foreach (var item in list)
             {
-                string sql;
-                if (ID > 0)
-                {
-                    sql = "select * from Z_Projekt_Brauchwasser where ID_Projekt=" + projektID + " and ID=" + ID;
-                }
-                else sql = "select * from Z_Projekt_Brauchwasser where ID_Projekt=" + projektID;
-
-                OdbcDataAdapter adapter = new OdbcDataAdapter(sql, Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "Z_Projekt_Brauchwasser");
-
-                for (int i = 0; i < dataSet.Tables["Z_Projekt_Brauchwasser"].Rows.Count; i++)
-                {
-                    DataRow row = dataSet.Tables["Z_Projekt_Brauchwasser"].Rows[i];
-                    row.Delete();
-                }
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_Projekt_Brauchwasser");
-
-                return true;
+                string sql = @"INSERT INTO Tab_Energieanlagen (ID, ID_Projekt, Bezeichner, Betriebsart, ID_Type, ID_WP, ID_Solar, ID_PV, ID_SP, ID_KESSEL, ID_BHKW, ID_PUFFER, Heizstab, Volumen, rendeMix, Solaranteil) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", nextID++),
+                    new OleDbParameter("@pID", projektID),
+                    new OleDbParameter("@bez", item.Bezeichner ?? ""),
+                    new OleDbParameter("@art", item.Betriebsart ?? ""),
+                    new OleDbParameter("@type", item.ID_Type),
+                    new OleDbParameter("@wp", GetIdForType(item, WizardItemClass.WP_TYP, item.ID_WP)),
+                    new OleDbParameter("@sol", GetIdForType(item, WizardItemClass.SOLAR_TYP, item.ID_Solar)),
+                    new OleDbParameter("@pv", GetIdForType(item, WizardItemClass.PV_TYP, item.ID_PV)),
+                    new OleDbParameter("@sp", GetIdForType(item, WizardItemClass.SP_TYP, item.ID_SP)),
+                    new OleDbParameter("@kes", GetIdForType(item, WizardItemClass.KESSEL_TYP, item.ID_Kessel)),
+                    new OleDbParameter("@bhkw", GetIdForType(item, WizardItemClass.BHKW_TYP, item.ID_BHKW)),
+                    new OleDbParameter("@puf", GetIdForType(item, WizardItemClass.PUFFER_TYP, item.ID_PUFFER)),
+                    new OleDbParameter("@stab", item.Heizstab),
+                    new OleDbParameter("@vol", item.Volumen),
+                    new OleDbParameter("@mix", item.rendeMix),
+                    new OleDbParameter("@solan", item.Solaranteil)
+                };
+                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
             }
-            catch (Exception ex)
+            return true;
+        }
+
+        public bool Add_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list)
+        {
+            int nextID = DataRepository.GetMaxID("Z_ProjektGebaeude", "ID") + 1;
+            foreach (var item in list)
             {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
+                string sql = "INSERT INTO Z_ProjektGebaeude (ID, ID_Projekt, ID_Gebaeude, Wohnflaeche_Waermebedarf, " +
+                    "Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad) VALUES (?,?,?,?,?,?)";
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", nextID++),
+                    new OleDbParameter("@pid", projektID),
+                    new OleDbParameter("@gid", item.ID_Gebaeude),
+                    new OleDbParameter("@fl", item.Wohnflaeche),
+                    new OleDbParameter("@Einheit",item.Einheit),
+                    new OleDbParameter("@jng",item.Jahresnutzungsgrad)
+                };
+                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
             }
+            return true;
+        }
 
+        public bool Add_Projekt(int projektID, ProjektModel model)
+        {
+            string sql = "INSERT INTO Tab_Projekt (ID, Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) VALUES (?,?,?,?,?,?,?,?)";
+            OleDbParameter[] ps = {
+                new OleDbParameter("@id", projektID),
+                new OleDbParameter("@name", model.m_szProjektname),
+                new OleDbParameter("@bearb", model.m_szBearbeiter),
+                new OleDbParameter("@besch", model.m_szBeschreibung),
+                new OleDbParameter("@kunde", model.m_szKunde),
+                new OleDbParameter("@date", OleDbType.Date) { Value = model.m_Aenderungsdatum },
+                new OleDbParameter("@klima", model.m_ID_Klimaregion),
+                new OleDbParameter("@edate", OleDbType.Date) { Value = model.m_Erstelldatum }
+            };
+            return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        public bool Update_Projekt(int projektID, ProjektModel model)
+        {
+            string sql = "UPDATE Tab_Projekt SET Projektname=?, Bearbeiter=?, ID_Klimaregion=?, Aenderungsdatum=?, Kunde=?, Beschreibung=? WHERE ID=?";
+            OleDbParameter[] ps = {
+                new OleDbParameter("@name", model.m_szProjektname),
+                new OleDbParameter("@bearb", model.m_szBearbeiter),
+                new OleDbParameter("@klima", model.m_ID_Klimaregion),
+                new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now },
+                new OleDbParameter("@kunde", model.m_szKunde),
+                new OleDbParameter("@besch", model.m_szBeschreibung),
+                new OleDbParameter("@id", projektID)
+            };
+            return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        public bool Add_SP(int projektID, List<StromspeicherModel> list)
+        {
+            // Start-ID für diesen Block holen
+            int nextID = DataRepository.GetMaxID("Tab_Energieanlagen", "ID") + 1;
+
+            foreach (var item in list)
+            {
+                string sql = @"INSERT INTO Tab_Energieanlagen 
+                               (ID, ID_Projekt, Bezeichner, ID_Type, ID_SP) 
+                               VALUES (?, ?, ?, ?, ?)";
+
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", nextID++),
+                    new OleDbParameter("@pID", projektID),
+                    new OleDbParameter("@bez", item.m_szBezeichner ?? ""),
+                    new OleDbParameter("@type", 4), // Typ 4 scheint Stromspeicher zu sein
+                    new OleDbParameter("@spID", item.m_ID)
+                };
+
+                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+            }
+            return true;
+        }
+
+        public bool Add_WaermebedarfExtern(int projektID, List<Z_ProjWaermebedarfModel> list)
+        {
+            int nextID = DataRepository.GetMaxID("Z_ProjektWaermebedarf", "ID_Z") + 1;
+
+            foreach (var item in list)
+            {
+                string sql = "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
+
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", nextID++),
+                    new OleDbParameter("@pID", projektID),
+                    new OleDbParameter("@gID", item.m_ID_Ganglinie),
+                    new OleDbParameter("@bez", item.m_szBezeichner ?? "")
+                };
+
+                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+            }
+            return true;
+        }
+
+        public bool Add_Projekt_Prozess(int projektID, List<Z_ProjektProzesswaermeModel> list)
+        {
+            int nextID = DataRepository.GetMaxID("Z_Projekt_Prozesswaerme", "ID") + 1;
+
+            foreach (var item in list)
+            {
+                string sql = "INSERT INTO Z_Projekt_Prozesswaerme (ID, ID_Projekt, ID_Prozesswaerme, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
+
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", nextID++),
+                    new OleDbParameter("@pID", projektID),
+                    new OleDbParameter("@pwID", item.ID_Prozesswaerme),
+                    new OleDbParameter("@bez", item.szProzessname ?? ""),
+                    new OleDbParameter("@sum", item.Summe)
+                };
+
+                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+            }
+            return true;
+        }
+
+        public bool Add_Projekt_Stromverbraucher(int projektID, List<Z_ProjektStromverbraucherModel> list)
+        {
+            int nextID = DataRepository.GetMaxID("Z_Projekt_Stromverbraucher", "ID") + 1;
+
+            foreach (var item in list)
+            {
+                string sql = "INSERT INTO Z_Projekt_Stromverbraucher (ID, ID_Projekt, ID_Stromverbraucher, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
+
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", nextID++),
+                    new OleDbParameter("@pID", projektID),
+                    new OleDbParameter("@svID", item.m_ID_Stromverbraucher),
+                    new OleDbParameter("@bez", item.m_szVerbraucher ?? ""),
+                    new OleDbParameter("@sum", item.m_Summe)
+                };
+
+                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+            }
+            return true;
+        }
+
+        public bool Add_Stromganglinie(int projektID, List<Z_ProjektStromganglinieModel> list)
+        {
+            int nextID = DataRepository.GetMaxID("Z_ProjektStromganglinie", "ID_Z") + 1;
+
+            foreach (var item in list)
+            {
+                string sql = "INSERT INTO Z_ProjektStromganglinie (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
+
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", nextID++),
+                    new OleDbParameter("@pID", projektID),
+                    new OleDbParameter("@gID", item.m_ID_Stromganglinie),
+                    new OleDbParameter("@bez", item.m_szStromganglinie ?? "")
+                };
+
+                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+            }
+            return true;
+        }
+
+        public bool Add_Solarganglinie(int projektID, List<Z_ProjektSolarganglinieModel> list)
+        {
+            int nextID = DataRepository.GetMaxID("Z_ProjektSolarganglinie", "ID_Z") + 1;
+
+            foreach (var item in list)
+            {
+                string sql = "INSERT INTO Z_ProjektSolarganglinie (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
+
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", nextID++),
+                    new OleDbParameter("@pID", projektID),
+                    new OleDbParameter("@gID", item.m_ID_Solarganglinie),
+                    new OleDbParameter("@bez", item.m_szSolarganglinie ?? "")
+                };
+
+                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+            }
+            return true;
         }
 
         public bool Add_Projekt_Brauchwasser(int projektID, List<Z_ProjektBrauchwasserModel> list)
         {
-            try
+            int nextID = DataRepository.GetMaxID("Z_Projekt_Brauchwasser", "ID") + 1;
+
+            foreach (var item in list)
             {
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Z_Projekt_Brauchwasser", Program.DBConnection);
-                DataSet dataSet = new DataSet();
+                string sql = "INSERT INTO Z_Projekt_Brauchwasser (ID, ID_Projekt, ID_Brauchwasser, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
-                adapter.Fill(dataSet, "Z_Projekt_Brauchwasser");
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", nextID++),
+                    new OleDbParameter("@pID", projektID),
+                    new OleDbParameter("@bwID", item.ID_Brauchwasser),
+                    new OleDbParameter("@bez", item.szBezeichner ?? ""),
+                    new OleDbParameter("@sum", item.Summe)
+                };
 
-                for (int i = 0; i < list.Count; i++)
-                {
-                    DataRow newRow = dataSet.Tables["Z_Projekt_Brauchwasser"].NewRow();
-                    newRow["ID"] = list[i].ID_Z;
-                    newRow["ID_Projekt"] = projektID;
-                    newRow["ID_Brauchwasser"] = list[i].ID_Brauchwasser;
-                    newRow["Bezeichner"] = list[i].szBezeichner;
-                    newRow["Summe"] = list[i].Summe;
-                    dataSet.Tables["Z_Projekt_Brauchwasser"].Rows.Add(newRow);
-                }
-
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(dataSet, "Z_Projekt_Brauchwasser");
-
-                Console.WriteLine("Daten erfolgreich aktualisiert.");
-                return true;
+                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
-                return false;
-            }
-
+            return true;
         }
+ 
     }
 }

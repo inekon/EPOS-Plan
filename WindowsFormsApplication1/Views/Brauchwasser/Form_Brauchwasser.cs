@@ -14,7 +14,6 @@ namespace WindowsFormsApplication1
     partial class Form_Brauchwasser : Form
     {
         private BrauchwasserModel model = new BrauchwasserModel();
-        private BrauchwasserCtrl ctrl = new BrauchwasserCtrl();
         public List<Z_ProjektBrauchwasserModel> list_pwmodel = new List<Z_ProjektBrauchwasserModel>();
         public int m_ID_Projekt = 0;
         private int startindex = 100000;
