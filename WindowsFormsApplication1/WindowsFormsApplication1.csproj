@@ -254,6 +254,7 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Allgemein\DataRepository.cs" />
     <Compile Include="Allgemein\Import\CEC\CECDataService.cs" />
     <Compile Include="Allgemein\GrafikTools\ChartManager.cs" />
     <Compile Include="Allgemein\GrafikTools\Form_ChartZoom.cs">
@@ -307,6 +308,18 @@
     </Compile>
     <Compile Include="Views\Kosten\ucKostenItem.Designer.cs">
       <DependentUpon>ucKostenItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Kosten\ucBrennstoffZeile.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Kosten\ucBrennstoffZeile.Designer.cs">
+      <DependentUpon>ucBrennstoffZeile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Kosten\ucKategorieHeader.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Kosten\ucKategorieHeader.Designer.cs">
+      <DependentUpon>ucKategorieHeader.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Simulation\NavigatorStrom.cs">
       <SubType>UserControl</SubType>
@@ -937,6 +950,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Kosten\ucKostenItem.resx">
       <DependentUpon>ucKostenItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Kosten\ucBrennstoffZeile.resx">
+      <DependentUpon>ucBrennstoffZeile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Kosten\ucKategorieHeader.resx">
+      <DependentUpon>ucKategorieHeader.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\NavigatorStrom.resx">
       <DependentUpon>NavigatorStrom.cs</DependentUpon>

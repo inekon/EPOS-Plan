@@ -1,11 +1,10 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.OleDb;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
+using System.Windows.Navigation;
 
 namespace WindowsFormsApplication1
 {
@@ -21,9 +20,6 @@ namespace WindowsFormsApplication1
 
         private FlowLayoutPanel flp = null;
         private string kategorie = "";
-
-        // Globale Liste, damit wir nicht bei jedem Filtern die DB abfragen müssen
-        private List<ProjektBrennstoff> m_AlleBrennstoffDaten;
 
         public Form_Kosten(int IDProjekt)
         {
@@ -49,28 +45,31 @@ namespace WindowsFormsApplication1
             if ((Program.startfrm.status & 2048) == 2048) { listBox_Erzeuger.Items.Add("Pufferspeicher"); listBox_Betriebskosten.Items.Add("Pufferspeicher"); }
             if ((Program.startfrm.status & 256) == 256) { listBox_Erzeuger.Items.Add("BHKW"); listBox_Betriebskosten.Items.Add("BHKW"); }
 
-            // Double Buffered für ruckelfreiere UI
+            // Im Konstruktor deines Hauptformulars:
             typeof(FlowLayoutPanel).InvokeMember("DoubleBuffered",
                 System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
-                null, flpContainer_Betriebskosten, new object[] { true });
-            
-            typeof(FlowLayoutPanel).InvokeMember("DoubleBuffered",
-                System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
-                null, flpContainer, new object[] { true });
-            
-            typeof(FlowLayoutPanel).InvokeMember("DoubleBuffered",
-                System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
-                null, flpContainer_Energiekosten, new object[] { true });
-
-            m_AlleBrennstoffDaten = GetBrennstoffDaten(m_ID_Projekt); // Einmal aus DB laden
-            FillFilterCombo(m_AlleBrennstoffDaten);                   // Combo füllen
-            RenderEnergieTab();
+                null, flp, new object[] { true });
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.OK;
             Close();
+        }
+
+        private string GetDBPath()
+        {
+            string db = "";
+            string userPath = $@"SOFTWARE\ODBC\ODBC.INI\TEST";
+
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(userPath))
+            {
+                if (key != null)
+                {
+                    db = key.GetValue("DBQ")?.ToString() ?? key.GetValue("Database")?.ToString();
+                }
+            }
+            return db;
         }
 
         private void Gesamtkosten(string aktuelleSelektion = "")
@@ -90,21 +89,15 @@ namespace WindowsFormsApplication1
             // Die Gesamtsumme berechnen:
             // Summe aller ANDEREN Komponenten aus der Datenbank
             // und live berechnete summeSelektion dazu addieren.
-            string sql = $"SELECT Komponente, Summe FROM Abfrage_KostenKomponenten WHERE ProjektID = ?";
-            
-            // Parameter vorbereiten
-            OleDbParameter[] ps = {
-                new OleDbParameter("@id", m_ID_Projekt),
-            };
+            RecordSet rs = new RecordSet();
+            string sql = $"SELECT Komponente, Summe FROM Abfrage_KostenKomponenten WHERE ProjektID = {m_ID_Projekt}";
 
-            // Repository nutzen, um die Daten zu holen
-            DataTable dt = DataRepository.GetDataTable(sql, ps);
+            rs.Open(sql);
 
-            // Durch die Zeilen loopen (ersetzt den Reader)
-            foreach (DataRow row in dt.Rows)
+            while (rs.Next())
             {
-                string komponente = row["Komponente"].ToString();
-                decimal betrag = row["Summe"] != DBNull.Value ? Convert.ToDecimal(row["Summe"]) : 0;
+                string komponente = rs.Read("Komponente").ToString();
+                decimal betrag = rs.Read("Summe") != DBNull.Value ? Convert.ToDecimal(rs.Read("Summe")) : 0;
 
                 // Wenn es NICHT die aktuelle Komponente ist, zur Gesamtsumme addieren
                 if (komponente != aktuelleSelektion)
@@ -167,6 +160,7 @@ namespace WindowsFormsApplication1
                         AutoSize = true, // Wichtig: Passt sich dem Text an
                         Location = new Point(5, 7), // Ein bisschen Padding von oben/links
                         TextAlign = ContentAlignment.MiddleLeft
+
                     };
 
                     Button btnTest = null;
@@ -336,53 +330,107 @@ namespace WindowsFormsApplication1
 
         private void DeleteGruppeAusDatenbank(string gruppenName, int projektID)
         {
-            try
+            string dbPath = GetDBPath();
+            string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};";
+
+            using (OleDbConnection conn = new OleDbConnection(connString))
             {
+                conn.Open();
                 // Löscht alle Faktoren dieser Gruppe aus dem aktuellen Projekt
-                string sqlDeleteProjektWerte = "DELETE FROM Tab_ProjektWerte WHERE Gruppe = ? AND ProjektID = ?";
-
-                DataRepository.ExecuteSQL(sqlDeleteProjektWerte,
-                    new OleDbParameter("@gName", gruppenName),
-                    new OleDbParameter("@pID", projektID));
-
-                // Cleanup Katalog: Lösche Gruppe nur, wenn sie nirgendwo mehr verwendet wird
-                // Hinweis: Access braucht den Parameter hier 2x, weil 2 Fragezeichen im SQL sind
-                string sqlCleanupKatalog = @"DELETE FROM Tab_KostenGruppenKatalog 
-                                     WHERE GruppenName = ? 
-                                     AND NOT EXISTS (SELECT 1 FROM Tab_ProjektWerte WHERE Gruppe = ?)";
-
-                DataRepository.ExecuteSQL(sqlCleanupKatalog,
-                    new OleDbParameter("@g1", gruppenName),
-                    new OleDbParameter("@g2", gruppenName));
-
-                // Optional: UI Logik zum Refresh danach aufrufen
+                string sql = "DELETE FROM Tab_ProjektWerte WHERE Gruppe = ? AND ProjektID = ?";
+                using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                {
+                    cmd.Parameters.Add("?", OleDbType.VarWChar).Value = gruppenName;
+                    cmd.Parameters.Add("?", OleDbType.Integer).Value = projektID;
+                    cmd.ExecuteNonQuery();
+                }
             }
-            catch (Exception ex)
+
+            using (OleDbConnection conn = new OleDbConnection(connString))
             {
-                MessageBox.Show("Fehler beim Löschen der Gruppe: " + ex.Message);
+                conn.Open();
+
+                // SQL: Lösche die Gruppe aus dem Katalog NUR DANN, 
+                // wenn kein einziger Eintrag in Tab_ProjektWerte diesen Namen mehr benutzt.
+                string sqlCleanupKatalog = @"DELETE FROM Tab_KostenGruppenKatalog 
+                                WHERE GruppenName = ? 
+                                AND NOT EXISTS (SELECT 1 FROM Tab_ProjektWerte WHERE Gruppe = ?)";
+
+                using (OleDbCommand cmdCleanup = new OleDbCommand(sqlCleanupKatalog, conn))
+                {
+                    // Wir brauchen den Parameter zweimal (einmal für das WHERE, einmal für das NOT EXISTS)
+                    cmdCleanup.Parameters.Add("?", OleDbType.VarWChar).Value = gruppenName;
+                    cmdCleanup.Parameters.Add("?", OleDbType.VarWChar).Value = gruppenName;
+
+                    int gelöscht = cmdCleanup.ExecuteNonQuery();
+
+                    // Optional: Debugging-Hinweis
+                    if (gelöscht > 0)
+                    {
+                        Console.WriteLine($"Gruppe '{gruppenName}' wurde auch aus dem Katalog entfernt.");
+                    }
+                }
             }
         }
 
         private void Zeile_DeleteRequested(object sender, EventArgs e)
         {
+            int StammID = 0;
+
             if (sender is ucKostenZeile zeile)
             {
-                int stammID = zeile.Daten.StammID;
-                int datensatzID = zeile.Daten.ID; // Falls du lieber über die Primär-ID löschst
-
-                // UI-Aufräumarbeiten
+                StammID = zeile.Daten.StammID;
+                // 1. Event-Handler abmelden (saubere Speicherverwaltung)
                 zeile.DeleteRequested -= Zeile_DeleteRequested;
+
+                // 2. Aus dem FlowLayoutPanel entfernen
                 flp.Controls.Remove(zeile);
+
+                // 3. Das Control endgültig zerstören
                 zeile.Dispose();
 
-                // Datenbank-Löschung
-                string sql = "DELETE FROM Tab_ProjektWerte WHERE ID = ?";
+                Gesamtkosten(listBox_Erzeuger.Text);
 
-                bool erfolg = DataRepository.ExecuteSQL(sql, new OleDbParameter("@id", datensatzID));
+                string dbPath = GetDBPath();
+                string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
 
-                if (erfolg)
+                // Transaktion außerhalb deklarieren, damit wir sie im catch-Block erreichen
+                OleDbTransaction trans = null;
+
+                try
                 {
-                    Gesamtkosten(listBox_Erzeuger.Text);
+                    using (OleDbConnection conn = new OleDbConnection(connString))
+                    {
+                        conn.Open();
+                        // Transaktion starten
+                        trans = conn.BeginTransaction();
+
+                        // INSERT Logik
+                        string insSql = @"DELETE * FROM Tab_ProjektWerte
+                                          WHERE ProjektID = @pid and StammID=@stid";
+
+                        using (OleDbCommand insCmd = new OleDbCommand(insSql, conn, trans)) // <--- Transaktion übergeben
+                        {
+                            insCmd.Parameters.AddWithValue("@pid", m_ID_Projekt);
+                            insCmd.Parameters.AddWithValue("@stid", StammID);
+                            insCmd.ExecuteNonQuery();
+                        }
+
+                        // Wenn alles erfolgreich war: Bestätigen
+                        trans.Commit();
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    // Im Fehlerfall: Alles rückgängig machen
+                    try
+                    {
+                        if (trans != null) trans.Rollback();
+                    }
+                    catch { /* Ignorieren, falls Rollback selbst fehlschlägt */ }
+
                 }
             }
         }
@@ -424,41 +472,86 @@ namespace WindowsFormsApplication1
         {
             List<KostenPosition> geladeneFaktoren = new List<KostenPosition>();
 
-            string sql = @"
-            SELECT ID, ProjektID, StammID, KategorieName, Komponente, Bezeichnung, 
-                   Gruppe, EingegebenerWert, WorstCase, BestCase, Nutzungsdauer, 
-                   WorstCase_Nutzungsdauer, BestCase_Nutzungsdauer, Einheit, IsMainComponent
-            FROM Abfrage_Kostenfaktoren
-            WHERE (KategorieName = ?) AND (Komponente = ?) AND (ProjektID = ?)";
+            string dbPath = GetDBPath();
+            string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
 
-            // Parameter vorbereiten
-            OleDbParameter[] ps = {
-                new OleDbParameter("@kat", kategorie),
-                new OleDbParameter("@komp", komponente),
-                new OleDbParameter("@pID", projektID)
-            };
-
-            // Repository nutzen, um die Daten zu holen
-            DataTable dt = DataRepository.GetDataTable(sql, ps);
-
-            // Durch die Zeilen loopen (ersetzt den Reader)
-            foreach (DataRow row in dt.Rows)
+            using (OleDbConnection conn = new OleDbConnection(connString))
             {
-                geladeneFaktoren.Add(new KostenPosition
+                try
                 {
-                    ID = Convert.ToInt32(row["ID"]),
-                    Name = row["Bezeichnung"].ToString(),
-                    Betrag = row["EingegebenerWert"] != DBNull.Value ? Convert.ToDecimal(row["EingegebenerWert"]) : 0,
-                    Einheit = row["Einheit"].ToString(),
-                    Nutzungsdauer = row["Nutzungsdauer"] != DBNull.Value ? Convert.ToDecimal(row["Nutzungsdauer"]) : 0,
-                    IsMainComponent = Convert.ToBoolean(row["IsMainComponent"]),
-                    Gruppenname = row["Gruppe"] != DBNull.Value ? row["Gruppe"].ToString() : "Allgemein",
-                    StammID = Convert.ToInt32(row["StammID"]),
-                    BestCase = row["BestCase"] != DBNull.Value ? Convert.ToDecimal(row["BestCase"]) : 0,
-                    WorstCase = row["WorstCase"] != DBNull.Value ? Convert.ToDecimal(row["WorstCase"]) : 0,
-                    BestCase_Nutzungsdauer = row["BestCase_Nutzungsdauer"] != DBNull.Value ? Convert.ToDecimal(row["BestCase_Nutzungsdauer"]) : 0,
-                    WorstCase_Nutzungsdauer = row["WorstCase_Nutzungsdauer"] != DBNull.Value ? Convert.ToDecimal(row["WorstCase_Nutzungsdauer"]) : 0
-                });
+                    conn.Open();
+
+                    // SQL: Wir nutzen konsequent Parameter (?) statt Variablen im String
+                    // Das Feld 'Gruppe' muss in deiner 'Abfrage_Kostenfaktoren' 
+                    // jetzt auf Tab_ProjektWerte.Gruppe verweisen!
+                    string sql = @"
+                SELECT  ID,
+                        ProjektID,
+                        StammID,
+                        KategorieName,
+                        Komponente,
+                        Bezeichnung,
+                        Gruppe, 
+                        EingegebenerWert,
+                        WorstCase,
+                        BestCase,
+                        Nutzungsdauer,
+                        WorstCase_Nutzungsdauer,
+                        BestCase_Nutzungsdauer,
+                        Einheit,
+                        IsMainComponent
+                FROM Abfrage_Kostenfaktoren
+                WHERE (KategorieName = ?) 
+                  AND (Komponente = ?)
+                  AND (ProjektID = ?)";
+
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        // WICHTIG: Die Reihenfolge der Parameter muss exakt dem SQL entsprechen
+                        cmd.Parameters.Add("?", OleDbType.VarWChar).Value = kategorie;
+                        cmd.Parameters.Add("?", OleDbType.VarWChar).Value = komponente;
+                        cmd.Parameters.Add("?", OleDbType.Integer).Value = projektID;
+
+                        using (OleDbDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                geladeneFaktoren.Add(new KostenPosition
+                                {
+                                    ID = Convert.ToInt32(reader["ID"]),
+
+                                    Name = reader["Bezeichnung"].ToString(),
+
+                                    Betrag = reader["EingegebenerWert"] != DBNull.Value
+                                             ? Convert.ToDecimal(reader["EingegebenerWert"])
+                                             : 0,
+                                    Einheit = reader["Einheit"].ToString(),
+
+                                    Nutzungsdauer = reader["Nutzungsdauer"] != DBNull.Value
+                                             ? Convert.ToDecimal(reader["Nutzungsdauer"])
+                                             : 0,
+
+                                    IsMainComponent = Convert.ToBoolean(reader["IsMainComponent"]),
+
+                                    // Hier wird die projekt-spezifische Gruppe geladen:
+                                    Gruppenname = reader["Gruppe"] != DBNull.Value ? reader["Gruppe"].ToString() : "Allgemein",
+
+                                    StammID = Convert.ToInt32(reader["StammID"]),
+
+                                    // BestCase & WorstCase
+                                    BestCase = reader["BestCase"] != DBNull.Value ? Convert.ToDecimal(reader["BestCase"]) : 0,
+                                    WorstCase = reader["WorstCase"] != DBNull.Value ? Convert.ToDecimal(reader["WorstCase"]) : 0,
+                                    BestCase_Nutzungsdauer = reader["BestCase_Nutzungsdauer"] != DBNull.Value ? Convert.ToDecimal(reader["BestCase_Nutzungsdauer"]) : 0,
+                                    WorstCase_Nutzungsdauer = reader["WorstCase_Nutzungsdauer"] != DBNull.Value ? Convert.ToDecimal(reader["WorstCase_Nutzungsdauer"]) : 0
+                                });
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Fehler beim Laden der Faktoren: " + ex.Message);
+                }
             }
 
             // UI aktualisieren
@@ -469,45 +562,67 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                // Stammdaten prüfen ---
-                string sqlStamm = @"SELECT StammID FROM Abfrage_Kostenfaktoren 
-                            WHERE Komponente = ? AND Bezeichnung = ? AND IsMainComponent = True";
+                string dbPath = GetDBPath();
+                string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
 
-                object resStamm = DataRepository.ExecuteScalar(sqlStamm,
-                    new OleDbParameter("@k1", komponente),
-                    new OleDbParameter("@k2", komponente));
-
-                if (resStamm == null) return; // Nichts gefunden, Abbruch
-                int stammID = Convert.ToInt32(resStamm);
-
-                // Projektdaten prüfen ---
-                string sqlCheckProjekt = "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ? AND StammID = ?";
-
-                int exists = Convert.ToInt32(DataRepository.ExecuteScalar(sqlCheckProjekt,
-                    new OleDbParameter("@p1", projektID),
-                    new OleDbParameter("@s1", stammID)));
-
-                if (exists == 0)
+                using (OleDbConnection conn = new OleDbConnection(connString))
                 {
-                    // --- Kosten ermitteln ---
-                    decimal initialeKosten = externeKosten;
-                    if (initialeKosten == 0)
+                    conn.Open();
+                    int stammID = 0;
+
+                    // --- SCHRITT 1: Stammdaten prüfen/anlegen ---
+                    // Suche StammID für den Namen und IsMainComponent
+                    string sqlStamm = $@"SELECT StammID FROM Abfrage_Kostenfaktoren 
+                             WHERE Komponente = '{komponente}' and Bezeichnung = '{komponente}' AND IsMainComponent = True";
+
+                    using (OleDbCommand cmd = new OleDbCommand(sqlStamm, conn))
                     {
-                        initialeKosten = (decimal)GetModulKosten(projektID, komponente);
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            stammID = Convert.ToInt32(result);
+                        }
                     }
 
-                    string sqlInsertWert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, 
-                                     KategorieID, EingegebenerWert, Nutzungsdauer, Einheit) 
-                                     VALUES (?, ?, ?, ?, ?, 0, ?)";
+                    // --- SCHRITT 2: Projektdaten prüfen/anlegen ---
+                    string sqlCheckProjekt = $@"SELECT COUNT(*) FROM Tab_ProjektWerte 
+                                   WHERE ProjektID = {projektID} AND StammID = {stammID}";
 
-                    DataRepository.ExecuteSQL(sqlInsertWert,
-                        new OleDbParameter("@pID", projektID),
-                        new OleDbParameter("@sID", stammID),
-                        new OleDbParameter("@kID", GetKomponentenID(komponente)),
-                        new OleDbParameter("@kat", tabMain.SelectedIndex + 1),
-                        new OleDbParameter("@val", (double)initialeKosten), // Access mag Double oft lieber als Decimal
-                        new OleDbParameter("@unit", "€")
-                    );
+                    using (OleDbCommand cmd = new OleDbCommand(sqlCheckProjekt, conn))
+                    {
+                        int exists = (int)cmd.ExecuteScalar();
+
+                        if (exists == 0)
+                        {
+
+                            // --- NEU: Kosten aus dem Technik-Modul holen, falls externeKosten 0 sind ---
+                            decimal initialeKosten = externeKosten;
+                            if (initialeKosten == 0)
+                            {
+                                initialeKosten = (decimal)GetModulKosten(projektID, komponente);
+                            }
+
+                            // Punkt statt Komma für SQL
+                            string betragSql = initialeKosten.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+                            string sqlInsertWert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, 
+                                                    KategorieID, EingegebenerWert, Nutzungsdauer, Einheit) 
+                                                    VALUES (?, ?, ?, ?, ?, 0, ?)";
+
+                            using (OleDbCommand cmdInsert = new OleDbCommand(sqlInsertWert, conn))
+                            {
+                                // Die Reihenfolge der Parameter MUSS exakt wie im SQL oben sein!
+                                cmdInsert.Parameters.AddWithValue("@p1", projektID);
+                                cmdInsert.Parameters.AddWithValue("@p2", stammID);
+                                cmdInsert.Parameters.AddWithValue("@p3", GetKomponentenID(komponente));
+                                cmdInsert.Parameters.AddWithValue("@p4", tabMain.SelectedIndex + 1);
+                                cmdInsert.Parameters.AddWithValue("@p5", betragSql); // Hier das Dezimal-Objekt übergeben, kein String!
+                                cmdInsert.Parameters.AddWithValue("@p6", "€");    // Einheit als Text
+
+                                cmdInsert.ExecuteNonQuery();
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -523,56 +638,71 @@ namespace WindowsFormsApplication1
 
         private void AddKostenItem(string komponenete)
         {
-            // Eingabemaske öffnen (bleibt UI-Logik)
-            Form_KostenfaktorItem frm = new Form_KostenfaktorItem();
-            
-            if (frm.ShowDialog() != DialogResult.OK) return;
-
             try
             {
-                // 2. Werte aus dem Dialog abrufen
-                int stammID = frm.gewählteID;
-                double nutzungsdauer = Convert.ToDouble(frm.Nutzungsdauer);
-                double betrag = Convert.ToDouble(frm.Wert);
-                string einheit = frm.Einheit;
-                string gewaehlteGruppe = string.IsNullOrWhiteSpace(frm.Gruppe) ? "Allgemein" : frm.Gruppe.Trim();
+                string dbPath = GetDBPath();
+                string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
 
-                // 3. Gruppe in den Katalog aufnehmen ("Lern-Funktion")
-                // Wir nutzen den "Insert if not exists" Trick mit deiner neuen Methode
-                string sqlKatalog = @"INSERT INTO Tab_KostenGruppenKatalog (GruppenName) 
-                              SELECT ?
-                              FROM (SELECT COUNT(*)
-                              FROM Tab_KostenGruppenKatalog
-                              WHERE GruppenName = ?) AS CheckTbl 
-                              WHERE CheckTbl.[Expr1000] = 0";
+                using (OleDbConnection conn = new OleDbConnection(connString))
+                {
+                    conn.Open();
 
-                DataRepository.ExecuteSQL(sqlKatalog,
-                    new OleDbParameter("@g1", gewaehlteGruppe),
-                    new OleDbParameter("@g2", gewaehlteGruppe));
+                    // Eingabemaske öffnen
+                    Form_KostenfaktorItem frm = new Form_KostenfaktorItem();
+                    if (frm.ShowDialog() != DialogResult.OK) return;
 
-                // 4. INSERT in Tab_ProjektWerte
-                string sqlInsert = @"INSERT INTO Tab_ProjektWerte
-                                    (ProjektID, StammID, EingegebenerWert, Nutzungsdauer, Einheit, Gruppe, KomponentenID, KategorieID) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    // Werte aus dem Dialog abrufen
+                    int stammID = frm.gewählteID;
+                    double nutzungsdauer = Convert.ToDouble(frm.Nutzungsdauer);
+                    double betrag = Convert.ToDouble(frm.Wert);
+                    string einheit = frm.Einheit;
+                    string gewaehlteGruppe = frm.Gruppe.Trim(); // Gruppe aus der ComboBox
 
-                DataRepository.ExecuteSQL(sqlInsert,
-                    new OleDbParameter("@pid", m_ID_Projekt),
-                    new OleDbParameter("@sid", stammID),
-                    new OleDbParameter("@val", betrag),
-                    new OleDbParameter("@nd", nutzungsdauer),
-                    new OleDbParameter("@ein", einheit),
-                    new OleDbParameter("@grp", gewaehlteGruppe),
-                    new OleDbParameter("@kid", GetKomponentenID(komponenete)),
-                    new OleDbParameter("@kat", tabMain.SelectedIndex + 1)
-                );
+                    if (string.IsNullOrEmpty(gewaehlteGruppe)) gewaehlteGruppe = "Allgemein";
 
-                // 5. UI aktualisieren
+                    // Gruppe in den Katalog aufnehmen, falls sie neu ist ("Lern-Funktion")
+                    string sqlKatalog = @"INSERT INTO Tab_KostenGruppenKatalog (GruppenName) 
+                                  SELECT ? FROM (SELECT COUNT(*) FROM Tab_KostenGruppenKatalog WHERE GruppenName = ?) AS CheckTbl 
+                                  WHERE CheckTbl.[Expr1000] = 0";
+                    // Hinweis: Das obige SQL ist ein "Insert if not exists" Trick für Access. 
+                    // Alternativ einfach ein Try-Catch um ein normales INSERT machen.
+
+                    try
+                    {
+                        using (OleDbCommand cmdKat = new OleDbCommand(sqlKatalog, conn))
+                        {
+                            cmdKat.Parameters.Add("?", OleDbType.VarWChar).Value = gewaehlteGruppe;
+                            cmdKat.Parameters.Add("?", OleDbType.VarWChar).Value = gewaehlteGruppe;
+                            cmdKat.ExecuteNonQuery();
+                        }
+                    }
+                    catch { /* Ignorieren, wenn Gruppe schon existiert (Duplicate Key) */ }
+
+                    // INSERT in Tab_ProjektWerte (inklusive der projekt-spezifischen Gruppe)
+                    string sqlInsert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, EingegebenerWert, Nutzungsdauer, Einheit, Gruppe, KomponentenID, KategorieID) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+                    using (OleDbCommand cmdIns = new OleDbCommand(sqlInsert, conn))
+                    {
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = m_ID_Projekt;
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = stammID;
+                        cmdIns.Parameters.Add("?", OleDbType.Double).Value = betrag;
+                        cmdIns.Parameters.Add("?", OleDbType.Double).Value = nutzungsdauer;
+                        cmdIns.Parameters.Add("?", OleDbType.VarWChar).Value = einheit;
+                        cmdIns.Parameters.Add("?", OleDbType.VarWChar).Value = gewaehlteGruppe;
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = GetKomponentenID(komponenete);
+                        cmdIns.Parameters.Add("?", OleDbType.Integer).Value = tabMain.SelectedIndex + 1;
+                        cmdIns.ExecuteNonQuery();
+                    }
+                }
+
+                // UI aktualisieren
                 LoadKostenFaktoren(m_ID_Projekt, komponenete);
                 Gesamtkosten();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Fehler beim Verarbeiten der Daten: " + ex.Message);
+                MessageBox.Show("Fehler beim Hinzufügen: " + ex.Message);
             }
         }
 
@@ -593,27 +723,52 @@ namespace WindowsFormsApplication1
 
         private void UpdateSingleRowInDatabase(KostenPosition pos)
         {
+            // Sicherheitscheck: Ohne ID kein Update
             if (pos.ID <= 0) return;
 
-            string sql = @"UPDATE Tab_ProjektWerte 
-                   SET EingegebenerWert = ?, 
-                       BestCase = ?, 
-                       WorstCase = ?,
-                       Nutzungsdauer = ?,
-                       BestCase_Nutzungsdauer = ?, 
-                       WorstCase_Nutzungsdauer = ?
-                   WHERE ID = ?";
+            try
+            {
+                string dbPath = GetDBPath();
+                string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};";
 
-            // Aufruf der neuen zentralen Methode
-            DataRepository.ExecuteSQL(sql,
-                new OleDbParameter("@val", (double)pos.Betrag),
-                new OleDbParameter("@best", (double)pos.BestCase),
-                new OleDbParameter("@worst", (double)pos.WorstCase),
-                new OleDbParameter("@nd", (double)pos.Nutzungsdauer),
-                new OleDbParameter("@bestNd", (double)pos.BestCase_Nutzungsdauer),
-                new OleDbParameter("@worstNd", (double)pos.WorstCase_Nutzungsdauer),
-                new OleDbParameter("@id", pos.ID)
-            );
+                using (OleDbConnection conn = new OleDbConnection(connString))
+                {
+                    conn.Open();
+                    // filtern NUR noch nach der eindeutigen ID
+                    string sql = @"UPDATE Tab_ProjektWerte 
+                           SET EingegebenerWert = ?, 
+                               BestCase = ?, 
+                               WorstCase = ?,
+                               Nutzungsdauer = ?,
+                               BestCase_Nutzungsdauer = ?, 
+                               WorstCase_Nutzungsdauer = ?
+                           WHERE ID = ?";
+
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        // Parameter-Reihenfolge einhalten:
+                        // EingegebenerWert
+                        cmd.Parameters.Add("?", OleDbType.Double).Value = (double)pos.Betrag;
+                        // BestCase (Wichtig: Hier war dein Fehler!)
+                        cmd.Parameters.Add("?", OleDbType.Double).Value = (double)pos.BestCase;
+                        // WorstCase
+                        cmd.Parameters.Add("?", OleDbType.Double).Value = (double)pos.WorstCase;
+                        // Nutzungsdauer
+                        cmd.Parameters.Add("?", OleDbType.Double).Value = (double)pos.Nutzungsdauer;
+
+                        cmd.Parameters.Add("?", OleDbType.Double).Value = (double)pos.BestCase_Nutzungsdauer;
+                        cmd.Parameters.Add("?", OleDbType.Double).Value = (double)pos.WorstCase_Nutzungsdauer;
+
+                        // WHERE ID (Der letzte Parameter im SQL muss auch als letztes hinzugefügt werden)
+                        cmd.Parameters.Add("?", OleDbType.Integer).Value = pos.ID;
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Fehler beim Speichern: " + ex.Message);
+            }
         }
 
         private void listBox_Betriebskosten_SelectedIndexChanged(object sender, EventArgs e)
@@ -635,7 +790,6 @@ namespace WindowsFormsApplication1
 
         private void tabMain_SelectedIndexChanged(object sender, EventArgs e)
         {
-            flpContainer_Energiekosten.Visible = false;
             kategorie = tabMain.SelectedTab.Text;
             if (kategorie == "Investitionskosten")
             {
@@ -647,7 +801,7 @@ namespace WindowsFormsApplication1
                 flp = flpContainer_Betriebskosten;
                 Gesamtkosten(listBox_Betriebskosten.Text);
             }
-            else if (kategorie == "Energiekosten") 
+            else if (kategorie == "Energiekosten") // Falls dein Tab so heißt
             {
                 flp = flpContainer_Energiekosten;
                 RenderEnergieTab();
@@ -657,7 +811,7 @@ namespace WindowsFormsApplication1
 
         private void btnTest_KostenUebernahme_Click(string komponente)
         {
-            // Wert aus dem Technik-Modul abrufen
+            // 1. Wert aus dem Technik-Modul abrufen
             decimal technikKosten = (decimal)GetModulKosten(m_ID_Projekt, komponente);
 
             if (technikKosten == 0)
@@ -666,7 +820,7 @@ namespace WindowsFormsApplication1
                     "Hinweis", MessageBoxButtons.YesNo) == DialogResult.No) return;
             }
 
-            // Suche die "MainComponent" Zeile in der UI, um sie sofort zu aktualisieren
+            // 2. Suche die "MainComponent" Zeile in der UI, um sie sofort zu aktualisieren
             ucKostenZeile mainZeile = null;
             foreach (Control c in flp.Controls)
             {
@@ -681,12 +835,15 @@ namespace WindowsFormsApplication1
             {
                 // Wert im UserControl setzen (das löst dort intern das UI-Update aus)
                 mainZeile.Daten.Betrag = technikKosten;
-                mainZeile.SetBerechnetenWert(technikKosten);
 
-                // In die Datenbank schreiben
+                mainZeile.SetBerechnetenWert(technikKosten);
+                // Manuelles UI-Refresh des UserControls (falls nötig)
+                //mainZeile.UpdateDisplay(); 
+
+                // 3. In die Datenbank schreiben
                 UpdateSingleRowInDatabase(mainZeile.Daten);
 
-                // Gesamtsummen im Formular neu berechnen
+                // 4. Gesamtsummen im Formular neu berechnen
                 Gesamtkosten(komponente);
 
                 MessageBox.Show($"Der Wert für '{komponente}' wurde erfolgreich auf {technikKosten:N2} € aktualisiert.",
@@ -697,39 +854,34 @@ namespace WindowsFormsApplication1
         private double GetModulKosten(int projektID, string komponente)
         {
             double Summe = 0;
+            RecordSet rs = new RecordSet();
+            string sql = "SELECT Abfrage_ProjektKostenKomponenten.ID_Projekt, Abfrage_ProjektKostenKomponenten.Gesamt,Tab_Typ_Energieanlagen.Bezeichner" +
+                " FROM Abfrage_ProjektKostenKomponenten INNER JOIN Tab_Typ_Energieanlagen ON Abfrage_ProjektKostenKomponenten.ID_Type = Tab_Typ_Energieanlagen.ID" +
+                " where Abfrage_ProjektKostenKomponenten.ID_Projekt=" + projektID + " and Tab_Typ_Energieanlagen.Bezeichner='" + komponente + "'";
+            rs.Open(sql);
+            if (rs.Next())
+                Summe = (double)rs.Read("Gesamt");
+            rs.Close();
 
-            string sql = "SELECT Abfrage_ProjektKostenKomponenten.ID_Projekt, Abfrage_ProjektKostenKomponenten.Gesamt,Tab_Typ_Energieanlagen.Bezeichner " +
-                         "FROM Abfrage_ProjektKostenKomponenten " + 
-                         "INNER JOIN Tab_Typ_Energieanlagen ON Abfrage_ProjektKostenKomponenten.ID_Type = Tab_Typ_Energieanlagen.ID " +
-                         "WHERE Abfrage_ProjektKostenKomponenten.ID_Projekt=? and Tab_Typ_Energieanlagen.Bezeichner=?";
-
-            OleDbParameter[] p = { new OleDbParameter("@id", (Int32)projektID), new OleDbParameter("@komp", (string)komponente) };  
-            
-            object obj = DataRepository.ExecuteScalar(sql, p);
-            Summe = (obj != null && obj != DBNull.Value) ? Convert.ToDouble(obj) : 0.0;
             return Summe;
         }
 
-        private void RenderEnergieTab(string filterKategorie = "Alle Kategorien")
+        private void RenderEnergieTab()
         {
             flpContainer_Energiekosten.Controls.Clear();
             flpContainer_Energiekosten.SuspendLayout();
 
-            // Nur filtern, wenn nicht "Alle" gewählt ist
-            var gefilterteDaten = (filterKategorie == "Alle Kategorien")
-                ? m_AlleBrennstoffDaten
-                : m_AlleBrennstoffDaten.Where(b => b.Kategorie == filterKategorie).ToList();
-
+            var daten = GetBrennstoffDaten(m_ID_Projekt);
             string aktuelleKat = "";
 
-            foreach (var b in gefilterteDaten)
+            foreach (var b in daten)
             {
-                // Kategorie-Balken (Navy Blue) wenn Kategorie wechselt
+                // 1. Kategorie-Balken (Navy Blue) wenn Kategorie wechselt
                 if (b.Kategorie != aktuelleKat)
                 {
                     var header = new ucKategorieHeader(b.Kategorie);
                     header.Width = flpContainer_Energiekosten.ClientSize.Width - 25;
-                    header.Height = 16; 
+                    header.Height = 16; // <-- Setze hier eine feste, kleine Höhe (z.B. 30)
                     header.Margin = new Padding(0, 5, 0, 0); // Optional: Kleiner Abstand nach oben
 
                     flpContainer_Energiekosten.Controls.Add(header);
@@ -737,16 +889,19 @@ namespace WindowsFormsApplication1
 
                     // --- NEU: Spaltenüberschriften hinzufügen ---
                     Panel spaltenHeader = CreateBrennstoffColumnHeader(aktuelleKat.Trim());
+
+                    //var spaltenHeader = new ucBrennstoffHeader();
                     spaltenHeader.Width = flpContainer_Energiekosten.ClientSize.Width - 25;
                     spaltenHeader.Height = 25;
                     spaltenHeader.Margin = new Padding(0, 0, 0, 2); // Kleiner Abstand nach unten
                     flpContainer_Energiekosten.Controls.Add(spaltenHeader);
+
                 }
 
-                // Zeile hinzufügen
+                // 2. Zeile hinzufügen
                 var zeile = new ucBrennstoffZeile(b);
                 zeile.Width = flpContainer_Energiekosten.ClientSize.Width - 25;
-                zeile.Height = 20;
+                zeile.Height = 18;
                 zeile.Margin = new Padding(0);
          
                 // Event zum Speichern binden
@@ -758,22 +913,19 @@ namespace WindowsFormsApplication1
                 flpContainer_Energiekosten.Controls.Add(zeile);
             }
 
-            flpContainer_Energiekosten.Controls[flpContainer_Energiekosten.Controls.Count - 1].Margin = new Padding(0, 0, 0, 10); 
-
             flpContainer_Energiekosten.ResumeLayout();
-
-            SyncHeaderPositions();
         }
 
         private void SaveBrennstoffToDb(ProjektBrennstoff b)
         {
-            // Prüfen, ob für dieses Projekt und diesen Brennstoff-Stamm bereits ein Eintrag existiert
+            // 1. Prüfen, ob für dieses Projekt und diesen Brennstoff-Stamm bereits ein Eintrag existiert
             string checkSql = $"SELECT ID FROM Tab_Brennstoff_Projekt WHERE ID_Projekt = {m_ID_Projekt} AND ID_Stamm = {b.StammID}";
+
+            RecordSet rs = new RecordSet();
             string finalSql = "";
 
             try
             {
-                RecordSet rs = new RecordSet();
                 rs.Open(checkSql);
 
                 // Dezimalzahlen für SQL formatieren (Punkt statt Komma)
@@ -797,8 +949,18 @@ namespace WindowsFormsApplication1
                     finalSql = $@"INSERT INTO Tab_Brennstoff_Projekt (ID_Projekt, ID_Stamm, Grundpreis, Arbeitspreis, Leistungspreis, [Bezug]) 
                           VALUES ({m_ID_Projekt}, {b.StammID}, {gp}, {ap}, {lp}, '{b.Bezug}')";
                 }
-                rs.Close();  
-                DataRepository.ExecuteSQL(finalSql);
+
+                string dbPath = GetDBPath();
+                string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};";
+
+                using (OleDbConnection conn = new OleDbConnection(connString))
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(finalSql, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -818,12 +980,12 @@ namespace WindowsFormsApplication1
                 K.Gruppe AS KatName, 
                 S.[Name], 
                 S.Einheit, 
-                S.PreisEinheit,
                 S.Hi, 
                 S.Hs, 
                 S.Standard_Grundpreis, 
                 S.Standard_Arbeitspreis,
                 S.Standard_Leistungspreis,
+               
                 P.Grundpreis,
                 P.Arbeitspreis, 
                 P.Leistungspreis, 
@@ -833,11 +995,10 @@ namespace WindowsFormsApplication1
             LEFT JOIN Tab_Brennstoff_Projekt AS P ON (S.ID = P.ID_Stamm AND P.ID_Projekt = {projektID})
             ORDER BY K.Gruppe, S.[Name];";
 
+            RecordSet rs = new RecordSet();
             try
             {
-                RecordSet rs = new RecordSet();
                 rs.Open(sql);
-
                 while (rs.Next())
                 {
                     var b = new ProjektBrennstoff();
@@ -846,7 +1007,6 @@ namespace WindowsFormsApplication1
                     b.StammID = Convert.ToInt32(rs.Read("ID"));
                     b.Name = rs.Read("Name").ToString();
                     b.Einheit = rs.Read("Einheit").ToString();
-                    b.PreisEinheit = rs.Read("PreisEinheit").ToString();
                     b.Hi = Convert.ToDouble(rs.Read("Hi") ?? 0);
                     b.Hs = Convert.ToDouble(rs.Read("Hs") ?? 0);
                     b.Kategorie = rs.Read("KatName").ToString();
@@ -863,17 +1023,18 @@ namespace WindowsFormsApplication1
                     b.ProjektGrundpreis = pGrund != DBNull.Value ? Convert.ToDouble(pGrund) : 0;
                     b.ProjektLeistungspreis = pLeist != DBNull.Value ? Convert.ToDouble(pLeist) : 0;
 
-                    //b.Aktiv = pAktiv != DBNull.Value ? Convert.ToBoolean(pAktiv) : false;
+                    //b.Aktiv = pAktiv != DBNull.Value ? Convert.ToBoolean(pAk
+                    //tiv) : false;
                     b.Bezug = pBezug != DBNull.Value ? pBezug.ToString() : "Hi"; // Default Hi
 
                     liste.Add(b);
                 }
-                rs.Close(); 
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Fehler beim Laden der Brennstoffdaten: " + ex.Message);
             }
+            // RecordSet schließt sich normalerweise automatisch beim Dispose oder du hast eine .Close() Methode
 
             return liste;
         }
@@ -882,11 +1043,11 @@ namespace WindowsFormsApplication1
         {
             Panel p = new Panel
             {
+               
                 Size = new Size(flpContainer_Energiekosten.ClientSize.Width - 25, 20),
                 BackColor = Color.LightGray,
                 Margin = new Padding(0, 0, 0, 5),
-                Tag = gruppe,
-                Name = "pnlSpaltenHeader"
+                Tag = gruppe
             };
             p.Controls.Clear();
             p.SuspendLayout();
@@ -895,38 +1056,37 @@ namespace WindowsFormsApplication1
             using (ucBrennstoffZeile muster = new ucBrennstoffZeile(new ProjektBrennstoff()))
             {
                 muster.Width = flpContainer_Energiekosten.ClientSize.Width - 25;
-
                 // Lokale Hilfsfunktion für die absolute Positionierung
+//                void AddLbl(string text, string ctrlName, int width)
                 void AddLbl(string text, string ctrlName, int width, int x)
                 {
                     Control target = muster.Controls[ctrlName];
                     if (target == null) return;
 
                     Label lbl = new Label();
-                    lbl.Name = ctrlName;
                     lbl.Text = text;
                     lbl.AutoSize = false;
                     lbl.Width = width;
-                    lbl.Height = 26;
                     lbl.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular);
                     lbl.TextAlign = ContentAlignment.MiddleLeft;
                     lbl.Padding = new Padding(0, 0, 0, 8);
-                    lbl.Tag = lbl.Name; 
 
-                    // Der Versatz: NumericUpDowns brauchen +2 bis +3 Pixel 
+                    // Der magische Versatz: NumericUpDowns brauchen +2 bis +3 Pixel 
                     // damit der Text über der Zahl steht, nicht über dem Rahmen.
                     int korrektur = (target is NumericUpDown) ? 3 : 0;
+
+//                    lbl.Location = new Point(target.Left + korrektur, 5);
                     lbl.Location = new Point(x + korrektur, 5);
                     p.Controls.Add(lbl);
                 }
 
-                // Jetzt mappen wir die Bezeichner auf die Namen vom ucBrennstoffZeile.Designer.cs
-                AddLbl("Brennstoff", "lblName", 100,12);
-                AddLbl("Einheit", "lblEinheit", 60,170);
-                AddLbl("Hi [kWh/Einh.]", "lblHi", 100,256);
-                AddLbl("Grundpr. [€]", "numGrundpreis", 80,369);
-                AddLbl("Arbeitsp. [€]", "numArbeitspreis", 80,477);
-                AddLbl("Leist.pr. [€]", "numLeistungpreis", 80,592);
+                // Jetzt mappen wir die Bezeichner auf die Namen in deinem ucBrennstoffZeile.Designer.cs
+                AddLbl("Brennstoff", "lblName", 100,5);
+                AddLbl("Einheit", "lblEinheit", 60,220);
+                AddLbl("Hi", "lblHi", 50,335);
+                AddLbl("Grundpr. [€]", "numGrundpreis", 80,445);
+                AddLbl("Arbeitsp. [€]", "numArbeitspreis", 80,555);
+                AddLbl("Leist.pr. [€]", "numLeistungpreis", 80,670);
             }
 
             p.ResumeLayout();
@@ -934,64 +1094,7 @@ namespace WindowsFormsApplication1
             return p;
         }
 
-
-        private void FillFilterCombo(List<ProjektBrennstoff> daten)
-        {
-            cmbFilterKategorie.Items.Clear();
-            cmbFilterKategorie.Items.Add("Alle Kategorien");
-
-            // Holt alle eindeutigen Kategorienamen aus der Liste
-            var kategorien = daten.Select(b => b.Kategorie).Distinct().OrderBy(k => k);
-
-            foreach (var kat in kategorien)
-            {
-                cmbFilterKategorie.Items.Add(kat);
-            }
-
-            cmbFilterKategorie.SelectedIndex = 0; // "Alle" vorselektieren
-            cmbFilterKategorie.SelectedIndex = -1;
-            cmbFilterKategorie.SetPlaceholder("🔍 Filter wählen...");
-        }
-
-        private void cmbFilterKategorie_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (cmbFilterKategorie.SelectedIndex == -1) return;
-            string selected = cmbFilterKategorie.SelectedItem.ToString();
-            RenderEnergieTab(selected);
-        }
-
-        private void SyncHeaderPositions()
-        {
-            // Finde die erste Datenzeile im FlowLayoutPanel
-            var ersteZeile = flpContainer_Energiekosten.Controls.OfType<ucBrennstoffZeile>().FirstOrDefault();
-
-            // Finde den Spalten-Header (das Panel, das wir vorher eingefügt haben)
-            // Das Panel suchenn, das die Header-Labels enthält
-            var headerPanel = flpContainer_Energiekosten.Controls.OfType<Panel>()
-                              .FirstOrDefault(p => p.Name == "pnlSpaltenHeader");
-
-            if (ersteZeile != null && headerPanel != null)
-            {
-                // Wir gehen alle Controls im Header durch und suchen das Gegenstück in der Zeile
-                foreach (Control hLabel in headerPanel.Controls)
-                {
-                    if (hLabel is Label && hLabel.Tag != null)
-                    {
-                        string targetName = hLabel.Tag.ToString();
-                        Control zielCtrl = ersteZeile.Controls[targetName];
-
-                        if (zielCtrl != null)
-                        {
-                            // X-Position abgleichen
-                            // Bei NumericUpDown korrigieren wir 3 Pixel für die Optik
-                            int offset = (zielCtrl is NumericUpDown) ? 3 : 0;
-                            hLabel.Left = zielCtrl.Left + offset;
-                        }
-                    }
-                }
-            }
-        }
-
+ 
 
     }
 }

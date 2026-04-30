@@ -127,7 +127,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Del_Projekt_Prozess(m_ID_Projekt);
                 wizctrl.Add_Projekt_Prozess(m_ID_Projekt, frm.list_pwmodel);
                     
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetProzesswaermeControl(m_ID_Projekt);
@@ -146,7 +146,7 @@ namespace WindowsFormsApplication1
                 listView_Prozesswaerme.Items[indexes[0]].Remove();
                 wizctrl.Del_Projekt_Prozess(m_ID_Projekt, Int32.Parse(item.SubItems[3].Text));
                 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetProzesswaermeControl(m_ID_Projekt);
@@ -169,7 +169,7 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Add_Projekt_Prozess(m_ID_Projekt, frm.list_pwmodel);
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetProzesswaermeControl(m_ID_Projekt);

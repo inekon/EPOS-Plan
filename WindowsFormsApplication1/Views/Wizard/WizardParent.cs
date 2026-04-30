@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
             ApplikationCtrl ctrl = new ApplikationCtrl();
             try
             {
-                ctrl.ReadSingle("select * from Tab_Applikation");
+                ctrl.ReadSingle();
                 SetImageFromFile(ctrl.m_icon);
             }
             catch (Exception ex)
@@ -391,7 +391,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
             
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + listBox_Projekte.Text + "'");
+            projctrl.ReadSingle(listBox_Projekte.Text);
             werzctrl.ReadAllFilter("ID_Projekt=" + projctrl.m_ID);
             projektID = projctrl.m_ID;
 
@@ -471,7 +471,7 @@ namespace WindowsFormsApplication1
                 ProjektCtrl projctrl = new ProjektCtrl();
                 WErzeugerCtrl werzctrl = new WErzeugerCtrl();
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + projekt + "'");
+                projctrl.ReadSingle(projekt);
                 werzctrl.ReadAllFilter("ID_Projekt=" + projctrl.m_ID);
 
                 list_werzmodel.Clear();
@@ -680,7 +680,7 @@ namespace WindowsFormsApplication1
                 try
                 {
                     ApplikationCtrl ctrl = new ApplikationCtrl();
-                    ctrl.ReadSingle("Select * from Tab_Applikation");
+                    ctrl.ReadSingle();
                     ctrl.m_icon = icon.FileName;
                     ctrl.Update();
                     SetImageFromFile(icon.FileName);
@@ -701,7 +701,7 @@ namespace WindowsFormsApplication1
                 ProjektCtrl projctrl = new ProjektCtrl();
                 RecordSet rs = new RecordSet();
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + projekt + "'");
+                projctrl.ReadSingle(projekt);
 
                 string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Gebaeude, Z_ProjektGebaeude.[ID_Projekt], " +
                     "[Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
@@ -739,7 +739,7 @@ namespace WindowsFormsApplication1
                 ProjektCtrl projctrl = new ProjektCtrl();
                 Z_ProjektProzesswaermeCtrl prozctrl = new Z_ProjektProzesswaermeCtrl();
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + projekt + "'");
+                projctrl.ReadSingle(projekt);
                 prozctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + projctrl.m_ID);
 
                 list_prozmodel.Clear();
@@ -766,7 +766,7 @@ namespace WindowsFormsApplication1
                 ProjektCtrl projctrl = new ProjektCtrl();
                 Z_ProjektStromganglinieCtrl prozctrl = new Z_ProjektStromganglinieCtrl();
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + projekt + "'");
+                projctrl.ReadSingle(projekt);
                 prozctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + projctrl.m_ID);
 
                 list_stromlastmodel.Clear();
@@ -792,7 +792,7 @@ namespace WindowsFormsApplication1
                 ProjektCtrl projctrl = new ProjektCtrl();
                 RecordSet rs = new RecordSet(); 
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + projekt + "'");
+                projctrl.ReadSingle(projekt);
                 rs.Open("select * from Z_ProjektWaermebedarf where ID_Projekt=" + projctrl.m_ID);
 
                 list_wbmodel.Clear();
@@ -818,7 +818,7 @@ namespace WindowsFormsApplication1
                 ProjektCtrl projctrl = new ProjektCtrl();
                 Z_ProjektStromverbraucherCtrl svctrl = new Z_ProjektStromverbraucherCtrl();
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + projekt + "'");
+                projctrl.ReadSingle(projekt);
                 svctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + projctrl.m_ID);
 
                 list_stromverbrauchermodel.Clear();

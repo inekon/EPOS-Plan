@@ -66,7 +66,7 @@ namespace WindowsFormsApplication1
             KlimaregionCtrl ctrl_klimaregion = new KlimaregionCtrl();
 
             if (m_szProjekt == "") return;
-            ctrl_projekt.ReadSingle("Select * from Tab_Projekt where Projektname='" + m_szProjekt + "'");
+            ctrl_projekt.ReadSingle(m_szProjekt);
 
             m_szProjekt = ctrl_projekt.m_szProjektname;
             m_ID_Projekt = ctrl_projekt.m_ID;

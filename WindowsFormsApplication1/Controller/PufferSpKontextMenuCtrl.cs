@@ -92,7 +92,7 @@ namespace WindowsFormsApplication1
                 listView_PufferSp.Items[indexes[0]].Remove();
                 wizctrl.Del_Projekt_ID_Waermeerzeuger(m_ID_Projekt, Int32.Parse(item.SubItems[4].Text));
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetPufferSpControl(m_szProjektname);
@@ -134,7 +134,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_pufferspmodel);
 
                 ProjektCtrl projctrl = new ProjektCtrl();
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
 

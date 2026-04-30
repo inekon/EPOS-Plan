@@ -20,12 +20,16 @@ namespace WindowsFormsApplication1
             // Werte beim Laden anzeigen
             numBestCase.Value = _daten.BestCase;
             numWorstCase.Value = _daten.WorstCase;
+            numBestCase_Nutzungsdauer.Value = _daten.BestCase_Nutzungsdauer;
+            numWorstCase_Nutzungsdauer.Value = _daten.WorstCase_Nutzungsdauer;
         }
         
         private void btn_OK_Click(object sender, EventArgs e)
         {
             _daten.BestCase = numBestCase.Value;
             _daten.WorstCase = numWorstCase.Value;
+            _daten.BestCase_Nutzungsdauer = numBestCase_Nutzungsdauer.Value;
+            _daten.WorstCase_Nutzungsdauer = numWorstCase_Nutzungsdauer.Value;
             DialogResult = DialogResult.OK;
             Close();
         }

@@ -44,6 +44,7 @@ namespace WindowsFormsApplication1
         {
             string db = "";
             string userPath = $@"SOFTWARE\ODBC\ODBC.INI\TEST";
+            
             using (RegistryKey key = Registry.CurrentUser.OpenSubKey(userPath))
             {
                 if (key != null)

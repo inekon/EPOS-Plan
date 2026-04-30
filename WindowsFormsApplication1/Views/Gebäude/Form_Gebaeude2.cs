@@ -220,7 +220,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Del_Projekt_Brauchwasser((int)m_ID_Projekt);
                 wizctrl.Add_Projekt_Brauchwasser((int)m_ID_Projekt, frm.list_pwmodel);
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }

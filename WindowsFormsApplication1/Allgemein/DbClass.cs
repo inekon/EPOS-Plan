@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Win32;
+using System;
 using System.Data;
 using System.Data.Odbc;
-using System.Data.SqlClient;
+using System.Data.OleDb;
 using System.IO;
-using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -20,6 +19,8 @@ namespace WindowsFormsApplication1
         public string[] tabellenNamen_delete;
         public string szError;
         string[] scripte = new string[] { "TABELLEN", "SPALTEN", "DATENTYPEN", "IMPORT", "DELETE" };
+
+        public static string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={GetDBPath()};";
 
         public OdbcConnection openDB(string szDSN)
         {
@@ -287,6 +288,79 @@ namespace WindowsFormsApplication1
                 // Fehlerausgabe
                 szError = "Fehler beim Importieren in '" + QuellTabelle + "'\n\n" + ex.Message;
                 return false;
+            }
+        }
+
+        public static string GetDBPath()
+        {
+            string db = "";
+            string userPath = $@"SOFTWARE\ODBC\ODBC.INI\TEST";
+
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(userPath))
+            {
+                if (key != null)
+                {
+                    db = key.GetValue("DBQ")?.ToString() ?? key.GetValue("Database")?.ToString();
+                }
+            }
+            return db;
+        }
+
+        public static bool ExecuteSQL(string sql, params OleDbParameter[] parameters)
+        {
+            using (OleDbConnection conn = new OleDbConnection(connString))
+            {
+                try
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        // Falls Parameter übergeben wurden, füge sie dem Kommando hinzu
+                        if (parameters != null)
+                        {
+                            cmd.Parameters.AddRange(parameters);
+                        }
+
+                        cmd.ExecuteNonQuery();
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("SQL-Fehler: " + ex.Message);
+                    return false;
+                }
+            }
+        }
+
+        public static object ExecuteScalar(string sql, params OleDbParameter[] parameters)
+        {
+            using (OleDbConnection conn = new OleDbConnection(connString))
+            {
+                try
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        // Parameter hinzufügen, falls vorhanden
+                        if (parameters != null && parameters.Length > 0)
+                        {
+                            cmd.Parameters.AddRange(parameters);
+                        }
+
+                        object result = cmd.ExecuteScalar();
+
+                        // Falls das Ergebnis DBNull ist, geben wir null zurück
+                        if (result == DBNull.Value) return null;
+
+                        return result;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.Forms.MessageBox.Show("Datenbankfehler (Scalar): " + ex.Message);
+                    return null;
+                }
             }
         }
     }

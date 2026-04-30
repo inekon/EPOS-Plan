@@ -36,6 +36,15 @@ namespace WindowsFormsApplication1
             rows = 0;
             DBCommand = Program.DBConnection.CreateCommand();
             model = new BrennstoffModel();
+            int i = 0;
+            RecordSet rs = new RecordSet();
+            rs.Open("select * from Tab_BrennstoffKategorien order by ID");
+            while (rs.Next()) Brennstoffart_Gruppe[i++] = (string)rs.Read("Gruppe");
+            rs.Close();
+            i = 0;
+            rs.Open("select * from Tab_Brennstoff_Stamm order by ID");
+            while (rs.Next()) Brennstoffart[i++] = (string)rs.Read("Name");
+            rs.Close();
         }
 
         ~BrennstoffCtrl()

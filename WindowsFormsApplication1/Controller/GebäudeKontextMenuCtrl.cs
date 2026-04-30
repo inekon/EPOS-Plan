@@ -137,7 +137,7 @@ namespace WindowsFormsApplication1
                     wizctrl.Del_Projekt_ZuordungGebäude(m_ID_Projekt);
                     wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, frm.list_gebmodel);
 
-                    projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                    projctrl.ReadSingle(m_szProjektname);
                     projctrl.m_Aenderungsdatum = DateTime.Now;
                     projctrl.Update();
                     Program.mainfrm.SetGebaeudeControl(m_szProjektname);
@@ -158,7 +158,7 @@ namespace WindowsFormsApplication1
                 listView_Gebäude.Items[indexes[0]].Remove();
                 wizctrl.Del_Projekt_ZuordungGebäude(m_ID_Projekt, Int32.Parse(item.SubItems[4].Text));
                 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetGebaeudeControl(m_szProjektname);
@@ -181,7 +181,7 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, frm.list_gebmodel);
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetGebaeudeControl(m_szProjektname);

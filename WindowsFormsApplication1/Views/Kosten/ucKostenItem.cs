@@ -119,8 +119,10 @@ public partial class ucKostenZeile : UserControl
         // mehrzeiligen String
         string info = $"📊 Kalkulations-Varianten:\n" +
                       $"--------------------------\n" +
-                      $"Best Case:  {Daten.BestCase:N2} €\n" +
-                      $"Worst Case: {Daten.WorstCase:N2} €";
+                      $"Best Case Kosten:  {Daten.BestCase:N2} €\n" +
+                      $"Worst Case Kosten: {Daten.WorstCase:N2} €\n" +
+                      $"Best Case Nutzungsdauer:  {Daten.BestCase_Nutzungsdauer:N2} €\n" +
+                      $"Worst Case Nutzungsdauer: {Daten.WorstCase_Nutzungsdauer:N2} €";
 
         // "btnOpenCases" ist +/- Button
         toolTip1.SetToolTip(btnOpenCases, info);
@@ -153,6 +155,8 @@ public class KostenPosition
     public decimal Betrag { get; set; }
     public decimal WorstCase { get; set; }
     public decimal BestCase { get; set; }
+    public decimal WorstCase_Nutzungsdauer { get; set; }
+    public decimal BestCase_Nutzungsdauer { get; set; }
     public string Einheit { get; set; }
     public decimal Nutzungsdauer { get; set; }
     public string Gruppenname { get; set; }

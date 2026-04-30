@@ -24,7 +24,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             if (Projektname != "")
             {
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + Projektname + "' order by Projektname");
+                projctrl.ReadSingle(Projektname);
                 textBox_Name.Text = Projektname;
                 textBox_Bearbeiter.Text = projctrl.m_szBearbeiter;
                 textBox_Beschreibung.Text = projctrl.m_szBeschreibung;
