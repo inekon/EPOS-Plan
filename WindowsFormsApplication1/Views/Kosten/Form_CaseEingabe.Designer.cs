@@ -140,7 +140,7 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(96, 17);
             this.label4.TabIndex = 54;
-            this.label4.Text = "Worst Case [€]:";
+            this.label4.Text = "Worst Case [a]:";
             // 
             // numWorstCase_Nutzungsdauer
             // 
@@ -163,7 +163,7 @@
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(86, 17);
             this.label5.TabIndex = 52;
-            this.label5.Text = "Best Case [€]:";
+            this.label5.Text = "Best Case [a]:";
             // 
             // numBestCase_Nutzungsdauer
             // 
@@ -202,7 +202,7 @@
             this.Name = "Form_CaseEingabe";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Eingabe";
+            this.Text = "Eingabe Worst/Best Case";
             ((System.ComponentModel.ISupportInitialize)(this.numBestCase)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWorstCase)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numWorstCase_Nutzungsdauer)).EndInit();
