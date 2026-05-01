@@ -10,7 +10,6 @@ namespace WindowsFormsApplication1
     
     public class ProjektModel
     {
-        public ProjektModel[] items;
         public int m_ID;
         public string m_szProjektname;
         public string m_szBearbeiter;
@@ -18,7 +17,6 @@ namespace WindowsFormsApplication1
         public string m_szKunde;
         public DateTime m_Aenderungsdatum;
         public int m_ID_Klimaregion;
-       // public int m_ID_Gebaeude;
         public int rows;
         public DateTime m_Erstelldatum;
         public string m_szEinheit;
@@ -26,7 +24,6 @@ namespace WindowsFormsApplication1
 
         public ProjektModel()
         {
-            items = null;
             m_ID = 0;
             m_szProjektname = "";
             m_szBearbeiter = "";

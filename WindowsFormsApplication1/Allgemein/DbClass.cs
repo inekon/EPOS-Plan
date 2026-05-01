@@ -73,7 +73,7 @@ namespace WindowsFormsApplication1
                                 cmd.ExecuteNonQuery();
                                 targetConn.Close();
                             }
-                            catch (Exception ex)
+                            catch
                             {
                                 // Fehlerausgabe
                                 targetConn.Close(); 
@@ -106,7 +106,7 @@ namespace WindowsFormsApplication1
                 });
                 return result;
             }
-            catch (Exception ex)
+            catch
             {
                 // Fehler im UI-Thread anzeigen
                 return false;

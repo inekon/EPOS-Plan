@@ -7,7 +7,6 @@ namespace WindowsFormsApplication1
 {
     public class GebaeudeModel
     {
-        public GebaeudeModel[] items;
         public int ID;
         public string Gebaeudename;
         public string Typ;
@@ -64,7 +63,6 @@ namespace WindowsFormsApplication1
  
         public GebaeudeModel()
         {
-            items = null;
             ID = 0;
             Gebaeudename = "";
             Typ = "Wohngebaeude  VDI 2067";
