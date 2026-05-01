@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.ComponentModel;
-using System.Data.OleDb;
 using System.Data;
+using System.Data.OleDb;
+using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -37,7 +34,6 @@ namespace WindowsFormsApplication1
             ContextMenuItemBearbeiten.Text = "Bearbeiten/Hinzufügen";
             ContextMenuItemBearbeiten.Click += new EventHandler(ContextMenuItemBearbeiten_Click);
             contextMenuStrip1.Items.Add(ContextMenuItemBearbeiten);
-
 
             ContextMenuItemLoeschen = new ToolStripMenuItem();
             ContextMenuItemLoeschen.Text = "Löschen";

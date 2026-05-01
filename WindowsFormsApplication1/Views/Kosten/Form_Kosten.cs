@@ -21,6 +21,7 @@ namespace WindowsFormsApplication1
 
         private FlowLayoutPanel flp = null;
         private string kategorie = "";
+        private int kategorieID = 0;
 
         // Globale Liste, damit wir nicht bei jedem Filtern die DB abfragen müssen
         private List<ProjektBrennstoff> m_AlleBrennstoffDaten;
@@ -31,6 +32,7 @@ namespace WindowsFormsApplication1
 
             m_ID_Projekt = IDProjekt;
             tabMain.SelectedIndex = 0;
+            kategorieID = 1;
             kategorie = tabMain.TabPages[0].Text;
             flp = flpContainer;
 
@@ -270,7 +272,7 @@ namespace WindowsFormsApplication1
             bool enthältMainComponent = false;
 
             // alle Zeilen dieser Gruppe im Container
-            foreach (Control c in flpContainer.Controls)
+            foreach (Control c in flp.Controls)
             {
                 if (c is ucKostenZeile zeile && c.Tag?.ToString() == gruppenName)
                 {
@@ -300,13 +302,15 @@ namespace WindowsFormsApplication1
                 try
                 {
                     // Datenbank: Nur die Faktoren löschen, die KEINE MainComponent sind
-                    DeleteGruppeAusDatenbank(gruppenName, m_ID_Projekt);
+                    DeleteGruppeAusDatenbank(gruppenName, m_ID_Projekt, kategorieID);
 
                     // UI: Nur die Zeilen entfernen, die keine MainComponent sind
-                    flpContainer.SuspendLayout();
-                    for (int i = flpContainer.Controls.Count - 1; i >= 0; i--)
+                    flp.SuspendLayout();
+//                    flpContainer.SuspendLayout();
+//                    for (int i = flpContainer.Controls.Count - 1; i >= 0; i--)
+                    for (int i = flp.Controls.Count - 1; i >= 0; i--)
                     {
-                        Control c = flpContainer.Controls[i];
+                        Control c = flp.Controls[i];
                         if (c.Tag?.ToString() == gruppenName)
                         {
                             // Falls es eine Zeile ist, prüfen wir IsMainComponent
@@ -319,11 +323,11 @@ namespace WindowsFormsApplication1
                             // (Das Header-Panel mit dem Namen lassen wir evtl. auch stehen?)
                             if (c is Panel && c.Height > 25) continue; // Header stehen lassen
 
-                            flpContainer.Controls.Remove(c);
+                            flp.Controls.Remove(c);
                             c.Dispose();
                         }
                     }
-                    flpContainer.ResumeLayout();
+                    flp.ResumeLayout();
 
                     Gesamtkosten(listBox_Erzeuger.Text);
                 }
@@ -334,16 +338,17 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void DeleteGruppeAusDatenbank(string gruppenName, int projektID)
+        private void DeleteGruppeAusDatenbank(string gruppenName, int projektID, int kategorieID)
         {
             try
             {
                 // Löscht alle Faktoren dieser Gruppe aus dem aktuellen Projekt
-                string sqlDeleteProjektWerte = "DELETE FROM Tab_ProjektWerte WHERE Gruppe = ? AND ProjektID = ?";
+                string sqlDeleteProjektWerte = "DELETE FROM Tab_ProjektWerte WHERE Gruppe = ? AND ProjektID = ? AND KategorieID=?";
 
                 DataRepository.ExecuteSQL(sqlDeleteProjektWerte,
                     new OleDbParameter("@gName", gruppenName),
-                    new OleDbParameter("@pID", projektID));
+                    new OleDbParameter("@pID", projektID),
+                    new OleDbParameter("@pIDkat", kategorieID));
 
                 // Cleanup Katalog: Lösche Gruppe nur, wenn sie nirgendwo mehr verwendet wird
                 // Hinweis: Access braucht den Parameter hier 2x, weil 2 Fragezeichen im SQL sind
@@ -641,17 +646,20 @@ namespace WindowsFormsApplication1
             {
                 flp = flpContainer;
                 Gesamtkosten(listBox_Erzeuger.Text);
+                kategorieID = 1;
             }
             else if (kategorie == "Betriebskosten")
             {
                 flp = flpContainer_Betriebskosten;
                 Gesamtkosten(listBox_Betriebskosten.Text);
+                kategorieID = 2;
             }
             else if (kategorie == "Energiekosten") 
             {
                 flp = flpContainer_Energiekosten;
                 RenderEnergieTab();
                 flp.Visible = true;
+                kategorieID = 3;
             }
         }
 
@@ -698,7 +706,7 @@ namespace WindowsFormsApplication1
         {
             double Summe = 0;
 
-            string sql = "SELECT Abfrage_ProjektKostenKomponenten.ID_Projekt, Abfrage_ProjektKostenKomponenten.Gesamt,Tab_Typ_Energieanlagen.Bezeichner " +
+            string sql = "SELECT Abfrage_ProjektKostenKomponenten.Gesamt,Abfrage_ProjektKostenKomponenten.ID_Projekt, Tab_Typ_Energieanlagen.Bezeichner " +
                          "FROM Abfrage_ProjektKostenKomponenten " + 
                          "INNER JOIN Tab_Typ_Energieanlagen ON Abfrage_ProjektKostenKomponenten.ID_Type = Tab_Typ_Energieanlagen.ID " +
                          "WHERE Abfrage_ProjektKostenKomponenten.ID_Projekt=? and Tab_Typ_Energieanlagen.Bezeichner=?";

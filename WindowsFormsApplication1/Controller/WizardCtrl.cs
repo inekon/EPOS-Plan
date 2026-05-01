@@ -106,33 +106,76 @@ namespace WindowsFormsApplication1
 
         public bool Add_WP_Waermeerzeuger(int projektID, List<WErzeugerModel> list)
         {
-            int nextID = DataRepository.GetMaxID("Tab_Energieanlagen", "ID") + 1;
-            foreach (var item in list)
+            try
             {
-                string sql = @"INSERT INTO Tab_Energieanlagen (ID, ID_Projekt, Bezeichner, Betriebsart, ID_Type, ID_WP, ID_Solar, ID_PV, ID_SP, ID_KESSEL, ID_BHKW, ID_PUFFER, Heizstab, Volumen, rendeMix, Solaranteil) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@id", nextID++),
-                    new OleDbParameter("@pID", projektID),
-                    new OleDbParameter("@bez", item.Bezeichner ?? ""),
-                    new OleDbParameter("@art", item.Betriebsart ?? ""),
-                    new OleDbParameter("@type", item.ID_Type),
-                    new OleDbParameter("@wp", GetIdForType(item, WizardItemClass.WP_TYP, item.ID_WP)),
-                    new OleDbParameter("@sol", GetIdForType(item, WizardItemClass.SOLAR_TYP, item.ID_Solar)),
-                    new OleDbParameter("@pv", GetIdForType(item, WizardItemClass.PV_TYP, item.ID_PV)),
-                    new OleDbParameter("@sp", GetIdForType(item, WizardItemClass.SP_TYP, item.ID_SP)),
-                    new OleDbParameter("@kes", GetIdForType(item, WizardItemClass.KESSEL_TYP, item.ID_Kessel)),
-                    new OleDbParameter("@bhkw", GetIdForType(item, WizardItemClass.BHKW_TYP, item.ID_BHKW)),
-                    new OleDbParameter("@puf", GetIdForType(item, WizardItemClass.PUFFER_TYP, item.ID_PUFFER)),
-                    new OleDbParameter("@stab", item.Heizstab),
-                    new OleDbParameter("@vol", item.Volumen),
-                    new OleDbParameter("@mix", item.rendeMix),
-                    new OleDbParameter("@solan", item.Solaranteil)
-                };
-                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+                // Start-ID ermitteln
+                int nextID = DataRepository.GetMaxID("Tab_Energieanlagen", "ID") + 1;
+
+                foreach (var item in list)
+                {
+                    // SQL mit allen Feldern aus dem Original
+                    string sql = @"INSERT INTO Tab_Energieanlagen 
+                        (ID, ID_Projekt, Bezeichner, Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis, 
+                         Vorlauf, Rücklauf, Bivalenter_Betrieb, Abschaltpunkt, Nutzungszeit, Grenzleistung, 
+                         Kollektormodulanzahl, PV_Leistung, Neigung, Azimut, ID_Type, 
+                         ID_WP, ID_Solar, ID_PV, ID_SP, ID_KESSEL, ID_BHKW, ID_PUFFER, 
+                         Heizstab, Volumen, rendeMix, Solaranteil) 
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+                    // Parameter exakt in der Reihenfolge des SQL-Strings
+                    OleDbParameter[] ps = {
+                        new OleDbParameter("@id", nextID++),
+                        new OleDbParameter("@pID", projektID),
+                        new OleDbParameter("@bez", item.Bezeichner ?? (object)DBNull.Value),
+                        new OleDbParameter("@art", item.Betriebsart ?? (object)DBNull.Value),
+                        new OleDbParameter("@sperr", item.Sperrung),
+                        new OleDbParameter("@svon", item.Sperrzeit_von),
+                        new OleDbParameter("@sbis", item.Sperrzeit_bis),
+                        new OleDbParameter("@vor", item.Vorlauf),
+                        new OleDbParameter("@rueck", item.Ruecklauf),
+                        new OleDbParameter("@biv", item.Bivalenter_Betrieb),
+                        new OleDbParameter("@ab", item.Abschaltpunkt),
+                        new OleDbParameter("@nutz", item.Nutzungszeit),
+                        new OleDbParameter("@grenz", item.Grenzleistung),
+                        new OleDbParameter("@koll", item.Kollektormodulanzahl),
+                        new OleDbParameter("@pvleist", item.PV_Leistung),
+                        new OleDbParameter("@neig", item.m_Neigung),
+                        new OleDbParameter("@azim", item.m_Azimut),
+                        new OleDbParameter("@type", item.ID_Type),
+                
+                        // Fremdschlüssel-Logik (IDs nur setzen, wenn der Typ passt)
+                        new OleDbParameter("@wp", CheckType(item, WizardItemClass.WP_TYP, WizardItemClass.REF_WP_TYP) ? item.ID_WP : (object)DBNull.Value),
+                        new OleDbParameter("@sol", CheckType(item, WizardItemClass.SOLAR_TYP, WizardItemClass.REF_SOLAR_TYP) ? item.ID_Solar : (object)DBNull.Value),
+                        new OleDbParameter("@pv", CheckType(item, WizardItemClass.PV_TYP, WizardItemClass.REF_PV_TYP) ? item.ID_PV : (object)DBNull.Value),
+                        new OleDbParameter("@sp", CheckType(item, WizardItemClass.SP_TYP, WizardItemClass.REF_SP_TYP) ? item.ID_SP : (object)DBNull.Value),
+                        new OleDbParameter("@kes", CheckType(item, WizardItemClass.KESSEL_TYP, WizardItemClass.REF_KESSEL_TYP) ? item.ID_Kessel : (object)DBNull.Value),
+                        new OleDbParameter("@bhkw", (item.ID_Type == WizardItemClass.BHKW_TYP) ? item.ID_BHKW : (object)DBNull.Value),
+                        new OleDbParameter("@puf", (item.ID_Type == WizardItemClass.PUFFER_TYP) ? item.ID_PUFFER : (object)DBNull.Value),
+
+                        new OleDbParameter("@stab", item.Heizstab),
+                        new OleDbParameter("@vol", item.Volumen),
+                        new OleDbParameter("@mix", item.rendeMix),
+                        new OleDbParameter("@solan", item.Solaranteil)
+                    };
+
+                    if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+                }
+
+                Console.WriteLine("Daten erfolgreich aktualisiert.");
+                return true;
             }
-            return true;
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
+                return false;
+            }
         }
 
+        // Kleine Hilfsfunktion für die Typprüfung (kommt mit in die Ctrl)
+        private bool CheckType(WErzeugerModel item, int typ, int refTyp)
+        {
+            return item.ID_Type == typ || item.ID_Type == refTyp;
+        }
         public bool Add_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list)
         {
             int nextID = DataRepository.GetMaxID("Z_ProjektGebaeude", "ID") + 1;
