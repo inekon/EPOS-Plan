@@ -68,7 +68,6 @@ namespace WindowsFormsApplication1
         {
             if (listView_Heizkessel.SelectedItems.Count <= 0)
             {
-                // e.Cancel = true;
                 contextMenuStrip1.Items[0].Enabled = true;
                 contextMenuStrip1.Items[1].Enabled = false;
             }
