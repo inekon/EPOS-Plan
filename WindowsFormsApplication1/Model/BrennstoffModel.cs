@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WindowsFormsApplication1
 {
-    class BrennstoffModel
+    public class BrennstoffModel
     {
         public int ID;
         public string Name;
@@ -26,11 +26,8 @@ namespace WindowsFormsApplication1
         public double Staub;
         public double Betriebsbereitschaftverlust;
 
-        public BrennstoffModel[] items;
-
         public BrennstoffModel()
         {
-            items = null;
             ID = 0;
             Name = "";
             Firma = "";

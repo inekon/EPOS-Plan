@@ -35,8 +35,11 @@
             this.flpContainer_Betriebskosten = new System.Windows.Forms.FlowLayoutPanel();
             this.label2 = new System.Windows.Forms.Label();
             this.tabEnergie = new System.Windows.Forms.TabPage();
+            this.panel8 = new System.Windows.Forms.Panel();
+            this.listBox_Energieträger = new System.Windows.Forms.ListBox();
+            this.panel9 = new System.Windows.Forms.Panel();
+            this.label4 = new System.Windows.Forms.Label();
             this.panel7 = new System.Windows.Forms.Panel();
-            this.cmbFilterKategorie = new System.Windows.Forms.ComboBox();
             this.flpContainer_Energiekosten = new System.Windows.Forms.FlowLayoutPanel();
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblTitle = new System.Windows.Forms.Label();
@@ -55,6 +58,8 @@
             this.panel5.SuspendLayout();
             this.panel6.SuspendLayout();
             this.tabEnergie.SuspendLayout();
+            this.panel8.SuspendLayout();
+            this.panel9.SuspendLayout();
             this.panel7.SuspendLayout();
             this.pnlHeader.SuspendLayout();
             this.pnlFooter.SuspendLayout();
@@ -270,6 +275,7 @@
             // 
             // tabEnergie
             // 
+            this.tabEnergie.Controls.Add(this.panel8);
             this.tabEnergie.Controls.Add(this.panel7);
             this.tabEnergie.Location = new System.Drawing.Point(4, 30);
             this.tabEnergie.Name = "tabEnergie";
@@ -278,25 +284,55 @@
             this.tabEnergie.Text = "Energiekosten";
             this.tabEnergie.UseVisualStyleBackColor = true;
             // 
+            // panel8
+            // 
+            this.panel8.BackColor = System.Drawing.Color.LightGray;
+            this.panel8.Controls.Add(this.listBox_Energieträger);
+            this.panel8.Controls.Add(this.panel9);
+            this.panel8.Location = new System.Drawing.Point(17, 18);
+            this.panel8.Name = "panel8";
+            this.panel8.Size = new System.Drawing.Size(355, 573);
+            this.panel8.TabIndex = 43;
+            // 
+            // listBox_Energieträger
+            // 
+            this.listBox_Energieträger.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.listBox_Energieträger.FormattingEnabled = true;
+            this.listBox_Energieträger.ItemHeight = 17;
+            this.listBox_Energieträger.Location = new System.Drawing.Point(6, 37);
+            this.listBox_Energieträger.Name = "listBox_Energieträger";
+            this.listBox_Energieträger.Size = new System.Drawing.Size(342, 514);
+            this.listBox_Energieträger.TabIndex = 37;
+            this.listBox_Energieträger.SelectedIndexChanged += new System.EventHandler(this.listBox_Energieträger_SelectedIndexChanged);
+            // 
+            // panel9
+            // 
+            this.panel9.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(50)))), ((int)(((byte)(97)))));
+            this.panel9.Controls.Add(this.label4);
+            this.panel9.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.panel9.ForeColor = System.Drawing.Color.White;
+            this.panel9.Location = new System.Drawing.Point(6, 7);
+            this.panel9.Name = "panel9";
+            this.panel9.Size = new System.Drawing.Size(343, 25);
+            this.panel9.TabIndex = 38;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(8, 3);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(104, 17);
+            this.label4.TabIndex = 35;
+            this.label4.Text = "Energieerzeuger";
+            // 
             // panel7
             // 
             this.panel7.BackColor = System.Drawing.Color.LightGray;
-            this.panel7.Controls.Add(this.cmbFilterKategorie);
             this.panel7.Controls.Add(this.flpContainer_Energiekosten);
-            this.panel7.Location = new System.Drawing.Point(8, 12);
+            this.panel7.Location = new System.Drawing.Point(387, 18);
             this.panel7.Name = "panel7";
-            this.panel7.Size = new System.Drawing.Size(978, 666);
+            this.panel7.Size = new System.Drawing.Size(606, 665);
             this.panel7.TabIndex = 42;
-            // 
-            // cmbFilterKategorie
-            // 
-            this.cmbFilterKategorie.BackColor = System.Drawing.Color.White;
-            this.cmbFilterKategorie.FormattingEnabled = true;
-            this.cmbFilterKategorie.Location = new System.Drawing.Point(6, 5);
-            this.cmbFilterKategorie.Name = "cmbFilterKategorie";
-            this.cmbFilterKategorie.Size = new System.Drawing.Size(206, 29);
-            this.cmbFilterKategorie.TabIndex = 38;
-            this.cmbFilterKategorie.SelectedIndexChanged += new System.EventHandler(this.cmbFilterKategorie_SelectedIndexChanged);
             // 
             // flpContainer_Energiekosten
             // 
@@ -304,12 +340,12 @@
             this.flpContainer_Energiekosten.BackColor = System.Drawing.SystemColors.Control;
             this.flpContainer_Energiekosten.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.flpContainer_Energiekosten.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flpContainer_Energiekosten.Location = new System.Drawing.Point(6, 40);
+            this.flpContainer_Energiekosten.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            this.flpContainer_Energiekosten.Location = new System.Drawing.Point(6, 8);
             this.flpContainer_Energiekosten.Name = "flpContainer_Energiekosten";
             this.flpContainer_Energiekosten.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
-            this.flpContainer_Energiekosten.Size = new System.Drawing.Size(966, 619);
+            this.flpContainer_Energiekosten.Size = new System.Drawing.Size(596, 619);
             this.flpContainer_Energiekosten.TabIndex = 37;
-            this.flpContainer_Energiekosten.Visible = false;
             this.flpContainer_Energiekosten.WrapContents = false;
             // 
             // pnlHeader
@@ -408,6 +444,9 @@
             this.panel5.PerformLayout();
             this.panel6.ResumeLayout(false);
             this.tabEnergie.ResumeLayout(false);
+            this.panel8.ResumeLayout(false);
+            this.panel9.ResumeLayout(false);
+            this.panel9.PerformLayout();
             this.panel7.ResumeLayout(false);
             this.pnlHeader.ResumeLayout(false);
             this.pnlHeader.PerformLayout();
@@ -446,6 +485,9 @@
         private System.Windows.Forms.Button btn_Hinzu_Betriebskosten;
         private System.Windows.Forms.Panel panel7;
         private System.Windows.Forms.FlowLayoutPanel flpContainer_Energiekosten;
-        private System.Windows.Forms.ComboBox cmbFilterKategorie;
+        private System.Windows.Forms.Panel panel8;
+        private System.Windows.Forms.ListBox listBox_Energieträger;
+        private System.Windows.Forms.Panel panel9;
+        private System.Windows.Forms.Label label4;
     }
 }

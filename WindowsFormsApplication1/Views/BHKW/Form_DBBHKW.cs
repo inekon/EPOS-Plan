@@ -41,7 +41,6 @@ namespace WindowsFormsApplication1
 
         public void SetControls(string szName)
         {
-            RecordSet rs = new RecordSet();
             BHKWCtrl ctrl = new BHKWCtrl();
 
             ctrl.ReadAll();
@@ -173,9 +172,8 @@ namespace WindowsFormsApplication1
             frmLabel.Location = p1;
             frmLabel.m_szName = "";
             frmLabel.SetControl();
-            frmLabel.ShowDialog();
 
-            if (frmLabel.result == DialogResult.OK)
+            if (frmLabel.ShowDialog() == DialogResult.OK)
             {
                 try
                 {

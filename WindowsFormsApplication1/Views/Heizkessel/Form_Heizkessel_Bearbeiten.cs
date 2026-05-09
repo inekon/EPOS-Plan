@@ -1,5 +1,8 @@
+using ScottPlot.Colormaps;
 using System;
+using System.Data;
 using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -15,6 +18,7 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             m_mode = mode;
+            
             if (mode == MODE_EDIT)
             {
                 btn_Speichern.Enabled = false;
@@ -41,8 +45,10 @@ namespace WindowsFormsApplication1
                 tb_CO.Text = "0";
                 tb_SO2.Text = "0";
                 tb_Staub.Text = "0";
-                radioButton_Gas.Checked = true; 
             }
+
+            BrennstoffCtrl ctrl = new BrennstoffCtrl();
+            comboBox_Brennstoff.DataSource = ctrl.Brennstoffart;
         }
 
         public void SetControls(string szName, string szBeschreibung)
@@ -73,18 +79,7 @@ namespace WindowsFormsApplication1
             if (rs.Read("Brennstoff") != DBNull.Value)
             {
                 int brennstoff = (int)rs.Read("Brennstoff");
-                if (brennstoff >= 6 && brennstoff <= 9) radioButton_Heizoel.Checked = true;
-                else if (brennstoff >= 1 && brennstoff <= 3) radioButton_Gas.Checked = true;
-                else if (brennstoff == 16) radioButton_Rapsoel.Checked = true;
-                else if (brennstoff == 12) radioButton_Holz.Checked = true;
-                else if (brennstoff >= 4 && brennstoff <= 5) radioButton_Fluessiggas.Checked = true;
-                else if (brennstoff == 14) radioButton_Biogas.Checked = true;
-                else if (brennstoff == 15) radioButton_Pellets.Checked = true;
-                else if (brennstoff == 10) radioButton_Koks.Checked = true;
-                else if (brennstoff == 11) radioButton_Kohle.Checked = true;
-                else if (brennstoff == 13) radioButton_Strom.Checked = true;
-                else if (brennstoff >= 18 && brennstoff <= 22) radioButton_Bioheizöl.Checked = true;
-                else radioButton_Sonstige.Checked = true;
+                comboBox_Brennstoff.SelectedIndex = brennstoff >= 1 ? brennstoff - 1 : 1;
             }
             rs.Close();
         }
@@ -96,97 +91,64 @@ namespace WindowsFormsApplication1
 
         private void btn_Ueberschreiben_Click(object sender, EventArgs e)
         {
+            BrennstoffModel model = new BrennstoffModel();
             BrennstoffCtrl ctrl = new BrennstoffCtrl();
-            OdbcTransaction transaction = null;
 
             try
             {
-                ctrl.model = InitDatensatzUpdate();
-                transaction = Program.DBConnection.BeginTransaction();
-                ctrl.DBCommand.Transaction = transaction;  
+                InitDatensatzUpdate(ctrl);
+      
                 if (ctrl.Update())
                 {
-                    transaction.Commit();
                     MessageBox.Show("Datensatz gespeichert");
                 }
                 else
                 {
-                    transaction.Rollback();
                     MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
                 }
+                DialogResult = DialogResult.OK; 
                 Close();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex.Message);
-                try
-                {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
-                }
-                catch
-                {
-                    // Do nothing here; transaction is not active.
-                }
+                MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
             }
         }
 
-        private void btn_Speichern_Unter_Click(object sender, EventArgs e)
+        public bool Insert(BrennstoffModel model)
         {
-            Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
-            RecordSet rs = new RecordSet();
-            OdbcTransaction transaction = null;
 
-            frmLabel.m_szName = "";
-            frmLabel.SetControl();
-            frmLabel.ShowDialog();
+            // Erst prüfen, ob die ID oder der Name bereits existiert (optional, je nach DB-Design)
+            string checkSql = "SELECT COUNT(*) FROM [Tab_Heizkessel] WHERE Name = ?";
+            DataTable dt = DataRepository.GetDataTable(checkSql, new OleDbParameter[] { new OleDbParameter("@n", model.Name) });
+            if (dt.Rows.Count > 0 && Convert.ToInt32(dt.Rows[0][0]) > 0) return false;
 
-            if (frmLabel.result == DialogResult.OK)
-            {
-                try
-                {
-                    transaction = Program.DBConnection.BeginTransaction();
-                    rs.DBCommand.Transaction = transaction;
-                    rs.Open("select Name from [Tab_Heizkessel] where Name='" + frmLabel.m_szName + "'");
-                    if (!rs.EOF()) { MessageBox.Show("Name existiert bereits!"); rs.Close(); return; }
-                    rs.Close();
-                
-                    textBox_Name.Text = frmLabel.m_szName;
-                    m_szKessel = frmLabel.m_szName;
-                    rs.Insert("INSERT INTO [Tab_Heizkessel] (Name) SELECT '" + frmLabel.m_szName + "' AS Ausdr1");
-                    rs.Close();
+            string sql = @"INSERT INTO [Tab_Heizkessel] 
+                   (Name, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Öl, 
+                    Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                    BrennstoffCtrl ctrl = new BrennstoffCtrl();
-                    ctrl.DBCommand.Transaction = transaction;
-                    ctrl.model = InitDatensatzUpdate();
-                    if (ctrl.Update())
-                    {
-                        transaction.Commit();
-                        this.DialogResult = DialogResult.OK;
-                        MessageBox.Show("Datensatz gespeichert");
-                    }
-                    else
-                    {
-                        transaction.Rollback();
-                        this.DialogResult = DialogResult.Cancel;
-                        MessageBox.Show("Fehler beim Speichern des Datensatzes!");
-                    }
-                    Close();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    try
-                    {
-                        // Attempt to roll back the transaction.
-                        transaction.Rollback();
-                    }
-                    catch
-                    {
-                        // Do nothing here; transaction is not active.
-                    }
-                }
-            }
+            OleDbParameter[] ps = {
+                new OleDbParameter("@nam", model.Name),
+                new OleDbParameter("@bes", model.Beschreibung),
+                new OleDbParameter("@fir", model.Firma),
+                new OleDbParameter("@pth", model.Ptherm),
+                new OleDbParameter("@bre", model.Brennstoff),
+                new OleDbParameter("@wgg", model.Wirkungsgrad_Gas),
+                new OleDbParameter("@wgo", model.Wirkungsgrad_Oel),
+                new OleDbParameter("@inv", model.Investitionskosten),
+                new OleDbParameter("@rau", model.Raumbedarf),
+                new OleDbParameter("@war", model.Wartungskosten),
+                new OleDbParameter("@nut", model.Nutzungsdauer),
+                new OleDbParameter("@co2", model.CO2),
+                new OleDbParameter("@so2", model.SO2),
+                new OleDbParameter("@nox", model.NOx),
+                new OleDbParameter("@co", model.CO),
+                new OleDbParameter("@sta", model.Staub),
+                new OleDbParameter("@bbv", model.Betriebsbereitschaftverlust)
+            };
+
+            return DataRepository.ExecuteSQL(sql, ps);
         }
 
         private void tb_th_Leistung_TextChanged(object sender, EventArgs e)
@@ -263,90 +225,123 @@ namespace WindowsFormsApplication1
 
         private void btn_CO2_Click(object sender, EventArgs e)
         {
-            if (radioButton_Heizoel.Checked)
-                tb_CO2.Text = ((double)290880).ToString();
+            // Wir holen uns den Namen aus der Liste der BrennstoffCtrl
+            string name = comboBox_Brennstoff.Text;
 
-            if (radioButton_Gas.Checked)
-                tb_CO2.Text = ((double)201600).ToString();
-
-            if (radioButton_Fluessiggas.Checked)
-                tb_CO2.Text = ((double)238680).ToString();
+            // Logik für CO2-Werte basierend auf dem Namen
+            if (name.ToUpper().Contains("ÖL"))
+            {
+                tb_CO2.Text = "290880";
+            }
+            else if (name.ToUpper().Contains("GAS") && !name.Contains("Flüssiggas"))
+            {
+                tb_CO2.Text = "201600";
+            }
+            else if (name.Contains("Flüssiggas"))
+            {
+                tb_CO2.Text = "238680";
+            }
+            else tb_CO2.Text = "0";
         }
 
-        BrennstoffModel InitDatensatzUpdate()
+        BrennstoffModel InitDatensatzUpdate(BrennstoffCtrl model = null)
         {
-            BrennstoffModel model = new BrennstoffModel();
-            model.Name = textBox_Name.Text;
-            model.Firma = textBox_Hersteller.Text;
-            model.Beschreibung = textBox_Beschreibung.Text;
-            model.Ptherm = double.Parse(tb_th_Leistung.Text);
-            if (radioButton_Heizoel.Checked) model.Brennstoff = 9;
-            else if (radioButton_Gas.Checked) model.Brennstoff = 1;
-            else if (radioButton_Rapsoel.Checked) model.Brennstoff = 16;
-            else if (radioButton_Holz.Checked) model.Brennstoff = 12;
-            else if (radioButton_Fluessiggas.Checked) model.Brennstoff = 4;
-            else if (radioButton_Biogas.Checked) model.Brennstoff = 14;
-            else if (radioButton_Pellets.Checked) model.Brennstoff = 15;
-            else if (radioButton_Strom.Checked) model.Brennstoff = 13;
-            else if (radioButton_Koks.Checked) model.Brennstoff = 10;
-            else if (radioButton_Kohle.Checked) model.Brennstoff = 11;
-            else if (radioButton_Sonstige.Checked)  model.Brennstoff = 23;
-            model.Wirkungsgrad_Gas = double.Parse(tb_Wirkungsgrad.Text);
-            model.Wirkungsgrad_Oel = Program.convertTxt2Double(tb_Wirkungsgrad_Öl.Text);
-            model.Betriebsbereitschaftverlust = double.Parse(tb_B_Verlust.Text);
-            model.Investitionskosten = double.Parse(tb_Investitionskosten.Text);
-            model.Nutzungsdauer = double.Parse(tb_Nutzungsdauer.Text);
-            model.Raumbedarf = double.Parse(tb_Raumbedarf.Text);
-            model.NOx = double.Parse(tb_NOx.Text);
-            model.CO2 = double.Parse(tb_CO2.Text);
-            model.CO = double.Parse(tb_CO.Text);
-            model.SO2 = double.Parse(tb_SO2.Text);
-            model.Staub = double.Parse(tb_Staub.Text);
+            if(model == null) model = new BrennstoffCtrl();
+
+            // Strings sind unkritisch, wir nutzen aber .Trim() gegen versehentliche Leerzeichen
+            model.Name = textBox_Name.Text.Trim();
+            model.Firma = textBox_Hersteller.Text.Trim();
+            model.Beschreibung = textBox_Beschreibung.Text.Trim();
+
+            // Zahlen sicher konvertieren
+            model.Ptherm = SafeParse(tb_th_Leistung.Text);
+
+            // Brennstoff: Sicherstellen, dass ein gültiger Index gewählt wurde
+            // Falls nichts gewählt ist (-1), wird hier die ID 1 gesetzt
+            model.Brennstoff = comboBox_Brennstoff.SelectedIndex >= 0
+                               ? comboBox_Brennstoff.SelectedIndex + 1
+                               : 1;
+
+            model.Wirkungsgrad_Gas = SafeParse(tb_Wirkungsgrad.Text);
+            model.Wirkungsgrad_Oel = SafeParse(tb_Wirkungsgrad_Öl.Text);
+            model.Betriebsbereitschaftverlust = SafeParse(tb_B_Verlust.Text);
+            model.Investitionskosten = SafeParse(tb_Investitionskosten.Text);
+            model.Nutzungsdauer = SafeParse(tb_Nutzungsdauer.Text);
+            model.Raumbedarf = SafeParse(tb_Raumbedarf.Text);
+            model.NOx = SafeParse(tb_NOx.Text);
+            model.CO2 = SafeParse(tb_CO2.Text);
+            model.CO = SafeParse(tb_CO.Text);
+            model.SO2 = SafeParse(tb_SO2.Text);
+            model.Staub = SafeParse(tb_Staub.Text);
+
             return model;
+        }
+        
+        private double SafeParse(string text)
+        {
+            // Entfernt Leerzeichen und ersetzt Punkt durch Komma (je nach Ländereinstellung)
+            if (double.TryParse(text.Replace('.', ','), out double result))
+            {
+                return result;
+            }
+            return 0.0; // Standardwert, falls die Eingabe ungültig ist
+        }
+        private void btn_Speichern_Unter_Click(object sender, EventArgs e)
+        {
+            Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
+            frmLabel.m_szName = "";
+            frmLabel.SetControl();
+
+            if (frmLabel.ShowDialog() == DialogResult.OK)
+            {
+                BrennstoffModel model = new BrennstoffModel();
+
+                // Zuerst das Model mit den UI-Daten füllen
+                model = InitDatensatzUpdate();
+
+                // Den neuen Namen aus dem Dialog setzen
+                model.Name = frmLabel.m_szName;
+
+                // Alles in einem Rutsch speichern
+                if (Insert(model))
+                {
+                    textBox_Name.Text = frmLabel.m_szName;
+                    m_szKessel = frmLabel.m_szName;
+
+                    MessageBox.Show("Datensatz erfolgreich neu angelegt.");
+                    this.DialogResult = DialogResult.OK;
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show("Fehler: Name existiert bereits oder Datenbankfehler!");
+                }
+            }
         }
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
-            RecordSet rs = new RecordSet();
-            OdbcTransaction transaction = null;
-
             try
             {
-                transaction = Program.DBConnection.BeginTransaction();
-                rs.DBCommand.Transaction = transaction;
-                rs.Insert("INSERT INTO [Tab_Heizkessel] (Name) SELECT '" + m_szKessel + "' AS Ausdr1");
-                rs.Close();
+                BrennstoffModel model = new BrennstoffModel();
+                model = InitDatensatzUpdate();
 
-                BrennstoffCtrl ctrl = new BrennstoffCtrl();
-                ctrl.model = InitDatensatzUpdate();
-                ctrl.DBCommand.Transaction = transaction;
-
-                if (ctrl.Update())
+                // Alles in einem Rutsch speichern
+                if (Insert(model))
                 {
-                    transaction.Commit();
-                    this.DialogResult = DialogResult.OK;
                     MessageBox.Show("Datensatz gespeichert");
+                    this.DialogResult = DialogResult.OK;
                 }
                 else
                 {
-                    transaction.Rollback();
-                    this.DialogResult = DialogResult.Cancel;
                     MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+                    this.DialogResult = DialogResult.Cancel;
                 }
                 Close();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex.Message);
-                try
-                {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
-                }
-                catch
-                {
-                    // Do nothing here; transaction is not active.
-                }
+                MessageBox.Show("Fehler beim Speichern des Datensatzes!");
             }
         }
     }

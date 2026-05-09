@@ -42,11 +42,13 @@
             this.btnNext = new System.Windows.Forms.Button();
             this.btnBack = new System.Windows.Forms.Button();
             this.pnlContent = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.pnlLeft.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_App)).BeginInit();
             this.pnlBottom.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            this.tableLayoutPanel3.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnlLeft
@@ -95,6 +97,7 @@
             // pnlBottom
             // 
             this.pnlBottom.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.pnlBottom.Controls.Add(this.tableLayoutPanel3);
             this.pnlBottom.Controls.Add(this.tableLayoutPanel2);
             this.pnlBottom.Controls.Add(this.tableLayoutPanel1);
             resources.ApplyResources(this.pnlBottom, "pnlBottom");
@@ -119,7 +122,6 @@
             resources.ApplyResources(this.tableLayoutPanel1, "tableLayoutPanel1");
             this.tableLayoutPanel1.Controls.Add(this.btnCancel, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.btnNext, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.btnBack, 1, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             // 
             // btnCancel
@@ -149,6 +151,12 @@
             this.pnlContent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.pnlContent.Name = "pnlContent";
             // 
+            // tableLayoutPanel3
+            // 
+            resources.ApplyResources(this.tableLayoutPanel3, "tableLayoutPanel3");
+            this.tableLayoutPanel3.Controls.Add(this.btnBack, 0, 0);
+            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            // 
             // WizardParent
             // 
             resources.ApplyResources(this, "$this");
@@ -164,6 +172,7 @@
             this.pnlBottom.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -184,6 +193,7 @@
         private System.Windows.Forms.Button btnSpeichern;
         private System.Windows.Forms.Button button_NeuProjekt;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
     }
 }
 

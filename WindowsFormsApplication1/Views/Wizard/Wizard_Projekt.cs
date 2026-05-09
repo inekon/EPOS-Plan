@@ -17,6 +17,8 @@ namespace WindowsFormsApplication1
         public Wizard_Projekt()
         {
             InitializeComponent();
+            comboBox_Klima.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            comboBox_Klima.AutoCompleteSource = AutoCompleteSource.ListItems;
         }
 
         public void SetProjektbezeichner(String Projektname)
@@ -36,10 +38,9 @@ namespace WindowsFormsApplication1
                 rs.Open("select * from Tab_Klimaregion where ID_Klimaregion=" + m_ID_Klimaregion);
                 if (rs.Next())
                 {
-                    comboBox_Gebaeude.Text = (string)rs.Read("Name");
+                    comboBox_Klima.Text = (string)rs.Read("Name");
                 }
                 rs.Close();
-
             }
             else
             {
@@ -51,7 +52,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll();
             for (int i = 0; i < ctrl.rows; i++)
             {
-                comboBox_Gebaeude.Items.Add(ctrl.items[i].m_szName);   
+                comboBox_Klima.Items.Add(ctrl.items[i].m_szName);   
             }
         }
 
@@ -63,12 +64,12 @@ namespace WindowsFormsApplication1
         public DateTime GetDatum() { return DateTime.Now ; }
         public DateTime GetErstellDatum() { return DateTime.Parse(textBox_Erstelldatum.Text); }
         public int GetIDKlimaregion() { return m_ID_Klimaregion; }
-        public string GetKlimaname() { return comboBox_Gebaeude.Text; }
+        public string GetKlimaname() { return comboBox_Klima.Text; }
 
-        private void comboBox_Gebaeude_SelectedIndexChanged(object sender, EventArgs e)
+        private void comboBox_Klima_SelectedIndexChanged(object sender, EventArgs e)
         {
             RecordSet rs = new RecordSet();
-            rs.Open("select * from Tab_Klimaregion where Name='" + comboBox_Gebaeude.Text + "'");
+            rs.Open("select * from Tab_Klimaregion where Name='" + comboBox_Klima.Text + "'");
             if (rs.Next())
             {
                 m_ID_Klimaregion = (int)rs.Read("ID_Klimaregion");

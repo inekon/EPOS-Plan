@@ -189,7 +189,7 @@ namespace WindowsFormsApplication1
             frm.Location = p1;
             frm.ShowDialog();
 
-            if (frm.result == DialogResult.Cancel) return;
+            if (frm.ShowDialog() == DialogResult.Cancel) return;
 
             for (int Tag = 0; Tag < 7; Tag++)
             {
@@ -224,7 +224,7 @@ namespace WindowsFormsApplication1
             p1 = this.PointToScreen(p1);
             frm.Location = p1;
             frm.ShowDialog();
-            if (frm.result == DialogResult.Cancel) return;
+            if (frm.ShowDialog() == DialogResult.Cancel) return;
 
             DBCommand.CommandText = "INSERT INTO Tab_Prozesstyp ( Typname ) SELECT '" + frm.m_szName + "' AS Ausdr1";
             DBCommand.ExecuteNonQuery();

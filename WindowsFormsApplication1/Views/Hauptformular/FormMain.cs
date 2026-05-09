@@ -394,6 +394,7 @@ namespace WindowsFormsApplication1
         {
             ProjektCtrl projctrl = new ProjektCtrl();
             RecordSet rs = new RecordSet();
+            BrennstoffCtrl heizkesselctrl = new BrennstoffCtrl();
 
             projctrl.ReadSingle(textBox_Projekt.Text);
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.REF_KESSEL_TYP + " or ID_Type=" + WizardItemClass.KESSEL_TYP + ")");
@@ -410,7 +411,7 @@ namespace WindowsFormsApplication1
                 if (!rs_hk.EOF())
                 {
                     lvitem.Text = (string)rs_hk.Read("Name");
-                    lvitem.SubItems.Add(BrennstoffCtrl.Brennstoffart[(int)rs_hk.Read("Brennstoff")]);
+                    lvitem.SubItems.Add(heizkesselctrl.Brennstoffart[(int)rs_hk.Read("Brennstoff")]);
                     double kl = (double)rs_hk.Read("Ptherm");
                     lvitem.SubItems.Add(kl.ToString("F2"));
                     lvitem.SubItems.Add(rs_hk.Read("Beschreibung").ToString());

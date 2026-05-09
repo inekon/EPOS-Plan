@@ -181,11 +181,9 @@ namespace WindowsFormsApplication1
             
             Point p1 = btn_Neu.Location;  
             p1 = this.PointToScreen(p1); 
-            
             frm.Location = p1;  
 
-            frm.ShowDialog();
-            if (frm.result == DialogResult.OK)
+            if (frm.ShowDialog() == DialogResult.OK)
             {
                 m_Neu = true;
                 textBox_Bezeichner.Text = frm.m_szName;

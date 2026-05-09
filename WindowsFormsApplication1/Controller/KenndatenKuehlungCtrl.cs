@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
         // --- Kompatibilitäts-Layer ---
         private List<KenndatenKuehlungModel> _internalList = new List<KenndatenKuehlungModel>();
 
-        public new int rows => _internalList.Count;
+        public int rows => _internalList.Count;
         public new List<KenndatenKuehlungModel> items => _internalList;
 
         public KenndatenKuehlungModel model;

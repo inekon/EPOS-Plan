@@ -65,6 +65,34 @@ namespace WindowsFormsApplication1
                 }
             }
         }
+        
+        // Für INSERT, UPDATE, DELETE – gibt die Anzahl der betroffenen Zeilen zurück
+        public static int ExecuteNonQuery(string sql, params OleDbParameter[] parameters)
+        {
+            using (OleDbConnection conn = new OleDbConnection(GetConnectionString()))
+            {
+                try
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        if (parameters != null && parameters.Length > 0)
+                        {
+                            cmd.Parameters.AddRange(parameters);
+                        }
+
+                        // ExecuteNonQuery liefert die Anzahl der betroffenen Datensätze (int)
+                        return cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.Forms.MessageBox.Show("Datenbankfehler (NonQuery): " + ex.Message);
+                    // Wir geben -1 zurück, um einen Fehler von "0 betroffenen Zeilen" zu unterscheiden
+                    return -1;
+                }
+            }
+        }
 
         public static object ExecuteScalar(string sql, params OleDbParameter[] parameters)
         {

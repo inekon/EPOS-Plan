@@ -43,7 +43,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.comboBox_Gebaeude = new System.Windows.Forms.ComboBox();
+            this.comboBox_Klima = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.textBox_Erstelldatum = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -124,12 +124,12 @@
             resources.ApplyResources(this.label8, "label8");
             this.label8.Name = "label8";
             // 
-            // comboBox_Gebaeude
+            // comboBox_Klima
             // 
-            resources.ApplyResources(this.comboBox_Gebaeude, "comboBox_Gebaeude");
-            this.comboBox_Gebaeude.FormattingEnabled = true;
-            this.comboBox_Gebaeude.Name = "comboBox_Gebaeude";
-            this.comboBox_Gebaeude.SelectedIndexChanged += new System.EventHandler(this.comboBox_Gebaeude_SelectedIndexChanged);
+            resources.ApplyResources(this.comboBox_Klima, "comboBox_Klima");
+            this.comboBox_Klima.FormattingEnabled = true;
+            this.comboBox_Klima.Name = "comboBox_Klima";
+            this.comboBox_Klima.SelectedIndexChanged += new System.EventHandler(this.comboBox_Klima_SelectedIndexChanged);
             // 
             // label9
             // 
@@ -148,7 +148,7 @@
             this.BackColor = System.Drawing.Color.White;
             this.Controls.Add(this.label9);
             this.Controls.Add(this.textBox_Erstelldatum);
-            this.Controls.Add(this.comboBox_Gebaeude);
+            this.Controls.Add(this.comboBox_Klima);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label2);
@@ -187,7 +187,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.ComboBox comboBox_Gebaeude;
+        private System.Windows.Forms.ComboBox comboBox_Klima;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TextBox textBox_Erstelldatum;
     }

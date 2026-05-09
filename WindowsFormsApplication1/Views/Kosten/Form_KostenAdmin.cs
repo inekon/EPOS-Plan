@@ -68,9 +68,8 @@ namespace WindowsFormsApplication1
             frmLabel.Location = p1;
             frmLabel.m_szName = "";
             frmLabel.SetControl();
-            frmLabel.ShowDialog();
 
-            if (frmLabel.result == DialogResult.OK)
+            if (frmLabel.ShowDialog() == DialogResult.OK)
             {
                 string neueBezeichnung = frmLabel.m_szName;
                 string insSql = @"INSERT INTO Tab_Kostenfaktor (Bezeichnung) Values (neueBezeichnung)";

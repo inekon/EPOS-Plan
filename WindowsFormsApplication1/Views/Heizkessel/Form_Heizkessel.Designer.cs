@@ -55,6 +55,7 @@
             this.label16 = new System.Windows.Forms.Label();
             this.textBox_Kesselname = new System.Windows.Forms.TextBox();
             this.label_Type = new System.Windows.Forms.Label();
+            this.btn_Admin = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -220,10 +221,18 @@
             resources.ApplyResources(this.label_Type, "label_Type");
             this.label_Type.Name = "label_Type";
             // 
+            // btn_Admin
+            // 
+            resources.ApplyResources(this.btn_Admin, "btn_Admin");
+            this.btn_Admin.Name = "btn_Admin";
+            this.btn_Admin.UseVisualStyleBackColor = true;
+            this.btn_Admin.Click += new System.EventHandler(this.btn_Admin_Click);
+            // 
             // Form_Heizkessel
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.btn_Admin);
             this.Controls.Add(this.label_Type);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btn_Löschen);
@@ -276,5 +285,6 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox textBox_Kesselname;
         private System.Windows.Forms.Label label_Type;
+        private System.Windows.Forms.Button btn_Admin;
     }
 }

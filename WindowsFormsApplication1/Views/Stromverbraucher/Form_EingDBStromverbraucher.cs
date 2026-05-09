@@ -43,18 +43,18 @@ namespace WindowsFormsApplication1
 
             if (rs.Next())
             {
-                Wert1.Text = rs.Read("Monat_1").ToString();
-                Wert2.Text = rs.Read("Monat_2").ToString();
-                Wert3.Text = rs.Read("Monat_3").ToString();
-                Wert4.Text = rs.Read("Monat_4").ToString();
-                Wert5.Text = rs.Read("Monat_5").ToString();
-                Wert6.Text = rs.Read("Monat_6").ToString();
-                Wert7.Text = rs.Read("Monat_7").ToString();
-                Wert8.Text = rs.Read("Monat_8").ToString();
-                Wert9.Text = rs.Read("Monat_9").ToString();
-                Wert10.Text = rs.Read("Monat_10").ToString();
-                Wert11.Text = rs.Read("Monat_11").ToString();
-                Wert12.Text = rs.Read("Monat_12").ToString();
+                Wert1.Text = Convert.ToDouble(rs.Read("Monat_1")).ToString("F4");
+                Wert2.Text = Convert.ToDouble(rs.Read("Monat_2")).ToString("F4");
+                Wert3.Text = Convert.ToDouble(rs.Read("Monat_3")).ToString("F4");
+                Wert4.Text = Convert.ToDouble(rs.Read("Monat_4")).ToString("F4");
+                Wert5.Text = Convert.ToDouble(rs.Read("Monat_5")).ToString("F4");
+                Wert6.Text = Convert.ToDouble(rs.Read("Monat_6")).ToString("F4");
+                Wert7.Text = Convert.ToDouble(rs.Read("Monat_7")).ToString("F4");
+                Wert8.Text = Convert.ToDouble(rs.Read("Monat_8")).ToString("F4");
+                Wert9.Text = Convert.ToDouble(rs.Read("Monat_9")).ToString("F4");
+                Wert10.Text = Convert.ToDouble(rs.Read("Monat_10")).ToString("F4");
+                Wert11.Text = Convert.ToDouble(rs.Read("Monat_11")).ToString("F4");
+                Wert12.Text = Convert.ToDouble(rs.Read("Monat_12")).ToString("F4");
             }
             rs.Close();
 
@@ -116,9 +116,8 @@ namespace WindowsFormsApplication1
             
             frm.m_szName = textBox_Stromname.Text;
             frm.SetControl();
-            frm.ShowDialog();
 
-            if (frm.result == DialogResult.OK)
+            if (frm.ShowDialog() == DialogResult.OK)
             {
                 RecordSet rs = new RecordSet();
                 rs.Open("select Bezeichner from Tab_Stromverbraucher where Bezeichner='" + frm.m_szName + "'");
@@ -132,7 +131,7 @@ namespace WindowsFormsApplication1
 
                 DataRow newRow = dataSet.Tables["test"].NewRow();
 
-                newRow["Prozessname"] = textBox_Stromname.Text;
+                newRow["Bezeichner"] = textBox_Stromname.Text;
                 newRow["Beschreibung"] = textBox_Beschreibung.Text;
                 newRow["Typ"] = comboBox_Stromtyp.Text;
 

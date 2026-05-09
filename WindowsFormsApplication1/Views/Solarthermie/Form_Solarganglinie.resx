@@ -187,7 +187,7 @@
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="btn_Hinzufuegen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>300, 70</value>
+    <value>288, 82</value>
   </data>
   <data name="btn_Hinzufuegen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
@@ -217,7 +217,7 @@
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="btn_Entfernen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>300, 117</value>
+    <value>313, 131</value>
   </data>
   <data name="btn_Entfernen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
@@ -340,19 +340,19 @@
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="btn_Abbrechen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>447, 361</value>
+    <value>440, 361</value>
   </data>
   <data name="btn_Abbrechen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
   </data>
   <data name="btn_Abbrechen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>98, 31</value>
+    <value>105, 31</value>
   </data>
   <data name="btn_Abbrechen.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
   </data>
   <data name="btn_Abbrechen.Text" xml:space="preserve">
-    <value>Abbrechen</value>
+    <value>❌Abbrechen</value>
   </data>
   <data name="&gt;&gt;btn_Abbrechen.Name" xml:space="preserve">
     <value>btn_Abbrechen</value>
@@ -367,16 +367,16 @@
     <value>3</value>
   </data>
   <data name="btn_Bearbeiten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>569, 217</value>
+    <value>547, 217</value>
   </data>
   <data name="btn_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>97, 31</value>
+    <value>119, 31</value>
   </data>
   <data name="btn_Bearbeiten.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
   </data>
   <data name="btn_Bearbeiten.Text" xml:space="preserve">
-    <value>Bearbeiten...</value>
+    <value>✏️ Bearbeiten...</value>
   </data>
   <data name="&gt;&gt;btn_Bearbeiten.Name" xml:space="preserve">
     <value>btn_Bearbeiten</value>
@@ -394,7 +394,7 @@
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="textBox_Name.Location" type="System.Drawing.Point, System.Drawing">
-    <value>123, 229</value>
+    <value>23, 241</value>
   </data>
   <data name="textBox_Name.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
@@ -403,7 +403,7 @@
     <value>Horizontal</value>
   </data>
   <data name="textBox_Name.Size" type="System.Drawing.Size, System.Drawing">
-    <value>229, 25</value>
+    <value>249, 25</value>
   </data>
   <data name="textBox_Name.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -427,7 +427,7 @@
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="Label3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>72, 229</value>
+    <value>19, 219</value>
   </data>
   <data name="Label3.Size" type="System.Drawing.Size, System.Drawing">
     <value>48, 19</value>
@@ -460,7 +460,7 @@
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>26, 264</value>
+    <value>19, 271</value>
   </data>
   <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
     <value>94, 19</value>
@@ -490,7 +490,7 @@
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="textBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>123, 262</value>
+    <value>23, 292</value>
   </data>
   <data name="textBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
@@ -502,7 +502,7 @@
     <value>Horizontal</value>
   </data>
   <data name="textBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>229, 78</value>
+    <value>249, 78</value>
   </data>
   <data name="textBox1.TabIndex" type="System.Int32, mscorlib">
     <value>17</value>
@@ -519,9 +519,6 @@
   <data name="&gt;&gt;textBox1.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>en-US</value>
-  </metadata>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>

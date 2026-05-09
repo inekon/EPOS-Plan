@@ -150,9 +150,7 @@ namespace WindowsFormsApplication1
             Form_EingDBProzess frm = new Form_EingDBProzess();
             Form_Sp_ItemNeu frm_item = new Form_Sp_ItemNeu();
             
-            frm_item.ShowDialog();
-            
-            if (frm_item.result == DialogResult.OK)
+            if (frm_item.ShowDialog() == DialogResult.OK)
             {
                 frm.m_szProzessname = frm_item.m_szName;
                 frm.mode = "Neu";

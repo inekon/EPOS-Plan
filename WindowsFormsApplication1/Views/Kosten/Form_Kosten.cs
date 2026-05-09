@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
+using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -55,17 +56,17 @@ namespace WindowsFormsApplication1
             typeof(FlowLayoutPanel).InvokeMember("DoubleBuffered",
                 System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
                 null, flpContainer_Betriebskosten, new object[] { true });
-            
+
             typeof(FlowLayoutPanel).InvokeMember("DoubleBuffered",
                 System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
                 null, flpContainer, new object[] { true });
-            
+
             typeof(FlowLayoutPanel).InvokeMember("DoubleBuffered",
                 System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
                 null, flpContainer_Energiekosten, new object[] { true });
 
             m_AlleBrennstoffDaten = GetBrennstoffDaten(m_ID_Projekt); // Einmal aus DB laden
-            FillFilterCombo(m_AlleBrennstoffDaten);                   // Combo füllen
+            FillCarrierComboBox();
             RenderEnergieTab();
         }
 
@@ -93,7 +94,7 @@ namespace WindowsFormsApplication1
             // Summe aller ANDEREN Komponenten aus der Datenbank
             // und live berechnete summeSelektion dazu addieren.
             string sql = $"SELECT Komponente, Summe FROM Abfrage_KostenKomponenten WHERE ProjektID = ?";
-            
+
             // Parameter vorbereiten
             OleDbParameter[] ps = {
                 new OleDbParameter("@id", m_ID_Projekt),
@@ -306,8 +307,8 @@ namespace WindowsFormsApplication1
 
                     // UI: Nur die Zeilen entfernen, die keine MainComponent sind
                     flp.SuspendLayout();
-//                    flpContainer.SuspendLayout();
-//                    for (int i = flpContainer.Controls.Count - 1; i >= 0; i--)
+                    //                    flpContainer.SuspendLayout();
+                    //                    for (int i = flpContainer.Controls.Count - 1; i >= 0; i--)
                     for (int i = flp.Controls.Count - 1; i >= 0; i--)
                     {
                         Control c = flp.Controls[i];
@@ -530,7 +531,7 @@ namespace WindowsFormsApplication1
         {
             // Eingabemaske öffnen (bleibt UI-Logik)
             Form_KostenfaktorItem frm = new Form_KostenfaktorItem();
-            
+
             if (frm.ShowDialog() != DialogResult.OK) return;
 
             try
@@ -654,11 +655,10 @@ namespace WindowsFormsApplication1
                 Gesamtkosten(listBox_Betriebskosten.Text);
                 kategorieID = 2;
             }
-            else if (kategorie == "Energiekosten") 
+            else if (kategorie == "Energiekosten")
             {
                 flp = flpContainer_Energiekosten;
-                RenderEnergieTab();
-                flp.Visible = true;
+                flp.Visible = false;
                 kategorieID = 3;
             }
         }
@@ -707,12 +707,12 @@ namespace WindowsFormsApplication1
             double Summe = 0;
 
             string sql = "SELECT Abfrage_ProjektKostenKomponenten.Gesamt,Abfrage_ProjektKostenKomponenten.ID_Projekt, Tab_Typ_Energieanlagen.Bezeichner " +
-                         "FROM Abfrage_ProjektKostenKomponenten " + 
+                         "FROM Abfrage_ProjektKostenKomponenten " +
                          "INNER JOIN Tab_Typ_Energieanlagen ON Abfrage_ProjektKostenKomponenten.ID_Type = Tab_Typ_Energieanlagen.ID " +
                          "WHERE Abfrage_ProjektKostenKomponenten.ID_Projekt=? and Tab_Typ_Energieanlagen.Bezeichner=?";
 
-            OleDbParameter[] p = { new OleDbParameter("@id", (Int32)projektID), new OleDbParameter("@komp", (string)komponente) };  
-            
+            OleDbParameter[] p = { new OleDbParameter("@id", (Int32)projektID), new OleDbParameter("@komp", (string)komponente) };
+
             object obj = DataRepository.ExecuteScalar(sql, p);
             Summe = (obj != null && obj != DBNull.Value) ? Convert.ToDouble(obj) : 0.0;
             return Summe;
@@ -722,6 +722,12 @@ namespace WindowsFormsApplication1
         {
             flpContainer_Energiekosten.Controls.Clear();
             flpContainer_Energiekosten.SuspendLayout();
+
+            return;
+
+
+
+
 
             // Nur filtern, wenn nicht "Alle" gewählt ist
             var gefilterteDaten = (filterKategorie == "Alle Kategorien")
@@ -737,7 +743,7 @@ namespace WindowsFormsApplication1
                 {
                     var header = new ucKategorieHeader(b.Kategorie);
                     header.Width = flpContainer_Energiekosten.ClientSize.Width - 25;
-                    header.Height = 16; 
+                    header.Height = 16;
                     header.Margin = new Padding(0, 5, 0, 0); // Optional: Kleiner Abstand nach oben
 
                     flpContainer_Energiekosten.Controls.Add(header);
@@ -756,7 +762,7 @@ namespace WindowsFormsApplication1
                 zeile.Width = flpContainer_Energiekosten.ClientSize.Width - 25;
                 zeile.Height = 20;
                 zeile.Margin = new Padding(0);
-         
+
                 // Event zum Speichern binden
                 zeile.ValueChanged += (s, e) =>
                 {
@@ -766,7 +772,7 @@ namespace WindowsFormsApplication1
                 flpContainer_Energiekosten.Controls.Add(zeile);
             }
 
-            flpContainer_Energiekosten.Controls[flpContainer_Energiekosten.Controls.Count - 1].Margin = new Padding(0, 0, 0, 10); 
+            flpContainer_Energiekosten.Controls[flpContainer_Energiekosten.Controls.Count - 1].Margin = new Padding(0, 0, 0, 10);
 
             flpContainer_Energiekosten.ResumeLayout();
 
@@ -896,7 +902,7 @@ namespace WindowsFormsApplication1
             };
             p.Controls.Clear();
             p.SuspendLayout();
-    
+
             // Wir erstellen eine temporäre Instanz zum Auslesen der Positionen
             using (ucBrennstoffZeile muster = new ucBrennstoffZeile(new ProjektBrennstoff()))
             {
@@ -917,7 +923,7 @@ namespace WindowsFormsApplication1
                     lbl.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular);
                     lbl.TextAlign = ContentAlignment.MiddleLeft;
                     lbl.Padding = new Padding(0, 0, 0, 8);
-                    lbl.Tag = lbl.Name; 
+                    lbl.Tag = lbl.Name;
 
                     // Der Versatz: NumericUpDowns brauchen +2 bis +3 Pixel 
                     // damit der Text über der Zahl steht, nicht über dem Rahmen.
@@ -927,43 +933,17 @@ namespace WindowsFormsApplication1
                 }
 
                 // Jetzt mappen wir die Bezeichner auf die Namen vom ucBrennstoffZeile.Designer.cs
-                AddLbl("Brennstoff", "lblName", 100,12);
-                AddLbl("Einheit", "lblEinheit", 60,170);
-                AddLbl("Hi [kWh/Einh.]", "lblHi", 100,256);
-                AddLbl("Grundpr. [€]", "numGrundpreis", 80,369);
-                AddLbl("Arbeitsp. [€]", "numArbeitspreis", 80,477);
-                AddLbl("Leist.pr. [€]", "numLeistungpreis", 80,592);
+                AddLbl("Brennstoff", "lblName", 100, 12);
+                AddLbl("Einheit", "lblEinheit", 60, 170);
+                AddLbl("Hi [kWh/Einh.]", "lblHi", 100, 256);
+                AddLbl("Grundpr. [€]", "numGrundpreis", 80, 369);
+                AddLbl("Arbeitsp. [€]", "numArbeitspreis", 80, 477);
+                AddLbl("Leist.pr. [€]", "numLeistungpreis", 80, 592);
             }
 
             p.ResumeLayout();
 
             return p;
-        }
-
-
-        private void FillFilterCombo(List<ProjektBrennstoff> daten)
-        {
-            cmbFilterKategorie.Items.Clear();
-            cmbFilterKategorie.Items.Add("Alle Kategorien");
-
-            // Holt alle eindeutigen Kategorienamen aus der Liste
-            var kategorien = daten.Select(b => b.Kategorie).Distinct().OrderBy(k => k);
-
-            foreach (var kat in kategorien)
-            {
-                cmbFilterKategorie.Items.Add(kat);
-            }
-
-            cmbFilterKategorie.SelectedIndex = 0; // "Alle" vorselektieren
-            cmbFilterKategorie.SelectedIndex = -1;
-            cmbFilterKategorie.SetPlaceholder("🔍 Filter wählen...");
-        }
-
-        private void cmbFilterKategorie_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (cmbFilterKategorie.SelectedIndex == -1) return;
-            string selected = cmbFilterKategorie.SelectedItem.ToString();
-            RenderEnergieTab(selected);
         }
 
         private void SyncHeaderPositions()
@@ -998,6 +978,101 @@ namespace WindowsFormsApplication1
             }
         }
 
+        private void listBox_Energieträger_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBox_Energieträger.SelectedItem is EnergyCarrier selectedCarrier)
+            {
+                flpContainer_Energiekosten.Controls.Clear();
+                flpContainer_Energiekosten.Visible = true;
+                UserControl uc = null;
+
+
+                // Prüfung des UI-Typs basierend auf PRICING_MODE oder ENERGY_GROUP
+                switch (selectedCarrier.PricingModel)
+                {
+                    case "FUEL":
+                    case "FUEL_LIQUID":
+                    case "FUEL_SOLID":
+                        uc = new ucFuelSettings(m_ID_Projekt, selectedCarrier);
+                        break;
+
+                    case "GAS":
+                        // uc = new ucGasSettings(m_ID_Projekt, selectedCarrier);
+                        break;
+
+                    case "GRID":
+                        // uc = new ucGridSettings(m_ID_Projekt, selectedCarrier);
+                        break;
+                }
+
+                if (uc != null)
+                {
+                    // Breite an den Container anpassen (minus Puffer für Scrollbars)
+                    uc.Width = flpContainer.ClientSize.Width - 10;
+                    flpContainer_Energiekosten.Controls.Add(uc);
+                }
+            }
+        }
+
+        public static List<EnergyCarrier> GetAllCarriers()
+        {
+            List<EnergyCarrier> carriers = new List<EnergyCarrier>();
+
+            // Wir joinen optional die ENERGY_GROUP, um z.B. nach Sortierung zu laden
+            string sql = "SELECT * FROM ENERGY_CARRIER WHERE is_active = true ORDER BY name ASC";
+
+            DataTable dt = DataRepository.GetDataTable(sql, null);
+
+            foreach (DataRow row in dt.Rows)
+            {
+                carriers.Add(new EnergyCarrier
+                {
+                    ID = Convert.ToInt32(row["id"]),
+                    Code = row["code"].ToString(),
+                    Name = row["name"].ToString(),
+                    GroupCode = row["group_code"].ToString(),
+                    PricingModel = row["pricing_model"].ToString(),
+                    BillingUnit = row["billing_unit"].ToString(),
+                    HiKwhPerUnit = row["hi_kwh_per_unit"] != DBNull.Value ? Convert.ToDouble(row["hi_kwh_per_unit"]) : 0
+                });
+            }
+            return carriers;
+        }
+        private void FillCarrierComboBox()
+        {
+            // Daten holen
+            List<EnergyCarrier> allCarriers = GetAllCarriers();
+            // ComboBox konfigurieren
+            listBox_Energieträger.DataSource = allCarriers;
+            // Darstellung
+            listBox_Energieträger.DisplayMember = "Name";
+            // Welcher Wert soll im Hintergrund identifizieren?
+            listBox_Energieträger.ValueMember = "Id";
+            listBox_Energieträger.SelectedIndex = -1; // Start ohne Auswahl 
+        }
 
     }
+
+    public class EnergyCarrier
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public string PricingModel { get; set; } // GAS, FUEL, GRID
+        public string Code { get; set; }                                      // Das ist der Standard-Heizwert aus der Tabelle ENERGY_CARRIER
+        public double HiKwhPerUnit { get; set; }
+        public string GroupCode { get; set; }
+        public string BillingUnit { get; set; }
+    }
+
+    public class EnergyConversion
+    {
+        public int CarrierId { get; set; }
+        public string FromUnit { get; set; }
+        public string ToUnitCode { get; set; } // z.B. "kg", "L"
+        public double Factor { get; set; }
+
+        // Hilfseigenschaft für die ComboBox-Anzeige
+        public string ToUnitLabel => $"{ToUnitCode} (Faktor: {Factor})";
+    }
+
 }
