@@ -1,5 +1,7 @@
 using System;
+using System.Data;
 using System.Data.Odbc;
+using System.Data.OleDb;
 using System.IO;
 using System.Web;
 using System.Windows.Forms;
@@ -100,37 +102,60 @@ namespace WindowsFormsApplication1
                 rs.Insert("INSERT INTO [Tab_Heizkessel] (Name) SELECT '" + textBox_Name.Text + "' AS Ausdr1");
                 rs.Close();
 
-                BrennstoffCtrl ctrl = new BrennstoffCtrl();
-                ctrl.model = InitDatensatzUpdate();
-                ctrl.DBCommand.Transaction = transaction;
+                BrennstoffModel model = new BrennstoffModel();
+                model = InitDatensatzUpdate();
 
-                if (ctrl.Update())
+                // Alles in einem Rutsch speichern
+                if (Insert(model))
                 {
-                    transaction.Commit();
+                    MessageBox.Show("Datensatz erfolgreich neu angelegt.");
                     this.DialogResult = DialogResult.OK;
-                    MessageBox.Show("Datensatz gespeichert");
+                    this.Close();
                 }
                 else
                 {
-                    transaction.Rollback();
-                    this.DialogResult = DialogResult.Cancel;
-                    MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+                    MessageBox.Show("Fehler: Name existiert bereits oder Datenbankfehler!");
                 }
-                Close();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex.Message);
-                try
-                {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
-                }
-                catch
-                {
-                    // Do nothing here; transaction is not active.
-                }
+                MessageBox.Show("Fehler: Name existiert bereits oder Datenbankfehler!");
             }
+        }
+
+        public bool Insert(BrennstoffModel model)
+        {
+            // Erst prüfen, ob die ID oder der Name bereits existiert (optional, je nach DB-Design)
+            string checkSql = "SELECT COUNT(*) FROM [Tab_Heizkessel] WHERE Name = ?";
+            DataTable dt = DataRepository.GetDataTable(checkSql, new OleDbParameter[] { new OleDbParameter("@n", model.Name) });
+            if (dt.Rows.Count > 0 && Convert.ToInt32(dt.Rows[0][0]) > 0) return false;
+
+            string sql = @"INSERT INTO [Tab_Heizkessel] 
+                   (Name, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Öl, 
+                    Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            OleDbParameter[] ps = {
+                new OleDbParameter("@nam", model.Name),
+                new OleDbParameter("@bes", model.Beschreibung),
+                new OleDbParameter("@fir", model.Firma),
+                new OleDbParameter("@pth", model.Ptherm),
+                new OleDbParameter("@bre", model.Brennstoff),
+                new OleDbParameter("@wgg", model.Wirkungsgrad_Gas),
+                new OleDbParameter("@wgo", model.Wirkungsgrad_Oel),
+                new OleDbParameter("@inv", model.Investitionskosten),
+                new OleDbParameter("@rau", model.Raumbedarf),
+                new OleDbParameter("@war", model.Wartungskosten),
+                new OleDbParameter("@nut", model.Nutzungsdauer),
+                new OleDbParameter("@co2", model.CO2),
+                new OleDbParameter("@so2", model.SO2),
+                new OleDbParameter("@nox", model.NOx),
+                new OleDbParameter("@co", model.CO),
+                new OleDbParameter("@sta", model.Staub),
+                new OleDbParameter("@bbv", model.Betriebsbereitschaftverlust)
+            };
+
+            return DataRepository.ExecuteSQL(sql, ps);
         }
 
         BrennstoffModel InitDatensatzUpdate()

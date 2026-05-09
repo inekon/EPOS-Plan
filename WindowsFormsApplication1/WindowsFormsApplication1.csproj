@@ -303,6 +303,12 @@
     <Compile Include="Views\Kosten\Form_KostenItemNeu.Designer.cs">
       <DependentUpon>Form_KostenItemNeu.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Kosten\ucFuelSettings.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Kosten\ucFuelSettings.Designer.cs">
+      <DependentUpon>ucFuelSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Kosten\ucKostenItem.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -947,6 +953,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Kosten\Form_KostenItemNeu.resx">
       <DependentUpon>Form_KostenItemNeu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Kosten\ucFuelSettings.resx">
+      <DependentUpon>ucFuelSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Kosten\ucKostenItem.resx">
       <DependentUpon>ucKostenItem.cs</DependentUpon>

@@ -111,12 +111,16 @@ namespace WindowsFormsApplication1
             StromganglinieCtrl spctrl = new StromganglinieCtrl();
 
             listBox_Auswahl.SelectedItems.Clear();
-            frm.ShowDialog();
-            listBox_Extern.Items.Clear();
-            spctrl.ReadAll();
-            for (int i = 0; i < spctrl.rows; i++)
+            frm.SetControls();
+
+            if (frm.ShowDialog() == DialogResult.OK)
             {
-                listBox_Extern.Items.Add(spctrl.items[i].m_szBezeichner);
+                listBox_Extern.Items.Clear();
+                spctrl.ReadAll();
+                for (int i = 0; i < spctrl.rows; i++)
+                {
+                    listBox_Extern.Items.Add(spctrl.items[i].m_szBezeichner);
+                }
             }
         }
     }

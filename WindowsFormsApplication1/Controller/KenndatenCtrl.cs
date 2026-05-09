@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
         // --- Kompatibilitäts-Layer ---
         private List<KenndatenModel> _internalList = new List<KenndatenModel>();
 
-        public new int rows => _internalList.Count;
+        public int rows => _internalList.Count;
         public new List<KenndatenModel> items => _internalList;
 
         public KenndatenModel model;

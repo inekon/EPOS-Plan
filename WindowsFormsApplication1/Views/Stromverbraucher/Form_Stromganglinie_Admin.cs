@@ -139,14 +139,13 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            this.Cursor = Cursors.WaitCursor;
-
-            // Datensatz in DB Tab_Waermebedarf anlegen
+            // Datensatz in DB Tab_Stromganglinie anlegen
             ctrl_ganglinie.m_szBezeichner = Path.GetFileNameWithoutExtension(filebasename);
             ctrl_ganglinie.m_Zeitinterval = Zeitinterval; // 1=Stundenwerte, 4=1/4 Stundenwerte, 60=Minutenwerte  
             if (!ctrl_ganglinie.Insert()) return;
 
             // Daten in DB
+            Cursor.Current = Cursors.WaitCursor;
             ctrl.list_GanglinieDaten.Clear();
             for (int i = 0; i < tool.textList.Count; i++)
             {
@@ -157,7 +156,7 @@ namespace WindowsFormsApplication1
             }
             ctrl.Insert();
 
-            this.Cursor = Cursors.Default;
+            Cursor.Current = Cursors.Default;
             SetControls();
         }
 

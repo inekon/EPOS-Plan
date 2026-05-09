@@ -170,11 +170,20 @@
   <data name="label3.Text" xml:space="preserve">
     <value>Investment costs:</value>
   </data>
+  <data name="btn_Bearbeiten.Location" type="System.Drawing.Point, System.Drawing">
+    <value>199, 290</value>
+  </data>
   <data name="btn_Bearbeiten.Text" xml:space="preserve">
     <value>Boiler Edit...</value>
   </data>
+  <data name="btn_Neu.Location" type="System.Drawing.Point, System.Drawing">
+    <value>365, 290</value>
+  </data>
   <data name="btn_Neu.Text" xml:space="preserve">
     <value>New boiler...</value>
+  </data>
+  <data name="btn_Loeschen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>164, 31</value>
   </data>
   <data name="btn_Loeschen.Text" xml:space="preserve">
     <value>Extinguish the boiler</value>

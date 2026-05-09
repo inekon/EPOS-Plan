@@ -473,9 +473,8 @@ namespace WindowsFormsApplication1
             frmLabel.Location = p1;
             frmLabel.m_szName = "";
             frmLabel.SetControl();
-            frmLabel.ShowDialog();
 
-            if (frmLabel.result == DialogResult.OK)
+            if (frmLabel.ShowDialog() == DialogResult.OK)
             {
                 frm.m_mode = Form_DBBHKW.MODE_NEU;
                 frm.SetControls(frmLabel.m_szName);

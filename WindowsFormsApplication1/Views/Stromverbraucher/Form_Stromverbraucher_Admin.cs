@@ -164,9 +164,7 @@ namespace WindowsFormsApplication1
             Form_EingDBStromverbraucher frm = new Form_EingDBStromverbraucher();
             Form_Sp_ItemNeu frm_item = new Form_Sp_ItemNeu();
             
-            frm_item.ShowDialog();
-            
-            if (frm_item.result == DialogResult.OK)
+            if (frm_item.ShowDialog() == DialogResult.OK)
             {
                 frm.m_szStromname = frm_item.m_szName;
                 frm.mode = "Neu";

@@ -456,362 +456,65 @@
   <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="radioButton_Bioheizöl.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label4.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="radioButton_Bioheizöl.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label4.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label4.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="radioButton_Bioheizöl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>98, 113</value>
+  <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>325, 30</value>
   </data>
-  <data name="radioButton_Bioheizöl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>78, 21</value>
+  <data name="label4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
-  <data name="radioButton_Bioheizöl.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
+  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>91, 17</value>
   </data>
-  <data name="radioButton_Bioheizöl.Text" xml:space="preserve">
-    <value>Bioheizöl</value>
+  <data name="label4.TabIndex" type="System.Int32, mscorlib">
+    <value>57</value>
   </data>
-  <data name="&gt;&gt;radioButton_Bioheizöl.Name" xml:space="preserve">
-    <value>radioButton_Bioheizöl</value>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Energieträger:</value>
   </data>
-  <data name="&gt;&gt;radioButton_Bioheizöl.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="label4.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
   </data>
-  <data name="&gt;&gt;radioButton_Bioheizöl.Parent" xml:space="preserve">
-    <value>groupBox6</value>
+  <data name="&gt;&gt;label4.Name" xml:space="preserve">
+    <value>label4</value>
   </data>
-  <data name="&gt;&gt;radioButton_Bioheizöl.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;label4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="radioButton_Kohle.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Kohle.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="radioButton_Kohle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>98, 91</value>
-  </data>
-  <data name="radioButton_Kohle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>59, 21</value>
-  </data>
-  <data name="radioButton_Kohle.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
-  </data>
-  <data name="radioButton_Kohle.Text" xml:space="preserve">
-    <value>Kohle</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Kohle.Name" xml:space="preserve">
-    <value>radioButton_Kohle</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Kohle.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Kohle.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Kohle.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="radioButton_Koks.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Koks.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="radioButton_Koks.Location" type="System.Drawing.Point, System.Drawing">
-    <value>98, 67</value>
-  </data>
-  <data name="radioButton_Koks.Size" type="System.Drawing.Size, System.Drawing">
-    <value>54, 21</value>
-  </data>
-  <data name="radioButton_Koks.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
-  </data>
-  <data name="radioButton_Koks.Text" xml:space="preserve">
-    <value>Koks</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Koks.Name" xml:space="preserve">
-    <value>radioButton_Koks</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Koks.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Koks.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Koks.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="radioButton_Heizoel.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Heizoel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>98, 44</value>
-  </data>
-  <data name="radioButton_Heizoel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 21</value>
-  </data>
-  <data name="radioButton_Heizoel.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
-  </data>
-  <data name="radioButton_Heizoel.Text" xml:space="preserve">
-    <value>Heizöl</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Heizoel.Name" xml:space="preserve">
-    <value>radioButton_Heizoel</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Heizoel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Heizoel.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Heizoel.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="radioButton_Sonstige.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Sonstige.Location" type="System.Drawing.Point, System.Drawing">
-    <value>98, 136</value>
-  </data>
-  <data name="radioButton_Sonstige.Size" type="System.Drawing.Size, System.Drawing">
-    <value>76, 21</value>
-  </data>
-  <data name="radioButton_Sonstige.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
-  </data>
-  <data name="radioButton_Sonstige.Text" xml:space="preserve">
-    <value>Sonstige</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Sonstige.Name" xml:space="preserve">
-    <value>radioButton_Sonstige</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Sonstige.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Sonstige.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Sonstige.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="radioButton_Strom.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Strom.Location" type="System.Drawing.Point, System.Drawing">
-    <value>98, 21</value>
-  </data>
-  <data name="radioButton_Strom.Size" type="System.Drawing.Size, System.Drawing">
-    <value>61, 21</value>
-  </data>
-  <data name="radioButton_Strom.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
-  </data>
-  <data name="radioButton_Strom.Text" xml:space="preserve">
-    <value>Strom</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Strom.Name" xml:space="preserve">
-    <value>radioButton_Strom</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Strom.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Strom.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Strom.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="radioButton_Pellets.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Pellets.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 136</value>
-  </data>
-  <data name="radioButton_Pellets.Size" type="System.Drawing.Size, System.Drawing">
-    <value>63, 21</value>
-  </data>
-  <data name="radioButton_Pellets.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
-  <data name="radioButton_Pellets.Text" xml:space="preserve">
-    <value>Pellets</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Pellets.Name" xml:space="preserve">
-    <value>radioButton_Pellets</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Pellets.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Pellets.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Pellets.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="radioButton_Rapsoel.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Rapsoel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 113</value>
-  </data>
-  <data name="radioButton_Rapsoel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 21</value>
-  </data>
-  <data name="radioButton_Rapsoel.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="radioButton_Rapsoel.Text" xml:space="preserve">
-    <value>Rapsöl</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Rapsoel.Name" xml:space="preserve">
-    <value>radioButton_Rapsoel</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Rapsoel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Rapsoel.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Rapsoel.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="radioButton_Holz.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Holz.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 90</value>
-  </data>
-  <data name="radioButton_Holz.Size" type="System.Drawing.Size, System.Drawing">
-    <value>52, 21</value>
-  </data>
-  <data name="radioButton_Holz.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="radioButton_Holz.Text" xml:space="preserve">
-    <value>Holz</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Holz.Name" xml:space="preserve">
-    <value>radioButton_Holz</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Holz.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Holz.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Holz.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="radioButton_Fluessiggas.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Fluessiggas.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 67</value>
-  </data>
-  <data name="radioButton_Fluessiggas.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 21</value>
-  </data>
-  <data name="radioButton_Fluessiggas.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="radioButton_Fluessiggas.Text" xml:space="preserve">
-    <value>Flüssiggas</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Fluessiggas.Name" xml:space="preserve">
-    <value>radioButton_Fluessiggas</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Fluessiggas.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Fluessiggas.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Fluessiggas.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="radioButton_Biogas.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Biogas.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 44</value>
-  </data>
-  <data name="radioButton_Biogas.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 21</value>
-  </data>
-  <data name="radioButton_Biogas.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="radioButton_Biogas.Text" xml:space="preserve">
-    <value>Biogas</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Biogas.Name" xml:space="preserve">
-    <value>radioButton_Biogas</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Biogas.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Biogas.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Biogas.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="radioButton_Gas.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButton_Gas.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 21</value>
-  </data>
-  <data name="radioButton_Gas.Size" type="System.Drawing.Size, System.Drawing">
-    <value>48, 21</value>
-  </data>
-  <data name="radioButton_Gas.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="radioButton_Gas.Text" xml:space="preserve">
-    <value>Gas</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Gas.Name" xml:space="preserve">
-    <value>radioButton_Gas</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Gas.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Gas.Parent" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;radioButton_Gas.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="groupBox6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>332, 16</value>
-  </data>
-  <data name="groupBox6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>243, 176</value>
-  </data>
-  <data name="groupBox6.TabIndex" type="System.Int32, mscorlib">
-    <value>29</value>
-  </data>
-  <data name="groupBox6.Text" xml:space="preserve">
-    <value>Brennstoff</value>
-  </data>
-  <data name="&gt;&gt;groupBox6.Name" xml:space="preserve">
-    <value>groupBox6</value>
-  </data>
-  <data name="&gt;&gt;groupBox6.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBox6.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label4.Parent" xml:space="preserve">
     <value>groupBox2</value>
   </data>
-  <data name="&gt;&gt;groupBox6.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label4.ZOrder" xml:space="preserve">
     <value>0</value>
+  </data>
+  <data name="comboBox_Brennstoff.Location" type="System.Drawing.Point, System.Drawing">
+    <value>423, 27</value>
+  </data>
+  <data name="comboBox_Brennstoff.Size" type="System.Drawing.Size, System.Drawing">
+    <value>121, 25</value>
+  </data>
+  <data name="comboBox_Brennstoff.TabIndex" type="System.Int32, mscorlib">
+    <value>56</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Brennstoff.Name" xml:space="preserve">
+    <value>comboBox_Brennstoff</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Brennstoff.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Brennstoff.Parent" xml:space="preserve">
+    <value>groupBox2</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Brennstoff.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="Label6.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -844,7 +547,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;Label6.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="Label5.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -880,7 +583,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;Label5.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="Label7.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -916,7 +619,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;Label7.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="Label8.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -952,7 +655,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;Label8.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="tb_th_Leistung.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -979,7 +682,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;tb_th_Leistung.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="tb_Wirkungsgrad.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -1006,7 +709,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;tb_Wirkungsgrad.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="tb_Wirkungsgrad_Öl.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -1033,7 +736,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;tb_Wirkungsgrad_Öl.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="tb_B_Verlust.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -1060,7 +763,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;tb_B_Verlust.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="Label9.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1096,7 +799,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;Label9.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="Label10.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1132,7 +835,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;Label10.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>11</value>
   </data>
   <data name="Label11.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1168,7 +871,7 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;Label11.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>12</value>
   </data>
   <data name="Label12.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1204,13 +907,13 @@
     <value>groupBox2</value>
   </data>
   <data name="&gt;&gt;Label12.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>13</value>
   </data>
   <data name="groupBox2.Location" type="System.Drawing.Point, System.Drawing">
     <value>17, 154</value>
   </data>
   <data name="groupBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>592, 205</value>
+    <value>559, 205</value>
   </data>
   <data name="groupBox2.TabIndex" type="System.Int32, mscorlib">
     <value>53</value>
@@ -2083,7 +1786,7 @@
     <value>4, 0, 4, 0</value>
   </data>
   <data name="Label41.Size" type="System.Drawing.Size, System.Drawing">
-    <value>176, 17</value>
+    <value>172, 17</value>
   </data>
   <data name="Label41.TabIndex" type="System.Int32, mscorlib">
     <value>46</value>
@@ -2291,8 +1994,5 @@
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
     <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="radioButton_Fernwaerme.Text" xml:space="preserve">
-    <value>District heating</value>
   </data>
 </root>

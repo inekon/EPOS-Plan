@@ -40,6 +40,8 @@
             this.btn_Bearbeiten = new System.Windows.Forms.Button();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.textBox_Modulkosten = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.textBox_Ladezustand = new System.Windows.Forms.TextBox();
@@ -52,8 +54,6 @@
             this.textBox_Typ = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.textBox_Name = new System.Windows.Forms.TextBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.textBox_Modulkosten = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -146,6 +146,17 @@
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
+            // label9
+            // 
+            resources.ApplyResources(this.label9, "label9");
+            this.label9.Name = "label9";
+            // 
+            // textBox_Modulkosten
+            // 
+            resources.ApplyResources(this.textBox_Modulkosten, "textBox_Modulkosten");
+            this.textBox_Modulkosten.Name = "textBox_Modulkosten";
+            this.textBox_Modulkosten.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Modulkosten_Validating);
+            // 
             // label6
             // 
             resources.ApplyResources(this.label6, "label6");
@@ -205,17 +216,6 @@
             // 
             resources.ApplyResources(this.textBox_Name, "textBox_Name");
             this.textBox_Name.Name = "textBox_Name";
-            // 
-            // label9
-            // 
-            resources.ApplyResources(this.label9, "label9");
-            this.label9.Name = "label9";
-            // 
-            // textBox_Modulkosten
-            // 
-            resources.ApplyResources(this.textBox_Modulkosten, "textBox_Modulkosten");
-            this.textBox_Modulkosten.Name = "textBox_Modulkosten";
-            this.textBox_Modulkosten.Validating += new System.ComponentModel.CancelEventHandler(this.textBox_Modulkosten_Validating);
             // 
             // Form_Stromspeicher
             // 
