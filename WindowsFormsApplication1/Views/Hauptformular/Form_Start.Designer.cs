@@ -1210,7 +1210,6 @@
             resources.ApplyResources(this.btn_Kosten, "btn_Kosten");
             this.btn_Kosten.Name = "btn_Kosten";
             this.btn_Kosten.UseVisualStyleBackColor = true;
-            this.btn_Kosten.Click += new System.EventHandler(this.btn_Kosten_Click);
             // 
             // textBox_ProjektOpen
             // 

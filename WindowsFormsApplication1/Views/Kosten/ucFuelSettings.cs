@@ -15,6 +15,7 @@ namespace WindowsFormsApplication1
         private List<EnergyConversion> _conversions;
         private double _basePrice; // Speichert immer den Preis pro Liter
         private double _baseHi;    // Speichert immer den Heizwert pro Liter
+        private double _baseHs;    // Speichert immer den Brennwert pro Liter
         private double _baseGroundPrice;
         private int id_conversion; // Speichert die ID der aktuell ausgewählten Umrechnung
 
@@ -28,21 +29,46 @@ namespace WindowsFormsApplication1
             // Events abonnieren für Live-Berechnung
             numArbeitspreis.ValueChanged += (s, e) => UpdatePricePerKWh();
             numHeizwert.ValueChanged += (s, e) => UpdatePricePerKWh();
+            numBrennwert.ValueChanged += (s, e) => UpdatePricePerKWh();
             cmbUnit.SelectedIndexChanged += CmbUnit_SelectedIndexChanged;
 
             numArbeitspreis.Maximum = 1000000;
             numHeizwert.Maximum = 1000000;
+            numBrennwert.Maximum = 1000000;
             numGrundpreis.Maximum = 1000000;
+
+            if(carrier.PricingModel == "ELECTRICITY")
+            {
+                lbl_Unit_Arbeitspreis.Text = "€ / kWh";
+                lbl_Unit_Heizwert.Text = "kWh / kWh";
+                lbl_Unit_Brennwert.Text = "kWh / kWh";
+                numHeizwert.Visible = false; // Heizwert bei Strom nicht relevant
+                numBrennwert.Visible = false; // Brennwert bei Strom nicht relevant
+                lb1_Brennwert .Visible = false;
+                lbl_Heizwert .Visible = false;
+                lbl_Unit_Brennwert.Visible = false; 
+                lbl_Unit_Heizwert.Visible = false;
+                cmbUnit.Enabled = false; // Keine Einheiten-Auswahl bei Strom
+                groupBox_Formel.Visible = false; // Formel-Box ausblenden, da sie bei Strom keinen Sinn ergibt
+            }
+            else if (carrier.PricingModel == "LIQUID_FUEL" || carrier.PricingModel == "LIQUID_FUEL" || 
+                carrier.PricingModel == "SOLID_FUEL" || carrier.PricingModel == "ANIMAL_FAT")
+            {
+                numBrennwert.Visible = false; // Heizwert bei Strom nicht relevant
+                lb1_Brennwert.Visible = false;
+                lbl_Unit_Brennwert.Visible = false;
+            }
 
             LoadData();
         }
 
         private void LoadData()
         {
-            lblCarrierName.Text = _carrier.Name;
+            lblCarrierName.Text = $"{_carrier.Name}  (VDI 3805 {_carrier.Code})";
+            lblGruppe.Text = $"Gruppe: {_carrier.GroupCode}";   
 
             // Alle verfügbaren Einheiten/Konvertierungen für diesen Energieträger laden
-            _conversions = GetConversions(_carrier.ID);
+            _conversions = GetConversions(_carrier.ID_Brennstoff);
 
             cmbUnit.SelectedIndexChanged -= CmbUnit_SelectedIndexChanged;
             cmbUnit.DataSource = _conversions;
@@ -61,13 +87,15 @@ namespace WindowsFormsApplication1
                 numArbeitspreis.Value = (decimal)projectSettings.ArbeitspreisEurUnit;
                 numGrundpreis.Value = (decimal)projectSettings.GrundpreisEurYear;
                 numHeizwert.Value = (decimal)(projectSettings.CustomHi ?? _carrier.HiKwhPerUnit);
+                numBrennwert.Value = (decimal)(projectSettings.CustomHs ?? _carrier.HsKwhPerUnit);
 
                 _basePrice = projectSettings.ArbeitspreisEurUnit;
                 _baseHi = projectSettings.CustomHi ?? _carrier.HiKwhPerUnit;
+                _baseHs = projectSettings.CustomHs ?? _carrier.HsKwhPerUnit;
                 _baseGroundPrice = projectSettings.GrundpreisEurYear;
 
                 // Korrekte Einheit in Combo auswählen
-                string project_conversion = GetTargetUnitByConversionId(_projectId, _carrier.ID);
+                string project_conversion = GetTargetUnitByConversionId(projectSettings.IDUmrechnung);
                 var selectedUnit = _conversions.FirstOrDefault(c => c.ToUnitCode == project_conversion);//projectSettings.ArbeitspreisUnit);
                 
                 if (selectedUnit != null)
@@ -75,6 +103,7 @@ namespace WindowsFormsApplication1
                     cmbUnit.SelectedItem = selectedUnit;
                     lbl_Unit_Arbeitspreis.Text = $"€/{selectedUnit.ToUnitCode}";
                     lbl_Unit_Heizwert.Text = $"kWh/{selectedUnit.ToUnitCode}";
+                    lbl_Unit_Brennwert.Text = $"kWh/{selectedUnit.ToUnitCode}";
                     CmbUnit_SelectedIndexChanged(cmbUnit, EventArgs.Empty);
                 }
             }
@@ -84,10 +113,12 @@ namespace WindowsFormsApplication1
                 numArbeitspreis.Value = 0;
                 numGrundpreis.Value = 0;
                 numHeizwert.Value = (decimal)_carrier.HiKwhPerUnit;
+                numBrennwert.Value = (decimal)_carrier.HsKwhPerUnit;
 
                 _basePrice = 0;
                 _baseGroundPrice = 0;
                 _baseHi = _carrier.HiKwhPerUnit;
+                _baseHs = _carrier.HsKwhPerUnit;
 
                 cmbUnit.SelectedItem = baseUnit;
                 CmbUnit_SelectedIndexChanged(cmbUnit, EventArgs.Empty);
@@ -98,19 +129,19 @@ namespace WindowsFormsApplication1
             LoadHistory(_carrier.ID, _projectId);
         }
 
-        public static List<EnergyConversion> GetConversions(int carrierId)
+        public static List<EnergyConversion> GetConversions(int Idbrennstoff)
         {
             List<EnergyConversion> list = new List<EnergyConversion>();
-            string sql = "SELECT carrier_id, from_unit, to_unit, factor FROM ENERGY_CONVERSION WHERE carrier_id = ?";
+            string sql = "SELECT id_brennstoff, from_unit, to_unit, factor FROM ENERGY_CONVERSION WHERE id_brennstoff = ?";
 
-            OleDbParameter[] ps = { new OleDbParameter("@id", carrierId) };
+            OleDbParameter[] ps = { new OleDbParameter("@id", Idbrennstoff) };
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
             foreach (DataRow row in dt.Rows)
             {
                 list.Add(new EnergyConversion
                 {
-                    CarrierId = Convert.ToInt32(row["carrier_id"]),
+                    IDBrennstoff = Convert.ToInt32(row["Id_brennstoff"]),
                     FromUnit = row["from_unit"].ToString(),
                     ToUnitCode = row["to_unit"].ToString(),
                     Factor = Convert.ToDouble(row["factor"])
@@ -136,17 +167,30 @@ namespace WindowsFormsApplication1
                 DataRow row = dt.Rows[0];
                 return new
                 {
-                    ArbeitspreisEurUnit = row["custom_price_work"] != DBNull.Value ? (double?) Convert.ToDouble(row["custom_price_work"]) : null,
+                    ArbeitspreisEurUnit = row["custom_price_work"] != DBNull.Value ? (double?)Convert.ToDouble(row["custom_price_work"]) : null,
                     ArbeitspreisUnit = "",
                     GrundpreisEurYear = row["custom_price_base"] != DBNull.Value ? (double?)Convert.ToDouble(row["custom_price_base"]) : null,
                     // Falls es Custom-Heizwerte in der Preis-Tabelle gibt:
-                    CustomHi = row["custom_hi"] != DBNull.Value ? (double?)Convert.ToDouble(row["custom_hi"]) : null
+                    CustomHi = row["custom_hi"] != DBNull.Value ? (double?)Convert.ToDouble(row["custom_hi"]) : null,
+                    CustomHs = row["custom_hs"] != DBNull.Value ? (double?)Convert.ToDouble(row["custom_hs"]) : null,
+                    IDUmrechnung = row["ID_Umrechnung"] != DBNull.Value ? (int?)Convert.ToInt32(row["ID_Umrechnung"]) : null
                 };
             }
 
             return null; // Nichts gefunden -> UserControl nutzt Stammdaten
         }
 
+        public string GetTargetUnitByConversionId(int idumrechnung)
+        {
+            RecordSet rs = new RecordSet();
+            rs.Open("select to_unit from energy_conversion where id=" + idumrechnung);
+            rs.Next();
+            string unit= (string)rs.Read("to_Unit");
+            rs.Close();
+            return unit;
+
+        }
+        /*
         public string GetTargetUnitByConversionId(int idproject, int idcarrier)
         {
             // SQL: Verknüpfung der ID aus project_setting mit der Tabelle energy_conversion
@@ -172,7 +216,7 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Fehler beim Abrufen der Einheit: " + ex.Message);
                 return string.Empty;
             }
-        }
+        }*/
 
         private void CmbUnit_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -184,7 +228,8 @@ namespace WindowsFormsApplication1
                 // IMMER vom Anker aus rechnen!
                 numArbeitspreis.Value = (decimal)(_basePrice / conv.Factor);
                 numHeizwert.Value = (decimal)(_baseHi / conv.Factor);
-                
+                numBrennwert.Value = (decimal)(_baseHs / conv.Factor);
+
                 numArbeitspreis.ValueChanged += Arbeitspreis_Changed;
 
                 UpdatePricePerKWh();
@@ -193,6 +238,7 @@ namespace WindowsFormsApplication1
 
                 lbl_Unit_Arbeitspreis.Text = $"€/{conv.ToUnitCode}";
                 lbl_Unit_Heizwert.Text = $"kWh/{conv.ToUnitCode}";
+                lbl_Unit_Brennwert.Text = $"kWh/{conv.ToUnitCode}";
             }
         }
 
@@ -200,9 +246,9 @@ namespace WindowsFormsApplication1
         {
             if (selectedItem is EnergyConversion conv)
             {
-                string sql = "SELECT ID FROM ENERGY_CONVERSION WHERE carrier_id = ? AND from_unit = ? AND to_unit = ?";
+                string sql = "SELECT ID FROM ENERGY_CONVERSION WHERE id_brennstoff = ? AND from_unit = ? AND to_unit = ?";
                 OleDbParameter[] ps = {
-                    new OleDbParameter("@cid", conv.CarrierId),
+                    new OleDbParameter("@cid", conv.IDBrennstoff),
                     new OleDbParameter("@fu", conv.FromUnit),
                     new OleDbParameter("@tu", conv.ToUnitCode)
                 };
@@ -229,6 +275,7 @@ namespace WindowsFormsApplication1
         {
             decimal price = numArbeitspreis.Value;
             decimal hi = numHeizwert.Value;
+            decimal hs = numBrennwert.Value;
 
             if (hi > 0)
             {
@@ -251,6 +298,7 @@ namespace WindowsFormsApplication1
                 // Aktuelle Werte auf Basis zurückrechnen
                 double currentPriceBase = (double)numArbeitspreis.Value * conv.Factor;
                 double currentHiBase = (double)numHeizwert.Value * conv.Factor;
+                double currentHsBase = (double)numBrennwert.Value * conv.Factor;
                 double currentGroundPrice = (double)numGrundpreis.Value;
                 int currentConvID = GetConvID(cmbUnit.SelectedItem);
                 string currentUnit = ((EnergyConversion)cmbUnit.SelectedItem).ToUnitCode;
@@ -260,6 +308,7 @@ namespace WindowsFormsApplication1
                 // die beim Laden oder letzten Speichern gesetzt wurden.
                 bool hasChanged = Math.Abs(currentPriceBase - _basePrice) > 0.0001 ||
                                   Math.Abs(currentHiBase - _baseHi) > 0.0001 ||
+                                  Math.Abs(currentHsBase - _baseHs) > 0.0001 ||
                                   Math.Abs(currentGroundPrice - _baseGroundPrice) > 0.01;
 
                 if (hasChanged)
@@ -289,12 +338,13 @@ namespace WindowsFormsApplication1
                 // Projekt-Setting (Wird immer aktualisiert/überschrieben) ---
                 // Das Projekt-Setting sollte immer den aktuellen Stand des Editors haben
                 string sqlUpsert = @"UPDATE energy_Project_settings 
-                            SET custom_price_work = ?, custom_hi = ?, custom_price_base = ?, ID_Umrechnung = ?
+                            SET custom_price_work = ?, custom_hi = ?, custom_hs = ?, custom_price_base = ?, ID_Umrechnung = ?
                             WHERE ID_Projekt = ? AND ID_Energieträger = ?";
 
                 int rows = (int)DataRepository.ExecuteNonQuery(sqlUpsert, new OleDbParameter[] {
                     new OleDbParameter("@p", currentPriceBase),
-                    new OleDbParameter("@h", currentHiBase),
+                    new OleDbParameter("@hi", currentHiBase),
+                    new OleDbParameter("@hs", currentHsBase),
                     new OleDbParameter("@b", currentGroundPrice),
                     new OleDbParameter(@"cid", currentConvID),
                     new OleDbParameter("@pid", _projectId),
@@ -304,14 +354,16 @@ namespace WindowsFormsApplication1
                 if ((int)rows == 0)
                 {
                     string sqlInsert = @"INSERT INTO energy_Project_settings 
-                                (ID_Projekt, ID_Energieträger, custom_price_work, custom_hi, custom_price_base) 
-                                VALUES (?, ?, ?, ?, ?)";
+                                (ID_Projekt, ID_Energieträger, custom_price_work, custom_hi, custom_Hs, custom_price_base, ID_Umrechnung) 
+                                VALUES (?, ?, ?, ?, ?, ?)";
                     DataRepository.ExecuteSQL(sqlInsert, new OleDbParameter[] {
                         new OleDbParameter("@pid", _projectId),
                         new OleDbParameter("@eid", _carrier.ID),
                         new OleDbParameter("@p", currentPriceBase),
                         new OleDbParameter("@h", currentHiBase),
-                        new OleDbParameter("@b", currentGroundPrice)
+                        new OleDbParameter("@hs", currentHsBase),
+                        new OleDbParameter("@b", currentGroundPrice),
+                        new OleDbParameter(@"cid", currentConvID),
                     });
                 }
             }
