@@ -807,6 +807,7 @@ namespace WindowsFormsApplication1
                     case "FUEL":
                     case "LIQUID_FUEL":
                     case "SOLID_FUEL":
+                    case "ANIMAL_FAT":
                         uc = new ucFuelSettings(m_ID_Projekt, selectedCarrier);
                         break;
 
