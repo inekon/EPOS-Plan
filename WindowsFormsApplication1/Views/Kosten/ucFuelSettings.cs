@@ -355,7 +355,7 @@ namespace WindowsFormsApplication1
                 {
                     string sqlInsert = @"INSERT INTO energy_Project_settings 
                                 (ID_Projekt, ID_Energieträger, custom_price_work, custom_hi, custom_Hs, custom_price_base, ID_Umrechnung) 
-                                VALUES (?, ?, ?, ?, ?, ?)";
+                                VALUES (?, ?, ?, ?, ?, ?, ?)";
                     DataRepository.ExecuteSQL(sqlInsert, new OleDbParameter[] {
                         new OleDbParameter("@pid", _projectId),
                         new OleDbParameter("@eid", _carrier.ID),
