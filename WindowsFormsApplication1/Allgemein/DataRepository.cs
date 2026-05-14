@@ -8,6 +8,7 @@ namespace WindowsFormsApplication1
 {
     public static class DataRepository
     {
+   
         // Zentraler Ort für den Pfad - einfach anzupassen
         public static string GetConnectionString()
         {
@@ -164,5 +165,44 @@ namespace WindowsFormsApplication1
             return 0;
         }
 
+        public static bool DeleteWithDependencies(string masterTable, string detailTable, string detailForeignKey, int masterId)
+        {
+            var (conn, trans) = BeginTransaction();
+            try
+            {
+                // 1. Details löschen (z.B. project_settings)
+                string sqlDetail = $"DELETE FROM {detailTable} WHERE {detailForeignKey} = ?";
+                using (OleDbCommand cmd = new OleDbCommand(sqlDetail, conn, trans))
+                {
+                    cmd.Parameters.AddWithValue("?", masterId);
+                    cmd.ExecuteNonQuery();
+                }
+
+                // 2. Master löschen (z.B. energy_carrier)
+                string sqlMaster = $"DELETE FROM {masterTable} WHERE ID = ?";
+                using (OleDbCommand cmd = new OleDbCommand(sqlMaster, conn, trans))
+                {
+                    cmd.Parameters.AddWithValue("?", masterId);
+                    cmd.ExecuteNonQuery();
+                }
+
+                trans.Commit();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                trans.Rollback();
+                MessageBox.Show($"Fehler beim Löschen in {masterTable}: " + ex.Message);
+                return false;
+            }
+            finally { conn.Close(); }
+        }
+
+        public static int GetIdByName(string tableName, string nameField, string nameValue)
+        {
+            string sql = $"SELECT ID FROM {tableName} WHERE {nameField} = ?";
+            object result = ExecuteScalar(sql, new OleDbParameter("?", nameValue));
+            return result != null ? Convert.ToInt32(result) : -1;
+        }
     }
 }

@@ -212,6 +212,20 @@
             this.label1 = new System.Windows.Forms.Label();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage_Stromspeicher = new System.Windows.Forms.TabPage();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl = new System.Windows.Forms.ComboBox();
+            this.textBox_Stromspeicher_Ladeleistung_max = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.textBox_Stromspeicher_Ladeenergie_max = new System.Windows.Forms.TextBox();
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl = new System.Windows.Forms.ComboBox();
+            this.btn_Strom_Simu_Start = new System.Windows.Forms.Button();
+            this.label12 = new System.Windows.Forms.Label();
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl = new System.Windows.Forms.ComboBox();
+            this.textBox_Speicher_Ladeschwelle = new System.Windows.Forms.TextBox();
+            this.label40 = new System.Windows.Forms.Label();
+            this.textBox_Stromspeicher_Ladeenergie_min = new System.Windows.Forms.TextBox();
             this.tabPage_PV.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart_PV)).BeginInit();
             this.tabPage_Solarthermie.SuspendLayout();
@@ -228,6 +242,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.tabControl1.SuspendLayout();
+            this.tabPage_Stromspeicher.SuspendLayout();
+            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // btn_Konfiguration
@@ -1611,10 +1627,114 @@
             this.tabControl1.Controls.Add(this.tabPage_Heizkessel);
             this.tabControl1.Controls.Add(this.tabPage_Solarthermie);
             this.tabControl1.Controls.Add(this.tabPage_PV);
+            this.tabControl1.Controls.Add(this.tabPage_Stromspeicher);
             this.tabControl1.Controls.Add(this.tabPage_Ergebnis);
             resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
+            // 
+            // tabPage_Stromspeicher
+            // 
+            this.tabPage_Stromspeicher.Controls.Add(this.groupBox5);
+            resources.ApplyResources(this.tabPage_Stromspeicher, "tabPage_Stromspeicher");
+            this.tabPage_Stromspeicher.Name = "tabPage_Stromspeicher";
+            this.tabPage_Stromspeicher.UseVisualStyleBackColor = true;
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.comboBox7_Stromspeicher_LadeleistungMax_auswahl);
+            this.groupBox5.Controls.Add(this.textBox_Stromspeicher_Ladeleistung_max);
+            this.groupBox5.Controls.Add(this.label7);
+            this.groupBox5.Controls.Add(this.label11);
+            this.groupBox5.Controls.Add(this.textBox_Stromspeicher_Ladeenergie_max);
+            this.groupBox5.Controls.Add(this.comboBox8_Stromspeicher_LadeenergieMin_auswahl);
+            this.groupBox5.Controls.Add(this.btn_Strom_Simu_Start);
+            this.groupBox5.Controls.Add(this.label12);
+            this.groupBox5.Controls.Add(this.comboBox_Stromspeicher_LadeenergieMax_auswahl);
+            this.groupBox5.Controls.Add(this.textBox_Speicher_Ladeschwelle);
+            this.groupBox5.Controls.Add(this.label40);
+            this.groupBox5.Controls.Add(this.textBox_Stromspeicher_Ladeenergie_min);
+            resources.ApplyResources(this.groupBox5, "groupBox5");
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.TabStop = false;
+            // 
+            // comboBox7_Stromspeicher_LadeleistungMax_auswahl
+            // 
+            resources.ApplyResources(this.comboBox7_Stromspeicher_LadeleistungMax_auswahl, "comboBox7_Stromspeicher_LadeleistungMax_auswahl");
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.FormattingEnabled = true;
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items.AddRange(new object[] {
+            resources.GetString("comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items"),
+            resources.GetString("comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items1")});
+            this.comboBox7_Stromspeicher_LadeleistungMax_auswahl.Name = "comboBox7_Stromspeicher_LadeleistungMax_auswahl";
+            // 
+            // textBox_Stromspeicher_Ladeleistung_max
+            // 
+            resources.ApplyResources(this.textBox_Stromspeicher_Ladeleistung_max, "textBox_Stromspeicher_Ladeleistung_max");
+            this.textBox_Stromspeicher_Ladeleistung_max.Name = "textBox_Stromspeicher_Ladeleistung_max";
+            // 
+            // label7
+            // 
+            resources.ApplyResources(this.label7, "label7");
+            this.label7.ForeColor = System.Drawing.Color.Black;
+            this.label7.Name = "label7";
+            // 
+            // label11
+            // 
+            resources.ApplyResources(this.label11, "label11");
+            this.label11.ForeColor = System.Drawing.Color.Black;
+            this.label11.Name = "label11";
+            // 
+            // textBox_Stromspeicher_Ladeenergie_max
+            // 
+            resources.ApplyResources(this.textBox_Stromspeicher_Ladeenergie_max, "textBox_Stromspeicher_Ladeenergie_max");
+            this.textBox_Stromspeicher_Ladeenergie_max.Name = "textBox_Stromspeicher_Ladeenergie_max";
+            // 
+            // comboBox8_Stromspeicher_LadeenergieMin_auswahl
+            // 
+            resources.ApplyResources(this.comboBox8_Stromspeicher_LadeenergieMin_auswahl, "comboBox8_Stromspeicher_LadeenergieMin_auswahl");
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.FormattingEnabled = true;
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items.AddRange(new object[] {
+            resources.GetString("comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items"),
+            resources.GetString("comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1")});
+            this.comboBox8_Stromspeicher_LadeenergieMin_auswahl.Name = "comboBox8_Stromspeicher_LadeenergieMin_auswahl";
+            // 
+            // btn_Strom_Simu_Start
+            // 
+            this.btn_Strom_Simu_Start.BackColor = System.Drawing.Color.LightGreen;
+            resources.ApplyResources(this.btn_Strom_Simu_Start, "btn_Strom_Simu_Start");
+            this.btn_Strom_Simu_Start.Name = "btn_Strom_Simu_Start";
+            this.btn_Strom_Simu_Start.UseVisualStyleBackColor = false;
+            // 
+            // label12
+            // 
+            resources.ApplyResources(this.label12, "label12");
+            this.label12.ForeColor = System.Drawing.Color.Black;
+            this.label12.Name = "label12";
+            // 
+            // comboBox_Stromspeicher_LadeenergieMax_auswahl
+            // 
+            resources.ApplyResources(this.comboBox_Stromspeicher_LadeenergieMax_auswahl, "comboBox_Stromspeicher_LadeenergieMax_auswahl");
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.FormattingEnabled = true;
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Items.AddRange(new object[] {
+            resources.GetString("comboBox_Stromspeicher_LadeenergieMax_auswahl.Items"),
+            resources.GetString("comboBox_Stromspeicher_LadeenergieMax_auswahl.Items1")});
+            this.comboBox_Stromspeicher_LadeenergieMax_auswahl.Name = "comboBox_Stromspeicher_LadeenergieMax_auswahl";
+            // 
+            // textBox_Speicher_Ladeschwelle
+            // 
+            resources.ApplyResources(this.textBox_Speicher_Ladeschwelle, "textBox_Speicher_Ladeschwelle");
+            this.textBox_Speicher_Ladeschwelle.Name = "textBox_Speicher_Ladeschwelle";
+            // 
+            // label40
+            // 
+            resources.ApplyResources(this.label40, "label40");
+            this.label40.ForeColor = System.Drawing.Color.Black;
+            this.label40.Name = "label40";
+            // 
+            // textBox_Stromspeicher_Ladeenergie_min
+            // 
+            resources.ApplyResources(this.textBox_Stromspeicher_Ladeenergie_min, "textBox_Stromspeicher_Ladeenergie_min");
+            this.textBox_Stromspeicher_Ladeenergie_min.Name = "textBox_Stromspeicher_Ladeenergie_min";
             // 
             // Form_Simulation_Detail
             // 
@@ -1649,6 +1769,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.tabControl1.ResumeLayout(false);
+            this.tabPage_Stromspeicher.ResumeLayout(false);
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1809,5 +1932,19 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage_Stromspeicher;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.ComboBox comboBox7_Stromspeicher_LadeleistungMax_auswahl;
+        private System.Windows.Forms.TextBox textBox_Stromspeicher_Ladeleistung_max;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TextBox textBox_Stromspeicher_Ladeenergie_max;
+        private System.Windows.Forms.ComboBox comboBox8_Stromspeicher_LadeenergieMin_auswahl;
+        private System.Windows.Forms.Button btn_Strom_Simu_Start;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.ComboBox comboBox_Stromspeicher_LadeenergieMax_auswahl;
+        private System.Windows.Forms.TextBox textBox_Speicher_Ladeschwelle;
+        private System.Windows.Forms.Label label40;
+        private System.Windows.Forms.TextBox textBox_Stromspeicher_Ladeenergie_min;
     }
 }

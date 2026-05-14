@@ -13,7 +13,7 @@
             this.cmbUnit = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
+            this.lbl_Heizwert = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.lblBasisnheit = new System.Windows.Forms.Label();
@@ -25,10 +25,17 @@
             this.label8 = new System.Windows.Forms.Label();
             this.dgvHistory = new System.Windows.Forms.DataGridView();
             this.label9 = new System.Windows.Forms.Label();
+            this.lblGruppe = new System.Windows.Forms.Label();
+            this.lbl_Unit_Brennwert = new System.Windows.Forms.Label();
+            this.lb1_Brennwert = new System.Windows.Forms.Label();
+            this.numBrennwert = new System.Windows.Forms.NumericUpDown();
+            this.groupBox_Formel = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.numArbeitspreis)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numGrundpreis)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numHeizwert)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvHistory)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numBrennwert)).BeginInit();
+            this.groupBox_Formel.SuspendLayout();
             this.SuspendLayout();
             // 
             // lblCarrierName
@@ -46,7 +53,7 @@
             // 
             // lblResult
             // 
-            this.lblResult.Location = new System.Drawing.Point(143, 241);
+            this.lblResult.Location = new System.Drawing.Point(124, 18);
             this.lblResult.Name = "lblResult";
             this.lblResult.Size = new System.Drawing.Size(172, 23);
             this.lblResult.TabIndex = 0;
@@ -54,7 +61,7 @@
             // 
             // lblFormula
             // 
-            this.lblFormula.Location = new System.Drawing.Point(143, 274);
+            this.lblFormula.Location = new System.Drawing.Point(124, 51);
             this.lblFormula.Name = "lblFormula";
             this.lblFormula.Size = new System.Drawing.Size(299, 23);
             this.lblFormula.TabIndex = 0;
@@ -76,7 +83,7 @@
             // numGrundpreis
             // 
             this.numGrundpreis.DecimalPlaces = 2;
-            this.numGrundpreis.Location = new System.Drawing.Point(132, 185);
+            this.numGrundpreis.Location = new System.Drawing.Point(132, 153);
             this.numGrundpreis.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -89,7 +96,7 @@
             // numHeizwert
             // 
             this.numHeizwert.DecimalPlaces = 2;
-            this.numHeizwert.Location = new System.Drawing.Point(132, 155);
+            this.numHeizwert.Location = new System.Drawing.Point(132, 180);
             this.numHeizwert.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -103,13 +110,13 @@
             // 
             this.cmbUnit.Location = new System.Drawing.Point(132, 53);
             this.cmbUnit.Name = "cmbUnit";
-            this.cmbUnit.Size = new System.Drawing.Size(106, 21);
+            this.cmbUnit.Size = new System.Drawing.Size(120, 21);
             this.cmbUnit.TabIndex = 0;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(28, 241);
+            this.label1.Location = new System.Drawing.Point(9, 18);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(77, 13);
             this.label1.TabIndex = 1;
@@ -118,20 +125,20 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(28, 274);
+            this.label2.Location = new System.Drawing.Point(9, 51);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(41, 13);
             this.label2.TabIndex = 2;
             this.label2.Text = "Formel:";
             // 
-            // label3
+            // lbl_Heizwert
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(28, 158);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(48, 13);
-            this.label3.TabIndex = 3;
-            this.label3.Text = "Heizwert";
+            this.lbl_Heizwert.AutoSize = true;
+            this.lbl_Heizwert.Location = new System.Drawing.Point(28, 183);
+            this.lbl_Heizwert.Name = "lbl_Heizwert";
+            this.lbl_Heizwert.Size = new System.Drawing.Size(48, 13);
+            this.lbl_Heizwert.TabIndex = 3;
+            this.lbl_Heizwert.Text = "Heizwert";
             // 
             // label4
             // 
@@ -145,7 +152,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(28, 188);
+            this.label5.Location = new System.Drawing.Point(28, 156);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(58, 13);
             this.label5.TabIndex = 5;
@@ -172,12 +179,12 @@
             // btn_Save
             // 
             this.btn_Save.AutoSize = true;
-            this.btn_Save.Location = new System.Drawing.Point(31, 321);
+            this.btn_Save.Location = new System.Drawing.Point(32, 340);
             this.btn_Save.MinimumSize = new System.Drawing.Size(75, 23);
             this.btn_Save.Name = "btn_Save";
-            this.btn_Save.Size = new System.Drawing.Size(75, 23);
+            this.btn_Save.Size = new System.Drawing.Size(80, 27);
             this.btn_Save.TabIndex = 9;
-            this.btn_Save.Text = "Speichern";
+            this.btn_Save.Text = "💾 Speichern";
             this.btn_Save.UseVisualStyleBackColor = true;
             this.btn_Save.Click += new System.EventHandler(this.btn_Save_Click);
             // 
@@ -194,7 +201,7 @@
             // lbl_Unit_Heizwert
             // 
             this.lbl_Unit_Heizwert.AutoSize = true;
-            this.lbl_Unit_Heizwert.Location = new System.Drawing.Point(260, 159);
+            this.lbl_Unit_Heizwert.Location = new System.Drawing.Point(260, 184);
             this.lbl_Unit_Heizwert.Margin = new System.Windows.Forms.Padding(8, 0, 3, 0);
             this.lbl_Unit_Heizwert.Name = "lbl_Unit_Heizwert";
             this.lbl_Unit_Heizwert.Size = new System.Drawing.Size(35, 13);
@@ -204,7 +211,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(260, 188);
+            this.label7.Location = new System.Drawing.Point(260, 156);
             this.label7.Margin = new System.Windows.Forms.Padding(8, 0, 3, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(13, 13);
@@ -237,9 +244,70 @@
             this.label9.TabIndex = 15;
             this.label9.Text = "Preishistorie:";
             // 
+            // lblGruppe
+            // 
+            this.lblGruppe.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(56)))), ((int)(((byte)(70)))), ((int)(((byte)(217)))));
+            this.lblGruppe.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblGruppe.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblGruppe.ForeColor = System.Drawing.Color.White;
+            this.lblGruppe.Location = new System.Drawing.Point(0, 20);
+            this.lblGruppe.Name = "lblGruppe";
+            this.lblGruppe.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            this.lblGruppe.Size = new System.Drawing.Size(563, 20);
+            this.lblGruppe.TabIndex = 16;
+            // 
+            // lbl_Unit_Brennwert
+            // 
+            this.lbl_Unit_Brennwert.AutoSize = true;
+            this.lbl_Unit_Brennwert.Location = new System.Drawing.Point(260, 212);
+            this.lbl_Unit_Brennwert.Margin = new System.Windows.Forms.Padding(8, 0, 3, 0);
+            this.lbl_Unit_Brennwert.Name = "lbl_Unit_Brennwert";
+            this.lbl_Unit_Brennwert.Size = new System.Drawing.Size(35, 13);
+            this.lbl_Unit_Brennwert.TabIndex = 19;
+            this.lbl_Unit_Brennwert.Text = "label8";
+            // 
+            // lb1_Brennwert
+            // 
+            this.lb1_Brennwert.AutoSize = true;
+            this.lb1_Brennwert.Location = new System.Drawing.Point(28, 211);
+            this.lb1_Brennwert.Name = "lb1_Brennwert";
+            this.lb1_Brennwert.Size = new System.Drawing.Size(55, 13);
+            this.lb1_Brennwert.TabIndex = 18;
+            this.lb1_Brennwert.Text = "Brennwert";
+            // 
+            // numBrennwert
+            // 
+            this.numBrennwert.DecimalPlaces = 2;
+            this.numBrennwert.Location = new System.Drawing.Point(132, 208);
+            this.numBrennwert.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.numBrennwert.Name = "numBrennwert";
+            this.numBrennwert.Size = new System.Drawing.Size(120, 20);
+            this.numBrennwert.TabIndex = 17;
+            // 
+            // groupBox_Formel
+            // 
+            this.groupBox_Formel.Controls.Add(this.lblFormula);
+            this.groupBox_Formel.Controls.Add(this.lblResult);
+            this.groupBox_Formel.Controls.Add(this.label1);
+            this.groupBox_Formel.Controls.Add(this.label2);
+            this.groupBox_Formel.Location = new System.Drawing.Point(31, 241);
+            this.groupBox_Formel.Name = "groupBox_Formel";
+            this.groupBox_Formel.Size = new System.Drawing.Size(443, 81);
+            this.groupBox_Formel.TabIndex = 20;
+            this.groupBox_Formel.TabStop = false;
+            // 
             // ucFuelSettings
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.Controls.Add(this.groupBox_Formel);
+            this.Controls.Add(this.lbl_Unit_Brennwert);
+            this.Controls.Add(this.lb1_Brennwert);
+            this.Controls.Add(this.numBrennwert);
+            this.Controls.Add(this.lblGruppe);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.dgvHistory);
             this.Controls.Add(this.label8);
@@ -251,11 +319,7 @@
             this.Controls.Add(this.lblBasisnheit);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.lblFormula);
-            this.Controls.Add(this.lblResult);
+            this.Controls.Add(this.lbl_Heizwert);
             this.Controls.Add(this.numArbeitspreis);
             this.Controls.Add(this.numHeizwert);
             this.Controls.Add(this.numGrundpreis);
@@ -267,6 +331,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.numGrundpreis)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numHeizwert)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvHistory)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numBrennwert)).EndInit();
+            this.groupBox_Formel.ResumeLayout(false);
+            this.groupBox_Formel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -281,7 +348,7 @@
         private System.Windows.Forms.Label lblFormula;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lbl_Heizwert;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label lblBasisnheit;
@@ -293,5 +360,10 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.DataGridView dgvHistory;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label lblGruppe;
+        private System.Windows.Forms.Label lbl_Unit_Brennwert;
+        private System.Windows.Forms.Label lb1_Brennwert;
+        private System.Windows.Forms.NumericUpDown numBrennwert;
+        private System.Windows.Forms.GroupBox groupBox_Formel;
     }
 }

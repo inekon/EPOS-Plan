@@ -36,6 +36,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.tabEnergie = new System.Windows.Forms.TabPage();
             this.panel8 = new System.Windows.Forms.Panel();
+            this.btn_Carrier = new System.Windows.Forms.Button();
             this.listBox_Energieträger = new System.Windows.Forms.ListBox();
             this.panel9 = new System.Windows.Forms.Panel();
             this.label4 = new System.Windows.Forms.Label();
@@ -48,6 +49,8 @@
             this.btn_OK = new System.Windows.Forms.Button();
             this.label_ErzeugerGesamt = new System.Windows.Forms.Label();
             this.panel1_space = new System.Windows.Forms.Panel();
+            this.btn_Delete = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
             this.tabMain.SuspendLayout();
             this.tabInvest.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -287,12 +290,25 @@
             // panel8
             // 
             this.panel8.BackColor = System.Drawing.Color.LightGray;
+            this.panel8.Controls.Add(this.btn_Delete);
+            this.panel8.Controls.Add(this.btn_Carrier);
             this.panel8.Controls.Add(this.listBox_Energieträger);
             this.panel8.Controls.Add(this.panel9);
             this.panel8.Location = new System.Drawing.Point(17, 18);
             this.panel8.Name = "panel8";
-            this.panel8.Size = new System.Drawing.Size(355, 573);
+            this.panel8.Size = new System.Drawing.Size(355, 601);
             this.panel8.TabIndex = 43;
+            // 
+            // btn_Carrier
+            // 
+            this.btn_Carrier.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btn_Carrier.Location = new System.Drawing.Point(6, 557);
+            this.btn_Carrier.Name = "btn_Carrier";
+            this.btn_Carrier.Size = new System.Drawing.Size(128, 33);
+            this.btn_Carrier.TabIndex = 39;
+            this.btn_Carrier.Text = "➕ Hinzufügen...";
+            this.btn_Carrier.UseVisualStyleBackColor = true;
+            this.btn_Carrier.Click += new System.EventHandler(this.btn_Carrier_Click);
             // 
             // listBox_Energieträger
             // 
@@ -329,6 +345,7 @@
             // 
             this.panel7.BackColor = System.Drawing.Color.LightGray;
             this.panel7.Controls.Add(this.flpContainer_Energiekosten);
+            this.panel7.Controls.Add(this.label6);
             this.panel7.Location = new System.Drawing.Point(387, 18);
             this.panel7.Name = "panel7";
             this.panel7.Size = new System.Drawing.Size(606, 665);
@@ -344,7 +361,7 @@
             this.flpContainer_Energiekosten.Location = new System.Drawing.Point(6, 8);
             this.flpContainer_Energiekosten.Name = "flpContainer_Energiekosten";
             this.flpContainer_Energiekosten.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
-            this.flpContainer_Energiekosten.Size = new System.Drawing.Size(596, 619);
+            this.flpContainer_Energiekosten.Size = new System.Drawing.Size(596, 651);
             this.flpContainer_Energiekosten.TabIndex = 37;
             this.flpContainer_Energiekosten.WrapContents = false;
             // 
@@ -421,6 +438,27 @@
             this.panel1_space.Size = new System.Drawing.Size(1015, 15);
             this.panel1_space.TabIndex = 1;
             // 
+            // btn_Delete
+            // 
+            this.btn_Delete.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btn_Delete.Location = new System.Drawing.Point(220, 557);
+            this.btn_Delete.Name = "btn_Delete";
+            this.btn_Delete.Size = new System.Drawing.Size(128, 33);
+            this.btn_Delete.TabIndex = 40;
+            this.btn_Delete.Text = "🗑️ Löschen";
+            this.btn_Delete.UseVisualStyleBackColor = true;
+            this.btn_Delete.Click += new System.EventHandler(this.btn_Delete_Click);
+            // 
+            // label6
+            // 
+            this.label6.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.Location = new System.Drawing.Point(194, 258);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(205, 74);
+            this.label6.TabIndex = 1;
+            this.label6.Text = "Energieerzeuger auswählen";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // Form_Kosten
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -489,5 +527,8 @@
         private System.Windows.Forms.ListBox listBox_Energieträger;
         private System.Windows.Forms.Panel panel9;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button btn_Carrier;
+        private System.Windows.Forms.Button btn_Delete;
+        private System.Windows.Forms.Label label6;
     }
 }

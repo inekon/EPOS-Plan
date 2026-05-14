@@ -722,104 +722,6 @@ namespace WindowsFormsApplication1
         {
             flpContainer_Energiekosten.Controls.Clear();
             flpContainer_Energiekosten.SuspendLayout();
-
-            return;
-
-
-
-
-
-            // Nur filtern, wenn nicht "Alle" gewählt ist
-            var gefilterteDaten = (filterKategorie == "Alle Kategorien")
-                ? m_AlleBrennstoffDaten
-                : m_AlleBrennstoffDaten.Where(b => b.Kategorie == filterKategorie).ToList();
-
-            string aktuelleKat = "";
-
-            foreach (var b in gefilterteDaten)
-            {
-                // Kategorie-Balken (Navy Blue) wenn Kategorie wechselt
-                if (b.Kategorie != aktuelleKat)
-                {
-                    var header = new ucKategorieHeader(b.Kategorie);
-                    header.Width = flpContainer_Energiekosten.ClientSize.Width - 25;
-                    header.Height = 16;
-                    header.Margin = new Padding(0, 5, 0, 0); // Optional: Kleiner Abstand nach oben
-
-                    flpContainer_Energiekosten.Controls.Add(header);
-                    aktuelleKat = b.Kategorie;
-
-                    // --- NEU: Spaltenüberschriften hinzufügen ---
-                    Panel spaltenHeader = CreateBrennstoffColumnHeader(aktuelleKat.Trim());
-                    spaltenHeader.Width = flpContainer_Energiekosten.ClientSize.Width - 25;
-                    spaltenHeader.Height = 25;
-                    spaltenHeader.Margin = new Padding(0, 0, 0, 2); // Kleiner Abstand nach unten
-                    flpContainer_Energiekosten.Controls.Add(spaltenHeader);
-                }
-
-                // Zeile hinzufügen
-                var zeile = new ucBrennstoffZeile(b);
-                zeile.Width = flpContainer_Energiekosten.ClientSize.Width - 25;
-                zeile.Height = 20;
-                zeile.Margin = new Padding(0);
-
-                // Event zum Speichern binden
-                zeile.ValueChanged += (s, e) =>
-                {
-                    SaveBrennstoffToDb(zeile.Daten);
-                };
-
-                flpContainer_Energiekosten.Controls.Add(zeile);
-            }
-
-            flpContainer_Energiekosten.Controls[flpContainer_Energiekosten.Controls.Count - 1].Margin = new Padding(0, 0, 0, 10);
-
-            flpContainer_Energiekosten.ResumeLayout();
-
-            SyncHeaderPositions();
-        }
-
-        private void SaveBrennstoffToDb(ProjektBrennstoff b)
-        {
-            string finalSql = "";
-
-            try
-            {
-                // Dezimalzahlen für SQL formatieren (Punkt statt Komma)
-                string gp = b.ProjektGrundpreis.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-                string ap = b.ProjektArbeitspreis.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-                string lp = b.ProjektLeistungspreis.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-
-                // Prüfen, ob für dieses Projekt und diesen Brennstoff-Stamm bereits ein Eintrag existiert
-                string sqlCheck = "SELECT COUNT(*) FROM Tab_Brennstoff_Projekt WHERE ID_Projekt = ? AND ID_Stamm = ?";
-
-                int exists = Convert.ToInt32(DataRepository.ExecuteScalar(sqlCheck,
-                    new OleDbParameter("@p1", m_ID_Projekt),
-                    new OleDbParameter("@s1", b.StammID)));
-
-                if (exists > 0)
-                {
-                    // UPDATE: Datensatz existiert bereits
-                    finalSql = $@"UPDATE Tab_Brennstoff_Projekt SET 
-                          Grundpreis = {gp}, 
-                          Arbeitspreis = {ap}, 
-                          Leistungspreis = {lp}, 
-                          [Bezug] = '{b.Bezug}' 
-                          WHERE ID_Projekt = {m_ID_Projekt} AND ID_Stamm = {b.StammID}";
-                }
-                else
-                {
-                    // INSERT: Neuer Datensatz für dieses Projekt anlegen
-                    finalSql = $@"INSERT INTO Tab_Brennstoff_Projekt (ID_Projekt, ID_Stamm, Grundpreis, Arbeitspreis, Leistungspreis, [Bezug]) 
-                          VALUES ({m_ID_Projekt}, {b.StammID}, {gp}, {ap}, {lp}, '{b.Bezug}')";
-                }
-                DataRepository.ExecuteSQL(finalSql);
-            }
-            catch (Exception ex)
-            {
-                // Optional: Logging oder Fehlermeldung
-                Console.WriteLine("Fehler beim Speichern: " + ex.Message);
-            }
         }
 
         private List<ProjektBrennstoff> GetBrennstoffDaten(int projektID)
@@ -889,95 +791,7 @@ namespace WindowsFormsApplication1
 
             return liste;
         }
-
-        private Panel CreateBrennstoffColumnHeader(string gruppe)
-        {
-            Panel p = new Panel
-            {
-                Size = new Size(flpContainer_Energiekosten.ClientSize.Width - 25, 20),
-                BackColor = Color.LightGray,
-                Margin = new Padding(0, 0, 0, 5),
-                Tag = gruppe,
-                Name = "pnlSpaltenHeader"
-            };
-            p.Controls.Clear();
-            p.SuspendLayout();
-
-            // Wir erstellen eine temporäre Instanz zum Auslesen der Positionen
-            using (ucBrennstoffZeile muster = new ucBrennstoffZeile(new ProjektBrennstoff()))
-            {
-                muster.Width = flpContainer_Energiekosten.ClientSize.Width - 25;
-
-                // Lokale Hilfsfunktion für die absolute Positionierung
-                void AddLbl(string text, string ctrlName, int width, int x)
-                {
-                    Control target = muster.Controls[ctrlName];
-                    if (target == null) return;
-
-                    Label lbl = new Label();
-                    lbl.Name = ctrlName;
-                    lbl.Text = text;
-                    lbl.AutoSize = false;
-                    lbl.Width = width;
-                    lbl.Height = 26;
-                    lbl.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular);
-                    lbl.TextAlign = ContentAlignment.MiddleLeft;
-                    lbl.Padding = new Padding(0, 0, 0, 8);
-                    lbl.Tag = lbl.Name;
-
-                    // Der Versatz: NumericUpDowns brauchen +2 bis +3 Pixel 
-                    // damit der Text über der Zahl steht, nicht über dem Rahmen.
-                    int korrektur = (target is NumericUpDown) ? 3 : 0;
-                    lbl.Location = new Point(x + korrektur, 5);
-                    p.Controls.Add(lbl);
-                }
-
-                // Jetzt mappen wir die Bezeichner auf die Namen vom ucBrennstoffZeile.Designer.cs
-                AddLbl("Brennstoff", "lblName", 100, 12);
-                AddLbl("Einheit", "lblEinheit", 60, 170);
-                AddLbl("Hi [kWh/Einh.]", "lblHi", 100, 256);
-                AddLbl("Grundpr. [€]", "numGrundpreis", 80, 369);
-                AddLbl("Arbeitsp. [€]", "numArbeitspreis", 80, 477);
-                AddLbl("Leist.pr. [€]", "numLeistungpreis", 80, 592);
-            }
-
-            p.ResumeLayout();
-
-            return p;
-        }
-
-        private void SyncHeaderPositions()
-        {
-            // Finde die erste Datenzeile im FlowLayoutPanel
-            var ersteZeile = flpContainer_Energiekosten.Controls.OfType<ucBrennstoffZeile>().FirstOrDefault();
-
-            // Finde den Spalten-Header (das Panel, das wir vorher eingefügt haben)
-            // Das Panel suchenn, das die Header-Labels enthält
-            var headerPanel = flpContainer_Energiekosten.Controls.OfType<Panel>()
-                              .FirstOrDefault(p => p.Name == "pnlSpaltenHeader");
-
-            if (ersteZeile != null && headerPanel != null)
-            {
-                // Wir gehen alle Controls im Header durch und suchen das Gegenstück in der Zeile
-                foreach (Control hLabel in headerPanel.Controls)
-                {
-                    if (hLabel is Label && hLabel.Tag != null)
-                    {
-                        string targetName = hLabel.Tag.ToString();
-                        Control zielCtrl = ersteZeile.Controls[targetName];
-
-                        if (zielCtrl != null)
-                        {
-                            // X-Position abgleichen
-                            // Bei NumericUpDown korrigieren wir 3 Pixel für die Optik
-                            int offset = (zielCtrl is NumericUpDown) ? 3 : 0;
-                            hLabel.Left = zielCtrl.Left + offset;
-                        }
-                    }
-                }
-            }
-        }
-
+        
         private void listBox_Energieträger_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBox_Energieträger.SelectedItem is EnergyCarrier selectedCarrier)
@@ -991,17 +805,17 @@ namespace WindowsFormsApplication1
                 switch (selectedCarrier.PricingModel)
                 {
                     case "FUEL":
-                    case "FUEL_LIQUID":
-                    case "FUEL_SOLID":
+                    case "LIQUID_FUEL":
+                    case "SOLID_FUEL":
                         uc = new ucFuelSettings(m_ID_Projekt, selectedCarrier);
                         break;
 
-                    case "GAS":
-                        // uc = new ucGasSettings(m_ID_Projekt, selectedCarrier);
+                    case "GASEOUS_FUEL":
+                        uc = new ucFuelSettings(m_ID_Projekt, selectedCarrier);
                         break;
 
-                    case "GRID":
-                        // uc = new ucGridSettings(m_ID_Projekt, selectedCarrier);
+                    case "ELECTRICITY":
+                        uc = new ucFuelSettings(m_ID_Projekt, selectedCarrier);
                         break;
                 }
 
@@ -1033,11 +847,14 @@ namespace WindowsFormsApplication1
                     GroupCode = row["group_code"].ToString(),
                     PricingModel = row["pricing_model"].ToString(),
                     BillingUnit = row["billing_unit"].ToString(),
-                    HiKwhPerUnit = row["hi_kwh_per_unit"] != DBNull.Value ? Convert.ToDouble(row["hi_kwh_per_unit"]) : 0
+                    HiKwhPerUnit = row["hi_kwh_per_unit"] != DBNull.Value ? Convert.ToDouble(row["hi_kwh_per_unit"]) : 0,
+                    HsKwhPerUnit = row["hs_kwh_per_unit"] != DBNull.Value ? Convert.ToDouble(row["hs_kwh_per_unit"]) : 0,
+                    ID_Brennstoff = Convert.ToInt32(row["id_brennstoff"])
                 });
             }
             return carriers;
         }
+        
         private void FillCarrierComboBox()
         {
             // Daten holen
@@ -1051,6 +868,93 @@ namespace WindowsFormsApplication1
             listBox_Energieträger.SelectedIndex = -1; // Start ohne Auswahl 
         }
 
+        private string CreateNewEnergyCarrier()
+        {
+            using (var dlg = new Form_Kosten_Auswahl())
+            {
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    // 1. Prüfen, ob der Code bereits existiert
+                    string checkSql = "SELECT COUNT(*) FROM energy_carrier WHERE code = ?";
+                    int count = (int)DataRepository.ExecuteScalar(checkSql, new OleDbParameter[] {
+                        new OleDbParameter("@name", dlg.SelectedName)
+                    });
+
+                    if (count > 0)
+                    {
+                        MessageBox.Show($"Die Energieträgervariante '{dlg.SelectedName}' existiert bereits!");
+                        return "";
+                    }
+
+                    // 2. In energy_carrier speichern
+                    string insertSql = @"INSERT INTO energy_carrier 
+                                 (ID_Brennstoff, code, name, group_code, pricing_model, billing_unit, hi_kwh_per_unit, hs_kwh_per_unit,is_active) 
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                    OleDbParameter[] ps = {
+                        new OleDbParameter("@idB", dlg.SelectedBrennstoffID),
+                        new OleDbParameter("@code", dlg.SelectedCode),
+                        new OleDbParameter("@name", dlg.SelectedName),
+                        new OleDbParameter("@gc", dlg.SelectedGroupCode),
+                        new OleDbParameter("@pm", dlg.SelectedBrennstoffCode),
+                        new OleDbParameter("@unit", dlg.SelectedBillingUnit),
+                        new OleDbParameter("@shi", dlg.SelectedHi),
+                        new OleDbParameter("@shs", dlg.SelectedHs),
+                        new OleDbParameter("@active", OleDbType.Boolean) { Value = true}
+                    };
+
+                    try
+                    {
+                        DataRepository.ExecuteNonQuery(insertSql, ps);
+                        MessageBox.Show("Brennstoff-Variante erfolgreich angelegt.");
+                        return dlg.SelectedName;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Fehler beim Speichern: " + ex.Message);
+                    }
+                }
+            }
+            return "";
+        }
+
+        private void btn_Carrier_Click(object sender, EventArgs e)
+        {
+            string carrierName= CreateNewEnergyCarrier();
+            FillCarrierComboBox();
+            int index = listBox_Energieträger.FindStringExact(carrierName);
+
+            if (index != ListBox.NoMatches)
+            {
+                listBox_Energieträger.SelectedIndex = index;
+            }
+        }
+
+        private void btn_Delete_Click(object sender, EventArgs e)
+        {
+            if (listBox_Energieträger.SelectedItem is EnergyCarrier selectedCarrier)
+            {
+                DeleteEnergyCarrierWithSettings(selectedCarrier.Name);
+            }
+        }
+
+        public bool DeleteEnergyCarrierWithSettings(string carrierName)
+        {
+            // Erst die ID finden
+            int id = DataRepository.GetIdByName("energy_carrier", "name", carrierName);
+
+            if (id == -1) return false;
+
+            // Dann kaskadierend löschen
+            bool ret = DataRepository.DeleteWithDependencies("energy_carrier", "energy_project_settings", "ID_Energieträger", id);
+
+            FillCarrierComboBox();
+ 
+            return ret;
+        }
+        
+  
+
     }
 
     public class EnergyCarrier
@@ -1060,13 +964,15 @@ namespace WindowsFormsApplication1
         public string PricingModel { get; set; } // GAS, FUEL, GRID
         public string Code { get; set; }                                      // Das ist der Standard-Heizwert aus der Tabelle ENERGY_CARRIER
         public double HiKwhPerUnit { get; set; }
+        public double HsKwhPerUnit { get; set; }
         public string GroupCode { get; set; }
         public string BillingUnit { get; set; }
+        public int ID_Brennstoff { get; set; }
     }
 
     public class EnergyConversion
     {
-        public int CarrierId { get; set; }
+        public int IDBrennstoff { get; set; }
         public string FromUnit { get; set; }
         public string ToUnitCode { get; set; } // z.B. "kg", "L"
         public double Factor { get; set; }
