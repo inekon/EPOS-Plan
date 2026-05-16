@@ -60,6 +60,7 @@ namespace WindowsFormsApplication1
                 double kl = (double)rs.Read("Ptherm");
                 textBox_Kesselleistung.Text = kl.ToString("F2");
                 textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
+                checkBox_Brennwert.Checked = (bool)rs.Read("Brennwert");    
             }
             rs.Close();
         }

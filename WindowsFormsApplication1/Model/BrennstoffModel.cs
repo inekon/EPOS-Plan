@@ -25,6 +25,7 @@ namespace WindowsFormsApplication1
         public double CO;
         public double Staub;
         public double Betriebsbereitschaftverlust;
+        public bool Brennwert;
 
         public BrennstoffModel()
         {
@@ -46,6 +47,7 @@ namespace WindowsFormsApplication1
             CO = 0;
             Staub = 0;
             Betriebsbereitschaftverlust = 0;
+            Brennwert = false;
         }
     }
 }

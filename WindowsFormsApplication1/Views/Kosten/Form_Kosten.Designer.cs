@@ -36,12 +36,14 @@
             this.label2 = new System.Windows.Forms.Label();
             this.tabEnergie = new System.Windows.Forms.TabPage();
             this.panel8 = new System.Windows.Forms.Panel();
+            this.btn_Delete = new System.Windows.Forms.Button();
             this.btn_Carrier = new System.Windows.Forms.Button();
             this.listBox_Energieträger = new System.Windows.Forms.ListBox();
             this.panel9 = new System.Windows.Forms.Panel();
             this.label4 = new System.Windows.Forms.Label();
             this.panel7 = new System.Windows.Forms.Panel();
             this.flpContainer_Energiekosten = new System.Windows.Forms.FlowLayoutPanel();
+            this.label6 = new System.Windows.Forms.Label();
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlFooter = new System.Windows.Forms.Panel();
@@ -49,8 +51,6 @@
             this.btn_OK = new System.Windows.Forms.Button();
             this.label_ErzeugerGesamt = new System.Windows.Forms.Label();
             this.panel1_space = new System.Windows.Forms.Panel();
-            this.btn_Delete = new System.Windows.Forms.Button();
-            this.label6 = new System.Windows.Forms.Label();
             this.tabMain.SuspendLayout();
             this.tabInvest.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -132,9 +132,9 @@
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(8, 3);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(104, 17);
+            this.label5.Size = new System.Drawing.Size(88, 17);
             this.label5.TabIndex = 35;
-            this.label5.Text = "Energieerzeuger";
+            this.label5.Text = "Energieträger";
             // 
             // flpContainer
             // 
@@ -226,9 +226,9 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(8, 3);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(104, 17);
+            this.label1.Size = new System.Drawing.Size(88, 17);
             this.label1.TabIndex = 35;
-            this.label1.Text = "Energieerzeuger";
+            this.label1.Text = "Energieträger";
             // 
             // panel6
             // 
@@ -299,6 +299,17 @@
             this.panel8.Size = new System.Drawing.Size(355, 601);
             this.panel8.TabIndex = 43;
             // 
+            // btn_Delete
+            // 
+            this.btn_Delete.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btn_Delete.Location = new System.Drawing.Point(220, 557);
+            this.btn_Delete.Name = "btn_Delete";
+            this.btn_Delete.Size = new System.Drawing.Size(128, 33);
+            this.btn_Delete.TabIndex = 40;
+            this.btn_Delete.Text = "🗑️ Löschen";
+            this.btn_Delete.UseVisualStyleBackColor = true;
+            this.btn_Delete.Click += new System.EventHandler(this.btn_Delete_Click);
+            // 
             // btn_Carrier
             // 
             this.btn_Carrier.Font = new System.Drawing.Font("Segoe UI", 10F);
@@ -337,9 +348,9 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(8, 3);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(104, 17);
+            this.label4.Size = new System.Drawing.Size(88, 17);
             this.label4.TabIndex = 35;
-            this.label4.Text = "Energieerzeuger";
+            this.label4.Text = "Energieträger";
             // 
             // panel7
             // 
@@ -364,6 +375,16 @@
             this.flpContainer_Energiekosten.Size = new System.Drawing.Size(596, 651);
             this.flpContainer_Energiekosten.TabIndex = 37;
             this.flpContainer_Energiekosten.WrapContents = false;
+            // 
+            // label6
+            // 
+            this.label6.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.Location = new System.Drawing.Point(194, 258);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(205, 74);
+            this.label6.TabIndex = 1;
+            this.label6.Text = "Energieerzeuger auswählen";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pnlHeader
             // 
@@ -437,27 +458,6 @@
             this.panel1_space.Name = "panel1_space";
             this.panel1_space.Size = new System.Drawing.Size(1015, 15);
             this.panel1_space.TabIndex = 1;
-            // 
-            // btn_Delete
-            // 
-            this.btn_Delete.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btn_Delete.Location = new System.Drawing.Point(220, 557);
-            this.btn_Delete.Name = "btn_Delete";
-            this.btn_Delete.Size = new System.Drawing.Size(128, 33);
-            this.btn_Delete.TabIndex = 40;
-            this.btn_Delete.Text = "🗑️ Löschen";
-            this.btn_Delete.UseVisualStyleBackColor = true;
-            this.btn_Delete.Click += new System.EventHandler(this.btn_Delete_Click);
-            // 
-            // label6
-            // 
-            this.label6.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(194, 258);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(205, 74);
-            this.label6.TabIndex = 1;
-            this.label6.Text = "Energieerzeuger auswählen";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // Form_Kosten
             // 

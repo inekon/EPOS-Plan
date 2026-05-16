@@ -223,7 +223,7 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_Ergebnis.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="textBox_PVStrombedarf.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -694,7 +694,7 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_PV.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="label83.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2917,7 +2917,7 @@
     <value>2</value>
   </data>
   <data name="tabPage_Heizkessel.Text" xml:space="preserve">
-    <value>Spitzenlastkessel</value>
+    <value>Heizkessel</value>
   </data>
   <data name="&gt;&gt;tabPage_Heizkessel.Name" xml:space="preserve">
     <value>tabPage_Heizkessel</value>
@@ -4857,6 +4857,30 @@
   <data name="&gt;&gt;tabPage_Bedarf.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="tabPage_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <data name="tabPage_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1162, 668</value>
+  </data>
+  <data name="tabPage_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="tabPage_BHKW.Text" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="&gt;&gt;tabPage_BHKW.Name" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tabPage_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_BHKW.Parent" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
+  <data name="&gt;&gt;tabPage_BHKW.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
   <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
   </data>
@@ -4867,7 +4891,7 @@
     <value>kWh/a</value>
   </data>
   <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 82</value>
+    <value>283, 103</value>
   </data>
   <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Size" type="System.Drawing.Size, System.Drawing">
     <value>68, 21</value>
@@ -4885,7 +4909,7 @@
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>tabPage_Stromspeicher</value>
   </data>
   <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.ZOrder" xml:space="preserve">
     <value>0</value>
@@ -4894,7 +4918,7 @@
     <value>Segoe UI, 8pt</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeleistung_max.Location" type="System.Drawing.Point, System.Drawing">
-    <value>165, 82</value>
+    <value>198, 103</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeleistung_max.Size" type="System.Drawing.Size, System.Drawing">
     <value>77, 22</value>
@@ -4912,7 +4936,7 @@
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>tabPage_Stromspeicher</value>
   </data>
   <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -4927,7 +4951,7 @@
     <value>NoControl</value>
   </data>
   <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 82</value>
+    <value>42, 103</value>
   </data>
   <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
     <value>142, 17</value>
@@ -4945,262 +4969,16 @@
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;label7.Parent" xml:space="preserve">
-    <value>groupBox5</value>
+    <value>tabPage_Stromspeicher</value>
   </data>
   <data name="&gt;&gt;label7.ZOrder" xml:space="preserve">
     <value>2</value>
-  </data>
-  <data name="label11.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label11.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label11.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 54</value>
-  </data>
-  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>141, 17</value>
-  </data>
-  <data name="label11.TabIndex" type="System.Int32, mscorlib">
-    <value>269</value>
-  </data>
-  <data name="label11.Text" xml:space="preserve">
-    <value>Maximum Ladeenergie</value>
-  </data>
-  <data name="&gt;&gt;label11.Name" xml:space="preserve">
-    <value>label11</value>
-  </data>
-  <data name="&gt;&gt;label11.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label11.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;label11.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Location" type="System.Drawing.Point, System.Drawing">
-    <value>165, 54</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Size" type="System.Drawing.Size, System.Drawing">
-    <value>77, 22</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.TabIndex" type="System.Int32, mscorlib">
-    <value>268</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Text" xml:space="preserve">
-    <value>90</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Name" xml:space="preserve">
-    <value>textBox_Stromspeicher_Ladeenergie_max</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 54</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 21</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.TabIndex" type="System.Int32, mscorlib">
-    <value>267</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Name" xml:space="preserve">
-    <value>comboBox8_Stromspeicher_LadeenergieMin_auswahl</value>
-  </data>
-  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="btn_Strom_Simu_Start.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="btn_Strom_Simu_Start.Location" type="System.Drawing.Point, System.Drawing">
-    <value>329, 27</value>
-  </data>
-  <data name="btn_Strom_Simu_Start.Size" type="System.Drawing.Size, System.Drawing">
-    <value>143, 30</value>
-  </data>
-  <data name="btn_Strom_Simu_Start.TabIndex" type="System.Int32, mscorlib">
-    <value>260</value>
-  </data>
-  <data name="btn_Strom_Simu_Start.Text" xml:space="preserve">
-    <value>Starte Simulation ▶</value>
-  </data>
-  <data name="&gt;&gt;btn_Strom_Simu_Start.Name" xml:space="preserve">
-    <value>btn_Strom_Simu_Start</value>
-  </data>
-  <data name="&gt;&gt;btn_Strom_Simu_Start.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_Strom_Simu_Start.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;btn_Strom_Simu_Start.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="label12.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label12.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label12.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
-    <value>10, 122</value>
-  </data>
-  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
-    <value>132, 17</value>
-  </data>
-  <data name="label12.TabIndex" type="System.Int32, mscorlib">
-    <value>258</value>
-  </data>
-  <data name="label12.Text" xml:space="preserve">
-    <value>Ladeschwellwert [kW]</value>
-  </data>
-  <data name="&gt;&gt;label12.Name" xml:space="preserve">
-    <value>label12</value>
-  </data>
-  <data name="&gt;&gt;label12.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label12.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>250, 28</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 21</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.TabIndex" type="System.Int32, mscorlib">
-    <value>266</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Name" xml:space="preserve">
-    <value>comboBox_Stromspeicher_LadeenergieMax_auswahl</value>
-  </data>
-  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>165, 117</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>77, 22</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.TabIndex" type="System.Int32, mscorlib">
-    <value>257</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Text" xml:space="preserve">
-    <value>90</value>
-  </data>
-  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Name" xml:space="preserve">
-    <value>textBox_Speicher_Ladeschwelle</value>
-  </data>
-  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="label40.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label40.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label40.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label40.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 27</value>
-  </data>
-  <data name="label40.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 17</value>
-  </data>
-  <data name="label40.TabIndex" type="System.Int32, mscorlib">
-    <value>265</value>
-  </data>
-  <data name="label40.Text" xml:space="preserve">
-    <value>Minimum Ladeenergie</value>
-  </data>
-  <data name="&gt;&gt;label40.Name" xml:space="preserve">
-    <value>label40</value>
-  </data>
-  <data name="&gt;&gt;label40.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label40.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;label40.ZOrder" xml:space="preserve">
-    <value>10</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeenergie_min.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeenergie_min.Location" type="System.Drawing.Point, System.Drawing">
-    <value>165, 26</value>
+    <value>198, 47</value>
   </data>
   <data name="textBox_Stromspeicher_Ladeenergie_min.Size" type="System.Drawing.Size, System.Drawing">
     <value>77, 22</value>
@@ -5218,37 +4996,229 @@
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.Parent" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="groupBox5.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 9.75pt, style=Bold</value>
-  </data>
-  <data name="groupBox5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>34, 24</value>
-  </data>
-  <data name="groupBox5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>479, 152</value>
-  </data>
-  <data name="groupBox5.TabIndex" type="System.Int32, mscorlib">
-    <value>306</value>
-  </data>
-  <data name="groupBox5.Text" xml:space="preserve">
-    <value>Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;groupBox5.Name" xml:space="preserve">
-    <value>groupBox5</value>
-  </data>
-  <data name="&gt;&gt;groupBox5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBox5.Parent" xml:space="preserve">
     <value>tabPage_Stromspeicher</value>
   </data>
-  <data name="&gt;&gt;groupBox5.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="label11.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label11.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label11.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
+    <value>42, 75</value>
+  </data>
+  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
+    <value>141, 17</value>
+  </data>
+  <data name="label11.TabIndex" type="System.Int32, mscorlib">
+    <value>269</value>
+  </data>
+  <data name="label11.Text" xml:space="preserve">
+    <value>Maximum Ladeenergie</value>
+  </data>
+  <data name="&gt;&gt;label11.Name" xml:space="preserve">
+    <value>label11</value>
+  </data>
+  <data name="&gt;&gt;label11.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label11.Parent" xml:space="preserve">
+    <value>tabPage_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;label11.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="label40.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label40.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label40.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label40.Location" type="System.Drawing.Point, System.Drawing">
+    <value>41, 48</value>
+  </data>
+  <data name="label40.Size" type="System.Drawing.Size, System.Drawing">
+    <value>138, 17</value>
+  </data>
+  <data name="label40.TabIndex" type="System.Int32, mscorlib">
+    <value>265</value>
+  </data>
+  <data name="label40.Text" xml:space="preserve">
+    <value>Minimum Ladeenergie</value>
+  </data>
+  <data name="&gt;&gt;label40.Name" xml:space="preserve">
+    <value>label40</value>
+  </data>
+  <data name="&gt;&gt;label40.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label40.Parent" xml:space="preserve">
+    <value>tabPage_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;label40.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Location" type="System.Drawing.Point, System.Drawing">
+    <value>198, 75</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 22</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.TabIndex" type="System.Int32, mscorlib">
+    <value>268</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Text" xml:space="preserve">
+    <value>90</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Name" xml:space="preserve">
+    <value>textBox_Stromspeicher_Ladeenergie_max</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Parent" xml:space="preserve">
+    <value>tabPage_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>198, 138</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 22</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.TabIndex" type="System.Int32, mscorlib">
+    <value>257</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Text" xml:space="preserve">
+    <value>90</value>
+  </data>
+  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Name" xml:space="preserve">
+    <value>textBox_Speicher_Ladeschwelle</value>
+  </data>
+  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Parent" xml:space="preserve">
+    <value>tabPage_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>283, 75</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>68, 21</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.TabIndex" type="System.Int32, mscorlib">
+    <value>267</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Name" xml:space="preserve">
+    <value>comboBox8_Stromspeicher_LadeenergieMin_auswahl</value>
+  </data>
+  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Parent" xml:space="preserve">
+    <value>tabPage_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>283, 49</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>68, 21</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.TabIndex" type="System.Int32, mscorlib">
+    <value>266</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Name" xml:space="preserve">
+    <value>comboBox_Stromspeicher_LadeenergieMax_auswahl</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Parent" xml:space="preserve">
+    <value>tabPage_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="label12.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label12.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label12.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
+    <value>43, 143</value>
+  </data>
+  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
+    <value>132, 17</value>
+  </data>
+  <data name="label12.TabIndex" type="System.Int32, mscorlib">
+    <value>258</value>
+  </data>
+  <data name="label12.Text" xml:space="preserve">
+    <value>Ladeschwellwert [kW]</value>
+  </data>
+  <data name="&gt;&gt;label12.Name" xml:space="preserve">
+    <value>label12</value>
+  </data>
+  <data name="&gt;&gt;label12.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label12.Parent" xml:space="preserve">
+    <value>tabPage_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
+    <value>10</value>
   </data>
   <data name="tabPage_Stromspeicher.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 30</value>
@@ -5272,7 +5242,7 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_Stromspeicher.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="tabControl1.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI Semibold, 12pt, style=Bold</value>

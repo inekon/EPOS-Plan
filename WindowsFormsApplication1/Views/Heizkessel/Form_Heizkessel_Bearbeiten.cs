@@ -45,6 +45,7 @@ namespace WindowsFormsApplication1
                 tb_CO.Text = "0";
                 tb_SO2.Text = "0";
                 tb_Staub.Text = "0";
+                checkBox_Brennwert.Checked = false;
             }
 
             BrennstoffCtrl ctrl = new BrennstoffCtrl();
@@ -75,7 +76,8 @@ namespace WindowsFormsApplication1
             tb_CO.Text = rs.Read("CO").ToString();
             tb_SO2.Text = rs.Read("SO2").ToString();
             tb_Staub.Text = rs.Read("Staub").ToString();
-            
+            checkBox_Brennwert.Checked = (bool)rs.Read("Brennwert");
+
             if (rs.Read("Brennstoff") != DBNull.Value)
             {
                 int brennstoff = (int)rs.Read("Brennstoff");
@@ -125,8 +127,8 @@ namespace WindowsFormsApplication1
 
             string sql = @"INSERT INTO [Tab_Heizkessel] 
                    (Name, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Öl, 
-                    Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, Brennwert) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             OleDbParameter[] ps = {
                 new OleDbParameter("@nam", model.Name),
@@ -145,7 +147,8 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@nox", model.NOx),
                 new OleDbParameter("@co", model.CO),
                 new OleDbParameter("@sta", model.Staub),
-                new OleDbParameter("@bbv", model.Betriebsbereitschaftverlust)
+                new OleDbParameter("@bbv", model.Betriebsbereitschaftverlust),
+                new OleDbParameter("@brennwert", checkBox_Brennwert.Checked)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
@@ -273,6 +276,7 @@ namespace WindowsFormsApplication1
             model.CO = SafeParse(tb_CO.Text);
             model.SO2 = SafeParse(tb_SO2.Text);
             model.Staub = SafeParse(tb_Staub.Text);
+            model.Brennwert = checkBox_Brennwert.Checked;
 
             return model;
         }
@@ -286,6 +290,7 @@ namespace WindowsFormsApplication1
             }
             return 0.0; // Standardwert, falls die Eingabe ungültig ist
         }
+
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
             Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
