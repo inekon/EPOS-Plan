@@ -321,12 +321,6 @@
     <Compile Include="Views\Kosten\ucKostenItem.Designer.cs">
       <DependentUpon>ucKostenItem.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Kosten\ucBrennstoffZeile.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Views\Kosten\ucBrennstoffZeile.Designer.cs">
-      <DependentUpon>ucBrennstoffZeile.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Kosten\ucKategorieHeader.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -564,7 +558,6 @@
     <Compile Include="Views\Kosten\Form_Kosten.Designer.cs">
       <DependentUpon>Form_Kosten.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Kosten\Helper.cs" />
     <Compile Include="Views\Kosten\SectionPanel.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -968,9 +961,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Kosten\ucKostenItem.resx">
       <DependentUpon>ucKostenItem.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\Kosten\ucBrennstoffZeile.resx">
-      <DependentUpon>ucBrennstoffZeile.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Kosten\ucKategorieHeader.resx">
       <DependentUpon>ucKategorieHeader.cs</DependentUpon>

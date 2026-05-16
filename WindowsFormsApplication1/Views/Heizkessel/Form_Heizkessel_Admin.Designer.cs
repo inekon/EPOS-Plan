@@ -51,6 +51,7 @@
             this.btn_Loeschen = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.textBox_Brennstoff = new System.Windows.Forms.TextBox();
+            this.checkBox_Brennwert = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label18
@@ -65,8 +66,8 @@
             // 
             // label13
             // 
-            resources.ApplyResources(this.label13, "label13");
             this.label13.BackColor = System.Drawing.Color.DimGray;
+            resources.ApplyResources(this.label13, "label13");
             this.label13.ForeColor = System.Drawing.Color.White;
             this.label13.Name = "label13";
             // 
@@ -112,8 +113,8 @@
             // 
             // comboBox_Brennstoffart
             // 
-            resources.ApplyResources(this.comboBox_Brennstoffart, "comboBox_Brennstoffart");
             this.comboBox_Brennstoffart.FormattingEnabled = true;
+            resources.ApplyResources(this.comboBox_Brennstoffart, "comboBox_Brennstoffart");
             this.comboBox_Brennstoffart.Name = "comboBox_Brennstoffart";
             this.comboBox_Brennstoffart.SelectedIndexChanged += new System.EventHandler(this.comboBox_Brennstoffart_SelectedIndexChanged);
             // 
@@ -129,8 +130,8 @@
             // 
             // comboBox_Leistung
             // 
-            resources.ApplyResources(this.comboBox_Leistung, "comboBox_Leistung");
             this.comboBox_Leistung.FormattingEnabled = true;
+            resources.ApplyResources(this.comboBox_Leistung, "comboBox_Leistung");
             this.comboBox_Leistung.Name = "comboBox_Leistung";
             this.comboBox_Leistung.SelectedIndexChanged += new System.EventHandler(this.comboBox_Leistung_SelectedIndexChanged);
             // 
@@ -147,8 +148,8 @@
             // 
             // label4
             // 
-            resources.ApplyResources(this.label4, "label4");
             this.label4.BackColor = System.Drawing.Color.DimGray;
+            resources.ApplyResources(this.label4, "label4");
             this.label4.ForeColor = System.Drawing.Color.White;
             this.label4.Name = "label4";
             // 
@@ -183,10 +184,17 @@
             resources.ApplyResources(this.textBox_Brennstoff, "textBox_Brennstoff");
             this.textBox_Brennstoff.Name = "textBox_Brennstoff";
             // 
+            // checkBox_Brennwert
+            // 
+            resources.ApplyResources(this.checkBox_Brennwert, "checkBox_Brennwert");
+            this.checkBox_Brennwert.Name = "checkBox_Brennwert";
+            this.checkBox_Brennwert.UseVisualStyleBackColor = true;
+            // 
             // Form_Heizkessel_Admin
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.checkBox_Brennwert);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.textBox_Brennstoff);
             this.Controls.Add(this.btn_Loeschen);
@@ -240,5 +248,6 @@
         private System.Windows.Forms.Button btn_Loeschen;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox textBox_Brennstoff;
+        private System.Windows.Forms.CheckBox checkBox_Brennwert;
     }
 }

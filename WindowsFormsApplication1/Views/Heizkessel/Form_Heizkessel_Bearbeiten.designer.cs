@@ -87,6 +87,7 @@ namespace WindowsFormsApplication1
             this.Label43 = new System.Windows.Forms.Label();
             this.Label44 = new System.Windows.Forms.Label();
             this.btn_CO2 = new System.Windows.Forms.Button();
+            this.checkBox_Brennwert = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -169,6 +170,7 @@ namespace WindowsFormsApplication1
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.checkBox_Brennwert);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.comboBox_Brennstoff);
             this.groupBox2.Controls.Add(this.Label6);
@@ -476,6 +478,12 @@ namespace WindowsFormsApplication1
             this.btn_CO2.UseVisualStyleBackColor = true;
             this.btn_CO2.Click += new System.EventHandler(this.btn_CO2_Click);
             // 
+            // checkBox_Brennwert
+            // 
+            resources.ApplyResources(this.checkBox_Brennwert, "checkBox_Brennwert");
+            this.checkBox_Brennwert.Name = "checkBox_Brennwert";
+            this.checkBox_Brennwert.UseVisualStyleBackColor = true;
+            // 
             // Form_Heizkessel_Bearbeiten
             // 
             resources.ApplyResources(this, "$this");
@@ -564,5 +572,6 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.Button btn_CO2;
         private System.Windows.Forms.ComboBox comboBox_Brennstoff;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.CheckBox checkBox_Brennwert;
     }
 }

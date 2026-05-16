@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
         private int kategorieID = 0;
 
         // Globale Liste, damit wir nicht bei jedem Filtern die DB abfragen müssen
-        private List<ProjektBrennstoff> m_AlleBrennstoffDaten;
+     //   private List<ProjektBrennstoff> m_AlleBrennstoffDaten;
 
         public Form_Kosten(int IDProjekt)
         {
@@ -65,7 +65,6 @@ namespace WindowsFormsApplication1
                 System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
                 null, flpContainer_Energiekosten, new object[] { true });
 
-            m_AlleBrennstoffDaten = GetBrennstoffDaten(m_ID_Projekt); // Einmal aus DB laden
             FillCarrierComboBox();
             RenderEnergieTab();
         }
@@ -723,74 +722,6 @@ namespace WindowsFormsApplication1
             flpContainer_Energiekosten.Controls.Clear();
             flpContainer_Energiekosten.SuspendLayout();
         }
-
-        private List<ProjektBrennstoff> GetBrennstoffDaten(int projektID)
-        {
-            List<ProjektBrennstoff> liste = new List<ProjektBrennstoff>();
-
-            // Dein SQL-Statement (Access-kompatibel mit Klammern für den JOIN)
-            string sql = $@"
-                SELECT 
-                    S.ID, 
-                    K.Gruppe AS KatName, 
-                    S.[Name], 
-                    S.Einheit, 
-                    S.PreisEinheit,
-                    S.Hi, 
-                    S.Hs, 
-                    S.Standard_Grundpreis, 
-                    S.Standard_Arbeitspreis,
-                    S.Standard_Leistungspreis,
-                    P.Grundpreis,
-                    P.Arbeitspreis, 
-                    P.Leistungspreis, 
-                    P.[Bezug]
-                FROM (Tab_Brennstoff_Stamm AS S 
-                INNER JOIN Tab_BrennstoffKategorien AS K ON S.ID_Kategorie = K.ID) 
-                LEFT JOIN Tab_Brennstoff_Projekt AS P ON (S.ID = P.ID_Stamm AND P.ID_Projekt = {projektID})
-                ORDER BY K.Gruppe, S.[Name];";
-
-            try
-            {
-                OleDbParameter[] p = { new OleDbParameter("id", projektID) };
-                DataTable dt = DataRepository.GetDataTable(sql, p);
-
-                for (int i = 0; i < dt.Rows.Count; i++)
-                {
-                    var b = new ProjektBrennstoff();
-
-                    // Stammdaten
-                    DataRow dr = dt.Rows[i];
-                    b.StammID = Convert.ToInt32(dr["ID"]);
-                    b.Name = dr["Name"].ToString();
-                    b.Einheit = dr["Einheit"].ToString();
-                    b.PreisEinheit = dr["PreisEinheit"].ToString();
-                    b.Hi = Convert.ToDouble(dr["Hi"] ?? 0);
-                    b.Hs = Convert.ToDouble(dr["Hs"] ?? 0);
-                    b.Kategorie = dr["KatName"].ToString();
-                    b.DefaultArbeitspreis = Convert.ToDouble(dr["Standard_Arbeitspreis"] ?? 0);
-
-                    // Projektspezifische Daten (können NULL sein wegen LEFT JOIN)
-                    object pArbeit = dr["Arbeitspreis"];
-                    object pGrund = dr["Grundpreis"];
-                    object pLeist = dr["Leistungspreis"];
-                    object pBezug = dr["Bezug"];
-
-                    b.ProjektArbeitspreis = pArbeit != DBNull.Value ? Convert.ToDouble(pArbeit) : 0;
-                    b.ProjektGrundpreis = pGrund != DBNull.Value ? Convert.ToDouble(pGrund) : 0;
-                    b.ProjektLeistungspreis = pLeist != DBNull.Value ? Convert.ToDouble(pLeist) : 0;
-                    b.Bezug = pBezug != DBNull.Value ? pBezug.ToString() : "Hi"; // Default Hi
-
-                    liste.Add(b);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Fehler beim Laden der Brennstoffdaten: " + ex.Message);
-            }
-
-            return liste;
-        }
         
         private void listBox_Energieträger_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -953,9 +884,6 @@ namespace WindowsFormsApplication1
  
             return ret;
         }
-        
-  
-
     }
 
     public class EnergyCarrier

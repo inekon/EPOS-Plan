@@ -37,6 +37,7 @@ namespace WindowsFormsApplication1
         Point prevPosition;
 
         private TabNavigationManager _navManager; // Global im Formular speichern
+        private List<TabPage> alleTabPages = new List<TabPage>();
 
         public Form_Simulation_Detail(int iD_Projekt)
         {
@@ -68,32 +69,91 @@ namespace WindowsFormsApplication1
             colorListViewHeader(ref listView_SimWP, Color.LightBlue, Color.Black);
             colorListViewHeader(ref listView_SimSPK, Color.LightBlue, Color.Black);
 
-            // Initialisiere die Navigation für TabPage 1 (z.B. dein Solar-Tab)
+            // Initialisiere die Navigation 
             _navManager = new TabNavigationManager(tabPage_Ergebnis, sim);
+
+            foreach (TabPage page in tabControl1.TabPages)
+            {
+                alleTabPages.Add(page);
+            }
+            ReihenfolgeTabPages();
+
         }
 
         public void SetControls()
         {
         }
 
-        private void ReihenfolgeTabPages()
+        public void UpdateTabPages()
         {
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
-
             ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
 
-            string[] tool = new string[4];
+            string[] tool = new string[6];
             tool[0] = ctrl.model.m_Tool_1;
             tool[1] = ctrl.model.m_Tool_2;
             tool[2] = ctrl.model.m_Tool_3;
             tool[3] = ctrl.model.m_Tool_4;
+            tool[4] = ctrl.model.m_Tool_5;
+            tool[5] = ctrl.model.m_Tool_6;
+
+            // Verhindert das Flackern des Controls während des Umbaus
+            tabControl1.SuspendLayout();
+
+            // Zuerst alle aktuell sichtbaren Tabs entfernen
+            tabControl1.TabPages.Clear();
+
+            // --- REGEEL 1: Das 1. Tab muss IMMER da sein ---
+            tabControl1.TabPages.Add(alleTabPages[0]);
+
+            // --- REGEL 2: Tabs 2 bis 5 (Index 1 bis 4) je nach m_Tool[1]..m_Tool[4] ---
+            // Hinweis: Im Code fangen Arrays bei 0 an. Wenn m_Tool[1] für das 2. Tab steht:
+            for (int i = 0; i < 4; i++)
+            {
+                if (tool[i] != "") // Oder wie auch immer deine Konfigurations-Prüfung aussieht
+                {
+                    tabControl1.TabPages.Add(tool[i]);
+                }
+            }
+
+            // --- REGEL 3: Tab 6 (Index 5) je nach ctrl.model.m_Tool_5 ---
+            if (tool[4] != "")
+            {
+                tabControl1.TabPages.Add(alleTabPages[5]);
+            }
+
+            // --- REGEL 4: Tab 7 (Index 6) je nach ctrl.model.m_Tool_6 ---
+            if (tool[5] != "")
+            {
+                tabControl1.TabPages.Add(alleTabPages[6]);
+            }
+
+            // --- REGEL 5: Das letzte Tab (Index 7) muss IMMER da sein ---
+            tabControl1.TabPages.Add(alleTabPages[7]);
+
+            // Steuerelement wieder freigeben
+            tabControl1.ResumeLayout();
+        }
+
+        private void ReihenfolgeTabPages()
+        {
+            KonfigurationCtrl ctrl = new KonfigurationCtrl();
+            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+
+            string[] tool = new string[6];
+            tool[1] = ctrl.model.m_Tool_2;
+            tool[2] = ctrl.model.m_Tool_3;
+            tool[3] = ctrl.model.m_Tool_4;
+            tool[4] = ctrl.model.m_Tool_5;
+            tool[5] = ctrl.model.m_Tool_6;
 
             int index = 1;
+            var tabPage = tabControl1.TabPages[0];
             for (int i = 0; i < 4; i++)
             {
                 if (tool[i] != "")
                 {
-                    var tabPage = tabControl1.TabPages.Cast<TabPage>().FirstOrDefault(tp => tp.Name == "tabPage_" + tool[i]);
+                    tabPage = tabControl1.TabPages.Cast<TabPage>().FirstOrDefault(tp => tp.Name == "tabPage_" + tool[i]);
                     if (tabPage != null)
                     {
                         tabControl1.TabPages.Remove(tabPage);
@@ -101,12 +161,12 @@ namespace WindowsFormsApplication1
                     }
                 }
             }
-
+            UpdateTabPages();
         }
 
         private void Form_Simulation_Detail_Load(object sender, EventArgs e)
         {
-            ReihenfolgeTabPages();
+            
         }
 
         private void init_Chart(Chart chart)

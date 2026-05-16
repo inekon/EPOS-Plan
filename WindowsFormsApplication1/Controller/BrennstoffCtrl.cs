@@ -89,8 +89,8 @@ namespace WindowsFormsApplication1
         {
             string sql = @"INSERT INTO [Tab_Heizkessel] (Name, Beschreibung, Firma, Ptherm, Brennstoff, 
                             Wirkungsgrad_Gas, Wirkungsgrad_Öl, Investitionskosten, Raumbedarf, 
-                            Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, Brennwert) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             bool success = DataRepository.ExecuteSQL(sql, CreateParameters(false));
             if (success)
@@ -108,7 +108,7 @@ namespace WindowsFormsApplication1
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?, 
                             Raumbedarf = ?, Wartungskosten = ?, Nutzungsdauer = ?, 
                             CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?, 
-                            Betriebsbereitschaftverlust = ? 
+                            Betriebsbereitschaftverlust = ?, Brennwert = ? 
                           WHERE Name = ?"; // Oder WHERE ID = ?, falls ID der Primärschlüssel ist
 
             return DataRepository.ExecuteSQL(sql, CreateParameters(true));
@@ -145,6 +145,7 @@ namespace WindowsFormsApplication1
             p.Add(new OleDbParameter("@co", this.CO));
             p.Add(new OleDbParameter("@sta", this.Staub));
             p.Add(new OleDbParameter("@bbv", this.Betriebsbereitschaftverlust));
+            p.Add(new OleDbParameter("@brn", this.Brennwert));
 
             // Bei Update steht der Name im WHERE-Teil (am Ende)
             if (isUpdate) p.Add(new OleDbParameter("@nam", this.Name ?? ""));
@@ -172,6 +173,7 @@ namespace WindowsFormsApplication1
             target.CO = row["CO"] != DBNull.Value ? Convert.ToDouble(row["CO"]) : 0.0;
             target.Staub = row["Staub"] != DBNull.Value ? Convert.ToDouble(row["Staub"]) : 0.0;
             target.Betriebsbereitschaftverlust = row["Betriebsbereitschaftverlust"] != DBNull.Value ? Convert.ToDouble(row["Betriebsbereitschaftverlust"]) : 0.0;
+            target.Brennwert = row["Brennwert"] != DBNull.Value ? Convert.ToBoolean(row["Brennwert"]) : false;  
         }
 
         private BrennstoffModel MapRowToModel(DataRow row)
