@@ -808,6 +808,7 @@ namespace WindowsFormsApplication1
                     case "LIQUID_FUEL":
                     case "SOLID_FUEL":
                     case "ANIMAL_FAT":
+                    case "HEAT":
                         uc = new ucFuelSettings(m_ID_Projekt, selectedCarrier);
                         break;
 
@@ -907,7 +908,7 @@ namespace WindowsFormsApplication1
                     try
                     {
                         DataRepository.ExecuteNonQuery(insertSql, ps);
-                        MessageBox.Show("Brennstoff-Variante erfolgreich angelegt.");
+                        MessageBox.Show("Energieträgervariante erfolgreich angelegt.");
                         return dlg.SelectedName;
                     }
                     catch (Exception ex)

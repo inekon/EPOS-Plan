@@ -37,7 +37,7 @@ namespace WindowsFormsApplication1
             numBrennwert.Maximum = 1000000;
             numGrundpreis.Maximum = 1000000;
 
-            if(carrier.PricingModel == "ELECTRICITY")
+            if(carrier.PricingModel == "ELECTRICITY" || carrier.PricingModel == "HEAT")
             {
                 lbl_Unit_Arbeitspreis.Text = "€ / kWh";
                 lbl_Unit_Heizwert.Text = "kWh / kWh";
@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1
                 lbl_Heizwert .Visible = false;
                 lbl_Unit_Brennwert.Visible = false; 
                 lbl_Unit_Heizwert.Visible = false;
-                cmbUnit.Enabled = false; // Keine Einheiten-Auswahl bei Strom
+                cmbUnit.Enabled = true; // Keine Einheiten-Auswahl bei Strom
                 groupBox_Formel.Visible = false; // Formel-Box ausblenden, da sie bei Strom keinen Sinn ergibt
             }
             else if (carrier.PricingModel == "LIQUID_FUEL" || carrier.PricingModel == "LIQUID_FUEL" || 
@@ -223,14 +223,14 @@ namespace WindowsFormsApplication1
             if (cmbUnit.SelectedItem is EnergyConversion conv)
             {
                 // Event-Handler kurzzeitig stumm schalten, um kein Dauerfeuer auszulösen
-                numArbeitspreis.ValueChanged -= Arbeitspreis_Changed;
+           //     numArbeitspreis.ValueChanged -= Arbeitspreis_Changed;
 
                 // IMMER vom Anker aus rechnen!
                 numArbeitspreis.Value = (decimal)(_basePrice / conv.Factor);
                 numHeizwert.Value = (decimal)(_baseHi / conv.Factor);
                 numBrennwert.Value = (decimal)(_baseHs / conv.Factor);
 
-                numArbeitspreis.ValueChanged += Arbeitspreis_Changed;
+          //      numArbeitspreis.ValueChanged += Arbeitspreis_Changed;
 
                 UpdatePricePerKWh();
 
@@ -283,6 +283,13 @@ namespace WindowsFormsApplication1
                 lblResult.Text = $"{result:N4} €";
                 lblFormula.Text = $"{price:N2} € ÷ {hi:N2} kWh = {result:N4} €/kWh";
             }
+
+            if (cmbUnit.SelectedItem is EnergyConversion conv)
+            {
+            ///    _basePrice = (double)numArbeitspreis.Value * conv.Factor;
+                //UpdatePricePerKWh();
+            }
+
         }
 
         private void btn_Save_Click(object sender, EventArgs e)
