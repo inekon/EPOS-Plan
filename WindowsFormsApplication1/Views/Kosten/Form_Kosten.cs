@@ -1,11 +1,8 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.Drawing;
-using System.Linq;
-using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -24,12 +21,15 @@ namespace WindowsFormsApplication1
         private string kategorie = "";
         private int kategorieID = 0;
 
-        // Globale Liste, damit wir nicht bei jedem Filtern die DB abfragen müssen
-     //   private List<ProjektBrennstoff> m_AlleBrennstoffDaten;
+        // Variable für den Extender des aktuellen Formulars
+        private HelpExtender _helpExtender;
 
         public Form_Kosten(int IDProjekt)
         {
             InitializeComponent(); // Lädt die Designer-Struktur
+
+            // Den Extender erstellen und mit dem bereits geladenen globalen Katalog füttern
+            _helpExtender = new HelpExtender(Program.HelpCatalog);
 
             m_ID_Projekt = IDProjekt;
             tabMain.SelectedIndex = 0;
@@ -67,6 +67,14 @@ namespace WindowsFormsApplication1
 
             FillCarrierComboBox();
             RenderEnergieTab();
+        }
+
+        private void Form_Kosten_Load(object sender, EventArgs e)
+        {
+            // Designer-Schutz (wichtig!)
+            if (this.DesignMode) return;
+
+            _helpExtender.RegisterForm(this);
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
@@ -513,6 +521,7 @@ namespace WindowsFormsApplication1
                         new OleDbParameter("@val", (double)initialeKosten), // Access mag Double oft lieber als Decimal
                         new OleDbParameter("@unit", "€")
                     );
+
                 }
             }
             catch (Exception ex)
@@ -660,6 +669,7 @@ namespace WindowsFormsApplication1
                 flp.Visible = false;
                 kategorieID = 3;
             }
+
         }
 
         private void btnTest_KostenUebernahme_Click(string komponente)
@@ -722,7 +732,7 @@ namespace WindowsFormsApplication1
             flpContainer_Energiekosten.Controls.Clear();
             flpContainer_Energiekosten.SuspendLayout();
         }
-        
+
         private void listBox_Energieträger_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBox_Energieträger.SelectedItem is EnergyCarrier selectedCarrier)
@@ -731,8 +741,6 @@ namespace WindowsFormsApplication1
                 flpContainer_Energiekosten.Visible = true;
                 UserControl uc = null;
 
-
-                // Prüfung des UI-Typs basierend auf PRICING_MODE oder ENERGY_GROUP
                 switch (selectedCarrier.PricingModel)
                 {
                     case "FUEL":
@@ -740,13 +748,7 @@ namespace WindowsFormsApplication1
                     case "SOLID_FUEL":
                     case "ANIMAL_FAT":
                     case "HEAT":
-                        uc = new ucFuelSettings(m_ID_Projekt, selectedCarrier);
-                        break;
-
                     case "GASEOUS_FUEL":
-                        uc = new ucFuelSettings(m_ID_Projekt, selectedCarrier);
-                        break;
-
                     case "ELECTRICITY":
                         uc = new ucFuelSettings(m_ID_Projekt, selectedCarrier);
                         break;
@@ -754,9 +756,15 @@ namespace WindowsFormsApplication1
 
                 if (uc != null)
                 {
-                    // Breite an den Container anpassen (minus Puffer für Scrollbars)
+                    // WICHTIG: Gib der Instanz einen festen Namen, den wir in der txt-Datei ansprechen können!
+                    uc.Name = "ucFuelSettings";
+
+                    // Breite an den Container anpassen
                     uc.Width = flpContainer.ClientSize.Width - 10;
                     flpContainer_Energiekosten.Controls.Add(uc);
+
+                    // JETZT ERST REGISTRIEREN, da das Control nun existiert und im Panel sitzt!
+                    _helpExtender.RegisterControl(uc, "ucFuelSettings");
                 }
             }
         }
@@ -765,8 +773,17 @@ namespace WindowsFormsApplication1
         {
             List<EnergyCarrier> carriers = new List<EnergyCarrier>();
 
-            // Wir joinen optional die ENERGY_GROUP, um z.B. nach Sortierung zu laden
-            string sql = "SELECT * FROM ENERGY_CARRIER WHERE is_active = true ORDER BY name ASC";
+            //string sql = "SELECT * FROM ENERGY_CARRIER WHERE is_active = true ORDER BY name ASC";
+
+            string sql = @"SELECT
+                            ec.*, 
+                            pm.has_hi, 
+                            pm.has_hs, 
+                            pm.has_powerprice
+                        FROM
+                            energy_carrier AS ec
+                        LEFT JOIN
+                            pricing_model AS pm ON ec.pricing_model = pm.code";
 
             DataTable dt = DataRepository.GetDataTable(sql, null);
 
@@ -782,7 +799,15 @@ namespace WindowsFormsApplication1
                     BillingUnit = row["billing_unit"].ToString(),
                     HiKwhPerUnit = row["hi_kwh_per_unit"] != DBNull.Value ? Convert.ToDouble(row["hi_kwh_per_unit"]) : 0,
                     HsKwhPerUnit = row["hs_kwh_per_unit"] != DBNull.Value ? Convert.ToDouble(row["hs_kwh_per_unit"]) : 0,
-                    ID_Brennstoff = Convert.ToInt32(row["id_brennstoff"])
+                    ID_Brennstoff = Convert.ToInt32(row["id_brennstoff"]),
+                    price_base = row["price_base"] != DBNull.Value ? Convert.ToDouble(row["price_base"]) : 0,
+                    price_work = row["price_work"] != DBNull.Value ? Convert.ToDouble(row["price_work"]) : 0,
+                    CO2 = row["co2"] != DBNull.Value ? Convert.ToDouble(row["co2"]) : 0,
+                    SO2 = row["so2"] != DBNull.Value ? Convert.ToDouble(row["so2"]) : 0,
+                    NOx = row["nox"] != DBNull.Value ? Convert.ToDouble(row["nox"]) : 0,
+                    HasHi = row["has_hi"] != DBNull.Value ? Convert.ToBoolean(row["has_hi"]) : false,
+                    HasHs = row["has_hs"] != DBNull.Value ? Convert.ToBoolean(row["has_hs"]) : false,
+                    HasPowerPrice = row["has_powerprice"] != DBNull.Value ? Convert.ToBoolean(row["has_powerprice"]) : false
                 });
             }
             return carriers;
@@ -807,8 +832,8 @@ namespace WindowsFormsApplication1
             {
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    // 1. Prüfen, ob der Code bereits existiert
-                    string checkSql = "SELECT COUNT(*) FROM energy_carrier WHERE code = ?";
+                    // Prüfen, ob der Code bereits existiert
+                    string checkSql = "SELECT COUNT(*) FROM energy_carrier WHERE name = ?";
                     int count = (int)DataRepository.ExecuteScalar(checkSql, new OleDbParameter[] {
                         new OleDbParameter("@name", dlg.SelectedName)
                     });
@@ -819,10 +844,26 @@ namespace WindowsFormsApplication1
                         return "";
                     }
 
-                    // 2. In energy_carrier speichern
+                    Object result = DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", dlg.SelectedBrennstoffID);
+                    double default_arbeitspreis = result != null ? Convert.ToDouble(result) : 0;
+                    result = DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", dlg.SelectedBrennstoffID);
+                    double default_grundpreis = result != null ? Convert.ToDouble(result) : 0;
+                    result = DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", dlg.SelectedBrennstoffID);
+                    double default_leistungspreis = result != null ? Convert.ToDouble(result) : 0;
+
+                    result = DataRepository.GetValueById("Tab_Brennstoff_Stamm", "CO2", dlg.SelectedBrennstoffID);
+                    double default_co2 = result != null ? Convert.ToDouble(result) : 0;
+                    result = DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", dlg.SelectedBrennstoffID);
+                    double default_so2 = result != null ? Convert.ToDouble(result) : 0;
+                    result = DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", dlg.SelectedBrennstoffID);
+                    double default_nox = result != null ? Convert.ToDouble(result) : 0;
+
+
+                    // In energy_carrier speichern
                     string insertSql = @"INSERT INTO energy_carrier 
-                                 (ID_Brennstoff, code, name, group_code, pricing_model, billing_unit, hi_kwh_per_unit, hs_kwh_per_unit,is_active) 
-                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                 (ID_Brennstoff, code, name, group_code, pricing_model, billing_unit, hi_kwh_per_unit,
+                                 hs_kwh_per_unit, price_work, price_base, co2, so2, nox, is_active) 
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     OleDbParameter[] ps = {
                         new OleDbParameter("@idB", dlg.SelectedBrennstoffID),
@@ -833,13 +874,54 @@ namespace WindowsFormsApplication1
                         new OleDbParameter("@unit", dlg.SelectedBillingUnit),
                         new OleDbParameter("@shi", dlg.SelectedHi),
                         new OleDbParameter("@shs", dlg.SelectedHs),
+                        new OleDbParameter("defap", default_arbeitspreis),
+                        new OleDbParameter("defgp", default_grundpreis),
+                        new OleDbParameter("co2", default_co2),
+                        new OleDbParameter("so2", default_so2),
+                        new OleDbParameter("nox", default_nox),
                         new OleDbParameter("@active", OleDbType.Boolean) { Value = true}
                     };
 
                     try
                     {
-                        DataRepository.ExecuteNonQuery(insertSql, ps);
+                        int id = DataRepository.ExecuteInsertAndGetId(insertSql, ps);
+
+                        // Historie nur bei Änderung ---
+                        string sqlHistory = @"INSERT INTO energy_price 
+                                (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+                        DataRepository.ExecuteSQL(sqlHistory, new OleDbParameter[] {
+                            new OleDbParameter("@cid", id),
+                            new OleDbParameter("@prid", m_ID_Projekt),
+                            new OleDbParameter("@ap", Math.Round(default_arbeitspreis,4)),
+                            new OleDbParameter("@hi", Math.Round(dlg.SelectedHi,4)),
+                            new OleDbParameter("@gp", Math.Round(default_grundpreis,4)),
+                            new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now },
+                            new OleDbParameter(@"au", dlg.SelectedBillingUnit)
+                        });
+
+                        string sqlInsert = @"INSERT INTO energy_Project_settings 
+                                (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs, 
+                                custom_price_base, ID_Umrechnung, co2, so2, nox) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                        DataRepository.ExecuteSQL(sqlInsert, new OleDbParameter[] {
+                        new OleDbParameter("@pid", m_ID_Projekt),
+                        new OleDbParameter("@eid", id),
+                        new OleDbParameter("@p",  Math.Round(default_arbeitspreis,4)),
+                        new OleDbParameter("@pl", Math.Round(default_leistungspreis,4)),
+                        new OleDbParameter("@h", Math.Round(dlg.SelectedHi,4)),
+                        new OleDbParameter("@hs", Math.Round(dlg.SelectedHs,4)),
+                        new OleDbParameter("@b", Math.Round(default_grundpreis,4)),
+                        new OleDbParameter(@"cid",  dlg.SelectedConvID),
+                        new OleDbParameter("@co2", default_co2),
+                        new OleDbParameter("@so2", default_so2),
+                        new OleDbParameter("@nox", default_nox)
+                    });
+
                         MessageBox.Show("Energieträgervariante erfolgreich angelegt.");
+
                         return dlg.SelectedName;
                     }
                     catch (Exception ex)
@@ -853,7 +935,7 @@ namespace WindowsFormsApplication1
 
         private void btn_Carrier_Click(object sender, EventArgs e)
         {
-            string carrierName= CreateNewEnergyCarrier();
+            string carrierName = CreateNewEnergyCarrier();
             FillCarrierComboBox();
             int index = listBox_Energieträger.FindStringExact(carrierName);
 
@@ -885,6 +967,7 @@ namespace WindowsFormsApplication1
  
             return ret;
         }
+ 
     }
 
     public class EnergyCarrier
@@ -898,6 +981,15 @@ namespace WindowsFormsApplication1
         public string GroupCode { get; set; }
         public string BillingUnit { get; set; }
         public int ID_Brennstoff { get; set; }
+        public double price_work { get; set; }
+        public double price_base { get; set; }
+        public double price_power { get; set; }
+        public double CO2 { get; set; }
+        public double SO2 { get; set; }
+        public double NOx { get; set; }
+        public bool HasPowerPrice { get; set; }
+        public bool HasHi { get; set; }
+        public bool HasHs { get; set; }
     }
 
     public class EnergyConversion

@@ -31,12 +31,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Start));
             this.tabControl_Wizard = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.panel_Klimaregion = new WindowsFormsApplication1.RoundedPanel();
-            this.label21 = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.comboBox_Klimaregion = new System.Windows.Forms.ComboBox();
-            this.label22 = new System.Windows.Forms.Label();
             this.label2_pBox_ProjektDetails = new System.Windows.Forms.Label();
             this.label_pBox_ProjektDetails = new System.Windows.Forms.Label();
             this.label2_pBox_Delete = new System.Windows.Forms.Label();
@@ -149,6 +143,8 @@
             this.pictureBox_Zusammenfassung = new System.Windows.Forms.PictureBox();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.btn_Kosten = new System.Windows.Forms.Button();
+            this.label21 = new System.Windows.Forms.Label();
+            this.label22 = new System.Windows.Forms.Label();
             this.textBox_ProjektOpen = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
@@ -156,12 +152,15 @@
             this.btn_Zurueck = new System.Windows.Forms.Button();
             this.label_Haus = new System.Windows.Forms.Label();
             this.label_ProjektStatus = new System.Windows.Forms.Label();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.label12 = new System.Windows.Forms.Label();
+            this.pictureBox4 = new System.Windows.Forms.PictureBox();
+            this.comboBox_Klima = new System.Windows.Forms.ComboBox();
+            this.btn_Help = new System.Windows.Forms.Button();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabControl_Wizard.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            this.panel_Klimaregion.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektDetails)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Bearbeiten)).BeginInit();
@@ -193,7 +192,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBoxSchnellSim)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_Zusammenfassung)).BeginInit();
             this.tabPage6.SuspendLayout();
+            this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl_Wizard
@@ -212,7 +214,6 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.panel_Klimaregion);
             this.tabPage1.Controls.Add(this.label2_pBox_ProjektDetails);
             this.tabPage1.Controls.Add(this.label_pBox_ProjektDetails);
             this.tabPage1.Controls.Add(this.label2_pBox_Delete);
@@ -237,50 +238,6 @@
             resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // panel_Klimaregion
-            // 
-            this.panel_Klimaregion.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.panel_Klimaregion.Controls.Add(this.label21);
-            this.panel_Klimaregion.Controls.Add(this.pictureBox1);
-            this.panel_Klimaregion.Controls.Add(this.panel1);
-            this.panel_Klimaregion.Controls.Add(this.label22);
-            this.panel_Klimaregion.CornerRadius = 9;
-            resources.ApplyResources(this.panel_Klimaregion, "panel_Klimaregion");
-            this.panel_Klimaregion.Name = "panel_Klimaregion";
-            // 
-            // label21
-            // 
-            resources.ApplyResources(this.label21, "label21");
-            this.label21.Name = "label21";
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.globe;
-            resources.ApplyResources(this.pictureBox1, "pictureBox1");
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.TabStop = false;
-            // 
-            // panel1
-            // 
-            this.panel1.BackColor = System.Drawing.Color.DodgerBlue;
-            this.panel1.Controls.Add(this.comboBox_Klimaregion);
-            resources.ApplyResources(this.panel1, "panel1");
-            this.panel1.Name = "panel1";
-            // 
-            // comboBox_Klimaregion
-            // 
-            resources.ApplyResources(this.comboBox_Klimaregion, "comboBox_Klimaregion");
-            this.comboBox_Klimaregion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox_Klimaregion.FormattingEnabled = true;
-            this.comboBox_Klimaregion.Name = "comboBox_Klimaregion";
-            this.comboBox_Klimaregion.SelectedIndexChanged += new System.EventHandler(this.comboBox_Klimaregion_SelectedIndexChanged);
-            this.comboBox_Klimaregion.DropDownClosed += new System.EventHandler(this.comboBox_Klimaregion_DropDownClosed);
-            // 
-            // label22
-            // 
-            resources.ApplyResources(this.label22, "label22");
-            this.label22.Name = "label22";
             // 
             // label2_pBox_ProjektDetails
             // 
@@ -1211,6 +1168,16 @@
             this.btn_Kosten.Name = "btn_Kosten";
             this.btn_Kosten.UseVisualStyleBackColor = true;
             // 
+            // label21
+            // 
+            resources.ApplyResources(this.label21, "label21");
+            this.label21.Name = "label21";
+            // 
+            // label22
+            // 
+            resources.ApplyResources(this.label22, "label22");
+            this.label22.Name = "label22";
+            // 
             // textBox_ProjektOpen
             // 
             this.textBox_ProjektOpen.BackColor = System.Drawing.Color.White;
@@ -1260,6 +1227,44 @@
             this.label_ProjektStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.label_ProjektStatus.Name = "label_ProjektStatus";
             // 
+            // panel1
+            // 
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.label12);
+            this.panel1.Controls.Add(this.pictureBox4);
+            this.panel1.Controls.Add(this.comboBox_Klima);
+            resources.ApplyResources(this.panel1, "panel1");
+            this.panel1.Name = "panel1";
+            // 
+            // label12
+            // 
+            resources.ApplyResources(this.label12, "label12");
+            this.label12.Name = "label12";
+            // 
+            // pictureBox4
+            // 
+            this.pictureBox4.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.globe1;
+            resources.ApplyResources(this.pictureBox4, "pictureBox4");
+            this.pictureBox4.Name = "pictureBox4";
+            this.pictureBox4.TabStop = false;
+            // 
+            // comboBox_Klima
+            // 
+            resources.ApplyResources(this.comboBox_Klima, "comboBox_Klima");
+            this.comboBox_Klima.FormattingEnabled = true;
+            this.comboBox_Klima.Name = "comboBox_Klima";
+            this.comboBox_Klima.SelectedIndexChanged += new System.EventHandler(this.comboBox_Klima_SelectedIndexChanged);
+            // 
+            // btn_Help
+            // 
+            this.btn_Help.BackColor = System.Drawing.Color.Transparent;
+            this.btn_Help.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.help_icon;
+            resources.ApplyResources(this.btn_Help, "btn_Help");
+            this.btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btn_Help.FlatAppearance.BorderSize = 0;
+            this.btn_Help.Name = "btn_Help";
+            this.btn_Help.UseVisualStyleBackColor = false;
+            // 
             // pictureBox2
             // 
             this.pictureBox2.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.PTitel;
@@ -1268,12 +1273,21 @@
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.TabStop = false;
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.globe;
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.TabStop = false;
+            // 
             // Form_Start
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ControlBox = false;
+            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.btn_Help);
             this.Controls.Add(this.label_ProjektStatus);
             this.Controls.Add(this.label_Haus);
             this.Controls.Add(this.btn_Zurueck);
@@ -1289,10 +1303,6 @@
             this.tabControl_Wizard.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
-            this.panel_Klimaregion.ResumeLayout(false);
-            this.panel_Klimaregion.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pBox_ProjektDetails)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Delete)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pBox_Bearbeiten)).EndInit();
@@ -1328,7 +1338,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.pBoxSchnellSim)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_Zusammenfassung)).EndInit();
             this.tabPage6.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1456,12 +1470,14 @@
         private System.Windows.Forms.Label label_Haus;
         private System.Windows.Forms.Label label_ProjektStatus;
         private System.Windows.Forms.Label label22;
-        private System.Windows.Forms.ComboBox comboBox_Klimaregion;
         private System.Windows.Forms.PictureBox pBox_ProjektOeffnen;
-        private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button btn_Kosten;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label21;
-        private WindowsFormsApplication1.RoundedPanel panel_Klimaregion;
+        private System.Windows.Forms.Button btn_Help;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.PictureBox pictureBox4;
+        private System.Windows.Forms.ComboBox comboBox_Klima;
+        private System.Windows.Forms.Label label12;
     }
 }

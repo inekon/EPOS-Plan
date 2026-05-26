@@ -24,11 +24,15 @@ namespace WindowsFormsApplication1
         // Value: Die Methode, die aufgerufen werden soll
         private Dictionary<string, Action<object, EventArgs>> _clickEvents;
 
+        // Hilfsklasse, die die Verbindung zwischen Controls und Hilfeseiten herstellt
+        private HelpExtender _helpExtender;
+
         public Form_Start()
         {
             InitializeComponent();
             textBox_ProjektOpen.Text = MyResource.Resource.Text_Select;
             InitEventDictionary();
+            _helpExtender = new HelpExtender(Program.HelpCatalog);
         }
 
         private void Form_Start_Load(object sender, EventArgs e)
@@ -50,14 +54,20 @@ namespace WindowsFormsApplication1
             label_Haus.Location = new Point(30, (pictureBox2.Height -label_Haus.Height)/2); // Achtung: Location ist jetzt relativ zum Panel!
 
             // DropDownStyle auf DropDownList
-            comboBox_Klimaregion.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox_Klimaregion.FlatStyle = FlatStyle.Popup;
+            comboBox_Klima.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox_Klima.FlatStyle = FlatStyle.Popup;
             // Hintergrundfarbe auf Weiß setzen
-            comboBox_Klimaregion.BackColor = Color.White;
+            comboBox_Klima.BackColor = Color.White;
             // Textfarbe auf Schwarz
-            comboBox_Klimaregion.ForeColor = Color.Black;
+            comboBox_Klima.ForeColor = Color.Black;
             ComboBox_Klimaregion();
-            comboBox_Klimaregion.SetPlaceholder("Bitte zuerst ein Projekt auswählen.");
+            comboBox_Klima.SetPlaceholder("Bitte zuerst ein Projekt auswählen.");
+
+            // Designer-Schutz (wichtig!)
+            if (this.DesignMode) return;
+
+            // jedes Control mit einem passenden Key in der Doku verbinden
+            _helpExtender.RegisterForm(this);
         }
 
         private void tabControl_Wizard_DrawItem(object sender, DrawItemEventArgs e)
@@ -255,7 +265,7 @@ namespace WindowsFormsApplication1
 
         public void SetKlima(string szKlima)
         {
-            comboBox_Klimaregion.Text = szKlima;
+            comboBox_Klima.Text = szKlima;
         }
 
         private void pBox_ProjektOeffnen_Click(object sender, EventArgs e)
@@ -272,7 +282,7 @@ namespace WindowsFormsApplication1
             }
             label_ProjektStatus.Text = "✔";
             label_ProjektStatus.ForeColor = Color.Green;
-            comboBox_Klimaregion.Text = GetProjektKlimaregion(m_ID_Projekt);
+            comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
         }
 
         public string GetKlimaregion(int ID_Klimaregion)
@@ -701,7 +711,7 @@ namespace WindowsFormsApplication1
                 for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
                 label_ProjektStatus.Text = "✔";
                 label_ProjektStatus.ForeColor = Color.Green;
-                comboBox_Klimaregion.Text = GetProjektKlimaregion(m_ID_Projekt);
+                comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
                 UpdateWizardSymbole();
             }
             else { MessageBox.Show("Das zuletzt geöffnete Projekt ist gelöscht!"); return; }
@@ -1105,7 +1115,7 @@ namespace WindowsFormsApplication1
                 textBox_ProjektOpen.Text = "bitte auswählen!";
                 label_ProjektStatus.ForeColor = Color.FromArgb(192,0,0);
                 label_ProjektStatus.Text = "⚠";
-                comboBox_Klimaregion.Text = "";
+                comboBox_Klima.Text = "";
             }
             
         }
@@ -1754,13 +1764,13 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             if (m_szProjektname != "")
             {
-                comboBox_Klimaregion.Text = m_szProjektname;
+                comboBox_Klima.Text = m_szProjektname;
             }
             KlimaregionCtrl ctrl = new KlimaregionCtrl();
             ctrl.ReadAll();
             for (int i = 0; i < ctrl.rows; i++)
             {
-                comboBox_Klimaregion.Items.Add(ctrl.items[i].m_szName);
+                comboBox_Klima.Items.Add(ctrl.items[i].m_szName);
             }
         }
 
@@ -1770,10 +1780,10 @@ namespace WindowsFormsApplication1
             KlimaregionCtrl ctrl_klimaregion = new KlimaregionCtrl();
 
             this.ActiveControl = null;
-            if (string.IsNullOrEmpty(m_szProjektname) || string.IsNullOrEmpty(comboBox_Klimaregion.Text)) return;
+            if (string.IsNullOrEmpty(m_szProjektname) || string.IsNullOrEmpty(comboBox_Klima.Text)) return;
             
             ctrl_projekt.ReadSingle(m_szProjektname);
-            ctrl_projekt.m_ID_Klimaregion = GetKlimaregion(comboBox_Klimaregion.Text);
+            ctrl_projekt.m_ID_Klimaregion = GetKlimaregion(comboBox_Klima.Text);
             ctrl_projekt.Update(); 
         }
 
@@ -1849,6 +1859,11 @@ namespace WindowsFormsApplication1
         {
             // Schiebt den Fokus auf das Parent-Element (z.B. das Panel oder die Form)
             this.ActiveControl = null;
+        }
+
+        private void comboBox_Klima_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.panel1.Focus();
         }
     }
 }

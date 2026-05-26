@@ -255,6 +255,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Allgemein\DataRepository.cs" />
+    <Compile Include="Allgemein\Hilfe\HelpCatalog.cs" />
     <Compile Include="Allgemein\Import\CEC\CECDataService.cs" />
     <Compile Include="Allgemein\GrafikTools\ChartManager.cs" />
     <Compile Include="Allgemein\GrafikTools\Form_ChartZoom.cs">
@@ -279,6 +280,12 @@
     <Compile Include="Allgemein\Import\VDI 3805\PufferSpImport.cs" />
     <Compile Include="Allgemein\Import\CEC\PVModule.cs" />
     <Compile Include="Allgemein\Update\UpdateDatabaseFromScript.cs" />
+    <Compile Include="Views\Help\Form_HelpPopup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Help\Form_HelpPopup.Designer.cs">
+      <DependentUpon>Form_HelpPopup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Kosten\Form_CaseEingabe.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -825,12 +832,6 @@
     <Compile Include="Views\Update\Form_Update.Designer.cs">
       <DependentUpon>Form_Update.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Update\ScriptGenerator.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Update\ScriptGenerator.Designer.cs">
-      <DependentUpon>ScriptGenerator.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Wizard\Wizard_Stromlastgang.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -937,6 +938,9 @@
     </Compile>
     <EmbeddedResource Include="Allgemein\Form_Hinweis.resx">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Help\Form_HelpPopup.resx">
+      <DependentUpon>Form_HelpPopup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Kosten\Form_CaseEingabe.resx">
       <DependentUpon>Form_CaseEingabe.cs</DependentUpon>
@@ -1445,9 +1449,6 @@
     <EmbeddedResource Include="Views\Update\Form_Update.resx">
       <DependentUpon>Form_Update.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Update\ScriptGenerator.resx">
-      <DependentUpon>ScriptGenerator.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Views\Wizard\WizardParent.de-DE.resx">
       <DependentUpon>WizardParent.cs</DependentUpon>
     </EmbeddedResource>
@@ -1728,6 +1729,7 @@
     <Content Include="Resources\edit.png" />
     <None Include="Resources\Klimaregion_bild.png" />
     <None Include="Resources\globe.png" />
+    <None Include="Resources\help_icon.png" />
     <Content Include="Resources\PDetailansicht.jpg" />
     <None Include="Resources\PSchnellSim.jpg" />
     <None Include="Resources\PDetailSim.jpg" />

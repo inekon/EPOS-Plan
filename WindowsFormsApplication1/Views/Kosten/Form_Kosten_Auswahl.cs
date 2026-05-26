@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.OleDb;
 using System.Windows.Forms;
 
@@ -17,6 +18,7 @@ namespace WindowsFormsApplication1
         public string SelectedBillingUnit { get; private set; }
         public double SelectedHi { get; private set; }
         public double SelectedHs { get; private set; }
+        public int SelectedConvID { get; private set; } 
 
         public Form_Kosten_Auswahl()
         {
@@ -69,6 +71,32 @@ namespace WindowsFormsApplication1
                 SelectedHi = (double)row["Hi"];
                 SelectedHs = (double)row["Hs"];
             }
+            
+            SelectedConvID = SelectedConvID = GetConvID(new EnergyConversion
+            {
+                IDBrennstoff = SelectedBrennstoffID,
+                FromUnit = SelectedBillingUnit,
+                ToUnitCode = SelectedBillingUnit
+            });
+        }
+
+        public int GetConvID(object selectedItem)
+        {
+            if (selectedItem is EnergyConversion conv)
+            {
+                string sql = "SELECT ID FROM ENERGY_CONVERSION WHERE id_brennstoff = ? AND from_unit = ? AND to_unit = ?";
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@cid", conv.IDBrennstoff),
+                    new OleDbParameter("@fu", conv.FromUnit),
+                    new OleDbParameter("@tu", conv.ToUnitCode)
+                };
+                DataTable dt = DataRepository.GetDataTable(sql, ps);
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    return Convert.ToInt32(dt.Rows[0]["ID"]);
+                }
+            }
+            return -1; // Fehlerfall
         }
 
         private void btn_OK_Click(object sender, EventArgs e)

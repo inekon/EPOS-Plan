@@ -45,6 +45,7 @@
             this.flpContainer_Energiekosten = new System.Windows.Forms.FlowLayoutPanel();
             this.label6 = new System.Windows.Forms.Label();
             this.pnlHeader = new System.Windows.Forms.Panel();
+            this.btn_Help = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlFooter = new System.Windows.Forms.Panel();
             this.label_Gesamt = new System.Windows.Forms.Label();
@@ -177,7 +178,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(205, 74);
             this.label3.TabIndex = 0;
-            this.label3.Text = "Energieerzeuger auswählen";
+            this.label3.Text = "Energieträger auswählen";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tabWartung
@@ -273,7 +274,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(205, 74);
             this.label2.TabIndex = 0;
-            this.label2.Text = "Energieerzeuger auswählen";
+            this.label2.Text = "Energieträger auswählen";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tabEnergie
@@ -383,18 +384,32 @@
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(205, 74);
             this.label6.TabIndex = 1;
-            this.label6.Text = "Energieerzeuger auswählen";
+            this.label6.Text = "Energieträger auswählen";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pnlHeader
             // 
             this.pnlHeader.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(31)))), ((int)(((byte)(61)))));
+            this.pnlHeader.Controls.Add(this.btn_Help);
             this.pnlHeader.Controls.Add(this.lblTitle);
             this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlHeader.Location = new System.Drawing.Point(0, 0);
             this.pnlHeader.Name = "pnlHeader";
             this.pnlHeader.Size = new System.Drawing.Size(1015, 52);
             this.pnlHeader.TabIndex = 1;
+            // 
+            // btn_Help
+            // 
+            this.btn_Help.BackgroundImage = global::WindowsFormsApplication1.Properties.Resources.help_icon;
+            this.btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btn_Help.FlatAppearance.BorderSize = 0;
+            this.btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_Help.Location = new System.Drawing.Point(968, 13);
+            this.btn_Help.Name = "btn_Help";
+            this.btn_Help.Size = new System.Drawing.Size(28, 28);
+            this.btn_Help.TabIndex = 1;
+            this.btn_Help.UseVisualStyleBackColor = true;
             // 
             // lblTitle
             // 
@@ -468,8 +483,11 @@
             this.Controls.Add(this.panel1_space);
             this.Controls.Add(this.pnlHeader);
             this.Controls.Add(this.pnlFooter);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Form_Kosten";
             this.Text = "Kosteneditor";
+            this.Load += new System.EventHandler(this.Form_Kosten_Load);
             this.tabMain.ResumeLayout(false);
             this.tabInvest.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
@@ -530,5 +548,6 @@
         private System.Windows.Forms.Button btn_Carrier;
         private System.Windows.Forms.Button btn_Delete;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button btn_Help;
     }
 }
