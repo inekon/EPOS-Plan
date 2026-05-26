@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -19,8 +20,25 @@ namespace WindowsFormsApplication1
             menu.ProjektNeu();
         }
 
-        private void MDIMainForm_Load(object sender, EventArgs e)
+        private async void MDIMainForm_Load(object sender, EventArgs e)
         {
+            // Verhindert, dass der Designer in Visual Studio die API blockiert
+            if (this.DesignMode) return;
+
+            try
+            {
+                // Einmaliger Download der Slugs beim echten Programmstart
+                label_OnlineDoku.Left = (this.ClientSize.Width - label_OnlineDoku.Width) / 2;
+                label_OnlineDoku.Top = (this.ClientSize.Height - label_OnlineDoku.Height) / 2;
+                label_OnlineDoku.Visible = true;
+                await Program.HelpCatalog.LoadAllAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Fehler beim Laden der Doku: " + ex.Message);
+            }
+            label_OnlineDoku.Visible = false;
+
             Program.startfrm = (Form_Start)Program.menuectrl.OpenForm(typeof(Form_Start), true);
         }
 
@@ -262,17 +280,6 @@ namespace WindowsFormsApplication1
             frm.ShowDialog();
         }
 
-        private void MenuItem_UpdateDBStruktur_Click(object sender, EventArgs e)
-        {
-            UpdateDatabaseFromScript update = new UpdateDatabaseFromScript();
-            update.UpdateDatabase(Application.StartupPath + @"\UpdateScript.txt");
-        }
-
-        private void MenuItem_ScriptGenerator_Click(object sender, EventArgs e)
-        {
-            Form_ScriptGenerator frm = new Form_ScriptGenerator();  
-            frm.ShowDialog();   
-        }
     }
 }
 

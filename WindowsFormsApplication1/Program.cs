@@ -23,12 +23,15 @@ namespace WindowsFormsApplication1
         public static string ApplicationPath_User = "";
         public static int nLanguage = 0; // 0=de, 1=en  
 
+        // Der globale Katalog, auf den alle Formulare zugreifen können
+        public static WordPressHelpCatalog HelpCatalog { get; private set; }
+
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
         /// </summary>
         [STAThread]
         static void Main()
-                               {
+        {
               
             var key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
             if (key == null)
@@ -87,6 +90,16 @@ namespace WindowsFormsApplication1
                 Form_Update formUpdate = new Form_Update();
                 formUpdate.ShowDialog();
             }
+
+            // Katalog-Objekt einmalig erstellen
+            // HelpCatalog = new WordPressHelpCatalog("https://wordpress.org/news");
+
+            // Visuelle Hilfe lokal testen:
+            // Wenn du die Hilfe lokal testen möchtest, kannst du einen einfachen HTTP-Server verwenden,
+            // um die Testartikel bereitzustellen. Hier ist eine schnelle Anleitung, wie du das mit dem .NET-Tool "dotnet-serve" machen kannst:
+            // dotnet tool install --global dotnet-serve
+            // starten mit : dotnet serve --directory "C:\Pfad\zu\deinem\Hilfeordner" --port 8080
+            HelpCatalog = new WordPressHelpCatalog("http://localhost:8080"); // Lokaler Testserver mit Testartik
 
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);

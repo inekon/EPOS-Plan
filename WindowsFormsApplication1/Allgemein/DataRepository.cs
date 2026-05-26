@@ -95,6 +95,35 @@ namespace WindowsFormsApplication1
             }
         }
 
+        public static int ExecuteInsertAndGetId(string insertSql, OleDbParameter[] parameters)
+        {
+            // Nutzen Sie hier Ihren bestehenden Verbindungsstring
+            using (var conn = new OleDbConnection(GetConnectionString()))
+            {
+                try
+                {
+                    conn.Open();
+                    using (var cmd = new OleDbCommand(insertSql, conn))
+                    {
+                        if (parameters != null) cmd.Parameters.AddRange(parameters);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Holt die ID des gerade erzeugten Datensatzes auf dieser Verbindung
+                    using (var cmdIdentity = new OleDbCommand("SELECT @@IDENTITY", conn))
+                    {
+                        return Convert.ToInt32(cmdIdentity.ExecuteScalar());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.Forms.MessageBox.Show("Datenbankfehler (NonQuery): " + ex.Message);
+                    // Wir geben -1 zurück, um einen Fehler von "0 betroffenen Zeilen" zu unterscheiden
+                    return 0;
+                }
+            }
+        }
+
         public static object ExecuteScalar(string sql, params OleDbParameter[] parameters)
         {
             using (OleDbConnection conn = new OleDbConnection(GetConnectionString()))
@@ -203,6 +232,13 @@ namespace WindowsFormsApplication1
             string sql = $"SELECT ID FROM {tableName} WHERE {nameField} = ?";
             object result = ExecuteScalar(sql, new OleDbParameter("?", nameValue));
             return result != null ? Convert.ToInt32(result) : -1;
+        }
+
+        public static object GetValueById(string tableName, string nameField, int id)
+        {
+            string sql = $"SELECT {nameField} FROM {tableName} WHERE id = ?";
+            object result = ExecuteScalar(sql, new OleDbParameter("?", id));
+            return result;
         }
     }
 }

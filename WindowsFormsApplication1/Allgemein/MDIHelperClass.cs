@@ -9,6 +9,7 @@ namespace WindowsFormsApplication1
     class MDIHelperClass
     {
         public Form newMDIChild;
+
         public Form openForm(Type clazz, Form mainForm)
         {
             Object theObject = Activator.CreateInstance(clazz);
@@ -17,22 +18,11 @@ namespace WindowsFormsApplication1
             // Zugriff auf die Sammlung der MDI-Child-Fenster
             Form[] mdiChildren = parentForm.MdiChildren;
 
-            // Iteriere über die Sammlung und arbeite mit jedem MDI-Child-Fenster
+            // Iterieren über die Sammlung
             bool bFound = false;
             foreach (Form childForm in mdiChildren)
             {
-                // Hier kannst du mit jedem MDI-Child-Fenster arbeiten, z.B.
-                // - den Text der Form ändern
-                // - das Formular schließen
-                // - das Formular aktivieren
-
-                Console.WriteLine("MDI-Child-Fenster: " + childForm.Text); // Nur zum Beispiel
-
-                // Beispiel zum Aktivieren eines Child-Fensters
-                // childForm.Activate();
-
-                // Beispiel zum Schließen eines Child-Fensters
-                // childForm.Close();
+                Console.WriteLine("MDI-Child-Fenster: " + childForm.Text);
 
                 if (childForm.Text == ((Form)theObject).Text)
                 {
@@ -40,7 +30,6 @@ namespace WindowsFormsApplication1
                     bFound = true;
                     newMDIChild = childForm;
                 }
-
             }
 
             if (!bFound)

@@ -38,6 +38,7 @@ namespace WindowsFormsApplication1
 
         private TabNavigationManager _navManager; // Global im Formular speichern
         private List<TabPage> alleTabPages = new List<TabPage>();
+        private Dictionary<string, TabPage> dictAllTabPages = new Dictionary<string, TabPage>();
 
         public Form_Simulation_Detail(int iD_Projekt)
         {
@@ -75,9 +76,9 @@ namespace WindowsFormsApplication1
             foreach (TabPage page in tabControl1.TabPages)
             {
                 alleTabPages.Add(page);
+                dictAllTabPages.Add(page.Name , page); 
             }
             ReihenfolgeTabPages();
-
         }
 
         public void SetControls()
@@ -104,7 +105,9 @@ namespace WindowsFormsApplication1
             tabControl1.TabPages.Clear();
 
             // --- REGEEL 1: Das 1. Tab muss IMMER da sein ---
-            tabControl1.TabPages.Add(alleTabPages[0]);
+            TabPage gefundeneSeite;
+            dictAllTabPages.TryGetValue("tabPage_Bedarf", out gefundeneSeite);
+            tabControl1.TabPages.Add(gefundeneSeite);
 
             // --- REGEL 2: Tabs 2 bis 5 (Index 1 bis 4) je nach m_Tool[1]..m_Tool[4] ---
             // Hinweis: Im Code fangen Arrays bei 0 an. Wenn m_Tool[1] für das 2. Tab steht:
@@ -112,24 +115,28 @@ namespace WindowsFormsApplication1
             {
                 if (tool[i] != "") // Oder wie auch immer deine Konfigurations-Prüfung aussieht
                 {
-                    tabControl1.TabPages.Add(tool[i]);
+                    dictAllTabPages.TryGetValue("tabPage_" + tool[i], out gefundeneSeite);
+                    tabControl1.TabPages.Add(gefundeneSeite);
                 }
             }
 
             // --- REGEL 3: Tab 6 (Index 5) je nach ctrl.model.m_Tool_5 ---
             if (tool[4] != "")
             {
-                tabControl1.TabPages.Add(alleTabPages[5]);
+                dictAllTabPages.TryGetValue("tabPage_Photovoltaik", out gefundeneSeite);
+                tabControl1.TabPages.Add(gefundeneSeite);
             }
 
             // --- REGEL 4: Tab 7 (Index 6) je nach ctrl.model.m_Tool_6 ---
             if (tool[5] != "")
             {
-                tabControl1.TabPages.Add(alleTabPages[6]);
+                dictAllTabPages.TryGetValue("tabPage_Stromspeicher", out gefundeneSeite);
+                tabControl1.TabPages.Add(gefundeneSeite);
             }
 
             // --- REGEL 5: Das letzte Tab (Index 7) muss IMMER da sein ---
-            tabControl1.TabPages.Add(alleTabPages[7]);
+            dictAllTabPages.TryGetValue("tabPage_Ergebnis", out gefundeneSeite);
+            tabControl1.TabPages.Add(gefundeneSeite);
 
             // Steuerelement wieder freigeben
             tabControl1.ResumeLayout();
