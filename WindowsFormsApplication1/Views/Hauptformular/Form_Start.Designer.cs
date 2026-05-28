@@ -313,6 +313,7 @@
             // label2_pBox_ProjektOeffnen
             // 
             resources.ApplyResources(this.label2_pBox_ProjektOeffnen, "label2_pBox_ProjektOeffnen");
+            this.label2_pBox_ProjektOeffnen.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label2_pBox_ProjektOeffnen.ForeColor = System.Drawing.Color.DimGray;
             this.label2_pBox_ProjektOeffnen.Name = "label2_pBox_ProjektOeffnen";
             this.label2_pBox_ProjektOeffnen.Click += new System.EventHandler(this.CentralControl_Click);
@@ -320,6 +321,7 @@
             // label_pBox_ProjektOeffnen
             // 
             resources.ApplyResources(this.label_pBox_ProjektOeffnen, "label_pBox_ProjektOeffnen");
+            this.label_pBox_ProjektOeffnen.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label_pBox_ProjektOeffnen.Name = "label_pBox_ProjektOeffnen";
             this.label_pBox_ProjektOeffnen.Click += new System.EventHandler(this.CentralControl_Click);
             // 

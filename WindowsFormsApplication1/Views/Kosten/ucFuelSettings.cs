@@ -95,7 +95,6 @@ namespace WindowsFormsApplication1
         {
             lblCarrierName.Text = $"{_carrier.Name}  (VDI 3805 {_carrier.Code})";
             lblGruppe.Text = $"Gruppe: {_carrier.GroupCode}";
-
             // Das neue Datum-Feld standardmäßig auf JETZT setzen
             dtpValidFrom.Value = DateTime.Now;
 
@@ -187,7 +186,6 @@ namespace WindowsFormsApplication1
                 lbl_Unit_Heizwert.Text = $"kWh/{conv.ToUnitCode}";
                 lbl_Unit_Brennwert.Text = $"kWh/{conv.ToUnitCode}";
             }
-
             UpdatePricePerKWh();
             SetupHistoryGrid();
             LoadHistory(_carrier.ID, _projectId);
