@@ -44,7 +44,7 @@ namespace WindowsFormsApplication1
             // Text im LinkLabel formatieren
             linkLabel_Doku.Text = $"Kapitel: {titel}\r\n➔ Hier klicken für Online-Doku";
 
-            // TIPP: Erhöhe den Y-Versatz minimal auf +25, um der Maus mehr "Luft" zu geben,
+            // Y-Versatz minimal auf +25 erhöhen, um der Maus mehr "Luft" zu geben,
             // damit sie beim Erscheinen nicht direkt AUF dem Fenster landet.
             this.Location = new Point(position.X + 15, position.Y + 25);
 

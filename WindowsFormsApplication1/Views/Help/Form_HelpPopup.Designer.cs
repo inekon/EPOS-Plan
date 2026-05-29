@@ -34,6 +34,7 @@
             // linkLabel_Doku
             // 
             this.linkLabel_Doku.AutoSize = true;
+            this.linkLabel_Doku.BackColor = System.Drawing.Color.LightYellow;
             this.linkLabel_Doku.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.linkLabel_Doku.Location = new System.Drawing.Point(12, 9);
             this.linkLabel_Doku.Name = "linkLabel_Doku";
@@ -50,8 +51,10 @@
             this.BackColor = System.Drawing.Color.LightYellow;
             this.ClientSize = new System.Drawing.Size(264, 45);
             this.Controls.Add(this.linkLabel_Doku);
+            this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "Form_HelpPopup";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Form_HelpPopup";
             this.TopMost = true;
