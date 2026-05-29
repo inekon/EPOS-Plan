@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-
 namespace WindowsFormsApplication1
 {
     public class HelpEntry
@@ -46,11 +45,10 @@ namespace WindowsFormsApplication1
         }
 */
  
-// Falls Ihre Klasse ein internes Dictionary nutzt (z. B. private Dictionary<string, HelpEntry> _cache;)
-public async Task LoadAllAsync()
+    public async Task LoadAllAsync()
     {
         // Pfad für die lokale Backup-Datei im AppData-Verzeichnis
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DeineAnwendung");
+        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
         string localBackupPath = Path.Combine(appDataFolder, "help_cache.json");
 
         int currentPage = 1;
@@ -63,15 +61,32 @@ public async Task LoadAllAsync()
 
         while (hasMorePages)
         {
-            // per_page auf 100 erhöht für maximale Effizienz, page= dynamisch angehängt
+
+            // Plaintext, Wordpress Link Aufbau
+            //
+            //    http://deine-domain.de/wp-json/wp/v2/help
+            //    └-─────────┬──────────┘└───┬───┘  └─┬┘└─┬┘
+            //        Website - URL  API Präfix  Version REST-Base(Custom Post Type)
+            
             var url = $"{_baseUrl}/wp-json/wp/v2/help?per_page=100&page={currentPage}&_fields=slug,link,title";
+            // per_page auf 100 erhöht für maximale Effizienz, page= dynamisch angehängt
+
+            // 1. wp-json (Das API - Präfix): Das sagt WordPress: „Achtung, jetzt kommt keine normale HTML-Webseite für den Browser,
+            //                                sondern eine Daten-Anfrage im JSON-Format.“
+            //
+            // 2. wp/v2 (Der Namensraum / Namespace): wp steht für die WordPress-Kernfunktionen, v2 für die Version 2 der API.
+            //
+            // 3. help (Die REST-Base / Der Post-Type): Das ist der entscheidende Teil.In WordPress gibt es standardmäßig zwei
+            //                                          eingebaute Inhaltstypen: posts (Beiträge) und pages (Seiten).
+            //                                          Wenn du also Standard-Seiten abfragst, heißt die URL.../wp/v2/pages.
+            //                                          Da aber ein eigenes Hilfesystem aufgebaut wird, einen Custom Post Type nutzen.
 
             try
             {
                 // Timeout schützt vor ewigem Hängen bei schlechter Verbindung
                 using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(10));
-                var response = await _http.GetAsync(url, cts.Token);
 
+                var response = await _http.GetAsync(url, cts.Token);
                 if (!response.IsSuccessStatusCode)
                 {
                     hasMorePages = false;
@@ -85,7 +100,7 @@ public async Task LoadAllAsync()
                 if (array.ValueKind != JsonValueKind.Array || array.GetArrayLength() == 0)
                 {
                     hasMorePages = false;
-                    if (currentPage > 1) onlineLoadSuccessful = true; // Wir haben auf vorherigen Seiten Daten erhalten
+                    if (currentPage > 1) onlineLoadSuccessful = true; // auf vorherigen Seiten Daten erhalten
                 }
                 else
                 {
@@ -173,8 +188,6 @@ public async Task LoadAllAsync()
             }
         }
     }
-
-
 
     // Hilfsmethode, um die Keys im Testprogramm auszulesen
     public ICollection<string> GetAllCachedSlugs() => _cache.Keys;
@@ -297,20 +310,20 @@ public async Task LoadAllAsync()
 
             int nextDot = remainingPath.IndexOf('.');
 
-            // FALL A: Wir suchen das finale Control (z.B. "btn_Carrier")
+            // FALL A: das finale Control (z.B. "btn_Carrier") suchen
             if (nextDot == -1)
             {
                 return FindControlByNameDeep(container, remainingPath);
             }
 
-            // FALL B: Wir müssen zuerst einen Zwischen-Container finden (z.B. "ucCarrierPanel")
+            // FALL B: existiert eine Zwischen-Container? usercontrol? (z.B. "ucCarrierPanel")
             string currentTargetName = remainingPath.Substring(0, nextDot).Trim();
             string tail = remainingPath.Substring(nextDot + 1).Trim();
 
             Control nextContainer = FindControlByNameDeep(container, currentTargetName);
             if (nextContainer != null)
             {
-                // Tiefer graben: Wir suchen im gefundenen Container nach dem Rest des Pfades ("tail")
+                // Tiefer graben: im gefundenen Container nach dem Rest des Pfades ("tail") suchen
                 return FindControlRecursive(nextContainer, tail);
             }
 
@@ -330,7 +343,7 @@ public async Task LoadAllAsync()
                 return root;
             }
 
-            // Durchsuche alle Kinder und Kindeskinder rekursiv
+            // Durchsuchen: alle Kinder und Kindeskinder rekursiv
             foreach (Control child in root.Controls)
             {
                 Control found = FindControlByNameDeep(child, name);
@@ -343,7 +356,6 @@ public async Task LoadAllAsync()
             return null;
         }
 
-        // --- Die bekannten Mouse-Events (bleiben unverändert) ---
         private void Control_MouseEnter(object sender, EventArgs e)
         {
             if (this.DesignMode) return;
