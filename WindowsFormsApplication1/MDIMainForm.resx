@@ -121,40 +121,6 @@
     <value>19, 19</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="menuToolbar.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="menuToolbar.Size" type="System.Drawing.Size, System.Drawing">
-    <value>762, 29</value>
-  </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="menuToolbar.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="menuToolbar.Text" xml:space="preserve">
-    <value>File</value>
-  </data>
-  <data name="&gt;&gt;menuToolbar.Name" xml:space="preserve">
-    <value>menuToolbar</value>
-  </data>
-  <data name="&gt;&gt;menuToolbar.Type" xml:space="preserve">
-    <value>System.Windows.Forms.MenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;menuToolbar.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;menuToolbar.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="Projekte.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12pt</value>
-  </data>
-  <data name="Projekte.Size" type="System.Drawing.Size, System.Drawing">
-    <value>71, 25</value>
-  </data>
-  <data name="Projekte.Text" xml:space="preserve">
-    <value>Projekt</value>
-  </data>
   <data name="MenuItem_ProjektNeu.Size" type="System.Drawing.Size, System.Drawing">
     <value>187, 26</value>
   </data>
@@ -197,27 +163,14 @@
   <data name="MenuItem_ProjektLöschen.Text" xml:space="preserve">
     <value>Löschen...</value>
   </data>
-  <data name="Administration.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="Projekte.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt</value>
   </data>
-  <data name="Administration.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 25</value>
+  <data name="Projekte.Size" type="System.Drawing.Size, System.Drawing">
+    <value>71, 25</value>
   </data>
-  <data name="Administration.Text" xml:space="preserve">
-    <value>Administration</value>
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="MenuItem_WBundHeizung.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
-    <value>None</value>
-  </data>
-  <data name="MenuItem_WBundHeizung.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
-    <value>Control</value>
-  </data>
-  <data name="MenuItem_WBundHeizung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>273, 38</value>
-  </data>
-  <data name="MenuItem_WBundHeizung.Text" xml:space="preserve">
-    <value>Wärmebedarf &amp;&amp; Heizung</value>
+  <data name="Projekte.Text" xml:space="preserve">
+    <value>Projekt</value>
   </data>
   <data name="MenuItem_Brauchwasser.Size" type="System.Drawing.Size, System.Drawing">
     <value>242, 26</value>
@@ -255,14 +208,18 @@
   <data name="MenuItem_WP.Text" xml:space="preserve">
     <value>Wärmepumpen</value>
   </data>
-  <data name="MenuItem_StromBedarfundSp.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="MenuItem_WBundHeizung.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
   </data>
-  <data name="MenuItem_StromBedarfundSp.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="MenuItem_WBundHeizung.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Control</value>
+  </data>
+  <data name="MenuItem_WBundHeizung.Size" type="System.Drawing.Size, System.Drawing">
     <value>273, 38</value>
   </data>
-  <data name="MenuItem_StromBedarfundSp.Text" xml:space="preserve">
-    <value>Strombedarf &amp;&amp; Speicher</value>
+  <data name="MenuItem_WBundHeizung.Text" xml:space="preserve">
+    <value>Wärmebedarf &amp;&amp; Heizung</value>
   </data>
   <data name="MenuItem_Stromverbraucher.Size" type="System.Drawing.Size, System.Drawing">
     <value>206, 26</value>
@@ -282,20 +239,14 @@
   <data name="MenuItem_Stromspeicher.Text" xml:space="preserve">
     <value>Stromspeicher</value>
   </data>
-  <data name="MenuItem_Energiesysteme.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
+  <data name="MenuItem_StromBedarfundSp.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
   </data>
-  <data name="MenuItem_Energiesysteme.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="MenuItem_StromBedarfundSp.Size" type="System.Drawing.Size, System.Drawing">
     <value>273, 38</value>
   </data>
-  <data name="MenuItem_Energiesysteme.Text" xml:space="preserve">
-    <value>Energiesysteme</value>
-  </data>
-  <data name="MenuItem_PV.Size" type="System.Drawing.Size, System.Drawing">
-    <value>234, 26</value>
-  </data>
-  <data name="MenuItem_PV.Text" xml:space="preserve">
-    <value>Photovoltaik</value>
+  <data name="MenuItem_StromBedarfundSp.Text" xml:space="preserve">
+    <value>Strombedarf &amp;&amp; Speicher</value>
   </data>
   <data name="MenuItem_PC_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
     <value>154, 26</value>
@@ -303,17 +254,23 @@
   <data name="MenuItem_PC_Bearbeiten.Text" xml:space="preserve">
     <value>Bearbeiten</value>
   </data>
-  <data name="MenuItem_Solarkollektoren.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="MenuItem_PV.Size" type="System.Drawing.Size, System.Drawing">
     <value>234, 26</value>
   </data>
-  <data name="MenuItem_Solarkollektoren.Text" xml:space="preserve">
-    <value>Solarkollektoren</value>
+  <data name="MenuItem_PV.Text" xml:space="preserve">
+    <value>Photovoltaik</value>
   </data>
   <data name="MenuItem_ST_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
     <value>154, 26</value>
   </data>
   <data name="MenuItem_ST_Bearbeiten.Text" xml:space="preserve">
     <value>Bearbeiten</value>
+  </data>
+  <data name="MenuItem_Solarkollektoren.Size" type="System.Drawing.Size, System.Drawing">
+    <value>234, 26</value>
+  </data>
+  <data name="MenuItem_Solarkollektoren.Text" xml:space="preserve">
+    <value>Solarkollektoren</value>
   </data>
   <data name="MenuItem_SolThermGanglinie.Size" type="System.Drawing.Size, System.Drawing">
     <value>234, 26</value>
@@ -327,6 +284,21 @@
   <data name="MenuItem_BHKW.Text" xml:space="preserve">
     <value>BHKW</value>
   </data>
+  <data name="MenuItem_Energiesysteme.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
+    <value>None</value>
+  </data>
+  <data name="MenuItem_Energiesysteme.Size" type="System.Drawing.Size, System.Drawing">
+    <value>273, 38</value>
+  </data>
+  <data name="MenuItem_Energiesysteme.Text" xml:space="preserve">
+    <value>Energiesysteme</value>
+  </data>
+  <data name="MenuItem_Klimadaten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>158, 26</value>
+  </data>
+  <data name="MenuItem_Klimadaten.Text" xml:space="preserve">
+    <value>Klimadaten</value>
+  </data>
   <data name="MenuItem_Klima.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
   </data>
@@ -335,21 +307,6 @@
   </data>
   <data name="MenuItem_Klima.Text" xml:space="preserve">
     <value>Klimadaten &amp;&amp; Umgebung</value>
-  </data>
-  <data name="MenuItem_Klimadaten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>158, 26</value>
-  </data>
-  <data name="MenuItem_Klimadaten.Text" xml:space="preserve">
-    <value>Klimadaten</value>
-  </data>
-  <data name="MenuItem_DatImport.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
-    <value>None</value>
-  </data>
-  <data name="MenuItem_DatImport.Size" type="System.Drawing.Size, System.Drawing">
-    <value>273, 38</value>
-  </data>
-  <data name="MenuItem_DatImport.Text" xml:space="preserve">
-    <value>Daten &amp;&amp; Import</value>
   </data>
   <data name="MenuItem_Update.Size" type="System.Drawing.Size, System.Drawing">
     <value>308, 26</value>
@@ -402,14 +359,14 @@
   <data name="MenuItem_ScriptGenerator.Size" type="System.Drawing.Size, System.Drawing">
     <value>308, 26</value>
   </data>
-  <data name="MenuItem_Gebaeude.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
+  <data name="MenuItem_DatImport.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
   </data>
-  <data name="MenuItem_Gebaeude.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="MenuItem_DatImport.Size" type="System.Drawing.Size, System.Drawing">
     <value>273, 38</value>
   </data>
-  <data name="MenuItem_Gebaeude.Text" xml:space="preserve">
-    <value>Gebäude</value>
+  <data name="MenuItem_DatImport.Text" xml:space="preserve">
+    <value>Daten &amp;&amp; Import</value>
   </data>
   <data name="MenuItem_GebBearbeiten.Size" type="System.Drawing.Size, System.Drawing">
     <value>181, 26</value>
@@ -423,14 +380,29 @@
   <data name="MenuItem_GebTypen.Text" xml:space="preserve">
     <value>Gebäudetypen</value>
   </data>
-  <data name="Help.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="MenuItem_Gebaeude.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
+    <value>None</value>
+  </data>
+  <data name="MenuItem_Gebaeude.Size" type="System.Drawing.Size, System.Drawing">
+    <value>273, 38</value>
+  </data>
+  <data name="MenuItem_Gebaeude.Text" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="MenuItem_Einstellungen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>273, 38</value>
+  </data>
+  <data name="MenuItem_Einstellungen.Text" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="Administration.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt</value>
   </data>
-  <data name="Help.Size" type="System.Drawing.Size, System.Drawing">
-    <value>54, 25</value>
+  <data name="Administration.Size" type="System.Drawing.Size, System.Drawing">
+    <value>125, 25</value>
   </data>
-  <data name="Help.Text" xml:space="preserve">
-    <value>Hilfe</value>
+  <data name="Administration.Text" xml:space="preserve">
+    <value>Administration</value>
   </data>
   <data name="MenuItem_Version.Size" type="System.Drawing.Size, System.Drawing">
     <value>132, 26</value>
@@ -449,6 +421,15 @@
   </data>
   <data name="MenuItem_Lizenz.Text" xml:space="preserve">
     <value>Lizenz</value>
+  </data>
+  <data name="Help.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12pt</value>
+  </data>
+  <data name="Help.Size" type="System.Drawing.Size, System.Drawing">
+    <value>54, 25</value>
+  </data>
+  <data name="Help.Text" xml:space="preserve">
+    <value>Hilfe</value>
   </data>
   <data name="Deutsch.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt</value>
@@ -473,6 +454,31 @@
   </data>
   <data name="Englisch.Text" xml:space="preserve">
     <value>Englisch</value>
+  </data>
+  <data name="menuToolbar.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="menuToolbar.Size" type="System.Drawing.Size, System.Drawing">
+    <value>762, 29</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="menuToolbar.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="menuToolbar.Text" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="&gt;&gt;menuToolbar.Name" xml:space="preserve">
+    <value>menuToolbar</value>
+  </data>
+  <data name="&gt;&gt;menuToolbar.Type" xml:space="preserve">
+    <value>System.Windows.Forms.MenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;menuToolbar.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;menuToolbar.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="label_OnlineDoku.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1639,6 +1645,12 @@
     <value>Englisch</value>
   </data>
   <data name="&gt;&gt;Englisch.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_Einstellungen.Name" xml:space="preserve">
+    <value>MenuItem_Einstellungen</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_Einstellungen.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">

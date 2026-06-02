@@ -280,6 +280,11 @@ namespace WindowsFormsApplication1
             frm.ShowDialog();
         }
 
+        private void MenuItem_Einstellungen_Click(object sender, EventArgs e)
+        {
+            Form_AdminSettings frm = new Form_AdminSettings();
+            frm.ShowDialog();
+        }
     }
 }
 

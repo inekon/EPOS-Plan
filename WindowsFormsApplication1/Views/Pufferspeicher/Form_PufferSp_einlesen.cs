@@ -26,7 +26,7 @@ namespace WindowsFormsApplication1
 
             Liste_PufferSp.Items.Clear();
 
-            string szAppDataPath = Path.Combine(Program.ApplicationPath_User, "VDI_Pufferspeicher");
+            string szAppDataPath = Path.Combine(Properties.Settings.Default.VDI3805Path, "VDI_Pufferspeicher");
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
 

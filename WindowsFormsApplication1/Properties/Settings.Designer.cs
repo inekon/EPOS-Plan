@@ -33,5 +33,101 @@ namespace WindowsFormsApplication1.Properties {
                 return ((string)(this["KenndatenConnectionString"]));
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string VDI3805Path {
+            get {
+                return ((string)(this["VDI3805Path"]));
+            }
+            set {
+                this["VDI3805Path"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:8080")]
+        public string WordPressUrl {
+            get {
+                return ((string)(this["WordPressUrl"]));
+            }
+            set {
+                this["WordPressUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string DBExportPath {
+            get {
+                return ((string)(this["DBExportPath"]));
+            }
+            set {
+                this["DBExportPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("help")]
+        public string WordPressPrefix {
+            get {
+                return ((string)(this["WordPressPrefix"]));
+            }
+            set {
+                this["WordPressPrefix"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://re.jrc.ec.europa.eu/api/tmy")]
+        public string PVGISUrl {
+            get {
+                return ((string)(this["PVGISUrl"]));
+            }
+            set {
+                this["PVGISUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string AllgemeinPath {
+            get {
+                return ((string)(this["AllgemeinPath"]));
+            }
+            set {
+                this["AllgemeinPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string DBImportPath {
+            get {
+                return ((string)(this["DBImportPath"]));
+            }
+            set {
+                this["DBImportPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://nominatim.openstreetmap.org")]
+        public string GeoKodierung {
+            get {
+                return ((string)(this["GeoKodierung"]));
+            }
+            set {
+                this["GeoKodierung"] = value;
+            }
+        }
     }
 }

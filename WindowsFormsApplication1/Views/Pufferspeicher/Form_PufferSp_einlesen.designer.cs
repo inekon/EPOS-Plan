@@ -57,6 +57,7 @@ namespace WindowsFormsApplication1
             // 
             resources.ApplyResources(this.btn_Uebernehmen, "btn_Uebernehmen");
             this.btn_Uebernehmen.ForeColor = System.Drawing.Color.Black;
+            this.btn_Uebernehmen.Image = global::WindowsFormsApplication1.Properties.Resources.save_icon_36513;
             this.btn_Uebernehmen.Name = "btn_Uebernehmen";
             this.btn_Uebernehmen.UseVisualStyleBackColor = true;
             this.btn_Uebernehmen.Click += new System.EventHandler(this.btn_Uebernehmen_Click);
@@ -92,8 +93,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Firma
             // 
-            resources.ApplyResources(this.textBox_Firma, "textBox_Firma");
             this.textBox_Firma.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Firma, "textBox_Firma");
             this.textBox_Firma.ForeColor = System.Drawing.Color.Black;
             this.textBox_Firma.Name = "textBox_Firma";
             // 
@@ -105,8 +106,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Name
             // 
-            resources.ApplyResources(this.textBox_Name, "textBox_Name");
             this.textBox_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Name, "textBox_Name");
             this.textBox_Name.ForeColor = System.Drawing.Color.Black;
             this.textBox_Name.Name = "textBox_Name";
             // 
@@ -118,8 +119,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Typ
             // 
-            resources.ApplyResources(this.textBox_Typ, "textBox_Typ");
             this.textBox_Typ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Typ, "textBox_Typ");
             this.textBox_Typ.ForeColor = System.Drawing.Color.Black;
             this.textBox_Typ.Name = "textBox_Typ";
             // 
@@ -131,8 +132,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Volumen
             // 
-            resources.ApplyResources(this.textBox_Volumen, "textBox_Volumen");
             this.textBox_Volumen.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Volumen, "textBox_Volumen");
             this.textBox_Volumen.ForeColor = System.Drawing.Color.Black;
             this.textBox_Volumen.Name = "textBox_Volumen";
             // 
@@ -144,8 +145,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Versluste
             // 
-            resources.ApplyResources(this.textBox_Versluste, "textBox_Versluste");
             this.textBox_Versluste.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Versluste, "textBox_Versluste");
             this.textBox_Versluste.ForeColor = System.Drawing.Color.Black;
             this.textBox_Versluste.Name = "textBox_Versluste";
             // 
