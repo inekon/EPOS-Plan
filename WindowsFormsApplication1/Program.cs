@@ -100,7 +100,7 @@ namespace WindowsFormsApplication1
             // 
             // dotnet tool install --global dotnet-serve
             // starten mit : dotnet serve --directory "C:\Pfad\zu\deinem\Hilfeordner" --port 8080
-            HelpCatalog = new WordPressHelpCatalog("http://localhost:8080"); // Lokaler Testserver mit Testartik
+            HelpCatalog = new WordPressHelpCatalog(Properties.Settings.Default.WordPressUrl); // Lokaler Testserver mit Testartik
 
             // nur zum Testen, Testserver wird in dieser Funktion beim Starten des Programms automatisch aufgerufen,
             // kein separates CMD Fensetr mit Aufruf nötig

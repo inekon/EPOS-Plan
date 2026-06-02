@@ -81,6 +81,7 @@
             this.Deutsch = new System.Windows.Forms.ToolStripMenuItem();
             this.Englisch = new System.Windows.Forms.ToolStripMenuItem();
             this.label_OnlineDoku = new System.Windows.Forms.Label();
+            this.MenuItem_Einstellungen = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolbar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -171,7 +172,8 @@
             this.MenuItem_Energiesysteme,
             this.MenuItem_Klima,
             this.MenuItem_DatImport,
-            this.MenuItem_Gebaeude});
+            this.MenuItem_Gebaeude,
+            this.MenuItem_Einstellungen});
             resources.ApplyResources(this.Administration, "Administration");
             this.Administration.Name = "Administration";
             // 
@@ -458,6 +460,12 @@
             this.label_OnlineDoku.BackColor = System.Drawing.Color.Transparent;
             this.label_OnlineDoku.Name = "label_OnlineDoku";
             // 
+            // MenuItem_Einstellungen
+            // 
+            this.MenuItem_Einstellungen.Name = "MenuItem_Einstellungen";
+            resources.ApplyResources(this.MenuItem_Einstellungen, "MenuItem_Einstellungen");
+            this.MenuItem_Einstellungen.Click += new System.EventHandler(this.MenuItem_Einstellungen_Click);
+            // 
             // MDIMainForm
             // 
             resources.ApplyResources(this, "$this");
@@ -530,6 +538,7 @@
         private System.Windows.Forms.ToolStripMenuItem kostenAdminToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ScriptGenerator;
         private System.Windows.Forms.Label label_OnlineDoku;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Einstellungen;
     }
 }
 

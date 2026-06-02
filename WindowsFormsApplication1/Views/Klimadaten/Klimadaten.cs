@@ -205,13 +205,22 @@ namespace WindowsFormsApplication1
                 if (listBoxKlimreg.FindString(comboBox_Ort.Text) != -1) return;
                 pBar_Import.Visible = true;
                 (Success, Lat, Lon, DisplayName) = await PVGIS_EPW_Downloader.GetCoordinatesAsync(comboBox_Ort.Text);
-                if (!Success) { pBar_Import.Visible = false; MessageBox.Show("Der Ort '" + comboBox_Ort.Text + "'konnte nicht ermittelt werden..."); return; }
+                if (!Success)
+                { 
+                    pBar_Import.Visible = false; 
+                    MessageBox.Show("Der Ort '" + comboBox_Ort.Text + "' konnte nicht ermittelt werden...\n" + DisplayName.ToString(), "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
                 Listbezeichner = comboBox_Ort.Text; 
             }
             else
             {
                 // Eingabe überprüfen
-                if (textBox_Latitude.Text == "" || textBox_Longitude.Text == "" || textBox_Bezeichnung.Text == "") { MessageBox.Show("Eingaben überprüfen!"); textBox_Bezeichnung.Focus(); return; }
+                if (textBox_Latitude.Text == "" || textBox_Longitude.Text == "" || textBox_Bezeichnung.Text == "")
+                {
+                    MessageBox.Show("Eingaben überprüfen!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error); textBox_Bezeichnung.Focus();
+                    return;
+                }
                 pBar_Import.Visible = true;
                 textBox_Longitude.Text = textBox_Longitude.Text.Replace('.', ','); 
                 Lon = Convert.ToDouble(textBox_Longitude.Text);
@@ -228,23 +237,51 @@ namespace WindowsFormsApplication1
 
 
             // TMY Daten von PVGIS herunterladen, berechnen nach Ost, Süd, West, Nord und in Listen speichern
-            List<TmyHourlyData> tmyHourlyList = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 0);
-            if (tmyHourlyList == null) { pBar_Import.Visible = false; return; } 
-            
+            List<TmyHourlyData> tmyHourlyList;
             List<TmyHourlyData> tmyHourlyList_ost = new List<TmyHourlyData>();
             List<TmyHourlyData> tmyHourlyList_sued = new List<TmyHourlyData>();
             List<TmyHourlyData> tmyHourlyList_west = new List<TmyHourlyData>();
             List<TmyHourlyData> tmyHourlyList_nord = new List<TmyHourlyData>();
 
-            // Anzeige der Datenquelle in der GUI
-            textBox_Display.Text = PVGIS_EPW_Downloader.meteoDb + ": " + textBox_Display.Text;
-            DisplayName = textBox_Display.Text; 
+            try
+            {
+                // 1. Süd-Daten abrufen (Azimut = 0)
+                tmyHourlyList = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 0);
+                tmyHourlyList_sued = tmyHourlyList; // Süd entspricht dem Standard
+
+                // 2. Die restlichen Himmelsrichtungen abrufen (falls du diese auch live vom Server brauchst)
+                // Hinweis: Die Werte für Azimut hängen von der PVGIS-Definition ab (meistens: Ost = -90 oder 90, West = 90 oder -90, Nord = 180)
+                tmyHourlyList_ost = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, -90);
+                tmyHourlyList_west = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 90);
+                tmyHourlyList_nord = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 180);
+
+                // Wenn bis hierhin kein Fehler aufgetreten ist, befüllen wir die GUI-Anzeige
+                textBox_Display.Text = PVGIS_EPW_Downloader.meteoDb + ": " + textBox_Display.Text;
+                DisplayName = textBox_Display.Text;
+            }
+            catch (ArgumentException ex)
+            {
+                // Fängt spezifische PVGIS-Eingabefehler ab (z.B. Koordinaten außerhalb der Datenbank)
+                pBar_Import.Visible = false;
+                MessageBox.Show(ex.Message, "Eingabefehler (PVGIS)", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return; // Bricht die Methode hier sauber ab
+            }
+            catch (Exception ex)
+            {
+                // Fängt alle harten Fehler ab (Server offline, URL falsch, JSON-Struktur kaputt, kein Internet)
+                pBar_Import.Visible = false;
+                MessageBox.Show(ex.Message, "Fehler beim Klimadaten-Download", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Bricht die Methode hier sauber ab
+            }
+
+            // HIER GEHT DEIN CODE GANZ NORMAL WEITER (Die Listen sind nun erfolgreich befüllt)
+            // ...
 
             // PVGIS Parameter für Solarberechnung:
             // <param name="dni">Gb(n) aus TMY</param>
             // <param name="dhi">Gd(h) aus TMY</param>
             // <param name="ghi">G(h) aus TMY</param>
- 
+
             for (int i=0; i < tmyHourlyList.Count; i++)
             {
                 ghi = tmyHourlyList[i].GlobalIrradiance;

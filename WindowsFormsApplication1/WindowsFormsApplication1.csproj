@@ -280,6 +280,12 @@
     <Compile Include="Allgemein\Import\VDI 3805\PufferSpImport.cs" />
     <Compile Include="Allgemein\Import\CEC\PVModule.cs" />
     <Compile Include="Allgemein\Update\UpdateDatabaseFromScript.cs" />
+    <Compile Include="Views\Admin\Form_AdminSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Admin\Form_AdminSettings.Designer.cs">
+      <DependentUpon>Form_AdminSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\Help\Form_HelpPopup.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -939,6 +945,9 @@
     <EmbeddedResource Include="Allgemein\Form_Hinweis.resx">
       <DependentUpon>Form_Hinweis.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\Admin\Form_AdminSettings.resx">
+      <DependentUpon>Form_AdminSettings.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\Help\Form_HelpPopup.resx">
       <DependentUpon>Form_HelpPopup.cs</DependentUpon>
     </EmbeddedResource>
@@ -1082,6 +1091,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Hauptformular\FormMain.de-DE.resx">
       <DependentUpon>FormMain.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Hauptformular\FormMain.en-US.resx">
       <DependentUpon>FormMain.cs</DependentUpon>
@@ -1138,6 +1148,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Photovoltaik\Form_AdminPV.en-US.resx">
       <DependentUpon>Form_AdminPV.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Photovoltaik\Form_AdminPV.resx">
       <DependentUpon>Form_AdminPV.cs</DependentUpon>
@@ -1292,6 +1303,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Simulation\DashboardForm.resx">
       <DependentUpon>DashboardForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Solarthermie\Form_SolarDB.de-DE.resx">
       <DependentUpon>Form_SolarDB.cs</DependentUpon>

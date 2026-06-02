@@ -68,7 +68,7 @@ namespace WindowsFormsApplication1
             //    └-─────────┬──────────┘└───┬───┘  └─┬┘└─┬┘
             //        Website - URL  API Präfix  Version REST-Base(Custom Post Type)
             
-            var url = $"{_baseUrl}/wp-json/wp/v2/help?per_page=100&page={currentPage}&_fields=slug,link,title";
+            var url = $"{_baseUrl}/wp-json/wp/v2/{Properties.Settings.Default.WordPressPrefix}?per_page=100&page={currentPage}&_fields=slug,link,title";
             // per_page auf 100 erhöht für maximale Effizienz, page= dynamisch angehängt
 
             // 1. wp-json (Das API - Präfix): Das sagt WordPress: „Achtung, jetzt kommt keine normale HTML-Webseite für den Browser,
@@ -100,14 +100,13 @@ namespace WindowsFormsApplication1
                 if (array.ValueKind != JsonValueKind.Array || array.GetArrayLength() == 0)
                 {
                     hasMorePages = false;
-                    if (currentPage > 1) onlineLoadSuccessful = true; // auf vorherigen Seiten Daten erhalten
+                    if (currentPage > 1) onlineLoadSuccessful = true; //  auf vorherigen Seiten Daten erhalten
                 }
                 else
                 {
                     foreach (var page in array.EnumerateArray())
                     {
                         var slug = page.GetProperty("slug").GetString() ?? "";
-
                         if (!string.IsNullOrEmpty(slug) && !tempCache.ContainsKey(slug))
                         {
                             tempCache[slug] = new HelpEntry
