@@ -1,55 +1,49 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
+using System.Data;
 
 namespace WindowsFormsApplication1
 {
-    class Z_ProjektSolarganglinieCtrl : Z_ProjektSolarganglinieModel 
+    class Z_ProjektSolarganglinieCtrl : Z_ProjektSolarganglinieModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
-        public Z_ProjektSolarganglinieModel model;
+        private List<Z_ProjektSolarganglinieModel> _internalList = new List<Z_ProjektSolarganglinieModel>();
+        public int rows => _internalList.Count;
+        public new List<Z_ProjektSolarganglinieModel> items => _internalList;
 
-        public Z_ProjektSolarganglinieCtrl ()
+        public Z_ProjektSolarganglinieCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-            model = new Z_ProjektSolarganglinieModel();
-        }
-        
-        ~Z_ProjektSolarganglinieCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public void ReadAll(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            // Abfrage über das zentrale DataRepository laden
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            items = new Z_ProjektSolarganglinieModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            // Interne Liste vor dem erneuten Befüllen leeren
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 Z_ProjektSolarganglinieModel item = new Z_ProjektSolarganglinieModel();
 
-                if (!DBReader.IsDBNull(0)) item.m_ID_Z = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_ID_Projekt = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.m_ID_Solarganglinie = (int)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) item.m_szSolarganglinie = (string)DBReader.GetString(3);
+                // Sicheres Auslesen über Spaltennamen statt fehleranfälliger numerischer Indizes
+                if (dt.Columns.Contains("ID_Z") && row["ID_Z"] != DBNull.Value)
+                    item.m_ID_Z = Convert.ToInt32(row["ID_Z"]);
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
+                    item.m_ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
+
+                if (dt.Columns.Contains("ID_Solarganglinie") && row["ID_Solarganglinie"] != DBNull.Value)
+                    item.m_ID_Solarganglinie = Convert.ToInt32(row["ID_Solarganglinie"]);
+
+                if (dt.Columns.Contains("Solarganglinie") && row["Solarganglinie"] != DBNull.Value)
+                    item.m_szSolarganglinie = row["Solarganglinie"].ToString();
+
+                // Das Element der dynamischen Liste hinzufügen
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
-
-
-
     }
 }

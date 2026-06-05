@@ -1,117 +1,120 @@
 ﻿using System;
-using System.Data.Odbc;
-using System.Globalization;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class Z_ProjektPufferSpCtrl : Z_ProjektPufferSpModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
+        private List<Z_ProjektPufferSpModel> _internalList = new List<Z_ProjektPufferSpModel>();
+
+        public int rows => _internalList.Count;
+        public new List<Z_ProjektPufferSpModel> items => _internalList;
+
         public Z_ProjektPufferSpModel model;
 
         public Z_ProjektPufferSpCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
             model = new Z_ProjektPufferSpModel();
-        }
-        
-        ~Z_ProjektPufferSpCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public bool Delete()
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Z_ProjektPufferSp WHERE ID_Projekt=" + ID_Projekt;
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                string sql = "DELETE FROM Z_ProjektPufferSp WHERE ID_Projekt = ?";
+                OleDbParameter[] ps = { new OleDbParameter("@idProj", ID_Projekt) };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Delete: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public bool Insert()
         {
             try
             {
-   
-                DBCommand.CommandText = FormattableString.Invariant($@"
-                    INSERT INTO Z_ProjektPufferSp 
-                    (
-                        ID_Projekt, Erzeuger, Pufferspeicher, 
-                        Vorlauf, Ruecklauf, Prioritaet
-                    ) 
-                    SELECT 
-                        {ID_Projekt}, 
-                        '{Erzeuger}', 
-                        '{PufferSp}', 
-                        {Vorlauf}, 
-                        {Ruecklauf}, 
-                        {Prioritaet}");
-                
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Umstellung von unparametrisiertem SELECT-String auf standardkonformes VALUES-Statement mit Parametern
+                string sql = @"INSERT INTO Z_ProjektPufferSp 
+                               (
+                                   ID_Projekt, Erzeuger, Pufferspeicher, 
+                                   Vorlauf, Ruecklauf, Prioritaet
+                               ) 
+                               VALUES (?, ?, ?, ?, ?, ?)";
+
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@idProj", ID_Projekt),
+                    new OleDbParameter("@erz", Erzeuger ?? (object)DBNull.Value),
+                    new OleDbParameter("@puf", PufferSp ?? (object)DBNull.Value),
+                    new OleDbParameter("@vor", Vorlauf),
+                    new OleDbParameter("@rue", Ruecklauf),
+                    new OleDbParameter("@prio", Prioritaet)
+                };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Insert: " + ex.Message);
                 return false;
             }
-            return true;
         }
-        
+
         public void ReadAll(string szFilter)
         {
-            if(szFilter == "")
-                DBCommand.CommandText = "select * from Z_ProjektPufferSp order by Prioritaet";
+            string sql;
+            if (string.IsNullOrEmpty(szFilter))
+            {
+                sql = "SELECT * FROM Z_ProjektPufferSp ORDER BY Prioritaet";
+            }
             else
-                DBCommand.CommandText = "select * from Z_ProjektPufferSp where " + szFilter + " order by Prioritaet";
-            
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            {
+                sql = "SELECT * FROM Z_ProjektPufferSp WHERE " + szFilter + " ORDER BY Prioritaet";
+            }
 
-            items = new Z_ProjektPufferSpModel[1000];
-            rows = 0;
+            // Abfrage über das zentrale DataRepository laden
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            while (DBReader.Read())
+            // Interne Liste vor dem erneuten Befüllen leeren
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 Z_ProjektPufferSpModel item = new Z_ProjektPufferSpModel();
 
-                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.ID_Projekt = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.Erzeuger = DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.PufferSp = DBReader.GetString(3);
-                if (!DBReader.IsDBNull(4)) item.Vorlauf = (int)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.Ruecklauf = (int)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.Prioritaet = (int)DBReader.GetValue(6);
+                // Sicheres Auslesen über Spaltennamen statt fehleranfälliger numerischer Indizes
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    item.ID = Convert.ToInt32(row["ID"]);
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
+                    item.ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
+
+                if (dt.Columns.Contains("Erzeuger") && row["Erzeuger"] != DBNull.Value)
+                    item.Erzeuger = row["Erzeuger"].ToString();
+
+                // Beachtet die Namensänderung beim Mapping (Pufferspeicher Spalte -> Property PufferSp)
+                if (dt.Columns.Contains("Pufferspeicher") && row["Pufferspeicher"] != DBNull.Value)
+                    item.PufferSp = row["Pufferspeicher"].ToString();
+
+                if (dt.Columns.Contains("Vorlauf") && row["Vorlauf"] != DBNull.Value)
+                    item.Vorlauf = Convert.ToInt32(row["Vorlauf"]);
+
+                if (dt.Columns.Contains("Ruecklauf") && row["Ruecklauf"] != DBNull.Value)
+                    item.Ruecklauf = Convert.ToInt32(row["Ruecklauf"]);
+
+                if (dt.Columns.Contains("Prioritaet") && row["Prioritaet"] != DBNull.Value)
+                    item.Prioritaet = Convert.ToInt32(row["Prioritaet"]);
+
+                // Das Element der dynamischen Liste hinzufügen
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
-
-     }
+    }
 }

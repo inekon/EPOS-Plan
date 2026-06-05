@@ -1,261 +1,243 @@
 ﻿using System;
-using System.Data.Odbc;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
     class WPCtrl : WPModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
-        public WPModel wpmodel;
+        private List<WPModel> _internalList = new List<WPModel>();
+        public int rows => _internalList.Count;
+        public new List<WPModel> items => _internalList;
 
         public WPCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-            wpmodel = new WPModel();
-        }
-        
-        ~WPCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public bool Update()
         {
             try
             {
-               string sql = FormattableString.Invariant($@"
-                    UPDATE Tab_WP 
-                    SET 
-                        Firma = '{Firma}', 
-                        Beschreibung = '{Beschreibung}', 
-                        Typ = '{Typ}', 
-                        Baujahr = {Baujahr}, 
-                        Aufstellung = '{Aufstellung}', 
-                        Nennleistung = {Nennleistung}, 
-                        maxPTherm = {maxPTherm}, 
-                        Heizung = {Heizung}, 
-                        Regelung = '{Regelung}', 
-                        Modulkosten = {Modulkosten} 
-                    WHERE 
-                        WPName = '{WPName}'");
+                string sql = @"UPDATE Tab_WP 
+                               SET Firma = ?, 
+                                   Beschreibung = ?, 
+                                   Typ = ?, 
+                                   Baujahr = ?, 
+                                   Aufstellung = ?, 
+                                   Nennleistung = ?, 
+                                   maxPTherm = ?, 
+                                   Heizung = ?, 
+                                   Regelung = ?, 
+                                   Modulkosten = ? 
+                               WHERE WPName = ?";
 
-                DBCommand.CommandText = sql;
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@fir", Firma ?? (object)DBNull.Value),
+                    new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value),
+                    new OleDbParameter("@typ", Typ ?? (object)DBNull.Value),
+                    new OleDbParameter("@bau", Baujahr),
+                    new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value),
+                    new OleDbParameter("@nen", Nennleistung),
+                    new OleDbParameter("@max", maxPTherm),
+                    new OleDbParameter("@hei", Heizung),
+                    new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value),
+                    new OleDbParameter("@mod", Modulkosten),
+                    new OleDbParameter("@nam", WPName ?? (object)DBNull.Value)
+                };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Update: " + ex.Message);
                 return false;
             }
-            return true;
         }
-            
+
         public bool Delete()
         {
             try
             {
-                DBCommand.CommandText = "DELETE WPName FROM Tab_WP WHERE WPName='" + WPName + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                string sql = "DELETE FROM Tab_WP WHERE WPName = ?";
+                OleDbParameter[] ps = { new OleDbParameter("@nam", WPName ?? (object)DBNull.Value) };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Delete: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public bool Insert()
         {
             try
             {
-                DBCommand.CommandText = "SELECT Count(*) FROM TAB_WP";
-                OdbcDataReader DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();  
-                int result = (int)DBReader.GetValue(0);
-                DBReader.Close();
-
-                if (result == 0) ID = 1;
-                else
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    DBCommand.CommandText = "SELECT Max(ID_WP) AS Ausdr1 FROM Tab_WP";
-                    DBReader = DBCommand.ExecuteReader();
-                    DBReader.Read();
-                    ID = (int)DBReader.GetValue(0) + 1;
-                    DBReader.Close();
+                    conn.Open();
+                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    {
+                        // 1. Höchste ID innerhalb der Transaktion ermitteln
+                        string countSql = "SELECT COUNT(*) FROM Tab_WP";
+                        using (OleDbCommand cmdCount = conn.CreateCommand())
+                        {
+                            cmdCount.Transaction = trans;
+                            cmdCount.CommandText = countSql;
+                            int count = Convert.ToInt32(cmdCount.ExecuteScalar());
+
+                            if (count == 0)
+                            {
+                                ID = 1;
+                            }
+                            else
+                            {
+                                string maxSql = "SELECT MAX(ID_WP) FROM Tab_WP";
+                                using (OleDbCommand cmdMax = conn.CreateCommand())
+                                {
+                                    cmdMax.Transaction = trans;
+                                    cmdMax.CommandText = maxSql;
+                                    object objMax = cmdMax.ExecuteScalar();
+                                    ID = (objMax != DBNull.Value) ? Convert.ToInt32(objMax) + 1 : 1;
+                                }
+                            }
+                        }
+
+                        // 2. Parametrisierter INSERT-Befehl
+                        string insertSql = @"INSERT INTO Tab_WP 
+                                            (
+                                                ID_WP, WPName, Firma, Beschreibung, Typ, 
+                                                Baujahr, Aufstellung, Nennleistung, maxPTherm, 
+                                                Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung
+                                            ) 
+                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                        using (OleDbCommand cmdInsert = conn.CreateCommand())
+                        {
+                            cmdInsert.Transaction = trans;
+                            cmdInsert.CommandText = insertSql;
+
+                            cmdInsert.Parameters.Add(new OleDbParameter("@id", ID));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@nam", WPName ?? (object)DBNull.Value));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@fir", Firma ?? (object)DBNull.Value));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@typ", Typ ?? (object)DBNull.Value));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@bau", Baujahr));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@auf", Aufstellung ?? (object)DBNull.Value));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@nen", Nennleistung));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@max", maxPTherm));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@hei", Heizung));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@reg", Regelung ?? (object)DBNull.Value));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@mod", Modulkosten));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@bart", Bauart ?? (object)DBNull.Value));
+                            cmdInsert.Parameters.Add(new OleDbParameter("@kuehl", Kuehlleistung));
+
+                            cmdInsert.ExecuteNonQuery();
+                        }
+
+                        trans.Commit();
+                        return true;
+                    }
                 }
-
-                DBCommand.CommandText = FormattableString.Invariant($@"
-                    INSERT INTO TAB_WP 
-                    (
-                        ID_WP, WPName, Firma, Beschreibung, Typ, 
-                        Baujahr, Aufstellung, Nennleistung, maxPTherm, 
-                        Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung
-                    ) 
-                    SELECT 
-                        {ID}, 
-                        '{WPName}', 
-                        '{Firma}', 
-                        '{Beschreibung}', 
-                        '{Typ}', 
-                        {Baujahr}, 
-                        '{Aufstellung}', 
-                        {Nennleistung}, 
-                        {maxPTherm}, 
-                        {Heizung}, 
-                        '{Regelung}', 
-                        {Modulkosten}, 
-                        '{Bauart}',
-                        {Kuehlleistung:F2}");
-
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Insert: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
-        public void ReadAll(string filter="")
+        public void ReadAll(string filter = "")
         {
-            string sql;
+            string sql = string.IsNullOrEmpty(filter)
+                ? "SELECT * FROM Tab_WP ORDER BY WPName"
+                : "SELECT * FROM Tab_WP WHERE " + filter;
 
-            if (filter == "")
-            {
-                sql = "select * from Tab_WP order by WPName";
-            }
-            else sql = "select * from Tab_WP where " + filter;
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-
-            items = new WPModel[1000];
-            rows = 0;
-            while (DBReader.Read())
-            {
-                WPModel item = new WPModel();
-
-                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.WPName = DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) item.Firma = DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.Beschreibung = (string)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.Typ = (string)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.Baujahr = (int)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.Aufstellung = (string)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) item.Nennleistung = (int)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) item.maxPTherm = (int)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) item.Heizung = (int)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) item.Regelung = (string)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) item.Modulkosten = (int)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(17)) item.Kuehlleistung = (double)DBReader.GetValue(17);
-                if (!DBReader.IsDBNull(18)) item.Bauart = DBReader.GetString(18);
-
-                items[rows] = item;
-                rows += 1;
-                item = null;
-            }
-            DBReader.Dispose();
-            DBReader.Close();
+            DataTable dt = DataRepository.GetDataTable(sql, null);
+            MapDataTableToItems(dt);
         }
 
         public void ReadAll_MitMinMaxVorlauf(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-
-            items = new WPModel[1000];
-            rows = 0;
-            while (DBReader.Read())
-            {
-                WPModel item = new WPModel();
-
-                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.WPName = DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) item.Firma = DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.Beschreibung = (string)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.Typ = (string)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.Baujahr = (int)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.Aufstellung = (string)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) item.Nennleistung = (int)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) item.maxPTherm = (int)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) item.Heizung = (int)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) item.Regelung = (string)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) item.Modulkosten = (int)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(12)) item.Kuehlleistung = (double)DBReader.GetValue(12);
-                if (!DBReader.IsDBNull(13)) item.MaxVorlauf = (int)DBReader.GetValue(13);
-                if (!DBReader.IsDBNull(14)) item.MinVorlauf = (int)DBReader.GetValue(14);
-                if (!DBReader.IsDBNull(15)) item.Bauart = DBReader.GetString(15);
-
-                items[rows] = item;
-                rows += 1;
-                item = null;
-            }
-            DBReader.Dispose();
-            DBReader.Close();
+            DataTable dt = DataRepository.GetDataTable(sql, null);
+            MapDataTableToItems(dt);
         }
 
         public void ReadSingle(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            DataTable dt = DataRepository.GetDataTable(sql, null);
+            _internalList.Clear(); // Liste leeren bei ReadSingle
 
-            rows = 0;
-            if (DBReader.Read())
+            if (dt != null && dt.Rows.Count > 0)
             {
-                if (!DBReader.IsDBNull(0)) ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) WPName = DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) Firma = DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) Beschreibung = (string)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) Typ = (string)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) Baujahr = (int)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) Aufstellung = (string)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) Nennleistung = (int)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(9)) Heizung = (int)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) Regelung = (string)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) Modulkosten = (int)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(17)) Kuehlleistung = (double)DBReader.GetValue(17);
-                if (!DBReader.IsDBNull(18)) Bauart = DBReader.GetString(18);
+                DataRow row = dt.Rows[0];
 
-                rows = 1;
+                if (row["ID_WP"] != DBNull.Value) ID = Convert.ToInt32(row["ID_WP"]);
+                if (row["WPName"] != DBNull.Value) WPName = row["WPName"].ToString();
+                if (row["Firma"] != DBNull.Value) Firma = row["Firma"].ToString();
+                if (row["Beschreibung"] != DBNull.Value) Beschreibung = row["Beschreibung"].ToString();
+                if (row["Typ"] != DBNull.Value) Typ = row["Typ"].ToString();
+                if (row["Baujahr"] != DBNull.Value) Baujahr = Convert.ToInt32(row["Baujahr"]);
+                if (row["Aufstellung"] != DBNull.Value) Aufstellung = row["Aufstellung"].ToString();
+                if (row["Nennleistung"] != DBNull.Value) Nennleistung = Convert.ToInt32(row["Nennleistung"]);
+                if (row["Heizung"] != DBNull.Value) Heizung = Convert.ToInt32(row["Heizung"]);
+                if (row["Regelung"] != DBNull.Value) Regelung = row["Regelung"].ToString();
+                if (row["Modulkosten"] != DBNull.Value) Modulkosten = Convert.ToInt32(row["Modulkosten"]);
+                if (dt.Columns.Contains("Kuehlleistung") && row["Kuehlleistung"] != DBNull.Value) Kuehlleistung = Convert.ToDouble(row["Kuehlleistung"]);
+                if (dt.Columns.Contains("Bauart") && row["Bauart"] != DBNull.Value) Bauart = row["Bauart"].ToString();
+
+                // Bei ReadSingle fügen wir diese Instanz (this) als Kopie hinzu, damit rows auf 1 springt
+                _internalList.Add(this);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
 
         public void FillListBox(ListBox ctrl)
         {
             ctrl.Items.Clear();
-            for (int i = 0; i < rows; i++)
+            foreach (var item in _internalList)
             {
-                ctrl.Items.Add(items[i].WPName);
+                if (item != null)
+                {
+                    ctrl.Items.Add(item.WPName);
+                }
             }
-         }
+        }
 
+        // Mappt die DataTable direkt in die dynamische Liste
+        private void MapDataTableToItems(DataTable dt)
+        {
+            _internalList.Clear(); // Alte Einträge aus der Liste löschen
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                WPModel item = new WPModel();
+
+                if (dt.Columns.Contains("ID_WP") && row["ID_WP"] != DBNull.Value) item.ID = Convert.ToInt32(row["ID_WP"]);
+                if (dt.Columns.Contains("WPName") && row["WPName"] != DBNull.Value) item.WPName = row["WPName"].ToString();
+                if (dt.Columns.Contains("Firma") && row["Firma"] != DBNull.Value) item.Firma = row["Firma"].ToString();
+                if (dt.Columns.Contains("Beschreibung") && row["Beschreibung"] != DBNull.Value) item.Beschreibung = row["Beschreibung"].ToString();
+                if (dt.Columns.Contains("Typ") && row["Typ"] != DBNull.Value) item.Typ = row["Typ"].ToString();
+                if (dt.Columns.Contains("Baujahr") && row["Baujahr"] != DBNull.Value) item.Baujahr = Convert.ToInt32(row["Baujahr"]);
+                if (dt.Columns.Contains("Aufstellung") && row["Aufstellung"] != DBNull.Value) item.Aufstellung = row["Aufstellung"].ToString();
+                if (dt.Columns.Contains("Nennleistung") && row["Nennleistung"] != DBNull.Value) item.Nennleistung = Convert.ToInt32(row["Nennleistung"]);
+                if (dt.Columns.Contains("maxPTherm") && row["maxPTherm"] != DBNull.Value) item.maxPTherm = Convert.ToInt32(row["maxPTherm"]);
+                if (dt.Columns.Contains("Heizung") && row["Heizung"] != DBNull.Value) item.Heizung = Convert.ToInt32(row["Heizung"]);
+                if (dt.Columns.Contains("Regelung") && row["Regelung"] != DBNull.Value) item.Regelung = row["Regelung"].ToString();
+                if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) item.Modulkosten = Convert.ToInt32(row["Modulkosten"]);
+                if (dt.Columns.Contains("Kuehlleistung") && row["Kuehlleistung"] != DBNull.Value) item.Kuehlleistung = Convert.ToDouble(row["Kuehlleistung"]);
+                if (dt.Columns.Contains("Bauart") && row["Bauart"] != DBNull.Value) item.Bauart = row["Bauart"].ToString();
+
+                // Für erweiterte Abfragen (ReadAll_MitMinMaxVorlauf)
+                if (dt.Columns.Contains("MaxVorlauf") && row["MaxVorlauf"] != DBNull.Value) item.MaxVorlauf = Convert.ToInt32(row["MaxVorlauf"]);
+                if (dt.Columns.Contains("MinVorlauf") && row["MinVorlauf"] != DBNull.Value) item.MinVorlauf = Convert.ToInt32(row["MinVorlauf"]);
+
+                _internalList.Add(item); // Dynamisch zur Liste hinzufügen
+            }
+        }
     }
 }

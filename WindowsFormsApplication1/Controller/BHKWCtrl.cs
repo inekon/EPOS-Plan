@@ -16,19 +16,32 @@ namespace WindowsFormsApplication1
         public static string[] LeistungFilterText = { "Ptherm LIKE '%'", "Ptherm<20", "Ptherm>=20 and Ptherm<40", "Ptherm>=40 and Ptherm<80", "Ptherm>=80 and Ptherm<200",
                                                       "Ptherm>=200 and Ptherm<500", "Ptherm>=500 and Ptherm<800", "Ptherm>=800 and Ptherm<1200", "Ptherm>=1200" };
 
-        // --- Kompatibilitäts-Layer für bestehenden UI-Code ---
+        // --- Kompatibilitäts-Layer nach vereinbarter Schablone ---
         private List<BHKWModel> _internalList = new List<BHKWModel>();
         private bool _hasSingleData = false;
 
-        // Simuliert die alte 'rows' Variable
-        public new int rows => _internalList.Count > 0 ? _internalList.Count : (_hasSingleData ? 1 : 0);
+        // Simuliert die alte 'rows' Variable dynamisch (ohne 'new', da aus Model gelöscht)
+        public int rows => _internalList.Count > 0 ? _internalList.Count : (_hasSingleData ? 1 : 0);
 
-        // Simuliert das alte 'items' Array (für Index-Zugriffe im UI)
+        // Simuliert das alte 'items' Array als Liste (ohne 'new')
         public List<BHKWModel> items => _internalList;
+
+        // HIER ERGÄNZT: Das OleDbCommand für transaktionale Aufrufe aus dem UI-Code
+        public OleDbCommand DBCommand;
 
         public BHKWCtrl()
         {
             _hasSingleData = false;
+            DBCommand = new OleDbCommand(); // Command im Konstruktor initialisieren
+            model = new BHKWModel();
+        }
+
+        ~BHKWCtrl()
+        {
+            if (DBCommand != null)
+            {
+                DBCommand.Dispose();
+            }
         }
 
         #region --- DATABASE OPERATIONS ---
@@ -46,9 +59,12 @@ namespace WindowsFormsApplication1
             _internalList.Clear();
             _hasSingleData = false;
 
-            foreach (DataRow row in dt.Rows)
+            if (dt != null)
             {
-                _internalList.Add(MapRowToModel(row));
+                foreach (DataRow row in dt.Rows)
+                {
+                    _internalList.Add(MapRowToModel(row));
+                }
             }
         }
 
@@ -58,7 +74,7 @@ namespace WindowsFormsApplication1
             OleDbParameter[] ps = { new OleDbParameter("@id", ID) };
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
-            if (dt.Rows.Count > 0)
+            if (dt != null && dt.Rows.Count > 0)
             {
                 MapThisToRow(dt.Rows[0]);
                 _hasSingleData = true;
@@ -71,7 +87,7 @@ namespace WindowsFormsApplication1
             OleDbParameter[] ps = { new OleDbParameter("@name", szBezeichner) };
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
-            if (dt.Rows.Count > 0)
+            if (dt != null && dt.Rows.Count > 0)
             {
                 MapThisToRow(dt.Rows[0]);
                 _hasSingleData = true;
@@ -80,42 +96,73 @@ namespace WindowsFormsApplication1
 
         public bool Update()
         {
-            // Hinweis: Bezeichner wird hier als Key verwendet
-            string sql = @"UPDATE Tab_BHKW SET 
-                            Beschreibung=?, Firma=?, Motortyp=?, Ptherm=?, Pel=?, 
-                            Brennstoff=?, Wirkungsgrad=?, Investition_kwel=?, Raumbedarf=?, 
-                            Wartungskosten_kwhel=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?, 
-                            CO2=?, Staub=?, Grenzleistung=?, Kosten_Modul=?, Kosten_Montage=?, 
-                            Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?
-                           WHERE Bezeichner=?";
+            try
+            {
+                // Hinweis: Bezeichner wird hier als Key verwendet
+                string sql = @"UPDATE Tab_BHKW SET 
+                               Beschreibung=?, Firma=?, Motortyp=?, Ptherm=?, Pel=?, 
+                               Brennstoff=?, Wirkungsgrad=?, Investition_kwel=?, Raumbedarf=?, 
+                               Wartungskosten_kwhel=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?, 
+                               CO2=?, Staub=?, Grenzleistung=?, Kosten_Modul=?, Kosten_Montage=?, 
+                               Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?
+                               WHERE Bezeichner=?";
 
-            OleDbParameter[] ps = {
-                new OleDbParameter("@besch", m_szBeschreibung ?? ""),
-                new OleDbParameter("@firma", m_szFirma ?? ""),
-                new OleDbParameter("@motor", m_szMotortyp ?? ""),
-                new OleDbParameter("@ptherm", m_Ptherm),
-                new OleDbParameter("@pel", m_Pel),
-                new OleDbParameter("@brenn", m_Brennstoff),
-                new OleDbParameter("@wirk", m_Wirkungsgrad),
-                new OleDbParameter("@inv", m_Investition_KWel),
-                new OleDbParameter("@raum", m_Raumbedarf),
-                new OleDbParameter("@wart", m_Wartungskosten_kWhel),
-                new OleDbParameter("@nutz", m_Nutzungsdauer),
-                new OleDbParameter("@nox", m_NOx),
-                new OleDbParameter("@so2", m_SO2),
-                new OleDbParameter("@co", m_CO),
-                new OleDbParameter("@co2", m_CO2),
-                new OleDbParameter("@staub", m_Staub),
-                new OleDbParameter("@grenz", m_Grenzleistung),
-                new OleDbParameter("@modul", m_Kosten_Modul),
-                new OleDbParameter("@mont", m_Kosten_Montage),
-                new OleDbParameter("@lief", m_Kosten_Lieferung),
-                new OleDbParameter("@schall", m_Kosten_Schallschutzhaube),
-                new OleDbParameter("@abgas", m_Kosten_Abgasreinigung),
-                new OleDbParameter("@key", m_szBezeichner)
-            };
+                // Nutzt das instanziierte DBCommand (wichtig für die Transaktion aus der UI)
+                DBCommand.CommandText = sql;
+                DBCommand.Parameters.Clear();
 
-            return DataRepository.ExecuteSQL(sql, ps);
+                // Beachte: Wenn das Control über InitDatensatzUpdate() befüllt wurde, 
+                // müssen wir hier auf das zugewiesene 'model' Objekt zugreifen!
+                DBCommand.Parameters.Add(new OleDbParameter("@besch", model.m_szBeschreibung ?? ""));
+                DBCommand.Parameters.Add(new OleDbParameter("@firma", model.m_szFirma ?? ""));
+                DBCommand.Parameters.Add(new OleDbParameter("@motor", model.m_szMotortyp ?? ""));
+                DBCommand.Parameters.Add(new OleDbParameter("@ptherm", model.m_Ptherm));
+                DBCommand.Parameters.Add(new OleDbParameter("@pel", model.m_Pel));
+                DBCommand.Parameters.Add(new OleDbParameter("@brenn", model.m_Brennstoff));
+                DBCommand.Parameters.Add(new OleDbParameter("@wirk", model.m_Wirkungsgrad));
+                DBCommand.Parameters.Add(new OleDbParameter("@inv", model.m_Investition_KWel));
+                DBCommand.Parameters.Add(new OleDbParameter("@raum", model.m_Raumbedarf));
+                DBCommand.Parameters.Add(new OleDbParameter("@wart", model.m_Wartungskosten_kWhel));
+                DBCommand.Parameters.Add(new OleDbParameter("@nutz", model.m_Nutzungsdauer));
+                DBCommand.Parameters.Add(new OleDbParameter("@nox", model.m_NOx));
+                DBCommand.Parameters.Add(new OleDbParameter("@so2", model.m_SO2));
+                DBCommand.Parameters.Add(new OleDbParameter("@co", model.m_CO));
+                DBCommand.Parameters.Add(new OleDbParameter("@co2", model.m_CO2));
+                DBCommand.Parameters.Add(new OleDbParameter("@staub", model.m_Staub));
+                DBCommand.Parameters.Add(new OleDbParameter("@grenz", model.m_Grenzleistung));
+                DBCommand.Parameters.Add(new OleDbParameter("@modul", model.m_Kosten_Modul));
+                DBCommand.Parameters.Add(new OleDbParameter("@mont", model.m_Kosten_Montage));
+                DBCommand.Parameters.Add(new OleDbParameter("@lief", model.m_Kosten_Lieferung));
+                DBCommand.Parameters.Add(new OleDbParameter("@schall", model.m_Kosten_Schallschutzhaube));
+                DBCommand.Parameters.Add(new OleDbParameter("@abgas", model.m_Kosten_Abgasreinigung));
+                DBCommand.Parameters.Add(new OleDbParameter("@key", model.m_szBezeichner ?? ""));
+
+                // Falls das Command noch keine Connection von außen hat, holen wir eine kurze Standalone-Verbindung
+                bool connectionOpenedInternally = false;
+                if (DBCommand.Connection == null)
+                {
+                    DBCommand.Connection = new OleDbConnection(DataRepository.GetConnectionString());
+                    DBCommand.Connection.Open();
+                    connectionOpenedInternally = true;
+                }
+
+                DBCommand.ExecuteNonQuery();
+
+                // Wenn wir die Verbindung intern geöffnet haben, schließen wir sie auch wieder sauber
+                if (connectionOpenedInternally)
+                {
+                    DBCommand.Connection.Close();
+                    DBCommand.Connection.Dispose();
+                    DBCommand.Connection = null;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Aktualisieren des BHKW: " + ex.Message);
+                return false;
+            }
         }
 
         #endregion

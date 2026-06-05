@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
+using System.Data.OleDb;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
@@ -211,10 +208,12 @@ namespace WindowsFormsApplication1
             textBox_Nennleistung.Text = wpctrl.Nennleistung.ToString();
             textBox_PHeizstab.Text = wpctrl.Heizung.ToString();
 
-            // Erstellen eines Datasets und Füllen mit Daten
-            OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Kenndaten where ID_WP = " +  wpctrl.ID + " order by Temperatur ASC", Program.DBConnection);
-            DataSet dataSet = new DataSet();
-            adapter.Fill(dataSet, "Tab_Kenndaten");
+            // Sicher, sauber und ohne SQL-Injection (Verwendung von ? als Parameter)
+            string sql = "SELECT * FROM Tab_Kenndaten WHERE ID_WP = ? ORDER BY Temperatur ASC";
+            OleDbParameter parameter = new OleDbParameter("?", wpctrl.ID);
+
+            // Das DataRepository übernimmt das Erstellen, Öffnen und Befüllen automatisch
+            DataTable dt = DataRepository.GetDataTable(sql, parameter);
 
             chart1.ChartAreas[0].AxisX.Title = "Temperatur";
             chart1.ChartAreas[0].AxisY.Title = "COP";
@@ -235,7 +234,7 @@ namespace WindowsFormsApplication1
                 chart1.Series[i].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Yes;
                 chart1.Series[i].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
                 chart1.Series[i].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
-                chart1.Series[i].Points.DataBind(dataSet.Tables["Tab_Kenndaten"].Select("Vorlauf=" + comboBox_Vorlauf.Items[i].ToString()), "Temperatur", "COP", "");
+                chart1.Series[i].Points.DataBind(dt.Select("Vorlauf=" + comboBox_Vorlauf.Items[i].ToString()), "Temperatur", "COP", "");
 
                 chart2.Series.Add(comboBox_Vorlauf.Items[i].ToString());
                 chart2.Series[i].Name = comboBox_Vorlauf.Items[i].ToString() + "°C";
@@ -246,7 +245,7 @@ namespace WindowsFormsApplication1
                 chart2.Series[i].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Yes;
                 chart2.Series[i].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
                 chart2.Series[i].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
-                chart2.Series[i].Points.DataBind(dataSet.Tables["Tab_Kenndaten"].Select("Vorlauf=" + comboBox_Vorlauf.Items[i].ToString()), "Temperatur", "Ptherm", "");
+                chart2.Series[i].Points.DataBind(dt.Select("Vorlauf=" + comboBox_Vorlauf.Items[i].ToString()), "Temperatur", "Ptherm", "");
 
             }
             return;

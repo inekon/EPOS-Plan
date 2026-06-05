@@ -1,110 +1,177 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class StromverbraucherCtrl : StromverbraucherModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
-        public StromverbraucherModel model;
+        private List<StromverbraucherModel> _internalList = new List<StromverbraucherModel>();
+        public int rows => _internalList.Count;
+        public new List<StromverbraucherModel> items => _internalList;
 
         public StromverbraucherCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-            model = new StromverbraucherModel();
-        }
-        ~StromverbraucherCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public void ReadAll()
         {
-            DBCommand.CommandText = "select * from Tab_Stromverbraucher order by Bezeichner";
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Stromverbraucher ORDER BY Bezeichner";
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            items = new StromverbraucherModel[1000];
+            _internalList.Clear();
 
-            rows = 0;
+            if (dt == null) return;
 
-            while (DBReader.Read())
+            foreach (DataRow row in dt.Rows)
             {
                 StromverbraucherModel item = new StromverbraucherModel();
 
-                if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_szBezeichner = (string)DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) item.m_szTyp = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.m_szBeschreibung = (string)DBReader.GetString(3);
+                // Basisdaten sicher auslesen
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    item.m_ID = Convert.ToInt32(row["ID"]);
+
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    item.m_szBezeichner = row["Bezeichner"].ToString();
+
+                if (dt.Columns.Contains("Typ") && row["Typ"] != DBNull.Value)
+                    item.m_szTyp = row["Typ"].ToString();
+
+                if (dt.Columns.Contains("Beschreibung") && row["Beschreibung"] != DBNull.Value)
+                    item.m_szBeschreibung = row["Beschreibung"].ToString();
+
+                // Die 12 Monate dynamisch und namensbasiert auslesen
                 for (int i = 0; i < 12; i++)
                 {
-                    if (!DBReader.IsDBNull(i + 4)) item.m_Monat[i] = (double)DBReader.GetValue(i + 4);
+                    // Erzeugt Spaltennamen wie "Monat1", "Monat2" ... passend zur Access-Tabelle
+                    string colName = "Monat" + (i + 1);
+
+                    if (dt.Columns.Contains(colName) && row[colName] != DBNull.Value)
+                    {
+                        item.m_Monat[i] = Convert.ToDouble(row[colName]);
+                    }
+                    else if (dt.Columns.Count > (i + 4) && row[i + 4] != DBNull.Value)
+                    {
+                        // Fallback auf den alten Index-basierten Zugriff, falls die Spalten nicht "MonatX" heißen
+                        item.m_Monat[i] = Convert.ToDouble(row[i + 4]);
+                    }
                 }
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
 
         public void ReadSingle(int ID_Stromverbraucher)
         {
-            DBCommand.CommandText = "select * from Tab_Stromverbraucher where ID=" + ID_Stromverbraucher;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Stromverbraucher WHERE ID = ?";
 
-            rows = 0;
+            OleDbParameter paramId = new OleDbParameter("@id", OleDbType.Integer);
+            paramId.Value = ID_Stromverbraucher;
+            OleDbParameter[] ps = { paramId };
 
-            DBReader.Read();
-            if (DBReader.HasRows)
+            DataTable dt = DataRepository.GetDataTable(sql, ps);
+
+            // Instanzdaten zurücksetzen für den Fall, dass nichts gefunden wird
+            m_ID = 0;
+            m_szBezeichner = string.Empty;
+            m_szTyp = string.Empty;
+            m_szBeschreibung = string.Empty;
+
+            if (dt != null && dt.Rows.Count > 0)
             {
-                if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_szBezeichner = (string)DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) m_szTyp = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_szBeschreibung = (string)DBReader.GetString(3);
-                
+                DataRow row = dt.Rows[0];
+
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    m_ID = Convert.ToInt32(row["ID"]);
+
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    m_szBezeichner = row["Bezeichner"].ToString();
+
+                if (dt.Columns.Contains("Typ") && row["Typ"] != DBNull.Value)
+                    m_szTyp = row["Typ"].ToString();
+
+                if (dt.Columns.Contains("Beschreibung") && row["Beschreibung"] != DBNull.Value)
+                    m_szBeschreibung = row["Beschreibung"].ToString();
+
+                // Die 12 Monate namensbasiert befüllen
                 for (int i = 0; i < 12; i++)
                 {
-                    if (!DBReader.IsDBNull(i+4)) m_Monat[i] = (double)DBReader.GetValue(i+4);
+                    string colName = "Monat" + (i + 1);
+                    if (dt.Columns.Contains(colName) && row[colName] != DBNull.Value)
+                    {
+                        m_Monat[i] = Convert.ToDouble(row[colName]);
+                    }
+                    else if (dt.Columns.Count > (i + 4) && row[i + 4] != DBNull.Value)
+                    {
+                        m_Monat[i] = Convert.ToDouble(row[i + 4]);
+                    }
                 }
 
-                rows = 1;
+                // Um die alte Logik (rows = 1) für die UI kompatibel zu halten, 
+                // wird hier temporär die interne Liste manipuliert:
+                _internalList.Clear();
+                _internalList.Add(this);
             }
-            DBReader.Dispose();
-            DBReader.Close();
+            else
+            {
+                _internalList.Clear();
+            }
         }
 
         public void ReadSingle(string szBezeichner)
         {
-            DBCommand.CommandText = "select * from Tab_Stromverbraucher where Bezeichner='" + szBezeichner + "'";
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Stromverbraucher WHERE Bezeichner = ?";
 
-            rows = 0;
+            OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
+            paramBez.Value = szBezeichner ?? (object)DBNull.Value;
+            OleDbParameter[] ps = { paramBez };
 
-            DBReader.Read();
-            if (DBReader.HasRows)
+            DataTable dt = DataRepository.GetDataTable(sql, ps);
+
+            // Instanzdaten zurücksetzen
+            m_ID = 0;
+            m_szBezeichner = string.Empty;
+            m_szTyp = string.Empty;
+            m_szBeschreibung = string.Empty;
+
+            if (dt != null && dt.Rows.Count > 0)
             {
-                if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_szBezeichner = (string)DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) m_szTyp = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_szBeschreibung = (string)DBReader.GetString(3);
+                DataRow row = dt.Rows[0];
 
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    m_ID = Convert.ToInt32(row["ID"]);
+
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    m_szBezeichner = row["Bezeichner"].ToString();
+
+                if (dt.Columns.Contains("Typ") && row["Typ"] != DBNull.Value)
+                    m_szTyp = row["Typ"].ToString();
+
+                if (dt.Columns.Contains("Beschreibung") && row["Beschreibung"] != DBNull.Value)
+                    m_szBeschreibung = row["Beschreibung"].ToString();
+
+                // Die 12 Monate namensbasiert befüllen
                 for (int i = 0; i < 12; i++)
                 {
-                    if (!DBReader.IsDBNull(i + 4)) m_Monat[i] = (double)DBReader.GetValue(i + 4);
+                    string colName = "Monat" + (i + 1);
+                    if (dt.Columns.Contains(colName) && row[colName] != DBNull.Value)
+                    {
+                        m_Monat[i] = Convert.ToDouble(row[colName]);
+                    }
+                    else if (dt.Columns.Count > (i + 4) && row[i + 4] != DBNull.Value)
+                    {
+                        m_Monat[i] = Convert.ToDouble(row[i + 4]);
+                    }
                 }
 
-                rows = 1;
+                _internalList.Clear();
+                _internalList.Add(this);
             }
-            DBReader.Dispose();
-            DBReader.Close();
+            else
+            {
+                _internalList.Clear();
+            }
         }
-
     }
 }

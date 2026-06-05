@@ -121,22 +121,16 @@
   <data name="btn_WocheUebernehmen.Location" type="System.Drawing.Point, System.Drawing">
     <value>37, 229</value>
   </data>
-  <data name="&gt;&gt;Label24.ZOrder" xml:space="preserve">
-    <value>43</value>
-  </data>
   <data name="st13.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 22</value>
   </data>
   <data name="&gt;&gt;Label7.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="Label23.TabIndex" type="System.Int32, mscorlib">
-    <value>158</value>
-  </data>
   <data name="&gt;&gt;Label22.ZOrder" xml:space="preserve">
     <value>39</value>
   </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="Label11.TabIndex" type="System.Int32, mscorlib">
     <value>134</value>
   </data>
@@ -158,11 +152,11 @@
   <data name="Label25.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
-  <data name="btn_Tageinfuegen.TabIndex" type="System.Int32, mscorlib">
-    <value>169</value>
+  <data name="label28.TabIndex" type="System.Int32, mscorlib">
+    <value>171</value>
   </data>
-  <data name="&gt;&gt;Label13.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;tabPage1.Parent" xml:space="preserve">
+    <value>tabControl1</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="btn_SpeichernUnter.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
@@ -201,17 +195,11 @@
   <data name="&gt;&gt;Label14.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="listBox_Tag.Size" type="System.Drawing.Size, System.Drawing">
-    <value>109, 123</value>
-  </data>
   <data name="&gt;&gt;st2.Parent" xml:space="preserve">
     <value>tabPage1</value>
   </data>
   <data name="Label4.Size" type="System.Drawing.Size, System.Drawing">
     <value>15, 17</value>
-  </data>
-  <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>570, 267</value>
   </data>
   <data name="&gt;&gt;Label1.Name" xml:space="preserve">
     <value>Label1</value>
@@ -233,6 +221,9 @@
   </data>
   <data name="st4.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="&gt;&gt;st13.Parent" xml:space="preserve">
+    <value>tabPage1</value>
   </data>
   <data name="Label5.Size" type="System.Drawing.Size, System.Drawing">
     <value>15, 17</value>
@@ -264,8 +255,8 @@
   <data name="&gt;&gt;st2.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="&gt;&gt;btn_SpeichernUnter.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;btn_Tagkopieren.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="btn_Neu.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -275,9 +266,6 @@
   </data>
   <data name="&gt;&gt;Label21.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="st9.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
   </data>
   <data name="btn_WocheUebernehmen.Text" xml:space="preserve">
     <value>Änderungen Übernehmen</value>
@@ -300,14 +288,14 @@
   <data name="btn_WocheUebernehmen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
   </data>
-  <data name="&gt;&gt;Label17.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="st19.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
   </data>
   <data name="Label10.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
+  </data>
+  <data name="&gt;&gt;Label21.ZOrder" xml:space="preserve">
+    <value>37</value>
   </data>
   <data name="st15.Location" type="System.Drawing.Point, System.Drawing">
     <value>147, 174</value>
@@ -333,11 +321,17 @@
   <data name="Label2.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="&gt;&gt;Label5.Name" xml:space="preserve">
+    <value>Label5</value>
+  </data>
   <data name="st16.Location" type="System.Drawing.Point, System.Drawing">
     <value>147, 198</value>
   </data>
   <data name="&gt;&gt;Label5.ZOrder" xml:space="preserve">
     <value>5</value>
+  </data>
+  <data name="Label8.Text" xml:space="preserve">
+    <value>6</value>
   </data>
   <data name="Label17.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -357,14 +351,17 @@
   <data name="&gt;&gt;Label27.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="st22.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
+  <data name="&gt;&gt;st5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;Label19.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Label15.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="st21.TabIndex" type="System.Int32, mscorlib">
+    <value>159</value>
   </data>
   <data name="st9.TabIndex" type="System.Int32, mscorlib">
     <value>135</value>
@@ -432,9 +429,6 @@
   <data name="&gt;&gt;btn_Schliessen.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="Label14.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
   <data name="listBox_Tag.Items3" xml:space="preserve">
     <value>Donnerstag</value>
   </data>
@@ -446,6 +440,9 @@
   </data>
   <data name="Label13.TabIndex" type="System.Int32, mscorlib">
     <value>138</value>
+  </data>
+  <data name="&gt;&gt;Label6.Parent" xml:space="preserve">
+    <value>tabPage1</value>
   </data>
   <data name="&gt;&gt;st3.Parent" xml:space="preserve">
     <value>tabPage1</value>
@@ -498,17 +495,17 @@
   <data name="&gt;&gt;Label18.Name" xml:space="preserve">
     <value>Label18</value>
   </data>
-  <data name="&gt;&gt;st8.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Prozesstypen Stundenverteilung</value>
+  <data name="listBox_Tag.Size" type="System.Drawing.Size, System.Drawing">
+    <value>109, 123</value>
   </data>
   <data name="btn_Tagkopieren.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="btn_Tagkopieren.Size" type="System.Drawing.Size, System.Drawing">
-    <value>109, 26</value>
+  <data name="Label20.Location" type="System.Drawing.Point, System.Drawing">
+    <value>228, 56</value>
+  </data>
+  <data name="&gt;&gt;Label17.ZOrder" xml:space="preserve">
+    <value>29</value>
   </data>
   <data name="&gt;&gt;Label19.Parent" xml:space="preserve">
     <value>tabPage1</value>
@@ -534,6 +531,9 @@
   <data name="st9.Location" type="System.Drawing.Point, System.Drawing">
     <value>147, 33</value>
   </data>
+  <data name="btn_Tageinfuegen.TabIndex" type="System.Int32, mscorlib">
+    <value>169</value>
+  </data>
   <data name="Label16.Location" type="System.Drawing.Point, System.Drawing">
     <value>117, 151</value>
   </data>
@@ -543,11 +543,8 @@
   <data name="Label19.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;btn_Speichern.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="label28.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="&gt;&gt;btn_SpeichernUnter.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="&gt;&gt;Label4.Parent" xml:space="preserve">
     <value>tabPage1</value>
@@ -583,6 +580,9 @@
     <value>st22</value>
   </data>
   <data name="Label3.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="Label7.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="&gt;&gt;label28.Type" xml:space="preserve">
@@ -720,8 +720,8 @@
   <data name="&gt;&gt;st19.ZOrder" xml:space="preserve">
     <value>38</value>
   </data>
-  <data name="&gt;&gt;Label1.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;Label3.Name" xml:space="preserve">
+    <value>Label3</value>
   </data>
   <data name="Label1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -750,11 +750,14 @@
   <data name="Label21.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="Label1.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="Label6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>16, 104</value>
   </data>
   <data name="Label10.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="st6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="&gt;&gt;st9.Parent" xml:space="preserve">
     <value>tabPage1</value>
@@ -780,17 +783,14 @@
   <data name="listBox_Typname.ItemHeight" type="System.Int32, mscorlib">
     <value>17</value>
   </data>
-  <data name="st21.TabIndex" type="System.Int32, mscorlib">
-    <value>159</value>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>7, 17</value>
   </data>
   <data name="listBox_Tag.Items" xml:space="preserve">
     <value>Montag</value>
   </data>
   <data name="Label6.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
-  </data>
-  <data name="Label27.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="&gt;&gt;st23.ZOrder" xml:space="preserve">
     <value>46</value>
@@ -801,14 +801,11 @@
   <data name="btn_Loeschen.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
   </data>
-  <data name="&gt;&gt;btn_Tagkopieren.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="btn_Tagkopieren.Size" type="System.Drawing.Size, System.Drawing">
+    <value>109, 26</value>
   </data>
   <data name="Label24.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="st1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 22</value>
   </data>
   <data name="Label12.Size" type="System.Drawing.Size, System.Drawing">
     <value>22, 17</value>
@@ -836,6 +833,9 @@
   </data>
   <data name="Label14.Size" type="System.Drawing.Size, System.Drawing">
     <value>22, 17</value>
+  </data>
+  <data name="&gt;&gt;Label1.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
     <value>16, 198</value>
@@ -912,8 +912,8 @@
   <data name="st12.Location" type="System.Drawing.Point, System.Drawing">
     <value>147, 104</value>
   </data>
-  <data name="&gt;&gt;Label4.Name" xml:space="preserve">
-    <value>Label4</value>
+  <data name="Label11.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="Label2.Size" type="System.Drawing.Size, System.Drawing">
     <value>270, 17</value>
@@ -924,20 +924,17 @@
   <data name="st18.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
   </data>
-  <data name="&gt;&gt;Label4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="st18.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="Label15.Text" xml:space="preserve">
+    <value>13</value>
   </data>
   <data name="st21.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
   </data>
-  <data name="Label3.Text" xml:space="preserve">
-    <value>1</value>
-  </data>
   <data name="Label26.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
-  </data>
-  <data name="&gt;&gt;Label10.Parent" xml:space="preserve">
-    <value>tabPage1</value>
   </data>
   <data name="&gt;&gt;Label21.Parent" xml:space="preserve">
     <value>tabPage1</value>
@@ -945,8 +942,11 @@
   <data name="&gt;&gt;listBox_Typname.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="&gt;&gt;st20.Parent" xml:space="preserve">
-    <value>tabPage1</value>
+  <data name="Label7.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="Label1.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="&gt;&gt;tabPage1.Name" xml:space="preserve">
     <value>tabPage1</value>
@@ -960,11 +960,14 @@
   <data name="&gt;&gt;Label20.Name" xml:space="preserve">
     <value>Label20</value>
   </data>
+  <data name="Label13.Size" type="System.Drawing.Size, System.Drawing">
+    <value>22, 17</value>
+  </data>
   <data name="Label3.TabIndex" type="System.Int32, mscorlib">
     <value>118</value>
   </data>
-  <data name="Label20.Location" type="System.Drawing.Point, System.Drawing">
-    <value>228, 56</value>
+  <data name="st9.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="btn_Schliessen.Location" type="System.Drawing.Point, System.Drawing">
     <value>511, 507</value>
@@ -1011,8 +1014,8 @@
   <data name="st14.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 22</value>
   </data>
-  <data name="&gt;&gt;Label21.ZOrder" xml:space="preserve">
-    <value>37</value>
+  <data name="Label14.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="Label21.Text" xml:space="preserve">
     <value>19</value>
@@ -1038,14 +1041,17 @@
   <data name="Label5.Text" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="&gt;&gt;Label6.Parent" xml:space="preserve">
-    <value>tabPage1</value>
+  <data name="&gt;&gt;st17.Name" xml:space="preserve">
+    <value>st17</value>
   </data>
   <data name="Label9.Text" xml:space="preserve">
     <value>7</value>
   </data>
   <data name="Label10.Text" xml:space="preserve">
     <value>8</value>
+  </data>
+  <data name="Label18.Text" xml:space="preserve">
+    <value>16</value>
   </data>
   <data name="&gt;&gt;label28.ZOrder" xml:space="preserve">
     <value>0</value>
@@ -1074,32 +1080,26 @@
   <data name="st5.Location" type="System.Drawing.Point, System.Drawing">
     <value>37, 127</value>
   </data>
-  <data name="&gt;&gt;st21.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;tabPage2.Name" xml:space="preserve">
     <value>tabPage2</value>
   </data>
   <data name="Label8.Size" type="System.Drawing.Size, System.Drawing">
     <value>15, 17</value>
   </data>
-  <data name="label28.TabIndex" type="System.Int32, mscorlib">
-    <value>171</value>
+  <data name="st10.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 22</value>
   </data>
   <data name="&gt;&gt;Label14.ZOrder" xml:space="preserve">
     <value>23</value>
   </data>
-  <data name="st24.Location" type="System.Drawing.Point, System.Drawing">
-    <value>258, 197</value>
+  <data name="listBox_Tag.Location" type="System.Drawing.Point, System.Drawing">
+    <value>345, 51</value>
   </data>
   <data name="&gt;&gt;listBox_Typname.Type" xml:space="preserve">
     <value>System.Windows.Forms.ListBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;Label22.Parent" xml:space="preserve">
     <value>tabPage1</value>
-  </data>
-  <data name="Label7.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
   </data>
   <data name="st9.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 22</value>
@@ -1125,6 +1125,9 @@
   <data name="st7.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 22</value>
   </data>
+  <data name="Label11.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
   <data name="&gt;&gt;btn_Neu.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
@@ -1140,8 +1143,8 @@
   <data name="tabPage2.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
-  <data name="Label27.Text" xml:space="preserve">
-    <value>Auswahl Wochentag</value>
+  <data name="&gt;&gt;st21.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;st5.ZOrder" xml:space="preserve">
     <value>10</value>
@@ -1161,8 +1164,8 @@
   <data name="btn_WocheUebernehmen.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="&gt;&gt;Label25.ZOrder" xml:space="preserve">
-    <value>45</value>
+  <data name="btn_Speichern.Location" type="System.Drawing.Point, System.Drawing">
+    <value>144, 507</value>
   </data>
   <data name="Label26.TabIndex" type="System.Int32, mscorlib">
     <value>164</value>
@@ -1185,8 +1188,8 @@
   <data name="&gt;&gt;tabPage2.Parent" xml:space="preserve">
     <value>tabControl1</value>
   </data>
-  <data name="&gt;&gt;tabPage1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;Label24.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="st23.Location" type="System.Drawing.Point, System.Drawing">
     <value>258, 173</value>
@@ -1197,11 +1200,11 @@
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
     <value>578, 297</value>
   </data>
-  <data name="st18.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
+  <data name="&gt;&gt;st8.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Label5.Name" xml:space="preserve">
-    <value>Label5</value>
+  <data name="Label27.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="st16.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -1211,6 +1214,9 @@
   </data>
   <data name="st16.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
+  </data>
+  <data name="st16.TabIndex" type="System.Int32, mscorlib">
+    <value>149</value>
   </data>
   <data name="&gt;&gt;btn_Tageinfuegen.ZOrder" xml:space="preserve">
     <value>52</value>
@@ -1233,11 +1239,11 @@
   <data name="st8.Location" type="System.Drawing.Point, System.Drawing">
     <value>37, 198</value>
   </data>
+  <data name="Label27.Text" xml:space="preserve">
+    <value>Auswahl Wochentag</value>
+  </data>
   <data name="Label5.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
-  </data>
-  <data name="listBox_Tag.Location" type="System.Drawing.Point, System.Drawing">
-    <value>345, 51</value>
   </data>
   <data name="&gt;&gt;st17.ZOrder" xml:space="preserve">
     <value>34</value>
@@ -1245,8 +1251,8 @@
   <data name="&gt;&gt;st4.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
-  <data name="st10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 22</value>
+  <data name="&gt;&gt;Label17.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;Label18.Parent" xml:space="preserve">
     <value>tabPage1</value>
@@ -1254,8 +1260,11 @@
   <data name="&gt;&gt;st12.Name" xml:space="preserve">
     <value>st12</value>
   </data>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>7, 17</value>
+  <data name="Label17.Location" type="System.Drawing.Point, System.Drawing">
+    <value>117, 174</value>
+  </data>
+  <data name="st24.Location" type="System.Drawing.Point, System.Drawing">
+    <value>258, 197</value>
   </data>
   <data name="Label25.Text" xml:space="preserve">
     <value>23</value>
@@ -1274,6 +1283,9 @@
   </data>
   <data name="Label6.TabIndex" type="System.Int32, mscorlib">
     <value>124</value>
+  </data>
+  <data name="&gt;&gt;st20.Parent" xml:space="preserve">
+    <value>tabPage1</value>
   </data>
   <data name="&gt;&gt;btn_Tageinfuegen.Parent" xml:space="preserve">
     <value>tabPage1</value>
@@ -1341,9 +1353,6 @@
   <data name="Label25.Location" type="System.Drawing.Point, System.Drawing">
     <value>228, 173</value>
   </data>
-  <data name="Label6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>16, 104</value>
-  </data>
   <data name="&gt;&gt;Label25.Name" xml:space="preserve">
     <value>Label25</value>
   </data>
@@ -1356,8 +1365,8 @@
   <data name="&gt;&gt;st21.Parent" xml:space="preserve">
     <value>tabPage1</value>
   </data>
-  <data name="Label17.Location" type="System.Drawing.Point, System.Drawing">
-    <value>117, 174</value>
+  <data name="&gt;&gt;tabPage1.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="&gt;&gt;Label11.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1392,6 +1401,9 @@
   <data name="&gt;&gt;st6.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;tabPage1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="st7.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
   </data>
@@ -1400,9 +1412,6 @@
   </data>
   <data name="&gt;&gt;textBox_Beschreibung.Name" xml:space="preserve">
     <value>textBox_Beschreibung</value>
-  </data>
-  <data name="Label17.Size" type="System.Drawing.Size, System.Drawing">
-    <value>22, 17</value>
   </data>
   <data name="st14.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
@@ -1424,9 +1433,6 @@
   </data>
   <data name="&gt;&gt;listBox_Typname.Parent" xml:space="preserve">
     <value>$this</value>
-  </data>
-  <data name="btn_Speichern.Location" type="System.Drawing.Point, System.Drawing">
-    <value>144, 507</value>
   </data>
   <data name="&gt;&gt;st22.Parent" xml:space="preserve">
     <value>tabPage1</value>
@@ -1488,8 +1494,8 @@
   <data name="&gt;&gt;btn_WocheUebernehmen.Parent" xml:space="preserve">
     <value>tabPage1</value>
   </data>
-  <data name="&gt;&gt;tabPage1.Parent" xml:space="preserve">
-    <value>tabControl1</value>
+  <data name="&gt;&gt;Label13.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;st4.Name" xml:space="preserve">
     <value>st4</value>
@@ -1497,11 +1503,8 @@
   <data name="Label27.Location" type="System.Drawing.Point, System.Drawing">
     <value>338, 25</value>
   </data>
-  <data name="st19.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="Label13.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
+  <data name="&gt;&gt;Label10.Parent" xml:space="preserve">
+    <value>tabPage1</value>
   </data>
   <data name="&gt;&gt;Label23.Name" xml:space="preserve">
     <value>Label23</value>
@@ -1509,20 +1512,17 @@
   <data name="&gt;&gt;Label18.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Label18.ZOrder" xml:space="preserve">
-    <value>31</value>
-  </data>
   <data name="Label26.Size" type="System.Drawing.Size, System.Drawing">
     <value>22, 17</value>
   </data>
   <data name="&gt;&gt;Label7.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="Label16.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
+  <data name="Label18.TabIndex" type="System.Int32, mscorlib">
+    <value>148</value>
   </data>
-  <data name="Label13.Size" type="System.Drawing.Size, System.Drawing">
-    <value>22, 17</value>
+  <data name="Label11.Location" type="System.Drawing.Point, System.Drawing">
+    <value>117, 33</value>
   </data>
   <data name="st13.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -1547,9 +1547,6 @@
   </data>
   <data name="st21.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 22</value>
-  </data>
-  <data name="&gt;&gt;Label27.Parent" xml:space="preserve">
-    <value>tabPage1</value>
   </data>
   <data name="st15.TabIndex" type="System.Int32, mscorlib">
     <value>147</value>
@@ -1593,14 +1590,17 @@
   <data name="&gt;&gt;st7.Parent" xml:space="preserve">
     <value>tabPage1</value>
   </data>
+  <data name="Label13.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
   <data name="&gt;&gt;btn_Speichern.Name" xml:space="preserve">
     <value>btn_Speichern</value>
   </data>
   <data name="Label21.TabIndex" type="System.Int32, mscorlib">
     <value>154</value>
   </data>
-  <data name="&gt;&gt;st13.Parent" xml:space="preserve">
-    <value>tabPage1</value>
+  <data name="&gt;&gt;Label24.ZOrder" xml:space="preserve">
+    <value>43</value>
   </data>
   <data name="Label2.Text" xml:space="preserve">
     <value>Beschreibung des ausgewählten Prozesstyps:</value>
@@ -1610,6 +1610,9 @@
   </data>
   <data name="&gt;&gt;Label16.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Label16.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="Label16.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1628,6 +1631,9 @@
   </data>
   <data name="st16.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 22</value>
+  </data>
+  <data name="&gt;&gt;Label2.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="listBox_Tag.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
@@ -1659,14 +1665,11 @@
   <data name="&gt;&gt;btn_WocheUebernehmen.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;st5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;Label20.Parent" xml:space="preserve">
     <value>tabPage1</value>
   </data>
-  <data name="Label7.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
+  <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>570, 267</value>
   </data>
   <data name="st11.TabIndex" type="System.Int32, mscorlib">
     <value>139</value>
@@ -1679,9 +1682,6 @@
   </data>
   <data name="st10.TabIndex" type="System.Int32, mscorlib">
     <value>137</value>
-  </data>
-  <data name="Label11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>117, 33</value>
   </data>
   <data name="&gt;&gt;chart1.Name" xml:space="preserve">
     <value>chart1</value>
@@ -1725,14 +1725,8 @@
   <data name="Label23.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
-  <data name="Label18.TabIndex" type="System.Int32, mscorlib">
-    <value>148</value>
-  </data>
-  <data name="listBox_Tag.TabIndex" type="System.Int32, mscorlib">
-    <value>170</value>
-  </data>
-  <data name="&gt;&gt;Label3.Name" xml:space="preserve">
-    <value>Label3</value>
+  <data name="&gt;&gt;Label18.ZOrder" xml:space="preserve">
+    <value>31</value>
   </data>
   <data name="btn_Tagkopieren.TabIndex" type="System.Int32, mscorlib">
     <value>168</value>
@@ -1761,9 +1755,6 @@
   <data name="&gt;&gt;st6.Name" xml:space="preserve">
     <value>st6</value>
   </data>
-  <data name="Label11.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
   <data name="btn_Tageinfuegen.Size" type="System.Drawing.Size, System.Drawing">
     <value>109, 26</value>
   </data>
@@ -1791,7 +1782,7 @@
   <data name="&gt;&gt;st12.ZOrder" xml:space="preserve">
     <value>24</value>
   </data>
-  <data name="st9.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="st19.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
   </data>
   <data name="Label11.Size" type="System.Drawing.Size, System.Drawing">
@@ -1800,14 +1791,17 @@
   <data name="&gt;&gt;Label3.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;st14.Parent" xml:space="preserve">
-    <value>tabPage1</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Prozesstypen Stundenverteilung</value>
+  </data>
+  <data name="listBox_Tag.Items4" xml:space="preserve">
+    <value>Freitag</value>
   </data>
   <data name="st13.Location" type="System.Drawing.Point, System.Drawing">
     <value>147, 127</value>
   </data>
-  <data name="st6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
+  <data name="&gt;&gt;btn_Speichern.ZOrder" xml:space="preserve">
+    <value>8</value>
   </data>
   <data name="&gt;&gt;Label14.Name" xml:space="preserve">
     <value>Label14</value>
@@ -1824,8 +1818,8 @@
   <data name="&gt;&gt;btn_WocheUebernehmen.Name" xml:space="preserve">
     <value>btn_WocheUebernehmen</value>
   </data>
-  <data name="Label23.Location" type="System.Drawing.Point, System.Drawing">
-    <value>228, 126</value>
+  <data name="btn_Tageinfuegen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>345, 216</value>
   </data>
   <data name="st10.Location" type="System.Drawing.Point, System.Drawing">
     <value>147, 57</value>
@@ -1833,8 +1827,8 @@
   <data name="btn_SpeichernUnter.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="&gt;&gt;Label17.ZOrder" xml:space="preserve">
-    <value>29</value>
+  <data name="&gt;&gt;st14.Parent" xml:space="preserve">
+    <value>tabPage1</value>
   </data>
   <data name="Label12.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
@@ -1862,9 +1856,6 @@
   </data>
   <data name="&gt;&gt;Label12.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="Label15.Text" xml:space="preserve">
-    <value>13</value>
   </data>
   <data name="&gt;&gt;Label6.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1902,17 +1893,26 @@
   <data name="&gt;&gt;st11.Parent" xml:space="preserve">
     <value>tabPage1</value>
   </data>
-  <data name="btn_SpeichernUnter.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+  <data name="Label23.TabIndex" type="System.Int32, mscorlib">
+    <value>158</value>
   </data>
   <data name="Label10.TabIndex" type="System.Int32, mscorlib">
     <value>132</value>
   </data>
-  <data name="btn_Tageinfuegen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>345, 216</value>
+  <data name="&gt;&gt;Label4.Name" xml:space="preserve">
+    <value>Label4</value>
+  </data>
+  <data name="st9.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="Label23.Location" type="System.Drawing.Point, System.Drawing">
+    <value>228, 126</value>
   </data>
   <data name="&gt;&gt;Label15.Parent" xml:space="preserve">
     <value>tabPage1</value>
+  </data>
+  <data name="label28.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
     <value>67</value>
@@ -1959,9 +1959,6 @@
   <data name="Label18.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;Label24.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;st10.ZOrder" xml:space="preserve">
     <value>20</value>
   </data>
@@ -1973,6 +1970,9 @@
   </data>
   <data name="&gt;&gt;Label1.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="st15.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 22</value>
   </data>
   <data name="st15.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -1995,11 +1995,14 @@
   <data name="Label9.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
   </data>
+  <data name="st22.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
   <data name="Label18.Location" type="System.Drawing.Point, System.Drawing">
     <value>117, 198</value>
   </data>
-  <data name="&gt;&gt;Label2.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;Label27.Parent" xml:space="preserve">
+    <value>tabPage1</value>
   </data>
   <data name="&gt;&gt;st24.Parent" xml:space="preserve">
     <value>tabPage1</value>
@@ -2007,11 +2010,14 @@
   <data name="&gt;&gt;st18.Name" xml:space="preserve">
     <value>st18</value>
   </data>
-  <data name="&gt;&gt;btn_SpeichernUnter.ZOrder" xml:space="preserve">
-    <value>7</value>
+  <data name="Label3.Text" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="st6.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="btn_SpeichernUnter.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
   </data>
   <data name="tabPage1.Text" xml:space="preserve">
     <value>Wochenwerte</value>
@@ -2022,14 +2028,11 @@
   <data name="Label23.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="listBox_Tag.Items4" xml:space="preserve">
-    <value>Freitag</value>
+  <data name="listBox_Tag.TabIndex" type="System.Int32, mscorlib">
+    <value>170</value>
   </data>
-  <data name="&gt;&gt;st17.Name" xml:space="preserve">
-    <value>st17</value>
-  </data>
-  <data name="Label8.Text" xml:space="preserve">
-    <value>6</value>
+  <data name="Label17.Size" type="System.Drawing.Size, System.Drawing">
+    <value>22, 17</value>
   </data>
   <data name="&gt;&gt;st16.ZOrder" xml:space="preserve">
     <value>32</value>
@@ -2040,9 +2043,6 @@
   <data name="&gt;&gt;st18.Parent" xml:space="preserve">
     <value>tabPage1</value>
   </data>
-  <data name="&gt;&gt;tabPage1.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
   <data name="Label12.TabIndex" type="System.Int32, mscorlib">
     <value>136</value>
   </data>
@@ -2052,8 +2052,8 @@
   <data name="chart1.Location" type="System.Drawing.Point, System.Drawing">
     <value>15, 16</value>
   </data>
-  <data name="Label18.Text" xml:space="preserve">
-    <value>16</value>
+  <data name="&gt;&gt;Label4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;btn_WocheUebernehmen.ZOrder" xml:space="preserve">
     <value>49</value>
@@ -2097,9 +2097,6 @@
   <data name="&gt;&gt;btn_Tagkopieren.ZOrder" xml:space="preserve">
     <value>51</value>
   </data>
-  <data name="st8.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
-  </data>
   <data name="&gt;&gt;tabControl1.Type" xml:space="preserve">
     <value>System.Windows.Forms.TabControl, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -2112,14 +2109,14 @@
   <data name="&gt;&gt;st13.Name" xml:space="preserve">
     <value>st13</value>
   </data>
-  <data name="st15.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="st1.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 22</value>
   </data>
   <data name="st18.TabIndex" type="System.Int32, mscorlib">
     <value>153</value>
   </data>
-  <data name="st16.TabIndex" type="System.Int32, mscorlib">
-    <value>149</value>
+  <data name="st8.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="&gt;&gt;Label9.Name" xml:space="preserve">
     <value>Label9</value>
@@ -2133,6 +2130,9 @@
   <data name="Label20.Size" type="System.Drawing.Size, System.Drawing">
     <value>22, 17</value>
   </data>
+  <data name="&gt;&gt;btn_SpeichernUnter.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
   <data name="st7.Location" type="System.Drawing.Point, System.Drawing">
     <value>37, 174</value>
   </data>
@@ -2142,8 +2142,8 @@
   <data name="textBox_Beschreibung.Size" type="System.Drawing.Size, System.Drawing">
     <value>343, 73</value>
   </data>
-  <data name="Label11.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
+  <data name="&gt;&gt;Label25.ZOrder" xml:space="preserve">
+    <value>45</value>
   </data>
   <data name="btn_SpeichernUnter.Size" type="System.Drawing.Size, System.Drawing">
     <value>119, 31</value>
@@ -2156,8 +2156,5 @@
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
-  </metadata>
-  <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>en-US</value>
   </metadata>
 </root>

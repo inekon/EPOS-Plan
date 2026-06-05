@@ -862,11 +862,11 @@
     <Compile Include="Views\Wärmepumpe\Form_WP.Designer.cs">
       <DependentUpon>Form_WP.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Klimadaten\Klimadaten.cs">
+    <Compile Include="Views\Klimadaten\Form_Klimadaten.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Klimadaten\Klimadaten.Designer.cs">
-      <DependentUpon>Klimadaten.cs</DependentUpon>
+    <Compile Include="Views\Klimadaten\Form_Klimadaten.Designer.cs">
+      <DependentUpon>Form_Klimadaten.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Hauptformular\Form_Start.cs">
       <SubType>Form</SubType>
@@ -1525,8 +1525,8 @@
     <EmbeddedResource Include="Views\Wärmepumpe\Form_WP.resx">
       <DependentUpon>Form_WP.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Klimadaten\Klimadaten.resx">
-      <DependentUpon>Klimadaten.cs</DependentUpon>
+    <EmbeddedResource Include="Views\Klimadaten\Form_Klimadaten.resx">
+      <DependentUpon>Form_Klimadaten.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Hauptformular\Form_Start.resx">
       <DependentUpon>Form_Start.cs</DependentUpon>

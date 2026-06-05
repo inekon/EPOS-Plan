@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -284,6 +285,19 @@ namespace WindowsFormsApplication1
         {
             Form_AdminSettings frm = new Form_AdminSettings();
             frm.ShowDialog();
+        }
+
+        private void MenuItem_Dokumentation_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string _targetUrl = Properties .Settings.Default.WordPressUrl;
+                Process.Start(new ProcessStartInfo { FileName = _targetUrl, UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Fehler beim Öffnen des Links: " + ex.Message);
+            }
         }
     }
 }

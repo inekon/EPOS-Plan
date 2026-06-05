@@ -1,8 +1,6 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Data;
 using System.Data.Odbc;
-using System.Data.OleDb;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,16 +16,16 @@ namespace WindowsFormsApplication1
         public string[] tabellenNamen_import;
         public string[] tabellenNamen_delete;
         public string szError;
-        string[] scripte = new string[] { "TABELLEN", "SPALTEN", "DATENTYPEN", "IMPORT", "DELETE" };
+        private readonly string[] scripte = { "TABELLEN", "SPALTEN", "DATENTYPEN", "IMPORT", "DELETE" };
 
-        public OdbcConnection openDB(string szDSN)
+        public OdbcConnection OpenDB(string szDSN)
         {
             DBConnection = new OdbcConnection(szDSN);
             DBConnection.Open();
             return DBConnection;
         }
 
-        public void closeDB()
+        public void CloseDB()
         {
             DBConnection.Close();
         }

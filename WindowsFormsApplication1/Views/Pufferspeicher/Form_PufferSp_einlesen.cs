@@ -1,7 +1,6 @@
 using System;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.IO;
-using System.Web;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -65,55 +64,89 @@ namespace WindowsFormsApplication1
 
         private void btn_Uebernehmen_Click(object sender, EventArgs e)
         {
-            RecordSet rs = new RecordSet();
-            OdbcTransaction transaction = null;
-
-            if (textBox_Name.Text == "")
+            if (string.IsNullOrEmpty(textBox_Name.Text))
             {
                 MessageBox.Show("Bitte einen Pufferspeicher selektieren!");
                 return;
             }
 
-            rs.Open("select * from Tab_Pufferspeicher where Bezeichner='" + textBox_Name.Text + "'");
-            if (rs.Next()) { MessageBox.Show("Daten bereits eingelesen!"); rs.Close(); return; }
-            rs.Close(); 
+            // 1. Vorabprüfung via DataRepository
+            string checkSql = "SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE Bezeichner = ?";
+            OleDbParameter checkParam = new OleDbParameter("?", textBox_Name.Text);
+            object checkResult = DataRepository.ExecuteScalar(checkSql, checkParam);
+
+            if (checkResult != null && Convert.ToInt32(checkResult) > 0)
+            {
+                MessageBox.Show("Daten bereits eingelesen!");
+                return;
+            }
+
+            // Variable für das Transaktionsmanagement vorbereiten
+            OleDbTransaction transaction = null;
+
             try
             {
-                transaction = Program.DBConnection.BeginTransaction();
-                rs.DBCommand.Transaction = transaction;
-                rs.Insert("INSERT INTO Tab_Pufferspeicher (Bezeichner) SELECT '" + textBox_Name.Text + "' AS Ausdr1");
-                rs.Close();
-
-                PufferSpCtrl ctrl = new PufferSpCtrl();
-                ctrl.model = InitDatensatzUpdate();
-                ctrl.DBCommand.Transaction = transaction;
-
-                if (ctrl.Update())
+                // 2. Verbindung und Transaktion manuell über das DataRepository aufbauen
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    transaction.Commit();
-                    this.DialogResult = DialogResult.OK;
-                    MessageBox.Show("Datensatz gespeichert");
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+
+                    // 3. Parametrisierter INSERT-Befehl innerhalb der Transaktion
+                    string insertSql = "INSERT INTO Tab_Pufferspeicher (Bezeichner) VALUES (?)";
+
+                    using (OleDbCommand insertCmd = conn.CreateCommand())
+                    {
+                        insertCmd.Transaction = transaction;
+                        insertCmd.CommandText = insertSql;
+                        insertCmd.Parameters.Add(new OleDbParameter("?", textBox_Name.Text));
+
+                        insertCmd.ExecuteNonQuery();
+                    }
+
+                    // 4. Update-Control initialisieren
+                    PufferSpCtrl ctrl = new PufferSpCtrl();
+                    ctrl.model = InitDatensatzUpdate();
+
+                    // Direktzuweisung der Verbindung und Transaktion an das Steuerelement
+                    ctrl.DBCommand.Connection = conn;
+                    ctrl.DBCommand.Transaction = transaction;
+
+                    // 5. Ausführen und Validieren des Updates
+                    if (ctrl.Update())
+                    {
+                        transaction.Commit();
+                        this.DialogResult = DialogResult.OK;
+                        MessageBox.Show("Datensatz gespeichert");
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                        this.DialogResult = DialogResult.Cancel;
+                        MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+                    }
+
+                    Close();
                 }
-                else
-                {
-                    transaction.Rollback();
-                    this.DialogResult = DialogResult.Cancel;
-                    MessageBox.Show("Fehler beim Speichern des Datensatzes!");
-                }
-                Close();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                try
+                Console.WriteLine("Fehler bei der Übernahme des Pufferspeichers: " + ex.Message);
+                MessageBox.Show("Ein Fehler ist aufgetreten: " + ex.Message);
+
+                if (transaction != null && transaction.Connection != null)
                 {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
+                    try
+                    {
+                        transaction.Rollback();
+                    }
+                    catch
+                    {
+                        // Ignorieren, falls die Transaktion bereits geschlossen oder ungültig ist
+                    }
                 }
-                catch
-                {
-                    // Do nothing here; transaction is not active.
-                }
+
+                this.DialogResult = DialogResult.Cancel;
             }
         }
 

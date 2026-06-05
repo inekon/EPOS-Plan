@@ -1,12 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Data.OleDb;
 using System.Windows.Forms;
-using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
@@ -16,20 +11,20 @@ namespace WindowsFormsApplication1
         public string m_szBeschreibung;
         public string m_szStromtyp;
         public string mode;
-        
-        public Form_EingDBStromverbraucher ()
+
+        public Form_EingDBStromverbraucher()
         {
             InitializeComponent();
 
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Stromverbrauchertyp order by Typname");
 
-            while(rs.Next())
+            while (rs.Next())
             {
                 comboBox_Stromtyp.Items.Add(rs.Read("Typname"));
             }
-            rs.Close(); 
- 
+            rs.Close();
+
         }
 
         public void SetControls()
@@ -63,39 +58,61 @@ namespace WindowsFormsApplication1
             {
                 btn_Speichern.Enabled = true;
                 btn_Speichern_Unter.Enabled = false;
-                btn_Ueberschreiben.Enabled = false; 
+                btn_Ueberschreiben.Enabled = false;
             }
         }
 
         private void btn_Ueberschreiben_Click(object sender, EventArgs e)
         {
-            
+            // 1. Validierung der UI-Eingaben (bleibt identisch)
             for (int i = 1; i <= 12; i++)
             {
                 string val = this.Controls["Wert" + i.ToString()].Text;
                 if (!Program.checkDouble(this.Controls["Wert" + i.ToString()], val)) return;
             }
 
-            OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Stromverbraucher where Bezeichner = '" + m_szStromname + "'", Program.DBConnection);
+            // 2. SQL mit Parameter definieren
+            string sql = "SELECT * FROM Tab_Stromverbraucher WHERE Bezeichner = ?";
             DataSet dataSet = new DataSet();
-            adapter.Fill(dataSet, "test");
-
-            DataRow row = dataSet.Tables["test"].Rows[0];
-
-            for (int i = 1; i <= 12; i++)
-            {
-                 row["Monat_" + i.ToString()] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
-            }
-            row["Typ"] = comboBox_Stromtyp.Text;
-            row["Beschreibung"] = textBox_Beschreibung.Text; 
 
             try
             {
+                // 3. Verbindung über den Connection-String des Repositories aufbauen
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    using (OleDbDataAdapter adapter = new OleDbDataAdapter(sql, conn))
+                    {
+                        // Parameter für den Stromnamen übergeben
+                        adapter.SelectCommand.Parameters.Add(new OleDbParameter("?", m_szStromname ?? (object)DBNull.Value));
 
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
+                        // Daten in das DataSet laden
+                        adapter.Fill(dataSet, "test");
 
-                adapter.Update(dataSet,"test");
-                MessageBox.Show("Daten aktualisiert!");
+                        // Prüfen, ob überhaupt ein Datensatz gefunden wurde
+                        if (dataSet.Tables["test"].Rows.Count == 0)
+                        {
+                            MessageBox.Show("Der zu aktualisierende Datensatz wurde nicht gefunden!");
+                            return;
+                        }
+
+                        DataRow row = dataSet.Tables["test"].Rows[0];
+
+                        // 4. Werte aus den Textboxen in die DataRow übertragen
+                        for (int i = 1; i <= 12; i++)
+                        {
+                            row["Monat_" + i.ToString()] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
+                        }
+                        row["Typ"] = comboBox_Stromtyp.Text;
+                        row["Beschreibung"] = textBox_Beschreibung.Text;
+
+                        // 5. Änderungen über den OleDbCommandBuilder zurückschreiben
+                        using (OleDbCommandBuilder commandBuilder = new OleDbCommandBuilder(adapter))
+                        {
+                            adapter.Update(dataSet, "test");
+                            MessageBox.Show("Daten aktualisiert!");
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -107,66 +124,86 @@ namespace WindowsFormsApplication1
 
         private void btn_OK_Click(object sender, EventArgs e)
         {
-             Close();
+            Close();
         }
 
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
             Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
-            
+
             frm.m_szName = textBox_Stromname.Text;
             frm.SetControl();
 
             if (frm.ShowDialog() == DialogResult.OK)
             {
-                RecordSet rs = new RecordSet();
-                rs.Open("select Bezeichner from Tab_Stromverbraucher where Bezeichner='" + frm.m_szName + "'");
-                if (!rs.EOF()) { MessageBox.Show("Name existiert bereits!"); rs.Close(); return; }
-                rs.Close(); 
-                textBox_Stromname.Text = frm.m_szName;
+                // 1. Vorabprüfung mittels DataRepository (Ersetzt das alte RecordSet)
+                string checkSql = "SELECT COUNT(*) FROM Tab_Stromverbraucher WHERE Bezeichner = ?";
+                OleDbParameter checkParam = new OleDbParameter("?", frm.m_szName);
+                object result = DataRepository.ExecuteScalar(checkSql, checkParam);
 
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Stromverbraucher", Program.DBConnection);
-                DataSet dataSet = new DataSet();
-                adapter.Fill(dataSet, "test");
-
-                DataRow newRow = dataSet.Tables["test"].NewRow();
-
-                newRow["Bezeichner"] = textBox_Stromname.Text;
-                newRow["Beschreibung"] = textBox_Beschreibung.Text;
-                newRow["Typ"] = comboBox_Stromtyp.Text;
-
-                for (int i = 1; i <= 12; i++)
+                if (result != null && Convert.ToInt32(result) > 0)
                 {
-                    newRow["Monat_" + i.ToString()] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
-                }
-
-                dataSet.Tables["test"].Rows.Add(newRow);
-                
-                try
-                {
-                    OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-
-                    adapter.Update(dataSet, "test");
-                    MessageBox.Show("Daten gespeichert!");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Fehler beim Aktualisieren der Daten!");
-                    Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
+                    MessageBox.Show("Name existiert bereits!");
                     return;
                 }
 
+                textBox_Stromname.Text = frm.m_szName;
 
+                // 2. Daten über OleDb laden und eine neue Zeile hinzufügen
+                string selectSql = "SELECT * FROM Tab_Stromverbraucher";
+                DataSet dataSet = new DataSet();
+
+                try
+                {
+                    using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                    {
+                        using (OleDbDataAdapter adapter = new OleDbDataAdapter(selectSql, conn))
+                        {
+                            // Tabelle in das DataSet laden
+                            adapter.Fill(dataSet, "test");
+
+                            // Neue Datenzeile (DataRow) basierend auf dem Tabellenschema erstellen
+                            DataRow newRow = dataSet.Tables["test"].NewRow();
+
+                            newRow["Bezeichner"] = textBox_Stromname.Text;
+                            newRow["Beschreibung"] = textBox_Beschreibung.Text;
+                            newRow["Typ"] = comboBox_Stromtyp.Text;
+
+                            for (int i = 1; i <= 12; i++)
+                            {
+                                newRow["Monat_" + i.ToString()] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
+                            }
+
+                            // Die neue Zeile der Tabelle hinzufügen
+                            dataSet.Tables["test"].Rows.Add(newRow);
+
+                            // 3. Änderungen mittels OleDbCommandBuilder in die Access-DB schreiben
+                            using (OleDbCommandBuilder commandBuilder = new OleDbCommandBuilder(adapter))
+                            {
+                                adapter.Update(dataSet, "test");
+                                MessageBox.Show("Daten gespeichert!");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Fehler beim Speichern der Daten!");
+                    Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
+                    return;
+                }
             }
         }
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
-            if(comboBox_Stromtyp.Text == "" )
+            // 1. Validierungen 
+            if (comboBox_Stromtyp.Text == "")
             {
                 MessageBox.Show("Verbrauchertyp auswählen!");
                 return;
             }
+
             for (int i = 1; i <= 12; i++)
             {
                 if (this.Controls["Wert" + i.ToString()].Text == "")
@@ -176,29 +213,44 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Stromverbraucher", Program.DBConnection);
+            // 2. Datenstruktur vorbereiten 
+            string selectSql = "SELECT * FROM Tab_Stromverbraucher";
             DataSet dataSet = new DataSet();
-            adapter.Fill(dataSet, "test");
-
-            DataRow newRow = dataSet.Tables["test"].NewRow();
-
-            newRow["Bezeichner"] = textBox_Stromname.Text;
-            newRow["Beschreibung"] = textBox_Beschreibung.Text;
-            newRow["Typ"] = comboBox_Stromtyp.Text;
-
-            for (int i = 1; i <= 12; i++)
-            {
-                newRow["Monat_" + i.ToString()] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
-            }
-
-            dataSet.Tables["test"].Rows.Add(newRow);
 
             try
             {
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
+                // Verbindung über den zentralen Connection-String des Repositories aufbauen
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    using (OleDbDataAdapter adapter = new OleDbDataAdapter(selectSql, conn))
+                    {
+                        // Tabelle in das DataSet laden
+                        adapter.Fill(dataSet, "test");
 
-                adapter.Update(dataSet, "test");
-                MessageBox.Show("Daten gespeichert!");
+                        // Neue Datenzeile (DataRow) basierend auf dem geladenen Tabellenschema erstellen
+                        DataRow newRow = dataSet.Tables["test"].NewRow();
+
+                        newRow["Bezeichner"] = textBox_Stromname.Text;
+                        newRow["Beschreibung"] = textBox_Beschreibung.Text;
+                        newRow["Typ"] = comboBox_Stromtyp.Text;
+
+                        // Monatsdaten parsen und in die Zeile eintragen
+                        for (int i = 1; i <= 12; i++)
+                        {
+                            newRow["Monat_" + i.ToString()] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
+                        }
+
+                        // Die befüllte Zeile der Tabelle im DataSet hinzufügen
+                        dataSet.Tables["test"].Rows.Add(newRow);
+
+                        // 3. Änderungen mittels OleDbCommandBuilder in die Access-DB schreiben
+                        using (OleDbCommandBuilder commandBuilder = new OleDbCommandBuilder(adapter))
+                        {
+                            adapter.Update(dataSet, "test");
+                            MessageBox.Show("Daten gespeichert!");
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -206,8 +258,5 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
             }
         }
-
- 
-  
     }
 }

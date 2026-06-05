@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -16,9 +12,8 @@ namespace WindowsFormsApplication1
     {
         public double[,] arr = new double[7, 24];
         private double[] arr_seriell = new double[168];
-        OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
 
-        public Form_EingStromTyp ()
+        public Form_EingStromTyp()
         {
             InitializeComponent();
             chart1.ChartAreas[0].AxisY.Minimum = 0;
@@ -27,16 +22,27 @@ namespace WindowsFormsApplication1
 
         public void SetControls()
         {
-            RecordSet rs = new RecordSet();
-            rs.Open("select * from Tab_Stromverbrauchertyp order by Typname");
-            listBox_Typname.Items.Clear();  
-            while (rs.Next())
+            // Abfrage über das DataRepository holen
+            string sql = "SELECT * FROM Tab_Stromverbrauchertyp ORDER BY Typname";
+            DataTable dt = DataRepository.GetDataTable(sql);
+
+            listBox_Typname.Items.Clear();
+
+            if (dt != null)
             {
-                listBox_Typname.Items.Add(rs.Read("Typname"));
-//                DatenEinlesen(rs);
+                foreach (DataRow row in dt.Rows)
+                {
+                    if (row["Typname"] != DBNull.Value)
+                    {
+                        listBox_Typname.Items.Add(row["Typname"].ToString());
+                    }
+                }
             }
-            rs.Close();
-            listBox_Typname.SelectedIndex = 0;
+
+            if (listBox_Typname.Items.Count > 0)
+            {
+                listBox_Typname.SelectedIndex = 0;
+            }
 
             init_Chart(chart1);
         }
@@ -47,60 +53,82 @@ namespace WindowsFormsApplication1
             {
                 string ctrl_name = "st" + (stunde + 1).ToString();
                 Control ctrl = tabPage1.Controls[ctrl_name];
-                ctrl.Text = arr[Tag, stunde].ToString("F2");
+                if (ctrl != null)
+                {
+                    ctrl.Text = arr[Tag, stunde].ToString("F2");
+                }
             }
         }
 
         private void listBox_Typname_SelectedIndexChanged(object sender, EventArgs e)
         {
-            RecordSet rs = new RecordSet();
-            rs.Open("select * from Tab_Stromverbrauchertyp where Typname='" + listBox_Typname.Text + "'");
-            
-            if(rs.Next())
-            {
-                DatenEinlesen(rs);
+            if (string.IsNullOrEmpty(listBox_Typname.Text)) return;
 
-                Object obj = rs.Read("Beschreibung");
-                if (!DBNull.Value.Equals(obj))
-                    textBox_Beschreibung.Text = (string)rs.Read("Beschreibung");
+            string sql = "SELECT * FROM Tab_Stromverbrauchertyp WHERE Typname = ?";
+            OleDbParameter parameter = new OleDbParameter("?", listBox_Typname.Text);
+            DataTable dt = DataRepository.GetDataTable(sql, parameter);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                DataRow row = dt.Rows[0];
+                DatenEinlesen(row);
+
+                if (row["Beschreibung"] != DBNull.Value)
+                    textBox_Beschreibung.Text = row["Beschreibung"].ToString();
                 else
                     textBox_Beschreibung.Text = "";
             }
-            rs.Close();
 
-            chart1.Series[0].Points.DataBindY(arr_seriell); 
+            chart1.Series[0].Points.DataBindY(arr_seriell);
 
-            listBox_Tag.ClearSelected(); 
-            listBox_Tag.SelectedIndex = 0;   
+            listBox_Tag.ClearSelected();
+            if (listBox_Tag.Items.Count > 0)
+            {
+                listBox_Tag.SelectedIndex = 0;
+            }
         }
 
         private void listBox_Tag_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(listBox_Tag.SelectedIndex == -1) return;
-             Tagesdaten(listBox_Typname.Text, listBox_Tag.SelectedIndex); 
+            if (listBox_Tag.SelectedIndex == -1) return;
+            Tagesdaten(listBox_Typname.Text, listBox_Tag.SelectedIndex);
         }
 
-        private void DatenEinlesen(RecordSet rs)
+        private void DatenEinlesen(DataRow row)
         {
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    arr[Tag, stunde] = (double)rs.Read(Tag * 24 + stunde + 3);
-                    arr_seriell[Tag*24+stunde] = arr[Tag, stunde];
+                    // Index 3 entspricht der vierten Spalte (Überspringen von ID, Typname, Beschreibung)
+                    int columnIndex = Tag * 24 + stunde + 3;
+                    if (row[columnIndex] != DBNull.Value)
+                    {
+                        arr[Tag, stunde] = Convert.ToDouble(row[columnIndex]);
+                    }
+                    else
+                    {
+                        arr[Tag, stunde] = 0;
+                    }
+                    arr_seriell[Tag * 24 + stunde] = arr[Tag, stunde];
                 }
             }
         }
 
         private void btn_WocheUebernehmen_Click(object sender, EventArgs e)
         {
-            int Tag = listBox_Tag.SelectedIndex;  
+            int Tag = listBox_Tag.SelectedIndex;
+            if (Tag == -1) return;
 
             for (int stunde = 0; stunde < 24; stunde++)
             {
-                string szval = tabPage1.Controls["st" + (stunde + 1).ToString()].Text;
-                Control ctrl = tabPage1.Controls["st" + (stunde + 1).ToString()];
-                if(!Program.checkDouble(ctrl, szval)) return;
+                string ctrlName = "st" + (stunde + 1).ToString();
+                Control ctrl = tabPage1.Controls[ctrlName];
+                if (ctrl == null) continue;
+
+                string szval = ctrl.Text;
+                if (!Program.checkDouble(ctrl, szval)) return;
+
                 double dval = double.Parse(szval);
                 arr[Tag, stunde] = dval;
                 arr_seriell[Tag * 24 + stunde] = dval;
@@ -113,46 +141,65 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(listBox_Typname.Text)) return;
+
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    if (!update(listBox_Typname.Text, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;  
+                    string feldName = "_" + (Tag * 24 + stunde + 1).ToString(); // Access mag Spaltennamen, die nur aus Zahlen bestehen, oft nicht ohne Präfix/Klammern (z.B. [1]). Wenn deine Spalten in der DB exakt "1", "2" heißen, belasse es bei (Tag * 24 + stunde + 1).ToString()
+                    string feld = (Tag * 24 + stunde + 1).ToString();
+
+                    if (!Update(listBox_Typname.Text, feld, arr[Tag, stunde])) return;
                 }
             }
-            update(textBox_Beschreibung.Text,listBox_Typname.Text);
-            MessageBox.Show("Datensatz gespeichert!"); 
-            chart1.Series[0].Points.DataBindY(arr_seriell); 
+            Update(textBox_Beschreibung.Text, listBox_Typname.Text);
+            MessageBox.Show("Datensatz gespeichert!");
+            chart1.Series[0].Points.DataBindY(arr_seriell);
         }
 
-        private bool update(string szBeschreibung, string szTyp)
+        private bool Update(string szBeschreibung, string szTyp)
         {
-            DBCommand.CommandText = "UPDATE Tab_Stromverbrauchertyp SET Beschreibung='" + szBeschreibung + "' WHERE Typname='" + szTyp + "'";
+            string sql = "UPDATE Tab_Stromverbrauchertyp SET Beschreibung = ? WHERE Typname = ?";
+            OleDbParameter[] parameters = new OleDbParameter[]
+            {
+                new OleDbParameter("?", szBeschreibung ?? (object)DBNull.Value),
+                new OleDbParameter("?", szTyp)
+            };
+
             try
             {
-                DBCommand.ExecuteNonQuery();
+                DataRepository.ExecuteNonQuery(sql, parameters);
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("Aktualisieren nicht möglich!");
+                MessageBox.Show("Aktualisieren der Beschreibung nicht möglich!");
+                Console.WriteLine("Fehler beim Aktualisieren der Beschreibung: " + ex.Message);
                 return false;
             }
             return true;
         }
 
-        private bool update(string typ, string feld, double value)
+        private bool Update(string typ, string feld, double value)
         {
+            // Da Spaltennamen nicht parametrisiert werden können, betten wir den validierten Feldnamen direkt ein.
+            // Die eckigen Klammern [ ] schützen rein numerische Spaltennamen (z.B. [1], [2]) unter Access/OleDb.
+            string sql = $"UPDATE Tab_Stromverbrauchertyp SET [{feld}] = ? WHERE Typname = ?";
 
-            string sql = "UPDATE Tab_Stromverbrauchertyp SET " + feld + "=" + value.ToString()  + " WHERE Typname='" + typ + "'";
-            sql = sql.Replace(',', '.'); 
-            DBCommand.CommandText = sql;
+            OleDbParameter[] parameters = new OleDbParameter[]
+            {
+                new OleDbParameter("?", value),
+                new OleDbParameter("?", typ)
+            };
+
             try
             {
-                DBCommand.ExecuteNonQuery();
+                DataRepository.ExecuteNonQuery(sql, parameters);
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("Aktualisieren nicht möglich!");
+                MessageBox.Show("Aktualisieren des Stundenwerts nicht möglich!");
+                Console.WriteLine($"Fehler beim Aktualisieren von Feld {feld}: " + ex.Message);
                 return false;
             }
             return true;
@@ -165,29 +212,34 @@ namespace WindowsFormsApplication1
 
         private void btn_Loeschen_Click(object sender, EventArgs e)
         {
-            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Typname.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            if (string.IsNullOrEmpty(listBox_Typname.Text))
+            {
+                MessageBox.Show("Bitte wählen Sie zuerst einen Typnamen aus!");
+                return;
+            }
+
+            DialogResult dialogResult = MessageBox.Show(
+                $"Soll {listBox_Typname.Text} wirklich gelöscht werden ?",
+                "Löschen",
+                MessageBoxButtons.YesNo
+            );
+
             if (dialogResult == DialogResult.No) return;
+
             try
             {
-                DBCommand.CommandText = "DELETE Typname FROM Tab_Stromverbrauchertyp WHERE Typname='" + listBox_Typname.Text + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                MessageBox.Show("Löschen nicht möglich!"); 
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return;
+                string sql = "DELETE FROM Tab_Stromverbrauchertyp WHERE Typname = ?";
+                OleDbParameter parameter = new OleDbParameter("?", listBox_Typname.Text);
+                DataRepository.ExecuteNonQuery(sql, parameter);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                MessageBox.Show("Löschen nicht möglich!"); 
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                MessageBox.Show("Löschen nicht möglich!");
+                Console.WriteLine("Fehler beim Löschen des Verbrauchertyps: " + ex.Message);
                 return;
             }
-            SetControls();
 
+            SetControls();
         }
 
         private void btn_Neu_Click(object sender, EventArgs e)
@@ -197,7 +249,8 @@ namespace WindowsFormsApplication1
             Point p1 = btn_Neu.Location;
             p1 = this.PointToScreen(p1);
             frm.Location = p1;
-            frm.ShowDialog();
+
+            // Fehler korrigiert: Im Original wurde ShowDialog() zweimal aufgerufen!
             if (frm.ShowDialog() == DialogResult.Cancel) return;
 
             for (int Tag = 0; Tag < 7; Tag++)
@@ -205,23 +258,36 @@ namespace WindowsFormsApplication1
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
                     arr[Tag, stunde] = 0;
-                    arr_seriell[Tag * 24 + stunde] = 0; 
+                    arr_seriell[Tag * 24 + stunde] = 0;
                 }
             }
-            DBCommand.CommandText = "INSERT INTO Tab_Stromverbrauchertyp ( Typname ) SELECT '" + frm.m_szName + "' AS Ausdr1";
-            DBCommand.ExecuteNonQuery();
+
+            // Sicherer parametrisierter Insert-Befehl
+            string sql = "INSERT INTO Tab_Stromverbrauchertyp ( Typname ) VALUES (?)";
+            OleDbParameter parameter = new OleDbParameter("?", frm.m_szName);
+
+            try
+            {
+                DataRepository.ExecuteNonQuery(sql, parameter);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Anlegen des Typs nicht möglich!");
+                Console.WriteLine("Fehler beim Einfügen: " + ex.Message);
+                return;
+            }
 
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    if (!update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;
+                    if (!Update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;
                 }
             }
-          
-            update("", frm.m_szName);
+
+            Update("", frm.m_szName);
             SetControls();
-            listBox_Typname.Text = frm.m_szName;  
+            listBox_Typname.Text = frm.m_szName;
         }
 
         private void btn_SpeichernUnter_Click(object sender, EventArgs e)
@@ -231,23 +297,34 @@ namespace WindowsFormsApplication1
             Point p1 = btn_Neu.Location;
             p1 = this.PointToScreen(p1);
             frm.Location = p1;
- 
+
             if (frm.ShowDialog() == DialogResult.Cancel) return;
 
-            DBCommand.CommandText = "INSERT INTO Tab_Stromverbrauchertyp ( Typname ) SELECT '" + frm.m_szName + "' AS Ausdr1";
-            DBCommand.ExecuteNonQuery();
+            string sql = "INSERT INTO Tab_Stromverbrauchertyp ( Typname ) VALUES (?)";
+            OleDbParameter parameter = new OleDbParameter("?", frm.m_szName);
+
+            try
+            {
+                DataRepository.ExecuteNonQuery(sql, parameter);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Speichern Unter nicht möglich!");
+                Console.WriteLine("Fehler beim Einfügen: " + ex.Message);
+                return;
+            }
 
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde]);
+                    Update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde]);
                 }
             }
 
-            update(textBox_Beschreibung.Text, frm.m_szName);
+            Update(textBox_Beschreibung.Text, frm.m_szName);
             SetControls();
-            listBox_Typname.Text = frm.m_szName;  
+            listBox_Typname.Text = frm.m_szName;
         }
 
         private void init_Chart(Chart chart)
@@ -273,8 +350,6 @@ namespace WindowsFormsApplication1
 
             chart.Series[0].ChartType = SeriesChartType.Area;
             chart.Series[0].Color = Color.FromArgb(100, Color.Blue);
-
         }
-
-     }
+    }
 }

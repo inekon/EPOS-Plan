@@ -164,6 +164,9 @@
   <data name="Label12.Text" xml:space="preserve">
     <value>Mai:</value>
   </data>
+  <data name="Label3.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
   <data name="Label24.TabIndex" type="System.Int32, mscorlib">
     <value>41</value>
   </data>
@@ -172,6 +175,9 @@
   </data>
   <data name="&gt;&gt;Label19.Name" xml:space="preserve">
     <value>Label19</value>
+  </data>
+  <data name="Label10.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="Label11.Size" type="System.Drawing.Size, System.Drawing">
     <value>43, 19</value>
@@ -188,14 +194,17 @@
   <data name="Label9.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="&gt;&gt;btn_Speichern_Unter.Name" xml:space="preserve">
-    <value>btn_Speichern_Unter</value>
+  <data name="&gt;&gt;Label22.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Label3.Text" xml:space="preserve">
     <value>Beschreibung:</value>
   </data>
   <data name="Wert3.Size" type="System.Drawing.Size, System.Drawing">
     <value>82, 25</value>
+  </data>
+  <data name="Label7.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="Label10.Text" xml:space="preserve">
     <value>April:</value>
@@ -206,6 +215,10 @@
   <data name="Label2.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Wert6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
   <data name="Label10.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleRight</value>
   </data>
@@ -214,6 +227,9 @@
   </data>
   <data name="&gt;&gt;Wert3.ZOrder" xml:space="preserve">
     <value>17</value>
+  </data>
+  <data name="&gt;&gt;btn_Speichern_Unter.Name" xml:space="preserve">
+    <value>btn_Speichern_Unter</value>
   </data>
   <data name="textBox_Beschreibung.Multiline" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -226,9 +242,6 @@
   </data>
   <data name="&gt;&gt;Label7.Parent" xml:space="preserve">
     <value>$this</value>
-  </data>
-  <data name="&gt;&gt;Label4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Label1.Location" type="System.Drawing.Point, System.Drawing">
     <value>59, 33</value>
@@ -244,6 +257,9 @@
   </data>
   <data name="Wert9.TabIndex" type="System.Int32, mscorlib">
     <value>36</value>
+  </data>
+  <data name="Wert8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>82, 25</value>
   </data>
   <data name="Wert1.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -296,12 +312,14 @@
   <data name="Label5.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="Wert9.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
   </data>
   <data name="Label27.Location" type="System.Drawing.Point, System.Drawing">
     <value>503, 317</value>
+  </data>
+  <data name="Label24.Location" type="System.Drawing.Point, System.Drawing">
+    <value>317, 288</value>
   </data>
   <data name="Label9.Location" type="System.Drawing.Point, System.Drawing">
     <value>251, 223</value>
@@ -333,13 +351,19 @@
   <data name="Label12.Size" type="System.Drawing.Size, System.Drawing">
     <value>35, 19</value>
   </data>
+  <data name="Label16.Size" type="System.Drawing.Size, System.Drawing">
+    <value>43, 19</value>
+  </data>
   <data name="&gt;&gt;Label25.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="Label22.TabIndex" type="System.Int32, mscorlib">
-    <value>38</value>
+  <data name="Label14.Location" type="System.Drawing.Point, System.Drawing">
+    <value>117, 317</value>
   </data>
   <data name="&gt;&gt;btn_Speichern_Unter.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;Label4.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="Wert6.TabIndex" type="System.Int32, mscorlib">
@@ -360,13 +384,13 @@
   <data name="Label12.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="Label17.TabIndex" type="System.Int32, mscorlib">
-    <value>31</value>
-  </data>
   <data name="Wert1.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="Label24.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
+  </data>
+  <data name="Label8.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
   <data name="&gt;&gt;Label14.Name" xml:space="preserve">
@@ -378,8 +402,8 @@
   <data name="Label21.Text" xml:space="preserve">
     <value>MWh</value>
   </data>
-  <data name="textBox_Stromname.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
+  <data name="&gt;&gt;Wert11.Name" xml:space="preserve">
+    <value>Wert11</value>
   </data>
   <data name="Label17.Text" xml:space="preserve">
     <value>Juli:</value>
@@ -417,9 +441,6 @@
   <data name="&gt;&gt;Label13.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="textBox_Beschreibung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>530, 48</value>
-  </data>
   <data name="&gt;&gt;Label8.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
@@ -432,14 +453,14 @@
   <data name="&gt;&gt;Wert4.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;btn_Ueberschreiben.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
   <data name="Label22.Text" xml:space="preserve">
     <value>Oktober:</value>
   </data>
   <data name="Label4.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleRight</value>
+  </data>
+  <data name="Label13.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
   <data name="Label21.TabIndex" type="System.Int32, mscorlib">
     <value>37</value>
@@ -450,17 +471,11 @@
   <data name="Wert12.TabIndex" type="System.Int32, mscorlib">
     <value>44</value>
   </data>
-  <data name="Wert7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>82, 25</value>
-  </data>
   <data name="Wert10.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
   </data>
   <data name="Label9.TabIndex" type="System.Int32, mscorlib">
     <value>20</value>
-  </data>
-  <data name="Label5.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
   </data>
   <data name="Label20.Size" type="System.Drawing.Size, System.Drawing">
     <value>78, 19</value>
@@ -468,14 +483,8 @@
   <data name="Wert10.Size" type="System.Drawing.Size, System.Drawing">
     <value>82, 25</value>
   </data>
-  <data name="Label7.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
-  </data>
   <data name="&gt;&gt;Wert12.Parent" xml:space="preserve">
     <value>$this</value>
-  </data>
-  <data name="Label26.Size" type="System.Drawing.Size, System.Drawing">
-    <value>71, 19</value>
   </data>
   <data name="&gt;&gt;Label10.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -486,8 +495,8 @@
   <data name="&gt;&gt;Wert6.Name" xml:space="preserve">
     <value>Wert6</value>
   </data>
-  <data name="&gt;&gt;Label5.Name" xml:space="preserve">
-    <value>Label5</value>
+  <data name="Wert7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>82, 25</value>
   </data>
   <data name="&gt;&gt;Wert7.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -500,6 +509,9 @@
   </data>
   <data name="btn_Speichern_Unter.Size" type="System.Drawing.Size, System.Drawing">
     <value>106, 34</value>
+  </data>
+  <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
+    <value>113, 254</value>
   </data>
   <data name="btn_Speichern.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -525,6 +537,9 @@
   <data name="Label5.Size" type="System.Drawing.Size, System.Drawing">
     <value>43, 19</value>
   </data>
+  <data name="Wert6.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
+  </data>
   <data name="Label6.Size" type="System.Drawing.Size, System.Drawing">
     <value>59, 19</value>
   </data>
@@ -546,12 +561,6 @@
   <data name="&gt;&gt;Label2.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Label7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>43, 19</value>
-  </data>
-  <data name="Label14.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
-  </data>
   <data name="btn_Speichern_Unter.Text" xml:space="preserve">
     <value>Speichern unter</value>
   </data>
@@ -560,9 +569,6 @@
   </data>
   <data name="comboBox_Stromtyp.Location" type="System.Drawing.Point, System.Drawing">
     <value>455, 31</value>
-  </data>
-  <data name="&gt;&gt;Label10.ZOrder" xml:space="preserve">
-    <value>19</value>
   </data>
   <data name="&gt;&gt;Label1.Parent" xml:space="preserve">
     <value>$this</value>
@@ -603,20 +609,17 @@
   <data name="Label21.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
+  <data name="&gt;&gt;Label22.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
   <data name="&gt;&gt;Label16.ZOrder" xml:space="preserve">
     <value>28</value>
   </data>
   <data name="&gt;&gt;Label16.Name" xml:space="preserve">
     <value>Label16</value>
   </data>
-  <data name="Label11.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
-  </data>
   <data name="Label5.Location" type="System.Drawing.Point, System.Drawing">
     <value>251, 159</value>
-  </data>
-  <data name="Label19.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
   </data>
   <data name="&gt;&gt;Wert1.Name" xml:space="preserve">
     <value>Wert1</value>
@@ -627,8 +630,8 @@
   <data name="&gt;&gt;Label15.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;Label22.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;Label12.Name" xml:space="preserve">
+    <value>Label12</value>
   </data>
   <data name="Label5.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -636,8 +639,8 @@
   <data name="&gt;&gt;textBox_Stromname.Name" xml:space="preserve">
     <value>textBox_Stromname</value>
   </data>
-  <data name="&gt;&gt;Label26.ZOrder" xml:space="preserve">
-    <value>43</value>
+  <data name="textBox_Stromname.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="&gt;&gt;Wert4.Parent" xml:space="preserve">
     <value>$this</value>
@@ -657,11 +660,11 @@
   <data name="Wert1.Location" type="System.Drawing.Point, System.Drawing">
     <value>161, 159</value>
   </data>
-  <data name="&gt;&gt;Wert8.ZOrder" xml:space="preserve">
-    <value>27</value>
-  </data>
   <data name="Label17.Size" type="System.Drawing.Size, System.Drawing">
     <value>31, 19</value>
+  </data>
+  <data name="Label16.Text" xml:space="preserve">
+    <value>MWh</value>
   </data>
   <data name="&gt;&gt;btn_Ueberschreiben.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -690,6 +693,9 @@
   <data name="&gt;&gt;Label15.ZOrder" xml:space="preserve">
     <value>26</value>
   </data>
+  <data name="&gt;&gt;Label22.Name" xml:space="preserve">
+    <value>Label22</value>
+  </data>
   <data name="&gt;&gt;Label20.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
@@ -699,20 +705,14 @@
   <data name="Label27.Text" xml:space="preserve">
     <value>MWh</value>
   </data>
-  <data name="Label13.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
   <data name="&gt;&gt;Wert12.ZOrder" xml:space="preserve">
     <value>42</value>
   </data>
-  <data name="&gt;&gt;Wert11.Name" xml:space="preserve">
-    <value>Wert11</value>
+  <data name="Wert9.Location" type="System.Drawing.Point, System.Drawing">
+    <value>413, 222</value>
   </data>
-  <data name="&gt;&gt;Label18.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label13.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="Label10.Size" type="System.Drawing.Size, System.Drawing">
+    <value>40, 19</value>
   </data>
   <data name="&gt;&gt;Label25.ZOrder" xml:space="preserve">
     <value>41</value>
@@ -726,8 +726,8 @@
   <data name="Label15.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="Label13.Location" type="System.Drawing.Point, System.Drawing">
-    <value>251, 286</value>
+  <data name="Wert7.Location" type="System.Drawing.Point, System.Drawing">
+    <value>413, 159</value>
   </data>
   <data name="Label2.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleRight</value>
@@ -738,14 +738,14 @@
   <data name="Label15.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="&gt;&gt;Label18.ZOrder" xml:space="preserve">
-    <value>31</value>
-  </data>
   <data name="Label5.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="Label12.Location" type="System.Drawing.Point, System.Drawing">
     <value>118, 286</value>
+  </data>
+  <data name="&gt;&gt;Label21.ZOrder" xml:space="preserve">
+    <value>35</value>
   </data>
   <data name="Label27.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -759,6 +759,9 @@
   <data name="Label1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
   </data>
+  <data name="&gt;&gt;Label17.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;Label13.Name" xml:space="preserve">
     <value>Label13</value>
   </data>
@@ -771,8 +774,8 @@
   <data name="Label9.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
   </data>
-  <data name="Wert9.Location" type="System.Drawing.Point, System.Drawing">
-    <value>413, 222</value>
+  <data name="Label11.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
   <data name="&gt;&gt;Wert4.Name" xml:space="preserve">
     <value>Wert4</value>
@@ -782,6 +785,9 @@
   </data>
   <data name="&gt;&gt;Label19.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Wert12.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="Label6.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -804,6 +810,12 @@
   <data name="Label21.Location" type="System.Drawing.Point, System.Drawing">
     <value>503, 223</value>
   </data>
+  <data name="Label13.TabIndex" type="System.Int32, mscorlib">
+    <value>26</value>
+  </data>
+  <data name="Wert10.Location" type="System.Drawing.Point, System.Drawing">
+    <value>413, 253</value>
+  </data>
   <data name="Label14.Text" xml:space="preserve">
     <value>Juni:</value>
   </data>
@@ -819,8 +831,8 @@
   <data name="&gt;&gt;Label18.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="Wert5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>82, 25</value>
+  <data name="&gt;&gt;Wert6.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="btn_OK.Size" type="System.Drawing.Size, System.Drawing">
     <value>91, 34</value>
@@ -831,14 +843,14 @@
   <data name="&gt;&gt;btn_Speichern.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
-    <value>113, 254</value>
+  <data name="&gt;&gt;Label5.Name" xml:space="preserve">
+    <value>Label5</value>
   </data>
   <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>48, 19</value>
   </data>
-  <data name="Label7.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="Label19.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
   <data name="Label2.Size" type="System.Drawing.Size, System.Drawing">
     <value>106, 19</value>
@@ -858,14 +870,14 @@
   <data name="&gt;&gt;textBox_Stromname.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="Label14.Size" type="System.Drawing.Size, System.Drawing">
-    <value>36, 19</value>
-  </data>
   <data name="&gt;&gt;Label24.ZOrder" xml:space="preserve">
     <value>39</value>
   </data>
   <data name="Label4.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
+  </data>
+  <data name="btn_OK.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
   </data>
   <data name="Wert3.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -885,9 +897,6 @@
   <data name="&gt;&gt;Wert2.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="comboBox_Stromtyp.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 5, 3, 5</value>
-  </data>
   <data name="Label18.Location" type="System.Drawing.Point, System.Drawing">
     <value>349, 194</value>
   </data>
@@ -897,8 +906,11 @@
   <data name="&gt;&gt;Label21.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;Label22.Name" xml:space="preserve">
-    <value>Label22</value>
+  <data name="btn_Speichern_Unter.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;Label7.ZOrder" xml:space="preserve">
+    <value>15</value>
   </data>
   <data name="&gt;&gt;Label6.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -939,26 +951,29 @@
   <data name="btn_Speichern_Unter.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
   </data>
+  <data name="&gt;&gt;Label25.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Label9.Size" type="System.Drawing.Size, System.Drawing">
     <value>43, 19</value>
   </data>
-  <data name="Label15.Location" type="System.Drawing.Point, System.Drawing">
-    <value>251, 317</value>
+  <data name="&gt;&gt;Wert8.Name" xml:space="preserve">
+    <value>Wert8</value>
   </data>
   <data name="&gt;&gt;Label3.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
+  <data name="Wert11.Location" type="System.Drawing.Point, System.Drawing">
+    <value>413, 285</value>
+  </data>
   <data name="&gt;&gt;Label19.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="Label25.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
+  <data name="Label20.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="Wert3.Location" type="System.Drawing.Point, System.Drawing">
     <value>161, 222</value>
-  </data>
-  <data name="&gt;&gt;btn_OK.ZOrder" xml:space="preserve">
-    <value>7</value>
   </data>
   <data name="Label4.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -966,8 +981,11 @@
   <data name="Wert3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
   </data>
-  <data name="Label13.Size" type="System.Drawing.Size, System.Drawing">
-    <value>43, 19</value>
+  <data name="Label20.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
+  </data>
+  <data name="Wert6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>82, 25</value>
   </data>
   <data name="&gt;&gt;textBox_Stromname.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -980,9 +998,6 @@
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>Form_EingDBStromverbraucher</value>
-  </data>
-  <data name="Label10.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
   </data>
   <data name="&gt;&gt;Wert9.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1005,14 +1020,14 @@
   <data name="Wert4.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="btn_Speichern_Unter.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
-  </data>
   <data name="Label7.TabIndex" type="System.Int32, mscorlib">
     <value>17</value>
   </data>
   <data name="&gt;&gt;comboBox_Stromtyp.ZOrder" xml:space="preserve">
     <value>2</value>
+  </data>
+  <data name="&gt;&gt;$this.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;Wert2.Name" xml:space="preserve">
     <value>Wert2</value>
@@ -1022,9 +1037,6 @@
   </data>
   <data name="Wert4.Size" type="System.Drawing.Size, System.Drawing">
     <value>82, 25</value>
-  </data>
-  <data name="btn_Ueberschreiben.Text" xml:space="preserve">
-    <value>Überschreiben</value>
   </data>
   <data name="&gt;&gt;Label10.Name" xml:space="preserve">
     <value>Label10</value>
@@ -1047,11 +1059,8 @@
   <data name="&gt;&gt;Wert7.Name" xml:space="preserve">
     <value>Wert7</value>
   </data>
-  <data name="Label18.Size" type="System.Drawing.Size, System.Drawing">
-    <value>56, 19</value>
-  </data>
-  <data name="Wert2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>82, 25</value>
+  <data name="Label13.Size" type="System.Drawing.Size, System.Drawing">
+    <value>43, 19</value>
   </data>
   <data name="Wert11.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -1063,9 +1072,6 @@
     <value>Name:</value>
   </data>
   <data name="Wert7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
-  </data>
-  <data name="textBox_Beschreibung.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
   </data>
   <data name="&gt;&gt;Label16.Parent" xml:space="preserve">
@@ -1083,9 +1089,6 @@
   <data name="Wert12.Location" type="System.Drawing.Point, System.Drawing">
     <value>413, 316</value>
   </data>
-  <data name="&gt;&gt;Label9.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;Wert11.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -1097,9 +1100,6 @@
   </data>
   <data name="Label8.TabIndex" type="System.Int32, mscorlib">
     <value>18</value>
-  </data>
-  <data name="btn_Ueberschreiben.Size" type="System.Drawing.Size, System.Drawing">
-    <value>102, 34</value>
   </data>
   <data name="Label26.Text" xml:space="preserve">
     <value>Dezember</value>
@@ -1113,8 +1113,8 @@
   <data name="Label10.TabIndex" type="System.Int32, mscorlib">
     <value>21</value>
   </data>
-  <data name="&gt;&gt;Label1.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="comboBox_Stromtyp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>192, 25</value>
   </data>
   <data name="&gt;&gt;Label19.ZOrder" xml:space="preserve">
     <value>32</value>
@@ -1122,8 +1122,8 @@
   <data name="&gt;&gt;Wert11.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="Wert11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>413, 285</value>
+  <data name="btn_Ueberschreiben.Size" type="System.Drawing.Size, System.Drawing">
+    <value>102, 34</value>
   </data>
   <data name="&gt;&gt;Label2.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -1137,8 +1137,8 @@
   <data name="Label25.Size" type="System.Drawing.Size, System.Drawing">
     <value>43, 19</value>
   </data>
-  <data name="textBox_Beschreibung.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+  <data name="Wert2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>82, 25</value>
   </data>
   <data name="Wert9.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -1152,14 +1152,17 @@
   <data name="&gt;&gt;comboBox_Stromtyp.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Label20.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
+  <data name="Label15.Location" type="System.Drawing.Point, System.Drawing">
+    <value>251, 317</value>
   </data>
   <data name="Label14.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleRight</value>
   </data>
   <data name="Label24.Text" xml:space="preserve">
     <value>Novmember:</value>
+  </data>
+  <data name="&gt;&gt;Label24.Name" xml:space="preserve">
+    <value>Label24</value>
   </data>
   <data name="Label25.Location" type="System.Drawing.Point, System.Drawing">
     <value>503, 286</value>
@@ -1182,6 +1185,9 @@
   <data name="Wert2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>5, 5, 5, 5</value>
   </data>
+  <data name="&gt;&gt;textBox_Beschreibung.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Label13.Text" xml:space="preserve">
     <value>MWh</value>
   </data>
@@ -1200,20 +1206,17 @@
   <data name="&gt;&gt;Label25.Name" xml:space="preserve">
     <value>Label25</value>
   </data>
-  <data name="Label14.Location" type="System.Drawing.Point, System.Drawing">
-    <value>117, 317</value>
+  <data name="&gt;&gt;Label18.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Label8.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
+  <data name="Label5.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
   <data name="textBox_Stromname.Location" type="System.Drawing.Point, System.Drawing">
     <value>115, 32</value>
   </data>
-  <data name="Label22.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
-  <data name="Label20.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="textBox_Beschreibung.Size" type="System.Drawing.Size, System.Drawing">
+    <value>530, 48</value>
   </data>
   <data name="Label12.TabIndex" type="System.Int32, mscorlib">
     <value>24</value>
@@ -1221,8 +1224,8 @@
   <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
-  <data name="Label24.Location" type="System.Drawing.Point, System.Drawing">
-    <value>317, 288</value>
+  <data name="&gt;&gt;Wert8.ZOrder" xml:space="preserve">
+    <value>27</value>
   </data>
   <data name="Label15.Size" type="System.Drawing.Size, System.Drawing">
     <value>43, 19</value>
@@ -1236,8 +1239,8 @@
   <data name="btn_Speichern_Unter.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 5, 3, 5</value>
   </data>
-  <data name="&gt;&gt;Label17.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Label10.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
   </data>
   <data name="&gt;&gt;Label12.ZOrder" xml:space="preserve">
     <value>22</value>
@@ -1248,8 +1251,8 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Eingabe Stromverbraucher</value>
   </data>
-  <data name="Wert7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>413, 159</value>
+  <data name="Label7.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
   <data name="&gt;&gt;Wert9.ZOrder" xml:space="preserve">
     <value>34</value>
@@ -1278,14 +1281,14 @@
   <data name="Wert2.Location" type="System.Drawing.Point, System.Drawing">
     <value>161, 191</value>
   </data>
-  <data name="Wert6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
+  <data name="&gt;&gt;Label18.ZOrder" xml:space="preserve">
+    <value>31</value>
   </data>
-  <data name="&gt;&gt;Label4.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;Label1.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
-  <data name="Label3.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
+  <data name="Label14.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
   </data>
   <data name="&gt;&gt;Wert1.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1293,8 +1296,8 @@
   <data name="Wert8.Location" type="System.Drawing.Point, System.Drawing">
     <value>413, 191</value>
   </data>
-  <data name="Wert6.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
+  <data name="Label25.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
   </data>
   <data name="btn_Ueberschreiben.Location" type="System.Drawing.Point, System.Drawing">
     <value>378, 378</value>
@@ -1308,8 +1311,8 @@
   <data name="&gt;&gt;Label14.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Wert6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>82, 25</value>
+  <data name="&gt;&gt;Label9.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Label23.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1320,20 +1323,17 @@
   <data name="Label25.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="btn_Speichern.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
   <data name="&gt;&gt;Wert7.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;Wert3.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Label7.ZOrder" xml:space="preserve">
-    <value>15</value>
+  <data name="Label26.Size" type="System.Drawing.Size, System.Drawing">
+    <value>71, 19</value>
   </data>
-  <data name="btn_OK.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+  <data name="Label7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>43, 19</value>
   </data>
   <data name="&gt;&gt;Label21.Name" xml:space="preserve">
     <value>Label21</value>
@@ -1350,8 +1350,8 @@
   <data name="Label5.Text" xml:space="preserve">
     <value>MWh</value>
   </data>
-  <data name="&gt;&gt;Label21.ZOrder" xml:space="preserve">
-    <value>35</value>
+  <data name="&gt;&gt;Label13.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="&gt;&gt;Label17.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1365,17 +1365,17 @@
   <data name="&gt;&gt;Label16.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;textBox_Beschreibung.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Label18.Size" type="System.Drawing.Size, System.Drawing">
+    <value>56, 19</value>
   </data>
-  <data name="Label10.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="btn_Ueberschreiben.Text" xml:space="preserve">
+    <value>Überschreiben</value>
   </data>
   <data name="Wert11.TabIndex" type="System.Int32, mscorlib">
     <value>42</value>
   </data>
-  <data name="&gt;&gt;Label22.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="Label22.TabIndex" type="System.Int32, mscorlib">
+    <value>38</value>
   </data>
   <data name="&gt;&gt;Wert1.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -1389,8 +1389,8 @@
   <data name="Label3.Size" type="System.Drawing.Size, System.Drawing">
     <value>94, 19</value>
   </data>
-  <data name="Wert12.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
+  <data name="Label14.Size" type="System.Drawing.Size, System.Drawing">
+    <value>36, 19</value>
   </data>
   <data name="&gt;&gt;Label6.Name" xml:space="preserve">
     <value>Label6</value>
@@ -1398,11 +1398,11 @@
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>7, 17</value>
   </data>
-  <data name="Label10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>40, 19</value>
+  <data name="Label13.Location" type="System.Drawing.Point, System.Drawing">
+    <value>251, 286</value>
   </data>
-  <data name="Label13.TabIndex" type="System.Int32, mscorlib">
-    <value>26</value>
+  <data name="comboBox_Stromtyp.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 5, 3, 5</value>
   </data>
   <data name="&gt;&gt;btn_Speichern.Parent" xml:space="preserve">
     <value>$this</value>
@@ -1419,8 +1419,8 @@
   <data name="Label18.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
-  <data name="Label16.Size" type="System.Drawing.Size, System.Drawing">
-    <value>43, 19</value>
+  <data name="&gt;&gt;Label26.ZOrder" xml:space="preserve">
+    <value>43</value>
   </data>
   <data name="Label8.Location" type="System.Drawing.Point, System.Drawing">
     <value>110, 223</value>
@@ -1440,8 +1440,8 @@
   <data name="Label15.Text" xml:space="preserve">
     <value>MWh</value>
   </data>
-  <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Label17.TabIndex" type="System.Int32, mscorlib">
+    <value>31</value>
   </data>
   <data name="Label4.Location" type="System.Drawing.Point, System.Drawing">
     <value>101, 159</value>
@@ -1470,23 +1470,23 @@
   <data name="Label6.Text" xml:space="preserve">
     <value>Februar:</value>
   </data>
-  <data name="&gt;&gt;Wert6.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="Label22.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
   </data>
   <data name="Label4.Size" type="System.Drawing.Size, System.Drawing">
     <value>52, 19</value>
   </data>
-  <data name="&gt;&gt;Label24.Name" xml:space="preserve">
-    <value>Label24</value>
+  <data name="Label13.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="&gt;&gt;Label11.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="Wert8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>82, 25</value>
+  <data name="&gt;&gt;btn_Ueberschreiben.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
-  <data name="Label13.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
+  <data name="&gt;&gt;Label10.ZOrder" xml:space="preserve">
+    <value>19</value>
   </data>
   <data name="Label20.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleRight</value>
@@ -1494,17 +1494,17 @@
   <data name="Label20.TabIndex" type="System.Int32, mscorlib">
     <value>35</value>
   </data>
-  <data name="&gt;&gt;Label12.Name" xml:space="preserve">
-    <value>Label12</value>
+  <data name="textBox_Beschreibung.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
   </data>
-  <data name="Label16.Text" xml:space="preserve">
-    <value>MWh</value>
-  </data>
-  <data name="&gt;&gt;Label25.Type" xml:space="preserve">
+  <data name="&gt;&gt;Label4.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Wert8.Name" xml:space="preserve">
-    <value>Wert8</value>
+  <data name="&gt;&gt;btn_OK.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="Wert5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>82, 25</value>
   </data>
   <data name="&gt;&gt;Label1.Name" xml:space="preserve">
     <value>Label1</value>
@@ -1512,8 +1512,8 @@
   <data name="Label15.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
   </data>
-  <data name="comboBox_Stromtyp.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 25</value>
+  <data name="btn_Speichern.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
   </data>
   <data name="Label6.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
@@ -1557,16 +1557,13 @@
   <data name="Label21.Size" type="System.Drawing.Size, System.Drawing">
     <value>43, 19</value>
   </data>
-  <data name="Wert10.Location" type="System.Drawing.Point, System.Drawing">
-    <value>413, 253</value>
+  <data name="textBox_Beschreibung.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="&gt;&gt;Label2.Name" xml:space="preserve">
     <value>Label2</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
-  </metadata>
-  <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>en-US</value>
   </metadata>
 </root>

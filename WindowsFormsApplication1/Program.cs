@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Diagnostics;
 using System.Drawing;
@@ -62,7 +61,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                DBConnection = db.openDB("DSN=TEST");
+                DBConnection = db.OpenDB("DSN=TEST");
             }
             catch (OdbcException sqlEx)
             {
@@ -111,7 +110,7 @@ namespace WindowsFormsApplication1
             
             StopLocalWebServer();
             
-            db.closeDB();
+            db.CloseDB();
             Application.Exit();
         }
 
