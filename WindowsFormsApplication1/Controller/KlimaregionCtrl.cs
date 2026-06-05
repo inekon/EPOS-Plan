@@ -1,135 +1,132 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
     class KlimaregionCtrl : KlimaregionModel
     {
-        public OdbcCommand DBCommand;
-        private List<double> list = new List<double>();
- 
+        // --- Kompatibilitäts-Layer ---
+        private List<KlimaregionModel> _internalList = new List<KlimaregionModel>();
+        public new int rows => _internalList.Count;
+        public new List<KlimaregionModel> items => _internalList;
+
+        public KlimaregionModel klimaregionmodel = new KlimaregionModel();
+
         public KlimaregionCtrl()
         {
-            DBCommand = Program.DBConnection.CreateCommand();
+            m_ID_Klimaregion = 0;
+            m_szName = "";
+            Longitude = 0;
+            Latitude = 0;
+            Details = "";
         }
+
+        #region --- READ OPERATIONS ---
 
         public void ReadAll()
         {
-            DBCommand.CommandText = "select * from Tab_Klimaregion order by Name";
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-
-            items = new KlimaregionModel[1000];
-            rows = 0;
-            while (DBReader.Read())
-            {
-                KlimaregionModel item = new KlimaregionModel();
-
-                if (!DBReader.IsDBNull(0)) item.m_ID_Klimaregion = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_szName = DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) item.Latitude = (double)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) item.Longitude = (double)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.Details = DBReader.GetString(4);
-
-                items[rows] = item;
-                item = null;
-                rows += 1;
-            }
-            DBReader.Dispose();
-            DBReader.Close();
+            string sql = "SELECT * FROM Tab_Klimaregion ORDER BY ID_Klimaregion";
+            ExecuteRead(sql);
         }
 
         public void ReadSingle(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            DataTable dt = DataRepository.GetDataTable(sql);
+            _internalList.Clear();
 
-            rows = 0;
-            DBReader.Read();
-            if (DBReader.HasRows)
+            if (dt.Rows.Count > 0)
             {
-                if (!DBReader.IsDBNull(0)) m_ID_Klimaregion = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_szName = DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) Longitude = (double)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) Latitude = (double)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) Details = DBReader.GetString(4);
-
-                rows = 1;
+                DataRow row = dt.Rows[0];
+                MapRowToThis(row);
+                _internalList.Add(this);
             }
-            DBReader.Dispose();
-            DBReader.Close();
+        }
+
+        private void ExecuteRead(string sql, params OleDbParameter[] parameters)
+        {
+            DataTable dt = DataRepository.GetDataTable(sql, parameters);
+            _internalList.Clear();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                KlimaregionModel item = new KlimaregionModel();
+
+                // Zuweisung über Spaltennamen – passend zu deinem KlimaregionModel aufgebaut:
+                item.m_ID_Klimaregion = row["ID_Klimaregion"] != DBNull.Value ? Convert.ToInt32(row["ID_Klimaregion"]) : 0;
+                item.m_szName = row["Name"] != DBNull.Value ? row["Name"].ToString() : "";
+                item.Longitude = row["Longitude"] != DBNull.Value ? Convert.ToDouble(row["Longitude"]) : 0;
+                item.Latitude = row["Latitude"] != DBNull.Value ? Convert.ToDouble(row["Latitude"]) : 0;
+                item.Details = row["Details"] != DBNull.Value ? row["Details"].ToString() : "";
+
+                _internalList.Add(item);
+            }
+        }
+
+        private void MapRowToThis(DataRow row)
+        {
+            // Zuweisung an die "this"-Instanz über Spaltennamen:
+            this.m_ID_Klimaregion = row["ID_Klimaregion"] != DBNull.Value ? Convert.ToInt32(row["ID_Klimaregion"]) : 0;
+            this.m_szName = row["Name"] != DBNull.Value ? row["Name"].ToString() : "";
+            this.Longitude = row["Longitude"] != DBNull.Value ? Convert.ToDouble(row["Longitude"]) : 0;
+            this.Latitude = row["Latitude"] != DBNull.Value ? Convert.ToDouble(row["Latitude"]) : 0;
+            this.Details = row["Details"] != DBNull.Value ? row["Details"].ToString() : "";
+        }
+
+        #endregion
+
+        #region --- WRITE OPERATIONS ---
+
+        public bool Add(string szName, double Longitude, double Latitude, string Details, OleDbConnection conn, OleDbTransaction trans)
+        {
+            // ID-Ermittlung direkt über die offene Verbindung innerhalb der Transaktion ausführen
+            using (OleDbCommand cmdMax = new OleDbConnection() == null ? null : new OleDbCommand("SELECT MAX(ID_Klimaregion) FROM Tab_Klimaregion", conn, trans))
+            {
+                object maxId = cmdMax.ExecuteScalar();
+                m_ID_Klimaregion = (maxId == null || maxId == DBNull.Value) ? 1 : Convert.ToInt32(maxId) + 1;
+            }
+
+            string sql = "INSERT INTO Tab_Klimaregion (ID_Klimaregion, Name, Longitude, Latitude, Details) VALUES (?, ?, ?, ?, ?)";
+
+            using (OleDbCommand cmd = new OleDbCommand(sql, conn, trans))
+            {
+                cmd.Parameters.Add(new OleDbParameter("?", m_ID_Klimaregion));
+                cmd.Parameters.Add(new OleDbParameter("?", string.IsNullOrEmpty(szName) ? (object)DBNull.Value : szName));
+                cmd.Parameters.Add(new OleDbParameter("?", Longitude));
+                cmd.Parameters.Add(new OleDbParameter("?", Latitude));
+                cmd.Parameters.Add(new OleDbParameter("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details));
+
+                cmd.ExecuteNonQuery();
+            }
+            return true;
+        }
+
+        public bool Update()
+        {
+            string sql = "UPDATE Tab_Klimaregion SET Name = ?, Längengrad = ?, Breitengrad = ?, Beschreibung = ? " +
+                         "WHERE ID_Klimaregion = ?";
+
+            OleDbParameter[] parameters = {
+                new OleDbParameter("?", string.IsNullOrEmpty(m_szName) ? (object)DBNull.Value : m_szName),
+                new OleDbParameter("?", Longitude),
+                new OleDbParameter("?", Latitude),
+                new OleDbParameter("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
+                new OleDbParameter("?", m_ID_Klimaregion) // WHERE-Bedingung
+            };
+
+            return DataRepository.ExecuteSQL(sql, parameters);
         }
 
         public bool Delete(string szName)
         {
-            try
-            {DBCommand.CommandText =
-                DBCommand.CommandText = "DELETE * FROM Tab_Klimaregion where Name= '" + szName + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                return false;
-            }
-            return true;
+            string sql = "DELETE FROM Tab_Klimaregion WHERE Name = ?";
+            return DataRepository.ExecuteSQL(sql, new OleDbParameter("?", szName));
         }
 
-        public bool Add(string szName, double Longitude, double Latitude, string Details)
-        {
-            try
-            {
-                DBCommand.CommandText = "SELECT Count(*) FROM Tab_Klimaregion";
-                OdbcDataReader DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();  
-                int result = (int)DBReader.GetValue(0);
-                DBReader.Close();
-
-                if (result == 0) m_ID_Klimaregion = 1;
-                else
-                {
-                    DBCommand.CommandText = "SELECT Max(ID_Klimaregion) AS Ausdr1 FROM Tab_Klimaregion";
-                    DBReader = DBCommand.ExecuteReader();
-                    DBReader.Read();
-                    m_ID_Klimaregion = (int)DBReader.GetValue(0) + 1;
-                    DBReader.Close();
-                }
-
-                DBCommand.CommandText = FormattableString.Invariant($@"
-                    INSERT INTO TAB_Klimaregion (ID_Klimaregion, Name, Longitude, Latitude, Details) 
-                    SELECT 
-                        {m_ID_Klimaregion}, 
-                        '{szName}', 
-                        {Longitude}, 
-                        {Latitude}, 
-                        '{Details}'");
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                MessageBox.Show("Allgemeiner Fehler: " + ex.Message);
-                return false;
-            }
-            return true;
-        }
+        #endregion
 
         public void FillComboBox(ComboBox ctrl)
         {
@@ -148,6 +145,5 @@ namespace WindowsFormsApplication1
                 ctrl.Items.Add(items[i].m_szName);
             }
         }
-
     }
 }

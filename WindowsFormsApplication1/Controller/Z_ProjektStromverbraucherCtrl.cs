@@ -1,84 +1,80 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Odbc;
-using System.Globalization;
-using System.Linq;
-using System.Text;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class Z_ProjektStromverbraucherCtrl : Z_ProjektStromverbraucherModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
+        private List<Z_ProjektStromverbraucherModel> _internalList = new List<Z_ProjektStromverbraucherModel>();
+        public int rows => _internalList.Count;
+        public new List<Z_ProjektStromverbraucherModel> items => _internalList;
         public Z_ProjektStromverbraucherModel model;
 
         public Z_ProjektStromverbraucherCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
             model = new Z_ProjektStromverbraucherModel();
         }
-        ~Z_ProjektStromverbraucherCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
-        }
 
-        public bool UpdateSumme(double dSumme, string  szBezeichner, int IDProjekt)
+        public bool UpdateSumme(double dSumme, string szBezeichner, int IDProjekt)
         {
             try
             {
-    
-                DBCommand.CommandText = FormattableString.Invariant($@"
-                    UPDATE Z_Projekt_Stromverbraucher 
-                    SET Summe = {dSumme:F2} 
-                    WHERE Bezeichner = '{szBezeichner}' 
-                      AND ID_Projekt = {IDProjekt}");
-                
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Parametrisierte Query gegen SQL-Injections und Formatierungsprobleme bei Nachkommastellen (Double)
+                string sql = @"UPDATE Z_Projekt_Stromverbraucher 
+                               SET Summe = ? 
+                               WHERE Bezeichner = ? 
+                                 AND ID_Projekt = ?";
+
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@summe", dSumme),
+                    new OleDbParameter("@bez", szBezeichner ?? (object)DBNull.Value),
+                    new OleDbParameter("@idProj", IDProjekt)
+                };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei UpdateSumme: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public void ReadAll(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            // Daten abrufen über DataRepository
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            items = new Z_ProjektStromverbraucherModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            // Interne Liste vor dem Befüllen bereinigen
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 Z_ProjektStromverbraucherModel item = new Z_ProjektStromverbraucherModel();
 
-                if (!DBReader.IsDBNull(0)) item.m_ID_Z = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_ID_Projekt = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.m_ID_Stromverbraucher = (int)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) item.m_szVerbraucher = (string)DBReader.GetString(3);
-                if (!DBReader.IsDBNull(4)) item.m_Summe = (double)DBReader.GetValue(4);
+                // Spaltenweises, sicheres Auslesen über Spaltennamen statt numerischer Indizes
+                if (dt.Columns.Contains("ID_Z") && row["ID_Z"] != DBNull.Value)
+                    item.m_ID_Z = Convert.ToInt32(row["ID_Z"]);
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
+                    item.m_ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
+
+                if (dt.Columns.Contains("ID_Stromverbraucher") && row["ID_Stromverbraucher"] != DBNull.Value)
+                    item.m_ID_Stromverbraucher = Convert.ToInt32(row["ID_Stromverbraucher"]);
+
+                if (dt.Columns.Contains("Verbraucher") && row["Verbraucher"] != DBNull.Value)
+                    item.m_szVerbraucher = row["Verbraucher"].ToString();
+
+                if (dt.Columns.Contains("Summe") && row["Summe"] != DBNull.Value)
+                    item.m_Summe = Convert.ToDouble(row["Summe"]);
+
+                // Element der dynamischen Liste hinzufügen
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
-
-
-
     }
 }

@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Data.Odbc;
-using System.Globalization;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     public class SolarganglinieDatenModel
     {
-        public int m_ID_GanglinieDaten;
-        public double m_Wert;
+        public int m_ID_GanglinieDaten { get; set; }
+        public double m_Wert { get; set; }
 
         public SolarganglinieDatenModel()
         {
@@ -22,73 +18,90 @@ namespace WindowsFormsApplication1
 
     class SolarganglinieDatenCtrl : SolarganglinieDatenModel
     {
-        OdbcCommand DBCommand;
-
         public List<SolarganglinieDatenModel> list_GanglinieDaten = new List<SolarganglinieDatenModel>();
+        public int rows => list_GanglinieDaten.Count;
+        public List<SolarganglinieDatenModel> items => list_GanglinieDaten;
 
-        public SolarganglinieDatenCtrl ()
+        public SolarganglinieDatenCtrl()
         {
-            DBCommand = Program.DBConnection.CreateCommand();
-        }
-
-        ~SolarganglinieDatenCtrl()
-        {
-            DBCommand.Dispose();
         }
 
         public bool Delete(string szName)
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Tab_SolarganglinieDaten where ID_GanglinieDaten= '" + m_ID_GanglinieDaten + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Standardkonformes DELETE ohne "*" und typsichere Parameterübergabe
+                string sql = "DELETE FROM Tab_SolarganglinieDaten WHERE ID_GanglinieDaten = ?";
+
+                OleDbParameter paramId = new OleDbParameter("@idGang", OleDbType.Integer);
+                paramId.Value = m_ID_GanglinieDaten;
+
+                OleDbParameter[] ps = { paramId };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Delete: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public bool Insert()
         {
+            if (list_GanglinieDaten == null || list_GanglinieDaten.Count == 0) return true;
+
             try
             {
-                for (int i = 0; i < list_GanglinieDaten.Count; i++)
+                // Verbindung explizit öffnen, um Massendaten gebündelt zu verarbeiten
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    SolarganglinieDatenModel item = list_GanglinieDaten.ElementAt(i);
+                    conn.Open();
 
-                    string sql = FormattableString.Invariant($@"
-                        INSERT INTO Tab_SolarganglinieDaten (ID_GanglinieDaten, Wert) 
-                        SELECT {item.m_ID_GanglinieDaten}, {item.m_Wert}");
+                    // Die Transaktion bündelt alle Schreibvorgänge im RAM und schreibt sie erst am Ende auf die Platte
+                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    {
+                        using (OleDbCommand cmd = new OleDbCommand())
+                        {
+                            cmd.Connection = conn;
+                            cmd.Transaction = trans;
+                            cmd.CommandText = "INSERT INTO Tab_SolarganglinieDaten (ID_GanglinieDaten, Wert) VALUES (?, ?)";
 
-                    DBCommand.CommandText = sql;
-                    DBCommand.ExecuteNonQuery();
+                            // Parameter vorab mit expliziten OleDbTypes definieren (verhindert den Laufzeitfehler)
+                            cmd.Parameters.Add("@id", OleDbType.Integer);
+                            cmd.Parameters.Add("@wert", OleDbType.Double);
+
+                            try
+                            {
+                                foreach (var item in list_GanglinieDaten)
+                                {
+                                    // In der Schleife werden hocheffizient nur die Werte ausgetauscht
+                                    cmd.Parameters[0].Value = item.m_ID_GanglinieDaten;
+                                    cmd.Parameters[1].Value = item.m_Wert;
+
+                                    cmd.ExecuteNonQuery();
+                                }
+
+                                // Erst jetzt wird die Änderung physikalisch in der *.accdb gespeichert
+                                trans.Commit();
+                                return true;
+                            }
+                            catch (Exception ex)
+                            {
+                                // Bei einem Fehler in der Schleife (z.B. Verletzung von DB-Regeln) wird alles zurückgerollt
+                                trans.Rollback();
+                                Console.WriteLine("Fehler beim Massen-Insert in der Schleife: " + ex.Message);
+                                return false;
+                            }
+                        }
+                    }
                 }
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Verbindungsfehler bei Massen-Insert: " + ex.Message);
                 return false;
             }
-            return true;
         }
-
-
     }
 }

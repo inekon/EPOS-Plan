@@ -1,53 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
+using System.Data;
 
 namespace WindowsFormsApplication1
 {
     class TagVCtrl : TagVModel
     {
-        OdbcCommand DBCommand;
-        TagVModel model;
-        public int rows;
+        // Das besprochene dynamische Listen-Schema
+        private List<TagVModel> _internalList = new List<TagVModel>();
+        public int rows => _internalList.Count;
+        public new List<TagVModel> items => _internalList;
 
         public TagVCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-            model = new TagVModel();
-        }
-
-        ~TagVCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public void ReadAll(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            // Daten abrufen über das zentrale DataRepository
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            items = new TagVCtrl[1000];
-            rows = 0;
-            while (DBReader.Read())
+            // Interne Liste vor dem erneuten Laden leeren
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
-                TagVCtrl item = new TagVCtrl();
+                // Korrektur: Hier wird nun korrekterweise das Model (statt des Controllers) erzeugt
+                TagVModel item = new TagVModel();
 
-                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.Name = (string)DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) item.Beschreibung = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.Veraenderbar = (bool)DBReader.GetValue(3);
+                // Spaltenbasiertes, sicheres Auslesen über Spaltennamen statt numerischer Indizes
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    item.ID = Convert.ToInt32(row["ID"]);
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                if (dt.Columns.Contains("Name") && row["Name"] != DBNull.Value)
+                    item.Name = row["Name"].ToString();
+
+                if (dt.Columns.Contains("Beschreibung") && row["Beschreibung"] != DBNull.Value)
+                    item.Beschreibung = row["Beschreibung"].ToString();
+
+                if (dt.Columns.Contains("Veraenderbar") && row["Veraenderbar"] != DBNull.Value)
+                    item.Veraenderbar = Convert.ToBoolean(row["Veraenderbar"]);
+
+                // Fallback, falls die Spalte in der Access-Tabelle "Veränderbar" (mit Umlaut) geschrieben ist
+                else if (dt.Columns.Contains("Veränderbar") && row["Veränderbar"] != DBNull.Value)
+                    item.Veraenderbar = Convert.ToBoolean(row["Veränderbar"]);
+
+                // Das fertige Element der dynamischen Liste hinzufügen
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
-
     }
 }

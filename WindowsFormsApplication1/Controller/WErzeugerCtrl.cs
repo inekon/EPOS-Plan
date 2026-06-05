@@ -1,307 +1,252 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
-using System.Windows.Forms;
 using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class WErzeugerCtrl : WErzeugerModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
-        public WErzeugerModel model;
-
-        public const string selectCommandText = "SELECT * FROM Tab_Energieanlagen";
-        public const string insertCommandText = "INSERT INTO Tab_Energieanlagen (ID, ID_Projekt,Bezeichner,ID_Type,ID_WP,Betriebsart,Sperrung,Sperrzeit_von,Sperrzeit_bis,Vorlauf,Ruecklauf,Bivalenter_Betrieb,Abschaltpunkt,Nutzungszeit,ID_SP,ID_PV,ID_Solar) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        public const string updateCommandText = "UPDATE Tab_Energieanlagen SET Name = ? WHERE ID = ?";
-        public const string deleteCommandText = "DELETE FROM Tab_Energieanlagen WHERE ID = ?";
+        private List<WErzeugerModel> _internalList = new List<WErzeugerModel>();
+        public int rows => _internalList.Count;
+        public new List<WErzeugerModel> items => _internalList;
 
         public WErzeugerCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-            model = new WErzeugerModel();
-        }
-        ~WErzeugerCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public bool Update()
         {
             try
             {
+                string sql = @"UPDATE Tab_Energieanlagen 
+                               SET ID_Projekt = ?, Bezeichner = ?, ID_Type = ?, ID_WP = ?, Betriebsart = ?, 
+                                   Sperrung = ?, Sperrzeit_von = ?, Sperrzeit_bis = ?, Vorlauf = ?, Ruecklauf = ?, 
+                                   Bivalenter_Betrieb = ?, Abschaltpunkt = ?, Nutzungszeit = ?, ID_SP = ?, ID_PV = ?, ID_Solar = ?
+                               WHERE ID = ?";
 
-                DBCommand.CommandText = FormattableString.Invariant($@"
-                    UPDATE Tab_Energieanlagen 
-                    SET 
-                        ID_Projekt = {ID_Projekt}, 
-                        Bezeichner = '{Bezeichner}', 
-                        ID_Type = {ID_Type}, 
-                        ID_WP = {ID_WP}, 
-                        Betriebsart = '{Betriebsart}', 
-                        Sperrung = {Sperrung}, 
-                        Sperrzeit_von = {Sperrzeit_von}, 
-                        Sperrzeit_bis = {Sperrzeit_bis}, 
-                        Vorlauf = {Vorlauf}, 
-                        Ruecklauf = {Ruecklauf}, 
-                        Bivalenter_Betrieb = {Bivalenter_Betrieb}, 
-                        Abschaltpunkt = {Abschaltpunkt}, 
-                        Nutzungszeit = {Nutzungszeit}, 
-                        ID_SP = {ID_SP}, 
-                        ID_PV = {ID_PV}, 
-                        ID_Solar = {ID_Solar}");
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@idProj", ID_Projekt),
+                    new OleDbParameter("@bez", Bezeichner ?? (object)DBNull.Value),
+                    new OleDbParameter("@idType", ID_Type),
+                    new OleDbParameter("@idWp", ID_WP),
+                    new OleDbParameter("@betr", Betriebsart ?? (object)DBNull.Value),
+                    new OleDbParameter("@sperr", Sperrung),
+                    new OleDbParameter("@von", Sperrzeit_von),
+                    new OleDbParameter("@bis", Sperrzeit_bis),
+                    new OleDbParameter("@vor", Vorlauf),
+                    new OleDbParameter("@rue", Ruecklauf),
+                    new OleDbParameter("@biv", Bivalenter_Betrieb),
+                    new OleDbParameter("@absch", Abschaltpunkt),
+                    new OleDbParameter("@nutz", Nutzungszeit),
+                    new OleDbParameter("@idSp", ID_SP),
+                    new OleDbParameter("@idPv", ID_PV),
+                    new OleDbParameter("@idSol", ID_Solar),
+                    new OleDbParameter("@id", ID) // Die ID am Ende bestimmt die WHERE-Klausel
+                };
 
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Update: " + ex.Message);
                 return false;
             }
-            return true;
         }
-            
+
         public bool Delete()
         {
             try
             {
-                DBCommand.CommandText = "DELETE ID_Projekt FROM Tab_Energieanlagen WHERE ID_Projekt=" + ID_Projekt;
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Korrektur: DELETE * FROM bzw. DELETE FROM statt der alten fehlerhaften Syntax "DELETE ID_Projekt FROM..."
+                string sql = "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ?";
+                OleDbParameter[] ps = { new OleDbParameter("@idProj", ID_Projekt) };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Delete: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public int GetMaxID()
         {
-            int maxID = 0;
-
-            DBCommand.CommandText = "SELECT Count(*) FROM Tab_Energieanlagen";
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-            DBReader.Read();  
-            int result = (int)DBReader.GetValue(0);
-            DBReader.Close();
-
-            if (result == 0) maxID = 0;
-            else
+            try
             {
-                DBCommand.CommandText = "SELECT Max(ID) AS Ausdr1 FROM Tab_Energieanlagen";
-                DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();
-                maxID = (int)DBReader.GetValue(0);
+                string sqlCount = "SELECT COUNT(*) FROM Tab_Energieanlagen";
+                object countResult = DataRepository.ExecuteScalar(sqlCount, null);
+                int count = countResult != null ? Convert.ToInt32(countResult) : 0;
+
+                if (count == 0) return 0;
+
+                string sqlMax = "SELECT MAX(ID) FROM Tab_Energieanlagen";
+                object maxResult = DataRepository.ExecuteScalar(sqlMax, null);
+                return maxResult != null ? Convert.ToInt32(maxResult) : 0;
             }
-            return maxID; 
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei GetMaxID: " + ex.Message);
+                return 0;
+            }
         }
 
         public bool Insert()
         {
             try
             {
-                DBCommand.CommandText = "SELECT Count(*) FROM TAB_WP";
-                OdbcDataReader DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();  
-                int result = (int)DBReader.GetValue(0);
-                DBReader.Close();
+                string sqlCount = "SELECT COUNT(*) FROM Tab_Energieanlagen";
+                object countResult = DataRepository.ExecuteScalar(sqlCount, null);
+                int count = countResult != null ? Convert.ToInt32(countResult) : 0;
 
-                if (result == 0) ID = 1;
+                if (count == 0)
+                {
+                    ID = 1;
+                }
                 else
                 {
-                    DBCommand.CommandText = "SELECT Max(ID) AS Ausdr1 FROM Tab_Energieanlagen";
-                    DBReader = DBCommand.ExecuteReader();
-                    DBReader.Read();
-                    ID = (int)DBReader.GetValue(0) + 1;
-                    DBReader.Close();
+                    string sqlMax = "SELECT MAX(ID) FROM Tab_Energieanlagen";
+                    object maxResult = DataRepository.ExecuteScalar(sqlMax, null);
+                    ID = (maxResult != null ? Convert.ToInt32(maxResult) : 0) + 1;
                 }
 
-                DBCommand.CommandText = FormattableString.Invariant($@"
-                    INSERT INTO TAB_WP 
-                    (
-                        ID, ID_Projekt, Bezeichner, ID_Type, ID_WP, 
-                        Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis, 
-                        Vorlauf, Ruecklauf, Bivalenter_Betrieb, Abschaltpunkt, 
-                        Nutzungszeit, ID_SP, ID_PV, ID_Solar
-                    ) 
-                    SELECT 
-                        {ID}, 
-                        {ID_Projekt}, 
-                        '{Bezeichner}', 
-                        {ID_Type}, 
-                        {ID_WP}, 
-                        '{Betriebsart}', 
-                        {Sperrung}, 
-                        {Sperrzeit_von}, 
-                        {Sperrzeit_bis}, 
-                        {Vorlauf}, 
-                        {Ruecklauf}, 
-                        {Bivalenter_Betrieb}, 
-                        {Abschaltpunkt}, 
-                        {Nutzungszeit}, 
-                        {ID_SP}, 
-                        {ID_PV}, 
-                        {ID_Solar}");
+                string sql = @"INSERT INTO Tab_Energieanlagen 
+                               (
+                                   ID, ID_Projekt, Bezeichner, ID_Type, ID_WP, Betriebsart, Sperrung, 
+                                   Sperrzeit_von, Sperrzeit_bis, Vorlauf, Ruecklauf, Bivalenter_Betrieb, 
+                                   Abschaltpunkt, Nutzungszeit, ID_SP, ID_PV, ID_Solar
+                               ) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", ID),
+                    new OleDbParameter("@idProj", ID_Projekt),
+                    new OleDbParameter("@bez", Bezeichner ?? (object)DBNull.Value),
+                    new OleDbParameter("@idType", ID_Type),
+                    new OleDbParameter("@idWp", ID_WP),
+                    new OleDbParameter("@betr", Betriebsart ?? (object)DBNull.Value),
+                    new OleDbParameter("@sperr", Sperrung),
+                    new OleDbParameter("@von", Sperrzeit_von),
+                    new OleDbParameter("@bis", Sperrzeit_bis),
+                    new OleDbParameter("@vor", Vorlauf),
+                    new OleDbParameter("@rue", Ruecklauf),
+                    new OleDbParameter("@biv", Bivalenter_Betrieb),
+                    new OleDbParameter("@absch", Abschaltpunkt),
+                    new OleDbParameter("@nutz", Nutzungszeit),
+                    new OleDbParameter("@idSp", ID_SP),
+                    new OleDbParameter("@idPv", ID_PV),
+                    new OleDbParameter("@idSol", ID_Solar)
+                };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Insert: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
-        public void ReadAllFilter(string filter="")
+        public void ReadAllFilter(string filter = "")
         {
             string sql;
-
-            if (filter == "")
+            if (string.IsNullOrEmpty(filter))
             {
-                sql = "select * from Tab_Energieanlagen order by Bezeichner";
+                sql = "SELECT * FROM Tab_Energieanlagen ORDER BY Bezeichner";
             }
-            else sql = "select * from Tab_Energieanlagen where " + filter;
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            else
+            {
+                sql = "SELECT * FROM Tab_Energieanlagen WHERE " + filter;
+            }
 
-            items = new WErzeugerModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            DataTable dt = DataRepository.GetDataTable(sql, null);
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 WErzeugerModel item = new WErzeugerModel();
 
-                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.ID_Projekt = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.Bezeichner = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.ID_Type = (int)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.ID_WP = (int)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.Betriebsart = (string)DBReader.GetString(5);
-                if (!DBReader.IsDBNull(6)) item.Sperrung = (bool)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) item.Sperrzeit_von = (int)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) item.Sperrzeit_bis = (int)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) item.Vorlauf = (int)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) item.Ruecklauf = (int)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) item.Bivalenter_Betrieb = (bool)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(12)) item.Abschaltpunkt = (double)DBReader.GetValue(12);
-                if (!DBReader.IsDBNull(13)) item.Nutzungszeit = (int)DBReader.GetValue(13);
-                if (!DBReader.IsDBNull(14)) item.ID_SP = (int)DBReader.GetValue(14);
-                if (!DBReader.IsDBNull(15)) item.ID_PV = (int)DBReader.GetValue(15);
-                if (!DBReader.IsDBNull(16)) item.ID_Solar = (int)DBReader.GetValue(16);
-                if (!DBReader.IsDBNull(17)) item.Heizstab = (bool)DBReader.GetValue(17);
-                if (!DBReader.IsDBNull(18)) item.Volumen = (double)DBReader.GetValue(18);
-                if (!DBReader.IsDBNull(19)) item.rendeMix = (bool)DBReader.GetValue(19);
-                if (!DBReader.IsDBNull(20)) item.Solaranteil = (int)DBReader.GetValue(20);
-                if (!DBReader.IsDBNull(21)) item.ID_Kessel = (int)DBReader.GetValue(21);
-                if (!DBReader.IsDBNull(22)) item.ID_BHKW = (int)DBReader.GetValue(22);
-                if (!DBReader.IsDBNull(23)) item.Grenzleistung = (double)DBReader.GetValue(23);
-                if (!DBReader.IsDBNull(24)) item.Kollektormodulanzahl = (int)DBReader.GetValue(24);
-                if (!DBReader.IsDBNull(25)) item.PV_Leistung = (double)DBReader.GetValue(25);
-                if (!DBReader.IsDBNull(26)) item.m_Neigung = (int)DBReader.GetValue(26);
-                if (!DBReader.IsDBNull(27)) item.m_Azimut = (int)DBReader.GetValue(27);
-                if (!DBReader.IsDBNull(28)) item.ID_PUFFER = (int)DBReader.GetValue(28);
+                // Spaltenbasiertes, sicheres Auslesen aus der DataTable
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value) item.ID = Convert.ToInt32(row["ID"]);
+                if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value) item.ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value) item.Bezeichner = row["Bezeichner"].ToString();
+                if (dt.Columns.Contains("ID_Type") && row["ID_Type"] != DBNull.Value) item.ID_Type = Convert.ToInt32(row["ID_Type"]);
+                if (dt.Columns.Contains("ID_WP") && row["ID_WP"] != DBNull.Value) item.ID_WP = Convert.ToInt32(row["ID_WP"]);
+                if (dt.Columns.Contains("Betriebsart") && row["Betriebsart"] != DBNull.Value) item.Betriebsart = row["Betriebsart"].ToString();
+                if (dt.Columns.Contains("Sperrung") && row["Sperrung"] != DBNull.Value) item.Sperrung = Convert.ToBoolean(row["Sperrung"]);
+                if (dt.Columns.Contains("Sperrzeit_von") && row["Sperrzeit_von"] != DBNull.Value) item.Sperrzeit_von = Convert.ToInt32(row["Sperrzeit_von"]);
+                if (dt.Columns.Contains("Sperrzeit_bis") && row["Sperrzeit_bis"] != DBNull.Value) item.Sperrzeit_bis = Convert.ToInt32(row["Sperrzeit_bis"]);
+                if (dt.Columns.Contains("Vorlauf") && row["Vorlauf"] != DBNull.Value) item.Vorlauf = Convert.ToInt32(row["Vorlauf"]);
+                if (dt.Columns.Contains("Ruecklauf") && row["Ruecklauf"] != DBNull.Value) item.Ruecklauf = Convert.ToInt32(row["Ruecklauf"]);
+                if (dt.Columns.Contains("Bivalenter_Betrieb") && row["Bivalenter_Betrieb"] != DBNull.Value) item.Bivalenter_Betrieb = Convert.ToBoolean(row["Bivalenter_Betrieb"]);
+                if (dt.Columns.Contains("Abschaltpunkt") && row["Abschaltpunkt"] != DBNull.Value) item.Abschaltpunkt = Convert.ToDouble(row["Abschaltpunkt"]);
+                if (dt.Columns.Contains("Nutzungszeit") && row["Nutzungszeit"] != DBNull.Value) item.Nutzungszeit = Convert.ToInt32(row["Nutzungszeit"]);
+                if (dt.Columns.Contains("ID_SP") && row["ID_SP"] != DBNull.Value) item.ID_SP = Convert.ToInt32(row["ID_SP"]);
+                if (dt.Columns.Contains("ID_PV") && row["ID_PV"] != DBNull.Value) item.ID_PV = Convert.ToInt32(row["ID_PV"]);
+                if (dt.Columns.Contains("ID_Solar") && row["ID_Solar"] != DBNull.Value) item.ID_Solar = Convert.ToInt32(row["ID_Solar"]);
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                // Zusätzliche Felder aus dem alten ReadAll
+                if (dt.Columns.Contains("Heizstab") && row["Heizstab"] != DBNull.Value) item.Heizstab = Convert.ToBoolean(row["Heizstab"]);
+                if (dt.Columns.Contains("Volumen") && row["Volumen"] != DBNull.Value) item.Volumen = Convert.ToDouble(row["Volumen"]);
+                if (dt.Columns.Contains("rendeMix") && row["rendeMix"] != DBNull.Value) item.rendeMix = Convert.ToBoolean(row["rendeMix"]);
+                if (dt.Columns.Contains("Solaranteil") && row["Solaranteil"] != DBNull.Value) item.Solaranteil = Convert.ToInt32(row["Solaranteil"]);
+                if (dt.Columns.Contains("ID_Kessel") && row["ID_Kessel"] != DBNull.Value) item.ID_Kessel = Convert.ToInt32(row["ID_Kessel"]);
+                if (dt.Columns.Contains("ID_BHKW") && row["ID_BHKW"] != DBNull.Value) item.ID_BHKW = Convert.ToInt32(row["ID_BHKW"]);
+                if (dt.Columns.Contains("Grenzleistung") && row["Grenzleistung"] != DBNull.Value) item.Grenzleistung = Convert.ToDouble(row["Grenzleistung"]);
+                if (dt.Columns.Contains("Kollektormodulanzahl") && row["Kollektormodulanzahl"] != DBNull.Value) item.Kollektormodulanzahl = Convert.ToInt32(row["Kollektormodulanzahl"]);
+                if (dt.Columns.Contains("PV_Leistung") && row["PV_Leistung"] != DBNull.Value) item.PV_Leistung = Convert.ToDouble(row["PV_Leistung"]);
+                if (dt.Columns.Contains("m_Neigung") && row["m_Neigung"] != DBNull.Value) item.m_Neigung = Convert.ToInt32(row["m_Neigung"]);
+                if (dt.Columns.Contains("m_Azimut") && row["m_Azimut"] != DBNull.Value) item.m_Azimut = Convert.ToInt32(row["m_Azimut"]);
+                if (dt.Columns.Contains("ID_PUFFER") && row["ID_PUFFER"] != DBNull.Value) item.ID_PUFFER = Convert.ToInt32(row["ID_PUFFER"]);
+
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
 
         public void ReadSingle(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            rows = 0;
-            DBReader.Read();
-            if (DBReader.HasRows)
+            // "rows" Variable spiegelt im Single-Modus die Existenz wider (0 oder 1)
+            if (dt != null && dt.Rows.Count > 0)
             {
-                if (!DBReader.IsDBNull(0)) ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) ID_Projekt = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) Bezeichner = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) ID_Type = (int)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) ID_WP = (int)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) Betriebsart = (string)DBReader.GetString(5);
-                if (!DBReader.IsDBNull(6)) Sperrung = (bool)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) Sperrzeit_von = (int)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) Sperrzeit_bis = (int)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) Vorlauf = (int)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) Ruecklauf = (int)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) Bivalenter_Betrieb = (bool)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(12)) Abschaltpunkt = (double)DBReader.GetValue(12);
-                if (!DBReader.IsDBNull(13)) Nutzungszeit = (int)DBReader.GetValue(13);
-                if (!DBReader.IsDBNull(14)) ID_SP = (int)DBReader.GetValue(14);
-                if (!DBReader.IsDBNull(15)) ID_PV = (int)DBReader.GetValue(15);
-                if (!DBReader.IsDBNull(16)) ID_Solar = (int)DBReader.GetValue(16);
-                if (!DBReader.IsDBNull(17)) Heizstab = (bool)DBReader.GetValue(17);
-                if (!DBReader.IsDBNull(18)) Volumen = (double)DBReader.GetValue(18);
-                if (!DBReader.IsDBNull(19)) rendeMix = (bool)DBReader.GetValue(19);
-                if (!DBReader.IsDBNull(20)) Solaranteil = (int)DBReader.GetValue(20);
-                if (!DBReader.IsDBNull(21)) ID_Kessel = (int)DBReader.GetValue(21);
-                if (!DBReader.IsDBNull(22)) ID_BHKW = (int)DBReader.GetValue(22);
-                if (!DBReader.IsDBNull(23)) Grenzleistung = (double)DBReader.GetValue(23);
-                if (!DBReader.IsDBNull(24)) Kollektormodulanzahl = (int)DBReader.GetValue(24);
-                if (!DBReader.IsDBNull(25)) PV_Leistung = (double)DBReader.GetValue(25);
-                if (!DBReader.IsDBNull(26)) m_Neigung = (int)DBReader.GetValue(26);
-                if (!DBReader.IsDBNull(27)) m_Azimut = (int)DBReader.GetValue(27);
-                if (!DBReader.IsDBNull(28)) ID_PUFFER = (int)DBReader.GetValue(28);
+                DataRow row = dt.Rows[0];
 
-                rows = 1;
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value) ID = Convert.ToInt32(row["ID"]);
+                if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value) ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value) Bezeichner = row["Bezeichner"].ToString();
+                if (dt.Columns.Contains("ID_Type") && row["ID_Type"] != DBNull.Value) ID_Type = Convert.ToInt32(row["ID_Type"]);
+                if (dt.Columns.Contains("ID_WP") && row["ID_WP"] != DBNull.Value) ID_WP = Convert.ToInt32(row["ID_WP"]);
+                if (dt.Columns.Contains("Betriebsart") && row["Betriebsart"] != DBNull.Value) Betriebsart = row["Betriebsart"].ToString();
+                if (dt.Columns.Contains("Sperrung") && row["Sperrung"] != DBNull.Value) Sperrung = Convert.ToBoolean(row["Sperrung"]);
+                if (dt.Columns.Contains("Sperrzeit_von") && row["Sperrzeit_von"] != DBNull.Value) Sperrzeit_von = Convert.ToInt32(row["Sperrzeit_von"]);
+                if (dt.Columns.Contains("Sperrzeit_bis") && row["Sperrzeit_bis"] != DBNull.Value) Sperrzeit_bis = Convert.ToInt32(row["Sperrzeit_bis"]);
+                if (dt.Columns.Contains("Vorlauf") && row["Vorlauf"] != DBNull.Value) Vorlauf = Convert.ToInt32(row["Vorlauf"]);
+                if (dt.Columns.Contains("Ruecklauf") && row["Ruecklauf"] != DBNull.Value) Ruecklauf = Convert.ToInt32(row["Ruecklauf"]);
+                if (dt.Columns.Contains("Bivalenter_Betrieb") && row["Bivalenter_Betrieb"] != DBNull.Value) Bivalenter_Betrieb = Convert.ToBoolean(row["Bivalenter_Betrieb"]);
+                if (dt.Columns.Contains("Abschaltpunkt") && row["Abschaltpunkt"] != DBNull.Value) Abschaltpunkt = Convert.ToDouble(row["Abschaltpunkt"]);
+                if (dt.Columns.Contains("Nutzungszeit") && row["Nutzungszeit"] != DBNull.Value) Nutzungszeit = Convert.ToInt32(row["Nutzungszeit"]);
+                if (dt.Columns.Contains("ID_SP") && row["ID_SP"] != DBNull.Value) ID_SP = Convert.ToInt32(row["ID_SP"]);
+                if (dt.Columns.Contains("ID_PV") && row["ID_PV"] != DBNull.Value) ID_PV = Convert.ToInt32(row["ID_PV"]);
+                if (dt.Columns.Contains("ID_Solar") && row["ID_Solar"] != DBNull.Value) ID_Solar = Convert.ToInt32(row["ID_Solar"]);
+                if (dt.Columns.Contains("Heizstab") && row["Heizstab"] != DBNull.Value) Heizstab = Convert.ToBoolean(row["Heizstab"]);
+                if (dt.Columns.Contains("Volumen") && row["Volumen"] != DBNull.Value) Volumen = Convert.ToDouble(row["Volumen"]);
+                if (dt.Columns.Contains("rendeMix") && row["rendeMix"] != DBNull.Value) rendeMix = Convert.ToBoolean(row["rendeMix"]);
+                if (dt.Columns.Contains("Solaranteil") && row["Solaranteil"] != DBNull.Value) Solaranteil = Convert.ToInt32(row["Solaranteil"]);
+                if (dt.Columns.Contains("ID_Kessel") && row["ID_Kessel"] != DBNull.Value) ID_Kessel = Convert.ToInt32(row["ID_Kessel"]);
+                if (dt.Columns.Contains("ID_BHKW") && row["ID_BHKW"] != DBNull.Value) ID_BHKW = Convert.ToInt32(row["ID_BHKW"]);
+                if (dt.Columns.Contains("Grenzleistung") && row["Grenzleistung"] != DBNull.Value) Grenzleistung = Convert.ToDouble(row["Grenzleistung"]);
+                if (dt.Columns.Contains("Kollektormodulanzahl") && row["Kollektormodulanzahl"] != DBNull.Value) Kollektormodulanzahl = Convert.ToInt32(row["Kollektormodulanzahl"]);
+                if (dt.Columns.Contains("PV_Leistung") && row["PV_Leistung"] != DBNull.Value) PV_Leistung = Convert.ToDouble(row["PV_Leistung"]);
+                if (dt.Columns.Contains("m_Neigung") && row["m_Neigung"] != DBNull.Value) m_Neigung = Convert.ToInt32(row["m_Neigung"]);
+                if (dt.Columns.Contains("m_Azimut") && row["m_Azimut"] != DBNull.Value) m_Azimut = Convert.ToInt32(row["m_Azimut"]);
+                if (dt.Columns.Contains("ID_PUFFER") && row["ID_PUFFER"] != DBNull.Value) ID_PUFFER = Convert.ToInt32(row["ID_PUFFER"]);
+
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
-
-        public DataSet GetDataSetFromAdapter(DataSet dataSet, string queryString)
-        {
-            //using (OdbcConnection connection = Program.DBConnection)
-            {
-                OdbcDataAdapter adapter = new OdbcDataAdapter(queryString, Program.DBConnection);
-              //  connection.Open();
-                // Open the connection and fill the DataSet.
-                try
-                {
-                   // connection.Open();
-                    adapter.Fill(dataSet);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                // The connection is automatically closed when the
-                // code exits the using block.
-            }
-            return dataSet;
-        }
-
+         
     }
 }

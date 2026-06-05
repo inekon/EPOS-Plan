@@ -2,22 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.Common;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Drawing;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Input;
 
 namespace WindowsFormsApplication1
 {
     public partial class Form_AdminStromspeicher : Form
     {
-        OdbcCommand DBCommand;
-        StromspeicherModel model = new StromspeicherModel();
+        private StromspeicherModel model = new StromspeicherModel();
         public List<WErzeugerModel> list_spmodel = new List<WErzeugerModel>();
         public bool m_bItemBearbeiten = false;
         private bool m_Neu = false;
@@ -25,9 +18,8 @@ namespace WindowsFormsApplication1
         public Form_AdminStromspeicher()
         {
             InitializeComponent();
-            DBCommand = Program.DBConnection.CreateCommand();
         }
-        
+
         public void SetControls(string projekt)
         {
             listBox_Stromspeicher.Items.Clear();
@@ -52,23 +44,32 @@ namespace WindowsFormsApplication1
         {
             if (m_bItemBearbeiten) return;
 
-            RecordSet rs = new RecordSet();
-            rs.Open("SELECT * FROM Tab_Stromspeicher");   
-            
-            while (rs.Next())
+            string sql = "SELECT Bezeichner FROM Tab_Stromspeicher";
+            DataTable dt = DataRepository.GetDataTable(sql);
+
+            listBox_Stromspeicher.Items.Clear();
+            if (dt != null)
             {
-                string bezeichner = rs.Read("Bezeichner").ToString();
-                Console.WriteLine("Bezeichner: {bezeichner}");
-                listBox_Stromspeicher.Items.Add(bezeichner);
+                foreach (DataRow row in dt.Rows)
+                {
+                    if (row["Bezeichner"] != DBNull.Value)
+                    {
+                        listBox_Stromspeicher.Items.Add(row["Bezeichner"].ToString());
+                    }
+                }
             }
-            listBox_Stromspeicher.SelectedIndex = 0;
+
+            if (listBox_Stromspeicher.Items.Count > 0)
+            {
+                listBox_Stromspeicher.SelectedIndex = 0;
+            }
         }
 
         private TextBox GetTextBox_Energie()
         {
             return textBox_Energie;
         }
-        
+
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
             if (textBox_Degradation.Text == "" || textBox_Energie.Text == "" || textBox_Ladezustand.Text == "" ||
@@ -84,104 +85,126 @@ namespace WindowsFormsApplication1
                 model.m_Leistung = double.Parse(textBox_Leistung.Text);
                 model.m_Degradation = double.Parse(textBox_Degradation.Text);
                 model.m_Ladezustand = double.Parse(textBox_Ladezustand.Text);
-                model.m_Modulkosten = double.Parse(textBox_Modulkosten.Text);   
+                model.m_Modulkosten = double.Parse(textBox_Modulkosten.Text);
 
                 if (m_Neu)
                 {
-                    string sql = FormattableString.Invariant($@"
-                        INSERT INTO TAB_Stromspeicher ( 
+                    string sql = @"
+                        INSERT INTO Tab_Stromspeicher ( 
                             Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten
-                        ) 
-                        SELECT 
-                            '{textBox_Bezeichner.Text}' AS Ausdr1, 
-                            '{textBox_Typ.Text}' AS Ausdr2, 
-                            {model.m_Leistung} AS Ausdr3, 
-                            {model.m_Energie} AS Ausdr4, 
-                            {model.m_Degradation} AS Ausdr5, 
-                            {model.m_Modulkosten} AS Ausdr6, 
-                            {model.m_Ladezustand} AS Ausdr7;");
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?);";
 
-                    DBCommand.CommandText = sql;
-                    DBCommand.ExecuteNonQuery();
+                    OleDbParameter[] parameters = new OleDbParameter[]
+                    {
+                        new OleDbParameter("?", textBox_Bezeichner.Text),
+                        new OleDbParameter("?", textBox_Typ.Text),
+                        new OleDbParameter("?", model.m_Leistung),
+                        new OleDbParameter("?", model.m_Energie),
+                        new OleDbParameter("?", model.m_Degradation),
+                        new OleDbParameter("?", model.m_Ladezustand),
+                        new OleDbParameter("?", model.m_Modulkosten)
+                    };
+
+                    DataRepository.ExecuteNonQuery(sql, parameters);
+
                     listBox_Stromspeicher.Items.Add(textBox_Bezeichner.Text);
                     listBox_Stromspeicher.SelectedIndex = listBox_Stromspeicher.Items.Count - 1;
                     m_Neu = false;
+                    MessageBox.Show("Daten gespeichert!");
                 }
                 else
                 {
-                    string sql = FormattableString.Invariant($@"
+                    string sql = @"
                         UPDATE Tab_Stromspeicher SET 
-                            Bezeichner = '{textBox_Bezeichner.Text}', 
-                            Typ = '{textBox_Typ.Text}', 
-                            Leistung = {model.m_Leistung}, 
-                            Energie = {model.m_Energie}, 
-                            Degradation = {model.m_Degradation}, 
-                            Ladezustand = {model.m_Ladezustand},
-                            Modulkosten = {model.m_Modulkosten}
-                        WHERE Bezeichner = '{listBox_Stromspeicher.Text}';"); ;
-                    
-                    DBCommand.CommandText = sql;    
-                    DBCommand.ExecuteNonQuery();
+                            Bezeichner = ?, 
+                            Typ = ?, 
+                            Leistung = ?, 
+                            Energie = ?, 
+                            Degradation = ?, 
+                            Ladezustand = ?,
+                            Modulkosten = ?
+                        WHERE Bezeichner = ?;";
+
+                    OleDbParameter[] parameters = new OleDbParameter[]
+                    {
+                        new OleDbParameter("?", textBox_Bezeichner.Text),
+                        new OleDbParameter("?", textBox_Typ.Text),
+                        new OleDbParameter("?", model.m_Leistung),
+                        new OleDbParameter("?", model.m_Energie),
+                        new OleDbParameter("?", model.m_Degradation),
+                        new OleDbParameter("?", model.m_Ladezustand),
+                        new OleDbParameter("?", model.m_Modulkosten),
+                        new OleDbParameter("?", listBox_Stromspeicher.Text) // Ursprünglicher Name für die WHERE-Klausel
+                    };
+
+                    DataRepository.ExecuteNonQuery(sql, parameters);
+
+                    // Falls sich der Bezeichner geändert hat, aktualisieren wir den Eintrag in der ListBox
+                    int currentIndex = listBox_Stromspeicher.SelectedIndex;
+                    if (currentIndex != -1)
+                    {
+                        listBox_Stromspeicher.Items[currentIndex] = textBox_Bezeichner.Text;
+                    }
 
                     MessageBox.Show("Daten gespeichert!");
                 }
             }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                m_Neu = false;
-                InitControls();
-                return;
-            }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Fehler beim Speichern des Stromspeichers: " + ex.Message);
+                MessageBox.Show("Fehler beim Speichern der Daten!");
                 m_Neu = false;
                 InitControls();
                 return;
             }
-            return;
         }
 
         private void listBox_Stromspeicher_SelectedIndexChanged(object sender, EventArgs e)
         {
-            RecordSet rs = new RecordSet();
+            if (string.IsNullOrEmpty(listBox_Stromspeicher.Text)) return;
 
             textBox_Bezeichner.Text = listBox_Stromspeicher.Text;
             model.m_szBezeichner = textBox_Bezeichner.Text;
-            
-            rs.Open("SELECT * FROM Tab_Stromspeicher where Bezeichner='" + listBox_Stromspeicher.Text + "'");
 
-            if (!rs.EOF())
+            string sql = "SELECT * FROM Tab_Stromspeicher WHERE Bezeichner = ?";
+            OleDbParameter parameter = new OleDbParameter("?", listBox_Stromspeicher.Text);
+            DataTable dt = DataRepository.GetDataTable(sql, parameter);
+
+            if (dt != null && dt.Rows.Count > 0)
             {
-                textBox_Energie.Text = rs.Read("Energie").ToString();
+                DataRow row = dt.Rows[0];
+
+                textBox_Energie.Text = row["Energie"].ToString();
                 model.m_Energie = double.Parse(textBox_Energie.Text);
-                textBox_Leistung.Text = rs.Read("Leistung").ToString();
-                model.m_Energie = double.Parse(textBox_Energie.Text);
-                textBox_Typ.Text = (string)rs.Read("Typ");
+
+                textBox_Leistung.Text = row["Leistung"].ToString();
+                model.m_Leistung = double.Parse(textBox_Leistung.Text); // Fehler korrigiert: war vorher model.m_Energie
+
+                textBox_Typ.Text = row["Typ"] != DBNull.Value ? row["Typ"].ToString() : "";
                 model.m_szTyp = textBox_Typ.Text;
-                textBox_Degradation.Text = rs.Read("Degradation").ToString();
-                model.m_Degradation = Double.Parse(textBox_Degradation.Text);
-                textBox_Ladezustand.Text = rs.Read("Ladezustand").ToString();
+
+                textBox_Degradation.Text = row["Degradation"].ToString();
+                model.m_Degradation = double.Parse(textBox_Degradation.Text);
+
+                textBox_Ladezustand.Text = row["Ladezustand"].ToString();
                 model.m_Ladezustand = double.Parse(textBox_Ladezustand.Text);
-                textBox_Modulkosten.Text = rs.Read("Modulkosten").ToString();
-                model.m_Modulkosten = Double.Parse(textBox_Modulkosten.Text);
-                textBox_Bezeichner.Text = rs.Read("Bezeichner").ToString();
+
+                textBox_Modulkosten.Text = row["Modulkosten"].ToString();
+                model.m_Modulkosten = double.Parse(textBox_Modulkosten.Text);
+
+                textBox_Bezeichner.Text = row["Bezeichner"].ToString();
                 model.m_szBezeichner = textBox_Bezeichner.Text;
             }
-            rs.Close();
         }
 
         private void btn_Neu_Click(object sender, EventArgs e)
         {
             InitControls();
             Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
-            
-            Point p1 = btn_Neu.Location;  
-            p1 = this.PointToScreen(p1); 
-            frm.Location = p1;  
+
+            Point p1 = btn_Neu.Location;
+            p1 = this.PointToScreen(p1);
+            frm.Location = p1;
 
             if (frm.ShowDialog() == DialogResult.OK)
             {
@@ -194,7 +217,6 @@ namespace WindowsFormsApplication1
                 textBox_Leistung.Text = "0";
                 textBox_Energie.Text = "0";
             }
-            return;
         }
 
         private void InitControls()
@@ -206,12 +228,13 @@ namespace WindowsFormsApplication1
             textBox_Degradation.Text = "";
             textBox_Energie.Text = "";
             textBox_Leistung.Text = "";
+            textBox_Modulkosten.Text = "";
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.OK;
-            Close(); 
+            Close();
         }
 
         private void btn_Loeschen_Click(object sender, EventArgs e)
@@ -221,25 +244,38 @@ namespace WindowsFormsApplication1
                 MessageBox.Show("Stromspeicher in Liste auswählen!");
                 return;
             }
+
+            DialogResult confirmResult = MessageBox.Show(
+                $"Möchten Sie den Stromspeicher '{textBox_Bezeichner.Text}' wirklich löschen?",
+                "Löschen bestätigen",
+                MessageBoxButtons.YesNo
+            );
+
+            if (confirmResult == DialogResult.No) return;
+
             try
             {
-                DBCommand.CommandText = "DELETE * from  Tab_Stromspeicher where Bezeichner='" + textBox_Bezeichner.Text + "'";
-                DBCommand.ExecuteNonQuery();
-                listBox_Stromspeicher.Items.Remove(textBox_Bezeichner.Text);
-                listBox_Stromspeicher.SelectedIndex = listBox_Stromspeicher.Items.Count - 1;
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                MessageBox.Show("Stromspeicher kann nicht gelöscht werden.\nEs besteht eine Projektzordnung!");  
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return;
+                // Standard SQL Syntax (Ohne '*') und mit Parameter
+                string sql = "DELETE FROM Tab_Stromspeicher WHERE Bezeichner = ?";
+                OleDbParameter parameter = new OleDbParameter("?", textBox_Bezeichner.Text);
+
+                DataRepository.ExecuteNonQuery(sql, parameter);
+
+                string geloeschterText = textBox_Bezeichner.Text;
+                InitControls();
+
+                listBox_Stromspeicher.Items.Remove(geloeschterText);
+
+                if (listBox_Stromspeicher.Items.Count > 0)
+                {
+                    listBox_Stromspeicher.SelectedIndex = listBox_Stromspeicher.Items.Count - 1;
+                }
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                return;
+                // Fehler beim Datenbankzugriff abfangen (z.B. Fremdschlüssel-Einschränkungen)
+                MessageBox.Show("Stromspeicher kann nicht gelöscht werden.\nEs besteht eine Projektzuordnung!");
+                Console.WriteLine("Fehler beim Löschen des Stromspeichers: " + ex.Message);
             }
         }
 
@@ -267,6 +303,5 @@ namespace WindowsFormsApplication1
         {
             if (!Program.checkDouble(textBox_Degradation, textBox_Degradation.Text)) { textBox_Degradation.Undo(); }
         }
-
     }
 }

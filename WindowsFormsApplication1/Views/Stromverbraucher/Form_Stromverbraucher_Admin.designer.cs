@@ -101,8 +101,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Name
             // 
-            resources.ApplyResources(this.textBox_Name, "textBox_Name");
             this.textBox_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Name, "textBox_Name");
             this.textBox_Name.Name = "textBox_Name";
             this.textBox_Name.ReadOnly = true;
             // 
@@ -113,22 +113,22 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Jahres_Verbrauch
             // 
-            resources.ApplyResources(this.textBox_Jahres_Verbrauch, "textBox_Jahres_Verbrauch");
             this.textBox_Jahres_Verbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Jahres_Verbrauch, "textBox_Jahres_Verbrauch");
             this.textBox_Jahres_Verbrauch.Name = "textBox_Jahres_Verbrauch";
             this.textBox_Jahres_Verbrauch.ReadOnly = true;
             // 
             // textBox_Beschreibung
             // 
-            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Beschreibung, "textBox_Beschreibung");
             this.textBox_Beschreibung.Name = "textBox_Beschreibung";
             this.textBox_Beschreibung.ReadOnly = true;
             // 
             // textBox_Type
             // 
-            resources.ApplyResources(this.textBox_Type, "textBox_Type");
             this.textBox_Type.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Type, "textBox_Type");
             this.textBox_Type.Name = "textBox_Type";
             this.textBox_Type.ReadOnly = true;
             // 
@@ -146,8 +146,8 @@ namespace WindowsFormsApplication1
             // 
             // listBox_Verbraucher_DB
             // 
-            resources.ApplyResources(this.listBox_Verbraucher_DB, "listBox_Verbraucher_DB");
             this.listBox_Verbraucher_DB.FormattingEnabled = true;
+            resources.ApplyResources(this.listBox_Verbraucher_DB, "listBox_Verbraucher_DB");
             this.listBox_Verbraucher_DB.Name = "listBox_Verbraucher_DB";
             this.listBox_Verbraucher_DB.SelectedIndexChanged += new System.EventHandler(this.listBox_Prozess_DB_SelectedIndexChanged);
             // 

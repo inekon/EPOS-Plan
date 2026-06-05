@@ -1,208 +1,218 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Odbc;
-using System.Globalization;
-using System.Linq;
-using System.Text;
+using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
     class SolardatenCtrl : SolardatenModel
     {
-        public OdbcCommand DBCommand;
-        public SolardatenModel Solarmodel = new SolardatenModel();
+        // Dynamisches Listen-Schema zur Aufhebung des 1.000.000er Limits
+        private List<SolardatenModel> _internalList = new List<SolardatenModel>();
+
+        public int rows => _internalList.Count;
+        public new List<SolardatenModel> items => _internalList;
+
+        // Zusätzliche Analyse-Listen aus dem Altcode beibehalten
         public List<double> list_Temperatur = new List<double>();
         public List<double> list_Sonnenwinkel = new List<double>();
         public List<int> list_Tag = new List<int>();
-        public string Klimazone;
-  
-        public SolardatenCtrl ()
+
+        public string Klimazone { get; set; }
+
+        public SolardatenCtrl()
         {
             Klimazone = "";
             m_ID_Klimaregion = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
         }
 
-        ~SolardatenCtrl ()
+        private void MapDataRowToModel(DataRow row, SolardatenModel item, DataTable dt)
         {
-            DBCommand.Dispose();
+            if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value) item.m_ID = Convert.ToInt32(row["ID"]);
+            if (dt.Columns.Contains("ID_Klimaregion") && row["ID_Klimaregion"] != DBNull.Value) item.m_ID_Klimaregion = Convert.ToInt32(row["ID_Klimaregion"]);
+            if (dt.Columns.Contains("Außen_Temp") && row["Außen_Temp"] != DBNull.Value) item.Außen_Temp = Convert.ToDouble(row["Außen_Temp"]);
+            if (dt.Columns.Contains("Sol_Nord") && row["Sol_Nord"] != DBNull.Value) item.Sol_Nord = Convert.ToDouble(row["Sol_Nord"]);
+            if (dt.Columns.Contains("Sol_Ost") && row["Sol_Ost"] != DBNull.Value) item.Sol_Ost = Convert.ToDouble(row["Sol_Ost"]);
+            if (dt.Columns.Contains("Sol_Sued") && row["Sol_Sued"] != DBNull.Value) item.Sol_Sued = Convert.ToDouble(row["Sol_Sued"]);
+            if (dt.Columns.Contains("Sol_West") && row["Sol_West"] != DBNull.Value) item.Sol_West = Convert.ToDouble(row["Sol_West"]);
+            if (dt.Columns.Contains("Globalstrahlung") && row["Globalstrahlung"] != DBNull.Value) item.Globalstrahlung = Convert.ToDouble(row["Globalstrahlung"]);
+            if (dt.Columns.Contains("Direktstrahlung") && row["Direktstrahlung"] != DBNull.Value) item.Direktstrahlung = Convert.ToDouble(row["Direktstrahlung"]);
+            if (dt.Columns.Contains("Diffusstrahlung") && row["Diffusstrahlung"] != DBNull.Value) item.Diffusstrahlung = Convert.ToDouble(row["Diffusstrahlung"]);
+            if (dt.Columns.Contains("Sonnenwinkel") && row["Sonnenwinkel"] != DBNull.Value) item.Sonnenwinkel = Convert.ToDouble(row["Sonnenwinkel"]);
         }
 
         public void ReadAll(string sql = "")
         {
-            if(string.IsNullOrEmpty(sql))
-                DBCommand.CommandText = "select * from Tab_Solar order by ID";
-            else DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            if (string.IsNullOrEmpty(sql))
+            {
+                sql = "SELECT * FROM Tab_Solar ORDER BY ID";
+            }
 
-            items = new SolardatenModel[1000000];
-            rows = 0;
-            while (DBReader.Read())
+            DataTable dt = DataRepository.GetDataTable(sql, null);
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 SolardatenModel item = new SolardatenModel();
-
-                if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_ID_Klimaregion = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.Außen_Temp = (double)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) item.Sol_Nord = (double)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.Sol_Ost = (double)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.Sol_Sued = (double)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.Sol_West = (double)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) item.Globalstrahlung = (double)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) item.Direktstrahlung = (double)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) item.Diffusstrahlung = (double)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) item.Sonnenwinkel = (double)DBReader.GetValue(10);
-
-                items[rows] = item;
-                item = null;
-                rows += 1;
+                MapDataRowToModel(row, item, dt);
+                _internalList.Add(item);
             }
-            DBReader.Close();
-            DBReader.Dispose();
         }
 
         public void ReadAll(int ID_Klimaregion)
         {
-            DBCommand.CommandText = "select * from Tab_Solar where ID_Klimaregion=" + ID_Klimaregion + " order by ID";
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Solar WHERE ID_Klimaregion = ? ORDER BY ID";
 
-            items = new SolardatenModel[1000000];
-            rows = 0;
-            while (DBReader.Read())
+            OleDbParameter paramReg = new OleDbParameter("@regId", OleDbType.Integer);
+            paramReg.Value = ID_Klimaregion;
+
+            DataTable dt = DataRepository.GetDataTable(sql, new[] { paramReg });
+
+            _internalList.Clear();
+            list_Temperatur.Clear();
+            list_Sonnenwinkel.Clear();
+            list_Tag.Clear();
+
+            if (dt == null) return;
+
+            int currentIndex = 0;
+            foreach (DataRow row in dt.Rows)
             {
                 SolardatenModel item = new SolardatenModel();
-
-
-                if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_ID_Klimaregion = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.Außen_Temp = (double)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) item.Sol_Nord = (double)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.Sol_Ost = (double)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.Sol_Sued = (double)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.Sol_West = (double)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) item.Globalstrahlung = (double)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) item.Direktstrahlung = (double)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) item.Diffusstrahlung = (double)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) item.Sonnenwinkel = (double)DBReader.GetValue(10);
+                MapDataRowToModel(row, item, dt);
 
                 list_Temperatur.Add(item.Außen_Temp);
-                list_Sonnenwinkel.Add(item.Sonnenwinkel); 
-                list_Tag.Add(rows+1);
-                items[rows] = item;
-                item = null;
-               
-                rows += 1;
+                list_Sonnenwinkel.Add(item.Sonnenwinkel);
+                list_Tag.Add(currentIndex + 1);
+
+                _internalList.Add(item);
+                currentIndex++;
             }
-            DBReader.Close();
-            DBReader.Dispose();
         }
 
         public bool Insert(int ID_Klimaregion, List<SolardatenModel> list)
         {
+            if (list == null || list.Count == 0) return true;
+
             try
             {
-                DBCommand.CommandText = "SELECT Count(*) FROM Tab_Solar";
-                OdbcDataReader DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();  
-                int result = (int)DBReader.GetValue(0);
-                DBReader.Close();
+                string sqlCount = "SELECT COUNT(*) FROM Tab_Solar";
+                object countResult = DataRepository.ExecuteScalar(sqlCount, null);
+                int count = countResult != null ? Convert.ToInt32(countResult) : 0;
 
-                if (result == 0) m_ID = 1;
-                else
+                int currentID = 1;
+                if (count > 0)
                 {
-                    DBCommand.CommandText = "SELECT Max(ID) AS Ausdr1 FROM Tab_Solar";
-                    DBReader = DBCommand.ExecuteReader();
-                    DBReader.Read();
-                    m_ID = (int)DBReader.GetValue(0) + 1;
-                    DBReader.Close();
+                    string sqlMax = "SELECT MAX(ID) FROM Tab_Solar";
+                    object maxResult = DataRepository.ExecuteScalar(sqlMax, null);
+                    currentID = (maxResult != null ? Convert.ToInt32(maxResult) : 0) + 1;
                 }
 
-                NumberFormatInfo formatInfo = new NumberFormatInfo();
-                formatInfo.NumberDecimalSeparator = "."; // Komma als Dezimaltrennzeichen
-       
-
-                for (int i = 0; i < list.Count(); i++)
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    SolardatenModel item = list.ElementAt(i);
-                                   
-                    DBCommand.CommandText = "INSERT INTO Tab_Solar ( ID, ID_Klimaregion, Temperatur ) SELECT " + m_ID +
-                        " AS Ausdr1, " + ID_Klimaregion + " AS Ausdr2, " + item.Außen_Temp.ToString("N5", formatInfo); 
-                    DBCommand.ExecuteNonQuery();
-                    m_ID += 1;
+                    conn.Open();
+                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    {
+                        using (OleDbCommand cmd = new OleDbCommand())
+                        {
+                            cmd.Connection = conn;
+                            cmd.Transaction = trans;
+                            cmd.CommandText = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Außen_Temp) VALUES (?, ?, ?)";
+
+                            cmd.Parameters.Add("@id", OleDbType.Integer);
+                            cmd.Parameters.Add("@regId", OleDbType.Integer);
+                            cmd.Parameters.Add("@temp", OleDbType.Double);
+
+                            try
+                            {
+                                foreach (var item in list)
+                                {
+                                    cmd.Parameters[0].Value = currentID;
+                                    cmd.Parameters[1].Value = ID_Klimaregion;
+                                    cmd.Parameters[2].Value = item.Außen_Temp;
+
+                                    cmd.ExecuteNonQuery();
+                                    currentID++;
+                                }
+
+                                trans.Commit();
+                                return true;
+                            }
+                            catch (Exception ex)
+                            {
+                                trans.Rollback();
+                                Console.WriteLine("Fehler beim Massen-Insert in der Schleife: " + ex.Message);
+                                return false;
+                            }
+                        }
+                    }
                 }
-            }
-            catch (OdbcException  sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Insert: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
-        public bool WritetDataTable(System.Data.DataTable dt, string szName, OdbcTransaction transaction)
+        public bool WriteDataTable(DataTable dt, string szName, OleDbTransaction transaction)
         {
+            if (dt == null) return false;
+
             try
             {
-                DBCommand.CommandText = "SELECT Max(ID) AS Ausdr1 FROM Tab_Solar";
-                OdbcDataReader DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();
-                int id = (int)DBReader.GetValue(0) + 1;
-                DBReader.Close();
+                OleDbConnection conn = transaction.Connection;
 
-                DBCommand.CommandText = "Select ID_Klimaregion from Tab_Klimaregion where Name='" + szName + "'";
-                DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();
-                int id_ref = (int)DBReader.GetValue(0);
-                DBReader.Close();
-
-                OdbcDataAdapter adapter = new OdbcDataAdapter("select ID, ID_Klimaregion, Temperatur from Tab_Solar", Program.DBConnection);
-                adapter.SelectCommand.Transaction = transaction;
-                DataSet dataSet = new DataSet();
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-
-                adapter.UpdateCommand = commandBuilder.GetUpdateCommand();
-                adapter.UpdateCommand.Transaction = transaction;
-
-                dt.Columns.Add("ID_Klimaregion", typeof(int)).SetOrdinal(0);
-                dt.Columns.Add("ID", typeof(int)).SetOrdinal(0);
-
-                for (int i = 0; i < dt.Rows.Count; i++)
+                int nextID = 1;
+                using (OleDbCommand cmdMax = new OleDbCommand("SELECT MAX(ID) FROM Tab_Solar", conn, transaction))
                 {
-                    DataRow dataRow = dt.Rows[i];
-                    dataRow[0] = id++;
-                    dataRow[1] = id_ref;
+                    object maxRes = cmdMax.ExecuteScalar();
+                    nextID = (maxRes != DBNull.Value && maxRes != null ? Convert.ToInt32(maxRes) : 0) + 1;
                 }
-                dt.Columns[2].ColumnName = "Temperatur";
 
-                dataSet.Tables.Add(dt);
+                int refID = 0;
+                string sqlRef = "SELECT ID_Klimaregion FROM Tab_Klimaregion WHERE Name = ?";
+                using (OleDbCommand cmdRef = new OleDbCommand(sqlRef, conn, transaction))
+                {
+                    cmdRef.Parameters.Add("@name", OleDbType.VarWChar).Value = szName ?? (object)DBNull.Value;
+                    object refRes = cmdRef.ExecuteScalar();
+                    if (refRes != null && refRes != DBNull.Value)
+                    {
+                        refID = Convert.ToInt32(refRes);
+                    }
+                }
 
-                adapter.Update(dataSet, dataSet.Tables[0].TableName);
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                MessageBox.Show("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Typsicheres, hocheffizientes zeilenweises Schreiben über ein Command-Objekt
+                string sqlInsert = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Außen_Temp) VALUES (?, ?, ?)";
+                using (OleDbCommand cmdInsert = new OleDbCommand(sqlInsert, conn, transaction))
+                {
+                    cmdInsert.Parameters.Add("@id", OleDbType.Integer);
+                    cmdInsert.Parameters.Add("@regId", OleDbType.Integer);
+                    cmdInsert.Parameters.Add("@temp", OleDbType.Double);
+
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        cmdInsert.Parameters[0].Value = nextID++;
+                        cmdInsert.Parameters[1].Value = refID;
+
+                        // Dynamische Typprüfung für die übergebene DataTable
+                        cmdInsert.Parameters[2].Value = row[0] != DBNull.Value ? Convert.ToDouble(row[0]) : 0.0;
+
+                        cmdInsert.ExecuteNonQuery();
+                    }
+                }
+
+                return true;
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei WriteDataTable: " + ex.Message);
+                MessageBox.Show("Fehler beim Schreiben der Tabellendaten: " + ex.Message);
                 return false;
             }
-            return true;
         }
-
-
     }
 }

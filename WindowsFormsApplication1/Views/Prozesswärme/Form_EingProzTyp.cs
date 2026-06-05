@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
+using System.Data.OleDb;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.Data.Odbc;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
@@ -15,7 +11,6 @@ namespace WindowsFormsApplication1
     {
         public double[,] arr = new double[7, 24];
         private double[] arr_seriell = new double[168];
-        OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
 
         public Form_EingProzTyp()
         {
@@ -26,16 +21,22 @@ namespace WindowsFormsApplication1
 
         public void SetControls()
         {
-            RecordSet rs = new RecordSet();
-            rs.Open("select * from Tab_Prozesstyp order by Typname");
-            listBox_Typname.Items.Clear();  
-            while (rs.Next())
+            listBox_Typname.Items.Clear();
+
+            string sql = "SELECT * FROM Tab_Prozesstyp ORDER BY Typname";
+            DataTable dt = DataRepository.GetDataTable(sql, null);
+
+            if (dt != null && dt.Rows.Count > 0)
             {
-                listBox_Typname.Items.Add(rs.Read("Typname"));
-                DatenEinlesen(rs);
+                foreach (DataRow row in dt.Rows)
+                {
+                    listBox_Typname.Items.Add(row["Typname"]?.ToString());
+                }
+
+                // Daten des ersten Elements temporär einlesen
+                DatenEinlesenVonRow(dt.Rows[0]);
+                listBox_Typname.SelectedIndex = 0;
             }
-            rs.Close();
-            listBox_Typname.SelectedIndex = 0;
 
             init_Chart(chart1);
         }
@@ -46,60 +47,81 @@ namespace WindowsFormsApplication1
             {
                 string ctrl_name = "st" + (stunde + 1).ToString();
                 Control ctrl = tabPage1.Controls[ctrl_name];
-                ctrl.Text = arr[Tag, stunde].ToString();
+                if (ctrl != null)
+                {
+                    ctrl.Text = arr[Tag, stunde].ToString();
+                }
             }
         }
 
         private void listBox_Typname_SelectedIndexChanged(object sender, EventArgs e)
         {
-            RecordSet rs = new RecordSet();
-            rs.Open("select * from Tab_Prozesstyp where Typname='" + listBox_Typname.Text + "'");
-            
-            if(rs.Next())
-            {
-                DatenEinlesen(rs);
+            if (string.IsNullOrEmpty(listBox_Typname.Text)) return;
 
-                Object obj = rs.Read("Beschreibung");
-                if (!DBNull.Value.Equals(obj))
-                    textBox_Beschreibung.Text = (string)rs.Read("Beschreibung");
+            string sql = "SELECT * FROM Tab_Prozesstyp WHERE Typname = ?";
+            OleDbParameter[] ps = { new OleDbParameter("@typ", listBox_Typname.Text) };
+            DataTable dt = DataRepository.GetDataTable(sql, ps);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                DataRow row = dt.Rows[0];
+                DatenEinlesenVonRow(row);
+
+                if (row["Beschreibung"] != DBNull.Value)
+                    textBox_Beschreibung.Text = row["Beschreibung"].ToString();
                 else
                     textBox_Beschreibung.Text = "";
             }
-            rs.Close();
 
-            chart1.Series[0].Points.DataBindY(arr_seriell); 
+            chart1.Series[0].Points.DataBindY(arr_seriell);
 
-            listBox_Tag.ClearSelected(); 
-            listBox_Tag.SelectedIndex = 0;   
+            listBox_Tag.ClearSelected();
+            listBox_Tag.SelectedIndex = 0;
         }
 
         private void listBox_Tag_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(listBox_Tag.SelectedIndex == -1) return;
-             Tagesdaten(listBox_Typname.Text, listBox_Tag.SelectedIndex); 
+            if (listBox_Tag.SelectedIndex == -1) return;
+            Tagesdaten(listBox_Typname.Text, listBox_Tag.SelectedIndex);
         }
 
-        private void DatenEinlesen(RecordSet rs)
+        private void DatenEinlesenVonRow(DataRow row)
         {
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    arr[Tag, stunde] = (double)rs.Read(Tag * 24 + stunde + 3);
-                    arr_seriell[Tag*24+stunde] = arr[Tag, stunde];
+                    // Index 3 entspricht der vierten Spalte (nach Typname, Beschreibung etc.)
+                    int columnIndex = Tag * 24 + stunde + 3;
+
+                    if (columnIndex < row.Table.Columns.Count && row[columnIndex] != DBNull.Value)
+                    {
+                        arr[Tag, stunde] = Convert.ToDouble(row[columnIndex]);
+                    }
+                    else
+                    {
+                        arr[Tag, stunde] = 0;
+                    }
+
+                    arr_seriell[Tag * 24 + stunde] = arr[Tag, stunde];
                 }
             }
         }
 
         private void btn_WocheUebernehmen_Click(object sender, EventArgs e)
         {
-            int Tag = listBox_Tag.SelectedIndex;  
+            int Tag = listBox_Tag.SelectedIndex;
+            if (Tag == -1) return;
 
             for (int stunde = 0; stunde < 24; stunde++)
             {
-                string szval = tabPage1.Controls["st" + (stunde + 1).ToString()].Text;
-                Control ctrl = tabPage1.Controls["st" + (stunde + 1).ToString()];
-                if(!Program.checkDouble(ctrl, szval)) return;
+                string ctrlName = "st" + (stunde + 1).ToString();
+                Control ctrl = tabPage1.Controls[ctrlName];
+                if (ctrl == null) continue;
+
+                string szval = ctrl.Text;
+                if (!Program.checkDouble(ctrl, szval)) return;
+
                 double dval = double.Parse(szval);
                 arr[Tag, stunde] = dval;
                 arr_seriell[Tag * 24 + stunde] = dval;
@@ -108,43 +130,75 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
-            for (int Tag = 0; Tag < 7; Tag++)
-            {
-                for (int stunde = 0; stunde < 24; stunde++)
-                {
-                    if (!update(listBox_Typname.Text, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;  
-                }
-            }
-            update(textBox_Beschreibung.Text,listBox_Typname.Text);
-            chart1.Series[0].Points.DataBindY(arr_seriell); 
-        }
+            if (string.IsNullOrEmpty(listBox_Typname.Text)) return;
 
-        private bool update(string szBeschreibung, string szTyp)
-        {
-            DBCommand.CommandText = "UPDATE Tab_Prozesstyp SET Beschreibung='" + szBeschreibung + "' WHERE Typname='" + szTyp + "'";
             try
             {
-                DBCommand.ExecuteNonQuery();
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    using (OleDbTransaction trans = conn.BeginTransaction())
+                    {
+                        // 1. Alle Stundenwerte aktualisieren (Gebündelt in einer Transaktion für max. Performance)
+                        for (int Tag = 0; Tag < 7; Tag++)
+                        {
+                            for (int stunde = 0; stunde < 24; stunde++)
+                            {
+                                string feldName = (Tag * 24 + stunde + 1).ToString();
+                                if (!UpdateWert(conn, trans, listBox_Typname.Text, feldName, arr[Tag, stunde]))
+                                {
+                                    trans.Rollback();
+                                    return;
+                                }
+                            }
+                        }
+
+                        // 2. Beschreibung aktualisieren
+                        if (!UpdateBeschreibung(conn, trans, textBox_Beschreibung.Text, listBox_Typname.Text))
+                        {
+                            trans.Rollback();
+                            return;
+                        }
+
+                        trans.Commit();
+                        MessageBox.Show("Daten erfolgreich gespeichert.");
+                    }
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("Aktualisieren nicht möglich!");
-                return false;
+                Console.WriteLine("Fehler beim Massenspeichern: " + ex.Message);
+                MessageBox.Show("Fehler beim Speichern der Daten!");
+            }
+
+            chart1.Series[0].Points.DataBindY(arr_seriell);
+        }
+
+        private bool UpdateBeschreibung(OleDbConnection conn, OleDbTransaction trans, string szBeschreibung, string szTyp)
+        {
+            string sql = "UPDATE Tab_Prozesstyp SET Beschreibung = ? WHERE Typname = ?";
+            using (OleDbCommand cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = trans;
+                cmd.CommandText = sql;
+                cmd.Parameters.Add(new OleDbParameter("@bes", szBeschreibung ?? (object)DBNull.Value));
+                cmd.Parameters.Add(new OleDbParameter("@typ", szTyp));
+                cmd.ExecuteNonQuery();
             }
             return true;
         }
 
-        private bool update(string typ, string feld, double value)
+        private bool UpdateWert(OleDbConnection conn, OleDbTransaction trans, string typ, string feld, double value)
         {
-            DBCommand.CommandText = "UPDATE Tab_Prozesstyp SET " + feld + "=" + value + " WHERE Typname='" + typ + "'";
-            try
+            // Feldnamen in eckige Klammern setzen, da reine Nummern (z.B. [1]) sonst SQL-Syntaxfehler erzeugen
+            string sql = $"UPDATE Tab_Prozesstyp SET [{feld}] = ? WHERE Typname = ?";
+            using (OleDbCommand cmd = conn.CreateCommand())
             {
-                DBCommand.ExecuteNonQuery();
-            }
-            catch
-            {
-                MessageBox.Show("Aktualisieren nicht möglich!");
-                return false;
+                cmd.Transaction = trans;
+                cmd.CommandText = sql;
+                cmd.Parameters.Add(new OleDbParameter("@val", value));
+                cmd.Parameters.Add(new OleDbParameter("@typ", typ));
+                cmd.ExecuteNonQuery();
             }
             return true;
         }
@@ -156,29 +210,23 @@ namespace WindowsFormsApplication1
 
         private void btn_Loeschen_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(listBox_Typname.Text)) return;
+
             DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Typname.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
-            try
-            {
-                DBCommand.CommandText = "DELETE Typname FROM Tab_Prozesstyp WHERE Typname='" + listBox_Typname.Text + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                MessageBox.Show("Löschen nicht möglich!"); 
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return;
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                MessageBox.Show("Löschen nicht möglich!"); 
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                return;
-            }
-            SetControls();
 
+            string sql = "DELETE FROM Tab_Prozesstyp WHERE Typname = ?";
+            OleDbParameter[] ps = { new OleDbParameter("@typ", listBox_Typname.Text) };
+
+            if (DataRepository.ExecuteSQL(sql, ps))
+            {
+                MessageBox.Show("Datensatz gelöscht.");
+                SetControls();
+            }
+            else
+            {
+                MessageBox.Show("Löschen nicht möglich!");
+            }
         }
 
         private void btn_Neu_Click(object sender, EventArgs e)
@@ -187,59 +235,100 @@ namespace WindowsFormsApplication1
             Point p1 = btn_Neu.Location;
             p1 = this.PointToScreen(p1);
             frm.Location = p1;
-            frm.ShowDialog();
 
-            if (frm.ShowDialog() == DialogResult.Cancel) return;
+            // BUGFIX: frm.ShowDialog() darf hier nur einmal ausgewertet werden
+            if (frm.ShowDialog() == DialogResult.Cancel || string.IsNullOrEmpty(frm.m_szName)) return;
 
+            // Arrays zurücksetzen
             for (int Tag = 0; Tag < 7; Tag++)
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
                     arr[Tag, stunde] = 0;
-                    arr_seriell[Tag * 24 + stunde] = 0; 
+                    arr_seriell[Tag * 24 + stunde] = 0;
                 }
             }
-            OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
-            DBCommand.CommandText = "INSERT INTO Tab_Prozesstyp ( Typname ) SELECT '" + frm.m_szName + "' AS Ausdr1";
-            DBCommand.ExecuteNonQuery();
 
-            for (int Tag = 0; Tag < 7; Tag++)
+            // Datensatz anlegen
+            string insertSql = "INSERT INTO Tab_Prozesstyp ( Typname ) VALUES (?)";
+            OleDbParameter[] ps = { new OleDbParameter("@typ", frm.m_szName) };
+
+            if (DataRepository.ExecuteSQL(insertSql, ps))
             {
-                for (int stunde = 0; stunde < 24; stunde++)
+                // Alle Stundenwerte über den Transaktions-Speicherer initialisieren
+                try
                 {
-                    if (!update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;
+                    using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                    {
+                        conn.Open();
+                        using (OleDbTransaction trans = conn.BeginTransaction())
+                        {
+                            for (int Tag = 0; Tag < 7; Tag++)
+                            {
+                                for (int stunde = 0; stunde < 24; stunde++)
+                                {
+                                    string feldName = (Tag * 24 + stunde + 1).ToString();
+                                    UpdateWert(conn, trans, frm.m_szName, feldName, 0);
+                                }
+                            }
+                            UpdateBeschreibung(conn, trans, "", frm.m_szName);
+                            trans.Commit();
+                        }
+                    }
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Fehler beim Initialisieren des neuen Datensatzes: " + ex.Message);
+                }
+
+                SetControls();
+                listBox_Typname.Text = frm.m_szName;
             }
-          
-            update("", frm.m_szName);
-            SetControls();
-            listBox_Typname.Text = frm.m_szName;  
         }
 
         private void btn_SpeichernUnter_Click(object sender, EventArgs e)
         {
             Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
-
             Point p1 = btn_SpeichernUnter.Location;
             p1 = this.PointToScreen(p1);
             frm.Location = p1;
-            frm.ShowDialog();
-            if (frm.ShowDialog() == DialogResult.Cancel) return;
 
-            DBCommand.CommandText = "INSERT INTO Tab_Prozesstyp ( Typname ) SELECT '" + frm.m_szName + "' AS Ausdr1";
-            DBCommand.ExecuteNonQuery();
+            // BUGFIX: Nur ein Aufruf von ShowDialog()
+            if (frm.ShowDialog() == DialogResult.Cancel || string.IsNullOrEmpty(frm.m_szName)) return;
 
-            for (int Tag = 0; Tag < 7; Tag++)
+            string insertSql = "INSERT INTO Tab_Prozesstyp ( Typname ) VALUES (?)";
+            OleDbParameter[] ps = { new OleDbParameter("@typ", frm.m_szName) };
+
+            if (DataRepository.ExecuteSQL(insertSql, ps))
             {
-                for (int stunde = 0; stunde < 24; stunde++)
+                try
                 {
-                    update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde]);
+                    using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                    {
+                        conn.Open();
+                        using (OleDbTransaction trans = conn.BeginTransaction())
+                        {
+                            for (int Tag = 0; Tag < 7; Tag++)
+                            {
+                                for (int stunde = 0; stunde < 24; stunde++)
+                                {
+                                    string feldName = (Tag * 24 + stunde + 1).ToString();
+                                    UpdateWert(conn, trans, frm.m_szName, feldName, arr[Tag, stunde]);
+                                }
+                            }
+                            UpdateBeschreibung(conn, trans, textBox_Beschreibung.Text, frm.m_szName);
+                            trans.Commit();
+                        }
+                    }
                 }
-            }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Fehler bei Speichern Unter: " + ex.Message);
+                }
 
-            update(textBox_Beschreibung.Text, frm.m_szName);
-            SetControls();
-            listBox_Typname.Text = frm.m_szName;  
+                SetControls();
+                listBox_Typname.Text = frm.m_szName;
+            }
         }
 
         private void init_Chart(Chart chart)
@@ -265,8 +354,6 @@ namespace WindowsFormsApplication1
 
             chart.Series[0].ChartType = SeriesChartType.Area;
             chart.Series[0].Color = Color.FromArgb(100, Color.Blue);
-
         }
-
     }
 }

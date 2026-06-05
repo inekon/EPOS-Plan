@@ -1,6 +1,7 @@
 ﻿using Microsoft.Vbe.Interop;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.OleDb;
 using System.Globalization;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace WindowsFormsApplication1
 {
 
     // --- DATENMODELL FÜR NOMINATIM (GEOCODING) ---
-    // 1. Definition der Datenstruktur (Mapping der JSON-Antwort)
+    // Definition der Datenstruktur (Mapping der JSON-Antwort)
     public class PvgisResponse
     {
         [JsonPropertyName("outputs")]
@@ -431,164 +432,107 @@ namespace WindowsFormsApplication1
 
     public class AccessRepository
     {
-        private string _connectionString;
+        // Konstruktor leer und sauber, da Verbindung von außen kommt
+        public AccessRepository() { }
 
-        public AccessRepository(string dbPath)
+        public void SaveTmyData(List<TmyHourlyData> dataList, string szOrt, string tabelle, int ID_Klimaregion,
+                                OleDbConnection connection, OleDbTransaction transaction)
         {
-            // Connection String für .accdb Dateien
-            _connectionString = DataRepository.GetConnectionString();
-        }
+            if (dataList == null || dataList.Count == 0) return;
 
-        public void SaveTmyData(List<TmyHourlyData> dataList, string szOrt, string tabelle, int ID_Klimaregion)
-        {
-
-            using (OleDbConnection connection = new OleDbConnection(_connectionString))
+            try
             {
-                connection.Open();
+                bool istKlimadaten = (tabelle == "Tab_Klimadaten");
+                int nextId = 1;
 
-                using (var transaction = connection.BeginTransaction())
+                if (istKlimadaten)
                 {
-
-                    if (tabelle == "Tab_Klimadaten")
+                    // 1. ID-Ermittlung stark vereinfacht
+                    string maxSql = "SELECT MAX(ID_Klimadaten) FROM Tab_Klimadaten";
+                    using (OleDbCommand cmdMax = new OleDbCommand(maxSql, connection, transaction))
                     {
-                        // 1. Maximale ID abfragen
-                        // NZ oder IIf(IsNull...) ist in Access das Äquivalent zu COALESCE
-                        string maxIdQuery = "SELECT MAX(ID_Klimadaten) FROM Tab_Klimadaten";
-                        int nextId = 1;
+                        object result = cmdMax.ExecuteScalar();
+                        if (result != DBNull.Value && result != null) nextId = Convert.ToInt32(result) + 1;
+                    }
+                }
 
-                        using (OleDbCommand cmdMax2 = new OleDbCommand(maxIdQuery, connection, transaction))
-                        {
-                            object result = cmdMax2.ExecuteScalar();
-                            if (result != DBNull.Value && result != null)
-                            {
-                                nextId = Convert.ToInt32(result) + 1;
-                            }
-                        }
+                // 2. SQL-Queries festlegen
+                string query = istKlimadaten
+                    ? "INSERT INTO Tab_Klimadaten (ID_Klimadaten, ID_Klimaregion, Temperatur, Sol_Nord, Sol_Sued, Sol_Ost, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, WE, TagTyp_W, TagTyp_NW, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    : "INSERT INTO Tab_Solar (ID_Klimaregion, Temperatur, Sol_Nord, Sol_Sued, Sol_Ost, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?)";
 
-                        // Wir nutzen eine Transaktion für deutlich bessere Performance bei 8760 Zeilen
-                        string query = "INSERT INTO Tab_Klimadaten (ID_Klimadaten,ID_Klimaregion, Temperatur, Sol_Nord, Sol_Sued, Sol_Ost,Sol_West,Globalstrahlung, " +
-                            "Direktstrahlung, Diffusstrahlung, WE, TagTyp_W, TagTyp_NW, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-
-                        using (OleDbCommand command = new OleDbCommand(query, connection, transaction))
-                        {
-                            // Parameter definieren
-                            command.Parameters.Add("?", OleDbType.Integer);
-                            command.Parameters.Add("?", OleDbType.Integer);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Boolean);
-                            command.Parameters.Add("?", OleDbType.Integer);
-                            command.Parameters.Add("?", OleDbType.Integer);
-                            command.Parameters.Add("?", OleDbType.Double);
-
-                            foreach (var data in dataList)
-                            {
-                                command.Parameters[0].Value = nextId++;
-                                command.Parameters[1].Value = (int)ID_Klimaregion;
-                                command.Parameters[2].Value = data.Temperature;
-                                command.Parameters[3].Value = data.Sol_nord;
-                                command.Parameters[4].Value = data.Sol_sued;
-                                command.Parameters[5].Value = data.Sol_ost;
-                                command.Parameters[6].Value = data.Sol_west;
-                                command.Parameters[7].Value = data.GlobalIrradiance;
-                                command.Parameters[8].Value = data.DirectIrradiance;
-                                command.Parameters[9].Value = data.DiffuseIrradiance;
-                                command.Parameters[10].Value = data.WE;
-                                command.Parameters[11].Value = data.TagTyp_W;
-                                command.Parameters[12].Value = data.TagTyp_NW;
-                                command.Parameters[13].Value = Math.Round(data.Sonnenwinkel, 1);
-                                command.ExecuteNonQuery();
-                            }
-                        }
+                using (OleDbCommand command = new OleDbCommand(query, connection, transaction))
+                {
+                    // 3. Typisierte Parameter vorab definieren (Bringt massiven Performance-Schub bei 8760 Zeilen!)
+                    if (istKlimadaten)
+                    {
+                        command.Parameters.Add("?", OleDbType.Integer);      // ID_Klimadaten
+                        command.Parameters.Add("?", OleDbType.Integer);      // ID_Klimaregion
+                        command.Parameters.Add("?", OleDbType.Double);       // Temperatur
+                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Nord
+                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Sued
+                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Ost
+                        command.Parameters.Add("?", OleDbType.Double);       // Sol_West
+                        command.Parameters.Add("?", OleDbType.Double);       // Globalstrahlung
+                        command.Parameters.Add("?", OleDbType.Double);       // Direktstrahlung
+                        command.Parameters.Add("?", OleDbType.Double);       // Diffusstrahlung
+                        command.Parameters.Add("?", OleDbType.Boolean);      // WE
+                        command.Parameters.Add("?", OleDbType.Integer);      // TagTyp_W
+                        command.Parameters.Add("?", OleDbType.Integer);      // TagTyp_NW
+                        command.Parameters.Add("?", OleDbType.Double);       // Sonnenwinkel
                     }
                     else
                     {
-                        string query = "INSERT INTO Tab_Solar (ID_Klimaregion, Temperatur, Sol_Nord, Sol_Sued, Sol_Ost,Sol_West,Globalstrahlung, Direktstrahlung, " +
-                            "Diffusstrahlung, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?)";
-
-                        using (OleDbCommand command = new OleDbCommand(query, connection, transaction))
-                        {
-                            // Parameter definieren
-                            command.Parameters.Add("?", OleDbType.Integer);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-                            command.Parameters.Add("?", OleDbType.Double);
-
-                            foreach (var data in dataList)
-                            {
-                                command.Parameters[0].Value = (int)ID_Klimaregion;
-                                command.Parameters[1].Value = data.Temperature;
-                                command.Parameters[2].Value = data.Sol_nord;
-                                command.Parameters[3].Value = data.Sol_sued;
-                                command.Parameters[4].Value = data.Sol_ost;
-                                command.Parameters[5].Value = data.Sol_west;
-                                command.Parameters[6].Value = data.GlobalIrradiance;
-                                command.Parameters[7].Value = data.DirectIrradiance;
-                                command.Parameters[8].Value = data.DiffuseIrradiance;
-                                command.Parameters[9].Value = data.Sonnenwinkel > 0 ? Math.Round(data.Sonnenwinkel, 1) : 0;
-                                command.ExecuteNonQuery();
-                            }
-                        }
-
+                        command.Parameters.Add("?", OleDbType.Integer);      // ID_Klimaregion
+                        command.Parameters.Add("?", OleDbType.Double);       // Temperatur
+                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Nord
+                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Sued
+                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Ost
+                        command.Parameters.Add("?", OleDbType.Double);       // Sol_West
+                        command.Parameters.Add("?", OleDbType.Double);       // Globalstrahlung
+                        command.Parameters.Add("?", OleDbType.Double);       // Direktstrahlung
+                        command.Parameters.Add("?", OleDbType.Double);       // Diffusstrahlung
+                        command.Parameters.Add("?", OleDbType.Double);       // Sonnenwinkel
                     }
 
-                    transaction.Commit();
+                    // 4. Die Schleife befüllt jetzt blitzschnell nur noch die Werte (.Value)
+                    foreach (var data in dataList)
+                    {
+                        int pIdx = 0;
+
+                        if (istKlimadaten) command.Parameters[pIdx++].Value = nextId++;
+
+                        command.Parameters[pIdx++].Value = ID_Klimaregion;
+                        command.Parameters[pIdx++].Value = data.Temperature;
+                        command.Parameters[pIdx++].Value = data.Sol_nord;
+                        command.Parameters[pIdx++].Value = data.Sol_sued;
+                        command.Parameters[pIdx++].Value = data.Sol_ost;
+                        command.Parameters[pIdx++].Value = data.Sol_west;
+                        command.Parameters[pIdx++].Value = data.GlobalIrradiance;
+                        command.Parameters[pIdx++].Value = data.DirectIrradiance;
+                        command.Parameters[pIdx++].Value = data.DiffuseIrradiance;
+
+                        if (istKlimadaten)
+                        {
+                            command.Parameters[pIdx++].Value = data.WE;
+                            command.Parameters[pIdx++].Value = data.TagTyp_W;
+                            command.Parameters[pIdx++].Value = data.TagTyp_NW;
+                            command.Parameters[pIdx++].Value = Math.Round(data.Sonnenwinkel, 1);
+                        }
+                        else
+                        {
+                            command.Parameters[pIdx++].Value = data.Sonnenwinkel > 0 ? Math.Round(data.Sonnenwinkel, 1) : 0;
+                        }
+
+                        command.ExecuteNonQuery();
+                    }
                 }
-            }
-        }
-    }
-
-    public static class Nominatim
-    {
-        private static readonly HttpClient client = new HttpClient();
-
-        /// <summary>
-        /// Wandelt einen Ortsnamen in Koordinaten um (via OpenStreetMap Nominatim API).
-        /// </summary>
-        public static async Task<(bool Success, double Lat, double Lon, string DisplayName, string Error)> TryGetCoordinatesAsync(string query)
-        {
-            try
-            {
-                // WICHTIG: Nominatim verlangt einen User-Agent! Sonst Fehler 403.
-                if (!client.DefaultRequestHeaders.UserAgent.TryParseAdd("CSharp_EpwTool_Demo/1.0"))
-                {
-                    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; EpwTool/1.0)");
-                }
-
-                // URL encoding für Leerzeichen etc. (Berlin Alexanderplatz -> Berlin%20Alexanderplatz)
-                string encodedQuery = System.Net.WebUtility.UrlEncode(query);
-                string url = $"https://nominatim.openstreetmap.org/search?q={encodedQuery}&format=json&limit=1";
-
-                var response = await client.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-
-                string json = await response.Content.ReadAsStringAsync();
-
-                // Die API gibt eine Liste zurück (auch wenn limit=1)
-                var results = JsonSerializer.Deserialize<List<GeoResult>>(json);
-                if (results == null || results.Count == 0)
-                    return (false, 0, 0, null, $"Ort '{query}' konnte nicht gefunden werden.");
-                var best = results[0];
-                double lat = double.Parse(best.LatString, CultureInfo.InvariantCulture);
-                double lon = double.Parse(best.LonString, CultureInfo.InvariantCulture);
-                return (true, lat, lon, best.DisplayName, null);
             }
             catch (Exception ex)
             {
-                return (false, 0, 0, null, ex.Message);
+                throw new Exception($"Fehler beim Schreiben der Datensätze in die Tabelle '{tabelle}': {ex.Message}", ex);
             }
         }
     }
+
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -277,26 +277,39 @@ namespace WindowsFormsApplication1
 
         private void btn_Strom_loeschen_Click(object sender, EventArgs e)
         {
-            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Strom_DB.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            // Sicherheitsprüfung, ob überhaupt ein Eintrag ausgewählt wurde
+            if (string.IsNullOrEmpty(listBox_Strom_DB.Text))
+            {
+                MessageBox.Show("Bitte wählen Sie zuerst einen Eintrag aus!");
+                return;
+            }
+
+            DialogResult dialogResult = MessageBox.Show(
+                $"Soll {listBox_Strom_DB.Text} wirklich gelöscht werden ?",
+                "Löschen",
+                MessageBoxButtons.YesNo
+            );
+
             if (dialogResult == DialogResult.No) return;
 
-            OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Tab_Stromverbraucher WHERE Bezeichner='" + listBox_Strom_DB.Text + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                // 1. SQL-Syntax vereinheitlichen (Standard-DELETE ohne '*') und Parameter nutzen
+                string sql = "DELETE FROM Tab_Stromverbraucher WHERE Bezeichner = ?";
+                OleDbParameter parameter = new OleDbParameter("?", listBox_Strom_DB.Text);
+
+                // 2. Ausführung über das zentrale DataRepository
+                DataRepository.ExecuteNonQuery(sql, parameter);
+
+                // 3. Nach erfolgreichem DB-Löschvorgang den Eintrag aus der UI entfernen
+                listBox_Strom_DB.Items.Remove(listBox_Strom_DB.Text);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                // Fängt alle OLEDB- und allgemeinen Laufzeitfehler ab
+                Console.WriteLine("Fehler beim Löschen des Stromeintrags: " + ex.Message);
+                MessageBox.Show("Der Datensatz konnte nicht gelöscht werden: " + ex.Message);
             }
-            listBox_Strom_DB.Items.Remove(listBox_Strom_DB.Text);    
         }
 
         private void btn_StromtypDBedit_Click(object sender, EventArgs e)

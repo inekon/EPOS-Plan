@@ -136,7 +136,7 @@
     <value>3</value>
   </data>
   <data name="btn_Prozess_DBneu.Text" xml:space="preserve">
-    <value>Prozess in DB neu</value>
+    <value>Neuer Prozess</value>
   </data>
   <data name="&gt;&gt;btn_Prozess_DBneu.Name" xml:space="preserve">
     <value>btn_Prozess_DBneu</value>
@@ -166,7 +166,7 @@
     <value>4</value>
   </data>
   <data name="btn_Prozess_loeschen.Text" xml:space="preserve">
-    <value>Prozess in DB löschen</value>
+    <value>Prozess löschen</value>
   </data>
   <data name="&gt;&gt;btn_Prozess_loeschen.Name" xml:space="preserve">
     <value>btn_Prozess_loeschen</value>
@@ -259,7 +259,7 @@
     <value>13</value>
   </data>
   <data name="btn_ProzTypeDBedit.Text" xml:space="preserve">
-    <value>Typ in DB ändern</value>
+    <value>Typ ändern</value>
   </data>
   <data name="&gt;&gt;btn_ProzTypeDBedit.Name" xml:space="preserve">
     <value>btn_ProzTypeDBedit</value>
@@ -289,7 +289,7 @@
     <value>15</value>
   </data>
   <data name="btn_Prozess_DBedit.Text" xml:space="preserve">
-    <value>Prozess in DB ändern</value>
+    <value>Prozess ändern</value>
   </data>
   <data name="&gt;&gt;btn_Prozess_DBedit.Name" xml:space="preserve">
     <value>btn_Prozess_DBedit</value>

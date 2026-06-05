@@ -1,5 +1,5 @@
 using System;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -119,37 +119,60 @@ namespace WindowsFormsApplication1
         private void btn_Überschreiben_Click(object sender, EventArgs e)
         {
             SolarkollektorenCtrl ctrl = new SolarkollektorenCtrl();
-            OdbcTransaction transaction = null;
+            OleDbTransaction transaction = null;
 
             try
             {
                 ctrl.model = InitDatensatzUpdate();
-                transaction = Program.DBConnection.BeginTransaction();
-                ctrl.DBCommand.Transaction = transaction;
-                if (ctrl.Update())
+
+                // 1. Verbindung manuell über das DataRepository öffnen
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    transaction.Commit();
-                    MessageBox.Show("Datensatz gespeichert");
+                    conn.Open();
+
+                    // 2. Transaktion auf der Verbindung starten
+                    transaction = conn.BeginTransaction();
+
+                    // 3. Dem Control die aktive Verbindung und die Transaktion zuweisen
+                    ctrl.DBCommand.Connection = conn;
+                    ctrl.DBCommand.Transaction = transaction;
+
+                    // 4. Update ausführen und das Ergebnis prüfen
+                    if (ctrl.Update())
+                    {
+                        transaction.Commit();
+                        this.DialogResult = DialogResult.OK; // Optional, falls die Form als Dialog geöffnet wurde
+                        MessageBox.Show("Datensatz gespeichert");
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                        this.DialogResult = DialogResult.Cancel;
+                        MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
+                    }
+
+                    Close();
                 }
-                else
-                {
-                    transaction.Rollback();
-                    MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
-                }
-                Close();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                try
+                Console.WriteLine("Fehler beim Überschreiben des Solarkollektors: " + ex.Message);
+                MessageBox.Show("Ein Fehler ist aufgetreten: " + ex.Message);
+
+                // Rollback versuchen, falls die Transaktion aktiv war
+                if (transaction != null && transaction.Connection != null)
                 {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
+                    try
+                    {
+                        transaction.Rollback();
+                    }
+                    catch
+                    {
+                        // Ignorieren, falls die Transaktion bereits geschlossen oder ungültig ist
+                    }
                 }
-                catch
-                {
-                    // Do nothing here; transaction is not active.
-                }
+
+                this.DialogResult = DialogResult.Cancel;
             }
         }
 
@@ -174,84 +197,61 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
-            OdbcTransaction transaction = null;
-            RecordSet rs = new RecordSet();
+            if (string.IsNullOrEmpty(textBox_Name.Text))
+            {
+                MessageBox.Show("Bitte einen Kollektorname eingeben!");
+                return;
+            }
+
+            OleDbTransaction transaction = null;
 
             try
             {
-                transaction = Program.DBConnection.BeginTransaction();
-                rs.DBCommand.Transaction = transaction;
-                rs.Open("select Kollektorname from Tab_Solarkollektoren where Kollektorname='" + textBox_Name.Text + "'");
-                if (!rs.EOF()) { MessageBox.Show("Name existiert bereits!"); transaction.Rollback(); rs.Close(); return; }
-                rs.Close();
-
-                rs.Insert("INSERT INTO Tab_Solarkollektoren (Kollektorname) SELECT '" + textBox_Name.Text + "' AS Ausdr1");
-                rs.Close();
-
-                SolarkollektorenCtrl ctrl = new SolarkollektorenCtrl();
-                ctrl.DBCommand.Transaction = transaction;
-                ctrl.model = InitDatensatzUpdate();
-                if (ctrl.Update())
+                // 1. Verbindung manuell über das DataRepository öffnen
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    transaction.Commit();
-                    this.DialogResult = DialogResult.OK;
-                    MessageBox.Show("Datensatz gespeichert");
-                }
-                else
-                {
-                    transaction.Rollback();
-                    this.DialogResult = DialogResult.Cancel;
-                    MessageBox.Show("Fehler beim Speichern des Datensatzes!");
-                }
-                Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                try
-                {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
-                }
-                catch
-                {
-                    // Do nothing here; transaction is not active.
-                }
-            }
+                    conn.Open();
 
+                    // 2. Transaktion starten
+                    transaction = conn.BeginTransaction();
 
-        }
+                    // 3. Existenzprüfung innerhalb der Transaktion (mit Parameter)
+                    string checkSql = "SELECT COUNT(*) FROM Tab_Solarkollektoren WHERE Kollektorname = ?";
+                    using (OleDbCommand checkCmd = conn.CreateCommand())
+                    {
+                        checkCmd.Transaction = transaction;
+                        checkCmd.CommandText = checkSql;
+                        checkCmd.Parameters.Add(new OleDbParameter("?", textBox_Name.Text));
 
-        private void btn_Speichern_Unter_Click(object sender, EventArgs e)
-        {
-            Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
-            RecordSet rs = new RecordSet();
-            OdbcTransaction transaction = null;
+                        int count = Convert.ToInt32(checkCmd.ExecuteScalar());
+                        if (count > 0)
+                        {
+                            MessageBox.Show("Name existiert bereits!");
+                            transaction.Rollback(); // Transaktion sauber beenden
+                            return;
+                        }
+                    }
 
-            System.Drawing.Point p1 = btn_Speichern_Unter.Location;
-            p1 = this.PointToScreen(p1);
-            frmLabel.Location = p1;
-            frmLabel.m_szName = "";
-            frmLabel.SetControl();
+                    // 4. Parametrisierter INSERT-Befehl innerhalb der Transaktion
+                    string insertSql = "INSERT INTO Tab_Solarkollektoren (Kollektorname) VALUES (?)";
+                    using (OleDbCommand insertCmd = conn.CreateCommand())
+                    {
+                        insertCmd.Transaction = transaction;
+                        insertCmd.CommandText = insertSql;
+                        insertCmd.Parameters.Add(new OleDbParameter("?", textBox_Name.Text));
 
-            if (frmLabel.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    transaction = Program.DBConnection.BeginTransaction();
-                    rs.DBCommand.Transaction = transaction;
-                    rs.Open("select Kollektorname from Tab_Solarkollektoren where Kollektorname='" + frmLabel.m_szName + "'");
-                    if (!rs.EOF()) { MessageBox.Show("Name existiert bereits!"); rs.Close(); transaction.Commit(); return; }
-                    rs.Close();
+                        insertCmd.ExecuteNonQuery();
+                    }
 
-                    textBox_Name.Text = frmLabel.m_szName;
-            
-                    rs.Insert("INSERT INTO Tab_Solarkollektoren (Kollektorname) SELECT '" + frmLabel.m_szName + "' AS Ausdr1");
-                    rs.Close();
-
+                    // 5. Update-Control initialisieren und mit Daten füttern
                     SolarkollektorenCtrl ctrl = new SolarkollektorenCtrl();
-                    ctrl.DBCommand.Transaction = transaction;
                     ctrl.model = InitDatensatzUpdate();
+
+                    // Dem Control die aktive Verbindung und Transaktion übergeben
+                    ctrl.DBCommand.Connection = conn;
+                    ctrl.DBCommand.Transaction = transaction;
+
+                    // 6. Ausführen und Validieren des Updates
                     if (ctrl.Update())
                     {
                         transaction.Commit();
@@ -264,24 +264,139 @@ namespace WindowsFormsApplication1
                         this.DialogResult = DialogResult.Cancel;
                         MessageBox.Show("Fehler beim Speichern des Datensatzes!");
                     }
+
                     Close();
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Speichern des Solarkollektors: " + ex.Message);
+                MessageBox.Show("Ein Fehler ist aufgetreten: " + ex.Message);
+
+                // Rollback versuchen, falls die Transaktion aktiv war
+                if (transaction != null && transaction.Connection != null)
                 {
-                    Console.WriteLine(ex.Message);
                     try
                     {
-                        MessageBox.Show("Fehler beim Speichern des Datensatzes!");
-                        // Attempt to roll back the transaction.
                         transaction.Rollback();
                     }
                     catch
                     {
-                        // Do nothing here; transaction is not active.
+                        // Ignorieren, falls die Transaktion bereits geschlossen oder ungültig ist
                     }
                 }
-            }
 
+                this.DialogResult = DialogResult.Cancel;
+            }
+        }
+
+        private void btn_Speichern_Unter_Click(object sender, EventArgs e)
+        {
+            Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
+            OleDbTransaction transaction = null;
+
+            System.Drawing.Point p1 = btn_Speichern_Unter.Location;
+            p1 = this.PointToScreen(p1);
+            frmLabel.Location = p1;
+            frmLabel.m_szName = "";
+            frmLabel.SetControl();
+
+            if (frmLabel.ShowDialog() == DialogResult.OK)
+            {
+                // Falls im Dialog kein Name eingegeben wurde, direkt abbrechen
+                if (string.IsNullOrEmpty(frmLabel.m_szName))
+                {
+                    MessageBox.Show("Bitte einen gültigen Kollektorname eingeben!");
+                    return;
+                }
+
+                try
+                {
+                    // 1. Verbindung manuell über das DataRepository öffnen
+                    using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                    {
+                        conn.Open();
+
+                        // 2. Transaktion starten
+                        transaction = conn.BeginTransaction();
+
+                        // 3. Existenzprüfung innerhalb der Transaktion (mit Parameter)
+                        string checkSql = "SELECT COUNT(*) FROM Tab_Solarkollektoren WHERE Kollektorname = ?";
+                        using (OleDbCommand checkCmd = conn.CreateCommand())
+                        {
+                            checkCmd.Transaction = transaction;
+                            checkCmd.CommandText = checkSql;
+                            checkCmd.Parameters.Add(new OleDbParameter("?", frmLabel.m_szName));
+
+                            int count = Convert.ToInt32(checkCmd.ExecuteScalar());
+                            if (count > 0)
+                            {
+                                MessageBox.Show("Name existiert bereits!");
+                                transaction.Rollback(); // Fehler im Original behoben (war vorher Commit)
+                                return;
+                            }
+                        }
+
+                        // Neuen Namen in die TextBox der UI übernehmen
+                        textBox_Name.Text = frmLabel.m_szName;
+
+                        // 4. Parametrisierter INSERT-Befehl innerhalb der Transaktion
+                        string insertSql = "INSERT INTO Tab_Solarkollektoren (Kollektorname) VALUES (?)";
+                        using (OleDbCommand insertCmd = conn.CreateCommand())
+                        {
+                            insertCmd.Transaction = transaction;
+                            insertCmd.CommandText = insertSql;
+                            insertCmd.Parameters.Add(new OleDbParameter("?", frmLabel.m_szName));
+
+                            insertCmd.ExecuteNonQuery();
+                        }
+
+                        // 5. Update-Control initialisieren und mit Daten füttern
+                        SolarkollektorenCtrl ctrl = new SolarkollektorenCtrl();
+                        ctrl.model = InitDatensatzUpdate();
+
+                        // Dem Control die aktive Verbindung und Transaktion übergeben
+                        ctrl.DBCommand.Connection = conn;
+                        ctrl.DBCommand.Transaction = transaction;
+
+                        // 6. Ausführen und Validieren des Updates
+                        if (ctrl.Update())
+                        {
+                            transaction.Commit();
+                            this.DialogResult = DialogResult.OK;
+                            MessageBox.Show("Datensatz gespeichert");
+                        }
+                        else
+                        {
+                            transaction.Rollback();
+                            this.DialogResult = DialogResult.Cancel;
+                            MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+                        }
+
+                        Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Fehler bei 'Speichern unter' des Solarkollektors: " + ex.Message);
+                    MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+
+                    // Rollback versuchen, falls die Transaktion aktiv war
+                    if (transaction != null && transaction.Connection != null)
+                    {
+                        try
+                        {
+                            transaction.Rollback();
+                        }
+                        catch
+                        {
+                            // Ignorieren, falls die Transaktion bereits geschlossen oder ungültig ist
+                        }
+                    }
+
+                    this.DialogResult = DialogResult.Cancel;
+                }
+            }
         }
     }
 }

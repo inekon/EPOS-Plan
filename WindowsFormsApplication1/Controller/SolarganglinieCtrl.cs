@@ -1,134 +1,165 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class SolarganglinieCtrl : SolarganglinieModel
     {
-        OdbcCommand DBCommand;
-        OdbcDataReader DBReader;
-        public int rows;
+        // Das besprochene dynamische Listen-Schema
+        private List<SolarganglinieModel> _internalList = new List<SolarganglinieModel>();
+
+        public int rows => _internalList.Count;
+        public new List<SolarganglinieModel> items => _internalList;
+
         public int max_id = 0;
 
-        public SolarganglinieCtrl ()
+        public SolarganglinieCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-        }
-
-        ~SolarganglinieCtrl ()
-        {
-            rows = 0;
-            DBCommand.Dispose();
+            // Konstruktor bereinigt - Ressourcen werden vom DataRepository verwaltet
         }
 
         public bool Delete(string szName)
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Tab_Solarganglinie where Bezeichner= '" + szName + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Parametrisierte Abfrage ohne fehleranfällige Stringverkettungen
+                string sql = "DELETE FROM Tab_Solarganglinie WHERE Bezeichner = ?";
+
+                OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
+                paramBez.Value = szName ?? (object)DBNull.Value;
+
+                OleDbParameter[] ps = { paramBez };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Delete: " + ex.Message);
                 return false;
             }
-            return true;
         }
-
 
         public bool Insert()
         {
             try
             {
-                DBCommand.CommandText = "SELECT Count(*) FROM Tab_Solarganglinie";
-                OdbcDataReader DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();  
-                int result = (int)DBReader.GetValue(0);
-                DBReader.Close();
+                // Ermittlung der nächsten ID über das Repository (Ersatz für sequenzielle Reader)
+                string sqlCount = "SELECT COUNT(*) FROM Tab_Solarganglinie";
+                object countResult = DataRepository.ExecuteScalar(sqlCount, null);
+                int count = countResult != null ? Convert.ToInt32(countResult) : 0;
 
-                if (result == 0) m_ID_Ganglinie = 1;
+                if (count == 0)
+                {
+                    m_ID_Ganglinie = 1;
+                }
                 else
                 {
-                    DBCommand.CommandText = "SELECT Max(ID_GanglinieDaten) AS Ausdr1 FROM Tab_Solarganglinie";
-                    DBReader = DBCommand.ExecuteReader();
-                    DBReader.Read();  
-                    m_ID_Ganglinie = (int)DBReader.GetValue(0) + 1;
-                    DBReader.Close();
+                    // Liest die höchste ID aus der DB aus (Beibehaltung deines Spaltennamens 'ID_GanglinieDaten')
+                    string sqlMax = "SELECT MAX(ID_GanglinieDaten) FROM Tab_Solarganglinie";
+                    object maxResult = DataRepository.ExecuteScalar(sqlMax, null);
+                    m_ID_Ganglinie = (maxResult != null ? Convert.ToInt32(maxResult) : 0) + 1;
                 }
-                DBCommand.CommandText = "INSERT INTO Tab_Solarganglinie ( ID_GanglinieDaten, Bezeichner, Beschreibung) SELECT " + m_ID_Ganglinie +
-                    " AS Ausdr1, '" + m_szBezeichner + "' AS Ausdr2, '" + m_szBeschreibung + "' AS Ausdr3";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+
+                // Umstellung auf das standardkonforme und sichere VALUES-Statement
+                string sql = "INSERT INTO Tab_Solarganglinie (ID_GanglinieDaten, Bezeichner, Beschreibung) VALUES (?, ?, ?)";
+
+                OleDbParameter paramId = new OleDbParameter("@id", OleDbType.Integer);
+                paramId.Value = m_ID_Ganglinie;
+
+                OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
+                paramBez.Value = m_szBezeichner ?? (object)DBNull.Value;
+
+                OleDbParameter paramBeschr = new OleDbParameter("@beschr", OleDbType.VarWChar);
+                paramBeschr.Value = m_szBeschreibung ?? (object)DBNull.Value;
+
+                OleDbParameter[] ps = { paramId, paramBez, paramBeschr };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Insert: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public void ReadAll()
         {
-            DBCommand.CommandText = "select * from Tab_Solarganglinie order by Bezeichner";
-            DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Solarganglinie ORDER BY Bezeichner";
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            items = new SolarganglinieModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 SolarganglinieModel item = new SolarganglinieModel();
 
-                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_ID_Ganglinie = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.m_szBezeichner = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.m_szBeschreibung = (string)DBReader.GetString(3);
+                // Spaltenbasiertes, sicheres Auslesen über Spaltennamen
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    item.ID = Convert.ToInt32(row["ID"]);
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                if (dt.Columns.Contains("ID_GanglinieDaten") && row["ID_GanglinieDaten"] != DBNull.Value)
+                    item.m_ID_Ganglinie = Convert.ToInt32(row["ID_GanglinieDaten"]);
+                else if (dt.Columns.Contains("ID_Ganglinie") && row["ID_Ganglinie"] != DBNull.Value)
+                    item.m_ID_Ganglinie = Convert.ToInt32(row["ID_Ganglinie"]);
+
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    item.m_szBezeichner = row["Bezeichner"].ToString();
+
+                if (dt.Columns.Contains("Beschreibung") && row["Beschreibung"] != DBNull.Value)
+                    item.m_szBeschreibung = row["Beschreibung"].ToString();
+
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
 
         public void ReadSingle(string szBezeichner)
         {
-            DBCommand.CommandText = "select * from Tab_Solarganglinie where Bezeichner='" + szBezeichner + "'";
-            DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Solarganglinie WHERE Bezeichner = ?";
 
-            rows = 0;
+            OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
+            paramBez.Value = szBezeichner ?? (object)DBNull.Value;
 
-            if (DBReader.Read())
+            OleDbParameter[] ps = { paramBez };
+
+            DataTable dt = DataRepository.GetDataTable(sql, ps);
+
+            // Instanzdaten vorsorglich bereinigen, falls kein Treffer erzielt wird
+            ID = 0;
+            m_ID_Ganglinie = 0;
+            m_szBezeichner = string.Empty;
+            m_szBeschreibung = string.Empty;
+
+            if (dt != null && dt.Rows.Count > 0)
             {
-                SolarganglinieModel item = new SolarganglinieModel();
+                DataRow row = dt.Rows[0];
 
-                if (!DBReader.IsDBNull(0)) ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_ID_Ganglinie = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) m_szBezeichner = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_szBeschreibung = (string)DBReader.GetString(3);
-                rows = 1;
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    ID = Convert.ToInt32(row["ID"]);
+
+                if (dt.Columns.Contains("ID_GanglinieDaten") && row["ID_GanglinieDaten"] != DBNull.Value)
+                    m_ID_Ganglinie = Convert.ToInt32(row["ID_GanglinieDaten"]);
+                else if (dt.Columns.Contains("ID_Ganglinie") && row["ID_Ganglinie"] != DBNull.Value)
+                    m_ID_Ganglinie = Convert.ToInt32(row["ID_Ganglinie"]);
+
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    m_szBezeichner = row["Bezeichner"].ToString();
+
+                if (dt.Columns.Contains("Beschreibung") && row["Beschreibung"] != DBNull.Value)
+                    m_szBeschreibung = row["Beschreibung"].ToString();
+
+                // Listensynchronisation zur Erhaltung der UI-Kompatibilität (rows = 1)
+                _internalList.Clear();
+                _internalList.Add(this);
             }
-            DBReader.Dispose();
-            DBReader.Close();
+            else
+            {
+                _internalList.Clear();
+            }
         }
     }
 }
