@@ -553,11 +553,14 @@
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ControlBox = false;
+            this.ControlBox = true;
             this.Controls.Add(this.tabControl_Main);
             this.Controls.Add(this.button_Beenden);
             this.ForeColor = System.Drawing.Color.White;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+            this.MaximizeBox = true;
+            this.MinimizeBox = true;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Name = "FormMain";
             this.Load += new System.EventHandler(this.FormMain_Load);
             this.tabControl_Main.ResumeLayout(false);
