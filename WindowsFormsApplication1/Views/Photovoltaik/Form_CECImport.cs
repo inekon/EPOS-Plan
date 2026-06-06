@@ -1,7 +1,9 @@
 ﻿using Json.Schema.Generation.Intents;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -435,57 +437,118 @@ namespace WindowsFormsApplication1
 
         private void btnSelect_Click(object sender, EventArgs e)
         {
-            RecordSet rs = new RecordSet();
-            OdbcTransaction transaction = null;
-
             if (pvum.Name == null)
             {
                 MessageBox.Show("Bitte ein PV-Modul selektieren!");
                 return;
             }
 
-            rs.Open("select * from [Tab_PV] where Modulname='" + pvum.Name + "'");
-            if (rs.Next()) { MessageBox.Show("Daten bereits eingelesen!"); rs.Close(); return; }
-            rs.Close();
+            // 1. Vorabprüfung über das DataRepository (ohne Transaktion)
+            string checkSql = "SELECT COUNT(*) FROM [Tab_PV] WHERE Modulname = ?";
+            OleDbParameter checkParam = new OleDbParameter("?", pvum.Name);
+            object result = DataRepository.ExecuteScalar(checkSql, checkParam);
+
+            if (result != null && Convert.ToInt32(result) > 0)
+            {
+                MessageBox.Show("Daten bereits eingelesen!");
+                return;
+            }
+
+            // 2. Transaktion über deine Repository-Hilfsmethode starten
+            OleDbConnection connection = null;
+            OleDbTransaction transaction = null;
 
             try
             {
-                transaction = Program.DBConnection.BeginTransaction();
-                rs.DBCommand.Transaction = transaction;
-                rs.Insert("INSERT INTO [Tab_PV] (Modulname) SELECT '" + pvum.Name + "' AS Ausdr1");
-                rs.Close();
+                // Nutzt deine spezifische Methode und entpackt das Tuple (ValueTuple C# 7+)
+                (connection, transaction) = DataRepository.BeginTransaction();
 
+                // --- SCHRITT A: INSERT des neuen Modulnamens ---
+                string insertSql = "INSERT INTO [Tab_PV] (Modulname) VALUES (?)";
+                using (OleDbCommand insertCmd = new OleDbCommand(insertSql, connection, transaction))
+                {
+                    insertCmd.Parameters.Add(new OleDbParameter("?", pvum.Name));
+                    insertCmd.ExecuteNonQuery();
+                }
+
+                // --- SCHRITT B: UPDATE über den Controller ---
                 PhotovoltaikCtrl ctrl = new PhotovoltaikCtrl();
-                
                 ctrl.model = InitDatensatzUpdate();
-                ctrl.DBCommand.Transaction = transaction;
 
-                if (ctrl.Update())
+                // Das Update wird direkt auf der bestehenden Transaktionsverbindung ausgeführt
+                string updateSql = @"
+                    UPDATE Tab_PV 
+                    SET 
+                        Firma = ?, Beschreibung = ?, Leistung = ?, Wirkungsgrad = ?, 
+                        U_Mpp = ?, U_Leerlauf = ?, I_Mpp = ?, I_Kurzschluss = ?, 
+                        alpha_SC = ?, beta_OC = ?, gamma_PMP = ?, T_NOCT = ?, 
+                        Laenge = ?, Breite = ?, Modulkosten = ? 
+                    WHERE 
+                        Modulname = ?";
+
+                using (OleDbCommand updateCmd = new OleDbCommand(updateSql, connection, transaction))
                 {
-                    transaction.Commit();
-                    //this.DialogResult = DialogResult.OK;
-                    MessageBox.Show("Datensatz gespeichert");
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_szFirma ?? (object)DBNull.Value));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_szBeschreibung ?? (object)DBNull.Value));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_Leistung));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_Wirkungsgrad));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_U_Mpp));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_U_Leerlauf));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_I_Mpp));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_I_Kurzschluss));
+
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_alpha_SC == 0 ? DBNull.Value : (object)ctrl.model.m_alpha_SC));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_beta_OC == 0 ? DBNull.Value : (object)ctrl.model.m_beta_OC));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_Temp_Coeff_Pmax == 0 ? DBNull.Value : (object)ctrl.model.m_Temp_Coeff_Pmax));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_T_NOCT == 0 ? DBNull.Value : (object)ctrl.model.m_T_NOCT));
+
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_Laenge));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_Breite));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_Modulkosten));
+                    updateCmd.Parameters.Add(new OleDbParameter("?", ctrl.model.m_szName ?? (object)DBNull.Value));
+
+                    int affectedRows = updateCmd.ExecuteNonQuery();
+
+                    if (affectedRows > 0)
+                    {
+                        // Erfolg: Direkt auf der .NET OleDbTransaction commiten
+                        transaction.Commit();
+                        MessageBox.Show("Datensatz erfolgreich gespeichert.");
+                    }
+                    else
+                    {
+                        // Kein Datensatz betroffen: Zurückrollen
+                        transaction.Rollback();
+                        MessageBox.Show("Fehler beim Speichern des Datensatzes! Das Update betraf keine Zeilen.");
+                    }
                 }
-                else
-                {
-                    transaction.Rollback();
-                    //this.DialogResult = DialogResult.Cancel;
-                    MessageBox.Show("Fehler beim Speichern des Datensatzes!");
-                }
-                //Close();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Fehler in der Transaktion: " + ex.Message);
+
                 try
                 {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
+                    // Fehlerfall: Direkt auf der .NET OleDbTransaction zurückrollen
+                    transaction?.Rollback();
                 }
-                catch
+                catch (Exception rollbackEx)
                 {
-                    // Do nothing here; transaction is not active.
+                    Console.WriteLine("Fehler beim Rollback: " + rollbackEx.Message);
                 }
+
+                MessageBox.Show("Fehler beim Speichern des Datensatzes: " + ex.Message);
+            }
+            finally
+            {
+                // Ganz wichtig: Da deine Methode BeginTransaction() die Verbindung eigenständig öffnet, 
+                // müssen wir sie hier im finally-Block zwingend wieder schließen und zerstören.
+                if (connection != null && connection.State == ConnectionState.Open)
+                {
+                    connection.Close();
+                }
+                transaction?.Dispose();
+                connection?.Dispose();
             }
         }
 

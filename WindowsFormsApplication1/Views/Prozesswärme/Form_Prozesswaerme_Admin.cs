@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -123,26 +123,38 @@ namespace WindowsFormsApplication1
 
         private void btn_Prozess_loeschen_Click(object sender, EventArgs e)
         {
-            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Prozess_DB.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
-            if (dialogResult == DialogResult.No) return; 
+            if (string.IsNullOrEmpty(listBox_Prozess_DB.Text))
+            {
+                MessageBox.Show("Bitte wählen Sie einen Prozess aus, den Sie löschen möchten.");
+                return;
+            }
 
-            OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
+            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Prozess_DB.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.No) return;
+
             try
             {
-                DBCommand.CommandText = "DELETE Prozessname FROM Tab_Prozesswaerme WHERE Prozessname='" + listBox_Prozess_DB.Text + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                // Parameterbasierte DELETE-Abfrage (schützt vor SQL-Injections und Sonderzeichen)
+                string sql = "DELETE FROM Tab_Prozesswaerme WHERE Prozessname = ?";
+                OleDbParameter[] ps = { new OleDbParameter("@name", listBox_Prozess_DB.Text) };
+
+                // Direkt über das DataRepository ausführen
+                if (DataRepository.ExecuteSQL(sql, ps))
+                {
+                    // Erst wenn es in der DB gelöscht wurde, aus der ListBox entfernen
+                    listBox_Prozess_DB.Items.Remove(listBox_Prozess_DB.Text);
+                    MessageBox.Show("Prozess erfolgreich gelöscht.");
+                }
+                else
+                {
+                    MessageBox.Show("Der Prozess konnte nicht aus der Datenbank gelöscht werden.");
+                }
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Fehler beim Löschen des Prozesses: " + ex.Message);
+                MessageBox.Show("Fehler beim Löschvorgang!");
             }
-            listBox_Prozess_DB.Items.Remove(listBox_Prozess_DB.Text);    
         }
 
         private void btn_Prozess_DBneu_Click(object sender, EventArgs e)

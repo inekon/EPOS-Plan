@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Data.Odbc;
-using System.Globalization;
+using System.Data;
+using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
     public class KonfigurationCtrl : KonfigurationModel
     {
-        public OdbcCommand DBCommand;
         public KonfigurationModel model = new KonfigurationModel();
         public int rows;
 
@@ -20,58 +19,59 @@ namespace WindowsFormsApplication1
             WAERMEPUMPE = 4
         }
 
+
         public KonfigurationCtrl()
         {
-            DBCommand = Program.DBConnection.CreateCommand();
             rows = 0;
         }
 
         ~KonfigurationCtrl()
         {
             rows = 0;
-            DBCommand.Dispose();
         }
 
         public void ReadSingle(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-
             rows = 0;
-            DBReader.Read();
-            if (DBReader.HasRows)
+
+            // Nutzt dein DataRepository (intern OLEDB) statt ODBC
+            DataTable dt = DataRepository.GetDataTable(sql);
+
+            if (dt != null && dt.Rows.Count > 0)
             {
-                if (!DBReader.IsDBNull(0)) model.m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) model.m_ID_Projekt = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) model.m_BHKW_Grenzleistung = (double)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) model.m_Netzverluste = (double)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) model.m_szNetzverlusteEinheit = DBReader.GetString(4);   
-                if (!DBReader.IsDBNull(5)) model.m_WP_Heizstab = (bool)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) model.m_Kessel_Betriebsbereitschaft = (int)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) model.m_Tool_1 = DBReader.GetString(7);
-                if (!DBReader.IsDBNull(8)) model.m_Tool_2 = DBReader.GetString(8);
-                if (!DBReader.IsDBNull(9)) model.m_Tool_3 = DBReader.GetString(9);
-                if (!DBReader.IsDBNull(10)) model.m_Tool_4 = DBReader.GetString(10);
-                if (!DBReader.IsDBNull(11)) model.m_Tool_5 = DBReader.GetString(11);
-                if (!DBReader.IsDBNull(12)) model.m_Tool_6 = DBReader.GetString(12);
-                if (!DBReader.IsDBNull(13)) model.m_Ladefuellstand_Min = (int)DBReader.GetValue(13);
-                if (!DBReader.IsDBNull(14)) model.m_Ladefuellstand_Max = (int)DBReader.GetValue(14);
-                if (!DBReader.IsDBNull(15)) model.m_Ladeleistung_Max = (int)DBReader.GetValue(15);
-                if (!DBReader.IsDBNull(16)) model.m_Ladefuellstand_Min_Auswahl = DBReader.GetString(16);
-                if (!DBReader.IsDBNull(17)) model.m_Ladefuellstand_Max_Auswahl = DBReader.GetString(17);
-                if (!DBReader.IsDBNull(18)) model.m_Ladeleistung_Max_Auswahl = DBReader.GetString(18);
-                if (!DBReader.IsDBNull(19)) model.m_Ladeschwellwert = (double)DBReader.GetValue(19);
+                DataRow row = dt.Rows[0];
+
+                if (row[0] != DBNull.Value) model.m_ID = Convert.ToInt32(row[0]);
+                if (row[1] != DBNull.Value) model.m_ID_Projekt = Convert.ToInt32(row[1]);
+                if (row[2] != DBNull.Value) model.m_BHKW_Grenzleistung = Convert.ToDouble(row[2]);
+                if (row[3] != DBNull.Value) model.m_Netzverluste = Convert.ToDouble(row[3]);
+                if (row[4] != DBNull.Value) model.m_szNetzverlusteEinheit = row[4].ToString();
+                if (row[5] != DBNull.Value) model.m_WP_Heizstab = Convert.ToBoolean(row[5]);
+                if (row[6] != DBNull.Value) model.m_Kessel_Betriebsbereitschaft = Convert.ToInt32(row[6]);
+                if (row[7] != DBNull.Value) model.m_Tool_1 = row[7].ToString();
+                if (row[8] != DBNull.Value) model.m_Tool_2 = row[8].ToString();
+                if (row[9] != DBNull.Value) model.m_Tool_3 = row[9].ToString();
+                if (row[10] != DBNull.Value) model.m_Tool_4 = row[10].ToString();
+                if (row[11] != DBNull.Value) model.m_Tool_5 = row[11].ToString();
+                if (row[12] != DBNull.Value) model.m_Tool_6 = row[12].ToString();
+                if (row[13] != DBNull.Value) model.m_Ladefuellstand_Min = Convert.ToInt32(row[13]);
+                if (row[14] != DBNull.Value) model.m_Ladefuellstand_Max = Convert.ToInt32(row[14]);
+                if (row[15] != DBNull.Value) model.m_Ladeleistung_Max = Convert.ToInt32(row[15]);
+                if (row[16] != DBNull.Value) model.m_Ladefuellstand_Min_Auswahl = row[16].ToString();
+                if (row[17] != DBNull.Value) model.m_Ladefuellstand_Max_Auswahl = row[17].ToString();
+                if (row[18] != DBNull.Value) model.m_Ladeleistung_Max_Auswahl = row[18].ToString();
+                if (row[19] != DBNull.Value) model.m_Ladeschwellwert = Convert.ToDouble(row[19]);
+
                 rows = 1;
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
 
         public bool Insert(int ID_Projekt)
         {
             try
             {
-                string sql = FormattableString.Invariant($@"
+                // Umstellung auf sichere Parameter-Marker (?) statt ungesicherter String-Verkettung
+                string sql = @"
                     INSERT INTO TAB_Einstellungen 
                     (
                         ID_Projekt, BHKW_Grenzleistung, Netzverluste, NetzverlusteEinheit, 
@@ -81,63 +81,60 @@ namespace WindowsFormsApplication1
                         Ladefuellstand_Min_Auswahl, Ladefuellstand_Max_Auswahl, 
                         Ladeleistung_Max_Auswahl, Ladeschwellwert
                     ) 
-                    SELECT 
-                        {ID_Projekt}, 
-                        {model.m_BHKW_Grenzleistung}, 
-                        {model.m_Netzverluste}, 
-                        '{model.m_szNetzverlusteEinheit}', 
-                        {model.m_WP_Heizstab}, 
-                        {model.m_Kessel_Betriebsbereitschaft}, 
-                        '{model.m_Tool_1}', '{model.m_Tool_2}', '{model.m_Tool_3}', 
-                        '{model.m_Tool_4}', '{model.m_Tool_5}', '{model.m_Tool_6}',
-                        {model.m_Ladefuellstand_Min}, 
-                        {model.m_Ladefuellstand_Max}, 
-                        {model.m_Ladeleistung_Max}, 
-                        '{model.m_Ladefuellstand_Min_Auswahl}', 
-                        '{model.m_Ladefuellstand_Max_Auswahl}', 
-                        '{model.m_Ladeleistung_Max_Auswahl}', 
-                        {model.m_Ladeschwellwert}");
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                DBCommand.CommandText = sql;
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Die Parameter werden als OLEDB-Objekte an dein DataRepository gereicht
+                OleDbParameter[] parameters = new OleDbParameter[]
+                {
+                    new OleDbParameter("?", ID_Projekt),
+                    new OleDbParameter("?", model.m_BHKW_Grenzleistung),
+                    new OleDbParameter("?", model.m_Netzverluste),
+                    new OleDbParameter("?", model.m_szNetzverlusteEinheit ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_WP_Heizstab),
+                    new OleDbParameter("?", model.m_Kessel_Betriebsbereitschaft),
+                    new OleDbParameter("?", model.m_Tool_1 ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_Tool_2 ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_Tool_3 ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_Tool_4 ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_Tool_5 ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_Tool_6 ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_Ladefuellstand_Min),
+                    new OleDbParameter("?", model.m_Ladefuellstand_Max),
+                    new OleDbParameter("?", model.m_Ladeleistung_Max),
+                    new OleDbParameter("?", model.m_Ladefuellstand_Min_Auswahl ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_Ladefuellstand_Max_Auswahl ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_Ladeleistung_Max_Auswahl ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_Ladeschwellwert)
+                };
+
+                // Übergabe an das DataRepository
+                DataRepository.ExecuteNonQuery(sql, parameters);
+                return true;
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Fehler beim Einfügen der Konfiguration: " + ex.Message);
                 MessageBox.Show("Allgemeiner Fehler: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public bool Delete(int ID_Projekt)
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Tab_Einstellungen where ID_Projekt=" + ID_Projekt;
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Sauberes ANSI-SQL für OLEDB ohne das ungültige "DELETE *"
+                string sql = "DELETE FROM Tab_Einstellungen WHERE ID_Projekt = ?";
+                OleDbParameter parameter = new OleDbParameter("?", ID_Projekt);
+
+                DataRepository.ExecuteNonQuery(sql, parameter);
+                return true;
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Fehler beim Löschen der Konfiguration: " + ex.Message);
                 return false;
             }
-            return true;
         }
-
     }
 }

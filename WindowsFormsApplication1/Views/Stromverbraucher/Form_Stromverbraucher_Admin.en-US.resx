@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="btn_Prozess_DBneu.Text" xml:space="preserve">
-    <value>New consumer in DB</value>
+    <value>New consumer</value>
   </data>
   <data name="btn_Prozess_loeschen.Text" xml:space="preserve">
-    <value>Delete consumer in DB</value>
+    <value>Delete consumer</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="Label24.Size" type="System.Drawing.Size, System.Drawing">
@@ -131,10 +131,10 @@
     <value>Electricity consumer database</value>
   </data>
   <data name="btn_ProzTypeDBedit.Text" xml:space="preserve">
-    <value>Change type in DB</value>
+    <value>Change type</value>
   </data>
   <data name="btn_Prozess_DBedit.Text" xml:space="preserve">
-    <value>Change consumer in DB</value>
+    <value>Change consumer</value>
   </data>
   <data name="Label12.Text" xml:space="preserve">
     <value>annual electricity requirement:</value>
@@ -165,14 +165,5 @@
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Electricity consumer management</value>
-  </data>
-  <data name="btn_OK.Text" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="Label11.Text" xml:space="preserve">
-    <value>MWh</value>
-  </data>
-  <data name="Label10.Text" xml:space="preserve">
-    <value>Name:</value>
   </data>
 </root>

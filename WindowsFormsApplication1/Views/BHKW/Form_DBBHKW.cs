@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -165,7 +166,7 @@ namespace WindowsFormsApplication1
         {
             Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
             RecordSet rs = new RecordSet();
-            OdbcTransaction transaction = null;
+            OleDbTransaction transaction = null; // Auf OleDbTransaction geändert
 
             System.Drawing.Point p1 = btn_Speichern_Unter.Location;
             p1 = this.PointToScreen(p1);
@@ -175,78 +176,157 @@ namespace WindowsFormsApplication1
 
             if (frmLabel.ShowDialog() == DialogResult.OK)
             {
+                if (string.IsNullOrEmpty(frmLabel.m_szName))
+                {
+                    MessageBox.Show("Bitte einen gültigen Namen eingeben!");
+                    return;
+                }
+
                 try
                 {
-                    transaction = Program.DBConnection.BeginTransaction();
-                    rs.DBCommand.Transaction = transaction;
-                    rs.Open("select Name from Tab_BHKW where Bezeichner='" + frmLabel.m_szName + "'");
-                    if (!rs.EOF()) { MessageBox.Show("Name existiert bereits!"); rs.Close(); return; }
-                    rs.Close();
-
-                    comboBox_Name.Text = frmLabel.m_szName;
-                    comboBox_Name.Items.Add(frmLabel.m_szName);
-  
-                    rs.Insert("INSERT INTO Tab_BHKW (Bezeichner) SELECT '" + frmLabel.m_szName + "' AS Ausdr1");
-                    rs.Close();
-
-                    BHKWCtrl ctrl = new BHKWCtrl();
-                    ctrl.model = InitDatensatzUpdate();
-                    if (ctrl.Update())
+                    // 1. Eine saubere OleDb-Verbindung über das DataRepository öffnen
+                    using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                     {
-                        this.DialogResult = DialogResult.OK;
-                        MessageBox.Show("Datensatz gespeichert");
+                        conn.Open();
+
+                        // 2. Transaktion auf der OleDbConnection starten
+                        transaction = conn.BeginTransaction();
+
+                        // 3. Dem RecordSet mitteilen, welche Connection und welche Transaktion es nutzen soll
+                        rs.DBCommand.Connection = conn;
+                        rs.DBCommand.Transaction = transaction;
+
+                        // Existenzprüfung (arbeitet jetzt dank Zuweisung oben voll in der Transaktion)
+                        rs.Open("select Bezeichner from Tab_BHKW where Bezeichner='" + frmLabel.m_szName + "'");
+                        if (!rs.EOF())
+                        {
+                            MessageBox.Show("Name existiert bereits!");
+                            rs.Close();
+                            transaction.Rollback(); // Sauber abbrechen, wenn Name existiert
+                            return;
+                        }
+                        rs.Close();
+
+                        comboBox_Name.Text = frmLabel.m_szName;
+                        comboBox_Name.Items.Add(frmLabel.m_szName);
+
+                        // INSERT ausführen
+                        rs.Insert("INSERT INTO Tab_BHKW (Bezeichner) SELECT '" + frmLabel.m_szName + "' AS Ausdr1");
+                        rs.Close();
+
+                        // 4. Controller verarbeiten 
+                        BHKWCtrl ctrl = new BHKWCtrl();
+                        ctrl.model = InitDatensatzUpdate();
+
+                        // Dem Controller die aktive Verbindung und Transaktion übergeben
+                        ctrl.DBCommand.Connection = conn;
+                        ctrl.DBCommand.Transaction = transaction;
+
+                        if (ctrl.Update())
+                        {
+                            // WICHTIG: Das fehlende Commit aus dem Original-Code hier ergänzt!
+                            transaction.Commit();
+                            this.DialogResult = DialogResult.OK;
+                            MessageBox.Show("Datensatz gespeichert");
+                        }
+                        else
+                        {
+                            transaction.Rollback();
+                            this.DialogResult = DialogResult.Cancel;
+                            MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+                        }
+                        Close();
                     }
-                    else
-                    {
-                        this.DialogResult = DialogResult.Cancel;
-                        MessageBox.Show("Fehler beim Speichern des Datensatzes!");
-                    }
-                    Close();
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Console.WriteLine("Fehler bei BHKW Speichern Unter: " + ex.Message);
                     MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+
+                    // Rollback im Fehlerfall absichern
+                    if (transaction != null && transaction.Connection != null)
+                    {
+                        try { transaction.Rollback(); } catch { }
+                    }
                 }
             }
         }
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
-            OdbcTransaction transaction = null;
-            RecordSet rs = new RecordSet();
+            OleDbTransaction transaction = null;
+
+            if (string.IsNullOrEmpty(comboBox_Name.Text))
+            {
+                MessageBox.Show("Bitte einen gültigen Namen eingeben!");
+                return;
+            }
 
             try
             {
-                transaction = Program.DBConnection.BeginTransaction();
-                rs.DBCommand.Transaction = transaction;
-                rs.Open("select Bezeichner from Tab_BHKW where Bezeichner='" + comboBox_Name.Text + "'");
-                if (!rs.EOF()) { MessageBox.Show("Name existiert bereits!"); transaction.Rollback(); rs.Close(); return; }
-                rs.Close();
-
-                rs.Insert("INSERT INTO Tab_BHKW (Bezeichner) SELECT '" + comboBox_Name.Text + "' AS Ausdr1");
-                rs.Close();
-
-                BHKWCtrl ctrl = new BHKWCtrl();
-                ctrl.model = InitDatensatzUpdate();
-                if (ctrl.Update())
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    this.DialogResult = DialogResult.OK;
-                    MessageBox.Show("Datensatz gespeichert");
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+
+                    // 1. Existenzprüfung via COUNT (Ersetzt rs.Open + rs.EOF)
+                    string checkSql = "SELECT COUNT(*) FROM Tab_BHKW WHERE Bezeichner = ?";
+                    using (OleDbCommand checkCmd = conn.CreateCommand())
+                    {
+                        checkCmd.Transaction = transaction;
+                        checkCmd.CommandText = checkSql;
+                        checkCmd.Parameters.Add(new OleDbParameter("?", comboBox_Name.Text));
+
+                        int count = Convert.ToInt32(checkCmd.ExecuteScalar());
+                        if (count > 0)
+                        {
+                            MessageBox.Show("Name existiert bereits!");
+                            transaction.Rollback();
+                            return;
+                        }
+                    }
+
+                    // 2. Parametrisierter INSERT (Ersetzt rs.Insert)
+                    string insertSql = "INSERT INTO Tab_BHKW (Bezeichner) VALUES (?)";
+                    using (OleDbCommand insertCmd = conn.CreateCommand())
+                    {
+                        insertCmd.Transaction = transaction;
+                        insertCmd.CommandText = insertSql;
+                        insertCmd.Parameters.Add(new OleDbParameter("?", comboBox_Name.Text));
+                        insertCmd.ExecuteNonQuery();
+                    }
+
+                    // 3. Controller verarbeiten (Schablone)
+                    BHKWCtrl ctrl = new BHKWCtrl();
+                    ctrl.model = InitDatensatzUpdate();
+                    ctrl.DBCommand.Connection = conn;
+                    ctrl.DBCommand.Transaction = transaction;
+
+                    if (ctrl.Update())
+                    {
+                        transaction.Commit();
+                        this.DialogResult = DialogResult.OK;
+                        MessageBox.Show("Datensatz gespeichert");
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                        this.DialogResult = DialogResult.Cancel;
+                        MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+                    }
+                    Close();
                 }
-                else
-                {
-                    this.DialogResult = DialogResult.Cancel;
-                    MessageBox.Show("Fehler beim Speichern des Datensatzes!");
-                }
-                Close();
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine("Fehler bei BHKW Speichern: " + ex.Message);
                 MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+                if (transaction != null && transaction.Connection != null)
+                {
+                    try { transaction.Rollback(); } catch { }
+                }
             }
-
         }
-
         private void textBox_Investitionskosten_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;

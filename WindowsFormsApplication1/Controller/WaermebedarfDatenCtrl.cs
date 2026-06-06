@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Data.Odbc;
-using System.Globalization;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     public class WaermebedarfDatenModel
     {
-        public int m_ID_GanglinieDaten;
-        public double m_Wert;
+        public int m_ID_GanglinieDaten { get; set; }
+        public double m_Wert { get; set; }
 
         public WaermebedarfDatenModel()
         {
@@ -22,75 +18,66 @@ namespace WindowsFormsApplication1
 
     class WaermebedarfDatenCtrl : WaermebedarfDatenModel
     {
-        OdbcCommand DBCommand;
-
+        // Verwendung der bestehenden Liste aus der Altanwendung
         public List<WaermebedarfDatenModel> list_GanglinieDaten = new List<WaermebedarfDatenModel>();
 
- 
+        // Kompatibilitätseigenschaften für das einheitliche Schema (falls benötigt)
+        public int rows => list_GanglinieDaten.Count;
+        public List<WaermebedarfDatenModel> items => list_GanglinieDaten;
 
         public WaermebedarfDatenCtrl()
         {
-            DBCommand = Program.DBConnection.CreateCommand();
-        }
-
-        ~WaermebedarfDatenCtrl()
-        {
-            DBCommand.Dispose();
+            // Konstruktor bereinigt - Command wird nun zentral vom DataRepository verwaltet
         }
 
         public bool Delete(string szName)
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Tab_WaermebedarfDaten where ID_GanglinieDaten= '" + m_ID_GanglinieDaten + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Standardkonforme DELETE-Syntax ohne "*" und Typkorrektur über Parameter
+                string sql = "DELETE FROM Tab_WaermebedarfDaten WHERE ID_GanglinieDaten = ?";
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@idGang", m_ID_GanglinieDaten)
+                };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Delete: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public bool Insert()
         {
-            try {
-
-                for (int i = 0; i < list_GanglinieDaten.Count(); i++)
-                {
-                    WaermebedarfDatenModel item = list_GanglinieDaten.ElementAt(i);
-     
-                    string sql = FormattableString.Invariant($@"
-                        INSERT INTO Tab_WaermebedarfDaten (ID_GanglinieDaten, Wert) 
-                        SELECT {item.m_ID_GanglinieDaten}, {item.m_Wert}");
-
-                    DBCommand.CommandText = sql;
-                    DBCommand.ExecuteNonQuery();
-                }
-            }
-            catch (OdbcException  sqlEx)
+            try
             {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Vorbereitung des parametrisierten SQL-Statements mit standardkonformer VALUES-Klausel
+                string sql = "INSERT INTO Tab_WaermebedarfDaten (ID_GanglinieDaten, Wert) VALUES (?, ?)";
+
+                // Schleife über die dynamische Liste unter Verwendung von foreach statt dem langsameren .ElementAt(i)
+                foreach (var item in list_GanglinieDaten)
+                {
+                    OleDbParameter[] ps = {
+                        new OleDbParameter("@idGang", item.m_ID_GanglinieDaten),
+                        new OleDbParameter("@wert", item.m_Wert) // Regelt Dezimaltrennzeichen (Punkt/Komma) automatisch fehlerfrei
+                    };
+
+                    bool success = DataRepository.ExecuteSQL(sql, ps);
+                    if (!success)
+                    {
+                        // Falls ein einzelner Eintrag fehlschlägt, abbrechen oder loggen
+                        return false;
+                    }
+                }
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Insert: " + ex.Message);
                 return false;
             }
             return true;
         }
-
-   
-     }
+    }
 }

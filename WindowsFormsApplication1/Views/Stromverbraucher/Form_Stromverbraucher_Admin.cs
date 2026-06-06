@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Data.OleDb;
 using System.Windows.Forms;
-using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
@@ -137,26 +132,39 @@ namespace WindowsFormsApplication1
 
         private void btn_Prozess_loeschen_Click(object sender, EventArgs e)
         {
-            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Verbraucher_DB.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
-            if (dialogResult == DialogResult.No) return; 
+            // Sicherheitsabfrage, ob überhaupt etwas selektiert ist
+            if (string.IsNullOrEmpty(listBox_Verbraucher_DB.Text))
+            {
+                MessageBox.Show("Bitte wählen Sie zuerst einen Verbraucher aus!");
+                return;
+            }
 
-            OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
+            DialogResult dialogResult = MessageBox.Show(
+                $"Soll {listBox_Verbraucher_DB.Text} wirklich gelöscht werden ?",
+                "Löschen",
+                MessageBoxButtons.YesNo
+            );
+
+            if (dialogResult == DialogResult.No) return;
+
             try
             {
-                DBCommand.CommandText = "DELETE Bezeichner FROM Tab_Stromverbraucher WHERE Bezeichner='" + listBox_Verbraucher_DB.Text + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                // 1. SQL-Syntax für Access/OLEDB korrigieren und Parameter (?) nutzen
+                string sql = "DELETE FROM Tab_Stromverbraucher WHERE Bezeichner = ?";
+                OleDbParameter parameter = new OleDbParameter("?", listBox_Verbraucher_DB.Text);
+
+                // 2. Befehl über das zentrale Repository ausführen
+                DataRepository.ExecuteNonQuery(sql, parameter);
+
+                // 3. Erst wenn in der DB erfolgreich gelöscht wurde, aus der ListBox entfernen
+                listBox_Verbraucher_DB.Items.Remove(listBox_Verbraucher_DB.Text);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                // Fängt sowohl OleDbExceptions als auch allgemeine Fehler ab
+                Console.WriteLine("Fehler beim Löschen des Verbrauchers: " + ex.Message);
+                MessageBox.Show("Der Datensatz konnte nicht gelöscht werden: " + ex.Message);
             }
-            listBox_Verbraucher_DB.Items.Remove(listBox_Verbraucher_DB.Text);    
         }
 
         private void btn_Prozess_DBneu_Click(object sender, EventArgs e)

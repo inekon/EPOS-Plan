@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Data.Odbc;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Data.OleDb;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -128,10 +122,9 @@ namespace WindowsFormsApplication1
                 sql = sql_Kuehlung;
             }
 
-            OdbcDataAdapter adapter = new OdbcDataAdapter(sql, Program.DBConnection);
-            DataSet dataSet = new DataSet();
-            adapter.Fill(dataSet, "Tab_Kenndaten");
-            
+            // Das Repository liefert direkt die fertige DataTable
+            DataTable dataTable = DataRepository.GetDataTable(sql);
+
             chart1.ChartAreas[0].AxisX.Title = "Temperatur";
             chart1.ChartAreas[0].AxisY.Title = "COP";
             chart1.Series.Clear();
@@ -165,7 +158,7 @@ namespace WindowsFormsApplication1
                 chart1.Series[i].SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.Yes;
                 chart1.Series[i].SmartLabelStyle.IsMarkerOverlappingAllowed = false;
                 chart1.Series[i].SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom;
-                chart1.Series[i].Points.DataBind(dataSet.Tables["Tab_Kenndaten"].Select("Vorlauf=" + ctrl.items[i].m_nVorlauf.ToString()), "Temperatur", "COP", "");
+                chart1.Series[i].Points.DataBind(dataTable.Select("Vorlauf=" + ctrl.items[i].m_nVorlauf.ToString()), "Temperatur", "COP", "");
                 chart1.Series[i].MarkerSize = 5;
                 chart1.Series[i].MarkerStyle = MarkerStyle.Circle;
                 chart1.Series[i].MarkerColor = chart2.Series[i].Color;
@@ -178,9 +171,9 @@ namespace WindowsFormsApplication1
                 chart2.Series[i].MarkerColor = chart2.Series[i].Color;
 
                 if (mode== "WÄRME")  
-                    chart2.Series[i].Points.DataBind(dataSet.Tables["Tab_Kenndaten"].Select("Vorlauf=" + ctrl.items[i].m_nVorlauf.ToString()), "Temperatur", "Ptherm", "");
+                    chart2.Series[i].Points.DataBind(dataTable.Select("Vorlauf=" + ctrl.items[i].m_nVorlauf.ToString()), "Temperatur", "Ptherm", "");
                 else
-                    chart2.Series[i].Points.DataBind(dataSet.Tables["Tab_Kenndaten"].Select("Vorlauf=" + ctrl.items[i].m_nVorlauf.ToString()), "Temperatur", "Pkuehl", "");
+                    chart2.Series[i].Points.DataBind(dataTable.Select("Vorlauf=" + ctrl.items[i].m_nVorlauf.ToString()), "Temperatur", "Pkuehl", "");
                 
             }
         }
@@ -305,22 +298,42 @@ namespace WindowsFormsApplication1
 
         private void btn_Kenndaten_Click(object sender, EventArgs e)
         {
+            // 1. SQL-Abfrage mit Parameter definieren (Schutz vor SQL-Injection)
+            string sql = "SELECT * FROM Tab_Kenndaten WHERE ID_WP = ?";
+
             DataSet ds = new DataSet();
-            OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Kenndaten where ID_WP=" + item.ID, Program.DBConnection);
-            adapter.Fill(ds);
-            
-            
-            DataTable table = ds.Tables[0];
-            Kenndaten frm = new Kenndaten(ref ds);
 
-            frm.m_ID_WP = item.ID;
-            DialogResult ret = frm.ShowDialog();
-            if (ret == DialogResult.OK)
+            // 2. Wir nutzen OleDb und holen uns den zentralen Connection-String aus dem Repository
+            using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
             {
-                OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
-                adapter.Update(ds);
+                using (OleDbDataAdapter adapter = new OleDbDataAdapter(sql, conn))
+                {
+                    // Parameter dem Adapter übergeben
+                    adapter.SelectCommand.Parameters.Add(new OleDbParameter("?", item.ID));
 
-                InitChart("WÄRME");
+                    // DataSet befüllen
+                    adapter.Fill(ds);
+
+                    // Das Formular aufrufen (es bekommt das DataSet per ref wie im Original)
+                    Kenndaten frm = new Kenndaten(ref ds);
+                    frm.m_ID_WP = item.ID;
+
+                    DialogResult ret = frm.ShowDialog();
+
+                    if (ret == DialogResult.OK)
+                    {
+                        // 3. Änderungen automatisch zurückschreiben via OleDbCommandBuilder
+                        using (OleDbCommandBuilder commandBuilder = new OleDbCommandBuilder(adapter))
+                        {
+                            // Der CommandBuilder generiert im Hintergrund automatisch 
+                            // die passenden INSERT-, UPDATE- und DELETE-Befehle für OLEDB.
+                            adapter.Update(ds);
+                        }
+
+                        // Chart aktualisieren
+                        InitChart("WÄRME");
+                    }
+                }
             }
         }
 

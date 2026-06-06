@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Media.Animation;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace WindowsFormsApplication1
@@ -1124,7 +1123,6 @@ namespace WindowsFormsApplication1
                 label_ProjektStatus.Text = "⚠";
                 comboBox_Klima.Text = "";
             }
-            
         }
 
         private void pBoxSchnellSim_Click(object sender, EventArgs e)

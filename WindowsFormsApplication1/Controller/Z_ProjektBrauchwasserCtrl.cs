@@ -1,81 +1,82 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Odbc;
-using System.Globalization;
-using System.Linq;
-using System.Text;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class Z_ProjektBrauchwasserCtrl : Z_ProjektBrauchwasserModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
-        public Z_ProjektBrauchwasserModel model;
+        private List<Z_ProjektBrauchwasserModel> _internalList = new List<Z_ProjektBrauchwasserModel>();
+        public int rows => _internalList.Count;
+        public new List<Z_ProjektBrauchwasserModel> items => _internalList;
 
         public Z_ProjektBrauchwasserCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-            model = new Z_ProjektBrauchwasserModel();
-        }
-        ~Z_ProjektBrauchwasserCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public bool UpdateSumme(double dSumme, string szBezeichner, int IDProjekt)
         {
             try
             {
-                NumberFormatInfo formatInfo = new NumberFormatInfo();
-                formatInfo.NumberDecimalSeparator = "."; // Komma als Dezimaltrennzeichen
-                DBCommand.CommandText = "UPDATE Z_Projekt_Brauchwasser SET Summe=" + dSumme.ToString("F2", formatInfo) +
-                    " WHERE Bezeichner='" + szBezeichner + "' and ID_Projekt=" + IDProjekt;
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Parametrisierte Query: Typkonvertierungen (z. B. Dezimaltrennzeichen bei Double) werden automatisch korrekt gehandhabt
+                string sql = @"UPDATE Z_Projekt_Brauchwasser 
+                               SET Summe = ? 
+                               WHERE Bezeichner = ? 
+                                 AND ID_Projekt = ?";
+
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@summe", dSumme),
+                    new OleDbParameter("@bez", szBezeichner ?? (object)DBNull.Value),
+                    new OleDbParameter("@idProj", IDProjekt)
+                };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei UpdateSumme: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public void ReadAll(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            // Daten abrufen über das zentrale DataRepository
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            items = new Z_ProjektBrauchwasserModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            // Interne Liste vor dem erneuten Laden leeren
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 Z_ProjektBrauchwasserModel item = new Z_ProjektBrauchwasserModel();
 
-                if (!DBReader.IsDBNull(0)) item.ID_Z = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.ID_Projekt = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.ID_Brauchwasser = (int)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) item.szBezeichner = (string)DBReader.GetString(3);
-                if (!DBReader.IsDBNull(4)) item.Summe = (double)DBReader.GetValue(4);
+                // Spaltenbasiertes, sicheres Auslesen über Spaltennamen statt numerischer Indizes
+                if (dt.Columns.Contains("ID_Z") && row["ID_Z"] != DBNull.Value)
+                    item.ID_Z = Convert.ToInt32(row["ID_Z"]);
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
+                    item.ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
+
+                if (dt.Columns.Contains("ID_Brauchwasser") && row["ID_Brauchwasser"] != DBNull.Value)
+                    item.ID_Brauchwasser = Convert.ToInt32(row["ID_Brauchwasser"]);
+
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    item.szBezeichner = row["Bezeichner"].ToString();
+
+                // Fallback, falls die Spalte in Access exakt wie die Variable heißt
+                else if (dt.Columns.Contains("szBezeichner") && row["szBezeichner"] != DBNull.Value)
+                    item.szBezeichner = row["szBezeichner"].ToString();
+
+                if (dt.Columns.Contains("Summe") && row["Summe"] != DBNull.Value)
+                    item.Summe = Convert.ToDouble(row["Summe"]);
+
+                // Das Element der dynamischen Liste hinzufügen
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
-
-
-
     }
 }

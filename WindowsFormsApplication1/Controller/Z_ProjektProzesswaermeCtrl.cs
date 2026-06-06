@@ -1,81 +1,82 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Odbc;
-using System.Globalization;
-using System.Linq;
-using System.Text;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class Z_ProjektProzesswaermeCtrl : Z_ProjektProzesswaermeModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
-        public Z_ProjektProzesswaermeModel model;
+        private List<Z_ProjektProzesswaermeModel> _internalList = new List<Z_ProjektProzesswaermeModel>();
+        public int rows => _internalList.Count;
+        public new List<Z_ProjektProzesswaermeModel> items => _internalList;
 
         public Z_ProjektProzesswaermeCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-            model = new Z_ProjektProzesswaermeModel();
-        }
-        ~Z_ProjektProzesswaermeCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public bool UpdateSumme(double dSumme, string szBezeichner, int IDProjekt)
         {
             try
             {
-                NumberFormatInfo formatInfo = new NumberFormatInfo();
-                formatInfo.NumberDecimalSeparator = "."; // Komma als Dezimaltrennzeichen
-                DBCommand.CommandText = "UPDATE Z_Projekt_Prozesswaerme SET Summe=" + dSumme.ToString("F2", formatInfo) +
-                    " WHERE Bezeichner='" + szBezeichner + "' and ID_Projekt=" + IDProjekt;
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Parametrisierte Query: Verhindert SQL-Injections und regelt Nachkommastellen (Double) automatisch fehlerfrei
+                string sql = @"UPDATE Z_Projekt_Prozesswaerme 
+                               SET Summe = ? 
+                               WHERE Bezeichner = ? 
+                                 AND ID_Projekt = ?";
+
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@summe", dSumme),
+                    new OleDbParameter("@bez", szBezeichner ?? (object)DBNull.Value),
+                    new OleDbParameter("@idProj", IDProjekt)
+                };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei UpdateSumme: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public void ReadAll(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            // Daten abrufen über das zentrale DataRepository
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            items = new Z_ProjektProzesswaermeModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            // Interne Liste vor dem erneuten Laden leeren
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
 
-                if (!DBReader.IsDBNull(0)) item.ID_Z = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.ID_Projekt = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.ID_Prozesswaerme = (int)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) item.szProzessname = (string)DBReader.GetString(3);
-                if (!DBReader.IsDBNull(4)) item.Summe = (double)DBReader.GetValue(4);
+                // Spaltenbasiertes, sicheres Auslesen über Spaltennamen statt numerischer Indizes
+                if (dt.Columns.Contains("ID_Z") && row["ID_Z"] != DBNull.Value)
+                    item.ID_Z = Convert.ToInt32(row["ID_Z"]);
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
+                    item.ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
+
+                if (dt.Columns.Contains("ID_Prozesswaerme") && row["ID_Prozesswaerme"] != DBNull.Value)
+                    item.ID_Prozesswaerme = Convert.ToInt32(row["ID_Prozesswaerme"]);
+
+                if (dt.Columns.Contains("szProzessname") && row["szProzessname"] != DBNull.Value)
+                    item.szProzessname = row["szProzessname"].ToString();
+
+                // Falls die Spalte in der Access-Tabelle stattdessen "Prozessname" heißt, hier anpassen:
+                else if (dt.Columns.Contains("Prozessname") && row["Prozessname"] != DBNull.Value)
+                    item.szProzessname = row["Prozessname"].ToString();
+
+                if (dt.Columns.Contains("Summe") && row["Summe"] != DBNull.Value)
+                    item.Summe = Convert.ToDouble(row["Summe"]);
+
+                // Das fertige Element der dynamischen Liste hinzufügen
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
-
-
-
     }
 }
