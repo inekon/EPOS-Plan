@@ -69,6 +69,7 @@ namespace WindowsFormsApplication1
             // 
             resources.ApplyResources(this.btn_Uebernehmen, "btn_Uebernehmen");
             this.btn_Uebernehmen.ForeColor = System.Drawing.Color.Black;
+            this.btn_Uebernehmen.Image = global::WindowsFormsApplication1.Properties.Resources.save_icon_36513;
             this.btn_Uebernehmen.Name = "btn_Uebernehmen";
             this.btn_Uebernehmen.UseVisualStyleBackColor = true;
             this.btn_Uebernehmen.Click += new System.EventHandler(this.btn_Uebernehmen_Click);
@@ -104,8 +105,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Firma
             // 
-            resources.ApplyResources(this.textBox_Firma, "textBox_Firma");
             this.textBox_Firma.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Firma, "textBox_Firma");
             this.textBox_Firma.ForeColor = System.Drawing.Color.Black;
             this.textBox_Firma.Name = "textBox_Firma";
             // 
@@ -117,8 +118,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Name
             // 
-            resources.ApplyResources(this.textBox_Name, "textBox_Name");
             this.textBox_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Name, "textBox_Name");
             this.textBox_Name.ForeColor = System.Drawing.Color.Black;
             this.textBox_Name.Name = "textBox_Name";
             // 
@@ -130,15 +131,15 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Aufstellung
             // 
-            resources.ApplyResources(this.textBox_Aufstellung, "textBox_Aufstellung");
             this.textBox_Aufstellung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Aufstellung, "textBox_Aufstellung");
             this.textBox_Aufstellung.ForeColor = System.Drawing.Color.Black;
             this.textBox_Aufstellung.Name = "textBox_Aufstellung";
             // 
             // textBox_ThLeistung
             // 
-            resources.ApplyResources(this.textBox_ThLeistung, "textBox_ThLeistung");
             this.textBox_ThLeistung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_ThLeistung, "textBox_ThLeistung");
             this.textBox_ThLeistung.ForeColor = System.Drawing.Color.Black;
             this.textBox_ThLeistung.Name = "textBox_ThLeistung";
             // 
@@ -156,8 +157,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Zusatzheizung
             // 
-            resources.ApplyResources(this.textBox_Zusatzheizung, "textBox_Zusatzheizung");
             this.textBox_Zusatzheizung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Zusatzheizung, "textBox_Zusatzheizung");
             this.textBox_Zusatzheizung.ForeColor = System.Drawing.Color.Black;
             this.textBox_Zusatzheizung.Name = "textBox_Zusatzheizung";
             // 
@@ -183,8 +184,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox__Wirkungsgrad
             // 
-            resources.ApplyResources(this.textBox__Wirkungsgrad, "textBox__Wirkungsgrad");
             this.textBox__Wirkungsgrad.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox__Wirkungsgrad, "textBox__Wirkungsgrad");
             this.textBox__Wirkungsgrad.ForeColor = System.Drawing.Color.Black;
             this.textBox__Wirkungsgrad.Name = "textBox__Wirkungsgrad";
             // 
@@ -196,8 +197,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Typ
             // 
-            resources.ApplyResources(this.textBox_Typ, "textBox_Typ");
             this.textBox_Typ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Typ, "textBox_Typ");
             this.textBox_Typ.ForeColor = System.Drawing.Color.Black;
             this.textBox_Typ.Name = "textBox_Typ";
             // 
@@ -209,8 +210,8 @@ namespace WindowsFormsApplication1
             // 
             // textBox_Stufen
             // 
-            resources.ApplyResources(this.textBox_Stufen, "textBox_Stufen");
             this.textBox_Stufen.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Stufen, "textBox_Stufen");
             this.textBox_Stufen.ForeColor = System.Drawing.Color.Black;
             this.textBox_Stufen.Name = "textBox_Stufen";
             // 
@@ -227,15 +228,15 @@ namespace WindowsFormsApplication1
             // 
             // textBox_MaxVorlauf
             // 
-            resources.ApplyResources(this.textBox_MaxVorlauf, "textBox_MaxVorlauf");
             this.textBox_MaxVorlauf.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_MaxVorlauf, "textBox_MaxVorlauf");
             this.textBox_MaxVorlauf.ForeColor = System.Drawing.Color.Black;
             this.textBox_MaxVorlauf.Name = "textBox_MaxVorlauf";
             // 
             // textBox_Kuehlleistung
             // 
-            resources.ApplyResources(this.textBox_Kuehlleistung, "textBox_Kuehlleistung");
             this.textBox_Kuehlleistung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(this.textBox_Kuehlleistung, "textBox_Kuehlleistung");
             this.textBox_Kuehlleistung.ForeColor = System.Drawing.Color.Black;
             this.textBox_Kuehlleistung.Name = "textBox_Kuehlleistung";
             // 

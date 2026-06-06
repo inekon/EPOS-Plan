@@ -13,7 +13,6 @@ namespace WindowsFormsApplication1
     partial class Form_Brauchwasser_Admin : Form
     {
         private BrauchwasserModel model = new BrauchwasserModel();
-        private BrauchwasserCtrl ctrl = new BrauchwasserCtrl();
         public List<Z_ProjektProzesswaermeModel> list_pwmodel = new List<Z_ProjektProzesswaermeModel>();
         public int m_ID_Projekt = 0;
         private SimulationWaermebedarf simulation = new SimulationWaermebedarf();
@@ -149,9 +148,7 @@ namespace WindowsFormsApplication1
             p1 = this.PointToScreen(p1);
             frm_item.Location = p1;
 
-            frm_item.ShowDialog();
-            
-            if (frm_item.result == DialogResult.OK)
+            if (frm_item.ShowDialog() == DialogResult.OK)
             {
                 frm.m_szBezeichner = frm_item.m_szName;
                 frm.mode = "Neu";

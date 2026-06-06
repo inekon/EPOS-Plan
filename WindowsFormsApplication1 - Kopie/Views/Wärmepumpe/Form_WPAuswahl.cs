@@ -21,6 +21,7 @@ namespace WindowsFormsApplication1
  
             listView_WP.View = View.Details;
             listView_WP.Columns.Add("Name", -2, HorizontalAlignment.Left);
+            listView_WP.Columns.Add("Leistung [kW]", -2, HorizontalAlignment.Left);
             listView_WP.Columns.Add("Vorlauf [°C]", -2, HorizontalAlignment.Left);
             listView_WP.Columns.Add("Rücklauf [°C]", -2, HorizontalAlignment.Left);
             listView_WP.Columns.Add("Betriebsart", -2, HorizontalAlignment.Left);
@@ -38,7 +39,6 @@ namespace WindowsFormsApplication1
                 wizardparent = (WizardParent)getWizardPage();
                 list_werzmodel = wizardparent.list_werzmodel;
             }
-
 
             listView_WP.Items.Clear();
    
@@ -77,6 +77,7 @@ namespace WindowsFormsApplication1
                     item.Heizung = wpctrl.items[0].Heizung;
 
                     lvitem.Text = item.Bezeichner;
+                    lvitem.SubItems.Add(item.Nennleistung.ToString());
                     lvitem.SubItems.Add(item.Vorlauf.ToString());
                     lvitem.SubItems.Add(item.Ruecklauf.ToString());
                     lvitem.SubItems.Add(item.Betriebsart);

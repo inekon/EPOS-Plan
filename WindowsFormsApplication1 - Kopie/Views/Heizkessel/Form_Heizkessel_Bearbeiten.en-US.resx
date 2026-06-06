@@ -166,71 +166,17 @@
   <data name="textBox_Beschreibung.Location" type="System.Drawing.Point, System.Drawing">
     <value>110, 80</value>
   </data>
-  <data name="radioButton_Heizoel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>110, 67</value>
+  <data name="groupBox2.Text" xml:space="preserve">
+    <value>Technical data</value>
   </data>
-  <data name="radioButton_Heizoel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>87, 21</value>
+  <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>322, 30</value>
   </data>
-  <data name="radioButton_Heizoel.Text" xml:space="preserve">
-    <value>heating oil</value>
+  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>94, 17</value>
   </data>
-  <data name="radioButton_Sonstige.Location" type="System.Drawing.Point, System.Drawing">
-    <value>110, 44</value>
-  </data>
-  <data name="radioButton_Sonstige.Size" type="System.Drawing.Size, System.Drawing">
-    <value>59, 21</value>
-  </data>
-  <data name="radioButton_Sonstige.Text" xml:space="preserve">
-    <value>Other</value>
-  </data>
-  <data name="radioButton_Strom.Location" type="System.Drawing.Point, System.Drawing">
-    <value>110, 21</value>
-  </data>
-  <data name="radioButton_Strom.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 21</value>
-  </data>
-  <data name="radioButton_Strom.Text" xml:space="preserve">
-    <value>Electricity</value>
-  </data>
-  <data name="radioButton_Fernwaerme.Size" type="System.Drawing.Size, System.Drawing">
-    <value>113, 21</value>
-  </data>
-  <data name="radioButton_Fernwaerme.Text" xml:space="preserve">
-    <value>District heating</value>
-  </data>
-  <data name="radioButton_Rapsoel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>99, 21</value>
-  </data>
-  <data name="radioButton_Rapsoel.Text" xml:space="preserve">
-    <value>rapeseed oil</value>
-  </data>
-  <data name="radioButton_Holz.Size" type="System.Drawing.Size, System.Drawing">
-    <value>61, 21</value>
-  </data>
-  <data name="radioButton_Holz.Text" xml:space="preserve">
-    <value>Wood</value>
-  </data>
-  <data name="radioButton_Fluessiggas.Size" type="System.Drawing.Size, System.Drawing">
-    <value>104, 21</value>
-  </data>
-  <data name="radioButton_Fluessiggas.Text" xml:space="preserve">
-    <value>Liquefied gas</value>
-  </data>
-  <data name="radioButton_Gas.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 21</value>
-  </data>
-  <data name="radioButton_Gas.Text" xml:space="preserve">
-    <value>Gas</value>
-  </data>
-  <data name="groupBox6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>313, 16</value>
-  </data>
-  <data name="groupBox6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>199, 176</value>
-  </data>
-  <data name="groupBox6.Text" xml:space="preserve">
-    <value>fuel</value>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Energy source:</value>
   </data>
   <data name="Label6.Location" type="System.Drawing.Point, System.Drawing">
     <value>37, 56</value>
@@ -301,8 +247,8 @@
   <data name="Label12.Location" type="System.Drawing.Point, System.Drawing">
     <value>240, 151</value>
   </data>
-  <data name="groupBox2.Text" xml:space="preserve">
-    <value>Technical data</value>
+  <data name="groupBox3.Text" xml:space="preserve">
+    <value>Input data for calculating costs</value>
   </data>
   <data name="Label13.Size" type="System.Drawing.Size, System.Drawing">
     <value>107, 17</value>
@@ -343,8 +289,8 @@
   <data name="Label20.Text" xml:space="preserve">
     <value>Years</value>
   </data>
-  <data name="groupBox3.Text" xml:space="preserve">
-    <value>Input data for calculating costs</value>
+  <data name="groupBox4.Text" xml:space="preserve">
+    <value>Emission factors related to fuel consumption</value>
   </data>
   <data name="Label31.Size" type="System.Drawing.Size, System.Drawing">
     <value>52, 17</value>
@@ -382,8 +328,14 @@
   <data name="Label38.Text" xml:space="preserve">
     <value>g/MWh</value>
   </data>
-  <data name="groupBox4.Text" xml:space="preserve">
-    <value>Emission factors related to fuel consumption</value>
+  <data name="groupBox5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>536, 400</value>
+  </data>
+  <data name="groupBox5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>196, 209</value>
+  </data>
+  <data name="groupBox5.Text" xml:space="preserve">
+    <value>Emissions according to BEHG-V</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="Label41.AutoSize" type="System.Boolean, mscorlib">
@@ -428,58 +380,7 @@
   <data name="btn_CO2.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 162</value>
   </data>
-  <data name="groupBox5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>536, 400</value>
-  </data>
-  <data name="groupBox5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>196, 209</value>
-  </data>
-  <data name="groupBox5.Text" xml:space="preserve">
-    <value>Emissions according to BEHG-V</value>
-  </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Boiler administration</value>
-  </data>
-  <data name="Label12.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="Label34.Text" xml:space="preserve">
-    <value>NOx:</value>
-  </data>
-  <data name="Label9.Text" xml:space="preserve">
-    <value>kW</value>
-  </data>
-  <data name="Label17.Text" xml:space="preserve">
-    <value>€</value>
-  </data>
-  <data name="Label35.Text" xml:space="preserve">
-    <value>CO:</value>
-  </data>
-  <data name="Label30.Text" xml:space="preserve">
-    <value>SO2:</value>
-  </data>
-  <data name="btn_CO2.Text" xml:space="preserve">
-    <value>CO2 BEHG</value>
-  </data>
-  <data name="Label29.Text" xml:space="preserve">
-    <value>CO2:</value>
-  </data>
-  <data name="radioButton_Biogas.Text" xml:space="preserve">
-    <value>Biogas</value>
-  </data>
-  <data name="Label18.Text" xml:space="preserve">
-    <value>m³</value>
-  </data>
-  <data name="radioButton_Kohle.Text" xml:space="preserve">
-    <value>Coal</value>
-  </data>
-  <data name="radioButton_Koks.Text" xml:space="preserve">
-    <value>Coke</value>
-  </data>
-  <data name="radioButton_Pellets.Text" xml:space="preserve">
-    <value>Pellets</value>
-  </data>
-  <data name="radioButton_Bioheizöl.Text" xml:space="preserve">
-    <value>Bio heating oil</value>
   </data>
 </root>

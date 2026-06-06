@@ -118,43 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>79, 19</value>
+  <data name="comboBox_Klima.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Projektname</value>
-  </data>
-  <data name="textBox_Erstelldatum.Text" xml:space="preserve">
-    <value>12.01.2020</value>
-  </data>
-  <data name="label8.Text" xml:space="preserve">
-    <value>Klimaregion</value>
-  </data>
-  <data name="label5.Text" xml:space="preserve">
-    <value>Bearbeiter</value>
-  </data>
-  <data name="label9.Text" xml:space="preserve">
-    <value>Erstelldatum</value>
-  </data>
-  <data name="label3.Text" xml:space="preserve">
-    <value>Beschreibung</value>
-  </data>
-  <data name="label7.Text" xml:space="preserve">
-    <value>Projektkonfiguration</value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>Projekte</value>
-  </data>
-  <data name="textBox_Aenderungsdatum.Text" xml:space="preserve">
-    <value>12.01.2020</value>
-  </data>
-  <data name="label2.Text" xml:space="preserve">
-    <value>Änderungsdatum</value>
-  </data>
-  <data name="label6.Text" xml:space="preserve">
-    <value>Geben Sie hier die administrativen Projektdaten ein:</value>
-  </data>
-  <data name="label4.Text" xml:space="preserve">
-    <value>Kunde</value>
+  <data name="comboBox_Klima.Size" type="System.Drawing.Size, System.Drawing">
+    <value>355, 25</value>
   </data>
 </root>

@@ -1,15 +1,8 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Globalization;
-using System.Linq;
+using System.IO;
 using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -19,6 +12,15 @@ namespace WindowsFormsApplication1
         public MDIMainForm()
         {
             InitializeComponent();
+
+            // Statt MDI: reguläre SDI-Hauptform.
+            // Form_Start wird unten in MDIMainForm_Load als eingebettete Form
+            // (TopLevel=false) ins Controls-Collection gehängt – wie ein UserControl.
+            this.IsMdiContainer = false;
+
+            // Beim Start vollflächig, aber später vom Nutzer skalierbar.
+            this.WindowState = FormWindowState.Maximized;
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         private void MenuItem_Neu_Click(object sender, EventArgs e)
@@ -27,9 +29,37 @@ namespace WindowsFormsApplication1
             menu.ProjektNeu();
         }
 
-        private void MDIMainForm_Load(object sender, EventArgs e)
+        private async void MDIMainForm_Load(object sender, EventArgs e)
         {
-            Program.startfrm = (Form_Start)Program.menuectrl.OpenForm(typeof(Form_Start), true);
+            // Verhindert, dass der Designer in Visual Studio die API blockiert
+            if (this.DesignMode) return;
+
+            try
+            {
+                // Einmaliger Download der Slugs beim echten Programmstart
+                label_OnlineDoku.Left = (this.ClientSize.Width - label_OnlineDoku.Width) / 2;
+                label_OnlineDoku.Top = (this.ClientSize.Height - label_OnlineDoku.Height) / 2;
+                label_OnlineDoku.Visible = true;
+                await Program.HelpCatalog.LoadAllAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Fehler beim Laden der Doku: " + ex.Message);
+            }
+            label_OnlineDoku.Visible = false;
+
+            // Form_Start als eingebettete Hauptansicht (kein MDI-Child mehr).
+            // TopLevel=false erlaubt es, eine Form wie ein UserControl in Controls.Add zu hängen.
+            // Dock=Fill sorgt für korrekte Skalierung beim Resize/DPI-Wechsel.
+            Program.startfrm = new Form_Start
+            {
+                TopLevel = false,
+                FormBorderStyle = FormBorderStyle.None,
+                Dock = DockStyle.Fill,
+            };
+            this.Controls.Add(Program.startfrm);
+            Program.startfrm.BringToFront();
+            Program.startfrm.Show();
         }
 
         private void MenuItem_zuletztGeöffnet_Click(object sender, EventArgs e)
@@ -248,6 +278,31 @@ namespace WindowsFormsApplication1
         private void MenuItem_PV_Import_PAN_Click(object sender, EventArgs e)
         {
             Main_PV_Test frm = new Main_PV_Test();
+            frm.ShowDialog();
+        }
+
+        private void MenuItem_Kosten_Click(object sender, EventArgs e)
+        {
+            int id = Program.startfrm.m_ID_Projekt;
+            if (id != 0)
+            {
+                using (var form = new Form_Kosten(id))
+                {
+                    form.ShowDialog(); // Öffnet das Fenster als modaler Dialog
+                }
+            }
+            else MessageBox.Show("Projekt auswählen!");
+        }
+
+        private void kostenAdminToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form_KostenAdmin frm = new Form_KostenAdmin();  
+            frm.ShowDialog();
+        }
+
+        private void MenuItem_Einstellungen_Click(object sender, EventArgs e)
+        {
+            Form_AdminSettings frm = new Form_AdminSettings();
             frm.ShowDialog();
         }
     }

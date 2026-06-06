@@ -55,6 +55,8 @@
             this.label16 = new System.Windows.Forms.Label();
             this.textBox_Kesselname = new System.Windows.Forms.TextBox();
             this.label_Type = new System.Windows.Forms.Label();
+            this.btn_Admin = new System.Windows.Forms.Button();
+            this.checkBox_Brennwert = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -150,6 +152,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.checkBox_Brennwert);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.textBox_Investitionskosten);
             this.groupBox1.Controls.Add(this.label18);
@@ -220,10 +223,24 @@
             resources.ApplyResources(this.label_Type, "label_Type");
             this.label_Type.Name = "label_Type";
             // 
+            // btn_Admin
+            // 
+            resources.ApplyResources(this.btn_Admin, "btn_Admin");
+            this.btn_Admin.Name = "btn_Admin";
+            this.btn_Admin.UseVisualStyleBackColor = true;
+            this.btn_Admin.Click += new System.EventHandler(this.btn_Admin_Click);
+            // 
+            // checkBox_Brennwert
+            // 
+            resources.ApplyResources(this.checkBox_Brennwert, "checkBox_Brennwert");
+            this.checkBox_Brennwert.Name = "checkBox_Brennwert";
+            this.checkBox_Brennwert.UseVisualStyleBackColor = true;
+            // 
             // Form_Heizkessel
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.btn_Admin);
             this.Controls.Add(this.label_Type);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btn_Löschen);
@@ -276,5 +293,7 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox textBox_Kesselname;
         private System.Windows.Forms.Label label_Type;
+        private System.Windows.Forms.Button btn_Admin;
+        private System.Windows.Forms.CheckBox checkBox_Brennwert;
     }
 }

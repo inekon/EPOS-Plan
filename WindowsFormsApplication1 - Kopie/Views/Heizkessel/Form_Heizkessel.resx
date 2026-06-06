@@ -151,7 +151,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;label11.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>11</value>
   </data>
   <data name="btn_Kessel_Entfernen.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -181,7 +181,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btn_Kessel_Entfernen.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>12</value>
   </data>
   <data name="btn_Kessel_Hinzu.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -211,7 +211,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btn_Kessel_Hinzu.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>13</value>
   </data>
   <data name="listBox_Kessel_DB.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -244,7 +244,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;listBox_Kessel_DB.ZOrder" xml:space="preserve">
-    <value>13</value>
+    <value>14</value>
   </data>
   <data name="label12.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -277,7 +277,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
-    <value>14</value>
+    <value>15</value>
   </data>
   <data name="listBox_Kessel.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
@@ -310,7 +310,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;listBox_Kessel.ZOrder" xml:space="preserve">
-    <value>15</value>
+    <value>16</value>
   </data>
   <data name="btn_Abbrechen.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -340,7 +340,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btn_Abbrechen.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="btn_OK.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -370,7 +370,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btn_OK.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="comboBox_Brennstoffart.Location" type="System.Drawing.Point, System.Drawing">
     <value>469, 277</value>
@@ -397,7 +397,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;comboBox_Brennstoffart.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="label1.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -427,7 +427,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="label2.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -457,7 +457,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;label2.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="comboBox_Leistung.Location" type="System.Drawing.Point, System.Drawing">
     <value>469, 333</value>
@@ -481,13 +481,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;comboBox_Leistung.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="btn_Bearbeiten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>657, 276</value>
+    <value>639, 276</value>
   </data>
   <data name="btn_Bearbeiten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>99, 32</value>
+    <value>117, 32</value>
   </data>
   <data name="btn_Bearbeiten.TabIndex" type="System.Int32, mscorlib">
     <value>108</value>
@@ -505,13 +505,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btn_Bearbeiten.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="btn_Löschen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>657, 315</value>
+    <value>639, 354</value>
   </data>
   <data name="btn_Löschen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>99, 28</value>
+    <value>117, 28</value>
   </data>
   <data name="btn_Löschen.TabIndex" type="System.Int32, mscorlib">
     <value>109</value>
@@ -529,7 +529,40 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btn_Löschen.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
+  </data>
+  <data name="checkBox_Brennwert.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBox_Brennwert.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="checkBox_Brennwert.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="checkBox_Brennwert.Location" type="System.Drawing.Point, System.Drawing">
+    <value>115, 124</value>
+  </data>
+  <data name="checkBox_Brennwert.Size" type="System.Drawing.Size, System.Drawing">
+    <value>120, 21</value>
+  </data>
+  <data name="checkBox_Brennwert.TabIndex" type="System.Int32, mscorlib">
+    <value>114</value>
+  </data>
+  <data name="checkBox_Brennwert.Text" xml:space="preserve">
+    <value>Brennwertkessel</value>
+  </data>
+  <data name="&gt;&gt;checkBox_Brennwert.Name" xml:space="preserve">
+    <value>checkBox_Brennwert</value>
+  </data>
+  <data name="&gt;&gt;checkBox_Brennwert.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBox_Brennwert.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;checkBox_Brennwert.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="label3.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -562,7 +595,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;label3.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="textBox_Investitionskosten.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -595,7 +628,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;textBox_Investitionskosten.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="label18.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -628,7 +661,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;label18.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="textBox_Kesselbeschreibung.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -649,7 +682,7 @@
     <value>Vertical</value>
   </data>
   <data name="textBox_Kesselbeschreibung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>282, 89</value>
+    <value>282, 62</value>
   </data>
   <data name="textBox_Kesselbeschreibung.TabIndex" type="System.Int32, mscorlib">
     <value>113</value>
@@ -664,7 +697,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;textBox_Kesselbeschreibung.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="label14.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -697,7 +730,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;label14.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="textBox_Kesselleistung.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -730,7 +763,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;textBox_Kesselleistung.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="label15.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -763,7 +796,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;label15.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="textBox_Kesseltyp.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -793,7 +826,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;textBox_Kesseltyp.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="label16.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -826,7 +859,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;label16.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="textBox_Kesselname.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -856,7 +889,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;textBox_Kesselname.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 256</value>
@@ -880,7 +913,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="label_Type.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Top</value>
@@ -916,6 +949,33 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;label_Type.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="btn_Admin.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btn_Admin.Location" type="System.Drawing.Point, System.Drawing">
+    <value>639, 315</value>
+  </data>
+  <data name="btn_Admin.Size" type="System.Drawing.Size, System.Drawing">
+    <value>117, 32</value>
+  </data>
+  <data name="btn_Admin.TabIndex" type="System.Int32, mscorlib">
+    <value>112</value>
+  </data>
+  <data name="btn_Admin.Text" xml:space="preserve">
+    <value>Administration...</value>
+  </data>
+  <data name="&gt;&gt;btn_Admin.Name" xml:space="preserve">
+    <value>btn_Admin</value>
+  </data>
+  <data name="&gt;&gt;btn_Admin.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_Admin.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;btn_Admin.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">

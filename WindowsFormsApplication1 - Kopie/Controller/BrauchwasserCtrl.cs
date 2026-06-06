@@ -1,106 +1,161 @@
-using System.Data.Odbc;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class BrauchwasserCtrl : BrauchwasserModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
-        public BrauchwasserModel model;
+        // --- Kompatibilitäts-Layer für bestehenden UI-Code ---
+        private List<BrauchwasserModel> _internalList = new List<BrauchwasserModel>();
+        private bool _hasSingleData = false;
 
-        public BrauchwasserCtrl()
-        {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-            model = new BrauchwasserModel();
-        }
-        ~BrauchwasserCtrl ()
-        {
-            rows = 0;
-            DBCommand.Dispose();
-        }
+        // Simuliert die alte 'rows' Variable und das 'items' Array
+        public int rows => _internalList.Count > 0 ? _internalList.Count : (_hasSingleData ? 1 : 0);
+        public List<BrauchwasserModel> items => _internalList;
 
+        // --- READ Methoden (Lesen) ---
         public void ReadAll()
         {
-            DBCommand.CommandText = "select * from Tab_Brauchwasser order by Bezeichner";
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            _internalList.Clear();
+            _hasSingleData = false;
 
-            items = new BrauchwasserModel[1000];
+            string sql = "SELECT * FROM Tab_Brauchwasser ORDER BY Bezeichner";
+            DataTable dt = DataRepository.GetDataTable(sql);
 
-            rows = 0;
-
-            while (DBReader.Read())
+            foreach (DataRow row in dt.Rows)
             {
-                BrauchwasserModel item = new BrauchwasserModel();
-
-                if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_szBezeichner = (string)DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) item.m_szTyp = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.m_szBeschreibung = (string)DBReader.GetString(3);
-                for (int i = 0; i < 12; i++)
-                {
-                    if (!DBReader.IsDBNull(i + 4)) item.m_Monat[i] = (double)DBReader.GetValue(i + 4);
-                }
-
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                _internalList.Add(MapRowToModel(row));
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
 
-        public void ReadSingle(int ID_Brauchwasser)
+        public void ReadSingle(int id)
         {
-            DBCommand.CommandText = "select * from Tab_Brauchwasser where ID=" + ID_Brauchwasser;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            _internalList.Clear();
+            _hasSingleData = false;
 
-            rows = 0;
+            string sql = "SELECT * FROM Tab_Brauchwasser WHERE ID = ?";
+            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("@id", id));
 
-            DBReader.Read();
-            if (DBReader.HasRows)
-            {
-                if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_szBezeichner = (string)DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) m_szTyp = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_szBeschreibung = (string)DBReader.GetString(3);
-                
-                for (int i = 0; i < 12; i++)
-                {
-                    if (!DBReader.IsDBNull(i+4)) m_Monat[i] = (double)DBReader.GetValue(i+4);
-                }
-
-                rows = 1;
-            }
-            DBReader.Dispose();
-            DBReader.Close();
+            ProcessSingleResult(dt);
         }
 
-        public void ReadSingle(string szBezeichner)
+        public void ReadSingle(string bezeichner)
         {
-            DBCommand.CommandText = "select * from Tab_Brauchwasser where Bezeichner='" + szBezeichner + "'";
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            _internalList.Clear();
+            _hasSingleData = false;
 
-            rows = 0;
+            string sql = "SELECT * FROM Tab_Brauchwasser WHERE Bezeichner = ?";
+            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("@bez", bezeichner));
 
-            DBReader.Read();
-            if (DBReader.HasRows)
-            {
-                if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_szBezeichner = (string)DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) m_szTyp = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_szBeschreibung = (string)DBReader.GetString(3);
-
-                for (int i = 0; i < 12; i++)
-                {
-                    if (!DBReader.IsDBNull(i + 4)) m_Monat[i] = (double)DBReader.GetValue(i + 4);
-                }
-
-                rows = 1;
-            }
-            DBReader.Dispose();
-            DBReader.Close();
+            ProcessSingleResult(dt);
         }
 
+        private void ProcessSingleResult(DataTable dt)
+        {
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                DataRow row = dt.Rows[0];
+                FillModelFromRow(this, row); // Füllt die Felder des Controllers (this)
+                _internalList.Add(MapRowToModel(row)); // Füllt items[0]
+                _hasSingleData = true;
+            }
+        }
+
+        // --- SAVE Methoden (Schreiben) ---
+
+        public bool Save()
+        {
+            // Entscheidungslogik: Neu anlegen oder Vorhandenes ändern
+            if (this.m_ID <= 0)
+                return Insert();
+            else
+                return Update();
+        }
+
+        private bool Insert()
+        {
+            string sql = @"INSERT INTO Tab_Brauchwasser (Bezeichner, Typ, Beschreibung, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10, M11, M12) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            bool success = DataRepository.ExecuteSQL(sql, CreateParameters(false));
+
+            if (success)
+            {
+                // Die neue Auto-Wert ID aus Access zurückholen
+                DataTable dt = DataRepository.GetDataTable("SELECT @@IDENTITY");
+                if (dt.Rows.Count > 0) this.m_ID = Convert.ToInt32(dt.Rows[0][0]);
+            }
+            return success;
+        }
+
+        private bool Update()
+        {
+            string sql = @"UPDATE Tab_Brauchwasser SET 
+                            Bezeichner = ?, Typ = ?, Beschreibung = ?, 
+                            M1=?, M2=?, M3=?, M4=?, M5=?, M6=?, M7=?, M8=?, M9=?, M10=?, M11=?, M12=? 
+                           WHERE ID = ?";
+
+            return DataRepository.ExecuteSQL(sql, CreateParameters(true));
+        }
+
+        // --- DELETE Methoden (Löschen) ---
+
+        public bool Delete()
+        {
+            if (this.m_ID <= 0) return false;
+            string sql = "DELETE FROM Tab_Brauchwasser WHERE ID = ?";
+            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@id", this.m_ID));
+        }
+
+        public bool Delete(string bezeichner)
+        {
+            string sql = "DELETE FROM Tab_Brauchwasser WHERE Bezeichner = ?";
+            return DataRepository.ExecuteSQL(sql, new OleDbParameter("@bez", bezeichner));
+        }
+
+        // --- MAPPING & PARAMETER (Die "Maschinenräume") ---
+
+        private OleDbParameter[] CreateParameters(bool includeId)
+        {
+            List<OleDbParameter> p = new List<OleDbParameter>
+            {
+                new OleDbParameter("@bez", this.m_szBezeichner ?? ""),
+                new OleDbParameter("@typ", this.m_szTyp ?? ""),
+                new OleDbParameter("@desc", this.m_szBeschreibung ?? "")
+            };
+
+            for (int i = 0; i < 12; i++)
+            {
+                p.Add(new OleDbParameter("@m" + (i + 1), this.m_Monat[i]));
+            }
+
+            if (includeId)
+                p.Add(new OleDbParameter("@id", this.m_ID));
+
+            return p.ToArray();
+        }
+
+        private void FillModelFromRow(BrauchwasserModel target, DataRow row)
+        {
+            target.m_ID = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0;
+            target.m_szBezeichner = row["Bezeichner"]?.ToString() ?? "";
+            target.m_szTyp = row["Typ"]?.ToString() ?? "";
+            target.m_szBeschreibung = row["Beschreibung"]?.ToString() ?? "";
+
+            for (int i = 0; i < 12; i++)
+            {
+                string colName = "Monat_" + (i + 1);
+                target.m_Monat[i] = row[colName] != DBNull.Value ? Convert.ToDouble(row[colName]) : 0.0;
+            }
+        }
+
+        private BrauchwasserModel MapRowToModel(DataRow row)
+        {
+            BrauchwasserModel m = new BrauchwasserModel();
+            FillModelFromRow(m, row);
+            return m;
+        }
     }
 }

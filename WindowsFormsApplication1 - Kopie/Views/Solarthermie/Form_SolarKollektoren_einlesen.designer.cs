@@ -73,6 +73,7 @@ namespace WindowsFormsApplication1
             // 
             resources.ApplyResources(this.btn_Uebernehmen, "btn_Uebernehmen");
             this.btn_Uebernehmen.ForeColor = System.Drawing.Color.Black;
+            this.btn_Uebernehmen.Image = global::WindowsFormsApplication1.Properties.Resources.save_icon_36513;
             this.btn_Uebernehmen.Name = "btn_Uebernehmen";
             this.btn_Uebernehmen.UseVisualStyleBackColor = true;
             this.btn_Uebernehmen.Click += new System.EventHandler(this.btn_Uebernehmen_Click);

@@ -1,79 +1,76 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Odbc;
-using System.Globalization;
-using System.Linq;
-using System.Text;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class ApplikationCtrl : ApplikationModel
     {
-        OdbcCommand DBCommand;
-        ApplikationModel applikationmodel;
-        public int rows;
- 
-        public ApplikationCtrl()
+        private List<ApplikationModel> _internalList = new List<ApplikationModel>();
+        private bool _hasData = false;
+
+        // Kompatibilitätsschicht
+        public int rows => _internalList.Count > 0 ? _internalList.Count : (_hasData ? 1 : 0);
+        public List<ApplikationModel> items => _internalList;
+
+        public ApplikationCtrl() { }
+
+        /// <summary>
+        /// Liest den einzigen existierenden Datensatz aus der Tabelle.
+        /// </summary>
+        public void ReadSingle()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-            applikationmodel = new ApplikationModel();
-        }
-        
-        ~ApplikationCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
+            _internalList.Clear();
+            _hasData = false;
+
+            // Da es nur einen Datensatz gibt, brauchen wir kein WHERE oder Parameter
+            string sql = "SELECT TOP 1 * FROM Tab_Applikation";
+            DataTable dt = DataRepository.GetDataTable(sql);
+
+            if (dt.Rows.Count > 0)
+            {
+                DataRow row = dt.Rows[0];
+
+                // Controller-Felder füllen (this)
+                FillModelFromRow(this, row);
+
+                // Liste füllen (items[0])
+                ApplikationModel m = new ApplikationModel();
+                FillModelFromRow(m, row);
+                _internalList.Add(m);
+
+                _hasData = true;
+            }
         }
 
         public bool Update()
         {
-            try
-            {
-                FormattableString sql = $@"
-                    UPDATE Tab_Applikation SET 
-                        Projektname = '{m_szProjektname}', 
-                        ID_Projekt = {m_ID_Projekt}, 
-                        Beschreibung = '{m_szBeschreibung}', 
-                        Icon = '{m_icon}' 
-                    WHERE ID = 1;";
-                
-                DBCommand.CommandText = sql.ToString(CultureInfo.InvariantCulture);
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                return false;
-            }
-            return true;
+            // Update erfolgt immer auf ID=1, da es nur diesen einen Datensatz gibt
+            string sql = @"UPDATE Tab_Applikation SET 
+                            Projektname = ?, 
+                            ID_Projekt = ?, 
+                            Beschreibung = ?, 
+                            Icon = ? 
+                           WHERE ID = 1;";
+
+            OleDbParameter[] parameters = {
+                new OleDbParameter("@pname", m_szProjektname ?? ""),
+                new OleDbParameter("@pID", m_ID_Projekt),
+                new OleDbParameter("@desc", m_szBeschreibung ?? ""),
+                new OleDbParameter("@icon", m_icon ?? "")
+            };
+
+            return DataRepository.ExecuteSQL(sql, parameters);
         }
 
-        public void ReadSingle(string sql)
+        private void FillModelFromRow(ApplikationModel target, DataRow row)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-
-            rows = 0;
-            DBReader.Read();
-            if (DBReader.HasRows)
-            {
-                if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_szProjektname = (string)DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) m_ID_Projekt = (int)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) m_szBeschreibung = (string)DBReader.GetString(3);
-                if (!DBReader.IsDBNull(4)) m_icon = (string)DBReader.GetValue(4);
-                rows = 1;
-            }
-            DBReader.Dispose();
-            DBReader.Close();
+            target.m_ID = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0;
+            target.m_szProjektname = row["Projektname"]?.ToString() ?? "";
+            target.m_ID_Projekt = row["ID_Projekt"] != DBNull.Value ? Convert.ToInt32(row["ID_Projekt"]) : 0;
+            target.m_szBeschreibung = row["Beschreibung"]?.ToString() ?? "";
+            target.m_icon = row["Icon"]?.ToString() ?? "";
         }
     }
 }

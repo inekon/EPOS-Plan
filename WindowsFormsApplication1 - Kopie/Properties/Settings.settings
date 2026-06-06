@@ -10,5 +10,29 @@
 &lt;/SerializableConnectionString&gt;</DesignTimeValue>
       <Value Profile="(Default)">Provider=Microsoft.ACE.OLEDB.12.0;Data Source="C:\Users\wg008\Documents\Visual Studio 2010\Projects\WP-Plan\Kenndaten.accdb"</Value>
     </Setting>
+    <Setting Name="VDI3805Path" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="WordPressUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://localhost:8080</Value>
+    </Setting>
+    <Setting Name="DBExportPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="WordPressPrefix" Type="System.String" Scope="User">
+      <Value Profile="(Default)">help</Value>
+    </Setting>
+    <Setting Name="PVGISUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://re.jrc.ec.europa.eu/api/tmy</Value>
+    </Setting>
+    <Setting Name="AllgemeinPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DBImportPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="GeoKodierung" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://nominatim.openstreetmap.org</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

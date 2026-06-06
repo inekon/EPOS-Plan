@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
                 DateiListe.Add(model);
             }
 
-            string szAppDataPath = Path.Combine(Program.ApplicationPath_User, "Waermebedarf");
+            string szAppDataPath = Path.Combine(Properties.Settings.Default.VDI3805Path, "Waermebedarf");
             textBox_Ordner.Text = szAppDataPath;
         }
 
@@ -63,7 +63,7 @@ namespace WindowsFormsApplication1
         private void GetDateiInfo(string dateiname)
         {
             textBox_Name.Text = dateiname + ".txt";
-            string szPath = Path.Combine(Program.ApplicationPath_User, "Waermebedarf");
+            string szPath = Path.Combine(Properties.Settings.Default.VDI3805Path, "Waermebedarf");
             szPath = Path.Combine(szPath, dateiname);
         }
 
@@ -71,7 +71,7 @@ namespace WindowsFormsApplication1
         {
             ToolsClass tool = new ToolsClass();
 
-            string szAppDataPath = Path.Combine(Program.ApplicationPath_User, "Waermebedarf");
+            string szAppDataPath = Path.Combine(Properties.Settings.Default.VDI3805Path, "Waermebedarf");
             szAppDataPath = Path.Combine(szAppDataPath, textBox_Name.Text);
             tool.OpenFileWithDefaultApp(szAppDataPath);
         }

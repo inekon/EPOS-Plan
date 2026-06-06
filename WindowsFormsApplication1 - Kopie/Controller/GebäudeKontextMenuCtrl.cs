@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.ComponentModel;
+using System.Data;
+using System.Data.OleDb;
+using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -36,7 +35,6 @@ namespace WindowsFormsApplication1
             ContextMenuItemBearbeiten.Click += new EventHandler(ContextMenuItemBearbeiten_Click);
             contextMenuStrip1.Items.Add(ContextMenuItemBearbeiten);
 
-
             ContextMenuItemLoeschen = new ToolStripMenuItem();
             ContextMenuItemLoeschen.Text = "Löschen";
             ContextMenuItemLoeschen.Click += new EventHandler(ContextMenuItemLoeschen_Click);
@@ -57,15 +55,8 @@ namespace WindowsFormsApplication1
             {
                 // Überprüfen, ob ein Element unter dem Mauszeiger angeklickt wurde
                 ListViewItem item = listView_Gebäude.GetItemAt(e.X, e.Y);
-               // if (item != null)
                 {
-                 //   if (listView_Gebäude.SelectedItems.Count > 0)
-                    {
-                        // Element auswählen
-                     //   item.Selected = true;
-                        // Kontextmenü anzeigen
-                        contextMenuStrip1.Show(listView_Gebäude, e.Location);
-                    }
+                    contextMenuStrip1.Show(listView_Gebäude, e.Location);
                 }
             }
         }
@@ -74,74 +65,68 @@ namespace WindowsFormsApplication1
         {
             if (listView_Gebäude.SelectedItems.Count <= 0)
             {
-                // e.Cancel = true;
                 contextMenuStrip1.Items[0].Enabled = true;
                 contextMenuStrip1.Items[1].Enabled = false;
-                //contextMenuStrip1.Items[2].Enabled = false;
             }
             else
             {
                 contextMenuStrip1.Items[0].Enabled = true;
                 contextMenuStrip1.Items[1].Enabled = true;
-          //      contextMenuStrip1.Items[2].Enabled = true;
             }
         }
 
         private void ContextMenuItemBearbeiten_Click(object sender, EventArgs e)
         {
             ListView.SelectedIndexCollection indexes = listView_Gebäude.SelectedIndices;
+            Z_ProjGebModel item;
+            Form_Gebaeude frm = new Form_Gebaeude();
+            WizardCtrl wizctrl = new WizardCtrl();
+            ProjektCtrl projctrl = new ProjektCtrl();
 
-         //   if (indexes.Count > 0)
+            frm.list_gebmodel.Clear();
+                
+            string sql = @"SELECT
+                             Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Gebaeude, Z_ProjektGebaeude.[ID_Projekt], 
+                             [Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche,
+                             Jahresnutzungsgrad, dezWarmwasserbereitung, Gebaeudeart, Beschreibung, Baualtersklasse
+                         FROM [Tab_Gebaeude]
+                         INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude
+                         WHERE Z_ProjektGebaeude.ID_Projekt=?";
+
+            OleDbParameter[] p = { new OleDbParameter("@id",m_ID_Projekt) };
+            DataTable dt = DataRepository.GetDataTable(sql, p);
+
+            for(int i=0; i<dt.Rows.Count; i++)
             {
-            //    ListViewItem lvitem = listView_Gebäude.Items[indexes[0]];
-                Z_ProjGebModel item;
-                Form_Gebaeude frm = new Form_Gebaeude();
-                RecordSet rs = new RecordSet();
-                WizardCtrl wizctrl = new WizardCtrl();
-                ProjektCtrl projctrl = new ProjektCtrl();
-
-                frm.list_gebmodel.Clear();
- //               frm.SetControls(m_szProjektname);
+                DataRow dr = dt.Rows[i];
+                item = new Z_ProjGebModel();
+                item.ID_Z = (int)dr["ID"];
+                item.ID_Projekt = m_ID_Projekt;
+                item.ID_Gebaeude = (int)dr["ID_Gebaeude"];
+                item.Gebaeudename = (string)dr["Gebaeudename"];
+                item.Wohnflaeche = (double)dr["Wohnflaeche_Waermebedarf"];
+                item.Einheit = (string)dr["Einheit_Waermebedarf_Wohnflaeche"];
+                item.Jahresnutzungsgrad = (double)dr["Jahresnutzungsgrad"];
+                item.DezentralWarmwasser = (bool)dr["dezWarmwasserbereitung"];
+                item.Gebaeudeart = (string)dr["Gebaeudeart"];  
+                item.Beschreibung = (string)dr["Beschreibung"];
+                item.Baualtersklasse = (string)dr["Baualtersklasse"];
+                frm.list_gebmodel.Add(item);
+            }
                 
-                string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Gebaeude, Z_ProjektGebaeude.[ID_Projekt], " +
-                    "[Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
-                    "dezWarmwasserbereitung, Gebaeudeart, Beschreibung  FROM [Tab_Gebaeude] " +
-                    "INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
-                    " where Z_ProjektGebaeude.ID_Projekt=" + m_ID_Projekt;
+            frm.m_ID_Projekt = m_ID_Projekt;
+            frm.SetControls(m_szProjektname);
+            frm.ShowDialog();
 
-                rs.Open(sql);
-                while(rs.Next())
-                {
-                    item = new Z_ProjGebModel();
-                    item.ID_Z = (int)rs.Read("ID");
-                    item.ID_Projekt = m_ID_Projekt;
-                    item.ID_Gebaeude = (int)rs.Read("ID_Gebaeude");
-                    item.Gebaeudename = (string)rs.Read("Gebaeudename");
-                    item.Wohnflaeche = (double)rs.Read("Wohnflaeche_Waermebedarf");
-                    item.Einheit = (string)rs.Read("Einheit_Waermebedarf_Wohnflaeche");
-                    item.Jahresnutzungsgrad = (double)rs.Read("Jahresnutzungsgrad");
-                    item.DezentralWarmwasser = (bool)rs.Read("dezWarmwasserbereitung");
-                    item.Gebaeudeart = (string)rs.Read("Gebaeudeart");
-                    item.Beschreibung = (string)rs.Read("Beschreibung");
-                    item.Baualtersklasse = (string)rs.Read("Baualtersklasse");
+            if (frm.DialogResult == DialogResult.OK)
+            {
+                wizctrl.Del_Projekt_ZuordungGebäude(m_ID_Projekt);
+                wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, frm.list_gebmodel);
 
-                    frm.list_gebmodel.Add(item);
-                }
-                
-                frm.m_ID_Projekt = m_ID_Projekt;
-                frm.SetControls(m_szProjektname);
-                frm.ShowDialog();
-
-                if (frm.DialogResult == DialogResult.OK)
-                {
-                    wizctrl.Del_Projekt_ZuordungGebäude(m_ID_Projekt);
-                    wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, frm.list_gebmodel);
-
-                    projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
-                    projctrl.m_Aenderungsdatum = DateTime.Now;
-                    projctrl.Update();
-                    Program.mainfrm.SetGebaeudeControl(m_szProjektname);
-                }
+                projctrl.ReadSingle(m_szProjektname);
+                projctrl.m_Aenderungsdatum = DateTime.Now;
+                projctrl.Update();
+                Program.mainfrm.SetGebaeudeControl(m_szProjektname);
             }
         }
 
@@ -158,7 +143,7 @@ namespace WindowsFormsApplication1
                 listView_Gebäude.Items[indexes[0]].Remove();
                 wizctrl.Del_Projekt_ZuordungGebäude(m_ID_Projekt, Int32.Parse(item.SubItems[4].Text));
                 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetGebaeudeControl(m_szProjektname);
@@ -181,7 +166,7 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Add_Projekt_ZuordungGebäude(m_ID_Projekt, frm.list_gebmodel);
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetGebaeudeControl(m_szProjektname);

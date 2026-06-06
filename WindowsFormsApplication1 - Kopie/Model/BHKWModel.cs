@@ -4,7 +4,6 @@
     public class BHKWModel
     {
         public int rows;
-        public BHKWModel[] items;
         public int m_ID;
         public string m_szBezeichner;
         public string m_szFirma;
@@ -32,7 +31,6 @@
 
         public BHKWModel()
         {
-            items = null;
             m_ID = 0;
             m_szBezeichner = string.Empty;
             m_szFirma = string.Empty;

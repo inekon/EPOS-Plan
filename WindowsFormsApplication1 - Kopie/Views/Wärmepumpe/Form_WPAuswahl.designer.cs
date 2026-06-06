@@ -85,7 +85,6 @@ namespace WindowsFormsApplication1
             // btn_Neu
             // 
             resources.ApplyResources(this.btn_Neu, "btn_Neu");
-            this.btn_Neu.Image = global::WindowsFormsApplication1.Properties.Resources.catalog_add;
             this.btn_Neu.Name = "btn_Neu";
             this.btn_Neu.UseVisualStyleBackColor = true;
             this.btn_Neu.Click += new System.EventHandler(this.btn_Neu_Click);
@@ -93,7 +92,6 @@ namespace WindowsFormsApplication1
             // btn_Löschen
             // 
             resources.ApplyResources(this.btn_Löschen, "btn_Löschen");
-            this.btn_Löschen.Image = global::WindowsFormsApplication1.Properties.Resources.catalog1;
             this.btn_Löschen.Name = "btn_Löschen";
             this.btn_Löschen.UseVisualStyleBackColor = true;
             this.btn_Löschen.Click += new System.EventHandler(this.btn_Löschen_Click);
@@ -101,7 +99,6 @@ namespace WindowsFormsApplication1
             // btn_Uebernehmen
             // 
             resources.ApplyResources(this.btn_Uebernehmen, "btn_Uebernehmen");
-            this.btn_Uebernehmen.Image = global::WindowsFormsApplication1.Properties.Resources.catalog_edit;
             this.btn_Uebernehmen.Name = "btn_Uebernehmen";
             this.btn_Uebernehmen.UseVisualStyleBackColor = true;
             this.btn_Uebernehmen.Click += new System.EventHandler(this.btn_Uebernehmen_Click);

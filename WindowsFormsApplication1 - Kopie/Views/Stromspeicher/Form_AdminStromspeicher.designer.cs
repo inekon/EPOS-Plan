@@ -51,6 +51,9 @@
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.textBox_Modulkosten = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btn_Beenden
@@ -62,8 +65,8 @@
             // 
             // listBox_Stromspeicher
             // 
-            resources.ApplyResources(this.listBox_Stromspeicher, "listBox_Stromspeicher");
             this.listBox_Stromspeicher.FormattingEnabled = true;
+            resources.ApplyResources(this.listBox_Stromspeicher, "listBox_Stromspeicher");
             this.listBox_Stromspeicher.Name = "listBox_Stromspeicher";
             this.listBox_Stromspeicher.SelectedIndexChanged += new System.EventHandler(this.listBox_Stromspeicher_SelectedIndexChanged);
             // 
@@ -133,8 +136,8 @@
             // 
             // btn_Speichern
             // 
-            resources.ApplyResources(this.btn_Speichern, "btn_Speichern");
             this.btn_Speichern.Image = global::WindowsFormsApplication1.Properties.Resources.speichern;
+            resources.ApplyResources(this.btn_Speichern, "btn_Speichern");
             this.btn_Speichern.Name = "btn_Speichern";
             this.btn_Speichern.UseVisualStyleBackColor = true;
             this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
@@ -188,10 +191,30 @@
             this.label10.ForeColor = System.Drawing.Color.White;
             this.label10.Name = "label10";
             // 
+            // label11
+            // 
+            resources.ApplyResources(this.label11, "label11");
+            this.label11.BackColor = System.Drawing.Color.Black;
+            this.label11.ForeColor = System.Drawing.Color.White;
+            this.label11.Name = "label11";
+            // 
+            // label12
+            // 
+            resources.ApplyResources(this.label12, "label12");
+            this.label12.Name = "label12";
+            // 
+            // textBox_Modulkosten
+            // 
+            resources.ApplyResources(this.textBox_Modulkosten, "textBox_Modulkosten");
+            this.textBox_Modulkosten.Name = "textBox_Modulkosten";
+            // 
             // Form_AdminStromspeicher
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.label12);
+            this.Controls.Add(this.textBox_Modulkosten);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
@@ -245,5 +268,8 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.TextBox textBox_Modulkosten;
     }
 }

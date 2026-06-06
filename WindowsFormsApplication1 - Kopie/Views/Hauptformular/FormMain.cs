@@ -231,7 +231,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             WPCtrl wpctrl = new WPCtrl();
 
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            projctrl.ReadSingle(textBox_Projekt.Text);
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.WP_TYP + " or ID_Type=" + WizardItemClass.REF_WP_TYP + ")");
 
@@ -262,7 +262,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             WPCtrl wpctrl = new WPCtrl();
 
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            projctrl.ReadSingle(textBox_Projekt.Text);
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.SP_TYP + " or ID_Type=" + WizardItemClass.REF_SP_TYP + ")");
             listView_SP.Items.Clear();
@@ -394,8 +394,9 @@ namespace WindowsFormsApplication1
         {
             ProjektCtrl projctrl = new ProjektCtrl();
             RecordSet rs = new RecordSet();
+            BrennstoffCtrl heizkesselctrl = new BrennstoffCtrl();
 
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            projctrl.ReadSingle(textBox_Projekt.Text);
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.REF_KESSEL_TYP + " or ID_Type=" + WizardItemClass.KESSEL_TYP + ")");
 
             listView_Heizkessel.Items.Clear();
@@ -410,7 +411,7 @@ namespace WindowsFormsApplication1
                 if (!rs_hk.EOF())
                 {
                     lvitem.Text = (string)rs_hk.Read("Name");
-                    lvitem.SubItems.Add(BrennstoffCtrl.Brennstoffart[(int)rs_hk.Read("Brennstoff")]);
+                    lvitem.SubItems.Add(heizkesselctrl.Brennstoffart[(int)rs_hk.Read("Brennstoff")]);
                     double kl = (double)rs_hk.Read("Ptherm");
                     lvitem.SubItems.Add(kl.ToString("F2"));
                     lvitem.SubItems.Add(rs_hk.Read("Beschreibung").ToString());
@@ -431,7 +432,7 @@ namespace WindowsFormsApplication1
         {
             ProjektCtrl projctrl = new ProjektCtrl();
 
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            projctrl.ReadSingle(textBox_Projekt.Text);
 
 
             string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Projekt, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, " +
@@ -467,7 +468,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             RecordSet rs = new RecordSet();
 
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            projctrl.ReadSingle(textBox_Projekt.Text);
 
             listView_WaermebedarfExtern.Items.Clear();
 
@@ -920,7 +921,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             RecordSet rs = new RecordSet();
 
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            projctrl.ReadSingle(textBox_Projekt.Text);
 
             listView_Stromganglinie.Items.Clear();
 
@@ -1011,7 +1012,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             BHKWCtrl bhkwctrl = new BHKWCtrl();
 
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            projctrl.ReadSingle(textBox_Projekt.Text);
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.BHKW_TYP + ")");
 
@@ -1067,7 +1068,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             PhotovoltaikCtrl ctrl = new PhotovoltaikCtrl();
 
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            projctrl.ReadSingle(textBox_Projekt.Text);
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.PV_TYP + ")");
 
@@ -1095,7 +1096,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             PufferSpCtrl ctrl = new PufferSpCtrl(); 
                   
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            projctrl.ReadSingle(textBox_Projekt.Text);
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.PUFFER_TYP + ")");
 
@@ -1127,7 +1128,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl projctrl = new ProjektCtrl();
             SolarkollektorenCtrl ctrl = new SolarkollektorenCtrl();
 
-            projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + textBox_Projekt.Text + "'");
+            projctrl.ReadSingle(textBox_Projekt.Text);
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.SOLAR_TYP + ")");
 

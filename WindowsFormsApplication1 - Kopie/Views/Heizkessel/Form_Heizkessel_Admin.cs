@@ -26,9 +26,9 @@ namespace WindowsFormsApplication1
             LoadDBHeizkessel();
 
             comboBox_Brennstoffart.Items.Add("Alle");
-            for (int i = 0; i < BrennstoffCtrl.Brennstoffart_Gruppe.Length; i++)
+            for (int i = 0; i < heizkesselctrl.Brennstoffart_Gruppe.Count; i++)
             {
-                comboBox_Brennstoffart.Items.Add(BrennstoffCtrl.Brennstoffart_Gruppe[i]);
+                comboBox_Brennstoffart.Items.Add(heizkesselctrl.Brennstoffart_Gruppe[i]);
             }
 
             comboBox_Leistung.Items.Add("Alle");
@@ -56,10 +56,11 @@ namespace WindowsFormsApplication1
             {
                 textBox_Kesselname.Text = (string)rs.Read("Name");
                 textBox_Kesselbeschreibung.Text = rs.GetString("Beschreibung");
-                textBox_Brennstoff.Text = BrennstoffCtrl.Brennstoffart[(int)rs.Read("Brennstoff")].ToString();
+                textBox_Brennstoff.Text = heizkesselctrl.Brennstoffart[(int)rs.Read("Brennstoff")-1].ToString();
                 double kl = (double)rs.Read("Ptherm");
                 textBox_Kesselleistung.Text = kl.ToString("F2");
                 textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
+                checkBox_Brennwert.Checked = (bool)rs.Read("Brennwert");    
             }
             rs.Close();
         }
@@ -157,9 +158,8 @@ namespace WindowsFormsApplication1
 
             frmLabel.m_szName = "";
             frmLabel.SetControl();
-            frmLabel.ShowDialog();
-
-            if (frmLabel.result == DialogResult.OK)
+ 
+            if (frmLabel.ShowDialog() == DialogResult.OK)
             {
                 RecordSet rs = new RecordSet();
                 rs.Open("select Name from [Tab_Heizkessel] where Name='" + frmLabel.m_szName + "'");

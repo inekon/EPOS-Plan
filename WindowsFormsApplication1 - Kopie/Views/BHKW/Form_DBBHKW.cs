@@ -41,7 +41,6 @@ namespace WindowsFormsApplication1
 
         public void SetControls(string szName)
         {
-            RecordSet rs = new RecordSet();
             BHKWCtrl ctrl = new BHKWCtrl();
 
             ctrl.ReadAll();
@@ -103,37 +102,24 @@ namespace WindowsFormsApplication1
         private void btn_Überschreiben_Click(object sender, EventArgs e)
         {
             BHKWCtrl ctrl = new BHKWCtrl();
-            OdbcTransaction transaction = null;
 
             try
             {
                 ctrl.model = InitDatensatzUpdate();
-                transaction = Program.DBConnection.BeginTransaction();
-                ctrl.DBCommand.Transaction = transaction;
+  
                 if (ctrl.Update())
                 {
-                    transaction.Commit();
                     MessageBox.Show("Datensatz gespeichert");
                 }
                 else
                 {
-                    transaction.Rollback();
                     MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
                 }
                 Close();
             }
-            catch (Exception ex)
+            catch 
             {
-                Console.WriteLine(ex.Message);
-                try
-                {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
-                }
-                catch
-                {
-                    // Do nothing here; transaction is not active.
-                }
+                MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
             }
         }
 
@@ -186,9 +172,8 @@ namespace WindowsFormsApplication1
             frmLabel.Location = p1;
             frmLabel.m_szName = "";
             frmLabel.SetControl();
-            frmLabel.ShowDialog();
 
-            if (frmLabel.result == DialogResult.OK)
+            if (frmLabel.ShowDialog() == DialogResult.OK)
             {
                 try
                 {
@@ -205,34 +190,22 @@ namespace WindowsFormsApplication1
                     rs.Close();
 
                     BHKWCtrl ctrl = new BHKWCtrl();
-                    ctrl.DBCommand.Transaction = transaction;
                     ctrl.model = InitDatensatzUpdate();
                     if (ctrl.Update())
                     {
-                        transaction.Commit();
                         this.DialogResult = DialogResult.OK;
                         MessageBox.Show("Datensatz gespeichert");
                     }
                     else
                     {
-                        transaction.Rollback();
                         this.DialogResult = DialogResult.Cancel;
                         MessageBox.Show("Fehler beim Speichern des Datensatzes!");
                     }
                     Close();
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Console.WriteLine(ex.Message);
-                    try
-                    {
-                        // Attempt to roll back the transaction.
-                        transaction.Rollback();
-                    }
-                    catch
-                    {
-                        // Do nothing here; transaction is not active.
-                    }
+                    MessageBox.Show("Fehler beim Speichern des Datensatzes!");
                 }
             }
         }
@@ -254,34 +227,22 @@ namespace WindowsFormsApplication1
                 rs.Close();
 
                 BHKWCtrl ctrl = new BHKWCtrl();
-                ctrl.DBCommand.Transaction = transaction;
                 ctrl.model = InitDatensatzUpdate();
                 if (ctrl.Update())
                 {
-                    transaction.Commit();
                     this.DialogResult = DialogResult.OK;
                     MessageBox.Show("Datensatz gespeichert");
                 }
                 else
                 {
-                    transaction.Rollback();
                     this.DialogResult = DialogResult.Cancel;
                     MessageBox.Show("Fehler beim Speichern des Datensatzes!");
                 }
                 Close();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex.Message);
-                try
-                {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
-                }
-                catch
-                {
-                    // Do nothing here; transaction is not active.
-                }
+                MessageBox.Show("Fehler beim Speichern des Datensatzes!");
             }
 
         }

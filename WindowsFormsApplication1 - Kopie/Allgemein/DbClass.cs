@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Win32;
+using System;
 using System.Data;
 using System.Data.Odbc;
-using System.Data.SqlClient;
+using System.Data.OleDb;
 using System.IO;
-using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -74,7 +73,7 @@ namespace WindowsFormsApplication1
                                 cmd.ExecuteNonQuery();
                                 targetConn.Close();
                             }
-                            catch (Exception ex)
+                            catch
                             {
                                 // Fehlerausgabe
                                 targetConn.Close(); 
@@ -107,7 +106,7 @@ namespace WindowsFormsApplication1
                 });
                 return result;
             }
-            catch (Exception ex)
+            catch
             {
                 // Fehler im UI-Thread anzeigen
                 return false;
@@ -289,5 +288,6 @@ namespace WindowsFormsApplication1
                 return false;
             }
         }
+
     }
 }

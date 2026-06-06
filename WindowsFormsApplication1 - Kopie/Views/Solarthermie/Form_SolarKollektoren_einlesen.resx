@@ -155,6 +155,9 @@
   <data name="btn_Uebernehmen.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
+  <data name="btn_Uebernehmen.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
   <data name="btn_Uebernehmen.Location" type="System.Drawing.Point, System.Drawing">
     <value>484, 535</value>
   </data>
@@ -169,7 +172,7 @@
     <value>5</value>
   </data>
   <data name="btn_Uebernehmen.Text" xml:space="preserve">
-    <value>Speichern DB</value>
+    <value>Speichern</value>
   </data>
   <data name="&gt;&gt;btn_Uebernehmen.Name" xml:space="preserve">
     <value>btn_Uebernehmen</value>

@@ -118,11 +118,26 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="listBox_SP.Location" type="System.Drawing.Point, System.Drawing">
+    <value>25, 64</value>
+  </data>
+  <data name="btn_Hinzu.Location" type="System.Drawing.Point, System.Drawing">
+    <value>272, 92</value>
+  </data>
+  <data name="btn_Entfernen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>272, 127</value>
+  </data>
+  <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 43</value>
+  </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>153, 19</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
     <value>selected power storage:</value>
+  </data>
+  <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>353, 42</value>
   </data>
   <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
     <value>191, 19</value>
@@ -138,6 +153,12 @@
   </data>
   <data name="btn_Bearbeiten.Text" xml:space="preserve">
     <value>Edit...</value>
+  </data>
+  <data name="dataGridView1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>357, 64</value>
+  </data>
+  <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 148</value>
   </data>
   <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
     <value>110, 19</value>
@@ -166,31 +187,13 @@
   <data name="label4.Text" xml:space="preserve">
     <value>Type:</value>
   </data>
+  <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 234</value>
+  </data>
   <data name="groupBox1.Text" xml:space="preserve">
     <value>Module</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Electricity storage</value>
-  </data>
-  <data name="btn_Hinzu.Text" xml:space="preserve">
-    <value>◀</value>
-  </data>
-  <data name="btn_Entfernen.Text" xml:space="preserve">
-    <value>▶</value>
-  </data>
-  <data name="label6.Text" xml:space="preserve">
-    <value>Degradation [%/a]:</value>
-  </data>
-  <data name="label3.Text" xml:space="preserve">
-    <value>Name:</value>
-  </data>
-  <data name="btn_OK.Text" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="textBox_Leistung.Text" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="textBox_Ladezustand.Text" xml:space="preserve">
-    <value>98</value>
   </data>
 </root>

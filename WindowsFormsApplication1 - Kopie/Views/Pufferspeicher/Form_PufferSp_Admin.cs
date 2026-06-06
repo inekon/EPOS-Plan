@@ -177,9 +177,8 @@ namespace WindowsFormsApplication1
 
             frmLabel.m_szName = "";
             frmLabel.SetControl();
-            frmLabel.ShowDialog();
 
-            if (frmLabel.result == DialogResult.OK)
+            if (frmLabel.ShowDialog() == DialogResult.OK)
             {
                 RecordSet rs = new RecordSet();
                 rs.Open("select Bezeichner from Tab_Pufferspeicher where Bezeichner='" + frmLabel.m_szName + "'");

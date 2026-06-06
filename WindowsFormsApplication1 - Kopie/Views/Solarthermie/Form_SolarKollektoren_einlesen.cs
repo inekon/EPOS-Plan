@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
 
             Liste_Kollektoren.Items.Clear();
 
-            string szAppDataPath = Path.Combine(Program.ApplicationPath_User, "VDI_Solarthermie");
+            string szAppDataPath = Path.Combine(Properties.Settings.Default.VDI3805Path, "VDI_Solarthermie");
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
 

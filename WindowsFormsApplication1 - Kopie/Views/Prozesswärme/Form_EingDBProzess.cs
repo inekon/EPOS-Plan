@@ -120,9 +120,7 @@ namespace WindowsFormsApplication1
             p1 = this.PointToScreen(p1);
             frm.Location = p1;
 
-            frm.ShowDialog();
-
-            if (frm.result == DialogResult.OK)
+            if (frm.ShowDialog() == DialogResult.OK)
             {
                 RecordSet rs = new RecordSet();
                 rs.Open("select Prozessname from Tab_Prozesswaerme where prozessname='" + frm.m_szName + "'");

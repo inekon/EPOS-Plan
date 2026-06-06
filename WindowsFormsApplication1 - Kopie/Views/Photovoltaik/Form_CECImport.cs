@@ -528,7 +528,7 @@ namespace WindowsFormsApplication1
 
             string dateiPfad = "";
 
-            string szAppDataPath = Path.Combine(Program.ApplicationPath_User, "PAN");
+            string szAppDataPath = Path.Combine(Properties.Settings.Default.VDI3805Path, "PAN");
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
 

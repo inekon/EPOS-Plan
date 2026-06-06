@@ -15,8 +15,16 @@ namespace WindowsFormsApplication1
         public int status = 0;
         private bool bUpdateWizardSymbole = false;
 
-        private SimulationStrombedarf simulationStrombedarf = new SimulationStrombedarf();
-        private SimulationWaermebedarf simulationWaermebedarf = new SimulationWaermebedarf();
+        // Lazy initialisiert – nicht als Field-Initializer, sonst versucht der
+        // WinForms-Designer die Klassen zu instanziieren und scheitert am
+        // DB-/COM-Zugriff im Konstruktor von SimulationStrombedarf.
+        private SimulationStrombedarf _simulationStrombedarf;
+        private SimulationStrombedarf simulationStrombedarf
+            => _simulationStrombedarf ??= new SimulationStrombedarf();
+
+        private SimulationWaermebedarf _simulationWaermebedarf;
+        private SimulationWaermebedarf simulationWaermebedarf
+            => _simulationWaermebedarf ??= new SimulationWaermebedarf();
 
         // Definition des Dictionarys
         // Key: Name des Controls oder ein Tag

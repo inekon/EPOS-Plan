@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     public partial class Form_ProjektOpen : Form
     {
         public string m_szProjekt;
-        public int ID_Klimaregion;
+        public int m_ID_Klimaregion;
         public int m_ID_Projekt;
         public string m_szKlimaregion;
         public string m_szKunde;
@@ -24,7 +24,7 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             m_szProjekt = "";
             m_szKlimaregion = "";
-            ID_Klimaregion = 0;
+            m_ID_Klimaregion = 0;
             m_ID_Projekt = 0;
 
             listView_Projekt.View = View.Details;
@@ -66,13 +66,14 @@ namespace WindowsFormsApplication1
             KlimaregionCtrl ctrl_klimaregion = new KlimaregionCtrl();
 
             if (m_szProjekt == "") return;
-            ctrl_projekt.ReadSingle("Select * from Tab_Projekt where Projektname='" + m_szProjekt + "'");
+            ctrl_projekt.ReadSingle(m_szProjekt);
 
             m_szProjekt = ctrl_projekt.m_szProjektname;
             m_ID_Projekt = ctrl_projekt.m_ID;
             m_Datum = ctrl_projekt.m_Aenderungsdatum;
             m_szBearbeiter = ctrl_projekt.m_szBearbeiter;
             m_szKunde = ctrl_projekt.m_szKunde;
+            m_ID_Klimaregion = ctrl_projekt.m_ID_Klimaregion;
             
             ctrl_app.m_ID_Projekt = ctrl_projekt.m_ID;
             ctrl_app.m_szProjektname = ctrl_projekt.m_szProjektname;
