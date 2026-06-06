@@ -12,6 +12,15 @@ namespace WindowsFormsApplication1
         public MDIMainForm()
         {
             InitializeComponent();
+
+            // Statt MDI: reguläre SDI-Hauptform.
+            // Form_Start wird unten in MDIMainForm_Load als eingebettete Form
+            // (TopLevel=false) ins Controls-Collection gehängt – wie ein UserControl.
+            this.IsMdiContainer = false;
+
+            // Beim Start vollflächig, aber später vom Nutzer skalierbar.
+            this.WindowState = FormWindowState.Maximized;
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         private void MenuItem_Neu_Click(object sender, EventArgs e)
@@ -39,7 +48,18 @@ namespace WindowsFormsApplication1
             }
             label_OnlineDoku.Visible = false;
 
-            Program.startfrm = (Form_Start)Program.menuectrl.OpenForm(typeof(Form_Start), true);
+            // Form_Start als eingebettete Hauptansicht (kein MDI-Child mehr).
+            // TopLevel=false erlaubt es, eine Form wie ein UserControl in Controls.Add zu hängen.
+            // Dock=Fill sorgt für korrekte Skalierung beim Resize/DPI-Wechsel.
+            Program.startfrm = new Form_Start
+            {
+                TopLevel = false,
+                FormBorderStyle = FormBorderStyle.None,
+                Dock = DockStyle.Fill,
+            };
+            this.Controls.Add(Program.startfrm);
+            Program.startfrm.BringToFront();
+            Program.startfrm.Show();
         }
 
         private void MenuItem_zuletztGeöffnet_Click(object sender, EventArgs e)

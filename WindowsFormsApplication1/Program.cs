@@ -53,6 +53,7 @@ namespace WindowsFormsApplication1
                 Thread.CurrentThread.CurrentUICulture = culture_en;
             }
 
+            // DPI-Awareness (PerMonitorV2) wird über app.manifest gesetzt.
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 

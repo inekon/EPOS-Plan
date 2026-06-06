@@ -1,50 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
+    /// <summary>
+    /// Helfer-Klasse zum Öffnen von Sub-Forms.
+    ///
+    /// Historisch: Die App war eine MDI-Anwendung; "openForm" hat Sub-Forms als MDI-Children
+    /// in MDIMainForm eingehängt. Seit der Umstellung auf SDI (MDIMainForm.IsMdiContainer=false,
+    /// Form_Start als eingebettete Hauptansicht) werden Sub-Forms stattdessen
+    /// **modal** über der Hauptform gezeigt.
+    /// </summary>
     class MDIHelperClass
     {
         public Form newMDIChild;
 
         public Form openForm(Type clazz, Form mainForm)
         {
-            Object theObject = Activator.CreateInstance(clazz);
-            Form parentForm = mainForm; // Hier muss die Instanz des übergeordneten MDI-Formulars sein
+            object theObject = Activator.CreateInstance(clazz);
+            Form openFrm = (Form)theObject;
 
-            // Zugriff auf die Sammlung der MDI-Child-Fenster
-            Form[] mdiChildren = parentForm.MdiChildren;
-
-            // Iterieren über die Sammlung
-            bool bFound = false;
-            foreach (Form childForm in mdiChildren)
+            // Owner setzen, damit die Dialog-Form korrekt minimiert/positioniert wird
+            // und immer über der Hauptform liegt.
+            newMDIChild = openFrm;
+            if (mainForm != null && !mainForm.IsDisposed)
             {
-                Console.WriteLine("MDI-Child-Fenster: " + childForm.Text);
-
-                if (childForm.Text == ((Form)theObject).Text)
-                {
-                    childForm.BringToFront();
-                    bFound = true;
-                    newMDIChild = childForm;
-                }
+                openFrm.ShowDialog(mainForm);
             }
-
-            if (!bFound)
+            else
             {
-                newMDIChild = (Form)theObject;
- 
-                // Set the Parent Form of the Child window.
-                newMDIChild.MdiParent = mainForm;
-
-                newMDIChild.Height = mainForm.ClientRectangle.Height - System.Windows.Forms.SystemInformation.HorizontalScrollBarHeight; ;
-                newMDIChild.Width = mainForm.ClientRectangle.Width - System.Windows.Forms.SystemInformation.VerticalScrollBarWidth; 
-                // Display the new form.
-                newMDIChild.Show();
+                openFrm.ShowDialog();
             }
-            mainForm.Refresh();
             return newMDIChild;
         }
     }
