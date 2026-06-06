@@ -37,7 +37,8 @@ namespace WindowsFormsApplication1
 
         private void Form_Start_Load(object sender, EventArgs e)
         {
-            WindowState = FormWindowState.Maximized;
+            // Form_Start wird als eingebettete Form (TopLevel=false) in MDIMainForm
+            // angezeigt – kein eigenes WindowState mehr nötig (der Host dockt sie auf Fill).
             tabControl_Wizard.DrawMode = TabDrawMode.OwnerDrawFixed;
             tabControl_Wizard.DrawItem += tabControl_Wizard_DrawItem;
             for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = false;
@@ -68,6 +69,12 @@ namespace WindowsFormsApplication1
 
             // jedes Control mit einem passenden Key in der Doku verbinden
             _helpExtender.RegisterForm(this);
+
+            // Scrollbars aktivieren, falls der Designer-Inhalt (1620x932 px) größer
+            // ist als der verfügbare Platz – schneidet sonst auf kleineren Bildschirmen ab.
+            this.AutoScroll = true;
+            foreach (TabPage tp in tabControl_Wizard.TabPages)
+                tp.AutoScroll = true;
         }
 
         private void tabControl_Wizard_DrawItem(object sender, DrawItemEventArgs e)
