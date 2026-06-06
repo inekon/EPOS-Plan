@@ -1,120 +1,127 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
+using System.Data;
 
 namespace WindowsFormsApplication1
 {
     class GebaeudeCtrl : GebaeudeModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
         public GebaeudeModel model;
 
+        // --- Kompatibilitäts-Layer ---
+        private List<GebaeudeModel> _internalList = new List<GebaeudeModel>();
+
+        // Verhindert die Warnung durch 'new' und hält die UI-Logik am Laufen
+        public int rows => _internalList.Count;
+        public List<GebaeudeModel> items => _internalList;
+   
         public GebaeudeCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
             model = new GebaeudeModel();
         }
-        ~GebaeudeCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
-        }
+
+        #region --- DATABASE OPERATIONS ---
 
         public void ReadAll(string szFilter = "Wohngebaeude_Nicht_Wohngebaeude='Wohngebaeude'")
         {
-            string sql;
-            if (szFilter != "")
+            string sql = "SELECT * FROM [Tab_Gebaeude]";
+            if (!string.IsNullOrEmpty(szFilter))
             {
-                sql = "select * from [Tab_Gebaeude] where " + szFilter + " order by Gebaeudename";
+                sql += " WHERE " + szFilter;
             }
-            else
-            {
-                sql = "select * from [Tab_Gebaeude] order by Gebaeudename";
-            }
-            Tab_Gebaeude(sql);
+            sql += " ORDER BY Gebaeudename";
+
+            ExecuteRead(sql);
         }
 
         public void Read(string sql)
         {
-            Tab_Gebaeude(sql);
+            ExecuteRead(sql);
         }
 
-        private void Tab_Gebaeude(string sql)
+        private void ExecuteRead(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            // Nutzt das neue Repository
+            DataTable dt = DataRepository.GetDataTable(sql);
 
-            items = new GebaeudeModel[1000];
-            rows = 0;
+            _internalList.Clear();
 
-            while (DBReader.Read())
+            foreach (DataRow row in dt.Rows)
             {
-                GebaeudeModel item = new GebaeudeModel();
-
-                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.Gebaeudename = DBReader.GetValue(1).ToString();
-                if (!DBReader.IsDBNull(2)) item.Typ = DBReader.GetValue(2).ToString();
-                if (!DBReader.IsDBNull(3)) item.Beschreibung = DBReader.GetValue(3).ToString();
-                if (!DBReader.IsDBNull(4)) item.Wohnflaeche_gesamt = (double)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.Bewohner = (double)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.Flaeche_Nutzer = (double)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) item.Interne_Waermegewinne = (double)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) item.Bauweise = (double)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) item.Fensterflaeche_Sued = (double)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) item.Fensterflaeche_Ost = (double)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) item.Fensterflaeche_Nord = (double)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(12)) item.Fensterdurchlassgrad = (double)DBReader.GetValue(12);
-                if (!DBReader.IsDBNull(13)) item.Raumsolltemperatur_Nachtabsenkung = (double)DBReader.GetValue(13);
-                if (!DBReader.IsDBNull(14)) item.Raumsolltemperatur_Tag = (double)DBReader.GetValue(14);
-                if (!DBReader.IsDBNull(15)) item.Raumsolltemperatur_Wochenende = (double)DBReader.GetValue(15);
-                if (!DBReader.IsDBNull(16)) item.Raumsolltemperatur_Ferien = (double)DBReader.GetValue(16);
-                if (!DBReader.IsDBNull(17)) item.Maximaleraumtemperatur = (double)DBReader.GetValue(17);
-                if (!DBReader.IsDBNull(18)) item.k_Wert_Außenwand = (double)DBReader.GetValue(18);
-                if (!DBReader.IsDBNull(19)) item.k_Wert_Fenster = (double)DBReader.GetValue(19);
-                if (!DBReader.IsDBNull(20)) item.k_Wert_Dachflaeche = (double)DBReader.GetValue(20);
-                if (!DBReader.IsDBNull(21)) item.k_Wert_Grundflaeche = (double)DBReader.GetValue(21);
-                if (!DBReader.IsDBNull(22)) item.k_Wert_Sonstiges = (double)DBReader.GetValue(22);
-                if (!DBReader.IsDBNull(23)) item.Flaeche_Außenwand = (double)DBReader.GetValue(23);
-                if (!DBReader.IsDBNull(24)) item.gesamte_Fensterflaeche = (double)DBReader.GetValue(24);
-                if (!DBReader.IsDBNull(25)) item.Dachflaeche = (double)DBReader.GetValue(25);
-                if (!DBReader.IsDBNull(26)) item.Grundflaeche = (double)DBReader.GetValue(26);
-                if (!DBReader.IsDBNull(27)) item.Sonstige_Flaechen = (double)DBReader.GetValue(27);
-                if (!DBReader.IsDBNull(28)) item.Wohnflaeche = (double)DBReader.GetValue(28);
-                if (!DBReader.IsDBNull(29)) item.Raumhoehe = (double)DBReader.GetValue(29);
-                if (!DBReader.IsDBNull(30)) item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand = (double)DBReader.GetValue(30);
-                if (!DBReader.IsDBNull(31)) item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach = (double)DBReader.GetValue(31);
-                if (!DBReader.IsDBNull(32)) item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke = (double)DBReader.GetValue(32);
-                if (!DBReader.IsDBNull(33)) item.Abmessung_Anschluß_Fenster_Wand = (double)DBReader.GetValue(33);
-                if (!DBReader.IsDBNull(34)) item.Abmessung_Anschluß_Wand_Dach = (double)DBReader.GetValue(34);
-                if (!DBReader.IsDBNull(35)) item.Abmessung_Anschluß_Außenwand_Kellerdecke = (double)DBReader.GetValue(35);
-                if (!DBReader.IsDBNull(36)) item.Luftwechselrate = (double)DBReader.GetValue(36);
-                if (!DBReader.IsDBNull(37)) item.Wochenende = (double)DBReader.GetValue(37);
-                if (!DBReader.IsDBNull(38)) item.Ferien = (double)DBReader.GetValue(38);
-                if (!DBReader.IsDBNull(39)) item.Ferienbeginn_1 = (double)DBReader.GetValue(39);
-                if (!DBReader.IsDBNull(40)) item.Ferienende_1 = (double)DBReader.GetValue(40);
-                if (!DBReader.IsDBNull(41)) item.Ferienbeginn_2 = (double)DBReader.GetValue(41);
-                if (!DBReader.IsDBNull(42)) item.Ferienende_2 = (double)DBReader.GetValue(42);
-                if (!DBReader.IsDBNull(43)) item.Ferienbeginn_3 = (double)DBReader.GetValue(43);
-                if (!DBReader.IsDBNull(44)) item.Ferienende_3 = (double)DBReader.GetValue(44);
-                if (!DBReader.IsDBNull(45)) item.Ferienbeginn_4 = (double)DBReader.GetValue(45);
-                if (!DBReader.IsDBNull(46)) item.Ferienende_4 = (double)DBReader.GetValue(46);
-                if (!DBReader.IsDBNull(47)) item.WW_Bedarf = (double)DBReader.GetValue(47);
-                if (!DBReader.IsDBNull(48)) item.spez_Waermeverbrauch = (double)DBReader.GetValue(48);
-                if (!DBReader.IsDBNull(49)) item.Waermebedarf = (double)DBReader.GetValue(49);
-                if (!DBReader.IsDBNull(50)) item.Baualtersklasse = DBReader.GetValue(50).ToString();
-                if (!DBReader.IsDBNull(51)) item.Gebaeudeart = DBReader.GetValue(51).ToString();
-                if (!DBReader.IsDBNull(52)) item.Wohngebaeude_Nicht_Wohngebaeude = DBReader.GetValue(52).ToString();
-  
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                _internalList.Add(MapRowToModel(row));
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
+
+        #endregion
+
+        #region --- MAPPING HELPER ---
+
+        private GebaeudeModel MapRowToModel(DataRow row)
+        {
+            GebaeudeModel item = new GebaeudeModel();
+
+            // Numerische Werte und Strings sicher konvertieren
+            item.ID = row[0] != DBNull.Value ? Convert.ToInt32(row[0]) : 0;
+            item.Gebaeudename = row[1]?.ToString() ?? "";
+            item.Typ = row[2]?.ToString() ?? "";
+            item.Beschreibung = row[3]?.ToString() ?? "";
+
+            // Double-Werte (Spalte 4 bis 49)
+            item.Wohnflaeche_gesamt = row[4] != DBNull.Value ? Convert.ToDouble(row[4]) : 0;
+            item.Bewohner = row[5] != DBNull.Value ? Convert.ToDouble(row[5]) : 0;
+            item.Flaeche_Nutzer = row[6] != DBNull.Value ? Convert.ToDouble(row[6]) : 0;
+            item.Interne_Waermegewinne = row[7] != DBNull.Value ? Convert.ToDouble(row[7]) : 0;
+            item.Bauweise = row[8] != DBNull.Value ? Convert.ToDouble(row[8]) : 0;
+            item.Fensterflaeche_Sued = row[9] != DBNull.Value ? Convert.ToDouble(row[9]) : 0;
+            item.Fensterflaeche_Ost = row[10] != DBNull.Value ? Convert.ToDouble(row[10]) : 0;
+            item.Fensterflaeche_Nord = row[11] != DBNull.Value ? Convert.ToDouble(row[11]) : 0;
+            item.Fensterdurchlassgrad = row[12] != DBNull.Value ? Convert.ToDouble(row[12]) : 0;
+            item.Raumsolltemperatur_Nachtabsenkung = row[13] != DBNull.Value ? Convert.ToDouble(row[13]) : 0;
+            item.Raumsolltemperatur_Tag = row[14] != DBNull.Value ? Convert.ToDouble(row[14]) : 0;
+            item.Raumsolltemperatur_Wochenende = row[15] != DBNull.Value ? Convert.ToDouble(row[15]) : 0;
+            item.Raumsolltemperatur_Ferien = row[16] != DBNull.Value ? Convert.ToDouble(row[16]) : 0;
+            item.Maximaleraumtemperatur = row[17] != DBNull.Value ? Convert.ToDouble(row[17]) : 0;
+            item.k_Wert_Außenwand = row[18] != DBNull.Value ? Convert.ToDouble(row[18]) : 0;
+            item.k_Wert_Fenster = row[19] != DBNull.Value ? Convert.ToDouble(row[19]) : 0;
+            item.k_Wert_Dachflaeche = row[20] != DBNull.Value ? Convert.ToDouble(row[20]) : 0;
+            item.k_Wert_Grundflaeche = row[21] != DBNull.Value ? Convert.ToDouble(row[21]) : 0;
+            item.k_Wert_Sonstiges = row[22] != DBNull.Value ? Convert.ToDouble(row[22]) : 0;
+            item.Flaeche_Außenwand = row[23] != DBNull.Value ? Convert.ToDouble(row[23]) : 0;
+            item.gesamte_Fensterflaeche = row[24] != DBNull.Value ? Convert.ToDouble(row[24]) : 0;
+            item.Dachflaeche = row[25] != DBNull.Value ? Convert.ToDouble(row[25]) : 0;
+            item.Grundflaeche = row[26] != DBNull.Value ? Convert.ToDouble(row[26]) : 0;
+            item.Sonstige_Flaechen = row[27] != DBNull.Value ? Convert.ToDouble(row[27]) : 0;
+            item.Wohnflaeche = row[28] != DBNull.Value ? Convert.ToDouble(row[28]) : 0;
+            item.Raumhoehe = row[29] != DBNull.Value ? Convert.ToDouble(row[29]) : 0;
+            item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand = row[30] != DBNull.Value ? Convert.ToDouble(row[30]) : 0;
+            item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach = row[31] != DBNull.Value ? Convert.ToDouble(row[31]) : 0;
+            item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke = row[32] != DBNull.Value ? Convert.ToDouble(row[32]) : 0;
+            item.Abmessung_Anschluß_Fenster_Wand = row[33] != DBNull.Value ? Convert.ToDouble(row[33]) : 0;
+            item.Abmessung_Anschluß_Wand_Dach = row[34] != DBNull.Value ? Convert.ToDouble(row[34]) : 0;
+            item.Abmessung_Anschluß_Außenwand_Kellerdecke = row[35] != DBNull.Value ? Convert.ToDouble(row[35]) : 0;
+            item.Luftwechselrate = row[36] != DBNull.Value ? Convert.ToDouble(row[36]) : 0;
+            item.Wochenende = row[37] != DBNull.Value ? Convert.ToDouble(row[37]) : 0;
+            item.Ferien = row[38] != DBNull.Value ? Convert.ToDouble(row[38]) : 0;
+            item.Ferienbeginn_1 = row[39] != DBNull.Value ? Convert.ToDouble(row[39]) : 0;
+            item.Ferienende_1 = row[40] != DBNull.Value ? Convert.ToDouble(row[40]) : 0;
+            item.Ferienbeginn_2 = row[41] != DBNull.Value ? Convert.ToDouble(row[41]) : 0;
+            item.Ferienende_2 = row[42] != DBNull.Value ? Convert.ToDouble(row[42]) : 0;
+            item.Ferienbeginn_3 = row[43] != DBNull.Value ? Convert.ToDouble(row[43]) : 0;
+            item.Ferienende_3 = row[44] != DBNull.Value ? Convert.ToDouble(row[44]) : 0;
+            item.Ferienbeginn_4 = row[45] != DBNull.Value ? Convert.ToDouble(row[45]) : 0;
+            item.Ferienende_4 = row[46] != DBNull.Value ? Convert.ToDouble(row[46]) : 0;
+            item.WW_Bedarf = row[47] != DBNull.Value ? Convert.ToDouble(row[47]) : 0;
+            item.spez_Waermeverbrauch = row[48] != DBNull.Value ? Convert.ToDouble(row[48]) : 0;
+            item.Waermebedarf = row[49] != DBNull.Value ? Convert.ToDouble(row[49]) : 0;
+
+            // Restliche Strings
+            item.Baualtersklasse = row[50]?.ToString() ?? "";
+            item.Gebaeudeart = row[51]?.ToString() ?? "";
+            item.Wohngebaeude_Nicht_Wohngebaeude = row[52]?.ToString() ?? "";
+
+            return item;
+        }
+
+        #endregion
     }
 }

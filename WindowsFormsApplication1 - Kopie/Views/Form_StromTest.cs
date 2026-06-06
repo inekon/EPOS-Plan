@@ -41,13 +41,17 @@ namespace WindowsFormsApplication1
             // Stromlastgang zum Projekt
             Z_ProjektStromganglinieCtrl z_ProjektStromganglinieCtrl = new Z_ProjektStromganglinieCtrl();
             z_ProjektStromganglinieCtrl.ReadAll("Select * from Z_ProjektStromganglinie where ID_Projekt=" + ID_Projekt);
-            string szStromganglinie = z_ProjektStromganglinieCtrl.items[0].m_szStromganglinie; 
+            string szStromganglinie = "";
+            if (z_ProjektStromganglinieCtrl.rows > 0)
+                szStromganglinie = z_ProjektStromganglinieCtrl.items[0].m_szStromganglinie;
             comboBox_Lastgang.Text = szStromganglinie;
 
             // Stromverbraucher zum Projekt
             Z_ProjektStromverbraucherCtrl ctrl_profil = new Z_ProjektStromverbraucherCtrl();
             ctrl_profil.ReadAll("Select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + ID_Projekt);
-            string szStromverbraucher = ctrl_profil.items[0].m_szVerbraucher;
+            string szStromverbraucher = "";
+            if(ctrl_profil.rows >0 )
+                szStromverbraucher = ctrl_profil.items[0].m_szVerbraucher;
             comboBox_Stromprofil.Text = szStromverbraucher;
         }
 

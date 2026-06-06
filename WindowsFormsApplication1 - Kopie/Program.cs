@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Odbc;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
@@ -23,13 +24,17 @@ namespace WindowsFormsApplication1
         public static string ApplicationPath_User = "";
         public static int nLanguage = 0; // 0=de, 1=en  
 
+        // Der globale Katalog, auf den alle Formulare zugreifen können
+        public static WordPressHelpCatalog HelpCatalog { get; private set; }
+        private static Process _webServerProcess;
+
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
         /// </summary>
         [STAThread]
         static void Main()
         {
-              
+
             var key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
             if (key == null)
             {
@@ -46,8 +51,9 @@ namespace WindowsFormsApplication1
             {
                 var culture_en = new CultureInfo("en-US");
                 Thread.CurrentThread.CurrentUICulture = culture_en;
-            }   
+            }
 
+            // DPI-Awareness (PerMonitorV2) wird über app.manifest gesetzt.
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
@@ -88,9 +94,24 @@ namespace WindowsFormsApplication1
                 formUpdate.ShowDialog();
             }
 
+            // Katalog-Objekt einmalig erstellen
+            // HelpCatalog = new WordPressHelpCatalog("https://wordpress.org/news");
+            // Visuelle Hilfe lokal testen:
+            // Der Hilfe Server kann lokal simuliert werden durch einen einfachen HTTP-Server,
+            // 
+            // dotnet tool install --global dotnet-serve
+            // starten mit : dotnet serve --directory "C:\Pfad\zu\deinem\Hilfeordner" --port 8080
+            HelpCatalog = new WordPressHelpCatalog(Properties.Settings.Default.WordPressUrl); // Lokaler Testserver mit Testartik
+
+            // nur zum Testen, Testserver wird in dieser Funktion beim Starten des Programms automatisch aufgerufen,
+            // kein separates CMD Fensetr mit Aufruf nötig
+            StartLocalWebServer();
+
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);
-
+            
+            StopLocalWebServer();
+            
             db.closeDB();
             Application.Exit();
         }
@@ -229,7 +250,44 @@ namespace WindowsFormsApplication1
             public const string Add = "➕";   // \u2795
             public const string Remove = "➖";   // \u2796
         }
+
+        private static void StartLocalWebServer()
+        {
+            try
+            {
+                _webServerProcess = new Process();
+
+                // Da 'dotnet' ein globaler Systembefehl ist, können wir ihn direkt beim Namen nennen
+                _webServerProcess.StartInfo.FileName = "dotnet";
+
+                // Hier sagen wir dotnet-serve, welchen Ordner es auf welchem Port öffnen soll:
+                // "serve" = Tool aufrufen
+                // "-d C:\WPFake" = Dieses Verzeichnis ausliefern
+                // "-p 8080" = Port 8080 nutzen
+                _webServerProcess.StartInfo.Arguments = @"serve -d C:\WPFake -p 8080";
+
+                // WICHTIG: Macht das CMD-Fenster für den Benutzer unsichtbar
+                _webServerProcess.StartInfo.CreateNoWindow = true;
+                _webServerProcess.StartInfo.UseShellExecute = false;
+
+                _webServerProcess.Start();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Fehler beim Starten von dotnet-serve: " + ex.Message);
+            }
+        }
+
+        private static void StopLocalWebServer()
+        {
+            if (_webServerProcess != null && !_webServerProcess.HasExited)
+            {
+                _webServerProcess.Kill(); // Schließt dotnet-serve im Hintergrund wieder
+                _webServerProcess.Dispose();
+            }
+        }
+
+
     }
 
-    
 }

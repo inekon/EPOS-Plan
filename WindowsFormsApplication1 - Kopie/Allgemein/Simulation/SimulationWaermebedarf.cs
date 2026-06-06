@@ -102,7 +102,7 @@ namespace WindowsFormsApplication1
             RecordSet rs;
             
             m_ID_Projekt = ID_Projekt;
-       
+
             com.I_vector_init(ref Dauerlinie);
             com.I_vector_init(ref Dauerlinie_nicht_sortiert);
             com.I_vector_init(ref Waermebedarf_Extern);
@@ -112,7 +112,7 @@ namespace WindowsFormsApplication1
             com.I_vector_init(ref prozesswerte);
             com.I_vector_init(ref brauchwasserwerte);
 
-          //  if (!DBGelesen)
+            //  if (!DBGelesen)
             {
                 KlimadatenCtrl ctrl_klima = new KlimadatenCtrl();
                 ctrl_klima.ReadAll(ID_Klimaregion);

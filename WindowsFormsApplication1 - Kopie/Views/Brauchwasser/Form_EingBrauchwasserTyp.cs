@@ -112,6 +112,7 @@ namespace WindowsFormsApplication1
                 }
             }
             update(textBox_Beschreibung.Text,listBox_Typname.Text);
+            MessageBox.Show("Datensatz gespeichert!");
             chart1.Series[0].Points.DataBindY(arr_seriell); 
         }
 
@@ -185,7 +186,7 @@ namespace WindowsFormsApplication1
             frm.Location = p1;
             frm.ShowDialog();
 
-            if (frm.result == DialogResult.Cancel) return;
+            if (frm.ShowDialog() == DialogResult.Cancel) return;
 
             for (int Tag = 0; Tag < 7; Tag++)
             {
@@ -219,8 +220,7 @@ namespace WindowsFormsApplication1
             Point p1 = btn_SpeichernUnter.Location;
             p1 = this.PointToScreen(p1);
             frm.Location = p1;
-            frm.ShowDialog();
-            if (frm.result == DialogResult.Cancel) return;
+            if (frm.ShowDialog() == DialogResult.Cancel) return;
 
             DBCommand.CommandText = "INSERT INTO Tab_Brauchwassertyp ( Typname ) SELECT '" + frm.m_szName + "' AS Ausdr1";
             DBCommand.ExecuteNonQuery();

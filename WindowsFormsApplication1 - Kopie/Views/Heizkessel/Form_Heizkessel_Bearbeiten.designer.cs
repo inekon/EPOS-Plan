@@ -41,16 +41,8 @@ namespace WindowsFormsApplication1
             this.textBox_Hersteller = new System.Windows.Forms.TextBox();
             this.textBox_Beschreibung = new System.Windows.Forms.TextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.groupBox6 = new System.Windows.Forms.GroupBox();
-            this.radioButton_Heizoel = new System.Windows.Forms.RadioButton();
-            this.radioButton_Sonstige = new System.Windows.Forms.RadioButton();
-            this.radioButton_Strom = new System.Windows.Forms.RadioButton();
-            this.radioButton_Pellets = new System.Windows.Forms.RadioButton();
-            this.radioButton_Rapsoel = new System.Windows.Forms.RadioButton();
-            this.radioButton_Holz = new System.Windows.Forms.RadioButton();
-            this.radioButton_Fluessiggas = new System.Windows.Forms.RadioButton();
-            this.radioButton_Biogas = new System.Windows.Forms.RadioButton();
-            this.radioButton_Gas = new System.Windows.Forms.RadioButton();
+            this.label4 = new System.Windows.Forms.Label();
+            this.comboBox_Brennstoff = new System.Windows.Forms.ComboBox();
             this.Label6 = new System.Windows.Forms.Label();
             this.Label5 = new System.Windows.Forms.Label();
             this.Label7 = new System.Windows.Forms.Label();
@@ -95,12 +87,9 @@ namespace WindowsFormsApplication1
             this.Label43 = new System.Windows.Forms.Label();
             this.Label44 = new System.Windows.Forms.Label();
             this.btn_CO2 = new System.Windows.Forms.Button();
-            this.radioButton_Koks = new System.Windows.Forms.RadioButton();
-            this.radioButton_Kohle = new System.Windows.Forms.RadioButton();
-            this.radioButton_Bioheizöl = new System.Windows.Forms.RadioButton();
+            this.checkBox_Brennwert = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.groupBox6.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -181,7 +170,9 @@ namespace WindowsFormsApplication1
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.groupBox6);
+            this.groupBox2.Controls.Add(this.checkBox_Brennwert);
+            this.groupBox2.Controls.Add(this.label4);
+            this.groupBox2.Controls.Add(this.comboBox_Brennstoff);
             this.groupBox2.Controls.Add(this.Label6);
             this.groupBox2.Controls.Add(this.Label5);
             this.groupBox2.Controls.Add(this.Label7);
@@ -198,86 +189,16 @@ namespace WindowsFormsApplication1
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.TabStop = false;
             // 
-            // groupBox6
+            // label4
             // 
-            this.groupBox6.Controls.Add(this.radioButton_Bioheizöl);
-            this.groupBox6.Controls.Add(this.radioButton_Kohle);
-            this.groupBox6.Controls.Add(this.radioButton_Koks);
-            this.groupBox6.Controls.Add(this.radioButton_Heizoel);
-            this.groupBox6.Controls.Add(this.radioButton_Sonstige);
-            this.groupBox6.Controls.Add(this.radioButton_Strom);
-            this.groupBox6.Controls.Add(this.radioButton_Pellets);
-            this.groupBox6.Controls.Add(this.radioButton_Rapsoel);
-            this.groupBox6.Controls.Add(this.radioButton_Holz);
-            this.groupBox6.Controls.Add(this.radioButton_Fluessiggas);
-            this.groupBox6.Controls.Add(this.radioButton_Biogas);
-            this.groupBox6.Controls.Add(this.radioButton_Gas);
-            resources.ApplyResources(this.groupBox6, "groupBox6");
-            this.groupBox6.Name = "groupBox6";
-            this.groupBox6.TabStop = false;
+            resources.ApplyResources(this.label4, "label4");
+            this.label4.Name = "label4";
             // 
-            // radioButton_Heizoel
+            // comboBox_Brennstoff
             // 
-            resources.ApplyResources(this.radioButton_Heizoel, "radioButton_Heizoel");
-            this.radioButton_Heizoel.Name = "radioButton_Heizoel";
-            this.radioButton_Heizoel.TabStop = true;
-            this.radioButton_Heizoel.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Sonstige
-            // 
-            resources.ApplyResources(this.radioButton_Sonstige, "radioButton_Sonstige");
-            this.radioButton_Sonstige.Name = "radioButton_Sonstige";
-            this.radioButton_Sonstige.TabStop = true;
-            this.radioButton_Sonstige.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Strom
-            // 
-            resources.ApplyResources(this.radioButton_Strom, "radioButton_Strom");
-            this.radioButton_Strom.Name = "radioButton_Strom";
-            this.radioButton_Strom.TabStop = true;
-            this.radioButton_Strom.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Pellets
-            // 
-            resources.ApplyResources(this.radioButton_Pellets, "radioButton_Pellets");
-            this.radioButton_Pellets.Name = "radioButton_Pellets";
-            this.radioButton_Pellets.TabStop = true;
-            this.radioButton_Pellets.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Rapsoel
-            // 
-            resources.ApplyResources(this.radioButton_Rapsoel, "radioButton_Rapsoel");
-            this.radioButton_Rapsoel.Name = "radioButton_Rapsoel";
-            this.radioButton_Rapsoel.TabStop = true;
-            this.radioButton_Rapsoel.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Holz
-            // 
-            resources.ApplyResources(this.radioButton_Holz, "radioButton_Holz");
-            this.radioButton_Holz.Name = "radioButton_Holz";
-            this.radioButton_Holz.TabStop = true;
-            this.radioButton_Holz.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Fluessiggas
-            // 
-            resources.ApplyResources(this.radioButton_Fluessiggas, "radioButton_Fluessiggas");
-            this.radioButton_Fluessiggas.Name = "radioButton_Fluessiggas";
-            this.radioButton_Fluessiggas.TabStop = true;
-            this.radioButton_Fluessiggas.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Biogas
-            // 
-            resources.ApplyResources(this.radioButton_Biogas, "radioButton_Biogas");
-            this.radioButton_Biogas.Name = "radioButton_Biogas";
-            this.radioButton_Biogas.TabStop = true;
-            this.radioButton_Biogas.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Gas
-            // 
-            resources.ApplyResources(this.radioButton_Gas, "radioButton_Gas");
-            this.radioButton_Gas.Name = "radioButton_Gas";
-            this.radioButton_Gas.TabStop = true;
-            this.radioButton_Gas.UseVisualStyleBackColor = true;
+            this.comboBox_Brennstoff.FormattingEnabled = true;
+            resources.ApplyResources(this.comboBox_Brennstoff, "comboBox_Brennstoff");
+            this.comboBox_Brennstoff.Name = "comboBox_Brennstoff";
             // 
             // Label6
             // 
@@ -557,26 +478,11 @@ namespace WindowsFormsApplication1
             this.btn_CO2.UseVisualStyleBackColor = true;
             this.btn_CO2.Click += new System.EventHandler(this.btn_CO2_Click);
             // 
-            // radioButton_Koks
+            // checkBox_Brennwert
             // 
-            resources.ApplyResources(this.radioButton_Koks, "radioButton_Koks");
-            this.radioButton_Koks.Name = "radioButton_Koks";
-            this.radioButton_Koks.TabStop = true;
-            this.radioButton_Koks.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Kohle
-            // 
-            resources.ApplyResources(this.radioButton_Kohle, "radioButton_Kohle");
-            this.radioButton_Kohle.Name = "radioButton_Kohle";
-            this.radioButton_Kohle.TabStop = true;
-            this.radioButton_Kohle.UseVisualStyleBackColor = true;
-            // 
-            // radioButton_Bioheizöl
-            // 
-            resources.ApplyResources(this.radioButton_Bioheizöl, "radioButton_Bioheizöl");
-            this.radioButton_Bioheizöl.Name = "radioButton_Bioheizöl";
-            this.radioButton_Bioheizöl.TabStop = true;
-            this.radioButton_Bioheizöl.UseVisualStyleBackColor = true;
+            resources.ApplyResources(this.checkBox_Brennwert, "checkBox_Brennwert");
+            this.checkBox_Brennwert.Name = "checkBox_Brennwert";
+            this.checkBox_Brennwert.UseVisualStyleBackColor = true;
             // 
             // Form_Heizkessel_Bearbeiten
             // 
@@ -596,8 +502,6 @@ namespace WindowsFormsApplication1
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            this.groupBox6.ResumeLayout(false);
-            this.groupBox6.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox4.ResumeLayout(false);
@@ -610,10 +514,10 @@ namespace WindowsFormsApplication1
 
         #endregion
 
-private System.Windows.Forms.Button btn_Abbrechen;
-private System.Windows.Forms.Button btn_Ueberschreiben;
-private System.Windows.Forms.Button btn_Speichern_Unter;
-private System.Windows.Forms.Button btn_Speichern;
+        private System.Windows.Forms.Button btn_Abbrechen;
+        private System.Windows.Forms.Button btn_Ueberschreiben;
+        private System.Windows.Forms.Button btn_Speichern_Unter;
+        private System.Windows.Forms.Button btn_Speichern;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label Label1;
         private System.Windows.Forms.Label Label2;
@@ -666,18 +570,8 @@ private System.Windows.Forms.Button btn_Speichern;
         private System.Windows.Forms.Label Label43;
         private System.Windows.Forms.Label Label44;
         private System.Windows.Forms.Button btn_CO2;
-        private System.Windows.Forms.GroupBox groupBox6;
-        private System.Windows.Forms.RadioButton radioButton_Heizoel;
-        private System.Windows.Forms.RadioButton radioButton_Sonstige;
-        private System.Windows.Forms.RadioButton radioButton_Strom;
-        private System.Windows.Forms.RadioButton radioButton_Pellets;
-        private System.Windows.Forms.RadioButton radioButton_Rapsoel;
-        private System.Windows.Forms.RadioButton radioButton_Holz;
-        private System.Windows.Forms.RadioButton radioButton_Fluessiggas;
-        private System.Windows.Forms.RadioButton radioButton_Biogas;
-        private System.Windows.Forms.RadioButton radioButton_Gas;
-        private System.Windows.Forms.RadioButton radioButton_Kohle;
-        private System.Windows.Forms.RadioButton radioButton_Koks;
-        private System.Windows.Forms.RadioButton radioButton_Bioheizöl;
+        private System.Windows.Forms.ComboBox comboBox_Brennstoff;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.CheckBox checkBox_Brennwert;
     }
 }

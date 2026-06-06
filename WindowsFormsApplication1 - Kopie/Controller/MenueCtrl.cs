@@ -38,7 +38,7 @@ namespace WindowsFormsApplication1
        public void SetProjektname()
        {
             ApplikationCtrl ctrl = new ApplikationCtrl();
-            ctrl.ReadSingle("Select * from Tab_Applikation where ID=1");
+            ctrl.ReadSingle();
             FormMain frm = (FormMain)Program.mainfrm;
             frm.SetProjekt(ctrl.m_szProjektname);
        }
@@ -104,7 +104,7 @@ namespace WindowsFormsApplication1
            ApplikationCtrl ctrl = new ApplikationCtrl();
            ProjektCtrl ctrlproj = new ProjektCtrl();
 
-           ctrl.ReadSingle("Select * from Tab_Applikation where ID=1");
+           ctrl.ReadSingle();
 
            if (!zuletzt)
            {
@@ -114,10 +114,11 @@ namespace WindowsFormsApplication1
                    Program.mainfrm = (FormMain)Program.menuectrl.OpenForm(typeof(FormMain), true);
                    FormMain frmmain = (FormMain)Program.mainfrm;
                     
-                   ctrlproj.ReadSingle("Select * from Tab_Projekt where ID=" + frm.m_ID_Projekt);
+                   ctrlproj.ReadSingle(frm.m_szProjekt);
                    frmmain.SetProjekt(frm.m_szProjekt);
                    frmmain.SetIDProjekt(frm.m_ID_Projekt);
                    frmmain.SetKlima(frm.m_szKlimaregion);
+                   Program.startfrm.SetKlima(frm.m_szKlimaregion);
                    frmmain.SetBearbeiter(ctrlproj.m_szBearbeiter);
                    frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);
                    frmmain.SetBeschreibung(ctrlproj.m_szBeschreibung);                
@@ -159,10 +160,11 @@ namespace WindowsFormsApplication1
                    Program.mainfrm = (FormMain)Program.menuectrl.OpenForm(typeof(FormMain), true);
                    FormMain frmmain = (FormMain)Program.mainfrm;
 
-                   ctrlproj.ReadSingle("Select * from Tab_Projekt where ID=" + ctrl.m_ID_Projekt);
+                   ctrlproj.ReadSingle(ctrl.m_szProjektname);
                    frmmain.SetProjekt(ctrl.m_szProjektname);
                    frmmain.SetIDProjekt(ctrl.m_ID_Projekt);
                    frmmain.SetKlima(frmmain.GetKlimaregion(ctrlproj.m_ID_Klimaregion));
+                   Program.startfrm.SetKlima(frmmain.GetKlimaregion(ctrlproj.m_ID_Klimaregion)); 
                    frmmain.SetBearbeiter(ctrlproj.m_szBearbeiter);
                    frmmain.SetKunde(ctrlproj.m_szKunde);
                    frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);
@@ -199,12 +201,12 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public void ProjektDelete(bool zuletzt = false)
+       public string ProjektDelete(bool zuletzt = false)
        {
             ProjektCtrl ctrlproj = new ProjektCtrl();
             WErzeugerCtrl ctrlwerz = new WErzeugerCtrl();
-            ApplikationCtrl ctrlapp = new ApplikationCtrl();
             Form_ProjektDelete frm = new Form_ProjektDelete();
+            string szProjekt = "";
  
             DialogResult ret = frm.ShowDialog();
             if (ret == DialogResult.OK)
@@ -229,13 +231,13 @@ namespace WindowsFormsApplication1
                 {
                     // Fehler beim Datenbankzugriff abfangen
                     Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                    return;
+                    return "";
                 }
                 catch (Exception ex)
                 {
                     // Allgemeine Fehler abfangen
                     Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                    return;
+                    return "";
                 }
 
                 ctrlwerz.ID_Projekt = frm.ID_Projekt;
@@ -243,7 +245,9 @@ namespace WindowsFormsApplication1
 
                 ctrlproj.m_szProjektname = frm.szProjekt;
                 ctrlproj.Delete(frm.szProjekt);
+                szProjekt = frm.szProjekt; 
             }
+            return szProjekt; 
        }
 
        public void WP_Administration()

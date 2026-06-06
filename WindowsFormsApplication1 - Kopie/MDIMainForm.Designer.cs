@@ -68,6 +68,9 @@
             this.MeniItem_VDI3805 = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_PV_Import_CEC = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_ST_Import = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Kosten = new System.Windows.Forms.ToolStripMenuItem();
+            this.kostenAdminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_ScriptGenerator = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebTypen = new System.Windows.Forms.ToolStripMenuItem();
@@ -77,6 +80,8 @@
             this.MenuItem_Lizenz = new System.Windows.Forms.ToolStripMenuItem();
             this.Deutsch = new System.Windows.Forms.ToolStripMenuItem();
             this.Englisch = new System.Windows.Forms.ToolStripMenuItem();
+            this.label_OnlineDoku = new System.Windows.Forms.Label();
+            this.MenuItem_Einstellungen = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolbar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -167,7 +172,8 @@
             this.MenuItem_Energiesysteme,
             this.MenuItem_Klima,
             this.MenuItem_DatImport,
-            this.MenuItem_Gebaeude});
+            this.MenuItem_Gebaeude,
+            this.MenuItem_Einstellungen});
             resources.ApplyResources(this.Administration, "Administration");
             this.Administration.Name = "Administration";
             // 
@@ -322,7 +328,10 @@
             this.MenuItem_PufferSp_VDI3805,
             this.MeniItem_VDI3805,
             this.MenuItem_PV_Import_CEC,
-            this.MenuItem_ST_Import});
+            this.MenuItem_ST_Import,
+            this.MenuItem_Kosten,
+            this.kostenAdminToolStripMenuItem,
+            this.MenuItem_ScriptGenerator});
             this.MenuItem_DatImport.Image = global::WindowsFormsApplication1.Properties.Resources.Menue5;
             resources.ApplyResources(this.MenuItem_DatImport, "MenuItem_DatImport");
             this.MenuItem_DatImport.Name = "MenuItem_DatImport";
@@ -362,6 +371,23 @@
             this.MenuItem_ST_Import.Name = "MenuItem_ST_Import";
             resources.ApplyResources(this.MenuItem_ST_Import, "MenuItem_ST_Import");
             this.MenuItem_ST_Import.Click += new System.EventHandler(this.MenuItem_ST_Import_Click);
+            // 
+            // MenuItem_Kosten
+            // 
+            this.MenuItem_Kosten.Name = "MenuItem_Kosten";
+            resources.ApplyResources(this.MenuItem_Kosten, "MenuItem_Kosten");
+            this.MenuItem_Kosten.Click += new System.EventHandler(this.MenuItem_Kosten_Click);
+            // 
+            // kostenAdminToolStripMenuItem
+            // 
+            this.kostenAdminToolStripMenuItem.Name = "kostenAdminToolStripMenuItem";
+            resources.ApplyResources(this.kostenAdminToolStripMenuItem, "kostenAdminToolStripMenuItem");
+            this.kostenAdminToolStripMenuItem.Click += new System.EventHandler(this.kostenAdminToolStripMenuItem_Click);
+            // 
+            // MenuItem_ScriptGenerator
+            // 
+            this.MenuItem_ScriptGenerator.Name = "MenuItem_ScriptGenerator";
+            resources.ApplyResources(this.MenuItem_ScriptGenerator, "MenuItem_ScriptGenerator");
             // 
             // MenuItem_Gebaeude
             // 
@@ -428,10 +454,23 @@
             this.Englisch.Name = "Englisch";
             this.Englisch.Click += new System.EventHandler(this.Englisch_Click);
             // 
+            // label_OnlineDoku
+            // 
+            resources.ApplyResources(this.label_OnlineDoku, "label_OnlineDoku");
+            this.label_OnlineDoku.BackColor = System.Drawing.Color.Transparent;
+            this.label_OnlineDoku.Name = "label_OnlineDoku";
+            // 
+            // MenuItem_Einstellungen
+            // 
+            this.MenuItem_Einstellungen.Name = "MenuItem_Einstellungen";
+            resources.ApplyResources(this.MenuItem_Einstellungen, "MenuItem_Einstellungen");
+            this.MenuItem_Einstellungen.Click += new System.EventHandler(this.MenuItem_Einstellungen_Click);
+            // 
             // MDIMainForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label_OnlineDoku);
             this.Controls.Add(this.menuToolbar);
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuToolbar;
@@ -495,6 +534,11 @@
         private System.Windows.Forms.ToolStripMenuItem MeniItem_VDI3805;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_PV_Import_CEC;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ST_Import;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Kosten;
+        private System.Windows.Forms.ToolStripMenuItem kostenAdminToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_ScriptGenerator;
+        private System.Windows.Forms.Label label_OnlineDoku;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Einstellungen;
     }
 }
 

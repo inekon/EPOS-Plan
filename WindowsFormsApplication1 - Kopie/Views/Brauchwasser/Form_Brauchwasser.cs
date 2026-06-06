@@ -14,7 +14,6 @@ namespace WindowsFormsApplication1
     partial class Form_Brauchwasser : Form
     {
         private BrauchwasserModel model = new BrauchwasserModel();
-        private BrauchwasserCtrl ctrl = new BrauchwasserCtrl();
         public List<Z_ProjektBrauchwasserModel> list_pwmodel = new List<Z_ProjektBrauchwasserModel>();
         public int m_ID_Projekt = 0;
         private int startindex = 100000;
@@ -333,9 +332,8 @@ namespace WindowsFormsApplication1
             Point p1 = btn_Prozess_DBneu.Location;
             p1 = this.PointToScreen(p1);
             frm_item.Location = p1;
-            frm_item.ShowDialog();
 
-            if (frm_item.result == DialogResult.OK)
+            if (frm_item.ShowDialog() == DialogResult.OK)
             {
                 frm.m_szBezeichner = frm_item.m_szName;
                 frm.mode = "Neu";

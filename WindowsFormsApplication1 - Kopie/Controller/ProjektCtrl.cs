@@ -1,223 +1,195 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
+using System.Data;
+using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
     class ProjektCtrl : ProjektModel
     {
-        
-        OdbcCommand DBCommand;
-        ProjektModel projektmodel;
+        // --- Kompatibilitäts-Layer für bestehenden UI-Code ---
+        private List<ProjektModel> _internalList = new List<ProjektModel>();
+        private bool _hasSingleData = false;
+
+        // Simuliert die alte 'rows' Variable
+        public new int rows => _internalList.Count > 0 ? _internalList.Count : (_hasSingleData ? 1 : 0);
+
+        // Simuliert das alte 'items' Array (als Liste, die sich wie ein Array verhält)
+        public List<ProjektModel> items => _internalList;
 
         public ProjektCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-            projektmodel = new ProjektModel();
+            _hasSingleData = false;
         }
 
-        ~ProjektCtrl()
+        #region --- DATABASE OPERATIONS ---
+
+        public int GetMaxID() => DataRepository.GetMaxID("Tab_Projekt", "ID");
+
+        public bool Insert()
         {
-            rows = 0;
-            DBCommand.Dispose();
+            m_ID = GetMaxID() + 1;
+
+            string sql = @"INSERT INTO Tab_Projekt 
+                           (ID, Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            OleDbParameter[] ps = {
+                new OleDbParameter("@id", m_ID),
+                new OleDbParameter("@name", m_szProjektname ?? ""),
+                new OleDbParameter("@bearb", m_szBearbeiter ?? ""),
+                new OleDbParameter("@besch", m_szBeschreibung ?? ""),
+                new OleDbParameter("@kunde", m_szKunde ?? ""),
+                new OleDbParameter("@date", OleDbType.Date) { Value = ValidateDate(m_Aenderungsdatum) },
+                new OleDbParameter("@klima", m_ID_Klimaregion),
+                new OleDbParameter("@edate", OleDbType.Date) { Value = ValidateDate(m_Erstelldatum) }
+            };
+
+            return DataRepository.ExecuteSQL(sql, ps);
         }
 
         public bool Update()
         {
-            try
-            {
-                DBCommand.CommandText = "UPDATE Tab_Projekt SET Bearbeiter='" + m_szBearbeiter + "', Beschreibung='" + m_szBeschreibung + "', Kunde='" + m_szKunde + "', Aenderungsdatum='" + m_Aenderungsdatum + "', ID_Klimaregion=" + m_ID_Klimaregion + ", Erstelldatum='" + m_Erstelldatum + "' WHERE Projektname='" + m_szProjektname + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                return false;
-            }
-            return true;
+            string sql = @"UPDATE Tab_Projekt SET 
+                            Bearbeiter=?, Beschreibung=?, Kunde=?, 
+                            Aenderungsdatum=?, ID_Klimaregion=?, Erstelldatum=? 
+                           WHERE Projektname=?";
+
+            OleDbParameter[] ps = {
+                new OleDbParameter("@bearb", (object)m_szBearbeiter ?? ""),
+                new OleDbParameter("@besch", (object)m_szBeschreibung ?? ""),
+                new OleDbParameter("@kunde", (object)m_szKunde ?? ""),
+                new OleDbParameter("@date", OleDbType.Date) { Value = ValidateDate(m_Aenderungsdatum) },
+                new OleDbParameter("@klima", m_ID_Klimaregion),
+                new OleDbParameter("@edate", OleDbType.Date) { Value = ValidateDate(m_Erstelldatum) },
+                new OleDbParameter("@pname", m_szProjektname)
+            };
+
+            return DataRepository.ExecuteSQL(sql, ps);
         }
-            
+
         public bool Delete(string szProjekt)
         {
-            try
-            {
-                DBCommand.CommandText = "DELETE Projektname FROM Tab_Projekt WHERE Projektname='" + szProjekt + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                return false;
-            }
-            return true;
+            string sql = "DELETE FROM Tab_Projekt WHERE Projektname=?";
+            OleDbParameter[] ps = { new OleDbParameter("@pname", szProjekt) };
+            return DataRepository.ExecuteSQL(sql, ps);
         }
-
-        public bool Insert()
-        {
-            try
-            {
-                DBCommand.CommandText = "SELECT Count(*) FROM TAB_Projekt";
-                OdbcDataReader DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();  
-                int result = (int)DBReader.GetValue(0);
-                DBReader.Close();
-
-                if (result == 0) m_ID = 1;
-                else
-                {
-                    DBCommand.CommandText = "SELECT Max(ID) AS Ausdr1 FROM Tab_Projekt";
-                    DBReader = DBCommand.ExecuteReader();
-                    DBReader.Read();
-                    m_ID = (int)DBReader.GetValue(0) + 1;
-                    DBReader.Close();
-                }
-
-                DBCommand.CommandText = FormattableString.Invariant($@"
-                    INSERT INTO TAB_Projekt 
-                    (
-                        ID, Projektname, Bearbeiter, Beschreibung, Kunde, 
-                        Aenderungsdatum, ID_Klimaregion, ID_Gebaeude, Erstelldatum
-                    ) 
-                    SELECT 
-                        {m_ID}, 
-                        '{m_szProjektname}', 
-                        '{m_szBearbeiter}', 
-                        '{m_szBeschreibung}', 
-                        '{m_szKunde}', 
-                        '{m_Aenderungsdatum}', 
-                        {m_ID_Klimaregion}, 
-                        {m_ID_Gebaeude}, 
-                        '{m_Erstelldatum}'");
-
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                return false;
-            }
-            return true;        }
 
         public void ReadAll()
         {
-            DBCommand.CommandText = "select * from Tab_Projekt order by Projektname";
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-            items = new ProjektModel[100];
-            rows = 0;
-            
-            while (DBReader.Read())
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM Tab_Projekt ORDER BY Projektname");
+            _internalList.Clear();
+            _hasSingleData = false;
+
+            foreach (DataRow row in dt.Rows)
             {
-                ProjektModel item = new ProjektModel();
-
-                if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_szProjektname = DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) item.m_szBearbeiter = DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.m_szBeschreibung = (string)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.m_szKunde = (string)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.m_Aenderungsdatum = (DateTime)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.m_ID_Klimaregion = (int)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) item.m_ID_Gebaeude = (int)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) item.m_Erstelldatum = (DateTime)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) item.m_nNetzverluste = (int)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) item.m_szEinheit = (string)DBReader.GetString(10);
-
-                items[rows] = item;
-                item = null;
-                rows += 1;
+                _internalList.Add(MapRowToModel(row));
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
 
-        public void ReadSingle(string sql)
+        public void ReadSingle(string projektName)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Projekt WHERE Projektname=?";
+            OleDbParameter[] ps = { new OleDbParameter("@pname", projektName) };
+            DataTable dt = DataRepository.GetDataTable(sql, ps);
 
-            rows = 0;
-            DBReader.Read();
-            if (DBReader.HasRows)
+            _internalList.Clear(); // Liste leeren, da wir nur einen Datensatz laden
+
+            if (dt.Rows.Count > 0)
             {
-                if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_szProjektname = DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) m_szBearbeiter = DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_szBeschreibung = (string)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) m_szKunde = (string)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) m_Aenderungsdatum = (DateTime)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) m_ID_Klimaregion = (int)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) m_ID_Gebaeude = (int)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) m_Erstelldatum = (DateTime)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) m_nNetzverluste = (int)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) m_szEinheit = (string)DBReader.GetString(10);
-                rows = 1;
+                DataRow row = dt.Rows[0];
+                ProjektModel model = MapRowToModel(row);
+
+                // Daten in die aktuelle Instanz mappen
+                this.m_ID = model.m_ID;
+                this.m_szProjektname = model.m_szProjektname;
+                this.m_szBearbeiter = model.m_szBearbeiter;
+                this.m_szBeschreibung = model.m_szBeschreibung;
+                this.m_szKunde = model.m_szKunde;
+                this.m_Aenderungsdatum = model.m_Aenderungsdatum;
+                this.m_ID_Klimaregion = model.m_ID_Klimaregion;
+                this.m_Erstelldatum = model.m_Erstelldatum;
+
+                _hasSingleData = true;
             }
-            DBReader.Dispose();
-            DBReader.Close();
+            else
+            {
+                _hasSingleData = false;
+            }
         }
+
+        public void ReadSingle(int IDProjekt)
+        {
+            string sql = "SELECT * FROM Tab_Projekt WHERE ID=?";
+            OleDbParameter[] ps = { new OleDbParameter("@id", IDProjekt) };
+            DataTable dt = DataRepository.GetDataTable(sql, ps);
+
+            _internalList.Clear(); // Liste leeren, da wir nur einen Datensatz laden
+
+            if (dt.Rows.Count > 0)
+            {
+                DataRow row = dt.Rows[0];
+                ProjektModel model = MapRowToModel(row);
+
+                // Daten in die aktuelle Instanz mappen
+                this.m_ID = model.m_ID;
+                this.m_szProjektname = model.m_szProjektname;
+                this.m_szBearbeiter = model.m_szBearbeiter;
+                this.m_szBeschreibung = model.m_szBeschreibung;
+                this.m_szKunde = model.m_szKunde;
+                this.m_Aenderungsdatum = model.m_Aenderungsdatum;
+                this.m_ID_Klimaregion = model.m_ID_Klimaregion;
+                this.m_Erstelldatum = model.m_Erstelldatum;
+
+                _hasSingleData = true;
+            }
+            else
+            {
+                _hasSingleData = false;
+            }
+        }
+        #endregion
+
+        #region --- UI FILL METHODS ---
 
         public void FillListBox(ListBox ctrl)
         {
             ctrl.Items.Clear();
-            for (int i = 0; i < rows; i++)
-            {
-                ctrl.Items.Add(items[i].m_szProjektname);
-            }
+            foreach (var p in _internalList) ctrl.Items.Add(p.m_szProjektname);
         }
-     
+
         public void FillComboBox(ComboBox ctrl)
         {
             ctrl.Items.Clear();
-            for (int i = 0; i < rows; i++)
-            {
-                ctrl.Items.Add(items[i].m_szProjektname);
-            }
+            foreach (var p in _internalList) ctrl.Items.Add(p.m_szProjektname);
         }
 
-        public int GetMaxID()
+        #endregion
+
+        #region --- HELPER METHODS ---
+
+        private DateTime ValidateDate(DateTime date)
         {
-            int maxID = 0;
-
-            DBCommand.CommandText = "SELECT Count(*) FROM Tab_Projekt";
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-            DBReader.Read();  
-            int result = (int)DBReader.GetValue(0);
-            DBReader.Close();
-
-            if (result == 0) maxID = 1;
-            else
-            {
-                DBCommand.CommandText = "SELECT Max(ID) AS Ausdr1 FROM Tab_Projekt";
-                DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();
-                maxID = (int)DBReader.GetValue(0);
-                DBReader.Close();
-            }
-            return maxID;
+            if (date < new DateTime(1900, 1, 1)) return DateTime.Now;
+            return date;
         }
+
+        private ProjektModel MapRowToModel(DataRow row)
+        {
+            return new ProjektModel
+            {
+                m_ID = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0,
+                m_szProjektname = row["Projektname"].ToString(),
+                m_szBearbeiter = row["Bearbeiter"]?.ToString() ?? "",
+                m_szBeschreibung = row["Beschreibung"]?.ToString() ?? "",
+                m_szKunde = row["Kunde"]?.ToString() ?? "",
+                m_Aenderungsdatum = row["Aenderungsdatum"] != DBNull.Value ? Convert.ToDateTime(row["Aenderungsdatum"]) : DateTime.Now,
+                m_ID_Klimaregion = row["ID_Klimaregion"] != DBNull.Value ? Convert.ToInt32(row["ID_Klimaregion"]) : 0,
+                m_Erstelldatum = row["Erstelldatum"] != DBNull.Value ? Convert.ToDateTime(row["Erstelldatum"]) : DateTime.Now
+            };
+        }
+
+        #endregion
     }
 }

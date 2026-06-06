@@ -60,7 +60,7 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(13)) item.m_T_NOCT = (double)DBReader.GetValue(13);
                 if (!DBReader.IsDBNull(14)) item.m_Laenge = (double)DBReader.GetValue(14);
                 if (!DBReader.IsDBNull(15)) item.m_Breite = (double)DBReader.GetValue(15);
-
+                if (!DBReader.IsDBNull(16)) item.m_Modulkosten = (double)DBReader.GetValue(16);
 
                 items[rows] = item;
                 item = null;
@@ -97,6 +97,7 @@ namespace WindowsFormsApplication1
                 if (!DBReader.IsDBNull(13)) m_T_NOCT= (double)DBReader.GetValue(13);
                 if (!DBReader.IsDBNull(14)) m_Laenge = (double)DBReader.GetValue(14);
                 if (!DBReader.IsDBNull(15)) m_Breite = (double)DBReader.GetValue(15);
+                if (!DBReader.IsDBNull(16)) m_Modulkosten = (double)DBReader.GetValue(16);
 
                 rows = 1;
             }
@@ -124,7 +125,8 @@ namespace WindowsFormsApplication1
                         gamma_PMP = {SqlVal(model.m_Temp_Coeff_Pmax)}, 
                         T_NOCT = {SqlVal(model.m_T_NOCT)}, 
                         Laenge = {model.m_Laenge}, 
-                        Breite = {model.m_Breite} 
+                        Breite = {model.m_Breite}, 
+                        Modulkosten = {model.m_Modulkosten} 
                     WHERE 
                         Modulname = '{model.m_szName}'");
 

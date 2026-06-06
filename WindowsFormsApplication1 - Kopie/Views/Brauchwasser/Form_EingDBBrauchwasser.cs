@@ -119,9 +119,7 @@ namespace WindowsFormsApplication1
             p1 = this.PointToScreen(p1);
             frm.Location = p1;
 
-            frm.ShowDialog();
-
-            if (frm.result == DialogResult.OK)
+            if (frm.ShowDialog() == DialogResult.OK)
             {
                 RecordSet rs = new RecordSet();
                 rs.Open("select Bezeichner from Tab_Brauchwasser where Bezeichner='" + frm.m_szName + "'");

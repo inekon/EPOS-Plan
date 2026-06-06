@@ -131,14 +131,8 @@
   <data name="&gt;&gt;label5.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;label6.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
   <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
     <value>15</value>
-  </data>
-  <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>82, 205</value>
   </data>
   <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
     <value>324, 19</value>
@@ -148,9 +142,6 @@
   </data>
   <data name="label3.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
-  </data>
-  <data name="&gt;&gt;label9.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="textBox_Aenderungsdatum.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -170,20 +161,11 @@
   <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
     <value>82, 170</value>
   </data>
-  <data name="label7.TabIndex" type="System.Int32, mscorlib">
-    <value>19</value>
-  </data>
-  <data name="label6.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
-  </data>
   <data name="textBox_Erstelldatum.Text" xml:space="preserve">
     <value>12.01.2020</value>
   </data>
   <data name="pictureBox1.Size" type="System.Drawing.Size, System.Drawing">
     <value>103, 100</value>
-  </data>
-  <data name="comboBox_Gebaeude.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="&gt;&gt;textBox_Erstelldatum.Parent" xml:space="preserve">
     <value>$this</value>
@@ -228,6 +210,9 @@
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
     <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="textBox_Aenderungsdatum.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
+    <value>Center</value>
+  </data>
   <data name="&gt;&gt;label4.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -258,6 +243,9 @@
   <data name="label8.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
+  <data name="comboBox_Klima.TabIndex" type="System.Int32, mscorlib">
+    <value>21</value>
+  </data>
   <data name="&gt;&gt;textBox_Kunde.Name" xml:space="preserve">
     <value>textBox_Kunde</value>
   </data>
@@ -285,11 +273,14 @@
   <data name="textBox_Bearbeiter.Location" type="System.Drawing.Point, System.Drawing">
     <value>236, 447</value>
   </data>
+  <data name="label6.Text" xml:space="preserve">
+    <value>Geben Sie hier die administrativen Projektdaten ein:</value>
+  </data>
   <data name="&gt;&gt;comboBox_Gebaeude.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="label7.Text" xml:space="preserve">
-    <value>Projektkonfiguration</value>
+  <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>82, 205</value>
   </data>
   <data name="label4.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -330,6 +321,12 @@
   <data name="textBox_Beschreibung.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
+  <data name="textBox_Aenderungsdatum.Location" type="System.Drawing.Point, System.Drawing">
+    <value>236, 521</value>
+  </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>Projektkonfiguration</value>
+  </data>
   <data name="&gt;&gt;textBox_Kunde.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -339,8 +336,11 @@
   <data name="&gt;&gt;textBox_Name.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>81, 19</value>
+  <data name="&gt;&gt;comboBox_Klima.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;textBox_Bearbeiter.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;textBox_Name.Parent" xml:space="preserve">
     <value>$this</value>
@@ -378,6 +378,12 @@
   <data name="&gt;&gt;label9.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="&gt;&gt;comboBox_Klima.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="label7.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12pt, style=Bold</value>
+  </data>
   <data name="&gt;&gt;textBox_Kunde.ZOrder" xml:space="preserve">
     <value>12</value>
   </data>
@@ -411,8 +417,11 @@
   <data name="&gt;&gt;label1.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;textBox_Bearbeiter.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;label9.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Klima.Name" xml:space="preserve">
+    <value>comboBox_Klima</value>
   </data>
   <data name="&gt;&gt;label5.Name" xml:space="preserve">
     <value>label5</value>
@@ -426,9 +435,6 @@
   <data name="textBox_Bearbeiter.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
   </data>
-  <data name="&gt;&gt;textBox_Name.ZOrder" xml:space="preserve">
-    <value>16</value>
-  </data>
   <data name="textBox_Name.Size" type="System.Drawing.Size, System.Drawing">
     <value>355, 25</value>
   </data>
@@ -438,17 +444,20 @@
   <data name="textBox_Kunde.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 10pt</value>
   </data>
+  <data name="&gt;&gt;comboBox_Klima.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
   <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
     <value>82, 399</value>
   </data>
   <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
     <value>116, 19</value>
   </data>
-  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>48, 19</value>
+  <data name="&gt;&gt;label6.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
-  <data name="label7.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12pt, style=Bold</value>
+  <data name="&gt;&gt;pictureBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;textBox_Erstelldatum.ZOrder" xml:space="preserve">
     <value>1</value>
@@ -462,9 +471,6 @@
   <data name="&gt;&gt;label4.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;pictureBox1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;label5.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -476,6 +482,9 @@
   </data>
   <data name="&gt;&gt;label7.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="textBox_Beschreibung.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="&gt;&gt;label1.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -495,8 +504,14 @@
   <data name="&gt;&gt;label3.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="textBox_Name.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
+  </data>
   <data name="textBox_Name.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
+  </data>
+  <data name="&gt;&gt;textBox_Aenderungsdatum.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="comboBox_Gebaeude.Location" type="System.Drawing.Point, System.Drawing">
     <value>236, 482</value>
@@ -506,6 +521,9 @@
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
+  </data>
+  <data name="comboBox_Klima.Location" type="System.Drawing.Point, System.Drawing">
+    <value>236, 482</value>
   </data>
   <data name="label5.Size" type="System.Drawing.Size, System.Drawing">
     <value>71, 19</value>
@@ -522,17 +540,14 @@
   <data name="&gt;&gt;label8.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="&gt;&gt;label9.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
   <data name="&gt;&gt;label6.Name" xml:space="preserve">
     <value>label6</value>
   </data>
   <data name="&gt;&gt;label3.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;textBox_Aenderungsdatum.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;textBox_Name.ZOrder" xml:space="preserve">
+    <value>16</value>
   </data>
   <data name="label2.Text" xml:space="preserve">
     <value>Änderungsdatum</value>
@@ -540,8 +555,8 @@
   <data name="&gt;&gt;pictureBox1.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="textBox_Name.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10pt</value>
+  <data name="label7.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
   </data>
   <data name="&gt;&gt;textBox_Aenderungsdatum.ZOrder" xml:space="preserve">
     <value>6</value>
@@ -552,11 +567,14 @@
   <data name="textBox_Erstelldatum.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
   </data>
-  <data name="label6.Text" xml:space="preserve">
-    <value>Geben Sie hier die administrativen Projektdaten ein:</value>
+  <data name="&gt;&gt;label9.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="label4.Text" xml:space="preserve">
     <value>Kunde</value>
+  </data>
+  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>48, 19</value>
   </data>
   <data name="pictureBox1.Location" type="System.Drawing.Point, System.Drawing">
     <value>14, 49</value>
@@ -603,8 +621,8 @@
   <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
     <value>631, 34</value>
   </data>
-  <data name="textBox_Aenderungsdatum.Location" type="System.Drawing.Point, System.Drawing">
-    <value>236, 521</value>
+  <data name="label6.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10pt</value>
   </data>
   <data name="label5.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -615,8 +633,8 @@
   <data name="&gt;&gt;textBox_Beschreibung.Name" xml:space="preserve">
     <value>textBox_Beschreibung</value>
   </data>
-  <data name="textBox_Aenderungsdatum.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
-    <value>Center</value>
+  <data name="comboBox_Gebaeude.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_Beschreibung.Size" type="System.Drawing.Size, System.Drawing">
     <value>355, 126</value>
@@ -636,8 +654,8 @@
   <data name="&gt;&gt;label9.Name" xml:space="preserve">
     <value>label9</value>
   </data>
-  <data name="textBox_Beschreibung.Multiline" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>81, 19</value>
   </data>
   <data name="pictureBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 4, 3, 4</value>
@@ -647,8 +665,5 @@
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
-  </metadata>
-  <metadata name="$this.Language" type="System.Globalization.CultureInfo, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>de-DE</value>
   </metadata>
 </root>

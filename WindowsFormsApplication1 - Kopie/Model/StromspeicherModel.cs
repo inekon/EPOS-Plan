@@ -19,6 +19,7 @@ namespace WindowsFormsApplication1
         public double m_Degradation;
         public double m_Ladezustand;
         public string m_szTyp;
+        public double m_Modulkosten;
      
         public StromspeicherModel()
         {
@@ -30,6 +31,7 @@ namespace WindowsFormsApplication1
             m_Degradation = 0.0;
             m_Ladezustand = 0;
             m_szTyp = string.Empty;
+            m_Modulkosten = 0;
         }
 
     }

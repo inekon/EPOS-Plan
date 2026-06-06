@@ -68,7 +68,6 @@ namespace WindowsFormsApplication1
         {
             if (listView_Heizkessel.SelectedItems.Count <= 0)
             {
-                // e.Cancel = true;
                 contextMenuStrip1.Items[0].Enabled = true;
                 contextMenuStrip1.Items[1].Enabled = false;
             }
@@ -92,7 +91,7 @@ namespace WindowsFormsApplication1
                 listView_Heizkessel.Items[indexes[0]].Remove();
                 wizctrl.Del_Projekt_ID_Waermeerzeuger(m_ID_Projekt, Int32.Parse(item.SubItems[4].Text));
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetHeizkesselControl(m_szProjektname);
@@ -142,7 +141,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_heizkesselmodel);
 
                 ProjektCtrl projctrl = new ProjektCtrl();
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
 

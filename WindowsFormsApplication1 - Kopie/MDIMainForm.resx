@@ -344,6 +344,21 @@
   <data name="MenuItem_ST_Import.Text" xml:space="preserve">
     <value>Import Solarthermie VDI 3805</value>
   </data>
+  <data name="MenuItem_Kosten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>308, 26</value>
+  </data>
+  <data name="MenuItem_Kosten.Text" xml:space="preserve">
+    <value>Kosten</value>
+  </data>
+  <data name="kostenAdminToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>308, 26</value>
+  </data>
+  <data name="kostenAdminToolStripMenuItem.Text" xml:space="preserve">
+    <value>Kosten Admin</value>
+  </data>
+  <data name="MenuItem_ScriptGenerator.Size" type="System.Drawing.Size, System.Drawing">
+    <value>308, 26</value>
+  </data>
   <data name="MenuItem_DatImport.ImageScaling" type="System.Windows.Forms.ToolStripItemImageScaling, System.Windows.Forms">
     <value>None</value>
   </data>
@@ -373,6 +388,12 @@
   </data>
   <data name="MenuItem_Gebaeude.Text" xml:space="preserve">
     <value>Gebäude</value>
+  </data>
+  <data name="MenuItem_Einstellungen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>273, 38</value>
+  </data>
+  <data name="MenuItem_Einstellungen.Text" xml:space="preserve">
+    <value>Einstellungen</value>
   </data>
   <data name="Administration.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 12pt</value>
@@ -457,6 +478,36 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;menuToolbar.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="label_OnlineDoku.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_OnlineDoku.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 14.25pt</value>
+  </data>
+  <data name="label_OnlineDoku.Location" type="System.Drawing.Point, System.Drawing">
+    <value>243, 281</value>
+  </data>
+  <data name="label_OnlineDoku.Size" type="System.Drawing.Size, System.Drawing">
+    <value>269, 25</value>
+  </data>
+  <data name="label_OnlineDoku.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="label_OnlineDoku.Text" xml:space="preserve">
+    <value>Dokumentation wird geladen...</value>
+  </data>
+  <data name="&gt;&gt;label_OnlineDoku.Name" xml:space="preserve">
+    <value>label_OnlineDoku</value>
+  </data>
+  <data name="&gt;&gt;label_OnlineDoku.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_OnlineDoku.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;label_OnlineDoku.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
@@ -1524,6 +1575,24 @@
   <data name="&gt;&gt;MenuItem_ST_Import.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;MenuItem_Kosten.Name" xml:space="preserve">
+    <value>MenuItem_Kosten</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_Kosten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;kostenAdminToolStripMenuItem.Name" xml:space="preserve">
+    <value>kostenAdminToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;kostenAdminToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_ScriptGenerator.Name" xml:space="preserve">
+    <value>MenuItem_ScriptGenerator</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_ScriptGenerator.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;MenuItem_Gebaeude.Name" xml:space="preserve">
     <value>MenuItem_Gebaeude</value>
   </data>
@@ -1576,6 +1645,12 @@
     <value>Englisch</value>
   </data>
   <data name="&gt;&gt;Englisch.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_Einstellungen.Name" xml:space="preserve">
+    <value>MenuItem_Einstellungen</value>
+  </data>
+  <data name="&gt;&gt;MenuItem_Einstellungen.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">

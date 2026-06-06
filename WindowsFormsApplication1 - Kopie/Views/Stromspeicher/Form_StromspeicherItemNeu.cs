@@ -12,7 +12,6 @@ namespace WindowsFormsApplication1
     public partial class Form_Sp_ItemNeu : Form
     {
         public StromspeicherModel model = new StromspeicherModel();
-        public DialogResult result;
         public string m_szName = "";
  
         public Form_Sp_ItemNeu()
@@ -30,13 +29,13 @@ namespace WindowsFormsApplication1
         {
             m_szName = textBox_Bezeichner.Text;
             if (m_szName == "") { MessageBox.Show("Bezeichnung eingeben!"); return; } 
-            result = DialogResult.OK; 
+            this.DialogResult = DialogResult.OK; 
             Close();
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
         {
-            result = DialogResult.Cancel; 
+            this.DialogResult = DialogResult.Cancel; 
             Close();
         }
     }

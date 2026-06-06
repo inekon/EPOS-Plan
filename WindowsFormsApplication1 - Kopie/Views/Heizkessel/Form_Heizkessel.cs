@@ -63,9 +63,9 @@ namespace WindowsFormsApplication1
             }
 
             comboBox_Brennstoffart.Items.Add("Alle");
-            for (int i = 0; i < BrennstoffCtrl.Brennstoffart_Gruppe.Length; i++)
+            for (int i = 0; i < heizkesselctrl.Brennstoffart_Gruppe.Count; i++)
             {
-                comboBox_Brennstoffart.Items.Add(BrennstoffCtrl.Brennstoffart_Gruppe[i]);
+                comboBox_Brennstoffart.Items.Add(heizkesselctrl.Brennstoffart_Gruppe[i]);
             }
 
             comboBox_Leistung.Items.Add("Alle");
@@ -143,10 +143,11 @@ namespace WindowsFormsApplication1
             {
                 textBox_Kesselname.Text = (string)rs.Read("Name");
                 textBox_Kesselbeschreibung.Text = (string)rs.Read("Beschreibung");
-                textBox_Kesseltyp.Text = BrennstoffCtrl.Brennstoffart[(int)rs.Read("Brennstoff")].ToString();
+                textBox_Kesseltyp.Text = heizkesselctrl.Brennstoffart[(int)rs.Read("Brennstoff")-1].ToString();
                 double kl = (double)rs.Read("Ptherm");
                 textBox_Kesselleistung.Text = kl.ToString("F2");
                 textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
+                checkBox_Brennwert.Checked = (bool)rs.Read("Brennwert");
             }
             rs.Close();
         }
@@ -160,10 +161,11 @@ namespace WindowsFormsApplication1
             {
                 textBox_Kesselname.Text = (string)rs.Read("Name");
                 textBox_Kesselbeschreibung.Text = (string)rs.Read("Beschreibung");
-                textBox_Kesseltyp.Text = BrennstoffCtrl.Brennstoffart[(int)rs.Read("Brennstoff")].ToString();
+                textBox_Kesseltyp.Text = heizkesselctrl.Brennstoffart[(int)rs.Read("Brennstoff")-1].ToString();
                 double kl = (double)rs.Read("Ptherm");
                 textBox_Kesselleistung.Text = kl.ToString("F2");
                 textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
+                checkBox_Brennwert.Checked = (bool)rs.Read("Brennwert");
             }
             rs.Close();
         }
@@ -223,17 +225,26 @@ namespace WindowsFormsApplication1
 
         private void btn_Bearbeiten_Click(object sender, EventArgs e)
         {
-            MenueCtrl ctrl = new MenueCtrl();
-
+            Form_Heizkessel_Bearbeiten frm = new Form_Heizkessel_Bearbeiten(Form_Heizkessel_Bearbeiten.MODE_EDIT);
+            
+            if (listBox_Kessel_DB.Text == "") return;
             int index = listBox_Kessel_DB.SelectedIndex;
-            listBox_Kessel.SelectedItems.Clear();
-            listBox_Kessel_DB.SelectedItems.Clear();
-            ctrl.Kessel();
-            listBox_Kessel_DB.Items.Clear();
-            heizkesselctrl.ReadAll();
-            for (int i = 0; i < heizkesselctrl.rows; i++)
+            frm.SetControls(listBox_Kessel_DB.Text, textBox_Kesselbeschreibung.Text);
+            DialogResult ret = frm.ShowDialog();
+            
+            if (ret == DialogResult.OK)
             {
-                listBox_Kessel_DB.Items.Add(heizkesselctrl.items[i].Name);
+                string szKessel = frm.m_szKessel;
+                listBox_Kessel.SelectedItems.Clear();
+                listBox_Kessel_DB.SelectedItems.Clear();
+                heizkesselctrl.ReadAll();
+                
+                for (int i = 0; i < heizkesselctrl.rows; i++)
+                {
+                    listBox_Kessel_DB.Items.Add(heizkesselctrl.items[i].Name);
+                }
+                listBox_Kessel_DB.SelectedIndex = -1;
+                listBox_Kessel_DB.SelectedIndex = index;
             }
         }
 
@@ -246,6 +257,19 @@ namespace WindowsFormsApplication1
             rs.Close();
 
             listBox_Kessel_DB.Items.RemoveAt(listBox_Kessel_DB.SelectedIndex);
+        }
+
+        private void btn_Admin_Click(object sender, EventArgs e)
+        {
+            Form_Heizkessel_Admin frm = new Form_Heizkessel_Admin();
+            frm.ShowDialog();
+            heizkesselctrl.ReadAll();
+            listBox_Kessel_DB.Items.Clear();
+            for (int i = 0; i < heizkesselctrl.rows; i++)
+            {
+                listBox_Kessel_DB.Items.Add(heizkesselctrl.items[i].Name);
+
+            }
         }
     }
 }

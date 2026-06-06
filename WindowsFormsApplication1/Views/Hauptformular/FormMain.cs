@@ -19,9 +19,20 @@ namespace WindowsFormsApplication1
         private int m_ID_Klimaregion = 0;
         private Control drag_control;
 
-        SimulationWaermebedarf simulation_Waermebedarf = new SimulationWaermebedarf();
-        SimulationStrombedarf simulation_strom = new SimulationStrombedarf();
-        SimulationWaermepumpe simulation_wp = new SimulationWaermepumpe();
+        // Lazy initialisiert – Field-Initializers wuerden im WinForms-Designer
+        // die Simulation-Klassen instanziieren und am DB-/COM-Zugriff im
+        // Konstruktor scheitern lassen.
+        private SimulationWaermebedarf _simulation_Waermebedarf;
+        SimulationWaermebedarf simulation_Waermebedarf
+            => _simulation_Waermebedarf ??= new SimulationWaermebedarf();
+
+        private SimulationStrombedarf _simulation_strom;
+        SimulationStrombedarf simulation_strom
+            => _simulation_strom ??= new SimulationStrombedarf();
+
+        private SimulationWaermepumpe _simulation_wp;
+        SimulationWaermepumpe simulation_wp
+            => _simulation_wp ??= new SimulationWaermepumpe();
 
         ToolTip tt = new ToolTip();
   

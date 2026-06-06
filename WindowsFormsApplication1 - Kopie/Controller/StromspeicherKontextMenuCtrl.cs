@@ -90,7 +90,7 @@ namespace WindowsFormsApplication1
                 listView_SP.Items[indexes[0]].Remove();
                 wizctrl.Del_Projekt_ID_Waermeerzeuger(m_ID_Projekt, Int32.Parse(item.SubItems[6].Text));
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
                 Program.mainfrm.SetSPControl(m_szProjektname);
@@ -140,7 +140,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_werzmodel);
 
                 ProjektCtrl projctrl = new ProjektCtrl();
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
 
@@ -182,7 +182,7 @@ namespace WindowsFormsApplication1
                 wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_spmodel);
 
-                projctrl.ReadSingle("select * from Tab_Projekt where Projektname='" + m_szProjektname + "'");
+                projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
 

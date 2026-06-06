@@ -7,8 +7,6 @@ namespace WindowsFormsApplication1
 {
     public class BrauchwasserModel
     {
-        public BrauchwasserModel[] items;
-
         public int m_ID;
         public string m_szBezeichner;
         public string m_szTyp;

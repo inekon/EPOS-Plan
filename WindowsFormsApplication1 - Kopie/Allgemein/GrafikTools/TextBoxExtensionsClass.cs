@@ -12,6 +12,7 @@ namespace WindowsFormsApplication1
         private static extern Int32 SendMessage(IntPtr hWnd, int msg, int wParam, [MarshalAs(UnmanagedType.LPWStr)] string lParam);
 
         private const int EM_SETCUEBANNER = 0x1501;
+        private const int CB_SETCUEBANNER = 0x1703; // Speziell für ComboBox
 
         /// <summary>
         /// Setzt einen Placeholder-Text (Cue Banner) für eine TextBox via Windows-API.
@@ -28,6 +29,21 @@ namespace WindowsFormsApplication1
                 // warten wir kurz, bis es erstellt wurde.
                 textBox.HandleCreated += (s, e) =>
                     SendMessage(textBox.Handle, EM_SETCUEBANNER, 0, placeholder);
+            }
+        }
+
+        public static void SetPlaceholder(this ComboBox comboBox, string placeholder)
+        {
+            if (comboBox.IsHandleCreated)
+            {
+                SendMessage(comboBox.Handle, CB_SETCUEBANNER, 0, placeholder);
+            }
+            else
+            {
+                // Falls das Handle noch nicht da ist (sehr früh im Code), 
+                // warten wir kurz, bis es erstellt wurde.
+                comboBox.HandleCreated += (s, e) =>
+                    SendMessage(comboBox.Handle, CB_SETCUEBANNER, 0, placeholder);
             }
         }
 
@@ -66,25 +82,42 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Rundet die Ecken eines Controls physikalisch ab.
         /// </summary>
-        public static void MakeRounded(this Control control, int radius)
+        public static void MakeSmoothRounded(this Control control, int radius, Color borderColor, float borderWidth)
         {
-            // Wir abonnieren das Resize-Event, damit die Rundung 
-            // mitwächst, wenn der Button seine Größe ändert.
-            control.Resize += (s, e) => {
-                Rectangle rect = new Rectangle(0, 0, control.Width, control.Height);
+            // Wir deaktivieren die Region, da sie kein Antialiasing erlaubt
+            control.Region = null;
+
+            control.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+
+                Rectangle rect = new Rectangle(0, 0, control.Width - 1, control.Height - 1);
+
                 using (GraphicsPath path = rect.GetRoundedRect(radius))
                 {
-                    control.Region = new Region(path);
+                    // 1. Hintergrund füllen
+                    using (SolidBrush brush = new SolidBrush(control.BackColor))
+                    {
+                        e.Graphics.FillPath(brush, path);
+                    }
+
+                    // 2. Rahmen zeichnen (das erzeugt die glatte Kante)
+                    if (borderWidth > 0)
+                    {
+                        using (Pen pen = new Pen(borderColor, borderWidth))
+                        {
+                            e.Graphics.DrawPath(pen, path);
+                        }
+                    }
                 }
             };
 
-            // Initial einmal ausführen
-            Rectangle initialRect = new Rectangle(0, 0, control.Width, control.Height);
-            using (GraphicsPath path = initialRect.GetRoundedRect(radius))
-            {
-                control.Region = new Region(path);
-            }
+            // Wichtig: Parent muss das Control neu zeichnen, wenn sich was ändert
+            control.Invalidate();
         }
+
+
 
         public static void ApplySmoothChildRounding(this Button btn, int radius, Color parentBackColor)
         {
@@ -120,54 +153,73 @@ namespace WindowsFormsApplication1
 
         public static void MakeSmoothButton(this Button btn, int radius)
         {
-            // 1. Alles abschalten, was Windows automatisch macht
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 0;
-            btn.FlatAppearance.BorderColor = Color.FromArgb(0, 255, 255, 255);
             btn.UseVisualStyleBackColor = false;
 
-            // 2. Den Fokus-Rahmen (die gestrichelte Linie) unterdrücken
-            // Das ist oft das "Rechteck", das man sieht
-            btn.TabStop = false;
+            // Diese Funktion setzt die physikalische Form des Buttons auf "Rund"
+            void UpdateRegion()
+            {
+                Rectangle rect = new Rectangle(0, 0, btn.Width, btn.Height);
+                using (var path = rect.GetRoundedRect(radius))
+                {
+                    btn.Region = new Region(path); // Das macht ihn physikalisch rund
+                }
+            }
+
+            btn.Resize += (s, e) => UpdateRegion();
+            UpdateRegion();
 
             btn.Paint += (s, e) =>
             {
-                // Wir holen uns das Grafik-Objekt
                 var g = e.Graphics;
+                // WICHTIG für weiche Kanten:
                 g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
 
-                // Hintergrundfarbe des Panels ermitteln
+                // Wir holen die Hintergrundfarbe des Parents
                 Color parentColor = btn.Parent?.BackColor ?? Color.White;
 
-                // SCHRITT A: Den kompletten Button-Bereich "auslöschen"
-                // Clear ist radikaler als FillRectangle und löscht alles Vorherige
-                g.Clear(parentColor);
+                // SCHRITT 1: Hintergrund des Buttons mit Parent-Farbe füllen (übermalt die harten Region-Ecken)
+                using (SolidBrush parentBrush = new SolidBrush(parentColor))
+                {
+                    g.FillRectangle(parentBrush, btn.ClientRectangle);
+                }
 
-                // SCHRITT B: Den Button-Körper vorbereiten
-                // Wir nehmen -1 Pixel an jeder Seite, um Platz für das Anti-Aliasing zu lassen
+                // SCHRITT 2: Den Button-Körper zeichnen. 
+                // Trick: Wir machen das Rechteck 1 Pixel kleiner als das Control (Width-1, Height-1),
+                // damit der weiche Rand des Anti-Aliasings nicht von der Region abgeschnitten wird!
                 Rectangle rect = new Rectangle(0, 0, btn.Width - 1, btn.Height - 1);
 
                 using (var path = rect.GetRoundedRect(radius))
                 {
-                    // Hover-Logik: Falls Maus drauf, Farbe leicht ändern
                     bool isHovered = btn.ClientRectangle.Contains(btn.PointToClient(Control.MousePosition));
                     Color drawColor = isHovered ? ControlPaint.Light(btn.BackColor, 0.2f) : btn.BackColor;
 
+                    // Füllen des runden Körpers
                     using (SolidBrush sb = new SolidBrush(drawColor))
                     {
                         g.FillPath(sb, path);
                     }
+
+                    // SCHRITT 3: Einen dünnen Rahmen in der GLEICHEN Farbe zeichnen.
+                    // Das erzwingt das Antialiasing an den Außenkanten.
+                    using (Pen pen = new Pen(drawColor, 1.5f)) // 1.5f sorgt für eine weichere Kante
+                    {
+                        g.DrawPath(pen, path);
+                    }
                 }
 
-                // SCHRITT C: Text ohne Standard-Fokus-Effekte zeichnen
+                // Text zeichnen
                 TextRenderer.DrawText(g, btn.Text, btn.Font, btn.ClientRectangle, btn.ForeColor,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
 
-            // WICHTIG: Wenn die Maus sich bewegt, muss der Button wissen, 
-            // dass er sich neu zeichnen soll (für den Hover-Effekt)
+
             btn.MouseMove += (s, e) => btn.Invalidate();
             btn.MouseLeave += (s, e) => btn.Invalidate();
         }
+
     }
 }

@@ -1,197 +1,138 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
-using System.Windows.Forms;
-using System.Globalization;
+using System.Data;
 
 namespace WindowsFormsApplication1
 {
-    class KenndatenKuehlungCtrl: KenndatenKuehlungModel
+    class KenndatenKuehlungCtrl : KenndatenKuehlungModel
     {
-        public int rows;
-        OdbcCommand DBCommand;
+        // --- Kompatibilitäts-Layer ---
+        private List<KenndatenKuehlungModel> _internalList = new List<KenndatenKuehlungModel>();
+
+        public int rows => _internalList.Count;
+        public new List<KenndatenKuehlungModel> items => _internalList;
+
         public KenndatenKuehlungModel model;
 
         public KenndatenKuehlungCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
             model = new KenndatenKuehlungModel();
         }
-        ~KenndatenKuehlungCtrl()
+
+        #region --- DATABASE READ OPERATIONS ---
+
+        public void ReadAll(int ID_WP = 0)
         {
-            rows = 0;
-            DBCommand.Dispose();
+            string sql = "SELECT * FROM Tab_Kenndaten_Kuehlung";
+            if (ID_WP > 0)
+                sql += $" WHERE ID_WP = {ID_WP}";
+
+            sql += " ORDER BY ID_WP";
+
+            ExecuteRead(sql);
         }
+
+        public void ReadSingle(string sql)
+        {
+            DataTable dt = DataRepository.GetDataTable(sql);
+            _internalList.Clear();
+
+            if (dt.Rows.Count > 0)
+            {
+                DataRow row = dt.Rows[0];
+                // Eigenschaften des Controllers selbst setzen (für Kompatibilität)
+                this.m_ID = row[0] != DBNull.Value ? Convert.ToInt32(row[0]) : 0;
+                this.m_ID_WP = row[1] != DBNull.Value ? Convert.ToInt32(row[1]) : 0;
+                this.m_nVorlauf = row[2] != DBNull.Value ? Convert.ToInt32(row[2]) : 0;
+                this.m_nTemperatur = row[3] != DBNull.Value ? Convert.ToInt32(row[3]) : 0;
+                this.m_nCOP = row[4] != DBNull.Value ? Convert.ToDouble(row[4]) : 0;
+                this.m_nPkuehl = row[5] != DBNull.Value ? Convert.ToDouble(row[5]) : 0;
+
+                // Auch in die Liste für 'rows = 1'
+                _internalList.Add(this);
+            }
+        }
+
+        public void ReadVorlauf(string sql)
+        {
+            DataTable dt = DataRepository.GetDataTable(sql);
+            _internalList.Clear();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                KenndatenKuehlungModel item = new KenndatenKuehlungModel();
+                item.m_nVorlauf = row[0] != DBNull.Value ? Convert.ToInt32(row[0]) : 0;
+                item.m_ID_WP = row[1] != DBNull.Value ? Convert.ToInt32(row[1]) : 0;
+                _internalList.Add(item);
+            }
+        }
+
+        private void ExecuteRead(string sql)
+        {
+            DataTable dt = DataRepository.GetDataTable(sql);
+            _internalList.Clear();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                KenndatenKuehlungModel item = new KenndatenKuehlungModel();
+                item.m_ID = row[0] != DBNull.Value ? Convert.ToInt32(row[0]) : 0;
+                item.m_ID_WP = row[1] != DBNull.Value ? Convert.ToInt32(row[1]) : 0;
+                item.m_nVorlauf = row[2] != DBNull.Value ? Convert.ToInt32(row[2]) : 0;
+                item.m_nTemperatur = row[3] != DBNull.Value ? Convert.ToInt32(row[3]) : 0;
+                item.m_nCOP = row[4] != DBNull.Value ? Convert.ToDouble(row[4]) : 0;
+                item.m_nPkuehl = row[5] != DBNull.Value ? Convert.ToDouble(row[5]) : 0;
+                _internalList.Add(item);
+            }
+        }
+
+        #endregion
+
+        #region --- DATABASE WRITE OPERATIONS ---
 
         public bool Delete()
         {
-            try
-            {
-                DBCommand.CommandText = "DELETE WPName FROM Tab_Kenndaten_Kuehlung WHERE ID_WP=" + m_ID_WP;
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                return false;
-            }
-            return true;
+            // Korrektur: Standard DELETE Syntax
+            string sql = $"DELETE FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = {m_ID_WP}";
+            return DataRepository.ExecuteSQL(sql);
         }
 
         public bool Insert()
         {
             try
             {
-                DBCommand.CommandText = "SELECT Count(*) FROM Tab_Kenndaten_Kuehlung";
-                OdbcDataReader DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();  
-                int result = (int)DBReader.GetValue(0);
-                DBReader.Close();
+                // ID-Ermittlung
+                object result = DataRepository.ExecuteScalar("SELECT Max(ID) FROM Tab_Kenndaten_Kuehlung");
+                m_ID = (result == DBNull.Value) ? 1 : Convert.ToInt32(result) + 1;
 
-                if (result == 0) m_ID = 1;
-                else
-                {
-                    DBCommand.CommandText = "SELECT Max(ID) AS Ausdr1 FROM Tab_Kenndaten_Kuehlung";
-                    DBReader = DBCommand.ExecuteReader();
-                    DBReader.Read();
-                    m_ID = (int)DBReader.GetValue(0) + 1;
-                    DBReader.Close();
-                }
-
-                DBCommand.CommandText = FormattableString.Invariant($@"
+                // Insert mit InvariantCulture
+                string sql = FormattableString.Invariant($@"
                     INSERT INTO Tab_Kenndaten_Kuehlung (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, Last) 
-                    SELECT {m_ID}, {m_ID_WP}, {m_nVorlauf}, {m_nTemperatur}, {m_nCOP:F2}, {m_nPkuehl:F2}, {m_nLast}");
-                
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                    VALUES ({m_ID}, {m_ID_WP}, {m_nVorlauf}, {m_nTemperatur}, {m_nCOP}, {m_nPkuehl}, {m_nLast})");
+
+                return DataRepository.ExecuteSQL(sql);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Fehler bei Insert (Kühlung): " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public bool Update()
         {
-            try
-            {
-                DBCommand.CommandText = FormattableString.Invariant($@"
-                    UPDATE Tab_Kenndaten_Kuehlung 
-                    SET ID_WP = {m_ID_WP}, 
-                        Vorlauf = {m_nVorlauf}, 
-                        Temperatur = {m_nTemperatur}, 
-                        COP = {m_nCOP:F2}, 
-                        Pkuehl = {m_nPkuehl:F2}");
+            // Korrektur: UPDATE benötigt eine WHERE Klausel (normalerweise auf die ID)
+            string sql = FormattableString.Invariant($@"
+                UPDATE Tab_Kenndaten_Kuehlung 
+                SET ID_WP = {m_ID_WP}, 
+                    Vorlauf = {m_nVorlauf}, 
+                    Temperatur = {m_nTemperatur}, 
+                    COP = {m_nCOP}, 
+                    Pkuehl = {m_nPkuehl}
+                WHERE ID = {m_ID}");
 
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                return false;
-            }
-            return true;
-        }
-        
-        public void ReadAll(int ID_WP=0)
-        {
-            if(ID_WP >0)
-                DBCommand.CommandText = "select * from Tab_Kenndaten_Kuehlung where ID_WP=" + ID_WP + " order by ID_WP";
-            else
-                DBCommand.CommandText = "select * from Tab_Kenndaten_Kuehlung order by ID_WP";
-            
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-
-            items = new KenndatenKuehlungModel[1000];
-            rows = 0;
-
-            while (DBReader.Read())
-            {
-                KenndatenKuehlungModel item = new KenndatenKuehlungModel();
-
-                if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_ID_WP = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.m_nVorlauf = (int)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) item.m_nTemperatur = (int)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.m_nCOP = (double)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.m_nPkuehl = (double)DBReader.GetValue(5);
-
-                items[rows] = item;
-                rows += 1;
-                item = null;
-            }
-            DBReader.Dispose();
-            DBReader.Close();
+            return DataRepository.ExecuteSQL(sql);
         }
 
-        public void ReadSingle(string sql)
-        {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-
-            rows = 0;
-            DBReader.Read();
-            if (DBReader.HasRows)
-            {
-                if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_ID_WP = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) m_nVorlauf = (int)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) m_nTemperatur = (int)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) m_nCOP = (double)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) m_nPkuehl = (double)DBReader.GetValue(5);
-
-                rows = 1;
-            }
-            DBReader.Dispose();
-            DBReader.Close();
-        }
-
-        public void ReadVorlauf(string sql)
-        {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-
-            items = new KenndatenKuehlungModel[1000];
-            rows = 0;
-
-            while (DBReader.Read())
-            {
-                KenndatenKuehlungModel item = new KenndatenKuehlungModel();
-
-                if (!DBReader.IsDBNull(0)) item.m_nVorlauf = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_ID_WP = (int)DBReader.GetValue(1);
-
-                items[rows] = item;
-                rows += 1;
-                item = null;
-            }
-            DBReader.Dispose();
-            DBReader.Close();
-        }
-     }
+        #endregion
+    }
 }
