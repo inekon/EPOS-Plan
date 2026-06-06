@@ -1,12 +1,15 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -187,175 +190,183 @@ namespace WindowsFormsApplication1
         private async void btn_Import_Click(object sender, EventArgs e)
         {
             KlimaregionCtrl ctrlklimareg = new KlimaregionCtrl();
-            double ghi; double dni; double dhi; double t2m;
-            List<double> sonnenwinkel = new List<double>();
-
-            // PVGIS nutzt Punkt als Dezimaltrenner, daher muss die InvariantCulture verwendet werden
             var culture = CultureInfo.InvariantCulture;
 
             pBar_Import.Maximum = 7;
             pBar_Import.Value = 1;
             textBox_Display.Text = "";
+
             bool Success; double Lat; double Lon; string DisplayName; string Listbezeichner;
 
-            if (comboBox_Ort.Text != "")
+            // 1. Koordinaten ermitteln / Validierung
+            if (!string.IsNullOrEmpty(comboBox_Ort.Text))
             {
-                // Koordinaten für den Ort ermitteln
-                // wenn in DB schon vorhanden, dann nicht importieren
                 if (listBoxKlimreg.FindString(comboBox_Ort.Text) != -1) return;
+
                 pBar_Import.Visible = true;
                 (Success, Lat, Lon, DisplayName) = await PVGIS_EPW_Downloader.GetCoordinatesAsync(comboBox_Ort.Text);
+
                 if (!Success)
-                { 
-                    pBar_Import.Visible = false; 
-                    MessageBox.Show("Der Ort '" + comboBox_Ort.Text + "' konnte nicht ermittelt werden...\n" + DisplayName.ToString(), "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                {
+                    pBar_Import.Visible = false;
+                    MessageBox.Show($"Der Ort '{comboBox_Ort.Text}' konnte nicht ermittelt werden...\n{DisplayName}", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-                Listbezeichner = comboBox_Ort.Text; 
+                Listbezeichner = comboBox_Ort.Text;
             }
             else
             {
-                // Eingabe überprüfen
-                if (textBox_Latitude.Text == "" || textBox_Longitude.Text == "" || textBox_Bezeichnung.Text == "")
+                if (string.IsNullOrEmpty(textBox_Latitude.Text) || string.IsNullOrEmpty(textBox_Longitude.Text) || string.IsNullOrEmpty(textBox_Bezeichnung.Text))
                 {
-                    MessageBox.Show("Eingaben überprüfen!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error); textBox_Bezeichnung.Focus();
+                    MessageBox.Show("Eingaben überprüfen!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    textBox_Bezeichnung.Focus();
                     return;
                 }
                 pBar_Import.Visible = true;
-                textBox_Longitude.Text = textBox_Longitude.Text.Replace('.', ','); 
-                Lon = Convert.ToDouble(textBox_Longitude.Text);
-                textBox_Latitude.Text = textBox_Latitude.Text.Replace('.', ',');
-                Lat = Convert.ToDouble(textBox_Latitude.Text);
+                Lon = Convert.ToDouble(textBox_Longitude.Text.Replace('.', ','));
+                Lat = Convert.ToDouble(textBox_Latitude.Text.Replace('.', ','));
                 DisplayName = "";
                 Listbezeichner = textBox_Bezeichnung.Text;
             }
 
-            pBar_Import.Value += 1;
-            textBox_Display.Text = DisplayName;
-            textBox_Latitude.Text = Lat.ToString();
-            textBox_Longitude.Text = Lon.ToString();
+            UpdateProgress(2, DisplayName, Lat, Lon);
 
-
-            // TMY Daten von PVGIS herunterladen, berechnen nach Ost, Süd, West, Nord und in Listen speichern
+            // 2. Paralleler TMY-Daten-Download (Extremer Geschwindigkeitsvorteil)
             List<TmyHourlyData> tmyHourlyList;
-            List<TmyHourlyData> tmyHourlyList_ost = new List<TmyHourlyData>();
-            List<TmyHourlyData> tmyHourlyList_sued = new List<TmyHourlyData>();
-            List<TmyHourlyData> tmyHourlyList_west = new List<TmyHourlyData>();
-            List<TmyHourlyData> tmyHourlyList_nord = new List<TmyHourlyData>();
-
             try
             {
-                // 1. Süd-Daten abrufen (Azimut = 0)
-                tmyHourlyList = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 0);
-                tmyHourlyList_sued = tmyHourlyList; // Süd entspricht dem Standard
+                // Alle Tasks gleichzeitig starten, statt nacheinander zu warten
+                var taskSued = PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 0);
+                var taskOst = PVGIS_EPW_Downloader.GetTMY(Lon, Lat, -90);
+                var taskWest = PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 90);
+                var taskNord = PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 180);
 
-                // 2. Die restlichen Himmelsrichtungen abrufen (falls du diese auch live vom Server brauchst)
-                // Hinweis: Die Werte für Azimut hängen von der PVGIS-Definition ab (meistens: Ost = -90 oder 90, West = 90 oder -90, Nord = 180)
-                tmyHourlyList_ost = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, -90);
-                tmyHourlyList_west = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 90);
-                tmyHourlyList_nord = await PVGIS_EPW_Downloader.GetTMY(Lon, Lat, 180);
+                // Synchron auf das Ende aller 4 Server-Antworten warten
+                await Task.WhenAll(taskSued, taskOst, taskWest, taskNord);
 
-                // Wenn bis hierhin kein Fehler aufgetreten ist, befüllen wir die GUI-Anzeige
-                textBox_Display.Text = PVGIS_EPW_Downloader.meteoDb + ": " + textBox_Display.Text;
+                tmyHourlyList = taskSued.Result;
+                // Hinweis: taskOst.Result, taskWest.Result, taskNord.Result stünden hier jetzt parallel bereit!
+
+                textBox_Display.Text = $"{PVGIS_EPW_Downloader.meteoDb}: {textBox_Display.Text}";
                 DisplayName = textBox_Display.Text;
             }
             catch (ArgumentException ex)
             {
-                // Fängt spezifische PVGIS-Eingabefehler ab (z.B. Koordinaten außerhalb der Datenbank)
                 pBar_Import.Visible = false;
                 MessageBox.Show(ex.Message, "Eingabefehler (PVGIS)", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return; // Bricht die Methode hier sauber ab
+                return;
             }
             catch (Exception ex)
             {
-                // Fängt alle harten Fehler ab (Server offline, URL falsch, JSON-Struktur kaputt, kein Internet)
                 pBar_Import.Visible = false;
                 MessageBox.Show(ex.Message, "Fehler beim Klimadaten-Download", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return; // Bricht die Methode hier sauber ab
+                return;
             }
 
-            // HIER GEHT DEIN CODE GANZ NORMAL WEITER (Die Listen sind nun erfolgreich befüllt)
-            // ...
-
-            // PVGIS Parameter für Solarberechnung:
-            // <param name="dni">Gb(n) aus TMY</param>
-            // <param name="dhi">Gd(h) aus TMY</param>
-            // <param name="ghi">G(h) aus TMY</param>
-
-            for (int i=0; i < tmyHourlyList.Count; i++)
+            // 3. Berechnung in einen Hintergrund-Thread auslagern (UI friert nicht ein)
+            await Task.Run(() =>
             {
-                ghi = tmyHourlyList[i].GlobalIrradiance;
-                dni = tmyHourlyList[i].DirectIrradiance;
-                dhi = tmyHourlyList[i].DiffuseIrradiance;
-                t2m = tmyHourlyList[i].Temperature;
-
-                DateTime dt = DateTime.ParseExact(tmyHourlyList[i].TimeString, "yyyyMMdd:HHmm", culture);
-                tmyHourlyList[i].Sol_sued = SolarCalculator.CalculateHourly(Lon, Lat, 90, 0, ghi, dni, dhi, t2m, dt.DayOfYear, dt.Hour);
-                tmyHourlyList[i].Sol_ost = SolarCalculator.CalculateHourly(Lon, Lat, 90, -90, ghi, dni, dhi, t2m, dt.DayOfYear, dt.Hour);
-                tmyHourlyList[i].Sol_nord = SolarCalculator.CalculateHourly(Lon, Lat, 90, 180, ghi, dni, dhi, t2m, dt.DayOfYear, dt.Hour);
-                tmyHourlyList[i].Sol_west = SolarCalculator.CalculateHourly(Lon, Lat, 90, 90, ghi, dni, dhi, t2m, dt.DayOfYear, dt.Hour);
-                sonnenwinkel.Add(SolarCalculator.sonnenwinkel);
-                tmyHourlyList[i].Sonnenwinkel = SolarCalculator.sonnenwinkel;
-            }
-
-            //File.WriteAllLines("c:\\temp\\sonnenwinkel.txt", sonnenwinkel.Select(d => d.ToString()));
-            pBar_Import.Value += 1; pBar_Import.Update();
-
-            // Datenbankpfad fpr OleDb ermitteln aus DSN ODBC Info
-            // Klimadaten werden mit OleDb Transactions geschrieben,
-            // da es sich um viele Datensätze handelt und damit die Performance deutlich besser ist als mit ODBC
-            string db = "";
-            string userPath = $@"SOFTWARE\ODBC\ODBC.INI\TEST";
-            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(userPath))
-            {
-                if (key != null)
+                for (int i = 0; i < tmyHourlyList.Count; i++)
                 {
-                    db = key.GetValue("DBQ")?.ToString() ?? key.GetValue("Database")?.ToString();
+                    double ghi = tmyHourlyList[i].GlobalIrradiance;
+                    double dni = tmyHourlyList[i].DirectIrradiance;
+                    double dhi = tmyHourlyList[i].DiffuseIrradiance;
+                    double t2m = tmyHourlyList[i].Temperature;
+
+                    DateTime dt = DateTime.ParseExact(tmyHourlyList[i].TimeString, "yyyyMMdd:HHmm", culture);
+
+                    tmyHourlyList[i].Sol_sued = SolarCalculator.CalculateHourly(Lon, Lat, 90, 0, ghi, dni, dhi, t2m, dt.DayOfYear, dt.Hour);
+                    tmyHourlyList[i].Sol_ost = SolarCalculator.CalculateHourly(Lon, Lat, 90, -90, ghi, dni, dhi, t2m, dt.DayOfYear, dt.Hour);
+                    tmyHourlyList[i].Sol_nord = SolarCalculator.CalculateHourly(Lon, Lat, 90, 180, ghi, dni, dhi, t2m, dt.DayOfYear, dt.Hour);
+                    tmyHourlyList[i].Sol_west = SolarCalculator.CalculateHourly(Lon, Lat, 90, 90, ghi, dni, dhi, t2m, dt.DayOfYear, dt.Hour);
+                    tmyHourlyList[i].Sonnenwinkel = SolarCalculator.sonnenwinkel;
                 }
-            }
+            });
 
-            pBar_Import.Value += 1; pBar_Import.Update();
+            UpdateProgress(3);
 
-            // Tabelle Klimaregion schreiben
-            if (!ctrlklimareg.Add(Listbezeichner, Lon, Lat, DisplayName)) return;
-            ctrlklimareg.ReadSingle("SELECT * FROM Tab_Klimaregion where Name = '" + Listbezeichner + "'");
-            int id = ctrlklimareg.m_ID_Klimaregion;
-            if (id == 0) return;
+            // 4. Datenbank-Schreibvorgänge (Atomare Transaktion)
+            AccessRepository repo = new AccessRepository(); // Pfad wird intern aus DataRepository gezogen
+            var (connection, transaction) = DataRepository.BeginTransaction();
 
-            pBar_Import.Value += 1; pBar_Import.Update();
-
-            // Tabelle Solar (Stundenwerte) schreiben
-            AccessRepository repo = new AccessRepository(db);
-            repo.SaveTmyData(tmyHourlyList, Listbezeichner, "Tab_Solar", id);
-
-            // Tageswerte für Tabelle_Klimadaten
-            var daylist = SolarCalculator.GetDailyAverages(tmyHourlyList);
-   
-            for (int i = 0; i < daylist.Count; i++)
+            try
             {
-                // Tagverteilungstyp für Nicht Wohngebäude bestimmen: 1-4 für Saison, 5-8 für Saison+WE, 1/5=Winter, 3/7=Sommer, 2/6=Frühling/Herbst
-                DateTime date = DateTime.ParseExact(daylist[i].TimeString, "dd.MM.yyyy", CultureInfo.InvariantCulture);
-                daylist[i].TagTyp_NW = GetSeasonalValue(date);
-                
-                bool isWeekend = date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
-                daylist[i].WE = isWeekend;
-                
-                // Tagverteilungstyp für Wohngebäude bestimmen:
-                // wenn Diffusstrahlung mehr als 50% der Globalstrahlung, dann wolkig, sonst sonnig
-                if (daylist[i].DiffuseIrradiance > (0.5 * daylist[i].GlobalIrradiance)) daylist[i].TagTyp_W = 2; else daylist[i].TagTyp_W = 1;
-            }
-            
-            // Tabelle Tab_Klimadaten (täglich) schreiben
-            repo.SaveTmyData(daylist, comboBox_Ort.Text, "Tab_Klimadaten", id);
-            pBar_Import.Value += 1; pBar_Import.Update();
+                // Schritt A: Klimaregion anlegen
+                if (!ctrlklimareg.Add(Listbezeichner, Lon, Lat, DisplayName, connection, transaction))
+                {
+                    transaction.Rollback();
+                    pBar_Import.Visible = false;
+                    return;
+                }
 
-            // GUI aktualisieren
+                // Schritt B: ID ermitteln
+                int id = 0;
+                string sqlSelect = "SELECT ID_Klimaregion FROM Tab_Klimaregion WHERE Name = ?";
+                using (OleDbCommand cmdGetId = new OleDbCommand(sqlSelect, connection, transaction))
+                {
+                    cmdGetId.Parameters.Add(new OleDbParameter("?", Listbezeichner));
+                    object result = cmdGetId.ExecuteScalar();
+                    if (result != null && result != DBNull.Value) id = Convert.ToInt32(result);
+                }
+
+                if (id == 0) throw new Exception("Die ID der neu angelegten Klimaregion konnte nicht ermittelt werden.");
+
+                UpdateProgress(4);
+
+                // Schritt C: Stundenwerte schreiben
+                repo.SaveTmyData(tmyHourlyList, Listbezeichner, "Tab_Solar", id, connection, transaction);
+
+                // Schritt D: Tagesdurchschnitte berechnen
+                var daylist = SolarCalculator.GetDailyAverages(tmyHourlyList);
+                for (int i = 0; i < daylist.Count; i++)
+                {
+                    DateTime date = DateTime.ParseExact(daylist[i].TimeString, "dd.MM.yyyy", culture);
+                    daylist[i].TagTyp_NW = GetSeasonalValue(date);
+                    daylist[i].WE = (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday);
+                    daylist[i].TagTyp_W = (daylist[i].DiffuseIrradiance > (0.5 * daylist[i].GlobalIrradiance)) ? 2 : 1;
+                }
+
+                // Schritt E: Tageswerte schreiben
+                repo.SaveTmyData(daylist, comboBox_Ort.Text, "Tab_Klimadaten", id, connection, transaction);
+
+                // Alles fehlerfrei? Verbindlich wegspeichern!
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                MessageBox.Show($"Der Import wurde abgebrochen. Alle Änderungen wurden rückgängig gemacht.\nFehler: {ex.Message}",
+                                "Import-Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                pBar_Import.Visible = false;
+                return;
+            }
+            finally
+            {
+                if (connection != null && connection.State == ConnectionState.Open) connection.Close();
+            }
+
+            UpdateProgress(5);
+
+            // 5. GUI finalisieren
             ctrlklimareg.ReadAll();
             ctrlklimareg.FillListBox(listBoxKlimreg);
-            listBoxKlimreg.SelectedIndex = listBoxKlimreg.FindString(comboBox_Ort.Text);
 
-            pBar_Import.Value = pBar_Import.Maximum; pBar_Import.Update();
+            int targetIndex = listBoxKlimreg.FindString(Listbezeichner);
+            if (targetIndex != -1) listBoxKlimreg.SelectedIndex = targetIndex;
+
+            pBar_Import.Value = pBar_Import.Maximum;
+            pBar_Import.Update();
             pBar_Import.Visible = false;
+        }
+
+        // Kleine Hilfsmethode zur Vermeidung von kopiertem UI-Code
+        private void UpdateProgress(int value, string displayName = null, double? lat = null, double? lon = null)
+        {
+            pBar_Import.Value = value;
+            pBar_Import.Update();
+            if (displayName != null) textBox_Display.Text = displayName;
+            if (lat.HasValue) textBox_Latitude.Text = lat.Value.ToString();
+            if (lon.HasValue) textBox_Longitude.Text = lon.Value.ToString();
         }
 
         private int GetSeasonalValue(DateTime date)

@@ -1,135 +1,134 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class WaermebedarfCtrl : WaermebedarfModel
     {
-        OdbcCommand DBCommand;
-        OdbcDataReader DBReader;
-        public int rows;
- 
+        private List<WaermebedarfModel> _internalList = new List<WaermebedarfModel>();
+        public int rows => _internalList.Count;
+        public new List<WaermebedarfModel> items => _internalList;
+
         public WaermebedarfCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-        }
-
-        ~WaermebedarfCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public bool Delete(string szName)
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Tab_Waermebedarf where Bezeichner= '" + szName + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Parametrisierte Abfrage ohne unsaubere Stringverkettungen
+                string sql = "DELETE FROM Tab_Waermebedarf WHERE Bezeichner = ?";
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@bez", szName ?? (object)DBNull.Value)
+                };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Delete: " + ex.Message);
                 return false;
             }
-            return true;
         }
-
 
         public bool Insert()
         {
             try
             {
-                DBCommand.CommandText = "SELECT Count(*) FROM Tab_Waermebedarf";
-                OdbcDataReader DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();  
-                int result = (int)DBReader.GetValue(0);
-                DBReader.Close();
+                // Ermittlung der nächsten ID direkt über das Repository
+                string sqlCount = "SELECT COUNT(*) FROM Tab_Waermebedarf";
+                object countResult = DataRepository.ExecuteScalar(sqlCount, null);
+                int count = countResult != null ? Convert.ToInt32(countResult) : 0;
 
-                if (result == 0) m_ID_Ganglinie = 1;
+                if (count == 0)
+                {
+                    m_ID_Ganglinie = 1;
+                }
                 else
                 {
-                    DBCommand.CommandText = "SELECT Max(ID_GanglinieDaten) AS Ausdr1 FROM Tab_Waermebedarf";
-                    DBReader = DBCommand.ExecuteReader();
-                    DBReader.Read();
-                    m_ID_Ganglinie = (int)DBReader.GetValue(0) + 1;
-                    DBReader.Close();
+                    // Korrektur: Nutzt einheitlich den Spaltennamen aus der DB (hier ID_GanglinieDaten gemäß Altanwendung)
+                    string sqlMax = "SELECT MAX(ID_GanglinieDaten) FROM Tab_Waermebedarf";
+                    object maxResult = DataRepository.ExecuteScalar(sqlMax, null);
+                    m_ID_Ganglinie = (maxResult != null ? Convert.ToInt32(maxResult) : 0) + 1;
                 }
-    
-                DBCommand.CommandText = FormattableString.Invariant($@"
-                    INSERT INTO Tab_Waermebedarf (ID_GanglinieDaten, Bezeichner) 
-                    SELECT {m_ID_Ganglinie}, '{m_szBezeichner}'");
 
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Standardkonformes INSERT INTO ... VALUES-Statement
+                string sql = "INSERT INTO Tab_Waermebedarf (ID_GanglinieDaten, Bezeichner) VALUES (?, ?)";
+                OleDbParameter[] ps = {
+                    new OleDbParameter("@id", m_ID_Ganglinie),
+                    new OleDbParameter("@bez", m_szBezeichner ?? (object)DBNull.Value)
+                };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Insert: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public void ReadAll()
         {
-            DBCommand.CommandText = "select * from Tab_Waermebedarf order by Bezeichner";
-            DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Waermebedarf ORDER BY Bezeichner";
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            items = new WaermebedarfModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 WaermebedarfModel item = new WaermebedarfModel();
 
-                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_ID_Ganglinie = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.m_szBezeichner = (string)DBReader.GetString(2);
-    
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                // Spaltenbasiertes, sicheres Auslesen über Spaltennamen
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    item.ID = Convert.ToInt32(row["ID"]);
+
+                if (dt.Columns.Contains("ID_GanglinieDaten") && row["ID_GanglinieDaten"] != DBNull.Value)
+                    item.m_ID_Ganglinie = Convert.ToInt32(row["ID_GanglinieDaten"]);
+                else if (dt.Columns.Contains("ID_Ganglinie") && row["ID_Ganglinie"] != DBNull.Value)
+                    item.m_ID_Ganglinie = Convert.ToInt32(row["ID_Ganglinie"]);
+
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    item.m_szBezeichner = row["Bezeichner"].ToString();
+
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
 
         public void ReadSingle(string szBezeichner)
         {
-            DBCommand.CommandText = "select * from Tab_Waermebedarf where Bezeichner='" + szBezeichner + "'";
-            DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Waermebedarf WHERE Bezeichner = ?";
+            OleDbParameter[] ps = {
+                new OleDbParameter("@bez", szBezeichner ?? (object)DBNull.Value)
+            };
 
-            rows = 0;
+            DataTable dt = DataRepository.GetDataTable(sql, ps);
 
-            if(DBReader.Read())
+            // Löscht Instanzdaten standardmäßig für den Fall, dass nichts gefunden wird
+            ID = 0;
+            m_ID_Ganglinie = 0;
+            m_szBezeichner = string.Empty;
+
+            if (dt != null && dt.Rows.Count > 0)
             {
-                WaermebedarfModel item = new WaermebedarfModel();
+                DataRow row = dt.Rows[0];
 
-                if (!DBReader.IsDBNull(0)) ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_ID_Ganglinie = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) m_szBezeichner = (string)DBReader.GetString(2);
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    ID = Convert.ToInt32(row["ID"]);
 
-                rows = 1;
+                if (dt.Columns.Contains("ID_GanglinieDaten") && row["ID_GanglinieDaten"] != DBNull.Value)
+                    m_ID_Ganglinie = Convert.ToInt32(row["ID_GanglinieDaten"]);
+                else if (dt.Columns.Contains("ID_Ganglinie") && row["ID_Ganglinie"] != DBNull.Value)
+                    m_ID_Ganglinie = Convert.ToInt32(row["ID_Ganglinie"]);
+
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    m_szBezeichner = row["Bezeichner"].ToString();
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
     }
 }

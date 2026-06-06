@@ -1,5 +1,6 @@
 using System;
-using System.Data.Odbc;
+using System.Data;
+using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -11,7 +12,7 @@ namespace WindowsFormsApplication1
         public string m_szPufferSp = "";
         private int m_mode = MODE_EDIT;
 
-        public Form_PufferSp_Bearbeiten (int mode)
+        public Form_PufferSp_Bearbeiten(int mode)
         {
             InitializeComponent();
             m_mode = mode;
@@ -31,27 +32,29 @@ namespace WindowsFormsApplication1
                 textBox_Hersteller.Text = "";
                 textBox_Verluste.Text = "0";
                 textBox_Investitionskosten.Text = "0";
-                textBox_Volumen .Text = "0";
+                textBox_Volumen.Text = "0";
             }
         }
 
         public void SetControls(string szName)
         {
-            RecordSet rs = new RecordSet();
-
             textBox_Name.Text = szName;
-            m_szPufferSp = szName;  
-               
-            rs.Open("select * from Tab_Pufferspeicher where Bezeichner='" + szName + "'");
-            if (!rs.Next()) { rs.Close(); return; }
-            
-            textBox_Hersteller.Text = rs.GetString("Hersteller");
-            comboBox_Speichertyp.Text = rs.Read("Speichertyp").ToString();
-            textBox_Volumen.Text = rs.Read("Gesamtvolumen").ToString();
-            textBox_Verluste.Text = ((double)rs.Read("Bereitschaftsverluste")).ToString("F2");
-            textBox_Investitionskosten.Text = ((double)rs.Read("Investitionskosten")).ToString("F2");
-                
-            rs.Close();
+            m_szPufferSp = szName;
+
+            // 1. Daten über das DataRepository mittels DataTable abfragen (Ersetzt RecordSet)
+            string sql = "SELECT * FROM Tab_Pufferspeicher WHERE Bezeichner = ?";
+            DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("?", szName ?? (object)DBNull.Value));
+
+            if (dt == null || dt.Rows.Count == 0) return;
+
+            DataRow row = dt.Rows[0];
+
+            // Zuordnung basierend auf der Tabellenstruktur (Indizes analog zur ReadAll-Logik)
+            if (row[2] != DBNull.Value) textBox_Hersteller.Text = row[2].ToString();
+            if (row[3] != DBNull.Value) comboBox_Speichertyp.Text = row[3].ToString();
+            if (row[5] != DBNull.Value) textBox_Volumen.Text = row[5].ToString();
+            if (row[4] != DBNull.Value) textBox_Verluste.Text = Convert.ToDouble(row[4]).ToString("F2");
+            if (row[6] != DBNull.Value) textBox_Investitionskosten.Text = Convert.ToDouble(row[6]).ToString("F2");
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
@@ -62,30 +65,135 @@ namespace WindowsFormsApplication1
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
             Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
-            RecordSet rs = new RecordSet();
-            OdbcTransaction transaction = null;
+            OleDbTransaction transaction = null;
 
             frmLabel.m_szName = "";
             frmLabel.SetControl();
 
             if (frmLabel.ShowDialog() == DialogResult.OK)
             {
+                if (string.IsNullOrEmpty(frmLabel.m_szName))
+                {
+                    MessageBox.Show("Bitte einen gültigen Bezeichner eingeben!");
+                    return;
+                }
+
                 try
                 {
-                    transaction = Program.DBConnection.BeginTransaction();
-                    rs.DBCommand.Transaction = transaction;
-                    rs.Open("select Bezeichner from Tab_Pufferspeicher where Bezeichner='" + frmLabel.m_szName + "'");
-                    if (!rs.EOF()) { MessageBox.Show("Name existiert bereits!"); rs.Close(); return; }
-                    rs.Close();
-                
-                    textBox_Name.Text = frmLabel.m_szName;
-                    m_szPufferSp = frmLabel.m_szName;
-                    rs.Insert("INSERT INTO Tab_Pufferspeicher (Bezeichner) SELECT '" + frmLabel.m_szName + "' AS Ausdr1");
-                    rs.Close();
+                    using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                    {
+                        conn.Open();
+                        transaction = conn.BeginTransaction();
 
+                        // Existenzprüfung
+                        string checkSql = "SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE Bezeichner = ?";
+                        using (OleDbCommand checkCmd = conn.CreateCommand())
+                        {
+                            checkCmd.Transaction = transaction;
+                            checkCmd.CommandText = checkSql;
+                            checkCmd.Parameters.Add(new OleDbParameter("?", frmLabel.m_szName));
+
+                            int count = Convert.ToInt32(checkCmd.ExecuteScalar());
+                            if (count > 0)
+                            {
+                                MessageBox.Show("Name existiert bereits!");
+                                transaction.Rollback();
+                                return;
+                            }
+                        }
+
+                        textBox_Name.Text = frmLabel.m_szName;
+                        m_szPufferSp = frmLabel.m_szName;
+
+                        // INSERT durchführen
+                        string insertSql = "INSERT INTO Tab_Pufferspeicher (Bezeichner) VALUES (?)";
+                        using (OleDbCommand insertCmd = conn.CreateCommand())
+                        {
+                            insertCmd.Transaction = transaction;
+                            insertCmd.CommandText = insertSql;
+                            insertCmd.Parameters.Add(new OleDbParameter("?", frmLabel.m_szName));
+                            insertCmd.ExecuteNonQuery();
+                        }
+
+                        // Controller initialisieren und updaten
+                        PufferSpCtrl ctrl = new PufferSpCtrl();
+                        ctrl.model = InitDatensatzUpdate();
+                        ctrl.DBCommand.Connection = conn;
+                        ctrl.DBCommand.Transaction = transaction;
+
+                        if (ctrl.Update())
+                        {
+                            transaction.Commit();
+                            this.DialogResult = DialogResult.OK;
+                            MessageBox.Show("Datensatz gespeichert");
+                        }
+                        else
+                        {
+                            transaction.Rollback();
+                            this.DialogResult = DialogResult.Cancel;
+                            MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+                        }
+                        Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Fehler bei Speichern Unter: " + ex.Message);
+                    MessageBox.Show("Ein Fehler ist aufgetreten: " + ex.Message);
+                    if (transaction != null && transaction.Connection != null)
+                    {
+                        try { transaction.Rollback(); } catch { }
+                    }
+                }
+            }
+        }
+
+        PufferSpModel InitDatensatzUpdate()
+        {
+            PufferSpModel model = new PufferSpModel();
+            model.Name = textBox_Name.Text;
+            model.Firma = textBox_Hersteller.Text;
+            model.Speichertyp = comboBox_Speichertyp.Text;
+
+            int volumen;
+            model.Gesamtvolumen = Int32.TryParse(textBox_Volumen.Text, out volumen) ? volumen : 0;
+
+            double verluste;
+            model.Betriebsbereitschaftverlust = double.TryParse(textBox_Verluste.Text, out verluste) ? verluste : 0.0;
+
+            double kosten;
+            model.Investitionskosten = double.TryParse(textBox_Investitionskosten.Text, out kosten) ? kosten : 0.0;
+
+            return model;
+        }
+
+        private void btn_Speichern_Click(object sender, EventArgs e)
+        {
+            OleDbTransaction transaction = null;
+
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+
+                    // INSERT durchführen
+                    string insertSql = "INSERT INTO Tab_Pufferspeicher (Bezeichner) VALUES (?)";
+                    using (OleDbCommand insertCmd = conn.CreateCommand())
+                    {
+                        insertCmd.Transaction = transaction;
+                        insertCmd.CommandText = insertSql;
+                        insertCmd.Parameters.Add(new OleDbParameter("?", m_szPufferSp ?? (object)DBNull.Value));
+                        insertCmd.ExecuteNonQuery();
+                    }
+
+                    // Controller initialisieren und updaten
                     PufferSpCtrl ctrl = new PufferSpCtrl();
-                    ctrl.DBCommand.Transaction = transaction;
                     ctrl.model = InitDatensatzUpdate();
+                    ctrl.DBCommand.Connection = conn;
+                    ctrl.DBCommand.Transaction = transaction;
+
                     if (ctrl.Update())
                     {
                         transaction.Commit();
@@ -100,76 +208,14 @@ namespace WindowsFormsApplication1
                     }
                     Close();
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    try
-                    {
-                        // Attempt to roll back the transaction.
-                        transaction.Rollback();
-                    }
-                    catch
-                    {
-                        // Do nothing here; transaction is not active.
-                    }
-                }
-            }
-        }
-
-        PufferSpModel InitDatensatzUpdate()
-        {
-            PufferSpModel model = new PufferSpModel();
-            model.Name = textBox_Name.Text;
-            model.Firma = textBox_Hersteller.Text;
-            model.Speichertyp = comboBox_Speichertyp.Text;
-            model.Gesamtvolumen = Int32.Parse(textBox_Volumen.Text);
-            model.Betriebsbereitschaftverlust = double.Parse(textBox_Verluste.Text);
-            model.Investitionskosten = double.Parse(textBox_Investitionskosten.Text);
-     
-            return model;
-        }
-
-        private void btn_Speichern_Click(object sender, EventArgs e)
-        {
-            RecordSet rs = new RecordSet();
-            OdbcTransaction transaction = null;
-
-            try
-            {
-                transaction = Program.DBConnection.BeginTransaction();
-                rs.DBCommand.Transaction = transaction;
-                rs.Insert("INSERT INTO Tab_Pufferspeicher (Bezeichner) SELECT '" + m_szPufferSp + "' AS Ausdr1");
-                rs.Close();
-
-                PufferSpCtrl ctrl = new PufferSpCtrl();
-                ctrl.model = InitDatensatzUpdate();
-                ctrl.DBCommand.Transaction = transaction;
-
-                if (ctrl.Update())
-                {
-                    transaction.Commit();
-                    this.DialogResult = DialogResult.OK;
-                    MessageBox.Show("Datensatz gespeichert");
-                }
-                else
-                {
-                    transaction.Rollback();
-                    this.DialogResult = DialogResult.Cancel;
-                    MessageBox.Show("Fehler beim Speichern des Datensatzes!");
-                }
-                Close();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                try
+                Console.WriteLine("Fehler beim Speichern: " + ex.Message);
+                MessageBox.Show("Ein Fehler ist aufgetreten: " + ex.Message);
+                if (transaction != null && transaction.Connection != null)
                 {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
-                }
-                catch
-                {
-                    // Do nothing here; transaction is not active.
+                    try { transaction.Rollback(); } catch { }
                 }
             }
         }
@@ -182,40 +228,45 @@ namespace WindowsFormsApplication1
 
         private void btn_Ueberschreiben_Click(object sender, EventArgs e)
         {
-            PufferSpCtrl ctrl = new PufferSpCtrl();
-            OdbcTransaction transaction = null;
+            OleDbTransaction transaction = null;
 
             try
             {
-                ctrl.model = InitDatensatzUpdate();
-                transaction = Program.DBConnection.BeginTransaction();
-                ctrl.DBCommand.Transaction = transaction;
-                if (ctrl.Update())
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
                 {
-                    transaction.Commit();
-                    MessageBox.Show("Datensatz gespeichert");
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+
+                    // Controller initialisieren und updaten
+                    PufferSpCtrl ctrl = new PufferSpCtrl();
+                    ctrl.model = InitDatensatzUpdate();
+                    ctrl.DBCommand.Connection = conn;
+                    ctrl.DBCommand.Transaction = transaction;
+
+                    if (ctrl.Update())
+                    {
+                        transaction.Commit();
+                        this.DialogResult = DialogResult.OK;
+                        MessageBox.Show("Datensatz gespeichert");
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                        this.DialogResult = DialogResult.Cancel;
+                        MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
+                    }
+                    Close();
                 }
-                else
-                {
-                    transaction.Rollback();
-                    MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
-                }
-                Close();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                try
+                Console.WriteLine("Fehler beim Überschreiben: " + ex.Message);
+                MessageBox.Show("Ein Fehler ist aufgetreten: " + ex.Message);
+                if (transaction != null && transaction.Connection != null)
                 {
-                    // Attempt to roll back the transaction.
-                    transaction.Rollback();
-                }
-                catch
-                {
-                    // Do nothing here; transaction is not active.
+                    try { transaction.Rollback(); } catch { }
                 }
             }
         }
-         
     }
 }

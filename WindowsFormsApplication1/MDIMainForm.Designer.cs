@@ -74,6 +74,7 @@
             this.MenuItem_Gebaeude = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebBearbeiten = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_GebTypen = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Einstellungen = new System.Windows.Forms.ToolStripMenuItem();
             this.Help = new System.Windows.Forms.ToolStripMenuItem();
             this.MenuItem_Version = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
@@ -81,7 +82,7 @@
             this.Deutsch = new System.Windows.Forms.ToolStripMenuItem();
             this.Englisch = new System.Windows.Forms.ToolStripMenuItem();
             this.label_OnlineDoku = new System.Windows.Forms.Label();
-            this.MenuItem_Einstellungen = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenuItem_Dokumentation = new System.Windows.Forms.ToolStripMenuItem();
             this.menuToolbar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -410,12 +411,19 @@
             resources.ApplyResources(this.MenuItem_GebTypen, "MenuItem_GebTypen");
             this.MenuItem_GebTypen.Click += new System.EventHandler(this.MenuItem_GebTypen_Click);
             // 
+            // MenuItem_Einstellungen
+            // 
+            this.MenuItem_Einstellungen.Name = "MenuItem_Einstellungen";
+            resources.ApplyResources(this.MenuItem_Einstellungen, "MenuItem_Einstellungen");
+            this.MenuItem_Einstellungen.Click += new System.EventHandler(this.MenuItem_Einstellungen_Click);
+            // 
             // Help
             // 
             this.Help.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MenuItem_Version,
             this.toolStripSeparator7,
-            this.MenuItem_Lizenz});
+            this.MenuItem_Lizenz,
+            this.MenuItem_Dokumentation});
             resources.ApplyResources(this.Help, "Help");
             this.Help.Name = "Help";
             // 
@@ -460,11 +468,11 @@
             this.label_OnlineDoku.BackColor = System.Drawing.Color.Transparent;
             this.label_OnlineDoku.Name = "label_OnlineDoku";
             // 
-            // MenuItem_Einstellungen
+            // MenuItem_Dokumentation
             // 
-            this.MenuItem_Einstellungen.Name = "MenuItem_Einstellungen";
-            resources.ApplyResources(this.MenuItem_Einstellungen, "MenuItem_Einstellungen");
-            this.MenuItem_Einstellungen.Click += new System.EventHandler(this.MenuItem_Einstellungen_Click);
+            this.MenuItem_Dokumentation.Name = "MenuItem_Dokumentation";
+            resources.ApplyResources(this.MenuItem_Dokumentation, "MenuItem_Dokumentation");
+            this.MenuItem_Dokumentation.Click += new System.EventHandler(this.MenuItem_Dokumentation_Click);
             // 
             // MDIMainForm
             // 
@@ -539,6 +547,7 @@
         private System.Windows.Forms.ToolStripMenuItem MenuItem_ScriptGenerator;
         private System.Windows.Forms.Label label_OnlineDoku;
         private System.Windows.Forms.ToolStripMenuItem MenuItem_Einstellungen;
+        private System.Windows.Forms.ToolStripMenuItem MenuItem_Dokumentation;
     }
 }
 

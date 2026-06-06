@@ -1,158 +1,180 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Odbc;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class PhotovoltaikCtrl : PhotovoltaikModel
     {
-        public OdbcCommand DBCommand;
+        // --- Kompatibilitäts-Layer nach deinem Vorbild ---
+        private List<PhotovoltaikModel> _internalList = new List<PhotovoltaikModel>();
+
+        public int rows => _internalList.Count;
+        public new List<PhotovoltaikModel> items => _internalList;
+
+        [Obsolete("Verwendung von ODBC entfernt. DB-Operationen laufen jetzt über das DataRepository.")]
+        public OleDbCommand DBCommand;
+
         public PhotovoltaikModel model = new PhotovoltaikModel();
-        public int rows;
-    
-        public PhotovoltaikCtrl ()
+
+        public PhotovoltaikCtrl()
         {
-            DBCommand = Program.DBConnection.CreateCommand();
-            rows = 0;
+#pragma warning disable CS0618
+            DBCommand = new OleDbCommand();
+#pragma warning restore CS0618
         }
 
-        ~PhotovoltaikCtrl ()
+        ~PhotovoltaikCtrl()
         {
-            DBCommand.Dispose();
+#pragma warning disable CS0618
+            DBCommand?.Dispose();
+#pragma warning restore CS0618
         }
 
-        public void ReadAll(string szFilter="")
+        #region --- DATABASE READ OPERATIONS ---
+
+        public void ReadAll(string szFilter = "")
         {
             string sql;
 
-            if (szFilter == "")
-                sql = "select * from Tab_PV order by Modulname";
+            if (string.IsNullOrEmpty(szFilter))
+                sql = "SELECT * FROM Tab_PV ORDER BY Modulname";
             else
-                sql = "select * from Tab_PV where " + szFilter + " order by Modulname";   
+                sql = "SELECT * FROM Tab_PV WHERE " + szFilter + " ORDER BY Modulname";
 
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            DataTable dt = DataRepository.GetDataTable(sql);
+            _internalList.Clear();
 
-            items = new PhotovoltaikModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            if (dt != null)
             {
-                PhotovoltaikModel item = new PhotovoltaikModel();
+                foreach (DataRow row in dt.Rows)
+                {
+                    PhotovoltaikModel item = new PhotovoltaikModel();
 
-                if (!DBReader.IsDBNull(0)) item.m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_szName = DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) item.m_szFirma = DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.m_szBeschreibung = DBReader.GetString(3);
-                if (!DBReader.IsDBNull(4)) item.m_Leistung = (double)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.m_Wirkungsgrad = (double)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.m_U_Mpp = (double)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) item.m_U_Leerlauf = (double)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) item.m_I_Mpp = (double)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) item.m_I_Kurzschluss = (double)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) item.m_alpha_SC = (double)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) item.m_beta_OC = (double)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(12)) item.m_Temp_Coeff_Pmax = (double)DBReader.GetValue(12);
-                if (!DBReader.IsDBNull(13)) item.m_T_NOCT = (double)DBReader.GetValue(13);
-                if (!DBReader.IsDBNull(14)) item.m_Laenge = (double)DBReader.GetValue(14);
-                if (!DBReader.IsDBNull(15)) item.m_Breite = (double)DBReader.GetValue(15);
-                if (!DBReader.IsDBNull(16)) item.m_Modulkosten = (double)DBReader.GetValue(16);
+                    if (row[0] != DBNull.Value) item.m_ID = Convert.ToInt32(row[0]);
+                    if (row[1] != DBNull.Value) item.m_szName = row[1].ToString();
+                    if (row[2] != DBNull.Value) item.m_szFirma = row[2].ToString();
+                    if (row[3] != DBNull.Value) item.m_szBeschreibung = row[3].ToString();
+                    if (row[4] != DBNull.Value) item.m_Leistung = Convert.ToDouble(row[4]);
+                    if (row[5] != DBNull.Value) item.m_Wirkungsgrad = Convert.ToDouble(row[5]);
+                    if (row[6] != DBNull.Value) item.m_U_Mpp = Convert.ToDouble(row[6]);
+                    if (row[7] != DBNull.Value) item.m_U_Leerlauf = Convert.ToDouble(row[7]);
+                    if (row[8] != DBNull.Value) item.m_I_Mpp = Convert.ToDouble(row[8]);
+                    if (row[9] != DBNull.Value) item.m_I_Kurzschluss = Convert.ToDouble(row[9]);
+                    if (row[10] != DBNull.Value) item.m_alpha_SC = Convert.ToDouble(row[10]);
+                    if (row[11] != DBNull.Value) item.m_beta_OC = Convert.ToDouble(row[11]);
+                    if (row[12] != DBNull.Value) item.m_Temp_Coeff_Pmax = Convert.ToDouble(row[12]);
+                    if (row[13] != DBNull.Value) item.m_T_NOCT = Convert.ToDouble(row[13]);
+                    if (row[14] != DBNull.Value) item.m_Laenge = Convert.ToDouble(row[14]);
+                    if (row[15] != DBNull.Value) item.m_Breite = Convert.ToDouble(row[15]);
+                    if (row[16] != DBNull.Value) item.m_Modulkosten = Convert.ToDouble(row[16]);
 
-                items[rows] = item;
-                item = null;
-                rows += 1;
+                    _internalList.Add(item);
+                }
             }
-            DBReader.Close();
-            DBReader.Dispose();
         }
 
         public void ReadSingle(int ID)
         {
-            DBCommand.CommandText = "select * from Tab_PV where ID=" + ID;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            // Bei ReadSingle befüllst du ja die Felder der eigenen Instanz (m_ID, m_szName etc.),
+            // aber wir können zur Sicherheit die Liste leeren oder das gefundene Element hineinlegen,
+            // falls das UI nach einem ReadSingle auch auf items[0] zugreift.
+            _internalList.Clear();
 
-            rows = 0;
+            string sql = "SELECT * FROM Tab_PV WHERE ID = ?";
+            OleDbParameter parameter = new OleDbParameter("?", ID);
 
-            DBReader.Read();
+            DataTable dt = DataRepository.GetDataTable(sql, parameter);
 
-            if (DBReader.HasRows)
+            if (dt != null && dt.Rows.Count > 0)
             {
-                if (!DBReader.IsDBNull(0)) m_ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_szName = DBReader.GetString(1);
-                if (!DBReader.IsDBNull(2)) m_szFirma = DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_szBeschreibung = DBReader.GetString(3);
-                if (!DBReader.IsDBNull(4)) m_Leistung = (double)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) m_Wirkungsgrad = (double)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) m_U_Mpp = (double)DBReader.GetValue(6);
-                if (!DBReader.IsDBNull(7)) m_U_Leerlauf = (double)DBReader.GetValue(7);
-                if (!DBReader.IsDBNull(8)) m_I_Mpp = (double)DBReader.GetValue(8);
-                if (!DBReader.IsDBNull(9)) m_I_Kurzschluss = (double)DBReader.GetValue(9);
-                if (!DBReader.IsDBNull(10)) m_alpha_SC = (double)DBReader.GetValue(10);
-                if (!DBReader.IsDBNull(11)) m_beta_OC = (double)DBReader.GetValue(11);
-                if (!DBReader.IsDBNull(12)) m_Temp_Coeff_Pmax = (double)DBReader.GetValue(12);
-                if (!DBReader.IsDBNull(13)) m_T_NOCT= (double)DBReader.GetValue(13);
-                if (!DBReader.IsDBNull(14)) m_Laenge = (double)DBReader.GetValue(14);
-                if (!DBReader.IsDBNull(15)) m_Breite = (double)DBReader.GetValue(15);
-                if (!DBReader.IsDBNull(16)) m_Modulkosten = (double)DBReader.GetValue(16);
+                DataRow row = dt.Rows[0];
 
-                rows = 1;
+                if (row[0] != DBNull.Value) m_ID = Convert.ToInt32(row[0]);
+                if (row[1] != DBNull.Value) m_szName = row[1].ToString();
+                if (row[2] != DBNull.Value) m_szFirma = row[2].ToString();
+                if (row[3] != DBNull.Value) m_szBeschreibung = row[3].ToString();
+                if (row[4] != DBNull.Value) m_Leistung = Convert.ToDouble(row[4]);
+                if (row[5] != DBNull.Value) m_Wirkungsgrad = Convert.ToDouble(row[5]);
+                if (row[6] != DBNull.Value) m_U_Mpp = Convert.ToDouble(row[6]);
+                if (row[7] != DBNull.Value) m_U_Leerlauf = Convert.ToDouble(row[7]);
+                if (row[8] != DBNull.Value) m_I_Mpp = Convert.ToDouble(row[8]);
+                if (row[9] != DBNull.Value) m_I_Kurzschluss = Convert.ToDouble(row[9]);
+                if (row[10] != DBNull.Value) m_alpha_SC = Convert.ToDouble(row[10]);
+                if (row[11] != DBNull.Value) m_beta_OC = Convert.ToDouble(row[11]);
+                if (row[12] != DBNull.Value) m_Temp_Coeff_Pmax = Convert.ToDouble(row[12]);
+                if (row[13] != DBNull.Value) m_T_NOCT = Convert.ToDouble(row[13]);
+                if (row[14] != DBNull.Value) m_Laenge = Convert.ToDouble(row[14]);
+                if (row[15] != DBNull.Value) m_Breite = Convert.ToDouble(row[15]);
+                if (row[16] != DBNull.Value) m_Modulkosten = Convert.ToDouble(row[16]);
+
+                // Kopie in die interne Liste legen, damit rows auf 1 springt
+                _internalList.Add(this);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
+
+        #endregion
+
+        #region --- DATABASE WRITE OPERATIONS ---
 
         public bool Update()
         {
             try
             {
-                string sql = FormattableString.Invariant($@"
+                string sql = @"
                     UPDATE Tab_PV 
                     SET 
-                        Firma = '{model.m_szFirma}', 
-                        Beschreibung = '{model.m_szBeschreibung}', 
-                        Leistung = {model.m_Leistung}, 
-                        Wirkungsgrad = {model.m_Wirkungsgrad}, 
-                        U_Mpp = {model.m_U_Mpp}, 
-                        U_Leerlauf = {model.m_U_Leerlauf}, 
-                        I_Mpp = {model.m_I_Mpp}, 
-                        I_Kurzschluss = {model.m_I_Kurzschluss}, 
-                        alpha_SC= {SqlVal(model.m_alpha_SC)}, 
-                        beta_OC= {SqlVal(model.m_beta_OC)}, 
-                        gamma_PMP = {SqlVal(model.m_Temp_Coeff_Pmax)}, 
-                        T_NOCT = {SqlVal(model.m_T_NOCT)}, 
-                        Laenge = {model.m_Laenge}, 
-                        Breite = {model.m_Breite}, 
-                        Modulkosten = {model.m_Modulkosten} 
+                        Firma = ?, 
+                        Beschreibung = ?, 
+                        Leistung = ?, 
+                        Wirkungsgrad = ?, 
+                        U_Mpp = ?, 
+                        U_Leerlauf = ?, 
+                        I_Mpp = ?, 
+                        I_Kurzschluss = ?, 
+                        alpha_SC = ?, 
+                        beta_OC = ?, 
+                        gamma_PMP = ?, 
+                        T_NOCT = ?, 
+                        Laenge = ?, 
+                        Breite = ?, 
+                        Modulkosten = ? 
                     WHERE 
-                        Modulname = '{model.m_szName}'");
+                        Modulname = ?";
 
-                DBCommand.CommandText = sql;
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                OleDbParameter[] parameters = new OleDbParameter[]
+                {
+                    new OleDbParameter("?", model.m_szFirma ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_szBeschreibung ?? (object)DBNull.Value),
+                    new OleDbParameter("?", model.m_Leistung),
+                    new OleDbParameter("?", model.m_Wirkungsgrad),
+                    new OleDbParameter("?", model.m_U_Mpp),
+                    new OleDbParameter("?", model.m_U_Leerlauf),
+                    new OleDbParameter("?", model.m_I_Mpp),
+                    new OleDbParameter("?", model.m_I_Kurzschluss),
+
+                    new OleDbParameter("?", model.m_alpha_SC == 0 ? DBNull.Value : (object)model.m_alpha_SC),
+                    new OleDbParameter("?", model.m_beta_OC == 0 ? DBNull.Value : (object)model.m_beta_OC),
+                    new OleDbParameter("?", model.m_Temp_Coeff_Pmax == 0 ? DBNull.Value : (object)model.m_Temp_Coeff_Pmax),
+                    new OleDbParameter("?", model.m_T_NOCT == 0 ? DBNull.Value : (object)model.m_T_NOCT),
+
+                    new OleDbParameter("?", model.m_Laenge),
+                    new OleDbParameter("?", model.m_Breite),
+                    new OleDbParameter("?", model.m_Modulkosten),
+                    new OleDbParameter("?", model.m_szName ?? (object)DBNull.Value)
+                };
+
+                DataRepository.ExecuteNonQuery(sql, parameters);
+                return true;
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler beim Update: " + ex.Message);
                 return false;
             }
-            return true;
-
         }
 
-        private string SqlVal(double value)
-        {
-            // Wenn 0, dann SQL NULL, sonst den Invariant-String des Wertes
-            return value == 0 ? "NULL" : value.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        }
+        #endregion
     }
 }

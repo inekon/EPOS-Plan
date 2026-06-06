@@ -1,79 +1,91 @@
 ﻿using System;
-using System.Data.Odbc;
-using System.Globalization;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
-    class PufferSpCtrl : PufferSpModel 
+    class PufferSpCtrl : PufferSpModel
     {
-        public int rows;
-        public OdbcCommand DBCommand;
+        // --- Kompatibilitäts-Layer für bestehenden UI-Code ---
+        private List<PufferSpModel> _internalList = new List<PufferSpModel>();
+        private bool _hasSingleData = false;
+
+        // Simuliert die alte 'rows' Variable dynamisch
+        public int rows => _internalList.Count > 0 ? _internalList.Count : (_hasSingleData ? 1 : 0);
+
+        // Simuliert das alte 'items' Array als Liste
+        public List<PufferSpModel> items => _internalList;
+
+        public OleDbCommand DBCommand;
         public PufferSpModel model;
-        
+
         public PufferSpCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
+            DBCommand = new OleDbCommand();
             model = new PufferSpModel();
         }
 
         ~PufferSpCtrl()
         {
-            rows = 0;
-            DBCommand.Dispose();
+            if (DBCommand != null)
+            {
+                DBCommand.Dispose();
+            }
         }
 
         public void ReadAll(string filter = "")
         {
             string sql;
-
             if (filter == "")
             {
-                sql = "select * from Tab_Pufferspeicher";
+                sql = "SELECT * FROM Tab_Pufferspeicher";
             }
-            else sql = "select * from Tab_Pufferspeicher where " + filter;
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
-
-            items = new PufferSpModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            else
             {
-                PufferSpModel item = new PufferSpModel();
-
-                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.Name = (string)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.Firma = (string)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) item.Speichertyp = (string)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.Betriebsbereitschaftverlust = (double)DBReader.GetValue(4);
-                if (!DBReader.IsDBNull(5)) item.Gesamtvolumen = (int)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.Investitionskosten = (double)DBReader.GetValue(6);
-
-                items[rows] = item;
-                rows += 1;
+                sql = "SELECT * FROM Tab_Pufferspeicher WHERE " + filter;
             }
-            DBReader.Close();
-            DBReader.Dispose();
-            //DBReader.Close();
+
+            DataTable dt = DataRepository.GetDataTable(sql);
+
+            // Liste und Zustand zurücksetzen
+            _internalList.Clear();
+            _hasSingleData = false;
+
+            if (dt != null)
+            {
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    PufferSpModel item = new PufferSpModel();
+
+                    if (dt.Rows[i][0] != DBNull.Value) item.ID = Convert.ToInt32(dt.Rows[i][0]);
+                    if (dt.Rows[i][1] != DBNull.Value) item.Name = dt.Rows[i][1].ToString();
+                    if (dt.Rows[i][2] != DBNull.Value) item.Firma = dt.Rows[i][2].ToString();
+                    if (dt.Rows[i][3] != DBNull.Value) item.Speichertyp = dt.Rows[i][3].ToString();
+                    if (dt.Rows[i][4] != DBNull.Value) item.Betriebsbereitschaftverlust = Convert.ToDouble(dt.Rows[i][4]);
+                    if (dt.Rows[i][5] != DBNull.Value) item.Gesamtvolumen = Convert.ToInt32(dt.Rows[i][5]);
+                    if (dt.Rows[i][6] != DBNull.Value) item.Investitionskosten = Convert.ToDouble(dt.Rows[i][6]);
+
+                    _internalList.Add(item);
+                }
+            }
         }
-        
+
         public bool Delete(string szName)
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Tab_Pufferspeicher where Bezeichner='" + szName + "'";
+                string sql = "DELETE FROM Tab_Pufferspeicher WHERE Bezeichner = ?";
+
+                DBCommand.CommandText = sql;
+                DBCommand.Parameters.Clear();
+                DBCommand.Parameters.Add(new OleDbParameter("?", szName ?? (object)DBNull.Value));
+
                 DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Fehler beim Löschen des Pufferspeichers: " + ex.Message);
                 return false;
             }
             return true;
@@ -84,26 +96,28 @@ namespace WindowsFormsApplication1
             try
             {
                 string sql = "UPDATE Tab_Pufferspeicher SET " +
-                    "Hersteller = '" + model.Firma + "'" +
-                    ", Speichertyp='" + model.Speichertyp + "'" +
-                    ", Bereitschaftsverluste= " + model.Betriebsbereitschaftverlust.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Investitionskosten= " + model.Investitionskosten.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    ", Gesamtvolumen= " + model.Gesamtvolumen.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                    " WHERE Bezeichner='" + model.Name + "'";
-                
+                             "Hersteller = ?, " +
+                             "Speichertyp = ?, " +
+                             "Bereitschaftsverluste = ?, " +
+                             "Investitionskosten = ?, " +
+                             "Gesamtvolumen = ? " +
+                             "WHERE Bezeichner = ?";
+
                 DBCommand.CommandText = sql;
+                DBCommand.Parameters.Clear();
+
+                DBCommand.Parameters.Add(new OleDbParameter("?", model.Firma ?? (object)DBNull.Value));
+                DBCommand.Parameters.Add(new OleDbParameter("?", model.Speichertyp ?? (object)DBNull.Value));
+                DBCommand.Parameters.Add(new OleDbParameter("?", model.Betriebsbereitschaftverlust));
+                DBCommand.Parameters.Add(new OleDbParameter("?", model.Investitionskosten));
+                DBCommand.Parameters.Add(new OleDbParameter("?", model.Gesamtvolumen));
+                DBCommand.Parameters.Add(new OleDbParameter("?", model.Name ?? (object)DBNull.Value));
+
                 DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Fehler beim Aktualisieren des Pufferspeichers: " + ex.Message);
                 return false;
             }
             return true;

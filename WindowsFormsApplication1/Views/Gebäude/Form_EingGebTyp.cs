@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Data.Odbc;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
@@ -233,48 +234,81 @@ namespace WindowsFormsApplication1
         private void btn_EingneuerTyp_Click(object sender, EventArgs e)
         {
             Form_GebaeudetypNeu frm = new Form_GebaeudetypNeu();
-            
+
             frm.ShowDialog();
             if (frm.result == DialogResult.OK)
             {
-                if (listBox_Typename.FindString(frm.m_szName) != -1) { MessageBox.Show("Name existiert bereits!"); return; }    
-
-                OdbcCommand DBCommand;
-                DBCommand = Program.DBConnection.CreateCommand();
-                DBCommand.CommandText = "INSERT INTO Tab_DBTagV (Name, Beschreibung, Veraenderbar) SELECT '" + frm.m_szName + "' AS Ausdr1, '" + frm.m_szBeschreibung + "' AS Ausdr2, true as Ausdr3";
-                
-                try
+                // 1. Validierung: Existiert der Name bereits in der UI-Liste?
+                if (listBox_Typename.FindString(frm.m_szName) != -1)
                 {
-                    DBCommand.ExecuteNonQuery();
-                }
-                catch (SystemException ex)
-                {
-                    Console.WriteLine("Fehler beim Speichern: " + ex.Message);
-                    MessageBox.Show("Speichern nicht möglich!");  
+                    MessageBox.Show("Name existiert bereits!");
                     return;
                 }
-                
-                RecordSet rs = new RecordSet();
-                rs.Open("select ID from Tab_DBTagV where Name='" + frm.m_szName + "'");
-                rs.Next();
-                int nID = (int)rs.Read("ID");
 
-                for (int i = 0; i < 192; i++)
+                try
                 {
-                    DBCommand.CommandText = "INSERT INTO Tab_DBTagVDaten (ID_TagV, Verteilung) SELECT " + nID + " AS Ausdr1,0 AS Ausdr2";
-                    try
+                    // 2. Haupttyp in 'Tab_DBTagV' einfügen (Standardkonformes VALUES statt SELECT)
+                    string sqlInsertTyp = "INSERT INTO Tab_DBTagV (Name, Beschreibung, Veraenderbar) VALUES (?, ?, ?)";
+
+                    OleDbParameter[] paramsTyp = {
+                new OleDbParameter("@name", frm.m_szName ?? (object)DBNull.Value),
+                new OleDbParameter("@beschreibung", frm.m_szBeschreibung ?? (object)DBNull.Value),
+                new OleDbParameter("@veraenderbar", true) // Übergibt den Boolean-Wert nativ an Access
+            };
+
+                    bool successTyp = DataRepository.ExecuteSQL(sqlInsertTyp, paramsTyp);
+                    if (!successTyp)
                     {
-                        DBCommand.ExecuteNonQuery();
-                    }
-                    catch(SystemException ex)
-                    {
-                        MessageBox.Show("Speichern nicht möglich!" + ex.ToString());
+                        MessageBox.Show("Speichern des Gebäudetyps fehlgeschlagen!");
                         return;
                     }
-                }
 
-                listBox_Typename.Items.Add(frm.m_szName);
-                listBox_Typename.SelectedIndex = listBox_Typename.Items.Count - 1;     
+                    // 3. Frisch generierte ID sicher über das Repository abfragen (ersetzt das fehleranfällige RecordSet)
+                    string sqlGetID = "SELECT MAX(ID) FROM Tab_DBTagV WHERE Name = ?";
+                    OleDbParameter[] paramsGetID = {
+                        new OleDbParameter("@name", frm.m_szName)
+                    };
+
+                    object idResult = DataRepository.ExecuteScalar(sqlGetID, paramsGetID);
+                    if (idResult == null || idResult == DBNull.Value)
+                    {
+                        MessageBox.Show("Die ID des neuen Typs konnte nicht ermittelt werden!");
+                        return;
+                    }
+                    int nID = Convert.ToInt32(idResult);
+
+                    // 4. Die 192 Verteilungs-Datensätze parametrisiert in 'Tab_DBTagVDaten' schreiben
+                    string sqlInsertDaten = "INSERT INTO Tab_DBTagVDaten (ID_TagV, Verteilung) VALUES (?, ?)";
+
+                    for (int i = 0; i < 192; i++)
+                    {
+                        // Explizite Definition der Parameter mit ihrem genauen Datenbanktyp
+                        OleDbParameter paramId = new OleDbParameter("@idTagV", OleDbType.Integer);
+                        paramId.Value = nID;
+
+                        OleDbParameter paramVerteilung = new OleDbParameter("@verteilung", OleDbType.Double);
+                        // Falls "Verteilung" in der DB ein Ganzzahlfeld (Integer) ist, hier OleDbType.Integer nutzen!
+                        paramVerteilung.Value = 0.0;
+
+                        OleDbParameter[] paramsDaten = { paramId, paramVerteilung };
+
+                        bool successDaten = DataRepository.ExecuteSQL(sqlInsertDaten, paramsDaten);
+                        if (!successDaten)
+                        {
+                            MessageBox.Show($"Fehler beim Erstellen der Verteilungsdaten im Schritt {i + 1}!");
+                            return;
+                        }
+                    }
+
+                    // 5. UI aktualisieren, wenn alles erfolgreich in die Datenbank geschrieben wurde
+                    listBox_Typename.Items.Add(frm.m_szName);
+                    listBox_Typename.SelectedIndex = listBox_Typename.Items.Count - 1;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Allgemeiner Fehler beim Speichern: " + ex.Message);
+                    MessageBox.Show("Ein unerwarteter Fehler ist aufgetreten: " + ex.Message);
+                }
             }
         }
 

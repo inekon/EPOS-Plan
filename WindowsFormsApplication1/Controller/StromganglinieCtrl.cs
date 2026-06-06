@@ -1,138 +1,162 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class StromganglinieCtrl : StromganglinieModel
     {
-        OdbcCommand DBCommand;
-        OdbcDataReader DBReader;
-        public int rows;
+        private List<StromganglinieModel> _internalList = new List<StromganglinieModel>();
+        public int rows => _internalList.Count;
+        public new List<StromganglinieModel> items => _internalList;
+
         public int max_id = 0;
 
         public StromganglinieCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
-        }
-
-        ~StromganglinieCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public bool Delete(string szName)
         {
             try
             {
-                DBCommand.CommandText = "DELETE * FROM Tab_Stromganglinie where Bezeichner= '" + szName + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+                // Parametrisierte Abfrage ohne unsaubere Stringverkettungen
+                string sql = "DELETE FROM Tab_Stromganglinie WHERE Bezeichner = ?";
+
+                OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
+                paramBez.Value = szName ?? (object)DBNull.Value;
+
+                OleDbParameter[] ps = { paramBez };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Delete: " + ex.Message);
                 return false;
             }
-            return true;
         }
-
 
         public bool Insert()
         {
             try
             {
-                DBCommand.CommandText = "SELECT Count(*) FROM Tab_Stromganglinie";
-                OdbcDataReader DBReader = DBCommand.ExecuteReader();
-                DBReader.Read();  
-                int result = (int)DBReader.GetValue(0);
-                DBReader.Close();
+                // Ermittlung der nächsten ID direkt über das Repository (Ersatz für sequenzielle Reader)
+                string sqlCount = "SELECT COUNT(*) FROM Tab_Stromganglinie";
+                object countResult = DataRepository.ExecuteScalar(sqlCount, null);
+                int count = countResult != null ? Convert.ToInt32(countResult) : 0;
 
-                if (result == 0) m_ID_Ganglinie = 1;
+                if (count == 0)
+                {
+                    m_ID_Ganglinie = 1;
+                }
                 else
                 {
-                    DBCommand.CommandText = "SELECT Max(ID_GanglinieDaten) AS Ausdr1 FROM Tab_Stromganglinie";
-                    DBReader = DBCommand.ExecuteReader();
-                    DBReader.Read();  
-                    m_ID_Ganglinie = (int)DBReader.GetValue(0) + 1;
-                    DBReader.Close();
+                    // Liest die höchste ID aus der DB aus (Beibehaltung deines Spaltennamens 'ID_GanglinieDaten')
+                    string sqlMax = "SELECT MAX(ID_GanglinieDaten) FROM Tab_Stromganglinie";
+                    object maxResult = DataRepository.ExecuteScalar(sqlMax, null);
+                    m_ID_Ganglinie = (maxResult != null ? Convert.ToInt32(maxResult) : 0) + 1;
                 }
-                
-                DBCommand.CommandText = FormattableString.Invariant($@"
-                    INSERT INTO Tab_Stromganglinie (ID_GanglinieDaten, Bezeichner, Zeitinterval) 
-                    SELECT {m_ID_Ganglinie}, '{m_szBezeichner}', {m_Zeitinterval}");
-                
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return false;
+
+                // Standardkonformes INSERT INTO ... VALUES-Statement mit expliziten Parametertypen
+                string sql = "INSERT INTO Tab_Stromganglinie (ID_GanglinieDaten, Bezeichner, Zeitinterval) VALUES (?, ?, ?)";
+
+                OleDbParameter paramId = new OleDbParameter("@id", OleDbType.Integer);
+                paramId.Value = m_ID_Ganglinie;
+
+                OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
+                paramBez.Value = m_szBezeichner ?? (object)DBNull.Value;
+
+                OleDbParameter paramInterval = new OleDbParameter("@interval", OleDbType.Integer);
+                paramInterval.Value = m_Zeitinterval;
+
+                OleDbParameter[] ps = { paramId, paramBez, paramInterval };
+
+                return DataRepository.ExecuteSQL(sql, ps);
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Allgemeiner Fehler bei Insert: " + ex.Message);
                 return false;
             }
-            return true;
         }
 
         public void ReadAll()
         {
-            DBCommand.CommandText = "select * from Tab_Stromganglinie order by Bezeichner";
-            DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Stromganglinie ORDER BY Bezeichner";
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            items = new StromganglinieModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 StromganglinieModel item = new StromganglinieModel();
 
-                if (!DBReader.IsDBNull(0)) item.ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.m_ID_Ganglinie = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.m_szBezeichner = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) item.m_Zeitinterval = (int)DBReader.GetValue(3);
+                // Spaltenbasiertes, sicheres Auslesen über Spaltennamen
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    item.ID = Convert.ToInt32(row["ID"]);
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                if (dt.Columns.Contains("ID_GanglinieDaten") && row["ID_GanglinieDaten"] != DBNull.Value)
+                    item.m_ID_Ganglinie = Convert.ToInt32(row["ID_GanglinieDaten"]);
+                else if (dt.Columns.Contains("ID_Ganglinie") && row["ID_Ganglinie"] != DBNull.Value)
+                    item.m_ID_Ganglinie = Convert.ToInt32(row["ID_Ganglinie"]);
+
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    item.m_szBezeichner = row["Bezeichner"].ToString();
+
+                if (dt.Columns.Contains("Zeitinterval") && row["Zeitinterval"] != DBNull.Value)
+                    item.m_Zeitinterval = Convert.ToInt32(row["Zeitinterval"]);
+
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
 
         public void ReadSingle(string szBezeichner)
         {
-            DBCommand.CommandText = "select * from Tab_Stromganglinie where Bezeichner='" + szBezeichner + "'";
-            DBReader = DBCommand.ExecuteReader();
+            string sql = "SELECT * FROM Tab_Stromganglinie WHERE Bezeichner = ?";
 
-            rows = 0;
+            OleDbParameter paramBez = new OleDbParameter("@bez", OleDbType.VarWChar);
+            paramBez.Value = szBezeichner ?? (object)DBNull.Value;
 
-            if (DBReader.Read())
+            OleDbParameter[] ps = { paramBez };
+
+            DataTable dt = DataRepository.GetDataTable(sql, ps);
+
+            // Instanzdaten vorsorglich bereinigen, falls kein Treffer erzielt wird
+            ID = 0;
+            m_ID_Ganglinie = 0;
+            m_szBezeichner = string.Empty;
+            m_Zeitinterval = 0;
+
+            if (dt != null && dt.Rows.Count > 0)
             {
-                StromganglinieModel item = new StromganglinieModel();
+                DataRow row = dt.Rows[0];
 
-                if (!DBReader.IsDBNull(0)) ID = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) m_ID_Ganglinie = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) m_szBezeichner = (string)DBReader.GetString(2);
-                if (!DBReader.IsDBNull(3)) m_Zeitinterval = (int)DBReader.GetValue(3);
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    ID = Convert.ToInt32(row["ID"]);
 
-                rows = 1;
+                if (dt.Columns.Contains("ID_GanglinieDaten") && row["ID_GanglinieDaten"] != DBNull.Value)
+                    m_ID_Ganglinie = Convert.ToInt32(row["ID_GanglinieDaten"]);
+                else if (dt.Columns.Contains("ID_Ganglinie") && row["ID_Ganglinie"] != DBNull.Value)
+                    m_ID_Ganglinie = Convert.ToInt32(row["ID_Ganglinie"]);
+
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    m_szBezeichner = row["Bezeichner"].ToString();
+
+                if (dt.Columns.Contains("Zeitinterval") && row["Zeitinterval"] != DBNull.Value)
+                    m_Zeitinterval = Convert.ToInt32(row["Zeitinterval"]);
+
+                // Listensynchronisation zur Erhaltung der UI-Kompatibilität (rows = 1)
+                _internalList.Clear();
+                _internalList.Add(this);
             }
-            DBReader.Dispose();
-            DBReader.Close();
+            else
+            {
+                _internalList.Clear();
+            }
         }
     }
 }

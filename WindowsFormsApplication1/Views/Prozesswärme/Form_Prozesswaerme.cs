@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -13,8 +11,6 @@ namespace WindowsFormsApplication1
 {
     partial class Form_Prozesswaerme : Form
     {
-        private ProzesswaermeModel model = new ProzesswaermeModel();
-        private ProzesswaermeCtrl ctrl = new ProzesswaermeCtrl();
         public List<Z_ProjektProzesswaermeModel> list_pwmodel = new List<Z_ProjektProzesswaermeModel>();
         public int m_ID_Projekt = 0;
         private int startindex = 100000;
@@ -350,32 +346,48 @@ namespace WindowsFormsApplication1
         {
             DataGridView dgv = dataGridView1;
 
-            if (dgv.CurrentCell.RowIndex < 0)
+            // Absicherung: Prüfen, ob überhaupt eine gültige Zelle/Zeile ausgewählt ist
+            if (dgv.CurrentCell == null || dgv.CurrentCell.RowIndex < 0 || dgv.CurrentRow == null)
             {
-                MessageBox.Show("Prozesswärme auswählen!");
+                MessageBox.Show("Bitte wählen Sie eine Prozesswärme aus der Liste aus!");
                 return;
             }
 
-            DialogResult dialogResult = MessageBox.Show("Soll " + (string)dataGridView1.CurrentRow.Cells[0].Value + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            // Den Prozessnamen sicher aus der ersten Zelle der aktuellen Zeile auslesen
+            string szProzessName = dgv.CurrentRow.Cells[0].Value?.ToString();
+
+            if (string.IsNullOrEmpty(szProzessName))
+            {
+                MessageBox.Show("Der ausgewählte Datensatz enthält keinen gültigen Prozessnamen!");
+                return;
+            }
+
+            DialogResult dialogResult = MessageBox.Show("Soll " + szProzessName + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
 
-            OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
             try
             {
-                DBCommand.CommandText = "DELETE Prozessname FROM Tab_Prozesswaerme WHERE Prozessname='" + (string)dataGridView1.CurrentRow.Cells[0].Value + "'";
-                DBCommand.ExecuteNonQuery();
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
+                // Standardkonformes, parametrisiertes SQL-Statement
+                string sql = "DELETE FROM Tab_Prozesswaerme WHERE Prozessname = ?";
+                OleDbParameter[] ps = { new OleDbParameter("@name", szProzessName) };
+
+                // Löschbefehl über das DataRepository ausführen
+                if (DataRepository.ExecuteSQL(sql, ps))
+                {
+                    // Erst wenn das Löschen in der Datenbank erfolgreich war, die Zeile aus der UI entfernen
+                    dgv.Rows.RemoveAt(dgv.CurrentRow.Index);
+                    MessageBox.Show("Prozess erfolgreich gelöscht.");
+                }
+                else
+                {
+                    MessageBox.Show("Der Prozess konnte nicht aus der Datenbank gelöscht werden.");
+                }
             }
             catch (Exception ex)
             {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
+                Console.WriteLine("Fehler beim Löschen des Prozesses aus dem DataGridView: " + ex.Message);
+                MessageBox.Show("Fehler beim Löschvorgang!");
             }
-            dgv.Rows.RemoveAt(dgv.CurrentCell.RowIndex);
         }
 
         private void btn_ProzTypeDBedit_Click(object sender, EventArgs e)

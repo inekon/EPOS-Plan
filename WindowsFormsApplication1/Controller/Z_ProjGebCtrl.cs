@@ -1,56 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.Odbc;
+using System.Data;
+using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
     class Z_ProjGebCtrl : Z_ProjGebModel
     {
-        OdbcCommand DBCommand;
-        Z_ProjGebModel model;
-        public int rows;
+        // Das neue dynamische Listen-Schema
+        private List<Z_ProjGebModel> _internalList = new List<Z_ProjGebModel>();
+
+        public int rows => _internalList.Count;
+        public new List<Z_ProjGebModel> items => _internalList;
+
+        private Z_ProjGebModel model;
 
         public Z_ProjGebCtrl()
         {
-            rows = 0;
-            DBCommand = Program.DBConnection.CreateCommand();
             model = new Z_ProjGebModel();
-        }
-
-        ~Z_ProjGebCtrl()
-        {
-            rows = 0;
-            DBCommand.Dispose();
         }
 
         public void ReadAll(string sql)
         {
-            DBCommand.CommandText = sql;
-            OdbcDataReader DBReader = DBCommand.ExecuteReader();
+            // Abfrage über das zentrale DataRepository holen
+            DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            items = new Z_ProjGebModel[1000];
-            rows = 0;
-            while (DBReader.Read())
+            // Liste vor dem Befüllen leeren
+            _internalList.Clear();
+
+            if (dt == null) return;
+
+            foreach (DataRow row in dt.Rows)
             {
                 Z_ProjGebModel item = new Z_ProjGebModel();
 
-                if (!DBReader.IsDBNull(0)) item.ID_Z = (int)DBReader.GetValue(0);
-                if (!DBReader.IsDBNull(1)) item.ID_Gebaeude = (int)DBReader.GetValue(1);
-                if (!DBReader.IsDBNull(2)) item.ID_Projekt = (int)DBReader.GetValue(2);
-                if (!DBReader.IsDBNull(3)) item.Wohnflaeche = (double)DBReader.GetValue(3);
-                if (!DBReader.IsDBNull(4)) item.Einheit = (string)DBReader.GetString(4);
-                if (!DBReader.IsDBNull(5)) item.Jahresnutzungsgrad = (double)DBReader.GetValue(5);
-                if (!DBReader.IsDBNull(6)) item.DezentralWarmwasser = (bool)DBReader.GetValue(6);
+                // Sicheres Mapping über die Spaltennamen statt numerischer Indizes
+                if (dt.Columns.Contains("ID_Z") && row["ID_Z"] != DBNull.Value)
+                    item.ID_Z = Convert.ToInt32(row["ID_Z"]);
 
-                items[rows] = item;
-                rows += 1;
-                item = null;
+                if (dt.Columns.Contains("ID_Gebaeude") && row["ID_Gebaeude"] != DBNull.Value)
+                    item.ID_Gebaeude = Convert.ToInt32(row["ID_Gebaeude"]);
+
+                if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
+                    item.ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
+
+                if (dt.Columns.Contains("Wohnflaeche") && row["Wohnflaeche"] != DBNull.Value)
+                    item.Wohnflaeche = Convert.ToDouble(row["Wohnflaeche"]);
+
+                if (dt.Columns.Contains("Einheit") && row["Einheit"] != DBNull.Value)
+                    item.Einheit = row["Einheit"].ToString();
+
+                if (dt.Columns.Contains("Jahresnutzungsgrad") && row["Jahresnutzungsgrad"] != DBNull.Value)
+                    item.Jahresnutzungsgrad = Convert.ToDouble(row["Jahresnutzungsgrad"]);
+
+                if (dt.Columns.Contains("DezentralWarmwasser") && row["DezentralWarmwasser"] != DBNull.Value)
+                    item.DezentralWarmwasser = Convert.ToBoolean(row["DezentralWarmwasser"]);
+
+                // Element dynamisch zur internen Liste hinzufügen
+                _internalList.Add(item);
             }
-            DBReader.Dispose();
-            DBReader.Close();
         }
-
     }
 }

@@ -15,11 +15,8 @@ namespace WindowsFormsApplication1
         public int Gesamtvolumen;
         public double Investitionskosten;
 
-        public PufferSpModel[] items;
-
         public PufferSpModel()
         {
-            items = null;
             ID = 0;
             Name = "";
             Firma = "";

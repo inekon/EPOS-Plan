@@ -142,21 +142,25 @@ namespace WindowsFormsApplication1
             // Datensatz in DB Tab_Stromganglinie anlegen
             ctrl_ganglinie.m_szBezeichner = Path.GetFileNameWithoutExtension(filebasename);
             ctrl_ganglinie.m_Zeitinterval = Zeitinterval; // 1=Stundenwerte, 4=1/4 Stundenwerte, 60=Minutenwerte  
-            if (!ctrl_ganglinie.Insert()) return;
 
-            // Daten in DB
+            // Daten in DB schreiben
             Cursor.Current = Cursors.WaitCursor;
-            ctrl.list_GanglinieDaten.Clear();
-            for (int i = 0; i < tool.textList.Count; i++)
+            try
             {
-                StromganglinieDatenModel model = new StromganglinieDatenModel();
-                model.m_ID_GanglinieDaten = ctrl_ganglinie.m_ID_Ganglinie;
-                model.m_Wert = double.Parse(tool.textList[i]);
-                ctrl.list_GanglinieDaten.Add(model);
-            }
-            ctrl.Insert();
+                // Wir übergeben das Kopf-Controller-Objekt (für den ersten Insert) 
+                // und die rohe Textliste (für das performante Parsen und Einfügen)
+                bool success = ctrl.InsertKompletteGanglinie(ctrl_ganglinie, tool.textList);
 
-            Cursor.Current = Cursors.Default;
+                if (!success)
+                {
+                    MessageBox.Show("Fehler beim Speichern der Ganglinie. Die Daten wurden nicht gespeichert.");
+                }
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+
             SetControls();
         }
 
