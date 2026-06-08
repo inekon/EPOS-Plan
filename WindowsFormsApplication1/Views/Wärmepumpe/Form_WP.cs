@@ -6,7 +6,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Form_WP : Form
+    public partial class Form_WP : BaseForm
     {
         private WPModel item;
         public bool CloseWithOK = false;

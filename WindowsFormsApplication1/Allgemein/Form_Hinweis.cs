@@ -10,13 +10,13 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Form_Hinweis : Form
+    public partial class Form_Hinweis : BaseForm
     {
         public Form_Hinweis(string szTitle, string szMessage)
         {
             InitializeComponent();
             this.Text = szTitle;
-            label_Hinweis.Text = szMessage;  
+            label_Hinweis.Text = szMessage;
         }
 
         private async void Form_Hinweis_Load(object sender, EventArgs e)
@@ -27,7 +27,8 @@ namespace WindowsFormsApplication1
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Close();    
+            Close();
         }
-    }
+
+     }
 }

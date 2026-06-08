@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Form_Heizkessel_Admin : Form
+    public partial class Form_Heizkessel_Admin : BaseForm
     {
         private BrennstoffCtrl heizkesselctrl = new BrennstoffCtrl();
         public int m_ID_Projekt = 0;

@@ -10,7 +10,7 @@ using System.IO;
 
 namespace WindowsFormsApplication1
 {
-    partial class Form_AdminWaermeeinlesen : Form
+    partial class Form_AdminWaermeeinlesen : BaseForm
     {
         public int m_ID_Projekt = 0;
         public string m_szProjekt = "";
@@ -23,14 +23,45 @@ namespace WindowsFormsApplication1
         public Form_AdminWaermeeinlesen()
         {
             InitializeComponent();
- 
+
             string szPath = Path.Combine(Program.ApplicationPath_User, "Waermebedarf");
             textBox_Ordner.Text = szPath;
+
+            // =================================================================================
+            // NOTEBOOK-FIX: Kontrolliertes Layout & Fix für die ListBox-Höhe
+            // =================================================================================
+
+            // 1. Verhindert, dass die ListBox wegen der Schriftgröße das Layout sprengt:
+            this.listBox_Extern.IntegralHeight = false;
+
+            // 2. Fenstergröße für Notebooks stabilisieren
+            this.MinimumSize = new System.Drawing.Size(680, 460);
+            this.AutoSize = false;
+
+            // 3. Die linken Buttons bleiben sauber links oben verankert (keine Stauchung)
+            this.label1.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.btn_Oeffnen.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.btn_Datei.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.btn_Loeschen.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.btn_Einlesen.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+
+            // 4. Die obere Pfad-Eingabe wächst elastisch nach rechts mit
+            this.Label2.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.textBox_Name.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+            // 5. Die ListBox passt sich flexibel an, respektiert aber den Boden!
+            this.listBox_Extern.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
+            // 6. WICHTIG: Die unteren Elemente MÜSSEN mit dem Boden nach unten wandern!
+            this.label6.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            this.textBox_Ordner.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            this.btn_OK.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            // =================================================================================
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
         {
-            result = DialogResult.OK;  
+            result = DialogResult.OK;
             Close();
         }
 
@@ -40,10 +71,10 @@ namespace WindowsFormsApplication1
             ctrl.ReadAll();
 
             listBox_Extern.Items.Clear();
-            
-            for(int i=0; i<ctrl.rows;i++)
+
+            for (int i = 0; i < ctrl.rows; i++)
             {
-                WaermebedarfModel model = new WaermebedarfModel(); 
+                WaermebedarfModel model = new WaermebedarfModel();
 
                 model.m_szBezeichner = ctrl.items[i].m_szBezeichner;
                 listBox_Extern.Items.Add(model.m_szBezeichner);
@@ -88,7 +119,7 @@ namespace WindowsFormsApplication1
             }
 
             ctrl_ganglinie.Delete(listBox_Extern.Text);
-            SetControls(); 
+            SetControls();
         }
 
         private void btn_Datei_Click(object sender, EventArgs e)
@@ -150,6 +181,10 @@ namespace WindowsFormsApplication1
             this.Cursor = Cursors.Default;
             SetControls();
         }
- 
+
+        private void listBox_Extern_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

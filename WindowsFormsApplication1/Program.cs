@@ -33,6 +33,16 @@ namespace WindowsFormsApplication1
         [STAThread]
         static void Main()
         {
+            // Aktiviert die moderne High-DPI-Unterstützung (Verfügbar ab .NET Framework 4.7)
+            if (Environment.OSVersion.Version.Major >= 10)
+            {
+                Application.SetHighDpiMode(HighDpiMode.DpiUnaware); // Für .NET Core / .NET 5+
+                                                                     // Für älteres .NET Framework 4.7+ nutzt man stattdessen oft:
+                                                                     // Application.EnableVisualStyles();
+            }
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
 
             var key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
             if (key == null)
@@ -51,10 +61,6 @@ namespace WindowsFormsApplication1
                 var culture_en = new CultureInfo("en-US");
                 Thread.CurrentThread.CurrentUICulture = culture_en;
             }
-
-            // DPI-Awareness (PerMonitorV2) wird über app.manifest gesetzt.
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
 
             menuectrl = new MenueCtrl();
             wizardctrl = new WizardCtrl();
@@ -104,12 +110,12 @@ namespace WindowsFormsApplication1
 
             // nur zum Testen, Testserver wird in dieser Funktion beim Starten des Programms automatisch aufgerufen,
             // kein separates CMD Fensetr mit Aufruf nötig
-            StartLocalWebServer();
+            //StartLocalWebServer();
 
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);
             
-            StopLocalWebServer();
+            //StopLocalWebServer();
             
             db.CloseDB();
             Application.Exit();
