@@ -173,7 +173,22 @@ namespace WindowsFormsApplication1
 
         private void Form_Simulation_Detail_Load(object sender, EventArgs e)
         {
-            
+            // 1. Wunschgröße des gesamten Inhalts (inklusive hochskalierter Schriften) messen
+            Size wunschGroesse = this.PreferredSize;
+
+            // 2. Das Fenster nur vergrößern, wenn es aktuell kleiner als die Wunschgröße ist
+            if (wunschGroesse.Width > this.Width) this.Width = wunschGroesse.Width;
+            if (wunschGroesse.Height > this.Height) this.Height = wunschGroesse.Height;
+
+            // 3. SICHERHEITS-DECKEL FÜR KLEINE NOTEBOOKS:
+            // Verhindert, dass das Fenster größer wird als der eigentliche Bildschirm
+            Rectangle bildschirm = Screen.FromControl(this).WorkingArea;
+
+            if (this.Width > bildschirm.Width) this.Width = bildschirm.Width;
+            if (this.Height > bildschirm.Height) this.Height = bildschirm.Height;
+
+            // 4. Falls das Fenster maximiert gestartet werden soll (oft die sauberste Notebook-Lösung):
+            // this.WindowState = FormWindowState.Maximized; 
         }
 
         private void init_Chart(Chart chart)

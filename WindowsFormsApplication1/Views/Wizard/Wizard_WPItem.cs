@@ -8,7 +8,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Wizard_WPItem : Form
+    public partial class Wizard_WPItem : BaseForm
     {
         public WErzeugerModel item;
         public List<WErzeugerModel> m_werzitemlist = null;

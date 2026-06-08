@@ -19,7 +19,7 @@ namespace WindowsFormsApplication1
         public bool m_bAdmin = false;
         public string m_szProjekt = "";
 
-        public Form_Brauchwasser_Admin ()
+        public Form_Brauchwasser_Admin()
         {
             InitializeComponent();
         }
@@ -30,16 +30,16 @@ namespace WindowsFormsApplication1
             BrauchwasserCtrl ctrl_pw = new BrauchwasserCtrl();
             Z_ProjektProzesswaermeModel model = new Z_ProjektProzesswaermeModel();
 
-            m_szProjekt = szProjekt; 
+            m_szProjekt = szProjekt;
             listBox_DB.Items.Clear();
             ctrl_pw.ReadAll();
-            
+
             for (int i = 0; i < ctrl_pw.rows; i++)
             {
                 listBox_DB.Items.Add(ctrl_pw.items[i].m_szBezeichner);
             }
             if (listBox_DB.Items.Count > 0) listBox_DB.SelectedIndex = 0;
-  
+
         }
 
         private void SetProzessInfo(string szName)
@@ -51,7 +51,7 @@ namespace WindowsFormsApplication1
             {
                 textBox_Prozess_Name.Text = szName;
                 textBox_Beschreibung.Text = ctrl.m_szBeschreibung;
-                textBox_Prozess_Type.Text = ctrl.m_szTyp;  
+                textBox_Prozess_Type.Text = ctrl.m_szTyp;
             }
         }
 
@@ -68,12 +68,12 @@ namespace WindowsFormsApplication1
                     summe += ctrl.m_Monat[i];
                 }
             }
-            return summe;  
+            return summe;
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.Cancel; 
+            this.DialogResult = DialogResult.Cancel;
             Close();
         }
 
@@ -88,7 +88,7 @@ namespace WindowsFormsApplication1
 
             Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
             frm.Init(simulation);
-            frm.SetPage(1); 
+            frm.SetPage(1);
             frm.ShowDialog();
         }
 
@@ -97,7 +97,7 @@ namespace WindowsFormsApplication1
             Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
             frm.Init(simulation);
             frm.SetPage(1);
-            frm.ShowDialog(); 
+            frm.ShowDialog();
         }
 
         private void btn_DBedit_Click(object sender, EventArgs e)
@@ -112,13 +112,13 @@ namespace WindowsFormsApplication1
             frm.Location = p1;
             frm.SetControls();
             frm.ShowDialog();
-            SetControls(m_szProjekt); 
+            SetControls(m_szProjekt);
         }
 
         private void btn_Loeschen_Click(object sender, EventArgs e)
         {
             DialogResult dialogResult = MessageBox.Show("Soll " + listBox_DB.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
-            if (dialogResult == DialogResult.No) return; 
+            if (dialogResult == DialogResult.No) return;
 
             OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
             try
@@ -136,7 +136,7 @@ namespace WindowsFormsApplication1
                 // Allgemeine Fehler abfangen
                 Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
             }
-            listBox_DB.Items.Remove(listBox_DB.Text);    
+            listBox_DB.Items.Remove(listBox_DB.Text);
         }
 
         private void btn_DBneu_Click(object sender, EventArgs e)
@@ -165,8 +165,8 @@ namespace WindowsFormsApplication1
             Point p1 = btn_TypeDBedit.Location;
             p1 = this.PointToScreen(p1);
             frm.Location = p1;
-            frm.SetControls(); 
-            frm.ShowDialog(); 
+            frm.SetControls();
+            frm.ShowDialog();
         }
 
         private void listBox_DB_Click(object sender, EventArgs e)

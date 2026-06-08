@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Form_Heizkessel_Bearbeiten : Form
+    public partial class Form_Heizkessel_Bearbeiten : BaseForm
     {
         public const int MODE_EDIT = 0;
         public const int MODE_NEU = 1;

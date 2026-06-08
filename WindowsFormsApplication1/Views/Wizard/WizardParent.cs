@@ -11,23 +11,23 @@ namespace WindowsFormsApplication1
     {
         public const int WIZARD_MODE_NEU = 0;
         public const int WIZARD_MODE_BEARBEITEN = 1;
-        
+
         public List<WizardItemClass> listPages = new List<WizardItemClass>();
-        public List<WErzeugerModel> list_werzmodel  = new List<WErzeugerModel>();
+        public List<WErzeugerModel> list_werzmodel = new List<WErzeugerModel>();
         public List<Z_ProjektProzesswaermeModel> list_prozmodel = new List<Z_ProjektProzesswaermeModel>();
         public List<Z_ProjektStromganglinieModel> list_stromlastmodel = new List<Z_ProjektStromganglinieModel>();
         public List<Z_ProjGebModel> list_gebmodel = new List<Z_ProjGebModel>();
         public List<Z_ProjektStromverbraucherModel> list_stromverbrauchermodel = new List<Z_ProjektStromverbraucherModel>();
         public List<Z_ProjWaermebedarfModel> list_wbmodel = new List<Z_ProjWaermebedarfModel>();
 
-        public ProjektModel m_Projektmodel  = new ProjektModel();
-  
+        public ProjektModel m_Projektmodel = new ProjektModel();
+
         public int wizardmode;
         public bool gespeichert = false;
         private int top = WizardItemClass.KOMPONENTEN_ITEM;
         private int pagecount;
         public int projektID;
-        public bool bBereitsGeladen = false;   
+        public bool bBereitsGeladen = false;
 
         public WizardParent()
         {
@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
             list_stromlastmodel.Clear();
             list_stromverbrauchermodel.Clear();
             list_wbmodel.Clear();
-     
+
             listPages = WizardPages;
             listPages[WizardItemClass.KOMPONENTEN_ITEM].aktiv = true;
             listPages[WizardItemClass.PROJEKT_ITEM].aktiv = true;
@@ -71,7 +71,7 @@ namespace WindowsFormsApplication1
             listPages[WizardItemClass.BHKW_ITEM].aktiv = false;
 
             pagecount = listPages.Count();
-            
+
             ApplikationCtrl ctrl = new ApplikationCtrl();
             try
             {
@@ -120,8 +120,42 @@ namespace WindowsFormsApplication1
             Next();
             btnBack.Enabled = false;
             btnCancel.Enabled = true;
-            if(wizardmode == WizardParent.WIZARD_MODE_NEU) button_NeuProjekt.Visible = false;
+            if (wizardmode == WizardParent.WIZARD_MODE_NEU) button_NeuProjekt.Visible = false;
         }
+
+        private void LoadNewForm()
+        {
+            Form page = listPages.ElementAt(top).wizardform;
+            page.FormBorderStyle = FormBorderStyle.None;
+            page.TopLevel = false;
+            page.AutoScroll = true;
+
+            // 1. Dock auf None, um die echte ungestauchte Wunschgröße der Unterseite zu ermitteln
+            page.Dock = DockStyle.None;
+
+            this.pnlContent.Controls.Clear();
+            this.pnlContent.Controls.Add(page);
+            page.Show();
+
+            // 2. Berechnen, wie viel Platz die Unterseite im Panel *tatsächlich* benötigt
+            int extraBreite = page.PreferredSize.Width - this.pnlContent.Width;
+            int extraHoehe = page.PreferredSize.Height - this.pnlContent.Height;
+
+            // 3. Hauptfenster vergrößern, falls die Unterseite mehr Platz beansprucht als vorhanden ist
+            if (extraBreite > 0) this.Width += extraBreite;
+            if (extraHoehe > 0) this.Height += extraHoehe;
+
+            // 4. Sicherheitscheck: Wenn das Fenster nun größer als der physische Bildschirm wird,
+            // begrenzen wir es auf die Bildschirmarbeitsfläche, damit die Buttons nicht unter die Taskleiste rutschen.
+            Rectangle bildschirm = Screen.FromControl(this).WorkingArea;
+
+            if (this.Width > bildschirm.Width) this.Width = bildschirm.Width;
+            if (this.Height > bildschirm.Height) this.Height = bildschirm.Height;
+
+            // 5. Erst JETZT die Unterseite auf Fill setzen
+            page.Dock = DockStyle.Fill;
+        }
+        /*
         private void LoadNewForm()
         {
             Form page = listPages.ElementAt(top).wizardform;
@@ -132,14 +166,14 @@ namespace WindowsFormsApplication1
             this.pnlContent.Controls.Clear();
             this.pnlContent.Controls.Add(page);
             page.Show();
-        }
+        }*/
 
         private void Back()
         {
             top = GetNextDownIndex();
 
             LoadNewForm();
-            
+
             if (wizardmode == WIZARD_MODE_BEARBEITEN)
             {
                 if (top == WizardItemClass.KOMPONENTEN_ITEM)
@@ -154,7 +188,7 @@ namespace WindowsFormsApplication1
             btnCancel.Enabled = true;
             btnSpeichern.Enabled = false;
             btnNext.Enabled = true;
-   
+
             if (top <= WizardItemClass.KOMPONENTEN_ITEM)
             {
                 btnBack.Enabled = false;
@@ -177,7 +211,7 @@ namespace WindowsFormsApplication1
             Form page;
 
             // Bevor die nächste Seite geladen wird...
-            if (wizardmode == WIZARD_MODE_BEARBEITEN && listBox_Projekte.SelectedIndex == -1 )
+            if (wizardmode == WIZARD_MODE_BEARBEITEN && listBox_Projekte.SelectedIndex == -1)
                 btnNext.Enabled = false;
             else btnNext.Enabled = true;
 
@@ -193,7 +227,7 @@ namespace WindowsFormsApplication1
                 m_Projektmodel.m_Aenderungsdatum = ((Wizard_Projekt)page).GetDatum();
                 m_Projektmodel.m_Erstelldatum = ((Wizard_Projekt)page).GetErstellDatum();
                 m_Projektmodel.m_ID_Klimaregion = ((Wizard_Projekt)page).GetIDKlimaregion();
-                
+
                 if (!bBereitsGeladen)
                 {
                     LoadWEFromDB(m_Projektmodel.m_szProjektname);
@@ -207,7 +241,7 @@ namespace WindowsFormsApplication1
             }
 
             top = GetNextUpIndex(); //nächste mögliche Seite...
-            
+
             // nächste Seite laden...
             LoadNewForm();
 
@@ -289,7 +323,7 @@ namespace WindowsFormsApplication1
             {
                 ((Form_Stromverbraucher)page).list_sbmodel = list_stromverbrauchermodel;
                 ((Form_Stromverbraucher)page).SetControls(listBox_Projekte.Text, true);
-                ((Form_Stromverbraucher)page).m_ID_Projekt  = projektID;    
+                ((Form_Stromverbraucher)page).m_ID_Projekt = projektID;
             }
             else if (top == WizardItemClass.BHKW_ITEM)
             {
@@ -309,7 +343,7 @@ namespace WindowsFormsApplication1
 
             btnBack.Enabled = true;
             btnCancel.Enabled = true;
-            
+
             // letzte Seite erreicht ?
             if (lastIndex())
             {
@@ -326,7 +360,7 @@ namespace WindowsFormsApplication1
 
         private bool lastIndex()
         {
-            if (top >= pagecount-1) return true;
+            if (top >= pagecount - 1) return true;
 
             WizardItemClass wizard = new WizardItemClass();
             for (int i = top + 1; i < pagecount; i++)
@@ -390,7 +424,7 @@ namespace WindowsFormsApplication1
             // zu einem bestehende Projekt die definierten Komponenten suchen
             ProjektCtrl projctrl = new ProjektCtrl();
             WErzeugerCtrl werzctrl = new WErzeugerCtrl();
-            
+
             projctrl.ReadSingle(listBox_Projekte.Text);
             werzctrl.ReadAllFilter("ID_Projekt=" + projctrl.m_ID);
             projektID = projctrl.m_ID;
@@ -409,18 +443,18 @@ namespace WindowsFormsApplication1
             ((Wizard_Komponenten)page).SetBHKWCheckBox(false);
 
             int rows = werzctrl.rows;
-           
-            while(rows > 0)
+
+            while (rows > 0)
             {
-                if (werzctrl.items[rows-1].ID_WP > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.WP_TYP) ((Wizard_Komponenten)page).SetWPCheckBox(true);
-                if (werzctrl.items[rows-1].ID_Solar > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.SOLAR_TYP) ((Wizard_Komponenten)page).SetSolarCheckBox(true);
-                if (werzctrl.items[rows-1].ID_PV > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.PV_TYP) ((Wizard_Komponenten)page).SetPVPCheckBox(true);
-                if (werzctrl.items[rows-1].ID_SP > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.SP_TYP) ((Wizard_Komponenten)page).SetStromSpCheckBox(true);
-                if (werzctrl.items[rows-1].ID_Kessel > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.KESSEL_TYP) ((Wizard_Komponenten)page).SetKesselCheckBox(true);
-                if (werzctrl.items[rows-1].ID_BHKW > 0 && werzctrl.items[rows-1].ID_Type == WizardItemClass.BHKW_TYP) ((Wizard_Komponenten)page).SetBHKWCheckBox(true);
+                if (werzctrl.items[rows - 1].ID_WP > 0 && werzctrl.items[rows - 1].ID_Type == WizardItemClass.WP_TYP) ((Wizard_Komponenten)page).SetWPCheckBox(true);
+                if (werzctrl.items[rows - 1].ID_Solar > 0 && werzctrl.items[rows - 1].ID_Type == WizardItemClass.SOLAR_TYP) ((Wizard_Komponenten)page).SetSolarCheckBox(true);
+                if (werzctrl.items[rows - 1].ID_PV > 0 && werzctrl.items[rows - 1].ID_Type == WizardItemClass.PV_TYP) ((Wizard_Komponenten)page).SetPVPCheckBox(true);
+                if (werzctrl.items[rows - 1].ID_SP > 0 && werzctrl.items[rows - 1].ID_Type == WizardItemClass.SP_TYP) ((Wizard_Komponenten)page).SetStromSpCheckBox(true);
+                if (werzctrl.items[rows - 1].ID_Kessel > 0 && werzctrl.items[rows - 1].ID_Type == WizardItemClass.KESSEL_TYP) ((Wizard_Komponenten)page).SetKesselCheckBox(true);
+                if (werzctrl.items[rows - 1].ID_BHKW > 0 && werzctrl.items[rows - 1].ID_Type == WizardItemClass.BHKW_TYP) ((Wizard_Komponenten)page).SetBHKWCheckBox(true);
                 rows--;
             }
-            
+
             // prüfe Prozess Definition
             Z_ProjektProzesswaermeCtrl prozctrl = new Z_ProjektProzesswaermeCtrl();
             prozctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + projektID);
@@ -428,7 +462,7 @@ namespace WindowsFormsApplication1
             {
                 ((Wizard_Komponenten)page).SetProzessCheckBox(true);
             }
-            
+
             // prüfe Stromlastgang Definition
             Z_ProjektStromganglinieCtrl stromctrl = new Z_ProjektStromganglinieCtrl();
             stromctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + projektID);
@@ -456,7 +490,7 @@ namespace WindowsFormsApplication1
             // prüfe Strom Wärmebedarf Lastgang Definition
             RecordSet rs = new RecordSet();
             rs.Open("select * from Z_ProjektWaermebedarf where ID_Projekt=" + projektID);
- 
+
             if (rs.Next())
             {
                 ((Wizard_Komponenten)page).SetWBedarfDatenCheckBox(true);
@@ -480,10 +514,10 @@ namespace WindowsFormsApplication1
                 {
                     WErzeugerModel item = new WErzeugerModel();
                     ListViewItem lvitem = new ListViewItem();
-                    
+
                     item.ID = werzctrl.items[n].ID;
                     item.ID_Projekt = projctrl.m_ID;
-                    item.Bezeichner = werzctrl.items[n].Bezeichner; 
+                    item.Bezeichner = werzctrl.items[n].Bezeichner;
                     item.ID_Type = werzctrl.items[n].ID_Type;
                     item.Abschaltpunkt = (double)werzctrl.items[n].Abschaltpunkt;
                     item.Betriebsart = (string)werzctrl.items[n].Betriebsart;
@@ -504,10 +538,10 @@ namespace WindowsFormsApplication1
                     item.ID_Solar = werzctrl.items[n].ID_Solar;
                     item.ID_Kessel = werzctrl.items[n].ID_Kessel;
                     item.ID_BHKW = werzctrl.items[n].ID_BHKW;
-                    item.Grenzleistung = werzctrl.items[n].Grenzleistung; 
+                    item.Grenzleistung = werzctrl.items[n].Grenzleistung;
                     item.Kollektormodulanzahl = werzctrl.items[n].Kollektormodulanzahl;
                     item.m_Azimut = werzctrl.items[n].m_Azimut;
-                    item.m_Neigung = werzctrl.items[n].m_Neigung;   
+                    item.m_Neigung = werzctrl.items[n].m_Neigung;
                     item.PV_Leistung = werzctrl.items[n].PV_Leistung;
 
                     list_werzmodel.Add(item);
@@ -556,13 +590,13 @@ namespace WindowsFormsApplication1
                 return;
             }*/
 
-            if(Program.wizardctrl.Klimazone == "")
+            if (Program.wizardctrl.Klimazone == "")
             {
                 MessageBox.Show("Bitte eine Klimazone auswählen!", "Klimazone fehlt", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (Program.wizardctrl.Projektname=="")
+            if (Program.wizardctrl.Projektname == "")
             {
                 MessageBox.Show("Bitte einen Projektnamen eingeben!", "Projektname fehlt", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -579,7 +613,7 @@ namespace WindowsFormsApplication1
             gespeichert = false;
             if (wizardmode == WIZARD_MODE_NEU)
             {
-                if (Program.wizardctrl.Add_Projekt(projektID, m_Projektmodel ))
+                if (Program.wizardctrl.Add_Projekt(projektID, m_Projektmodel))
                 {
                     bool result = Program.wizardctrl.Add_Projekt_ZuordungGebäude(projektID, list_gebmodel);
                     if (!result) return;
@@ -704,14 +738,14 @@ namespace WindowsFormsApplication1
 
                 string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Gebaeude, Z_ProjektGebaeude.[ID_Projekt], " +
                     "[Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, " +
-                    "dezWarmwasserbereitung, Gebaeudeart, Beschreibung  FROM [Tab_Gebaeude] " + 
+                    "dezWarmwasserbereitung, Gebaeudeart, Beschreibung  FROM [Tab_Gebaeude] " +
                     "INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
                     " where Z_ProjektGebaeude.ID_Projekt=" + projctrl.m_ID;
 
                 rs.Open(sql);
                 list_gebmodel.Clear();
 
-                while(rs.Next()) 
+                while (rs.Next())
                 {
                     Z_ProjGebModel item = new Z_ProjGebModel();
 
@@ -746,12 +780,12 @@ namespace WindowsFormsApplication1
                 for (int n = 0; n < prozctrl.rows; n++)
                 {
                     Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
-      
+
                     item.ID_Z = prozctrl.items[n].ID_Z;
                     item.ID_Projekt = projctrl.m_ID;
                     item.szProzessname = prozctrl.items[n].szProzessname;
                     item.ID_Prozesswaerme = prozctrl.items[n].ID_Prozesswaerme;
-                    item.Summe = prozctrl.items[n].Summe; 
+                    item.Summe = prozctrl.items[n].Summe;
 
                     list_prozmodel.Add(item);
                 }
@@ -789,14 +823,14 @@ namespace WindowsFormsApplication1
             if (projekt != "")
             {
                 ProjektCtrl projctrl = new ProjektCtrl();
-                RecordSet rs = new RecordSet(); 
+                RecordSet rs = new RecordSet();
 
                 projctrl.ReadSingle(projekt);
                 rs.Open("select * from Z_ProjektWaermebedarf where ID_Projekt=" + projctrl.m_ID);
 
                 list_wbmodel.Clear();
 
-                while(rs.Next())
+                while (rs.Next())
                 {
                     Z_ProjWaermebedarfModel item = new Z_ProjWaermebedarfModel();
 
@@ -871,6 +905,9 @@ namespace WindowsFormsApplication1
             ((Wizard_Komponenten)page).SetBHKWCheckBox(false);
         }
 
-  
+        private void pnlContent_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }
