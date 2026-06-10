@@ -11,7 +11,7 @@ namespace WindowsFormsApplication1
     {
         // --- Kompatibilitäts-Layer ---
         private List<KlimadatenModel> _internalList = new List<KlimadatenModel>();
-        public new int rows => _internalList.Count;
+        public int rows => _internalList.Count;
         public new List<KlimadatenModel> items => _internalList;
 
         public KlimadatenModel klimamodel = new KlimadatenModel();
@@ -120,37 +120,47 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                // IDs ermitteln
-                object maxId = DataRepository.ExecuteScalar("SELECT Max(ID_Klimadaten) FROM Tab_Klimadaten");
-                int nextId = (maxId == DBNull.Value) ? 1 : Convert.ToInt32(maxId) + 1;
+                // 1. ID_Klimaregion ermitteln (Nutzt jetzt die übergebene Verbindung/Transaktion!)
+                string regSql = "SELECT ID_Klimaregion FROM Tab_Klimaregion WHERE Name = ?";
+                int id_ref;
 
-                object regId = DataRepository.ExecuteScalar($"SELECT ID_Klimaregion FROM Tab_Klimaregion WHERE Name='{szName}'");
-                if (regId == DBNull.Value || regId == null) return false;
-                int id_ref = Convert.ToInt32(regId);
-
-                // Adapter Setup
-                OleDbDataAdapter adapter = new OleDbDataAdapter("SELECT * FROM Tab_Klimadaten", DataRepository.GetConnectionString());
-                OleDbCommandBuilder cb = new OleDbCommandBuilder(adapter);
-
-                // Spalten für die interne Verarbeitung im Gedächtnis vorbereiten
-                if (!dt.Columns.Contains("ID_Klimadaten"))
+                using (OleDbCommand cmdReg = new OleDbCommand(regSql, transaction.Connection, transaction))
                 {
-                    dt.Columns.Add("ID_Klimaregion", typeof(int)).SetOrdinal(0);
-                    dt.Columns.Add("ID_Klimadaten", typeof(int)).SetOrdinal(0);
+                    cmdReg.Parameters.Add(new OleDbParameter("?", szName ?? (object)DBNull.Value));
+                    object regId = cmdReg.ExecuteScalar();
+                    if (regId == DBNull.Value || regId == null) return false;
+                    id_ref = Convert.ToInt32(regId);
                 }
 
+                // 2. Adapter Setup & zwingend an die bestehende Transaktion koppeln!
+                OleDbDataAdapter adapter = new OleDbDataAdapter("SELECT * FROM Tab_Klimadaten WHERE 1=0", transaction.Connection);
+                OleDbCommandBuilder cb = new OleDbCommandBuilder(adapter);
+
+                // Das sorgt dafür, dass die generierten INSERT-Befehle die Transaktion nutzen:
+                adapter.SelectCommand.Transaction = transaction;
+
+                // 3. Spalten für die Verarbeitung vorbereiten
+                // WICHTIG: 'ID_Klimadaten' fügen wir NICHT manuell hinzu, das macht Access per Autowert!
+                if (!dt.Columns.Contains("ID_Klimaregion"))
+                {
+                    dt.Columns.Add("ID_Klimaregion", typeof(int)).SetOrdinal(0);
+                }
+
+                // 4. Nur noch die Fremdschlüssel-ID eintragen
                 foreach (DataRow row in dt.Rows)
                 {
-                    row["ID_Klimadaten"] = nextId++;
                     row["ID_Klimaregion"] = id_ref;
                 }
 
-                // Spaltenmapping (Falls die DataTable aus einem CSV/Excel kommt und die Header nicht passen)
-                dt.Columns[2].ColumnName = "Sol_Nord"; dt.Columns[3].ColumnName = "Sol_Ost";
-                dt.Columns[4].ColumnName = "Sol_Sued"; dt.Columns[5].ColumnName = "Sol_West";
-                dt.Columns[6].ColumnName = "Temperatur"; dt.Columns[7].ColumnName = "WE";
-                dt.Columns[8].ColumnName = "Tagtyp_W"; dt.Columns[9].ColumnName = "Tagtyp_NW";
+                // Spaltenmapping (Bleibt genau so, wie du es hattest)
+                dt.Columns[1].ColumnName = "Sol_Nord"; dt.Columns[2].ColumnName = "Sol_Ost";
+                dt.Columns[3].ColumnName = "Sol_Sued"; dt.Columns[4].ColumnName = "Sol_West";
+                dt.Columns[5].ColumnName = "Temperatur"; dt.Columns[6].ColumnName = "WE";
+                dt.Columns[7].ColumnName = "Tagtyp_W"; dt.Columns[8].ColumnName = "Tagtyp_NW";
+                // Hinweis: Die Indizes [1] bis [8] verschieben sich um eins nach vorne, 
+                // weil wir die 'ID_Klimadaten'-Spalte links nicht mehr künstlich einfügen!
 
+                // 5. Daten über den Adapter in die DB jagen
                 adapter.Update(dt);
                 return true;
             }
@@ -160,9 +170,7 @@ namespace WindowsFormsApplication1
                 return false;
             }
         }
-
         #endregion
 
- 
     }
 }

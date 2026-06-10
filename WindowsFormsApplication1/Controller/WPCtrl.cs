@@ -81,46 +81,20 @@ namespace WindowsFormsApplication1
                     conn.Open();
                     using (OleDbTransaction trans = conn.BeginTransaction())
                     {
-                        // 1. Höchste ID innerhalb der Transaktion ermitteln
-                        string countSql = "SELECT COUNT(*) FROM Tab_WP";
-                        using (OleDbCommand cmdCount = conn.CreateCommand())
-                        {
-                            cmdCount.Transaction = trans;
-                            cmdCount.CommandText = countSql;
-                            int count = Convert.ToInt32(cmdCount.ExecuteScalar());
-
-                            if (count == 0)
-                            {
-                                ID = 1;
-                            }
-                            else
-                            {
-                                string maxSql = "SELECT MAX(ID_WP) FROM Tab_WP";
-                                using (OleDbCommand cmdMax = conn.CreateCommand())
-                                {
-                                    cmdMax.Transaction = trans;
-                                    cmdMax.CommandText = maxSql;
-                                    object objMax = cmdMax.ExecuteScalar();
-                                    ID = (objMax != DBNull.Value) ? Convert.ToInt32(objMax) + 1 : 1;
-                                }
-                            }
-                        }
-
-                        // 2. Parametrisierter INSERT-Befehl
+                        // Parametrisierter INSERT-Befehl
                         string insertSql = @"INSERT INTO Tab_WP 
                                             (
-                                                ID_WP, WPName, Firma, Beschreibung, Typ, 
+                                                WPName, Firma, Beschreibung, Typ, 
                                                 Baujahr, Aufstellung, Nennleistung, maxPTherm, 
                                                 Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung
                                             ) 
-                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                         using (OleDbCommand cmdInsert = conn.CreateCommand())
                         {
                             cmdInsert.Transaction = trans;
                             cmdInsert.CommandText = insertSql;
 
-                            cmdInsert.Parameters.Add(new OleDbParameter("@id", ID));
                             cmdInsert.Parameters.Add(new OleDbParameter("@nam", WPName ?? (object)DBNull.Value));
                             cmdInsert.Parameters.Add(new OleDbParameter("@fir", Firma ?? (object)DBNull.Value));
                             cmdInsert.Parameters.Add(new OleDbParameter("@bes", Beschreibung ?? (object)DBNull.Value));
@@ -138,9 +112,21 @@ namespace WindowsFormsApplication1
                             cmdInsert.ExecuteNonQuery();
                         }
 
-                        trans.Commit();
-                        return true;
+                        trans.Commit(); // Schreibt die Daten jetzt unwiderruflich in die Datenbank
+
+                        // 3. JETZT die ID abfragen (Die Verbindung 'conn' ist ja noch offen!)
+                        using (var cmdIdentity = new OleDbCommand("SELECT @@IDENTITY", conn))
+                        {
+                            // Hier KEINE Transaktion mehr zuweisen, da trans bereits geschlossen ist!
+                            object result = cmdIdentity.ExecuteScalar();
+                            if (result != null && result != DBNull.Value)
+                            {
+                                ID = Convert.ToInt32(result);
+                            }
+                        }
                     }
+
+                    return true;
                 }
             }
             catch (Exception ex)

@@ -52,7 +52,6 @@ namespace WindowsFormsApplication1
                     Liste_WP.Items.Add(ctrl._list[i].szName);
                 }
             }
-
         }
 
         private void Liste_WP_SelectedIndexChanged(object sender, EventArgs e)
@@ -74,7 +73,6 @@ namespace WindowsFormsApplication1
                     index = i;
                     break;
                 }
-
             }
         }
 

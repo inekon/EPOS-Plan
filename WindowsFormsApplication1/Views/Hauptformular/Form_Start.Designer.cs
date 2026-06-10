@@ -47,7 +47,6 @@
             label_pBox_ProjektNeu = new System.Windows.Forms.Label();
             pBox_ProjektDetails = new System.Windows.Forms.PictureBox();
             pBox_Delete = new System.Windows.Forms.PictureBox();
-            Label4 = new System.Windows.Forms.Label();
             pBox_Bearbeiten = new System.Windows.Forms.PictureBox();
             pBox_ProjektZuletzt = new System.Windows.Forms.PictureBox();
             pBox_ProjektOeffnen = new System.Windows.Forms.PictureBox();
@@ -86,22 +85,22 @@
             pBox_StromProfilEigenes = new System.Windows.Forms.PictureBox();
             pBox_StdLastProfil = new System.Windows.Forms.PictureBox();
             tabPage4 = new System.Windows.Forms.TabPage();
-            label71 = new System.Windows.Forms.Label();
-            label72 = new System.Windows.Forms.Label();
+            label2_pBox_Pufferspeicher = new System.Windows.Forms.Label();
+            label_pBox_Pufferspeicher = new System.Windows.Forms.Label();
             label59 = new System.Windows.Forms.Label();
             label58 = new System.Windows.Forms.Label();
-            label56 = new System.Windows.Forms.Label();
-            label57 = new System.Windows.Forms.Label();
-            label54 = new System.Windows.Forms.Label();
-            label55 = new System.Windows.Forms.Label();
-            label52 = new System.Windows.Forms.Label();
-            label53 = new System.Windows.Forms.Label();
-            label50 = new System.Windows.Forms.Label();
-            label51 = new System.Windows.Forms.Label();
+            label2_pBox_PV = new System.Windows.Forms.Label();
+            label_pBox_PV = new System.Windows.Forms.Label();
+            label2_pBox_Stromspeicher = new System.Windows.Forms.Label();
+            label_pBox_Stromspeicher = new System.Windows.Forms.Label();
+            label2_pBox_BHKW = new System.Windows.Forms.Label();
+            label_pBox_BHKW = new System.Windows.Forms.Label();
+            label2_pBox_Solarthermie = new System.Windows.Forms.Label();
+            label_pBox_Solarthermie = new System.Windows.Forms.Label();
             label2_pBox_Heizkessel = new System.Windows.Forms.Label();
             label_pBox_Heizkessel = new System.Windows.Forms.Label();
-            label46 = new System.Windows.Forms.Label();
-            label47 = new System.Windows.Forms.Label();
+            label2_pBox_WP = new System.Windows.Forms.Label();
+            label_pBox_WP = new System.Windows.Forms.Label();
             label28 = new System.Windows.Forms.Label();
             label29 = new System.Windows.Forms.Label();
             radioButton_Ganglinie = new System.Windows.Forms.RadioButton();
@@ -118,17 +117,17 @@
             pBox_WP = new System.Windows.Forms.PictureBox();
             tabPage5 = new System.Windows.Forms.TabPage();
             label70 = new System.Windows.Forms.Label();
-            label69 = new System.Windows.Forms.Label();
-            label68 = new System.Windows.Forms.Label();
-            label67 = new System.Windows.Forms.Label();
-            label66 = new System.Windows.Forms.Label();
-            label64 = new System.Windows.Forms.Label();
-            label65 = new System.Windows.Forms.Label();
-            label62 = new System.Windows.Forms.Label();
-            label63 = new System.Windows.Forms.Label();
+            label_ProjektKomp = new System.Windows.Forms.Label();
+            label_Strombedarf = new System.Windows.Forms.Label();
+            label6_WBedarf = new System.Windows.Forms.Label();
+            label_ProjektName = new System.Windows.Forms.Label();
+            label2_pBox_Optinierung = new System.Windows.Forms.Label();
+            label_pBox_Optimierung = new System.Windows.Forms.Label();
+            label2_pBox_DetailSim = new System.Windows.Forms.Label();
+            label_pBox_DetailSim = new System.Windows.Forms.Label();
             btn_SimKonfig = new System.Windows.Forms.Button();
-            label60 = new System.Windows.Forms.Label();
-            label61 = new System.Windows.Forms.Label();
+            label2_pBox_SchnellSim = new System.Windows.Forms.Label();
+            label_pBox_SchnellSim = new System.Windows.Forms.Label();
             label30 = new System.Windows.Forms.Label();
             label31 = new System.Windows.Forms.Label();
             label_Komponenten = new System.Windows.Forms.Label();
@@ -230,7 +229,6 @@
             tabPage1.Controls.Add(label_pBox_ProjektNeu);
             tabPage1.Controls.Add(pBox_ProjektDetails);
             tabPage1.Controls.Add(pBox_Delete);
-            tabPage1.Controls.Add(Label4);
             tabPage1.Controls.Add(pBox_Bearbeiten);
             tabPage1.Controls.Add(pBox_ProjektZuletzt);
             tabPage1.Controls.Add(pBox_ProjektOeffnen);
@@ -357,11 +355,6 @@
             pBox_Delete.Name = "pBox_Delete";
             pBox_Delete.TabStop = false;
             pBox_Delete.Click += CentralControl_Click;
-            // 
-            // Label4
-            // 
-            resources.ApplyResources(Label4, "Label4");
-            Label4.Name = "Label4";
             // 
             // pBox_Bearbeiten
             // 
@@ -679,22 +672,22 @@
             // 
             // tabPage4
             // 
-            tabPage4.Controls.Add(label71);
-            tabPage4.Controls.Add(label72);
+            tabPage4.Controls.Add(label2_pBox_Pufferspeicher);
+            tabPage4.Controls.Add(label_pBox_Pufferspeicher);
             tabPage4.Controls.Add(label59);
             tabPage4.Controls.Add(label58);
-            tabPage4.Controls.Add(label56);
-            tabPage4.Controls.Add(label57);
-            tabPage4.Controls.Add(label54);
-            tabPage4.Controls.Add(label55);
-            tabPage4.Controls.Add(label52);
-            tabPage4.Controls.Add(label53);
-            tabPage4.Controls.Add(label50);
-            tabPage4.Controls.Add(label51);
+            tabPage4.Controls.Add(label2_pBox_PV);
+            tabPage4.Controls.Add(label_pBox_PV);
+            tabPage4.Controls.Add(label2_pBox_Stromspeicher);
+            tabPage4.Controls.Add(label_pBox_Stromspeicher);
+            tabPage4.Controls.Add(label2_pBox_BHKW);
+            tabPage4.Controls.Add(label_pBox_BHKW);
+            tabPage4.Controls.Add(label2_pBox_Solarthermie);
+            tabPage4.Controls.Add(label_pBox_Solarthermie);
             tabPage4.Controls.Add(label2_pBox_Heizkessel);
             tabPage4.Controls.Add(label_pBox_Heizkessel);
-            tabPage4.Controls.Add(label46);
-            tabPage4.Controls.Add(label47);
+            tabPage4.Controls.Add(label2_pBox_WP);
+            tabPage4.Controls.Add(label_pBox_WP);
             tabPage4.Controls.Add(label28);
             tabPage4.Controls.Add(label29);
             tabPage4.Controls.Add(radioButton_Ganglinie);
@@ -713,20 +706,20 @@
             tabPage4.Name = "tabPage4";
             tabPage4.UseVisualStyleBackColor = true;
             // 
-            // label71
+            // label2_pBox_Pufferspeicher
             // 
-            label71.Cursor = System.Windows.Forms.Cursors.Hand;
-            label71.ForeColor = System.Drawing.Color.DimGray;
-            resources.ApplyResources(label71, "label71");
-            label71.Name = "label71";
-            label71.Click += label71_Click;
+            label2_pBox_Pufferspeicher.Cursor = System.Windows.Forms.Cursors.Hand;
+            label2_pBox_Pufferspeicher.ForeColor = System.Drawing.Color.DimGray;
+            resources.ApplyResources(label2_pBox_Pufferspeicher, "label2_pBox_Pufferspeicher");
+            label2_pBox_Pufferspeicher.Name = "label2_pBox_Pufferspeicher";
+            label2_pBox_Pufferspeicher.Click += label71_Click;
             // 
-            // label72
+            // label_pBox_Pufferspeicher
             // 
-            resources.ApplyResources(label72, "label72");
-            label72.Cursor = System.Windows.Forms.Cursors.Hand;
-            label72.Name = "label72";
-            label72.Click += label72_Click;
+            resources.ApplyResources(label_pBox_Pufferspeicher, "label_pBox_Pufferspeicher");
+            label_pBox_Pufferspeicher.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_pBox_Pufferspeicher.Name = "label_pBox_Pufferspeicher";
+            label_pBox_Pufferspeicher.Click += label72_Click;
             // 
             // label59
             // 
@@ -744,63 +737,63 @@
             label58.ForeColor = System.Drawing.Color.FromArgb(36, 72, 169);
             label58.Name = "label58";
             // 
-            // label56
+            // label2_pBox_PV
             // 
-            resources.ApplyResources(label56, "label56");
-            label56.Cursor = System.Windows.Forms.Cursors.Hand;
-            label56.ForeColor = System.Drawing.Color.DimGray;
-            label56.Name = "label56";
-            label56.Click += label56_Click;
+            resources.ApplyResources(label2_pBox_PV, "label2_pBox_PV");
+            label2_pBox_PV.Cursor = System.Windows.Forms.Cursors.Hand;
+            label2_pBox_PV.ForeColor = System.Drawing.Color.DimGray;
+            label2_pBox_PV.Name = "label2_pBox_PV";
+            label2_pBox_PV.Click += label56_Click;
             // 
-            // label57
+            // label_pBox_PV
             // 
-            resources.ApplyResources(label57, "label57");
-            label57.Cursor = System.Windows.Forms.Cursors.Hand;
-            label57.Name = "label57";
-            label57.Click += label57_Click;
+            resources.ApplyResources(label_pBox_PV, "label_pBox_PV");
+            label_pBox_PV.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_pBox_PV.Name = "label_pBox_PV";
+            label_pBox_PV.Click += label57_Click;
             // 
-            // label54
+            // label2_pBox_Stromspeicher
             // 
-            label54.Cursor = System.Windows.Forms.Cursors.Hand;
-            label54.ForeColor = System.Drawing.Color.DimGray;
-            resources.ApplyResources(label54, "label54");
-            label54.Name = "label54";
-            label54.Click += label54_Click;
+            label2_pBox_Stromspeicher.Cursor = System.Windows.Forms.Cursors.Hand;
+            label2_pBox_Stromspeicher.ForeColor = System.Drawing.Color.DimGray;
+            resources.ApplyResources(label2_pBox_Stromspeicher, "label2_pBox_Stromspeicher");
+            label2_pBox_Stromspeicher.Name = "label2_pBox_Stromspeicher";
+            label2_pBox_Stromspeicher.Click += label54_Click;
             // 
-            // label55
+            // label_pBox_Stromspeicher
             // 
-            resources.ApplyResources(label55, "label55");
-            label55.Cursor = System.Windows.Forms.Cursors.Hand;
-            label55.Name = "label55";
-            label55.Click += label55_Click;
+            resources.ApplyResources(label_pBox_Stromspeicher, "label_pBox_Stromspeicher");
+            label_pBox_Stromspeicher.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_pBox_Stromspeicher.Name = "label_pBox_Stromspeicher";
+            label_pBox_Stromspeicher.Click += label55_Click;
             // 
-            // label52
+            // label2_pBox_BHKW
             // 
-            resources.ApplyResources(label52, "label52");
-            label52.Cursor = System.Windows.Forms.Cursors.Hand;
-            label52.ForeColor = System.Drawing.Color.DimGray;
-            label52.Name = "label52";
+            resources.ApplyResources(label2_pBox_BHKW, "label2_pBox_BHKW");
+            label2_pBox_BHKW.Cursor = System.Windows.Forms.Cursors.Hand;
+            label2_pBox_BHKW.ForeColor = System.Drawing.Color.DimGray;
+            label2_pBox_BHKW.Name = "label2_pBox_BHKW";
             // 
-            // label53
+            // label_pBox_BHKW
             // 
-            resources.ApplyResources(label53, "label53");
-            label53.Cursor = System.Windows.Forms.Cursors.Hand;
-            label53.Name = "label53";
+            resources.ApplyResources(label_pBox_BHKW, "label_pBox_BHKW");
+            label_pBox_BHKW.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_pBox_BHKW.Name = "label_pBox_BHKW";
             // 
-            // label50
+            // label2_pBox_Solarthermie
             // 
-            resources.ApplyResources(label50, "label50");
-            label50.Cursor = System.Windows.Forms.Cursors.Hand;
-            label50.ForeColor = System.Drawing.Color.DimGray;
-            label50.Name = "label50";
-            label50.Click += label50_Click;
+            resources.ApplyResources(label2_pBox_Solarthermie, "label2_pBox_Solarthermie");
+            label2_pBox_Solarthermie.Cursor = System.Windows.Forms.Cursors.Hand;
+            label2_pBox_Solarthermie.ForeColor = System.Drawing.Color.DimGray;
+            label2_pBox_Solarthermie.Name = "label2_pBox_Solarthermie";
+            label2_pBox_Solarthermie.Click += label50_Click;
             // 
-            // label51
+            // label_pBox_Solarthermie
             // 
-            resources.ApplyResources(label51, "label51");
-            label51.Cursor = System.Windows.Forms.Cursors.Hand;
-            label51.Name = "label51";
-            label51.Click += label51_Click;
+            resources.ApplyResources(label_pBox_Solarthermie, "label_pBox_Solarthermie");
+            label_pBox_Solarthermie.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_pBox_Solarthermie.Name = "label_pBox_Solarthermie";
+            label_pBox_Solarthermie.Click += label51_Click;
             // 
             // label2_pBox_Heizkessel
             // 
@@ -817,20 +810,20 @@
             label_pBox_Heizkessel.Name = "label_pBox_Heizkessel";
             label_pBox_Heizkessel.Click += CentralControl_Click;
             // 
-            // label46
+            // label2_pBox_WP
             // 
-            label46.Cursor = System.Windows.Forms.Cursors.Hand;
-            label46.ForeColor = System.Drawing.Color.DimGray;
-            resources.ApplyResources(label46, "label46");
-            label46.Name = "label46";
-            label46.Click += label46_Click;
+            label2_pBox_WP.Cursor = System.Windows.Forms.Cursors.Hand;
+            label2_pBox_WP.ForeColor = System.Drawing.Color.DimGray;
+            resources.ApplyResources(label2_pBox_WP, "label2_pBox_WP");
+            label2_pBox_WP.Name = "label2_pBox_WP";
+            label2_pBox_WP.Click += label46_Click;
             // 
-            // label47
+            // label_pBox_WP
             // 
-            resources.ApplyResources(label47, "label47");
-            label47.Cursor = System.Windows.Forms.Cursors.Hand;
-            label47.Name = "label47";
-            label47.Click += label47_Click;
+            resources.ApplyResources(label_pBox_WP, "label_pBox_WP");
+            label_pBox_WP.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_pBox_WP.Name = "label_pBox_WP";
+            label_pBox_WP.Click += label47_Click;
             // 
             // label28
             // 
@@ -915,7 +908,6 @@
             // pBox_Heizkessel
             // 
             pBox_Heizkessel.BackColor = System.Drawing.Color.Transparent;
-            pBox_Heizkessel.BackgroundImage = Properties.Resources.PHeizkessel;
             resources.ApplyResources(pBox_Heizkessel, "pBox_Heizkessel");
             pBox_Heizkessel.Cursor = System.Windows.Forms.Cursors.Hand;
             pBox_Heizkessel.Name = "pBox_Heizkessel";
@@ -953,17 +945,17 @@
             // tabPage5
             // 
             tabPage5.Controls.Add(label70);
-            tabPage5.Controls.Add(label69);
-            tabPage5.Controls.Add(label68);
-            tabPage5.Controls.Add(label67);
-            tabPage5.Controls.Add(label66);
-            tabPage5.Controls.Add(label64);
-            tabPage5.Controls.Add(label65);
-            tabPage5.Controls.Add(label62);
-            tabPage5.Controls.Add(label63);
+            tabPage5.Controls.Add(label_ProjektKomp);
+            tabPage5.Controls.Add(label_Strombedarf);
+            tabPage5.Controls.Add(label6_WBedarf);
+            tabPage5.Controls.Add(label_ProjektName);
+            tabPage5.Controls.Add(label2_pBox_Optinierung);
+            tabPage5.Controls.Add(label_pBox_Optimierung);
+            tabPage5.Controls.Add(label2_pBox_DetailSim);
+            tabPage5.Controls.Add(label_pBox_DetailSim);
             tabPage5.Controls.Add(btn_SimKonfig);
-            tabPage5.Controls.Add(label60);
-            tabPage5.Controls.Add(label61);
+            tabPage5.Controls.Add(label2_pBox_SchnellSim);
+            tabPage5.Controls.Add(label_pBox_SchnellSim);
             tabPage5.Controls.Add(label30);
             tabPage5.Controls.Add(label31);
             tabPage5.Controls.Add(label_Komponenten);
@@ -989,67 +981,67 @@
             label70.ForeColor = System.Drawing.Color.Black;
             label70.Name = "label70";
             // 
-            // label69
+            // label_ProjektKomp
             // 
-            resources.ApplyResources(label69, "label69");
-            label69.BackColor = System.Drawing.Color.FromArgb(249, 250, 252);
-            label69.Cursor = System.Windows.Forms.Cursors.Hand;
-            label69.ForeColor = System.Drawing.Color.DimGray;
-            label69.Name = "label69";
+            resources.ApplyResources(label_ProjektKomp, "label_ProjektKomp");
+            label_ProjektKomp.BackColor = System.Drawing.Color.FromArgb(249, 250, 252);
+            label_ProjektKomp.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_ProjektKomp.ForeColor = System.Drawing.Color.DimGray;
+            label_ProjektKomp.Name = "label_ProjektKomp";
             // 
-            // label68
+            // label_Strombedarf
             // 
-            resources.ApplyResources(label68, "label68");
-            label68.BackColor = System.Drawing.Color.FromArgb(249, 250, 252);
-            label68.Cursor = System.Windows.Forms.Cursors.Hand;
-            label68.ForeColor = System.Drawing.Color.DimGray;
-            label68.Name = "label68";
+            resources.ApplyResources(label_Strombedarf, "label_Strombedarf");
+            label_Strombedarf.BackColor = System.Drawing.Color.FromArgb(249, 250, 252);
+            label_Strombedarf.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_Strombedarf.ForeColor = System.Drawing.Color.DimGray;
+            label_Strombedarf.Name = "label_Strombedarf";
             // 
-            // label67
+            // label6_WBedarf
             // 
-            resources.ApplyResources(label67, "label67");
-            label67.BackColor = System.Drawing.Color.FromArgb(249, 250, 252);
-            label67.Cursor = System.Windows.Forms.Cursors.Hand;
-            label67.ForeColor = System.Drawing.Color.DimGray;
-            label67.Name = "label67";
+            resources.ApplyResources(label6_WBedarf, "label6_WBedarf");
+            label6_WBedarf.BackColor = System.Drawing.Color.FromArgb(249, 250, 252);
+            label6_WBedarf.Cursor = System.Windows.Forms.Cursors.Hand;
+            label6_WBedarf.ForeColor = System.Drawing.Color.DimGray;
+            label6_WBedarf.Name = "label6_WBedarf";
             // 
-            // label66
+            // label_ProjektName
             // 
-            resources.ApplyResources(label66, "label66");
-            label66.BackColor = System.Drawing.Color.FromArgb(249, 250, 252);
-            label66.Cursor = System.Windows.Forms.Cursors.Hand;
-            label66.ForeColor = System.Drawing.Color.DimGray;
-            label66.Name = "label66";
+            resources.ApplyResources(label_ProjektName, "label_ProjektName");
+            label_ProjektName.BackColor = System.Drawing.Color.FromArgb(249, 250, 252);
+            label_ProjektName.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_ProjektName.ForeColor = System.Drawing.Color.DimGray;
+            label_ProjektName.Name = "label_ProjektName";
             // 
-            // label64
+            // label2_pBox_Optinierung
             // 
-            resources.ApplyResources(label64, "label64");
-            label64.Cursor = System.Windows.Forms.Cursors.Hand;
-            label64.ForeColor = System.Drawing.Color.DimGray;
-            label64.Name = "label64";
-            label64.Click += label64_Click;
+            resources.ApplyResources(label2_pBox_Optinierung, "label2_pBox_Optinierung");
+            label2_pBox_Optinierung.Cursor = System.Windows.Forms.Cursors.Hand;
+            label2_pBox_Optinierung.ForeColor = System.Drawing.Color.DimGray;
+            label2_pBox_Optinierung.Name = "label2_pBox_Optinierung";
+            label2_pBox_Optinierung.Click += label64_Click;
             // 
-            // label65
+            // label_pBox_Optimierung
             // 
-            resources.ApplyResources(label65, "label65");
-            label65.Cursor = System.Windows.Forms.Cursors.Hand;
-            label65.Name = "label65";
-            label65.Click += label65_Click;
+            resources.ApplyResources(label_pBox_Optimierung, "label_pBox_Optimierung");
+            label_pBox_Optimierung.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_pBox_Optimierung.Name = "label_pBox_Optimierung";
+            label_pBox_Optimierung.Click += label65_Click;
             // 
-            // label62
+            // label2_pBox_DetailSim
             // 
-            resources.ApplyResources(label62, "label62");
-            label62.Cursor = System.Windows.Forms.Cursors.Hand;
-            label62.ForeColor = System.Drawing.Color.DimGray;
-            label62.Name = "label62";
-            label62.Click += label62_Click;
+            resources.ApplyResources(label2_pBox_DetailSim, "label2_pBox_DetailSim");
+            label2_pBox_DetailSim.Cursor = System.Windows.Forms.Cursors.Hand;
+            label2_pBox_DetailSim.ForeColor = System.Drawing.Color.DimGray;
+            label2_pBox_DetailSim.Name = "label2_pBox_DetailSim";
+            label2_pBox_DetailSim.Click += label62_Click;
             // 
-            // label63
+            // label_pBox_DetailSim
             // 
-            resources.ApplyResources(label63, "label63");
-            label63.Cursor = System.Windows.Forms.Cursors.Hand;
-            label63.Name = "label63";
-            label63.Click += label63_Click;
+            resources.ApplyResources(label_pBox_DetailSim, "label_pBox_DetailSim");
+            label_pBox_DetailSim.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_pBox_DetailSim.Name = "label_pBox_DetailSim";
+            label_pBox_DetailSim.Click += label63_Click;
             // 
             // btn_SimKonfig
             // 
@@ -1060,20 +1052,20 @@
             btn_SimKonfig.UseVisualStyleBackColor = true;
             btn_SimKonfig.Click += btn_SimKonfig_Click;
             // 
-            // label60
+            // label2_pBox_SchnellSim
             // 
-            resources.ApplyResources(label60, "label60");
-            label60.Cursor = System.Windows.Forms.Cursors.Hand;
-            label60.ForeColor = System.Drawing.Color.DimGray;
-            label60.Name = "label60";
-            label60.Click += label60_Click;
+            resources.ApplyResources(label2_pBox_SchnellSim, "label2_pBox_SchnellSim");
+            label2_pBox_SchnellSim.Cursor = System.Windows.Forms.Cursors.Hand;
+            label2_pBox_SchnellSim.ForeColor = System.Drawing.Color.DimGray;
+            label2_pBox_SchnellSim.Name = "label2_pBox_SchnellSim";
+            label2_pBox_SchnellSim.Click += label60_Click;
             // 
-            // label61
+            // label_pBox_SchnellSim
             // 
-            resources.ApplyResources(label61, "label61");
-            label61.Cursor = System.Windows.Forms.Cursors.Hand;
-            label61.Name = "label61";
-            label61.Click += label61_Click;
+            resources.ApplyResources(label_pBox_SchnellSim, "label_pBox_SchnellSim");
+            label_pBox_SchnellSim.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_pBox_SchnellSim.Name = "label_pBox_SchnellSim";
+            label_pBox_SchnellSim.Click += label61_Click;
             // 
             // label30
             // 
@@ -1359,7 +1351,6 @@
         private System.Windows.Forms.PictureBox pBox_ProjektNeu;
         private System.Windows.Forms.PictureBox pBox_Bearbeiten;
         private System.Windows.Forms.PictureBox pBox_ProjektZuletzt;
-        private System.Windows.Forms.Label Label4;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.TextBox textBox_ProjektOpen;
         private System.Windows.Forms.TabPage tabPage3;
@@ -1433,35 +1424,35 @@
         private System.Windows.Forms.Label label_pBox_StromProfilEigenes;
         private System.Windows.Forms.Label label2_pBox_StromMessdaten;
         private System.Windows.Forms.Label label_pBox_StromMessdaten;
-        private System.Windows.Forms.Label label46;
-        private System.Windows.Forms.Label label47;
+        private System.Windows.Forms.Label label2_pBox_WP;
+        private System.Windows.Forms.Label label_pBox_WP;
         private System.Windows.Forms.Label label2_pBox_Heizkessel;
         private System.Windows.Forms.Label label_pBox_Heizkessel;
-        private System.Windows.Forms.Label label50;
-        private System.Windows.Forms.Label label51;
-        private System.Windows.Forms.Label label54;
-        private System.Windows.Forms.Label label55;
-        private System.Windows.Forms.Label label52;
-        private System.Windows.Forms.Label label53;
-        private System.Windows.Forms.Label label56;
-        private System.Windows.Forms.Label label57;
+        private System.Windows.Forms.Label label2_pBox_Solarthermie;
+        private System.Windows.Forms.Label label_pBox_Solarthermie;
+        private System.Windows.Forms.Label label2_pBox_Stromspeicher;
+        private System.Windows.Forms.Label label_pBox_Stromspeicher;
+        private System.Windows.Forms.Label label2_pBox_BHKW;
+        private System.Windows.Forms.Label label_pBox_BHKW;
+        private System.Windows.Forms.Label label2_pBox_PV;
+        private System.Windows.Forms.Label label_pBox_PV;
         private System.Windows.Forms.Label label59;
         private System.Windows.Forms.Label label58;
-        private System.Windows.Forms.Label label64;
-        private System.Windows.Forms.Label label65;
-        private System.Windows.Forms.Label label62;
-        private System.Windows.Forms.Label label63;
-        private System.Windows.Forms.Label label60;
-        private System.Windows.Forms.Label label61;
-        private System.Windows.Forms.Label label66;
+        private System.Windows.Forms.Label label2_pBox_Optinierung;
+        private System.Windows.Forms.Label label_pBox_Optimierung;
+        private System.Windows.Forms.Label label2_pBox_DetailSim;
+        private System.Windows.Forms.Label label_pBox_DetailSim;
+        private System.Windows.Forms.Label label2_pBox_SchnellSim;
+        private System.Windows.Forms.Label label_pBox_SchnellSim;
+        private System.Windows.Forms.Label label_ProjektName;
         private System.Windows.Forms.Label label70;
-        private System.Windows.Forms.Label label69;
-        private System.Windows.Forms.Label label68;
-        private System.Windows.Forms.Label label67;
+        private System.Windows.Forms.Label label_ProjektKomp;
+        private System.Windows.Forms.Label label_Strombedarf;
+        private System.Windows.Forms.Label label6_WBedarf;
         private System.Windows.Forms.Button btn_Weiter;
         private System.Windows.Forms.Button btn_Zurueck;
-        private System.Windows.Forms.Label label71;
-        private System.Windows.Forms.Label label72;
+        private System.Windows.Forms.Label label2_pBox_Pufferspeicher;
+        private System.Windows.Forms.Label label_pBox_Pufferspeicher;
         private System.Windows.Forms.PictureBox pBox_Pufferspeicher;
         private System.Windows.Forms.Label label2_pBox_Brauchwasser;
         private System.Windows.Forms.Label label_pBox_Brauchwasser;

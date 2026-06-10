@@ -15,24 +15,6 @@ namespace WindowsFormsApplication1
             wizparent = null;
         }
 
-        public Form OpenForm(Type clazz, bool bChildWindow = true)
-        {
-            if (bChildWindow)
-            {
-                MDIHelperClass openFrm = new MDIHelperClass();
-                Form mdichild = openFrm.openForm(clazz, Program.mdifrm);
-                return mdichild;
-            }
-            else
-            {
-                Object theObject = Activator.CreateInstance(clazz);
-                Form openFrm = (Form)theObject;
-                openFrm.Show();
-                openFrm.Focus();
-                return openFrm;
-            }
-        }
-
         public void SetProjektname()
         {
             ApplikationCtrl ctrl = new ApplikationCtrl();
@@ -109,7 +91,7 @@ namespace WindowsFormsApplication1
                 DialogResult ret = frm.ShowDialog();
                 if (ret == DialogResult.OK)
                 {
-                    Program.mainfrm = (FormMain)Program.menuectrl.OpenForm(typeof(FormMain), true);
+                    Program.mainfrm = new FormMain();
                     FormMain frmmain = (FormMain)Program.mainfrm;
 
                     ctrlproj.ReadSingle(frm.m_szProjekt);
@@ -145,6 +127,8 @@ namespace WindowsFormsApplication1
                     frmmain.Add_PVKontext();
                     frmmain.Add_SolarKontext();
 
+                    frmmain.ShowDialog();
+
                     Program.startfrm.m_szProjektname = frm.m_szProjekt;
                     Program.startfrm.m_ID_Projekt = frm.m_ID_Projekt;
                     Program.startfrm.SetTextProjekt(frm.m_szProjekt);
@@ -154,7 +138,7 @@ namespace WindowsFormsApplication1
             {
                 if (ctrl.m_szProjektname != "")
                 {
-                    Program.mainfrm = (FormMain)Program.menuectrl.OpenForm(typeof(FormMain), true);
+                    Program.mainfrm = new FormMain();
                     FormMain frmmain = (FormMain)Program.mainfrm;
 
                     ctrlproj.ReadSingle(ctrl.m_szProjektname);
@@ -190,6 +174,8 @@ namespace WindowsFormsApplication1
                     frmmain.Add_SpKontext();
                     frmmain.Add_PVKontext();
                     frmmain.Add_SolarKontext();
+
+                    frmmain.ShowDialog();
 
                     Program.startfrm.m_szProjektname = ctrl.m_szProjektname;
                     Program.startfrm.m_ID_Projekt = ctrl.m_ID_Projekt;
@@ -344,12 +330,6 @@ namespace WindowsFormsApplication1
         public void Solarkollektoren()
         {
             Form_SolarKollektorenAdmin frm = new Form_SolarKollektorenAdmin();
-            frm.ShowDialog();
-        }
-
-        public void DBUpdate()
-        {
-            Form_Import frm = new Form_Import();
             frm.ShowDialog();
         }
 

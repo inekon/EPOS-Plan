@@ -117,25 +117,2038 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="&gt;&gt;label2_pBox_ProjektDetails.Name" xml:space="preserve">
+    <value>label2_pBox_ProjektDetails</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektDetails.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektDetails.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektDetails.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektDetails.Name" xml:space="preserve">
+    <value>label_pBox_ProjektDetails</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektDetails.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektDetails.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektDetails.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Delete.Name" xml:space="preserve">
+    <value>label2_pBox_Delete</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Delete.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Delete.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Delete.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Delete.Name" xml:space="preserve">
+    <value>label_pBox_Delete</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Delete.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Delete.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Delete.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Bearbeiten.Name" xml:space="preserve">
+    <value>label2_pBox_Bearbeiten</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Bearbeiten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Bearbeiten.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Bearbeiten.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Bearbeiten.Name" xml:space="preserve">
+    <value>label_pBox_Bearbeiten</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Bearbeiten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Bearbeiten.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Bearbeiten.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektZuletzt.Name" xml:space="preserve">
+    <value>label2_pBox_ProjektZuletzt</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektZuletzt.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektZuletzt.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektZuletzt.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektZuletzt.Name" xml:space="preserve">
+    <value>label_pBox_ProjektZuletzt</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektZuletzt.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektZuletzt.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektZuletzt.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;label1.Name" xml:space="preserve">
+    <value>label1</value>
+  </data>
+  <data name="&gt;&gt;label1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label1.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;label3.Name" xml:space="preserve">
+    <value>label3</value>
+  </data>
+  <data name="&gt;&gt;label3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label3.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label3.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektOeffnen.Name" xml:space="preserve">
+    <value>label2_pBox_ProjektOeffnen</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektOeffnen.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektOeffnen.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektOeffnen.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektOeffnen.Name" xml:space="preserve">
+    <value>label_pBox_ProjektOeffnen</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektOeffnen.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektOeffnen.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektOeffnen.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektNeu.Name" xml:space="preserve">
+    <value>label2_pBox_ProjektNeu</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektNeu.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektNeu.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_ProjektNeu.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektNeu.Name" xml:space="preserve">
+    <value>label_pBox_ProjektNeu</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektNeu.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektNeu.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_ProjektNeu.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektDetails.Name" xml:space="preserve">
+    <value>pBox_ProjektDetails</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektDetails.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektDetails.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektDetails.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="&gt;&gt;pBox_Delete.Name" xml:space="preserve">
+    <value>pBox_Delete</value>
+  </data>
+  <data name="&gt;&gt;pBox_Delete.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_Delete.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;pBox_Delete.ZOrder" xml:space="preserve">
+    <value>15</value>
+  </data>
+  <data name="&gt;&gt;pBox_Bearbeiten.Name" xml:space="preserve">
+    <value>pBox_Bearbeiten</value>
+  </data>
+  <data name="&gt;&gt;pBox_Bearbeiten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_Bearbeiten.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;pBox_Bearbeiten.ZOrder" xml:space="preserve">
+    <value>16</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektZuletzt.Name" xml:space="preserve">
+    <value>pBox_ProjektZuletzt</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektZuletzt.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektZuletzt.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektZuletzt.ZOrder" xml:space="preserve">
+    <value>17</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektOeffnen.Name" xml:space="preserve">
+    <value>pBox_ProjektOeffnen</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektOeffnen.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektOeffnen.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektOeffnen.ZOrder" xml:space="preserve">
+    <value>18</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektNeu.Name" xml:space="preserve">
+    <value>pBox_ProjektNeu</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektNeu.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektNeu.Parent" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;pBox_ProjektNeu.ZOrder" xml:space="preserve">
+    <value>19</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="tabPage1.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 12pt, style=Bold</value>
+  </data>
+  <data name="tabPage1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="tabPage1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPage1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1342, 560</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="tabPage1.Text" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.Name" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.Parent" xml:space="preserve">
+    <value>tabControl_Wizard</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Brauchwasser.Name" xml:space="preserve">
+    <value>label2_pBox_Brauchwasser</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Brauchwasser.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Brauchwasser.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Brauchwasser.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Brauchwasser.Name" xml:space="preserve">
+    <value>label_pBox_Brauchwasser</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Brauchwasser.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Brauchwasser.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Brauchwasser.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Prozess.Name" xml:space="preserve">
+    <value>label2_pBox_Prozess</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Prozess.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Prozess.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Prozess.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Prozess.Name" xml:space="preserve">
+    <value>label_pBox_Prozess</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Prozess.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Prozess.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Prozess.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_WBedarfDaten.Name" xml:space="preserve">
+    <value>label2_pBox_WBedarfDaten</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_WBedarfDaten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_WBedarfDaten.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_WBedarfDaten.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_WBedarfDaten.Name" xml:space="preserve">
+    <value>label_pBox_WBedarfDaten</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_WBedarfDaten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_WBedarfDaten.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_WBedarfDaten.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Gebaude.Name" xml:space="preserve">
+    <value>label2_pBox_Gebaude</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Gebaude.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Gebaude.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Gebaude.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Gebaude.Name" xml:space="preserve">
+    <value>label_pBox_Gebaude</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Gebaude.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Gebaude.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Gebaude.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;label33.Name" xml:space="preserve">
+    <value>label33</value>
+  </data>
+  <data name="&gt;&gt;label33.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label33.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label33.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;label32.Name" xml:space="preserve">
+    <value>label32</value>
+  </data>
+  <data name="&gt;&gt;label32.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label32.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label32.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;label24.Name" xml:space="preserve">
+    <value>label24</value>
+  </data>
+  <data name="&gt;&gt;label24.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label24.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label24.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;label25.Name" xml:space="preserve">
+    <value>label25</value>
+  </data>
+  <data name="&gt;&gt;label25.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label25.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;label25.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="&gt;&gt;Label2.Name" xml:space="preserve">
+    <value>Label2</value>
+  </data>
+  <data name="&gt;&gt;Label2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Label2.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;Label2.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="&gt;&gt;pBox_Brauchwasser.Name" xml:space="preserve">
+    <value>pBox_Brauchwasser</value>
+  </data>
+  <data name="&gt;&gt;pBox_Brauchwasser.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_Brauchwasser.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;pBox_Brauchwasser.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="&gt;&gt;pBox_WBHinweis.Name" xml:space="preserve">
+    <value>pBox_WBHinweis</value>
+  </data>
+  <data name="&gt;&gt;pBox_WBHinweis.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_WBHinweis.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;pBox_WBHinweis.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="&gt;&gt;pBox_Prozess.Name" xml:space="preserve">
+    <value>pBox_Prozess</value>
+  </data>
+  <data name="&gt;&gt;pBox_Prozess.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_Prozess.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;pBox_Prozess.ZOrder" xml:space="preserve">
+    <value>15</value>
+  </data>
+  <data name="&gt;&gt;pBox_WBedarfDaten.Name" xml:space="preserve">
+    <value>pBox_WBedarfDaten</value>
+  </data>
+  <data name="&gt;&gt;pBox_WBedarfDaten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_WBedarfDaten.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;pBox_WBedarfDaten.ZOrder" xml:space="preserve">
+    <value>16</value>
+  </data>
+  <data name="&gt;&gt;pBox_Gebaude.Name" xml:space="preserve">
+    <value>pBox_Gebaude</value>
+  </data>
+  <data name="&gt;&gt;pBox_Gebaude.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_Gebaude.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;pBox_Gebaude.ZOrder" xml:space="preserve">
+    <value>17</value>
+  </data>
+  <data name="tabPage2.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 12pt, style=Bold</value>
+  </data>
+  <data name="tabPage2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <data name="tabPage2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPage2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1342, 560</value>
+  </data>
+  <data name="tabPage2.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.Name" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.Parent" xml:space="preserve">
+    <value>tabControl_Wizard</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StromMessdaten.Name" xml:space="preserve">
+    <value>label2_pBox_StromMessdaten</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StromMessdaten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StromMessdaten.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StromMessdaten.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StromMessdaten.Name" xml:space="preserve">
+    <value>label_pBox_StromMessdaten</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StromMessdaten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StromMessdaten.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StromMessdaten.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StromProfilEigenes.Name" xml:space="preserve">
+    <value>label2_pBox_StromProfilEigenes</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StromProfilEigenes.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StromProfilEigenes.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StromProfilEigenes.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StromProfilEigenes.Name" xml:space="preserve">
+    <value>label_pBox_StromProfilEigenes</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StromProfilEigenes.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StromProfilEigenes.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StromProfilEigenes.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StdLastProfil.Name" xml:space="preserve">
+    <value>label2_pBox_StdLastProfil</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StdLastProfil.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StdLastProfil.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_StdLastProfil.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StdLastProfil.Name" xml:space="preserve">
+    <value>label_pBox_StdLastProfil</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StdLastProfil.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StdLastProfil.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_StdLastProfil.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;label26.Name" xml:space="preserve">
+    <value>label26</value>
+  </data>
+  <data name="&gt;&gt;label26.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label26.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;label26.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;label27.Name" xml:space="preserve">
+    <value>label27</value>
+  </data>
+  <data name="&gt;&gt;label27.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label27.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;label27.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;Label5.Name" xml:space="preserve">
+    <value>Label5</value>
+  </data>
+  <data name="&gt;&gt;Label5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Label5.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;Label5.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;Label6.Name" xml:space="preserve">
+    <value>Label6</value>
+  </data>
+  <data name="&gt;&gt;Label6.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Label6.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;Label6.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;pBox_StromMessdaten.Name" xml:space="preserve">
+    <value>pBox_StromMessdaten</value>
+  </data>
+  <data name="&gt;&gt;pBox_StromMessdaten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_StromMessdaten.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;pBox_StromMessdaten.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;pBox_StromProfilEigenes.Name" xml:space="preserve">
+    <value>pBox_StromProfilEigenes</value>
+  </data>
+  <data name="&gt;&gt;pBox_StromProfilEigenes.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_StromProfilEigenes.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;pBox_StromProfilEigenes.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="&gt;&gt;pBox_StdLastProfil.Name" xml:space="preserve">
+    <value>pBox_StdLastProfil</value>
+  </data>
+  <data name="&gt;&gt;pBox_StdLastProfil.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_StdLastProfil.Parent" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;pBox_StdLastProfil.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="tabPage3.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 12pt, style=Bold</value>
+  </data>
+  <data name="tabPage3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <data name="tabPage3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPage3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1342, 560</value>
+  </data>
+  <data name="tabPage3.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tabPage3.Text" xml:space="preserve">
+    <value>Strombedarf</value>
+  </data>
+  <data name="&gt;&gt;tabPage3.Name" xml:space="preserve">
+    <value>tabPage3</value>
+  </data>
+  <data name="&gt;&gt;tabPage3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage3.Parent" xml:space="preserve">
+    <value>tabControl_Wizard</value>
+  </data>
+  <data name="&gt;&gt;tabPage3.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Pufferspeicher.Name" xml:space="preserve">
+    <value>label2_pBox_Pufferspeicher</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Pufferspeicher.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Pufferspeicher.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Pufferspeicher.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Pufferspeicher.Name" xml:space="preserve">
+    <value>label_pBox_Pufferspeicher</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Pufferspeicher.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Pufferspeicher.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Pufferspeicher.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;label59.Name" xml:space="preserve">
+    <value>label59</value>
+  </data>
+  <data name="&gt;&gt;label59.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label59.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label59.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;label58.Name" xml:space="preserve">
+    <value>label58</value>
+  </data>
+  <data name="&gt;&gt;label58.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label58.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label58.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_PV.Name" xml:space="preserve">
+    <value>label2_pBox_PV</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_PV.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_PV.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_PV.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_PV.Name" xml:space="preserve">
+    <value>label_pBox_PV</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_PV.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_PV.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_PV.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Stromspeicher.Name" xml:space="preserve">
+    <value>label2_pBox_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Stromspeicher.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Stromspeicher.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Stromspeicher.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Stromspeicher.Name" xml:space="preserve">
+    <value>label_pBox_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Stromspeicher.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Stromspeicher.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Stromspeicher.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_BHKW.Name" xml:space="preserve">
+    <value>label2_pBox_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_BHKW.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_BHKW.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_BHKW.Name" xml:space="preserve">
+    <value>label_pBox_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_BHKW.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_BHKW.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Solarthermie.Name" xml:space="preserve">
+    <value>label2_pBox_Solarthermie</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Solarthermie.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Solarthermie.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Solarthermie.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Solarthermie.Name" xml:space="preserve">
+    <value>label_pBox_Solarthermie</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Solarthermie.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Solarthermie.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Solarthermie.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Heizkessel.Name" xml:space="preserve">
+    <value>label2_pBox_Heizkessel</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Heizkessel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Heizkessel.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Heizkessel.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Heizkessel.Name" xml:space="preserve">
+    <value>label_pBox_Heizkessel</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Heizkessel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Heizkessel.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Heizkessel.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_WP.Name" xml:space="preserve">
+    <value>label2_pBox_WP</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_WP.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_WP.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_WP.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_WP.Name" xml:space="preserve">
+    <value>label_pBox_WP</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_WP.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_WP.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_WP.ZOrder" xml:space="preserve">
+    <value>15</value>
+  </data>
+  <data name="&gt;&gt;label28.Name" xml:space="preserve">
+    <value>label28</value>
+  </data>
+  <data name="&gt;&gt;label28.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label28.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label28.ZOrder" xml:space="preserve">
+    <value>16</value>
+  </data>
+  <data name="&gt;&gt;label29.Name" xml:space="preserve">
+    <value>label29</value>
+  </data>
+  <data name="&gt;&gt;label29.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label29.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;label29.ZOrder" xml:space="preserve">
+    <value>17</value>
+  </data>
+  <data name="&gt;&gt;radioButton_Ganglinie.Name" xml:space="preserve">
+    <value>radioButton_Ganglinie</value>
+  </data>
+  <data name="&gt;&gt;radioButton_Ganglinie.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButton_Ganglinie.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;radioButton_Ganglinie.ZOrder" xml:space="preserve">
+    <value>18</value>
+  </data>
+  <data name="&gt;&gt;radioButton_KollektorProfil.Name" xml:space="preserve">
+    <value>radioButton_KollektorProfil</value>
+  </data>
+  <data name="&gt;&gt;radioButton_KollektorProfil.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButton_KollektorProfil.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;radioButton_KollektorProfil.ZOrder" xml:space="preserve">
+    <value>19</value>
+  </data>
+  <data name="&gt;&gt;Label7.Name" xml:space="preserve">
+    <value>Label7</value>
+  </data>
+  <data name="&gt;&gt;Label7.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Label7.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;Label7.ZOrder" xml:space="preserve">
+    <value>20</value>
+  </data>
+  <data name="&gt;&gt;Label8.Name" xml:space="preserve">
+    <value>Label8</value>
+  </data>
+  <data name="&gt;&gt;Label8.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Label8.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;Label8.ZOrder" xml:space="preserve">
+    <value>21</value>
+  </data>
+  <data name="&gt;&gt;pBox_Pufferspeicher.Name" xml:space="preserve">
+    <value>pBox_Pufferspeicher</value>
+  </data>
+  <data name="&gt;&gt;pBox_Pufferspeicher.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_Pufferspeicher.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;pBox_Pufferspeicher.ZOrder" xml:space="preserve">
+    <value>22</value>
+  </data>
+  <data name="&gt;&gt;pBox_PV.Name" xml:space="preserve">
+    <value>pBox_PV</value>
+  </data>
+  <data name="&gt;&gt;pBox_PV.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_PV.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;pBox_PV.ZOrder" xml:space="preserve">
+    <value>23</value>
+  </data>
+  <data name="&gt;&gt;pBox_Solarthermie.Name" xml:space="preserve">
+    <value>pBox_Solarthermie</value>
+  </data>
+  <data name="&gt;&gt;pBox_Solarthermie.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_Solarthermie.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;pBox_Solarthermie.ZOrder" xml:space="preserve">
+    <value>24</value>
+  </data>
+  <data name="&gt;&gt;pBox_Stromspeicher.Name" xml:space="preserve">
+    <value>pBox_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;pBox_Stromspeicher.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_Stromspeicher.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;pBox_Stromspeicher.ZOrder" xml:space="preserve">
+    <value>25</value>
+  </data>
+  <data name="&gt;&gt;pBox_Heizkessel.Name" xml:space="preserve">
+    <value>pBox_Heizkessel</value>
+  </data>
+  <data name="&gt;&gt;pBox_Heizkessel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_Heizkessel.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;pBox_Heizkessel.ZOrder" xml:space="preserve">
+    <value>26</value>
+  </data>
+  <data name="&gt;&gt;pBox_BHKW.Name" xml:space="preserve">
+    <value>pBox_BHKW</value>
+  </data>
+  <data name="&gt;&gt;pBox_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_BHKW.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;pBox_BHKW.ZOrder" xml:space="preserve">
+    <value>27</value>
+  </data>
+  <data name="&gt;&gt;pictureBox3.Name" xml:space="preserve">
+    <value>pictureBox3</value>
+  </data>
+  <data name="&gt;&gt;pictureBox3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pictureBox3.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;pictureBox3.ZOrder" xml:space="preserve">
+    <value>28</value>
+  </data>
+  <data name="&gt;&gt;pBox_WP.Name" xml:space="preserve">
+    <value>pBox_WP</value>
+  </data>
+  <data name="&gt;&gt;pBox_WP.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_WP.Parent" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;pBox_WP.ZOrder" xml:space="preserve">
+    <value>29</value>
+  </data>
+  <data name="tabPage4.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 12pt, style=Bold</value>
+  </data>
+  <data name="tabPage4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <data name="tabPage4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPage4.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPage4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1342, 560</value>
+  </data>
+  <data name="tabPage4.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="tabPage4.Text" xml:space="preserve">
+    <value>Energieerzeuger</value>
+  </data>
+  <data name="&gt;&gt;tabPage4.Name" xml:space="preserve">
+    <value>tabPage4</value>
+  </data>
+  <data name="&gt;&gt;tabPage4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage4.Parent" xml:space="preserve">
+    <value>tabControl_Wizard</value>
+  </data>
+  <data name="&gt;&gt;tabPage4.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="label70.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label70.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 15pt, style=Bold</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="label70.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label70.Location" type="System.Drawing.Point, System.Drawing">
+    <value>65, 114</value>
+  </data>
+  <data name="label70.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label70.Size" type="System.Drawing.Size, System.Drawing">
+    <value>259, 25</value>
+  </data>
+  <data name="label70.TabIndex" type="System.Int32, mscorlib">
+    <value>105</value>
+  </data>
+  <data name="label70.Text" xml:space="preserve">
+    <value>Projektzusammenfassung</value>
+  </data>
+  <data name="&gt;&gt;label70.Name" xml:space="preserve">
+    <value>label70</value>
+  </data>
+  <data name="&gt;&gt;label70.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label70.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label70.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="label_ProjektKomp.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_ProjektKomp.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 13pt, style=Bold</value>
+  </data>
+  <data name="label_ProjektKomp.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_ProjektKomp.Location" type="System.Drawing.Point, System.Drawing">
+    <value>70, 283</value>
+  </data>
+  <data name="label_ProjektKomp.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label_ProjektKomp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>239, 25</value>
+  </data>
+  <data name="label_ProjektKomp.TabIndex" type="System.Int32, mscorlib">
+    <value>104</value>
+  </data>
+  <data name="label_ProjektKomp.Text" xml:space="preserve">
+    <value>Ausgewählte Technologien:</value>
+  </data>
+  <data name="&gt;&gt;label_ProjektKomp.Name" xml:space="preserve">
+    <value>label_ProjektKomp</value>
+  </data>
+  <data name="&gt;&gt;label_ProjektKomp.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_ProjektKomp.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label_ProjektKomp.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="label_Strombedarf.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_Strombedarf.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 13pt, style=Bold</value>
+  </data>
+  <data name="label_Strombedarf.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_Strombedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>70, 243</value>
+  </data>
+  <data name="label_Strombedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label_Strombedarf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>121, 25</value>
+  </data>
+  <data name="label_Strombedarf.TabIndex" type="System.Int32, mscorlib">
+    <value>103</value>
+  </data>
+  <data name="label_Strombedarf.Text" xml:space="preserve">
+    <value>Strombedarf:</value>
+  </data>
+  <data name="&gt;&gt;label_Strombedarf.Name" xml:space="preserve">
+    <value>label_Strombedarf</value>
+  </data>
+  <data name="&gt;&gt;label_Strombedarf.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_Strombedarf.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label_Strombedarf.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="label6_WBedarf.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label6_WBedarf.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 13pt, style=Bold</value>
+  </data>
+  <data name="label6_WBedarf.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label6_WBedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>70, 201</value>
+  </data>
+  <data name="label6_WBedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label6_WBedarf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>129, 25</value>
+  </data>
+  <data name="label6_WBedarf.TabIndex" type="System.Int32, mscorlib">
+    <value>102</value>
+  </data>
+  <data name="label6_WBedarf.Text" xml:space="preserve">
+    <value>Wärmebedarf:</value>
+  </data>
+  <data name="&gt;&gt;label6_WBedarf.Name" xml:space="preserve">
+    <value>label6_WBedarf</value>
+  </data>
+  <data name="&gt;&gt;label6_WBedarf.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label6_WBedarf.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label6_WBedarf.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="label_ProjektName.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_ProjektName.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 13pt, style=Bold</value>
+  </data>
+  <data name="label_ProjektName.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_ProjektName.Location" type="System.Drawing.Point, System.Drawing">
+    <value>70, 163</value>
+  </data>
+  <data name="label_ProjektName.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label_ProjektName.Size" type="System.Drawing.Size, System.Drawing">
+    <value>122, 25</value>
+  </data>
+  <data name="label_ProjektName.TabIndex" type="System.Int32, mscorlib">
+    <value>101</value>
+  </data>
+  <data name="label_ProjektName.Text" xml:space="preserve">
+    <value>Projektname:</value>
+  </data>
+  <data name="&gt;&gt;label_ProjektName.Name" xml:space="preserve">
+    <value>label_ProjektName</value>
+  </data>
+  <data name="&gt;&gt;label_ProjektName.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_ProjektName.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label_ProjektName.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="label2_pBox_Optinierung.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label2_pBox_Optinierung.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label2_pBox_Optinierung.Location" type="System.Drawing.Point, System.Drawing">
+    <value>892, 465</value>
+  </data>
+  <data name="label2_pBox_Optinierung.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label2_pBox_Optinierung.Size" type="System.Drawing.Size, System.Drawing">
+    <value>259, 21</value>
+  </data>
+  <data name="label2_pBox_Optinierung.TabIndex" type="System.Int32, mscorlib">
+    <value>100</value>
+  </data>
+  <data name="label2_pBox_Optinierung.Text" xml:space="preserve">
+    <value>Automatische Systemoptimierung</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Optinierung.Name" xml:space="preserve">
+    <value>label2_pBox_Optinierung</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Optinierung.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Optinierung.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_Optinierung.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="label_pBox_Optimierung.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_pBox_Optimierung.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_pBox_Optimierung.Location" type="System.Drawing.Point, System.Drawing">
+    <value>999, 408</value>
+  </data>
+  <data name="label_pBox_Optimierung.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label_pBox_Optimierung.Size" type="System.Drawing.Size, System.Drawing">
+    <value>103, 21</value>
+  </data>
+  <data name="label_pBox_Optimierung.TabIndex" type="System.Int32, mscorlib">
+    <value>99</value>
+  </data>
+  <data name="label_pBox_Optimierung.Text" xml:space="preserve">
+    <value>Optimierung</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Optimierung.Name" xml:space="preserve">
+    <value>label_pBox_Optimierung</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Optimierung.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Optimierung.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_Optimierung.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="label2_pBox_DetailSim.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label2_pBox_DetailSim.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label2_pBox_DetailSim.Location" type="System.Drawing.Point, System.Drawing">
+    <value>477, 465</value>
+  </data>
+  <data name="label2_pBox_DetailSim.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label2_pBox_DetailSim.Size" type="System.Drawing.Size, System.Drawing">
+    <value>303, 21</value>
+  </data>
+  <data name="label2_pBox_DetailSim.TabIndex" type="System.Int32, mscorlib">
+    <value>98</value>
+  </data>
+  <data name="label2_pBox_DetailSim.Text" xml:space="preserve">
+    <value>Präzise Jahressimulation mit allen Details</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_DetailSim.Name" xml:space="preserve">
+    <value>label2_pBox_DetailSim</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_DetailSim.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_DetailSim.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_DetailSim.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="label_pBox_DetailSim.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_pBox_DetailSim.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_pBox_DetailSim.Location" type="System.Drawing.Point, System.Drawing">
+    <value>575, 408</value>
+  </data>
+  <data name="label_pBox_DetailSim.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label_pBox_DetailSim.Size" type="System.Drawing.Size, System.Drawing">
+    <value>171, 21</value>
+  </data>
+  <data name="label_pBox_DetailSim.TabIndex" type="System.Int32, mscorlib">
+    <value>97</value>
+  </data>
+  <data name="label_pBox_DetailSim.Text" xml:space="preserve">
+    <value>Detaillierte Simulation</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_DetailSim.Name" xml:space="preserve">
+    <value>label_pBox_DetailSim</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_DetailSim.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_DetailSim.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_DetailSim.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="btn_SimKonfig.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="btn_SimKonfig.Location" type="System.Drawing.Point, System.Drawing">
+    <value>815, 42</value>
+  </data>
+  <data name="btn_SimKonfig.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="btn_SimKonfig.Size" type="System.Drawing.Size, System.Drawing">
+    <value>221, 37</value>
+  </data>
+  <data name="btn_SimKonfig.TabIndex" type="System.Int32, mscorlib">
+    <value>65</value>
+  </data>
+  <data name="btn_SimKonfig.Text" xml:space="preserve">
+    <value>Simulation Konfiguration...</value>
+  </data>
+  <data name="&gt;&gt;btn_SimKonfig.Name" xml:space="preserve">
+    <value>btn_SimKonfig</value>
+  </data>
+  <data name="&gt;&gt;btn_SimKonfig.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_SimKonfig.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;btn_SimKonfig.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="label2_pBox_SchnellSim.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label2_pBox_SchnellSim.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label2_pBox_SchnellSim.Location" type="System.Drawing.Point, System.Drawing">
+    <value>65, 465</value>
+  </data>
+  <data name="label2_pBox_SchnellSim.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label2_pBox_SchnellSim.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 21</value>
+  </data>
+  <data name="label2_pBox_SchnellSim.TabIndex" type="System.Int32, mscorlib">
+    <value>96</value>
+  </data>
+  <data name="label2_pBox_SchnellSim.Text" xml:space="preserve">
+    <value>Schnelle Übersicht in wenigen Sekunden</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_SchnellSim.Name" xml:space="preserve">
+    <value>label2_pBox_SchnellSim</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_SchnellSim.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_SchnellSim.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label2_pBox_SchnellSim.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="label_pBox_SchnellSim.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_pBox_SchnellSim.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_pBox_SchnellSim.Location" type="System.Drawing.Point, System.Drawing">
+    <value>156, 408</value>
+  </data>
+  <data name="label_pBox_SchnellSim.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label_pBox_SchnellSim.Size" type="System.Drawing.Size, System.Drawing">
+    <value>137, 21</value>
+  </data>
+  <data name="label_pBox_SchnellSim.TabIndex" type="System.Int32, mscorlib">
+    <value>95</value>
+  </data>
+  <data name="label_pBox_SchnellSim.Text" xml:space="preserve">
+    <value>Schnellsimulation</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_SchnellSim.Name" xml:space="preserve">
+    <value>label_pBox_SchnellSim</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_SchnellSim.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_SchnellSim.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label_pBox_SchnellSim.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="label30.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label30.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 12pt, style=Bold</value>
+  </data>
+  <data name="label30.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label30.Location" type="System.Drawing.Point, System.Drawing">
+    <value>24, 46</value>
+  </data>
+  <data name="label30.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label30.Size" type="System.Drawing.Size, System.Drawing">
+    <value>393, 21</value>
+  </data>
+  <data name="label30.TabIndex" type="System.Int32, mscorlib">
+    <value>73</value>
+  </data>
+  <data name="label30.Text" xml:space="preserve">
+    <value>Berechnen Sie die Energieflüsse und Systemleistung.</value>
+  </data>
+  <data name="&gt;&gt;label30.Name" xml:space="preserve">
+    <value>label30</value>
+  </data>
+  <data name="&gt;&gt;label30.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label30.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label30.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="label31.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label31.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 16pt, style=Bold</value>
+  </data>
+  <data name="label31.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label31.Location" type="System.Drawing.Point, System.Drawing">
+    <value>22, 5</value>
+  </data>
+  <data name="label31.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label31.Size" type="System.Drawing.Size, System.Drawing">
+    <value>250, 30</value>
+  </data>
+  <data name="label31.TabIndex" type="System.Int32, mscorlib">
+    <value>72</value>
+  </data>
+  <data name="label31.Text" xml:space="preserve">
+    <value>Simulation durchführen</value>
+  </data>
+  <data name="&gt;&gt;label31.Name" xml:space="preserve">
+    <value>label31</value>
+  </data>
+  <data name="&gt;&gt;label31.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label31.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label31.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="label_Komponenten.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_Komponenten.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12.75pt, style=Bold</value>
+  </data>
+  <data name="label_Komponenten.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_Komponenten.Location" type="System.Drawing.Point, System.Drawing">
+    <value>892, 285</value>
+  </data>
+  <data name="label_Komponenten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label_Komponenten.Size" type="System.Drawing.Size, System.Drawing">
+    <value>68, 23</value>
+  </data>
+  <data name="label_Komponenten.TabIndex" type="System.Int32, mscorlib">
+    <value>61</value>
+  </data>
+  <data name="label_Komponenten.Text" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="label_Komponenten.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label_Komponenten.Name" xml:space="preserve">
+    <value>label_Komponenten</value>
+  </data>
+  <data name="&gt;&gt;label_Komponenten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_Komponenten.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label_Komponenten.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="label_Strom.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_Strom.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12.75pt, style=Bold</value>
+  </data>
+  <data name="label_Strom.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_Strom.Location" type="System.Drawing.Point, System.Drawing">
+    <value>892, 243</value>
+  </data>
+  <data name="label_Strom.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label_Strom.Size" type="System.Drawing.Size, System.Drawing">
+    <value>68, 23</value>
+  </data>
+  <data name="label_Strom.TabIndex" type="System.Int32, mscorlib">
+    <value>60</value>
+  </data>
+  <data name="label_Strom.Text" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="label_Strom.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label_Strom.Name" xml:space="preserve">
+    <value>label_Strom</value>
+  </data>
+  <data name="&gt;&gt;label_Strom.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_Strom.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label_Strom.ZOrder" xml:space="preserve">
+    <value>15</value>
+  </data>
+  <data name="label_WBedarf.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_WBedarf.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12.75pt, style=Bold</value>
+  </data>
+  <data name="label_WBedarf.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_WBedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>892, 203</value>
+  </data>
+  <data name="label_WBedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label_WBedarf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>68, 23</value>
+  </data>
+  <data name="label_WBedarf.TabIndex" type="System.Int32, mscorlib">
+    <value>59</value>
+  </data>
+  <data name="label_WBedarf.Text" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="label_WBedarf.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label_WBedarf.Name" xml:space="preserve">
+    <value>label_WBedarf</value>
+  </data>
+  <data name="&gt;&gt;label_WBedarf.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_WBedarf.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label_WBedarf.ZOrder" xml:space="preserve">
+    <value>16</value>
+  </data>
+  <data name="label_Name.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label_Name.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12.75pt, style=Bold</value>
+  </data>
+  <data name="label_Name.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label_Name.Location" type="System.Drawing.Point, System.Drawing">
+    <value>892, 163</value>
+  </data>
+  <data name="label_Name.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label_Name.Size" type="System.Drawing.Size, System.Drawing">
+    <value>68, 23</value>
+  </data>
+  <data name="label_Name.TabIndex" type="System.Int32, mscorlib">
+    <value>58</value>
+  </data>
+  <data name="label_Name.Text" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="label_Name.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label_Name.Name" xml:space="preserve">
+    <value>label_Name</value>
+  </data>
+  <data name="&gt;&gt;label_Name.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label_Name.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;label_Name.ZOrder" xml:space="preserve">
+    <value>17</value>
+  </data>
+  <data name="Label9.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="Label9.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, -22</value>
+  </data>
+  <data name="Label9.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="Label9.Size" type="System.Drawing.Size, System.Drawing">
+    <value>117, 27</value>
+  </data>
+  <data name="Label9.TabIndex" type="System.Int32, mscorlib">
+    <value>66</value>
+  </data>
+  <data name="&gt;&gt;Label9.Name" xml:space="preserve">
+    <value>Label9</value>
+  </data>
+  <data name="&gt;&gt;Label9.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Label9.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;Label9.ZOrder" xml:space="preserve">
+    <value>18</value>
+  </data>
+  <data name="Label10.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, -22</value>
+  </data>
+  <data name="Label10.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="Label10.Size" type="System.Drawing.Size, System.Drawing">
+    <value>117, 27</value>
+  </data>
+  <data name="Label10.TabIndex" type="System.Int32, mscorlib">
+    <value>67</value>
+  </data>
+  <data name="&gt;&gt;Label10.Name" xml:space="preserve">
+    <value>Label10</value>
+  </data>
+  <data name="&gt;&gt;Label10.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Label10.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;Label10.ZOrder" xml:space="preserve">
+    <value>19</value>
+  </data>
+  <data name="pBox_Optimierung.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
+    <value>Stretch</value>
+  </data>
+  <data name="pBox_Optimierung.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="pBox_Optimierung.Location" type="System.Drawing.Point, System.Drawing">
+    <value>847, 358</value>
+  </data>
+  <data name="pBox_Optimierung.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="pBox_Optimierung.Size" type="System.Drawing.Size, System.Drawing">
+    <value>404, 185</value>
+  </data>
+  <data name="pBox_Optimierung.TabIndex" type="System.Int32, mscorlib">
+    <value>64</value>
+  </data>
+  <data name="&gt;&gt;pBox_Optimierung.Name" xml:space="preserve">
+    <value>pBox_Optimierung</value>
+  </data>
+  <data name="&gt;&gt;pBox_Optimierung.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_Optimierung.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;pBox_Optimierung.ZOrder" xml:space="preserve">
+    <value>20</value>
+  </data>
+  <data name="pBox_DetailSim.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
+    <value>Stretch</value>
+  </data>
+  <data name="pBox_DetailSim.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="pBox_DetailSim.Location" type="System.Drawing.Point, System.Drawing">
+    <value>433, 358</value>
+  </data>
+  <data name="pBox_DetailSim.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="pBox_DetailSim.Size" type="System.Drawing.Size, System.Drawing">
+    <value>404, 185</value>
+  </data>
+  <data name="pBox_DetailSim.TabIndex" type="System.Int32, mscorlib">
+    <value>63</value>
+  </data>
+  <data name="&gt;&gt;pBox_DetailSim.Name" xml:space="preserve">
+    <value>pBox_DetailSim</value>
+  </data>
+  <data name="&gt;&gt;pBox_DetailSim.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBox_DetailSim.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;pBox_DetailSim.ZOrder" xml:space="preserve">
+    <value>21</value>
+  </data>
+  <data name="pBoxSchnellSim.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
+    <value>Stretch</value>
+  </data>
+  <data name="pBoxSchnellSim.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="pBoxSchnellSim.Location" type="System.Drawing.Point, System.Drawing">
+    <value>20, 358</value>
+  </data>
+  <data name="pBoxSchnellSim.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="pBoxSchnellSim.Size" type="System.Drawing.Size, System.Drawing">
+    <value>404, 185</value>
+  </data>
+  <data name="pBoxSchnellSim.TabIndex" type="System.Int32, mscorlib">
+    <value>62</value>
+  </data>
+  <data name="&gt;&gt;pBoxSchnellSim.Name" xml:space="preserve">
+    <value>pBoxSchnellSim</value>
+  </data>
+  <data name="&gt;&gt;pBoxSchnellSim.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pBoxSchnellSim.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;pBoxSchnellSim.ZOrder" xml:space="preserve">
+    <value>22</value>
+  </data>
+  <data name="pictureBox_Zusammenfassung.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
+    <value>Stretch</value>
+  </data>
+  <data name="pictureBox_Zusammenfassung.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="pictureBox_Zusammenfassung.Location" type="System.Drawing.Point, System.Drawing">
+    <value>18, 85</value>
+  </data>
+  <data name="pictureBox_Zusammenfassung.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="pictureBox_Zusammenfassung.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1022, 246</value>
+  </data>
+  <data name="pictureBox_Zusammenfassung.SizeMode" type="System.Windows.Forms.PictureBoxSizeMode, System.Windows.Forms">
+    <value>Zoom</value>
+  </data>
+  <data name="pictureBox_Zusammenfassung.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;pictureBox_Zusammenfassung.Name" xml:space="preserve">
+    <value>pictureBox_Zusammenfassung</value>
+  </data>
+  <data name="&gt;&gt;pictureBox_Zusammenfassung.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pictureBox_Zusammenfassung.Parent" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;pictureBox_Zusammenfassung.ZOrder" xml:space="preserve">
+    <value>23</value>
+  </data>
+  <data name="tabPage5.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 12pt, style=Bold</value>
+  </data>
+  <data name="tabPage5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <data name="tabPage5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPage5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1265, 560</value>
+  </data>
+  <data name="tabPage5.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="tabPage5.Text" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="&gt;&gt;tabPage5.Name" xml:space="preserve">
+    <value>tabPage5</value>
+  </data>
+  <data name="&gt;&gt;tabPage5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage5.Parent" xml:space="preserve">
+    <value>tabControl_Wizard</value>
+  </data>
+  <data name="&gt;&gt;tabPage5.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;btn_Kosten.Name" xml:space="preserve">
+    <value>btn_Kosten</value>
+  </data>
+  <data name="&gt;&gt;btn_Kosten.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btn_Kosten.Parent" xml:space="preserve">
+    <value>tabPage6</value>
+  </data>
+  <data name="&gt;&gt;btn_Kosten.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tabPage6.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 12pt, style=Bold</value>
+  </data>
+  <data name="tabPage6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <data name="tabPage6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPage6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1342, 560</value>
+  </data>
+  <data name="tabPage6.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="tabPage6.Text" xml:space="preserve">
+    <value>Berichte &amp;&amp; Kosten</value>
+  </data>
+  <data name="&gt;&gt;tabPage6.Name" xml:space="preserve">
+    <value>tabPage6</value>
+  </data>
+  <data name="&gt;&gt;tabPage6.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage6.Parent" xml:space="preserve">
+    <value>tabControl_Wizard</value>
+  </data>
+  <data name="&gt;&gt;tabPage6.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="tabControl_Wizard.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 12pt, style=Bold</value>
+  </data>
+  <data name="tabControl_Wizard.Location" type="System.Drawing.Point, System.Drawing">
+    <value>23, 177</value>
+  </data>
+  <data name="tabControl_Wizard.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabControl_Wizard.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1273, 594</value>
+  </data>
+  <data name="tabControl_Wizard.TabIndex" type="System.Int32, mscorlib">
+    <value>44</value>
+  </data>
+  <data name="&gt;&gt;tabControl_Wizard.Name" xml:space="preserve">
+    <value>tabControl_Wizard</value>
+  </data>
+  <data name="&gt;&gt;tabControl_Wizard.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabControl, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabControl_Wizard.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;tabControl_Wizard.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
   <data name="label2_pBox_ProjektDetails.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI Semibold, 9.75pt, style=Bold</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="label2_pBox_ProjektDetails.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_ProjektDetails.Location" type="System.Drawing.Point, System.Drawing">
-    <value>880, 471</value>
+    <value>878, 431</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="label2_pBox_ProjektDetails.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
   <data name="label2_pBox_ProjektDetails.Size" type="System.Drawing.Size, System.Drawing">
     <value>344, 43</value>
   </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="label2_pBox_ProjektDetails.TabIndex" type="System.Int32, mscorlib">
     <value>75</value>
   </data>
@@ -164,7 +2177,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_ProjektDetails.Location" type="System.Drawing.Point, System.Drawing">
-    <value>977, 405</value>
+    <value>975, 365</value>
   </data>
   <data name="label_pBox_ProjektDetails.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -200,7 +2213,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_Delete.Location" type="System.Drawing.Point, System.Drawing">
-    <value>471, 475</value>
+    <value>469, 435</value>
   </data>
   <data name="label2_pBox_Delete.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -236,7 +2249,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_Delete.Location" type="System.Drawing.Point, System.Drawing">
-    <value>567, 409</value>
+    <value>565, 369</value>
   </data>
   <data name="label_pBox_Delete.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -272,7 +2285,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_Bearbeiten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>65, 475</value>
+    <value>63, 435</value>
   </data>
   <data name="label2_pBox_Bearbeiten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -308,7 +2321,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_Bearbeiten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>170, 409</value>
+    <value>168, 369</value>
   </data>
   <data name="label_pBox_Bearbeiten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -344,7 +2357,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_ProjektZuletzt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>880, 282</value>
+    <value>878, 242</value>
   </data>
   <data name="label2_pBox_ProjektZuletzt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -380,7 +2393,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_ProjektZuletzt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>977, 224</value>
+    <value>975, 184</value>
   </data>
   <data name="label_pBox_ProjektZuletzt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -416,7 +2429,7 @@
     <value>NoControl</value>
   </data>
   <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>15, 134</value>
+    <value>13, 94</value>
   </data>
   <data name="label1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -452,7 +2465,7 @@
     <value>NoControl</value>
   </data>
   <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>13, 92</value>
+    <value>11, 52</value>
   </data>
   <data name="label3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -488,7 +2501,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_ProjektOeffnen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>523, 282</value>
+    <value>475, 242</value>
   </data>
   <data name="label2_pBox_ProjektOeffnen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -524,7 +2537,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_ProjektOeffnen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>566, 224</value>
+    <value>564, 184</value>
   </data>
   <data name="label_pBox_ProjektOeffnen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -560,7 +2573,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_ProjektNeu.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 282</value>
+    <value>62, 242</value>
   </data>
   <data name="label2_pBox_ProjektNeu.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -596,7 +2609,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_ProjektNeu.Location" type="System.Drawing.Point, System.Drawing">
-    <value>151, 224</value>
+    <value>149, 184</value>
   </data>
   <data name="label_pBox_ProjektNeu.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -629,7 +2642,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_ProjektDetails.Location" type="System.Drawing.Point, System.Drawing">
-    <value>837, 365</value>
+    <value>835, 325</value>
   </data>
   <data name="pBox_ProjektDetails.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -659,7 +2672,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_Delete.Location" type="System.Drawing.Point, System.Drawing">
-    <value>425, 365</value>
+    <value>423, 325</value>
   </data>
   <data name="pBox_Delete.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -682,33 +2695,6 @@
   <data name="&gt;&gt;pBox_Delete.ZOrder" xml:space="preserve">
     <value>15</value>
   </data>
-  <data name="Label4.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="Label4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, -22</value>
-  </data>
-  <data name="Label4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="Label4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>117, 27</value>
-  </data>
-  <data name="Label4.TabIndex" type="System.Int32, mscorlib">
-    <value>63</value>
-  </data>
-  <data name="&gt;&gt;Label4.Name" xml:space="preserve">
-    <value>Label4</value>
-  </data>
-  <data name="&gt;&gt;Label4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label4.Parent" xml:space="preserve">
-    <value>tabPage1</value>
-  </data>
-  <data name="&gt;&gt;Label4.ZOrder" xml:space="preserve">
-    <value>16</value>
-  </data>
   <data name="pBox_Bearbeiten.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
   </data>
@@ -716,7 +2702,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_Bearbeiten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>20, 365</value>
+    <value>18, 325</value>
   </data>
   <data name="pBox_Bearbeiten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -737,7 +2723,7 @@
     <value>tabPage1</value>
   </data>
   <data name="&gt;&gt;pBox_Bearbeiten.ZOrder" xml:space="preserve">
-    <value>17</value>
+    <value>16</value>
   </data>
   <data name="pBox_ProjektZuletzt.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -746,7 +2732,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_ProjektZuletzt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>836, 174</value>
+    <value>834, 134</value>
   </data>
   <data name="pBox_ProjektZuletzt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -767,7 +2753,7 @@
     <value>tabPage1</value>
   </data>
   <data name="&gt;&gt;pBox_ProjektZuletzt.ZOrder" xml:space="preserve">
-    <value>18</value>
+    <value>17</value>
   </data>
   <data name="pBox_ProjektOeffnen.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -776,7 +2762,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_ProjektOeffnen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>424, 174</value>
+    <value>422, 134</value>
   </data>
   <data name="pBox_ProjektOeffnen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -797,7 +2783,7 @@
     <value>tabPage1</value>
   </data>
   <data name="&gt;&gt;pBox_ProjektOeffnen.ZOrder" xml:space="preserve">
-    <value>19</value>
+    <value>18</value>
   </data>
   <data name="pBox_ProjektNeu.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -806,7 +2792,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_ProjektNeu.Location" type="System.Drawing.Point, System.Drawing">
-    <value>20, 174</value>
+    <value>18, 134</value>
   </data>
   <data name="pBox_ProjektNeu.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -827,46 +2813,13 @@
     <value>tabPage1</value>
   </data>
   <data name="&gt;&gt;pBox_ProjektNeu.ZOrder" xml:space="preserve">
-    <value>20</value>
-  </data>
-  <data name="tabPage1.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 12pt, style=Bold</value>
-  </data>
-  <data name="tabPage1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
-  </data>
-  <data name="tabPage1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="tabPage1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1342, 621</value>
-  </data>
-  <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="tabPage1.Text" xml:space="preserve">
-    <value>Projekt</value>
-  </data>
-  <data name="&gt;&gt;tabPage1.Name" xml:space="preserve">
-    <value>tabPage1</value>
-  </data>
-  <data name="&gt;&gt;tabPage1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tabPage1.Parent" xml:space="preserve">
-    <value>tabControl_Wizard</value>
-  </data>
-  <data name="&gt;&gt;tabPage1.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>19</value>
   </data>
   <data name="label2_pBox_Brauchwasser.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_Brauchwasser.Location" type="System.Drawing.Point, System.Drawing">
-    <value>50, 499</value>
+    <value>63, 499</value>
   </data>
   <data name="label2_pBox_Brauchwasser.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -899,7 +2852,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_Brauchwasser.Location" type="System.Drawing.Point, System.Drawing">
-    <value>159, 436</value>
+    <value>159, 410</value>
   </data>
   <data name="label_pBox_Brauchwasser.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -932,7 +2885,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_Prozess.Location" type="System.Drawing.Point, System.Drawing">
-    <value>918, 310</value>
+    <value>894, 284</value>
   </data>
   <data name="label2_pBox_Prozess.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -965,7 +2918,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_Prozess.Location" type="System.Drawing.Point, System.Drawing">
-    <value>999, 254</value>
+    <value>999, 228</value>
   </data>
   <data name="label_pBox_Prozess.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -995,7 +2948,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_WBedarfDaten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>476, 310</value>
+    <value>474, 284</value>
   </data>
   <data name="label2_pBox_WBedarfDaten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -1025,7 +2978,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_WBedarfDaten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>569, 248</value>
+    <value>568, 222</value>
   </data>
   <data name="label_pBox_WBedarfDaten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -1055,7 +3008,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_Gebaude.Location" type="System.Drawing.Point, System.Drawing">
-    <value>63, 310</value>
+    <value>63, 284</value>
   </data>
   <data name="label2_pBox_Gebaude.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -1085,7 +3038,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_Gebaude.Location" type="System.Drawing.Point, System.Drawing">
-    <value>159, 248</value>
+    <value>159, 222</value>
   </data>
   <data name="label_pBox_Gebaude.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -1121,7 +3074,7 @@
     <value>NoControl</value>
   </data>
   <data name="label33.Location" type="System.Drawing.Point, System.Drawing">
-    <value>118, 108</value>
+    <value>102, 86</value>
   </data>
   <data name="label33.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -1157,7 +3110,7 @@
     <value>NoControl</value>
   </data>
   <data name="label32.Location" type="System.Drawing.Point, System.Drawing">
-    <value>72, 145</value>
+    <value>102, 118</value>
   </data>
   <data name="label32.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -1289,7 +3242,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_Brauchwasser.Location" type="System.Drawing.Point, System.Drawing">
-    <value>22, 391</value>
+    <value>22, 365</value>
   </data>
   <data name="pBox_Brauchwasser.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -1325,7 +3278,7 @@
     <value>4, 3, 4, 3</value>
   </data>
   <data name="pBox_WBHinweis.Size" type="System.Drawing.Size, System.Drawing">
-    <value>810, 119</value>
+    <value>726, 88</value>
   </data>
   <data name="pBox_WBHinweis.TabIndex" type="System.Int32, mscorlib">
     <value>48</value>
@@ -1349,7 +3302,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_Prozess.Location" type="System.Drawing.Point, System.Drawing">
-    <value>848, 200</value>
+    <value>848, 174</value>
   </data>
   <data name="pBox_Prozess.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -1379,7 +3332,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_WBedarfDaten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>436, 200</value>
+    <value>436, 174</value>
   </data>
   <data name="pBox_WBedarfDaten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -1409,7 +3362,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_Gebaude.Location" type="System.Drawing.Point, System.Drawing">
-    <value>23, 200</value>
+    <value>23, 174</value>
   </data>
   <data name="pBox_Gebaude.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -1432,39 +3385,6 @@
   <data name="&gt;&gt;pBox_Gebaude.ZOrder" xml:space="preserve">
     <value>17</value>
   </data>
-  <data name="tabPage2.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 12pt, style=Bold</value>
-  </data>
-  <data name="tabPage2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
-  </data>
-  <data name="tabPage2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="tabPage2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1342, 621</value>
-  </data>
-  <data name="tabPage2.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="tabPage2.Text" xml:space="preserve">
-    <value>Wärmebedarf</value>
-  </data>
-  <data name="&gt;&gt;tabPage2.Name" xml:space="preserve">
-    <value>tabPage2</value>
-  </data>
-  <data name="&gt;&gt;tabPage2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tabPage2.Parent" xml:space="preserve">
-    <value>tabControl_Wizard</value>
-  </data>
-  <data name="&gt;&gt;tabPage2.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
   <data name="label2_pBox_StromMessdaten.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -1472,7 +3392,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_StromMessdaten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>875, 249</value>
+    <value>896, 249</value>
   </data>
   <data name="label2_pBox_StromMessdaten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -1604,7 +3524,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_StdLastProfil.Location" type="System.Drawing.Point, System.Drawing">
-    <value>58, 249</value>
+    <value>75, 249</value>
   </data>
   <data name="label2_pBox_StdLastProfil.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -1879,97 +3799,67 @@
   <data name="&gt;&gt;pBox_StdLastProfil.ZOrder" xml:space="preserve">
     <value>12</value>
   </data>
-  <data name="tabPage3.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 12pt, style=Bold</value>
-  </data>
-  <data name="tabPage3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
-  </data>
-  <data name="tabPage3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="tabPage3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1342, 621</value>
-  </data>
-  <data name="tabPage3.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="tabPage3.Text" xml:space="preserve">
-    <value>Strombedarf</value>
-  </data>
-  <data name="&gt;&gt;tabPage3.Name" xml:space="preserve">
-    <value>tabPage3</value>
-  </data>
-  <data name="&gt;&gt;tabPage3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tabPage3.Parent" xml:space="preserve">
-    <value>tabControl_Wizard</value>
-  </data>
-  <data name="&gt;&gt;tabPage3.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="label71.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label2_pBox_Pufferspeicher.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label71.Location" type="System.Drawing.Point, System.Drawing">
-    <value>544, 546</value>
+  <data name="label2_pBox_Pufferspeicher.Location" type="System.Drawing.Point, System.Drawing">
+    <value>544, 485</value>
   </data>
-  <data name="label71.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label2_pBox_Pufferspeicher.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label71.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label2_pBox_Pufferspeicher.Size" type="System.Drawing.Size, System.Drawing">
     <value>275, 55</value>
   </data>
-  <data name="label71.TabIndex" type="System.Int32, mscorlib">
+  <data name="label2_pBox_Pufferspeicher.TabIndex" type="System.Int32, mscorlib">
     <value>99</value>
   </data>
-  <data name="label71.Text" xml:space="preserve">
+  <data name="label2_pBox_Pufferspeicher.Text" xml:space="preserve">
     <value>Überschüssige Wärme aus der Heizung speichern</value>
   </data>
-  <data name="&gt;&gt;label71.Name" xml:space="preserve">
-    <value>label71</value>
+  <data name="&gt;&gt;label2_pBox_Pufferspeicher.Name" xml:space="preserve">
+    <value>label2_pBox_Pufferspeicher</value>
   </data>
-  <data name="&gt;&gt;label71.Type" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_Pufferspeicher.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label71.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_Pufferspeicher.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label71.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_Pufferspeicher.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="label72.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label_pBox_Pufferspeicher.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label72.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label_pBox_Pufferspeicher.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label72.Location" type="System.Drawing.Point, System.Drawing">
-    <value>603, 523</value>
+  <data name="label_pBox_Pufferspeicher.Location" type="System.Drawing.Point, System.Drawing">
+    <value>603, 457</value>
   </data>
-  <data name="label72.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label_pBox_Pufferspeicher.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label72.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_pBox_Pufferspeicher.Size" type="System.Drawing.Size, System.Drawing">
     <value>117, 21</value>
   </data>
-  <data name="label72.TabIndex" type="System.Int32, mscorlib">
+  <data name="label_pBox_Pufferspeicher.TabIndex" type="System.Int32, mscorlib">
     <value>98</value>
   </data>
-  <data name="label72.Text" xml:space="preserve">
+  <data name="label_pBox_Pufferspeicher.Text" xml:space="preserve">
     <value>Pufferspeicher</value>
   </data>
-  <data name="&gt;&gt;label72.Name" xml:space="preserve">
-    <value>label72</value>
+  <data name="&gt;&gt;label_pBox_Pufferspeicher.Name" xml:space="preserve">
+    <value>label_pBox_Pufferspeicher</value>
   </data>
-  <data name="&gt;&gt;label72.Type" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_Pufferspeicher.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label72.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_Pufferspeicher.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label72.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_Pufferspeicher.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
   <data name="label59.AutoSize" type="System.Boolean, mscorlib">
@@ -1979,7 +3869,7 @@
     <value>NoControl</value>
   </data>
   <data name="label59.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 140</value>
+    <value>79, 123</value>
   </data>
   <data name="label59.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -2012,7 +3902,7 @@
     <value>NoControl</value>
   </data>
   <data name="label58.Location" type="System.Drawing.Point, System.Drawing">
-    <value>107, 105</value>
+    <value>101, 92</value>
   </data>
   <data name="label58.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -2038,265 +3928,265 @@
   <data name="&gt;&gt;label58.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="label56.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label2_pBox_PV.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label56.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label2_pBox_PV.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label56.Location" type="System.Drawing.Point, System.Drawing">
-    <value>925, 500</value>
+  <data name="label2_pBox_PV.Location" type="System.Drawing.Point, System.Drawing">
+    <value>925, 474</value>
   </data>
-  <data name="label56.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label2_pBox_PV.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label56.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label2_pBox_PV.Size" type="System.Drawing.Size, System.Drawing">
     <value>276, 21</value>
   </data>
-  <data name="label56.TabIndex" type="System.Int32, mscorlib">
+  <data name="label2_pBox_PV.TabIndex" type="System.Int32, mscorlib">
     <value>94</value>
   </data>
-  <data name="label56.Text" xml:space="preserve">
+  <data name="label2_pBox_PV.Text" xml:space="preserve">
     <value>Stromerzeugung aus Sonnenenergie</value>
   </data>
-  <data name="&gt;&gt;label56.Name" xml:space="preserve">
-    <value>label56</value>
+  <data name="&gt;&gt;label2_pBox_PV.Name" xml:space="preserve">
+    <value>label2_pBox_PV</value>
   </data>
-  <data name="&gt;&gt;label56.Type" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_PV.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label56.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_PV.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label56.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_PV.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="label57.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label_pBox_PV.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label57.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label_pBox_PV.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label57.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="label_pBox_PV.Location" type="System.Drawing.Point, System.Drawing">
     <value>1007, 436</value>
   </data>
-  <data name="label57.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label_pBox_PV.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label57.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_pBox_PV.Size" type="System.Drawing.Size, System.Drawing">
     <value>102, 21</value>
   </data>
-  <data name="label57.TabIndex" type="System.Int32, mscorlib">
+  <data name="label_pBox_PV.TabIndex" type="System.Int32, mscorlib">
     <value>93</value>
   </data>
-  <data name="label57.Text" xml:space="preserve">
+  <data name="label_pBox_PV.Text" xml:space="preserve">
     <value>Photovoltaik</value>
   </data>
-  <data name="&gt;&gt;label57.Name" xml:space="preserve">
-    <value>label57</value>
+  <data name="&gt;&gt;label_pBox_PV.Name" xml:space="preserve">
+    <value>label_pBox_PV</value>
   </data>
-  <data name="&gt;&gt;label57.Type" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_PV.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label57.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_PV.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label57.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_PV.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="label54.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label2_pBox_Stromspeicher.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label54.Location" type="System.Drawing.Point, System.Drawing">
-    <value>544, 436</value>
+  <data name="label2_pBox_Stromspeicher.Location" type="System.Drawing.Point, System.Drawing">
+    <value>544, 375</value>
   </data>
-  <data name="label54.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label2_pBox_Stromspeicher.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label54.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label2_pBox_Stromspeicher.Size" type="System.Drawing.Size, System.Drawing">
     <value>250, 55</value>
   </data>
-  <data name="label54.TabIndex" type="System.Int32, mscorlib">
+  <data name="label2_pBox_Stromspeicher.TabIndex" type="System.Int32, mscorlib">
     <value>92</value>
   </data>
-  <data name="label54.Text" xml:space="preserve">
+  <data name="label2_pBox_Stromspeicher.Text" xml:space="preserve">
     <value>Batteriespeicher für überschüssigen Strom</value>
   </data>
-  <data name="&gt;&gt;label54.Name" xml:space="preserve">
-    <value>label54</value>
+  <data name="&gt;&gt;label2_pBox_Stromspeicher.Name" xml:space="preserve">
+    <value>label2_pBox_Stromspeicher</value>
   </data>
-  <data name="&gt;&gt;label54.Type" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_Stromspeicher.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label54.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_Stromspeicher.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label54.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_Stromspeicher.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="label55.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label_pBox_Stromspeicher.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label55.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label_pBox_Stromspeicher.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label55.Location" type="System.Drawing.Point, System.Drawing">
-    <value>603, 415</value>
+  <data name="label_pBox_Stromspeicher.Location" type="System.Drawing.Point, System.Drawing">
+    <value>603, 348</value>
   </data>
-  <data name="label55.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label_pBox_Stromspeicher.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label55.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_pBox_Stromspeicher.Size" type="System.Drawing.Size, System.Drawing">
     <value>117, 21</value>
   </data>
-  <data name="label55.TabIndex" type="System.Int32, mscorlib">
+  <data name="label_pBox_Stromspeicher.TabIndex" type="System.Int32, mscorlib">
     <value>91</value>
   </data>
-  <data name="label55.Text" xml:space="preserve">
+  <data name="label_pBox_Stromspeicher.Text" xml:space="preserve">
     <value>Stromspeicher</value>
   </data>
-  <data name="&gt;&gt;label55.Name" xml:space="preserve">
-    <value>label55</value>
+  <data name="&gt;&gt;label_pBox_Stromspeicher.Name" xml:space="preserve">
+    <value>label_pBox_Stromspeicher</value>
   </data>
-  <data name="&gt;&gt;label55.Type" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_Stromspeicher.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label55.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_Stromspeicher.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label55.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_Stromspeicher.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
-  <data name="label52.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label2_pBox_BHKW.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label52.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label2_pBox_BHKW.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label52.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 500</value>
+  <data name="label2_pBox_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>64, 474</value>
   </data>
-  <data name="label52.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label2_pBox_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label52.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label2_pBox_BHKW.Size" type="System.Drawing.Size, System.Drawing">
     <value>309, 21</value>
   </data>
-  <data name="label52.TabIndex" type="System.Int32, mscorlib">
+  <data name="label2_pBox_BHKW.TabIndex" type="System.Int32, mscorlib">
     <value>90</value>
   </data>
-  <data name="label52.Text" xml:space="preserve">
+  <data name="label2_pBox_BHKW.Text" xml:space="preserve">
     <value>Blockheizkraftwerk für Wärme und Strom</value>
   </data>
-  <data name="&gt;&gt;label52.Name" xml:space="preserve">
-    <value>label52</value>
+  <data name="&gt;&gt;label2_pBox_BHKW.Name" xml:space="preserve">
+    <value>label2_pBox_BHKW</value>
   </data>
-  <data name="&gt;&gt;label52.Type" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_BHKW.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label52.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_BHKW.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label52.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_BHKW.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
-  <data name="label53.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label_pBox_BHKW.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label53.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label_pBox_BHKW.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label53.Location" type="System.Drawing.Point, System.Drawing">
-    <value>206, 436</value>
+  <data name="label_pBox_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>206, 410</value>
   </data>
-  <data name="label53.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label_pBox_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label53.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_pBox_BHKW.Size" type="System.Drawing.Size, System.Drawing">
     <value>57, 21</value>
   </data>
-  <data name="label53.TabIndex" type="System.Int32, mscorlib">
+  <data name="label_pBox_BHKW.TabIndex" type="System.Int32, mscorlib">
     <value>89</value>
   </data>
-  <data name="label53.Text" xml:space="preserve">
+  <data name="label_pBox_BHKW.Text" xml:space="preserve">
     <value>BHKW</value>
   </data>
-  <data name="&gt;&gt;label53.Name" xml:space="preserve">
-    <value>label53</value>
+  <data name="&gt;&gt;label_pBox_BHKW.Name" xml:space="preserve">
+    <value>label_pBox_BHKW</value>
   </data>
-  <data name="&gt;&gt;label53.Type" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_BHKW.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label53.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_BHKW.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label53.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_BHKW.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="label50.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label2_pBox_Solarthermie.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label50.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label2_pBox_Solarthermie.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label50.Location" type="System.Drawing.Point, System.Drawing">
-    <value>919, 301</value>
+  <data name="label2_pBox_Solarthermie.Location" type="System.Drawing.Point, System.Drawing">
+    <value>919, 275</value>
   </data>
-  <data name="label50.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label2_pBox_Solarthermie.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label50.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label2_pBox_Solarthermie.Size" type="System.Drawing.Size, System.Drawing">
     <value>282, 21</value>
   </data>
-  <data name="label50.TabIndex" type="System.Int32, mscorlib">
+  <data name="label2_pBox_Solarthermie.TabIndex" type="System.Int32, mscorlib">
     <value>88</value>
   </data>
-  <data name="label50.Text" xml:space="preserve">
+  <data name="label2_pBox_Solarthermie.Text" xml:space="preserve">
     <value>Wärmeerzeugung aus Sonnenenergie</value>
   </data>
-  <data name="&gt;&gt;label50.Name" xml:space="preserve">
-    <value>label50</value>
+  <data name="&gt;&gt;label2_pBox_Solarthermie.Name" xml:space="preserve">
+    <value>label2_pBox_Solarthermie</value>
   </data>
-  <data name="&gt;&gt;label50.Type" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_Solarthermie.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label50.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_Solarthermie.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label50.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_Solarthermie.ZOrder" xml:space="preserve">
     <value>10</value>
   </data>
-  <data name="label51.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label_pBox_Solarthermie.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label51.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label_pBox_Solarthermie.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label51.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1007, 229</value>
+  <data name="label_pBox_Solarthermie.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1007, 212</value>
   </data>
-  <data name="label51.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label_pBox_Solarthermie.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label51.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_pBox_Solarthermie.Size" type="System.Drawing.Size, System.Drawing">
     <value>104, 21</value>
   </data>
-  <data name="label51.TabIndex" type="System.Int32, mscorlib">
+  <data name="label_pBox_Solarthermie.TabIndex" type="System.Int32, mscorlib">
     <value>87</value>
   </data>
-  <data name="label51.Text" xml:space="preserve">
+  <data name="label_pBox_Solarthermie.Text" xml:space="preserve">
     <value>Solarthermie</value>
   </data>
-  <data name="&gt;&gt;label51.Name" xml:space="preserve">
-    <value>label51</value>
+  <data name="&gt;&gt;label_pBox_Solarthermie.Name" xml:space="preserve">
+    <value>label_pBox_Solarthermie</value>
   </data>
-  <data name="&gt;&gt;label51.Type" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_Solarthermie.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label51.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_Solarthermie.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label51.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_Solarthermie.ZOrder" xml:space="preserve">
     <value>11</value>
   </data>
   <data name="label2_pBox_Heizkessel.AutoSize" type="System.Boolean, mscorlib">
@@ -2306,7 +4196,7 @@
     <value>NoControl</value>
   </data>
   <data name="label2_pBox_Heizkessel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>480, 301</value>
+    <value>480, 275</value>
   </data>
   <data name="label2_pBox_Heizkessel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -2339,7 +4229,7 @@
     <value>NoControl</value>
   </data>
   <data name="label_pBox_Heizkessel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>603, 249</value>
+    <value>603, 223</value>
   </data>
   <data name="label_pBox_Heizkessel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -2365,67 +4255,67 @@
   <data name="&gt;&gt;label_pBox_Heizkessel.ZOrder" xml:space="preserve">
     <value>13</value>
   </data>
-  <data name="label46.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label2_pBox_WP.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label46.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 301</value>
+  <data name="label2_pBox_WP.Location" type="System.Drawing.Point, System.Drawing">
+    <value>64, 275</value>
   </data>
-  <data name="label46.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label2_pBox_WP.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label46.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label2_pBox_WP.Size" type="System.Drawing.Size, System.Drawing">
     <value>301, 52</value>
   </data>
-  <data name="label46.TabIndex" type="System.Int32, mscorlib">
+  <data name="label2_pBox_WP.TabIndex" type="System.Int32, mscorlib">
     <value>84</value>
   </data>
-  <data name="label46.Text" xml:space="preserve">
+  <data name="label2_pBox_WP.Text" xml:space="preserve">
     <value>Effiziente Wärmeerzeugung aus Umweltwärme</value>
   </data>
-  <data name="&gt;&gt;label46.Name" xml:space="preserve">
-    <value>label46</value>
+  <data name="&gt;&gt;label2_pBox_WP.Name" xml:space="preserve">
+    <value>label2_pBox_WP</value>
   </data>
-  <data name="&gt;&gt;label46.Type" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_WP.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label46.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_WP.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label46.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label2_pBox_WP.ZOrder" xml:space="preserve">
     <value>14</value>
   </data>
-  <data name="label47.AutoSize" type="System.Boolean, mscorlib">
+  <data name="label_pBox_WP.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label47.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+  <data name="label_pBox_WP.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="label47.Location" type="System.Drawing.Point, System.Drawing">
-    <value>177, 249</value>
+  <data name="label_pBox_WP.Location" type="System.Drawing.Point, System.Drawing">
+    <value>177, 223</value>
   </data>
-  <data name="label47.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="label_pBox_WP.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
-  <data name="label47.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="label_pBox_WP.Size" type="System.Drawing.Size, System.Drawing">
     <value>113, 21</value>
   </data>
-  <data name="label47.TabIndex" type="System.Int32, mscorlib">
+  <data name="label_pBox_WP.TabIndex" type="System.Int32, mscorlib">
     <value>83</value>
   </data>
-  <data name="label47.Text" xml:space="preserve">
+  <data name="label_pBox_WP.Text" xml:space="preserve">
     <value>Wärmepumpe</value>
   </data>
-  <data name="&gt;&gt;label47.Name" xml:space="preserve">
-    <value>label47</value>
+  <data name="&gt;&gt;label_pBox_WP.Name" xml:space="preserve">
+    <value>label_pBox_WP</value>
   </data>
-  <data name="&gt;&gt;label47.Type" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_WP.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;label47.Parent" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_WP.Parent" xml:space="preserve">
     <value>tabPage4</value>
   </data>
-  <data name="&gt;&gt;label47.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;label_pBox_WP.ZOrder" xml:space="preserve">
     <value>15</value>
   </data>
   <data name="label28.AutoSize" type="System.Boolean, mscorlib">
@@ -2507,7 +4397,7 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton_Ganglinie.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1082, 262</value>
+    <value>1083, 236</value>
   </data>
   <data name="radioButton_Ganglinie.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -2540,7 +4430,7 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton_KollektorProfil.Location" type="System.Drawing.Point, System.Drawing">
-    <value>982, 262</value>
+    <value>982, 236</value>
   </data>
   <data name="radioButton_KollektorProfil.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -2627,7 +4517,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_Pufferspeicher.Location" type="System.Drawing.Point, System.Drawing">
-    <value>435, 500</value>
+    <value>435, 439</value>
   </data>
   <data name="pBox_Pufferspeicher.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -2657,7 +4547,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_PV.Location" type="System.Drawing.Point, System.Drawing">
-    <value>847, 390</value>
+    <value>847, 364</value>
   </data>
   <data name="pBox_PV.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -2687,7 +4577,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_Solarthermie.Location" type="System.Drawing.Point, System.Drawing">
-    <value>847, 197</value>
+    <value>847, 171</value>
   </data>
   <data name="pBox_Solarthermie.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -2717,7 +4607,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_Stromspeicher.Location" type="System.Drawing.Point, System.Drawing">
-    <value>435, 390</value>
+    <value>435, 329</value>
   </data>
   <data name="pBox_Stromspeicher.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -2740,6 +4630,145 @@
   <data name="&gt;&gt;pBox_Stromspeicher.ZOrder" xml:space="preserve">
     <value>25</value>
   </data>
+  <data name="pBox_Heizkessel.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        /9j/4AAQSkZJRgABAQEAYABgAAD/4QAiRXhpZgAATU0AKgAAAAgAAQESAAMAAAABAAEAAAAAAAD/2wBD
+        AAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0M
+        DgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM
+        DAwMDAwMDAwMDAwMDAz/wAARCADXAicDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQF
+        BgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAk
+        M2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWG
+        h4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx
+        8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQA
+        AQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5
+        OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmq
+        srO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9
+        /Ky9c8VWegj9826TGRGgy3/1qj8W64dE0393zcTnZEPf1/D/AAqLw34UXSx9oucT3snzM7c7Cew/xp26
+        sCsPHV1N80OjXci9m55/JTTv+E01D/oB3n/j3/xFdJRS07Ac3/wmmof9AO8/8e/+Io/4TTUP+gHef+Pf
+        /EV0lFGnYDm/+E01D/oB3n/j3/xFH/Caah/0A7z/AMe/+IrpKKNOwHN/8JpqH/QDvP8Ax7/4ij/hNNQ/
+        6Ad5/wCPf/EV0lFGnYDm/wDhNNQ/6Ad5/wCPf/EUf8JpqH/QDvP/AB7/AOIrpKKNOwHN/wDCaah/0A7z
+        /wAe/wDiKP8AhNNQ/wCgHef+Pf8AxFdJRRp2A5v/AITTUP8AoB3n/j3/AMRR/wAJpqH/AEA7z/x7/wCI
+        rpKKNOwHN/8ACaah/wBAO8/8e/8AiKP+E01D/oB3n/j3/wARXSUUadgOb/4TTUP+gHef+Pf/ABFH/Caa
+        h/0A7z/x7/4iukoo07Ac3/wmmof9AO8/8e/+Io/4TTUP+gHef+Pf/EV0lFGnYDm/+E01D/oB3n/j3/xF
+        H/Caah/0A7z/AMe/+IrpKKNOwHN/8JpqH/QDvP8Ax7/4ij/hNNQ/6Ad5/wCPf/EV0lFGnYDm/wDhNNQ/
+        6Ad5/wCPf/EUf8JpqH/QDvP/AB7/AOIrpKKNOwHN/wDCaah/0A7z/wAe/wDiKP8AhNNQ/wCgHef+Pf8A
+        xFdJRRp2A5v/AITTUP8AoB3n/j3/AMRR/wAJpqH/AEA7z/x7/wCIrpKKNOwHN/8ACaah/wBAO8/8e/8A
+        iKP+E01D/oB3n/j3/wARXSUUadgOb/4TTUP+gHef+Pf/ABFH/Caah/0A7z/x7/4iukoo07Ac3/wmmof9
+        AO8/8e/+Io/4TTUP+gHef+Pf/EV0lFGnYDm/+E01D/oB3n/j3/xFH/Caah/0A7z/AMe/+IrpKKNOwHN/
+        8JpqH/QDvP8Ax7/4ij/hNNQ/6Ad5/wCPf/EV0lFGnYDm/wDhNNQ/6Ad5/wCPf/EUf8JpqH/QDvP/AB7/
+        AOIrpKKNOwHN/wDCaah/0A7z/wAe/wDiKP8AhNNQ/wCgHef+Pf8AxFdJRRp2A5v/AITTUP8AoB3n/j3/
+        AMRR/wAJpqH/AEA7z/x7/wCIrpKKNOwHN/8ACaah/wBAO8/8e/8AiKP+E01D/oB3n/j3/wARXSUUadgO
+        b/4TTUP+gHef+Pf/ABFH/Caah/0A7z/x7/4iukoo07Ac3/wmmof9AO8/8e/+Io/4TTUP+gHef+Pf/EV0
+        lFGnYDm/+E01D/oB3n/j3/xFH/Caah/0A7z/AMe/+IrpKKNOwHN/8JpqH/QDvP8Ax7/4ij/hNNQ/6Ad5
+        /wCPf/EV0lFGnYDm/wDhNNQ/6Ad5/wCPf/EUf8JpqH/QDvP/AB7/AOIrpKKNOwHN/wDCaah/0A7z/wAe
+        /wDiKP8AhNNQ/wCgHef+Pf8AxFdJRRp2A5v/AITTUP8AoB3n/j3/AMRR/wAJpqH/AEA7z/x7/wCIrpKK
+        NOwHN/8ACaah/wBAO8/8e/8AiKP+E01D/oB3n/j3/wARXSUUadgOYbx3NbLuudJu4I+7c8fmorX0bxBa
+        67Hut5PmUZZDwy/UVoVzXibwz5B/tDT/ANxdQfOyoOJB349f509GB0tFUPD+rrrukxzrhWb5XA/hYdRR
+        SAyNdH2zx/pcLcpHGZQPf5j/AOyiumrm9T/5KZp//Xuf5SV0lABRRRQAUUUUAFFFFABRRRQAUUUUAFFF
+        FABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFF
+        FABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAHM+A18m+1e1H+q
+        huPlHpyw/wDZRRTvBX/If1z/AK+P/ZnooFHYNT/5KZp//Xuf5SV0lc3qf/JTNP8A+vc/ykrpKBhRRRQA
+        UUUE4FADFbPelJ49K8X+Ov7enw0/Z5v5LHW9d+1axH97T9PjNxcIfR8fJGfZ2U89K8jk/wCC1nwxSQr/
+        AMI/46+osrXn/wAmK9jD8O5nXpqrRoScXs7Oz9O5zyxdGL5ZSVz7Ey3tTs18bn/gtp8MB/zL3jz/AMAr
+        T/5Jph/4LcfC4H/kXvHn/gFZ/wDyVW3+qub/APQPP7mCxdF7SR9kjaaPLr40b/gt98LV/wCZd8ff+Adn
+        /wDJNMP/AAXD+Fg/5l3x9/4A2n/yVU/6r5v/ANA8vuZSxFN7M+0M5pCBXxc3/Bcr4Vr/AMy78QP/AABs
+        /wD5Kr0b4H/8FQPhH8c9Yh0211ybQtUumCwWuswfZTMx6KsmWi3ZwAu/JJ4BrGtw/mVGDnVoySXky1Ui
+        9mfRlFCtuFFeSWFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFF
+        FFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQBzfgr/kP
+        65/18f8Asz0UeCv+Q/rn/Xx/7M9FAo7Bqf8AyUzT/wDr3P8AKSukrm9T/wCSmaf/ANe5/lJXSUDCiiig
+        Bp+UV8w/8FN/2s7z9m/4U2um6DcfZ/E3ippILeZfv2UCAebMvo/zKqn1YkcrX08fnFfmH/wWn1OZ/wBp
+        bQbVm/cw+G4ZUX0Zrq6DH8Qi/lX1XA+XUcdnFKjiFeOra72V0vS+5w5jUlToNw3PkK+vZLy4kmmkeWaZ
+        i7u7FmdickknkknvVV3od6gkkr+r1GMI8sT5GnTCSSoJJMUSSYqF3rmqVox+I9CnTB3qCSSiSSq8klc7
+        qX2O6nTCSSoJZcUSy4qvJJiuSpaW56FOmfqH/wAEbf21NT+Kmk33w28UXkl9qehWou9Iupm3SzWisEeF
+        2PLGMsm3qdrEdEr7yxivxX/4JG6nNaf8FAfA8cchVLxNRilA/jUWFw+P++kU/hX7UbOa/nDjrL6WDzRx
+        oqyklK3m20/yud3QdRRRXyIBRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUU
+        UAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQBzfg
+        r/kP65/18f8Asz0UeCv+Q/rn/Xx/7M9FAo7Bqf8AyUzT/wDr3P8AKSukrm9T/wCSmaf/ANe5/lJXSUDC
+        iiigBp4Svy3/AOC1bY/ap0T/ALFa3/8ASu7r9Sj1r8sf+C2L4/as0Mf9Stbf+ld3X3HhvpntL0f5Hn5m
+        r0LeaPkGSSoJJMUSSYqF3r+mpTPCp0zzv9qj4/w/s2/B6+8SyWv266jdLaztSdonnkOEBPZRgk+ykDk1
+        8meIfht48/an/bR8EeDfi3a6fYxjTJr2e30Jmj+wQyQs4V3Yt84dIweWGWxk5r1j/gq5c28n7NENu17b
+        297JrFvJa27k+ZdsofKooByQGyc4GB1yQD6T+w38CPFWjNqHxI+Jd0154+8V20UPlyRpGdMtVwVi2qAF
+        ZtqlgBxtUdd2f49+kFx9ispc6UKyjHlajFfE5NKzVu123fy7n7j4T8G0c5xUac6cpcsotvTlUU7tO/V2
+        SS63ZwHxD+BHjr9h3Sm8VeB/EeteNvBGm4fVPDusS+fPb24+9LBKAMbQSSAq4AyQ4Bx7N4E8fab8S/BW
+        m69pM3nafq1utzA54OD2I7MDkEdiCK9bvLOPULOW3njWWGdDHIjDKupGCCPQivgD9lT9qTwN+z94L1jw
+        h4o8QHTbrSfEF5DaQm0uJ/3BYbcGONgBu39cV430a/FjH5tGtlmdVebkScZSaT1drX6+R9X42eHuByWt
+        RxuWw5YzbUorZNK6a7XW/Q+tZJMVA77qGm8xd3bqKgkkr+vZSPxCnA+j/wDgkk+f+Chnw9/3tQ/9N13X
+        7bV+If8AwSOfP/BQ74e/XUf/AE23dft4p4r8H8RZXzVf4V+bNKkbMKKKK+DMwooooAKKKKACiiigAooo
+        oAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooo
+        oAKKKKACiiigAooooAKKKKACiiigAooooA5vwV/yH9c/6+P/AGZ6KPBX/If1z/r4/wDZnooFHYNT/wCS
+        maf/ANe5/lJXSVzep/8AJTNP/wCvc/ykrpKBhRRRQA09R9a/K/8A4LcPt/av0P8A7Fa2/wDSu8r9UMbl
+        r8rP+C3rY/ax0P8A7FW2/wDSu8r7fw70zun6S/I5cZG9Jo+O3eoJJKJJKrySV/R9ap7p5dGnqfPPg7w7
+        H+0j/wAFH9QbUl+1aB8I9PiNrbvzG1/LtZZCp4JGWOfWBK+1NF8Nah4keZdOsbq+aFd0iwRGRkXOMkKC
+        cV8a/sp6tH8OP+Cg/wAWPDl9+6uPGNra6xp7vgfaFjHzqvqf3snTtE3pX7Cfse/B+HwX8PodWZfO1HxB
+        HHOT2jjPzRov4Nk+5x2r/Hn6UHE+LwXEVWeJTk7pQjr11f43XyR/Z3hrnGDyThNYmilKpOTTXdq1rvsl
+        Z+rPjmWBoJWR1ZJEJVlYYKkdQRXx/wD8FFPgR4S+Fn7I+pzaLoOm2t9cavayzXxgVrqd3nLMXlI3nJY8
+        ZwAcAAcV+t37T37MF18RfEdnqPh+3tbe7cOl+Xby1YDGwtgEluoOASePSvy6/wCCrk+Phzofw/DJJrfi
+        rxJBZQxoc/LE+ZH9doJQZx/FXy/gjn9TNc9wdLAyacpxc4J7WfXut7XPtOJuIMtzXhfE4qpy88actHZu
+        LaaWvm9FsdrHJm3T/dFRySUhbYoUfwjFQySV/shzWR/E9GnaKufSX/BItt//AAUR+Hf+9qH/AKbbuv2/
+        P+Nfh3/wSGfP/BRX4d/XUf8A023dfuKeTX4j4hO+Zr/CvzZOKVmvQWiiivhTlCiiigAooooAKKKKACii
+        igAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACii
+        igAooooAKKKKACiiigAooooAKKKKACiiigDm/BX/ACH9c/6+P/Znoo8Ff8h/XP8Ar4/9meigUdg1P/kp
+        mn/9e5/lJXSVzep/8lM0/wD69z/KSukoGFFFFADWGTX5Uf8ABcN9v7WWh/8AYq23/pXe1+rJ6V+Yf/Bd
+        f4f3Vj8XPBviry2ax1LSX0vePupLBM8uD6Ei449dp9DX2HAFSMM6p8z3TS+4xxCvCx8JySVBLLiiWXFV
+        5JMV/R0pHNTpnkX7UvwA1L4kzaR4s8I3/wDYvj/wk/naXdZ2rcL1aCQ/3TzjOR8zAjDGvt//AIJ0f8HE
+        nwZ+Ffh6z8OftHab4g+Dfi7w7pkVkss+j3eqabqTRqsbTQNbRSSru2k4KFVDYEj9a+dnfdWfrOmWmvWT
+        W19a215bv96KeISI31BBFfifHfg1kfEmOpZniYL2tJtp2urtW1V/Pz11R9Dh8yxVPDvDQm1F7rp/Vuvy
+        Psr9p3/g4o/ZR0Tws0nwp17xV8XvGGoTyeTouk+HtRs5JWYFlDPd28KrHu6lBI4B+61fm74P8I+LPjV8
+        ddQ+L3xKhj0/WLl5RoOgRS+bF4ft5GJwW6NKQxBOO5J5IVPS9F8NaZ4WgMWmafY6fETkpa26QqfwUCrE
+        kleHwF4BcMcK5nUznB0l7aolsrJJaaLu9+7b1Z6DzXG1cN9TlN8jabXezur90gkkqB33UO+6oJJK/bJS
+        M6dM+lf+CQT5/wCCi/w7+uo/+m27r9ysYP4V+Kv/AARJ+HF54y/bp0vWIY2+x+EdPu7+4k/hXzYWtUXP
+        qTOSB6K3oa/apG3GvxHjypGeZWXSKX4t/qefjtJpeQ6iiivizhCiiigAooooAKKKKACiiigAooooAKKK
+        KACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKK
+        KACiiigAooooAKKKKACiiigDm/BX/If1z/r4/wDZnoo8Ff8AIf1z/r4/9meigUdg1P8A5KZp/wD17n+U
+        ldJXN6n/AMlM0/8A69z/ACkrpKBhRRRQA3Hy8V5v+1D+zbof7VPwhvvCevK0cUxE9pdRjMtlcKDslTPX
+        GSCP4lZhxnNelE4oI3Cqo1qlGpGrSdpRd0/MD8Mf2kf2CPiZ+zPrlymreHb7UtIjc+RrGmwtcWcydmZl
+        BMRP92QKeDjI5rw+ZmViDkY4INf0eOu4crupPIjP8K/lX6VhfE7FQpqNakpS7p2/CzFGKR/N7JJUEklf
+        0kiGM/wr+VH2eP8AuL+Vbf8AETqj/wCXH/k3/wBqbxqJdD+a+SSoHfdX9Kxto/7q/lTfs0X91fyrJ+JV
+        R/8ALn/yb/7U6I4tLofzSSSZr0v4D/safEz9pbWobXwn4T1S6t5GAfUZ4Wt7C3H9553ATpk4BLHHAJr+
+        hD7LGp+6v5U7ywq8fL+Fc2I8Q684ONKkk/N3/CyNP7RaVoo8D/YC/Yb0j9iD4TtpVvMmpeIdWZJ9Z1PZ
+        t+0yqCFRB1EUe5goPJ3MxwWIHvyptWjOBxTh0r8/xGIqV6jq1XeT3Z59SbnLmluFFFFZkhRRRQAUUUUA
+        FFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUA
+        FFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQBzfgr/AJD+uf8AXx/7M9FHgr/kP65/18f+zPRQ
+        KOwan/yUzT/+vc/ykrpK5vU/+Smaf/17n+UldJQMKKKKACiiigAooooAKKKKACiiigAooooAKKKKACii
+        igAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACii
+        igAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA5vwV/wAh/XP+vj/2Z6KPBX/I
+        f1z/AK+P/ZnooFHYNT/5KZp//Xuf5SV0lc3qf/JTNP8A+vc/ykrpKBhRRRQAUUUUAFFFFABRRRQAUUUU
+        AFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUU
+        AFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAHN+Cv+Q/rn
+        /Xx/7M9FHgr/AJD+uf8AXx/7M9FAo7Bqf/JTNP8A+vc/ykrpK5vU/wDkpmn/APXuf5SV0lAwooooAKKK
+        KACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKK
+        KACiiigAooooAKGOBRQRkUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRR
+        QAUUUUAFFFFAHN+Cv+Q/rn/Xx/7M9FHgr/kP65/18f8Asz0UCjsGp/8AJTNP/wCvc/ykrpK5vU/+Smaf
+        /wBe5/lJXSUDCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiii
+        gAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiii
+        gAooooAKKKKACiiigAooooAKKKKAOb8Ff8h/XP8Ar4/9meijwV/yH9c/6+P/AGZ6KBR2E8Rv/Z3jfS7p
+        /wDVsphz6Hkf+zZ/CukyazvE2iLr2mtDnbIp3Rt/das3QfF32ZvsWp7re4j43t91x6k/16VXQZ0lFRxX
+        KTpujdXX1U7qkzUgFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AF
+        FGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGa
+        M0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFFGaM0AFNeTYpY
+        kBRySewplxdx2qbpJI417lmxXNa54hk8SyHT9MVpA3Es38Kj6/5+hppAS/D8m6n1K8xhLq4O38CT/wCz
+        UVt6Rpcej2EVvHkrGOv940UgLWKq6notrrMW24hWQDpnqv0oooAx5Phlp7niS7Vf7ocED8wab/wq/T/+
+        e15/32v/AMTRRTuwsH/Cr9P/AOe15/32v/xNH/Cr9P8A+e15/wB9r/8AE0UUXYB/wq/T/wDntef99r/8
+        TR/wq/T/APntef8Afa//ABNFFF2Af8Kv0/8A57Xn/fa//E0f8Kv0/wD57Xn/AH2v/wATRRRdgH/Cr9P/
+        AOe15/32v/xNH/Cr9P8A+e15/wB9r/8AE0UUXYB/wq/T/wDntef99r/8TR/wq/T/APntef8Afa//ABNF
+        FF2Af8Kv0/8A57Xn/fa//E0f8Kv0/wD57Xn/AH2v/wATRRRdgH/Cr9P/AOe15/32v/xNH/Cr9P8A+e15
+        /wB9r/8AE0UUXYB/wq/T/wDntef99r/8TR/wq/T/APntef8Afa//ABNFFF2Af8Kv0/8A57Xn/fa//E0f
+        8Kv0/wD57Xn/AH2v/wATRRRdgH/Cr9P/AOe15/32v/xNH/Cr9P8A+e15/wB9r/8AE0UUXYB/wq/T/wDn
+        tef99r/8TR/wq/T/APntef8Afa//ABNFFF2Af8Kv0/8A57Xn/fa//E0f8Kv0/wD57Xn/AH2v/wATRRRd
+        gH/Cr9P/AOe15/32v/xNH/Cr9P8A+e15/wB9r/8AE0UUXYB/wq/T/wDntef99r/8TR/wq/T/APntef8A
+        fa//ABNFFF2Af8Kv0/8A57Xn/fa//E0f8Kv0/wD57Xn/AH2v/wATRRRdgH/Cr9P/AOe15/32v/xNH/Cr
+        9P8A+e15/wB9r/8AE0UUXYB/wq/T/wDntef99r/8TR/wq/T/APntef8Afa//ABNFFF2Af8Kv0/8A57Xn
+        /fa//E0f8Kv0/wD57Xn/AH2v/wATRRRdgH/Cr9P/AOe15/32v/xNH/Cr9P8A+e15/wB9r/8AE0UUXYB/
+        wq/T/wDntef99r/8TR/wq/T/APntef8Afa//ABNFFF2Af8Kv0/8A57Xn/fa//E0f8Kv0/wD57Xn/AH2v
+        /wATRRRdgH/Cr9P/AOe15/32v/xNH/Cr9P8A+e15/wB9r/8AE0UUXYB/wq/T/wDntef99r/8TR/wq/T/
+        APntef8Afa//ABNFFF2Af8Kv0/8A57Xn/fa//E0f8Kv0/wD57Xn/AH2v/wATRRRdgH/Cr9P/AOe15/32
+        v/xNH/Cr9P8A+e15/wB9r/8AE0UUXYB/wq/T/wDntef99r/8TR/wq/T/APntef8Afa//ABNFFF2Af8Kv
+        0/8A57Xn/fa//E0f8Kv0/wD57Xn/AH2v/wATRRRdgH/Cr9P/AOe15/32v/xNH/Cr9P8A+e15/wB9r/8A
+        E0UUXYB/wq/T/wDntef99r/8TR/wq/T/APntef8Afa//ABNFFF2Af8Kv0/8A57Xn/fa//E0f8Kv0/wD5
+        7Xn/AH2v/wATRRRdgH/Cr9P/AOe15/32v/xNH/Cr9P8A+e15/wB9r/8AE0UUXYDofhnpsR+ZriRf7rOM
+        foBW3ZabBpsAjt41iQdlFFFICfFFFFAH/9k=
+</value>
+  </data>
   <data name="pBox_Heizkessel.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
   </data>
@@ -2747,13 +4776,13 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_Heizkessel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>435, 197</value>
+    <value>435, 171</value>
   </data>
   <data name="pBox_Heizkessel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="pBox_Heizkessel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>404, 185</value>
+    <value>404, 156</value>
   </data>
   <data name="pBox_Heizkessel.TabIndex" type="System.Int32, mscorlib">
     <value>57</value>
@@ -2777,7 +4806,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_BHKW.Location" type="System.Drawing.Point, System.Drawing">
-    <value>23, 390</value>
+    <value>23, 364</value>
   </data>
   <data name="pBox_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -2813,7 +4842,7 @@
     <value>4, 3, 4, 3</value>
   </data>
   <data name="pictureBox3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>933, 99</value>
+    <value>828, 77</value>
   </data>
   <data name="pictureBox3.TabIndex" type="System.Int32, mscorlib">
     <value>53</value>
@@ -2837,7 +4866,7 @@
     <value>NoControl</value>
   </data>
   <data name="pBox_WP.Location" type="System.Drawing.Point, System.Drawing">
-    <value>23, 197</value>
+    <value>23, 171</value>
   </data>
   <data name="pBox_WP.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -2859,882 +4888,6 @@
   </data>
   <data name="&gt;&gt;pBox_WP.ZOrder" xml:space="preserve">
     <value>29</value>
-  </data>
-  <data name="tabPage4.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 12pt, style=Bold</value>
-  </data>
-  <data name="tabPage4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
-  </data>
-  <data name="tabPage4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="tabPage4.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="tabPage4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1342, 621</value>
-  </data>
-  <data name="tabPage4.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="tabPage4.Text" xml:space="preserve">
-    <value>Energieerzeuger</value>
-  </data>
-  <data name="&gt;&gt;tabPage4.Name" xml:space="preserve">
-    <value>tabPage4</value>
-  </data>
-  <data name="&gt;&gt;tabPage4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tabPage4.Parent" xml:space="preserve">
-    <value>tabControl_Wizard</value>
-  </data>
-  <data name="&gt;&gt;tabPage4.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="label70.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label70.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Microsoft Sans Serif, 15pt, style=Bold</value>
-  </data>
-  <data name="label70.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label70.Location" type="System.Drawing.Point, System.Drawing">
-    <value>63, 127</value>
-  </data>
-  <data name="label70.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label70.Size" type="System.Drawing.Size, System.Drawing">
-    <value>259, 25</value>
-  </data>
-  <data name="label70.TabIndex" type="System.Int32, mscorlib">
-    <value>105</value>
-  </data>
-  <data name="label70.Text" xml:space="preserve">
-    <value>Projektzusammenfassung</value>
-  </data>
-  <data name="&gt;&gt;label70.Name" xml:space="preserve">
-    <value>label70</value>
-  </data>
-  <data name="&gt;&gt;label70.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label70.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label70.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="label69.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label69.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 13pt, style=Bold</value>
-  </data>
-  <data name="label69.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label69.Location" type="System.Drawing.Point, System.Drawing">
-    <value>63, 365</value>
-  </data>
-  <data name="label69.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label69.Size" type="System.Drawing.Size, System.Drawing">
-    <value>239, 25</value>
-  </data>
-  <data name="label69.TabIndex" type="System.Int32, mscorlib">
-    <value>104</value>
-  </data>
-  <data name="label69.Text" xml:space="preserve">
-    <value>Ausgewählte Technologien:</value>
-  </data>
-  <data name="&gt;&gt;label69.Name" xml:space="preserve">
-    <value>label69</value>
-  </data>
-  <data name="&gt;&gt;label69.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label69.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label69.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="label68.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label68.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 13pt, style=Bold</value>
-  </data>
-  <data name="label68.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label68.Location" type="System.Drawing.Point, System.Drawing">
-    <value>63, 306</value>
-  </data>
-  <data name="label68.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label68.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 25</value>
-  </data>
-  <data name="label68.TabIndex" type="System.Int32, mscorlib">
-    <value>103</value>
-  </data>
-  <data name="label68.Text" xml:space="preserve">
-    <value>Strombedarf:</value>
-  </data>
-  <data name="&gt;&gt;label68.Name" xml:space="preserve">
-    <value>label68</value>
-  </data>
-  <data name="&gt;&gt;label68.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label68.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label68.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="label67.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label67.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 13pt, style=Bold</value>
-  </data>
-  <data name="label67.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label67.Location" type="System.Drawing.Point, System.Drawing">
-    <value>63, 255</value>
-  </data>
-  <data name="label67.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label67.Size" type="System.Drawing.Size, System.Drawing">
-    <value>129, 25</value>
-  </data>
-  <data name="label67.TabIndex" type="System.Int32, mscorlib">
-    <value>102</value>
-  </data>
-  <data name="label67.Text" xml:space="preserve">
-    <value>Wärmebedarf:</value>
-  </data>
-  <data name="&gt;&gt;label67.Name" xml:space="preserve">
-    <value>label67</value>
-  </data>
-  <data name="&gt;&gt;label67.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label67.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label67.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="label66.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label66.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 13pt, style=Bold</value>
-  </data>
-  <data name="label66.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label66.Location" type="System.Drawing.Point, System.Drawing">
-    <value>63, 201</value>
-  </data>
-  <data name="label66.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label66.Size" type="System.Drawing.Size, System.Drawing">
-    <value>122, 25</value>
-  </data>
-  <data name="label66.TabIndex" type="System.Int32, mscorlib">
-    <value>101</value>
-  </data>
-  <data name="label66.Text" xml:space="preserve">
-    <value>Projektname:</value>
-  </data>
-  <data name="&gt;&gt;label66.Name" xml:space="preserve">
-    <value>label66</value>
-  </data>
-  <data name="&gt;&gt;label66.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label66.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label66.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="label64.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label64.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label64.Location" type="System.Drawing.Point, System.Drawing">
-    <value>970, 535</value>
-  </data>
-  <data name="label64.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label64.Size" type="System.Drawing.Size, System.Drawing">
-    <value>259, 21</value>
-  </data>
-  <data name="label64.TabIndex" type="System.Int32, mscorlib">
-    <value>100</value>
-  </data>
-  <data name="label64.Text" xml:space="preserve">
-    <value>Automatische Systemoptimierung</value>
-  </data>
-  <data name="&gt;&gt;label64.Name" xml:space="preserve">
-    <value>label64</value>
-  </data>
-  <data name="&gt;&gt;label64.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label64.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label64.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="label65.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label65.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label65.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1080, 478</value>
-  </data>
-  <data name="label65.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label65.Size" type="System.Drawing.Size, System.Drawing">
-    <value>103, 21</value>
-  </data>
-  <data name="label65.TabIndex" type="System.Int32, mscorlib">
-    <value>99</value>
-  </data>
-  <data name="label65.Text" xml:space="preserve">
-    <value>Optimierung</value>
-  </data>
-  <data name="&gt;&gt;label65.Name" xml:space="preserve">
-    <value>label65</value>
-  </data>
-  <data name="&gt;&gt;label65.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label65.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label65.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="label62.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label62.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label62.Location" type="System.Drawing.Point, System.Drawing">
-    <value>519, 535</value>
-  </data>
-  <data name="label62.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label62.Size" type="System.Drawing.Size, System.Drawing">
-    <value>303, 21</value>
-  </data>
-  <data name="label62.TabIndex" type="System.Int32, mscorlib">
-    <value>98</value>
-  </data>
-  <data name="label62.Text" xml:space="preserve">
-    <value>Präzise Jahressimulation mit allen Details</value>
-  </data>
-  <data name="&gt;&gt;label62.Name" xml:space="preserve">
-    <value>label62</value>
-  </data>
-  <data name="&gt;&gt;label62.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label62.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label62.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="label63.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label63.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label63.Location" type="System.Drawing.Point, System.Drawing">
-    <value>608, 478</value>
-  </data>
-  <data name="label63.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label63.Size" type="System.Drawing.Size, System.Drawing">
-    <value>171, 21</value>
-  </data>
-  <data name="label63.TabIndex" type="System.Int32, mscorlib">
-    <value>97</value>
-  </data>
-  <data name="label63.Text" xml:space="preserve">
-    <value>Detaillierte Simulation</value>
-  </data>
-  <data name="&gt;&gt;label63.Name" xml:space="preserve">
-    <value>label63</value>
-  </data>
-  <data name="&gt;&gt;label63.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label63.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label63.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="btn_SimKonfig.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="btn_SimKonfig.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1036, 365</value>
-  </data>
-  <data name="btn_SimKonfig.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="btn_SimKonfig.Size" type="System.Drawing.Size, System.Drawing">
-    <value>267, 49</value>
-  </data>
-  <data name="btn_SimKonfig.TabIndex" type="System.Int32, mscorlib">
-    <value>65</value>
-  </data>
-  <data name="btn_SimKonfig.Text" xml:space="preserve">
-    <value>Simulation Konfiguration...</value>
-  </data>
-  <data name="&gt;&gt;btn_SimKonfig.Name" xml:space="preserve">
-    <value>btn_SimKonfig</value>
-  </data>
-  <data name="&gt;&gt;btn_SimKonfig.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btn_SimKonfig.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;btn_SimKonfig.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="label60.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label60.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label60.Location" type="System.Drawing.Point, System.Drawing">
-    <value>73, 535</value>
-  </data>
-  <data name="label60.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label60.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 21</value>
-  </data>
-  <data name="label60.TabIndex" type="System.Int32, mscorlib">
-    <value>96</value>
-  </data>
-  <data name="label60.Text" xml:space="preserve">
-    <value>Schnelle Übersicht in wenigen Sekunden</value>
-  </data>
-  <data name="&gt;&gt;label60.Name" xml:space="preserve">
-    <value>label60</value>
-  </data>
-  <data name="&gt;&gt;label60.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label60.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label60.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="label61.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label61.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label61.Location" type="System.Drawing.Point, System.Drawing">
-    <value>165, 478</value>
-  </data>
-  <data name="label61.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label61.Size" type="System.Drawing.Size, System.Drawing">
-    <value>137, 21</value>
-  </data>
-  <data name="label61.TabIndex" type="System.Int32, mscorlib">
-    <value>95</value>
-  </data>
-  <data name="label61.Text" xml:space="preserve">
-    <value>Schnellsimulation</value>
-  </data>
-  <data name="&gt;&gt;label61.Name" xml:space="preserve">
-    <value>label61</value>
-  </data>
-  <data name="&gt;&gt;label61.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label61.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label61.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="label30.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label30.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 12pt, style=Bold</value>
-  </data>
-  <data name="label30.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label30.Location" type="System.Drawing.Point, System.Drawing">
-    <value>24, 46</value>
-  </data>
-  <data name="label30.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label30.Size" type="System.Drawing.Size, System.Drawing">
-    <value>393, 21</value>
-  </data>
-  <data name="label30.TabIndex" type="System.Int32, mscorlib">
-    <value>73</value>
-  </data>
-  <data name="label30.Text" xml:space="preserve">
-    <value>Berechnen Sie die Energieflüsse und Systemleistung.</value>
-  </data>
-  <data name="&gt;&gt;label30.Name" xml:space="preserve">
-    <value>label30</value>
-  </data>
-  <data name="&gt;&gt;label30.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label30.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label30.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="label31.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label31.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 16pt, style=Bold</value>
-  </data>
-  <data name="label31.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label31.Location" type="System.Drawing.Point, System.Drawing">
-    <value>22, 5</value>
-  </data>
-  <data name="label31.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label31.Size" type="System.Drawing.Size, System.Drawing">
-    <value>250, 30</value>
-  </data>
-  <data name="label31.TabIndex" type="System.Int32, mscorlib">
-    <value>72</value>
-  </data>
-  <data name="label31.Text" xml:space="preserve">
-    <value>Simulation durchführen</value>
-  </data>
-  <data name="&gt;&gt;label31.Name" xml:space="preserve">
-    <value>label31</value>
-  </data>
-  <data name="&gt;&gt;label31.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label31.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label31.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="label_Komponenten.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label_Komponenten.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12.75pt, style=Bold</value>
-  </data>
-  <data name="label_Komponenten.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label_Komponenten.Location" type="System.Drawing.Point, System.Drawing">
-    <value>892, 361</value>
-  </data>
-  <data name="label_Komponenten.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label_Komponenten.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 23</value>
-  </data>
-  <data name="label_Komponenten.TabIndex" type="System.Int32, mscorlib">
-    <value>61</value>
-  </data>
-  <data name="label_Komponenten.Text" xml:space="preserve">
-    <value>Projekt</value>
-  </data>
-  <data name="label_Komponenten.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
-  <data name="&gt;&gt;label_Komponenten.Name" xml:space="preserve">
-    <value>label_Komponenten</value>
-  </data>
-  <data name="&gt;&gt;label_Komponenten.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_Komponenten.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label_Komponenten.ZOrder" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="label_Strom.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label_Strom.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12.75pt, style=Bold</value>
-  </data>
-  <data name="label_Strom.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label_Strom.Location" type="System.Drawing.Point, System.Drawing">
-    <value>892, 318</value>
-  </data>
-  <data name="label_Strom.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label_Strom.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 23</value>
-  </data>
-  <data name="label_Strom.TabIndex" type="System.Int32, mscorlib">
-    <value>60</value>
-  </data>
-  <data name="label_Strom.Text" xml:space="preserve">
-    <value>Projekt</value>
-  </data>
-  <data name="label_Strom.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
-  <data name="&gt;&gt;label_Strom.Name" xml:space="preserve">
-    <value>label_Strom</value>
-  </data>
-  <data name="&gt;&gt;label_Strom.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_Strom.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label_Strom.ZOrder" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <data name="label_WBedarf.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label_WBedarf.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12.75pt, style=Bold</value>
-  </data>
-  <data name="label_WBedarf.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label_WBedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>892, 257</value>
-  </data>
-  <data name="label_WBedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label_WBedarf.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 23</value>
-  </data>
-  <data name="label_WBedarf.TabIndex" type="System.Int32, mscorlib">
-    <value>59</value>
-  </data>
-  <data name="label_WBedarf.Text" xml:space="preserve">
-    <value>Projekt</value>
-  </data>
-  <data name="label_WBedarf.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
-  <data name="&gt;&gt;label_WBedarf.Name" xml:space="preserve">
-    <value>label_WBedarf</value>
-  </data>
-  <data name="&gt;&gt;label_WBedarf.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_WBedarf.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label_WBedarf.ZOrder" xml:space="preserve">
-    <value>16</value>
-  </data>
-  <data name="label_Name.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label_Name.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12.75pt, style=Bold</value>
-  </data>
-  <data name="label_Name.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label_Name.Location" type="System.Drawing.Point, System.Drawing">
-    <value>892, 201</value>
-  </data>
-  <data name="label_Name.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label_Name.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 23</value>
-  </data>
-  <data name="label_Name.TabIndex" type="System.Int32, mscorlib">
-    <value>58</value>
-  </data>
-  <data name="label_Name.Text" xml:space="preserve">
-    <value>Projekt</value>
-  </data>
-  <data name="label_Name.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
-  <data name="&gt;&gt;label_Name.Name" xml:space="preserve">
-    <value>label_Name</value>
-  </data>
-  <data name="&gt;&gt;label_Name.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_Name.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;label_Name.ZOrder" xml:space="preserve">
-    <value>17</value>
-  </data>
-  <data name="Label9.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="Label9.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, -22</value>
-  </data>
-  <data name="Label9.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="Label9.Size" type="System.Drawing.Size, System.Drawing">
-    <value>117, 27</value>
-  </data>
-  <data name="Label9.TabIndex" type="System.Int32, mscorlib">
-    <value>66</value>
-  </data>
-  <data name="&gt;&gt;Label9.Name" xml:space="preserve">
-    <value>Label9</value>
-  </data>
-  <data name="&gt;&gt;Label9.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label9.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;Label9.ZOrder" xml:space="preserve">
-    <value>18</value>
-  </data>
-  <data name="Label10.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="Label10.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, -22</value>
-  </data>
-  <data name="Label10.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="Label10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>117, 27</value>
-  </data>
-  <data name="Label10.TabIndex" type="System.Int32, mscorlib">
-    <value>67</value>
-  </data>
-  <data name="&gt;&gt;Label10.Name" xml:space="preserve">
-    <value>Label10</value>
-  </data>
-  <data name="&gt;&gt;Label10.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label10.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;Label10.ZOrder" xml:space="preserve">
-    <value>19</value>
-  </data>
-  <data name="pBox_Optimierung.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
-    <value>Stretch</value>
-  </data>
-  <data name="pBox_Optimierung.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="pBox_Optimierung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>922, 428</value>
-  </data>
-  <data name="pBox_Optimierung.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="pBox_Optimierung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>404, 185</value>
-  </data>
-  <data name="pBox_Optimierung.TabIndex" type="System.Int32, mscorlib">
-    <value>64</value>
-  </data>
-  <data name="&gt;&gt;pBox_Optimierung.Name" xml:space="preserve">
-    <value>pBox_Optimierung</value>
-  </data>
-  <data name="&gt;&gt;pBox_Optimierung.Type" xml:space="preserve">
-    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;pBox_Optimierung.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;pBox_Optimierung.ZOrder" xml:space="preserve">
-    <value>20</value>
-  </data>
-  <data name="pBox_DetailSim.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
-    <value>Stretch</value>
-  </data>
-  <data name="pBox_DetailSim.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="pBox_DetailSim.Location" type="System.Drawing.Point, System.Drawing">
-    <value>475, 428</value>
-  </data>
-  <data name="pBox_DetailSim.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="pBox_DetailSim.Size" type="System.Drawing.Size, System.Drawing">
-    <value>404, 185</value>
-  </data>
-  <data name="pBox_DetailSim.TabIndex" type="System.Int32, mscorlib">
-    <value>63</value>
-  </data>
-  <data name="&gt;&gt;pBox_DetailSim.Name" xml:space="preserve">
-    <value>pBox_DetailSim</value>
-  </data>
-  <data name="&gt;&gt;pBox_DetailSim.Type" xml:space="preserve">
-    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;pBox_DetailSim.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;pBox_DetailSim.ZOrder" xml:space="preserve">
-    <value>21</value>
-  </data>
-  <data name="pBoxSchnellSim.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
-    <value>Stretch</value>
-  </data>
-  <data name="pBoxSchnellSim.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="pBoxSchnellSim.Location" type="System.Drawing.Point, System.Drawing">
-    <value>28, 428</value>
-  </data>
-  <data name="pBoxSchnellSim.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="pBoxSchnellSim.Size" type="System.Drawing.Size, System.Drawing">
-    <value>404, 185</value>
-  </data>
-  <data name="pBoxSchnellSim.TabIndex" type="System.Int32, mscorlib">
-    <value>62</value>
-  </data>
-  <data name="&gt;&gt;pBoxSchnellSim.Name" xml:space="preserve">
-    <value>pBoxSchnellSim</value>
-  </data>
-  <data name="&gt;&gt;pBoxSchnellSim.Type" xml:space="preserve">
-    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;pBoxSchnellSim.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;pBoxSchnellSim.ZOrder" xml:space="preserve">
-    <value>22</value>
-  </data>
-  <data name="pictureBox_Zusammenfassung.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
-    <value>Stretch</value>
-  </data>
-  <data name="pictureBox_Zusammenfassung.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="pictureBox_Zusammenfassung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>18, 85</value>
-  </data>
-  <data name="pictureBox_Zusammenfassung.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="pictureBox_Zusammenfassung.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1010, 329</value>
-  </data>
-  <data name="pictureBox_Zusammenfassung.SizeMode" type="System.Windows.Forms.PictureBoxSizeMode, System.Windows.Forms">
-    <value>Zoom</value>
-  </data>
-  <data name="pictureBox_Zusammenfassung.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;pictureBox_Zusammenfassung.Name" xml:space="preserve">
-    <value>pictureBox_Zusammenfassung</value>
-  </data>
-  <data name="&gt;&gt;pictureBox_Zusammenfassung.Type" xml:space="preserve">
-    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;pictureBox_Zusammenfassung.Parent" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;pictureBox_Zusammenfassung.ZOrder" xml:space="preserve">
-    <value>23</value>
-  </data>
-  <data name="tabPage5.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 12pt, style=Bold</value>
-  </data>
-  <data name="tabPage5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
-  </data>
-  <data name="tabPage5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="tabPage5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1342, 621</value>
-  </data>
-  <data name="tabPage5.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="tabPage5.Text" xml:space="preserve">
-    <value>Simulation</value>
-  </data>
-  <data name="&gt;&gt;tabPage5.Name" xml:space="preserve">
-    <value>tabPage5</value>
-  </data>
-  <data name="&gt;&gt;tabPage5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tabPage5.Parent" xml:space="preserve">
-    <value>tabControl_Wizard</value>
-  </data>
-  <data name="&gt;&gt;tabPage5.ZOrder" xml:space="preserve">
-    <value>4</value>
   </data>
   <data name="btn_Kosten.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -3765,63 +4918,6 @@
   </data>
   <data name="&gt;&gt;btn_Kosten.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="tabPage6.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 12pt, style=Bold</value>
-  </data>
-  <data name="tabPage6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
-  </data>
-  <data name="tabPage6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="tabPage6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1342, 621</value>
-  </data>
-  <data name="tabPage6.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
-  <data name="tabPage6.Text" xml:space="preserve">
-    <value>Berichte &amp;&amp; Kosten</value>
-  </data>
-  <data name="&gt;&gt;tabPage6.Name" xml:space="preserve">
-    <value>tabPage6</value>
-  </data>
-  <data name="&gt;&gt;tabPage6.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tabPage6.Parent" xml:space="preserve">
-    <value>tabControl_Wizard</value>
-  </data>
-  <data name="&gt;&gt;tabPage6.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="tabControl_Wizard.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 12pt, style=Bold</value>
-  </data>
-  <data name="tabControl_Wizard.Location" type="System.Drawing.Point, System.Drawing">
-    <value>23, 177</value>
-  </data>
-  <data name="tabControl_Wizard.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="tabControl_Wizard.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1350, 655</value>
-  </data>
-  <data name="tabControl_Wizard.TabIndex" type="System.Int32, mscorlib">
-    <value>44</value>
-  </data>
-  <data name="&gt;&gt;tabControl_Wizard.Name" xml:space="preserve">
-    <value>tabControl_Wizard</value>
-  </data>
-  <data name="&gt;&gt;tabControl_Wizard.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabControl, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tabControl_Wizard.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;tabControl_Wizard.ZOrder" xml:space="preserve">
-    <value>10</value>
   </data>
   <data name="label21.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -3986,13 +5082,13 @@
     <value>NoControl</value>
   </data>
   <data name="btn_Weiter.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1222, 842</value>
+    <value>1160, 777</value>
   </data>
   <data name="btn_Weiter.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="btn_Weiter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>132, 47</value>
+    <value>132, 35</value>
   </data>
   <data name="btn_Weiter.TabIndex" type="System.Int32, mscorlib">
     <value>107</value>
@@ -4019,13 +5115,13 @@
     <value>NoControl</value>
   </data>
   <data name="btn_Zurueck.Location" type="System.Drawing.Point, System.Drawing">
-    <value>46, 842</value>
+    <value>1020, 777</value>
   </data>
   <data name="btn_Zurueck.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="btn_Zurueck.Size" type="System.Drawing.Size, System.Drawing">
-    <value>132, 47</value>
+    <value>132, 35</value>
   </data>
   <data name="btn_Zurueck.TabIndex" type="System.Int32, mscorlib">
     <value>108</value>
@@ -4120,6 +5216,66 @@
   <data name="&gt;&gt;label_ProjektStatus.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
+  <data name="&gt;&gt;label12.Name" xml:space="preserve">
+    <value>label12</value>
+  </data>
+  <data name="&gt;&gt;label12.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label12.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;pictureBox4.Name" xml:space="preserve">
+    <value>pictureBox4</value>
+  </data>
+  <data name="&gt;&gt;pictureBox4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pictureBox4.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;pictureBox4.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Klima.Name" xml:space="preserve">
+    <value>comboBox_Klima</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Klima.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Klima.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Klima.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>92, 118</value>
+  </data>
+  <data name="panel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>734, 46</value>
+  </data>
+  <data name="panel1.TabIndex" type="System.Int32, mscorlib">
+    <value>112</value>
+  </data>
+  <data name="&gt;&gt;panel1.Name" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;panel1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;panel1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="label12.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -4190,7 +5346,7 @@
     <value>Segoe UI, 12pt</value>
   </data>
   <data name="comboBox_Klima.Location" type="System.Drawing.Point, System.Drawing">
-    <value>292, 8</value>
+    <value>359, 7</value>
   </data>
   <data name="comboBox_Klima.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -4212,30 +5368,6 @@
   </data>
   <data name="&gt;&gt;comboBox_Klima.ZOrder" xml:space="preserve">
     <value>2</value>
-  </data>
-  <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>158, 118</value>
-  </data>
-  <data name="panel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>668, 46</value>
-  </data>
-  <data name="panel1.TabIndex" type="System.Int32, mscorlib">
-    <value>112</value>
-  </data>
-  <data name="&gt;&gt;panel1.Name" xml:space="preserve">
-    <value>panel1</value>
-  </data>
-  <data name="&gt;&gt;panel1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;panel1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;panel1.ZOrder" xml:space="preserve">
-    <value>0</value>
   </data>
   <data name="btn_Help.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Zoom</value>
@@ -4283,7 +5415,7 @@
     <value>4, 3, 4, 3</value>
   </data>
   <data name="pictureBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1426, 93</value>
+    <value>1273, 93</value>
   </data>
   <data name="pictureBox2.TabIndex" type="System.Int32, mscorlib">
     <value>47</value>
@@ -4328,7 +5460,7 @@
     <value>7, 15</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>1890, 905</value>
+    <value>1438, 831</value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>

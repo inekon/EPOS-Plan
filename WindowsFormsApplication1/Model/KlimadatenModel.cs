@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace WindowsFormsApplication1
+﻿namespace WindowsFormsApplication1
 {
     public class KlimadatenModel
     {
@@ -20,8 +15,6 @@ namespace WindowsFormsApplication1
         public double m_TagTyp_NW;
         public double m_Globalstrahlung;
 
-        public int rows;
-              
         public KlimadatenModel()
         {
 	        m_ID_Klimadaten = 0;
@@ -35,7 +28,6 @@ namespace WindowsFormsApplication1
             m_TagTyp_W = 0;
             m_TagTyp_NW = 0;
             m_Globalstrahlung = 0;  
-            rows = 0;
         }
     }
 
@@ -54,8 +46,6 @@ namespace WindowsFormsApplication1
         public double Diffusstrahlung;
         public double Sonnenwinkel;
 
-        public int rows;
-
         public SolardatenModel()
         {
             m_ID = 0;
@@ -69,7 +59,6 @@ namespace WindowsFormsApplication1
             Direktstrahlung = 0;
             Diffusstrahlung = 0;
             Sonnenwinkel = 0;
-            rows = 0;
         }
     }
 }

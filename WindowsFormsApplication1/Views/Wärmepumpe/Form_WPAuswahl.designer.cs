@@ -29,99 +29,98 @@ namespace WindowsFormsApplication1
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_WPAuswahl));
-            this.listView_WP = new System.Windows.Forms.ListView();
-            this.label7 = new System.Windows.Forms.Label();
-            this.textBox_WP = new System.Windows.Forms.TextBox();
-            this.btn_OK = new System.Windows.Forms.Button();
-            this.btn_Abbrechen = new System.Windows.Forms.Button();
-            this.label_Type = new System.Windows.Forms.Label();
-            this.btn_Neu = new System.Windows.Forms.Button();
-            this.btn_Löschen = new System.Windows.Forms.Button();
-            this.btn_Uebernehmen = new System.Windows.Forms.Button();
-            this.SuspendLayout();
+            listView_WP = new System.Windows.Forms.ListView();
+            label7 = new System.Windows.Forms.Label();
+            textBox_WP = new System.Windows.Forms.TextBox();
+            btn_OK = new System.Windows.Forms.Button();
+            btn_Abbrechen = new System.Windows.Forms.Button();
+            label_Type = new System.Windows.Forms.Label();
+            btn_Neu = new System.Windows.Forms.Button();
+            btn_Löschen = new System.Windows.Forms.Button();
+            btn_Uebernehmen = new System.Windows.Forms.Button();
+            SuspendLayout();
             // 
             // listView_WP
             // 
-            resources.ApplyResources(this.listView_WP, "listView_WP");
-            this.listView_WP.FullRowSelect = true;
-            this.listView_WP.GridLines = true;
-            this.listView_WP.HideSelection = false;
-            this.listView_WP.MultiSelect = false;
-            this.listView_WP.Name = "listView_WP";
-            this.listView_WP.UseCompatibleStateImageBehavior = false;
-            this.listView_WP.SelectedIndexChanged += new System.EventHandler(this.listView_WP_SelectedIndexChanged);
-            this.listView_WP.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listView_WP_MouseDoubleClick);
+            resources.ApplyResources(listView_WP, "listView_WP");
+            listView_WP.FullRowSelect = true;
+            listView_WP.GridLines = true;
+            listView_WP.MultiSelect = false;
+            listView_WP.Name = "listView_WP";
+            listView_WP.UseCompatibleStateImageBehavior = false;
+            listView_WP.SelectedIndexChanged += listView_WP_SelectedIndexChanged;
+            listView_WP.MouseDoubleClick += listView_WP_MouseDoubleClick;
             // 
             // label7
             // 
-            resources.ApplyResources(this.label7, "label7");
-            this.label7.Name = "label7";
+            resources.ApplyResources(label7, "label7");
+            label7.Name = "label7";
             // 
             // textBox_WP
             // 
-            resources.ApplyResources(this.textBox_WP, "textBox_WP");
-            this.textBox_WP.Name = "textBox_WP";
+            resources.ApplyResources(textBox_WP, "textBox_WP");
+            textBox_WP.Name = "textBox_WP";
             // 
             // btn_OK
             // 
-            resources.ApplyResources(this.btn_OK, "btn_OK");
-            this.btn_OK.Name = "btn_OK";
-            this.btn_OK.UseVisualStyleBackColor = true;
-            this.btn_OK.Click += new System.EventHandler(this.btn_OK_Click);
+            resources.ApplyResources(btn_OK, "btn_OK");
+            btn_OK.Name = "btn_OK";
+            btn_OK.UseVisualStyleBackColor = true;
+            btn_OK.Click += btn_OK_Click;
             // 
             // btn_Abbrechen
             // 
-            resources.ApplyResources(this.btn_Abbrechen, "btn_Abbrechen");
-            this.btn_Abbrechen.Name = "btn_Abbrechen";
-            this.btn_Abbrechen.UseVisualStyleBackColor = true;
-            this.btn_Abbrechen.Click += new System.EventHandler(this.btn_Abbrechen_Click);
+            resources.ApplyResources(btn_Abbrechen, "btn_Abbrechen");
+            btn_Abbrechen.Name = "btn_Abbrechen";
+            btn_Abbrechen.UseVisualStyleBackColor = true;
+            btn_Abbrechen.Click += btn_Abbrechen_Click;
             // 
             // label_Type
             // 
-            resources.ApplyResources(this.label_Type, "label_Type");
-            this.label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.label_Type.Name = "label_Type";
+            resources.ApplyResources(label_Type, "label_Type");
+            label_Type.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            label_Type.Name = "label_Type";
             // 
             // btn_Neu
             // 
-            resources.ApplyResources(this.btn_Neu, "btn_Neu");
-            this.btn_Neu.Name = "btn_Neu";
-            this.btn_Neu.UseVisualStyleBackColor = true;
-            this.btn_Neu.Click += new System.EventHandler(this.btn_Neu_Click);
+            resources.ApplyResources(btn_Neu, "btn_Neu");
+            btn_Neu.Name = "btn_Neu";
+            btn_Neu.UseVisualStyleBackColor = true;
+            btn_Neu.Click += btn_Neu_Click;
             // 
             // btn_Löschen
             // 
-            resources.ApplyResources(this.btn_Löschen, "btn_Löschen");
-            this.btn_Löschen.Name = "btn_Löschen";
-            this.btn_Löschen.UseVisualStyleBackColor = true;
-            this.btn_Löschen.Click += new System.EventHandler(this.btn_Löschen_Click);
+            resources.ApplyResources(btn_Löschen, "btn_Löschen");
+            btn_Löschen.Name = "btn_Löschen";
+            btn_Löschen.UseVisualStyleBackColor = true;
+            btn_Löschen.Click += btn_Löschen_Click;
             // 
             // btn_Uebernehmen
             // 
-            resources.ApplyResources(this.btn_Uebernehmen, "btn_Uebernehmen");
-            this.btn_Uebernehmen.Name = "btn_Uebernehmen";
-            this.btn_Uebernehmen.UseVisualStyleBackColor = true;
-            this.btn_Uebernehmen.Click += new System.EventHandler(this.btn_Uebernehmen_Click);
+            resources.ApplyResources(btn_Uebernehmen, "btn_Uebernehmen");
+            btn_Uebernehmen.Name = "btn_Uebernehmen";
+            btn_Uebernehmen.UseVisualStyleBackColor = true;
+            btn_Uebernehmen.Click += btn_Uebernehmen_Click;
             // 
             // Form_WPAuswahl
             // 
             resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.White;
-            this.Controls.Add(this.btn_Abbrechen);
-            this.Controls.Add(this.btn_OK);
-            this.Controls.Add(this.btn_Neu);
-            this.Controls.Add(this.textBox_WP);
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.btn_Löschen);
-            this.Controls.Add(this.listView_WP);
-            this.Controls.Add(this.label_Type);
-            this.Controls.Add(this.btn_Uebernehmen);
-            this.ForeColor = System.Drawing.Color.Black;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
-            this.Name = "Form_WPAuswahl";
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            BackColor = System.Drawing.Color.White;
+            Controls.Add(btn_Abbrechen);
+            Controls.Add(btn_OK);
+            Controls.Add(btn_Neu);
+            Controls.Add(textBox_WP);
+            Controls.Add(label7);
+            Controls.Add(btn_Löschen);
+            Controls.Add(listView_WP);
+            Controls.Add(label_Type);
+            Controls.Add(btn_Uebernehmen);
+            ForeColor = System.Drawing.Color.Black;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
+            Name = "Form_WPAuswahl";
+            ResumeLayout(false);
+            PerformLayout();
 
         }
 

@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WindowsFormsApplication1
+﻿namespace WindowsFormsApplication1
 {
- 
     
     public class StromspeicherModel
     {
-        public int rows;
-        public StromspeicherModel[] items;
         public int m_ID;
         public string m_szBezeichner;
         public double m_Energie;
@@ -23,7 +14,6 @@ namespace WindowsFormsApplication1
      
         public StromspeicherModel()
         {
-            items = null;
             m_ID = 0;
             m_szBezeichner = string.Empty;
             m_Energie = 0;

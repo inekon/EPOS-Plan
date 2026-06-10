@@ -77,7 +77,8 @@ namespace WindowsFormsApplication1
 
         private void MenuItem_Klimadaten_Click(object sender, EventArgs e)
         {
-            Program.menuectrl.OpenForm(typeof(Form_Klimadaten), false);
+            Form_Klimadaten frm = new Form_Klimadaten();
+            frm.ShowDialog();
         }
 
         private void MenuItem_ProjektBearbeiten_Click(object sender, EventArgs e)
@@ -156,12 +157,6 @@ namespace WindowsFormsApplication1
         {
             MenueCtrl ctrl = new MenueCtrl();
             ctrl.Solarganglinie();
-        }
-
-        private void MenuItem_Update_Click(object sender, EventArgs e)
-        {
-            MenueCtrl ctrl = new MenueCtrl();
-            ctrl.DBUpdate();
         }
 
         private void MenuItem_Version_Click(object sender, EventArgs e)
