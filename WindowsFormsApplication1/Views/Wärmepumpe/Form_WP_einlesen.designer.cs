@@ -29,267 +29,267 @@ namespace WindowsFormsApplication1
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_WP_einlesen));
-            this.Label2 = new System.Windows.Forms.Label();
-            this.btn_Uebernehmen = new System.Windows.Forms.Button();
-            this.btn_Beenden = new System.Windows.Forms.Button();
-            this.Liste_WP = new System.Windows.Forms.ListBox();
-            this.btn_VDI3805 = new System.Windows.Forms.Button();
-            this.Label3 = new System.Windows.Forms.Label();
-            this.textBox_Firma = new System.Windows.Forms.TextBox();
-            this.Label9 = new System.Windows.Forms.Label();
-            this.textBox_Name = new System.Windows.Forms.TextBox();
-            this.Label10 = new System.Windows.Forms.Label();
-            this.textBox_Aufstellung = new System.Windows.Forms.TextBox();
-            this.textBox_ThLeistung = new System.Windows.Forms.TextBox();
-            this.Label12 = new System.Windows.Forms.Label();
-            this.Label13 = new System.Windows.Forms.Label();
-            this.textBox_Zusatzheizung = new System.Windows.Forms.TextBox();
-            this.Label14 = new System.Windows.Forms.Label();
-            this.Label15 = new System.Windows.Forms.Label();
-            this.Label16 = new System.Windows.Forms.Label();
-            this.textBox__Wirkungsgrad = new System.Windows.Forms.TextBox();
-            this.Label17 = new System.Windows.Forms.Label();
-            this.textBox_Typ = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.textBox_Stufen = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.textBox_MaxVorlauf = new System.Windows.Forms.TextBox();
-            this.textBox_Kuehlleistung = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.SuspendLayout();
+            Label2 = new System.Windows.Forms.Label();
+            btn_Uebernehmen = new System.Windows.Forms.Button();
+            btn_Beenden = new System.Windows.Forms.Button();
+            Liste_WP = new System.Windows.Forms.ListBox();
+            btn_VDI3805 = new System.Windows.Forms.Button();
+            Label3 = new System.Windows.Forms.Label();
+            textBox_Firma = new System.Windows.Forms.TextBox();
+            Label9 = new System.Windows.Forms.Label();
+            textBox_Name = new System.Windows.Forms.TextBox();
+            Label10 = new System.Windows.Forms.Label();
+            textBox_Aufstellung = new System.Windows.Forms.TextBox();
+            textBox_ThLeistung = new System.Windows.Forms.TextBox();
+            Label12 = new System.Windows.Forms.Label();
+            Label13 = new System.Windows.Forms.Label();
+            textBox_Zusatzheizung = new System.Windows.Forms.TextBox();
+            Label14 = new System.Windows.Forms.Label();
+            Label15 = new System.Windows.Forms.Label();
+            Label16 = new System.Windows.Forms.Label();
+            textBox__Wirkungsgrad = new System.Windows.Forms.TextBox();
+            Label17 = new System.Windows.Forms.Label();
+            textBox_Typ = new System.Windows.Forms.TextBox();
+            label1 = new System.Windows.Forms.Label();
+            textBox_Stufen = new System.Windows.Forms.TextBox();
+            label4 = new System.Windows.Forms.Label();
+            label5 = new System.Windows.Forms.Label();
+            textBox_MaxVorlauf = new System.Windows.Forms.TextBox();
+            textBox_Kuehlleistung = new System.Windows.Forms.TextBox();
+            label6 = new System.Windows.Forms.Label();
+            label7 = new System.Windows.Forms.Label();
+            SuspendLayout();
             // 
             // Label2
             // 
-            resources.ApplyResources(this.Label2, "Label2");
-            this.Label2.Name = "Label2";
+            resources.ApplyResources(Label2, "Label2");
+            Label2.Name = "Label2";
             // 
             // btn_Uebernehmen
             // 
-            resources.ApplyResources(this.btn_Uebernehmen, "btn_Uebernehmen");
-            this.btn_Uebernehmen.ForeColor = System.Drawing.Color.Black;
-            this.btn_Uebernehmen.Image = global::WindowsFormsApplication1.Properties.Resources.save_icon_36513;
-            this.btn_Uebernehmen.Name = "btn_Uebernehmen";
-            this.btn_Uebernehmen.UseVisualStyleBackColor = true;
-            this.btn_Uebernehmen.Click += new System.EventHandler(this.btn_Uebernehmen_Click);
+            resources.ApplyResources(btn_Uebernehmen, "btn_Uebernehmen");
+            btn_Uebernehmen.ForeColor = System.Drawing.Color.Black;
+            btn_Uebernehmen.Image = Properties.Resources.save_icon_36513;
+            btn_Uebernehmen.Name = "btn_Uebernehmen";
+            btn_Uebernehmen.UseVisualStyleBackColor = true;
+            btn_Uebernehmen.Click += btn_Uebernehmen_Click;
             // 
             // btn_Beenden
             // 
-            resources.ApplyResources(this.btn_Beenden, "btn_Beenden");
-            this.btn_Beenden.ForeColor = System.Drawing.Color.Black;
-            this.btn_Beenden.Name = "btn_Beenden";
-            this.btn_Beenden.UseVisualStyleBackColor = true;
-            this.btn_Beenden.Click += new System.EventHandler(this.btn_Beenden_Click);
+            resources.ApplyResources(btn_Beenden, "btn_Beenden");
+            btn_Beenden.ForeColor = System.Drawing.Color.Black;
+            btn_Beenden.Name = "btn_Beenden";
+            btn_Beenden.UseVisualStyleBackColor = true;
+            btn_Beenden.Click += btn_Beenden_Click;
             // 
             // Liste_WP
             // 
-            resources.ApplyResources(this.Liste_WP, "Liste_WP");
-            this.Liste_WP.ForeColor = System.Drawing.Color.Black;
-            this.Liste_WP.Name = "Liste_WP";
-            this.Liste_WP.SelectedIndexChanged += new System.EventHandler(this.Liste_WP_SelectedIndexChanged);
+            resources.ApplyResources(Liste_WP, "Liste_WP");
+            Liste_WP.ForeColor = System.Drawing.Color.Black;
+            Liste_WP.Name = "Liste_WP";
+            Liste_WP.SelectedIndexChanged += Liste_WP_SelectedIndexChanged;
             // 
             // btn_VDI3805
             // 
-            resources.ApplyResources(this.btn_VDI3805, "btn_VDI3805");
-            this.btn_VDI3805.ForeColor = System.Drawing.Color.Black;
-            this.btn_VDI3805.Name = "btn_VDI3805";
-            this.btn_VDI3805.UseVisualStyleBackColor = true;
-            this.btn_VDI3805.Click += new System.EventHandler(this.btn_VDI3805_Click);
+            resources.ApplyResources(btn_VDI3805, "btn_VDI3805");
+            btn_VDI3805.ForeColor = System.Drawing.Color.Black;
+            btn_VDI3805.Name = "btn_VDI3805";
+            btn_VDI3805.UseVisualStyleBackColor = true;
+            btn_VDI3805.Click += btn_VDI3805_Click;
             // 
             // Label3
             // 
-            resources.ApplyResources(this.Label3, "Label3");
-            this.Label3.ForeColor = System.Drawing.Color.Black;
-            this.Label3.Name = "Label3";
+            resources.ApplyResources(Label3, "Label3");
+            Label3.ForeColor = System.Drawing.Color.Black;
+            Label3.Name = "Label3";
             // 
             // textBox_Firma
             // 
-            this.textBox_Firma.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_Firma, "textBox_Firma");
-            this.textBox_Firma.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Firma.Name = "textBox_Firma";
+            textBox_Firma.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(textBox_Firma, "textBox_Firma");
+            textBox_Firma.ForeColor = System.Drawing.Color.Black;
+            textBox_Firma.Name = "textBox_Firma";
             // 
             // Label9
             // 
-            resources.ApplyResources(this.Label9, "Label9");
-            this.Label9.ForeColor = System.Drawing.Color.Black;
-            this.Label9.Name = "Label9";
+            resources.ApplyResources(Label9, "Label9");
+            Label9.ForeColor = System.Drawing.Color.Black;
+            Label9.Name = "Label9";
             // 
             // textBox_Name
             // 
-            this.textBox_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_Name, "textBox_Name");
-            this.textBox_Name.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Name.Name = "textBox_Name";
+            textBox_Name.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(textBox_Name, "textBox_Name");
+            textBox_Name.ForeColor = System.Drawing.Color.Black;
+            textBox_Name.Name = "textBox_Name";
             // 
             // Label10
             // 
-            resources.ApplyResources(this.Label10, "Label10");
-            this.Label10.ForeColor = System.Drawing.Color.Black;
-            this.Label10.Name = "Label10";
+            resources.ApplyResources(Label10, "Label10");
+            Label10.ForeColor = System.Drawing.Color.Black;
+            Label10.Name = "Label10";
             // 
             // textBox_Aufstellung
             // 
-            this.textBox_Aufstellung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_Aufstellung, "textBox_Aufstellung");
-            this.textBox_Aufstellung.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Aufstellung.Name = "textBox_Aufstellung";
+            textBox_Aufstellung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(textBox_Aufstellung, "textBox_Aufstellung");
+            textBox_Aufstellung.ForeColor = System.Drawing.Color.Black;
+            textBox_Aufstellung.Name = "textBox_Aufstellung";
             // 
             // textBox_ThLeistung
             // 
-            this.textBox_ThLeistung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_ThLeistung, "textBox_ThLeistung");
-            this.textBox_ThLeistung.ForeColor = System.Drawing.Color.Black;
-            this.textBox_ThLeistung.Name = "textBox_ThLeistung";
+            textBox_ThLeistung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(textBox_ThLeistung, "textBox_ThLeistung");
+            textBox_ThLeistung.ForeColor = System.Drawing.Color.Black;
+            textBox_ThLeistung.Name = "textBox_ThLeistung";
             // 
             // Label12
             // 
-            resources.ApplyResources(this.Label12, "Label12");
-            this.Label12.ForeColor = System.Drawing.Color.Black;
-            this.Label12.Name = "Label12";
+            resources.ApplyResources(Label12, "Label12");
+            Label12.ForeColor = System.Drawing.Color.Black;
+            Label12.Name = "Label12";
             // 
             // Label13
             // 
-            resources.ApplyResources(this.Label13, "Label13");
-            this.Label13.ForeColor = System.Drawing.Color.Black;
-            this.Label13.Name = "Label13";
+            resources.ApplyResources(Label13, "Label13");
+            Label13.ForeColor = System.Drawing.Color.Black;
+            Label13.Name = "Label13";
             // 
             // textBox_Zusatzheizung
             // 
-            this.textBox_Zusatzheizung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_Zusatzheizung, "textBox_Zusatzheizung");
-            this.textBox_Zusatzheizung.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Zusatzheizung.Name = "textBox_Zusatzheizung";
+            textBox_Zusatzheizung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(textBox_Zusatzheizung, "textBox_Zusatzheizung");
+            textBox_Zusatzheizung.ForeColor = System.Drawing.Color.Black;
+            textBox_Zusatzheizung.Name = "textBox_Zusatzheizung";
             // 
             // Label14
             // 
-            resources.ApplyResources(this.Label14, "Label14");
-            this.Label14.BackColor = System.Drawing.Color.Black;
-            this.Label14.ForeColor = System.Drawing.Color.White;
-            this.Label14.Name = "Label14";
+            resources.ApplyResources(Label14, "Label14");
+            Label14.BackColor = System.Drawing.Color.Black;
+            Label14.ForeColor = System.Drawing.Color.White;
+            Label14.Name = "Label14";
             // 
             // Label15
             // 
-            resources.ApplyResources(this.Label15, "Label15");
-            this.Label15.BackColor = System.Drawing.Color.Black;
-            this.Label15.ForeColor = System.Drawing.Color.White;
-            this.Label15.Name = "Label15";
+            resources.ApplyResources(Label15, "Label15");
+            Label15.BackColor = System.Drawing.Color.Black;
+            Label15.ForeColor = System.Drawing.Color.White;
+            Label15.Name = "Label15";
             // 
             // Label16
             // 
-            resources.ApplyResources(this.Label16, "Label16");
-            this.Label16.ForeColor = System.Drawing.Color.Black;
-            this.Label16.Name = "Label16";
+            resources.ApplyResources(Label16, "Label16");
+            Label16.ForeColor = System.Drawing.Color.Black;
+            Label16.Name = "Label16";
             // 
             // textBox__Wirkungsgrad
             // 
-            this.textBox__Wirkungsgrad.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox__Wirkungsgrad, "textBox__Wirkungsgrad");
-            this.textBox__Wirkungsgrad.ForeColor = System.Drawing.Color.Black;
-            this.textBox__Wirkungsgrad.Name = "textBox__Wirkungsgrad";
+            textBox__Wirkungsgrad.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(textBox__Wirkungsgrad, "textBox__Wirkungsgrad");
+            textBox__Wirkungsgrad.ForeColor = System.Drawing.Color.Black;
+            textBox__Wirkungsgrad.Name = "textBox__Wirkungsgrad";
             // 
             // Label17
             // 
-            resources.ApplyResources(this.Label17, "Label17");
-            this.Label17.ForeColor = System.Drawing.Color.Black;
-            this.Label17.Name = "Label17";
+            resources.ApplyResources(Label17, "Label17");
+            Label17.ForeColor = System.Drawing.Color.Black;
+            Label17.Name = "Label17";
             // 
             // textBox_Typ
             // 
-            this.textBox_Typ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_Typ, "textBox_Typ");
-            this.textBox_Typ.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Typ.Name = "textBox_Typ";
+            textBox_Typ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(textBox_Typ, "textBox_Typ");
+            textBox_Typ.ForeColor = System.Drawing.Color.Black;
+            textBox_Typ.Name = "textBox_Typ";
             // 
             // label1
             // 
-            resources.ApplyResources(this.label1, "label1");
-            this.label1.ForeColor = System.Drawing.Color.Black;
-            this.label1.Name = "label1";
+            resources.ApplyResources(label1, "label1");
+            label1.ForeColor = System.Drawing.Color.Black;
+            label1.Name = "label1";
             // 
             // textBox_Stufen
             // 
-            this.textBox_Stufen.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_Stufen, "textBox_Stufen");
-            this.textBox_Stufen.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Stufen.Name = "textBox_Stufen";
+            textBox_Stufen.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(textBox_Stufen, "textBox_Stufen");
+            textBox_Stufen.ForeColor = System.Drawing.Color.Black;
+            textBox_Stufen.Name = "textBox_Stufen";
             // 
             // label4
             // 
-            resources.ApplyResources(this.label4, "label4");
-            this.label4.Name = "label4";
+            resources.ApplyResources(label4, "label4");
+            label4.Name = "label4";
             // 
             // label5
             // 
-            resources.ApplyResources(this.label5, "label5");
-            this.label5.ForeColor = System.Drawing.Color.Black;
-            this.label5.Name = "label5";
+            resources.ApplyResources(label5, "label5");
+            label5.ForeColor = System.Drawing.Color.Black;
+            label5.Name = "label5";
             // 
             // textBox_MaxVorlauf
             // 
-            this.textBox_MaxVorlauf.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_MaxVorlauf, "textBox_MaxVorlauf");
-            this.textBox_MaxVorlauf.ForeColor = System.Drawing.Color.Black;
-            this.textBox_MaxVorlauf.Name = "textBox_MaxVorlauf";
+            textBox_MaxVorlauf.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(textBox_MaxVorlauf, "textBox_MaxVorlauf");
+            textBox_MaxVorlauf.ForeColor = System.Drawing.Color.Black;
+            textBox_MaxVorlauf.Name = "textBox_MaxVorlauf";
             // 
             // textBox_Kuehlleistung
             // 
-            this.textBox_Kuehlleistung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            resources.ApplyResources(this.textBox_Kuehlleistung, "textBox_Kuehlleistung");
-            this.textBox_Kuehlleistung.ForeColor = System.Drawing.Color.Black;
-            this.textBox_Kuehlleistung.Name = "textBox_Kuehlleistung";
+            textBox_Kuehlleistung.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(textBox_Kuehlleistung, "textBox_Kuehlleistung");
+            textBox_Kuehlleistung.ForeColor = System.Drawing.Color.Black;
+            textBox_Kuehlleistung.Name = "textBox_Kuehlleistung";
             // 
             // label6
             // 
-            resources.ApplyResources(this.label6, "label6");
-            this.label6.ForeColor = System.Drawing.Color.Black;
-            this.label6.Name = "label6";
+            resources.ApplyResources(label6, "label6");
+            label6.ForeColor = System.Drawing.Color.Black;
+            label6.Name = "label6";
             // 
             // label7
             // 
-            resources.ApplyResources(this.label7, "label7");
-            this.label7.BackColor = System.Drawing.Color.Black;
-            this.label7.ForeColor = System.Drawing.Color.White;
-            this.label7.Name = "label7";
+            resources.ApplyResources(label7, "label7");
+            label7.BackColor = System.Drawing.Color.Black;
+            label7.ForeColor = System.Drawing.Color.White;
+            label7.Name = "label7";
             // 
             // Form_WP_einlesen
             // 
             resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.textBox_Kuehlleistung);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.textBox_MaxVorlauf);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox_Stufen);
-            this.Controls.Add(this.Label2);
-            this.Controls.Add(this.btn_Uebernehmen);
-            this.Controls.Add(this.btn_Beenden);
-            this.Controls.Add(this.Liste_WP);
-            this.Controls.Add(this.btn_VDI3805);
-            this.Controls.Add(this.Label3);
-            this.Controls.Add(this.textBox_Firma);
-            this.Controls.Add(this.Label9);
-            this.Controls.Add(this.textBox_Name);
-            this.Controls.Add(this.Label10);
-            this.Controls.Add(this.textBox_Aufstellung);
-            this.Controls.Add(this.textBox_ThLeistung);
-            this.Controls.Add(this.Label12);
-            this.Controls.Add(this.Label13);
-            this.Controls.Add(this.textBox_Zusatzheizung);
-            this.Controls.Add(this.Label14);
-            this.Controls.Add(this.Label15);
-            this.Controls.Add(this.Label16);
-            this.Controls.Add(this.textBox__Wirkungsgrad);
-            this.Controls.Add(this.Label17);
-            this.Controls.Add(this.textBox_Typ);
-            this.ForeColor = System.Drawing.Color.Black;
-            this.Name = "Form_WP_einlesen";
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(textBox_Kuehlleistung);
+            Controls.Add(label6);
+            Controls.Add(label7);
+            Controls.Add(label5);
+            Controls.Add(textBox_MaxVorlauf);
+            Controls.Add(label4);
+            Controls.Add(label1);
+            Controls.Add(textBox_Stufen);
+            Controls.Add(Label2);
+            Controls.Add(btn_Uebernehmen);
+            Controls.Add(btn_Beenden);
+            Controls.Add(Liste_WP);
+            Controls.Add(btn_VDI3805);
+            Controls.Add(Label3);
+            Controls.Add(textBox_Firma);
+            Controls.Add(Label9);
+            Controls.Add(textBox_Name);
+            Controls.Add(Label10);
+            Controls.Add(textBox_Aufstellung);
+            Controls.Add(textBox_ThLeistung);
+            Controls.Add(Label12);
+            Controls.Add(Label13);
+            Controls.Add(textBox_Zusatzheizung);
+            Controls.Add(Label14);
+            Controls.Add(Label15);
+            Controls.Add(Label16);
+            Controls.Add(textBox__Wirkungsgrad);
+            Controls.Add(Label17);
+            Controls.Add(textBox_Typ);
+            ForeColor = System.Drawing.Color.Black;
+            Name = "Form_WP_einlesen";
+            ResumeLayout(false);
+            PerformLayout();
 
         }
 

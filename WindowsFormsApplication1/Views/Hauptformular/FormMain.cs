@@ -1,19 +1,14 @@
-﻿using Microsoft.Office.Interop.Excel;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
 using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
 {
 
     public partial class FormMain : Form
     {
-
         private int m_ID_Projekt = 0;
         private string m_szProjektname = "";
         private int m_ID_Klimaregion = 0;

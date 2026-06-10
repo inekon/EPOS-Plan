@@ -1,5 +1,4 @@
-﻿using Microsoft.Vbe.Interop;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -9,7 +8,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -436,46 +434,35 @@ namespace WindowsFormsApplication1
         public AccessRepository() { }
 
         public void SaveTmyData(List<TmyHourlyData> dataList, string szOrt, string tabelle, int ID_Klimaregion,
-                                OleDbConnection connection, OleDbTransaction transaction)
+                                        OleDbConnection connection, OleDbTransaction transaction)
         {
             if (dataList == null || dataList.Count == 0) return;
 
             try
             {
                 bool istKlimadaten = (tabelle == "Tab_Klimadaten");
-                int nextId = 1;
 
-                if (istKlimadaten)
-                {
-                    // 1. ID-Ermittlung stark vereinfacht
-                    string maxSql = "SELECT MAX(ID_Klimadaten) FROM Tab_Klimadaten";
-                    using (OleDbCommand cmdMax = new OleDbCommand(maxSql, connection, transaction))
-                    {
-                        object result = cmdMax.ExecuteScalar();
-                        if (result != DBNull.Value && result != null) nextId = Convert.ToInt32(result) + 1;
-                    }
-                }
-
-                // 2. SQL-Queries festlegen
+                // 1. SQL-Queries festlegen (ID_Klimadaten wurde aus der Tab_Klimadaten-Query entfernt!)
                 string query = istKlimadaten
-                    ? "INSERT INTO Tab_Klimadaten (ID_Klimadaten, ID_Klimaregion, Temperatur, Sol_Nord, Sol_Sued, Sol_Ost, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, WE, TagTyp_W, TagTyp_NW, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    ? "INSERT INTO Tab_Klimadaten (ID_Klimaregion, Temperatur, Sol_Nord, Sol_Sued, Sol_Ost, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, WE, TagTyp_W, TagTyp_NW, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     : "INSERT INTO Tab_Solar (ID_Klimaregion, Temperatur, Sol_Nord, Sol_Sued, Sol_Ost, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?)";
 
                 using (OleDbCommand command = new OleDbCommand(query, connection, transaction))
                 {
-                    // 3. Typisierte Parameter vorab definieren (Bringt massiven Performance-Schub bei 8760 Zeilen!)
+                    // 2. Typisierte Parameter vorab definieren (Zwingend nötig für Speed bei 8760 Schleifendurchläufen!)
+                    // HIER WURDE DER ERSTE ID-PARAMETER ENTFERNT!
+                    command.Parameters.Add("?", OleDbType.Integer);      // ID_Klimaregion
+                    command.Parameters.Add("?", OleDbType.Double);       // Temperatur
+                    command.Parameters.Add("?", OleDbType.Double);       // Sol_Nord
+                    command.Parameters.Add("?", OleDbType.Double);       // Sol_Sued
+                    command.Parameters.Add("?", OleDbType.Double);       // Sol_Ost
+                    command.Parameters.Add("?", OleDbType.Double);       // Sol_West
+                    command.Parameters.Add("?", OleDbType.Double);       // Globalstrahlung
+                    command.Parameters.Add("?", OleDbType.Double);       // Direktstrahlung
+                    command.Parameters.Add("?", OleDbType.Double);       // Diffusstrahlung
+
                     if (istKlimadaten)
                     {
-                        command.Parameters.Add("?", OleDbType.Integer);      // ID_Klimadaten
-                        command.Parameters.Add("?", OleDbType.Integer);      // ID_Klimaregion
-                        command.Parameters.Add("?", OleDbType.Double);       // Temperatur
-                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Nord
-                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Sued
-                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Ost
-                        command.Parameters.Add("?", OleDbType.Double);       // Sol_West
-                        command.Parameters.Add("?", OleDbType.Double);       // Globalstrahlung
-                        command.Parameters.Add("?", OleDbType.Double);       // Direktstrahlung
-                        command.Parameters.Add("?", OleDbType.Double);       // Diffusstrahlung
                         command.Parameters.Add("?", OleDbType.Boolean);      // WE
                         command.Parameters.Add("?", OleDbType.Integer);      // TagTyp_W
                         command.Parameters.Add("?", OleDbType.Integer);      // TagTyp_NW
@@ -483,25 +470,15 @@ namespace WindowsFormsApplication1
                     }
                     else
                     {
-                        command.Parameters.Add("?", OleDbType.Integer);      // ID_Klimaregion
-                        command.Parameters.Add("?", OleDbType.Double);       // Temperatur
-                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Nord
-                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Sued
-                        command.Parameters.Add("?", OleDbType.Double);       // Sol_Ost
-                        command.Parameters.Add("?", OleDbType.Double);       // Sol_West
-                        command.Parameters.Add("?", OleDbType.Double);       // Globalstrahlung
-                        command.Parameters.Add("?", OleDbType.Double);       // Direktstrahlung
-                        command.Parameters.Add("?", OleDbType.Double);       // Diffusstrahlung
                         command.Parameters.Add("?", OleDbType.Double);       // Sonnenwinkel
                     }
 
-                    // 4. Die Schleife befüllt jetzt blitzschnell nur noch die Werte (.Value)
+                    // 3. Die Schleife befüllt jetzt blitzschnell nur noch die Werte (.Value)
                     foreach (var data in dataList)
                     {
                         int pIdx = 0;
 
-                        if (istKlimadaten) command.Parameters[pIdx++].Value = nextId++;
-
+                        // HIER WURDE DER SEITENEFFEKT 'nextId++' KOMPLETT ENTFERNT!
                         command.Parameters[pIdx++].Value = ID_Klimaregion;
                         command.Parameters[pIdx++].Value = data.Temperature;
                         command.Parameters[pIdx++].Value = data.Sol_nord;

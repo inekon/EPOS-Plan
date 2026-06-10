@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -7,8 +6,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -35,15 +32,10 @@ namespace WindowsFormsApplication1
 
             comboBox_Ort.Items.Clear();
 
-
             string szPath = Path.Combine(Program.ApplicationPath_User, "Ortsliste");
 
-            // Windows-1252 ist der Standard für deutsche Textdateien, 
-            // die oft als "ASCII" bezeichnet werden
-            //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            Encoding enc = Encoding.GetEncoding("Windows-1252");
-
-            string[] lines = File.ReadAllLines(szPath + "\\Ortsnamen.txt", enc);
+            string[] lines = File.ReadAllLines(szPath + "\\Ortsnamen.txt");
+  
             foreach (string line in lines)
             {
                 Console.WriteLine(line);
@@ -57,9 +49,6 @@ namespace WindowsFormsApplication1
 
         private void initChart(Chart chart)
         {
-
-
-
             chart.Series.Clear();
             var ca = chart.ChartAreas[0];
             ca.CursorX.IsUserEnabled = true;

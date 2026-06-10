@@ -108,23 +108,19 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                // Start-ID ermitteln
-                int nextID = DataRepository.GetMaxID("Tab_Energieanlagen", "ID") + 1;
-
                 foreach (var item in list)
                 {
                     // SQL mit allen Feldern aus dem Original
                     string sql = @"INSERT INTO Tab_Energieanlagen 
-                        (ID, ID_Projekt, Bezeichner, Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis, 
+                        (ID_Projekt, Bezeichner, Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis, 
                          Vorlauf, Rücklauf, Bivalenter_Betrieb, Abschaltpunkt, Nutzungszeit, Grenzleistung, 
                          Kollektormodulanzahl, PV_Leistung, Neigung, Azimut, ID_Type, 
                          ID_WP, ID_Solar, ID_PV, ID_SP, ID_KESSEL, ID_BHKW, ID_PUFFER, 
                          Heizstab, Volumen, rendeMix, Solaranteil) 
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
                     // Parameter exakt in der Reihenfolge des SQL-Strings
                     OleDbParameter[] ps = {
-                        new OleDbParameter("@id", nextID++),
                         new OleDbParameter("@pID", projektID),
                         new OleDbParameter("@bez", item.Bezeichner ?? (object)DBNull.Value),
                         new OleDbParameter("@art", item.Betriebsart ?? (object)DBNull.Value),
@@ -198,9 +194,8 @@ namespace WindowsFormsApplication1
 
         public bool Add_Projekt(int projektID, ProjektModel model)
         {
-            string sql = "INSERT INTO Tab_Projekt (ID, Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) VALUES (?,?,?,?,?,?,?,?)";
+            string sql = "INSERT INTO Tab_Projekt (Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) VALUES (?,?,?,?,?,?,?)";
             OleDbParameter[] ps = {
-                new OleDbParameter("@id", projektID),
                 new OleDbParameter("@name", model.m_szProjektname),
                 new OleDbParameter("@bearb", model.m_szBearbeiter),
                 new OleDbParameter("@besch", model.m_szBeschreibung),
@@ -229,20 +224,16 @@ namespace WindowsFormsApplication1
 
         public bool Add_SP(int projektID, List<StromspeicherModel> list)
         {
-            // Start-ID für diesen Block holen
-            int nextID = DataRepository.GetMaxID("Tab_Energieanlagen", "ID") + 1;
-
             foreach (var item in list)
             {
                 string sql = @"INSERT INTO Tab_Energieanlagen 
-                               (ID, ID_Projekt, Bezeichner, ID_Type, ID_SP) 
-                               VALUES (?, ?, ?, ?, ?)";
+                               (ID_Projekt, Bezeichner, ID_Type, ID_SP) 
+                               VALUES (?, ?, ?, ?)";
 
                 OleDbParameter[] ps = {
-                    new OleDbParameter("@id", nextID++),
                     new OleDbParameter("@pID", projektID),
                     new OleDbParameter("@bez", item.m_szBezeichner ?? ""),
-                    new OleDbParameter("@type", 4), // Typ 4 scheint Stromspeicher zu sein
+                    new OleDbParameter("@type", 4), // Typ 4 Stromspeicher
                     new OleDbParameter("@spID", item.m_ID)
                 };
 

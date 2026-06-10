@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
     {
         private List<StromspeicherModel> _internalList = new List<StromspeicherModel>();
         public int rows => _internalList.Count;
-        public new List<StromspeicherModel> items => _internalList;
+        public List<StromspeicherModel> items => _internalList;
 
         public void ReadAll()
         {

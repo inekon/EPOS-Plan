@@ -71,56 +71,19 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public int GetMaxID()
-        {
-            try
-            {
-                string sqlCount = "SELECT COUNT(*) FROM Tab_Energieanlagen";
-                object countResult = DataRepository.ExecuteScalar(sqlCount, null);
-                int count = countResult != null ? Convert.ToInt32(countResult) : 0;
-
-                if (count == 0) return 0;
-
-                string sqlMax = "SELECT MAX(ID) FROM Tab_Energieanlagen";
-                object maxResult = DataRepository.ExecuteScalar(sqlMax, null);
-                return maxResult != null ? Convert.ToInt32(maxResult) : 0;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler bei GetMaxID: " + ex.Message);
-                return 0;
-            }
-        }
-
         public bool Insert()
         {
             try
             {
-                string sqlCount = "SELECT COUNT(*) FROM Tab_Energieanlagen";
-                object countResult = DataRepository.ExecuteScalar(sqlCount, null);
-                int count = countResult != null ? Convert.ToInt32(countResult) : 0;
-
-                if (count == 0)
-                {
-                    ID = 1;
-                }
-                else
-                {
-                    string sqlMax = "SELECT MAX(ID) FROM Tab_Energieanlagen";
-                    object maxResult = DataRepository.ExecuteScalar(sqlMax, null);
-                    ID = (maxResult != null ? Convert.ToInt32(maxResult) : 0) + 1;
-                }
-
-                string sql = @"INSERT INTO Tab_Energieanlagen 
+               string sql = @"INSERT INTO Tab_Energieanlagen 
                                (
-                                   ID, ID_Projekt, Bezeichner, ID_Type, ID_WP, Betriebsart, Sperrung, 
+                                   ID_Projekt, Bezeichner, ID_Type, ID_WP, Betriebsart, Sperrung, 
                                    Sperrzeit_von, Sperrzeit_bis, Vorlauf, Ruecklauf, Bivalenter_Betrieb, 
                                    Abschaltpunkt, Nutzungszeit, ID_SP, ID_PV, ID_Solar
                                ) 
-                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 OleDbParameter[] ps = {
-                    new OleDbParameter("@id", ID),
                     new OleDbParameter("@idProj", ID_Projekt),
                     new OleDbParameter("@bez", Bezeichner ?? (object)DBNull.Value),
                     new OleDbParameter("@idType", ID_Type),

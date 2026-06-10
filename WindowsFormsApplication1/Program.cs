@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -91,13 +92,6 @@ namespace WindowsFormsApplication1
             ApplicationPath_Common = Path.Combine(ApplicationPath_Common, "WP-Plan");
             ApplicationPath_User = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             ApplicationPath_User = Path.Combine(ApplicationPath_User, "WP-Plan");
-
-            // wenn die UdateDB.ini Datei und die DB existiert, dann Update starten   
-            if (db.GetIniFilePath() != "" && db.GetDBFilePath() != "")
-            {
-                Form_Update formUpdate = new Form_Update();
-                formUpdate.ShowDialog();
-            }
 
             // Katalog-Objekt einmalig erstellen
             // HelpCatalog = new WordPressHelpCatalog("https://wordpress.org/news");
@@ -292,7 +286,6 @@ namespace WindowsFormsApplication1
             }
         }
 
-
-    }
+     }
 
 }

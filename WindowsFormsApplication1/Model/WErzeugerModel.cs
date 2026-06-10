@@ -3,8 +3,6 @@
     
     public class WErzeugerModel : WPModel
     {
-        public WErzeugerModel[] items;
-        public int ID;
         public int ID_Projekt;
         public string Bezeichner;
         public int ID_Type;
@@ -36,7 +34,6 @@
 
         public WErzeugerModel()
         {
-            items = null;
             ID = 0;
             ID_Projekt = 0;
             Betriebsart = "";;

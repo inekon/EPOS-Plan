@@ -82,18 +82,12 @@ namespace WindowsFormsApplication1
 
         public bool Add(string szName, double Longitude, double Latitude, string Details, OleDbConnection conn, OleDbTransaction trans)
         {
-            // ID-Ermittlung direkt über die offene Verbindung innerhalb der Transaktion ausführen
-            using (OleDbCommand cmdMax = new OleDbConnection() == null ? null : new OleDbCommand("SELECT MAX(ID_Klimaregion) FROM Tab_Klimaregion", conn, trans))
-            {
-                object maxId = cmdMax.ExecuteScalar();
-                m_ID_Klimaregion = (maxId == null || maxId == DBNull.Value) ? 1 : Convert.ToInt32(maxId) + 1;
-            }
-
-            string sql = "INSERT INTO Tab_Klimaregion (ID_Klimaregion, Name, Longitude, Latitude, Details) VALUES (?, ?, ?, ?, ?)";
+            // 1. Das SQL ohne das ID-Feld, da Access dieses nun als Autowert selbst befüllt!
+            string sql = "INSERT INTO Tab_Klimaregion (Name, Longitude, Latitude, Details) VALUES (?, ?, ?, ?)";
 
             using (OleDbCommand cmd = new OleDbCommand(sql, conn, trans))
             {
-                cmd.Parameters.Add(new OleDbParameter("?", m_ID_Klimaregion));
+                // WICHTIG: Die Reihenfolge der Parameter MUSS exakt mit dem SQL übereinstimmen!
                 cmd.Parameters.Add(new OleDbParameter("?", string.IsNullOrEmpty(szName) ? (object)DBNull.Value : szName));
                 cmd.Parameters.Add(new OleDbParameter("?", Longitude));
                 cmd.Parameters.Add(new OleDbParameter("?", Latitude));
@@ -101,6 +95,18 @@ namespace WindowsFormsApplication1
 
                 cmd.ExecuteNonQuery();
             }
+
+            // 2. Da es ein Autowert ist, fragen wir Access nach der ID, 
+            // die gerade eben automatisch für diesen Datensatz generiert wurde:
+            using (OleDbCommand cmdIdentity = new OleDbCommand("SELECT @@IDENTITY", conn, trans))
+            {
+                object result = cmdIdentity.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    m_ID_Klimaregion = Convert.ToInt32(result);
+                }
+            }
+
             return true;
         }
 

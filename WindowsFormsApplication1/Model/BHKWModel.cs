@@ -1,9 +1,8 @@
 ﻿namespace WindowsFormsApplication1
 {
-    
+  
     public class BHKWModel
     {
-        public int rows;
         public int m_ID;
         public string m_szBezeichner;
         public string m_szFirma;
@@ -56,6 +55,5 @@
             m_Kosten_Montage = 0;
             m_Kosten_Abgasreinigung = 0;
         }
-
-}
+    }
 }

@@ -654,13 +654,13 @@ namespace WindowsFormsApplication1
                         }
                     }
 
-                    label46.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label47.BackColor = label46.BackColor;
+                    label2_pBox_WP.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_WP.BackColor = label2_pBox_WP.BackColor;
                 }
                 else
                 {
-                    label46.BackColor = Color.Transparent;
-                    label47.BackColor = Color.Transparent;
+                    label2_pBox_WP.BackColor = Color.Transparent;
+                    label_pBox_WP.BackColor = Color.Transparent;
                 }
             }
         }
@@ -700,13 +700,13 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label54.BackColor = Color.FromArgb(90, 0, 162, 232);
-                    label55.BackColor = label54.BackColor;
+                    label2_pBox_Stromspeicher.BackColor = Color.FromArgb(90, 0, 162, 232);
+                    label_pBox_Stromspeicher.BackColor = label2_pBox_Stromspeicher.BackColor;
                 }
                 else
                 {
-                    label54.BackColor = Color.Transparent;
-                    label55.BackColor = Color.Transparent;
+                    label2_pBox_Stromspeicher.BackColor = Color.Transparent;
+                    label_pBox_Stromspeicher.BackColor = Color.Transparent;
                 }
             }
         }
@@ -1087,13 +1087,13 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label52.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label53.BackColor = label52.BackColor;
+                    label2_pBox_BHKW.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_BHKW.BackColor = label2_pBox_BHKW.BackColor;
                 }
                 else
                 {
-                    label52.BackColor = Color.Transparent;
-                    label53.BackColor = Color.Transparent;
+                    label2_pBox_BHKW.BackColor = Color.Transparent;
+                    label_pBox_BHKW.BackColor = Color.Transparent;
                 }
             }
         }
@@ -1302,13 +1302,13 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label50.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label51.BackColor = label50.BackColor;
+                    label2_pBox_Solarthermie.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_Solarthermie.BackColor = label2_pBox_Solarthermie.BackColor;
                 }
                 else
                 {
-                    label50.BackColor = Color.Transparent;
-                    label51.BackColor = Color.Transparent;
+                    label2_pBox_Solarthermie.BackColor = Color.Transparent;
+                    label_pBox_Solarthermie.BackColor = Color.Transparent;
                 }
             }
         }
@@ -1396,13 +1396,13 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label56.BackColor = Color.FromArgb(90, 0, 255, 0);
-                    label57.BackColor = label56.BackColor;
+                    label2_pBox_PV.BackColor = Color.FromArgb(90, 0, 255, 0);
+                    label_pBox_PV.BackColor = label2_pBox_PV.BackColor;
                 }
                 else
                 {
-                    label56.BackColor = Color.Transparent;
-                    label57.BackColor = Color.Transparent;
+                    label2_pBox_PV.BackColor = Color.Transparent;
+                    label_pBox_PV.BackColor = Color.Transparent;
                 }
 
             }
@@ -1657,13 +1657,13 @@ namespace WindowsFormsApplication1
                             g.FillPath(blueBrush, path);
                         }
                     }
-                    label71.BackColor = Color.FromArgb(90, 0, 162, 232);
-                    label72.BackColor = label71.BackColor;
+                    label2_pBox_Pufferspeicher.BackColor = Color.FromArgb(90, 0, 162, 232);
+                    label_pBox_Pufferspeicher.BackColor = label2_pBox_Pufferspeicher.BackColor;
                 }
                 else
                 {
-                    label71.BackColor = Color.Transparent;
-                    label72.BackColor = Color.Transparent;
+                    label2_pBox_Pufferspeicher.BackColor = Color.Transparent;
+                    label_pBox_Pufferspeicher.BackColor = Color.Transparent;
                 }
             }
 

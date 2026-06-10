@@ -32,11 +32,10 @@ namespace WindowsFormsApplication1
             m_ID = GetMaxID() + 1;
 
             string sql = @"INSERT INTO Tab_Projekt 
-                           (ID, Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                           (Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             OleDbParameter[] ps = {
-                new OleDbParameter("@id", m_ID),
                 new OleDbParameter("@name", m_szProjektname ?? ""),
                 new OleDbParameter("@bearb", m_szBearbeiter ?? ""),
                 new OleDbParameter("@besch", m_szBeschreibung ?? ""),

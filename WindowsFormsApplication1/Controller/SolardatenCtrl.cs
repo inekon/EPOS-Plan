@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
         {
             if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value) item.m_ID = Convert.ToInt32(row["ID"]);
             if (dt.Columns.Contains("ID_Klimaregion") && row["ID_Klimaregion"] != DBNull.Value) item.m_ID_Klimaregion = Convert.ToInt32(row["ID_Klimaregion"]);
-            if (dt.Columns.Contains("Außen_Temp") && row["Außen_Temp"] != DBNull.Value) item.Außen_Temp = Convert.ToDouble(row["Außen_Temp"]);
+            if (dt.Columns.Contains("Temperatur") && row["Temperatur"] != DBNull.Value) item.Außen_Temp = Convert.ToDouble(row["Temperatur"]);
             if (dt.Columns.Contains("Sol_Nord") && row["Sol_Nord"] != DBNull.Value) item.Sol_Nord = Convert.ToDouble(row["Sol_Nord"]);
             if (dt.Columns.Contains("Sol_Ost") && row["Sol_Ost"] != DBNull.Value) item.Sol_Ost = Convert.ToDouble(row["Sol_Ost"]);
             if (dt.Columns.Contains("Sol_Sued") && row["Sol_Sued"] != DBNull.Value) item.Sol_Sued = Convert.ToDouble(row["Sol_Sued"]);
