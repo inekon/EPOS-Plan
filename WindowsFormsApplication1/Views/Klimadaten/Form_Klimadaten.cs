@@ -25,7 +25,6 @@ namespace WindowsFormsApplication1
 
         private void Form_Klimadaten_Load(object sender, EventArgs e)
         {
-            WindowState = FormWindowState.Normal;
             KlimaregionCtrl krclass = new KlimaregionCtrl();
             krclass.ReadAll();
             krclass.FillListBox(listBoxKlimreg);
