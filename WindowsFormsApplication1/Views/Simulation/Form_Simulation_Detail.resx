@@ -119,7 +119,7 @@
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="btn_Konfiguration.Location" type="System.Drawing.Point, System.Drawing">
-    <value>35, 28</value>
+    <value>18, 12</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="btn_Konfiguration.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
@@ -155,7 +155,7 @@
     <value>Segoe UI Semibold, 9.75pt, style=Bold</value>
   </data>
   <data name="btn_Simulation.Location" type="System.Drawing.Point, System.Drawing">
-    <value>35, 74</value>
+    <value>18, 58</value>
   </data>
   <data name="btn_Simulation.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -185,7 +185,7 @@
     <value>Segoe UI, 12pt</value>
   </data>
   <data name="btn_Beenden.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1480, 902</value>
+    <value>1300, 902</value>
   </data>
   <data name="btn_Beenden.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -218,7 +218,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Ergebnis.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 776</value>
+    <value>1357, 756</value>
   </data>
   <data name="tabPage_Ergebnis.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -734,7 +734,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Photovoltaik.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 776</value>
+    <value>1357, 756</value>
   </data>
   <data name="tabPage_Photovoltaik.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1295,7 +1295,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Solarthermie.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 776</value>
+    <value>1357, 756</value>
   </data>
   <data name="tabPage_Solarthermie.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -3134,7 +3134,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Heizkessel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 776</value>
+    <value>1357, 756</value>
   </data>
   <data name="tabPage_Heizkessel.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -4382,7 +4382,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Wärmepumpe.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 776</value>
+    <value>1357, 756</value>
   </data>
   <data name="tabPage_Wärmepumpe.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -4409,7 +4409,7 @@
     <value>NoControl</value>
   </data>
   <data name="checkBox_StromSortiert.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1091, 184</value>
+    <value>1095, 132</value>
   </data>
   <data name="checkBox_StromSortiert.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4442,7 +4442,7 @@
     <value>NoControl</value>
   </data>
   <data name="label17.Location" type="System.Drawing.Point, System.Drawing">
-    <value>750, 638</value>
+    <value>754, 586</value>
   </data>
   <data name="label17.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4478,7 +4478,7 @@
     <value>NoControl</value>
   </data>
   <data name="label18.Location" type="System.Drawing.Point, System.Drawing">
-    <value>652, 619</value>
+    <value>656, 567</value>
   </data>
   <data name="label18.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4613,7 +4613,7 @@
     <value>5</value>
   </data>
   <data name="textBox_Gesamt_Strombedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>655, 637</value>
+    <value>659, 585</value>
   </data>
   <data name="textBox_Gesamt_Strombedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4667,7 +4667,7 @@
     <value>7</value>
   </data>
   <data name="textBox_MaxStrombedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>655, 579</value>
+    <value>659, 527</value>
   </data>
   <data name="textBox_MaxStrombedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4694,7 +4694,7 @@
     <value>Segoe UI, 8.25pt</value>
   </data>
   <data name="textBox_Gesamt_Waermebedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 638</value>
+    <value>68, 586</value>
   </data>
   <data name="textBox_Gesamt_Waermebedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4721,7 +4721,7 @@
     <value>Segoe UI, 8.25pt</value>
   </data>
   <data name="textBox_MaxWaermelast.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 580</value>
+    <value>68, 528</value>
   </data>
   <data name="textBox_MaxWaermelast.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4829,7 +4829,7 @@
     <value>NoControl</value>
   </data>
   <data name="label19.Location" type="System.Drawing.Point, System.Drawing">
-    <value>750, 580</value>
+    <value>754, 528</value>
   </data>
   <data name="label19.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4865,7 +4865,7 @@
     <value>NoControl</value>
   </data>
   <data name="label20.Location" type="System.Drawing.Point, System.Drawing">
-    <value>652, 561</value>
+    <value>656, 509</value>
   </data>
   <data name="label20.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4931,7 +4931,7 @@
     <value>15</value>
   </data>
   <data name="chart2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>643, 174</value>
+    <value>647, 122</value>
   </data>
   <data name="chart2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4964,7 +4964,7 @@
     <value>NoControl</value>
   </data>
   <data name="checkBox_Sortiert.Location" type="System.Drawing.Point, System.Drawing">
-    <value>430, 184</value>
+    <value>434, 132</value>
   </data>
   <data name="checkBox_Sortiert.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4997,7 +4997,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_StromDetails.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1075, 559</value>
+    <value>1079, 507</value>
   </data>
   <data name="btn_StromDetails.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -5030,7 +5030,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_Details.Location" type="System.Drawing.Point, System.Drawing">
-    <value>398, 561</value>
+    <value>402, 509</value>
   </data>
   <data name="btn_Details.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -5063,7 +5063,7 @@
     <value>NoControl</value>
   </data>
   <data name="label15.Location" type="System.Drawing.Point, System.Drawing">
-    <value>141, 639</value>
+    <value>145, 587</value>
   </data>
   <data name="label15.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -5099,7 +5099,7 @@
     <value>NoControl</value>
   </data>
   <data name="label16.Location" type="System.Drawing.Point, System.Drawing">
-    <value>60, 620</value>
+    <value>64, 568</value>
   </data>
   <data name="label16.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -5132,7 +5132,7 @@
     <value>NoControl</value>
   </data>
   <data name="label14.Location" type="System.Drawing.Point, System.Drawing">
-    <value>141, 580</value>
+    <value>145, 528</value>
   </data>
   <data name="label14.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -5168,7 +5168,7 @@
     <value>NoControl</value>
   </data>
   <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>60, 562</value>
+    <value>64, 510</value>
   </data>
   <data name="label1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -5195,7 +5195,7 @@
     <value>23</value>
   </data>
   <data name="chart1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>18, 174</value>
+    <value>22, 122</value>
   </data>
   <data name="chart1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -5234,7 +5234,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Bedarf.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 776</value>
+    <value>1357, 756</value>
   </data>
   <data name="tabPage_Bedarf.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -5254,6 +5254,40 @@
   <data name="&gt;&gt;tabPage_Bedarf.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="richTextBox1.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8.25pt</value>
+  </data>
+  <data name="richTextBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>23, 293</value>
+  </data>
+  <data name="richTextBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>406, 268</value>
+  </data>
+  <data name="richTextBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>278</value>
+  </data>
+  <data name="richTextBox1.Text" xml:space="preserve">
+    <value>Wärmegeführt (Standard)
+Das BHKW richtet sich nach dem Heiz- und Warmwasserbedarf. Erzeugter Strom deckt den Eigenbedarf, Überschüsse werden in das öffentliche Netz eingespeist.
+
+Stromgeführt (Wirtschaftlich)
+Das BHKW richtet sich nach dem Strombedarf des Hauses, um den teuren Netzeinkauf zu minimieren. Überschüssige Wärme wird im Speicher geparkt oder bei Vollbelegung weggekühlt.
+
+Ohne Einspeisung (Zero-Export)
+Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage regelt sofort ab, sobald der Strombedarf gedeckt oder der Wärmespeicher voll ist. Keine Netzeinspeisung.</value>
+  </data>
+  <data name="&gt;&gt;richTextBox1.Name" xml:space="preserve">
+    <value>richTextBox1</value>
+  </data>
+  <data name="&gt;&gt;richTextBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RichTextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;richTextBox1.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;richTextBox1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="label56.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -5261,16 +5295,16 @@
     <value>NoControl</value>
   </data>
   <data name="label56.Location" type="System.Drawing.Point, System.Drawing">
-    <value>61, 208</value>
+    <value>39, 226</value>
   </data>
   <data name="label56.Size" type="System.Drawing.Size, System.Drawing">
-    <value>150, 17</value>
+    <value>178, 17</value>
   </data>
   <data name="label56.TabIndex" type="System.Int32, mscorlib">
     <value>277</value>
   </data>
   <data name="label56.Text" xml:space="preserve">
-    <value>Volumen Pendelspeicher</value>
+    <value>Volumen Pendelspeicher [m³]</value>
   </data>
   <data name="&gt;&gt;label56.Name" xml:space="preserve">
     <value>label56</value>
@@ -5282,10 +5316,10 @@
     <value>tabPage_BHKW</value>
   </data>
   <data name="&gt;&gt;label56.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="numericUpDown_Volumen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>61, 228</value>
+    <value>53, 246</value>
   </data>
   <data name="numericUpDown_Volumen.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 25</value>
@@ -5303,7 +5337,7 @@
     <value>tabPage_BHKW</value>
   </data>
   <data name="&gt;&gt;numericUpDown_Volumen.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="radioButton_OhneStromEinspeisung.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -5312,7 +5346,7 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton_OhneStromEinspeisung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>29, 98</value>
+    <value>17, 89</value>
   </data>
   <data name="radioButton_OhneStromEinspeisung.Size" type="System.Drawing.Size, System.Drawing">
     <value>163, 21</value>
@@ -5342,7 +5376,7 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton_Waermegefuehrt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>29, 67</value>
+    <value>17, 58</value>
   </data>
   <data name="radioButton_Waermegefuehrt.Size" type="System.Drawing.Size, System.Drawing">
     <value>109, 21</value>
@@ -5372,7 +5406,7 @@
     <value>NoControl</value>
   </data>
   <data name="radioButton_Stromgefuehrt.Location" type="System.Drawing.Point, System.Drawing">
-    <value>29, 40</value>
+    <value>17, 31</value>
   </data>
   <data name="radioButton_Stromgefuehrt.Size" type="System.Drawing.Size, System.Drawing">
     <value>103, 21</value>
@@ -5396,10 +5430,10 @@
     <value>2</value>
   </data>
   <data name="groupBox_BHKWBetriebsart.Location" type="System.Drawing.Point, System.Drawing">
-    <value>61, 23</value>
+    <value>53, 23</value>
   </data>
   <data name="groupBox_BHKWBetriebsart.Size" type="System.Drawing.Size, System.Drawing">
-    <value>209, 131</value>
+    <value>207, 124</value>
   </data>
   <data name="groupBox_BHKWBetriebsart.TabIndex" type="System.Int32, mscorlib">
     <value>275</value>
@@ -5417,7 +5451,7 @@
     <value>tabPage_BHKW</value>
   </data>
   <data name="&gt;&gt;groupBox_BHKWBetriebsart.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="chart_BHKW_Waerme.Location" type="System.Drawing.Point, System.Drawing">
     <value>450, 23</value>
@@ -5426,7 +5460,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="chart_BHKW_Waerme.Size" type="System.Drawing.Size, System.Drawing">
-    <value>522, 326</value>
+    <value>624, 420</value>
   </data>
   <data name="chart_BHKW_Waerme.TabIndex" type="System.Int32, mscorlib">
     <value>274</value>
@@ -5444,13 +5478,13 @@
     <value>tabPage_BHKW</value>
   </data>
   <data name="&gt;&gt;chart_BHKW_Waerme.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="label54.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="label54.Location" type="System.Drawing.Point, System.Drawing">
-    <value>61, 158</value>
+    <value>39, 154</value>
   </data>
   <data name="label54.Size" type="System.Drawing.Size, System.Drawing">
     <value>306, 17</value>
@@ -5471,10 +5505,10 @@
     <value>tabPage_BHKW</value>
   </data>
   <data name="&gt;&gt;label54.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="numericUpDown_UnteresteLG.Location" type="System.Drawing.Point, System.Drawing">
-    <value>61, 178</value>
+    <value>53, 174</value>
   </data>
   <data name="numericUpDown_UnteresteLG.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 25</value>
@@ -5492,7 +5526,7 @@
     <value>tabPage_BHKW</value>
   </data>
   <data name="&gt;&gt;numericUpDown_UnteresteLG.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="tabPage_BHKW.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -5504,7 +5538,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_BHKW.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 776</value>
+    <value>1357, 756</value>
   </data>
   <data name="tabPage_BHKW.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -5903,7 +5937,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Stromspeicher.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 776</value>
+    <value>1357, 756</value>
   </data>
   <data name="tabPage_Stromspeicher.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -5927,13 +5961,13 @@
     <value>Segoe UI Semibold, 12pt, style=Bold</value>
   </data>
   <data name="tabControl1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>35, 135</value>
+    <value>36, 104</value>
   </data>
   <data name="tabControl1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1365, 810</value>
+    <value>1365, 790</value>
   </data>
   <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
     <value>254</value>
@@ -5960,7 +5994,7 @@
     <value>True</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>1616, 791</value>
+    <value>1616, 841</value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>

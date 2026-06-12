@@ -162,26 +162,62 @@ namespace WindowsFormsApplication1
      //           bhkwGrenzL[i] = (float)ctrl.m_Grenzleistung;
             }
 
-
-            BhkwSimulationWaermegefuehrt(
-                waermebedarf,
-                stromproduktion,
-                waermerestbedarf,
-                waermeproduktion,
-                s_waerme,
-                s_strom,
-                kapazitaetPendelspeicher,
-                anzahlBhkw,
-                bhkwWaermeLeistung,
-                bhkwStromLeistung,
-                ref solarSpeicher,
-                bhkwGrenzL,
-                solarVorhanden,
-                ref solarWaerme,
-                ref solarUeberschuss,
-                strombedarf,
-                bhkwGrenzleistungAllgemein
-            );
+            if (modeBHKW == 0)
+            {
+                BhkwSimulationWaermegefuehrt(
+                    waermebedarf,
+                    stromproduktion,
+                    waermerestbedarf,
+                    waermeproduktion,
+                    s_waerme,
+                    s_strom,
+                    kapazitaetPendelspeicher,
+                    anzahlBhkw,
+                    bhkwWaermeLeistung,
+                    bhkwStromLeistung,
+                    ref solarSpeicher,
+                    bhkwGrenzL,
+                    solarVorhanden,
+                    ref solarWaerme,
+                    ref solarUeberschuss,
+                    strombedarf,
+                    bhkwGrenzleistungAllgemein
+                );
+            }
+            else if (modeBHKW == 1) {
+                SimulationStromgefuehrt(
+                    waermebedarf,
+                    strombedarf,
+                    stromproduktion,
+                    waermerestbedarf,
+                    waermeproduktion,
+                    s_waerme,
+                    s_strom,
+                    kapazitaetPendelspeicher,
+                    anzahlBhkw,
+                    bhkwWaermeLeistung,
+                    bhkwStromLeistung,
+                    bhkwGrenzleistungAllgemein,
+                    ref solarUeberschuss
+                );
+            }
+            else if (modeBHKW == 2)
+            {
+                SimulationOhneEinspeisung(
+                    waermebedarf,
+                    strombedarf,
+                    stromproduktion,
+                    waermerestbedarf,
+                    waermeproduktion,
+                    s_waerme,
+                    s_strom,
+                    kapazitaetPendelspeicher,
+                    anzahlBhkw,
+                    bhkwWaermeLeistung,
+                    bhkwStromLeistung,
+                    bhkwGrenzleistungAllgemein
+                );
+            }
 
             /*
             string ordnerPfad = AppDomain.CurrentDomain.BaseDirectory; // Speicherort ist der Debug/Release-Ordner deiner App
@@ -792,6 +828,8 @@ namespace WindowsFormsApplication1
                 s_strom[j] /= 1000f;
             }
         }
+
+
 
         // Hilfsmethode als Platzhalter für die solare Erzeugung
         private float SolareErzeugung(int stunde)

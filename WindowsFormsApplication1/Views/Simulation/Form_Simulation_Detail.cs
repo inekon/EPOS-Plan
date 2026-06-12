@@ -192,6 +192,23 @@ namespace WindowsFormsApplication1
 
             // 4. Falls das Fenster maximiert gestartet werden soll (oft die sauberste Notebook-Lösung):
             // this.WindowState = FormWindowState.Maximized; 
+
+            radioButton_Waermegefuehrt.Checked = true;
+
+            MacheTextAbschnittFett(richTextBox1, "Wärmegeführt (Standard)");
+            MacheTextAbschnittFett(richTextBox1, "Stromgeführt (Wirtschaftlich)");
+            MacheTextAbschnittFett(richTextBox1, "Ohne Einspeisung (Zero-Export)");
+        }
+
+        private void MacheTextAbschnittFett(RichTextBox rtb, string textZuFormatieren)
+        {
+            int index = rtb.Text.IndexOf(textZuFormatieren);
+            if (index != -1)
+            {
+                rtb.Select(index, textZuFormatieren.Length);
+                rtb.SelectionFont = new Font(rtb.Font, FontStyle.Bold);
+                rtb.SelectionLength = 0; // Auswahl aufheben
+            }
         }
 
         private void init_Chart(Chart chart)
