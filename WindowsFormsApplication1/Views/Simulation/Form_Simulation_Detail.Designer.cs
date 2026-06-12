@@ -218,6 +218,9 @@
             chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             tabControl1 = new System.Windows.Forms.TabControl();
             tabPage_BHKW = new System.Windows.Forms.TabPage();
+            richTextBox1 = new System.Windows.Forms.RichTextBox();
+            label56 = new System.Windows.Forms.Label();
+            numericUpDown_Volumen = new System.Windows.Forms.NumericUpDown();
             groupBox_BHKWBetriebsart = new System.Windows.Forms.GroupBox();
             radioButton_OhneStromEinspeisung = new System.Windows.Forms.RadioButton();
             radioButton_Waermegefuehrt = new System.Windows.Forms.RadioButton();
@@ -237,8 +240,6 @@
             comboBox8_Stromspeicher_LadeenergieMin_auswahl = new System.Windows.Forms.ComboBox();
             comboBox_Stromspeicher_LadeenergieMax_auswahl = new System.Windows.Forms.ComboBox();
             label12 = new System.Windows.Forms.Label();
-            numericUpDown_Volumen = new System.Windows.Forms.NumericUpDown();
-            label56 = new System.Windows.Forms.Label();
             tabPage_Photovoltaik.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)chart_PV).BeginInit();
             tabPage_Solarthermie.SuspendLayout();
@@ -256,11 +257,11 @@
             ((System.ComponentModel.ISupportInitialize)chart1).BeginInit();
             tabControl1.SuspendLayout();
             tabPage_BHKW.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown_Volumen).BeginInit();
             groupBox_BHKWBetriebsart.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)chart_BHKW_Waerme).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown_UnteresteLG).BeginInit();
             tabPage_Stromspeicher.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown_Volumen).BeginInit();
             SuspendLayout();
             // 
             // btn_Konfiguration
@@ -1651,6 +1652,7 @@
             // 
             // tabPage_BHKW
             // 
+            tabPage_BHKW.Controls.Add(richTextBox1);
             tabPage_BHKW.Controls.Add(label56);
             tabPage_BHKW.Controls.Add(numericUpDown_Volumen);
             tabPage_BHKW.Controls.Add(groupBox_BHKWBetriebsart);
@@ -1660,6 +1662,25 @@
             resources.ApplyResources(tabPage_BHKW, "tabPage_BHKW");
             tabPage_BHKW.Name = "tabPage_BHKW";
             tabPage_BHKW.UseVisualStyleBackColor = true;
+            // 
+            // richTextBox1
+            // 
+            richTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(richTextBox1, "richTextBox1");
+            richTextBox1.ForeColor = System.Drawing.Color.DarkGreen;
+            richTextBox1.Name = "richTextBox1";
+            // 
+            // label56
+            // 
+            resources.ApplyResources(label56, "label56");
+            label56.Name = "label56";
+            // 
+            // numericUpDown_Volumen
+            // 
+            numericUpDown_Volumen.DecimalPlaces = 1;
+            numericUpDown_Volumen.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
+            resources.ApplyResources(numericUpDown_Volumen, "numericUpDown_Volumen");
+            numericUpDown_Volumen.Name = "numericUpDown_Volumen";
             // 
             // groupBox_BHKWBetriebsart
             // 
@@ -1674,22 +1695,25 @@
             // 
             resources.ApplyResources(radioButton_OhneStromEinspeisung, "radioButton_OhneStromEinspeisung");
             radioButton_OhneStromEinspeisung.Name = "radioButton_OhneStromEinspeisung";
+            radioButton_OhneStromEinspeisung.Tag = "2";
             radioButton_OhneStromEinspeisung.UseVisualStyleBackColor = true;
             radioButton_OhneStromEinspeisung.CheckedChanged += radioButton_Stromgefuehrt_CheckedChanged;
             // 
             // radioButton_Waermegefuehrt
             // 
             resources.ApplyResources(radioButton_Waermegefuehrt, "radioButton_Waermegefuehrt");
+            radioButton_Waermegefuehrt.Checked = true;
             radioButton_Waermegefuehrt.Name = "radioButton_Waermegefuehrt";
+            radioButton_Waermegefuehrt.TabStop = true;
+            radioButton_Waermegefuehrt.Tag = "0";
             radioButton_Waermegefuehrt.UseVisualStyleBackColor = true;
             radioButton_Waermegefuehrt.CheckedChanged += radioButton_Stromgefuehrt_CheckedChanged;
             // 
             // radioButton_Stromgefuehrt
             // 
             resources.ApplyResources(radioButton_Stromgefuehrt, "radioButton_Stromgefuehrt");
-            radioButton_Stromgefuehrt.Checked = true;
             radioButton_Stromgefuehrt.Name = "radioButton_Stromgefuehrt";
-            radioButton_Stromgefuehrt.TabStop = true;
+            radioButton_Stromgefuehrt.Tag = "1";
             radioButton_Stromgefuehrt.UseVisualStyleBackColor = true;
             radioButton_Stromgefuehrt.CheckedChanged += radioButton_Stromgefuehrt_CheckedChanged;
             // 
@@ -1821,16 +1845,6 @@
             label12.ForeColor = System.Drawing.Color.Black;
             label12.Name = "label12";
             // 
-            // numericUpDown_Volumen
-            // 
-            resources.ApplyResources(numericUpDown_Volumen, "numericUpDown_Volumen");
-            numericUpDown_Volumen.Name = "numericUpDown_Volumen";
-            // 
-            // label56
-            // 
-            resources.ApplyResources(label56, "label56");
-            label56.Name = "label56";
-            // 
             // Form_Simulation_Detail
             // 
             resources.ApplyResources(this, "$this");
@@ -1866,13 +1880,13 @@
             tabControl1.ResumeLayout(false);
             tabPage_BHKW.ResumeLayout(false);
             tabPage_BHKW.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown_Volumen).EndInit();
             groupBox_BHKWBetriebsart.ResumeLayout(false);
             groupBox_BHKWBetriebsart.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)chart_BHKW_Waerme).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown_UnteresteLG).EndInit();
             tabPage_Stromspeicher.ResumeLayout(false);
             tabPage_Stromspeicher.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown_Volumen).EndInit();
             ResumeLayout(false);
 
         }
@@ -2055,5 +2069,6 @@
         private System.Windows.Forms.RadioButton radioButton_Stromgefuehrt;
         private System.Windows.Forms.Label label56;
         private System.Windows.Forms.NumericUpDown numericUpDown_Volumen;
+        private System.Windows.Forms.RichTextBox richTextBox1;
     }
 }
