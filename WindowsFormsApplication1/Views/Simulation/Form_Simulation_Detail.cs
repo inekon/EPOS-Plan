@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
         SimulationControl sim = new SimulationControl();
         KonfigurationCtrl ctrl = new KonfigurationCtrl();
         ProjektCtrl projektCtrl = new ProjektCtrl();
-        ChartManager[] _chartManager = new ChartManager[10];
+        ChartManager[] _chartManager = new ChartManager[11];
         ToolTip tooltip = new ToolTip();
 
         public int m_ID_Projekt;
@@ -40,6 +40,9 @@ namespace WindowsFormsApplication1
         private List<TabPage> alleTabPages = new List<TabPage>();
         private Dictionary<string, TabPage> dictAllTabPages = new Dictionary<string, TabPage>();
 
+        // Das ist deine Zielvariable (0 = Wärmegeführt, 1 = Stromgeführt, 2 = Ohne Einspeisung)
+        private int bhkwSimulationsArt = 0;
+
         public Form_Simulation_Detail(int iD_Projekt)
         {
             InitializeComponent();
@@ -47,7 +50,7 @@ namespace WindowsFormsApplication1
 
             init_Chart(chart1);
             init_Chart(chart2);
-            
+
             listView_SimSPK.View = View.Details;
             listView_SimSPK.Columns.Add("Heizkessel", -2, HorizontalAlignment.Left);
             listView_SimSPK.Columns.Add("Name", -2, HorizontalAlignment.Left);
@@ -76,7 +79,7 @@ namespace WindowsFormsApplication1
             foreach (TabPage page in tabControl1.TabPages)
             {
                 alleTabPages.Add(page);
-                dictAllTabPages.Add(page.Name , page); 
+                dictAllTabPages.Add(page.Name, page);
             }
             ReihenfolgeTabPages();
         }
@@ -268,11 +271,13 @@ namespace WindowsFormsApplication1
             textBox_gesStrombedarf.Text = simulation_Strombedarf.Strombedarf_gesamt.ToString("F2");
             textBox_gesWaermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
 
+            sim.GrenzleistungBHKW = (int)numericUpDown_UnteresteLG.Value;
+            sim.VolumenPendelspeicherBHKW = (int)numericUpDown_Volumen.Value;
+            sim.modeBHKW = bhkwSimulationsArt;
+
             // Tool Simulation WP, SPK usw. durchführen
             sim.Do_Simulation(m_ID_Projekt);
             Endergebniss_Simulation();
-
- 
         }
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
@@ -547,7 +552,7 @@ namespace WindowsFormsApplication1
                 _chartManager[4].IsXYChart = true;
                 _chartManager[4].AreaLine = true; // Area Chart Effekt
                 _chartManager[4].MitLegende = true;
-                _chartManager[4].YMaxValue = sim.simulation_wp.Waermebedarf_stuendlich.Max();   
+                _chartManager[4].YMaxValue = sim.simulation_wp.Waermebedarf_stuendlich.Max();
                 _chartManager[4].Init();
 
                 // Daten hinzufügen (gefilterte PointF[] Arrays)
@@ -665,7 +670,33 @@ namespace WindowsFormsApplication1
             _chartManager[9]._chart.Series["Speicherfüllstand"].Enabled = false;
             checkBox_Ueberschuss.Checked = false;
             checkBox_Speicherzustand.Checked = false;
-            textBox_MaxPSolar.Text =  sim.simulation_pv.MaxPSolar.ToString("F2");
+            textBox_MaxPSolar.Text = sim.simulation_pv.MaxPSolar.ToString("F2");
+
+
+
+            // ********************************************************************************************/
+            // BHKW
+            // ********************************************************************************************/
+            // Chart Solarthermie Wärmerbedarf und Produktion
+            _chartManager[10] = new ChartManager(chart_BHKW_Waerme);
+            _chartManager[10].YMaxValue = sim.simulation_bhkw.waermebedarf.Max();
+            _chartManager[10].YMinValue = 0;
+            _chartManager[10].XAxisAsNumber = true;
+            _chartManager[10].XAxisTitle = "Jahresstunden";
+            _chartManager[10].YAxisTitle = "Wärmelast";
+            _chartManager[10].toolTipUnit = "kW";
+            _chartManager[10].ChartTitle = "Wärmelast Jahresganglinie";
+            _chartManager[10].MitLegende = true;
+            _chartManager[10].MitChartBorder = true;
+            _chartManager[10].AreaLine = false;
+            _chartManager[10].Init();
+
+            float[] waermebedarfSortiert = sim.simulation_bhkw.waermebedarf.OrderByDescending(w => w).ToArray();
+            _chartManager[10].AddSeries("Waermebedarf", Color.Red, waermebedarfSortiert);
+            float[] waermeproduktionSortiert = sim.simulation_bhkw.waermeproduktion.OrderByDescending(w => w).ToArray();
+            _chartManager[10].AddSeries("Wärmeproduktion", Color.Blue, waermeproduktionSortiert);
+
+
 
             // ********************************************************************************************/
             // Ergebnisübersicht
@@ -945,7 +976,7 @@ namespace WindowsFormsApplication1
         }
 
 
-                
+
         private void InitTextBoxen(TabPage page)
         {
             page.Controls.OfType<TextBox>().ToList().ForEach(tb => tb.Text = "");
@@ -982,8 +1013,8 @@ namespace WindowsFormsApplication1
                 }
             }
         }
-  
- 
+
+
 
         private void checkBox_Ueberschuss_CheckedChanged(object sender, EventArgs e)
         {
@@ -994,7 +1025,7 @@ namespace WindowsFormsApplication1
             }
 
             // 2. Skalierung über den Manager korrigieren
-           // _chartManager[9].UpdateYScaleBasedOnVisibleSeries();
+            // _chartManager[9].UpdateYScaleBasedOnVisibleSeries();
         }
 
         private void checkBox_Speicherzustand_CheckedChanged(object sender, EventArgs e)
@@ -1064,6 +1095,28 @@ namespace WindowsFormsApplication1
 
             ca.RecalculateAxesScale();
             _chartManager[9]._chart.Invalidate();
+        }
+
+        private void radioButton_Stromgefuehrt_CheckedChanged(object sender, EventArgs e)
+        {
+            // 0 = Wärmegeführt, 1 = Stromgeführt, 2 = Ohne Einspeisung
+            // Sicherstellen, dass der "Sender" wirklich ein RadioButton ist
+            if (sender is RadioButton geklickterButton)
+            {
+                // Wichtig: Das Event feuert beim alten Button (wird false) UND beim neuen Button (wird true).
+                // Wir wollen nur reagieren, wenn ein Button AKTIVIERT wurde.
+                if (geklickterButton.Checked)
+                {
+                    // Den Wert aus dem 'Tag' auslesen und in ein Int umwandeln
+                    if (geklickterButton.Tag != null)
+                    {
+                        bhkwSimulationsArt = Convert.ToInt32(geklickterButton.Tag);
+
+                        // Zum Testen im Ausgabefenster:
+                        System.Diagnostics.Debug.WriteLine($"Simulationsart geändert auf: {bhkwSimulationsArt}");
+                    }
+                }
+            }
         }
     }
 
