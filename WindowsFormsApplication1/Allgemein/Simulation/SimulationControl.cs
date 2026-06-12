@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace WindowsFormsApplication1
 {
@@ -11,6 +12,7 @@ namespace WindowsFormsApplication1
         public SimulationSolarthermie simulation_solarthermie = new SimulationSolarthermie();
         public SimulationPV simulation_pv = new SimulationPV(); 
         public SimulationSSP simulation_ssp = new SimulationSSP();
+        public SimulationBHKW simulation_bhkw = new SimulationBHKW();
 
         private bool m_bError = false;
 
@@ -22,7 +24,11 @@ namespace WindowsFormsApplication1
         public int m_ID_Projekt;
         public string[] tool;
         public float[] Stundentemperatur = new float[8760];
-        
+        public int modeBHKW;
+        public int GrenzleistungBHKW;
+        public int VolumenPendelspeicherBHKW;
+
+
         // Rückgabe
         public float Restwaerme;
         public float Reststrom;
@@ -34,6 +40,7 @@ namespace WindowsFormsApplication1
         public bool bSimulationSolarthermie = false;
         public bool bSimulationPV = false;
         public bool bSimulationSSP = false;
+        public bool bSimulationBHKW = false;
 
         public void Do_Simulation(int ID_Projekt)
         {
@@ -115,7 +122,30 @@ namespace WindowsFormsApplication1
 
                     bSimulationSolarthermie = true;
                 }
-   
+                else if (tool[i] == "BHKW")
+                {
+                    Ausgang = Simulation_BHKW_Ctrl(Eingang, Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich));
+                    Restwaerme = 0;
+                    for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
+                    Rest_Wermebedarf_stuendlich = Ausgang;
+                    Eingang = Ausgang;
+         
+                    // 1. Das BHKW rechnet. Es füllt intern das Array 'Stromproduktion_stündlich'
+
+                    // 2. Wir holen uns die tatsächliche ERZEUGUNG des BHKWs (nicht den internen Reststrom!)
+                    float[] bhkwStromStuendlich = simulation_bhkw.stromproduktion;
+
+                    // 3. Wir wandeln die ERZEUGUNG in Viertelstunden
+                    float[] bhkwStromViertelstuendlich = Stundenwerte_zu_viertelstunden(bhkwStromStuendlich);
+
+                    // 4. Wir ZIEHEN DIE ERZEUGUNG VOM BEDARF AB
+                    // Wenn der Bedarf 10 kW war und das BHKW 10 kW erzeugt hat, bleibt für die Wärmepumpe richtigerweise 0 kW übrig.
+                    Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, bhkwStromViertelstuendlich);
+                    Reststrom -= (float)simulation_bhkw.Stromproduktion_gesamt / 1000f; //MWh
+
+                    bSimulationBHKW = true;
+                }
+
             }
 
             if(tool[4] == "Photovoltaik")
@@ -129,9 +159,6 @@ namespace WindowsFormsApplication1
                 bSimulationPV = true;
             }
 
-
-            Restwaerme /= 1000; // in MWh
-            
             if (tool[5] == "Stromspeicher")
             {
                 // Rest_Strombedarf_viertelstuendlich
@@ -143,6 +170,8 @@ namespace WindowsFormsApplication1
 
                 bSimulationSSP = true;
             }
+
+            Restwaerme /= 1000; // in MWh
         }
 
         private float[] Simulation_WP_Ctrl(float[] Waermebedarf, bool bHeizstab)
@@ -165,6 +194,36 @@ namespace WindowsFormsApplication1
             m_bError = !simulation_wp.Berechnung();
 
             return  m_bError ? Waermebedarf : simulation_wp.waermerestbedarf_stuendlich;
+        }
+
+        private float[] Simulation_BHKW_Ctrl(float[] Waermebedarf, float[] Strombedarf)
+        {
+            RecordSet rs = new RecordSet();
+
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass. BHKW_TYP);
+
+            simulation_bhkw.bhkw_list.Clear();
+            int i = 0;
+            while (rs.Next())
+            {
+                simulation_bhkw.bhkw_list.Add((int)rs.Read("ID_BHKW"));
+                double Grenzleistung = (double)rs.Read("Grenzleistung") / 100;
+                simulation_bhkw.bhkwGrenzL[i++] = (float)Grenzleistung;
+            }
+            rs.Close();
+
+            simulation_bhkw.waermebedarf = Waermebedarf;
+            simulation_bhkw.strombedarf = Strombedarf;
+            simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
+            simulation_bhkw.kapazitaetPendelspeicher = (float)VolumenPendelspeicherBHKW * 20000 / 860;
+            simulation_bhkw.modeBHKW = modeBHKW;
+
+            // Simulation starten
+            m_bError = !simulation_bhkw.Berechnung(m_ID_Projekt);
+
+            float[] restwaerme = SubVectors(Waermebedarf, simulation_bhkw.waermeproduktion);
+
+            return m_bError ? Waermebedarf : restwaerme;
         }
 
         private float[] Simulation_SPK_Ctrl(float[] Waermebedarf, int nBereitschaft)
@@ -253,6 +312,25 @@ namespace WindowsFormsApplication1
                 viertelstundenwerte[i * 4 + 3] = stundenwerte[i];
             }
             return viertelstundenwerte;
+        }
+
+        public float[] Viertelstunden_zu_Stundenwerte_Mittelwert(float[] viertelstundenwerte)
+        {
+            // Die Länge des neuen Arrays ist genau ein Viertel des Originals
+            float[] stundenwerte = new float[viertelstundenwerte.Length / 4];
+
+            for (int i = 0; i < stundenwerte.Length; i++)
+            {
+                // Die 4 Viertelstunden einer Stunde zusammenrechnen und den Durchschnitt bilden
+                float summe = viertelstundenwerte[i * 4] +
+                              viertelstundenwerte[i * 4 + 1] +
+                              viertelstundenwerte[i * 4 + 2] +
+                              viertelstundenwerte[i * 4 + 3];
+
+                stundenwerte[i] = summe / 4f;
+            }
+
+            return stundenwerte;
         }
 
         private float[] Simulation_Photovoltaik_Ctrl(float[] Strombedarf)

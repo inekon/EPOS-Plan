@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
     public partial class NavigatorUebersicht : UserControl, INavigatableContent
     {
         double waerme_solar = 0, gesamt_waerme = 0, restwaermebedarf = 0;
-        double waerme_spk = 0, waerme_wp = 0, waerme_heizstab = 0;
+        double waerme_spk = 0, waerme_wp = 0, waerme_heizstab = 0, waerme_bhkw = 0;
         SimulationControl sim;
 
         // Donut Farben (WP, Solar, Heizstab, Kessel, Rest)
@@ -18,6 +18,7 @@ namespace WindowsFormsApplication1
             ColorTranslator.FromHtml("#E67E22"), // Solar
             ColorTranslator.FromHtml("#F1C40F"), // Heizstab
             ColorTranslator.FromHtml("#95A5A6"), // Kessel
+            ColorTranslator.FromHtml("#75A5A6"), // BHKW
             ColorTranslator.FromHtml("#3498DB")  // Rest
         };
 
@@ -66,7 +67,8 @@ namespace WindowsFormsApplication1
             dgvErgebnisse.Rows.Add("Heizstab", (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2"));
             dgvErgebnisse.Rows.Add("Solarthermie-Anlage", (sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000).ToString("F2"));
             dgvErgebnisse.Rows.Add("HeizKessel", sim.simulation_spk.S_Waerme_spk.ToString("F2"));
-            dgvErgebnisse.Rows.Add("Photovoltaik", (sim.simulation_pv.Stromproduktion_gesamt / 1000).ToString("F2"));
+            //dgvErgebnisse.Rows.Add("Photovoltaik", (sim.simulation_pv.Stromproduktion_gesamt / 1000).ToString("F2"));
+            dgvErgebnisse.Rows.Add("BHKW", (sim.simulation_bhkw.Waermeproduktion_gesamt / 1000).ToString("F2"));
         }
 
         private void bt_WaermebedarfUebersicht_Click(object sender, EventArgs e)
@@ -172,8 +174,9 @@ namespace WindowsFormsApplication1
             waerme_wp = sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
             waerme_heizstab = sim.simulation_wp.Heizstab_gesamt / 1000;
             waerme_solar = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000;
-
-            gesamt_waerme = waerme_spk + waerme_wp + waerme_heizstab + waerme_solar;
+            waerme_bhkw = sim.simulation_bhkw.waermeproduktion.Sum() / 1000;
+            
+            gesamt_waerme = waerme_spk + waerme_wp + waerme_heizstab + waerme_solar + waerme_bhkw;
             restwaermebedarf = sim.simulation_Waermebedarf.Waermebedarf_Gesamt - gesamt_waerme;
 
             FillTableWithData(dataGridView1);
@@ -209,9 +212,10 @@ namespace WindowsFormsApplication1
                 waerme_solar * 100 / wb_gesamt,
                 waerme_heizstab * 100 / wb_gesamt,
                 waerme_spk * 100 / wb_gesamt,
+                waerme_bhkw * 100 / wb_gesamt,
                 Math.Max(0, restwaermebedarf * 100 / wb_gesamt)
             };
-            string[] namenWaerme = { "Wärmepumpe", "Solarthermie", "Heizstab", "Spitzenkessel", "Restwärme" };
+            string[] namenWaerme = { "Wärmepumpe", "Solarthermie", "Heizstab", "Spitzenkessel", "BHKW", "Restwärme" };
 
             Rectangle innerWaerme = new Rectangle(rectWaermeChart.X + 10, rectWaermeChart.Y + 20, rectWaermeChart.Width - 20, rectWaermeChart.Height - 30);
             DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerWaerme, werteWaerme, (gesamt_waerme * 100 / wb_gesamt), namenWaerme, palette);
@@ -220,13 +224,34 @@ namespace WindowsFormsApplication1
             Rectangle rectStromChart = new Rectangle(margin, rectWaermeChart.Bottom + margin, kachelBreiteLinks, kachelHoeheDonut);
             Kacheln.DrawKPICard(e.Graphics, rectStromChart, "Strombedarfsdeckung [%]", "", "", Color.DodgerBlue);
 
-            double se_pv = sim.simulation_pv.Stromproduktion_gesamt / 1000;
-            double sb_gesamt = sim.simulation_Strombedarf.Strombedarf_gesamt + (sim.simulation_wp.WP_Strombedarf_gesamt + sim.simulation_wp.Heizstab_gesamt) / 1000;
-            double[] werteStrom = { se_pv * 100 / sb_gesamt, Math.Max(0, (sb_gesamt - se_pv) * 100 / sb_gesamt) };
-            string[] namenStrom = { "Photovoltaik", "Reststrom" };
+            double se_pv = (sim.simulation_pv.Stromproduktion_gesamt) / 1000;
+            double se_bhkw = (sim.simulation_bhkw.Stromproduktion_gesamt) / 1000;
+
+            double sb_gesamt = 0;
+            sb_gesamt = sim.simulation_Strombedarf.Strombedarf_gesamt + (sim.simulation_wp.WP_Strombedarf_gesamt + sim.simulation_wp.Heizstab_gesamt) / 1000;
+
+            double[] werteStrom = new double[3];
+            if (sb_gesamt > 0)
+            {
+                werteStrom[0] = se_pv * 100 / sb_gesamt;
+                werteStrom[1] = se_bhkw * 100 / sb_gesamt;
+                werteStrom[2] = Math.Max(0, (sb_gesamt - se_pv - se_bhkw) * 100 / sb_gesamt);
+            }
+            else
+            {
+                werteStrom[0] = 0;
+                werteStrom[1] = 0;
+                werteStrom[2] = 0;
+            }
+
+            string[] namenStrom = { "Photovoltaik", "BHKW", "Reststrom" };
 
             Rectangle innerStrom = new Rectangle(rectStromChart.X + 10, rectStromChart.Y + 20, rectStromChart.Width - 20, rectStromChart.Height - 30);
-            DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, (se_pv * 100 / sb_gesamt), namenStrom, palette);
+            
+            if(sb_gesamt > 0)
+                DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, ((se_pv + se_bhkw) * 100 / sb_gesamt), namenStrom, palette);
+            else
+                DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, 100, namenStrom, palette);
 
 
             // --- RECHTE SPALTE: KPIs & TABELLE ---
