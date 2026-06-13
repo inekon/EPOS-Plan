@@ -1,0 +1,70 @@
+Vorlage – Anfrage technische Datenblätter avus (2G Energy AG)
+=============================================================
+
+An:       info@2-g.de
+Cc:       [ggf. zuständiger Vertriebskontakt / Gebietsleiter]
+Von:      philipp.engelmann@inekon.de
+Betreff:  Anfrage: Technische Datenblätter der avus-Baureihe (Erdgas) für Planungszwecke
+
+
+Sehr geehrte Damen und Herren,
+
+wir verwenden in unserer Planungs- bzw. Simulationssoftware für die kommunale
+Wärmeplanung herstellerbezogene Kenndaten von Blockheizkraftwerken. Für die
+2G-Produktreihe agenitor liegen uns die technischen Einzel-Datenblätter bereits
+vor; für die Baureihe avus konnten wir über die öffentlichen Quellen jedoch keine
+vollständigen, aktuellen Einzel-Datenblätter in deutscher oder englischer Sprache
+beziehen.
+
+Wir bitten Sie daher um Zusendung der aktuellen technischen Datenblätter
+(Technische Spezifikation, PDF) für die folgenden avus-Modelle, Betrieb mit
+Erdgas (EG):
+
+    - avus 500plus / 500a / 500b / 500c
+    - avus 800a / 800b / 800c / 800e
+    - avus 1000plus / 1000a / 1000b / 1000c
+    - avus 1200e
+    - avus 1500b / 1500c
+    - avus 1600e
+    - avus 2000a / 2000b / 2000c / 2000e
+    - avus 3000a
+      (sowie ggf. weitere aktuell verfügbare Baugrößen/Konfigurationen)
+
+Benötigte Angaben je Modell:
+    - elektrische und thermische Leistung (bei 100/75/50 % Last)
+    - elektrischer, thermischer und Gesamtwirkungsgrad
+    - Brennstoffverbrauch / Energieeinsatz (Hi)
+    - NOx-/Emissionsklasse und Abgastemperatur
+    - Maße, Gewicht und Schallleistungspegel
+
+Format und Sprache:
+    - PDF, deutsch (alternativ englisch)
+    - aktueller Versionsstand (keine „provisional/preliminary"-Entwürfe, sofern
+      vermeidbar)
+
+Sofern verfügbar, freuen wir uns zusätzlich über entsprechende Datenblätter für
+den Betrieb mit Biogas (BG) und Wasserstoff (H2).
+
+Für einen Zugang zu Ihrem Produktkonfigurator bzw. Downloadbereich, über den wir
+die Datenblätter künftig selbst abrufen können, sind wir ebenfalls dankbar.
+
+Vielen Dank im Voraus für Ihre Unterstützung. Für Rückfragen stehe ich Ihnen
+gerne zur Verfügung.
+
+Mit freundlichen Grüßen
+
+[Vorname Nachname]
+[Funktion / Abteilung]
+[Firmenname]
+[Straße, PLZ Ort]
+[Telefon]
+philipp.engelmann@inekon.de
+
+
+-------------------------------------------------------------
+Hinweise (nicht mitsenden):
+- info@2-g.de und +49 (0)2568 9347-0 sind die offiziellen Kontaktdaten der
+  2G Energy AG (Stand der Recherche Juni 2026).
+- Platzhalter in [ ] vor dem Versand ersetzen.
+- Falls ein direkter Vertriebs-/Gebietskontakt bekannt ist, diesen ins „An"
+  setzen und info@2-g.de auf Cc – das beschleunigt die Bearbeitung erfahrungsgemäß.

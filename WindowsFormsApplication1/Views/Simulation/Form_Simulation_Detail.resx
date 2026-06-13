@@ -5271,7 +5271,7 @@
 Das BHKW richtet sich nach dem Heiz- und Warmwasserbedarf. Erzeugter Strom deckt den Eigenbedarf, Überschüsse werden in das öffentliche Netz eingespeist.
 
 Stromgeführt (Wirtschaftlich)
-Das BHKW richtet sich nach dem Strombedarf des Hauses, um den teuren Netzeinkauf zu minimieren. Überschüssige Wärme wird im Speicher geparkt oder bei Vollbelegung weggekühlt.
+Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im im Speicher gepuffert, solangen Speicherkapazität verfügbar ist, Überschüssige Wärme wird weggekühlt.
 
 Ohne Einspeisung (Zero-Export)
 Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage regelt sofort ab, sobald der Strombedarf gedeckt oder der Wärmespeicher voll ist. Keine Netzeinspeisung.</value>
