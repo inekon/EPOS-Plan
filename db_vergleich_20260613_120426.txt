@@ -1,0 +1,55 @@
+﻿==============================================================================
+  DB-VERGLEICH  –  Delta zwischen Ausgangs-DB (alt) und Ziel-DB (neu)
+==============================================================================
+  Erstellt:     2026-06-13 12:04:26
+  Quelle (alt): C:\Waermeplan\WP_Plan\Kenndaten-neu1.accdb
+  Ziel   (neu): C:\Waermeplan\WP_Plan\Kenndaten-alt1.accdb
+  Zeilenzahlen: einbezogen
+
+------------------------------------------------------------------------------
+  ZUSAMMENFASSUNG
+------------------------------------------------------------------------------
+  Tabellen nur in Quelle (im Ziel entfernt) : 0
+  Tabellen nur in Ziel   (neu hinzugefuegt) : 0
+  Gemeinsame Tabellen                       : 55
+     davon mit Unterschieden                : 1
+     davon identisch                        : 54
+  Beziehungen nur in Quelle                 : 0
+  Beziehungen nur in Ziel                   : 0
+  Unterschiede gesamt                       : 1
+
+------------------------------------------------------------------------------
+  TABELLEN NUR IN QUELLE (alt) – im Ziel nicht vorhanden  [0]
+------------------------------------------------------------------------------
+  (keine)
+
+------------------------------------------------------------------------------
+  TABELLEN NUR IN ZIEL (neu) – neu hinzugefuegt  [0]
+------------------------------------------------------------------------------
+  (keine)
+
+------------------------------------------------------------------------------
+  GEMEINSAME TABELLEN MIT UNTERSCHIEDEN  [1]
+------------------------------------------------------------------------------
+
+  ▶ Tab_Applikation
+      Zeilen:  Quelle=1  Ziel=2  Delta=+1
+
+------------------------------------------------------------------------------
+  BEZIEHUNGEN NUR IN QUELLE (alt)  [0]
+------------------------------------------------------------------------------
+  (keine)
+
+------------------------------------------------------------------------------
+  BEZIEHUNGEN NUR IN ZIEL (neu)  [0]
+------------------------------------------------------------------------------
+  (keine)
+
+------------------------------------------------------------------------------
+  IDENTISCHE TABELLEN (Struktur + Zeilenzahl gleich)  [54]
+------------------------------------------------------------------------------
+  energy_carrier, energy_conversion, energy_price, energy_project_settings, energy_unit, pricing_model, Tab_BHKW, Tab_Brauchwasser, Tab_Brauchwassertyp, Tab_BrennstoffKategorien, Tab_Brennstoff_Projekt, Tab_Brennstoff_Stamm, Tab_DBTagV, Tab_DBTagVDaten, Tab_Einstellungen, Tab_Energieanlagen, Tab_Gebaeude, Tab_Heizkessel, Tab_Kenndaten, Tab_Kenndaten_Kuehlung, Tab_Klimadaten, Tab_Klimaregion, Tab_Kostenfaktor, Tab_KostenGruppenKatalog, Tab_KostenKategorie, Tab_KostenKomponente, Tab_Projekt, Tab_Projekt – Kopieren, Tab_ProjektWerte, Tab_Prozesstyp, Tab_Prozesswaerme, Tab_Pufferspeicher, Tab_PV, Tab_Solar, Tab_Solarganglinie, Tab_SolarganglinieDaten, Tab_Solarkollektoren, Tab_Stromganglinie, Tab_StromganglinieDaten, Tab_Stromspeicher, Tab_Stromverbraucher, Tab_Stromverbrauchertyp, Tab_Typ_Energieanlagen, Tab_Waermebedarf, Tab_WaermebedarfDaten, Tab_WP, Z_ProjektGebaeude, Z_ProjektPufferSp, Z_ProjektSolarganglinie, Z_ProjektStromganglinie, Z_ProjektWaermebedarf, Z_Projekt_Brauchwasser, Z_Projekt_Prozesswaerme, Z_Projekt_Stromverbraucher
+
+==============================================================================
+  Ende des Vergleichs. (Es wurde nichts veraendert.)
+==============================================================================
