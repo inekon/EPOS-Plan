@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1
                 checkBox_Brennwert.Checked = false;
             }
 
-            BrennstoffCtrl ctrl = new BrennstoffCtrl();
+            HeizkesselCtrl ctrl = new HeizkesselCtrl();
             comboBox_Brennstoff.DataSource = ctrl.Brennstoffart;
         }
 
@@ -93,8 +93,8 @@ namespace WindowsFormsApplication1
 
         private void btn_Ueberschreiben_Click(object sender, EventArgs e)
         {
-            BrennstoffModel model = new BrennstoffModel();
-            BrennstoffCtrl ctrl = new BrennstoffCtrl();
+            HeizkesselModel model = new HeizkesselModel();
+            HeizkesselCtrl ctrl = new HeizkesselCtrl();
 
             try
             {
@@ -117,7 +117,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public bool Insert(BrennstoffModel model)
+        public bool Insert(HeizkesselModel model)
         {
 
             // Erst prüfen, ob die ID oder der Name bereits existiert (optional, je nach DB-Design)
@@ -247,9 +247,9 @@ namespace WindowsFormsApplication1
             else tb_CO2.Text = "0";
         }
 
-        BrennstoffModel InitDatensatzUpdate(BrennstoffCtrl model = null)
+        HeizkesselModel InitDatensatzUpdate(HeizkesselCtrl model = null)
         {
-            if(model == null) model = new BrennstoffCtrl();
+            if(model == null) model = new HeizkesselCtrl();
 
             // Strings sind unkritisch, wir nutzen aber .Trim() gegen versehentliche Leerzeichen
             model.Name = textBox_Name.Text.Trim();
@@ -299,7 +299,7 @@ namespace WindowsFormsApplication1
 
             if (frmLabel.ShowDialog() == DialogResult.OK)
             {
-                BrennstoffModel model = new BrennstoffModel();
+                HeizkesselModel model = new HeizkesselModel();
 
                 // Zuerst das Model mit den UI-Daten füllen
                 model = InitDatensatzUpdate();
@@ -328,7 +328,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                BrennstoffModel model = new BrennstoffModel();
+                HeizkesselModel model = new HeizkesselModel();
                 model = InitDatensatzUpdate();
 
                 // Alles in einem Rutsch speichern

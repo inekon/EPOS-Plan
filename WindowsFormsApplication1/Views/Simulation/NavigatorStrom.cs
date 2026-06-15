@@ -11,12 +11,13 @@ namespace WindowsFormsApplication1
         private float[] temp_wp;
         private float[] temp_hs;
         private float[] temp_hk;
+        private float[] temp_bhkw;
         private float[] temp_ges;
-    
+
         ChartManager _chartManager;
         SimulationControl sim;
 
-        public NavigatorStrom (SimulationControl simctrl)
+        public NavigatorStrom(SimulationControl simctrl)
         {
             InitializeComponent();
             sim = simctrl;
@@ -48,10 +49,11 @@ namespace WindowsFormsApplication1
             temp_wp = sim.Stundenwerte_zu_viertelstunden(sim.simulation_wp.WP_Strombedarf_stuendlich);
             temp_hs = sim.Stundenwerte_zu_viertelstunden(sim.simulation_wp.Heizstab_stuendlich);
             temp_hk = sim.Stundenwerte_zu_viertelstunden(sim.simulation_spk.Strombedarf_stuendlich);
+            temp_bhkw = sim.Stundenwerte_zu_viertelstunden(sim.simulation_bhkw.stromproduktion);
             temp_ges = new float[8760 * 4];
 
             for (int i = 0; i < 8760 * 4; i++) temp_ges[i] = temp_wp[i] + temp_hs[i] + temp_hk[i] + temp_profil[i];
-   
+
             _chartManager.YMaxValue = temp_ges.Max() + 1;
             _chartManager.YMinValue = 0;
             _chartManager.XAxisAsNumber = false;
@@ -68,6 +70,9 @@ namespace WindowsFormsApplication1
             _chartManager.AddSeries("Heizstab", Color.Yellow, temp_hs);
             _chartManager.AddSeries("Heizkessel", Color.Blue, temp_hk);
             _chartManager.AddSeries("Profil/Lastgang", Color.Brown, temp_profil);
+            _chartManager.AddSeries("BHKW", Color.Brown, temp_bhkw);
+
+
             // _chartManager[7].AddSeries("Rest", Color.Black, sim.Rest_Strombedarf_viertelstuendlich);
             _chartManager.AddSeries("PV", Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
             // _chartManager[7].AddSeries("Überschuss", Color.Magenta, sim.simulation_pv.Ueberschuss_viertelstunde);
@@ -76,7 +81,7 @@ namespace WindowsFormsApplication1
             _chartManager._chart.Series["Heizkessel"].Enabled = false;
             _chartManager._chart.Series["Profil/Lastgang"].Enabled = false;
             _chartManager._chart.Series["PV"].Enabled = false;
-
+            _chartManager._chart.Series["BHKW"].Enabled = false;
             checkBox_Gesamt.Checked = true;
         }
 
@@ -91,6 +96,7 @@ namespace WindowsFormsApplication1
                 _chartManager._chart.Series["Heizkessel"].Enabled = checkBox_SPK.Checked;
                 _chartManager._chart.Series["Profil/Lastgang"].Enabled = checkBox_Profil_Lastgang.Checked;
                 _chartManager._chart.Series["PV"].Enabled = checkBox_PV.Checked;
+                _chartManager._chart.Series["BHKW"].Enabled = checkBox_BHKW.Checked;
             }
         }
 
@@ -212,7 +218,17 @@ namespace WindowsFormsApplication1
             chart.Invalidate();
         }
 
-
-
+        private void checkBox_BHKW_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox_BHKW.Checked)
+            {
+                _chartManager._chart.Series["BHKW"].Enabled = true;
+            }
+            else
+            {
+                _chartManager._chart.Series["BHKW"].Enabled = false;
+            }
+            OptimizeYAxisScale();
+        }
     }
 }

@@ -75,6 +75,7 @@ namespace WindowsFormsApplication1
         {
             Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
             frm.Init(sim.simulation_Waermebedarf);
+            frm.SetPage(2);
             frm.ShowDialog();
         }
 

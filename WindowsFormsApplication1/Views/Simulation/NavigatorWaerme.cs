@@ -21,6 +21,7 @@ namespace WindowsFormsApplication1
         private float[] temp_hs;
         private float[] temp_hk;
         private float[] temp_st;
+        private float[] temp_bhkw;
         private float[] temp_ges;
 
         public NavigatorWaerme(SimulationControl simctrl)
@@ -45,9 +46,10 @@ namespace WindowsFormsApplication1
             temp_hs = sim.simulation_wp.Heizstab_stuendlich;
             temp_hk = sim.simulation_spk.Kesselleistung_stuendlich;
             temp_st = Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermeproduktion, x => (float)x);
+            temp_bhkw = sim.simulation_bhkw.waermeproduktion;
             temp_ges = new float[8760];
 
-            for (int i = 0; i < 8760; i++) temp_ges[i] = temp_wp[i] + temp_hs[i] + temp_hk[i] + temp_st[i];
+            for (int i = 0; i < 8760; i++) temp_ges[i] = temp_wp[i] + temp_hs[i] + temp_hk[i] + temp_st[i] + temp_bhkw[i];
 
             _chartManager = new ChartManager(chart_Waerme);
             _chartManager.BackColor = Color.White;
@@ -68,10 +70,12 @@ namespace WindowsFormsApplication1
             _chartManager.AddSeries("Heizstab", Color.Yellow, temp_hs);
             _chartManager.AddSeries("Heizkessel", Color.Blue, temp_hk);
             _chartManager.AddSeries("Solarthermie", Color.Brown, temp_st);
+            _chartManager.AddSeries("BHKW", Color.Red, temp_bhkw);
             _chartManager._chart.Series["Waermepumpe"].Enabled = false;
             _chartManager._chart.Series["Heizstab"].Enabled = false;
             _chartManager._chart.Series["Heizkessel"].Enabled = false;
             _chartManager._chart.Series["Solarthermie"].Enabled = false;
+            _chartManager._chart.Series["BHKW"].Enabled = false;
             checkBox_Gesamt.Checked = true;
         }
 
@@ -85,6 +89,7 @@ namespace WindowsFormsApplication1
                 _chartManager._chart.Series["Heizstab"].Enabled = checkBox_Heizstab.Checked;
                 _chartManager._chart.Series["Heizkessel"].Enabled = checkBox_SPK.Checked;
                 _chartManager._chart.Series["Solarthermie"].Enabled = checkBox_ST.Checked;
+                _chartManager._chart.Series["BHKW"].Enabled = checkBox_BHKW.Checked;
             }
         }
 
@@ -145,6 +150,18 @@ namespace WindowsFormsApplication1
             else
             {
                 _chartManager._chart.Series["Solarthermie"].Enabled = false;
+            }
+        }
+
+        private void checkBox_BHKW_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox_BHKW.Checked)
+            {
+                _chartManager._chart.Series["BHKW"].Enabled = true;
+            }
+            else
+            {
+                _chartManager._chart.Series["BHKW"].Enabled = false;
             }
         }
     }

@@ -5,21 +5,21 @@ using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
-    public class BrennstoffCtrl : BrennstoffModel
+    public class HeizkesselCtrl : HeizkesselModel
     {
         // --- Kompatibilitäts-Layer für bestehenden UI-Code ---
-        private List<BrennstoffModel> _internalList = new List<BrennstoffModel>();
+        private List<HeizkesselModel> _internalList = new List<HeizkesselModel>();
         private bool _hasSingleData = false;
 
         // Simuliert die alte 'rows' Variable und das 'items' Array
         public int rows => _internalList.Count > 0 ? _internalList.Count : (_hasSingleData ? 1 : 0);
-        public List<BrennstoffModel> items => _internalList;
+        public List<HeizkesselModel> items => _internalList;
 
         // Stammdaten-Listen (Bleiben erhalten für Dropdowns)
         public List<string> Brennstoffart = new List<string>();
         public List<string> Brennstoffart_Gruppe = new List<string>();
 
-        public BrennstoffCtrl()
+        public HeizkesselCtrl()
         {
             LoadMetaData();
         }
@@ -153,7 +153,7 @@ namespace WindowsFormsApplication1
             return p.ToArray();
         }
 
-        private void FillModelFromRow(BrennstoffModel target, DataRow row)
+        private void FillModelFromRow(HeizkesselModel target, DataRow row)
         {
             target.ID = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0;
             target.Name = row["Name"]?.ToString() ?? "";
@@ -176,9 +176,9 @@ namespace WindowsFormsApplication1
             target.Brennwert = row["Brennwert"] != DBNull.Value ? Convert.ToBoolean(row["Brennwert"]) : false;  
         }
 
-        private BrennstoffModel MapRowToModel(DataRow row)
+        private HeizkesselModel MapRowToModel(DataRow row)
         {
-            BrennstoffModel m = new BrennstoffModel();
+            HeizkesselModel m = new HeizkesselModel();
             FillModelFromRow(m, row);
             return m;
         }
