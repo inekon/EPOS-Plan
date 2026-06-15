@@ -164,7 +164,7 @@ namespace WindowsFormsApplication1
                 {
                     textBox_Neigung.Text = list_pvmodel[i].m_Neigung.ToString();
                     textBox_Azimut.Text = list_pvmodel[i].m_Azimut.ToString();
-                    textBox_AnlagenLeistung.Text = list_pvmodel[i].PV_Leistung.ToString("F2");
+                    textBox_AnlagenLeistung.Text = list_pvmodel[i].PV_Leistung.ToString();
                     panel1.Visible = true;
                 }
             }
@@ -262,6 +262,7 @@ namespace WindowsFormsApplication1
 
         private void textBox_Neigung_TextChanged(object sender, EventArgs e)
         {
+            if (textBox_Neigung.Text == "") { textBox_Neigung.Text = "0"; return; }
             if (!Program.checkInt(textBox_Neigung, textBox_Neigung.Text))
             {
                 textBox_Neigung.Undo();
@@ -272,6 +273,7 @@ namespace WindowsFormsApplication1
 
         private void textBox_Azimut_TextChanged(object sender, EventArgs e)
         {
+            if (textBox_Azimut.Text == "") { textBox_Azimut.Text = "0"; return; }
             if (!Program.checkInt(textBox_Azimut, textBox_Azimut.Text))
             {
                 textBox_Azimut.Undo();
@@ -282,7 +284,8 @@ namespace WindowsFormsApplication1
 
         private void textBox_AnlagenLeistung_TextChanged(object sender, EventArgs e)
         {
-            if (!Program.checkDouble(textBox_AnlagenLeistung, textBox_AnlagenLeistung.Text))
+            if (textBox_AnlagenLeistung.Text == "") { textBox_AnlagenLeistung.Text = "0"; return; }
+            if (!Program.checkInt(textBox_AnlagenLeistung, textBox_AnlagenLeistung.Text))
             {
                 textBox_AnlagenLeistung.Undo();
                 textBox_AnlagenLeistung.ClearUndo();
