@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
 
         private void btn_OK_Click(object sender, EventArgs e)
         {
-            ctrl.Wohnflaeche = Int32.Parse(txt_Verbrauch.Text);
+            ctrl.Wohnflaeche = Double.Parse(txt_Verbrauch.Text);
             ctrl.Jahresnutzungsgrad = double.Parse(Jahresnutzungsgrad.Text);
             ctrl.Einheit = txt_Bedarfsart_Auswahl.Text;   
             this.DialogResult = DialogResult.OK;

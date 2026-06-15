@@ -161,8 +161,8 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Grenzleistung") && row["Grenzleistung"] != DBNull.Value) item.Grenzleistung = Convert.ToDouble(row["Grenzleistung"]);
                 if (dt.Columns.Contains("Kollektormodulanzahl") && row["Kollektormodulanzahl"] != DBNull.Value) item.Kollektormodulanzahl = Convert.ToInt32(row["Kollektormodulanzahl"]);
                 if (dt.Columns.Contains("PV_Leistung") && row["PV_Leistung"] != DBNull.Value) item.PV_Leistung = Convert.ToDouble(row["PV_Leistung"]);
-                if (dt.Columns.Contains("m_Neigung") && row["m_Neigung"] != DBNull.Value) item.m_Neigung = Convert.ToInt32(row["m_Neigung"]);
-                if (dt.Columns.Contains("m_Azimut") && row["m_Azimut"] != DBNull.Value) item.m_Azimut = Convert.ToInt32(row["m_Azimut"]);
+                if (dt.Columns.Contains("Neigung") && row["Neigung"] != DBNull.Value) item.m_Neigung = Convert.ToInt32(row["Neigung"]);
+                if (dt.Columns.Contains("Azimut") & row["Azimut"] != DBNull.Value) item.m_Azimut = Convert.ToInt32(row["Azimut"]);
                 if (dt.Columns.Contains("ID_PUFFER") && row["ID_PUFFER"] != DBNull.Value) item.ID_PUFFER = Convert.ToInt32(row["ID_PUFFER"]);
 
                 _internalList.Add(item);
@@ -204,8 +204,8 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Grenzleistung") && row["Grenzleistung"] != DBNull.Value) Grenzleistung = Convert.ToDouble(row["Grenzleistung"]);
                 if (dt.Columns.Contains("Kollektormodulanzahl") && row["Kollektormodulanzahl"] != DBNull.Value) Kollektormodulanzahl = Convert.ToInt32(row["Kollektormodulanzahl"]);
                 if (dt.Columns.Contains("PV_Leistung") && row["PV_Leistung"] != DBNull.Value) PV_Leistung = Convert.ToDouble(row["PV_Leistung"]);
-                if (dt.Columns.Contains("m_Neigung") && row["m_Neigung"] != DBNull.Value) m_Neigung = Convert.ToInt32(row["m_Neigung"]);
-                if (dt.Columns.Contains("m_Azimut") && row["m_Azimut"] != DBNull.Value) m_Azimut = Convert.ToInt32(row["m_Azimut"]);
+                if (dt.Columns.Contains("Neigung") && row["Neigung"] != DBNull.Value) m_Neigung = Convert.ToInt32(row["Neigung"]);
+                if (dt.Columns.Contains("Azimut") && row["Azimut"] != DBNull.Value) m_Azimut = Convert.ToInt32(row["Azimut"]);
                 if (dt.Columns.Contains("ID_PUFFER") && row["ID_PUFFER"] != DBNull.Value) ID_PUFFER = Convert.ToInt32(row["ID_PUFFER"]);
 
             }

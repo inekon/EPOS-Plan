@@ -41,7 +41,9 @@ namespace WindowsFormsApplication1
                 label_OnlineDoku.Left = (this.ClientSize.Width - label_OnlineDoku.Width) / 2;
                 label_OnlineDoku.Top = (this.ClientSize.Height - label_OnlineDoku.Height) / 2;
                 label_OnlineDoku.Visible = true;
-                await Program.HelpCatalog.LoadAllAsync();
+                Program.HelpCatalog.LoadAllAsync(); // Await entfernt, wordpress zugriff asynchron, Main läuft weiter,
+                                                    // Doku wird im Hintergrund geladen, wenn Nutzer auf Doku klickt, wird geprüft ob schon geladen,
+                                                    // wenn nein, dann warten bis geladen ist, wenn ja, dann sofort öffnen
             }
             catch (Exception ex)
             {
