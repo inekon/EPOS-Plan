@@ -1,0 +1,7 @@
+﻿11:53:24  === DB-Vergleich (Delta Quelle -> Ziel) ===
+11:53:24  Quelle (alt): C:\Waermeplan\WP_Plan\Kenndaten-alt1.accdb
+11:53:24  Ziel   (neu): C:\Waermeplan\WP_Plan\Kenndaten-neu1.accdb
+11:53:24  Verbunden mit Kenndaten-alt1.accdb ueber Microsoft.ACE.OLEDB.16.0
+11:53:24  Verbunden mit Kenndaten-neu1.accdb ueber Microsoft.ACE.OLEDB.16.0
+11:53:25  Vergleich fertig: 0 Tabelle(n) nur in Quelle, 0 nur in Ziel, 4 mit Unterschieden, 51 identisch.
+11:53:25  Ausgabedatei geschrieben: C:\Waermeplan\WP_Plan\db_vergleich_20260613_115324.txt

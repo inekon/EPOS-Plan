@@ -540,9 +540,7 @@ namespace WindowsFormsApplication1
                 waermeproduktion[stunde] = 0f;
                 restSpeicher = kapazitaetPendelspeicher - speicher;
 
-                // --- Winterbetrieb (Stunden < 3600 oder > 5760) ---
-                if (stunde < 3600 || stunde > 5760)
-                {
+
                     for (int motor = 0; motor < anzahl; motor++)
                     {
                         restSpeicher = kapazitaetPendelspeicher - speicher;
@@ -590,7 +588,7 @@ namespace WindowsFormsApplication1
                             {
                                 wLeistung = restWaerme + restSpeicher;
                             }
-                            else if (bhkwStromLeistung[motor] * bhkwGrenzleistung < strombedarf[stunde])
+                            else if (bhkwStromLeistung[motor] * bhkwGrenzleistung < restStrom)
                             {
                                 sLeistung = restStrom;
                                 wLeistung = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
@@ -606,15 +604,18 @@ namespace WindowsFormsApplication1
                             stromproduktion[stunde] += sLeistung;
                             s_strom[motor] += sLeistung;
 
-                            speicher = kapazitaetPendelspeicher;
-                            restWaerme = 0f;
                             restStrom -= sLeistung;
+                            restWaerme -= wLeistung;
+
+                            // Überschüssige Wärme in den Speicher (restWaerme negativ -> erhöht den Speicher).
+                            // Im Volllastzweig füllt das den Speicher exakt bis kapazitaetPendelspeicher.
+                            if (restWaerme < 0)
+                            {
+                                speicher -= restWaerme;
+                                restWaerme = 0f;
+                            }
                         }
                     }
-                }
-                // --- Sommerbetrieb (Stunden 8 bis 24) und nur wenn erstes BHKW existiert ---
-                else if ((stdTag > 8 && stdTag < 24) && bhkwStromLeistung[0] > 0.01f)
-                {
                     for (int motor = 0; motor < anzahl; motor++)
                     {
                         restSpeicher = kapazitaetPendelspeicher - speicher;
@@ -643,7 +644,7 @@ namespace WindowsFormsApplication1
                             stromproduktion[stunde] += restStrom;
                             s_strom[motor] += restStrom;
 
-                            float anteiligeWaerme = strombedarf[stunde] / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
+                            float anteiligeWaerme = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
                             waermeproduktion[stunde] += anteiligeWaerme;
                             s_waerme[motor] += anteiligeWaerme;
 
@@ -672,7 +673,7 @@ namespace WindowsFormsApplication1
                             speicher = kapazitaetPendelspeicher;
                         }
                     }
-                }
+
 
                 // --- Speicherabrechnung am Ende der Stunde ---
                 if (restWaerme > speicher)
