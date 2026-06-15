@@ -110,7 +110,7 @@ namespace WindowsFormsApplication1
                     }
 
                     // 4. Model initialisieren
-                    BrennstoffModel model = InitDatensatzUpdate();
+                    HeizkesselModel model = InitDatensatzUpdate();
 
                     // 5. Datensatz in einem Rutsch transaktionssicher speichern
                     if (Insert(model, conn, transaction))
@@ -141,7 +141,7 @@ namespace WindowsFormsApplication1
         }
 
         // Überladene Insert-Methode, die voll in der aktiven Transaktion arbeitet
-        public bool Insert(BrennstoffModel model, OleDbConnection conn, OleDbTransaction transaction)
+        public bool Insert(HeizkesselModel model, OleDbConnection conn, OleDbTransaction transaction)
         {
             try
             {
@@ -184,9 +184,9 @@ namespace WindowsFormsApplication1
             }
         }
 
-        BrennstoffModel InitDatensatzUpdate()
+        HeizkesselModel InitDatensatzUpdate()
         {
-            BrennstoffModel model = new BrennstoffModel();
+            HeizkesselModel model = new HeizkesselModel();
             model.Name = textBox_Name.Text;
             model.Firma = textBox_Firma.Text;
             model.Beschreibung = textBox_Bauart.Text;

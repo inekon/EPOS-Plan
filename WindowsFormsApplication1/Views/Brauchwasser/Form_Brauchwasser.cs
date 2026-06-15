@@ -298,7 +298,7 @@ namespace WindowsFormsApplication1
 
             Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
             frm.Init(simulation);
-            frm.SetPage(1); 
+            frm.SetPage(2); 
             frm.ShowDialog();
             btn_ErgebnisseVerbrauch.Enabled = true;
         }

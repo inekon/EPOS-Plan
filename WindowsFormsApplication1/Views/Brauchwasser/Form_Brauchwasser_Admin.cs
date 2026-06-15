@@ -82,13 +82,13 @@ namespace WindowsFormsApplication1
             simulation.m_ID_Projekt = m_ID_Projekt;
             List<string> list = new List<string>();
             list.Add(listBox_DB.Text);
-            simulation.Prozesswaerme_berechnen(list);
-            simulation.Waermebedarf_Prozess = simulation.com.I_vector_summe(simulation.prozesswerte);
-            simulation.com.I_monats_summe(simulation.prozesswerte, simulation.Waermebedarf_Prozess_Monat, simulation.mo_anfang, simulation.mo_ende);
+            simulation.Brauchwasserwaerme_berechnen(list);
+            simulation.Waermebedarf_Brauchwasser = simulation.brauchwasserwerte.Sum();
+            simulation.com.I_monats_summe(simulation.brauchwasserwerte, simulation.Waermebedarf_Brauchwasser_Monat, simulation.mo_anfang, simulation.mo_ende);
 
-            Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
+            Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
             frm.Init(simulation);
-            frm.SetPage(1);
+            frm.SetPage(2);
             frm.ShowDialog();
         }
 

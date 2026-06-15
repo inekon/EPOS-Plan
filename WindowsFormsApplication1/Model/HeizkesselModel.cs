@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WindowsFormsApplication1
 {
-    public class BrennstoffModel
+    public class HeizkesselModel
     {
         public int ID;
         public string Name;
@@ -27,7 +27,7 @@ namespace WindowsFormsApplication1
         public double Betriebsbereitschaftverlust;
         public bool Brennwert;
 
-        public BrennstoffModel()
+        public HeizkesselModel()
         {
             ID = 0;
             Name = "";

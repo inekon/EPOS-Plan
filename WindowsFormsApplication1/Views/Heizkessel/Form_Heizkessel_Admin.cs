@@ -6,7 +6,7 @@ namespace WindowsFormsApplication1
 {
     public partial class Form_Heizkessel_Admin : BaseForm
     {
-        private BrennstoffCtrl heizkesselctrl = new BrennstoffCtrl();
+        private HeizkesselCtrl heizkesselctrl = new HeizkesselCtrl();
         public int m_ID_Projekt = 0;
   
         public Form_Heizkessel_Admin()
@@ -118,7 +118,7 @@ namespace WindowsFormsApplication1
 
         private void btn_Loeschen_Click(object sender, EventArgs e)
         {
-            BrennstoffCtrl ctrl = new BrennstoffCtrl();
+            HeizkesselCtrl ctrl = new HeizkesselCtrl();
             if(listBox_Kessel_DB.Text == "") return;    
             DialogResult dialogResult = MessageBox.Show("Soll " + listBox_Kessel_DB.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;

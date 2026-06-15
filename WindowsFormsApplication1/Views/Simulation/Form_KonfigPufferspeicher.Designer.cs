@@ -1,4 +1,4 @@
-﻿namespace WindowsFormsApplication1.Views.Simulation
+﻿namespace WindowsFormsApplication1
 {
     partial class Form_KonfigPufferspeicher
     {

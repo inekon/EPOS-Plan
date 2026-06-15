@@ -413,6 +413,7 @@ namespace WindowsFormsApplication1
         {
             Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
             frm.Init(simulation_Waermebedarf);
+            frm.SetPage(1);
             frm.ShowDialog();
         }
 
@@ -616,7 +617,7 @@ namespace WindowsFormsApplication1
                     lvitem.SubItems.Add(sim.simulation_spk.spk_list[i]);
                     lvitem.SubItems.Add((sim.simulation_spk.s_waerme_Gas_Spk[i]).ToString("F2"));
                     lvitem.SubItems.Add((sim.simulation_spk.s_waerme_Oel_Spk[i]).ToString("F2"));
-                    lvitem.SubItems.Add((sim.simulation_spk.Kessel_Wirk_Gas_Spk[i] * 100).ToString("F1"));
+                    lvitem.SubItems.Add((sim.simulation_spk.Kessel_Jahresnutzungsgrad_Spk[i]).ToString("F1"));
 
                     listView_SimSPK.Items.Add(lvitem);
                 }

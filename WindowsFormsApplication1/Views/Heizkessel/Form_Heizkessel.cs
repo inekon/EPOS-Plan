@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
     {
         private WErzeugerModel model = new WErzeugerModel();
         private WErzeugerCtrl ctrl = new WErzeugerCtrl();
-        private BrennstoffCtrl heizkesselctrl = new BrennstoffCtrl();
+        private HeizkesselCtrl heizkesselctrl = new HeizkesselCtrl();
         public List<WErzeugerModel> list_heizkesselmodel = new List<WErzeugerModel>();
         public int m_nType = WizardItemClass.KESSEL_TYP;
         public int m_ID_Projekt = 0;

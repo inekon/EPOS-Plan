@@ -34,9 +34,7 @@ namespace WindowsFormsApplication1
         public float[] bhkwGrenzL = new float[10];
         public float bhkwGrenzleistungAllgemein = 0;
 
-        // Summenzähler für die Auswertung (Größe 10 laut deinem VBA-Code)
-
-            // 4. Deine Vorgaben für Solar und Speicher setzen
+        // Vorgaben für Solar und Speicher setzen
         bool solarVorhanden = false; // Solar = 0
         float solarSpeicher = 0.0f;
         float solarWaerme = 0.0f;
@@ -48,118 +46,30 @@ namespace WindowsFormsApplication1
         public SimulationBHKW()
         {
   
-            // 3. BHKW-Anlagendaten definieren (Beispiel mit 2 Modulen)
-            anzahlBhkw = bhkw_list.Count; //2;
+            anzahlBhkw = bhkw_list.Count;
 
             BHKWCtrl ctrl = new BHKWCtrl();
             for (int i = 0; i < anzahlBhkw; i++)
             {
                 ctrl.ReadSingle(bhkw_list[i]);
-                // Beispielwerte für Wärme- und Stromleistung der BHKW-Module
                 bhkwWaermeLeistung[i] = (float)ctrl.m_Ptherm; 
                 bhkwStromLeistung[i] = (float)ctrl.m_Pel;
                 //hkwGrenzL[i] = (float)ctrl.m_Grenzleistung;
             }
-
-/*
-            // 5. Funktion aufrufen
-            System.Diagnostics.Debug.WriteLine("Simulationslauf wird gestartet...");
-
-            BhkwSimulationWaermegefuehrt(
-                waermebedarf,
-                stromproduktion,
-                waermerestbedarf,
-                waermeproduktion,
-                s_waerme,
-                s_strom,
-                kapazitaetPendelspeicher,
-                anzahlBhkw,
-                bhkwWaermeLeistung,
-                bhkwStromLeistung,
-                ref solarSpeicher,
-                bhkwGrenzL,
-                solarVorhanden,
-                ref solarWaerme,
-                ref solarUeberschuss,
-                strombedarf,
-                bhkwGrenzleistungAllgemein
-            );
-
-            // 6. Ergebnisse in der Konsole ausgeben
-            System.Diagnostics.Debug.WriteLine("\n--- SIMULATIONS-ERGEBNISSE (Jahressummen) ---");
-            for (int m = 0; m < anzahlBhkw; m++)
-            {
-                System.Diagnostics.Debug.WriteLine($"BHKW Modul {m + 1}:");
-                System.Diagnostics.Debug.WriteLine($"  -> Erzeugte Wärme: {s_waerme[m]:F2} MWh");
-                System.Diagnostics.Debug.WriteLine($"  -> Erzeugter Strom: {s_strom[m]:F2} MWh");
-            }
-
-            // Stichprobe für eine Winter- und eine Sommerstunde ausgeben
-            System.Diagnostics.Debug.WriteLine("\n--- STICHPROBEN (Momentanwerte) ---");
-            System.Diagnostics.Debug.WriteLine($"Winter (Stunde 1000) - Bedarf: {waermebedarf[1000]} kW | BHKW-Wärme: {waermeproduktion[1000]} kW | Restbedarf: {waermerestbedarf[1000]} kW");
-            System.Diagnostics.Debug.WriteLine($"Sommer (Stunde 4000) - Bedarf: {waermebedarf[4000]} kW | BHKW-Wärme: {waermeproduktion[4000]} kW | Restbedarf: {waermerestbedarf[4000]} kW");
-
-
-            // 6. Ergebnisse in separate Textdateien schreiben
-            string ordnerPfad = AppDomain.CurrentDomain.BaseDirectory; // Speicherort ist der Debug/Release-Ordner deiner App
-            string pfadBedarf = Path.Combine(ordnerPfad, "Waermebedarf.txt");
-            string pfadErzeugung = Path.Combine(ordnerPfad, "Waermeerzeugung.txt");
-
-            try
-            {
-                // StreamWriter für beide Dateien öffnen (false = Datei wird bei jedem Start überschrieben)
-                using (StreamWriter swBedarf = new StreamWriter(pfadBedarf, false))
-                using (StreamWriter swErzeugung = new StreamWriter(pfadErzeugung, false))
-                {
-                    // Spaltenüberschriften in die Textdateien schreiben
-                    swBedarf.WriteLine("Stunde;Waermebedarf_kW");
-                    swErzeugung.WriteLine("Stunde;Waermeproduktion_BHKW_kW;Waermerestbedarf_kW");
-
-                    // Alle 8760 Stunden durchlaufen und zeilenweise wegschreiben
-                    for (int stunde = 0; stunde < 8760; stunde++)
-                    {
-                        // :F2 sorgt für genau 2 Nachkommastellen
-                        swBedarf.WriteLine($"{stunde};{waermebedarf[stunde]:F2}");
-                        swErzeugung.WriteLine($"{stunde};{waermeproduktion[stunde]:F2};{waermerestbedarf[stunde]:F2}");
-                    }
-                }
-
-                // Erfolgsmeldung direkt als Windows-Fenster ausgeben
-                MessageBox.Show($"Simulation erfolgreich beendet!\n\nDateien wurden erstellt:\n" +
-                                $"1. {pfadBedarf}\n" +
-                                $"2. {pfadErzeugung}",
-                                "Simulation beendet",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                // Falls eine Datei z.B. noch in Excel geöffnet ist und blockiert wird:
-                MessageBox.Show($"Fehler beim Schreiben der Ergebnisdateien:\n{ex.Message}",
-                                "Schreibfehler",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
-            }
-*/
-
         }
 
         public bool Berechnung(int ProjektID)
         {
-            // Hier könnte die Logik für die Berechnung basierend auf der ProjektID implementiert werden
-            // Aktuell gibt es keine konkrete Berechnung, daher wird nur 0 zurückgegeben
             m_ID_Projekt = ProjektID;
-
-            anzahlBhkw = bhkw_list.Count; //2;
+            anzahlBhkw = bhkw_list.Count;
 
             BHKWCtrl ctrl = new BHKWCtrl();
             for (int i = 0; i < anzahlBhkw; i++)
             {
                 ctrl.ReadSingle(bhkw_list[i]);
-                // Beispielwerte für Wärme- und Stromleistung der BHKW-Module
                 bhkwWaermeLeistung[i] = (float)ctrl.m_Ptherm;
                 bhkwStromLeistung[i] = (float)ctrl.m_Pel;
-     //           bhkwGrenzL[i] = (float)ctrl.m_Grenzleistung;
+                //bhkwGrenzL[i] = (float)ctrl.m_Grenzleistung;
             }
 
             if (modeBHKW == 0)
@@ -219,48 +129,6 @@ namespace WindowsFormsApplication1
                 );
             }
 
-            /*
-            string ordnerPfad = AppDomain.CurrentDomain.BaseDirectory; // Speicherort ist der Debug/Release-Ordner deiner App
-            string pfadBedarf = Path.Combine(ordnerPfad, "Waermebedarf.txt");
-            string pfadErzeugung = Path.Combine(ordnerPfad, "Waermeerzeugung.txt");
-
-
-            try
-            {
-                // StreamWriter für beide Dateien öffnen (false = Datei wird bei jedem Start überschrieben)
-                using (StreamWriter swBedarf = new StreamWriter(pfadBedarf, false))
-                using (StreamWriter swErzeugung = new StreamWriter(pfadErzeugung, false))
-                {
-                    // Spaltenüberschriften in die Textdateien schreiben
-                    swBedarf.WriteLine("Stunde;Waermebedarf_kW");
-                    swErzeugung.WriteLine("Stunde;Waermeproduktion_BHKW_kW;Waermerestbedarf_kW");
-
-                    // Alle 8760 Stunden durchlaufen und zeilenweise wegschreiben
-                    for (int stunde = 0; stunde < 8760; stunde++)
-                    {
-                        // :F2 sorgt für genau 2 Nachkommastellen
-                        swBedarf.WriteLine($"{stunde};{waermebedarf[stunde]:F2}");
-                        swErzeugung.WriteLine($"{stunde};{waermeproduktion[stunde]:F2};{waermerestbedarf[stunde]:F2}");
-                    }
-                }
-
-                // Erfolgsmeldung direkt als Windows-Fenster ausgeben
-                MessageBox.Show($"Simulation erfolgreich beendet!\n\nDateien wurden erstellt:\n" +
-                                $"1. {pfadBedarf}\n" +
-                                $"2. {pfadErzeugung}",
-                                "Simulation beendet",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                // Falls eine Datei z.B. noch in Excel geöffnet ist und blockiert wird:
-                MessageBox.Show($"Fehler beim Schreiben der Ergebnisdateien:\n{ex.Message}",
-                                "Schreibfehler",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
-            }
-            */
             return true;
         }   
 
