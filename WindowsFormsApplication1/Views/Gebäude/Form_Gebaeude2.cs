@@ -1,10 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -23,7 +17,7 @@ namespace WindowsFormsApplication1
 
         public void SetControls()
         {
-            textBox_SollTag.Text = model.Raumsolltemperatur_Tag.ToString("F2"); 
+            textBox_SollTag.Text = model.Raumsolltemperatur_Tag.ToString("F2");
             textBox_NachtAbsenkung.Text = model.Raumsolltemperatur_Nachtabsenkung.ToString("F2");
             textBox_MaxTemperatur.Text = model.Maximaleraumtemperatur.ToString("F2");
             textBox_WEAbsenkung.Text = model.Raumsolltemperatur_Wochenende.ToString("F2");
@@ -34,27 +28,27 @@ namespace WindowsFormsApplication1
             textBox_AnschussFenster.Text = model.Abmessung_Anschluﬂ_Fenster_Wand.ToString("F2");
             textBox_AnschussDach.Text = model.Abmessung_Anschluﬂ_Wand_Dach.ToString("F2");
             textBox_AnschussKeller.Text = model.Abmessung_Anschluﬂ_Auﬂenwand_Kellerdecke.ToString("F2");
-            
-            Winter_Tag_A.Text = model.Ferienbeginn_1.ToString("F2");
-            Ostern_Tag_A.Text = model.Ferienbeginn_1.ToString("F2");
-            Sommer_Tag_A.Text = model.Ferienbeginn_1.ToString("F2");
-            Herbst_Tag_A.Text = model.Ferienbeginn_1.ToString("F2");
-            Winter_Monat_A.Text = model.Ferienbeginn_1.ToString("F2");
-            Ostern_Monat_A.Text = model.Ferienbeginn_1.ToString("F2");
-            Sommer_Monat_A.Text = model.Ferienbeginn_1.ToString("F2");
-            Herbst_Monat_A.Text = model.Ferienbeginn_1.ToString("F2");
-            Winter_Tag_E.Text = model.Ferienbeginn_1.ToString("F2");
-            Ostern_Tag_E.Text = model.Ferienbeginn_1.ToString("F2");
-            Sommer_Tag_E.Text = model.Ferienbeginn_1.ToString("F2");
-            Herbst_Tag_E.Text = model.Ferienbeginn_1.ToString("F2");
-            Winter_Monat_E.Text = model.Ferienbeginn_1.ToString("F2");
-            Ostern_Monat_E.Text = model.Ferienbeginn_1.ToString("F2");
-            Sommer_Monat_E.Text = model.Ferienbeginn_1.ToString("F2");
-            Herbst_Monat_E.Text = model.Ferienbeginn_1.ToString("F2");
+
+            Winter_Tag_A.Text = model.Ferienbeginn_1.ToString();
+            Ostern_Tag_A.Text = model.Ferienbeginn_1.ToString();
+            Sommer_Tag_A.Text = model.Ferienbeginn_1.ToString();
+            Herbst_Tag_A.Text = model.Ferienbeginn_1.ToString();
+            Winter_Monat_A.Text = model.Ferienbeginn_1.ToString();
+            Ostern_Monat_A.Text = model.Ferienbeginn_1.ToString();
+            Sommer_Monat_A.Text = model.Ferienbeginn_1.ToString();
+            Herbst_Monat_A.Text = model.Ferienbeginn_1.ToString();
+            Winter_Tag_E.Text = model.Ferienbeginn_1.ToString();
+            Ostern_Tag_E.Text = model.Ferienbeginn_1.ToString();
+            Sommer_Tag_E.Text = model.Ferienbeginn_1.ToString();
+            Herbst_Tag_E.Text = model.Ferienbeginn_1.ToString();
+            Winter_Monat_E.Text = model.Ferienbeginn_1.ToString();
+            Ostern_Monat_E.Text = model.Ferienbeginn_1.ToString();
+            Sommer_Monat_E.Text = model.Ferienbeginn_1.ToString();
+            Herbst_Monat_E.Text = model.Ferienbeginn_1.ToString();
             textBox_Luftwechsel.Text = model.Luftwechselrate.ToString("F2");
-            
+
             JahrestagUmrechner((int)model.Ferienbeginn_1, Winter_Tag_A, Winter_Monat_A);
-            JahrestagUmrechner((int)model.Ferienende_1,Winter_Tag_E, Winter_Monat_E);
+            JahrestagUmrechner((int)model.Ferienende_1, Winter_Tag_E, Winter_Monat_E);
             JahrestagUmrechner((int)model.Ferienbeginn_2, Ostern_Tag_A, Ostern_Monat_A);
             JahrestagUmrechner((int)model.Ferienende_2, Ostern_Tag_E, Ostern_Monat_E);
             JahrestagUmrechner((int)model.Ferienbeginn_3, Sommer_Tag_A, Sommer_Monat_A);
@@ -70,17 +64,17 @@ namespace WindowsFormsApplication1
             DateTime startdatum = new DateTime(DateTime.Now.Year, 1, 1); // Startdatum ist immer der 1. Januar des aktuellen Jahres
             DateTime umgerechnetesDatum = startdatum.AddDays(jahrestag - 1); // Tage abziehen, da der 1. Januar Tag 1 ist
             Tag.Text = umgerechnetesDatum.Day.ToString();
-            Monat.Text = umgerechnetesDatum.Month.ToString(); 
+            Monat.Text = umgerechnetesDatum.Month.ToString();
         }
 
         public static int BerechneJahrestag(string szMonat, string szTag)
         {
-            if(szMonat == "") return 0;
-            else if(szTag == "") return 0;
+            if (szMonat == "") return 0;
+            else if (szTag == "") return 0;
 
             int monat = Int32.Parse(szMonat);
             int tag = Int32.Parse(szTag);
- 
+
             DateTime aktuellesJahr = new DateTime(DateTime.Now.Year, 1, 1);
             DateTime benutzerDatum = new DateTime(DateTime.Now.Year, monat, tag);
             TimeSpan differenz = benutzerDatum - aktuellesJahr;
@@ -90,7 +84,7 @@ namespace WindowsFormsApplication1
         private double Text2Wert(string szText)
         {
             if (szText == "") return 0;
-            else return double.Parse(szText); 
+            else return double.Parse(szText);
         }
 
         private string Wert2Text(double dValue)
@@ -128,7 +122,7 @@ namespace WindowsFormsApplication1
             model.Raumsolltemperatur_Ferien = Text2Wert(textBox_SollFerien.Text);
             if (model.Raumsolltemperatur_Ferien > 0) model.Ferien = 1;
             else model.Ferien = 0;
-            
+
             model.Waermebrueckenverlustkoeffizient_Anschluﬂ_Fenster_Wand = Text2Wert(textBox_WBVK_Fenster.Text);
             model.Waermebruckenverlustkoeffizient_Anschluﬂ_Auﬂenwand_Kellerdecke = Text2Wert(textBox_WBVK_Keller.Text);
             model.Waermebrueckenverlustkoeffizient_Anschluﬂ_Wand_Dach = Text2Wert(textBox_WBVK_Dach.Text);
@@ -146,12 +140,12 @@ namespace WindowsFormsApplication1
             model.Ferienende_3 = BerechneJahrestag(Sommer_Monat_E.Text, Sommer_Tag_E.Text);
             model.Ferienende_4 = BerechneJahrestag(Herbst_Monat_E.Text, Herbst_Tag_E.Text);
 
-            if(model.Ferienbeginn_1 < model.Ferienende_1)
+            if (model.Ferienbeginn_1 < model.Ferienende_1)
             {
-                MessageBox .Show("Die Ferien m¸ssen ¸ber die Jahresgrenze gehen!");
+                MessageBox.Show("Die Ferien m¸ssen ¸ber die Jahresgrenze gehen!");
                 return;
             }
-            if(model.Ferienbeginn_2 > model.Ferienende_2)
+            if (model.Ferienbeginn_2 > model.Ferienende_2)
             {
                 MessageBox.Show("Fehler: Bei der Eingabe der Osterferien!");
                 return;
@@ -168,17 +162,17 @@ namespace WindowsFormsApplication1
             }
 
             if (model.Ferienbeginn_1 == 0) model.Ferienbeginn_1 = 366;
-            
+
             model.Luftwechselrate = Text2Wert(textBox_Luftwechsel.Text);
             model.WW_Bedarf = 0;
 
-            result = DialogResult.OK;  
+            result = DialogResult.OK;
             Close();
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
         {
-            result = DialogResult.Cancel;  
+            result = DialogResult.Cancel;
             Close();
         }
 
@@ -224,9 +218,202 @@ namespace WindowsFormsApplication1
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
             }
+        }
 
+        private void textBox_SollTag_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
 
+        private void textBox_NachtAbsenkung_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
 
+        private void textBox_MaxTemperatur_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_WEAbsenkung_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_SollFerien_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_WBVK_Fenster_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_WBVK_Keller_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_WBVK_Dach_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_AnschussFenster_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_AnschussKeller_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_AnschussDach_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Winter_Tag_A_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Winter_Monat_A_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Ostern_Tag_A_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Ostern_Monat_A_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Sommer_Tag_A_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Sommer_Monat_A_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Herbst_Tag_A_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Herbst_Monat_A_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Winter_Tag_E_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Winter_Monat_E_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_Luftwechsel_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Ostern_Tag_E_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Ostern_Monat_E_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Sommer_Tag_E_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Sommer_Monat_E_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Herbst_Tag_E_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+        }
+
+        private void Herbst_Monat_E_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
         }
     }
 }

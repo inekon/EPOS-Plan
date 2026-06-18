@@ -29,11 +29,16 @@ namespace WindowsFormsApplication1
         // HIER ERGÄNZT: Das OleDbCommand für transaktionale Aufrufe aus dem UI-Code
         public OleDbCommand DBCommand;
 
+        // Stammdaten-Listen (Bleiben erhalten für Dropdowns)
+        public List<string> Brennstoffart = new List<string>();
+        public List<string> Brennstoffart_Gruppe = new List<string>();
+
         public BHKWCtrl()
         {
             _hasSingleData = false;
             DBCommand = new OleDbCommand(); // Command im Konstruktor initialisieren
             model = new BHKWModel();
+            LoadMetaData();
         }
 
         ~BHKWCtrl()
@@ -45,6 +50,17 @@ namespace WindowsFormsApplication1
         }
 
         #region --- DATABASE OPERATIONS ---
+
+        private void LoadMetaData()
+        {
+            DataTable dtG = DataRepository.GetDataTable("SELECT Gruppe FROM Tab_BrennstoffKategorien ORDER BY ID");
+            Brennstoffart_Gruppe.Clear();
+            foreach (DataRow r in dtG.Rows) Brennstoffart_Gruppe.Add(r["Gruppe"].ToString());
+
+            DataTable dtS = DataRepository.GetDataTable("SELECT Name FROM Tab_Brennstoff_Stamm ORDER BY ID");
+            Brennstoffart.Clear();
+            foreach (DataRow r in dtS.Rows) Brennstoffart.Add(r["Name"].ToString());
+        }
 
         public void ReadAll(string szFilter = "")
         {

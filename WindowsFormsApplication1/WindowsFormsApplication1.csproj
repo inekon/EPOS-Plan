@@ -48,6 +48,11 @@
   <ItemGroup>
     <Compile Remove="Allgemein\GrafikTools\ChartManagerNeu.cs" />
     <Compile Remove="Controller\WPTestCtrl.cs" />
+    <Compile Remove="Views\Simulation\Form_Simulation_Detail - Kopie.cs" />
+    <Compile Remove="Views\Simulation\Form_Simulation_Detail.Designer - Kopie.cs" />
+    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail - Kopie.resx" />
+    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail.de-DE - Kopie.resx" />
+    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail.en-US - Kopie.resx" />
     <None Include="Allgemein\GrafikTools\ChartManagerNeu.cs" />
     <None Include="Controller\WPTestCtrl.cs" />
   </ItemGroup>

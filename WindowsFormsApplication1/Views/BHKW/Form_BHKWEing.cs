@@ -1,10 +1,7 @@
-using MathNet.Numerics.LinearAlgebra.Factorization;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Reflection;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
 namespace WindowsFormsApplication1
@@ -73,6 +70,54 @@ namespace WindowsFormsApplication1
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
+        private void SetFilter()
+        {
+            RecordSet rs = new RecordSet();
+            string szFilter = "";
+            string szFilterLeistung = "";
+            string sql = "";
+
+            szFilterLeistung = "";
+            if (comboBox_Leistung.Text == "Alle") szFilterLeistung = "Ptherm Like '%'";
+            else if (comboBox_Leistung.Text == "kleiner 20 kW") szFilterLeistung = "Ptherm <20";
+            else if (comboBox_Leistung.Text == "20 bis 40 kW") szFilterLeistung = "Ptherm >=20 and Ptherm <40";
+            else if (comboBox_Leistung.Text == "40 bis 80 kW") szFilterLeistung = "Ptherm >=40 and Ptherm <80";
+            else if (comboBox_Leistung.Text == "80 bis 200 kW") szFilterLeistung = "Ptherm >=80 and Ptherm <200";
+            else if (comboBox_Leistung.Text == "200 bis 500 kW") szFilterLeistung = "Ptherm >=200 and Ptherm <500";
+            else if (comboBox_Leistung.Text == "500 bis 800 kW") szFilterLeistung = "Ptherm >=500 and Ptherm <800";
+            else if (comboBox_Leistung.Text == "800 bis 1200 kW") szFilterLeistung = "Ptherm >=800 and Ptherm <1200";
+            else if (comboBox_Leistung.Text == "über 1.200 kW") szFilterLeistung = "Ptherm >=1200";
+
+            if (comboBox_Brennstoff.Text == "Gas") szFilter = "(Brennstoff >=1 and Brennstoff <=5) or Brennstoff=14";
+            else if (comboBox_Brennstoff.Text == "Öl") szFilter = "(Brennstoff >=6 and Brennstoff <=9) or (Brennstoff >=18 and Brennstoff <=22)";
+            else if (comboBox_Brennstoff.Text == "Koks") szFilter = "Brennstoff=10";
+            else if (comboBox_Brennstoff.Text == "Kohle") szFilter = "Brennstoff=11";
+            else if (comboBox_Brennstoff.Text == "Holz") szFilter = "Brennstoff=12";
+            else if (comboBox_Brennstoff.Text == "Tierische Fette") szFilter = "Brennstoff=17";
+            else if (comboBox_Brennstoff.Text == "Strom") szFilter = "Brennstoff=13";
+            else if (comboBox_Brennstoff.Text == "Pellets") szFilter = "Brennstoff=15";
+            else if (comboBox_Brennstoff.Text == "Rapsöl") szFilter = "Brennstoff=16";
+            else if (comboBox_Brennstoff.Text == "Sonstige") szFilter = "Brennstoff=23";
+            else if (comboBox_Brennstoff.Text == "Alle") szFilter = "Brennstoff Like '%'";
+
+            if (szFilter == "")
+                sql = "select * from [Tab_BHKW] where " + szFilterLeistung + " order by Bewzeichner";
+            else
+                sql = "select * from [Tab_BHKW] where (" + szFilter + ") and " + szFilterLeistung + " order by Bezeichner";
+
+            rs.Open(sql);
+
+            DataGridView dgv = dataGridView1;
+            dgv.Rows.Clear();
+            int i = 0;
+            while (rs.Next())
+            {
+                dgv.Rows.Add((string)rs.Read("Bezeichner"), (string)rs.Read("Firma") + "\nBrennstoff: " + ctrl.Brennstoffart[(int)rs.Read("Brennstoff") - 1] + "\nPtherm: " + rs.Read("Ptherm").ToString() + " kW" + "\nPel: " + rs.Read("Pel").ToString() + " kW");
+                dgv.Rows[i++].DividerHeight = 5;
+            }
+            rs.Close();
+        }
+
         private Form getWizardPage()
         {
             foreach (Form form in Application.OpenForms)
@@ -113,18 +158,7 @@ namespace WindowsFormsApplication1
                 listBox_Auswahl.SelectedItems.Clear();
                 listBox_Auswahl.SelectedIndex = 0;
             }
-        }
-
-        private void SetDBList(string szFilter="")
-        {
-            DataGridView dgv = dataGridView1;
-            dgv.Rows.Clear();
-            ctrl.ReadAll(szFilter);
-            for (int i = 0; i < ctrl.rows; i++)
-            {
-                dgv.Rows.Add(ctrl.items[i].m_szBezeichner, ctrl.items[i].m_szFirma +  "\nBrennstoff: " + BHKWCtrl.BrennstoffartText[ctrl.items[i].m_Brennstoff] + "\nPtherm: " + ctrl.items[i].m_Ptherm + " kW" + "\nPel: " + ctrl.items[i].m_Pel + " kW");
-                dgv.Rows[i].DividerHeight = 5;
-            }
+            SetFilter();
         }
 
         public void SetControls(string szProjekt, bool bWizard = false)
@@ -141,7 +175,7 @@ namespace WindowsFormsApplication1
 
             m_szProjekt = szProjekt;
             
-            SetDBList();
+            SetFilter();
 
             dataGridView1.Select();
             dataGridView1.ClearSelection();
@@ -167,10 +201,9 @@ namespace WindowsFormsApplication1
             comboBox_Leistung.Items.Clear();
 
             comboBox_Brennstoff.Items.Add("Alle");
-            for (int i = 0; i < BHKWCtrl.BrennstoffartText.Length; i++)
+            for (int i = 0; i < ctrl.Brennstoffart_Gruppe.Count; i++)
             {
-                if (BHKWCtrl.BrennstoffartText[i] != "")
-                    comboBox_Brennstoff.Items.Add(BHKWCtrl.BrennstoffartText[i]);
+                comboBox_Brennstoff.Items.Add(ctrl.Brennstoffart_Gruppe[i]);
             }
 
             comboBox_Leistung.Items.Add("Alle");
@@ -388,68 +421,12 @@ namespace WindowsFormsApplication1
 
         private void comboBox_Brennstoff_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string[] brennstofftext = new string[BHKWCtrl.BrennstoffartText.Length];
-            brennstofftext = BHKWCtrl.BrennstoffartText;
-            string[] leistungfiltertext = new string[BHKWCtrl.LeistungFilterText.Length];
-            leistungfiltertext = BHKWCtrl.LeistungFilterText;
-
-            if (comboBox_Brennstoff.Text == "Alle" && comboBox_Leistung.Text == "Alle")
-            {
-                SetDBList(""); 
-            }
-            else
-            {
-                if (comboBox_Leistung.Text == "Alle" || comboBox_Leistung.Text == "")
-                {
-                    SetDBList("Brennstoff=" + Array.FindIndex(brennstofftext, a => a.Equals(comboBox_Brennstoff.Text)));                }
-                else
-                {
-                    if (comboBox_Brennstoff.Text == "Alle")
-                    {
-                        SetDBList("");
-                    }
-                    else
-                    {
-                        SetDBList("Brennstoff=" + Array.FindIndex(brennstofftext, a => a.Equals(comboBox_Brennstoff.Text)) +
-                                  " and " + leistungfiltertext[comboBox_Leistung.SelectedIndex]);
-                    }
-                }
-            }
+            SetFilter();
         }
 
         private void comboBox_Leistung_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string[] brennstofftext = new string[BHKWCtrl.BrennstoffartText.Length];
-            brennstofftext = BHKWCtrl.BrennstoffartText;
-            string[] leistungfiltertext = new string[BHKWCtrl.LeistungFilterText.Length];
-            leistungfiltertext = BHKWCtrl.LeistungFilterText;
-
-            if (comboBox_Brennstoff.Text == "Alle" && comboBox_Leistung.Text == "Alle")
-            {
-                SetDBList("");
-            }
-            else
-            {
-                if (comboBox_Brennstoff.Text == "Alle" || comboBox_Brennstoff.Text == "")
-                {
-                    SetDBList(leistungfiltertext[comboBox_Leistung.SelectedIndex]);
-                }
-                else
-                {
-                    int brennstoffindex = Array.FindIndex(brennstofftext, a => a.Equals(comboBox_Brennstoff.Text));
-                    int leistungsfilterindex = comboBox_Leistung.FindString(comboBox_Leistung.Text);
-
-                    if (comboBox_Leistung.Text == "Alle")
-                    {
-                        SetDBList("Brennstoff=" + brennstoffindex + " and " + leistungfiltertext[leistungsfilterindex]);
-                    }
-                    else
-                    {
-                   
-                        SetDBList("Brennstoff=" + brennstoffindex + " and " + leistungfiltertext[leistungsfilterindex]);
-                    }
-                }
-            }
+            SetFilter();
         }
 
         private void btn_DBBHKW_Edit_Click(object sender, EventArgs e)
@@ -457,10 +434,11 @@ namespace WindowsFormsApplication1
             Form_DBBHKW frm = new Form_DBBHKW();
             frm.m_mode = Form_DBBHKW.MODE_EDIT;
             DataGridViewSelectedRowCollection sr =  dataGridView1.SelectedRows;
-            if(sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte ein BHKW auswählen!"); return; }   
+            if(sr.Count == 0) { MessageBox.Show("Bitte ein BHKW auswählen!"); return; }   
 
             frm.SetControls((string)dataGridView1.CurrentRow.Cells[0].Value); 
-            frm.ShowDialog();
+            DialogResult result = frm.ShowDialog();
+            if(result == DialogResult.OK) SetFilter();
         }
 
         private void btn_DBBHKW_Neu_Click(object sender, EventArgs e)
@@ -480,7 +458,7 @@ namespace WindowsFormsApplication1
                 frm.SetControls(frmLabel.m_szName);
                 frm.m_szName = frmLabel.m_szName;
                 frm.ShowDialog();
-                SetDBList();
+                SetFilter();
             }
         }
 
@@ -499,8 +477,6 @@ namespace WindowsFormsApplication1
                 dataGridView1.Rows.RemoveAt(dataGridView1.SelectedRows[0].Index);
             }
         }
-
    
     }
-
 }

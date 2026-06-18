@@ -29,546 +29,574 @@ namespace WindowsFormsApplication1
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Gebaeude2));
-            this.btn_Hilfe = new System.Windows.Forms.Button();
-            this.btn_Speichern = new System.Windows.Forms.Button();
-            this.btn_Abbrechen = new System.Windows.Forms.Button();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.Label4 = new System.Windows.Forms.Label();
-            this.textBox_SollTag = new System.Windows.Forms.TextBox();
-            this.Label5 = new System.Windows.Forms.Label();
-            this.textBox_NachtAbsenkung = new System.Windows.Forms.TextBox();
-            this.Label6 = new System.Windows.Forms.Label();
-            this.textBox_MaxTemperatur = new System.Windows.Forms.TextBox();
-            this.Label8 = new System.Windows.Forms.Label();
-            this.Label9 = new System.Windows.Forms.Label();
-            this.Label10 = new System.Windows.Forms.Label();
-            this.Label12 = new System.Windows.Forms.Label();
-            this.textBox_WEAbsenkung = new System.Windows.Forms.TextBox();
-            this.Label13 = new System.Windows.Forms.Label();
-            this.textBox_SollFerien = new System.Windows.Forms.TextBox();
-            this.Label14 = new System.Windows.Forms.Label();
-            this.Label15 = new System.Windows.Forms.Label();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.Label17 = new System.Windows.Forms.Label();
-            this.textBox_WBVK_Fenster = new System.Windows.Forms.TextBox();
-            this.Label18 = new System.Windows.Forms.Label();
-            this.textBox_WBVK_Keller = new System.Windows.Forms.TextBox();
-            this.Label23 = new System.Windows.Forms.Label();
-            this.textBox_WBVK_Dach = new System.Windows.Forms.TextBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.Label49 = new System.Windows.Forms.Label();
-            this.textBox_AnschussFenster = new System.Windows.Forms.TextBox();
-            this.Label50 = new System.Windows.Forms.Label();
-            this.textBox_AnschussDach = new System.Windows.Forms.TextBox();
-            this.Label51 = new System.Windows.Forms.Label();
-            this.textBox_AnschussKeller = new System.Windows.Forms.TextBox();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.Label33 = new System.Windows.Forms.Label();
-            this.Winter_Tag_A = new System.Windows.Forms.TextBox();
-            this.Ostern_Tag_A = new System.Windows.Forms.TextBox();
-            this.Label34 = new System.Windows.Forms.Label();
-            this.Label35 = new System.Windows.Forms.Label();
-            this.Sommer_Tag_A = new System.Windows.Forms.TextBox();
-            this.Herbst_Tag_A = new System.Windows.Forms.TextBox();
-            this.Label36 = new System.Windows.Forms.Label();
-            this.Winter_Monat_A = new System.Windows.Forms.TextBox();
-            this.Ostern_Monat_A = new System.Windows.Forms.TextBox();
-            this.Sommer_Monat_A = new System.Windows.Forms.TextBox();
-            this.Herbst_Monat_A = new System.Windows.Forms.TextBox();
-            this.Label37 = new System.Windows.Forms.Label();
-            this.Label38 = new System.Windows.Forms.Label();
-            this.groupBox6 = new System.Windows.Forms.GroupBox();
-            this.Label52 = new System.Windows.Forms.Label();
-            this.Winter_Tag_E = new System.Windows.Forms.TextBox();
-            this.Ostern_Tag_E = new System.Windows.Forms.TextBox();
-            this.Label53 = new System.Windows.Forms.Label();
-            this.Label54 = new System.Windows.Forms.Label();
-            this.Sommer_Tag_E = new System.Windows.Forms.TextBox();
-            this.Herbst_Tag_E = new System.Windows.Forms.TextBox();
-            this.Label55 = new System.Windows.Forms.Label();
-            this.Winter_Monat_E = new System.Windows.Forms.TextBox();
-            this.Ostern_Monat_E = new System.Windows.Forms.TextBox();
-            this.Sommer_Monat_E = new System.Windows.Forms.TextBox();
-            this.Herbst_Monat_E = new System.Windows.Forms.TextBox();
-            this.Label56 = new System.Windows.Forms.Label();
-            this.Label57 = new System.Windows.Forms.Label();
-            this.groupBox7 = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.btn_Brauchwasser = new System.Windows.Forms.Button();
-            this.Label45 = new System.Windows.Forms.Label();
-            this.textBox_Luftwechsel = new System.Windows.Forms.TextBox();
-            this.Label47 = new System.Windows.Forms.Label();
-            this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
-            this.groupBox5.SuspendLayout();
-            this.groupBox6.SuspendLayout();
-            this.groupBox7.SuspendLayout();
-            this.SuspendLayout();
+            btn_Hilfe = new System.Windows.Forms.Button();
+            btn_Speichern = new System.Windows.Forms.Button();
+            btn_Abbrechen = new System.Windows.Forms.Button();
+            groupBox1 = new System.Windows.Forms.GroupBox();
+            Label4 = new System.Windows.Forms.Label();
+            textBox_SollTag = new System.Windows.Forms.TextBox();
+            Label5 = new System.Windows.Forms.Label();
+            textBox_NachtAbsenkung = new System.Windows.Forms.TextBox();
+            Label6 = new System.Windows.Forms.Label();
+            textBox_MaxTemperatur = new System.Windows.Forms.TextBox();
+            Label8 = new System.Windows.Forms.Label();
+            Label9 = new System.Windows.Forms.Label();
+            Label10 = new System.Windows.Forms.Label();
+            Label12 = new System.Windows.Forms.Label();
+            textBox_WEAbsenkung = new System.Windows.Forms.TextBox();
+            Label13 = new System.Windows.Forms.Label();
+            textBox_SollFerien = new System.Windows.Forms.TextBox();
+            Label14 = new System.Windows.Forms.Label();
+            Label15 = new System.Windows.Forms.Label();
+            groupBox2 = new System.Windows.Forms.GroupBox();
+            Label17 = new System.Windows.Forms.Label();
+            textBox_WBVK_Fenster = new System.Windows.Forms.TextBox();
+            Label18 = new System.Windows.Forms.Label();
+            textBox_WBVK_Keller = new System.Windows.Forms.TextBox();
+            Label23 = new System.Windows.Forms.Label();
+            textBox_WBVK_Dach = new System.Windows.Forms.TextBox();
+            groupBox3 = new System.Windows.Forms.GroupBox();
+            Label49 = new System.Windows.Forms.Label();
+            textBox_AnschussFenster = new System.Windows.Forms.TextBox();
+            Label50 = new System.Windows.Forms.Label();
+            textBox_AnschussDach = new System.Windows.Forms.TextBox();
+            Label51 = new System.Windows.Forms.Label();
+            textBox_AnschussKeller = new System.Windows.Forms.TextBox();
+            groupBox5 = new System.Windows.Forms.GroupBox();
+            Label33 = new System.Windows.Forms.Label();
+            Winter_Tag_A = new System.Windows.Forms.TextBox();
+            Ostern_Tag_A = new System.Windows.Forms.TextBox();
+            Label34 = new System.Windows.Forms.Label();
+            Label35 = new System.Windows.Forms.Label();
+            Sommer_Tag_A = new System.Windows.Forms.TextBox();
+            Herbst_Tag_A = new System.Windows.Forms.TextBox();
+            Label36 = new System.Windows.Forms.Label();
+            Winter_Monat_A = new System.Windows.Forms.TextBox();
+            Ostern_Monat_A = new System.Windows.Forms.TextBox();
+            Sommer_Monat_A = new System.Windows.Forms.TextBox();
+            Herbst_Monat_A = new System.Windows.Forms.TextBox();
+            Label37 = new System.Windows.Forms.Label();
+            Label38 = new System.Windows.Forms.Label();
+            groupBox6 = new System.Windows.Forms.GroupBox();
+            Label52 = new System.Windows.Forms.Label();
+            Winter_Tag_E = new System.Windows.Forms.TextBox();
+            Ostern_Tag_E = new System.Windows.Forms.TextBox();
+            Label53 = new System.Windows.Forms.Label();
+            Label54 = new System.Windows.Forms.Label();
+            Sommer_Tag_E = new System.Windows.Forms.TextBox();
+            Herbst_Tag_E = new System.Windows.Forms.TextBox();
+            Label55 = new System.Windows.Forms.Label();
+            Winter_Monat_E = new System.Windows.Forms.TextBox();
+            Ostern_Monat_E = new System.Windows.Forms.TextBox();
+            Sommer_Monat_E = new System.Windows.Forms.TextBox();
+            Herbst_Monat_E = new System.Windows.Forms.TextBox();
+            Label56 = new System.Windows.Forms.Label();
+            Label57 = new System.Windows.Forms.Label();
+            groupBox7 = new System.Windows.Forms.GroupBox();
+            label1 = new System.Windows.Forms.Label();
+            btn_Brauchwasser = new System.Windows.Forms.Button();
+            Label45 = new System.Windows.Forms.Label();
+            textBox_Luftwechsel = new System.Windows.Forms.TextBox();
+            Label47 = new System.Windows.Forms.Label();
+            groupBox1.SuspendLayout();
+            groupBox2.SuspendLayout();
+            groupBox3.SuspendLayout();
+            groupBox5.SuspendLayout();
+            groupBox6.SuspendLayout();
+            groupBox7.SuspendLayout();
+            SuspendLayout();
             // 
             // btn_Hilfe
             // 
-            resources.ApplyResources(this.btn_Hilfe, "btn_Hilfe");
-            this.btn_Hilfe.Name = "btn_Hilfe";
-            this.btn_Hilfe.UseVisualStyleBackColor = true;
+            resources.ApplyResources(btn_Hilfe, "btn_Hilfe");
+            btn_Hilfe.Name = "btn_Hilfe";
+            btn_Hilfe.UseVisualStyleBackColor = true;
             // 
             // btn_Speichern
             // 
-            resources.ApplyResources(this.btn_Speichern, "btn_Speichern");
-            this.btn_Speichern.Name = "btn_Speichern";
-            this.btn_Speichern.UseVisualStyleBackColor = true;
-            this.btn_Speichern.Click += new System.EventHandler(this.btn_Speichern_Click);
+            resources.ApplyResources(btn_Speichern, "btn_Speichern");
+            btn_Speichern.Name = "btn_Speichern";
+            btn_Speichern.UseVisualStyleBackColor = true;
+            btn_Speichern.Click += btn_Speichern_Click;
             // 
             // btn_Abbrechen
             // 
-            resources.ApplyResources(this.btn_Abbrechen, "btn_Abbrechen");
-            this.btn_Abbrechen.Name = "btn_Abbrechen";
-            this.btn_Abbrechen.UseVisualStyleBackColor = true;
-            this.btn_Abbrechen.Click += new System.EventHandler(this.btn_Abbrechen_Click);
+            resources.ApplyResources(btn_Abbrechen, "btn_Abbrechen");
+            btn_Abbrechen.Name = "btn_Abbrechen";
+            btn_Abbrechen.UseVisualStyleBackColor = true;
+            btn_Abbrechen.Click += btn_Abbrechen_Click;
             // 
             // groupBox1
             // 
-            resources.ApplyResources(this.groupBox1, "groupBox1");
-            this.groupBox1.Controls.Add(this.Label4);
-            this.groupBox1.Controls.Add(this.textBox_SollTag);
-            this.groupBox1.Controls.Add(this.Label5);
-            this.groupBox1.Controls.Add(this.textBox_NachtAbsenkung);
-            this.groupBox1.Controls.Add(this.Label6);
-            this.groupBox1.Controls.Add(this.textBox_MaxTemperatur);
-            this.groupBox1.Controls.Add(this.Label8);
-            this.groupBox1.Controls.Add(this.Label9);
-            this.groupBox1.Controls.Add(this.Label10);
-            this.groupBox1.Controls.Add(this.Label12);
-            this.groupBox1.Controls.Add(this.textBox_WEAbsenkung);
-            this.groupBox1.Controls.Add(this.Label13);
-            this.groupBox1.Controls.Add(this.textBox_SollFerien);
-            this.groupBox1.Controls.Add(this.Label14);
-            this.groupBox1.Controls.Add(this.Label15);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.TabStop = false;
+            resources.ApplyResources(groupBox1, "groupBox1");
+            groupBox1.Controls.Add(Label4);
+            groupBox1.Controls.Add(textBox_SollTag);
+            groupBox1.Controls.Add(Label5);
+            groupBox1.Controls.Add(textBox_NachtAbsenkung);
+            groupBox1.Controls.Add(Label6);
+            groupBox1.Controls.Add(textBox_MaxTemperatur);
+            groupBox1.Controls.Add(Label8);
+            groupBox1.Controls.Add(Label9);
+            groupBox1.Controls.Add(Label10);
+            groupBox1.Controls.Add(Label12);
+            groupBox1.Controls.Add(textBox_WEAbsenkung);
+            groupBox1.Controls.Add(Label13);
+            groupBox1.Controls.Add(textBox_SollFerien);
+            groupBox1.Controls.Add(Label14);
+            groupBox1.Controls.Add(Label15);
+            groupBox1.Name = "groupBox1";
+            groupBox1.TabStop = false;
             // 
             // Label4
             // 
-            resources.ApplyResources(this.Label4, "Label4");
-            this.Label4.Name = "Label4";
+            resources.ApplyResources(Label4, "Label4");
+            Label4.Name = "Label4";
             // 
             // textBox_SollTag
             // 
-            resources.ApplyResources(this.textBox_SollTag, "textBox_SollTag");
-            this.textBox_SollTag.Name = "textBox_SollTag";
+            resources.ApplyResources(textBox_SollTag, "textBox_SollTag");
+            textBox_SollTag.Name = "textBox_SollTag";
+            textBox_SollTag.TextChanged += textBox_SollTag_TextChanged;
             // 
             // Label5
             // 
-            resources.ApplyResources(this.Label5, "Label5");
-            this.Label5.Name = "Label5";
+            resources.ApplyResources(Label5, "Label5");
+            Label5.Name = "Label5";
             // 
             // textBox_NachtAbsenkung
             // 
-            resources.ApplyResources(this.textBox_NachtAbsenkung, "textBox_NachtAbsenkung");
-            this.textBox_NachtAbsenkung.Name = "textBox_NachtAbsenkung";
+            resources.ApplyResources(textBox_NachtAbsenkung, "textBox_NachtAbsenkung");
+            textBox_NachtAbsenkung.Name = "textBox_NachtAbsenkung";
+            textBox_NachtAbsenkung.TextChanged += textBox_NachtAbsenkung_TextChanged;
             // 
             // Label6
             // 
-            resources.ApplyResources(this.Label6, "Label6");
-            this.Label6.Name = "Label6";
+            resources.ApplyResources(Label6, "Label6");
+            Label6.Name = "Label6";
             // 
             // textBox_MaxTemperatur
             // 
-            resources.ApplyResources(this.textBox_MaxTemperatur, "textBox_MaxTemperatur");
-            this.textBox_MaxTemperatur.Name = "textBox_MaxTemperatur";
+            resources.ApplyResources(textBox_MaxTemperatur, "textBox_MaxTemperatur");
+            textBox_MaxTemperatur.Name = "textBox_MaxTemperatur";
+            textBox_MaxTemperatur.TextChanged += textBox_MaxTemperatur_TextChanged;
             // 
             // Label8
             // 
-            resources.ApplyResources(this.Label8, "Label8");
-            this.Label8.BackColor = System.Drawing.Color.Black;
-            this.Label8.ForeColor = System.Drawing.Color.White;
-            this.Label8.Name = "Label8";
+            resources.ApplyResources(Label8, "Label8");
+            Label8.BackColor = System.Drawing.Color.Black;
+            Label8.ForeColor = System.Drawing.Color.White;
+            Label8.Name = "Label8";
             // 
             // Label9
             // 
-            resources.ApplyResources(this.Label9, "Label9");
-            this.Label9.BackColor = System.Drawing.Color.Black;
-            this.Label9.ForeColor = System.Drawing.Color.White;
-            this.Label9.Name = "Label9";
+            resources.ApplyResources(Label9, "Label9");
+            Label9.BackColor = System.Drawing.Color.Black;
+            Label9.ForeColor = System.Drawing.Color.White;
+            Label9.Name = "Label9";
             // 
             // Label10
             // 
-            resources.ApplyResources(this.Label10, "Label10");
-            this.Label10.BackColor = System.Drawing.Color.Black;
-            this.Label10.ForeColor = System.Drawing.Color.White;
-            this.Label10.Name = "Label10";
+            resources.ApplyResources(Label10, "Label10");
+            Label10.BackColor = System.Drawing.Color.Black;
+            Label10.ForeColor = System.Drawing.Color.White;
+            Label10.Name = "Label10";
             // 
             // Label12
             // 
-            resources.ApplyResources(this.Label12, "Label12");
-            this.Label12.Name = "Label12";
+            resources.ApplyResources(Label12, "Label12");
+            Label12.Name = "Label12";
             // 
             // textBox_WEAbsenkung
             // 
-            resources.ApplyResources(this.textBox_WEAbsenkung, "textBox_WEAbsenkung");
-            this.textBox_WEAbsenkung.Name = "textBox_WEAbsenkung";
+            resources.ApplyResources(textBox_WEAbsenkung, "textBox_WEAbsenkung");
+            textBox_WEAbsenkung.Name = "textBox_WEAbsenkung";
+            textBox_WEAbsenkung.TextChanged += textBox_WEAbsenkung_TextChanged;
             // 
             // Label13
             // 
-            resources.ApplyResources(this.Label13, "Label13");
-            this.Label13.Name = "Label13";
+            resources.ApplyResources(Label13, "Label13");
+            Label13.Name = "Label13";
             // 
             // textBox_SollFerien
             // 
-            resources.ApplyResources(this.textBox_SollFerien, "textBox_SollFerien");
-            this.textBox_SollFerien.Name = "textBox_SollFerien";
+            resources.ApplyResources(textBox_SollFerien, "textBox_SollFerien");
+            textBox_SollFerien.Name = "textBox_SollFerien";
+            textBox_SollFerien.TextChanged += textBox_SollFerien_TextChanged;
             // 
             // Label14
             // 
-            resources.ApplyResources(this.Label14, "Label14");
-            this.Label14.BackColor = System.Drawing.Color.Black;
-            this.Label14.ForeColor = System.Drawing.Color.White;
-            this.Label14.Name = "Label14";
+            resources.ApplyResources(Label14, "Label14");
+            Label14.BackColor = System.Drawing.Color.Black;
+            Label14.ForeColor = System.Drawing.Color.White;
+            Label14.Name = "Label14";
             // 
             // Label15
             // 
-            resources.ApplyResources(this.Label15, "Label15");
-            this.Label15.BackColor = System.Drawing.Color.Black;
-            this.Label15.ForeColor = System.Drawing.Color.White;
-            this.Label15.Name = "Label15";
+            resources.ApplyResources(Label15, "Label15");
+            Label15.BackColor = System.Drawing.Color.Black;
+            Label15.ForeColor = System.Drawing.Color.White;
+            Label15.Name = "Label15";
             // 
             // groupBox2
             // 
-            resources.ApplyResources(this.groupBox2, "groupBox2");
-            this.groupBox2.Controls.Add(this.Label17);
-            this.groupBox2.Controls.Add(this.textBox_WBVK_Fenster);
-            this.groupBox2.Controls.Add(this.Label18);
-            this.groupBox2.Controls.Add(this.textBox_WBVK_Keller);
-            this.groupBox2.Controls.Add(this.Label23);
-            this.groupBox2.Controls.Add(this.textBox_WBVK_Dach);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.TabStop = false;
+            resources.ApplyResources(groupBox2, "groupBox2");
+            groupBox2.Controls.Add(Label17);
+            groupBox2.Controls.Add(textBox_WBVK_Fenster);
+            groupBox2.Controls.Add(Label18);
+            groupBox2.Controls.Add(textBox_WBVK_Keller);
+            groupBox2.Controls.Add(Label23);
+            groupBox2.Controls.Add(textBox_WBVK_Dach);
+            groupBox2.Name = "groupBox2";
+            groupBox2.TabStop = false;
             // 
             // Label17
             // 
-            resources.ApplyResources(this.Label17, "Label17");
-            this.Label17.Name = "Label17";
+            resources.ApplyResources(Label17, "Label17");
+            Label17.Name = "Label17";
             // 
             // textBox_WBVK_Fenster
             // 
-            resources.ApplyResources(this.textBox_WBVK_Fenster, "textBox_WBVK_Fenster");
-            this.textBox_WBVK_Fenster.Name = "textBox_WBVK_Fenster";
+            resources.ApplyResources(textBox_WBVK_Fenster, "textBox_WBVK_Fenster");
+            textBox_WBVK_Fenster.Name = "textBox_WBVK_Fenster";
+            textBox_WBVK_Fenster.TextChanged += textBox_WBVK_Fenster_TextChanged;
             // 
             // Label18
             // 
-            resources.ApplyResources(this.Label18, "Label18");
-            this.Label18.Name = "Label18";
+            resources.ApplyResources(Label18, "Label18");
+            Label18.Name = "Label18";
             // 
             // textBox_WBVK_Keller
             // 
-            resources.ApplyResources(this.textBox_WBVK_Keller, "textBox_WBVK_Keller");
-            this.textBox_WBVK_Keller.Name = "textBox_WBVK_Keller";
+            resources.ApplyResources(textBox_WBVK_Keller, "textBox_WBVK_Keller");
+            textBox_WBVK_Keller.Name = "textBox_WBVK_Keller";
+            textBox_WBVK_Keller.TextChanged += textBox_WBVK_Keller_TextChanged;
             // 
             // Label23
             // 
-            resources.ApplyResources(this.Label23, "Label23");
-            this.Label23.Name = "Label23";
+            resources.ApplyResources(Label23, "Label23");
+            Label23.Name = "Label23";
             // 
             // textBox_WBVK_Dach
             // 
-            resources.ApplyResources(this.textBox_WBVK_Dach, "textBox_WBVK_Dach");
-            this.textBox_WBVK_Dach.Name = "textBox_WBVK_Dach";
+            resources.ApplyResources(textBox_WBVK_Dach, "textBox_WBVK_Dach");
+            textBox_WBVK_Dach.Name = "textBox_WBVK_Dach";
+            textBox_WBVK_Dach.TextChanged += textBox_WBVK_Dach_TextChanged;
             // 
             // groupBox3
             // 
-            resources.ApplyResources(this.groupBox3, "groupBox3");
-            this.groupBox3.Controls.Add(this.Label49);
-            this.groupBox3.Controls.Add(this.textBox_AnschussFenster);
-            this.groupBox3.Controls.Add(this.Label50);
-            this.groupBox3.Controls.Add(this.textBox_AnschussDach);
-            this.groupBox3.Controls.Add(this.Label51);
-            this.groupBox3.Controls.Add(this.textBox_AnschussKeller);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.TabStop = false;
+            resources.ApplyResources(groupBox3, "groupBox3");
+            groupBox3.Controls.Add(Label49);
+            groupBox3.Controls.Add(textBox_AnschussFenster);
+            groupBox3.Controls.Add(Label50);
+            groupBox3.Controls.Add(textBox_AnschussDach);
+            groupBox3.Controls.Add(Label51);
+            groupBox3.Controls.Add(textBox_AnschussKeller);
+            groupBox3.Name = "groupBox3";
+            groupBox3.TabStop = false;
             // 
             // Label49
             // 
-            resources.ApplyResources(this.Label49, "Label49");
-            this.Label49.Name = "Label49";
+            resources.ApplyResources(Label49, "Label49");
+            Label49.Name = "Label49";
             // 
             // textBox_AnschussFenster
             // 
-            resources.ApplyResources(this.textBox_AnschussFenster, "textBox_AnschussFenster");
-            this.textBox_AnschussFenster.Name = "textBox_AnschussFenster";
+            resources.ApplyResources(textBox_AnschussFenster, "textBox_AnschussFenster");
+            textBox_AnschussFenster.Name = "textBox_AnschussFenster";
+            textBox_AnschussFenster.TextChanged += textBox_AnschussFenster_TextChanged;
             // 
             // Label50
             // 
-            resources.ApplyResources(this.Label50, "Label50");
-            this.Label50.Name = "Label50";
+            resources.ApplyResources(Label50, "Label50");
+            Label50.Name = "Label50";
             // 
             // textBox_AnschussDach
             // 
-            resources.ApplyResources(this.textBox_AnschussDach, "textBox_AnschussDach");
-            this.textBox_AnschussDach.Name = "textBox_AnschussDach";
+            resources.ApplyResources(textBox_AnschussDach, "textBox_AnschussDach");
+            textBox_AnschussDach.Name = "textBox_AnschussDach";
+            textBox_AnschussDach.TextChanged += textBox_AnschussDach_TextChanged;
             // 
             // Label51
             // 
-            resources.ApplyResources(this.Label51, "Label51");
-            this.Label51.Name = "Label51";
+            resources.ApplyResources(Label51, "Label51");
+            Label51.Name = "Label51";
             // 
             // textBox_AnschussKeller
             // 
-            resources.ApplyResources(this.textBox_AnschussKeller, "textBox_AnschussKeller");
-            this.textBox_AnschussKeller.Name = "textBox_AnschussKeller";
+            resources.ApplyResources(textBox_AnschussKeller, "textBox_AnschussKeller");
+            textBox_AnschussKeller.Name = "textBox_AnschussKeller";
+            textBox_AnschussKeller.TextChanged += textBox_AnschussKeller_TextChanged;
             // 
             // groupBox5
             // 
-            resources.ApplyResources(this.groupBox5, "groupBox5");
-            this.groupBox5.Controls.Add(this.Label33);
-            this.groupBox5.Controls.Add(this.Winter_Tag_A);
-            this.groupBox5.Controls.Add(this.Ostern_Tag_A);
-            this.groupBox5.Controls.Add(this.Label34);
-            this.groupBox5.Controls.Add(this.Label35);
-            this.groupBox5.Controls.Add(this.Sommer_Tag_A);
-            this.groupBox5.Controls.Add(this.Herbst_Tag_A);
-            this.groupBox5.Controls.Add(this.Label36);
-            this.groupBox5.Controls.Add(this.Winter_Monat_A);
-            this.groupBox5.Controls.Add(this.Ostern_Monat_A);
-            this.groupBox5.Controls.Add(this.Sommer_Monat_A);
-            this.groupBox5.Controls.Add(this.Herbst_Monat_A);
-            this.groupBox5.Controls.Add(this.Label37);
-            this.groupBox5.Controls.Add(this.Label38);
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.TabStop = false;
+            resources.ApplyResources(groupBox5, "groupBox5");
+            groupBox5.Controls.Add(Label33);
+            groupBox5.Controls.Add(Winter_Tag_A);
+            groupBox5.Controls.Add(Ostern_Tag_A);
+            groupBox5.Controls.Add(Label34);
+            groupBox5.Controls.Add(Label35);
+            groupBox5.Controls.Add(Sommer_Tag_A);
+            groupBox5.Controls.Add(Herbst_Tag_A);
+            groupBox5.Controls.Add(Label36);
+            groupBox5.Controls.Add(Winter_Monat_A);
+            groupBox5.Controls.Add(Ostern_Monat_A);
+            groupBox5.Controls.Add(Sommer_Monat_A);
+            groupBox5.Controls.Add(Herbst_Monat_A);
+            groupBox5.Controls.Add(Label37);
+            groupBox5.Controls.Add(Label38);
+            groupBox5.Name = "groupBox5";
+            groupBox5.TabStop = false;
             // 
             // Label33
             // 
-            resources.ApplyResources(this.Label33, "Label33");
-            this.Label33.Name = "Label33";
+            resources.ApplyResources(Label33, "Label33");
+            Label33.Name = "Label33";
             // 
             // Winter_Tag_A
             // 
-            resources.ApplyResources(this.Winter_Tag_A, "Winter_Tag_A");
-            this.Winter_Tag_A.Name = "Winter_Tag_A";
+            resources.ApplyResources(Winter_Tag_A, "Winter_Tag_A");
+            Winter_Tag_A.Name = "Winter_Tag_A";
+            Winter_Tag_A.TextChanged += Winter_Tag_A_TextChanged;
             // 
             // Ostern_Tag_A
             // 
-            resources.ApplyResources(this.Ostern_Tag_A, "Ostern_Tag_A");
-            this.Ostern_Tag_A.Name = "Ostern_Tag_A";
+            resources.ApplyResources(Ostern_Tag_A, "Ostern_Tag_A");
+            Ostern_Tag_A.Name = "Ostern_Tag_A";
+            Ostern_Tag_A.TextChanged += Ostern_Tag_A_TextChanged;
             // 
             // Label34
             // 
-            resources.ApplyResources(this.Label34, "Label34");
-            this.Label34.Name = "Label34";
+            resources.ApplyResources(Label34, "Label34");
+            Label34.Name = "Label34";
             // 
             // Label35
             // 
-            resources.ApplyResources(this.Label35, "Label35");
-            this.Label35.Name = "Label35";
+            resources.ApplyResources(Label35, "Label35");
+            Label35.Name = "Label35";
             // 
             // Sommer_Tag_A
             // 
-            resources.ApplyResources(this.Sommer_Tag_A, "Sommer_Tag_A");
-            this.Sommer_Tag_A.Name = "Sommer_Tag_A";
+            resources.ApplyResources(Sommer_Tag_A, "Sommer_Tag_A");
+            Sommer_Tag_A.Name = "Sommer_Tag_A";
+            Sommer_Tag_A.TextChanged += Sommer_Tag_A_TextChanged;
             // 
             // Herbst_Tag_A
             // 
-            resources.ApplyResources(this.Herbst_Tag_A, "Herbst_Tag_A");
-            this.Herbst_Tag_A.Name = "Herbst_Tag_A";
+            resources.ApplyResources(Herbst_Tag_A, "Herbst_Tag_A");
+            Herbst_Tag_A.Name = "Herbst_Tag_A";
+            Herbst_Tag_A.TextChanged += Herbst_Tag_A_TextChanged;
             // 
             // Label36
             // 
-            resources.ApplyResources(this.Label36, "Label36");
-            this.Label36.Name = "Label36";
+            resources.ApplyResources(Label36, "Label36");
+            Label36.Name = "Label36";
             // 
             // Winter_Monat_A
             // 
-            resources.ApplyResources(this.Winter_Monat_A, "Winter_Monat_A");
-            this.Winter_Monat_A.Name = "Winter_Monat_A";
+            resources.ApplyResources(Winter_Monat_A, "Winter_Monat_A");
+            Winter_Monat_A.Name = "Winter_Monat_A";
+            Winter_Monat_A.TextChanged += Winter_Monat_A_TextChanged;
             // 
             // Ostern_Monat_A
             // 
-            resources.ApplyResources(this.Ostern_Monat_A, "Ostern_Monat_A");
-            this.Ostern_Monat_A.Name = "Ostern_Monat_A";
+            resources.ApplyResources(Ostern_Monat_A, "Ostern_Monat_A");
+            Ostern_Monat_A.Name = "Ostern_Monat_A";
+            Ostern_Monat_A.TextChanged += Ostern_Monat_A_TextChanged;
             // 
             // Sommer_Monat_A
             // 
-            resources.ApplyResources(this.Sommer_Monat_A, "Sommer_Monat_A");
-            this.Sommer_Monat_A.Name = "Sommer_Monat_A";
+            resources.ApplyResources(Sommer_Monat_A, "Sommer_Monat_A");
+            Sommer_Monat_A.Name = "Sommer_Monat_A";
+            Sommer_Monat_A.TextChanged += Sommer_Monat_A_TextChanged;
             // 
             // Herbst_Monat_A
             // 
-            resources.ApplyResources(this.Herbst_Monat_A, "Herbst_Monat_A");
-            this.Herbst_Monat_A.Name = "Herbst_Monat_A";
+            resources.ApplyResources(Herbst_Monat_A, "Herbst_Monat_A");
+            Herbst_Monat_A.Name = "Herbst_Monat_A";
+            Herbst_Monat_A.TextChanged += Herbst_Monat_A_TextChanged;
             // 
             // Label37
             // 
-            resources.ApplyResources(this.Label37, "Label37");
-            this.Label37.Name = "Label37";
+            resources.ApplyResources(Label37, "Label37");
+            Label37.Name = "Label37";
             // 
             // Label38
             // 
-            resources.ApplyResources(this.Label38, "Label38");
-            this.Label38.Name = "Label38";
+            resources.ApplyResources(Label38, "Label38");
+            Label38.Name = "Label38";
             // 
             // groupBox6
             // 
-            resources.ApplyResources(this.groupBox6, "groupBox6");
-            this.groupBox6.Controls.Add(this.Label52);
-            this.groupBox6.Controls.Add(this.Winter_Tag_E);
-            this.groupBox6.Controls.Add(this.Ostern_Tag_E);
-            this.groupBox6.Controls.Add(this.Label53);
-            this.groupBox6.Controls.Add(this.Label54);
-            this.groupBox6.Controls.Add(this.Sommer_Tag_E);
-            this.groupBox6.Controls.Add(this.Herbst_Tag_E);
-            this.groupBox6.Controls.Add(this.Label55);
-            this.groupBox6.Controls.Add(this.Winter_Monat_E);
-            this.groupBox6.Controls.Add(this.Ostern_Monat_E);
-            this.groupBox6.Controls.Add(this.Sommer_Monat_E);
-            this.groupBox6.Controls.Add(this.Herbst_Monat_E);
-            this.groupBox6.Controls.Add(this.Label56);
-            this.groupBox6.Controls.Add(this.Label57);
-            this.groupBox6.Name = "groupBox6";
-            this.groupBox6.TabStop = false;
+            resources.ApplyResources(groupBox6, "groupBox6");
+            groupBox6.Controls.Add(Label52);
+            groupBox6.Controls.Add(Winter_Tag_E);
+            groupBox6.Controls.Add(Ostern_Tag_E);
+            groupBox6.Controls.Add(Label53);
+            groupBox6.Controls.Add(Label54);
+            groupBox6.Controls.Add(Sommer_Tag_E);
+            groupBox6.Controls.Add(Herbst_Tag_E);
+            groupBox6.Controls.Add(Label55);
+            groupBox6.Controls.Add(Winter_Monat_E);
+            groupBox6.Controls.Add(Ostern_Monat_E);
+            groupBox6.Controls.Add(Sommer_Monat_E);
+            groupBox6.Controls.Add(Herbst_Monat_E);
+            groupBox6.Controls.Add(Label56);
+            groupBox6.Controls.Add(Label57);
+            groupBox6.Name = "groupBox6";
+            groupBox6.TabStop = false;
             // 
             // Label52
             // 
-            resources.ApplyResources(this.Label52, "Label52");
-            this.Label52.Name = "Label52";
+            resources.ApplyResources(Label52, "Label52");
+            Label52.Name = "Label52";
             // 
             // Winter_Tag_E
             // 
-            resources.ApplyResources(this.Winter_Tag_E, "Winter_Tag_E");
-            this.Winter_Tag_E.Name = "Winter_Tag_E";
+            resources.ApplyResources(Winter_Tag_E, "Winter_Tag_E");
+            Winter_Tag_E.Name = "Winter_Tag_E";
+            Winter_Tag_E.TextChanged += Winter_Tag_E_TextChanged;
             // 
             // Ostern_Tag_E
             // 
-            resources.ApplyResources(this.Ostern_Tag_E, "Ostern_Tag_E");
-            this.Ostern_Tag_E.Name = "Ostern_Tag_E";
+            resources.ApplyResources(Ostern_Tag_E, "Ostern_Tag_E");
+            Ostern_Tag_E.Name = "Ostern_Tag_E";
+            Ostern_Tag_E.TextChanged += Ostern_Tag_E_TextChanged;
             // 
             // Label53
             // 
-            resources.ApplyResources(this.Label53, "Label53");
-            this.Label53.Name = "Label53";
+            resources.ApplyResources(Label53, "Label53");
+            Label53.Name = "Label53";
             // 
             // Label54
             // 
-            resources.ApplyResources(this.Label54, "Label54");
-            this.Label54.Name = "Label54";
+            resources.ApplyResources(Label54, "Label54");
+            Label54.Name = "Label54";
             // 
             // Sommer_Tag_E
             // 
-            resources.ApplyResources(this.Sommer_Tag_E, "Sommer_Tag_E");
-            this.Sommer_Tag_E.Name = "Sommer_Tag_E";
+            resources.ApplyResources(Sommer_Tag_E, "Sommer_Tag_E");
+            Sommer_Tag_E.Name = "Sommer_Tag_E";
+            Sommer_Tag_E.TextChanged += Sommer_Tag_E_TextChanged;
             // 
             // Herbst_Tag_E
             // 
-            resources.ApplyResources(this.Herbst_Tag_E, "Herbst_Tag_E");
-            this.Herbst_Tag_E.Name = "Herbst_Tag_E";
+            resources.ApplyResources(Herbst_Tag_E, "Herbst_Tag_E");
+            Herbst_Tag_E.Name = "Herbst_Tag_E";
+            Herbst_Tag_E.TextChanged += Herbst_Tag_E_TextChanged;
             // 
             // Label55
             // 
-            resources.ApplyResources(this.Label55, "Label55");
-            this.Label55.Name = "Label55";
+            resources.ApplyResources(Label55, "Label55");
+            Label55.Name = "Label55";
             // 
             // Winter_Monat_E
             // 
-            resources.ApplyResources(this.Winter_Monat_E, "Winter_Monat_E");
-            this.Winter_Monat_E.Name = "Winter_Monat_E";
+            resources.ApplyResources(Winter_Monat_E, "Winter_Monat_E");
+            Winter_Monat_E.Name = "Winter_Monat_E";
+            Winter_Monat_E.TextChanged += Winter_Monat_E_TextChanged;
             // 
             // Ostern_Monat_E
             // 
-            resources.ApplyResources(this.Ostern_Monat_E, "Ostern_Monat_E");
-            this.Ostern_Monat_E.Name = "Ostern_Monat_E";
+            resources.ApplyResources(Ostern_Monat_E, "Ostern_Monat_E");
+            Ostern_Monat_E.Name = "Ostern_Monat_E";
+            Ostern_Monat_E.TextChanged += Ostern_Monat_E_TextChanged;
             // 
             // Sommer_Monat_E
             // 
-            resources.ApplyResources(this.Sommer_Monat_E, "Sommer_Monat_E");
-            this.Sommer_Monat_E.Name = "Sommer_Monat_E";
+            resources.ApplyResources(Sommer_Monat_E, "Sommer_Monat_E");
+            Sommer_Monat_E.Name = "Sommer_Monat_E";
+            Sommer_Monat_E.TextChanged += Sommer_Monat_E_TextChanged;
             // 
             // Herbst_Monat_E
             // 
-            resources.ApplyResources(this.Herbst_Monat_E, "Herbst_Monat_E");
-            this.Herbst_Monat_E.Name = "Herbst_Monat_E";
+            resources.ApplyResources(Herbst_Monat_E, "Herbst_Monat_E");
+            Herbst_Monat_E.Name = "Herbst_Monat_E";
+            Herbst_Monat_E.TextChanged += Herbst_Monat_E_TextChanged;
             // 
             // Label56
             // 
-            resources.ApplyResources(this.Label56, "Label56");
-            this.Label56.Name = "Label56";
+            resources.ApplyResources(Label56, "Label56");
+            Label56.Name = "Label56";
             // 
             // Label57
             // 
-            resources.ApplyResources(this.Label57, "Label57");
-            this.Label57.Name = "Label57";
+            resources.ApplyResources(Label57, "Label57");
+            Label57.Name = "Label57";
             // 
             // groupBox7
             // 
-            resources.ApplyResources(this.groupBox7, "groupBox7");
-            this.groupBox7.Controls.Add(this.label1);
-            this.groupBox7.Controls.Add(this.btn_Brauchwasser);
-            this.groupBox7.Controls.Add(this.Label45);
-            this.groupBox7.Controls.Add(this.textBox_Luftwechsel);
-            this.groupBox7.Controls.Add(this.Label47);
-            this.groupBox7.Name = "groupBox7";
-            this.groupBox7.TabStop = false;
+            resources.ApplyResources(groupBox7, "groupBox7");
+            groupBox7.Controls.Add(label1);
+            groupBox7.Controls.Add(btn_Brauchwasser);
+            groupBox7.Controls.Add(Label45);
+            groupBox7.Controls.Add(textBox_Luftwechsel);
+            groupBox7.Controls.Add(Label47);
+            groupBox7.Name = "groupBox7";
+            groupBox7.TabStop = false;
             // 
             // label1
             // 
-            resources.ApplyResources(this.label1, "label1");
-            this.label1.Name = "label1";
+            resources.ApplyResources(label1, "label1");
+            label1.Name = "label1";
             // 
             // btn_Brauchwasser
             // 
-            resources.ApplyResources(this.btn_Brauchwasser, "btn_Brauchwasser");
-            this.btn_Brauchwasser.Name = "btn_Brauchwasser";
-            this.btn_Brauchwasser.UseVisualStyleBackColor = true;
-            this.btn_Brauchwasser.Click += new System.EventHandler(this.btn_Brauchwasser_Click);
+            resources.ApplyResources(btn_Brauchwasser, "btn_Brauchwasser");
+            btn_Brauchwasser.Name = "btn_Brauchwasser";
+            btn_Brauchwasser.UseVisualStyleBackColor = true;
+            btn_Brauchwasser.Click += btn_Brauchwasser_Click;
             // 
             // Label45
             // 
-            resources.ApplyResources(this.Label45, "Label45");
-            this.Label45.Name = "Label45";
+            resources.ApplyResources(Label45, "Label45");
+            Label45.Name = "Label45";
             // 
             // textBox_Luftwechsel
             // 
-            resources.ApplyResources(this.textBox_Luftwechsel, "textBox_Luftwechsel");
-            this.textBox_Luftwechsel.Name = "textBox_Luftwechsel";
+            resources.ApplyResources(textBox_Luftwechsel, "textBox_Luftwechsel");
+            textBox_Luftwechsel.Name = "textBox_Luftwechsel";
+            textBox_Luftwechsel.TextChanged += textBox_Luftwechsel_TextChanged;
             // 
             // Label47
             // 
-            resources.ApplyResources(this.Label47, "Label47");
-            this.Label47.BackColor = System.Drawing.Color.Black;
-            this.Label47.ForeColor = System.Drawing.Color.White;
-            this.Label47.Name = "Label47";
+            resources.ApplyResources(Label47, "Label47");
+            Label47.BackColor = System.Drawing.Color.Black;
+            Label47.ForeColor = System.Drawing.Color.White;
+            Label47.Name = "Label47";
             // 
             // Form_Gebaeude2
             // 
             resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.groupBox7);
-            this.Controls.Add(this.groupBox6);
-            this.Controls.Add(this.groupBox5);
-            this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.btn_Hilfe);
-            this.Controls.Add(this.btn_Speichern);
-            this.Controls.Add(this.btn_Abbrechen);
-            this.Name = "Form_Gebaeude2";
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
-            this.groupBox5.ResumeLayout(false);
-            this.groupBox5.PerformLayout();
-            this.groupBox6.ResumeLayout(false);
-            this.groupBox6.PerformLayout();
-            this.groupBox7.ResumeLayout(false);
-            this.groupBox7.PerformLayout();
-            this.ResumeLayout(false);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(groupBox7);
+            Controls.Add(groupBox6);
+            Controls.Add(groupBox5);
+            Controls.Add(groupBox3);
+            Controls.Add(groupBox2);
+            Controls.Add(groupBox1);
+            Controls.Add(btn_Hilfe);
+            Controls.Add(btn_Speichern);
+            Controls.Add(btn_Abbrechen);
+            Name = "Form_Gebaeude2";
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
+            groupBox3.ResumeLayout(false);
+            groupBox3.PerformLayout();
+            groupBox5.ResumeLayout(false);
+            groupBox5.PerformLayout();
+            groupBox6.ResumeLayout(false);
+            groupBox6.PerformLayout();
+            groupBox7.ResumeLayout(false);
+            groupBox7.PerformLayout();
+            ResumeLayout(false);
 
         }
 
         #endregion
 
-private System.Windows.Forms.Button btn_Hilfe;
+        private System.Windows.Forms.Button btn_Hilfe;
 private System.Windows.Forms.Button btn_Speichern;
 private System.Windows.Forms.Button btn_Abbrechen;
 private System.Windows.Forms.GroupBox groupBox1;
