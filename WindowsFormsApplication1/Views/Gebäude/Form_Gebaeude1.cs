@@ -33,7 +33,7 @@ namespace WindowsFormsApplication1
                 if (m_bAdmin)
                 {
                     btn_Ueberschreiben.Enabled = true;
-                    btn_NeuerDatensatz.Enabled = false; 
+                    btn_NeuerDatensatz.Enabled = false;
                     RecordSet rs = new RecordSet();
                     rs.Open("SELECT * from Tab_Gebaeude");
                     while (rs.Next())
@@ -125,7 +125,7 @@ namespace WindowsFormsApplication1
             textBox_UWert_Sonstige.Text = model.k_Wert_Sonstiges.ToString("F2");
             textBox_UWert_Aussenwand.Text = model.k_Wert_Auﬂenwand.ToString("F2");
             textBox_UWert_Grundflaeche.Text = model.k_Wert_Grundflaeche.ToString("F2");
-            comboBox_Verwendung.Text = model.Wohngebaeude_Nicht_Wohngebaeude; 
+            comboBox_Verwendung.Text = model.Wohngebaeude_Nicht_Wohngebaeude;
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
@@ -146,19 +146,19 @@ namespace WindowsFormsApplication1
                 "Flaeche_Auﬂenwand,gesamte_Fensterflaeche,Dachflaeche,Grundflaeche,Sonstige_Flaechen,Wohnflaeche," +
                 "Raumhoehe,WBVK_Anschluﬂ_Fenster_Wand,WBVK_Anschluﬂ_Wand_Dach,WBVK_Anschluﬂ_Auﬂenwand_Kellerdecke," +
                 "Abmessung_Anschluﬂ_Fenster_Wand,Abmessung_Anschluﬂ_Wand_Dach,Abmessung_Anschluﬂ_Auﬂenwand_Kellerdecke," +
-                "Luftwechselrate,Wochenende,Ferien,Ferienbeginn_1,Ferienende_1,Ferienbeginn_2,Ferienende_2," + 
+                "Luftwechselrate,Wochenende,Ferien,Ferienbeginn_1,Ferienende_1,Ferienbeginn_2,Ferienende_2," +
                  "Ferienbeginn_3,Ferienende_3,Ferienbeginn_4,Ferienende_4,WW_Bedarf,spez_Waermeverbrauch,Waermebedarf," +
                  "Baualtersklasse,Gebaeudeart,Wohngebaeude_Nicht_Wohngebaeude from Tab_Gebaeude where Gebaeudename='" + comboBox_Name.Text + "'", Program.DBConnection);
-            
-            adapter.Fill(ds,"Tab_Gebaeude");
+
+            adapter.Fill(ds, "Tab_Gebaeude");
 
             try
             {
                 DataTable table = ds.Tables["Tab_Gebaeude"];
                 DataRow dr = table.Rows[0];
 
-                if(Init_DataRow(dr) == null) return;
-            
+                if (Init_DataRow(dr) == null) return;
+
                 OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
                 adapter.Update(ds, "Tab_Gebaeude");
 
@@ -179,15 +179,15 @@ namespace WindowsFormsApplication1
                 dr[1] = comboBox_Name.Text;
                 dr[2] = comboBox_Gebaeudetyp.Text;
                 dr[3] = textBox_Beschreibung.Text;
-                
+
                 double wfl = double.Parse(textBox_WohnflaecheGesamt.Text);
                 dr[4] = wfl;
-                
+
                 double dWfNutzer = double.Parse(textBox_FlaecheNutzer.Text);
                 dr[6] = dWfNutzer;
                 if (dWfNutzer == 0) { dr[6] = 35; dWfNutzer = 35; }
                 dr[5] = wfl / dWfNutzer; // Wohnfl‰che pro Nutzer
-                
+
                 dr[7] = double.Parse(textBox_Waermegewinne.Text);
 
                 if (comboBox_Gebaeudeart.SelectedIndex == 0) dr[8] = wfl * 20;
@@ -199,8 +199,8 @@ namespace WindowsFormsApplication1
                 dr[10] = double.Parse(textBox_FFOstWest.Text);
                 dr[11] = double.Parse(textBox_FFNord.Text);
                 dr[12] = double.Parse(textBox_Fensterdurchlassgrad.Text);
-   
-                dr[13] = model.Raumsolltemperatur_Nachtabsenkung; 
+
+                dr[13] = model.Raumsolltemperatur_Nachtabsenkung;
                 dr[14] = model.Raumsolltemperatur_Tag;
                 dr[15] = model.Raumsolltemperatur_Wochenende;
                 dr[16] = model.Raumsolltemperatur_Ferien;
@@ -212,7 +212,7 @@ namespace WindowsFormsApplication1
                 dr[21] = double.Parse(textBox_UWert_Grundflaeche.Text);
                 dr[22] = double.Parse(textBox_UWert_Sonstige.Text);
                 dr[23] = double.Parse(textBox_Flaeche_Aussenwand.Text);
-                dr[24] = double.Parse(textBox_FFSued.Text) + 
+                dr[24] = double.Parse(textBox_FFSued.Text) +
                          double.Parse(textBox_FFOstWest.Text) +
                          double.Parse(textBox_FFNord.Text); // gesamte Fensterfl‰che
                 dr[25] = double.Parse(textBox_Gebaeude_Dachflaeche.Text);
@@ -220,18 +220,18 @@ namespace WindowsFormsApplication1
                 dr[27] = double.Parse(textBox_Sonstige_Flaechen.Text);
                 dr[28] = dr[4]; // Wohnfl‰che
                 dr[29] = double.Parse(textBox_Raumhoehe.Text);
-                
+
                 dr[30] = model.Waermebrueckenverlustkoeffizient_Anschluﬂ_Fenster_Wand;
                 dr[31] = model.Waermebrueckenverlustkoeffizient_Anschluﬂ_Wand_Dach;
                 dr[32] = model.Waermebruckenverlustkoeffizient_Anschluﬂ_Auﬂenwand_Kellerdecke;
-                
+
                 dr[33] = model.Abmessung_Anschluﬂ_Fenster_Wand;
                 dr[34] = model.Abmessung_Anschluﬂ_Wand_Dach;
                 dr[35] = model.Abmessung_Anschluﬂ_Auﬂenwand_Kellerdecke;
-                
+
                 dr[36] = model.Luftwechselrate;
                 dr[37] = model.Wochenende;
-                
+
                 dr[38] = model.Ferien;
                 dr[39] = model.Ferienbeginn_1;
                 dr[40] = model.Ferienende_1;
@@ -241,11 +241,11 @@ namespace WindowsFormsApplication1
                 dr[44] = model.Ferienende_3;
                 dr[45] = model.Ferienbeginn_4;
                 dr[46] = model.Ferienende_4;
-                
+
                 dr[47] = model.WW_Bedarf;
                 dr[48] = model.spez_Waermeverbrauch;
                 dr[49] = model.Waermebedarf;
-      
+
                 int index = comboBox_Baujahr.SelectedIndex;
                 dr[50] = Convert.ToChar('A' + index);
                 dr[51] = comboBox_Gebaeudeart.Text;
@@ -263,7 +263,7 @@ namespace WindowsFormsApplication1
 
         private void btn_NeuerDatensatz_Click(object sender, EventArgs e)
         {
-            if (comboBox_Name.Text == "") { MessageBox.Show("Geb‰udenamen eingeben!"); return; }   
+            if (comboBox_Name.Text == "") { MessageBox.Show("Geb‰udenamen eingeben!"); return; }
 
             DataSet ds = new DataSet();
             OdbcDataAdapter adapter = new OdbcDataAdapter("select * from Tab_Gebaeude where Gebaeudename='" + comboBox_Name.Text + "'", Program.DBConnection);
@@ -271,11 +271,11 @@ namespace WindowsFormsApplication1
 
             DataTable table = ds.Tables["Tab_Gebaeude"];
             DataRow newRow = table.NewRow();
-            
+
             newRow = Init_DataRow(newRow);
             if (newRow == null) return;
             table.Rows.Add(newRow);
-            
+
             OdbcCommandBuilder commandBuilder = new OdbcCommandBuilder(adapter);
 
             try
@@ -294,7 +294,7 @@ namespace WindowsFormsApplication1
 
         private void comboBox_Name_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetControls(); 
+            SetControls();
         }
 
         private void btn_Dialog2_Click(object sender, EventArgs e)
@@ -302,7 +302,126 @@ namespace WindowsFormsApplication1
             Form_Gebaeude2 frm = new Form_Gebaeude2();
             frm.model = model;
             frm.SetControls();
-            frm.ShowDialog(); 
+            frm.ShowDialog();
+        }
+
+        private void textBox_WohnflaecheGesamt_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_FlaecheNutzer_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_Fensterdurchlassgrad_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_Raumhoehe_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_Waermegewinne_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_FFNord_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_FFOstWest_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_FFSued_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_Gebaeude_Grundflaeche_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_Gebaeude_Dachflaeche_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_Flaeche_Aussenwand_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_Sonstige_Flaechen_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_UWert_Aussenwand_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_UWert_Dachflaeche_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_UWert_Fenster_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_UWert_Grundflaeche_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+        }
+
+        private void textBox_UWert_Sonstige_TextChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
+            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
     }
 }

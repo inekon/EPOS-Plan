@@ -157,72 +157,84 @@ namespace WindowsFormsApplication1
         private void tb_th_Leistung_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_Wirkungsgrad_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_Wirkungsgrad_Öl_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_B_Verlust_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_Investitionskosten_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_Raumbedarf_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_Nutzungsdauer_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_CO2_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_SO2_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_NOx_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_CO_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void tb_Staub_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 

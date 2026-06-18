@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
@@ -33,7 +27,7 @@ namespace WindowsFormsApplication1
         float[] bhkwStromLeistung = new float[10];
         public float[] bhkwGrenzL = new float[10];
         public float bhkwGrenzleistungAllgemein = 0;
-
+   
         // Vorgaben für Solar und Speicher setzen
         bool solarVorhanden = false; // Solar = 0
         float solarSpeicher = 0.0f;
@@ -42,6 +36,51 @@ namespace WindowsFormsApplication1
         public float kapazitaetPendelspeicher = 0.0f; // Pendelspeicher = 0
 
         int anzahlBhkw = 0;
+
+        // --- Neue Ergebnis- und Verbrauchsvariablen aus VBA ---
+        public float BruttoBHKWErzeugung = 0f;
+        public float Waermeproduktion_BHKW = 0f;
+        public float Stromproduktion_BHKW = 0f;
+        public float Gasspitze_BHKW = 0f;
+
+        public float Gasverbrauch_BHKW = 0f;
+        public float Oelverbrauch_BHKW = 0f;
+        public float Rapsoelverbrauch_BHKW = 0f;
+        public float Holzmenge_BHKW = 0f;
+        public float Sonstigemenge_BHKW = 0f;
+        public double Koks_BHKW = 0;
+        public double Kohle_BHKW = 0;
+        public double Pellets_BHKW = 0;
+        public double TierischeFette_BHKW = 0;
+        public float Stromverbrauch_BHKW = 0f; // Ergänzt aus Brennstoffart 14
+
+        //public float Biogasverbrauch_BHKW = 0f;
+        //public float Fluessiggasverbrauch_BHKW = 0f;
+        //public float BioErdgasverbrauch = 0f;
+        //public float BioErdgasleistung = 0f;
+   
+
+        // Emissionswerte
+        public float Em_CO2_BHKW = 0f;
+        public float Em_SO2_BHKW = 0f;
+        public float Em_NOX_BHKW = 0f;
+        public float Em_CO_BHKW = 0f;
+        public float Em_Staub_BHKW = 0f;
+
+        // Laufzeiten
+        public float Betriebsstunden = 0f;
+        public float dLaufzeiten = 0f;
+        public float[] Laufzeiten = new float[10];
+
+        // Arrays für die Modulkonfigurationen zur späteren Berechnung
+        private int[] bhkwBrennstoffart = new int[10];
+        private float[] bhkwWirkungsgrad = new float[10];
+        private float[] bhkwSKZ = new float[10];
+        private float[] bhkwCO2Factor = new float[10];
+        private float[] bhkwSO2Factor = new float[10];
+        private float[] bhkwNOXFactor = new float[10];
+        private float[] bhkwCOFactor = new float[10];
+        private float[] bhkwStaubFactor = new float[10];
 
         public SimulationBHKW()
         {
@@ -63,74 +102,142 @@ namespace WindowsFormsApplication1
             m_ID_Projekt = ProjektID;
             anzahlBhkw = bhkw_list.Count;
 
+            // Variablen vor jeder Berechnung sauber zurücksetzen
+            BruttoBHKWErzeugung = 0f;
+            Waermeproduktion_BHKW = 0f;
+            Stromproduktion_BHKW = 0f;
+            Gasverbrauch_BHKW = 0f;
+            Oelverbrauch_BHKW = 0f;
+            Gasspitze_BHKW = 0f;
+            //Biogasverbrauch_BHKW = 0f;
+            Rapsoelverbrauch_BHKW = 0f;
+            Holzmenge_BHKW = 0f;
+            Sonstigemenge_BHKW = 0f;
+            //Fluessiggasverbrauch_BHKW = 0f;
+            //BioErdgasverbrauch = 0f;
+            //BioErdgasleistung = 0f;
+            Stromverbrauch_BHKW = 0f;
+            Em_CO2_BHKW = 0f;
+            Em_SO2_BHKW = 0f;
+            Em_NOX_BHKW = 0f;
+            Em_CO_BHKW = 0f;
+            Em_Staub_BHKW = 0f;
+            dLaufzeiten = 0f;
+
             BHKWCtrl ctrl = new BHKWCtrl();
             for (int i = 0; i < anzahlBhkw; i++)
             {
                 ctrl.ReadSingle(bhkw_list[i]);
                 bhkwWaermeLeistung[i] = (float)ctrl.m_Ptherm;
                 bhkwStromLeistung[i] = (float)ctrl.m_Pel;
-                //bhkwGrenzL[i] = (float)ctrl.m_Grenzleistung;
+
+                // Neue Werte für die Verbrauchs- und Emissionsberechnung mappen:
+                bhkwBrennstoffart[i] = ctrl.m_Brennstoff; // oder passendes Feld aus deiner BHKWCtrl
+                bhkwWirkungsgrad[i] = (float)ctrl.m_Wirkungsgrad; // Gesamtwirkungsgrad (Elektrisch + Thermisch)
+                bhkwSKZ[i] = bhkwStromLeistung[i] / bhkwWaermeLeistung[i];
+                bhkwGrenzL[i] = (float)ctrl.m_Grenzleistung; // Grenzleistung als Faktor (z.B. 0.8 für 80% Modulation)
+
+                // Emissionsfaktoren aus der DB auslesen (Äquivalent zu Cells(zaehler+2, X))
+                bhkwCO2Factor[i] = (float)ctrl.m_CO2;
+                bhkwSO2Factor[i] = (float)ctrl.m_SO2;
+                bhkwNOXFactor[i] = (float)ctrl.m_NOx;
+                bhkwCOFactor[i] = (float)ctrl.m_CO;
+                bhkwStaubFactor[i] = (float)ctrl.m_Staub;
             }
 
+            // --- 1. Simulationen ausführen ---
             if (modeBHKW == 0)
             {
                 BhkwSimulationWaermegefuehrt(
-                    waermebedarf,
-                    stromproduktion,
-                    waermerestbedarf,
-                    waermeproduktion,
-                    s_waerme,
-                    s_strom,
-                    kapazitaetPendelspeicher,
-                    anzahlBhkw,
-                    bhkwWaermeLeistung,
-                    bhkwStromLeistung,
-                    ref solarSpeicher,
-                    bhkwGrenzL,
-                    solarVorhanden,
-                    ref solarWaerme,
-                    ref solarUeberschuss,
-                    strombedarf,
-                    bhkwGrenzleistungAllgemein
+                    waermebedarf, stromproduktion, waermerestbedarf, waermeproduktion,
+                    s_waerme, s_strom, kapazitaetPendelspeicher, anzahlBhkw,
+                    bhkwWaermeLeistung, bhkwStromLeistung, ref solarSpeicher,
+                    bhkwGrenzL, solarVorhanden, ref solarWaerme, ref solarUeberschuss,
+                    strombedarf, bhkwGrenzleistungAllgemein
                 );
             }
-            else if (modeBHKW == 1) {
+            else if (modeBHKW == 1)
+            {
                 SimulationStromgefuehrt(
-                    waermebedarf,
-                    strombedarf,
-                    stromproduktion,
-                    waermerestbedarf,
-                    waermeproduktion,
-                    s_waerme,
-                    s_strom,
-                    kapazitaetPendelspeicher,
-                    anzahlBhkw,
-                    bhkwWaermeLeistung,
-                    bhkwStromLeistung,
-                    bhkwGrenzleistungAllgemein,
-                    ref solarUeberschuss
+                    waermebedarf, strombedarf, stromproduktion, waermerestbedarf, waermeproduktion,
+                    s_waerme, s_strom, kapazitaetPendelspeicher, anzahlBhkw,
+                    bhkwWaermeLeistung, bhkwStromLeistung, bhkwGrenzleistungAllgemein, ref solarUeberschuss
                 );
             }
             else if (modeBHKW == 2)
             {
                 SimulationOhneEinspeisung(
-                    waermebedarf,
-                    strombedarf,
-                    stromproduktion,
-                    waermerestbedarf,
-                    waermeproduktion,
-                    s_waerme,
-                    s_strom,
-                    kapazitaetPendelspeicher,
-                    anzahlBhkw,
-                    bhkwWaermeLeistung,
-                    bhkwStromLeistung,
-                    bhkwGrenzleistungAllgemein
+                    waermebedarf, strombedarf, stromproduktion, waermerestbedarf, waermeproduktion,
+                    s_waerme, s_strom, kapazitaetPendelspeicher, anzahlBhkw,
+                    bhkwWaermeLeistung, bhkwStromLeistung, bhkwGrenzleistungAllgemein
                 );
             }
 
+            // --- 2. Das übersetzte VBA-Code-Fragment für die Auswertung anhängen ---
+            for (int zaehler = 0; zaehler < anzahlBhkw; zaehler++)
+            {
+                Waermeproduktion_BHKW += s_waerme[zaehler];
+                Stromproduktion_BHKW += s_strom[zaehler];
+
+                // Laufzeitberechnung des Moduls
+                if (bhkwWaermeLeistung[zaehler] > 0)
+                {
+                    // s_waerme ist am Ende bereits in MWh umgerechnet worden (laut deinem Code-Ende / 1000f),
+                    // für die Stundenlaufzeit multiplizieren wir wieder mit 1000, um auf kWh/kW zu kommen.
+                    Laufzeiten[zaehler] = (s_waerme[zaehler] / bhkwWaermeLeistung[zaehler]) * 1000f;
+                }
+                else
+                {
+                    Laufzeiten[zaehler] = 0f;
+                }
+                dLaufzeiten += Laufzeiten[zaehler];
+
+                // Verbrauch & Emissionen
+                if (bhkwWirkungsgrad[zaehler] > 0)
+                {
+                    // Verbrauch berechnen (Wärme + Strom) / Wirkungsgrad
+                    float ModulVerbrauch = (s_waerme[zaehler] + s_strom[zaehler]) / bhkwWirkungsgrad[zaehler];
+
+                    BruttoBHKWErzeugung += ModulVerbrauch;
+
+                    // Emissionen addieren und von g in kg oder Tonnen skalieren (/1000)
+                    Em_CO2_BHKW += ModulVerbrauch * bhkwCO2Factor[zaehler] / 1000f;
+                    Em_SO2_BHKW += ModulVerbrauch * bhkwSO2Factor[zaehler] / 1000f;
+                    Em_NOX_BHKW += ModulVerbrauch * bhkwNOXFactor[zaehler] / 1000f;
+                    Em_CO_BHKW += ModulVerbrauch * bhkwCOFactor[zaehler] / 1000f;
+                    Em_Staub_BHKW += ModulVerbrauch * bhkwStaubFactor[zaehler] / 1000f;
+
+                    // Brennstoffarten-Verzweigung
+
+                    // Den Verbrauch auf die globalen Brennstoffzähler buchen
+                    int art = bhkwBrennstoffart[zaehler];
+
+                    if (art >= 1 && art <= 5)
+                    {
+                        Gasverbrauch_BHKW += ModulVerbrauch;
+                        Gasspitze_BHKW += bhkwWaermeLeistung[zaehler] * (1f + bhkwSKZ[zaehler]) / bhkwWirkungsgrad[zaehler];
+                    }
+                    else if ((art >= 6 && art <= 9) || (art >= 18 && art <= 22)) Oelverbrauch_BHKW += ModulVerbrauch;
+                    else if (art == 10) Koks_BHKW += ModulVerbrauch;
+                    else if (art == 11) Kohle_BHKW += ModulVerbrauch;
+                    else if (art == 12) Holzmenge_BHKW += ModulVerbrauch;
+                    else if (art == 17) TierischeFette_BHKW += ModulVerbrauch;
+                    else if (art == 15) Pellets_BHKW += ModulVerbrauch;
+                    else if (art == 16) Rapsoelverbrauch_BHKW += ModulVerbrauch;
+  
+                }
+            }
+
+            // gesamte Laufzeiten
+            Betriebsstunden = dLaufzeiten;
+            // Durchschnittliche Laufzeit berechnen
+            if (anzahlBhkw > 0)
+            {
+                dLaufzeiten = dLaufzeiten / anzahlBhkw;
+            }
+
             return true;
-        }   
+        }
 
 
         // Hinweis: Die globalen VBA-Variablen (wie solar_waerme, solar_vorhanden etc.) 
@@ -162,7 +269,7 @@ namespace WindowsFormsApplication1
             bool solar = false;
             float solW = 0f;
             float solSp = 0f;
-
+            
             // Arrays initialisieren (die ersten 10 Elemente nullen)
             for (int i = 0; i <= 9; i++)
             {

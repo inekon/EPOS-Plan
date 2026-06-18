@@ -62,6 +62,8 @@
             System.Windows.Forms.DataVisualization.Charting.Series series11 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series12 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Title title8 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            splitContainer_Parameter = new System.Windows.Forms.SplitContainer();
+            listViewQuellen = new System.Windows.Forms.ListView();
             btn_Konfiguration = new System.Windows.Forms.Button();
             btn_Simulation = new System.Windows.Forms.Button();
             btn_Beenden = new System.Windows.Forms.Button();
@@ -195,7 +197,6 @@
             label17 = new System.Windows.Forms.Label();
             label18 = new System.Windows.Forms.Label();
             label9 = new System.Windows.Forms.Label();
-            label13 = new System.Windows.Forms.Label();
             textBox_gesStrombedarf = new System.Windows.Forms.TextBox();
             textBox_Gesamt_Strombedarf = new System.Windows.Forms.TextBox();
             textBox_gesWaermebedarf = new System.Windows.Forms.TextBox();
@@ -217,18 +218,19 @@
             label1 = new System.Windows.Forms.Label();
             chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             tabControl1 = new System.Windows.Forms.TabControl();
-            tabPage_BHKW = new System.Windows.Forms.TabPage();
-            richTextBox1 = new System.Windows.Forms.RichTextBox();
+            tabPage_Parameter = new System.Windows.Forms.TabPage();
+            tabControl4 = new System.Windows.Forms.TabControl();
+            tabPage_Parameter_BHKW = new System.Windows.Forms.TabPage();
+            richTextBox_Info = new System.Windows.Forms.RichTextBox();
             label56 = new System.Windows.Forms.Label();
             numericUpDown_Volumen = new System.Windows.Forms.NumericUpDown();
             groupBox_BHKWBetriebsart = new System.Windows.Forms.GroupBox();
             radioButton_OhneStromEinspeisung = new System.Windows.Forms.RadioButton();
             radioButton_Waermegefuehrt = new System.Windows.Forms.RadioButton();
             radioButton_Stromgefuehrt = new System.Windows.Forms.RadioButton();
-            chart_BHKW_Waerme = new System.Windows.Forms.DataVisualization.Charting.Chart();
             label54 = new System.Windows.Forms.Label();
             numericUpDown_UnteresteLG = new System.Windows.Forms.NumericUpDown();
-            tabPage_Stromspeicher = new System.Windows.Forms.TabPage();
+            tabPage_Parameter_Stromspeicher = new System.Windows.Forms.TabPage();
             comboBox7_Stromspeicher_LadeleistungMax_auswahl = new System.Windows.Forms.ComboBox();
             textBox_Stromspeicher_Ladeleistung_max = new System.Windows.Forms.TextBox();
             label7 = new System.Windows.Forms.Label();
@@ -240,6 +242,51 @@
             comboBox8_Stromspeicher_LadeenergieMin_auswahl = new System.Windows.Forms.ComboBox();
             comboBox_Stromspeicher_LadeenergieMax_auswahl = new System.Windows.Forms.ComboBox();
             label12 = new System.Windows.Forms.Label();
+            tabPage_Parameter_WP = new System.Windows.Forms.TabPage();
+            tabPage_Parameter_SPK = new System.Windows.Forms.TabPage();
+            tabPage_Parameter_Bedarf = new System.Windows.Forms.TabPage();
+            tabControl3 = new System.Windows.Forms.TabControl();
+            tabPage1 = new System.Windows.Forms.TabPage();
+            tabPage2 = new System.Windows.Forms.TabPage();
+            tabPage_Simulation = new System.Windows.Forms.TabPage();
+            tabPage_BHKW = new System.Windows.Forms.TabPage();
+            textBox_Betriebsstunden_Durchschnitt = new System.Windows.Forms.TextBox();
+            label108 = new System.Windows.Forms.Label();
+            label63 = new System.Windows.Forms.Label();
+            tb_TierischeFette_BHKW = new System.Windows.Forms.TextBox();
+            tb_Pellets_BHKW = new System.Windows.Forms.TextBox();
+            tb_Oelverbrauch_BHKW = new System.Windows.Forms.TextBox();
+            tb_Koks_BHKW = new System.Windows.Forms.TextBox();
+            tb_Rapsoelverbrauch_BHKW = new System.Windows.Forms.TextBox();
+            tb_Holzverbrauch_BHKW = new System.Windows.Forms.TextBox();
+            tb_Kohle_BHKW = new System.Windows.Forms.TextBox();
+            tb_Sonstigverbrauch_BHKW = new System.Windows.Forms.TextBox();
+            tb_Gasverbrauch_BHKW = new System.Windows.Forms.TextBox();
+            label88 = new System.Windows.Forms.Label();
+            label89 = new System.Windows.Forms.Label();
+            label90 = new System.Windows.Forms.Label();
+            label91 = new System.Windows.Forms.Label();
+            label92 = new System.Windows.Forms.Label();
+            label93 = new System.Windows.Forms.Label();
+            label94 = new System.Windows.Forms.Label();
+            label95 = new System.Windows.Forms.Label();
+            label96 = new System.Windows.Forms.Label();
+            label97 = new System.Windows.Forms.Label();
+            label98 = new System.Windows.Forms.Label();
+            label99 = new System.Windows.Forms.Label();
+            label100 = new System.Windows.Forms.Label();
+            label101 = new System.Windows.Forms.Label();
+            label102 = new System.Windows.Forms.Label();
+            label103 = new System.Windows.Forms.Label();
+            label106 = new System.Windows.Forms.Label();
+            label107 = new System.Windows.Forms.Label();
+            textBox_Betriebsstunden = new System.Windows.Forms.TextBox();
+            label13 = new System.Windows.Forms.Label();
+            chart_BHKW_Waerme = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            tabPage_Stromspeicher = new System.Windows.Forms.TabPage();
+            ((System.ComponentModel.ISupportInitialize)splitContainer_Parameter).BeginInit();
+            splitContainer_Parameter.Panel1.SuspendLayout();
+            splitContainer_Parameter.SuspendLayout();
             tabPage_Photovoltaik.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)chart_PV).BeginInit();
             tabPage_Solarthermie.SuspendLayout();
@@ -256,13 +303,43 @@
             ((System.ComponentModel.ISupportInitialize)chart2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)chart1).BeginInit();
             tabControl1.SuspendLayout();
-            tabPage_BHKW.SuspendLayout();
+            tabPage_Parameter.SuspendLayout();
+            tabControl4.SuspendLayout();
+            tabPage_Parameter_BHKW.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDown_Volumen).BeginInit();
             groupBox_BHKWBetriebsart.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)chart_BHKW_Waerme).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown_UnteresteLG).BeginInit();
-            tabPage_Stromspeicher.SuspendLayout();
+            tabPage_Parameter_Stromspeicher.SuspendLayout();
+            tabControl3.SuspendLayout();
+            tabPage_Simulation.SuspendLayout();
+            tabPage_BHKW.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)chart_BHKW_Waerme).BeginInit();
             SuspendLayout();
+            // 
+            // splitContainer_Parameter
+            // 
+            resources.ApplyResources(splitContainer_Parameter, "splitContainer_Parameter");
+            splitContainer_Parameter.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            splitContainer_Parameter.Name = "splitContainer_Parameter";
+            // 
+            // splitContainer_Parameter.Panel1
+            // 
+            splitContainer_Parameter.Panel1.Controls.Add(listViewQuellen);
+            // 
+            // splitContainer_Parameter.Panel2
+            // 
+            resources.ApplyResources(splitContainer_Parameter.Panel2, "splitContainer_Parameter.Panel2");
+            // 
+            // listViewQuellen
+            // 
+            resources.ApplyResources(listViewQuellen, "listViewQuellen");
+            listViewQuellen.FullRowSelect = true;
+            listViewQuellen.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            listViewQuellen.MultiSelect = false;
+            listViewQuellen.Name = "listViewQuellen";
+            listViewQuellen.UseCompatibleStateImageBehavior = false;
+            listViewQuellen.View = System.Windows.Forms.View.Details;
+            listViewQuellen.SelectedIndexChanged += listViewQuellen_SelectedIndexChanged;
             // 
             // btn_Konfiguration
             // 
@@ -467,7 +544,7 @@
             tabPage_Solarthermie.Controls.Add(label51);
             tabPage_Solarthermie.Controls.Add(label52);
             tabPage_Solarthermie.Controls.Add(label53);
-            tabPage_Solarthermie.ForeColor = System.Drawing.Color.Black;
+            tabPage_Solarthermie.ForeColor = System.Drawing.SystemColors.ControlText;
             resources.ApplyResources(tabPage_Solarthermie, "tabPage_Solarthermie");
             tabPage_Solarthermie.Name = "tabPage_Solarthermie";
             // 
@@ -711,6 +788,7 @@
             // 
             // tb_Oelverbrauch
             // 
+            tb_Oelverbrauch.AcceptsReturn = true;
             tb_Oelverbrauch.BackColor = System.Drawing.Color.White;
             tb_Oelverbrauch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             resources.ApplyResources(tb_Oelverbrauch, "tb_Oelverbrauch");
@@ -1397,7 +1475,6 @@
             tabPage_Bedarf.Controls.Add(label17);
             tabPage_Bedarf.Controls.Add(label18);
             tabPage_Bedarf.Controls.Add(label9);
-            tabPage_Bedarf.Controls.Add(label13);
             tabPage_Bedarf.Controls.Add(textBox_gesStrombedarf);
             tabPage_Bedarf.Controls.Add(textBox_Gesamt_Strombedarf);
             tabPage_Bedarf.Controls.Add(textBox_gesWaermebedarf);
@@ -1452,13 +1529,6 @@
             label9.BackColor = System.Drawing.Color.Transparent;
             label9.ForeColor = System.Drawing.Color.Black;
             label9.Name = "label9";
-            // 
-            // label13
-            // 
-            resources.ApplyResources(label13, "label13");
-            label13.BackColor = System.Drawing.Color.Transparent;
-            label13.ForeColor = System.Drawing.Color.Black;
-            label13.Name = "label13";
             // 
             // textBox_gesStrombedarf
             // 
@@ -1638,6 +1708,9 @@
             // 
             // tabControl1
             // 
+            resources.ApplyResources(tabControl1, "tabControl1");
+            tabControl1.Controls.Add(tabPage_Parameter);
+            tabControl1.Controls.Add(tabPage_Simulation);
             tabControl1.Controls.Add(tabPage_Bedarf);
             tabControl1.Controls.Add(tabPage_Wärmepumpe);
             tabControl1.Controls.Add(tabPage_Heizkessel);
@@ -1646,29 +1719,46 @@
             tabControl1.Controls.Add(tabPage_Photovoltaik);
             tabControl1.Controls.Add(tabPage_Stromspeicher);
             tabControl1.Controls.Add(tabPage_Ergebnis);
-            resources.ApplyResources(tabControl1, "tabControl1");
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
             // 
-            // tabPage_BHKW
+            // tabPage_Parameter
             // 
-            tabPage_BHKW.Controls.Add(richTextBox1);
-            tabPage_BHKW.Controls.Add(label56);
-            tabPage_BHKW.Controls.Add(numericUpDown_Volumen);
-            tabPage_BHKW.Controls.Add(groupBox_BHKWBetriebsart);
-            tabPage_BHKW.Controls.Add(chart_BHKW_Waerme);
-            tabPage_BHKW.Controls.Add(label54);
-            tabPage_BHKW.Controls.Add(numericUpDown_UnteresteLG);
-            resources.ApplyResources(tabPage_BHKW, "tabPage_BHKW");
-            tabPage_BHKW.Name = "tabPage_BHKW";
-            tabPage_BHKW.UseVisualStyleBackColor = true;
+            tabPage_Parameter.Controls.Add(tabControl4);
+            tabPage_Parameter.Controls.Add(tabControl3);
+            resources.ApplyResources(tabPage_Parameter, "tabPage_Parameter");
+            tabPage_Parameter.Name = "tabPage_Parameter";
+            tabPage_Parameter.UseVisualStyleBackColor = true;
             // 
-            // richTextBox1
+            // tabControl4
             // 
-            richTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            resources.ApplyResources(richTextBox1, "richTextBox1");
-            richTextBox1.ForeColor = System.Drawing.Color.DarkGreen;
-            richTextBox1.Name = "richTextBox1";
+            resources.ApplyResources(tabControl4, "tabControl4");
+            tabControl4.Controls.Add(tabPage_Parameter_BHKW);
+            tabControl4.Controls.Add(tabPage_Parameter_Stromspeicher);
+            tabControl4.Controls.Add(tabPage_Parameter_WP);
+            tabControl4.Controls.Add(tabPage_Parameter_SPK);
+            tabControl4.Controls.Add(tabPage_Parameter_Bedarf);
+            tabControl4.Name = "tabControl4";
+            tabControl4.SelectedIndex = 0;
+            // 
+            // tabPage_Parameter_BHKW
+            // 
+            tabPage_Parameter_BHKW.BackColor = System.Drawing.Color.White;
+            tabPage_Parameter_BHKW.Controls.Add(richTextBox_Info);
+            tabPage_Parameter_BHKW.Controls.Add(label56);
+            tabPage_Parameter_BHKW.Controls.Add(numericUpDown_Volumen);
+            tabPage_Parameter_BHKW.Controls.Add(groupBox_BHKWBetriebsart);
+            tabPage_Parameter_BHKW.Controls.Add(label54);
+            tabPage_Parameter_BHKW.Controls.Add(numericUpDown_UnteresteLG);
+            resources.ApplyResources(tabPage_Parameter_BHKW, "tabPage_Parameter_BHKW");
+            tabPage_Parameter_BHKW.Name = "tabPage_Parameter_BHKW";
+            // 
+            // richTextBox_Info
+            // 
+            richTextBox_Info.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            resources.ApplyResources(richTextBox_Info, "richTextBox_Info");
+            richTextBox_Info.ForeColor = System.Drawing.Color.DarkGreen;
+            richTextBox_Info.Name = "richTextBox_Info";
             // 
             // label56
             // 
@@ -1678,8 +1768,8 @@
             // numericUpDown_Volumen
             // 
             numericUpDown_Volumen.DecimalPlaces = 1;
-            numericUpDown_Volumen.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
             resources.ApplyResources(numericUpDown_Volumen, "numericUpDown_Volumen");
+            numericUpDown_Volumen.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
             numericUpDown_Volumen.Name = "numericUpDown_Volumen";
             // 
             // groupBox_BHKWBetriebsart
@@ -1717,42 +1807,6 @@
             radioButton_Stromgefuehrt.UseVisualStyleBackColor = true;
             radioButton_Stromgefuehrt.CheckedChanged += radioButton_Stromgefuehrt_CheckedChanged;
             // 
-            // chart_BHKW_Waerme
-            // 
-            chart_BHKW_Waerme.BorderlineColor = System.Drawing.Color.Black;
-            chart_BHKW_Waerme.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.DashDot;
-            chartArea8.AxisX.IsLabelAutoFit = false;
-            chartArea8.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea8.AxisX.Title = "Monate";
-            chartArea8.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea8.AxisY.Title = "Wärmelast [kW]";
-            chartArea8.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
-            chartArea8.BackColor = System.Drawing.Color.FromArgb(122, 255, 222);
-            chartArea8.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
-            chartArea8.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
-            chartArea8.Name = "ChartArea1";
-            chart_BHKW_Waerme.ChartAreas.Add(chartArea8);
-            legend5.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
-            legend5.LegendItemOrder = System.Windows.Forms.DataVisualization.Charting.LegendItemOrder.SameAsSeriesOrder;
-            legend5.Name = "Legend1";
-            chart_BHKW_Waerme.Legends.Add(legend5);
-            resources.ApplyResources(chart_BHKW_Waerme, "chart_BHKW_Waerme");
-            chart_BHKW_Waerme.Name = "chart_BHKW_Waerme";
-            series11.ChartArea = "ChartArea1";
-            series11.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series11.Legend = "Legend1";
-            series11.LegendText = "Wärmebedarf";
-            series11.Name = "Wärmebedarf";
-            series12.ChartArea = "ChartArea1";
-            series12.Legend = "Legend1";
-            series12.LegendText = "Wärmeproduktion";
-            series12.Name = "Wärmeproduktion";
-            chart_BHKW_Waerme.Series.Add(series11);
-            chart_BHKW_Waerme.Series.Add(series12);
-            title8.Name = "Title1";
-            title8.Text = "Wärmelast Jahresganglinie ";
-            chart_BHKW_Waerme.Titles.Add(title8);
-            // 
             // label54
             // 
             resources.ApplyResources(label54, "label54");
@@ -1763,22 +1817,22 @@
             resources.ApplyResources(numericUpDown_UnteresteLG, "numericUpDown_UnteresteLG");
             numericUpDown_UnteresteLG.Name = "numericUpDown_UnteresteLG";
             // 
-            // tabPage_Stromspeicher
+            // tabPage_Parameter_Stromspeicher
             // 
-            tabPage_Stromspeicher.Controls.Add(comboBox7_Stromspeicher_LadeleistungMax_auswahl);
-            tabPage_Stromspeicher.Controls.Add(textBox_Stromspeicher_Ladeleistung_max);
-            tabPage_Stromspeicher.Controls.Add(label7);
-            tabPage_Stromspeicher.Controls.Add(textBox_Stromspeicher_Ladeenergie_min);
-            tabPage_Stromspeicher.Controls.Add(label11);
-            tabPage_Stromspeicher.Controls.Add(label40);
-            tabPage_Stromspeicher.Controls.Add(textBox_Stromspeicher_Ladeenergie_max);
-            tabPage_Stromspeicher.Controls.Add(textBox_Speicher_Ladeschwelle);
-            tabPage_Stromspeicher.Controls.Add(comboBox8_Stromspeicher_LadeenergieMin_auswahl);
-            tabPage_Stromspeicher.Controls.Add(comboBox_Stromspeicher_LadeenergieMax_auswahl);
-            tabPage_Stromspeicher.Controls.Add(label12);
-            resources.ApplyResources(tabPage_Stromspeicher, "tabPage_Stromspeicher");
-            tabPage_Stromspeicher.Name = "tabPage_Stromspeicher";
-            tabPage_Stromspeicher.UseVisualStyleBackColor = true;
+            tabPage_Parameter_Stromspeicher.BackColor = System.Drawing.Color.White;
+            tabPage_Parameter_Stromspeicher.Controls.Add(comboBox7_Stromspeicher_LadeleistungMax_auswahl);
+            tabPage_Parameter_Stromspeicher.Controls.Add(textBox_Stromspeicher_Ladeleistung_max);
+            tabPage_Parameter_Stromspeicher.Controls.Add(label7);
+            tabPage_Parameter_Stromspeicher.Controls.Add(textBox_Stromspeicher_Ladeenergie_min);
+            tabPage_Parameter_Stromspeicher.Controls.Add(label11);
+            tabPage_Parameter_Stromspeicher.Controls.Add(label40);
+            tabPage_Parameter_Stromspeicher.Controls.Add(textBox_Stromspeicher_Ladeenergie_max);
+            tabPage_Parameter_Stromspeicher.Controls.Add(textBox_Speicher_Ladeschwelle);
+            tabPage_Parameter_Stromspeicher.Controls.Add(comboBox8_Stromspeicher_LadeenergieMin_auswahl);
+            tabPage_Parameter_Stromspeicher.Controls.Add(comboBox_Stromspeicher_LadeenergieMax_auswahl);
+            tabPage_Parameter_Stromspeicher.Controls.Add(label12);
+            resources.ApplyResources(tabPage_Parameter_Stromspeicher, "tabPage_Parameter_Stromspeicher");
+            tabPage_Parameter_Stromspeicher.Name = "tabPage_Parameter_Stromspeicher";
             // 
             // comboBox7_Stromspeicher_LadeleistungMax_auswahl
             // 
@@ -1845,17 +1899,372 @@
             label12.ForeColor = System.Drawing.Color.Black;
             label12.Name = "label12";
             // 
+            // tabPage_Parameter_WP
+            // 
+            tabPage_Parameter_WP.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(tabPage_Parameter_WP, "tabPage_Parameter_WP");
+            tabPage_Parameter_WP.Name = "tabPage_Parameter_WP";
+            // 
+            // tabPage_Parameter_SPK
+            // 
+            tabPage_Parameter_SPK.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(tabPage_Parameter_SPK, "tabPage_Parameter_SPK");
+            tabPage_Parameter_SPK.Name = "tabPage_Parameter_SPK";
+            // 
+            // tabPage_Parameter_Bedarf
+            // 
+            tabPage_Parameter_Bedarf.BackColor = System.Drawing.Color.White;
+            resources.ApplyResources(tabPage_Parameter_Bedarf, "tabPage_Parameter_Bedarf");
+            tabPage_Parameter_Bedarf.Name = "tabPage_Parameter_Bedarf";
+            // 
+            // tabControl3
+            // 
+            tabControl3.Controls.Add(tabPage1);
+            tabControl3.Controls.Add(tabPage2);
+            resources.ApplyResources(tabControl3, "tabControl3");
+            tabControl3.Name = "tabControl3";
+            tabControl3.SelectedIndex = 0;
+            // 
+            // tabPage1
+            // 
+            resources.ApplyResources(tabPage1, "tabPage1");
+            tabPage1.Name = "tabPage1";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // tabPage2
+            // 
+            resources.ApplyResources(tabPage2, "tabPage2");
+            tabPage2.Name = "tabPage2";
+            tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // tabPage_Simulation
+            // 
+            tabPage_Simulation.Controls.Add(splitContainer_Parameter);
+            resources.ApplyResources(tabPage_Simulation, "tabPage_Simulation");
+            tabPage_Simulation.Name = "tabPage_Simulation";
+            tabPage_Simulation.UseVisualStyleBackColor = true;
+            // 
+            // tabPage_BHKW
+            // 
+            tabPage_BHKW.BackColor = System.Drawing.Color.FromArgb(245, 247, 249);
+            tabPage_BHKW.Controls.Add(textBox_Betriebsstunden_Durchschnitt);
+            tabPage_BHKW.Controls.Add(label108);
+            tabPage_BHKW.Controls.Add(label63);
+            tabPage_BHKW.Controls.Add(tb_TierischeFette_BHKW);
+            tabPage_BHKW.Controls.Add(tb_Pellets_BHKW);
+            tabPage_BHKW.Controls.Add(tb_Oelverbrauch_BHKW);
+            tabPage_BHKW.Controls.Add(tb_Koks_BHKW);
+            tabPage_BHKW.Controls.Add(tb_Rapsoelverbrauch_BHKW);
+            tabPage_BHKW.Controls.Add(tb_Holzverbrauch_BHKW);
+            tabPage_BHKW.Controls.Add(tb_Kohle_BHKW);
+            tabPage_BHKW.Controls.Add(tb_Sonstigverbrauch_BHKW);
+            tabPage_BHKW.Controls.Add(tb_Gasverbrauch_BHKW);
+            tabPage_BHKW.Controls.Add(label88);
+            tabPage_BHKW.Controls.Add(label89);
+            tabPage_BHKW.Controls.Add(label90);
+            tabPage_BHKW.Controls.Add(label91);
+            tabPage_BHKW.Controls.Add(label92);
+            tabPage_BHKW.Controls.Add(label93);
+            tabPage_BHKW.Controls.Add(label94);
+            tabPage_BHKW.Controls.Add(label95);
+            tabPage_BHKW.Controls.Add(label96);
+            tabPage_BHKW.Controls.Add(label97);
+            tabPage_BHKW.Controls.Add(label98);
+            tabPage_BHKW.Controls.Add(label99);
+            tabPage_BHKW.Controls.Add(label100);
+            tabPage_BHKW.Controls.Add(label101);
+            tabPage_BHKW.Controls.Add(label102);
+            tabPage_BHKW.Controls.Add(label103);
+            tabPage_BHKW.Controls.Add(label106);
+            tabPage_BHKW.Controls.Add(label107);
+            tabPage_BHKW.Controls.Add(textBox_Betriebsstunden);
+            tabPage_BHKW.Controls.Add(label13);
+            tabPage_BHKW.Controls.Add(chart_BHKW_Waerme);
+            resources.ApplyResources(tabPage_BHKW, "tabPage_BHKW");
+            tabPage_BHKW.Name = "tabPage_BHKW";
+            tabPage_BHKW.Click += tabPage_BHKW_Click;
+            // 
+            // textBox_Betriebsstunden_Durchschnitt
+            // 
+            resources.ApplyResources(textBox_Betriebsstunden_Durchschnitt, "textBox_Betriebsstunden_Durchschnitt");
+            textBox_Betriebsstunden_Durchschnitt.Name = "textBox_Betriebsstunden_Durchschnitt";
+            // 
+            // label108
+            // 
+            resources.ApplyResources(label108, "label108");
+            label108.Name = "label108";
+            // 
+            // label63
+            // 
+            resources.ApplyResources(label63, "label63");
+            label63.BackColor = System.Drawing.Color.Transparent;
+            label63.ForeColor = System.Drawing.Color.Black;
+            label63.Name = "label63";
+            // 
+            // tb_TierischeFette_BHKW
+            // 
+            tb_TierischeFette_BHKW.BackColor = System.Drawing.Color.White;
+            tb_TierischeFette_BHKW.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(tb_TierischeFette_BHKW, "tb_TierischeFette_BHKW");
+            tb_TierischeFette_BHKW.ForeColor = System.Drawing.Color.Black;
+            tb_TierischeFette_BHKW.Name = "tb_TierischeFette_BHKW";
+            // 
+            // tb_Pellets_BHKW
+            // 
+            tb_Pellets_BHKW.BackColor = System.Drawing.Color.White;
+            tb_Pellets_BHKW.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(tb_Pellets_BHKW, "tb_Pellets_BHKW");
+            tb_Pellets_BHKW.ForeColor = System.Drawing.Color.Black;
+            tb_Pellets_BHKW.Name = "tb_Pellets_BHKW";
+            // 
+            // tb_Oelverbrauch_BHKW
+            // 
+            tb_Oelverbrauch_BHKW.BackColor = System.Drawing.Color.White;
+            tb_Oelverbrauch_BHKW.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(tb_Oelverbrauch_BHKW, "tb_Oelverbrauch_BHKW");
+            tb_Oelverbrauch_BHKW.ForeColor = System.Drawing.Color.Black;
+            tb_Oelverbrauch_BHKW.Name = "tb_Oelverbrauch_BHKW";
+            // 
+            // tb_Koks_BHKW
+            // 
+            tb_Koks_BHKW.BackColor = System.Drawing.Color.White;
+            tb_Koks_BHKW.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(tb_Koks_BHKW, "tb_Koks_BHKW");
+            tb_Koks_BHKW.ForeColor = System.Drawing.Color.Black;
+            tb_Koks_BHKW.Name = "tb_Koks_BHKW";
+            // 
+            // tb_Rapsoelverbrauch_BHKW
+            // 
+            tb_Rapsoelverbrauch_BHKW.BackColor = System.Drawing.Color.White;
+            tb_Rapsoelverbrauch_BHKW.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(tb_Rapsoelverbrauch_BHKW, "tb_Rapsoelverbrauch_BHKW");
+            tb_Rapsoelverbrauch_BHKW.ForeColor = System.Drawing.Color.Black;
+            tb_Rapsoelverbrauch_BHKW.Name = "tb_Rapsoelverbrauch_BHKW";
+            // 
+            // tb_Holzverbrauch_BHKW
+            // 
+            tb_Holzverbrauch_BHKW.BackColor = System.Drawing.Color.White;
+            tb_Holzverbrauch_BHKW.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(tb_Holzverbrauch_BHKW, "tb_Holzverbrauch_BHKW");
+            tb_Holzverbrauch_BHKW.ForeColor = System.Drawing.Color.Black;
+            tb_Holzverbrauch_BHKW.Name = "tb_Holzverbrauch_BHKW";
+            // 
+            // tb_Kohle_BHKW
+            // 
+            tb_Kohle_BHKW.BackColor = System.Drawing.Color.White;
+            tb_Kohle_BHKW.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(tb_Kohle_BHKW, "tb_Kohle_BHKW");
+            tb_Kohle_BHKW.ForeColor = System.Drawing.Color.Black;
+            tb_Kohle_BHKW.Name = "tb_Kohle_BHKW";
+            // 
+            // tb_Sonstigverbrauch_BHKW
+            // 
+            tb_Sonstigverbrauch_BHKW.BackColor = System.Drawing.Color.White;
+            tb_Sonstigverbrauch_BHKW.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(tb_Sonstigverbrauch_BHKW, "tb_Sonstigverbrauch_BHKW");
+            tb_Sonstigverbrauch_BHKW.ForeColor = System.Drawing.Color.Black;
+            tb_Sonstigverbrauch_BHKW.Name = "tb_Sonstigverbrauch_BHKW";
+            // 
+            // tb_Gasverbrauch_BHKW
+            // 
+            tb_Gasverbrauch_BHKW.BackColor = System.Drawing.Color.White;
+            tb_Gasverbrauch_BHKW.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(tb_Gasverbrauch_BHKW, "tb_Gasverbrauch_BHKW");
+            tb_Gasverbrauch_BHKW.ForeColor = System.Drawing.Color.Black;
+            tb_Gasverbrauch_BHKW.Name = "tb_Gasverbrauch_BHKW";
+            // 
+            // label88
+            // 
+            resources.ApplyResources(label88, "label88");
+            label88.BackColor = System.Drawing.Color.Transparent;
+            label88.ForeColor = System.Drawing.Color.Black;
+            label88.Name = "label88";
+            // 
+            // label89
+            // 
+            resources.ApplyResources(label89, "label89");
+            label89.BackColor = System.Drawing.Color.Transparent;
+            label89.ForeColor = System.Drawing.Color.Black;
+            label89.Name = "label89";
+            // 
+            // label90
+            // 
+            resources.ApplyResources(label90, "label90");
+            label90.BackColor = System.Drawing.Color.Transparent;
+            label90.ForeColor = System.Drawing.Color.Black;
+            label90.Name = "label90";
+            // 
+            // label91
+            // 
+            resources.ApplyResources(label91, "label91");
+            label91.BackColor = System.Drawing.Color.Transparent;
+            label91.ForeColor = System.Drawing.Color.Black;
+            label91.Name = "label91";
+            // 
+            // label92
+            // 
+            resources.ApplyResources(label92, "label92");
+            label92.BackColor = System.Drawing.Color.Transparent;
+            label92.ForeColor = System.Drawing.Color.Black;
+            label92.Name = "label92";
+            // 
+            // label93
+            // 
+            resources.ApplyResources(label93, "label93");
+            label93.BackColor = System.Drawing.Color.Transparent;
+            label93.ForeColor = System.Drawing.Color.Black;
+            label93.Name = "label93";
+            // 
+            // label94
+            // 
+            resources.ApplyResources(label94, "label94");
+            label94.BackColor = System.Drawing.Color.Transparent;
+            label94.ForeColor = System.Drawing.Color.Black;
+            label94.Name = "label94";
+            // 
+            // label95
+            // 
+            resources.ApplyResources(label95, "label95");
+            label95.BackColor = System.Drawing.Color.Transparent;
+            label95.ForeColor = System.Drawing.Color.Black;
+            label95.Name = "label95";
+            // 
+            // label96
+            // 
+            resources.ApplyResources(label96, "label96");
+            label96.BackColor = System.Drawing.Color.Transparent;
+            label96.ForeColor = System.Drawing.Color.Black;
+            label96.Name = "label96";
+            // 
+            // label97
+            // 
+            resources.ApplyResources(label97, "label97");
+            label97.BackColor = System.Drawing.Color.Transparent;
+            label97.ForeColor = System.Drawing.Color.Black;
+            label97.Name = "label97";
+            // 
+            // label98
+            // 
+            resources.ApplyResources(label98, "label98");
+            label98.BackColor = System.Drawing.Color.Transparent;
+            label98.ForeColor = System.Drawing.Color.Black;
+            label98.Name = "label98";
+            // 
+            // label99
+            // 
+            resources.ApplyResources(label99, "label99");
+            label99.BackColor = System.Drawing.Color.Transparent;
+            label99.ForeColor = System.Drawing.Color.Black;
+            label99.Name = "label99";
+            // 
+            // label100
+            // 
+            resources.ApplyResources(label100, "label100");
+            label100.BackColor = System.Drawing.Color.Transparent;
+            label100.ForeColor = System.Drawing.Color.Black;
+            label100.Name = "label100";
+            // 
+            // label101
+            // 
+            resources.ApplyResources(label101, "label101");
+            label101.BackColor = System.Drawing.Color.Transparent;
+            label101.ForeColor = System.Drawing.Color.Black;
+            label101.Name = "label101";
+            // 
+            // label102
+            // 
+            resources.ApplyResources(label102, "label102");
+            label102.BackColor = System.Drawing.Color.Transparent;
+            label102.ForeColor = System.Drawing.Color.Black;
+            label102.Name = "label102";
+            // 
+            // label103
+            // 
+            resources.ApplyResources(label103, "label103");
+            label103.BackColor = System.Drawing.Color.Transparent;
+            label103.ForeColor = System.Drawing.Color.Black;
+            label103.Name = "label103";
+            // 
+            // label106
+            // 
+            resources.ApplyResources(label106, "label106");
+            label106.BackColor = System.Drawing.Color.Transparent;
+            label106.ForeColor = System.Drawing.Color.Black;
+            label106.Name = "label106";
+            // 
+            // label107
+            // 
+            resources.ApplyResources(label107, "label107");
+            label107.BackColor = System.Drawing.Color.Transparent;
+            label107.ForeColor = System.Drawing.Color.Black;
+            label107.Name = "label107";
+            // 
+            // textBox_Betriebsstunden
+            // 
+            resources.ApplyResources(textBox_Betriebsstunden, "textBox_Betriebsstunden");
+            textBox_Betriebsstunden.Name = "textBox_Betriebsstunden";
+            // 
+            // label13
+            // 
+            resources.ApplyResources(label13, "label13");
+            label13.Name = "label13";
+            // 
+            // chart_BHKW_Waerme
+            // 
+            chart_BHKW_Waerme.BorderlineColor = System.Drawing.Color.Black;
+            chart_BHKW_Waerme.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.DashDot;
+            chartArea8.AxisX.IsLabelAutoFit = false;
+            chartArea8.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea8.AxisX.Title = "Monate";
+            chartArea8.AxisX.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea8.AxisY.Title = "Wärmelast [kW]";
+            chartArea8.AxisY.TitleFont = new System.Drawing.Font("Segoe UI", 10F);
+            chartArea8.BackColor = System.Drawing.Color.FromArgb(122, 255, 222);
+            chartArea8.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.DiagonalLeft;
+            chartArea8.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            chartArea8.Name = "ChartArea1";
+            chart_BHKW_Waerme.ChartAreas.Add(chartArea8);
+            legend5.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
+            legend5.LegendItemOrder = System.Windows.Forms.DataVisualization.Charting.LegendItemOrder.SameAsSeriesOrder;
+            legend5.Name = "Legend1";
+            chart_BHKW_Waerme.Legends.Add(legend5);
+            resources.ApplyResources(chart_BHKW_Waerme, "chart_BHKW_Waerme");
+            chart_BHKW_Waerme.Name = "chart_BHKW_Waerme";
+            series11.ChartArea = "ChartArea1";
+            series11.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series11.Legend = "Legend1";
+            series11.LegendText = "Wärmebedarf";
+            series11.Name = "Wärmebedarf";
+            series12.ChartArea = "ChartArea1";
+            series12.Legend = "Legend1";
+            series12.LegendText = "Wärmeproduktion";
+            series12.Name = "Wärmeproduktion";
+            chart_BHKW_Waerme.Series.Add(series11);
+            chart_BHKW_Waerme.Series.Add(series12);
+            title8.Name = "Title1";
+            title8.Text = "Wärmelast Jahresganglinie ";
+            chart_BHKW_Waerme.Titles.Add(title8);
+            // 
+            // tabPage_Stromspeicher
+            // 
+            resources.ApplyResources(tabPage_Stromspeicher, "tabPage_Stromspeicher");
+            tabPage_Stromspeicher.Name = "tabPage_Stromspeicher";
+            tabPage_Stromspeicher.UseVisualStyleBackColor = true;
+            // 
             // Form_Simulation_Detail
             // 
             resources.ApplyResources(this, "$this");
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            BackColor = System.Drawing.SystemColors.Control;
+            BackColor = System.Drawing.Color.White;
             Controls.Add(btn_Beenden);
             Controls.Add(tabControl1);
             Controls.Add(btn_Konfiguration);
             Controls.Add(btn_Simulation);
             Name = "Form_Simulation_Detail";
             Load += Form_Simulation_Detail_Load;
+            splitContainer_Parameter.Panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer_Parameter).EndInit();
+            splitContainer_Parameter.ResumeLayout(false);
             tabPage_Photovoltaik.ResumeLayout(false);
             tabPage_Photovoltaik.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)chart_PV).EndInit();
@@ -1878,15 +2287,21 @@
             ((System.ComponentModel.ISupportInitialize)chart2).EndInit();
             ((System.ComponentModel.ISupportInitialize)chart1).EndInit();
             tabControl1.ResumeLayout(false);
-            tabPage_BHKW.ResumeLayout(false);
-            tabPage_BHKW.PerformLayout();
+            tabPage_Parameter.ResumeLayout(false);
+            tabControl4.ResumeLayout(false);
+            tabPage_Parameter_BHKW.ResumeLayout(false);
+            tabPage_Parameter_BHKW.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDown_Volumen).EndInit();
             groupBox_BHKWBetriebsart.ResumeLayout(false);
             groupBox_BHKWBetriebsart.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)chart_BHKW_Waerme).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown_UnteresteLG).EndInit();
-            tabPage_Stromspeicher.ResumeLayout(false);
-            tabPage_Stromspeicher.PerformLayout();
+            tabPage_Parameter_Stromspeicher.ResumeLayout(false);
+            tabPage_Parameter_Stromspeicher.PerformLayout();
+            tabControl3.ResumeLayout(false);
+            tabPage_Simulation.ResumeLayout(false);
+            tabPage_BHKW.ResumeLayout(false);
+            tabPage_BHKW.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)chart_BHKW_Waerme).EndInit();
             ResumeLayout(false);
 
         }
@@ -2025,7 +2440,6 @@
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Label label13;
         private System.Windows.Forms.TextBox textBox_gesStrombedarf;
         private System.Windows.Forms.TextBox textBox_Gesamt_Strombedarf;
         private System.Windows.Forms.TextBox textBox_gesWaermebedarf;
@@ -2048,27 +2462,72 @@
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage_Stromspeicher;
+        private System.Windows.Forms.TabPage tabPage_BHKW;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart_BHKW_Waerme;
+        private System.Windows.Forms.TabPage tabPage_Parameter;
+        private System.Windows.Forms.TabPage tabPage_Simulation;
+        private System.Windows.Forms.SplitContainer splitContainer_Parameter;
+        private System.Windows.Forms.ListView listViewQuellen;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.TextBox textBox_Betriebsstunden;
+        private System.Windows.Forms.Label label63;
+        private System.Windows.Forms.TextBox tb_TierischeFette_BHKW;
+        private System.Windows.Forms.TextBox tb_Pellets_BHKW;
+        private System.Windows.Forms.TextBox tb_Oelverbrauch_BHKW;
+        private System.Windows.Forms.TextBox tb_Koks_BHKW;
+        private System.Windows.Forms.TextBox tb_Rapsoelverbrauch_BHKW;
+        private System.Windows.Forms.TextBox tb_Holzverbrauch_BHKW;
+        private System.Windows.Forms.TextBox tb_Kohle_BHKW;
+        private System.Windows.Forms.TextBox tb_Sonstigverbrauch_BHKW;
+        private System.Windows.Forms.TextBox tb_Gasverbrauch_BHKW;
+        private System.Windows.Forms.Label label88;
+        private System.Windows.Forms.Label label89;
+        private System.Windows.Forms.Label label90;
+        private System.Windows.Forms.Label label91;
+        private System.Windows.Forms.Label label92;
+        private System.Windows.Forms.Label label93;
+        private System.Windows.Forms.Label label94;
+        private System.Windows.Forms.Label label95;
+        private System.Windows.Forms.Label label96;
+        private System.Windows.Forms.Label label97;
+        private System.Windows.Forms.Label label98;
+        private System.Windows.Forms.Label label99;
+        private System.Windows.Forms.Label label100;
+        private System.Windows.Forms.Label label101;
+        private System.Windows.Forms.Label label102;
+        private System.Windows.Forms.Label label103;
+        private System.Windows.Forms.Label label106;
+        private System.Windows.Forms.Label label107;
+        private System.Windows.Forms.TextBox textBox_Betriebsstunden_Durchschnitt;
+        private System.Windows.Forms.Label label108;
+        private System.Windows.Forms.TabControl tabControl4;
+        private System.Windows.Forms.TabPage tabPage_Parameter_BHKW;
+        private System.Windows.Forms.TabPage tabPage_Parameter_Stromspeicher;
         private System.Windows.Forms.ComboBox comboBox7_Stromspeicher_LadeleistungMax_auswahl;
         private System.Windows.Forms.TextBox textBox_Stromspeicher_Ladeleistung_max;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.TextBox textBox_Stromspeicher_Ladeenergie_max;
-        private System.Windows.Forms.ComboBox comboBox8_Stromspeicher_LadeenergieMin_auswahl;
-        private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.ComboBox comboBox_Stromspeicher_LadeenergieMax_auswahl;
-        private System.Windows.Forms.TextBox textBox_Speicher_Ladeschwelle;
-        private System.Windows.Forms.Label label40;
         private System.Windows.Forms.TextBox textBox_Stromspeicher_Ladeenergie_min;
-        private System.Windows.Forms.TabPage tabPage_BHKW;
-        private System.Windows.Forms.Label label54;
-        private System.Windows.Forms.NumericUpDown numericUpDown_UnteresteLG;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart_BHKW_Waerme;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label40;
+        private System.Windows.Forms.TextBox textBox_Stromspeicher_Ladeenergie_max;
+        private System.Windows.Forms.TextBox textBox_Speicher_Ladeschwelle;
+        private System.Windows.Forms.ComboBox comboBox8_Stromspeicher_LadeenergieMin_auswahl;
+        private System.Windows.Forms.ComboBox comboBox_Stromspeicher_LadeenergieMax_auswahl;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.TabControl tabControl3;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.RichTextBox richTextBox_Info;
+        private System.Windows.Forms.Label label56;
+        private System.Windows.Forms.NumericUpDown numericUpDown_Volumen;
         private System.Windows.Forms.GroupBox groupBox_BHKWBetriebsart;
         private System.Windows.Forms.RadioButton radioButton_OhneStromEinspeisung;
         private System.Windows.Forms.RadioButton radioButton_Waermegefuehrt;
         private System.Windows.Forms.RadioButton radioButton_Stromgefuehrt;
-        private System.Windows.Forms.Label label56;
-        private System.Windows.Forms.NumericUpDown numericUpDown_Volumen;
-        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.Label label54;
+        private System.Windows.Forms.NumericUpDown numericUpDown_UnteresteLG;
+        private System.Windows.Forms.TabPage tabPage_Parameter_WP;
+        private System.Windows.Forms.TabPage tabPage_Parameter_SPK;
+        private System.Windows.Forms.TabPage tabPage_Parameter_Bedarf;
     }
 }

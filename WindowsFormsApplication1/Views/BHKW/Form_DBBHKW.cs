@@ -43,6 +43,7 @@ namespace WindowsFormsApplication1
         public void SetControls(string szName)
         {
             BHKWCtrl ctrl = new BHKWCtrl();
+            RecordSet rs = new RecordSet();
 
             ctrl.ReadAll();
             ctrl.FillComboBox(comboBox_Name);
@@ -74,7 +75,7 @@ namespace WindowsFormsApplication1
             textBox_SO2.Text = model.m_SO2.ToString();
             textBox_Staub.Text = model.m_Staub.ToString(); 
             textBox_el_Leistung.Text = model.m_Pel.ToString("F2"); 
-            textBox_th_Leistung.Text= model.m_Pel.ToString("F2");
+            textBox_th_Leistung.Text= model.m_Ptherm.ToString("F2");
             textBox_Wartungskosten.Text = model.m_Wartungskosten_kWhel.ToString("F2");
             textBox_Hersteller.Text = model.m_szFirma;
             textBox_Wirkungsgrad.Text = model.m_Wirkungsgrad.ToString("F2");  
@@ -88,16 +89,20 @@ namespace WindowsFormsApplication1
             textBox_Schallschutzhaube.Text = model.m_Kosten_Schallschutzhaube.ToString("F2");
             textBox_Abgasreinigung.Text = model.m_Kosten_Abgasreinigung.ToString("F2");
 
-            int brennstoff = model.m_Brennstoff; 
-            if (brennstoff == 1) radioButton_Gas.Checked = true;
-            else if (brennstoff == 2) radioButton_Biogas.Checked = true;
-            else if (brennstoff == 8) radioButton_Fluessiggas.Checked = true;
-            else if (brennstoff == 4) radioButton_Holz.Checked = true;
-            else if (brennstoff == 3) radioButton_Rapsoel.Checked = true;
-            else if (brennstoff == 15) radioButton_Strom.Checked = true;
-            else if (brennstoff == 5) radioButton_Sonstige.Checked = true;
-            else if (brennstoff == 0) radioButton_Heizoel.Checked = true;
-            else if (brennstoff == 11) radioButton_BioErdgas.Checked = true;
+            comboBox_Brennstoff.Items.Add("Alle");
+            for (int i = 0; i < ctrl.Brennstoffart.Count; i++)
+            {
+                comboBox_Brennstoff.Items.Add(ctrl.Brennstoffart[i]);
+            }
+
+            rs.Open("select * from [Tab_BHKW] where Bezeichner='" + szName + "'");
+            if (!rs.Next()) { rs.Close(); return; }
+            if (rs.Read("Brennstoff") != DBNull.Value)
+            {
+                int brennstoff = (int)rs.Read("Brennstoff");
+                comboBox_Brennstoff.SelectedIndex = brennstoff >= 1 ? brennstoff : 1;
+            }
+            rs.Close();
         }
 
         private void btn_Überschreiben_Click(object sender, EventArgs e)
@@ -111,10 +116,12 @@ namespace WindowsFormsApplication1
                 if (ctrl.Update())
                 {
                     MessageBox.Show("Datensatz gespeichert");
+                    this.DialogResult = DialogResult.OK;
                 }
                 else
                 {
                     MessageBox.Show("Fehler beim Überschreiben des Datensatzes!");
+                    this.DialogResult = DialogResult.Cancel; 
                 }
                 Close();
             }
@@ -132,16 +139,6 @@ namespace WindowsFormsApplication1
             model.m_szBeschreibung = textBox_Beschreibung.Text;
             model.m_Pel = double.Parse(textBox_el_Leistung.Text);
             model.m_Ptherm = double.Parse(textBox_th_Leistung.Text);
-            if (radioButton_Heizoel.Checked) model.m_Brennstoff = 0;
-            else if (radioButton_Gas.Checked) model.m_Brennstoff = 1;
-            else if (radioButton_Rapsoel.Checked) model.m_Brennstoff = 3;
-            else if (radioButton_Holz.Checked) model.m_Brennstoff = 4;
-            else if (radioButton_Fluessiggas.Checked) model.m_Brennstoff = 8;
-            else if (radioButton_Biogas.Checked) model.m_Brennstoff = 2;
-            else if (radioButton_Strom.Checked) model.m_Brennstoff = 15;
-            else if (radioButton_Sonstige.Checked) model.m_Brennstoff = 5;
-            else if (radioButton_BioErdgas.Checked) model.m_Brennstoff = 11;
-
             model.m_Wirkungsgrad = double.Parse(textBox_Wirkungsgrad.Text);
             model.m_Investition_KWel = double.Parse(textBox_Investitionskosten.Text);
             model.m_Nutzungsdauer = Int32.Parse(textBox_Nutzungsdauer.Text);
@@ -159,6 +156,13 @@ namespace WindowsFormsApplication1
             model.m_Kosten_Lieferung = double.Parse(textBox_Lieferung.Text);    
             model.m_Kosten_Schallschutzhaube = double.Parse(textBox_Schallschutzhaube.Text);
             model.m_Kosten_Abgasreinigung = double.Parse(textBox_Abgasreinigung.Text);
+
+            // Brennstoff: Sicherstellen, dass ein gültiger Index gewählt wurde
+            // Falls nichts gewählt ist (-1), wird hier die ID 1 gesetzt
+            model.m_Brennstoff = comboBox_Brennstoff.SelectedIndex >= 0
+                               ? comboBox_Brennstoff.SelectedIndex
+                               : 1;
+
             return model;
         }
 
@@ -330,126 +334,144 @@ namespace WindowsFormsApplication1
         private void textBox_Investitionskosten_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if(tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_th_Leistung_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_el_Leistung_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Wirkungsgrad_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Grenzleistung_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Raumbedarf_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Wartungskosten_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Nutzungsdauer_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkInt(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Modul_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Montage_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Lieferung_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Schallschutzhaube_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Abgasreinigung_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_CO2_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkInt(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_SO2_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkInt(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_NOx_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkInt(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_CO_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkInt(tb, tb.Text)) tb.Undo();
         }
 
         private void textBox_Staub_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == "") { tb.Text = "0"; return; }
             if (!Program.checkInt(tb, tb.Text)) tb.Undo();
         }
 
         private void btn_Eintragen_Click(object sender, EventArgs e)
         {
             //Wenn Heizöl aktiviert ist, trage die entsprechenden Werte ein
-            if (radioButton_Heizoel.Checked)
+            if (comboBox_Brennstoff.Text.ToUpper().Contains("HEIZÖL"))
             {
                 textBox_SO2.Text = "270";
                 textBox_CO2.Text = "265000";
-                //Wenn Checkbox "mit SCR" aktiviert ist
+                // Wenn Checkbox "mit SCR" aktiviert ist
                 if(checkBox_SCR.Checked)
                 {
                     textBox_NOx.Text = "450";
                     textBox_CO.Text = "280";
                     textBox_Staub.Text = "80"; 
                 }
-                //Wenn Checkbox "mit SCR" n i c h t aktiviert ist
+                // Wenn Checkbox "mit SCR" n i c h t aktiviert ist
                 else
                 {
                     textBox_NOx.Text = "4400";
@@ -458,9 +480,9 @@ namespace WindowsFormsApplication1
                 }
             }
 
-
             //Wenn Gas oder Biogas aktiviert ist, trage die entsprechenden Werte ein
-            if(radioButton_Gas.Checked || radioButton_BioErdgas.Checked)
+            if(comboBox_Brennstoff.Text.ToUpper().Contains("STADTGAS") || comboBox_Brennstoff.Text.ToUpper().Contains("ERDGAS")
+                || comboBox_Brennstoff.Text.ToUpper().Contains("BIOGAS"))
             {
                 textBox_SO2.Text = "0";
                 textBox_CO2.Text = "200000";
@@ -478,17 +500,16 @@ namespace WindowsFormsApplication1
                     textBox_Staub.Text = "0";
                 }
             }
-
         }
 
         private void btn_CO2_Click(object sender, EventArgs e)
         {
             //Wenn Heizöl aktiviert wurde, trage den CO2-Wert für Heizöl ein
-            if (radioButton_Heizoel.Checked) textBox_CO2.Text = "290880";
+            if (comboBox_Brennstoff.Text.ToUpper().Contains("HEIZÖL")) textBox_CO2.Text = "290880";
             //Wenn Gas aktiviert wurde, trage den CO2-Wert für Gas ein
-            if (radioButton_Gas.Checked) textBox_CO2.Text = "201600";
+            if (comboBox_Brennstoff.Text.ToUpper().Contains("GAS")) textBox_CO2.Text = "201600";
             //Wenn Flüssiggas aktiviert wurde, trage den CO2-Wert für Flüssiggas ein
-            if(radioButton_Fluessiggas.Checked) textBox_CO2.Text = "238680";
+            if(comboBox_Brennstoff.Text.ToUpper().Contains("FLÜSSIGGAS")) textBox_CO2.Text = "238680";
         }
     }
 }

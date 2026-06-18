@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -38,17 +37,11 @@ namespace WindowsFormsApplication1
         Point prevPosition;
 
         private TabNavigationManager _navManager; // Global im Formular speichern
+        private List<TabPage> alleTabPages = new List<TabPage>();
         private Dictionary<string, TabPage> dictAllTabPages = new Dictionary<string, TabPage>();
 
         // Das ist deine Zielvariable (0 = Wärmegeführt, 1 = Stromgeführt, 2 = Ohne Einspeisung)
         private int bhkwSimulationsArt = 0;
-
-        // Merkt sich, von welcher TabPage aktuell die Controls im rechten Panel angezeigt werden
-        private TabPage aktuellAusgeliehenePage = null;
-
-        private int mainTabPageIndex = 0; // 0 = Parameter, 1 = Simulation
-        private int mainTablistIndex = 0;
-
 
         public Form_Simulation_Detail(int iD_Projekt)
         {
@@ -83,36 +76,14 @@ namespace WindowsFormsApplication1
             // Initialisiere die Navigation 
             _navManager = new TabNavigationManager(tabPage_Ergebnis, sim);
 
-            // Dictionary befüllen
             foreach (TabPage page in tabControl1.TabPages)
             {
-                if (!dictAllTabPages.ContainsKey(page.Name))
-                    dictAllTabPages.Add(page.Name, page);
+                alleTabPages.Add(page);
+                dictAllTabPages.Add(page.Name, page);
             }
+            ReihenfolgeTabPages();
 
-            this.splitContainer_Parameter.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer_Parameter_SplitterMoved);
-            this.listViewQuellen.TileSize = new System.Drawing.Size(this.listViewQuellen.Width, 40);
-
-            VereinheitlichePageSchriftarten(this.tabPage_Bedarf);
-            VereinheitlichePageSchriftarten(this.tabPage_Wärmepumpe);
-            VereinheitlichePageSchriftarten(this.tabPage_Heizkessel);
-            VereinheitlichePageSchriftarten(this.tabPage_BHKW);
-            VereinheitlichePageSchriftarten(this.tabPage_Solarthermie);
-            VereinheitlichePageSchriftarten(this.tabPage_Photovoltaik);
-            VereinheitlichePageSchriftarten(this.tabPage_Stromspeicher);
-            VereinheitlichePageSchriftarten(this.tabPage_Ergebnis);
-
-            // HIER DIE KORREKTUR: ReihenfolgeTabPages() komplett weglassen 
-            // und stattdessen direkt unsere neue Update-Logik starten!
-            UpdateTabPages();
-
-            string targetTabName = "tabPage_Parameter";
-            if (dictAllTabPages.ContainsKey(targetTabName))
-            {
-                // Die TabPage aus dem Dictionary holen und direkt selektieren
-                tabControl1.SelectedTab = dictAllTabPages[targetTabName];
-                mainTabPageIndex = tabControl1.SelectedIndex; // Aktualisiere den Index der Haupt-TabPage
-            }
+            AktualisiereQuellenListe();
         }
 
         public void SetControls()
@@ -124,7 +95,6 @@ namespace WindowsFormsApplication1
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
             ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
 
-            // Alle 6 Tools lückenlos von Index 0 bis 5 auslesen
             string[] tool = new string[6];
             tool[0] = ctrl.model.m_Tool_1;
             tool[1] = ctrl.model.m_Tool_2;
@@ -136,125 +106,74 @@ namespace WindowsFormsApplication1
             // Verhindert das Flackern des Controls während des Umbaus
             tabControl1.SuspendLayout();
 
-            dictAllTabPages.Clear();
-
-            // Alle TabPages im Dictionary registrieren, damit sie im Hintergrund existieren
-            dictAllTabPages.Add("tabPage_Parameter", this.tabPage_Parameter);
-            dictAllTabPages.Add("tabPage_Simulation", this.tabPage_Simulation);
-            dictAllTabPages.Add("tabPage_Bedarf", this.tabPage_Bedarf);
-            dictAllTabPages.Add("tabPage_Wärmepumpe", this.tabPage_Wärmepumpe);
-            dictAllTabPages.Add("tabPage_Heizkessel", this.tabPage_Heizkessel);
-            dictAllTabPages.Add("tabPage_Photovoltaik", this.tabPage_Photovoltaik);
-            dictAllTabPages.Add("tabPage_BHKW", this.tabPage_BHKW);
-            dictAllTabPages.Add("tabPage_Solarthermie", this.tabPage_Solarthermie);
-            dictAllTabPages.Add("tabPage_Stromspeicher", this.tabPage_Stromspeicher);
-            dictAllTabPages.Add("tabPage_Ergebnis", this.tabPage_Ergebnis);
-
-            // Radikal alle Tabs oben aus der Reiterleiste löschen
+            // Zuerst alle aktuell sichtbaren Tabs entfernen
             tabControl1.TabPages.Clear();
 
+            // --- REGEEL 1: Das 1. Tab muss IMMER da sein ---
             TabPage gefundeneSeite;
+            dictAllTabPages.TryGetValue("tabPage_Bedarf", out gefundeneSeite);
+            tabControl1.TabPages.Add(gefundeneSeite);
 
-            // NUR NOCH die 2 echten Haupt-Tabs oben sichtbar einfügen:
-            if (dictAllTabPages.TryGetValue("tabPage_Parameter", out gefundeneSeite) && gefundeneSeite != null)
-                tabControl1.TabPages.Add(gefundeneSeite);
-
-            if (dictAllTabPages.TryGetValue("tabPage_Simulation", out gefundeneSeite) && gefundeneSeite != null)
-                tabControl1.TabPages.Add(gefundeneSeite);
-
-            // Steuerelement wieder freigeben
-            tabControl1.ResumeLayout();
-
-            // Jetzt rufen wir die korrigierte Listenbefüllung auf
-            BefuelleQuellenListe(tool, ctrl);
-        }
-
-        private void BefuelleQuellenListe(string[] tool, KonfigurationCtrl ctrl)
-        {
-            // Listeneigenschaften für die saubere Detail-Darstellung erzwingen
-            listViewQuellen.View = View.Details;
-            listViewQuellen.FullRowSelect = true;
-            listViewQuellen.HeaderStyle = ColumnHeaderStyle.None;
-
-            // HIER DIE ANPASSUNG: Schriftart fest auf Segoe UI, 9.75pt (oder 10f) einstellen
-            listViewQuellen.Font = new Font("Segoe UI", 12f, FontStyle.Regular);
-
-            listViewQuellen.Columns.Clear();
-            // Verwende die Breite von Panel1 abzüglich eines kleinen Puffers (25), 
-            // damit keine horizontale Scrollleiste entsteht
-            listViewQuellen.Columns.Add("Komponente", splitContainer_Parameter.Panel1.Width - 4);
-
-            listViewQuellen.Items.Clear();
-
-            // --- POS 1: Wärme-/Strombedarf (MUSS IMMER AN ERSTER STELLE SEIN) ---
-            ListViewItem itemBedarf = new ListViewItem("Energiebedarf");
-            itemBedarf.Tag = "tabPage_Bedarf";
-            listViewQuellen.Items.Add(itemBedarf);
-
-            // --- POS 2: Dynamische Erzeuger (Egal in welcher der Boxen 1-4 ausgewählt!) ---
-            List<string> hinzugefuegteGerete = new List<string>();
-
+            // --- REGEL 2: Tabs 2 bis 5 (Index 1 bis 4) je nach m_Tool[1]..m_Tool[4] ---
+            // Hinweis: Im Code fangen Arrays bei 0 an. Wenn m_Tool[1] für das 2. Tab steht:
             for (int i = 0; i < 4; i++)
             {
-                if (!string.IsNullOrEmpty(tool[i]))
+                if (tool[i] != "") // Oder wie auch immer deine Konfigurations-Prüfung aussieht
                 {
-                    string geraetName = tool[i].Trim();
-
-                    // Verhindert doppelte Einträge in der Liste
-                    if (hinzugefuegteGerete.Contains(geraetName))
-                        continue;
-
-                    if (geraetName == "Wärmepumpe")
-                    {
-                        ListViewItem itemWP = new ListViewItem("Wärmepumpe");
-                        itemWP.Tag = "tabPage_Wärmepumpe";
-                        listViewQuellen.Items.Add(itemWP);
-                        hinzugefuegteGerete.Add(geraetName);
-                    }
-                    else if (geraetName == "Heizkessel")
-                    {
-                        ListViewItem itemKessel = new ListViewItem("Heizkessel");
-                        itemKessel.Tag = "tabPage_Heizkessel";
-                        listViewQuellen.Items.Add(itemKessel);
-                        hinzugefuegteGerete.Add(geraetName);
-                    }
-                    else if (geraetName == "BHKW")
-                    {
-                        ListViewItem itemBHKW = new ListViewItem("BHKW");
-                        itemBHKW.Tag = "tabPage_BHKW";
-                        listViewQuellen.Items.Add(itemBHKW);
-                        hinzugefuegteGerete.Add(geraetName);
-                    }
-                    else if (geraetName == "Solarthermie")
-                    {
-                        ListViewItem itemSolar = new ListViewItem("Solarthermie");
-                        itemSolar.Tag = "tabPage_Solarthermie";
-                        listViewQuellen.Items.Add(itemSolar);
-                        hinzugefuegteGerete.Add(geraetName);
-                    }
+                    dictAllTabPages.TryGetValue("tabPage_" + tool[i], out gefundeneSeite);
+                    tabControl1.TabPages.Add(gefundeneSeite);
                 }
             }
 
-            // --- POS 3: Photovoltaik (Fest zugewiesen an Tool 5 / Index 4) ---
-            if (tool[4] == "Photovoltaik" || tool[4] == "true" || tool.Contains("Photovoltaik"))
+            // --- REGEL 3: Tab 6 (Index 5) je nach ctrl.model.m_Tool_5 ---
+            if (tool[4] != "")
             {
-                ListViewItem itemPV = new ListViewItem("Photovoltaik");
-                itemPV.Tag = "tabPage_Photovoltaik";
-                listViewQuellen.Items.Add(itemPV);
+                dictAllTabPages.TryGetValue("tabPage_Photovoltaik", out gefundeneSeite);
+                tabControl1.TabPages.Add(gefundeneSeite);
             }
 
-            // --- POS 4: Stromspeicher (Fest zugewiesen an Tool 6 / Index 5) ---
-            if (tool[5] == "Stromspeicher" || tool[5] == "true" || tool.Contains("Stromspeicher"))
+            // --- REGEL 4: Tab 7 (Index 6) je nach ctrl.model.m_Tool_6 ---
+            if (tool[5] != "")
             {
-                ListViewItem itemSpeicher = new ListViewItem("Stromspeicher");
-                itemSpeicher.Tag = "tabPage_Stromspeicher";
-                listViewQuellen.Items.Add(itemSpeicher);
+                dictAllTabPages.TryGetValue("tabPage_Stromspeicher", out gefundeneSeite);
+                tabControl1.TabPages.Add(gefundeneSeite);
             }
 
-            // --- AM ENDE DER LISTE: Ergebnisauswertung (MUSS IMMER DA SEIN) ---
-            ListViewItem itemErgebnis = new ListViewItem("Ergebnis");
-            itemErgebnis.Tag = "tabPage_Ergebnis";
-            listViewQuellen.Items.Add(itemErgebnis);
+            // --- REGEL 5: Das letzte Tab (Index 7) muss IMMER da sein ---
+            dictAllTabPages.TryGetValue("tabPage_Ergebnis", out gefundeneSeite);
+            tabControl1.TabPages.Add(gefundeneSeite);
+
+            // Steuerelement wieder freigeben
+            tabControl1.ResumeLayout();
+        }
+
+        private void ReihenfolgeTabPages()
+        {
+            KonfigurationCtrl ctrl = new KonfigurationCtrl();
+            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+
+            string[] tool = new string[6];
+            tool[1] = ctrl.model.m_Tool_2;
+            tool[2] = ctrl.model.m_Tool_3;
+            tool[3] = ctrl.model.m_Tool_4;
+            tool[4] = ctrl.model.m_Tool_5;
+            tool[5] = ctrl.model.m_Tool_6;
+
+            int index = 1;
+            var tabPage = tabControl1.TabPages[0];
+            for (int i = 0; i < 4; i++)
+            {
+                if (tool[i] != "")
+                {
+                    tabPage = tabControl1.TabPages.Cast<TabPage>().FirstOrDefault(tp => tp.Name == "tabPage_" + tool[i]);
+                    if (tabPage != null)
+                    {
+                        tabControl1.TabPages.Remove(tabPage);
+                        tabControl1.TabPages.Insert(index++, tabPage);
+                    }
+                }
+            }
+            UpdateTabPages();
         }
 
         private void Form_Simulation_Detail_Load(object sender, EventArgs e)
@@ -278,9 +197,9 @@ namespace WindowsFormsApplication1
 
             radioButton_Waermegefuehrt.Checked = true;
 
-            MacheTextAbschnittFett(richTextBox_Info, "Wärmegeführt (Standard)");
-            MacheTextAbschnittFett(richTextBox_Info, "Stromgeführt (Wirtschaftlich)");
-            MacheTextAbschnittFett(richTextBox_Info, "Ohne Einspeisung (Zero-Export)");
+            MacheTextAbschnittFett(richTextBox1, "Wärmegeführt (Standard)");
+            MacheTextAbschnittFett(richTextBox1, "Stromgeführt (Wirtschaftlich)");
+            MacheTextAbschnittFett(richTextBox1, "Ohne Einspeisung (Zero-Export)");
         }
 
         private void MacheTextAbschnittFett(RichTextBox rtb, string textZuFormatieren)
@@ -378,12 +297,6 @@ namespace WindowsFormsApplication1
             // Tool Simulation WP, SPK usw. durchführen
             sim.Do_Simulation(m_ID_Projekt);
             Endergebniss_Simulation();
-
-            tabControl1.SelectedIndex = 1;
-            if (tabControl1.SelectedTab.Name == "tabPage_Simulation")
-            {
-                listViewQuellen.SelectedIndices.Add(0);
-            }
         }
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
@@ -511,7 +424,6 @@ namespace WindowsFormsApplication1
             Form_Simulation_Config frm = new Form_Simulation_Config();
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
 
-            mainTabPageIndex = tabControl1.SelectedIndex; // Aktuellen Index der Haupt-TabPage merken, damit wir nach dem Konfigurationsfenster dorthin zurückspringen können
             ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
             frm.Konfiguration = ctrl.model;
             frm.SetControls(m_ID_Projekt);
@@ -520,13 +432,7 @@ namespace WindowsFormsApplication1
             frm.Location = p1;
             frm.ShowDialog();
 
-            UpdateTabPages();
-
-            tabControl1.SelectedIndex = mainTabPageIndex;
-            if (tabControl1.SelectedTab.Name == "tabPage_Simulation")
-            {
-                listViewQuellen.SelectedIndices.Add(mainTablistIndex);
-            }
+            ReihenfolgeTabPages();
         }
 
         private void Endergebniss_Simulation()
@@ -810,19 +716,6 @@ namespace WindowsFormsApplication1
             float[] waermeproduktionSortiert = sim.simulation_bhkw.waermeproduktion.OrderByDescending(w => w).ToArray();
             _chartManager[10].AddSeries("Wärmeproduktion", Color.Blue, waermeproduktionSortiert);
 
-            textBox_Betriebsstunden.Text = sim.simulation_bhkw.Betriebsstunden.ToString("F0");
-            textBox_Betriebsstunden_Durchschnitt.Text = sim.simulation_bhkw.dLaufzeiten.ToString("F0");
-
-            tb_Gasverbrauch_BHKW.Text = (sim.simulation_bhkw.Gasverbrauch_BHKW).ToString("F2");
-            tb_Oelverbrauch_BHKW.Text = (sim.simulation_bhkw.Oelverbrauch_BHKW).ToString("F2");
-            tb_Koks_BHKW.Text = (sim.simulation_bhkw.Koks_BHKW).ToString("F2");
-            tb_Rapsoelverbrauch_BHKW.Text = (sim.simulation_bhkw.Rapsoelverbrauch_BHKW).ToString("F2");
-            tb_Holzverbrauch_BHKW.Text = (sim.simulation_bhkw.Holzmenge_BHKW).ToString("F2");
-            tb_Kohle_BHKW.Text = (sim.simulation_bhkw.Kohle_BHKW).ToString("F2");
-            tb_Sonstigverbrauch_BHKW.Text = (sim.simulation_bhkw.Sonstigemenge_BHKW).ToString("F2");
-            tb_Pellets_BHKW.Text = (sim.simulation_bhkw.Pellets_BHKW).ToString("F2");
-            tb_Koks_BHKW.Text = (sim.simulation_bhkw.Koks_BHKW).ToString("F2");
-            tb_TierischeFette_BHKW.Text = (sim.simulation_bhkw.TierischeFette_BHKW).ToString("F2");
 
 
             // ********************************************************************************************/
@@ -1102,6 +995,8 @@ namespace WindowsFormsApplication1
             }
         }
 
+
+
         private void InitTextBoxen(TabPage page)
         {
             page.Controls.OfType<TextBox>().ToList().ForEach(tb => tb.Text = "");
@@ -1244,112 +1139,86 @@ namespace WindowsFormsApplication1
             }
         }
 
+        private void AktualisiereQuellenListe()
+        {
+            listViewQuellen.Items.Clear();
+
+            // Beispiel-Konfigurationsabfragen (Musst du an deine Variablen anpassen)
+            bool wpAktiv = true;//ProjektKonfig.IstWaerempumpeVorhanden;
+            bool kesselAktiv = true;//ProjektKonfig.IstHeizkesselVorhanden;
+            bool bhkwAktiv = true;
+            bool pvAktiv = true;
+
+            // 1. Wärmepumpe hinzufügen
+            HinzufuegenOderAktualisierenEintrag("Wärmepumpe", wpAktiv);
+
+            // 2. Heizkessel hinzufügen
+            HinzufuegenOderAktualisierenEintrag("Heizkessel", kesselAktiv);
+
+            // 3. BHKW hinzufügen
+            HinzufuegenOderAktualisierenEintrag("BHKW", bhkwAktiv);
+
+            // 4. Photovoltaik hinzufügen
+            HinzufuegenOderAktualisierenEintrag("Photovoltaik", pvAktiv);
+        }
+
+        private void HinzufuegenOderAktualisierenEintrag(string name, bool istAktiv)
+        {
+            ListViewItem item = new ListViewItem(name);
+
+            if (istAktiv)
+            {
+                item.ForeColor = Color.Black;
+                item.Font = new Font(listViewQuellen.Font, FontStyle.Regular);
+                item.Tag = "AKTIV_" + name; // Nutzen wir später beim Klick
+            }
+            else
+            {
+                // Wenn deaktiviert: Eintrag wird ausgegraut
+                item.ForeColor = Color.Gray;
+                // Optional: Kursiv machen, um es optisch noch klarer zu trennen
+                item.Font = new Font(listViewQuellen.Font, FontStyle.Italic);
+                item.Tag = "DEAKTIVIERT";
+            }
+
+            listViewQuellen.Items.Add(item);
+        }
+
         private void listViewQuellen_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listViewQuellen.SelectedItems.Count > 0)
             {
                 ListViewItem selectedItem = listViewQuellen.SelectedItems[0];
-                mainTablistIndex = listViewQuellen.SelectedIndices[0];
 
                 // 1. Verhindern, dass deaktivierte Geräte geöffnet werden
                 if (selectedItem.Tag.ToString() == "DEAKTIVIERT")
                 {
+                    // Auswahl direkt wieder aufheben, falls gewünscht
                     listViewQuellen.SelectedIndices.Clear();
                     return;
                 }
 
-                string targetTabName = selectedItem.Tag.ToString();
+                // 2. Panel2 leeren
+                splitContainer_Parameter.Panel2.Controls.Clear();
 
-                // Prüfen, ob die TabPage im Dictionary existiert
-                if (dictAllTabPages.ContainsKey(targetTabName))
+                // 3. Je nach Auswahl das richtige Control in Panel2 laden
+                switch (selectedItem.Text)
                 {
-                    TabPage zielPage = dictAllTabPages[targetTabName];
+                    case "Wärmepumpe":
+                        //UC_WaermepumpeSimulation ucWP = new UC_WaermepumpeSimulation();
+                        //ucWP.Dock = DockStyle.Fill;
+                        //panel2.Controls.Add(ucWP);
+                        break;
 
-                    // 2. WICHTIG: Wenn vorher schon Controls einer ANDEREN Seite im Panel2 waren,
-                    // müssen wir diese zuerst sauber auf ihre originale TabPage zurücklegen!
-                    if (aktuellAusgeliehenePage != null && aktuellAusgeliehenePage != zielPage)
-                    {
-                        // Solange noch Steuerelemente im rechten Panel liegen...
-                        while (splitContainer_Parameter.Panel2.Controls.Count > 0)
-                        {
-                            Control c = splitContainer_Parameter.Panel2.Controls[0];
-                            splitContainer_Parameter.Panel2.Controls.Remove(c); // Aus Panel2 entfernen
-                            aktuellAusgeliehenePage.Controls.Add(c);            // Zurück zur alten TabPage
-                        }
-                    }
+                    case "Heizkessel":
+                        //UC_HeizkesselSimulation ucKessel = new UC_HeizkesselSimulation();
+                        //ucKessel.Dock = DockStyle.Fill;
+                        //panel2.Controls.Add(ucKessel);
+                        break;
 
-                    // 3. Rechtes Panel komplett leeren
-                    splitContainer_Parameter.Panel2.Controls.Clear();
-
-                    // Die neue Zielseite als aktuell ausgeliehen merken
-                    aktuellAusgeliehenePage = zielPage;
-
-                    // 4. Alle Controls der neuen Ziel-TabPage in eine temporäre Liste kopieren
-                    // (Direktes Verschieben in einer foreach-Schleife führt in C# zu Fehlern)
-                    List<Control> controlsToMove = new List<Control>();
-                    foreach (Control c in zielPage.Controls)
-                    {
-                        controlsToMove.Add(c);
-                    }
-
-                    // 5. Controls physisch in das rechte Panel (Panel2) einsetzen
-                    foreach (Control c in controlsToMove)
-                    {
-                        zielPage.Controls.Remove(c);
-                        splitContainer_Parameter.Panel2.Controls.Add(c);
-                    }
-
-                    // 6. Dem Windows-Form sagen, dass es das rechte Panel frisch zeichnen soll
-                    splitContainer_Parameter.Panel2.Refresh();
-                }
-
-            }
-        }
-
-        private void splitContainer_Parameter_SplitterMoved(object sender, SplitterEventArgs e)
-        {
-            // Sobald der Balken verschoben wird, passen wir die Spaltenbreite der ListView
-            // exakt an die neue Breite des linken Panels an.
-            if (listViewQuellen.Columns.Count > 0)
-            {
-                // -25 sorgt für einen kleinen Puffer, damit keine horizontale Scrollleiste entsteht
-                listViewQuellen.Columns[0].Width = splitContainer_Parameter.Panel1.Width - 25;
-            }
-        }
-
-        private void VereinheitlichePageSchriftarten(Control parentControl)
-        {
-            // Die gewünschte Ziel-Schriftart definieren (Segoe UI, 9.75pt)
-            Font zielFont = new Font("Segoe UI", 9.75f, FontStyle.Regular);
-
-            foreach (Control ctrl in parentControl.Controls)
-            {
-                // Wenn es sich um Labels, TextBoxen, GroupBoxen, RadioButtons etc. handelt, Schrift anpassen
-                // (Wir klammern Charts oder spezielle Listen aus, falls diese eigene Formatierungen haben)
-                if (!(ctrl is System.Windows.Forms.DataVisualization.Charting.Chart) && !(ctrl is ListView))
-                {
-                    if (ctrl is RichTextBox)
-                    {
-                        Font rtFont = new Font("Segoe UI", 8f, FontStyle.Regular);
-                        ctrl.Font = rtFont;
-                    }
-                    else
-                    {
-                        ctrl.Font = zielFont;
-                    }
-                }
-
-                // Falls das Steuerelement tiefere Unterelemente hat (z.B. eine GroupBox), gehen wir rekursiv rein
-                if (ctrl.Controls.Count > 0)
-                {
-                    VereinheitlichePageSchriftarten(ctrl);
+                        // ... Analog für PV, BHKW etc.
                 }
             }
-        }
-
-        private void tabPage_BHKW_Click(object sender, EventArgs e)
-        {
-
         }
     }
 

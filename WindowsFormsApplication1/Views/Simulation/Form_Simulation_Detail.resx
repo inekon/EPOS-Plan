@@ -117,9 +117,95 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="splitContainer_Parameter.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="splitContainer_Parameter.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="listViewQuellen.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listViewQuellen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="listViewQuellen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>148, 718</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="listViewQuellen.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;listViewQuellen.Name" xml:space="preserve">
+    <value>listViewQuellen</value>
+  </data>
+  <data name="&gt;&gt;listViewQuellen.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListView, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;listViewQuellen.Parent" xml:space="preserve">
+    <value>splitContainer_Parameter.Panel1</value>
+  </data>
+  <data name="&gt;&gt;listViewQuellen.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Panel1.Name" xml:space="preserve">
+    <value>splitContainer_Parameter.Panel1</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Panel1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.SplitterPanel, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Panel1.Parent" xml:space="preserve">
+    <value>splitContainer_Parameter</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Panel1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="splitContainer_Parameter.Panel2.AutoScroll" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="splitContainer_Parameter.Panel2.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12pt</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Panel2.Name" xml:space="preserve">
+    <value>splitContainer_Parameter.Panel2</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Panel2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.SplitterPanel, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Panel2.Parent" xml:space="preserve">
+    <value>splitContainer_Parameter</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Panel2.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="splitContainer_Parameter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1420, 718</value>
+  </data>
+  <data name="splitContainer_Parameter.SplitterDistance" type="System.Int32, mscorlib">
+    <value>148</value>
+  </data>
+  <data name="splitContainer_Parameter.SplitterWidth" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="splitContainer_Parameter.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Name" xml:space="preserve">
+    <value>splitContainer_Parameter</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Type" xml:space="preserve">
+    <value>System.Windows.Forms.SplitContainer, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.Parent" xml:space="preserve">
+    <value>tabPage_Simulation</value>
+  </data>
+  <data name="&gt;&gt;splitContainer_Parameter.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="btn_Konfiguration.Location" type="System.Drawing.Point, System.Drawing">
-    <value>18, 12</value>
+    <value>210, 776</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="btn_Konfiguration.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
@@ -128,7 +214,6 @@
   <data name="btn_Konfiguration.Size" type="System.Drawing.Size, System.Drawing">
     <value>185, 38</value>
   </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="btn_Konfiguration.TabIndex" type="System.Int32, mscorlib">
     <value>253</value>
   </data>
@@ -147,7 +232,6 @@
   <data name="&gt;&gt;btn_Konfiguration.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="btn_Simulation.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
@@ -155,7 +239,7 @@
     <value>Segoe UI Semibold, 9.75pt, style=Bold</value>
   </data>
   <data name="btn_Simulation.Location" type="System.Drawing.Point, System.Drawing">
-    <value>18, 58</value>
+    <value>17, 775</value>
   </data>
   <data name="btn_Simulation.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -185,7 +269,7 @@
     <value>Segoe UI, 12pt</value>
   </data>
   <data name="btn_Beenden.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1300, 902</value>
+    <value>1319, 775</value>
   </data>
   <data name="btn_Beenden.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -212,13 +296,13 @@
     <value>0</value>
   </data>
   <data name="tabPage_Ergebnis.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
+    <value>4, 33</value>
   </data>
   <data name="tabPage_Ergebnis.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Ergebnis.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 756</value>
+    <value>1420, 718</value>
   </data>
   <data name="tabPage_Ergebnis.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -236,7 +320,7 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_Ergebnis.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>9</value>
   </data>
   <data name="textBox_PVStrombedarf.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -299,7 +383,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_MaxPSolar.Location" type="System.Drawing.Point, System.Drawing">
-    <value>381, 225</value>
+    <value>253, 192</value>
   </data>
   <data name="textBox_MaxPSolar.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -329,7 +413,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_PVStrombedarfsdeckung.Location" type="System.Drawing.Point, System.Drawing">
-    <value>381, 188</value>
+    <value>253, 155</value>
   </data>
   <data name="textBox_PVStrombedarfsdeckung.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -356,7 +440,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_PVUeberschuss.Location" type="System.Drawing.Point, System.Drawing">
-    <value>381, 261</value>
+    <value>253, 228</value>
   </data>
   <data name="textBox_PVUeberschuss.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -386,7 +470,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_PVStrom.Location" type="System.Drawing.Point, System.Drawing">
-    <value>381, 148</value>
+    <value>253, 115</value>
   </data>
   <data name="textBox_PVStrom.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -494,7 +578,7 @@
     <value>NoControl</value>
   </data>
   <data name="checkBox_Speicherzustand.Location" type="System.Drawing.Point, System.Drawing">
-    <value>882, 90</value>
+    <value>727, 68</value>
   </data>
   <data name="checkBox_Speicherzustand.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -530,7 +614,7 @@
     <value>NoControl</value>
   </data>
   <data name="label55.Location" type="System.Drawing.Point, System.Drawing">
-    <value>134, 229</value>
+    <value>13, 197</value>
   </data>
   <data name="label55.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -566,7 +650,7 @@
     <value>NoControl</value>
   </data>
   <data name="checkBox_Ueberschuss.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1089, 90</value>
+    <value>907, 68</value>
   </data>
   <data name="checkBox_Ueberschuss.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -593,13 +677,13 @@
     <value>10</value>
   </data>
   <data name="chart_PV.Location" type="System.Drawing.Point, System.Drawing">
-    <value>519, 45</value>
+    <value>392, 28</value>
   </data>
   <data name="chart_PV.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="chart_PV.Size" type="System.Drawing.Size, System.Drawing">
-    <value>809, 443</value>
+    <value>714, 443</value>
   </data>
   <data name="chart_PV.TabIndex" type="System.Int32, mscorlib">
     <value>283</value>
@@ -629,7 +713,7 @@
     <value>NoControl</value>
   </data>
   <data name="label45.Location" type="System.Drawing.Point, System.Drawing">
-    <value>182, 191</value>
+    <value>50, 157</value>
   </data>
   <data name="label45.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -665,7 +749,7 @@
     <value>NoControl</value>
   </data>
   <data name="label39.Location" type="System.Drawing.Point, System.Drawing">
-    <value>223, 268</value>
+    <value>85, 231</value>
   </data>
   <data name="label39.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -698,13 +782,13 @@
     <value>NoControl</value>
   </data>
   <data name="label8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>31, 141</value>
+    <value>31, 102</value>
   </data>
   <data name="label8.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
   <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>342, 39</value>
+    <value>186, 49</value>
   </data>
   <data name="label8.TabIndex" type="System.Int32, mscorlib">
     <value>264</value>
@@ -728,13 +812,13 @@
     <value>14</value>
   </data>
   <data name="tabPage_Photovoltaik.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
+    <value>4, 33</value>
   </data>
   <data name="tabPage_Photovoltaik.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Photovoltaik.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 756</value>
+    <value>1420, 718</value>
   </data>
   <data name="tabPage_Photovoltaik.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -752,7 +836,7 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_Photovoltaik.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>7</value>
   </data>
   <data name="label83.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1289,13 +1373,13 @@
     <value>15</value>
   </data>
   <data name="tabPage_Solarthermie.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
+    <value>4, 33</value>
   </data>
   <data name="tabPage_Solarthermie.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Solarthermie.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 756</value>
+    <value>1420, 718</value>
   </data>
   <data name="tabPage_Solarthermie.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -1313,7 +1397,7 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_Solarthermie.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="label86.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2165,7 +2249,7 @@
     <value>Segoe UI, 9pt</value>
   </data>
   <data name="listView_SimSPK.Location" type="System.Drawing.Point, System.Drawing">
-    <value>34, 460</value>
+    <value>31, 418</value>
   </data>
   <data name="listView_SimSPK.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -2978,7 +3062,7 @@
     <value>NoControl</value>
   </data>
   <data name="label80.Location" type="System.Drawing.Point, System.Drawing">
-    <value>32, 433</value>
+    <value>29, 391</value>
   </data>
   <data name="label80.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3128,13 +3212,13 @@
     <value>Segoe UI, 12pt</value>
   </data>
   <data name="tabPage_Heizkessel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
+    <value>4, 33</value>
   </data>
   <data name="tabPage_Heizkessel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Heizkessel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 756</value>
+    <value>1420, 718</value>
   </data>
   <data name="tabPage_Heizkessel.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -3152,7 +3236,7 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_Heizkessel.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>4</value>
   </data>
   <data name="listView_SimWP.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9pt</value>
@@ -4373,7 +4457,7 @@
     <value>Segoe UI, 12pt</value>
   </data>
   <data name="tabPage_Wärmepumpe.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
+    <value>4, 33</value>
   </data>
   <data name="tabPage_Wärmepumpe.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4382,7 +4466,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Wärmepumpe.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 756</value>
+    <value>1420, 718</value>
   </data>
   <data name="tabPage_Wärmepumpe.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -4400,7 +4484,7 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_Wärmepumpe.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
   <data name="checkBox_StromSortiert.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -4409,7 +4493,7 @@
     <value>NoControl</value>
   </data>
   <data name="checkBox_StromSortiert.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1095, 132</value>
+    <value>1095, 127</value>
   </data>
   <data name="checkBox_StromSortiert.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4442,7 +4526,7 @@
     <value>NoControl</value>
   </data>
   <data name="label17.Location" type="System.Drawing.Point, System.Drawing">
-    <value>754, 586</value>
+    <value>755, 522</value>
   </data>
   <data name="label17.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4478,7 +4562,7 @@
     <value>NoControl</value>
   </data>
   <data name="label18.Location" type="System.Drawing.Point, System.Drawing">
-    <value>656, 567</value>
+    <value>657, 503</value>
   </data>
   <data name="label18.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4543,45 +4627,6 @@
   <data name="&gt;&gt;label9.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="label13.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label13.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 12pt, style=Bold, Underline</value>
-  </data>
-  <data name="label13.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label13.Location" type="System.Drawing.Point, System.Drawing">
-    <value>46, 39</value>
-  </data>
-  <data name="label13.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label13.Size" type="System.Drawing.Size, System.Drawing">
-    <value>118, 21</value>
-  </data>
-  <data name="label13.TabIndex" type="System.Int32, mscorlib">
-    <value>215</value>
-  </data>
-  <data name="label13.Text" xml:space="preserve">
-    <value>Energiebedarf</value>
-  </data>
-  <data name="label13.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleRight</value>
-  </data>
-  <data name="&gt;&gt;label13.Name" xml:space="preserve">
-    <value>label13</value>
-  </data>
-  <data name="&gt;&gt;label13.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label13.Parent" xml:space="preserve">
-    <value>tabPage_Bedarf</value>
-  </data>
-  <data name="&gt;&gt;label13.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
   <data name="textBox_gesStrombedarf.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
   </data>
@@ -4610,10 +4655,10 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;textBox_gesStrombedarf.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>4</value>
   </data>
   <data name="textBox_Gesamt_Strombedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>659, 585</value>
+    <value>660, 521</value>
   </data>
   <data name="textBox_Gesamt_Strombedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4634,7 +4679,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;textBox_Gesamt_Strombedarf.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>5</value>
   </data>
   <data name="textBox_gesWaermebedarf.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -4664,10 +4709,10 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;textBox_gesWaermebedarf.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>6</value>
   </data>
   <data name="textBox_MaxStrombedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>659, 527</value>
+    <value>660, 463</value>
   </data>
   <data name="textBox_MaxStrombedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4688,13 +4733,13 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;textBox_MaxStrombedarf.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>7</value>
   </data>
   <data name="textBox_Gesamt_Waermebedarf.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8.25pt</value>
   </data>
   <data name="textBox_Gesamt_Waermebedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>68, 586</value>
+    <value>69, 522</value>
   </data>
   <data name="textBox_Gesamt_Waermebedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4715,13 +4760,13 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;textBox_Gesamt_Waermebedarf.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>8</value>
   </data>
   <data name="textBox_MaxWaermelast.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8.25pt</value>
   </data>
   <data name="textBox_MaxWaermelast.Location" type="System.Drawing.Point, System.Drawing">
-    <value>68, 528</value>
+    <value>69, 464</value>
   </data>
   <data name="textBox_MaxWaermelast.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4742,7 +4787,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;textBox_MaxWaermelast.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>9</value>
   </data>
   <data name="label10.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -4781,7 +4826,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;label10.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>10</value>
   </data>
   <data name="label47.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -4793,7 +4838,7 @@
     <value>NoControl</value>
   </data>
   <data name="label47.Location" type="System.Drawing.Point, System.Drawing">
-    <value>231, 47</value>
+    <value>251, 47</value>
   </data>
   <data name="label47.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4820,7 +4865,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;label47.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>11</value>
   </data>
   <data name="label19.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -4829,7 +4874,7 @@
     <value>NoControl</value>
   </data>
   <data name="label19.Location" type="System.Drawing.Point, System.Drawing">
-    <value>754, 528</value>
+    <value>755, 464</value>
   </data>
   <data name="label19.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4853,7 +4898,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;label19.ZOrder" xml:space="preserve">
-    <value>13</value>
+    <value>12</value>
   </data>
   <data name="label20.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -4865,7 +4910,7 @@
     <value>NoControl</value>
   </data>
   <data name="label20.Location" type="System.Drawing.Point, System.Drawing">
-    <value>656, 509</value>
+    <value>657, 445</value>
   </data>
   <data name="label20.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -4889,7 +4934,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;label20.ZOrder" xml:space="preserve">
-    <value>14</value>
+    <value>13</value>
   </data>
   <data name="label62.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -4928,7 +4973,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;label62.ZOrder" xml:space="preserve">
-    <value>15</value>
+    <value>14</value>
   </data>
   <data name="chart2.Location" type="System.Drawing.Point, System.Drawing">
     <value>647, 122</value>
@@ -4937,7 +4982,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="chart2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>637, 377</value>
+    <value>593, 318</value>
   </data>
   <data name="chart2.TabIndex" type="System.Int32, mscorlib">
     <value>61</value>
@@ -4955,7 +5000,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;chart2.ZOrder" xml:space="preserve">
-    <value>16</value>
+    <value>15</value>
   </data>
   <data name="checkBox_Sortiert.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -4964,7 +5009,7 @@
     <value>NoControl</value>
   </data>
   <data name="checkBox_Sortiert.Location" type="System.Drawing.Point, System.Drawing">
-    <value>434, 132</value>
+    <value>434, 127</value>
   </data>
   <data name="checkBox_Sortiert.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -4988,7 +5033,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;checkBox_Sortiert.ZOrder" xml:space="preserve">
-    <value>17</value>
+    <value>16</value>
   </data>
   <data name="btn_StromDetails.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8pt</value>
@@ -4997,7 +5042,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_StromDetails.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1079, 507</value>
+    <value>1036, 445</value>
   </data>
   <data name="btn_StromDetails.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -5021,7 +5066,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;btn_StromDetails.ZOrder" xml:space="preserve">
-    <value>18</value>
+    <value>17</value>
   </data>
   <data name="btn_Details.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 8.25pt</value>
@@ -5030,7 +5075,7 @@
     <value>NoControl</value>
   </data>
   <data name="btn_Details.Location" type="System.Drawing.Point, System.Drawing">
-    <value>402, 509</value>
+    <value>403, 445</value>
   </data>
   <data name="btn_Details.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -5054,7 +5099,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;btn_Details.ZOrder" xml:space="preserve">
-    <value>19</value>
+    <value>18</value>
   </data>
   <data name="label15.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -5063,7 +5108,7 @@
     <value>NoControl</value>
   </data>
   <data name="label15.Location" type="System.Drawing.Point, System.Drawing">
-    <value>145, 587</value>
+    <value>146, 523</value>
   </data>
   <data name="label15.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -5087,7 +5132,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;label15.ZOrder" xml:space="preserve">
-    <value>20</value>
+    <value>19</value>
   </data>
   <data name="label16.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -5099,7 +5144,7 @@
     <value>NoControl</value>
   </data>
   <data name="label16.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 568</value>
+    <value>65, 504</value>
   </data>
   <data name="label16.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -5123,7 +5168,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;label16.ZOrder" xml:space="preserve">
-    <value>21</value>
+    <value>20</value>
   </data>
   <data name="label14.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -5132,7 +5177,7 @@
     <value>NoControl</value>
   </data>
   <data name="label14.Location" type="System.Drawing.Point, System.Drawing">
-    <value>145, 528</value>
+    <value>146, 464</value>
   </data>
   <data name="label14.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -5156,7 +5201,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;label14.ZOrder" xml:space="preserve">
-    <value>22</value>
+    <value>21</value>
   </data>
   <data name="label1.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -5168,7 +5213,7 @@
     <value>NoControl</value>
   </data>
   <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 510</value>
+    <value>65, 446</value>
   </data>
   <data name="label1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -5192,7 +5237,7 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
-    <value>23</value>
+    <value>22</value>
   </data>
   <data name="chart1.Location" type="System.Drawing.Point, System.Drawing">
     <value>22, 122</value>
@@ -5201,7 +5246,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="chart1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>584, 380</value>
+    <value>584, 318</value>
   </data>
   <data name="chart1.TabIndex" type="System.Int32, mscorlib">
     <value>52</value>
@@ -5219,13 +5264,13 @@
     <value>tabPage_Bedarf</value>
   </data>
   <data name="&gt;&gt;chart1.ZOrder" xml:space="preserve">
-    <value>24</value>
+    <value>23</value>
   </data>
   <data name="tabPage_Bedarf.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="tabPage_Bedarf.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
+    <value>4, 33</value>
   </data>
   <data name="tabPage_Bedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -5234,7 +5279,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Bedarf.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 756</value>
+    <value>1420, 718</value>
   </data>
   <data name="tabPage_Bedarf.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -5252,21 +5297,27 @@
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_Bedarf.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>2</value>
   </data>
-  <data name="richTextBox1.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8.25pt</value>
+  <data name="tabControl1.Appearance" type="System.Windows.Forms.TabAppearance, System.Windows.Forms">
+    <value>Buttons</value>
   </data>
-  <data name="richTextBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>23, 293</value>
+  <data name="tabControl4.Appearance" type="System.Windows.Forms.TabAppearance, System.Windows.Forms">
+    <value>Buttons</value>
   </data>
-  <data name="richTextBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>406, 268</value>
+  <data name="richTextBox_Info.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
   </data>
-  <data name="richTextBox1.TabIndex" type="System.Int32, mscorlib">
-    <value>278</value>
+  <data name="richTextBox_Info.Location" type="System.Drawing.Point, System.Drawing">
+    <value>358, 32</value>
   </data>
-  <data name="richTextBox1.Text" xml:space="preserve">
+  <data name="richTextBox_Info.Size" type="System.Drawing.Size, System.Drawing">
+    <value>344, 294</value>
+  </data>
+  <data name="richTextBox_Info.TabIndex" type="System.Int32, mscorlib">
+    <value>284</value>
+  </data>
+  <data name="richTextBox_Info.Text" xml:space="preserve">
     <value>Wärmegeführt (Standard)
 Das BHKW richtet sich nach dem Heiz- und Warmwasserbedarf. Erzeugter Strom deckt den Eigenbedarf, Überschüsse werden in das öffentliche Netz eingespeist.
 
@@ -5276,32 +5327,35 @@ Das BHKW richtet sich nach dem Strombedarf. Überschüssige Wärme wird im im Sp
 Ohne Einspeisung (Zero-Export)
 Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage regelt sofort ab, sobald der Strombedarf gedeckt oder der Wärmespeicher voll ist. Keine Netzeinspeisung.</value>
   </data>
-  <data name="&gt;&gt;richTextBox1.Name" xml:space="preserve">
-    <value>richTextBox1</value>
+  <data name="&gt;&gt;richTextBox_Info.Name" xml:space="preserve">
+    <value>richTextBox_Info</value>
   </data>
-  <data name="&gt;&gt;richTextBox1.Type" xml:space="preserve">
+  <data name="&gt;&gt;richTextBox_Info.Type" xml:space="preserve">
     <value>System.Windows.Forms.RichTextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;richTextBox1.Parent" xml:space="preserve">
-    <value>tabPage_BHKW</value>
+  <data name="&gt;&gt;richTextBox_Info.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_BHKW</value>
   </data>
-  <data name="&gt;&gt;richTextBox1.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;richTextBox_Info.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <data name="label56.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="label56.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
   <data name="label56.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="label56.Location" type="System.Drawing.Point, System.Drawing">
-    <value>39, 226</value>
+    <value>29, 237</value>
   </data>
   <data name="label56.Size" type="System.Drawing.Size, System.Drawing">
     <value>178, 17</value>
   </data>
   <data name="label56.TabIndex" type="System.Int32, mscorlib">
-    <value>277</value>
+    <value>283</value>
   </data>
   <data name="label56.Text" xml:space="preserve">
     <value>Volumen Pendelspeicher [m³]</value>
@@ -5313,19 +5367,22 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;label56.Parent" xml:space="preserve">
-    <value>tabPage_BHKW</value>
+    <value>tabPage_Parameter_BHKW</value>
   </data>
   <data name="&gt;&gt;label56.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
+  <data name="numericUpDown_Volumen.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
   <data name="numericUpDown_Volumen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>53, 246</value>
+    <value>55, 257</value>
   </data>
   <data name="numericUpDown_Volumen.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 25</value>
   </data>
   <data name="numericUpDown_Volumen.TabIndex" type="System.Int32, mscorlib">
-    <value>276</value>
+    <value>282</value>
   </data>
   <data name="&gt;&gt;numericUpDown_Volumen.Name" xml:space="preserve">
     <value>numericUpDown_Volumen</value>
@@ -5334,7 +5391,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;numericUpDown_Volumen.Parent" xml:space="preserve">
-    <value>tabPage_BHKW</value>
+    <value>tabPage_Parameter_BHKW</value>
   </data>
   <data name="&gt;&gt;numericUpDown_Volumen.ZOrder" xml:space="preserve">
     <value>2</value>
@@ -5429,14 +5486,17 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   <data name="&gt;&gt;radioButton_Stromgefuehrt.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
+  <data name="groupBox_BHKWBetriebsart.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
   <data name="groupBox_BHKWBetriebsart.Location" type="System.Drawing.Point, System.Drawing">
-    <value>53, 23</value>
+    <value>46, 32</value>
   </data>
   <data name="groupBox_BHKWBetriebsart.Size" type="System.Drawing.Size, System.Drawing">
     <value>207, 124</value>
   </data>
   <data name="groupBox_BHKWBetriebsart.TabIndex" type="System.Int32, mscorlib">
-    <value>275</value>
+    <value>281</value>
   </data>
   <data name="groupBox_BHKWBetriebsart.Text" xml:space="preserve">
     <value>Betriebsart</value>
@@ -5448,19 +5508,1831 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;groupBox_BHKWBetriebsart.Parent" xml:space="preserve">
-    <value>tabPage_BHKW</value>
+    <value>tabPage_Parameter_BHKW</value>
   </data>
   <data name="&gt;&gt;groupBox_BHKWBetriebsart.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="label54.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label54.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label54.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label54.Location" type="System.Drawing.Point, System.Drawing">
+    <value>30, 170</value>
+  </data>
+  <data name="label54.Size" type="System.Drawing.Size, System.Drawing">
+    <value>265, 17</value>
+  </data>
+  <data name="label54.TabIndex" type="System.Int32, mscorlib">
+    <value>280</value>
+  </data>
+  <data name="label54.Text" xml:space="preserve">
+    <value>Unterste Leistungsgrenze der Module [50%]</value>
+  </data>
+  <data name="&gt;&gt;label54.Name" xml:space="preserve">
+    <value>label54</value>
+  </data>
+  <data name="&gt;&gt;label54.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label54.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label54.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="numericUpDown_UnteresteLG.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="numericUpDown_UnteresteLG.Location" type="System.Drawing.Point, System.Drawing">
+    <value>55, 190</value>
+  </data>
+  <data name="numericUpDown_UnteresteLG.Size" type="System.Drawing.Size, System.Drawing">
+    <value>120, 25</value>
+  </data>
+  <data name="numericUpDown_UnteresteLG.TabIndex" type="System.Int32, mscorlib">
+    <value>279</value>
+  </data>
+  <data name="&gt;&gt;numericUpDown_UnteresteLG.Name" xml:space="preserve">
+    <value>numericUpDown_UnteresteLG</value>
+  </data>
+  <data name="&gt;&gt;numericUpDown_UnteresteLG.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;numericUpDown_UnteresteLG.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_BHKW</value>
+  </data>
+  <data name="&gt;&gt;numericUpDown_UnteresteLG.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="tabPage_Parameter_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 33</value>
+  </data>
+  <data name="tabPage_Parameter_BHKW.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
+  </data>
+  <data name="tabPage_Parameter_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>760, 376</value>
+  </data>
+  <data name="tabPage_Parameter_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="tabPage_Parameter_BHKW.Text" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_BHKW.Name" xml:space="preserve">
+    <value>tabPage_Parameter_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_BHKW.Parent" xml:space="preserve">
+    <value>tabControl4</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_BHKW.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>316, 96</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>78, 21</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.TabIndex" type="System.Int32, mscorlib">
+    <value>283</value>
+  </data>
+  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.Name" xml:space="preserve">
+    <value>comboBox7_Stromspeicher_LadeleistungMax_auswahl</value>
+  </data>
+  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeleistung_max.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeleistung_max.Location" type="System.Drawing.Point, System.Drawing">
+    <value>217, 96</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeleistung_max.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeleistung_max.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 22</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeleistung_max.TabIndex" type="System.Int32, mscorlib">
+    <value>282</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeleistung_max.Text" xml:space="preserve">
+    <value>100</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.Name" xml:space="preserve">
+    <value>textBox_Stromspeicher_Ladeleistung_max</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="label7.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label7.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label7.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
+    <value>35, 96</value>
+  </data>
+  <data name="label7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>142, 17</value>
+  </data>
+  <data name="label7.TabIndex" type="System.Int32, mscorlib">
+    <value>281</value>
+  </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>Maximum Ladeleistung</value>
+  </data>
+  <data name="&gt;&gt;label7.Name" xml:space="preserve">
+    <value>label7</value>
+  </data>
+  <data name="&gt;&gt;label7.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label7.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;label7.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_min.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_min.Location" type="System.Drawing.Point, System.Drawing">
+    <value>217, 32</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_min.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_min.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 22</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_min.TabIndex" type="System.Int32, mscorlib">
+    <value>275</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_min.Text" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.Name" xml:space="preserve">
+    <value>textBox_Stromspeicher_Ladeenergie_min</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="label11.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label11.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label11.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
+    <value>35, 64</value>
+  </data>
+  <data name="label11.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
+    <value>141, 17</value>
+  </data>
+  <data name="label11.TabIndex" type="System.Int32, mscorlib">
+    <value>280</value>
+  </data>
+  <data name="label11.Text" xml:space="preserve">
+    <value>Maximum Ladeenergie</value>
+  </data>
+  <data name="&gt;&gt;label11.Name" xml:space="preserve">
+    <value>label11</value>
+  </data>
+  <data name="&gt;&gt;label11.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label11.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;label11.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="label40.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label40.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label40.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label40.Location" type="System.Drawing.Point, System.Drawing">
+    <value>34, 34</value>
+  </data>
+  <data name="label40.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label40.Size" type="System.Drawing.Size, System.Drawing">
+    <value>138, 17</value>
+  </data>
+  <data name="label40.TabIndex" type="System.Int32, mscorlib">
+    <value>276</value>
+  </data>
+  <data name="label40.Text" xml:space="preserve">
+    <value>Minimum Ladeenergie</value>
+  </data>
+  <data name="&gt;&gt;label40.Name" xml:space="preserve">
+    <value>label40</value>
+  </data>
+  <data name="&gt;&gt;label40.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label40.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;label40.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Location" type="System.Drawing.Point, System.Drawing">
+    <value>217, 64</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 22</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.TabIndex" type="System.Int32, mscorlib">
+    <value>279</value>
+  </data>
+  <data name="textBox_Stromspeicher_Ladeenergie_max.Text" xml:space="preserve">
+    <value>90</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Name" xml:space="preserve">
+    <value>textBox_Stromspeicher_Ladeenergie_max</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>217, 137</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 22</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.TabIndex" type="System.Int32, mscorlib">
+    <value>273</value>
+  </data>
+  <data name="textBox_Speicher_Ladeschwelle.Text" xml:space="preserve">
+    <value>90</value>
+  </data>
+  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Name" xml:space="preserve">
+    <value>textBox_Speicher_Ladeschwelle</value>
+  </data>
+  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>316, 64</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>78, 21</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.TabIndex" type="System.Int32, mscorlib">
+    <value>278</value>
+  </data>
+  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Name" xml:space="preserve">
+    <value>comboBox8_Stromspeicher_LadeenergieMin_auswahl</value>
+  </data>
+  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>316, 34</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>78, 21</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.TabIndex" type="System.Int32, mscorlib">
+    <value>277</value>
+  </data>
+  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Name" xml:space="preserve">
+    <value>comboBox_Stromspeicher_LadeenergieMax_auswahl</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="label12.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label12.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label12.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
+    <value>36, 143</value>
+  </data>
+  <data name="label12.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
+    <value>132, 17</value>
+  </data>
+  <data name="label12.TabIndex" type="System.Int32, mscorlib">
+    <value>274</value>
+  </data>
+  <data name="label12.Text" xml:space="preserve">
+    <value>Ladeschwellwert [kW]</value>
+  </data>
+  <data name="&gt;&gt;label12.Name" xml:space="preserve">
+    <value>label12</value>
+  </data>
+  <data name="&gt;&gt;label12.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label12.Parent" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="tabPage_Parameter_Stromspeicher.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 33</value>
+  </data>
+  <data name="tabPage_Parameter_Stromspeicher.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
+  </data>
+  <data name="tabPage_Parameter_Stromspeicher.Size" type="System.Drawing.Size, System.Drawing">
+    <value>760, 376</value>
+  </data>
+  <data name="tabPage_Parameter_Stromspeicher.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="tabPage_Parameter_Stromspeicher.Text" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_Stromspeicher.Name" xml:space="preserve">
+    <value>tabPage_Parameter_Stromspeicher</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_Stromspeicher.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_Stromspeicher.Parent" xml:space="preserve">
+    <value>tabControl4</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_Stromspeicher.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="tabPage_Parameter_WP.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 33</value>
+  </data>
+  <data name="tabPage_Parameter_WP.Size" type="System.Drawing.Size, System.Drawing">
+    <value>760, 376</value>
+  </data>
+  <data name="tabPage_Parameter_WP.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tabPage_Parameter_WP.Text" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_WP.Name" xml:space="preserve">
+    <value>tabPage_Parameter_WP</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_WP.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_WP.Parent" xml:space="preserve">
+    <value>tabControl4</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_WP.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="tabPage_Parameter_SPK.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 33</value>
+  </data>
+  <data name="tabPage_Parameter_SPK.Size" type="System.Drawing.Size, System.Drawing">
+    <value>760, 376</value>
+  </data>
+  <data name="tabPage_Parameter_SPK.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="tabPage_Parameter_SPK.Text" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_SPK.Name" xml:space="preserve">
+    <value>tabPage_Parameter_SPK</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_SPK.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_SPK.Parent" xml:space="preserve">
+    <value>tabControl4</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_SPK.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="tabPage_Parameter_Bedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 33</value>
+  </data>
+  <data name="tabPage_Parameter_Bedarf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>760, 376</value>
+  </data>
+  <data name="tabPage_Parameter_Bedarf.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="tabPage_Parameter_Bedarf.Text" xml:space="preserve">
+    <value>Wärme-/Strombedarf</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_Bedarf.Name" xml:space="preserve">
+    <value>tabPage_Parameter_Bedarf</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_Bedarf.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_Bedarf.Parent" xml:space="preserve">
+    <value>tabControl4</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter_Bedarf.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="tabControl4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>42, 28</value>
+  </data>
+  <data name="tabControl4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>768, 413</value>
+  </data>
+  <data name="tabControl4.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;tabControl4.Name" xml:space="preserve">
+    <value>tabControl4</value>
+  </data>
+  <data name="&gt;&gt;tabControl4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabControl, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabControl4.Parent" xml:space="preserve">
+    <value>tabPage_Parameter</value>
+  </data>
+  <data name="&gt;&gt;tabControl4.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tabPage1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <data name="tabPage1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
+  </data>
+  <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="tabPage1.Text" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.Name" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.Parent" xml:space="preserve">
+    <value>tabControl3</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tabPage2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <data name="tabPage2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
+  </data>
+  <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="tabPage2.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.Name" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.Parent" xml:space="preserve">
+    <value>tabControl3</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="tabControl3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>237, 304</value>
+  </data>
+  <data name="tabControl3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>8, 8</value>
+  </data>
+  <data name="tabControl3.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;tabControl3.Name" xml:space="preserve">
+    <value>tabControl3</value>
+  </data>
+  <data name="&gt;&gt;tabControl3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabControl, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabControl3.Parent" xml:space="preserve">
+    <value>tabPage_Parameter</value>
+  </data>
+  <data name="&gt;&gt;tabControl3.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="tabPage_Parameter.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 33</value>
+  </data>
+  <data name="tabPage_Parameter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1420, 718</value>
+  </data>
+  <data name="tabPage_Parameter.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="tabPage_Parameter.Text" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter.Name" xml:space="preserve">
+    <value>tabPage_Parameter</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter.Parent" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Parameter.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tabPage_Simulation.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 33</value>
+  </data>
+  <data name="tabPage_Simulation.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1420, 718</value>
+  </data>
+  <data name="tabPage_Simulation.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="tabPage_Simulation.Text" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Simulation.Name" xml:space="preserve">
+    <value>tabPage_Simulation</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Simulation.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Simulation.Parent" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Simulation.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="textBox_Betriebsstunden_Durchschnitt.Location" type="System.Drawing.Point, System.Drawing">
+    <value>686, 115</value>
+  </data>
+  <data name="textBox_Betriebsstunden_Durchschnitt.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 25</value>
+  </data>
+  <data name="textBox_Betriebsstunden_Durchschnitt.TabIndex" type="System.Int32, mscorlib">
+    <value>313</value>
+  </data>
+  <data name="&gt;&gt;textBox_Betriebsstunden_Durchschnitt.Name" xml:space="preserve">
+    <value>textBox_Betriebsstunden_Durchschnitt</value>
+  </data>
+  <data name="&gt;&gt;textBox_Betriebsstunden_Durchschnitt.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_Betriebsstunden_Durchschnitt.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;textBox_Betriebsstunden_Durchschnitt.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="label108.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label108.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label108.Location" type="System.Drawing.Point, System.Drawing">
+    <value>653, 95</value>
+  </data>
+  <data name="label108.Size" type="System.Drawing.Size, System.Drawing">
+    <value>207, 17</value>
+  </data>
+  <data name="label108.TabIndex" type="System.Int32, mscorlib">
+    <value>312</value>
+  </data>
+  <data name="label108.Text" xml:space="preserve">
+    <value>Betriebsstunden Durchschnitt [h/a]</value>
+  </data>
+  <data name="&gt;&gt;label108.Name" xml:space="preserve">
+    <value>label108</value>
+  </data>
+  <data name="&gt;&gt;label108.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label108.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label108.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="label63.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label63.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label63.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label63.Location" type="System.Drawing.Point, System.Drawing">
+    <value>677, 430</value>
+  </data>
+  <data name="label63.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label63.Size" type="System.Drawing.Size, System.Drawing">
+    <value>94, 17</value>
+  </data>
+  <data name="label63.TabIndex" type="System.Int32, mscorlib">
+    <value>309</value>
+  </data>
+  <data name="label63.Text" xml:space="preserve">
+    <value>Tierische Fette:</value>
+  </data>
+  <data name="label63.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label63.Name" xml:space="preserve">
+    <value>label63</value>
+  </data>
+  <data name="&gt;&gt;label63.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label63.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label63.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="tb_TierischeFette_BHKW.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tb_TierischeFette_BHKW.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="tb_TierischeFette_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>845, 428</value>
+  </data>
+  <data name="tb_TierischeFette_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="tb_TierischeFette_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="tb_TierischeFette_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>310</value>
+  </data>
+  <data name="&gt;&gt;tb_TierischeFette_BHKW.Name" xml:space="preserve">
+    <value>tb_TierischeFette_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_TierischeFette_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tb_TierischeFette_BHKW.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_TierischeFette_BHKW.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="tb_Pellets_BHKW.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tb_Pellets_BHKW.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="tb_Pellets_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>845, 364</value>
+  </data>
+  <data name="tb_Pellets_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="tb_Pellets_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="tb_Pellets_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>307</value>
+  </data>
+  <data name="&gt;&gt;tb_Pellets_BHKW.Name" xml:space="preserve">
+    <value>tb_Pellets_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Pellets_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tb_Pellets_BHKW.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Pellets_BHKW.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="tb_Oelverbrauch_BHKW.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tb_Oelverbrauch_BHKW.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="tb_Oelverbrauch_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>845, 235</value>
+  </data>
+  <data name="tb_Oelverbrauch_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="tb_Oelverbrauch_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="tb_Oelverbrauch_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>285</value>
+  </data>
+  <data name="&gt;&gt;tb_Oelverbrauch_BHKW.Name" xml:space="preserve">
+    <value>tb_Oelverbrauch_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Oelverbrauch_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tb_Oelverbrauch_BHKW.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Oelverbrauch_BHKW.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="tb_Koks_BHKW.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tb_Koks_BHKW.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="tb_Koks_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>845, 267</value>
+  </data>
+  <data name="tb_Koks_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="tb_Koks_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="tb_Koks_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>288</value>
+  </data>
+  <data name="&gt;&gt;tb_Koks_BHKW.Name" xml:space="preserve">
+    <value>tb_Koks_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Koks_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tb_Koks_BHKW.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Koks_BHKW.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="tb_Rapsoelverbrauch_BHKW.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tb_Rapsoelverbrauch_BHKW.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="tb_Rapsoelverbrauch_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>845, 396</value>
+  </data>
+  <data name="tb_Rapsoelverbrauch_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="tb_Rapsoelverbrauch_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="tb_Rapsoelverbrauch_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>291</value>
+  </data>
+  <data name="&gt;&gt;tb_Rapsoelverbrauch_BHKW.Name" xml:space="preserve">
+    <value>tb_Rapsoelverbrauch_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Rapsoelverbrauch_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tb_Rapsoelverbrauch_BHKW.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Rapsoelverbrauch_BHKW.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="tb_Holzverbrauch_BHKW.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tb_Holzverbrauch_BHKW.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="tb_Holzverbrauch_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>845, 331</value>
+  </data>
+  <data name="tb_Holzverbrauch_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="tb_Holzverbrauch_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="tb_Holzverbrauch_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>294</value>
+  </data>
+  <data name="&gt;&gt;tb_Holzverbrauch_BHKW.Name" xml:space="preserve">
+    <value>tb_Holzverbrauch_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Holzverbrauch_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tb_Holzverbrauch_BHKW.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Holzverbrauch_BHKW.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="tb_Kohle_BHKW.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tb_Kohle_BHKW.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="tb_Kohle_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>845, 299</value>
+  </data>
+  <data name="tb_Kohle_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="tb_Kohle_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="tb_Kohle_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>297</value>
+  </data>
+  <data name="&gt;&gt;tb_Kohle_BHKW.Name" xml:space="preserve">
+    <value>tb_Kohle_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Kohle_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tb_Kohle_BHKW.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Kohle_BHKW.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="tb_Sonstigverbrauch_BHKW.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tb_Sonstigverbrauch_BHKW.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="tb_Sonstigverbrauch_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>845, 460</value>
+  </data>
+  <data name="tb_Sonstigverbrauch_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="tb_Sonstigverbrauch_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="tb_Sonstigverbrauch_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>303</value>
+  </data>
+  <data name="&gt;&gt;tb_Sonstigverbrauch_BHKW.Name" xml:space="preserve">
+    <value>tb_Sonstigverbrauch_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Sonstigverbrauch_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tb_Sonstigverbrauch_BHKW.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Sonstigverbrauch_BHKW.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="tb_Gasverbrauch_BHKW.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tb_Gasverbrauch_BHKW.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="tb_Gasverbrauch_BHKW.Location" type="System.Drawing.Point, System.Drawing">
+    <value>845, 203</value>
+  </data>
+  <data name="tb_Gasverbrauch_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="tb_Gasverbrauch_BHKW.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="tb_Gasverbrauch_BHKW.TabIndex" type="System.Int32, mscorlib">
+    <value>305</value>
+  </data>
+  <data name="&gt;&gt;tb_Gasverbrauch_BHKW.Name" xml:space="preserve">
+    <value>tb_Gasverbrauch_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Gasverbrauch_BHKW.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tb_Gasverbrauch_BHKW.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;tb_Gasverbrauch_BHKW.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="label88.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label88.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label88.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label88.Location" type="System.Drawing.Point, System.Drawing">
+    <value>946, 430</value>
+  </data>
+  <data name="label88.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label88.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="label88.TabIndex" type="System.Int32, mscorlib">
+    <value>311</value>
+  </data>
+  <data name="label88.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label88.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label88.Name" xml:space="preserve">
+    <value>label88</value>
+  </data>
+  <data name="&gt;&gt;label88.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label88.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label88.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="label89.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label89.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label89.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label89.Location" type="System.Drawing.Point, System.Drawing">
+    <value>677, 366</value>
+  </data>
+  <data name="label89.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label89.Size" type="System.Drawing.Size, System.Drawing">
+    <value>48, 17</value>
+  </data>
+  <data name="label89.TabIndex" type="System.Int32, mscorlib">
+    <value>306</value>
+  </data>
+  <data name="label89.Text" xml:space="preserve">
+    <value>Pellets:</value>
+  </data>
+  <data name="label89.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label89.Name" xml:space="preserve">
+    <value>label89</value>
+  </data>
+  <data name="&gt;&gt;label89.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label89.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label89.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="label90.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label90.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label90.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label90.Location" type="System.Drawing.Point, System.Drawing">
+    <value>946, 366</value>
+  </data>
+  <data name="label90.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label90.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="label90.TabIndex" type="System.Int32, mscorlib">
+    <value>308</value>
+  </data>
+  <data name="label90.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label90.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label90.Name" xml:space="preserve">
+    <value>label90</value>
+  </data>
+  <data name="&gt;&gt;label90.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label90.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label90.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="label91.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label91.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt, style=Bold, Underline</value>
+  </data>
+  <data name="label91.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label91.Location" type="System.Drawing.Point, System.Drawing">
+    <value>659, 170</value>
+  </data>
+  <data name="label91.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label91.Size" type="System.Drawing.Size, System.Drawing">
+    <value>138, 17</value>
+  </data>
+  <data name="label91.TabIndex" type="System.Int32, mscorlib">
+    <value>281</value>
+  </data>
+  <data name="label91.Text" xml:space="preserve">
+    <value>Brennstoffverbrauch:</value>
+  </data>
+  <data name="label91.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label91.Name" xml:space="preserve">
+    <value>label91</value>
+  </data>
+  <data name="&gt;&gt;label91.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label91.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label91.ZOrder" xml:space="preserve">
+    <value>15</value>
+  </data>
+  <data name="label92.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label92.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label92.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label92.Location" type="System.Drawing.Point, System.Drawing">
+    <value>677, 205</value>
+  </data>
+  <data name="label92.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label92.Size" type="System.Drawing.Size, System.Drawing">
+    <value>119, 17</value>
+  </data>
+  <data name="label92.TabIndex" type="System.Int32, mscorlib">
+    <value>282</value>
+  </data>
+  <data name="label92.Text" xml:space="preserve">
+    <value>Gasverbrauch (Hu):</value>
+  </data>
+  <data name="label92.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label92.Name" xml:space="preserve">
+    <value>label92</value>
+  </data>
+  <data name="&gt;&gt;label92.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label92.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label92.ZOrder" xml:space="preserve">
+    <value>16</value>
+  </data>
+  <data name="label93.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label93.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label93.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label93.Location" type="System.Drawing.Point, System.Drawing">
+    <value>946, 207</value>
+  </data>
+  <data name="label93.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label93.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="label93.TabIndex" type="System.Int32, mscorlib">
+    <value>283</value>
+  </data>
+  <data name="label93.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label93.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label93.Name" xml:space="preserve">
+    <value>label93</value>
+  </data>
+  <data name="&gt;&gt;label93.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label93.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label93.ZOrder" xml:space="preserve">
+    <value>17</value>
+  </data>
+  <data name="label94.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label94.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label94.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label94.Location" type="System.Drawing.Point, System.Drawing">
+    <value>677, 239</value>
+  </data>
+  <data name="label94.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label94.Size" type="System.Drawing.Size, System.Drawing">
+    <value>82, 17</value>
+  </data>
+  <data name="label94.TabIndex" type="System.Int32, mscorlib">
+    <value>284</value>
+  </data>
+  <data name="label94.Text" xml:space="preserve">
+    <value>Ölverbrauch:</value>
+  </data>
+  <data name="label94.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label94.Name" xml:space="preserve">
+    <value>label94</value>
+  </data>
+  <data name="&gt;&gt;label94.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label94.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label94.ZOrder" xml:space="preserve">
+    <value>18</value>
+  </data>
+  <data name="label95.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label95.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label95.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label95.Location" type="System.Drawing.Point, System.Drawing">
+    <value>946, 237</value>
+  </data>
+  <data name="label95.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label95.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="label95.TabIndex" type="System.Int32, mscorlib">
+    <value>286</value>
+  </data>
+  <data name="label95.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label95.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label95.Name" xml:space="preserve">
+    <value>label95</value>
+  </data>
+  <data name="&gt;&gt;label95.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label95.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label95.ZOrder" xml:space="preserve">
+    <value>19</value>
+  </data>
+  <data name="label96.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label96.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label96.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label96.Location" type="System.Drawing.Point, System.Drawing">
+    <value>677, 269</value>
+  </data>
+  <data name="label96.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label96.Size" type="System.Drawing.Size, System.Drawing">
+    <value>39, 17</value>
+  </data>
+  <data name="label96.TabIndex" type="System.Int32, mscorlib">
+    <value>287</value>
+  </data>
+  <data name="label96.Text" xml:space="preserve">
+    <value>Koks:</value>
+  </data>
+  <data name="label96.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label96.Name" xml:space="preserve">
+    <value>label96</value>
+  </data>
+  <data name="&gt;&gt;label96.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label96.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label96.ZOrder" xml:space="preserve">
+    <value>20</value>
+  </data>
+  <data name="label97.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label97.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label97.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label97.Location" type="System.Drawing.Point, System.Drawing">
+    <value>946, 269</value>
+  </data>
+  <data name="label97.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label97.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="label97.TabIndex" type="System.Int32, mscorlib">
+    <value>289</value>
+  </data>
+  <data name="label97.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label97.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label97.Name" xml:space="preserve">
+    <value>label97</value>
+  </data>
+  <data name="&gt;&gt;label97.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label97.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label97.ZOrder" xml:space="preserve">
+    <value>21</value>
+  </data>
+  <data name="label98.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label98.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label98.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label98.Location" type="System.Drawing.Point, System.Drawing">
+    <value>677, 398</value>
+  </data>
+  <data name="label98.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label98.Size" type="System.Drawing.Size, System.Drawing">
+    <value>109, 17</value>
+  </data>
+  <data name="label98.TabIndex" type="System.Int32, mscorlib">
+    <value>290</value>
+  </data>
+  <data name="label98.Text" xml:space="preserve">
+    <value>Rapsölverbrauch:</value>
+  </data>
+  <data name="label98.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label98.Name" xml:space="preserve">
+    <value>label98</value>
+  </data>
+  <data name="&gt;&gt;label98.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label98.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label98.ZOrder" xml:space="preserve">
+    <value>22</value>
+  </data>
+  <data name="label99.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label99.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label99.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label99.Location" type="System.Drawing.Point, System.Drawing">
+    <value>946, 398</value>
+  </data>
+  <data name="label99.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label99.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="label99.TabIndex" type="System.Int32, mscorlib">
+    <value>292</value>
+  </data>
+  <data name="label99.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label99.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label99.Name" xml:space="preserve">
+    <value>label99</value>
+  </data>
+  <data name="&gt;&gt;label99.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label99.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label99.ZOrder" xml:space="preserve">
+    <value>23</value>
+  </data>
+  <data name="label100.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label100.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label100.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label100.Location" type="System.Drawing.Point, System.Drawing">
+    <value>677, 334</value>
+  </data>
+  <data name="label100.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label100.Size" type="System.Drawing.Size, System.Drawing">
+    <value>95, 17</value>
+  </data>
+  <data name="label100.TabIndex" type="System.Int32, mscorlib">
+    <value>293</value>
+  </data>
+  <data name="label100.Text" xml:space="preserve">
+    <value>Holzverbrauch:</value>
+  </data>
+  <data name="label100.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label100.Name" xml:space="preserve">
+    <value>label100</value>
+  </data>
+  <data name="&gt;&gt;label100.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label100.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label100.ZOrder" xml:space="preserve">
+    <value>24</value>
+  </data>
+  <data name="label101.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label101.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label101.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label101.Location" type="System.Drawing.Point, System.Drawing">
+    <value>946, 334</value>
+  </data>
+  <data name="label101.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label101.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="label101.TabIndex" type="System.Int32, mscorlib">
+    <value>295</value>
+  </data>
+  <data name="label101.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label101.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label101.Name" xml:space="preserve">
+    <value>label101</value>
+  </data>
+  <data name="&gt;&gt;label101.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label101.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label101.ZOrder" xml:space="preserve">
+    <value>25</value>
+  </data>
+  <data name="label102.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label102.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label102.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label102.Location" type="System.Drawing.Point, System.Drawing">
+    <value>677, 301</value>
+  </data>
+  <data name="label102.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label102.Size" type="System.Drawing.Size, System.Drawing">
+    <value>44, 17</value>
+  </data>
+  <data name="label102.TabIndex" type="System.Int32, mscorlib">
+    <value>296</value>
+  </data>
+  <data name="label102.Text" xml:space="preserve">
+    <value>Kohle:</value>
+  </data>
+  <data name="label102.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label102.Name" xml:space="preserve">
+    <value>label102</value>
+  </data>
+  <data name="&gt;&gt;label102.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label102.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label102.ZOrder" xml:space="preserve">
+    <value>26</value>
+  </data>
+  <data name="label103.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label103.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label103.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label103.Location" type="System.Drawing.Point, System.Drawing">
+    <value>946, 301</value>
+  </data>
+  <data name="label103.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label103.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="label103.TabIndex" type="System.Int32, mscorlib">
+    <value>298</value>
+  </data>
+  <data name="label103.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label103.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label103.Name" xml:space="preserve">
+    <value>label103</value>
+  </data>
+  <data name="&gt;&gt;label103.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label103.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label103.ZOrder" xml:space="preserve">
+    <value>27</value>
+  </data>
+  <data name="label106.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label106.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label106.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label106.Location" type="System.Drawing.Point, System.Drawing">
+    <value>677, 463</value>
+  </data>
+  <data name="label106.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label106.Size" type="System.Drawing.Size, System.Drawing">
+    <value>131, 17</value>
+  </data>
+  <data name="label106.TabIndex" type="System.Int32, mscorlib">
+    <value>302</value>
+  </data>
+  <data name="label106.Text" xml:space="preserve">
+    <value>Sonstige Brennstoffe:</value>
+  </data>
+  <data name="label106.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;label106.Name" xml:space="preserve">
+    <value>label106</value>
+  </data>
+  <data name="&gt;&gt;label106.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label106.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label106.ZOrder" xml:space="preserve">
+    <value>28</value>
+  </data>
+  <data name="label107.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label107.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label107.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label107.Location" type="System.Drawing.Point, System.Drawing">
+    <value>946, 463</value>
+  </data>
+  <data name="label107.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label107.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="label107.TabIndex" type="System.Int32, mscorlib">
+    <value>304</value>
+  </data>
+  <data name="label107.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="label107.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;label107.Name" xml:space="preserve">
+    <value>label107</value>
+  </data>
+  <data name="&gt;&gt;label107.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label107.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label107.ZOrder" xml:space="preserve">
+    <value>29</value>
+  </data>
+  <data name="textBox_Betriebsstunden.Location" type="System.Drawing.Point, System.Drawing">
+    <value>686, 56</value>
+  </data>
+  <data name="textBox_Betriebsstunden.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 25</value>
+  </data>
+  <data name="textBox_Betriebsstunden.TabIndex" type="System.Int32, mscorlib">
+    <value>280</value>
+  </data>
+  <data name="&gt;&gt;textBox_Betriebsstunden.Name" xml:space="preserve">
+    <value>textBox_Betriebsstunden</value>
+  </data>
+  <data name="&gt;&gt;textBox_Betriebsstunden.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_Betriebsstunden.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;textBox_Betriebsstunden.ZOrder" xml:space="preserve">
+    <value>30</value>
+  </data>
+  <data name="label13.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label13.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label13.Location" type="System.Drawing.Point, System.Drawing">
+    <value>660, 36</value>
+  </data>
+  <data name="label13.Size" type="System.Drawing.Size, System.Drawing">
+    <value>179, 17</value>
+  </data>
+  <data name="label13.TabIndex" type="System.Int32, mscorlib">
+    <value>279</value>
+  </data>
+  <data name="label13.Text" xml:space="preserve">
+    <value>Betriebsstunden gesamt [h/a]</value>
+  </data>
+  <data name="&gt;&gt;label13.Name" xml:space="preserve">
+    <value>label13</value>
+  </data>
+  <data name="&gt;&gt;label13.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label13.Parent" xml:space="preserve">
+    <value>tabPage_BHKW</value>
+  </data>
+  <data name="&gt;&gt;label13.ZOrder" xml:space="preserve">
+    <value>31</value>
+  </data>
   <data name="chart_BHKW_Waerme.Location" type="System.Drawing.Point, System.Drawing">
-    <value>450, 23</value>
+    <value>32, 22</value>
   </data>
   <data name="chart_BHKW_Waerme.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="chart_BHKW_Waerme.Size" type="System.Drawing.Size, System.Drawing">
-    <value>624, 420</value>
+    <value>575, 420</value>
   </data>
   <data name="chart_BHKW_Waerme.TabIndex" type="System.Int32, mscorlib">
     <value>274</value>
@@ -5478,67 +7350,19 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabPage_BHKW</value>
   </data>
   <data name="&gt;&gt;chart_BHKW_Waerme.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="label54.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label54.Location" type="System.Drawing.Point, System.Drawing">
-    <value>39, 154</value>
-  </data>
-  <data name="label54.Size" type="System.Drawing.Size, System.Drawing">
-    <value>306, 17</value>
-  </data>
-  <data name="label54.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="label54.Text" xml:space="preserve">
-    <value>Unterste Leistungsgrenze der BHKW-Module [50%]</value>
-  </data>
-  <data name="&gt;&gt;label54.Name" xml:space="preserve">
-    <value>label54</value>
-  </data>
-  <data name="&gt;&gt;label54.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label54.Parent" xml:space="preserve">
-    <value>tabPage_BHKW</value>
-  </data>
-  <data name="&gt;&gt;label54.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="numericUpDown_UnteresteLG.Location" type="System.Drawing.Point, System.Drawing">
-    <value>53, 174</value>
-  </data>
-  <data name="numericUpDown_UnteresteLG.Size" type="System.Drawing.Size, System.Drawing">
-    <value>120, 25</value>
-  </data>
-  <data name="numericUpDown_UnteresteLG.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;numericUpDown_UnteresteLG.Name" xml:space="preserve">
-    <value>numericUpDown_UnteresteLG</value>
-  </data>
-  <data name="&gt;&gt;numericUpDown_UnteresteLG.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;numericUpDown_UnteresteLG.Parent" xml:space="preserve">
-    <value>tabPage_BHKW</value>
-  </data>
-  <data name="&gt;&gt;numericUpDown_UnteresteLG.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>32</value>
   </data>
   <data name="tabPage_BHKW.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="tabPage_BHKW.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
+    <value>4, 33</value>
   </data>
   <data name="tabPage_BHKW.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_BHKW.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 756</value>
+    <value>1420, 718</value>
   </data>
   <data name="tabPage_BHKW.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -5556,388 +7380,16 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_BHKW.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>330, 118</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>78, 21</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.TabIndex" type="System.Int32, mscorlib">
-    <value>272</value>
-  </data>
-  <data name="comboBox7_Stromspeicher_LadeleistungMax_auswahl.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.Name" xml:space="preserve">
-    <value>comboBox7_Stromspeicher_LadeleistungMax_auswahl</value>
-  </data>
-  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;comboBox7_Stromspeicher_LadeleistungMax_auswahl.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeleistung_max.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeleistung_max.Location" type="System.Drawing.Point, System.Drawing">
-    <value>231, 118</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeleistung_max.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeleistung_max.Size" type="System.Drawing.Size, System.Drawing">
-    <value>89, 22</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeleistung_max.TabIndex" type="System.Int32, mscorlib">
-    <value>271</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeleistung_max.Text" xml:space="preserve">
-    <value>100</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.Name" xml:space="preserve">
-    <value>textBox_Stromspeicher_Ladeleistung_max</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeleistung_max.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="label7.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label7.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label7.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>49, 118</value>
-  </data>
-  <data name="label7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>142, 17</value>
-  </data>
-  <data name="label7.TabIndex" type="System.Int32, mscorlib">
-    <value>270</value>
-  </data>
-  <data name="label7.Text" xml:space="preserve">
-    <value>Maximum Ladeleistung</value>
-  </data>
-  <data name="&gt;&gt;label7.Name" xml:space="preserve">
-    <value>label7</value>
-  </data>
-  <data name="&gt;&gt;label7.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label7.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;label7.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_min.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_min.Location" type="System.Drawing.Point, System.Drawing">
-    <value>231, 54</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_min.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_min.Size" type="System.Drawing.Size, System.Drawing">
-    <value>89, 22</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_min.TabIndex" type="System.Int32, mscorlib">
-    <value>264</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_min.Text" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.Name" xml:space="preserve">
-    <value>textBox_Stromspeicher_Ladeenergie_min</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_min.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="label11.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label11.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label11.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label11.Location" type="System.Drawing.Point, System.Drawing">
-    <value>49, 86</value>
-  </data>
-  <data name="label11.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
-    <value>141, 17</value>
-  </data>
-  <data name="label11.TabIndex" type="System.Int32, mscorlib">
-    <value>269</value>
-  </data>
-  <data name="label11.Text" xml:space="preserve">
-    <value>Maximum Ladeenergie</value>
-  </data>
-  <data name="&gt;&gt;label11.Name" xml:space="preserve">
-    <value>label11</value>
-  </data>
-  <data name="&gt;&gt;label11.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label11.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;label11.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="label40.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label40.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label40.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label40.Location" type="System.Drawing.Point, System.Drawing">
-    <value>48, 56</value>
-  </data>
-  <data name="label40.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label40.Size" type="System.Drawing.Size, System.Drawing">
-    <value>138, 17</value>
-  </data>
-  <data name="label40.TabIndex" type="System.Int32, mscorlib">
-    <value>265</value>
-  </data>
-  <data name="label40.Text" xml:space="preserve">
-    <value>Minimum Ladeenergie</value>
-  </data>
-  <data name="&gt;&gt;label40.Name" xml:space="preserve">
-    <value>label40</value>
-  </data>
-  <data name="&gt;&gt;label40.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label40.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;label40.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Location" type="System.Drawing.Point, System.Drawing">
-    <value>231, 86</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Size" type="System.Drawing.Size, System.Drawing">
-    <value>89, 22</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.TabIndex" type="System.Int32, mscorlib">
-    <value>268</value>
-  </data>
-  <data name="textBox_Stromspeicher_Ladeenergie_max.Text" xml:space="preserve">
-    <value>90</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Name" xml:space="preserve">
-    <value>textBox_Stromspeicher_Ladeenergie_max</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;textBox_Stromspeicher_Ladeenergie_max.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="textBox_Speicher_Ladeschwelle.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>231, 159</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>89, 22</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.TabIndex" type="System.Int32, mscorlib">
-    <value>257</value>
-  </data>
-  <data name="textBox_Speicher_Ladeschwelle.Text" xml:space="preserve">
-    <value>90</value>
-  </data>
-  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Name" xml:space="preserve">
-    <value>textBox_Speicher_Ladeschwelle</value>
-  </data>
-  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;textBox_Speicher_Ladeschwelle.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>330, 86</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>78, 21</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.TabIndex" type="System.Int32, mscorlib">
-    <value>267</value>
-  </data>
-  <data name="comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Name" xml:space="preserve">
-    <value>comboBox8_Stromspeicher_LadeenergieMin_auswahl</value>
-  </data>
-  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;comboBox8_Stromspeicher_LadeenergieMin_auswahl.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 8pt</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>330, 56</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>78, 21</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.TabIndex" type="System.Int32, mscorlib">
-    <value>266</value>
-  </data>
-  <data name="comboBox_Stromspeicher_LadeenergieMax_auswahl.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Name" xml:space="preserve">
-    <value>comboBox_Stromspeicher_LadeenergieMax_auswahl</value>
-  </data>
-  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;comboBox_Stromspeicher_LadeenergieMax_auswahl.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="label12.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label12.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label12.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label12.Location" type="System.Drawing.Point, System.Drawing">
-    <value>50, 165</value>
-  </data>
-  <data name="label12.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
-    <value>132, 17</value>
-  </data>
-  <data name="label12.TabIndex" type="System.Int32, mscorlib">
-    <value>258</value>
-  </data>
-  <data name="label12.Text" xml:space="preserve">
-    <value>Ladeschwellwert [kW]</value>
-  </data>
-  <data name="&gt;&gt;label12.Name" xml:space="preserve">
-    <value>label12</value>
-  </data>
-  <data name="&gt;&gt;label12.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label12.Parent" xml:space="preserve">
-    <value>tabPage_Stromspeicher</value>
-  </data>
-  <data name="&gt;&gt;label12.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
   <data name="tabPage_Stromspeicher.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 30</value>
+    <value>4, 33</value>
   </data>
   <data name="tabPage_Stromspeicher.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Stromspeicher.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1357, 756</value>
+    <value>1420, 718</value>
   </data>
   <data name="tabPage_Stromspeicher.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -5955,19 +7407,19 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabControl1</value>
   </data>
   <data name="&gt;&gt;tabPage_Stromspeicher.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>8</value>
   </data>
   <data name="tabControl1.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI Semibold, 12pt, style=Bold</value>
   </data>
   <data name="tabControl1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>36, 104</value>
+    <value>5, 12</value>
   </data>
   <data name="tabControl1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1365, 790</value>
+    <value>1428, 755</value>
   </data>
   <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
     <value>254</value>
