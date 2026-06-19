@@ -37,11 +37,11 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
                     item.m_ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
 
-                if (dt.Columns.Contains("ID_Stromganglinie") && row["ID_Stromganglinie"] != DBNull.Value)
-                    item.m_ID_Stromganglinie = Convert.ToInt32(row["ID_Stromganglinie"]);
+                if (dt.Columns.Contains("ID_Ganglinie") && row["ID_Ganglinie"] != DBNull.Value)
+                    item.m_ID_Stromganglinie = Convert.ToInt32(row["ID_Ganglinie"]);
 
-                if (dt.Columns.Contains("Stromganglinie") && row["Stromganglinie"] != DBNull.Value)
-                    item.m_szStromganglinie = row["Stromganglinie"].ToString();
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    item.m_szStromganglinie = row["Bezeichner"].ToString();
 
                 // Das Element der dynamischen Liste hinzufügen
                 _internalList.Add(item);

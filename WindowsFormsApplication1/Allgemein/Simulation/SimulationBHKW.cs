@@ -124,6 +124,10 @@ namespace WindowsFormsApplication1
             Em_Staub_BHKW = 0f;
             dLaufzeiten = 0f;
 
+
+            bhkwGrenzleistungAllgemein /= 100;
+            if (bhkwGrenzleistungAllgemein == 0) bhkwGrenzleistungAllgemein = 0.5f;
+
             BHKWCtrl ctrl = new BHKWCtrl();
             for (int i = 0; i < anzahlBhkw; i++)
             {
@@ -135,7 +139,11 @@ namespace WindowsFormsApplication1
                 bhkwBrennstoffart[i] = ctrl.m_Brennstoff; // oder passendes Feld aus deiner BHKWCtrl
                 bhkwWirkungsgrad[i] = (float)ctrl.m_Wirkungsgrad; // Gesamtwirkungsgrad (Elektrisch + Thermisch)
                 bhkwSKZ[i] = bhkwStromLeistung[i] / bhkwWaermeLeistung[i];
-                bhkwGrenzL[i] = (float)ctrl.m_Grenzleistung; // Grenzleistung als Faktor (z.B. 0.8 für 80% Modulation)
+                
+                if((float)ctrl.m_Grenzleistung == 0)
+                    bhkwGrenzL[i] = bhkwGrenzleistungAllgemein; // Grenzleistung als Faktor (z.B. 0.8 für 80% Modulation)
+                else
+                    bhkwGrenzL[i] = (float)ctrl.m_Grenzleistung; // Grenzleistung als Faktor (z.B. 0.8 für 80% Modulation)
 
                 // Emissionsfaktoren aus der DB auslesen (Äquivalent zu Cells(zaehler+2, X))
                 bhkwCO2Factor[i] = (float)ctrl.m_CO2;
@@ -512,7 +520,6 @@ namespace WindowsFormsApplication1
                 solarWaerme /= 1000f;
             }
         }
-
 
         public void SimulationStromgefuehrt(
             float[] waermebedarf,
