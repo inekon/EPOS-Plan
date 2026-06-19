@@ -347,115 +347,37 @@ namespace WindowsFormsApplication1
                 waermeproduktion[stunde] = 0f;
                 restSpeicher = kapazitaetPendelspeicher - solarSpeicher - speicher;
 
-                // Winterbetrieb
-                if (stunde < 3600 || stunde > 5760)
+                for (int motor = 0; motor < anzahl; motor++)
                 {
-                    for (int motor = 0; motor < anzahl; motor++)
+                    restSpeicher = kapazitaetPendelspeicher - solarSpeicher - speicher;
+
+                    if (bhkwWaermeLeistung[motor] < restWaerme + restSpeicher)
                     {
-                        restSpeicher = kapazitaetPendelspeicher - solarSpeicher - speicher;
+                        waermeproduktion[stunde] += bhkwWaermeLeistung[motor];
+                        s_waerme[motor] += bhkwWaermeLeistung[motor];
+                        stromproduktion[stunde] += bhkwStromLeistung[motor];
+                        s_strom[motor] += bhkwStromLeistung[motor];
+                        restWaerme -= bhkwWaermeLeistung[motor];
 
-                        if (bhkwWaermeLeistung[motor] < restWaerme + restSpeicher)
+                        if (restWaerme < 0)
                         {
-                            waermeproduktion[stunde] += bhkwWaermeLeistung[motor];
-                            s_waerme[motor] += bhkwWaermeLeistung[motor];
-                            stromproduktion[stunde] += bhkwStromLeistung[motor];
-                            s_strom[motor] += bhkwStromLeistung[motor];
-                            restWaerme -= bhkwWaermeLeistung[motor];
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
-                        else if (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor] <= restWaerme + restSpeicher)
-                        {
-                            waermeproduktion[stunde] += restWaerme + restSpeicher;
-                            s_waerme[motor] += restWaerme + restSpeicher;
-                            stromproduktion[stunde] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                            s_strom[motor] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                            speicher = kapazitaetPendelspeicher - solarSpeicher;
+                            speicher -= restWaerme;
                             restWaerme = 0f;
                         }
                     }
-                }
-                // Sommerbetrieb
-                else if (stdTag > 10 && stdTag < 22)
-                {
-                    for (int motor = 0; motor < anzahl; motor++)
+                    else if (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor] <= restWaerme + restSpeicher)
                     {
-                        restSpeicher = kapazitaetPendelspeicher - solarSpeicher - speicher;
-
-                        if (bhkwStromLeistung[motor] < strombedarf[stunde] && (restSpeicher + restWaerme > bhkwWaermeLeistung[motor]) && bhkwStromLeistung[motor] > 0.2f)
-                        {
-                            stromproduktion[stunde] += bhkwStromLeistung[motor];
-                            s_strom[motor] += bhkwStromLeistung[motor];
-                            waermeproduktion[stunde] += bhkwWaermeLeistung[motor];
-                            s_waerme[motor] += bhkwWaermeLeistung[motor];
-                            restWaerme -= bhkwWaermeLeistung[motor];
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
-                        else if (bhkwStromLeistung[motor] * bhkwGrenzL[motor] <= strombedarf[stunde] && (restSpeicher + restWaerme > strombedarf[stunde] / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor]) && bhkwStromLeistung[motor] > 0.2f)
-                        {
-                            stromproduktion[stunde] += strombedarf[stunde];
-                            s_strom[motor] += strombedarf[stunde];
-                            waermeproduktion[stunde] += strombedarf[stunde] / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
-                            s_waerme[motor] += strombedarf[stunde] / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
-                            restWaerme -= strombedarf[stunde] / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
-                        else if (bhkwStromLeistung[motor] * bhkwGrenzL[motor] <= strombedarf[stunde] && (restSpeicher + restWaerme > bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]) && bhkwStromLeistung[motor] > 0.2f)
-                        {
-                            waermeproduktion[stunde] += restSpeicher + restWaerme;
-                            s_waerme[motor] += restSpeicher + restWaerme;
-                            stromproduktion[stunde] += (restSpeicher + restWaerme) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                            s_strom[motor] += (restSpeicher + restWaerme) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
-                            restWaerme = 0f;
-                            speicher = kapazitaetPendelspeicher - solarSpeicher;
-                        }
-                        else if (bhkwStromLeistung[motor] * bhkwGrenzL[motor] * 0.8f <= strombedarf[stunde] && speicher < kapazitaetPendelspeicher * 0.3f && bhkwStromLeistung[motor] > 0.2f)
-                        {
-                            waermeproduktion[stunde] += bhkwWaermeLeistung[motor] * bhkwGrenzL[motor];
-                            s_waerme[motor] += bhkwWaermeLeistung[motor] * bhkwGrenzL[motor];
-                            stromproduktion[stunde] += bhkwStromLeistung[motor] * bhkwGrenzL[motor];
-                            s_strom[motor] += bhkwStromLeistung[motor] * bhkwGrenzL[motor];
-                            restWaerme -= bhkwWaermeLeistung[motor] * bhkwGrenzL[motor];
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
-                        // Notschaltung: es müssen immer 10 % im Speicher sein
-                        else if (speicher < kapazitaetPendelspeicher * 0.1f)
-                        {
-                            waermeproduktion[stunde] += bhkwWaermeLeistung[motor] * bhkwGrenzL[motor];
-                            s_waerme[motor] += bhkwWaermeLeistung[motor] * bhkwGrenzL[motor];
-                            stromproduktion[stunde] += bhkwStromLeistung[motor] * bhkwGrenzL[motor];
-                            s_strom[motor] += bhkwStromLeistung[motor] * bhkwGrenzL[motor];
-                            restWaerme -= bhkwWaermeLeistung[motor] * bhkwGrenzleistung;
-
-                            if (restWaerme < 0)
-                            {
-                                speicher -= restWaerme;
-                                restWaerme = 0f;
-                            }
-                        }
+                        waermeproduktion[stunde] += restWaerme + restSpeicher;
+                        s_waerme[motor] += restWaerme + restSpeicher;
+                        stromproduktion[stunde] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
+                        s_strom[motor] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
+                        speicher = kapazitaetPendelspeicher - solarSpeicher;
+                        restWaerme = 0f;
                     }
                 }
+
                 // Notschaltung: es müssen immer 20 % im Speicher sein
-                else if (speicher - restWaerme < kapazitaetPendelspeicher * 0.2f && (stdTag > 5 && stdTag < 10))
+                if (speicher - restWaerme < kapazitaetPendelspeicher * 0.2f && (stdTag > 5 && stdTag < 10))
                 {
                     for (int motor = 0; motor < anzahl; motor++)
                     {
