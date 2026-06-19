@@ -156,7 +156,6 @@
             resources.ApplyResources(pnlContent, "pnlContent");
             pnlContent.BackColor = System.Drawing.Color.FromArgb(224, 224, 224);
             pnlContent.Name = "pnlContent";
-            pnlContent.Paint += pnlContent_Paint;
             // 
             // WizardParent
             // 

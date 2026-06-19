@@ -172,15 +172,16 @@ namespace WindowsFormsApplication1
         {
             return item.ID_Type == typ || item.ID_Type == refTyp;
         }
+        
         public bool Add_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list)
         {
-            int nextID = DataRepository.GetMaxID("Z_ProjektGebaeude", "ID") + 1;
+            //int nextID = DataRepository.GetMaxID("Z_ProjektGebaeude", "ID") + 1;
             foreach (var item in list)
             {
-                string sql = "INSERT INTO Z_ProjektGebaeude (ID, ID_Projekt, ID_Gebaeude, Wohnflaeche_Waermebedarf, " +
-                    "Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad) VALUES (?,?,?,?,?,?)";
+                string sql = "INSERT INTO Z_ProjektGebaeude (ID_Projekt, ID_Gebaeude, Wohnflaeche_Waermebedarf, " +
+                    "Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad) VALUES (?,?,?,?,?)";
                 OleDbParameter[] ps = {
-                    new OleDbParameter("@id", nextID++),
+                    //new OleDbParameter("@id", nextID++),
                     new OleDbParameter("@pid", projektID),
                     new OleDbParameter("@gid", item.ID_Gebaeude),
                     new OleDbParameter("@fl", item.Wohnflaeche),
@@ -192,9 +193,10 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool Add_Projekt(int projektID, ProjektModel model)
+        public bool Add_Projekt(ref int projektID, ProjektModel model)
         {
             string sql = "INSERT INTO Tab_Projekt (Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) VALUES (?,?,?,?,?,?,?)";
+
             OleDbParameter[] ps = {
                 new OleDbParameter("@name", model.m_szProjektname),
                 new OleDbParameter("@bearb", model.m_szBearbeiter),
@@ -204,7 +206,20 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@klima", model.m_ID_Klimaregion),
                 new OleDbParameter("@edate", OleDbType.Date) { Value = model.m_Erstelldatum }
             };
-            return DataRepository.ExecuteSQL(sql, ps);
+
+            // Aufruf deiner neuen, zentralen Methode
+            int generierteId = DataRepository.ExecuteInsertAndGetId(sql, ps);
+
+            // Wenn die ID größer als 0 ist, war das Einfügen erfolgreich
+            if (generierteId > 0)
+            {
+                projektID = generierteId; // Über ref-Parameter an den Aufrufer zurückgeben
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public bool Update_Projekt(int projektID, ProjektModel model)
@@ -306,14 +321,11 @@ namespace WindowsFormsApplication1
 
         public bool Add_Stromganglinie(int projektID, List<Z_ProjektStromganglinieModel> list)
         {
-            int nextID = DataRepository.GetMaxID("Z_ProjektStromganglinie", "ID_Z") + 1;
-
             foreach (var item in list)
             {
-                string sql = "INSERT INTO Z_ProjektStromganglinie (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?, ?)";
+                string sql = "INSERT INTO Z_ProjektStromganglinie (ID_Projekt, ID_Ganglinie, Bezeichner) VALUES (?, ?, ?)";
 
                 OleDbParameter[] ps = {
-                    new OleDbParameter("@id", nextID++),
                     new OleDbParameter("@pID", projektID),
                     new OleDbParameter("@gID", item.m_ID_Stromganglinie),
                     new OleDbParameter("@bez", item.m_szStromganglinie ?? "")

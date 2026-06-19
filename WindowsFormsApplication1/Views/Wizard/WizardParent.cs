@@ -613,7 +613,7 @@ namespace WindowsFormsApplication1
             gespeichert = false;
             if (wizardmode == WIZARD_MODE_NEU)
             {
-                if (Program.wizardctrl.Add_Projekt(projektID, m_Projektmodel))
+                if (Program.wizardctrl.Add_Projekt(ref projektID, m_Projektmodel))
                 {
                     bool result = Program.wizardctrl.Add_Projekt_ZuordungGebäude(projektID, list_gebmodel);
                     if (!result) return;
@@ -905,9 +905,5 @@ namespace WindowsFormsApplication1
             ((Wizard_Komponenten)page).SetBHKWCheckBox(false);
         }
 
-        private void pnlContent_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
     }
 }

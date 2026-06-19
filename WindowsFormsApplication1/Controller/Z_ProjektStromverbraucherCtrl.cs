@@ -57,8 +57,8 @@ namespace WindowsFormsApplication1
                 Z_ProjektStromverbraucherModel item = new Z_ProjektStromverbraucherModel();
 
                 // Spaltenweises, sicheres Auslesen über Spaltennamen statt numerischer Indizes
-                if (dt.Columns.Contains("ID_Z") && row["ID_Z"] != DBNull.Value)
-                    item.m_ID_Z = Convert.ToInt32(row["ID_Z"]);
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    item.m_ID_Z = Convert.ToInt32(row["ID"]);
 
                 if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
                     item.m_ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
@@ -66,8 +66,8 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("ID_Stromverbraucher") && row["ID_Stromverbraucher"] != DBNull.Value)
                     item.m_ID_Stromverbraucher = Convert.ToInt32(row["ID_Stromverbraucher"]);
 
-                if (dt.Columns.Contains("Verbraucher") && row["Verbraucher"] != DBNull.Value)
-                    item.m_szVerbraucher = row["Verbraucher"].ToString();
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    item.m_szVerbraucher = row["Bezeichner"].ToString();
 
                 if (dt.Columns.Contains("Summe") && row["Summe"] != DBNull.Value)
                     item.m_Summe = Convert.ToDouble(row["Summe"]);

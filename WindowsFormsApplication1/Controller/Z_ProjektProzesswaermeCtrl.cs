@@ -55,8 +55,8 @@ namespace WindowsFormsApplication1
                 Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
 
                 // Spaltenbasiertes, sicheres Auslesen über Spaltennamen statt numerischer Indizes
-                if (dt.Columns.Contains("ID_Z") && row["ID_Z"] != DBNull.Value)
-                    item.ID_Z = Convert.ToInt32(row["ID_Z"]);
+                if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
+                    item.ID_Z = Convert.ToInt32(row["ID"]);
 
                 if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
                     item.ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
@@ -64,12 +64,8 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("ID_Prozesswaerme") && row["ID_Prozesswaerme"] != DBNull.Value)
                     item.ID_Prozesswaerme = Convert.ToInt32(row["ID_Prozesswaerme"]);
 
-                if (dt.Columns.Contains("szProzessname") && row["szProzessname"] != DBNull.Value)
-                    item.szProzessname = row["szProzessname"].ToString();
-
-                // Falls die Spalte in der Access-Tabelle stattdessen "Prozessname" heißt, hier anpassen:
-                else if (dt.Columns.Contains("Prozessname") && row["Prozessname"] != DBNull.Value)
-                    item.szProzessname = row["Prozessname"].ToString();
+                if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
+                    item.szProzessname = row["Bezeichner"].ToString();
 
                 if (dt.Columns.Contains("Summe") && row["Summe"] != DBNull.Value)
                     item.Summe = Convert.ToDouble(row["Summe"]);
