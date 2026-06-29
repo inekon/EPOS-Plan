@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
         // Rückgabe
         public float Restwaerme;
         public float Reststrom;
-        public float[] Rest_Wermebedarf_stuendlich = new float[8760];
+        public float[] Rest_Waermebedarf_stuendlich = new float[8760];
         public float[] Rest_Strombedarf_viertelstuendlich = new float[8760 * 4];
 
         public bool bSimulationWP = false;
@@ -44,12 +44,12 @@ namespace WindowsFormsApplication1
         public void Do_Simulation(int ID_Projekt)
         {
             float[] temp = new float[8760 * 4];
-            float[] Eingang = new float[2];
-            float[] Ausgang = new float[2];
+            float[] Eingang;
+            float[] Ausgang;
 
             m_ID_Projekt = ID_Projekt;
 
-            Array.Clear(Rest_Wermebedarf_stuendlich, 0, Rest_Wermebedarf_stuendlich.Length);
+            Array.Clear(Rest_Waermebedarf_stuendlich, 0, Rest_Waermebedarf_stuendlich.Length);
             Array.Clear(Rest_Strombedarf_viertelstuendlich, 0, Rest_Strombedarf_viertelstuendlich.Length);
             
             simulation_wp.Init();
@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
             Restwaerme = 0;
             Reststrom = simulation_Strombedarf.Strombedarf_gesamt; //MWh
             Rest_Strombedarf_viertelstuendlich = simulation_Strombedarf.Strombedarf_viertelStundenwerte;
-            Rest_Wermebedarf_stuendlich = (float[])simulation_Waermebedarf.Waermebedarf.Clone();
+            Rest_Waermebedarf_stuendlich = (float[])simulation_Waermebedarf.Waermebedarf.Clone();
 
             bSimulationWP = false;
             bSimulationKessel = false;
@@ -75,15 +75,12 @@ namespace WindowsFormsApplication1
             {
                 if (tool[i] == "Wärmepumpe")
                 {
-                    Ausgang = Simulation_WP_Ctrl(Eingang, ctrl_konfig.model.m_WP_Heizstab);
-                    
-                    double x = Ausgang.Sum();
-                    double x2 = Eingang.Sum();
-
+                    Ausgang = Simulation_WP_Ctrl(Eingang, Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich), ctrl_konfig.model.m_WP_Heizstab);
+     
                     if (m_bError) Ausgang = Eingang;
                     Restwaerme = 0;
                     for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
-                    Rest_Wermebedarf_stuendlich = Ausgang;
+                    Rest_Waermebedarf_stuendlich = Ausgang;
                     Eingang = Ausgang;
 
                     Reststrom += (float)simulation_wp.WP_Strombedarf_gesamt / 1000f; // in MWh
@@ -93,21 +90,19 @@ namespace WindowsFormsApplication1
                     Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
                     temp = Stundenwerte_zu_viertelstunden(simulation_wp.Heizstab_stuendlich);
                     Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
-
                     bSimulationWP = true;
                 }
                 else if (tool[i] == "Heizkessel")
                 {
-                    Ausgang = Simulation_SPK_Ctrl(Eingang, ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
+                    Ausgang = Simulation_SPK_Ctrl(Eingang, Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich), ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
                     Restwaerme = 0;
                     for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
-                    Rest_Wermebedarf_stuendlich = Ausgang;
+                    Rest_Waermebedarf_stuendlich = Ausgang;
                     Eingang = Ausgang;
-                    Reststrom += (float)simulation_spk.Stromverbrauch_Spk;
-
-                    temp = Stundenwerte_zu_viertelstunden(simulation_spk.Strombedarf_stuendlich);
+                   
+                    temp = Stundenwerte_zu_viertelstunden(simulation_spk.Stromverbrauch_stuendlich);
                     Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
-
+                    
                     bSimulationKessel = true;
                 }
                 else if (tool[i] == "Solarthermie")
@@ -116,7 +111,7 @@ namespace WindowsFormsApplication1
 
                     Restwaerme = 0;
                     for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
-                    Rest_Wermebedarf_stuendlich = Ausgang;
+                    Rest_Waermebedarf_stuendlich = Ausgang;
                     Eingang = Ausgang;
 
                     bSimulationSolarthermie = true;
@@ -124,62 +119,55 @@ namespace WindowsFormsApplication1
                 else if (tool[i] == "BHKW")
                 {
                     Ausgang = Simulation_BHKW_Ctrl(Eingang, Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich));
-                    Restwaerme = 0;
-                    for (int n = 0; n < 8760; n++) Restwaerme += Ausgang[n];
-                    Rest_Wermebedarf_stuendlich = Ausgang;
+
+                    Restwaerme = Ausgang.Sum();
+                    Rest_Waermebedarf_stuendlich = Ausgang;
                     Eingang = Ausgang;
-         
-                    // 1. Das BHKW rechnet. Es füllt intern das Array 'Stromproduktion_stündlich'
 
-                    // 2. Wir holen uns die tatsächliche ERZEUGUNG des BHKWs (nicht den internen Reststrom!)
+                    // Erzeugung holen und in Viertelstunden wandeln
                     float[] bhkwStromStuendlich = simulation_bhkw.stromproduktion;
-
-                    // 3. Wir wandeln die ERZEUGUNG in Viertelstunden
                     float[] bhkwStromViertelstuendlich = Stundenwerte_zu_viertelstunden(bhkwStromStuendlich);
 
-                    // 4. Wir ZIEHEN DIE ERZEUGUNG VOM BEDARF AB
-                    // Wenn der Bedarf 10 kW war und das BHKW 10 kW erzeugt hat, bleibt für die Wärmepumpe richtigerweise 0 kW übrig.
-                    Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, bhkwStromViertelstuendlich);
-                    Reststrom -= (float)simulation_bhkw.Stromproduktion_gesamt / 1000f; //MWh
-
+                    // Erzeugung vom Vektor abziehen
+                    Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, bhkwStromViertelstuendlich, false);
                     bSimulationBHKW = true;
                 }
-
             }
 
-            if(tool[4] == "Photovoltaik")
+            // Photovoltaik abziehen
+            if (tool[4] == "Photovoltaik")
             {
+                var x = Rest_Strombedarf_viertelstuendlich.Sum() / 4000;
                 temp = Simulation_Photovoltaik_Ctrl(Rest_Strombedarf_viertelstuendlich);
                 Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
-
-                // Reststrom gesamt in MHh
-                Reststrom = Rest_Strombedarf_viertelstuendlich.Sum() / 4000;
-
                 bSimulationPV = true;
             }
 
+            // Stromspeicher verrechnen
             if (tool[5] == "Stromspeicher")
             {
-                // Rest_Strombedarf_viertelstuendlich
                 temp = Simulation_Stromspeicher_Ctrl(Rest_Strombedarf_viertelstuendlich);
                 Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
-
-                // Reststrom gesamt in MHh
-                Reststrom = Rest_Strombedarf_viertelstuendlich.Sum() / 4000;
-
                 bSimulationSSP = true;
             }
 
-            Restwaerme /= 1000; // in MWh
+            // Wärmebedarf von kWh in MWh umrechnen
+            Restwaerme /= 1000f;
+
+            // Reststrom mathematisch korrekt aus dem finalen Ergebnis-Vektor berechnen
+            // Falls deine Quell-Vektoren stündliche kW-Mittelwerte/kWh enthalten:
+            Reststrom = Rest_Strombedarf_viertelstuendlich.Sum() / 4000f;
+
         }
 
-        private float[] Simulation_WP_Ctrl(float[] Waermebedarf, bool bHeizstab)
+        private float[] Simulation_WP_Ctrl(float[] Waermebedarf, float[] Strombedarf, bool bHeizstab)
         {
             RecordSet rs = new RecordSet();
 
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP);
 
             simulation_wp.wp_list.Clear();
+            
             while (rs.Next())
             {
                 simulation_wp.wp_list.Add((int)rs.Read("ID"));
@@ -188,7 +176,9 @@ namespace WindowsFormsApplication1
 
             simulation_wp.Temperatur = Stundentemperatur;
             simulation_wp.Waermebedarf_stuendlich = Waermebedarf;
+            simulation_wp.WP_Strombedarf_stuendlich = Strombedarf;
             simulation_wp.Mit_Heizstab = bHeizstab;
+            
             // Simulation starten
             m_bError = !simulation_wp.Berechnung();
 
@@ -202,10 +192,12 @@ namespace WindowsFormsApplication1
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass. BHKW_TYP);
 
             simulation_bhkw.bhkw_list.Clear();
+            
             int i = 0;
             while (rs.Next())
             {
                 simulation_bhkw.bhkw_list.Add((int)rs.Read("ID_BHKW"));
+                simulation_bhkw.bhkw_list_Namen.Add((string)rs.Read("Bezeichner"));
                 double Grenzleistung = (double)rs.Read("Grenzleistung") / 100;
                 simulation_bhkw.bhkwGrenzL[i++] = (float)Grenzleistung;
             }
@@ -221,11 +213,11 @@ namespace WindowsFormsApplication1
             m_bError = !simulation_bhkw.Berechnung(m_ID_Projekt);
 
             float[] restwaerme = SubVectors(Waermebedarf, simulation_bhkw.waermeproduktion);
-
+      
             return m_bError ? Waermebedarf : restwaerme;
         }
 
-        private float[] Simulation_SPK_Ctrl(float[] Waermebedarf, int nBereitschaft)
+        private float[] Simulation_SPK_Ctrl(float[] Waermebedarf, float[] Strombedarf, int nBereitschaft)
         {
             RecordSet rs = new RecordSet();
 
@@ -239,14 +231,11 @@ namespace WindowsFormsApplication1
             rs.Close();
 
             simulation_spk.Waermebedarf = Waermebedarf;
+            simulation_spk.Strombedarf_stuendlich = Strombedarf;
             simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
             
             // Simulation starten
-       //     if (simulation_spk.spk_list.Count == 0) return Waermebedarf;
             simulation_spk.Berechnung(m_ID_Projekt);
-
-            double summe = 0;
-            for(int i=0;i<8760;i++) summe+= simulation_spk.Restwaerme[i];   
 
             return simulation_spk.Restwaerme;
         }
@@ -285,7 +274,7 @@ namespace WindowsFormsApplication1
             return result;
         }
 
-        public float[] SubVectors(float[] array1, float[] array2)
+        public float[] SubVectors(float[] array1, float[] array2, bool korrigiert=true)
         {
             if (array1.Length != array2.Length)
                 throw new ArgumentException("Arrays must be of the same length.");
@@ -293,9 +282,13 @@ namespace WindowsFormsApplication1
             float[] result = new float[array1.Length];
             for (int i = 0; i < array1.Length; i++)
             {
-                if (array1[i] >= array2[i])
-                    result[i] = array1[i] - array2[i];
-                else result[i] = 0; 
+                if (korrigiert)
+                {
+                    if (array1[i] >= array2[i])
+                        result[i] = array1[i] - array2[i];
+                    else result[i] = 0;
+                }
+                else result[i] = array1[i] - array2[i];
             }
             return result;
         }

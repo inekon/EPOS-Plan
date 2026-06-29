@@ -63,12 +63,11 @@ namespace WindowsFormsApplication1
         private void FillTableWithData(DataGridView dgvErgebnisse)
         {
             dgvErgebnisse.Rows.Clear();
-            dgvErgebnisse.Rows.Add("Wärmepumpe", (sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000).ToString("F2"));
-            dgvErgebnisse.Rows.Add("Heizstab", (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2"));
-            dgvErgebnisse.Rows.Add("Solarthermie-Anlage", (sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000).ToString("F2"));
-            dgvErgebnisse.Rows.Add("HeizKessel", sim.simulation_spk.S_Waerme_spk.ToString("F2"));
-            //dgvErgebnisse.Rows.Add("Photovoltaik", (sim.simulation_pv.Stromproduktion_gesamt / 1000).ToString("F2"));
-            dgvErgebnisse.Rows.Add("BHKW", (sim.simulation_bhkw.Waermeproduktion_gesamt / 1000).ToString("F2"));
+            dgvErgebnisse.Rows.Add("Wärmepumpe", waerme_wp.ToString("F2"));
+            dgvErgebnisse.Rows.Add("Heizstab", waerme_heizstab.ToString("F2"));
+            dgvErgebnisse.Rows.Add("Solarthermie-Anlage", waerme_solar.ToString("F2"));
+            dgvErgebnisse.Rows.Add("HeizKessel", waerme_spk.ToString("F2"));
+            dgvErgebnisse.Rows.Add("BHKW", waerme_bhkw.ToString("F2"));
         }
 
         private void bt_WaermebedarfUebersicht_Click(object sender, EventArgs e)
@@ -166,17 +165,11 @@ namespace WindowsFormsApplication1
             if (sim == null || sim.simulation_Waermebedarf == null) return;
 
             // Berechnung Wärme
-            waerme_spk = sim.simulation_spk.spk_list.Sum(x => 0); // Platzhalter für deine Liste
-            // Falls Sum() nicht geht, deine Schleife nutzen:
-            waerme_spk = 0;
-            for (int i = 0; i < sim.simulation_spk.spk_list.Count(); i++)
-                waerme_spk += sim.simulation_spk.s_waerme_Gas_Spk[i] + sim.simulation_spk.s_waerme_Oel_Spk[i];
-
+            waerme_spk = sim.simulation_spk.S_Waerme_spk;
             waerme_wp = sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
             waerme_heizstab = sim.simulation_wp.Heizstab_gesamt / 1000;
             waerme_solar = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000;
-            waerme_bhkw = sim.simulation_bhkw.waermeproduktion.Sum() / 1000;
-            
+            waerme_bhkw = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh;
             gesamt_waerme = waerme_spk + waerme_wp + waerme_heizstab + waerme_solar + waerme_bhkw;
             restwaermebedarf = sim.simulation_Waermebedarf.Waermebedarf_Gesamt - gesamt_waerme;
 
@@ -226,31 +219,38 @@ namespace WindowsFormsApplication1
             Kacheln.DrawKPICard(e.Graphics, rectStromChart, "Strombedarfsdeckung [%]", "", "", Color.DodgerBlue);
 
             double se_pv = (sim.simulation_pv.Stromproduktion_gesamt) / 1000;
-            double se_bhkw = (sim.simulation_bhkw.Stromproduktion_gesamt) / 1000;
+            double se_bhkw = sim.simulation_bhkw.Stromproduktion_BHKW_MWh;
+            double se_spk = sim.simulation_spk.Stromverbrauch_Spk;
 
             double sb_gesamt = 0;
-            sb_gesamt = sim.simulation_Strombedarf.Strombedarf_gesamt + (sim.simulation_wp.WP_Strombedarf_gesamt + sim.simulation_wp.Heizstab_gesamt) / 1000;
+            sb_gesamt = sim.simulation_Strombedarf.Strombedarf_gesamt
+                        + (sim.simulation_wp.WP_Strombedarf_gesamt
+                        + sim.simulation_wp.Heizstab_gesamt
+                        + sim.simulation_spk.Stromverbrauch_Spk
+                        ) / 1000;
 
-            double[] werteStrom = new double[3];
+            double[] werteStrom = new double[4];
             if (sb_gesamt > 0)
             {
                 werteStrom[0] = se_pv * 100 / sb_gesamt;
                 werteStrom[1] = se_bhkw * 100 / sb_gesamt;
-                werteStrom[2] = Math.Max(0, (sb_gesamt - se_pv - se_bhkw) * 100 / sb_gesamt);
+                werteStrom[2] = se_spk * 100 / sb_gesamt; 
+                werteStrom[3] = Math.Max(0, (sb_gesamt - se_pv - se_spk - se_bhkw) * 100 / sb_gesamt);
             }
             else
             {
                 werteStrom[0] = 0;
                 werteStrom[1] = 0;
                 werteStrom[2] = 0;
+                werteStrom[3] = 0;
             }
 
-            string[] namenStrom = { "Photovoltaik", "BHKW", "Reststrom" };
+            string[] namenStrom = { "Photovoltaik", "BHKW", "Heizkessel", "Reststrom" };
 
             Rectangle innerStrom = new Rectangle(rectStromChart.X + 10, rectStromChart.Y + 20, rectStromChart.Width - 20, rectStromChart.Height - 30);
             
             if(sb_gesamt > 0)
-                DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, ((se_pv + se_bhkw) * 100 / sb_gesamt), namenStrom, palette);
+                DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, ((se_pv + se_spk + se_bhkw) * 100 / sb_gesamt), namenStrom, palette);
             else
                 DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, 100, namenStrom, palette);
 

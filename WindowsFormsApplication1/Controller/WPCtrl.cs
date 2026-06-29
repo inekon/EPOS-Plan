@@ -219,8 +219,8 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Bauart") && row["Bauart"] != DBNull.Value) item.Bauart = row["Bauart"].ToString();
 
                 // Für erweiterte Abfragen (ReadAll_MitMinMaxVorlauf)
-                if (dt.Columns.Contains("MaxVorlauf") && row["MaxVorlauf"] != DBNull.Value) item.MaxVorlauf = Convert.ToInt32(row["MaxVorlauf"]);
-                if (dt.Columns.Contains("MinVorlauf") && row["MinVorlauf"] != DBNull.Value) item.MinVorlauf = Convert.ToInt32(row["MinVorlauf"]);
+                if (dt.Columns.Contains("Max") && row["Max"] != DBNull.Value) item.MaxVorlauf = Convert.ToInt32(row["Max"]);
+                if (dt.Columns.Contains("Min") && row["Min"] != DBNull.Value) item.MinVorlauf = Convert.ToInt32(row["Min"]);
 
                 _internalList.Add(item); // Dynamisch zur Liste hinzufügen
             }

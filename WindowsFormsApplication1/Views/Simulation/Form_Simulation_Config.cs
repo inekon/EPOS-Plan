@@ -305,12 +305,7 @@ namespace WindowsFormsApplication1
             comboBox4.SelectedValue = Konfiguration.m_Tool_4;
             comboBox5.SelectedValue = Konfiguration.m_Tool_5;
             comboBox6.SelectedValue = Konfiguration.m_Tool_6;
-            checkBox_Heizstab.Checked = Konfiguration.m_WP_Heizstab;
-            textBox_Netzverluste.Text = Konfiguration.m_Netzverluste.ToString();
-            comboBox_NetzvEinheit.Text = Konfiguration.m_szNetzverlusteEinheit;
-            textBox_untere_PGrenze.Text = Konfiguration.m_BHKW_Grenzleistung.ToString();
-            comboBox_Bereitschaft.Text = Konfiguration.m_Kessel_Betriebsbereitschaft.ToString();
-
+            
             Z_ProjektPufferSpCtrl ctrlpsp = new Z_ProjektPufferSpCtrl();
             ctrlpsp.ReadAll("ID_Projekt= " + m_ID_Projekt);
             for (int i = 0; i < ctrlpsp.rows; i++)
@@ -352,36 +347,6 @@ namespace WindowsFormsApplication1
             Konfiguration.m_Tool_4 = checkBox4.Checked ? GetDbValue(comboBox4) : "";
             Konfiguration.m_Tool_5 = checkBox5.Checked ? GetDbValue(comboBox5) : "";
             Konfiguration.m_Tool_6 = checkBox6.Checked ? GetDbValue(comboBox6) : "";
-            Konfiguration.m_WP_Heizstab = checkBox_Heizstab.Checked;
-
-            // Statt: Konfiguration.m_Netzverluste = double.Parse(textBox_Netzverluste.Text);
-            if (double.TryParse(textBox_Netzverluste.Text, out double netzVerluste))
-            {
-                Konfiguration.m_Netzverluste = netzVerluste;
-            }
-            else
-            {
-                Konfiguration.m_Netzverluste = 0; // Standardwert bei Fehlern
-            }
-            Konfiguration.m_szNetzverlusteEinheit = comboBox_NetzvEinheit.Text;
-
-            if (double.TryParse(textBox_untere_PGrenze.Text, out double untere_PGrenze))
-            {
-                Konfiguration.m_BHKW_Grenzleistung = untere_PGrenze;
-            }
-            else
-            {
-                Konfiguration.m_BHKW_Grenzleistung = 0; // Standardwert bei Fehlern
-            }
-
-            if (int.TryParse(comboBox_Bereitschaft.Text, out int bereitschaft))
-            {
-                Konfiguration.m_Kessel_Betriebsbereitschaft = bereitschaft;
-            }
-            else
-            {
-                Konfiguration.m_Kessel_Betriebsbereitschaft = 0; // Standardwert bei Fehlern
-            }
 
             ctrl.model = Konfiguration;
             if (!ctrl.Delete(m_ID_Projekt)) return;
@@ -413,8 +378,6 @@ namespace WindowsFormsApplication1
                 ctrlpsp.Prioritaet = prioritaet++;
                 ctrlpsp.Insert();
             }
-
-
         }
 
         private void AddErzeuger()

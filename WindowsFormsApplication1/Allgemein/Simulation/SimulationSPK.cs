@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
@@ -27,6 +28,7 @@ namespace WindowsFormsApplication1
         public float[] Waermebedarf = new float[8760];
         public float[] Restwaerme = new float[8760];
         public float[] Strombedarf_stuendlich = new float[8760];
+        public float[] Stromverbrauch_stuendlich = new float[8760];
         public float[] Kesselleistung_stuendlich = new float[8760];
         public int Vorgabe_Betriebsbereitschaft;
 
@@ -92,7 +94,8 @@ namespace WindowsFormsApplication1
             Waermebedarf_gesamt = 0;
             Array.ForEach(Waermebedarf, value => Waermebedarf_gesamt += value);
             Waermebedarf_gesamt /= 1000;
-
+            
+            Strombedarf_gesamt = Strombedarf_stuendlich.Sum();
             HeizkesselCtrl heizkesselctrl = new HeizkesselCtrl();
             Anzahl = spk_list.Count;
             if (Anzahl == 0) { Restwaerme = Waermebedarf; return true; }
@@ -157,7 +160,7 @@ namespace WindowsFormsApplication1
                 {
                     // Elektrowärme / Wärmepumpe
                     Stromverbrauch_Spk += Kessel_Nutzkraft_Jahr;
-                    Strombedarf_stuendlich = AddVectors(Strombedarf_stuendlich, Kesselleistung_stuendlich);
+                    Stromverbrauch_stuendlich = Kesselleistung_stuendlich;
                 }
                 else if (Brennstoff_Art[i] == 15) Pellets_SPK += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 16) Rapsoelverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
@@ -315,7 +318,6 @@ namespace WindowsFormsApplication1
                 Kessel_Name[j] = "";
                 Brennstoff_Betrieb_Spk[j] = 0;
                 Kessel_Leistung_Spk[j] = 0;
-
                 Kessel_Verbrauch_MWh_Spk[j] = 0;
                 Kessel_Jahresnutzungsgrad_Spk[j] = 0;
 
@@ -349,7 +351,7 @@ namespace WindowsFormsApplication1
             Gasspitze_Spk = 0;
 
             Array.Clear(Restwaerme, 0, Restwaerme.Length);
-            Array.Clear(Strombedarf_stuendlich, 0, Strombedarf_stuendlich.Length);
+            Array.Clear(Stromverbrauch_stuendlich, 0, Stromverbrauch_stuendlich.Length);
             Array.Clear(Kesselleistung_stuendlich, 0, Kesselleistung_stuendlich.Length);
         }
     }

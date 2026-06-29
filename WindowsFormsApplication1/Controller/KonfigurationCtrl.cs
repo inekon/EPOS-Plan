@@ -61,6 +61,9 @@ namespace WindowsFormsApplication1
                 if (row[17] != DBNull.Value) model.m_Ladefuellstand_Max_Auswahl = row[17].ToString();
                 if (row[18] != DBNull.Value) model.m_Ladeleistung_Max_Auswahl = row[18].ToString();
                 if (row[19] != DBNull.Value) model.m_Ladeschwellwert = Convert.ToDouble(row[19]);
+                if (row[20] != DBNull.Value) model.Betriebsart = Convert.ToInt32(row[20]);
+                if (row[21] != DBNull.Value) model.Leistungsgrenze = Convert.ToInt32(row[21]);
+                if (row[22] != DBNull.Value) model.Pendelspeicher = Convert.ToDouble(row[22]);
 
                 rows = 1;
             }
@@ -79,9 +82,9 @@ namespace WindowsFormsApplication1
                         Tool_1, Tool_2, Tool_3, Tool_4, Tool_5, Tool_6,
                         Ladefuellstand_Min, Ladefuellstand_Max, Ladeleistung_Max,
                         Ladefuellstand_Min_Auswahl, Ladefuellstand_Max_Auswahl, 
-                        Ladeleistung_Max_Auswahl, Ladeschwellwert
+                        Ladeleistung_Max_Auswahl, Ladeschwellwert, Betriebsart, Leistungsgrenze, Pendelspeicher
                     ) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 // Die Parameter werden als OLEDB-Objekte an dein DataRepository gereicht
                 OleDbParameter[] parameters = new OleDbParameter[]
@@ -104,7 +107,10 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("?", model.m_Ladefuellstand_Min_Auswahl ?? (object)DBNull.Value),
                     new OleDbParameter("?", model.m_Ladefuellstand_Max_Auswahl ?? (object)DBNull.Value),
                     new OleDbParameter("?", model.m_Ladeleistung_Max_Auswahl ?? (object)DBNull.Value),
-                    new OleDbParameter("?", model.m_Ladeschwellwert)
+                    new OleDbParameter("?", model.m_Ladeschwellwert),
+                    new OleDbParameter("?", model.Betriebsart),
+                    new OleDbParameter("?", model.Leistungsgrenze),
+                    new OleDbParameter("?", model.Pendelspeicher)
                 };
 
                 // Übergabe an das DataRepository
@@ -115,6 +121,77 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("Fehler beim Einfügen der Konfiguration: " + ex.Message);
                 MessageBox.Show("Allgemeiner Fehler: " + ex.Message);
+                return false;
+            }
+        }
+
+        public bool Update(int ID_Projekt)
+        {
+            try
+            {
+                // SQL-Update-String mit Positions-Parametern (?)
+                string sql = @"
+            UPDATE TAB_Einstellungen 
+            SET 
+                BHKW_Grenzleistung = ?, 
+                Netzverluste = ?, 
+                NetzverlusteEinheit = ?, 
+                WP_Heizstab = ?, 
+                Kessel_Betriebsbereitschaft = ?, 
+                Tool_1 = ?, 
+                Tool_2 = ?, 
+                Tool_3 = ?, 
+                Tool_4 = ?, 
+                Tool_5 = ?, 
+                Tool_6 = ?,
+                Ladefuellstand_Min = ?, 
+                Ladefuellstand_Max = ?, 
+                Ladeleistung_Max = ?,
+                Ladefuellstand_Min_Auswahl = ?, 
+                Ladefuellstand_Max_Auswahl = ?, 
+                Ladeleistung_Max_Auswahl = ?, 
+                Ladeschwellwert = ?,
+                Betriebsart = ?,
+                Leistungsgrenze = ?,
+                Pendelspeicher = ?
+            WHERE ID_Projekt = ?";
+
+                // Die Parameter-Reihenfolge entspricht exakt den Fragezeichen im SQL-String
+                OleDbParameter[] parameters = new OleDbParameter[]
+                {
+            new OleDbParameter("?", model.m_BHKW_Grenzleistung),
+            new OleDbParameter("?", model.m_Netzverluste),
+            new OleDbParameter("?", model.m_szNetzverlusteEinheit ?? (object)DBNull.Value),
+            new OleDbParameter("?", model.m_WP_Heizstab),
+            new OleDbParameter("?", model.m_Kessel_Betriebsbereitschaft),
+            new OleDbParameter("?", model.m_Tool_1 ?? (object)DBNull.Value),
+            new OleDbParameter("?", model.m_Tool_2 ?? (object)DBNull.Value),
+            new OleDbParameter("?", model.m_Tool_3 ?? (object)DBNull.Value),
+            new OleDbParameter("?", model.m_Tool_4 ?? (object)DBNull.Value),
+            new OleDbParameter("?", model.m_Tool_5 ?? (object)DBNull.Value),
+            new OleDbParameter("?", model.m_Tool_6 ?? (object)DBNull.Value),
+            new OleDbParameter("?", model.m_Ladefuellstand_Min),
+            new OleDbParameter("?", model.m_Ladefuellstand_Max),
+            new OleDbParameter("?", model.m_Ladeleistung_Max),
+            new OleDbParameter("?", model.m_Ladefuellstand_Min_Auswahl ?? (object)DBNull.Value),
+            new OleDbParameter("?", model.m_Ladefuellstand_Max_Auswahl ?? (object)DBNull.Value),
+            new OleDbParameter("?", model.m_Ladeleistung_Max_Auswahl ?? (object)DBNull.Value),
+            new OleDbParameter("?", model.m_Ladeschwellwert),
+            new OleDbParameter("?", model.Betriebsart),
+            new OleDbParameter("?", model.Leistungsgrenze),
+            new OleDbParameter("?", model.Pendelspeicher),
+            // ID_Projekt steht am Ende, weil das WHERE-Statement ganz unten steht!
+            new OleDbParameter("?", ID_Projekt)
+                };
+
+                // Übergabe an dein bestehendes DataRepository
+                DataRepository.ExecuteNonQuery(sql, parameters);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Aktualisieren der Konfiguration: " + ex.Message);
+                MessageBox.Show("Allgemeiner Fehler beim Speichern: " + ex.Message);
                 return false;
             }
         }

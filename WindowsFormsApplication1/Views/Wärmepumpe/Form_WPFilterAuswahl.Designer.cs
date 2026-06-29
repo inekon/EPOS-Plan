@@ -17,590 +17,573 @@
 
         private void InitializeComponent()
         {
-            this.dgv = new System.Windows.Forms.DataGridView();
-            this.filterPanel = new System.Windows.Forms.FlowLayoutPanel();
-            this.pnlHersteller = new System.Windows.Forms.Panel();
-            this.cbHersteller = new System.Windows.Forms.ComboBox();
-            this.lblHersteller = new System.Windows.Forms.Label();
-            this.pnlAuslegung = new System.Windows.Forms.Panel();
-            this.cbAuslegung = new System.Windows.Forms.ComboBox();
-            this.lblAuslegung = new System.Windows.Forms.Label();
-            this.pnlPrinzip = new System.Windows.Forms.Panel();
-            this.cbPrinzip = new System.Windows.Forms.ComboBox();
-            this.lblPrinzip = new System.Windows.Forms.Label();
-            this.pnlRegelung = new System.Windows.Forms.Panel();
-            this.cbRegelung = new System.Windows.Forms.ComboBox();
-            this.lblRegelung = new System.Windows.Forms.Label();
-            this.pnlBauart = new System.Windows.Forms.Panel();
-            this.cbBauart = new System.Windows.Forms.ComboBox();
-            this.lblBauart = new System.Windows.Forms.Label();
-            this.pnlAufstellung = new System.Windows.Forms.Panel();
-            this.cbAufstellung = new System.Windows.Forms.ComboBox();
-            this.lblAufstellung = new System.Windows.Forms.Label();
-            this.pnlZuheizun = new System.Windows.Forms.Panel();
-            this.cbZuheizung = new System.Windows.Forms.ComboBox();
-            this.lblZuheizung = new System.Windows.Forms.Label();
-            this.pnlTempMin = new System.Windows.Forms.Panel();
-            this.numTempMin = new System.Windows.Forms.NumericUpDown();
-            this.lblTempMin = new System.Windows.Forms.Label();
-            this.pnlTempMax = new System.Windows.Forms.Panel();
-            this.numTempMax = new System.Windows.Forms.NumericUpDown();
-            this.lblTempMax = new System.Windows.Forms.Label();
-            this.pnlLeistungMin = new System.Windows.Forms.Panel();
-            this.numLeistungMin = new System.Windows.Forms.NumericUpDown();
-            this.lblLeistungMin = new System.Windows.Forms.Label();
-            this.pnlLeistungMax = new System.Windows.Forms.Panel();
-            this.numLeistungMax = new System.Windows.Forms.NumericUpDown();
-            this.lblLeistungMax = new System.Windows.Forms.Label();
-            this.filterBezeichnungPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtSucheBezeichnung = new System.Windows.Forms.TextBox();
-            this.pnlFilterbtn = new System.Windows.Forms.Panel();
-            this.btn_Reset = new System.Windows.Forms.Button();
-            this.btnFilter = new System.Windows.Forms.Button();
-            this.bottomPanel = new System.Windows.Forms.Panel();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.btnSelect = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.dgv)).BeginInit();
-            this.filterPanel.SuspendLayout();
-            this.pnlHersteller.SuspendLayout();
-            this.pnlAuslegung.SuspendLayout();
-            this.pnlPrinzip.SuspendLayout();
-            this.pnlRegelung.SuspendLayout();
-            this.pnlBauart.SuspendLayout();
-            this.pnlAufstellung.SuspendLayout();
-            this.pnlZuheizun.SuspendLayout();
-            this.pnlTempMin.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numTempMin)).BeginInit();
-            this.pnlTempMax.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numTempMax)).BeginInit();
-            this.pnlLeistungMin.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numLeistungMin)).BeginInit();
-            this.pnlLeistungMax.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numLeistungMax)).BeginInit();
-            this.filterBezeichnungPanel.SuspendLayout();
-            this.pnlFilterbtn.SuspendLayout();
-            this.bottomPanel.SuspendLayout();
-            this.SuspendLayout();
+            dgv = new System.Windows.Forms.DataGridView();
+            filterPanel = new System.Windows.Forms.FlowLayoutPanel();
+            pnlHersteller = new System.Windows.Forms.Panel();
+            cbHersteller = new System.Windows.Forms.ComboBox();
+            lblHersteller = new System.Windows.Forms.Label();
+            pnlAuslegung = new System.Windows.Forms.Panel();
+            cbAuslegung = new System.Windows.Forms.ComboBox();
+            lblAuslegung = new System.Windows.Forms.Label();
+            pnlPrinzip = new System.Windows.Forms.Panel();
+            cbPrinzip = new System.Windows.Forms.ComboBox();
+            lblPrinzip = new System.Windows.Forms.Label();
+            pnlRegelung = new System.Windows.Forms.Panel();
+            cbRegelung = new System.Windows.Forms.ComboBox();
+            lblRegelung = new System.Windows.Forms.Label();
+            pnlBauart = new System.Windows.Forms.Panel();
+            cbBauart = new System.Windows.Forms.ComboBox();
+            lblBauart = new System.Windows.Forms.Label();
+            pnlAufstellung = new System.Windows.Forms.Panel();
+            cbAufstellung = new System.Windows.Forms.ComboBox();
+            lblAufstellung = new System.Windows.Forms.Label();
+            pnlZuheizun = new System.Windows.Forms.Panel();
+            cbZuheizung = new System.Windows.Forms.ComboBox();
+            lblZuheizung = new System.Windows.Forms.Label();
+            pnlTempMin = new System.Windows.Forms.Panel();
+            numTempMin = new System.Windows.Forms.NumericUpDown();
+            lblTempMin = new System.Windows.Forms.Label();
+            pnlTempMax = new System.Windows.Forms.Panel();
+            numTempMax = new System.Windows.Forms.NumericUpDown();
+            lblTempMax = new System.Windows.Forms.Label();
+            pnlLeistungMin = new System.Windows.Forms.Panel();
+            numLeistungMin = new System.Windows.Forms.NumericUpDown();
+            lblLeistungMin = new System.Windows.Forms.Label();
+            pnlLeistungMax = new System.Windows.Forms.Panel();
+            numLeistungMax = new System.Windows.Forms.NumericUpDown();
+            lblLeistungMax = new System.Windows.Forms.Label();
+            filterBezeichnungPanel = new System.Windows.Forms.TableLayoutPanel();
+            label1 = new System.Windows.Forms.Label();
+            txtSucheBezeichnung = new System.Windows.Forms.TextBox();
+            pnlFilterbtn = new System.Windows.Forms.Panel();
+            btn_Reset = new System.Windows.Forms.Button();
+            btnFilter = new System.Windows.Forms.Button();
+            bottomPanel = new System.Windows.Forms.Panel();
+            btnCancel = new System.Windows.Forms.Button();
+            btnSelect = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)dgv).BeginInit();
+            filterPanel.SuspendLayout();
+            pnlHersteller.SuspendLayout();
+            pnlAuslegung.SuspendLayout();
+            pnlPrinzip.SuspendLayout();
+            pnlRegelung.SuspendLayout();
+            pnlBauart.SuspendLayout();
+            pnlAufstellung.SuspendLayout();
+            pnlZuheizun.SuspendLayout();
+            pnlTempMin.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numTempMin).BeginInit();
+            pnlTempMax.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numTempMax).BeginInit();
+            pnlLeistungMin.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numLeistungMin).BeginInit();
+            pnlLeistungMax.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numLeistungMax).BeginInit();
+            filterBezeichnungPanel.SuspendLayout();
+            pnlFilterbtn.SuspendLayout();
+            bottomPanel.SuspendLayout();
+            SuspendLayout();
             // 
             // dgv
             // 
-            this.dgv.BackgroundColor = System.Drawing.Color.White;
-            this.dgv.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.dgv.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgv.Location = new System.Drawing.Point(0, 160);
-            this.dgv.Name = "dgv";
-            this.dgv.RowHeadersVisible = false;
-            this.dgv.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgv.Size = new System.Drawing.Size(1181, 576);
-            this.dgv.TabIndex = 0;
+            dgv.BackgroundColor = System.Drawing.Color.White;
+            dgv.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            dgv.Dock = System.Windows.Forms.DockStyle.Fill;
+            dgv.Location = new System.Drawing.Point(0, 160);
+            dgv.Name = "dgv";
+            dgv.RowHeadersVisible = false;
+            dgv.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            dgv.Size = new System.Drawing.Size(1181, 576);
+            dgv.TabIndex = 0;
             // 
             // filterPanel
             // 
-            this.filterPanel.AutoScroll = true;
-            this.filterPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(225)))), ((int)(((byte)(230)))));
-            this.filterPanel.Controls.Add(this.pnlHersteller);
-            this.filterPanel.Controls.Add(this.pnlAuslegung);
-            this.filterPanel.Controls.Add(this.pnlPrinzip);
-            this.filterPanel.Controls.Add(this.pnlRegelung);
-            this.filterPanel.Controls.Add(this.pnlBauart);
-            this.filterPanel.Controls.Add(this.pnlAufstellung);
-            this.filterPanel.Controls.Add(this.pnlZuheizun);
-            this.filterPanel.Controls.Add(this.pnlTempMin);
-            this.filterPanel.Controls.Add(this.pnlTempMax);
-            this.filterPanel.Controls.Add(this.pnlLeistungMin);
-            this.filterPanel.Controls.Add(this.pnlLeistungMax);
-            this.filterPanel.Controls.Add(this.filterBezeichnungPanel);
-            this.filterPanel.Controls.Add(this.pnlFilterbtn);
-            this.filterPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.filterPanel.Location = new System.Drawing.Point(0, 0);
-            this.filterPanel.Name = "filterPanel";
-            this.filterPanel.Padding = new System.Windows.Forms.Padding(15);
-            this.filterPanel.Size = new System.Drawing.Size(1181, 160);
-            this.filterPanel.TabIndex = 1;
+            filterPanel.AutoScroll = true;
+            filterPanel.BackColor = System.Drawing.Color.FromArgb(220, 225, 230);
+            filterPanel.Controls.Add(pnlHersteller);
+            filterPanel.Controls.Add(pnlAuslegung);
+            filterPanel.Controls.Add(pnlPrinzip);
+            filterPanel.Controls.Add(pnlRegelung);
+            filterPanel.Controls.Add(pnlBauart);
+            filterPanel.Controls.Add(pnlAufstellung);
+            filterPanel.Controls.Add(pnlZuheizun);
+            filterPanel.Controls.Add(pnlTempMin);
+            filterPanel.Controls.Add(pnlTempMax);
+            filterPanel.Controls.Add(pnlLeistungMin);
+            filterPanel.Controls.Add(pnlLeistungMax);
+            filterPanel.Controls.Add(filterBezeichnungPanel);
+            filterPanel.Controls.Add(pnlFilterbtn);
+            filterPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            filterPanel.Location = new System.Drawing.Point(0, 0);
+            filterPanel.Name = "filterPanel";
+            filterPanel.Padding = new System.Windows.Forms.Padding(15);
+            filterPanel.Size = new System.Drawing.Size(1181, 160);
+            filterPanel.TabIndex = 1;
             // 
             // pnlHersteller
             // 
-            this.pnlHersteller.Controls.Add(this.cbHersteller);
-            this.pnlHersteller.Controls.Add(this.lblHersteller);
-            this.pnlHersteller.Location = new System.Drawing.Point(20, 20);
-            this.pnlHersteller.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlHersteller.Name = "pnlHersteller";
-            this.pnlHersteller.Size = new System.Drawing.Size(160, 55);
-            this.pnlHersteller.TabIndex = 0;
+            pnlHersteller.Controls.Add(cbHersteller);
+            pnlHersteller.Controls.Add(lblHersteller);
+            pnlHersteller.Location = new System.Drawing.Point(20, 20);
+            pnlHersteller.Margin = new System.Windows.Forms.Padding(5);
+            pnlHersteller.Name = "pnlHersteller";
+            pnlHersteller.Size = new System.Drawing.Size(160, 55);
+            pnlHersteller.TabIndex = 0;
             // 
             // cbHersteller
             // 
-            this.cbHersteller.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.cbHersteller.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbHersteller.Location = new System.Drawing.Point(0, 34);
-            this.cbHersteller.Name = "cbHersteller";
-            this.cbHersteller.Size = new System.Drawing.Size(160, 21);
-            this.cbHersteller.TabIndex = 0;
+            cbHersteller.Dock = System.Windows.Forms.DockStyle.Bottom;
+            cbHersteller.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbHersteller.Location = new System.Drawing.Point(0, 32);
+            cbHersteller.Name = "cbHersteller";
+            cbHersteller.Size = new System.Drawing.Size(160, 23);
+            cbHersteller.TabIndex = 0;
             // 
             // lblHersteller
             // 
-            this.lblHersteller.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblHersteller.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblHersteller.Location = new System.Drawing.Point(0, 0);
-            this.lblHersteller.Name = "lblHersteller";
-            this.lblHersteller.Size = new System.Drawing.Size(160, 23);
-            this.lblHersteller.TabIndex = 1;
-            this.lblHersteller.Text = "Hersteller";
+            lblHersteller.Dock = System.Windows.Forms.DockStyle.Top;
+            lblHersteller.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblHersteller.Location = new System.Drawing.Point(0, 0);
+            lblHersteller.Name = "lblHersteller";
+            lblHersteller.Size = new System.Drawing.Size(160, 23);
+            lblHersteller.TabIndex = 1;
+            lblHersteller.Text = "Hersteller";
             // 
             // pnlAuslegung
             // 
-            this.pnlAuslegung.Controls.Add(this.cbAuslegung);
-            this.pnlAuslegung.Controls.Add(this.lblAuslegung);
-            this.pnlAuslegung.Location = new System.Drawing.Point(190, 20);
-            this.pnlAuslegung.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlAuslegung.Name = "pnlAuslegung";
-            this.pnlAuslegung.Size = new System.Drawing.Size(160, 55);
-            this.pnlAuslegung.TabIndex = 1;
+            pnlAuslegung.Controls.Add(cbAuslegung);
+            pnlAuslegung.Controls.Add(lblAuslegung);
+            pnlAuslegung.Location = new System.Drawing.Point(190, 20);
+            pnlAuslegung.Margin = new System.Windows.Forms.Padding(5);
+            pnlAuslegung.Name = "pnlAuslegung";
+            pnlAuslegung.Size = new System.Drawing.Size(160, 55);
+            pnlAuslegung.TabIndex = 1;
             // 
             // cbAuslegung
             // 
-            this.cbAuslegung.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.cbAuslegung.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbAuslegung.Location = new System.Drawing.Point(0, 34);
-            this.cbAuslegung.Name = "cbAuslegung";
-            this.cbAuslegung.Size = new System.Drawing.Size(160, 21);
-            this.cbAuslegung.TabIndex = 0;
+            cbAuslegung.Dock = System.Windows.Forms.DockStyle.Bottom;
+            cbAuslegung.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbAuslegung.Location = new System.Drawing.Point(0, 32);
+            cbAuslegung.Name = "cbAuslegung";
+            cbAuslegung.Size = new System.Drawing.Size(160, 23);
+            cbAuslegung.TabIndex = 0;
             // 
             // lblAuslegung
             // 
-            this.lblAuslegung.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblAuslegung.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblAuslegung.Location = new System.Drawing.Point(0, 0);
-            this.lblAuslegung.Name = "lblAuslegung";
-            this.lblAuslegung.Size = new System.Drawing.Size(160, 23);
-            this.lblAuslegung.TabIndex = 1;
-            this.lblAuslegung.Text = "Auslegung";
+            lblAuslegung.Dock = System.Windows.Forms.DockStyle.Top;
+            lblAuslegung.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblAuslegung.Location = new System.Drawing.Point(0, 0);
+            lblAuslegung.Name = "lblAuslegung";
+            lblAuslegung.Size = new System.Drawing.Size(160, 23);
+            lblAuslegung.TabIndex = 1;
+            lblAuslegung.Text = "Auslegung";
             // 
             // pnlPrinzip
             // 
-            this.pnlPrinzip.Controls.Add(this.cbPrinzip);
-            this.pnlPrinzip.Controls.Add(this.lblPrinzip);
-            this.pnlPrinzip.Location = new System.Drawing.Point(360, 20);
-            this.pnlPrinzip.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlPrinzip.Name = "pnlPrinzip";
-            this.pnlPrinzip.Size = new System.Drawing.Size(160, 55);
-            this.pnlPrinzip.TabIndex = 2;
+            pnlPrinzip.Controls.Add(cbPrinzip);
+            pnlPrinzip.Controls.Add(lblPrinzip);
+            pnlPrinzip.Location = new System.Drawing.Point(360, 20);
+            pnlPrinzip.Margin = new System.Windows.Forms.Padding(5);
+            pnlPrinzip.Name = "pnlPrinzip";
+            pnlPrinzip.Size = new System.Drawing.Size(160, 55);
+            pnlPrinzip.TabIndex = 2;
             // 
             // cbPrinzip
             // 
-            this.cbPrinzip.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.cbPrinzip.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbPrinzip.Location = new System.Drawing.Point(0, 34);
-            this.cbPrinzip.Name = "cbPrinzip";
-            this.cbPrinzip.Size = new System.Drawing.Size(160, 21);
-            this.cbPrinzip.TabIndex = 0;
+            cbPrinzip.Dock = System.Windows.Forms.DockStyle.Bottom;
+            cbPrinzip.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbPrinzip.Location = new System.Drawing.Point(0, 32);
+            cbPrinzip.Name = "cbPrinzip";
+            cbPrinzip.Size = new System.Drawing.Size(160, 23);
+            cbPrinzip.TabIndex = 0;
             // 
             // lblPrinzip
             // 
-            this.lblPrinzip.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblPrinzip.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblPrinzip.Location = new System.Drawing.Point(0, 0);
-            this.lblPrinzip.Name = "lblPrinzip";
-            this.lblPrinzip.Size = new System.Drawing.Size(160, 23);
-            this.lblPrinzip.TabIndex = 1;
-            this.lblPrinzip.Text = "Funktionsprinzip";
+            lblPrinzip.Dock = System.Windows.Forms.DockStyle.Top;
+            lblPrinzip.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblPrinzip.Location = new System.Drawing.Point(0, 0);
+            lblPrinzip.Name = "lblPrinzip";
+            lblPrinzip.Size = new System.Drawing.Size(160, 23);
+            lblPrinzip.TabIndex = 1;
+            lblPrinzip.Text = "Funktionsprinzip";
             // 
             // pnlRegelung
             // 
-            this.pnlRegelung.Controls.Add(this.cbRegelung);
-            this.pnlRegelung.Controls.Add(this.lblRegelung);
-            this.pnlRegelung.Location = new System.Drawing.Point(530, 20);
-            this.pnlRegelung.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlRegelung.Name = "pnlRegelung";
-            this.pnlRegelung.Size = new System.Drawing.Size(160, 55);
-            this.pnlRegelung.TabIndex = 3;
+            pnlRegelung.Controls.Add(cbRegelung);
+            pnlRegelung.Controls.Add(lblRegelung);
+            pnlRegelung.Location = new System.Drawing.Point(530, 20);
+            pnlRegelung.Margin = new System.Windows.Forms.Padding(5);
+            pnlRegelung.Name = "pnlRegelung";
+            pnlRegelung.Size = new System.Drawing.Size(160, 55);
+            pnlRegelung.TabIndex = 3;
             // 
             // cbRegelung
             // 
-            this.cbRegelung.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.cbRegelung.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbRegelung.Location = new System.Drawing.Point(0, 34);
-            this.cbRegelung.Name = "cbRegelung";
-            this.cbRegelung.Size = new System.Drawing.Size(160, 21);
-            this.cbRegelung.TabIndex = 0;
+            cbRegelung.Dock = System.Windows.Forms.DockStyle.Bottom;
+            cbRegelung.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbRegelung.Location = new System.Drawing.Point(0, 32);
+            cbRegelung.Name = "cbRegelung";
+            cbRegelung.Size = new System.Drawing.Size(160, 23);
+            cbRegelung.TabIndex = 0;
             // 
             // lblRegelung
             // 
-            this.lblRegelung.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblRegelung.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblRegelung.Location = new System.Drawing.Point(0, 0);
-            this.lblRegelung.Name = "lblRegelung";
-            this.lblRegelung.Size = new System.Drawing.Size(160, 23);
-            this.lblRegelung.TabIndex = 1;
-            this.lblRegelung.Text = "Regelung";
+            lblRegelung.Dock = System.Windows.Forms.DockStyle.Top;
+            lblRegelung.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblRegelung.Location = new System.Drawing.Point(0, 0);
+            lblRegelung.Name = "lblRegelung";
+            lblRegelung.Size = new System.Drawing.Size(160, 23);
+            lblRegelung.TabIndex = 1;
+            lblRegelung.Text = "Regelung";
             // 
             // pnlBauart
             // 
-            this.pnlBauart.Controls.Add(this.cbBauart);
-            this.pnlBauart.Controls.Add(this.lblBauart);
-            this.pnlBauart.Location = new System.Drawing.Point(700, 20);
-            this.pnlBauart.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlBauart.Name = "pnlBauart";
-            this.pnlBauart.Size = new System.Drawing.Size(160, 55);
-            this.pnlBauart.TabIndex = 4;
+            pnlBauart.Controls.Add(cbBauart);
+            pnlBauart.Controls.Add(lblBauart);
+            pnlBauart.Location = new System.Drawing.Point(700, 20);
+            pnlBauart.Margin = new System.Windows.Forms.Padding(5);
+            pnlBauart.Name = "pnlBauart";
+            pnlBauart.Size = new System.Drawing.Size(160, 55);
+            pnlBauart.TabIndex = 4;
             // 
             // cbBauart
             // 
-            this.cbBauart.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.cbBauart.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbBauart.Location = new System.Drawing.Point(0, 34);
-            this.cbBauart.Name = "cbBauart";
-            this.cbBauart.Size = new System.Drawing.Size(160, 21);
-            this.cbBauart.TabIndex = 0;
+            cbBauart.Dock = System.Windows.Forms.DockStyle.Bottom;
+            cbBauart.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbBauart.Location = new System.Drawing.Point(0, 32);
+            cbBauart.Name = "cbBauart";
+            cbBauart.Size = new System.Drawing.Size(160, 23);
+            cbBauart.TabIndex = 0;
             // 
             // lblBauart
             // 
-            this.lblBauart.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblBauart.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblBauart.Location = new System.Drawing.Point(0, 0);
-            this.lblBauart.Name = "lblBauart";
-            this.lblBauart.Size = new System.Drawing.Size(160, 23);
-            this.lblBauart.TabIndex = 1;
-            this.lblBauart.Text = "Bauart";
+            lblBauart.Dock = System.Windows.Forms.DockStyle.Top;
+            lblBauart.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblBauart.Location = new System.Drawing.Point(0, 0);
+            lblBauart.Name = "lblBauart";
+            lblBauart.Size = new System.Drawing.Size(160, 23);
+            lblBauart.TabIndex = 1;
+            lblBauart.Text = "Bauart";
             // 
             // pnlAufstellung
             // 
-            this.pnlAufstellung.Controls.Add(this.cbAufstellung);
-            this.pnlAufstellung.Controls.Add(this.lblAufstellung);
-            this.pnlAufstellung.Location = new System.Drawing.Point(870, 20);
-            this.pnlAufstellung.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlAufstellung.Name = "pnlAufstellung";
-            this.pnlAufstellung.Size = new System.Drawing.Size(160, 55);
-            this.pnlAufstellung.TabIndex = 5;
+            pnlAufstellung.Controls.Add(cbAufstellung);
+            pnlAufstellung.Controls.Add(lblAufstellung);
+            pnlAufstellung.Location = new System.Drawing.Point(870, 20);
+            pnlAufstellung.Margin = new System.Windows.Forms.Padding(5);
+            pnlAufstellung.Name = "pnlAufstellung";
+            pnlAufstellung.Size = new System.Drawing.Size(160, 55);
+            pnlAufstellung.TabIndex = 5;
             // 
             // cbAufstellung
             // 
-            this.cbAufstellung.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.cbAufstellung.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbAufstellung.Location = new System.Drawing.Point(0, 34);
-            this.cbAufstellung.Name = "cbAufstellung";
-            this.cbAufstellung.Size = new System.Drawing.Size(160, 21);
-            this.cbAufstellung.TabIndex = 0;
+            cbAufstellung.Dock = System.Windows.Forms.DockStyle.Bottom;
+            cbAufstellung.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbAufstellung.Location = new System.Drawing.Point(0, 32);
+            cbAufstellung.Name = "cbAufstellung";
+            cbAufstellung.Size = new System.Drawing.Size(160, 23);
+            cbAufstellung.TabIndex = 0;
             // 
             // lblAufstellung
             // 
-            this.lblAufstellung.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblAufstellung.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblAufstellung.Location = new System.Drawing.Point(0, 0);
-            this.lblAufstellung.Name = "lblAufstellung";
-            this.lblAufstellung.Size = new System.Drawing.Size(160, 23);
-            this.lblAufstellung.TabIndex = 1;
-            this.lblAufstellung.Text = "Aufstellung";
+            lblAufstellung.Dock = System.Windows.Forms.DockStyle.Top;
+            lblAufstellung.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblAufstellung.Location = new System.Drawing.Point(0, 0);
+            lblAufstellung.Name = "lblAufstellung";
+            lblAufstellung.Size = new System.Drawing.Size(160, 23);
+            lblAufstellung.TabIndex = 1;
+            lblAufstellung.Text = "Aufstellung";
             // 
             // pnlZuheizun
             // 
-            this.pnlZuheizun.Controls.Add(this.cbZuheizung);
-            this.pnlZuheizun.Controls.Add(this.lblZuheizung);
-            this.pnlZuheizun.Location = new System.Drawing.Point(1040, 20);
-            this.pnlZuheizun.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlZuheizun.Name = "pnlZuheizun";
-            this.pnlZuheizun.Size = new System.Drawing.Size(120, 55);
-            this.pnlZuheizun.TabIndex = 6;
+            pnlZuheizun.Controls.Add(cbZuheizung);
+            pnlZuheizun.Controls.Add(lblZuheizung);
+            pnlZuheizun.Location = new System.Drawing.Point(1040, 20);
+            pnlZuheizun.Margin = new System.Windows.Forms.Padding(5);
+            pnlZuheizun.Name = "pnlZuheizun";
+            pnlZuheizun.Size = new System.Drawing.Size(120, 55);
+            pnlZuheizun.TabIndex = 6;
             // 
             // cbZuheizung
             // 
-            this.cbZuheizung.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.cbZuheizung.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbZuheizung.Location = new System.Drawing.Point(0, 34);
-            this.cbZuheizung.Name = "cbZuheizung";
-            this.cbZuheizung.Size = new System.Drawing.Size(120, 21);
-            this.cbZuheizung.TabIndex = 0;
+            cbZuheizung.Dock = System.Windows.Forms.DockStyle.Bottom;
+            cbZuheizung.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbZuheizung.Location = new System.Drawing.Point(0, 32);
+            cbZuheizung.Name = "cbZuheizung";
+            cbZuheizung.Size = new System.Drawing.Size(120, 23);
+            cbZuheizung.TabIndex = 0;
             // 
             // lblZuheizung
             // 
-            this.lblZuheizung.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblZuheizung.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblZuheizung.Location = new System.Drawing.Point(0, 0);
-            this.lblZuheizung.Name = "lblZuheizung";
-            this.lblZuheizung.Size = new System.Drawing.Size(120, 23);
-            this.lblZuheizung.TabIndex = 1;
-            this.lblZuheizung.Text = "Zuheizung";
+            lblZuheizung.Dock = System.Windows.Forms.DockStyle.Top;
+            lblZuheizung.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblZuheizung.Location = new System.Drawing.Point(0, 0);
+            lblZuheizung.Name = "lblZuheizung";
+            lblZuheizung.Size = new System.Drawing.Size(120, 23);
+            lblZuheizung.TabIndex = 1;
+            lblZuheizung.Text = "Zuheizung";
             // 
             // pnlTempMin
             // 
-            this.pnlTempMin.Controls.Add(this.numTempMin);
-            this.pnlTempMin.Controls.Add(this.lblTempMin);
-            this.pnlTempMin.Location = new System.Drawing.Point(20, 85);
-            this.pnlTempMin.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlTempMin.Name = "pnlTempMin";
-            this.pnlTempMin.Size = new System.Drawing.Size(100, 55);
-            this.pnlTempMin.TabIndex = 7;
+            pnlTempMin.Controls.Add(numTempMin);
+            pnlTempMin.Controls.Add(lblTempMin);
+            pnlTempMin.Location = new System.Drawing.Point(20, 85);
+            pnlTempMin.Margin = new System.Windows.Forms.Padding(5);
+            pnlTempMin.Name = "pnlTempMin";
+            pnlTempMin.Size = new System.Drawing.Size(100, 55);
+            pnlTempMin.TabIndex = 7;
             // 
             // numTempMin
             // 
-            this.numTempMin.DecimalPlaces = 1;
-            this.numTempMin.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.numTempMin.Location = new System.Drawing.Point(0, 35);
-            this.numTempMin.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.numTempMin.Name = "numTempMin";
-            this.numTempMin.Size = new System.Drawing.Size(100, 20);
-            this.numTempMin.TabIndex = 0;
+            numTempMin.DecimalPlaces = 1;
+            numTempMin.Dock = System.Windows.Forms.DockStyle.Bottom;
+            numTempMin.Location = new System.Drawing.Point(0, 32);
+            numTempMin.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numTempMin.Name = "numTempMin";
+            numTempMin.Size = new System.Drawing.Size(100, 23);
+            numTempMin.TabIndex = 0;
             // 
             // lblTempMin
             // 
-            this.lblTempMin.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblTempMin.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblTempMin.Location = new System.Drawing.Point(0, 0);
-            this.lblTempMin.Name = "lblTempMin";
-            this.lblTempMin.Size = new System.Drawing.Size(100, 23);
-            this.lblTempMin.TabIndex = 1;
-            this.lblTempMin.Text = "VLT Min [°C]";
+            lblTempMin.Dock = System.Windows.Forms.DockStyle.Top;
+            lblTempMin.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblTempMin.Location = new System.Drawing.Point(0, 0);
+            lblTempMin.Name = "lblTempMin";
+            lblTempMin.Size = new System.Drawing.Size(100, 23);
+            lblTempMin.TabIndex = 1;
+            lblTempMin.Text = "VLT Min [°C]";
             // 
             // pnlTempMax
             // 
-            this.pnlTempMax.Controls.Add(this.numTempMax);
-            this.pnlTempMax.Controls.Add(this.lblTempMax);
-            this.pnlTempMax.Location = new System.Drawing.Point(130, 85);
-            this.pnlTempMax.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlTempMax.Name = "pnlTempMax";
-            this.pnlTempMax.Size = new System.Drawing.Size(100, 55);
-            this.pnlTempMax.TabIndex = 8;
+            pnlTempMax.Controls.Add(numTempMax);
+            pnlTempMax.Controls.Add(lblTempMax);
+            pnlTempMax.Location = new System.Drawing.Point(130, 85);
+            pnlTempMax.Margin = new System.Windows.Forms.Padding(5);
+            pnlTempMax.Name = "pnlTempMax";
+            pnlTempMax.Size = new System.Drawing.Size(100, 55);
+            pnlTempMax.TabIndex = 8;
             // 
             // numTempMax
             // 
-            this.numTempMax.DecimalPlaces = 1;
-            this.numTempMax.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.numTempMax.Location = new System.Drawing.Point(0, 35);
-            this.numTempMax.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.numTempMax.Name = "numTempMax";
-            this.numTempMax.Size = new System.Drawing.Size(100, 20);
-            this.numTempMax.TabIndex = 0;
+            numTempMax.DecimalPlaces = 1;
+            numTempMax.Dock = System.Windows.Forms.DockStyle.Bottom;
+            numTempMax.Location = new System.Drawing.Point(0, 32);
+            numTempMax.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numTempMax.Name = "numTempMax";
+            numTempMax.Size = new System.Drawing.Size(100, 23);
+            numTempMax.TabIndex = 0;
             // 
             // lblTempMax
             // 
-            this.lblTempMax.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblTempMax.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblTempMax.Location = new System.Drawing.Point(0, 0);
-            this.lblTempMax.Name = "lblTempMax";
-            this.lblTempMax.Size = new System.Drawing.Size(100, 23);
-            this.lblTempMax.TabIndex = 1;
-            this.lblTempMax.Text = "VLT Max [°C]";
+            lblTempMax.Dock = System.Windows.Forms.DockStyle.Top;
+            lblTempMax.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblTempMax.Location = new System.Drawing.Point(0, 0);
+            lblTempMax.Name = "lblTempMax";
+            lblTempMax.Size = new System.Drawing.Size(100, 23);
+            lblTempMax.TabIndex = 1;
+            lblTempMax.Text = "VLT Max [°C]";
             // 
             // pnlLeistungMin
             // 
-            this.pnlLeistungMin.Controls.Add(this.numLeistungMin);
-            this.pnlLeistungMin.Controls.Add(this.lblLeistungMin);
-            this.pnlLeistungMin.Location = new System.Drawing.Point(240, 85);
-            this.pnlLeistungMin.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlLeistungMin.Name = "pnlLeistungMin";
-            this.pnlLeistungMin.Size = new System.Drawing.Size(100, 55);
-            this.pnlLeistungMin.TabIndex = 9;
+            pnlLeistungMin.Controls.Add(numLeistungMin);
+            pnlLeistungMin.Controls.Add(lblLeistungMin);
+            pnlLeistungMin.Location = new System.Drawing.Point(240, 85);
+            pnlLeistungMin.Margin = new System.Windows.Forms.Padding(5);
+            pnlLeistungMin.Name = "pnlLeistungMin";
+            pnlLeistungMin.Size = new System.Drawing.Size(100, 55);
+            pnlLeistungMin.TabIndex = 9;
             // 
             // numLeistungMin
             // 
-            this.numLeistungMin.DecimalPlaces = 1;
-            this.numLeistungMin.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.numLeistungMin.Location = new System.Drawing.Point(0, 35);
-            this.numLeistungMin.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.numLeistungMin.Name = "numLeistungMin";
-            this.numLeistungMin.Size = new System.Drawing.Size(100, 20);
-            this.numLeistungMin.TabIndex = 0;
+            numLeistungMin.DecimalPlaces = 1;
+            numLeistungMin.Dock = System.Windows.Forms.DockStyle.Bottom;
+            numLeistungMin.Location = new System.Drawing.Point(0, 32);
+            numLeistungMin.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numLeistungMin.Name = "numLeistungMin";
+            numLeistungMin.Size = new System.Drawing.Size(100, 23);
+            numLeistungMin.TabIndex = 0;
             // 
             // lblLeistungMin
             // 
-            this.lblLeistungMin.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblLeistungMin.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblLeistungMin.Location = new System.Drawing.Point(0, 0);
-            this.lblLeistungMin.Name = "lblLeistungMin";
-            this.lblLeistungMin.Size = new System.Drawing.Size(100, 23);
-            this.lblLeistungMin.TabIndex = 1;
-            this.lblLeistungMin.Text = "Leist. Min [kW]";
+            lblLeistungMin.Dock = System.Windows.Forms.DockStyle.Top;
+            lblLeistungMin.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblLeistungMin.Location = new System.Drawing.Point(0, 0);
+            lblLeistungMin.Name = "lblLeistungMin";
+            lblLeistungMin.Size = new System.Drawing.Size(100, 23);
+            lblLeistungMin.TabIndex = 1;
+            lblLeistungMin.Text = "Leist. Min [kW]";
             // 
             // pnlLeistungMax
             // 
-            this.pnlLeistungMax.Controls.Add(this.numLeistungMax);
-            this.pnlLeistungMax.Controls.Add(this.lblLeistungMax);
-            this.pnlLeistungMax.Location = new System.Drawing.Point(350, 85);
-            this.pnlLeistungMax.Margin = new System.Windows.Forms.Padding(5);
-            this.pnlLeistungMax.Name = "pnlLeistungMax";
-            this.pnlLeistungMax.Size = new System.Drawing.Size(100, 55);
-            this.pnlLeistungMax.TabIndex = 10;
+            pnlLeistungMax.Controls.Add(numLeistungMax);
+            pnlLeistungMax.Controls.Add(lblLeistungMax);
+            pnlLeistungMax.Location = new System.Drawing.Point(350, 85);
+            pnlLeistungMax.Margin = new System.Windows.Forms.Padding(5);
+            pnlLeistungMax.Name = "pnlLeistungMax";
+            pnlLeistungMax.Size = new System.Drawing.Size(100, 55);
+            pnlLeistungMax.TabIndex = 10;
             // 
             // numLeistungMax
             // 
-            this.numLeistungMax.DecimalPlaces = 1;
-            this.numLeistungMax.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.numLeistungMax.Location = new System.Drawing.Point(0, 35);
-            this.numLeistungMax.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.numLeistungMax.Name = "numLeistungMax";
-            this.numLeistungMax.Size = new System.Drawing.Size(100, 20);
-            this.numLeistungMax.TabIndex = 0;
+            numLeistungMax.DecimalPlaces = 1;
+            numLeistungMax.Dock = System.Windows.Forms.DockStyle.Bottom;
+            numLeistungMax.Location = new System.Drawing.Point(0, 32);
+            numLeistungMax.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numLeistungMax.Name = "numLeistungMax";
+            numLeistungMax.Size = new System.Drawing.Size(100, 23);
+            numLeistungMax.TabIndex = 0;
             // 
             // lblLeistungMax
             // 
-            this.lblLeistungMax.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblLeistungMax.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.lblLeistungMax.Location = new System.Drawing.Point(0, 0);
-            this.lblLeistungMax.Name = "lblLeistungMax";
-            this.lblLeistungMax.Size = new System.Drawing.Size(100, 23);
-            this.lblLeistungMax.TabIndex = 1;
-            this.lblLeistungMax.Text = "Leist. Max [kW]";
+            lblLeistungMax.Dock = System.Windows.Forms.DockStyle.Top;
+            lblLeistungMax.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            lblLeistungMax.Location = new System.Drawing.Point(0, 0);
+            lblLeistungMax.Name = "lblLeistungMax";
+            lblLeistungMax.Size = new System.Drawing.Size(100, 23);
+            lblLeistungMax.TabIndex = 1;
+            lblLeistungMax.Text = "Leist. Max [kW]";
             // 
             // filterBezeichnungPanel
             // 
-            this.filterBezeichnungPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.filterBezeichnungPanel.Controls.Add(this.label1);
-            this.filterBezeichnungPanel.Controls.Add(this.txtSucheBezeichnung);
-            this.filterBezeichnungPanel.Location = new System.Drawing.Point(460, 85);
-            this.filterBezeichnungPanel.Margin = new System.Windows.Forms.Padding(5);
-            this.filterBezeichnungPanel.Name = "filterBezeichnungPanel";
-            this.filterBezeichnungPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.filterBezeichnungPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.filterBezeichnungPanel.Size = new System.Drawing.Size(200, 57);
-            this.filterBezeichnungPanel.TabIndex = 12;
+            filterBezeichnungPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            filterBezeichnungPanel.Controls.Add(label1);
+            filterBezeichnungPanel.Controls.Add(txtSucheBezeichnung);
+            filterBezeichnungPanel.Location = new System.Drawing.Point(460, 85);
+            filterBezeichnungPanel.Margin = new System.Windows.Forms.Padding(5);
+            filterBezeichnungPanel.Name = "filterBezeichnungPanel";
+            filterBezeichnungPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            filterBezeichnungPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            filterBezeichnungPanel.Size = new System.Drawing.Size(200, 57);
+            filterBezeichnungPanel.TabIndex = 12;
             // 
             // label1
             // 
-            this.label1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.label1.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.label1.Location = new System.Drawing.Point(3, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(194, 20);
-            this.label1.TabIndex = 14;
-            this.label1.Text = "Modell filtern (z.B. CS*7*)";
+            label1.Dock = System.Windows.Forms.DockStyle.Top;
+            label1.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            label1.Location = new System.Drawing.Point(3, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(194, 20);
+            label1.TabIndex = 14;
+            label1.Text = "Modell filtern (z.B. CS*7*)";
             // 
             // txtSucheBezeichnung
             // 
-            this.txtSucheBezeichnung.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.txtSucheBezeichnung.Location = new System.Drawing.Point(3, 34);
-            this.txtSucheBezeichnung.Name = "txtSucheBezeichnung";
-            this.txtSucheBezeichnung.Size = new System.Drawing.Size(194, 20);
-            this.txtSucheBezeichnung.TabIndex = 0;
+            txtSucheBezeichnung.Dock = System.Windows.Forms.DockStyle.Bottom;
+            txtSucheBezeichnung.Location = new System.Drawing.Point(3, 31);
+            txtSucheBezeichnung.Name = "txtSucheBezeichnung";
+            txtSucheBezeichnung.Size = new System.Drawing.Size(194, 23);
+            txtSucheBezeichnung.TabIndex = 0;
             // 
             // pnlFilterbtn
             // 
-            this.pnlFilterbtn.Controls.Add(this.btn_Reset);
-            this.pnlFilterbtn.Controls.Add(this.btnFilter);
-            this.pnlFilterbtn.Location = new System.Drawing.Point(668, 83);
-            this.pnlFilterbtn.Name = "pnlFilterbtn";
-            this.pnlFilterbtn.Size = new System.Drawing.Size(138, 57);
-            this.pnlFilterbtn.TabIndex = 13;
+            pnlFilterbtn.Controls.Add(btn_Reset);
+            pnlFilterbtn.Controls.Add(btnFilter);
+            pnlFilterbtn.Location = new System.Drawing.Point(668, 83);
+            pnlFilterbtn.Name = "pnlFilterbtn";
+            pnlFilterbtn.Size = new System.Drawing.Size(138, 57);
+            pnlFilterbtn.TabIndex = 13;
             // 
             // btn_Reset
             // 
-            this.btn_Reset.BackColor = System.Drawing.Color.Gray;
-            this.btn_Reset.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btn_Reset.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_Reset.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Reset.ForeColor = System.Drawing.Color.White;
-            this.btn_Reset.Location = new System.Drawing.Point(0, 31);
-            this.btn_Reset.Margin = new System.Windows.Forms.Padding(15, 12, 0, 0);
-            this.btn_Reset.Name = "btn_Reset";
-            this.btn_Reset.Size = new System.Drawing.Size(138, 28);
-            this.btn_Reset.TabIndex = 12;
-            this.btn_Reset.Text = "Filter Reset";
-            this.btn_Reset.UseVisualStyleBackColor = false;
-            this.btn_Reset.Click += new System.EventHandler(this.btn_Reset_Click);
+            btn_Reset.BackColor = System.Drawing.Color.Gray;
+            btn_Reset.Dock = System.Windows.Forms.DockStyle.Top;
+            btn_Reset.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btn_Reset.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            btn_Reset.ForeColor = System.Drawing.Color.White;
+            btn_Reset.Location = new System.Drawing.Point(0, 31);
+            btn_Reset.Margin = new System.Windows.Forms.Padding(15, 12, 0, 0);
+            btn_Reset.Name = "btn_Reset";
+            btn_Reset.Size = new System.Drawing.Size(138, 28);
+            btn_Reset.TabIndex = 12;
+            btn_Reset.Text = "Filter Reset";
+            btn_Reset.UseVisualStyleBackColor = false;
+            btn_Reset.Click += btn_Reset_Click;
             // 
             // btnFilter
             // 
-            this.btnFilter.BackColor = System.Drawing.Color.SteelBlue;
-            this.btnFilter.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnFilter.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFilter.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnFilter.ForeColor = System.Drawing.Color.White;
-            this.btnFilter.Location = new System.Drawing.Point(0, 0);
-            this.btnFilter.Margin = new System.Windows.Forms.Padding(15, 12, 0, 0);
-            this.btnFilter.Name = "btnFilter";
-            this.btnFilter.Size = new System.Drawing.Size(138, 31);
-            this.btnFilter.TabIndex = 11;
-            this.btnFilter.Text = "Daten filtern";
-            this.btnFilter.UseVisualStyleBackColor = false;
+            btnFilter.BackColor = System.Drawing.Color.SteelBlue;
+            btnFilter.Dock = System.Windows.Forms.DockStyle.Top;
+            btnFilter.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btnFilter.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            btnFilter.ForeColor = System.Drawing.Color.White;
+            btnFilter.Location = new System.Drawing.Point(0, 0);
+            btnFilter.Margin = new System.Windows.Forms.Padding(15, 12, 0, 0);
+            btnFilter.Name = "btnFilter";
+            btnFilter.Size = new System.Drawing.Size(138, 31);
+            btnFilter.TabIndex = 11;
+            btnFilter.Text = "Daten filtern";
+            btnFilter.UseVisualStyleBackColor = false;
             // 
             // bottomPanel
             // 
-            this.bottomPanel.BackColor = System.Drawing.Color.White;
-            this.bottomPanel.Controls.Add(this.btnCancel);
-            this.bottomPanel.Controls.Add(this.btnSelect);
-            this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.bottomPanel.Location = new System.Drawing.Point(0, 736);
-            this.bottomPanel.Name = "bottomPanel";
-            this.bottomPanel.Size = new System.Drawing.Size(1181, 64);
-            this.bottomPanel.TabIndex = 2;
+            bottomPanel.BackColor = System.Drawing.Color.White;
+            bottomPanel.Controls.Add(btnCancel);
+            bottomPanel.Controls.Add(btnSelect);
+            bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            bottomPanel.Location = new System.Drawing.Point(0, 736);
+            bottomPanel.Name = "bottomPanel";
+            bottomPanel.Size = new System.Drawing.Size(1181, 64);
+            bottomPanel.TabIndex = 2;
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCancel.BackColor = System.Drawing.SystemColors.Control;
-            this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btnCancel.ForeColor = System.Drawing.Color.Black;
-            this.btnCancel.Location = new System.Drawing.Point(819, 15);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(121, 36);
-            this.btnCancel.TabIndex = 1;
-            this.btnCancel.Text = "❌";
-            this.btnCancel.UseVisualStyleBackColor = false;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnCancel.BackColor = System.Drawing.SystemColors.Control;
+            btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btnCancel.Font = new System.Drawing.Font("Segoe UI", 10F);
+            btnCancel.ForeColor = System.Drawing.Color.Black;
+            btnCancel.Location = new System.Drawing.Point(819, 15);
+            btnCancel.Name = "btnCancel";
+            btnCancel.Size = new System.Drawing.Size(121, 36);
+            btnCancel.TabIndex = 1;
+            btnCancel.Text = "❌";
+            btnCancel.UseVisualStyleBackColor = false;
+            btnCancel.Click += btnCancel_Click;
             // 
             // btnSelect
             // 
-            this.btnSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSelect.BackColor = System.Drawing.Color.MediumSeaGreen;
-            this.btnSelect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnSelect.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnSelect.ForeColor = System.Drawing.Color.White;
-            this.btnSelect.Location = new System.Drawing.Point(961, 15);
-            this.btnSelect.Name = "btnSelect";
-            this.btnSelect.Size = new System.Drawing.Size(189, 36);
-            this.btnSelect.TabIndex = 0;
-            this.btnSelect.Text = "✔ Auswahl übernehmen";
-            this.btnSelect.UseVisualStyleBackColor = false;
-            this.btnSelect.Click += new System.EventHandler(this.btnSelect_Click);
+            btnSelect.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnSelect.BackColor = System.Drawing.Color.MediumSeaGreen;
+            btnSelect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btnSelect.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            btnSelect.ForeColor = System.Drawing.Color.White;
+            btnSelect.Location = new System.Drawing.Point(961, 15);
+            btnSelect.Name = "btnSelect";
+            btnSelect.Size = new System.Drawing.Size(189, 36);
+            btnSelect.TabIndex = 0;
+            btnSelect.Text = "✔ Auswahl übernehmen";
+            btnSelect.UseVisualStyleBackColor = false;
             // 
             // Form_WpFilterAuswahl
             // 
-            this.ClientSize = new System.Drawing.Size(1181, 800);
-            this.Controls.Add(this.dgv);
-            this.Controls.Add(this.filterPanel);
-            this.Controls.Add(this.bottomPanel);
-            this.Name = "Form_WpFilterAuswahl";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Wärmepumpen-Katalog";
-            ((System.ComponentModel.ISupportInitialize)(this.dgv)).EndInit();
-            this.filterPanel.ResumeLayout(false);
-            this.pnlHersteller.ResumeLayout(false);
-            this.pnlAuslegung.ResumeLayout(false);
-            this.pnlPrinzip.ResumeLayout(false);
-            this.pnlRegelung.ResumeLayout(false);
-            this.pnlBauart.ResumeLayout(false);
-            this.pnlAufstellung.ResumeLayout(false);
-            this.pnlZuheizun.ResumeLayout(false);
-            this.pnlTempMin.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.numTempMin)).EndInit();
-            this.pnlTempMax.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.numTempMax)).EndInit();
-            this.pnlLeistungMin.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.numLeistungMin)).EndInit();
-            this.pnlLeistungMax.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.numLeistungMax)).EndInit();
-            this.filterBezeichnungPanel.ResumeLayout(false);
-            this.filterBezeichnungPanel.PerformLayout();
-            this.pnlFilterbtn.ResumeLayout(false);
-            this.bottomPanel.ResumeLayout(false);
-            this.ResumeLayout(false);
+            ClientSize = new System.Drawing.Size(1181, 800);
+            Controls.Add(dgv);
+            Controls.Add(filterPanel);
+            Controls.Add(bottomPanel);
+            Name = "Form_WpFilterAuswahl";
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            Text = "Wärmepumpen-Katalog";
+            ((System.ComponentModel.ISupportInitialize)dgv).EndInit();
+            filterPanel.ResumeLayout(false);
+            pnlHersteller.ResumeLayout(false);
+            pnlAuslegung.ResumeLayout(false);
+            pnlPrinzip.ResumeLayout(false);
+            pnlRegelung.ResumeLayout(false);
+            pnlBauart.ResumeLayout(false);
+            pnlAufstellung.ResumeLayout(false);
+            pnlZuheizun.ResumeLayout(false);
+            pnlTempMin.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)numTempMin).EndInit();
+            pnlTempMax.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)numTempMax).EndInit();
+            pnlLeistungMin.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)numLeistungMin).EndInit();
+            pnlLeistungMax.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)numLeistungMax).EndInit();
+            filterBezeichnungPanel.ResumeLayout(false);
+            filterBezeichnungPanel.PerformLayout();
+            pnlFilterbtn.ResumeLayout(false);
+            bottomPanel.ResumeLayout(false);
+            ResumeLayout(false);
 
         }
 
