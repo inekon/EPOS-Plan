@@ -520,7 +520,7 @@ namespace WindowsFormsApplication1
             // Text in die Mitte (z.B. "100%")
             using (Font font = new Font("Segoe UI", rect.Width * 0.12f, FontStyle.Bold))
             {
-                string centerText = deckung.ToString("F2");
+                string centerText = deckung.ToString("F1");
                 SizeF size = g.MeasureString(centerText, font);
                 g.DrawString(centerText, font, Brushes.Black,
                              rect.X + (rect.Width - size.Width) / 2,

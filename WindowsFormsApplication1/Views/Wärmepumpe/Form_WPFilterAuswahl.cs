@@ -17,12 +17,12 @@ namespace WindowsFormsApplication1
         public Form_WpFilterAuswahl()
         {
             InitializeComponent();
-            
+
             dgv.Visible = false; // Erstmal verstecken
-            
+
             AttachEvents();
             LoadData();
-            
+
             txtSucheBezeichnung.SetPlaceholder("🔍  Suchen…");
             btnSelect.FlatStyle = FlatStyle.Flat;
             btnSelect.FlatAppearance.BorderSize = 0; // Entfernt den Rahmen
@@ -52,8 +52,8 @@ namespace WindowsFormsApplication1
             FillCombo(cbBauart, x => x.Bauart);
             FillCombo(cbAufstellung, x => x.Aufstellung);
             FillCombo(cbZuheizung, x => x.ElZuheizung.ToString());
-            numLeistungMax.Value = (decimal)_allData.Max(x => x.MaxLeistung);   
-            numTempMax.Value = (decimal)_allData.Max(x => x.MaxVorlaufTemp);    
+            numLeistungMax.Value = (decimal)_allData.Max(x => x.MaxLeistung);
+            numTempMax.Value = (decimal)_allData.Max(x => x.MaxVorlaufTemp);
             ApplyFilter();
         }
 
@@ -148,10 +148,10 @@ namespace WindowsFormsApplication1
                 }
                 if (col.Name.Contains("Bezeichnung") || col.Name.Contains("Modell"))
                 {
-                    col.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill; 
+                    col.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 }
             }
-    
+
             dgv.ReadOnly = true;                // Verhindert das Tippen in Zellen
             dgv.AllowUserToAddRows = false;     // Entfernt die leere Sternchen-Zeile am Ende
             dgv.AllowUserToDeleteRows = false;  // Verhindert das Löschen mit der Entf-Taste
@@ -251,10 +251,6 @@ namespace WindowsFormsApplication1
             ResetFilter();
         }
 
-        private void btnSelect_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 
     public class WPData

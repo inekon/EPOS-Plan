@@ -10,6 +10,7 @@ namespace WindowsFormsApplication1
 
         // Input-Arrays
         public float[] Strombedarf = new float[8760 * 4];
+        public float[] Stromgespeichert = new float[8760 * 4];
 
         public float[] Berechnung(int ID_Projekt)
         {
@@ -39,12 +40,12 @@ namespace WindowsFormsApplication1
             // hier wird die eigentliche Simulation des Strombedarfs mit den vorhandenen Stromspeichern durchgeführt
             for (int i = 0; i < 8760 * 4; i++)
             {
-                double value = Strombedarf[i];
-
+                //double value = Strombedarf[i];
+                Stromgespeichert[i] = 0;
 
 
             }
-            return Strombedarf; // den korrigierten Wert zurückgeben, der den Strombedarf unter Berücksichtigung der Stromspeicher darstellt
+            return Stromgespeichert; // den korrigierten Wert zurückgeben, der den Strombedarf unter Berücksichtigung der Stromspeicher darstellt
         }
     }
 }

@@ -22,6 +22,9 @@
         public string m_Ladefuellstand_Min_Auswahl;
         public string m_Ladefuellstand_Max_Auswahl;
         public string m_Ladeleistung_Max_Auswahl;
+        public int Betriebsart;
+        public int Leistungsgrenze;
+        public double Pendelspeicher;
 
         public KonfigurationModel()
         {
@@ -45,6 +48,9 @@
             m_Ladefuellstand_Min_Auswahl = "";
             m_Ladefuellstand_Max_Auswahl = "";
             m_Ladeleistung_Max_Auswahl = "";
+            Betriebsart = 0;
+            Leistungsgrenze = 0;
+            Pendelspeicher = 0;
         }
     }
 }
