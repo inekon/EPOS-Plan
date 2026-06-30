@@ -37,7 +37,6 @@ namespace WindowsFormsApplication1
 
         private TabNavigationManager _navManager; // Global im Formular speichern
         private Dictionary<string, TabPage> dictAllTabPages = new Dictionary<string, TabPage>();
-        private Dictionary<string, TabPage> dictParameterTabPages = new Dictionary<string, TabPage>();
 
         // Das ist deine Zielvariable (0 = Wärmegeführt, 1 = Stromgeführt, 2 = Ohne Einspeisung)
         private int bhkwSimulationsArt = 0;
@@ -47,21 +46,6 @@ namespace WindowsFormsApplication1
 
         private int mainTabPageIndex = 0; // 0 = Parameter, 1 = Simulation
         private int mainTablistIndex = 0;
-
-        // --- Menü-Optik für listViewQuellen (dunkles WordPress-Stil-Menü) ---
-        private int _hoverIndex = -1;                 // aktuell überfahrene Zeile (-1 = keine)
-        private bool _quellenMenuStyled = false;      // verhindert doppeltes Verdrahten
-        private System.Windows.Forms.ImageList _quellenRowSizer; // erzwingt die Zeilenhöhe
-
-        // Farbpalette (klassisches WP-Admin-Menü)
-        private static readonly Color cMenuBase     = Color.FromArgb(0x23, 0x28, 0x2d); // Grundfläche
-        private static readonly Color cMenuText     = Color.FromArgb(0xee, 0xee, 0xee); // Text normal
-        private static readonly Color cMenuIcon     = Color.FromArgb(0xa7, 0xaa, 0xad); // Icon normal (grau)
-        private static readonly Color cMenuHoverBg  = Color.FromArgb(0x19, 0x1e, 0x23); // Hover-Hintergrund
-        private static readonly Color cMenuHoverFg  = Color.FromArgb(0x00, 0xb9, 0xeb); // Hover-Text/Icon (cyan)
-        private static readonly Color cMenuSelBg    = Color.FromArgb(0x00, 0x73, 0xaa); // aktiv (blau)
-        private static readonly Color cMenuSelFg    = Color.White;                      // aktiv Text/Icon
-        private static readonly Color cMenuDisabled = Color.FromArgb(0x55, 0x5d, 0x66); // deaktiviert
 
 
         public Form_Simulation_Detail(int iD_Projekt)
@@ -81,50 +65,31 @@ namespace WindowsFormsApplication1
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
+            listView_SimWP.View = View.Details;
+            listView_SimWP.Columns.Add("Modul", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Leistung [kW]", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Wärmeprod.[MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Stromverbr. [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Heizstab [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimWP.Columns.Add("Betriebsstunden [h/a]", -2, HorizontalAlignment.Left);
+            listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+
+            colorListViewHeader(ref listView_SimWP, Color.LightBlue, Color.Black);
+            colorListViewHeader(ref listView_SimSPK, Color.LightBlue, Color.Black);
+
             // Initialisiere die Navigation 
             _navManager = new TabNavigationManager(tabPage_Ergebnis, sim);
 
             // Dictionary befüllen
-            foreach (TabPage page in tabControl_Simulation.TabPages)
+            foreach (TabPage page in tabControl1.TabPages)
             {
                 if (!dictAllTabPages.ContainsKey(page.Name))
-                {
                     dictAllTabPages.Add(page.Name, page);
-                }
             }
 
             this.splitContainer_Parameter.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer_Parameter_SplitterMoved);
             this.listViewQuellen.TileSize = new System.Drawing.Size(this.listViewQuellen.Width, 40);
-
-            // Menü-Optik (dunkles WP-Stil-Menü mit Icons) aktivieren – einmalig.
-            // Beeinflusst nur die Darstellung; Auswahl-/Resize-Logik bleibt unverändert.
-            StyleQuellenListeAlsMenu();
-
-            // Ansicht & Verhalten konfigurieren
-            dataGridView_BHKW.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridView_BHKW.MultiSelect = false;
-            dataGridView_BHKW.AllowUserToAddRows = false;
-            dataGridView_BHKW.RowHeadersVisible = false;
-
-            // Zeilenumbruch für den Header aktivieren und Höhe setzen
-            dataGridView_BHKW.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            dataGridView_BHKW.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridView_BHKW.ColumnHeadersHeight = 42;
-
-            // Spalten hinzufügen (\n für den zentrierten Umbruch)
-            dataGridView_BHKW.Columns.Add("Name", "BHKW-Modul");
-            dataGridView_BHKW.Columns.Add("Waermeprod", "Wärmeprod.\n[MWh/a]");
-            dataGridView_BHKW.Columns.Add("Stromprod", "Stromprod.\n[MWh/a]");
-
-            // Formatierung: Zahlen rechtsbündig, Header zentriert (ab Index 1)
-            for (int i = 1; i < dataGridView_BHKW.Columns.Count; i++)
-            {
-                dataGridView_BHKW.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                dataGridView_BHKW.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            }
-
-            // Automatische Spaltenbreite
-            dataGridView_BHKW.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
 
             VereinheitlichePageSchriftarten(this.tabPage_Bedarf);
             VereinheitlichePageSchriftarten(this.tabPage_Wärmepumpe);
@@ -143,8 +108,8 @@ namespace WindowsFormsApplication1
             if (dictAllTabPages.ContainsKey(targetTabName))
             {
                 // Die TabPage aus dem Dictionary holen und direkt selektieren
-                tabControl_Simulation.SelectedTab = dictAllTabPages[targetTabName];
-                mainTabPageIndex = tabControl_Simulation.SelectedIndex; // Aktualisiere den Index der Haupt-TabPage
+                tabControl1.SelectedTab = dictAllTabPages[targetTabName];
+                mainTabPageIndex = tabControl1.SelectedIndex; // Aktualisiere den Index der Haupt-TabPage
             }
         }
 
@@ -167,8 +132,7 @@ namespace WindowsFormsApplication1
             tool[5] = ctrl.model.m_Tool_6;
 
             // Verhindert das Flackern des Controls während des Umbaus
-            tabControl_Simulation.SuspendLayout();
-            tabControl_Einstellungen.SuspendLayout();
+            tabControl1.SuspendLayout();
 
             dictAllTabPages.Clear();
 
@@ -185,65 +149,26 @@ namespace WindowsFormsApplication1
             dictAllTabPages.Add("tabPage_Ergebnis", this.tabPage_Ergebnis);
 
             // Radikal alle Tabs oben aus der Reiterleiste löschen
-            tabControl_Simulation.TabPages.Clear();
+            tabControl1.TabPages.Clear();
 
             TabPage gefundeneSeite;
 
             // NUR NOCH die 2 echten Haupt-Tabs oben sichtbar einfügen:
             if (dictAllTabPages.TryGetValue("tabPage_Parameter", out gefundeneSeite) && gefundeneSeite != null)
-                tabControl_Simulation.TabPages.Add(gefundeneSeite);
+                tabControl1.TabPages.Add(gefundeneSeite);
 
             if (dictAllTabPages.TryGetValue("tabPage_Simulation", out gefundeneSeite) && gefundeneSeite != null)
-                tabControl_Simulation.TabPages.Add(gefundeneSeite);
-
-            // ==========================================
-            // STEUERUNG INNERES TAB-CONTROL (Parameter-Sub-Tabs)
-            // ==========================================
-            dictParameterTabPages.Clear();
-            // Wir registrieren die 5 verfügbaren inneren Seiten im eigenen Dictionary
-            // (Hinweis: Die Namen müssen exakt mit den Designer-Namen deiner inneren Pages übereinstimmen!)
-            dictParameterTabPages.Add("tabPage_Bedarf_Parameter", this.tabPage_Bedarf_Parameter);
-            dictParameterTabPages.Add("tabPage_Wärmepumpe_Parameter", this.tabPage_Wärmepumpe_Parameter);
-            dictParameterTabPages.Add("tabPage_Heizkessel_Parameter", this.tabPage_Heizkessel_Parameter);
-            dictParameterTabPages.Add("tabPage_BHKW_Parameter", this.tabPage_BHKW_Parameter);
-            dictParameterTabPages.Add("tabPage_Stromspeicher_Parameter", this.tabPage_Stromspeicher_Parameter);
-
-            // Das innere TabControl komplett leeren
-            tabControl_Einstellungen.TabPages.Clear();
-
-            // "Bedarf" ist immer aktiv und wird standardmäßig als erster Tab gesetzt
-            if (dictParameterTabPages.TryGetValue("tabPage_Bedarf_Parameter", out gefundeneSeite) && gefundeneSeite != null)
-                tabControl_Einstellungen.TabPages.Add(gefundeneSeite);
-
-            // Jetzt die restlichen Erzeuger-Tabs dynamisch anhand der DB-Liste (tool) hinzufügen
-            foreach (string toolName in tool)
-            {
-                if (string.IsNullOrEmpty(toolName)) continue;
-
-                // prüfen, ob das aktivierte Tool eine der inneren Parameter-Seiten betrifft
-                if (dictParameterTabPages.TryGetValue("tabPage_" + toolName + "_Parameter", out gefundeneSeite) && gefundeneSeite != null)
-                {
-                    // Verhindert doppeltes Hinzufügen, falls ein Tool fälschlicherweise zweimal in der DB steht
-                    if (!tabControl_Einstellungen.TabPages.Contains(gefundeneSeite))
-                    {
-                        tabControl_Einstellungen.TabPages.Add(gefundeneSeite);
-                    }
-                }
-            }
+                tabControl1.TabPages.Add(gefundeneSeite);
 
             // Steuerelement wieder freigeben
-            tabControl_Simulation.ResumeLayout();
-            tabControl_Einstellungen.ResumeLayout();
+            tabControl1.ResumeLayout();
 
             // Jetzt rufen wir die korrigierte Listenbefüllung auf
             BefuelleQuellenListe(tool, ctrl);
-
         }
 
         private void BefuelleQuellenListe(string[] tool, KonfigurationCtrl ctrl)
         {
-            _hoverIndex = -1; // Hover-Markierung beim Neuaufbau zurücksetzen
-
             // Listeneigenschaften für die saubere Detail-Darstellung erzwingen
             listViewQuellen.View = View.Details;
             listViewQuellen.FullRowSelect = true;
@@ -330,280 +255,6 @@ namespace WindowsFormsApplication1
             listViewQuellen.Items.Add(itemErgebnis);
         }
 
-        // ============================================================
-        //  Menü-Optik für listViewQuellen (dunkles WordPress-Stil-Menü)
-        //  Rein visuell – ergänzt das bestehende Verhalten, ohne den
-        //  Designer oder die .resx-Dateien zu verändern.
-        // ============================================================
-        private void StyleQuellenListeAlsMenu()
-        {
-            if (_quellenMenuStyled || listViewQuellen == null) return;
-            _quellenMenuStyled = true;
-
-            // Zeilenhöhe über eine (leere) SmallImageList erzwingen (~40 px).
-            _quellenRowSizer = new ImageList();
-            _quellenRowSizer.ImageSize = new Size(1, 40);
-            _quellenRowSizer.ColorDepth = ColorDepth.Depth32Bit;
-            listViewQuellen.SmallImageList = _quellenRowSizer;
-
-            listViewQuellen.OwnerDraw = true;
-            listViewQuellen.BorderStyle = BorderStyle.None;
-            listViewQuellen.BackColor = cMenuBase;
-            listViewQuellen.ForeColor = cMenuText;
-
-            // Linkes Panel auf dieselbe Grundfarbe -> nahtlose dunkle Spalte.
-            if (splitContainer_Parameter != null)
-                splitContainer_Parameter.Panel1.BackColor = cMenuBase;
-
-            // Flicker beim Hover reduzieren (DoubleBuffering der ListView).
-            try
-            {
-                typeof(ListView).GetProperty("DoubleBuffered",
-                        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                    ?.SetValue(listViewQuellen, true, null);
-            }
-            catch { /* unkritisch */ }
-
-            // Eigene Zeichen- und Hover-Logik verdrahten (einmalig).
-            listViewQuellen.DrawColumnHeader += (s, e) => { /* Header ist ausgeblendet */ };
-            listViewQuellen.DrawSubItem += (s, e) => { /* gesamte Zeile wird in DrawItem gezeichnet */ };
-            listViewQuellen.DrawItem += listViewQuellen_DrawItem;
-            listViewQuellen.MouseMove += listViewQuellen_MouseMove;
-            listViewQuellen.MouseLeave += listViewQuellen_MouseLeave;
-        }
-
-        private void listViewQuellen_MouseMove(object sender, MouseEventArgs e)
-        {
-            ListViewHitTestInfo hit = listViewQuellen.HitTest(e.Location);
-            int idx = (hit != null && hit.Item != null) ? hit.Item.Index : -1;
-            if (idx == _hoverIndex) return;
-
-            int alt = _hoverIndex;
-            _hoverIndex = idx;
-            if (alt >= 0 && alt < listViewQuellen.Items.Count)
-                listViewQuellen.Invalidate(listViewQuellen.Items[alt].Bounds);
-            if (idx >= 0 && idx < listViewQuellen.Items.Count)
-                listViewQuellen.Invalidate(listViewQuellen.Items[idx].Bounds);
-        }
-
-        private void listViewQuellen_MouseLeave(object sender, EventArgs e)
-        {
-            if (_hoverIndex < 0) return;
-            int alt = _hoverIndex;
-            _hoverIndex = -1;
-            if (alt < listViewQuellen.Items.Count)
-                listViewQuellen.Invalidate(listViewQuellen.Items[alt].Bounds);
-        }
-
-        private void listViewQuellen_DrawItem(object sender, DrawListViewItemEventArgs e)
-        {
-            Graphics g = e.Graphics;
-            Rectangle r = e.Bounds;
-
-            string tag = (e.Item.Tag != null) ? e.Item.Tag.ToString() : "";
-            bool disabled = (tag == "DEAKTIVIERT");
-            bool selected = e.Item.Selected && !disabled;
-            bool hot = (e.ItemIndex == _hoverIndex) && !selected && !disabled;
-
-            Color bg = selected ? cMenuSelBg : (hot ? cMenuHoverBg : cMenuBase);
-            Color fg = disabled ? cMenuDisabled : (selected ? cMenuSelFg : (hot ? cMenuHoverFg : cMenuText));
-            Color ic = disabled ? cMenuDisabled : (selected ? cMenuSelFg : (hot ? cMenuHoverFg : cMenuIcon));
-
-            using (SolidBrush b = new SolidBrush(bg))
-                g.FillRectangle(b, r);
-
-            // Icon (quadratisch, vertikal zentriert)
-            int s = 22;
-            int iconX = r.X + 16;
-            int iconY = r.Y + (r.Height - s) / 2;
-            ZeichneGewerkIcon(g, new Rectangle(iconX, iconY, s, s), tag, ic);
-
-            // Beschriftung
-            int textX = iconX + s + 12;
-            Rectangle textRect = new Rectangle(textX, r.Y, Math.Max(0, r.Right - textX - 8), r.Height);
-            TextRenderer.DrawText(g, e.Item.Text, listViewQuellen.Font, textRect, fg,
-                TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
-                TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
-        }
-
-        // ------------------------------------------------------------
-        //  Vektor-Icons je Gewerk (einfarbig, per GDI+ gezeichnet)
-        //  Zuordnung über das Item.Tag (z. B. "tabPage_BHKW").
-        // ------------------------------------------------------------
-        private void ZeichneGewerkIcon(Graphics g, Rectangle box, string tag, Color farbe)
-        {
-            System.Drawing.Drawing2D.SmoothingMode alt = g.SmoothingMode;
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-
-            float pw = Math.Max(1.8f, box.Width / 11f);
-            using (Pen pen = new Pen(farbe, pw))
-            using (SolidBrush brush = new SolidBrush(farbe))
-            {
-                pen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
-                pen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
-                pen.LineJoin = System.Drawing.Drawing2D.LineJoin.Round;
-
-                // normalisierte Koordinate (0..1) -> Punkt in der Box
-                Func<float, float, PointF> P = (nx, ny) =>
-                    new PointF(box.X + nx * box.Width, box.Y + ny * box.Height);
-
-                switch (tag)
-                {
-                    case "tabPage_Bedarf": // Energiebedarf – Blitz
-                    {
-                        PointF[] bolt =
-                        {
-                            P(0.58f, 0.06f), P(0.30f, 0.54f), P(0.48f, 0.54f),
-                            P(0.40f, 0.94f), P(0.74f, 0.42f), P(0.54f, 0.42f)
-                        };
-                        g.FillPolygon(brush, bolt);
-                        break;
-                    }
-                    case "tabPage_Heizkessel": // Flamme
-                    {
-                        using (var path = new System.Drawing.Drawing2D.GraphicsPath())
-                        {
-                            path.AddBezier(P(0.50f, 0.96f), P(0.14f, 0.86f), P(0.16f, 0.60f), P(0.30f, 0.50f));
-                            path.AddBezier(P(0.30f, 0.50f), P(0.40f, 0.42f), P(0.36f, 0.22f), P(0.50f, 0.05f));
-                            path.AddBezier(P(0.50f, 0.05f), P(0.60f, 0.26f), P(0.70f, 0.34f), P(0.72f, 0.54f));
-                            path.AddBezier(P(0.72f, 0.54f), P(0.80f, 0.66f), P(0.78f, 0.88f), P(0.50f, 0.96f));
-                            path.CloseFigure();
-                            g.FillPath(brush, path);
-                        }
-                        break;
-                    }
-                    case "tabPage_BHKW": // Zahnrad
-                        ZeichneZahnrad(g, pen, brush, box, farbe);
-                        break;
-
-                    case "tabPage_Wärmepumpe": // Kreislauf (zwei Pfeile)
-                        ZeichneWaermepumpe(g, pen, box);
-                        break;
-
-                    case "tabPage_Solarthermie": // Sonne
-                    {
-                        float cx = box.X + box.Width * 0.5f;
-                        float cy = box.Y + box.Height * 0.5f;
-                        float rCore = box.Width * 0.17f;
-                        g.FillEllipse(brush, cx - rCore, cy - rCore, rCore * 2, rCore * 2);
-                        float r1 = box.Width * 0.30f, r2 = box.Width * 0.46f;
-                        for (int i = 0; i < 8; i++)
-                        {
-                            double a = i * Math.PI / 4.0;
-                            float dx = (float)Math.Cos(a), dy = (float)Math.Sin(a);
-                            g.DrawLine(pen, cx + dx * r1, cy + dy * r1, cx + dx * r2, cy + dy * r2);
-                        }
-                        break;
-                    }
-                    case "tabPage_Photovoltaik": // Solarpanel (Raster) auf Ständer
-                    {
-                        RectangleF panel = new RectangleF(
-                            box.X + box.Width * 0.16f, box.Y + box.Height * 0.18f,
-                            box.Width * 0.68f, box.Height * 0.46f);
-                        g.DrawRectangle(pen, panel.X, panel.Y, panel.Width, panel.Height);
-                        g.DrawLine(pen, panel.X + panel.Width / 3f, panel.Y, panel.X + panel.Width / 3f, panel.Bottom);
-                        g.DrawLine(pen, panel.X + 2f * panel.Width / 3f, panel.Y, panel.X + 2f * panel.Width / 3f, panel.Bottom);
-                        g.DrawLine(pen, panel.X, panel.Y + panel.Height / 2f, panel.Right, panel.Y + panel.Height / 2f);
-                        g.DrawLine(pen, P(0.50f, 0.64f).X, P(0.50f, 0.64f).Y, P(0.50f, 0.90f).X, P(0.50f, 0.90f).Y);
-                        g.DrawLine(pen, P(0.34f, 0.90f).X, P(0.34f, 0.90f).Y, P(0.66f, 0.90f).X, P(0.66f, 0.90f).Y);
-                        break;
-                    }
-                    case "tabPage_Stromspeicher": // Batterie
-                    {
-                        RectangleF body = new RectangleF(
-                            box.X + box.Width * 0.24f, box.Y + box.Height * 0.30f,
-                            box.Width * 0.52f, box.Height * 0.60f);
-                        g.DrawRectangle(pen, body.X, body.Y, body.Width, body.Height);
-                        // Pluspol
-                        g.FillRectangle(brush, P(0.42f, 0.16f).X, P(0.42f, 0.16f).Y, box.Width * 0.16f, box.Height * 0.14f);
-                        // Ladestand-Linie
-                        g.DrawLine(pen, P(0.34f, 0.60f).X, P(0.34f, 0.60f).Y, P(0.66f, 0.60f).X, P(0.66f, 0.60f).Y);
-                        break;
-                    }
-                    case "tabPage_Ergebnis": // Balkendiagramm
-                    {
-                        g.DrawLine(pen, P(0.16f, 0.84f).X, P(0.16f, 0.84f).Y, P(0.86f, 0.84f).X, P(0.86f, 0.84f).Y);
-                        float bw = box.Width * 0.12f;
-                        DrawBar(g, brush, P(0.24f, 0.60f), bw, P(0.24f, 0.84f).Y);
-                        DrawBar(g, brush, P(0.44f, 0.46f), bw, P(0.44f, 0.84f).Y);
-                        DrawBar(g, brush, P(0.64f, 0.30f), bw, P(0.64f, 0.84f).Y);
-                        break;
-                    }
-                    default: // u. a. "DEAKTIVIERT" oder unbekannt – schlichter Punkt
-                    {
-                        float d = box.Width * 0.20f;
-                        g.DrawEllipse(pen, box.X + box.Width * 0.5f - d, box.Y + box.Height * 0.5f - d, d * 2, d * 2);
-                        break;
-                    }
-                }
-            }
-
-            g.SmoothingMode = alt;
-        }
-
-        private static void DrawBar(Graphics g, SolidBrush brush, PointF topLeft, float width, float baselineY)
-        {
-            g.FillRectangle(brush, topLeft.X, topLeft.Y, width, baselineY - topLeft.Y);
-        }
-
-        private void ZeichneZahnrad(Graphics g, Pen pen, SolidBrush brush, Rectangle box, Color farbe)
-        {
-            float cx = box.X + box.Width * 0.5f, cy = box.Y + box.Height * 0.5f;
-            float rRing = box.Width * 0.28f;   // Zahnkranz (Ring)
-            float rTeeth = box.Width * 0.44f;  // Zahnspitzen
-            float rHub = box.Width * 0.11f;    // Nabe
-
-            using (Pen tp = new Pen(farbe, Math.Max(2.2f, box.Width / 8f)))
-            {
-                tp.StartCap = System.Drawing.Drawing2D.LineCap.Round;
-                tp.EndCap = System.Drawing.Drawing2D.LineCap.Round;
-                for (int i = 0; i < 8; i++)
-                {
-                    double a = i * Math.PI / 4.0;
-                    float dx = (float)Math.Cos(a), dy = (float)Math.Sin(a);
-                    g.DrawLine(tp, cx + dx * rRing, cy + dy * rRing, cx + dx * rTeeth, cy + dy * rTeeth);
-                }
-            }
-            g.DrawEllipse(pen, cx - rRing, cy - rRing, rRing * 2, rRing * 2);
-            g.FillEllipse(brush, cx - rHub, cy - rHub, rHub * 2, rHub * 2);
-        }
-
-        private void ZeichneWaermepumpe(Graphics g, Pen pen, Rectangle box)
-        {
-            RectangleF arc = new RectangleF(
-                box.X + box.Width * 0.18f, box.Y + box.Height * 0.18f,
-                box.Width * 0.64f, box.Height * 0.64f);
-            float rx = arc.Width / 2f, ry = arc.Height / 2f;
-            float cx = arc.X + rx, cy = arc.Y + ry;
-
-            g.DrawArc(pen, arc.X, arc.Y, arc.Width, arc.Height, 105f, 150f);
-            g.DrawArc(pen, arc.X, arc.Y, arc.Width, arc.Height, 285f, 150f);
-
-            float ah = box.Width * 0.18f;
-            DrawArcArrow(g, pen, cx, cy, rx, ry, 255f, ah); // Ende 1. Bogen (105+150)
-            DrawArcArrow(g, pen, cx, cy, rx, ry, 75f, ah);  // Ende 2. Bogen (285+150=435->75)
-        }
-
-        private static void DrawArcArrow(Graphics g, Pen pen, float cx, float cy, float rx, float ry, float deg, float size)
-        {
-            PointF tip = new PointF(
-                cx + rx * (float)Math.Cos(deg * Math.PI / 180.0),
-                cy + ry * (float)Math.Sin(deg * Math.PI / 180.0));
-            float pdeg = deg - 12f;
-            PointF prev = new PointF(
-                cx + rx * (float)Math.Cos(pdeg * Math.PI / 180.0),
-                cy + ry * (float)Math.Sin(pdeg * Math.PI / 180.0));
-            double ang = Math.Atan2(tip.Y - prev.Y, tip.X - prev.X);
-            for (int sgn = -1; sgn <= 1; sgn += 2)
-            {
-                double b = ang + sgn * 2.5; // ~143° Widerhaken
-                PointF q = new PointF(
-                    tip.X + (float)Math.Cos(b) * size,
-                    tip.Y + (float)Math.Sin(b) * size);
-                g.DrawLine(pen, tip, q);
-            }
-        }
-
         private void Form_Simulation_Detail_Load(object sender, EventArgs e)
         {
             // 1. Wunschgröße des gesamten Inhalts (inklusive hochskalierter Schriften) messen
@@ -628,8 +279,6 @@ namespace WindowsFormsApplication1
             MacheTextAbschnittFett(richTextBox_Info, "Wärmegeführt (Standard)");
             MacheTextAbschnittFett(richTextBox_Info, "Stromgeführt (Wirtschaftlich)");
             MacheTextAbschnittFett(richTextBox_Info, "Ohne Einspeisung (Zero-Export)");
-
-            LeseKonfiguration();
         }
 
         private void MacheTextAbschnittFett(RichTextBox rtb, string textZuFormatieren)
@@ -682,9 +331,9 @@ namespace WindowsFormsApplication1
         private void btn_Simulation_Click(object sender, EventArgs e)
         {
             // TextBoxe leeren  
-            for (int i = 0; i < tabControl_Simulation.TabCount; i++)
+            for (int i = 0; i < tabControl1.TabCount; i++)
             {
-                InitTextBoxen(tabControl_Simulation.TabPages[i]);
+                InitTextBoxen(tabControl1.TabPages[i]);
             }
 
             m_Waermebedarf_Gesamt = simulation_Waermebedarf.Waermebedarf_Gesamt;
@@ -728,12 +377,11 @@ namespace WindowsFormsApplication1
             sim.Do_Simulation(m_ID_Projekt);
             Endergebniss_Simulation();
 
-            tabControl_Simulation.SelectedIndex = 1;
-            if (tabControl_Simulation.SelectedTab.Name == "tabPage_Simulation")
+            tabControl1.SelectedIndex = 1;
+            if (tabControl1.SelectedTab.Name == "tabPage_Simulation")
             {
                 listViewQuellen.SelectedIndices.Add(0);
             }
-
         }
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
@@ -861,7 +509,7 @@ namespace WindowsFormsApplication1
             Form_Simulation_Config frm = new Form_Simulation_Config();
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
 
-            mainTabPageIndex = tabControl_Simulation.SelectedIndex; // Aktuellen Index der Haupt-TabPage merken, damit wir nach dem Konfigurationsfenster dorthin zurückspringen können
+            mainTabPageIndex = tabControl1.SelectedIndex; // Aktuellen Index der Haupt-TabPage merken, damit wir nach dem Konfigurationsfenster dorthin zurückspringen können
             ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
             frm.Konfiguration = ctrl.model;
             frm.SetControls(m_ID_Projekt);
@@ -872,8 +520,8 @@ namespace WindowsFormsApplication1
 
             UpdateTabPages();
 
-            tabControl_Simulation.SelectedIndex = mainTabPageIndex;
-            if (tabControl_Simulation.SelectedTab.Name == "tabPage_Simulation")
+            tabControl1.SelectedIndex = mainTabPageIndex;
+            if (tabControl1.SelectedTab.Name == "tabPage_Simulation")
             {
                 listViewQuellen.SelectedIndices.Add(mainTablistIndex);
             }
@@ -945,56 +593,22 @@ namespace WindowsFormsApplication1
                 }
                 textBox_MinSPKLeistung.Text = Max_Spk.ToString("F2");
 
-                // Ansicht & Verhalten konfigurieren
-                listView_SimWP.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                listView_SimWP.MultiSelect = false;
-                listView_SimWP.AllowUserToAddRows = false;
-                listView_SimWP.RowHeadersVisible = false;
-
-                // 1. Zeilenumbruch für den Header aktivieren und feste Höhe vergeben
-                listView_SimWP.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-                listView_SimWP.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-                listView_SimWP.ColumnHeadersHeight = 42;
-
-                // Spalten hinzufügen (\n sorgt für den harten Umbruch)
-                listView_SimWP.Columns.Add("Modul", "Modul");
-                listView_SimWP.Columns.Add("Leistung", "Leistung\n[kW]");
-                listView_SimWP.Columns.Add("Waermeprod", "Wärmeprod.\n[MWh/a]");
-                listView_SimWP.Columns.Add("Stromverbr", "Stromverbr.\n[MWh/a]");
-                listView_SimWP.Columns.Add("Heizstab", "Heizstab\n[MWh/a]");
-                listView_SimWP.Columns.Add("Betriebsstunden", "Betriebsstunden\n[h/a]");
-
-                // 2. Formatierung für die Zahlen-Spalten (Ab Index 1)
-                for (int i = 1; i < listView_SimWP.Columns.Count; i++)
-                {
-                    // Die Datenzeilen (Zahlen) bleiben rechtsbündig für bessere Lesbarkeit
-                    listView_SimWP.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-
-                    // NEU: Der Spaltenkopf (Header) wird exakt mittig zentriert!
-                    listView_SimWP.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                }
-
-                // Automatische Breitenanpassung aktivieren
-                listView_SimWP.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
-
-                // Grid leeren
-                listView_SimWP.Rows.Clear();
-
-                // Daten zeilenweise eintragen
+                listView_SimWP.Items.Clear();
                 for (int i = 0; i < sim.simulation_wp.wp_list.Count(); i++)
                 {
-                    listView_SimWP.Rows.Add(
-                        sim.simulation_wp.WP_Modul[i],
-                        sim.simulation_wp.wp_model[i].Grenzleistung.ToString("F2"),
-                        (sim.simulation_wp.Modul_WP_Waermeproduktion[i] / 1000.0).ToString("F2"),
-                        (sim.simulation_wp.Modul_WP_Strombedarf[i] / 1000.0).ToString("F2"),
-                        (sim.simulation_wp.Modul_Heizstab[i] / 1000.0).ToString("F2"),
-                        sim.simulation_wp.Modul_WP_Laufzeit[i].ToString("F2")
-                    );
+                    ListViewItem lvitem = new ListViewItem();
+                    lvitem.Text = sim.simulation_wp.WP_Modul[i];
+                    lvitem.SubItems.Add(sim.simulation_wp.wp_model[i].Grenzleistung.ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Waermeproduktion[i] / 1000).ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Strombedarf[i] / 1000).ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_Heizstab[i] / 1000).ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Laufzeit[i]).ToString("F2"));
+
+                    listView_SimWP.Items.Add(lvitem);
                 }
 
-                // Spaltenbreiten final an den frisch geschriebenen Inhalt anpassen
-                listView_SimWP.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
+                listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+                listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
                 // charts und Textfelder Wärmepumpe
                 checkBox_WP_sortiert.Checked = true;
@@ -1069,11 +683,9 @@ namespace WindowsFormsApplication1
                     textBox_SPKWaermebedarfsdeckung.Text = (sim.simulation_spk.S_Waerme_spk * 100 / simulation_Waermebedarf.Waermebedarf_Gesamt).ToString("F2");
                 else
                     textBox_SPKWaermebedarfsdeckung.Text = "0";
-                textBox_Waermebedarf_Heizkessel.Text = sim.simulation_spk.Waermebedarf_gesamt.ToString("F2");
-                textBox_Restwermebedarf_Heizkessel.Text = (sim.simulation_spk.Waermebedarf_gesamt - sim.simulation_spk.S_Waerme_spk).ToString("F2");
+                textBox_SPKWaermebedarf.Text = sim.simulation_spk.Waermebedarf_gesamt.ToString("F2");
+                textBox_SPKRestwermebedarf.Text = (sim.simulation_spk.Waermebedarf_gesamt - sim.simulation_spk.S_Waerme_spk).ToString("F2");
                 tb_WaermeprSpk.Text = (sim.simulation_spk.S_Waerme_spk).ToString("F2");
-                textBox_Strombedarf_Heizkessel.Text = (sim.simulation_spk.Strombedarf_gesamt / 1000).ToString("F2");
-                textBox_Reststrombedarf_Heizkessel.Text = (sim.simulation_spk.Strombedarf_gesamt / 1000 + sim.simulation_spk.Stromverbrauch_Spk).ToString("F2");
 
                 tb_Gasverbrauch.Text = (sim.simulation_spk.Gasverbrauch_SPK).ToString("F2");
                 tb_Oelverbrauch.Text = (sim.simulation_spk.Oelverbrauch_SPK).ToString("F2");
@@ -1147,7 +759,7 @@ namespace WindowsFormsApplication1
             textBox_PVUeberschuss.Text = (sim.simulation_pv.Ueberschuss.Sum() / 1000.0).ToString("F2");
             textBox_PVStrombedarfsdeckung.Text = (sim.simulation_pv.Stromproduktion.Sum() * 100 / sim.simulation_pv.Strombedarf_stuendlich.Sum()).ToString("F2");
             textBox_PVStrombedarf.Text = (sim.simulation_pv.Strombedarf.Sum() / 4000.0).ToString("F2");
-            textBox_PVReststrombedarf.Text = (sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0).ToString("F2");
+            textBox_PVReststrombedarf.Text = (sim.simulation_pv.Reststrom_viertelstunde.Sum() / 4000.0).ToString("F2");
 
             _chartManager[9] = new ChartManager(chart_PV);
             _chartManager[9].YMaxValue = sim.simulation_pv.Strombedarf.Max() * 1.1;
@@ -1199,55 +811,17 @@ namespace WindowsFormsApplication1
             textBox_Betriebsstunden.Text = sim.simulation_bhkw.Betriebsstunden.ToString("F0");
             textBox_Betriebsstunden_Durchschnitt.Text = sim.simulation_bhkw.dLaufzeiten.ToString("F0");
 
-            AktualisiereBrennstoffAnzeige(sim.simulation_bhkw);
+            tb_Gasverbrauch_BHKW.Text = (sim.simulation_bhkw.Gasverbrauch_BHKW).ToString("F2");
+            tb_Oelverbrauch_BHKW.Text = (sim.simulation_bhkw.Oelverbrauch_BHKW).ToString("F2");
+            tb_Koks_BHKW.Text = (sim.simulation_bhkw.Koks_BHKW).ToString("F2");
+            tb_Rapsoelverbrauch_BHKW.Text = (sim.simulation_bhkw.Rapsoelverbrauch_BHKW).ToString("F2");
+            tb_Holzverbrauch_BHKW.Text = (sim.simulation_bhkw.Holzmenge_BHKW).ToString("F2");
+            tb_Kohle_BHKW.Text = (sim.simulation_bhkw.Kohle_BHKW).ToString("F2");
+            tb_Sonstigverbrauch_BHKW.Text = (sim.simulation_bhkw.Sonstigemenge_BHKW).ToString("F2");
+            tb_Pellets_BHKW.Text = (sim.simulation_bhkw.Pellets_BHKW).ToString("F2");
+            tb_Koks_BHKW.Text = (sim.simulation_bhkw.Koks_BHKW).ToString("F2");
+            tb_TierischeFette_BHKW.Text = (sim.simulation_bhkw.TierischeFette_BHKW).ToString("F2");
 
-            textBox_Waermebedarf_BHKW.Text = (sim.simulation_bhkw.waermebedarf.Sum() / 1000).ToString("F2");  
-            textBox_Strombedarf_BHKW.Text = (sim.simulation_bhkw.strombedarf.Sum() / 1000).ToString("F2");  
-            textBox_Waermeproduktion_gesamt_BHKW.Text = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh.ToString("F2");
-            textBox_Stromproduktion_gesamt_BHKW.Text = sim.simulation_bhkw.Stromproduktion_BHKW_MWh.ToString("F2");
-
-            float[] restwaerme = sim.SubVectors(sim.simulation_bhkw.waermebedarf, sim.simulation_bhkw.waermeproduktion);
-            textBox_Restwaermebedarf_BHKW.Text = (restwaerme.Sum() / 1000f).ToString("F2"); 
-
-            textBox_Reststrombedarf_BHKW.Text = ((sim.simulation_bhkw.strombedarf.Sum() / 1000) - sim.simulation_bhkw.Stromproduktion_BHKW_MWh).ToString("F2");
-            textBox_Waermeueberschuss_BHKW.Text = (sim.simulation_bhkw.Waermeueberschuss / 1000).ToString("F2");
-
-            if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
-                textBox_Waermedeckung.Text = (sim.simulation_bhkw.Waermeproduktion_BHKW_MWh * 100 / simulation_Waermebedarf.Waermebedarf_Gesamt).ToString("F2");
-            else
-                textBox_Waermedeckung.Text = "0";
-            if (simulation_Strombedarf.Strombedarf_gesamt > 0)
-                textBox_Stromdeckung.Text = (sim.simulation_bhkw.Stromproduktion_BHKW_MWh * 100 / simulation_Strombedarf.Strombedarf_gesamt).ToString("F2");
-            else
-                textBox_Stromdeckung.Text = "0";
-
-            // Grid einmal komplett leeren
-            dataGridView_BHKW.Rows.Clear();
-
-            // Falls eine gültige Simulation vorliegt
-            if (sim != null && sim.simulation_bhkw != null)
-            {
-                // Umrechnung des Überschusses von kWh in MWh
-                double ueberschussMWh = sim.simulation_bhkw.Waermeueberschuss / 1000.0;
-
-                // 2. Werte aus den Simulationsergebnissen ziehen
-                for (int i = 0; i < sim.simulation_bhkw.bhkw_list.Count; i++)
-                {
-                    string name = sim.simulation_bhkw.bhkw_list_Namen[i] ?? "Standard BHKW";
-                    double waermeproduktionMWh = sim.simulation_bhkw.s_waerme_MWh[i];
-                    double stromproduktionMWh = sim.simulation_bhkw.s_strom_MWh[i];
-
-                    // 3. Zeile im DataGridView hinzufügen
-                    dataGridView_BHKW.Rows.Add(
-                        name,
-                        waermeproduktionMWh.ToString("F2"),
-                        stromproduktionMWh.ToString("F2")
-                    );
-                }
-            }
-
-            // Spaltenbreiten an den neuen Inhalt anpassen
-            dataGridView_BHKW.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
 
             // ********************************************************************************************/
             // Ergebnisübersicht
@@ -1660,7 +1234,6 @@ namespace WindowsFormsApplication1
                     if (geklickterButton.Tag != null)
                     {
                         bhkwSimulationsArt = Convert.ToInt32(geklickterButton.Tag);
-                        SpeichereKonfigurationsAenderung(model => model.Betriebsart = Convert.ToInt32(geklickterButton.Tag));
 
                         // Zum Testen im Ausgabefenster:
                         System.Diagnostics.Debug.WriteLine($"Simulationsart geändert auf: {bhkwSimulationsArt}");
@@ -1690,15 +1263,8 @@ namespace WindowsFormsApplication1
                 {
                     TabPage zielPage = dictAllTabPages[targetTabName];
 
-                    // === HIER DIE ENTSCHEIDENDE WEICHE ===
-                    // Wenn die neue Zielseite absolut identisch mit der bereits geladenen Seite ist
-                    // und sich bereits Controls im Panel befinden, brechen wir sofort ab!
-                    if (aktuellAusgeliehenePage == zielPage && splitContainer_Parameter.Panel2.Controls.Count > 0)
-                    {
-                        return; // Nichts tun, die Controls sind schon da und bleiben unberührt!
-                    }
-
-                    // 2. KORREKTUR: Nur zurücklegen, wenn vorher eine ANDERE Seite ausgeliehen war!
+                    // 2. WICHTIG: Wenn vorher schon Controls einer ANDEREN Seite im Panel2 waren,
+                    // müssen wir diese zuerst sauber auf ihre originale TabPage zurücklegen!
                     if (aktuellAusgeliehenePage != null && aktuellAusgeliehenePage != zielPage)
                     {
                         // Solange noch Steuerelemente im rechten Panel liegen...
@@ -1710,13 +1276,14 @@ namespace WindowsFormsApplication1
                         }
                     }
 
-                    // 3. Rechtes Panel komplett leeren (Passiert jetzt nur noch bei echtem Seitenwechsel)
+                    // 3. Rechtes Panel komplett leeren
                     splitContainer_Parameter.Panel2.Controls.Clear();
 
                     // Die neue Zielseite als aktuell ausgeliehen merken
                     aktuellAusgeliehenePage = zielPage;
 
                     // 4. Alle Controls der neuen Ziel-TabPage in eine temporäre Liste kopieren
+                    // (Direktes Verschieben in einer foreach-Schleife führt in C# zu Fehlern)
                     List<Control> controlsToMove = new List<Control>();
                     foreach (Control c in zielPage.Controls)
                     {
@@ -1733,6 +1300,7 @@ namespace WindowsFormsApplication1
                     // 6. Dem Windows-Form sagen, dass es das rechte Panel frisch zeichnen soll
                     splitContainer_Parameter.Panel2.Refresh();
                 }
+
             }
         }
 
@@ -1749,41 +1317,27 @@ namespace WindowsFormsApplication1
 
         private void VereinheitlichePageSchriftarten(Control parentControl)
         {
-            string zielFamilie = "Segoe UI";
-            float zielGroesse = 10f;
+            // Die gewünschte Ziel-Schriftart definieren (Segoe UI, 9.75pt)
+            Font zielFont = new Font("Segoe UI", 9.75f, FontStyle.Regular);
 
             foreach (Control ctrl in parentControl.Controls)
             {
-                // Wenn es ein DataGridView ist, passen wir es speziell an
-                if (ctrl is DataGridView dgv)
-                {
-                    // 1. Schriftgröße für die normalen Tabellenzellen (Größe 10)
-                    dgv.DefaultCellStyle.Font = new Font(zielFamilie, zielGroesse, FontStyle.Regular);
-
-                    // 2. Schriftgröße für den Spaltenkopf / Header (Größe 10)
-                    // Hier lesen wir den aktuellen Stil aus, falls der Header z.B. Fett markiert ist
-                    FontStyle headerStil = dgv.ColumnHeadersDefaultCellStyle.Font?.Style ?? FontStyle.Regular;
-                    dgv.ColumnHeadersDefaultCellStyle.Font = new Font(zielFamilie, zielGroesse, headerStil);
-
-                    // 3. Optional: Auch für die Zeilenköpfe ganz links (falls eingeblendet)
-                    dgv.RowHeadersDefaultCellStyle.Font = new Font(zielFamilie, zielGroesse, FontStyle.Regular);
-                }
-                // Alle anderen Standard-Controls (außer Charts und ListViews)
-                else if (!(ctrl is System.Windows.Forms.DataVisualization.Charting.Chart) && !(ctrl is ListView))
+                // Wenn es sich um Labels, TextBoxen, GroupBoxen, RadioButtons etc. handelt, Schrift anpassen
+                // (Wir klammern Charts oder spezielle Listen aus, falls diese eigene Formatierungen haben)
+                if (!(ctrl is System.Windows.Forms.DataVisualization.Charting.Chart) && !(ctrl is ListView))
                 {
                     if (ctrl is RichTextBox)
                     {
-                        FontStyle aktuellerStil = ctrl.Font?.Style ?? FontStyle.Regular;
-                        ctrl.Font = new Font(zielFamilie, 8f, aktuellerStil);
+                        Font rtFont = new Font("Segoe UI", 8f, FontStyle.Regular);
+                        ctrl.Font = rtFont;
                     }
                     else
                     {
-                        FontStyle aktuellerStil = ctrl.Font?.Style ?? FontStyle.Regular;
-                        ctrl.Font = new Font(zielFamilie, zielGroesse, aktuellerStil);
+                        ctrl.Font = zielFont;
                     }
                 }
 
-                // Rekursion für Unterelemente
+                // Falls das Steuerelement tiefere Unterelemente hat (z.B. eine GroupBox), gehen wir rekursiv rein
                 if (ctrl.Controls.Count > 0)
                 {
                     VereinheitlichePageSchriftarten(ctrl);
@@ -1791,208 +1345,9 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void checkBox_Heizstab_CheckedChanged(object sender, EventArgs e)
+        private void tabPage_BHKW_Click(object sender, EventArgs e)
         {
-            SpeichereKonfigurationsAenderung(model => model.m_WP_Heizstab = checkBox_Heizstab.Checked);
-        }
 
-        private void SpeichereKonfigurationsAenderung(Action<KonfigurationModel> anpassungsAktion)
-        {
-            try
-            {
-                // Controller instanziieren und aktuellen DB-Stand laden
-                KonfigurationCtrl ctrl = new KonfigurationCtrl();
-                ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
-
-                if (ctrl.rows > 0)
-                {
-                    // Die übergebene Aktion ausführen (z. B. den Wert des Controls zuweisen)
-                    anpassungsAktion(ctrl.model);
-
-                    // Den gesamten Datensatz mit der neuen Änderung aktualisieren
-                    ctrl.Update(m_ID_Projekt);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Fehler beim automatischen Speichern: " + ex.Message);
-            }
-        }
-
-        private void LeseKonfiguration()
-        {
-            KonfigurationCtrl ctrl = new KonfigurationCtrl();
-            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
-            if (ctrl.rows > 0)
-            {
-                checkBox_Heizstab.Checked = ctrl.model.m_WP_Heizstab;
-                textBox_Netzverluste.Text = ctrl.model.m_Netzverluste.ToString();
-                comboBox_NetzvEinheit.Text = ctrl.model.m_szNetzverlusteEinheit;
-                numericUpDown_UnteresteLG.Value = (decimal)ctrl.model.Leistungsgrenze;
-                numericUpDown_Volumen.Value = (decimal)ctrl.model.Pendelspeicher;
-                textBox_Bereitschaft.Text = ctrl.model.m_Kessel_Betriebsbereitschaft.ToString();
-                int mode = ctrl.model.Betriebsart;
-                radioButton_OhneStromEinspeisung.CheckedChanged -= radioButton_Stromgefuehrt_CheckedChanged;
-                if (mode == 0) radioButton_Waermegefuehrt.Checked = true;
-                else if (mode == 1) radioButton_Stromgefuehrt.Checked = true;
-                else radioButton_OhneStromEinspeisung.Checked = true;
-                radioButton_OhneStromEinspeisung.CheckedChanged += radioButton_Stromgefuehrt_CheckedChanged;
-                textBox_Stromspeicher_Ladeenergie_min.Text = ctrl.model.m_Ladefuellstand_Min.ToString();
-                textBox_Stromspeicher_Ladeenergie_max.Text = ctrl.model.m_Ladefuellstand_Max.ToString();
-                comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text = ctrl.model.m_Ladefuellstand_Min_Auswahl;
-                comboBox_Stromspeicher_LadeenergieMax_auswahl.Text = ctrl.model.m_Ladefuellstand_Max_Auswahl;
-                textBox_Stromspeicher_Ladeleistung_max.Text = ctrl.model.m_Ladeleistung_Max.ToString();
-                comboBox_Stromspeicher_LadeleistungMax_auswahl.Text = ctrl.model.m_Ladeleistung_Max_Auswahl.ToString();
-                textBox_Speicher_Ladeschwelle.Text = ctrl.model.m_Ladeschwellwert.ToString();
-            }
-        }
-
-        private void numericUpDown_UnteresteLG_Leave(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.Leistungsgrenze = (int)numericUpDown_UnteresteLG.Value);
-        }
-
-        private void numericUpDown_Volumen_Leave(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.Pendelspeicher = (double)numericUpDown_Volumen.Value);
-        }
-
-        private void textBox_Netzverluste_Leave(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.m_Netzverluste = Convert.ToDouble(textBox_Netzverluste.Text));
-        }
-
-        private void comboBox_NetzvEinheit_SelectedValueChanged(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.m_szNetzverlusteEinheit = comboBox_NetzvEinheit.Text);
-        }
-
-        private void textBox_Bereitschaft_Leave(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.m_Kessel_Betriebsbereitschaft = Convert.ToInt32(textBox_Bereitschaft.Text));
-        }
-
-
-
-        private void textBox_Stromspeicher_Ladeenergie_min_Leave(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladefuellstand_Min = Convert.ToInt32(textBox_Stromspeicher_Ladeenergie_min.Text));
-        }
-
-        private void textBox_Stromspeicher_Ladeenergie_max_Leave(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladefuellstand_Max = Convert.ToInt32(textBox_Stromspeicher_Ladeenergie_max.Text));
-        }
-
-        private void textBox_Stromspeicher_Ladeleistung_max_Leave(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladeleistung_Max = Convert.ToInt32(textBox_Stromspeicher_Ladeleistung_max.Text));
-        }
-
-        private void textBox_Speicher_Ladeschwelle_Leave(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladeschwellwert = Convert.ToDouble(textBox_Speicher_Ladeschwelle.Text));
-        }
-
-        private void comboBox_Stromspeicher_LadeenergieMax_auswahl_SelectedValueChanged(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladefuellstand_Max_Auswahl = comboBox_Stromspeicher_LadeenergieMax_auswahl.Text);
-        }
-
-        private void comboBox8_Stromspeicher_LadeenergieMin_auswahl_SelectedValueChanged(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladefuellstand_Min_Auswahl = comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text);
-        }
-
-        private void comboBox_Stromspeicher_LadeleistungMax_auswahl_SelectedValueChanged(object sender, EventArgs e)
-        {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladeleistung_Max_Auswahl = comboBox_Stromspeicher_LadeleistungMax_auswahl.Text);
-        }
-
-        private Panel ErstelleBrennstoffZeile(string bezeichnung, double verbrauchswert)
-        {
-            // Ein schmales, horizontales Container-Panel für eine Zeile
-            Panel zeilenPanel = new Panel();
-            zeilenPanel.Size = new Size(350, 30); // Breite an dein UI anpassen, Höhe 30px
-            zeilenPanel.Margin = new Padding(0, 2, 0, 2);
-
-            // 1. Das Label für die Bezeichnung (z.B. "Gasverbrauch (Hu):")
-            Label lblName = new Label();
-            lblName.Text = bezeichnung;
-            lblName.Location = new Point(0, 5);
-            lblName.Size = new Size(150, 20); // Genug Platz für den Text
-            lblName.TextAlign = ContentAlignment.MiddleLeft;
-
-            // 2. Die TextBox für den berechneten Simulationswert
-            TextBox txtWert = new TextBox();
-            txtWert.Text = verbrauchswert.ToString("F2");
-            txtWert.Location = new Point(160, 2);
-            txtWert.Size = new Size(80, 20);
-            txtWert.ReadOnly = true; // Simulationsergebnisse sollten schreibgeschützt sein
-            txtWert.TextAlign = HorizontalAlignment.Right;
-
-            // 3. Das Label für die Einheit
-            Label lblEinheit = new Label();
-            lblEinheit.Text = "MWh/a";
-            lblEinheit.Location = new Point(245, 5);
-            lblEinheit.Size = new Size(60, 20);
-            lblEinheit.TextAlign = ContentAlignment.MiddleLeft;
-
-            // Alle drei Steuerelemente in das Zeilen-Panel packen
-            zeilenPanel.Controls.Add(lblName);
-            zeilenPanel.Controls.Add(txtWert);
-            zeilenPanel.Controls.Add(lblEinheit);
-
-            return zeilenPanel;
-        }
-
-        private void AktualisiereBrennstoffAnzeige(SimulationBHKW simBHKW)
-        {
-            // Verhindert Flackern beim Neuaufbau
-            flowLayoutPanelBrennstoffe.SuspendLayout();
-
-            // Alte dynamische Zeilen restlos löschen
-            flowLayoutPanelBrennstoffe.Controls.Clear();
-
-            // Beispiel-Logik: Prüfe deine DB-Werte oder Simulationsergebnisse
-            // Füge nur hinzu, was wirklich verbraucht wurde oder definiert ist
-
-            if (simBHKW.Gasverbrauch_BHKW > 0)
-            {
-                var zeile = ErstelleBrennstoffZeile("Gasverbrauch (Hu):", simBHKW.Gasverbrauch_BHKW);
-                flowLayoutPanelBrennstoffe.Controls.Add(zeile);
-            }
-
-            if (simBHKW.Oelverbrauch_BHKW > 0)
-            {
-                var zeile = ErstelleBrennstoffZeile("Ölverbrauch:", simBHKW.Oelverbrauch_BHKW);
-                flowLayoutPanelBrennstoffe.Controls.Add(zeile);
-            }
-
-            if (simBHKW.Holzmenge_BHKW > 0)
-            {
-                var zeile = ErstelleBrennstoffZeile("Holzverbrauch:", simBHKW.Holzmenge_BHKW);
-                flowLayoutPanelBrennstoffe.Controls.Add(zeile);
-            }
-
-            if (simBHKW.Pellets_BHKW > 0)
-            {
-                var zeile = ErstelleBrennstoffZeile("Pellets:", simBHKW.Pellets_BHKW);
-                flowLayoutPanelBrennstoffe.Controls.Add(zeile);
-            }
-
-            // Falls GAR kein Brennstoff aktiv war (z.B. Fehler im Datensatz)
-            if (flowLayoutPanelBrennstoffe.Controls.Count == 0)
-            {
-                Label lblHinweis = new Label();
-                lblHinweis.Text = "Kein Brennstoff für dieses BHKW definiert.";
-                lblHinweis.ForeColor = Color.Red;
-                lblHinweis.AutoSize = true;
-                flowLayoutPanelBrennstoffe.Controls.Add(lblHinweis);
-            }
-
-            // Layout wieder freigeben -> Windows Forms ordnet alles perfekt untereinander an!
-            flowLayoutPanelBrennstoffe.ResumeLayout();
         }
     }
 
