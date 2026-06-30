@@ -1,0 +1,195 @@
+using System;
+using System.Collections.Generic;
+using System.Data.OleDb;
+using System.Windows.Forms;
+
+namespace WindowsFormsApplication1
+{
+    partial class Form_Stromverbraucher_Admin : Form
+    {
+        private SimulationStrombedarf simulation = new SimulationStrombedarf();
+        private StromverbraucherModel model = new StromverbraucherModel();
+        private StromverbraucherCtrl ctrl = new StromverbraucherCtrl();
+        public List<Z_ProjektStromverbraucherModel> list_pwmodel = new List<Z_ProjektStromverbraucherModel>();
+        
+        public int m_ID_Projekt = 0;
+        public string m_szProjekt = "";
+        public bool m_bAdmin = false;
+        
+        public Form_Stromverbraucher_Admin()
+        {
+            InitializeComponent();
+        }
+
+        public void SetControls(string szProjekt)
+        {
+            Z_ProjektStromverbraucherModel ctrl = new Z_ProjektStromverbraucherModel();
+            StromverbraucherCtrl ctrl_pw = new StromverbraucherCtrl();
+            Z_ProjektStromverbraucherModel model = new Z_ProjektStromverbraucherModel();
+
+            m_szProjekt = szProjekt; 
+            listBox_Verbraucher_DB.Items.Clear();
+            ctrl_pw.ReadAll();
+            
+            for (int i = 0; i < ctrl_pw.rows; i++)
+            {
+                listBox_Verbraucher_DB.Items.Add(ctrl_pw.items[i].m_szBezeichner);
+            }
+            if (listBox_Verbraucher_DB.Items.Count > 0) listBox_Verbraucher_DB.SelectedIndex = 0;
+   
+        }
+
+        private void listBox_Prozess_DB_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ListBox list = (ListBox)sender;
+            string szName = list.Text;
+            textBox_Jahres_Verbrauch.Text = Prozesssumme(szName).ToString("F2");
+            SetProzessInfo(szName);
+        }
+
+        private void SetProzessInfo(string szName)
+        {
+            StromverbraucherCtrl ctrl = new StromverbraucherCtrl();
+            ctrl.ReadSingle(szName);
+
+            if (ctrl.rows > 0)
+            {
+                textBox_Name.Text = szName;
+                textBox_Beschreibung.Text = ctrl.m_szBeschreibung;
+                textBox_Type.Text = ctrl.m_szTyp;  
+            }
+        }
+
+        private double Prozesssumme(string szName)
+        {
+            StromverbraucherCtrl ctrl = new StromverbraucherCtrl();
+            ctrl.ReadSingle(szName);
+
+            double summe = 0;
+            if (ctrl.rows > 0)
+            {
+                for (int i = 0; i < 12; i++)
+                {
+                    summe += ctrl.m_Monat[i];
+                }
+            }
+            return summe;  
+        }
+
+        private void btn_OK_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            Close();
+        }
+
+        private void btn_Abbrechen_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel; 
+            Close();
+        }
+
+        private void btn_Simulation_Click(object sender, EventArgs e)
+        {
+            List<string> list = new List<string>();
+            float[] result = new float[8760];
+
+            list.Add(listBox_Verbraucher_DB.Text);
+            result = simulation.Stromprofil_Strombedarf_berechnen(list);
+            if (result == null) return;
+            simulation.Strombedarf_Gebaeude_gesamt = simulation.com.I_vector_summe(result);
+            //simulation.com.CSharp_I_vectoren_addieren(simulation.prozesswerte, simulation.Strombedarf_viertelStundenwerte);
+            Array.Copy(result, simulation.Strombedarf_viertelStundenwerte, result.Length);
+
+            simulation.com.I_monats_summe(simulation.Strombedarf_viertelStundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
+            simulation.Strombedarf_Max = simulation.Maximaler_Strombedarf(simulation.Strombedarf_viertelStundenwerte);
+            simulation.Strombedarf_gesamt = simulation.Strombedarf_Gebaeude_gesamt;
+            
+            Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();
+            frm.Init(simulation);
+            frm.SetPage(1); 
+            frm.ShowDialog();
+        }
+
+        private void btn_ErgebnisseVerbrauch_Click(object sender, EventArgs e)
+        {
+            Form_ErgStromverbraucher frm = new Form_ErgStromverbraucher();
+            frm.Init(simulation);
+            frm.SetPage(1);
+            frm.ShowDialog(); 
+        }
+
+        private void btn_Prozess_DBedit_Click(object sender, EventArgs e)
+        {
+            Form_EingDBStromverbraucher frm = new Form_EingDBStromverbraucher();
+            frm.m_szStromname = textBox_Name.Text;
+            frm.m_szBeschreibung = textBox_Beschreibung.Text;
+            frm.m_szStromtyp = textBox_Type.Text;
+            frm.mode = "Bearbeiten";
+            frm.SetControls();
+            frm.ShowDialog();
+            SetControls(m_szProjekt); 
+        }
+
+        private void btn_Prozess_loeschen_Click(object sender, EventArgs e)
+        {
+            // Sicherheitsabfrage, ob überhaupt etwas selektiert ist
+            if (string.IsNullOrEmpty(listBox_Verbraucher_DB.Text))
+            {
+                MessageBox.Show("Bitte wählen Sie zuerst einen Verbraucher aus!");
+                return;
+            }
+
+            DialogResult dialogResult = MessageBox.Show(
+                $"Soll {listBox_Verbraucher_DB.Text} wirklich gelöscht werden ?",
+                "Löschen",
+                MessageBoxButtons.YesNo
+            );
+
+            if (dialogResult == DialogResult.No) return;
+
+            try
+            {
+                // 1. SQL-Syntax für Access/OLEDB korrigieren und Parameter (?) nutzen
+                string sql = "DELETE FROM Tab_Stromverbraucher WHERE Bezeichner = ?";
+                OleDbParameter parameter = new OleDbParameter("?", listBox_Verbraucher_DB.Text);
+
+                // 2. Befehl über das zentrale Repository ausführen
+                DataRepository.ExecuteNonQuery(sql, parameter);
+
+                // 3. Erst wenn in der DB erfolgreich gelöscht wurde, aus der ListBox entfernen
+                listBox_Verbraucher_DB.Items.Remove(listBox_Verbraucher_DB.Text);
+            }
+            catch (Exception ex)
+            {
+                // Fängt sowohl OleDbExceptions als auch allgemeine Fehler ab
+                Console.WriteLine("Fehler beim Löschen des Verbrauchers: " + ex.Message);
+                MessageBox.Show("Der Datensatz konnte nicht gelöscht werden: " + ex.Message);
+            }
+        }
+
+        private void btn_Prozess_DBneu_Click(object sender, EventArgs e)
+        {
+            Form_EingDBStromverbraucher frm = new Form_EingDBStromverbraucher();
+            Form_Sp_ItemNeu frm_item = new Form_Sp_ItemNeu();
+            
+            if (frm_item.ShowDialog() == DialogResult.OK)
+            {
+                frm.m_szStromname = frm_item.m_szName;
+                frm.mode = "Neu";
+                frm.SetControls();
+                frm.ShowDialog();
+                SetControls(m_szProjekt);
+            }
+        }
+
+        private void btn_ProzTypeDBedit_Click(object sender, EventArgs e)
+        {
+            Form_EingStromTyp frm = new Form_EingStromTyp();
+            frm.SetControls(); 
+            frm.ShowDialog(); 
+        }
+
+ 
+  
+    }
+}
