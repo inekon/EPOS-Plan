@@ -65,6 +65,8 @@ namespace WindowsFormsApplication1
                 MessageBox.Show("Bitte zuerst die Konfiguration festlegen.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
+
             string[] tool = new string[6];
             tool[0] = ctrl.model.m_Tool_1;
             tool[1] = ctrl.model.m_Tool_2;
@@ -88,8 +90,6 @@ namespace WindowsFormsApplication1
             simulation_Strombedarf.m_ID_Projekt = m_ID_Projekt; 
             simulation_Strombedarf.Berechnung(m_ID_Projekt);
 
-            //Do_Simulation( ctrl, tool, simulation_Waermebedarf, simulation_Strombedarf);
-
             SimulationControl sim = new SimulationControl();
             sim.tool = tool;
             sim.Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
@@ -109,6 +109,9 @@ namespace WindowsFormsApplication1
             textBox_SPKWaermeproduktion.Text = sim.simulation_spk.S_Waerme_spk.ToString("F2");
             textBox_HeizstabStromverbrauch.Text = (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
             textBox_SPKStromverbrauch.Text = sim.simulation_spk.Stromverbrauch_Spk.ToString("F2");
+            textBox_BHKWWaermeproduktion.Text = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh.ToString("F2");
+            textBox_BHKWStromproduktion.Text = sim.simulation_bhkw.Stromproduktion_BHKW_MWh.ToString("F2");
+
 
             chart5.Series[0].Points.Clear();
             if (sim.simulation_wp.WP_Waermeproduktion_gesamt > 0)
@@ -117,6 +120,8 @@ namespace WindowsFormsApplication1
                 chart5.Series[0].Points.AddXY("Heizstab", sim.simulation_wp.Heizstab_gesamt / 1000);
             if (sim.simulation_spk.S_Waerme_spk > 0)
                 chart5.Series[0].Points.AddXY("Heizkessel", sim.simulation_spk.S_Waerme_spk);
+            if (sim.simulation_bhkw.Waermeproduktion_BHKW_MWh > 0)
+                chart5.Series[0].Points.AddXY("BHKW", sim.simulation_bhkw.Waermeproduktion_BHKW_MWh);
             if (sim.Restwaerme > 0)
                 chart5.Series[0].Points.AddXY("Rest",sim.Restwaerme);
 

@@ -1400,7 +1400,7 @@
     <value>5</value>
   </data>
   <data name="textBox_Reststrombedarf_Heizkessel.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI Semibold, 10pt</value>
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_Reststrombedarf_Heizkessel.Location" type="System.Drawing.Point, System.Drawing">
     <value>699, 139</value>
@@ -1499,7 +1499,7 @@
     <value>NoControl</value>
   </data>
   <data name="label95.Location" type="System.Drawing.Point, System.Drawing">
-    <value>452, 142</value>
+    <value>438, 142</value>
   </data>
   <data name="label95.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -1571,7 +1571,7 @@
     <value>NoControl</value>
   </data>
   <data name="label97.Location" type="System.Drawing.Point, System.Drawing">
-    <value>451, 113</value>
+    <value>437, 113</value>
   </data>
   <data name="label97.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -1750,11 +1750,8 @@
   <data name="&gt;&gt;textBox_Waermebedarf_Heizkessel.ZOrder" xml:space="preserve">
     <value>10</value>
   </data>
-  <data name="textBox_Restwermebedarf_Heizkessel.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
   <data name="textBox_Restwermebedarf_Heizkessel.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt, style=Bold</value>
+    <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="textBox_Restwermebedarf_Heizkessel.Location" type="System.Drawing.Point, System.Drawing">
     <value>699, 81</value>
@@ -2273,7 +2270,7 @@
     <value>NoControl</value>
   </data>
   <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>451, 281</value>
+    <value>437, 281</value>
   </data>
   <data name="label3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -2345,7 +2342,7 @@
     <value>NoControl</value>
   </data>
   <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>451, 57</value>
+    <value>437, 57</value>
   </data>
   <data name="label6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -2378,7 +2375,7 @@
     <value>NoControl</value>
   </data>
   <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>452, 82</value>
+    <value>438, 82</value>
   </data>
   <data name="label4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -2480,7 +2477,7 @@
     <value>NoControl</value>
   </data>
   <data name="label46.Location" type="System.Drawing.Point, System.Drawing">
-    <value>451, 214</value>
+    <value>437, 214</value>
   </data>
   <data name="label46.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -2519,7 +2516,7 @@
     <value>NoControl</value>
   </data>
   <data name="label59.Location" type="System.Drawing.Point, System.Drawing">
-    <value>451, 246</value>
+    <value>437, 246</value>
   </data>
   <data name="label59.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3299,7 +3296,7 @@
     <value>NoControl</value>
   </data>
   <data name="label112.Location" type="System.Drawing.Point, System.Drawing">
-    <value>451, 182</value>
+    <value>437, 182</value>
   </data>
   <data name="label112.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
