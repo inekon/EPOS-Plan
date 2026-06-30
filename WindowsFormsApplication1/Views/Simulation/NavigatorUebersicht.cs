@@ -227,25 +227,23 @@ namespace WindowsFormsApplication1
                         + (sim.simulation_wp.WP_Strombedarf_gesamt
                         + sim.simulation_wp.Heizstab_gesamt
                         + sim.simulation_spk.Stromverbrauch_Spk
-                        ) / 1000;
+                        );
 
             double[] werteStrom = new double[4];
             if (sb_gesamt > 0)
             {
                 werteStrom[0] = se_pv * 100 / sb_gesamt;
                 werteStrom[1] = se_bhkw * 100 / sb_gesamt;
-                werteStrom[2] = se_spk * 100 / sb_gesamt; 
-                werteStrom[3] = Math.Max(0, (sb_gesamt - se_pv - se_spk - se_bhkw) * 100 / sb_gesamt);
+                werteStrom[2] = Math.Max(0, (sb_gesamt - se_pv - se_bhkw) * 100 / sb_gesamt);
             }
             else
             {
                 werteStrom[0] = 0;
                 werteStrom[1] = 0;
                 werteStrom[2] = 0;
-                werteStrom[3] = 0;
             }
 
-            string[] namenStrom = { "Photovoltaik", "BHKW", "Heizkessel", "Reststrom" };
+            string[] namenStrom = { "Photovoltaik", "BHKW", "Reststrom" };
 
             Rectangle innerStrom = new Rectangle(rectStromChart.X + 10, rectStromChart.Y + 20, rectStromChart.Width - 20, rectStromChart.Height - 30);
             

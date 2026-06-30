@@ -778,7 +778,7 @@ namespace WindowsFormsApplication1
                 textBox_Restwermebedarf_Heizkessel.Text = (sim.simulation_spk.Waermebedarf_gesamt - sim.simulation_spk.S_Waerme_spk).ToString("F2");
                 tb_WaermeprSpk.Text = (sim.simulation_spk.S_Waerme_spk).ToString("F2");
                 textBox_Strombedarf_Heizkessel.Text = (sim.simulation_spk.Strombedarf_gesamt / 1000).ToString("F2");
-                textBox_Reststrombedarf_Heizkessel.Text = ((sim.simulation_spk.Strombedarf_gesamt + sim.simulation_spk.Stromverbrauch_Spk) / 1000).ToString("F2");
+                textBox_Reststrombedarf_Heizkessel.Text = (sim.simulation_spk.Strombedarf_gesamt / 1000 + sim.simulation_spk.Stromverbrauch_Spk).ToString("F2");
 
                 tb_Gasverbrauch.Text = (sim.simulation_spk.Gasverbrauch_SPK).ToString("F2");
                 tb_Oelverbrauch.Text = (sim.simulation_spk.Oelverbrauch_SPK).ToString("F2");
