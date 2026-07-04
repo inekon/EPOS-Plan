@@ -320,7 +320,7 @@
     <value>tabControl_Simulation</value>
   </data>
   <data name="&gt;&gt;tabPage_Ergebnis.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="textBox_PVStrombedarf.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -836,7 +836,7 @@
     <value>tabControl_Simulation</value>
   </data>
   <data name="&gt;&gt;tabPage_Photovoltaik.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="label83.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -1397,7 +1397,7 @@
     <value>tabControl_Simulation</value>
   </data>
   <data name="&gt;&gt;tabPage_Solarthermie.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="textBox_Reststrombedarf_Heizkessel.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -3431,7 +3431,7 @@
     <value>tabControl_Simulation</value>
   </data>
   <data name="&gt;&gt;tabPage_Heizkessel.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="checkBox_StromSortiert.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -4244,10 +4244,127 @@
     <value>tabControl_Simulation</value>
   </data>
   <data name="&gt;&gt;tabPage_Bedarf.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="tabControl_Einstellungen.Appearance" type="System.Windows.Forms.TabAppearance, System.Windows.Forms">
     <value>Buttons</value>
+  </data>
+  <data name="textBox_Netzverluste.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="textBox_Netzverluste.Location" type="System.Drawing.Point, System.Drawing">
+    <value>131, 31</value>
+  </data>
+  <data name="textBox_Netzverluste.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 25</value>
+  </data>
+  <data name="textBox_Netzverluste.TabIndex" type="System.Int32, mscorlib">
+    <value>227</value>
+  </data>
+  <data name="textBox_Netzverluste.Text" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;textBox_Netzverluste.Name" xml:space="preserve">
+    <value>textBox_Netzverluste</value>
+  </data>
+  <data name="&gt;&gt;textBox_Netzverluste.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBox_Netzverluste.Parent" xml:space="preserve">
+    <value>tabPage_Bedarf_Parameter</value>
+  </data>
+  <data name="&gt;&gt;textBox_Netzverluste.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="label104.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="label104.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="label104.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label104.Location" type="System.Drawing.Point, System.Drawing">
+    <value>45, 32</value>
+  </data>
+  <data name="label104.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 17</value>
+  </data>
+  <data name="label104.TabIndex" type="System.Int32, mscorlib">
+    <value>228</value>
+  </data>
+  <data name="label104.Text" xml:space="preserve">
+    <value>Netzverluste</value>
+  </data>
+  <data name="&gt;&gt;label104.Name" xml:space="preserve">
+    <value>label104</value>
+  </data>
+  <data name="&gt;&gt;label104.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label104.Parent" xml:space="preserve">
+    <value>tabPage_Bedarf_Parameter</value>
+  </data>
+  <data name="&gt;&gt;label104.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Items" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Items1" xml:space="preserve">
+    <value>kWh/a</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Location" type="System.Drawing.Point, System.Drawing">
+    <value>214, 31</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Size" type="System.Drawing.Size, System.Drawing">
+    <value>68, 25</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.TabIndex" type="System.Int32, mscorlib">
+    <value>229</value>
+  </data>
+  <data name="comboBox_NetzvEinheit.Text" xml:space="preserve">
+    <value>%</value>
+  </data>
+  <data name="&gt;&gt;comboBox_NetzvEinheit.Name" xml:space="preserve">
+    <value>comboBox_NetzvEinheit</value>
+  </data>
+  <data name="&gt;&gt;comboBox_NetzvEinheit.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBox_NetzvEinheit.Parent" xml:space="preserve">
+    <value>tabPage_Bedarf_Parameter</value>
+  </data>
+  <data name="&gt;&gt;comboBox_NetzvEinheit.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="tabPage_Bedarf_Parameter.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 33</value>
+  </data>
+  <data name="tabPage_Bedarf_Parameter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1016, 414</value>
+  </data>
+  <data name="tabPage_Bedarf_Parameter.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="tabPage_Bedarf_Parameter.Text" xml:space="preserve">
+    <value>Wärme-/Strombedarf</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Bedarf_Parameter.Name" xml:space="preserve">
+    <value>tabPage_Bedarf_Parameter</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Bedarf_Parameter.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Bedarf_Parameter.Parent" xml:space="preserve">
+    <value>tabControl_Einstellungen</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Bedarf_Parameter.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="richTextBox_Info.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -4515,13 +4632,13 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>5</value>
   </data>
   <data name="tabPage_BHKW_Parameter.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 33</value>
+    <value>4, 27</value>
   </data>
   <data name="tabPage_BHKW_Parameter.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tabPage_BHKW_Parameter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>760, 376</value>
+    <value>1016, 420</value>
   </data>
   <data name="tabPage_BHKW_Parameter.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -4539,7 +4656,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabControl_Einstellungen</value>
   </data>
   <data name="&gt;&gt;tabPage_BHKW_Parameter.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="comboBox_Stromspeicher_LadeleistungMax_auswahl.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -4920,7 +5037,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tabPage_Stromspeicher_Parameter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>760, 382</value>
+    <value>1016, 420</value>
   </data>
   <data name="tabPage_Stromspeicher_Parameter.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -4938,7 +5055,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabControl_Einstellungen</value>
   </data>
   <data name="&gt;&gt;tabPage_Stromspeicher_Parameter.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="checkBox_Heizstab.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -4980,7 +5097,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>4, 27</value>
   </data>
   <data name="tabPage_Wärmepumpe_Parameter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>760, 382</value>
+    <value>1016, 420</value>
   </data>
   <data name="tabPage_Wärmepumpe_Parameter.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -4998,7 +5115,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabControl_Einstellungen</value>
   </data>
   <data name="&gt;&gt;tabPage_Wärmepumpe_Parameter.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="textBox_Bereitschaft.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9.75pt</value>
@@ -5106,7 +5223,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>4, 27</value>
   </data>
   <data name="tabPage_Heizkessel_Parameter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>760, 382</value>
+    <value>1016, 420</value>
   </data>
   <data name="tabPage_Heizkessel_Parameter.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -5124,130 +5241,13 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabControl_Einstellungen</value>
   </data>
   <data name="&gt;&gt;tabPage_Heizkessel_Parameter.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="textBox_Netzverluste.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="textBox_Netzverluste.Location" type="System.Drawing.Point, System.Drawing">
-    <value>131, 31</value>
-  </data>
-  <data name="textBox_Netzverluste.Size" type="System.Drawing.Size, System.Drawing">
-    <value>77, 25</value>
-  </data>
-  <data name="textBox_Netzverluste.TabIndex" type="System.Int32, mscorlib">
-    <value>227</value>
-  </data>
-  <data name="textBox_Netzverluste.Text" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;textBox_Netzverluste.Name" xml:space="preserve">
-    <value>textBox_Netzverluste</value>
-  </data>
-  <data name="&gt;&gt;textBox_Netzverluste.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox_Netzverluste.Parent" xml:space="preserve">
-    <value>tabPage_Bedarf_Parameter</value>
-  </data>
-  <data name="&gt;&gt;textBox_Netzverluste.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="label104.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label104.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="label104.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="label104.Location" type="System.Drawing.Point, System.Drawing">
-    <value>45, 32</value>
-  </data>
-  <data name="label104.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 17</value>
-  </data>
-  <data name="label104.TabIndex" type="System.Int32, mscorlib">
-    <value>228</value>
-  </data>
-  <data name="label104.Text" xml:space="preserve">
-    <value>Netzverluste</value>
-  </data>
-  <data name="&gt;&gt;label104.Name" xml:space="preserve">
-    <value>label104</value>
-  </data>
-  <data name="&gt;&gt;label104.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label104.Parent" xml:space="preserve">
-    <value>tabPage_Bedarf_Parameter</value>
-  </data>
-  <data name="&gt;&gt;label104.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 9.75pt</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.Items" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.Items1" xml:space="preserve">
-    <value>kWh/a</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.Location" type="System.Drawing.Point, System.Drawing">
-    <value>214, 31</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.Size" type="System.Drawing.Size, System.Drawing">
-    <value>68, 25</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.TabIndex" type="System.Int32, mscorlib">
-    <value>229</value>
-  </data>
-  <data name="comboBox_NetzvEinheit.Text" xml:space="preserve">
-    <value>%</value>
-  </data>
-  <data name="&gt;&gt;comboBox_NetzvEinheit.Name" xml:space="preserve">
-    <value>comboBox_NetzvEinheit</value>
-  </data>
-  <data name="&gt;&gt;comboBox_NetzvEinheit.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;comboBox_NetzvEinheit.Parent" xml:space="preserve">
-    <value>tabPage_Bedarf_Parameter</value>
-  </data>
-  <data name="&gt;&gt;comboBox_NetzvEinheit.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="tabPage_Bedarf_Parameter.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 27</value>
-  </data>
-  <data name="tabPage_Bedarf_Parameter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>760, 382</value>
-  </data>
-  <data name="tabPage_Bedarf_Parameter.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="tabPage_Bedarf_Parameter.Text" xml:space="preserve">
-    <value>Wärme-/Strombedarf</value>
-  </data>
-  <data name="&gt;&gt;tabPage_Bedarf_Parameter.Name" xml:space="preserve">
-    <value>tabPage_Bedarf_Parameter</value>
-  </data>
-  <data name="&gt;&gt;tabPage_Bedarf_Parameter.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tabPage_Bedarf_Parameter.Parent" xml:space="preserve">
-    <value>tabControl_Einstellungen</value>
-  </data>
-  <data name="&gt;&gt;tabPage_Bedarf_Parameter.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
   <data name="tabControl_Einstellungen.Location" type="System.Drawing.Point, System.Drawing">
     <value>42, 28</value>
   </data>
   <data name="tabControl_Einstellungen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>768, 413</value>
+    <value>1024, 451</value>
   </data>
   <data name="tabControl_Einstellungen.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -5363,6 +5363,1320 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   <data name="&gt;&gt;tabPage_Parameter.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="tabPage_Uebersicht.AutoScroll" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label2.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label2.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>705, 358</value>
+  </data>
+  <data name="ueb_label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label2.TabIndex" type="System.Int32, mscorlib">
+    <value>255</value>
+  </data>
+  <data name="ueb_label2.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="&gt;&gt;ueb_label2.Name" xml:space="preserve">
+    <value>ueb_label2</value>
+  </data>
+  <data name="&gt;&gt;ueb_label2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label2.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label2.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="ueb_textBox_SPKStromverbrauch.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_SPKStromverbrauch.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 8pt</value>
+  </data>
+  <data name="ueb_textBox_SPKStromverbrauch.Location" type="System.Drawing.Point, System.Drawing">
+    <value>610, 356</value>
+  </data>
+  <data name="ueb_textBox_SPKStromverbrauch.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 22</value>
+  </data>
+  <data name="ueb_textBox_SPKStromverbrauch.TabIndex" type="System.Int32, mscorlib">
+    <value>254</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SPKStromverbrauch.Name" xml:space="preserve">
+    <value>ueb_textBox_SPKStromverbrauch</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SPKStromverbrauch.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SPKStromverbrauch.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SPKStromverbrauch.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="ueb_label3.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label3.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>448, 359</value>
+  </data>
+  <data name="ueb_label3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>130, 17</value>
+  </data>
+  <data name="ueb_label3.TabIndex" type="System.Int32, mscorlib">
+    <value>253</value>
+  </data>
+  <data name="ueb_label3.Text" xml:space="preserve">
+    <value>Stromverbrauch SPK:</value>
+  </data>
+  <data name="&gt;&gt;ueb_label3.Name" xml:space="preserve">
+    <value>ueb_label3</value>
+  </data>
+  <data name="&gt;&gt;ueb_label3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label3.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label3.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="ueb_chart.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 380</value>
+  </data>
+  <data name="ueb_chart.Size" type="System.Drawing.Size, System.Drawing">
+    <value>319, 177</value>
+  </data>
+  <data name="ueb_chart.TabIndex" type="System.Int32, mscorlib">
+    <value>252</value>
+  </data>
+  <data name="ueb_chart.Text" xml:space="preserve">
+    <value>chart5</value>
+  </data>
+  <data name="&gt;&gt;ueb_chart.Name" xml:space="preserve">
+    <value>ueb_chart</value>
+  </data>
+  <data name="&gt;&gt;ueb_chart.Type" xml:space="preserve">
+    <value>System.Windows.Forms.DataVisualization.Charting.Chart, WinForms.DataVisualization, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;ueb_chart.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_chart.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="ueb_label1.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label1.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12pt, style=Bold, Underline</value>
+  </data>
+  <data name="ueb_label1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>29, 194</value>
+  </data>
+  <data name="ueb_label1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="ueb_label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>92, 21</value>
+  </data>
+  <data name="ueb_label1.TabIndex" type="System.Int32, mscorlib">
+    <value>250</value>
+  </data>
+  <data name="ueb_label1.Text" xml:space="preserve">
+    <value>Ergebnisse</value>
+  </data>
+  <data name="ueb_label1.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;ueb_label1.Name" xml:space="preserve">
+    <value>ueb_label1</value>
+  </data>
+  <data name="&gt;&gt;ueb_label1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label1.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label1.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="ueb_label29.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label29.Location" type="System.Drawing.Point, System.Drawing">
+    <value>437, 466</value>
+  </data>
+  <data name="ueb_label29.Size" type="System.Drawing.Size, System.Drawing">
+    <value>115, 22</value>
+  </data>
+  <data name="ueb_label29.TabIndex" type="System.Int32, mscorlib">
+    <value>248</value>
+  </data>
+  <data name="ueb_label29.Text" xml:space="preserve">
+    <value>Reststrombedarf:</value>
+  </data>
+  <data name="ueb_label29.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;ueb_label29.Name" xml:space="preserve">
+    <value>ueb_label29</value>
+  </data>
+  <data name="&gt;&gt;ueb_label29.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label29.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label29.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="ueb_label28.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label28.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label28.Location" type="System.Drawing.Point, System.Drawing">
+    <value>648, 468</value>
+  </data>
+  <data name="ueb_label28.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label28.TabIndex" type="System.Int32, mscorlib">
+    <value>247</value>
+  </data>
+  <data name="ueb_label28.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="&gt;&gt;ueb_label28.Name" xml:space="preserve">
+    <value>ueb_label28</value>
+  </data>
+  <data name="&gt;&gt;ueb_label28.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label28.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label28.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="ueb_textBox_Reststrombedarf.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_Reststrombedarf.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt, style=Bold</value>
+  </data>
+  <data name="ueb_textBox_Reststrombedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>558, 465</value>
+  </data>
+  <data name="ueb_textBox_Reststrombedarf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 25</value>
+  </data>
+  <data name="ueb_textBox_Reststrombedarf.TabIndex" type="System.Int32, mscorlib">
+    <value>246</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_Reststrombedarf.Name" xml:space="preserve">
+    <value>ueb_textBox_Reststrombedarf</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_Reststrombedarf.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_Reststrombedarf.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_Reststrombedarf.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="ueb_label26.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label26.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label26.Location" type="System.Drawing.Point, System.Drawing">
+    <value>706, 330</value>
+  </data>
+  <data name="ueb_label26.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label26.TabIndex" type="System.Int32, mscorlib">
+    <value>245</value>
+  </data>
+  <data name="ueb_label26.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="&gt;&gt;ueb_label26.Name" xml:space="preserve">
+    <value>ueb_label26</value>
+  </data>
+  <data name="&gt;&gt;ueb_label26.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label26.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label26.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="ueb_textBox_PVStromproduktion.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_PVStromproduktion.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 8pt</value>
+  </data>
+  <data name="ueb_textBox_PVStromproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>611, 328</value>
+  </data>
+  <data name="ueb_textBox_PVStromproduktion.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 22</value>
+  </data>
+  <data name="ueb_textBox_PVStromproduktion.TabIndex" type="System.Int32, mscorlib">
+    <value>244</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_PVStromproduktion.Name" xml:space="preserve">
+    <value>ueb_textBox_PVStromproduktion</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_PVStromproduktion.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_PVStromproduktion.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_PVStromproduktion.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="ueb_label27.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label27.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label27.Location" type="System.Drawing.Point, System.Drawing">
+    <value>449, 331</value>
+  </data>
+  <data name="ueb_label27.Size" type="System.Drawing.Size, System.Drawing">
+    <value>129, 17</value>
+  </data>
+  <data name="ueb_label27.TabIndex" type="System.Int32, mscorlib">
+    <value>243</value>
+  </data>
+  <data name="ueb_label27.Text" xml:space="preserve">
+    <value>Stromproduktion PV:</value>
+  </data>
+  <data name="&gt;&gt;ueb_label27.Name" xml:space="preserve">
+    <value>ueb_label27</value>
+  </data>
+  <data name="&gt;&gt;ueb_label27.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label27.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label27.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="ueb_label24.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label24.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label24.Location" type="System.Drawing.Point, System.Drawing">
+    <value>706, 302</value>
+  </data>
+  <data name="ueb_label24.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label24.TabIndex" type="System.Int32, mscorlib">
+    <value>242</value>
+  </data>
+  <data name="ueb_label24.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="&gt;&gt;ueb_label24.Name" xml:space="preserve">
+    <value>ueb_label24</value>
+  </data>
+  <data name="&gt;&gt;ueb_label24.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label24.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label24.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="ueb_textBox_BHKWStromproduktion.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_BHKWStromproduktion.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 8pt</value>
+  </data>
+  <data name="ueb_textBox_BHKWStromproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>611, 300</value>
+  </data>
+  <data name="ueb_textBox_BHKWStromproduktion.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 22</value>
+  </data>
+  <data name="ueb_textBox_BHKWStromproduktion.TabIndex" type="System.Int32, mscorlib">
+    <value>241</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_BHKWStromproduktion.Name" xml:space="preserve">
+    <value>ueb_textBox_BHKWStromproduktion</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_BHKWStromproduktion.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_BHKWStromproduktion.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_BHKWStromproduktion.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="ueb_label25.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label25.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label25.Location" type="System.Drawing.Point, System.Drawing">
+    <value>449, 303</value>
+  </data>
+  <data name="ueb_label25.Size" type="System.Drawing.Size, System.Drawing">
+    <value>150, 17</value>
+  </data>
+  <data name="ueb_label25.TabIndex" type="System.Int32, mscorlib">
+    <value>240</value>
+  </data>
+  <data name="ueb_label25.Text" xml:space="preserve">
+    <value>Stromproduktion BHKW:</value>
+  </data>
+  <data name="&gt;&gt;ueb_label25.Name" xml:space="preserve">
+    <value>ueb_label25</value>
+  </data>
+  <data name="&gt;&gt;ueb_label25.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label25.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label25.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="ueb_label23.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label23.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label23.Location" type="System.Drawing.Point, System.Drawing">
+    <value>345, 246</value>
+  </data>
+  <data name="ueb_label23.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label23.TabIndex" type="System.Int32, mscorlib">
+    <value>239</value>
+  </data>
+  <data name="ueb_label23.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="ueb_label23.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;ueb_label23.Name" xml:space="preserve">
+    <value>ueb_label23</value>
+  </data>
+  <data name="&gt;&gt;ueb_label23.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label23.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label23.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="ueb_label21.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label21.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label21.Location" type="System.Drawing.Point, System.Drawing">
+    <value>28, 313</value>
+  </data>
+  <data name="ueb_label21.Size" type="System.Drawing.Size, System.Drawing">
+    <value>93, 17</value>
+  </data>
+  <data name="ueb_label21.TabIndex" type="System.Int32, mscorlib">
+    <value>236</value>
+  </data>
+  <data name="ueb_label21.Text" xml:space="preserve">
+    <value>Solare Wärme:</value>
+  </data>
+  <data name="ueb_label21.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;ueb_label21.Name" xml:space="preserve">
+    <value>ueb_label21</value>
+  </data>
+  <data name="&gt;&gt;ueb_label21.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label21.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label21.ZOrder" xml:space="preserve">
+    <value>15</value>
+  </data>
+  <data name="ueb_textBox_SPKWaermeproduktion.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_SPKWaermeproduktion.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_textBox_SPKWaermeproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>255, 342</value>
+  </data>
+  <data name="ueb_textBox_SPKWaermeproduktion.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="ueb_textBox_SPKWaermeproduktion.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 25</value>
+  </data>
+  <data name="ueb_textBox_SPKWaermeproduktion.TabIndex" type="System.Int32, mscorlib">
+    <value>237</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SPKWaermeproduktion.Name" xml:space="preserve">
+    <value>ueb_textBox_SPKWaermeproduktion</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SPKWaermeproduktion.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SPKWaermeproduktion.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SPKWaermeproduktion.ZOrder" xml:space="preserve">
+    <value>16</value>
+  </data>
+  <data name="ueb_label22.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label22.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label22.Location" type="System.Drawing.Point, System.Drawing">
+    <value>345, 344</value>
+  </data>
+  <data name="ueb_label22.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label22.TabIndex" type="System.Int32, mscorlib">
+    <value>238</value>
+  </data>
+  <data name="ueb_label22.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="ueb_label22.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;ueb_label22.Name" xml:space="preserve">
+    <value>ueb_label22</value>
+  </data>
+  <data name="&gt;&gt;ueb_label22.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label22.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label22.ZOrder" xml:space="preserve">
+    <value>17</value>
+  </data>
+  <data name="ueb_label20.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label20.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label20.Location" type="System.Drawing.Point, System.Drawing">
+    <value>28, 245</value>
+  </data>
+  <data name="ueb_label20.Size" type="System.Drawing.Size, System.Drawing">
+    <value>139, 17</value>
+  </data>
+  <data name="ueb_label20.TabIndex" type="System.Int32, mscorlib">
+    <value>235</value>
+  </data>
+  <data name="ueb_label20.Text" xml:space="preserve">
+    <value>Wärmeproduktion WP:</value>
+  </data>
+  <data name="ueb_label20.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;ueb_label20.Name" xml:space="preserve">
+    <value>ueb_label20</value>
+  </data>
+  <data name="&gt;&gt;ueb_label20.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label20.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label20.ZOrder" xml:space="preserve">
+    <value>18</value>
+  </data>
+  <data name="ueb_label18.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label18.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label18.Location" type="System.Drawing.Point, System.Drawing">
+    <value>28, 277</value>
+  </data>
+  <data name="ueb_label18.Size" type="System.Drawing.Size, System.Drawing">
+    <value>156, 17</value>
+  </data>
+  <data name="ueb_label18.TabIndex" type="System.Int32, mscorlib">
+    <value>232</value>
+  </data>
+  <data name="ueb_label18.Text" xml:space="preserve">
+    <value>Wärmeproduktion BHKW:</value>
+  </data>
+  <data name="ueb_label18.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;ueb_label18.Name" xml:space="preserve">
+    <value>ueb_label18</value>
+  </data>
+  <data name="&gt;&gt;ueb_label18.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label18.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label18.ZOrder" xml:space="preserve">
+    <value>19</value>
+  </data>
+  <data name="ueb_textBox_SWWaermeproduktion.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_SWWaermeproduktion.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_textBox_SWWaermeproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>256, 309</value>
+  </data>
+  <data name="ueb_textBox_SWWaermeproduktion.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="ueb_textBox_SWWaermeproduktion.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 25</value>
+  </data>
+  <data name="ueb_textBox_SWWaermeproduktion.TabIndex" type="System.Int32, mscorlib">
+    <value>233</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SWWaermeproduktion.Name" xml:space="preserve">
+    <value>ueb_textBox_SWWaermeproduktion</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SWWaermeproduktion.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SWWaermeproduktion.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_SWWaermeproduktion.ZOrder" xml:space="preserve">
+    <value>20</value>
+  </data>
+  <data name="ueb_label19.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label19.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label19.Location" type="System.Drawing.Point, System.Drawing">
+    <value>345, 311</value>
+  </data>
+  <data name="ueb_label19.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label19.TabIndex" type="System.Int32, mscorlib">
+    <value>234</value>
+  </data>
+  <data name="ueb_label19.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="ueb_label19.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;ueb_label19.Name" xml:space="preserve">
+    <value>ueb_label19</value>
+  </data>
+  <data name="&gt;&gt;ueb_label19.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label19.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label19.ZOrder" xml:space="preserve">
+    <value>21</value>
+  </data>
+  <data name="ueb_label33.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label33.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label33.Location" type="System.Drawing.Point, System.Drawing">
+    <value>706, 274</value>
+  </data>
+  <data name="ueb_label33.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label33.TabIndex" type="System.Int32, mscorlib">
+    <value>226</value>
+  </data>
+  <data name="ueb_label33.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="&gt;&gt;ueb_label33.Name" xml:space="preserve">
+    <value>ueb_label33</value>
+  </data>
+  <data name="&gt;&gt;ueb_label33.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label33.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label33.ZOrder" xml:space="preserve">
+    <value>22</value>
+  </data>
+  <data name="ueb_textBox_HeizstabStromverbrauch.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_HeizstabStromverbrauch.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 8pt</value>
+  </data>
+  <data name="ueb_textBox_HeizstabStromverbrauch.Location" type="System.Drawing.Point, System.Drawing">
+    <value>611, 272</value>
+  </data>
+  <data name="ueb_textBox_HeizstabStromverbrauch.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 22</value>
+  </data>
+  <data name="ueb_textBox_HeizstabStromverbrauch.TabIndex" type="System.Int32, mscorlib">
+    <value>225</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_HeizstabStromverbrauch.Name" xml:space="preserve">
+    <value>ueb_textBox_HeizstabStromverbrauch</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_HeizstabStromverbrauch.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_HeizstabStromverbrauch.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_HeizstabStromverbrauch.ZOrder" xml:space="preserve">
+    <value>23</value>
+  </data>
+  <data name="ueb_label34.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label34.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label34.Location" type="System.Drawing.Point, System.Drawing">
+    <value>449, 275</value>
+  </data>
+  <data name="ueb_label34.Size" type="System.Drawing.Size, System.Drawing">
+    <value>158, 17</value>
+  </data>
+  <data name="ueb_label34.TabIndex" type="System.Int32, mscorlib">
+    <value>224</value>
+  </data>
+  <data name="ueb_label34.Text" xml:space="preserve">
+    <value>Stromverbrauch Heizstab:</value>
+  </data>
+  <data name="&gt;&gt;ueb_label34.Name" xml:space="preserve">
+    <value>ueb_label34</value>
+  </data>
+  <data name="&gt;&gt;ueb_label34.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label34.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label34.ZOrder" xml:space="preserve">
+    <value>24</value>
+  </data>
+  <data name="ueb_label31.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label31.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label31.Location" type="System.Drawing.Point, System.Drawing">
+    <value>706, 245</value>
+  </data>
+  <data name="ueb_label31.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label31.TabIndex" type="System.Int32, mscorlib">
+    <value>223</value>
+  </data>
+  <data name="ueb_label31.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="&gt;&gt;ueb_label31.Name" xml:space="preserve">
+    <value>ueb_label31</value>
+  </data>
+  <data name="&gt;&gt;ueb_label31.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label31.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label31.ZOrder" xml:space="preserve">
+    <value>25</value>
+  </data>
+  <data name="ueb_textBox_WPStromverbrauch.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_WPStromverbrauch.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI Semibold, 8pt</value>
+  </data>
+  <data name="ueb_textBox_WPStromverbrauch.Location" type="System.Drawing.Point, System.Drawing">
+    <value>611, 243</value>
+  </data>
+  <data name="ueb_textBox_WPStromverbrauch.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 22</value>
+  </data>
+  <data name="ueb_textBox_WPStromverbrauch.TabIndex" type="System.Int32, mscorlib">
+    <value>222</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_WPStromverbrauch.Name" xml:space="preserve">
+    <value>ueb_textBox_WPStromverbrauch</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_WPStromverbrauch.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_WPStromverbrauch.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_WPStromverbrauch.ZOrder" xml:space="preserve">
+    <value>26</value>
+  </data>
+  <data name="ueb_label32.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label32.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label32.Location" type="System.Drawing.Point, System.Drawing">
+    <value>449, 246</value>
+  </data>
+  <data name="ueb_label32.Size" type="System.Drawing.Size, System.Drawing">
+    <value>127, 17</value>
+  </data>
+  <data name="ueb_label32.TabIndex" type="System.Int32, mscorlib">
+    <value>221</value>
+  </data>
+  <data name="ueb_label32.Text" xml:space="preserve">
+    <value>Stromverbrauch WP:</value>
+  </data>
+  <data name="&gt;&gt;ueb_label32.Name" xml:space="preserve">
+    <value>ueb_label32</value>
+  </data>
+  <data name="&gt;&gt;ueb_label32.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label32.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label32.ZOrder" xml:space="preserve">
+    <value>27</value>
+  </data>
+  <data name="ueb_textBox_WPWaermeproduktion.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_WPWaermeproduktion.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 8pt</value>
+  </data>
+  <data name="ueb_textBox_WPWaermeproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>255, 246</value>
+  </data>
+  <data name="ueb_textBox_WPWaermeproduktion.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 22</value>
+  </data>
+  <data name="ueb_textBox_WPWaermeproduktion.TabIndex" type="System.Int32, mscorlib">
+    <value>219</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_WPWaermeproduktion.Name" xml:space="preserve">
+    <value>ueb_textBox_WPWaermeproduktion</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_WPWaermeproduktion.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_WPWaermeproduktion.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_WPWaermeproduktion.ZOrder" xml:space="preserve">
+    <value>28</value>
+  </data>
+  <data name="ueb_label63.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label63.Location" type="System.Drawing.Point, System.Drawing">
+    <value>437, 435</value>
+  </data>
+  <data name="ueb_label63.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 22</value>
+  </data>
+  <data name="ueb_label63.TabIndex" type="System.Int32, mscorlib">
+    <value>217</value>
+  </data>
+  <data name="ueb_label63.Text" xml:space="preserve">
+    <value>Restwärmebedarf:</value>
+  </data>
+  <data name="ueb_label63.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;ueb_label63.Name" xml:space="preserve">
+    <value>ueb_label63</value>
+  </data>
+  <data name="&gt;&gt;ueb_label63.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label63.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label63.ZOrder" xml:space="preserve">
+    <value>29</value>
+  </data>
+  <data name="ueb_label81.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label81.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label81.Location" type="System.Drawing.Point, System.Drawing">
+    <value>648, 437</value>
+  </data>
+  <data name="ueb_label81.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label81.TabIndex" type="System.Int32, mscorlib">
+    <value>216</value>
+  </data>
+  <data name="ueb_label81.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="&gt;&gt;ueb_label81.Name" xml:space="preserve">
+    <value>ueb_label81</value>
+  </data>
+  <data name="&gt;&gt;ueb_label81.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label81.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label81.ZOrder" xml:space="preserve">
+    <value>30</value>
+  </data>
+  <data name="ueb_textBox_Restwaermebedarf.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_Restwaermebedarf.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt, style=Bold</value>
+  </data>
+  <data name="ueb_textBox_Restwaermebedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>558, 434</value>
+  </data>
+  <data name="ueb_textBox_Restwaermebedarf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 25</value>
+  </data>
+  <data name="ueb_textBox_Restwaermebedarf.TabIndex" type="System.Int32, mscorlib">
+    <value>215</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_Restwaermebedarf.Name" xml:space="preserve">
+    <value>ueb_textBox_Restwaermebedarf</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_Restwaermebedarf.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_Restwaermebedarf.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_Restwaermebedarf.ZOrder" xml:space="preserve">
+    <value>31</value>
+  </data>
+  <data name="ueb_label59.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label59.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label59.Location" type="System.Drawing.Point, System.Drawing">
+    <value>28, 344</value>
+  </data>
+  <data name="ueb_label59.Size" type="System.Drawing.Size, System.Drawing">
+    <value>221, 17</value>
+  </data>
+  <data name="ueb_label59.TabIndex" type="System.Int32, mscorlib">
+    <value>212</value>
+  </data>
+  <data name="ueb_label59.Text" xml:space="preserve">
+    <value>Wärmeproduktion der Spitzenkessel:</value>
+  </data>
+  <data name="ueb_label59.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;ueb_label59.Name" xml:space="preserve">
+    <value>ueb_label59</value>
+  </data>
+  <data name="&gt;&gt;ueb_label59.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label59.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label59.ZOrder" xml:space="preserve">
+    <value>32</value>
+  </data>
+  <data name="ueb_textBox_BHKWWaermeproduktion.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_BHKWWaermeproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>255, 275</value>
+  </data>
+  <data name="ueb_textBox_BHKWWaermeproduktion.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 25</value>
+  </data>
+  <data name="ueb_textBox_BHKWWaermeproduktion.TabIndex" type="System.Int32, mscorlib">
+    <value>213</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_BHKWWaermeproduktion.Name" xml:space="preserve">
+    <value>ueb_textBox_BHKWWaermeproduktion</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_BHKWWaermeproduktion.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_BHKWWaermeproduktion.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_BHKWWaermeproduktion.ZOrder" xml:space="preserve">
+    <value>33</value>
+  </data>
+  <data name="ueb_label64.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label64.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label64.Location" type="System.Drawing.Point, System.Drawing">
+    <value>345, 277</value>
+  </data>
+  <data name="ueb_label64.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label64.TabIndex" type="System.Int32, mscorlib">
+    <value>214</value>
+  </data>
+  <data name="ueb_label64.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="ueb_label64.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;ueb_label64.Name" xml:space="preserve">
+    <value>ueb_label64</value>
+  </data>
+  <data name="&gt;&gt;ueb_label64.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label64.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label64.ZOrder" xml:space="preserve">
+    <value>34</value>
+  </data>
+  <data name="ueb_label13.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label13.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 12pt, style=Bold, Underline</value>
+  </data>
+  <data name="ueb_label13.Location" type="System.Drawing.Point, System.Drawing">
+    <value>27, 94</value>
+  </data>
+  <data name="ueb_label13.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="ueb_label13.Size" type="System.Drawing.Size, System.Drawing">
+    <value>118, 21</value>
+  </data>
+  <data name="ueb_label13.TabIndex" type="System.Int32, mscorlib">
+    <value>208</value>
+  </data>
+  <data name="ueb_label13.Text" xml:space="preserve">
+    <value>Energiebedarf</value>
+  </data>
+  <data name="ueb_label13.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;ueb_label13.Name" xml:space="preserve">
+    <value>ueb_label13</value>
+  </data>
+  <data name="&gt;&gt;ueb_label13.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label13.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label13.ZOrder" xml:space="preserve">
+    <value>35</value>
+  </data>
+  <data name="ueb_label9.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label9.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label9.Location" type="System.Drawing.Point, System.Drawing">
+    <value>180, 161</value>
+  </data>
+  <data name="ueb_label9.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="ueb_label9.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 17</value>
+  </data>
+  <data name="ueb_label9.TabIndex" type="System.Int32, mscorlib">
+    <value>203</value>
+  </data>
+  <data name="ueb_label9.Text" xml:space="preserve">
+    <value>Strombedarf:</value>
+  </data>
+  <data name="ueb_label9.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;ueb_label9.Name" xml:space="preserve">
+    <value>ueb_label9</value>
+  </data>
+  <data name="&gt;&gt;ueb_label9.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label9.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label9.ZOrder" xml:space="preserve">
+    <value>36</value>
+  </data>
+  <data name="ueb_textBox_gesStrombedarf.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_gesStrombedarf.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt, style=Bold</value>
+  </data>
+  <data name="ueb_textBox_gesStrombedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>267, 157</value>
+  </data>
+  <data name="ueb_textBox_gesStrombedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="ueb_textBox_gesStrombedarf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="ueb_textBox_gesStrombedarf.TabIndex" type="System.Int32, mscorlib">
+    <value>204</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_gesStrombedarf.Name" xml:space="preserve">
+    <value>ueb_textBox_gesStrombedarf</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_gesStrombedarf.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_gesStrombedarf.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_gesStrombedarf.ZOrder" xml:space="preserve">
+    <value>37</value>
+  </data>
+  <data name="ueb_label10.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label10.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label10.Location" type="System.Drawing.Point, System.Drawing">
+    <value>369, 161</value>
+  </data>
+  <data name="ueb_label10.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="ueb_label10.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label10.TabIndex" type="System.Int32, mscorlib">
+    <value>205</value>
+  </data>
+  <data name="ueb_label10.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="ueb_label10.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;ueb_label10.Name" xml:space="preserve">
+    <value>ueb_label10</value>
+  </data>
+  <data name="&gt;&gt;ueb_label10.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label10.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label10.ZOrder" xml:space="preserve">
+    <value>38</value>
+  </data>
+  <data name="ueb_label47.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label47.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label47.Location" type="System.Drawing.Point, System.Drawing">
+    <value>47, 125</value>
+  </data>
+  <data name="ueb_label47.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="ueb_label47.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 17</value>
+  </data>
+  <data name="ueb_label47.TabIndex" type="System.Int32, mscorlib">
+    <value>191</value>
+  </data>
+  <data name="ueb_label47.Text" xml:space="preserve">
+    <value>Wärmebedarf des Nahwärmenetzes:</value>
+  </data>
+  <data name="ueb_label47.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleRight</value>
+  </data>
+  <data name="&gt;&gt;ueb_label47.Name" xml:space="preserve">
+    <value>ueb_label47</value>
+  </data>
+  <data name="&gt;&gt;ueb_label47.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label47.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label47.ZOrder" xml:space="preserve">
+    <value>39</value>
+  </data>
+  <data name="ueb_textBox_gesWaermebedarf.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ueb_textBox_gesWaermebedarf.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt, style=Bold</value>
+  </data>
+  <data name="ueb_textBox_gesWaermebedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>267, 122</value>
+  </data>
+  <data name="ueb_textBox_gesWaermebedarf.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="ueb_textBox_gesWaermebedarf.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 25</value>
+  </data>
+  <data name="ueb_textBox_gesWaermebedarf.TabIndex" type="System.Int32, mscorlib">
+    <value>192</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_gesWaermebedarf.Name" xml:space="preserve">
+    <value>ueb_textBox_gesWaermebedarf</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_gesWaermebedarf.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_gesWaermebedarf.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_textBox_gesWaermebedarf.ZOrder" xml:space="preserve">
+    <value>40</value>
+  </data>
+  <data name="ueb_label62.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="ueb_label62.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="ueb_label62.Location" type="System.Drawing.Point, System.Drawing">
+    <value>369, 126</value>
+  </data>
+  <data name="ueb_label62.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="ueb_label62.Size" type="System.Drawing.Size, System.Drawing">
+    <value>51, 17</value>
+  </data>
+  <data name="ueb_label62.TabIndex" type="System.Int32, mscorlib">
+    <value>193</value>
+  </data>
+  <data name="ueb_label62.Text" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="ueb_label62.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;ueb_label62.Name" xml:space="preserve">
+    <value>ueb_label62</value>
+  </data>
+  <data name="&gt;&gt;ueb_label62.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ueb_label62.Parent" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;ueb_label62.ZOrder" xml:space="preserve">
+    <value>41</value>
+  </data>
+  <data name="tabPage_Uebersicht.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+  <data name="tabPage_Uebersicht.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 30</value>
+  </data>
+  <data name="tabPage_Uebersicht.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1420, 721</value>
+  </data>
+  <data name="tabPage_Uebersicht.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="tabPage_Uebersicht.Text" xml:space="preserve">
+    <value>Übersicht</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Uebersicht.Name" xml:space="preserve">
+    <value>tabPage_Uebersicht</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Uebersicht.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Uebersicht.Parent" xml:space="preserve">
+    <value>tabControl_Simulation</value>
+  </data>
+  <data name="&gt;&gt;tabPage_Uebersicht.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
   <data name="tabPage_Simulation.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 30</value>
   </data>
@@ -5385,7 +6699,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabControl_Simulation</value>
   </data>
   <data name="&gt;&gt;tabPage_Simulation.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="listView_SimWP.Location" type="System.Drawing.Point, System.Drawing">
     <value>668, 420</value>
@@ -6627,7 +7941,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabControl_Simulation</value>
   </data>
   <data name="&gt;&gt;tabPage_Wärmepumpe.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="textBox_Waermeueberschuss_BHKW.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI Semibold, 10pt</value>
@@ -7830,7 +9144,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabControl_Simulation</value>
   </data>
   <data name="&gt;&gt;tabPage_BHKW.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="tabPage_Stromspeicher.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 30</value>
@@ -7857,7 +9171,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>tabControl_Simulation</value>
   </data>
   <data name="&gt;&gt;tabPage_Stromspeicher.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="tabControl_Simulation.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI Semibold, 12pt, style=Bold</value>

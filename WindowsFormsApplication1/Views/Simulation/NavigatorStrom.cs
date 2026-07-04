@@ -190,7 +190,7 @@ namespace WindowsFormsApplication1
             // 1. Finde den höchsten Wert aller sichtbaren Serien
             foreach (var series in chart.Series)
             {
-                if (series.Enabled)
+                if (series.Enabled && series.Points.Count > 0)
                 {
                     anySeriesVisible = true;
                     // Ermittle das Maximum der Punkte dieser Serie
@@ -202,16 +202,30 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            // 2. Skalierung anwenden (mit kleinem Puffer, z.B. 5-10%)
+            // 2. Skalierung + passendes Interval anwenden.
+            //    WICHTIG: Bisher wurde nur das Maximum gesetzt. Das in Init() berechnete
+            //    Interval passte danach nicht mehr zum neuen Maximum -> die Y-Achse hatte
+            //    keine (oder unpassende) Labels. Deshalb hier das Interval passend zum
+            //    neuen Maximum neu berechnen (gleiche Logik wie in ChartManager.Init()).
+            var axisY = chart.ChartAreas[0].AxisY;
             if (anySeriesVisible && maxVisibleValue > 0)
             {
-                chart.ChartAreas[0].AxisY.Maximum = maxVisibleValue * 1.1; // 10% Puffer oben
-                chart.ChartAreas[0].AxisY.Minimum = 0;
+                double interval = _chartManager.CalculateNiceInterval(maxVisibleValue, 8);
+                if (interval <= 0) interval = 1;
+                double roundedMax = Math.Ceiling((maxVisibleValue * 1.1) / interval) * interval;
+
+                axisY.Minimum = 0;
+                axisY.Maximum = roundedMax;
+                axisY.Interval = interval;
+                axisY.IntervalOffset = 0;
+                axisY.LabelStyle.Format = interval < 1.0 ? "N1" : "N0";
             }
             else
             {
-                // Fallback, wenn nichts ausgewählt ist
-                chart.ChartAreas[0].AxisY.Maximum = Double.NaN; // Automatisch
+                // Fallback, wenn nichts ausgewählt ist: alles automatisch
+                axisY.Minimum = 0;
+                axisY.Maximum = Double.NaN;
+                axisY.Interval = 0; // 0 = automatische Intervallberechnung
             }
 
             chart.ChartAreas[0].RecalculateAxesScale();

@@ -92,28 +92,40 @@ namespace WindowsFormsApplication1
 
             // --- Y-ACHSE ---
             ca.AxisY.Title = YAxisTitle + (string.IsNullOrEmpty(toolTipUnit) ? "" : " [" + toolTipUnit + "]");
-            ca.AxisY.LabelStyle.Format = "N0";
             ca.AxisY.IsLabelAutoFit = false;
+            ca.AxisY.LabelStyle.Font = new Font("Segoe UI", 8, FontStyle.Regular);
+            ca.AxisY.LabelStyle.ForeColor = Color.FromArgb(64, 64, 64);
+
             double range = (YMaxValue != 0 ? YMaxValue : 100) - YMinValue;
-            //double interval = Math.Max(1, Math.Ceiling(range / 10));
-            // Wenn du maximal 10 Labels willst:
-            // Wir teilen die Range durch 10. 
-            // Math.Max(1, ...) verhindert ein Intervall von 0 (Endlosschleife/Crash)
-            //double interval = range / 10.0;
             double interval = CalculateNiceInterval(range, 8);
-            //interval = Math.Ceiling(interval / 5.0) * 5.0;
             ca.AxisY.Interval = interval;
-            if (interval < 1.0)
+            ca.AxisY.IntervalOffset = 0;
+            ca.AxisY.LabelStyle.Format = interval < 1.0 ? "N1" : "N0";
+
+            // Minimum auf ein Interval-Vielfaches ab- und Maximum aufrunden:
+            //  -> Labels sind runde Zahlen (auch bei negativem/krummem Minimum, z. B. Temperatur)
+            //  -> der oberste Wert bekommt ein Label und die Datenspitze klebt nicht am oberen Rand
+            //     (macht das frühere "YMaxValue * 1.1" beim Aufrufer überflüssig)
+            if (interval > 0)
             {
-                // Zeige 1 oder 2 Nachkommastellen, wenn das Intervall klein ist
-                ca.AxisY.LabelStyle.Format = "N1";
+                double roundedMin = Math.Floor(YMinValue / interval) * interval;
+                ca.AxisY.Minimum = roundedMin;
+                if (YMaxValue != 0)
+                {
+                    double roundedMax = Math.Ceiling(YMaxValue / interval) * interval;
+                    if (roundedMax <= roundedMin) roundedMax = roundedMin + interval;
+                    ca.AxisY.Maximum = roundedMax;
+                }
+                else
+                {
+                    ca.AxisY.Maximum = double.NaN;
+                }
             }
             else
             {
-                ca.AxisY.LabelStyle.Format = "N0";
+                ca.AxisY.Minimum = YMinValue;
+                ca.AxisY.Maximum = YMaxValue != 0 ? YMaxValue : double.NaN;
             }
-            ca.AxisY.Maximum = YMaxValue != 0 ? YMaxValue : double.NaN;
-            ca.AxisY.Minimum = YMinValue;
             ca.AxisY.ScaleView.Zoomable = true;
             ca.AxisY.MajorGrid.LineDashStyle = ChartDashStyle.DashDot;
             ca.AxisY.MajorGrid.LineColor = Color.FromArgb(150, 150, 150);
@@ -288,13 +300,14 @@ namespace WindowsFormsApplication1
             ca.AxisX.IntervalOffsetType = DateTimeIntervalType.Number;
 
             ca.AxisX.Minimum = 0;
-            // Deine Logik für die Max-Werte
-            ca.AxisX.Maximum = MitViertelStunde ? (8760 * 4) - 1 : 8760;
+            // Achsen-Endwert (voller Wertebereich)
+            double xMax = MitViertelStunde ? 8760 * 4 : 8760;
+            ca.AxisX.Maximum = xMax;
 
             ca.AxisX.Title = XAxisTitle;
 
-            // Intervalle festlegen
-            double mainInterval = MitViertelStunde ? 8000 : 2000;
+            // Intervall so wählen, dass der Endwert ein Label bekommt (6 gleiche Abschnitte, kein unbeschrifteter Rest)
+            double mainInterval = xMax / 6.0;
             ca.AxisX.Interval = mainInterval;
             ca.AxisX.MajorGrid.Interval = mainInterval;
 
@@ -309,8 +322,9 @@ namespace WindowsFormsApplication1
             ca.AxisX.Minimum = new DateTime(currentYear, 1, 1).ToOADate();
             ca.AxisX.Maximum = new DateTime(currentYear, 12, 31, 23, 59, 59).ToOADate();
             ca.AxisX.Title = "Zeitverlauf (Monate)";
-            ca.AxisX.LabelStyle.Format = "%M";
+            ca.AxisX.LabelStyle.Format = "MMM";   // Monatsnamen (Jan, Feb, ...) – konsistent mit der Zoom-Ansicht (UpdateVisuals)
             ca.AxisX.IntervalType = DateTimeIntervalType.Months;
+            ca.AxisX.IntervalOffsetType = DateTimeIntervalType.Months;
             ca.AxisX.Interval = 1;
         }
 
@@ -422,7 +436,7 @@ namespace WindowsFormsApplication1
                 if (viewSize <= 72) mainInterval = 24;          // 3 Tage -> 24h Schritte
                 else if (viewSize <= 500) mainInterval = 168;   // ~3 Wochen -> Wochenschnitte
                 else if (viewSize <= 2500) mainInterval = 720;  // Monate
-                else mainInterval = 2000;                       // Übersicht
+                else mainInterval = 1460;                       // Übersicht (teilt 8760 -> Endwert bekommt ein Label)
 
                 xAxis.Interval = mainInterval;
                 xAxis.MajorGrid.Interval = mainInterval;
