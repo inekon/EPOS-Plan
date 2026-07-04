@@ -126,8 +126,6 @@
             label2_pBox_DetailSim = new System.Windows.Forms.Label();
             label_pBox_DetailSim = new System.Windows.Forms.Label();
             btn_SimKonfig = new System.Windows.Forms.Button();
-            label2_pBox_SchnellSim = new System.Windows.Forms.Label();
-            label_pBox_SchnellSim = new System.Windows.Forms.Label();
             label30 = new System.Windows.Forms.Label();
             label31 = new System.Windows.Forms.Label();
             label_Komponenten = new System.Windows.Forms.Label();
@@ -138,7 +136,6 @@
             Label10 = new System.Windows.Forms.Label();
             pBox_Optimierung = new System.Windows.Forms.PictureBox();
             pBox_DetailSim = new System.Windows.Forms.PictureBox();
-            pBoxSchnellSim = new System.Windows.Forms.PictureBox();
             pictureBox_Zusammenfassung = new System.Windows.Forms.PictureBox();
             tabPage6 = new System.Windows.Forms.TabPage();
             btn_Kosten = new System.Windows.Forms.Button();
@@ -188,7 +185,6 @@
             tabPage5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pBox_Optimierung).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pBox_DetailSim).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pBoxSchnellSim).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox_Zusammenfassung).BeginInit();
             tabPage6.SuspendLayout();
             panel1.SuspendLayout();
@@ -954,8 +950,6 @@
             tabPage5.Controls.Add(label2_pBox_DetailSim);
             tabPage5.Controls.Add(label_pBox_DetailSim);
             tabPage5.Controls.Add(btn_SimKonfig);
-            tabPage5.Controls.Add(label2_pBox_SchnellSim);
-            tabPage5.Controls.Add(label_pBox_SchnellSim);
             tabPage5.Controls.Add(label30);
             tabPage5.Controls.Add(label31);
             tabPage5.Controls.Add(label_Komponenten);
@@ -966,7 +960,6 @@
             tabPage5.Controls.Add(Label10);
             tabPage5.Controls.Add(pBox_Optimierung);
             tabPage5.Controls.Add(pBox_DetailSim);
-            tabPage5.Controls.Add(pBoxSchnellSim);
             tabPage5.Controls.Add(pictureBox_Zusammenfassung);
             resources.ApplyResources(tabPage5, "tabPage5");
             tabPage5.Name = "tabPage5";
@@ -1052,21 +1045,6 @@
             btn_SimKonfig.UseVisualStyleBackColor = true;
             btn_SimKonfig.Click += btn_SimKonfig_Click;
             // 
-            // label2_pBox_SchnellSim
-            // 
-            resources.ApplyResources(label2_pBox_SchnellSim, "label2_pBox_SchnellSim");
-            label2_pBox_SchnellSim.Cursor = System.Windows.Forms.Cursors.Hand;
-            label2_pBox_SchnellSim.ForeColor = System.Drawing.Color.DimGray;
-            label2_pBox_SchnellSim.Name = "label2_pBox_SchnellSim";
-            label2_pBox_SchnellSim.Click += label60_Click;
-            // 
-            // label_pBox_SchnellSim
-            // 
-            resources.ApplyResources(label_pBox_SchnellSim, "label_pBox_SchnellSim");
-            label_pBox_SchnellSim.Cursor = System.Windows.Forms.Cursors.Hand;
-            label_pBox_SchnellSim.Name = "label_pBox_SchnellSim";
-            label_pBox_SchnellSim.Click += label61_Click;
-            // 
             // label30
             // 
             resources.ApplyResources(label30, "label30");
@@ -1130,15 +1108,6 @@
             pBox_DetailSim.Name = "pBox_DetailSim";
             pBox_DetailSim.TabStop = false;
             pBox_DetailSim.Click += pBox_DetailSim_Click;
-            // 
-            // pBoxSchnellSim
-            // 
-            pBoxSchnellSim.BackgroundImage = Properties.Resources.PSchnellSim;
-            resources.ApplyResources(pBoxSchnellSim, "pBoxSchnellSim");
-            pBoxSchnellSim.Cursor = System.Windows.Forms.Cursors.Hand;
-            pBoxSchnellSim.Name = "pBoxSchnellSim";
-            pBoxSchnellSim.TabStop = false;
-            pBoxSchnellSim.Click += pBoxSchnellSim_Click;
             // 
             // pictureBox_Zusammenfassung
             // 
@@ -1326,7 +1295,6 @@
             tabPage5.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pBox_Optimierung).EndInit();
             ((System.ComponentModel.ISupportInitialize)pBox_DetailSim).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pBoxSchnellSim).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox_Zusammenfassung).EndInit();
             tabPage6.ResumeLayout(false);
             panel1.ResumeLayout(false);
@@ -1376,7 +1344,6 @@
         private System.Windows.Forms.Label label_WBedarf;
         private System.Windows.Forms.Label label_Strom;
         private System.Windows.Forms.Label label_Komponenten;
-        private System.Windows.Forms.PictureBox pBoxSchnellSim;
         private System.Windows.Forms.PictureBox pBox_DetailSim;
         private System.Windows.Forms.PictureBox pBox_Optimierung;
         private System.Windows.Forms.PictureBox pBox_Delete;
@@ -1442,8 +1409,6 @@
         private System.Windows.Forms.Label label_pBox_Optimierung;
         private System.Windows.Forms.Label label2_pBox_DetailSim;
         private System.Windows.Forms.Label label_pBox_DetailSim;
-        private System.Windows.Forms.Label label2_pBox_SchnellSim;
-        private System.Windows.Forms.Label label_pBox_SchnellSim;
         private System.Windows.Forms.Label label_ProjektName;
         private System.Windows.Forms.Label label70;
         private System.Windows.Forms.Label label_ProjektKomp;

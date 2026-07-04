@@ -641,4 +641,267 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Detailed simulation</value>
   </data>
+  <data name="ueb_label47.Location" type="System.Drawing.Point, System.Drawing">
+    <value>22, 125</value>
+  </data>
+    
+  <data name="ueb_label47.Size" type="System.Drawing.Size, System.Drawing">
+    <value>279, 17</value>
+  </data>
+    
+  <data name="ueb_label47.Text" xml:space="preserve">
+    <value>Heat requirement of the local heating network:</value>
+  </data>
+    
+  <data name="ueb_textBox_gesWaermebedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>315, 122</value>
+  </data>
+    
+  <data name="ueb_label62.Location" type="System.Drawing.Point, System.Drawing">
+    <value>417, 126</value>
+  </data>
+    
+  <data name="ueb_label9.Size" type="System.Drawing.Size, System.Drawing">
+    <value>128, 17</value>
+  </data>
+    
+  <data name="ueb_label9.Text" xml:space="preserve">
+    <value>Power requirements:</value>
+  </data>
+    
+  <data name="ueb_textBox_gesStrombedarf.Location" type="System.Drawing.Point, System.Drawing">
+    <value>315, 157</value>
+  </data>
+    
+  <data name="ueb_label10.Location" type="System.Drawing.Point, System.Drawing">
+    <value>417, 161</value>
+  </data>
+    
+  <data name="ueb_label13.Location" type="System.Drawing.Point, System.Drawing">
+    <value>17, 94</value>
+  </data>
+    
+  <data name="ueb_label13.Size" type="System.Drawing.Size, System.Drawing">
+    <value>169, 21</value>
+  </data>
+    
+  <data name="ueb_label13.Text" xml:space="preserve">
+    <value>Energy requirements</value>
+  </data>
+    
+  <data name="ueb_label63.Text" xml:space="preserve">
+    <value>Residual heat requirement:</value>
+  </data>
+    
+  <data name="ueb_label59.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 344</value>
+  </data>
+    
+  <data name="ueb_label59.Size" type="System.Drawing.Size, System.Drawing">
+    <value>212, 17</value>
+  </data>
+    
+  <data name="ueb_label59.Text" xml:space="preserve">
+    <value>Heat production of the top boilers:</value>
+  </data>
+    
+  <data name="ueb_textBox_BHKWWaermeproduktion.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+    
+  <data name="ueb_textBox_BHKWWaermeproduktion.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9.75pt</value>
+  </data>
+    
+  <data name="ueb_textBox_BHKWWaermeproduktion.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+    
+  <data name="ueb_textBox_BHKWWaermeproduktion.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 25</value>
+  </data>
+    
+  <data name="ueb_label64.Location" type="System.Drawing.Point, System.Drawing">
+    <value>323, 277</value>
+  </data>
+    
+  <data name="ueb_label33.Location" type="System.Drawing.Point, System.Drawing">
+    <value>727, 275</value>
+  </data>
+    
+  <data name="ueb_textBox_HeizstabStromverbrauch.Location" type="System.Drawing.Point, System.Drawing">
+    <value>632, 273</value>
+  </data>
+    
+  <data name="ueb_label34.Location" type="System.Drawing.Point, System.Drawing">
+    <value>408, 274</value>
+  </data>
+    
+  <data name="ueb_label34.Size" type="System.Drawing.Size, System.Drawing">
+    <value>223, 17</value>
+  </data>
+    
+  <data name="ueb_label34.Text" xml:space="preserve">
+    <value>Power consumption heating element:</value>
+  </data>
+    
+  <data name="ueb_label31.Location" type="System.Drawing.Point, System.Drawing">
+    <value>727, 245</value>
+  </data>
+    
+  <data name="ueb_textBox_WPStromverbrauch.Location" type="System.Drawing.Point, System.Drawing">
+    <value>632, 245</value>
+  </data>
+    
+  <data name="ueb_label32.Location" type="System.Drawing.Point, System.Drawing">
+    <value>409, 245</value>
+  </data>
+    
+  <data name="ueb_label32.Size" type="System.Drawing.Size, System.Drawing">
+    <value>146, 17</value>
+  </data>
+    
+  <data name="ueb_label32.Text" xml:space="preserve">
+    <value>Power consumption HP:</value>
+  </data>
+    
+  <data name="ueb_textBox_WPWaermeproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>233, 246</value>
+  </data>
+    
+  <data name="ueb_label18.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 277</value>
+  </data>
+    
+  <data name="ueb_label18.Size" type="System.Drawing.Size, System.Drawing">
+    <value>134, 17</value>
+  </data>
+    
+  <data name="ueb_label18.Text" xml:space="preserve">
+    <value>Heat production CHP:</value>
+  </data>
+    
+  <data name="ueb_textBox_SWWaermeproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>234, 309</value>
+  </data>
+    
+  <data name="ueb_label19.Location" type="System.Drawing.Point, System.Drawing">
+    <value>323, 311</value>
+  </data>
+    
+  <data name="ueb_label20.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 246</value>
+  </data>
+    
+  <data name="ueb_label20.Size" type="System.Drawing.Size, System.Drawing">
+    <value>129, 17</value>
+  </data>
+    
+  <data name="ueb_label20.Text" xml:space="preserve">
+    <value>Heat production WP:</value>
+  </data>
+    
+  <data name="ueb_label21.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 313</value>
+  </data>
+    
+  <data name="ueb_label21.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 17</value>
+  </data>
+    
+  <data name="ueb_label21.Text" xml:space="preserve">
+    <value>Solar heat:</value>
+  </data>
+    
+  <data name="ueb_textBox_SPKWaermeproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>233, 342</value>
+  </data>
+    
+  <data name="ueb_label22.Location" type="System.Drawing.Point, System.Drawing">
+    <value>323, 344</value>
+  </data>
+    
+  <data name="ueb_label23.Location" type="System.Drawing.Point, System.Drawing">
+    <value>323, 246</value>
+  </data>
+    
+  <data name="ueb_label24.Location" type="System.Drawing.Point, System.Drawing">
+    <value>727, 303</value>
+  </data>
+    
+  <data name="ueb_textBox_BHKWStromproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>632, 301</value>
+  </data>
+    
+  <data name="ueb_label25.Location" type="System.Drawing.Point, System.Drawing">
+    <value>409, 303</value>
+  </data>
+    
+  <data name="ueb_label25.Size" type="System.Drawing.Size, System.Drawing">
+    <value>161, 17</value>
+  </data>
+    
+  <data name="ueb_label25.Text" xml:space="preserve">
+    <value>Electricity production CHP:</value>
+  </data>
+    
+  <data name="ueb_label26.Location" type="System.Drawing.Point, System.Drawing">
+    <value>727, 331</value>
+  </data>
+    
+  <data name="ueb_textBox_PVStromproduktion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>632, 329</value>
+  </data>
+    
+  <data name="ueb_label27.Location" type="System.Drawing.Point, System.Drawing">
+    <value>409, 331</value>
+  </data>
+    
+  <data name="ueb_label27.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 17</value>
+  </data>
+    
+  <data name="ueb_label27.Text" xml:space="preserve">
+    <value>Electricity production PV:</value>
+  </data>
+    
+  <data name="ueb_label29.Text" xml:space="preserve">
+    <value>Residual power requirement:</value>
+  </data>
+    
+  <data name="ueb_label1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 194</value>
+  </data>
+    
+  <data name="ueb_label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>64, 21</value>
+  </data>
+    
+  <data name="ueb_label1.Text" xml:space="preserve">
+    <value>Results</value>
+  </data>
+    
+  <data name="ueb_label2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>726, 359</value>
+  </data>
+    
+  <data name="ueb_textBox_SPKStromverbrauch.Location" type="System.Drawing.Point, System.Drawing">
+    <value>631, 357</value>
+  </data>
+    
+  <data name="ueb_label3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>408, 359</value>
+  </data>
+    
+  <data name="ueb_label3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 17</value>
+  </data>
+    
+  <data name="ueb_label3.Text" xml:space="preserve">
+    <value>Power consumption SPK:</value>
+  </data>
+    
+  <data name="tabPage_Uebersicht.Text" xml:space="preserve">
+    <value>Overview</value>
+  </data>
 </root>

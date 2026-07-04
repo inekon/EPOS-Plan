@@ -1132,14 +1132,6 @@ namespace WindowsFormsApplication1
                 comboBox_Klima.Text = "";
             }
         }
-
-        private void pBoxSchnellSim_Click(object sender, EventArgs e)
-        {
-            Form_Simulation_Kurz frm = new Form_Simulation_Kurz(m_ID_Projekt);
-            frm.SetControls();
-            frm.ShowDialog();
-        }
-
         private void btn_SimKonfig_Click(object sender, EventArgs e)
         {
             Form_Simulation_Config frm = new Form_Simulation_Config();
@@ -1443,17 +1435,7 @@ namespace WindowsFormsApplication1
         {
             pBox_Solarthermie_Click(sender, e);
         }
-
-        private void label61_Click(object sender, EventArgs e)
-        {
-            pBoxSchnellSim_Click(sender, e);
-        }
-
-        private void label60_Click(object sender, EventArgs e)
-        {
-            pBoxSchnellSim_Click(sender, e);
-        }
-
+        
         private void label63_Click(object sender, EventArgs e)
         {
             pBox_DetailSim_Click(sender, e);

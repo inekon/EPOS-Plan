@@ -50,10 +50,14 @@
     <Compile Remove="Controller\WPTestCtrl.cs" />
     <Compile Remove="Views\Simulation\Form_Simulation_Detail - Kopie.cs" />
     <Compile Remove="Views\Simulation\Form_Simulation_Detail.Designer - Kopie.cs" />
+    <Compile Remove="Views\Simulation\Form_Simulation_Kurz.cs" />
+    <Compile Remove="Views\Simulation\Form_Simulation_Kurz.Designer.cs" />
     <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail - Kopie.resx" />
     <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail.de-DE - Kopie.resx" />
     <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail.en-US - Kopie.resx" />
-    <None Include="Allgemein\GrafikTools\ChartManagerNeu.cs" />
+    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.de-DE.resx" />
+    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.en-US.resx" />
+    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.resx" />
     <None Include="Controller\WPTestCtrl.cs" />
   </ItemGroup>
 

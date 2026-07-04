@@ -36,6 +36,7 @@ namespace WindowsFormsApplication1
         Point prevPosition;
 
         private TabNavigationManager _navManager; // Global im Formular speichern
+        private TabListMapper _einstellungenMapper; // Mappt tabControl_Einstellungen auf ListView-Navigation
         private Dictionary<string, TabPage> dictAllTabPages = new Dictionary<string, TabPage>();
         private Dictionary<string, TabPage> dictParameterTabPages = new Dictionary<string, TabPage>();
 
@@ -71,6 +72,16 @@ namespace WindowsFormsApplication1
 
             init_Chart(chart1);
             init_Chart(chart2);
+
+            // Übersicht-Diagramm (Kreis) initialisieren – entspricht chart5 aus Form_Simulation_Kurz
+            ueb_chart.Legends[0].LegendStyle = LegendStyle.Table;
+            ueb_chart.Legends[0].Docking = Docking.Right;
+            ueb_chart.Legends[0].Alignment = StringAlignment.Center;
+            ueb_chart.Legends[0].Title = "Wärmebedarfsdeckung";
+            ueb_chart.Legends[0].BorderColor = Color.Green;
+            ueb_chart.Series[0].IsValueShownAsLabel = false;
+            ueb_chart.Series[0]["PieLabelStyle"] = "Outside";
+            ueb_chart.Series[0].Points.Clear();
 
             listView_SimSPK.View = View.Details;
             listView_SimSPK.Columns.Add("Heizkessel", -2, HorizontalAlignment.Left);
@@ -123,8 +134,12 @@ namespace WindowsFormsApplication1
                 dataGridView_BHKW.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
 
-            // Automatische Spaltenbreite
-            dataGridView_BHKW.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
+            // Spalten füllen die gesamte verfügbare Breite (passt sich bei Größenänderung an)
+            dataGridView_BHKW.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            // Gewichtung: Modulname breiter als die beiden Zahlenspalten
+            dataGridView_BHKW.Columns[0].FillWeight = 50; // BHKW-Modul
+            dataGridView_BHKW.Columns[1].FillWeight = 25; // Wärmeprod. [MWh/a]
+            dataGridView_BHKW.Columns[2].FillWeight = 25; // Stromprod. [MWh/a]
 
             VereinheitlichePageSchriftarten(this.tabPage_Bedarf);
             VereinheitlichePageSchriftarten(this.tabPage_Wärmepumpe);
@@ -146,6 +161,9 @@ namespace WindowsFormsApplication1
                 tabControl_Simulation.SelectedTab = dictAllTabPages[targetTabName];
                 mainTabPageIndex = tabControl_Simulation.SelectedIndex; // Aktualisiere den Index der Haupt-TabPage
             }
+
+            // tabControl_Einstellungen als ListView-Navigation darstellen (Original-TabControl bleibt erhalten)
+            _einstellungenMapper = new TabListMapper(tabControl_Einstellungen, 200);
         }
 
         public void SetControls()
@@ -174,6 +192,7 @@ namespace WindowsFormsApplication1
 
             // Alle TabPages im Dictionary registrieren, damit sie im Hintergrund existieren
             dictAllTabPages.Add("tabPage_Parameter", this.tabPage_Parameter);
+            dictAllTabPages.Add("tabPage_Uebersicht", this.tabPage_Uebersicht);
             dictAllTabPages.Add("tabPage_Simulation", this.tabPage_Simulation);
             dictAllTabPages.Add("tabPage_Bedarf", this.tabPage_Bedarf);
             dictAllTabPages.Add("tabPage_Wärmepumpe", this.tabPage_Wärmepumpe);
@@ -191,6 +210,10 @@ namespace WindowsFormsApplication1
 
             // NUR NOCH die 2 echten Haupt-Tabs oben sichtbar einfügen:
             if (dictAllTabPages.TryGetValue("tabPage_Parameter", out gefundeneSeite) && gefundeneSeite != null)
+                tabControl_Simulation.TabPages.Add(gefundeneSeite);
+
+            // Übersicht als 2. Haupt-Tab (wie Parameter/Simulation NICHT Teil des ListView-Menü-Mappings)
+            if (dictAllTabPages.TryGetValue("tabPage_Uebersicht", out gefundeneSeite) && gefundeneSeite != null)
                 tabControl_Simulation.TabPages.Add(gefundeneSeite);
 
             if (dictAllTabPages.TryGetValue("tabPage_Simulation", out gefundeneSeite) && gefundeneSeite != null)
@@ -234,6 +257,9 @@ namespace WindowsFormsApplication1
             // Steuerelement wieder freigeben
             tabControl_Simulation.ResumeLayout();
             tabControl_Einstellungen.ResumeLayout();
+
+            // ListView-Navigation an die neu aufgebauten Einstellungen-Seiten angleichen
+            _einstellungenMapper?.BuildItems();
 
             // Jetzt rufen wir die korrigierte Listenbefüllung auf
             BefuelleQuellenListe(tool, ctrl);
@@ -630,6 +656,15 @@ namespace WindowsFormsApplication1
             MacheTextAbschnittFett(richTextBox_Info, "Ohne Einspeisung (Zero-Export)");
 
             LeseKonfiguration();
+
+            // Beim Öffnen automatisch simulieren (wie btn_Simulation in Form_Simulation_Kurz)
+            // und anschließend den Übersicht-Tab in den Vordergrund holen.
+            ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
+            if (ctrl.rows > 0)
+            {
+                btn_Simulation_Click(this, EventArgs.Empty);
+            }
+            tabControl_Simulation.SelectedTab = tabPage_Uebersicht;
         }
 
         private void MacheTextAbschnittFett(RichTextBox rtb, string textZuFormatieren)
@@ -728,12 +763,45 @@ namespace WindowsFormsApplication1
             sim.Do_Simulation(m_ID_Projekt);
             Endergebniss_Simulation();
 
-            tabControl_Simulation.SelectedIndex = 1;
+            // Inhalt des Übersicht-Tabs aktualisieren (wie zuvor in Form_Simulation_Kurz.btn_Simulation_Click)
+            FuelleUebersicht();
+
+            tabControl_Simulation.SelectedTab = tabPage_Simulation;
             if (tabControl_Simulation.SelectedTab.Name == "tabPage_Simulation")
             {
                 listViewQuellen.SelectedIndices.Add(0);
             }
 
+        }
+
+        // Befüllt den Übersicht-Tab mit den Simulationsergebnissen
+        // (entspricht der Ergebnisdarstellung aus Form_Simulation_Kurz.btn_Simulation_Click).
+        private void FuelleUebersicht()
+        {
+            ueb_textBox_gesStrombedarf.Text = simulation_Strombedarf.Strombedarf_gesamt.ToString("F2");
+            ueb_textBox_gesWaermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
+
+            ueb_textBox_Restwaermebedarf.Text = sim.Restwaerme.ToString("F2");
+            ueb_textBox_Reststrombedarf.Text = sim.Reststrom.ToString("F2");
+            ueb_textBox_WPWaermeproduktion.Text = (sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000).ToString("F2");
+            ueb_textBox_WPStromverbrauch.Text = (sim.simulation_wp.WP_Strombedarf_gesamt / 1000).ToString("F2");
+            ueb_textBox_SPKWaermeproduktion.Text = sim.simulation_spk.S_Waerme_spk.ToString("F2");
+            ueb_textBox_HeizstabStromverbrauch.Text = (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
+            ueb_textBox_SPKStromverbrauch.Text = sim.simulation_spk.Stromverbrauch_Spk.ToString("F2");
+            ueb_textBox_BHKWWaermeproduktion.Text = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh.ToString("F2");
+            ueb_textBox_BHKWStromproduktion.Text = sim.simulation_bhkw.Stromproduktion_BHKW_MWh.ToString("F2");
+
+            ueb_chart.Series[0].Points.Clear();
+            if (sim.simulation_wp.WP_Waermeproduktion_gesamt > 0)
+                ueb_chart.Series[0].Points.AddXY("Wärmepumpe", sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000);
+            if (sim.simulation_wp.Heizstab_gesamt > 0)
+                ueb_chart.Series[0].Points.AddXY("Heizstab", sim.simulation_wp.Heizstab_gesamt / 1000);
+            if (sim.simulation_spk.S_Waerme_spk > 0)
+                ueb_chart.Series[0].Points.AddXY("Heizkessel", sim.simulation_spk.S_Waerme_spk);
+            if (sim.simulation_bhkw.Waermeproduktion_BHKW_MWh > 0)
+                ueb_chart.Series[0].Points.AddXY("BHKW", sim.simulation_bhkw.Waermeproduktion_BHKW_MWh);
+            if (sim.Restwaerme > 0)
+                ueb_chart.Series[0].Points.AddXY("Rest", sim.Restwaerme);
         }
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
@@ -1150,7 +1218,7 @@ namespace WindowsFormsApplication1
             textBox_PVReststrombedarf.Text = (sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0).ToString("F2");
 
             _chartManager[9] = new ChartManager(chart_PV);
-            _chartManager[9].YMaxValue = sim.simulation_pv.Strombedarf.Max() * 1.1;
+            _chartManager[9].YMaxValue = sim.simulation_pv.Strombedarf.Max();
             _chartManager[9].YMinValue = 0;
             _chartManager[9].XAxisAsNumber = false;
             _chartManager[9].XAxisTitle = "Monate";
