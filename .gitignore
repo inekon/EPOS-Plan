@@ -9,6 +9,8 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.kopie*
+.claude
 Kenndaten.accdb
 Kenndaten.laccdb
 
