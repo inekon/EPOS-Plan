@@ -26,10 +26,10 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             dataGridView1.Rows.Clear();
-            listView_Prozess_Auswahl.Items.Clear();
-            listView_Prozess_Auswahl.View = View.Details;
-            listView_Prozess_Auswahl.Columns.Add("Name", -2, HorizontalAlignment.Left);
-            listView_Prozess_Auswahl.Columns[0].Width = listView_Prozess_Auswahl.ClientRectangle.Width;
+            listView_Auswahl.Items.Clear();
+            listView_Auswahl.View = View.Details;
+            listView_Auswahl.Columns.Add("Name", -2, HorizontalAlignment.Left);
+            listView_Auswahl.Columns[0].Width = listView_Auswahl.ClientRectangle.Width;
 
             DataGridView dgv = dataGridView1;
             dgv.AutoGenerateColumns = false;
@@ -78,7 +78,6 @@ namespace WindowsFormsApplication1
                 dgv.Rows[i].DividerHeight = 1;
             }
         }
-
         public void SetControls(string szProjekt, bool bWizard = false)
         {
             Z_ProjektBrauchwasserCtrl ctrl = new Z_ProjektBrauchwasserCtrl();
@@ -97,25 +96,25 @@ namespace WindowsFormsApplication1
             m_szProjekt = szProjekt;
 
         
-            listView_Prozess_Auswahl.Items.Clear(); 
+            listView_Auswahl.Items.Clear(); 
             for (int i = 0; i < list_pwmodel.Count; i++)
             {
                 ListViewItem lvitem = new ListViewItem();
                 lvitem.Text = list_pwmodel[i].szBezeichner;
                 lvitem.SubItems.Add(list_pwmodel[i].ID_Z.ToString());
-                listView_Prozess_Auswahl.Items.Add(lvitem);
+                listView_Auswahl.Items.Add(lvitem);
             }
             btn_ErgebnisseVerbrauch.Enabled = false;
 
-            if (listView_Prozess_Auswahl.Items.Count > 0)
+            if (listView_Auswahl.Items.Count > 0)
             {
-                textBox_SummeProzesswaerme.Text = ProzesssummeGesamt().ToString("F2");
+                textBox_Summe.Text = BrauchwasserGesamt().ToString("F2");
             }
 
             dataGridView1.Select();
             dataGridView1.ClearSelection();
-            listView_Prozess_Auswahl.Select();
-            if(listView_Prozess_Auswahl.Items.Count > 0) listView_Prozess_Auswahl.Items[0].Selected = true;
+            listView_Auswahl.Select();
+            if(listView_Auswahl.Items.Count > 0) listView_Auswahl.Items[0].Selected = true;
         }
 
         private void listBox_Prozess_DB_SelectedIndexChanged(object sender, EventArgs e)
@@ -125,16 +124,16 @@ namespace WindowsFormsApplication1
             SetProzessInfo(szName);
         }
 
-        private void listView_Prozess_Auswahl_SelectedIndexChanged(object sender, EventArgs e)
+        private void listView_Auswahl_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ListView.SelectedIndexCollection indexes = listView_Prozess_Auswahl.SelectedIndices;
+            ListView.SelectedIndexCollection indexes = listView_Auswahl.SelectedIndices;
 
             if (indexes.Count > 0)
             {
                 m_ListIndex = indexes[0];
-                ListViewItem lvitem = listView_Prozess_Auswahl.Items[indexes[0]];
+                ListViewItem lvitem = listView_Auswahl.Items[indexes[0]];
                 textBox_Jahres_Verbrauch.Text = list_pwmodel[m_ListIndex].Summe.ToString("F2");
-                textBox_SummeProzesswaerme.Text = ProzesssummeGesamt().ToString("F2");
+                textBox_Summe.Text = BrauchwasserGesamt().ToString("F2");
                 SetProzessInfo(lvitem.Text);
             }
             dataGridView1.ClearSelection();
@@ -146,9 +145,9 @@ namespace WindowsFormsApplication1
 
             if (ctrl.rows > 0)
             {
-                textBox_Prozess_Name.Text = szName;
+                textBox_Name.Text = szName;
                 textBox_Beschreibung.Text = ctrl.m_szBeschreibung;
-                textBox_Prozess_Type.Text = ctrl.m_szTyp;  
+                textBox_Type.Text = ctrl.m_szTyp;  
             }
         }
 
@@ -191,24 +190,24 @@ namespace WindowsFormsApplication1
                 ListViewItem lvitem = new ListViewItem();
                 lvitem.Text = (string)dataGridView1.CurrentRow.Cells[0].Value;
                 lvitem.SubItems.Add(model.ID_Z.ToString());
-                listView_Prozess_Auswahl.Items.Add(lvitem);
-                listView_Prozess_Auswahl.Select();
-                listView_Prozess_Auswahl.SelectedItems.Clear();
-                listView_Prozess_Auswahl.Items[listView_Prozess_Auswahl.Items.Count-1].Selected = true;  
+                listView_Auswahl.Items.Add(lvitem);
+                listView_Auswahl.Select();
+                listView_Auswahl.SelectedItems.Clear();
+                listView_Auswahl.Items[listView_Auswahl.Items.Count-1].Selected = true;  
             }
             rs.Close();
 
-            textBox_SummeProzesswaerme.Text = ProzesssummeGesamt().ToString("F2");
+            textBox_Summe.Text = BrauchwasserGesamt().ToString("F2");
         }
 
         private void btn_Entfernen_Click(object sender, EventArgs e)
         {
-            ListView.SelectedIndexCollection indexes = listView_Prozess_Auswahl.SelectedIndices;
+            ListView.SelectedIndexCollection indexes = listView_Auswahl.SelectedIndices;
 
             if (indexes.Count > 0)
             {
        
-                ListViewItem lvitem = listView_Prozess_Auswahl.Items[indexes[0]];
+                ListViewItem lvitem = listView_Auswahl.Items[indexes[0]];
     
                 for (int i = 0; i < list_pwmodel.Count; i++)
                 {
@@ -217,8 +216,8 @@ namespace WindowsFormsApplication1
                         list_pwmodel.RemoveAt(i);
                         m_ListIndex -= 1;
                         if(m_ListIndex < 0) m_ListIndex = 0;
-                        listView_Prozess_Auswahl.Items[indexes[0]].Remove();
-                        textBox_SummeProzesswaerme.Text = ProzesssummeGesamt().ToString("F2");
+                        listView_Auswahl.Items[indexes[0]].Remove();
+                        textBox_Summe.Text = BrauchwasserGesamt().ToString("F2");
                         break;
                     }
                 }
@@ -243,18 +242,18 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    listView_Prozess_Auswahl.Select(); 
-                    listView_Prozess_Auswahl.Items[0].Selected = true;
+                    listView_Auswahl.Select(); 
+                    listView_Auswahl.Items[0].Selected = true;
                 }
             }
             
         }
 
-        private double ProzesssummeGesamt()
+        private double BrauchwasserGesamt()
         {
             double summe = 0;
 
-            for (int i=0; i<listView_Prozess_Auswahl.Items.Count; i++)
+            for (int i=0; i<listView_Auswahl.Items.Count; i++)
             {
                 summe += list_pwmodel[i].Summe;
             }
@@ -277,7 +276,7 @@ namespace WindowsFormsApplication1
         {
             simulation.m_ID_Projekt = m_ID_Projekt;
 
-            if (textBox_Prozess_Name.Text == "")
+            if (textBox_Name.Text == "")
             {
                 MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen!");
                 return;
@@ -286,11 +285,11 @@ namespace WindowsFormsApplication1
             if (m_bWizard && textBox_Verbrauch.Text != "") // nur im Wizard Wert sofort speichern, wegen Simulation
             {
                 Z_ProjektBrauchwasserCtrl ctrl = new Z_ProjektBrauchwasserCtrl();
-                ctrl.UpdateSumme(double.Parse(textBox_Verbrauch.Text), textBox_Prozess_Name.Text, m_ID_Projekt);
+                ctrl.UpdateSumme(double.Parse(textBox_Verbrauch.Text), textBox_Name.Text, m_ID_Projekt);
             }
 
             List<string> list;
-            list = listView_Prozess_Auswahl.Items.Cast<ListViewItem>().Select(item => item.Text).ToList();
+            list = listView_Auswahl.Items.Cast<ListViewItem>().Select(item => item.Text).ToList();
 
             simulation.Brauchwasserwaerme_berechnen(list);
             simulation.Waermebedarf_Brauchwasser = simulation.com.I_vector_summe(simulation.brauchwasserwerte);
@@ -314,9 +313,9 @@ namespace WindowsFormsApplication1
         private void btn_Prozess_DBedit_Click(object sender, EventArgs e)
         {
             Form_EingDBBrauchwasser frm = new Form_EingDBBrauchwasser();
-            frm.m_szBezeichner = textBox_Prozess_Name.Text;
+            frm.m_szBezeichner = textBox_Name.Text;
             frm.m_szBeschreibung = textBox_Beschreibung.Text;
-            frm.m_szBrauchwassertyp = textBox_Prozess_Type.Text;
+            frm.m_szBrauchwassertyp = textBox_Type.Text;
             frm.mode = "Bearbeiten";
             frm.SetControls();
             frm.ShowDialog();
@@ -386,7 +385,7 @@ namespace WindowsFormsApplication1
 
         private void btn_neuerWert_Click(object sender, EventArgs e)
         {
-            ListView.SelectedIndexCollection indexes = listView_Prozess_Auswahl.SelectedIndices;
+            ListView.SelectedIndexCollection indexes = listView_Auswahl.SelectedIndices;
             if (indexes.Count == 0 || textBox_Verbrauch.Text == "")
             {
                 MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!");
@@ -394,25 +393,24 @@ namespace WindowsFormsApplication1
             }
             list_pwmodel[indexes[0]].Summe = double.Parse(textBox_Verbrauch.Text);
             textBox_Jahres_Verbrauch.Text = textBox_Verbrauch.Text;
-            textBox_SummeProzesswaerme.Text = ProzesssummeGesamt().ToString("F2") ;
+            textBox_Summe.Text = BrauchwasserGesamt().ToString("F2") ;
             pictureBox1.Visible = true;
             pictureBox1.Refresh();
             Thread.Sleep(500);
             pictureBox1.Visible = false;
         }
  
-        private void Form_Prozesswaerme_Load(object sender, EventArgs e)
+        private void Form_Brauchwasser_Load(object sender, EventArgs e)
         {
             SetDBList();
             dataGridView1.ClearSelection();
 
-            if (listView_Prozess_Auswahl.Items.Count > 0)
+            if (listView_Auswahl.Items.Count > 0)
             {
-                listView_Prozess_Auswahl.Select();
-                listView_Prozess_Auswahl.SelectedItems.Clear();
-                listView_Prozess_Auswahl.Items[0].Selected = true;
+                listView_Auswahl.Select();
+                listView_Auswahl.SelectedItems.Clear();
+                listView_Auswahl.Items[0].Selected = true;
             }
-
         }
 
         private void textBox_Verbrauch_TextChanged(object sender, EventArgs e)

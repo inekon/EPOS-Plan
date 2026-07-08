@@ -210,9 +210,10 @@ namespace WindowsFormsApplication1
                 ListViewItem lvitem;
                 lvitem = listView_WP.Items[n];
                 lvitem.Text = frm.item.Bezeichner;
-                lvitem.SubItems[1].Text = frm.item.Vorlauf.ToString();
-                lvitem.SubItems[2].Text = frm.item.Ruecklauf.ToString();
-                lvitem.SubItems[3].Text = frm.item.Betriebsart;
+                lvitem.SubItems[1].Text = frm.item.maxPTherm.ToString();
+                lvitem.SubItems[2].Text = frm.item.Vorlauf.ToString();
+                lvitem.SubItems[3].Text = frm.item.Ruecklauf.ToString();
+                lvitem.SubItems[4].Text = frm.item.Betriebsart;
             }
         }
 
@@ -234,6 +235,7 @@ namespace WindowsFormsApplication1
             ListViewItem lvitem = new ListViewItem();
       
             lvitem.Text = frm.item.Bezeichner;
+            lvitem.SubItems.Add(frm.item.maxPTherm.ToString());
             lvitem.SubItems.Add(frm.item.Vorlauf.ToString());
             lvitem.SubItems.Add(frm.item.Ruecklauf.ToString());
             lvitem.SubItems.Add(frm.item.Betriebsart);

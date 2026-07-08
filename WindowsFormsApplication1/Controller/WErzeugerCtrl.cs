@@ -143,7 +143,7 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Sperrzeit_von") && row["Sperrzeit_von"] != DBNull.Value) item.Sperrzeit_von = Convert.ToInt32(row["Sperrzeit_von"]);
                 if (dt.Columns.Contains("Sperrzeit_bis") && row["Sperrzeit_bis"] != DBNull.Value) item.Sperrzeit_bis = Convert.ToInt32(row["Sperrzeit_bis"]);
                 if (dt.Columns.Contains("Vorlauf") && row["Vorlauf"] != DBNull.Value) item.Vorlauf = Convert.ToInt32(row["Vorlauf"]);
-                if (dt.Columns.Contains("Ruecklauf") && row["Ruecklauf"] != DBNull.Value) item.Ruecklauf = Convert.ToInt32(row["Ruecklauf"]);
+                if (dt.Columns.Contains("Rücklauf") && row["Rücklauf"] != DBNull.Value) item.Ruecklauf = Convert.ToInt32(row["Rücklauf"]);
                 if (dt.Columns.Contains("Bivalenter_Betrieb") && row["Bivalenter_Betrieb"] != DBNull.Value) item.Bivalenter_Betrieb = Convert.ToBoolean(row["Bivalenter_Betrieb"]);
                 if (dt.Columns.Contains("Abschaltpunkt") && row["Abschaltpunkt"] != DBNull.Value) item.Abschaltpunkt = Convert.ToDouble(row["Abschaltpunkt"]);
                 if (dt.Columns.Contains("Nutzungszeit") && row["Nutzungszeit"] != DBNull.Value) item.Nutzungszeit = Convert.ToInt32(row["Nutzungszeit"]);
