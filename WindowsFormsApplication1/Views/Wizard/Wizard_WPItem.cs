@@ -1,4 +1,5 @@
 ﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -109,6 +110,7 @@ namespace WindowsFormsApplication1
                 textBox_bis.Text = item.Sperrzeit_bis.ToString();
                 textBox_von.Text = item.Sperrzeit_von.ToString();
                 comboBox_Vorlauf.Text = item.Vorlauf.ToString();
+                comboBox_Ruecklauf.Text = item.Ruecklauf.ToString();
                 checkBox_Heizstab.Checked = item.Heizstab;
                 textBox_Volumen.Text = item.Volumen.ToString();
                 checkBox_rendeMIX.Checked = item.rendeMix;
@@ -188,7 +190,6 @@ namespace WindowsFormsApplication1
             CloseWithOK = false;
             Close();
         }
-
         private void listBox_WP_SelectedIndexChanged(object sender, EventArgs e)
         {
             FillVorlaufCombo(listBox_WP.Text);
@@ -250,7 +251,6 @@ namespace WindowsFormsApplication1
             }
             return;
         }
-
         private void btn_WP_Click(object sender, EventArgs e)
         {
             Form_WP frm = new Form_WP(listBox_WP.Text);
@@ -268,7 +268,6 @@ namespace WindowsFormsApplication1
             textBox_Modulkosten.Text = wpctrl.items[0].Modulkosten.ToString();
             textBox_Nennleistung.Text = wpctrl.items[0].Nennleistung.ToString();
         }
-
         private void checkBox_Bivalent_CheckedChanged(object sender, EventArgs e)
         {
              if(checkBox_Bivalent.Checked)
@@ -298,7 +297,6 @@ namespace WindowsFormsApplication1
                 label_Betriebsart.Visible = false;
             }
         }
-
         private void comboBox_Betriebsart_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBox_Betriebsart.Text == "Teilparallelbetrieb" && checkBox_Bivalent.Checked == true)
@@ -315,19 +313,16 @@ namespace WindowsFormsApplication1
 
             }
         }
-
         private void textBox_Nutzungszeit_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
-
         private void textBox_Volumen_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
             if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
         }
-
         private void textBox_von_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
@@ -339,13 +334,11 @@ namespace WindowsFormsApplication1
             TextBox tb = sender as TextBox;
             if (!Program.checkInt(tb, tb.Text)) tb.Undo();
         }
-
         private void textBox_Anteil_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
             if (!Program.checkInt(tb, tb.Text)) tb.Undo();
         }
-
         private void btn_Katalog_Click(object sender, EventArgs e)
         {
             Form_WpFilterAuswahl frmauswahl = new Form_WpFilterAuswahl();
