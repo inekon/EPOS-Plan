@@ -86,11 +86,11 @@ namespace WindowsFormsApplication1
             frm.list_gebmodel.Clear();
                 
             string sql = @"SELECT
-                             Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Gebaeude, Z_ProjektGebaeude.[ID_Projekt], 
-                             [Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche,
+                             Z_ProjektGebaeude.ID, Z_ProjektGebaeude.[ID_Projekt], 
+                             [Tab_Gebaeude].ID_ProjektGebaeude, [Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, Einheit_Waermebedarf_Wohnflaeche,
                              Jahresnutzungsgrad, dezWarmwasserbereitung, Gebaeudeart, Beschreibung, Baualtersklasse
                          FROM [Tab_Gebaeude]
-                         INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude
+                         INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID_ProjektGebaeude = Z_ProjektGebaeude.ID
                          WHERE Z_ProjektGebaeude.ID_Projekt=?";
 
             OleDbParameter[] p = { new OleDbParameter("@id",m_ID_Projekt) };
@@ -102,7 +102,7 @@ namespace WindowsFormsApplication1
                 item = new Z_ProjGebModel();
                 item.ID_Z = (int)dr["ID"];
                 item.ID_Projekt = m_ID_Projekt;
-                item.ID_Gebaeude = (int)dr["ID_Gebaeude"];
+                item.ID_Gebaeude = (int)dr["ID_ProjektGebaeude"];
                 item.Gebaeudename = (string)dr["Gebaeudename"];
                 item.Wohnflaeche = (double)dr["Wohnflaeche_Waermebedarf"];
                 item.Einheit = (string)dr["Einheit_Waermebedarf_Wohnflaeche"];

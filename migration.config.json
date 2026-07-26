@@ -1,0 +1,23 @@
+{
+  // ====================================================================
+  // Feinsteuerung fuer den SQL-Skript-Generator (Auto-Modus der GUI/CLI).
+  // Liegt bewusst neben der DB neu (WP_Plan) - wird dort automatisch gefunden.
+  //
+  // Der Auto-Entwurf migriert jetzt ALLE Tabellen mit gleichnamiger Quelle
+  // (DELETE + INSERT, Quelle gewinnt). Hier ausgeschlossen:
+  // ====================================================================
+  "excludeTables": [
+    // Access-Fehlerartefakte
+    "Einfügefehler",
+    "Fehler beim AutoSpeichern von Objektnamen",
+
+    // Einzel-Zeilen-Statustabelle (zuletzt geoeffnetes Projekt) - die neue DB
+    // behaelt ihre eigene Statuszeile (sonst PK-Duplikat beim Projekt-Oeffnen).
+    "Tab_Applikation"
+  ]
+
+  // Hinweis: Ein manuell gepflegtes Skript "migration.manuell.sql" neben der
+  // DB neu hat im Auto-Modus VORRANG vor dem generierten Entwurf. Nur dieses
+  // bildet den Strukturwandel korrekt ab (projektbezogene Komponenten-Kopien,
+  // ID_Projekt/ID_ProjektGebaeude-Verknuepfungen, Erhalt von Projekt 20).
+}

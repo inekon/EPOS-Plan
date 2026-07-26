@@ -23,6 +23,8 @@ namespace WindowsFormsApplication1
         ToolTip tooltip = new ToolTip();
 
         public int m_ID_Projekt;
+        private System.Windows.Forms.ListView listView_SimSolar;
+        private System.Windows.Forms.ListView listView_SimPV;
         public double m_Waermebedarf_Gesamt;
         public double m_Strombedarf_Gesamt;
 
@@ -70,6 +72,8 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             m_ID_Projekt = iD_Projekt;
 
+            btn_ErgebnisSpeichern.Click += btn_ErgebnisSpeichern_Click;
+
             init_Chart(chart1);
             init_Chart(chart2);
 
@@ -111,44 +115,74 @@ namespace WindowsFormsApplication1
             // Beeinflusst nur die Darstellung; Auswahl-/Resize-Logik bleibt unverändert.
             StyleQuellenListeAlsMenu();
 
-            // Ansicht & Verhalten konfigurieren
-            dataGridView_BHKW.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            // Ansicht & Verhalten der BHKW-Liste (jetzt ListView, gleiches Steuerelement
+            // wie Heizkessel/Solarthermie; Feldname bleibt dataGridView_BHKW wegen .resx-Layout)
+            dataGridView_BHKW.View = View.Details;
+            dataGridView_BHKW.FullRowSelect = true;
+            dataGridView_BHKW.GridLines = true;
             dataGridView_BHKW.MultiSelect = false;
-            dataGridView_BHKW.AllowUserToAddRows = false;
-            dataGridView_BHKW.RowHeadersVisible = false;
-
-            // Zeilenumbruch für den Header aktivieren und Höhe setzen
-            dataGridView_BHKW.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            dataGridView_BHKW.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridView_BHKW.ColumnHeadersHeight = 42;
-
-            // Spalten hinzufügen (\n für den zentrierten Umbruch)
-            dataGridView_BHKW.Columns.Add("Name", "BHKW-Modul");
-            dataGridView_BHKW.Columns.Add("Waermeprod", "Wärmeprod.\n[MWh/a]");
-            dataGridView_BHKW.Columns.Add("Stromprod", "Stromprod.\n[MWh/a]");
-
-            // Formatierung: Zahlen rechtsbündig, Header zentriert (ab Index 1)
-            for (int i = 1; i < dataGridView_BHKW.Columns.Count; i++)
-            {
-                dataGridView_BHKW.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                dataGridView_BHKW.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            }
-
-            // Spalten füllen die gesamte verfügbare Breite (passt sich bei Größenänderung an)
-            dataGridView_BHKW.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            // Gewichtung: Modulname breiter als die beiden Zahlenspalten
-            dataGridView_BHKW.Columns[0].FillWeight = 50; // BHKW-Modul
-            dataGridView_BHKW.Columns[1].FillWeight = 25; // Wärmeprod. [MWh/a]
-            dataGridView_BHKW.Columns[2].FillWeight = 25; // Stromprod. [MWh/a]
+            dataGridView_BHKW.Columns.Add("BHKW", -2, HorizontalAlignment.Left);
+            dataGridView_BHKW.Columns.Add("Name", -2, HorizontalAlignment.Left);
+            dataGridView_BHKW.Columns.Add("Wärmeprod. [MWh/a]", -2, HorizontalAlignment.Left);
+            dataGridView_BHKW.Columns.Add("Stromprod. [MWh/a]", -2, HorizontalAlignment.Left);
 
             VereinheitlichePageSchriftarten(this.tabPage_Bedarf);
             VereinheitlichePageSchriftarten(this.tabPage_Wärmepumpe);
             VereinheitlichePageSchriftarten(this.tabPage_Heizkessel);
             VereinheitlichePageSchriftarten(this.tabPage_BHKW);
             VereinheitlichePageSchriftarten(this.tabPage_Solarthermie);
+
+            // Solarkollektoren-Auflistung (analog listView_SimSPK beim Heizkessel) programmatisch
+            // anlegen und im Solarthermie-Tab unter dem Diagramm platzieren (kein Designer noetig).
+            listView_SimSolar = new System.Windows.Forms.ListView();
+            listView_SimSolar.Name = "listView_SimSolar";
+            listView_SimSolar.View = View.Details;
+            listView_SimSolar.FullRowSelect = true;
+            listView_SimSolar.GridLines = true;
+            // Schriftart/-groesse exakt von der Heizkessel-Liste uebernehmen.
+            listView_SimSolar.Font = listView_SimSPK.Font;
+            listView_SimSolar.Columns.Add("Solarkollektor", -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add("Name", -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add("Fläche [m²]", -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add("Anzahl", -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add("Wärmeprod. [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add("Überschuß [MWh/a]", -2, HorizontalAlignment.Left);
+            if (chart8 != null && chart8.Parent != null)
+            {
+                listView_SimSolar.Location = new System.Drawing.Point(chart8.Left, chart8.Bottom + 12);
+                listView_SimSolar.Width = chart8.Width;
+                listView_SimSolar.Height = 180;
+                listView_SimSolar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+                chart8.Parent.Controls.Add(listView_SimSolar);
+            }
+
+            // BHKW-Liste an Font/Schriftgroesse der Heizkessel-/Solar-Liste angleichen.
+            dataGridView_BHKW.Font = listView_SimSPK.Font;
             VereinheitlichePageSchriftarten(this.tabPage_Photovoltaik);
             VereinheitlichePageSchriftarten(this.tabPage_Stromspeicher);
             VereinheitlichePageSchriftarten(this.tabPage_Ergebnis);
+
+            // Photovoltaik-Modul-Auflistung (ListView, analog Heizkessel/Solarthermie) programmatisch
+            // anlegen und im PV-Tab unter dem Diagramm platzieren (kein Designer noetig).
+            listView_SimPV = new System.Windows.Forms.ListView();
+            listView_SimPV.Name = "listView_SimPV";
+            listView_SimPV.View = View.Details;
+            listView_SimPV.FullRowSelect = true;
+            listView_SimPV.GridLines = true;
+            listView_SimPV.Font = listView_SimSPK.Font;
+            listView_SimPV.Columns.Add("Photovoltaik", -2, HorizontalAlignment.Left);
+            listView_SimPV.Columns.Add("Name", -2, HorizontalAlignment.Left);
+            listView_SimPV.Columns.Add("Fläche [m²]", -2, HorizontalAlignment.Left);
+            listView_SimPV.Columns.Add("Anzahl", -2, HorizontalAlignment.Left);
+            listView_SimPV.Columns.Add("Stromprod. [MWh/a]", -2, HorizontalAlignment.Left);
+            if (chart_PV != null && chart_PV.Parent != null)
+            {
+                listView_SimPV.Location = new System.Drawing.Point(chart_PV.Left, chart_PV.Bottom + 12);
+                listView_SimPV.Width = chart_PV.Width;
+                listView_SimPV.Height = 180;
+                listView_SimPV.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+                chart_PV.Parent.Controls.Add(listView_SimPV);
+            }
 
             // HIER DIE KORREKTUR: ReihenfolgeTabPages() komplett weglassen 
             // und stattdessen direkt unsere neue Update-Logik starten!
@@ -354,6 +388,38 @@ namespace WindowsFormsApplication1
             ListViewItem itemErgebnis = new ListViewItem("Ergebnis");
             itemErgebnis.Tag = "tabPage_Ergebnis";
             listViewQuellen.Items.Add(itemErgebnis);
+
+            // Panel-Breite an den breitesten Eintrag anpassen.
+            AdjustQuellenPanelWidth();
+        }
+
+        // Passt die Breite des linken Menue-Panels (splitContainer_Parameter.Panel1)
+        // an den breitesten Listeneintrag an: Icon + Abstand + gemessene Textbreite + Rand.
+        private void AdjustQuellenPanelWidth()
+        {
+            if (listViewQuellen == null || splitContainer_Parameter == null || listViewQuellen.Items.Count == 0) return;
+
+            int maxText = 0;
+            foreach (ListViewItem it in listViewQuellen.Items)
+            {
+                int w = TextRenderer.MeasureText(it.Text, listViewQuellen.Font).Width;
+                if (w > maxText) maxText = w;
+            }
+
+            // Layout aus listViewQuellen_DrawItem: Icon links 16 + Icon 22 + Abstand 12 = 50,
+            // plus rechter Rand und Reserve fuer die vertikale Scrollbar.
+            int needed = 50 + maxText + 20;
+
+            int min = splitContainer_Parameter.Panel1MinSize;
+            int max = splitContainer_Parameter.Width - splitContainer_Parameter.Panel2MinSize - splitContainer_Parameter.SplitterWidth;
+            if (max > min && needed > max) needed = max;
+            if (needed < min) needed = min;
+
+            try { splitContainer_Parameter.SplitterDistance = needed; } catch { }
+
+            if (listViewQuellen.Columns.Count > 0)
+                listViewQuellen.Columns[0].Width = listViewQuellen.ClientSize.Width;
+            listViewQuellen.TileSize = new System.Drawing.Size(listViewQuellen.ClientSize.Width, 40);
         }
 
         // ============================================================
@@ -682,6 +748,10 @@ namespace WindowsFormsApplication1
         {
             var ca = chart.ChartAreas[0];
 
+            // Plotflaeche neutral weiss (konsistent zu den ChartManager-Diagrammen)
+            ca.BackColor = Color.White;
+            ca.BackGradientStyle = GradientStyle.None;
+
             // Enable cursors and selections
             ca.CursorX.IsUserEnabled = true;
             ca.CursorX.IsUserSelectionEnabled = true;
@@ -772,6 +842,227 @@ namespace WindowsFormsApplication1
                 listViewQuellen.SelectedIndices.Add(0);
             }
 
+        }
+
+        // Button-Handler: speichert das aktuelle Gesamtergebnis der Simulation.
+        private void btn_ErgebnisSpeichern_Click(object sender, EventArgs e)
+        {
+            SpeichereErgebnis();
+        }
+
+        // Bildet aus den aktuellen Simulationsobjekten ein ErgebnisModel und speichert es
+        // (Strategie: letztes Ergebnis je Projekt -> ErgebnisCtrl.Save loescht das bisherige).
+        private void SpeichereErgebnis()
+        {
+            if (m_ID_Projekt <= 0)
+            {
+                MessageBox.Show("Kein Projekt geladen.", "Hinweis");
+                return;
+            }
+
+            // Projektkontext (Klimaregion, Name) auslesen.
+            ProjektCtrl pc = new ProjektCtrl();
+            pc.ReadSingle(m_ID_Projekt);
+
+            ErgebnisModel m = new ErgebnisModel();
+            m.ID_Projekt = m_ID_Projekt;
+            m.ID_Klimaregion = pc.m_ID_Klimaregion;
+            m.Bezeichner = "Simulation " + pc.m_szProjektname;
+
+            // Welche Simulationsarten dieser Lauf enthaelt.
+            m.Sim_Energiebedarf  = true;
+            m.Sim_Waermepumpe    = sim.bSimulationWP;
+            m.Sim_Heizkessel     = sim.bSimulationKessel;
+            m.Sim_Solarthermie   = sim.bSimulationSolarthermie;
+            m.Sim_BHKW           = sim.bSimulationBHKW;
+            m.Sim_PV             = sim.bSimulationPV;
+            m.Sim_Stromspeicher  = sim.bSimulationSSP;
+
+            // Detail: Waerme-/Strombedarf (immer vorhanden).
+            m.Energiebedarf = new ErgebnisEnergiebedarfModel();
+            m.Energiebedarf.Waermebedarf_Gesamt = simulation_Waermebedarf.Waermebedarf_Gesamt;
+            m.Energiebedarf.Waermelast_Max      = simulation_Waermebedarf.Waermebedarf_Max;
+            m.Energiebedarf.Strombedarf_Gesamt  = simulation_Strombedarf.Strombedarf_gesamt;
+            m.Energiebedarf.Strombedarf_Max     = simulation_Strombedarf.Strombedarf_Max;
+
+            // Detail: Waermepumpe (nur wenn gerechnet), Werte wie in der WP-Ansicht (MWh).
+            if (sim.bSimulationWP)
+            {
+                SimulationWaermepumpe wp = sim.simulation_wp;
+                ErgebnisWaermepumpeModel w = new ErgebnisWaermepumpeModel();
+                w.Waermebedarf            = wp.Waermebedarf_gesamt / 1000.0;
+                w.Waermeproduktion_WP     = wp.WP_Waermeproduktion_gesamt / 1000.0;
+                w.Stromverbrauch_WP       = wp.WP_Strombedarf_gesamt / 1000.0;
+                w.Stromverbrauch_Heizstab = wp.Heizstab_gesamt / 1000.0;
+                w.Restwaermebedarf        = w.Waermebedarf - w.Waermeproduktion_WP - w.Stromverbrauch_Heizstab;
+                w.Kapazitaet_Pufferspeicher = wp.Volumen_Pufferspeicher * 1.16;
+                w.Vollbenutzungsstunden   = (wp.wp_list.Count > 0) ? wp.WP_Laufzeit / wp.wp_list.Count : 0;
+                w.Bivalenzpunkt           = (wp.Bivalenzpunkt != -100) ? (double?)wp.Bivalenzpunkt : null;
+
+                // Minimale Spitzenkesselleistung = max. stuendlicher Waermerestbedarf.
+                double maxSpk = 0;
+                for (int i = 0; i < wp.waermerestbedarf_stuendlich.Length; i++)
+                    if (wp.waermerestbedarf_stuendlich[i] > maxSpk) maxSpk = wp.waermerestbedarf_stuendlich[i];
+                w.Min_Spitzenkesselleistung = maxSpk;
+
+                // Waermebedarfsdeckung (%) = (WP-Waerme + Heizstab) / Gesamtwaermebedarf.
+                double basis = simulation_Waermebedarf.Waermebedarf_Gesamt;
+                if (basis > 0)
+                {
+                    double deckung = (w.Waermeproduktion_WP + w.Stromverbrauch_Heizstab) / basis * 100.0;
+                    w.Waermebedarfsdeckung = (deckung > 100) ? 100 : deckung;
+                }
+
+                // Modulauflistung.
+                for (int i = 0; i < wp.wp_list.Count; i++)
+                {
+                    ErgebnisWaermepumpeModulModel mo = new ErgebnisWaermepumpeModulModel();
+                    mo.Modul            = wp.WP_Modul[i];
+                    mo.Leistung         = (i < wp.wp_model.Count) ? wp.wp_model[i].Grenzleistung : 0;
+                    mo.Waermeproduktion = wp.Modul_WP_Waermeproduktion[i] / 1000.0;
+                    mo.Stromverbrauch   = wp.Modul_WP_Strombedarf[i] / 1000.0;
+                    mo.Heizstab         = wp.Modul_Heizstab[i] / 1000.0;
+                    mo.Betriebsstunden  = wp.Modul_WP_Laufzeit[i];
+                    w.Module.Add(mo);
+                }
+
+                m.Waermepumpe = w;
+            }
+
+            // Detail: BHKW (nur wenn gerechnet). Werte wie in der BHKW-Ergebnisansicht (MWh/a).
+            if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
+            {
+                SimulationBHKW bh = sim.simulation_bhkw;
+                ErgebnisBHKWModel b = new ErgebnisBHKWModel();
+
+                double waermebedarfMWh = bh.waermebedarf.Sum() / 1000.0;
+                double strombedarfMWh  = bh.strombedarf.Sum() / 1000.0;
+                float[] restwaermeBhkw = sim.SubVectors(bh.waermebedarf, bh.waermeproduktion);
+
+                b.Waermebedarf      = waermebedarfMWh;
+                b.Restwaermebedarf  = restwaermeBhkw.Sum() / 1000.0;
+                b.Strombedarf       = strombedarfMWh;
+                b.Reststrombedarf   = strombedarfMWh - bh.Stromproduktion_BHKW_MWh;
+                b.Waermeproduktion  = bh.Waermeproduktion_BHKW_MWh;
+                b.Waermeueberschuss = bh.Waermeueberschuss / 1000.0;
+                b.Stromproduktion   = bh.Stromproduktion_BHKW_MWh;
+                b.Betriebsstunden_Gesamt       = bh.Betriebsstunden;
+                b.Betriebsstunden_Durchschnitt = bh.dLaufzeiten;
+                b.Waermebedarfsdeckung = (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
+                    ? bh.Waermeproduktion_BHKW_MWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt : 0;
+                b.Strombedarfsdeckung = (simulation_Strombedarf.Strombedarf_gesamt > 0)
+                    ? bh.Stromproduktion_BHKW_MWh * 100.0 / simulation_Strombedarf.Strombedarf_gesamt : 0;
+                b.Gasverbrauch_Hu = bh.Gasverbrauch_BHKW;
+
+                // Modulauflistung (wie dataGridView_BHKW).
+                for (int i = 0; i < bh.bhkw_list.Count; i++)
+                {
+                    ErgebnisBHKWModulModel mo = new ErgebnisBHKWModulModel();
+                    mo.Modul            = bh.bhkw_list_Namen[i] ?? "Standard BHKW";
+                    mo.Waermeproduktion = bh.s_waerme_MWh[i];
+                    mo.Stromproduktion  = bh.s_strom_MWh[i];
+                    b.Module.Add(mo);
+                }
+
+                m.BHKW = b;
+            }
+
+            // Detail: Heizkessel/Spitzenkessel (nur wenn gerechnet). Werte wie in der Kessel-Ansicht.
+            if (sim.bSimulationKessel && sim.simulation_spk != null)
+            {
+                var spk = sim.simulation_spk;
+                ErgebnisHeizkesselModel h = new ErgebnisHeizkesselModel();
+                h.Waermebedarf     = spk.Waermebedarf_gesamt;
+                h.Waermeproduktion = spk.S_Waerme_spk;
+                h.Restwaermebedarf = spk.Waermebedarf_gesamt - spk.S_Waerme_spk;
+                h.Strombedarf      = spk.Strombedarf_gesamt / 1000.0;
+                h.Reststrombedarf  = spk.Strombedarf_gesamt / 1000.0 + spk.Stromverbrauch_Spk;
+                h.Stromverbrauch   = spk.Stromverbrauch_Spk;
+                h.Waermebedarfsdeckung = (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
+                    ? spk.S_Waerme_spk * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt : 0;
+                h.Maximale_Kesselleistung = spk.Maximale_Kesselleistung_Spk;
+                h.Gasspitze        = spk.Gasspitze_Spk;
+                h.Gasverbrauch     = spk.Gasverbrauch_SPK;
+                h.Oelverbrauch     = spk.Oelverbrauch_SPK;
+                h.Koks             = spk.Koks_SPK;
+                h.Rapsoelverbrauch = spk.Rapsoelverbrauch_SPK;
+                h.Holzverbrauch    = spk.Holzverbrauch_SPK;
+                h.Kohle            = spk.Kohle_SPK;
+                h.Sonstigverbrauch = spk.Sonstigverbrauch_SPK;
+                h.Pellets          = spk.Pellets_SPK;
+                h.TierischeFette   = spk.TierischeFette_SPK;
+
+                // Modulauflistung (wie listView_SimSPK).
+                for (int i = 0; i < spk.spk_list.Count(); i++)
+                {
+                    ErgebnisHeizkesselModulModel mo = new ErgebnisHeizkesselModulModel();
+                    mo.Modul              = spk.spk_list[i];
+                    mo.Waerme_Gas         = spk.s_waerme_Gas_Spk[i];
+                    mo.Waerme_Oel         = spk.s_waerme_Oel_Spk[i];
+                    mo.Jahresnutzungsgrad = spk.Kessel_Jahresnutzungsgrad_Spk[i];
+                    h.Module.Add(mo);
+                }
+
+                m.Heizkessel = h;
+            }
+
+            // Detail: Solarthermie (nur wenn gerechnet). Werte wie in der Solarthermie-Ansicht.
+            if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null)
+            {
+                var st = sim.simulation_solarthermie;
+                ErgebnisSolarthermieModel stm = new ErgebnisSolarthermieModel();
+                stm.Waermebedarf     = st.Waermebedarf_gesamt / 1000.0;
+                stm.Waermeproduktion = st.Waermeproduktion_gesamt / 1000.0;
+                stm.Restwaermebedarf = (st.Waermebedarf_gesamt - st.Waermeproduktion_gesamt) / 1000.0;
+                stm.Waermebedarfsdeckung = (st.Waermebedarf_gesamt > 0)
+                    ? st.Waermeproduktion_gesamt * 100.0 / st.Waermebedarf_gesamt : 0;
+                stm.Ueberschuss = st.Ueberschuss_summe / 1000.0;
+
+                if (st.Kollektor_Ergebnisse != null)
+                    foreach (SolarKollektorErgebnis k in st.Kollektor_Ergebnisse)
+                        stm.Module.Add(new ErgebnisSolarthermieModulModel
+                        {
+                            Modul = k.Name,
+                            Flaeche = k.Flaeche,
+                            Anzahl = k.Anzahl,
+                            Waermeproduktion = k.Waermeproduktion / 1000.0,
+                            Ueberschuss = k.Ueberschuss / 1000.0
+                        });
+
+                m.Solarthermie = stm;
+            }
+
+            // Detail: Photovoltaik (nur wenn gerechnet). Werte wie in der PV-Ansicht.
+            if (sim.bSimulationPV && sim.simulation_pv != null)
+            {
+                var pvs = sim.simulation_pv;
+                ErgebnisPhotovoltaikModel pvm = new ErgebnisPhotovoltaikModel();
+                pvm.Stromproduktion = pvs.Stromproduktion.Sum() / 1000.0;
+                pvm.Ueberschuss     = pvs.Ueberschuss.Sum() / 1000.0;
+                pvm.Strombedarf     = pvs.Strombedarf.Sum() / 4000.0;
+                pvm.Reststrombedarf = sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
+                pvm.Strombedarfsdeckung = (pvs.Strombedarf_stuendlich.Sum() > 0)
+                    ? pvs.Stromproduktion.Sum() * 100.0 / pvs.Strombedarf_stuendlich.Sum() : 0;
+                pvm.MaxSolareLeistung = pvs.MaxPSolar;
+
+                if (pvs.Modul_Ergebnisse != null)
+                    foreach (PVModulErgebnis p in pvs.Modul_Ergebnisse)
+                        pvm.Module.Add(new ErgebnisPhotovoltaikModulModel
+                        {
+                            Modul = p.Name,
+                            Flaeche = p.Flaeche,
+                            Anzahl = p.Anzahl,
+                            Stromproduktion = p.Stromproduktion / 1000.0
+                        });
+
+                m.Photovoltaik = pvm;
+            }
+
+            int id = new ErgebnisCtrl().Save(m);
+            if (id > 0)
+                MessageBox.Show("Simulationsergebnis gespeichert.", "Ergebnis");
+            else
+                MessageBox.Show("Das Ergebnis konnte nicht gespeichert werden.", "Fehler");
         }
 
         // Befüllt den Übersicht-Tab mit den Simulationsergebnissen
@@ -943,7 +1234,7 @@ namespace WindowsFormsApplication1
             tabControl_Simulation.SelectedIndex = mainTabPageIndex;
             if (tabControl_Simulation.SelectedTab.Name == "tabPage_Simulation")
             {
-                listViewQuellen.SelectedIndices.Add(mainTablistIndex);
+ //               listViewQuellen.SelectedIndices.Add(mainTablistIndex);
             }
         }
 
@@ -1013,56 +1304,36 @@ namespace WindowsFormsApplication1
                 }
                 textBox_MinSPKLeistung.Text = Max_Spk.ToString("F2");
 
-                // Ansicht & Verhalten konfigurieren
-                listView_SimWP.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                listView_SimWP.MultiSelect = false;
-                listView_SimWP.AllowUserToAddRows = false;
-                listView_SimWP.RowHeadersVisible = false;
-
-                // 1. Zeilenumbruch für den Header aktivieren und feste Höhe vergeben
-                listView_SimWP.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-                listView_SimWP.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-                listView_SimWP.ColumnHeadersHeight = 42;
-
-                // Spalten hinzufügen (\n sorgt für den harten Umbruch)
-                listView_SimWP.Columns.Add("Modul", "Modul");
-                listView_SimWP.Columns.Add("Leistung", "Leistung\n[kW]");
-                listView_SimWP.Columns.Add("Waermeprod", "Wärmeprod.\n[MWh/a]");
-                listView_SimWP.Columns.Add("Stromverbr", "Stromverbr.\n[MWh/a]");
-                listView_SimWP.Columns.Add("Heizstab", "Heizstab\n[MWh/a]");
-                listView_SimWP.Columns.Add("Betriebsstunden", "Betriebsstunden\n[h/a]");
-
-                // 2. Formatierung für die Zahlen-Spalten (Ab Index 1)
-                for (int i = 1; i < listView_SimWP.Columns.Count; i++)
+                // Ansicht & Verhalten der WP-Liste (ListView, gleiches Steuerelement wie Heizkessel/BHKW/Solar)
+                if (listView_SimWP.Columns.Count == 0)
                 {
-                    // Die Datenzeilen (Zahlen) bleiben rechtsbündig für bessere Lesbarkeit
-                    listView_SimWP.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-
-                    // NEU: Der Spaltenkopf (Header) wird exakt mittig zentriert!
-                    listView_SimWP.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                    listView_SimWP.View = View.Details;
+                    listView_SimWP.FullRowSelect = true;
+                    listView_SimWP.GridLines = true;
+                    listView_SimWP.MultiSelect = false;
+                    listView_SimWP.Font = listView_SimSPK.Font;
+                    listView_SimWP.Columns.Add("Modul", -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add("Leistung [kW]", -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add("Wärmeprod. [MWh/a]", -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add("Stromverbr. [MWh/a]", -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add("Heizstab [MWh/a]", -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add("Betriebsstunden [h/a]", -2, HorizontalAlignment.Left);
                 }
-
-                // Automatische Breitenanpassung aktivieren
-                listView_SimWP.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
-
-                // Grid leeren
-                listView_SimWP.Rows.Clear();
 
                 // Daten zeilenweise eintragen
+                listView_SimWP.Items.Clear();
                 for (int i = 0; i < sim.simulation_wp.wp_list.Count(); i++)
                 {
-                    listView_SimWP.Rows.Add(
-                        sim.simulation_wp.WP_Modul[i],
-                        sim.simulation_wp.wp_model[i].Grenzleistung.ToString("F2"),
-                        (sim.simulation_wp.Modul_WP_Waermeproduktion[i] / 1000.0).ToString("F2"),
-                        (sim.simulation_wp.Modul_WP_Strombedarf[i] / 1000.0).ToString("F2"),
-                        (sim.simulation_wp.Modul_Heizstab[i] / 1000.0).ToString("F2"),
-                        sim.simulation_wp.Modul_WP_Laufzeit[i].ToString("F2")
-                    );
+                    ListViewItem lvitem = new ListViewItem(sim.simulation_wp.WP_Modul[i]);
+                    lvitem.SubItems.Add(sim.simulation_wp.wp_model[i].Grenzleistung.ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Waermeproduktion[i] / 1000.0).ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_WP_Strombedarf[i] / 1000.0).ToString("F2"));
+                    lvitem.SubItems.Add((sim.simulation_wp.Modul_Heizstab[i] / 1000.0).ToString("F2"));
+                    lvitem.SubItems.Add(sim.simulation_wp.Modul_WP_Laufzeit[i].ToString("F2"));
+                    listView_SimWP.Items.Add(lvitem);
                 }
-
-                // Spaltenbreiten final an den frisch geschriebenen Inhalt anpassen
-                listView_SimWP.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
+                listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+                listView_SimWP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
                 // charts und Textfelder Wärmepumpe
                 checkBox_WP_sortiert.Checked = true;
@@ -1206,6 +1477,25 @@ namespace WindowsFormsApplication1
                 _chartManager[8].Init();
                 _chartManager[8].AddSeries("Waermebedarf", Color.Red, Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermebedarf, x => (float)x));
                 _chartManager[8].AddSeries("Wärmeproduktion", Color.Blue, Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermeproduktion, x => (float)x));
+
+                // Auflistung der einzelnen Solarkollektoren (analog listView_SimSPK beim Heizkessel).
+                listView_SimSolar.Items.Clear();
+                if (sim.simulation_solarthermie.Kollektor_Ergebnisse != null)
+                {
+                    for (int i = 0; i < sim.simulation_solarthermie.Kollektor_Ergebnisse.Count; i++)
+                    {
+                        var k = sim.simulation_solarthermie.Kollektor_Ergebnisse[i];
+                        ListViewItem lvitem = new ListViewItem((i + 1).ToString());
+                        lvitem.SubItems.Add(k.Name);
+                        lvitem.SubItems.Add(k.Flaeche.ToString("F2"));
+                        lvitem.SubItems.Add(k.Anzahl.ToString());
+                        lvitem.SubItems.Add((k.Waermeproduktion / 1000.0).ToString("F2"));
+                        lvitem.SubItems.Add((k.Ueberschuss / 1000.0).ToString("F2"));
+                        listView_SimSolar.Items.Add(lvitem);
+                    }
+                }
+                listView_SimSolar.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+                listView_SimSolar.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
             }
 
             // ********************************************************************************************/
@@ -1239,6 +1529,24 @@ namespace WindowsFormsApplication1
             checkBox_Ueberschuss.Checked = false;
             checkBox_Speicherzustand.Checked = false;
             textBox_MaxPSolar.Text = sim.simulation_pv.MaxPSolar.ToString("F2");
+
+            // Auflistung der einzelnen PV-Module (ListView, analog Heizkessel/Solarthermie).
+            listView_SimPV.Items.Clear();
+            if (sim.simulation_pv.Modul_Ergebnisse != null)
+            {
+                for (int i = 0; i < sim.simulation_pv.Modul_Ergebnisse.Count; i++)
+                {
+                    var p = sim.simulation_pv.Modul_Ergebnisse[i];
+                    ListViewItem lvitem = new ListViewItem((i + 1).ToString());
+                    lvitem.SubItems.Add(p.Name);
+                    lvitem.SubItems.Add(p.Flaeche.ToString("F2"));
+                    lvitem.SubItems.Add(p.Anzahl.ToString());
+                    lvitem.SubItems.Add((p.Stromproduktion / 1000.0).ToString("F2"));
+                    listView_SimPV.Items.Add(lvitem);
+                }
+            }
+            listView_SimPV.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            listView_SimPV.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
 
 
@@ -1289,33 +1597,22 @@ namespace WindowsFormsApplication1
             else
                 textBox_Stromdeckung.Text = "0";
 
-            // Grid einmal komplett leeren
-            dataGridView_BHKW.Rows.Clear();
-
-            // Falls eine gültige Simulation vorliegt
+            // Auflistung der BHKW-Module (ListView, analog Heizkessel/Solarthermie).
+            dataGridView_BHKW.Items.Clear();
             if (sim != null && sim.simulation_bhkw != null)
             {
-                // Umrechnung des Überschusses von kWh in MWh
-                double ueberschussMWh = sim.simulation_bhkw.Waermeueberschuss / 1000.0;
-
-                // 2. Werte aus den Simulationsergebnissen ziehen
                 for (int i = 0; i < sim.simulation_bhkw.bhkw_list.Count; i++)
                 {
                     string name = sim.simulation_bhkw.bhkw_list_Namen[i] ?? "Standard BHKW";
-                    double waermeproduktionMWh = sim.simulation_bhkw.s_waerme_MWh[i];
-                    double stromproduktionMWh = sim.simulation_bhkw.s_strom_MWh[i];
-
-                    // 3. Zeile im DataGridView hinzufügen
-                    dataGridView_BHKW.Rows.Add(
-                        name,
-                        waermeproduktionMWh.ToString("F2"),
-                        stromproduktionMWh.ToString("F2")
-                    );
+                    ListViewItem lvitem = new ListViewItem((i + 1).ToString());
+                    lvitem.SubItems.Add(name);
+                    lvitem.SubItems.Add(sim.simulation_bhkw.s_waerme_MWh[i].ToString("F2"));
+                    lvitem.SubItems.Add(sim.simulation_bhkw.s_strom_MWh[i].ToString("F2"));
+                    dataGridView_BHKW.Items.Add(lvitem);
                 }
             }
-
-            // Spaltenbreiten an den neuen Inhalt anpassen
-            dataGridView_BHKW.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
+            dataGridView_BHKW.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            dataGridView_BHKW.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
             // ********************************************************************************************/
             // Ergebnisübersicht
@@ -1659,6 +1956,11 @@ namespace WindowsFormsApplication1
             else
                 neueMax = sim.simulation_pv.Strombedarf.Max() * 1.1;
 
+            // Achsen-Maximum darf nie 0 oder negativ sein, sonst wirft RecalculateAxesScale
+            // "Axis Object - Auto interval does not have proper value" (z. B. wenn noch keine
+            // Bedarfsdaten vorliegen bzw. der Handler vor der Simulation feuert).
+            if (neueMax < 10 || double.IsNaN(neueMax)) neueMax = 10;
+
             // Nur die Achse updaten ohne die Daten zu löschen:
             var ca = _chartManager[9]._chart.ChartAreas[0];
 
@@ -1810,8 +2112,8 @@ namespace WindowsFormsApplication1
             // exakt an die neue Breite des linken Panels an.
             if (listViewQuellen.Columns.Count > 0)
             {
-                // -25 sorgt für einen kleinen Puffer, damit keine horizontale Scrollleiste entsteht
-                listViewQuellen.Columns[0].Width = splitContainer_Parameter.Panel1.Width - 25;
+                // Spalte fuellt die volle Client-Breite -> Zeilen-Selektion ueber die ganze Breite.
+                listViewQuellen.Columns[0].Width = listViewQuellen.ClientSize.Width;
             }
         }
 

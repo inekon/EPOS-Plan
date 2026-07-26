@@ -416,7 +416,7 @@ namespace WindowsFormsApplication1
 
                 if (!rs_hk.EOF())
                 {
-                    lvitem.Text = (string)rs_hk.Read("Name");
+                    lvitem.Text = (string)rs_hk.Read("Bezeichner");
                     lvitem.SubItems.Add(heizkesselctrl.Brennstoffart[(int)rs_hk.Read("Brennstoff")]);
                     double kl = (double)rs_hk.Read("Ptherm");
                     lvitem.SubItems.Add(kl.ToString("F2"));
@@ -443,7 +443,7 @@ namespace WindowsFormsApplication1
 
             string sql = "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.ID_Projekt, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, " +
              "[Tab_Gebaeude].Gebaeudename, Z_ProjektGebaeude.Einheit_Waermebedarf_Wohnflaeche, [Tab_Gebaeude].Gebaeudeart " +
-             "FROM [Tab_Gebaeude] INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID = Z_ProjektGebaeude.ID_Gebaeude" +
+             "FROM [Tab_Gebaeude] INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID_ProjektGebaeude = Z_ProjektGebaeude.ID" +
              " where Z_ProjektGebaeude.ID_Projekt=" + projctrl.m_ID;
 
             RecordSet rs = new RecordSet();
