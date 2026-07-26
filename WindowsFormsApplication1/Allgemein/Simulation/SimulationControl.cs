@@ -19,6 +19,9 @@ namespace WindowsFormsApplication1
         public SimulationWaermebedarf simulation_Waermebedarf;
         public SimulationStrombedarf simulation_Strombedarf;
 
+        // Pufferspeicher der Wärmepumpe (Stufe 1), null = keiner zugeordnet
+        public SimulationPufferspeicher puffer_wp = null;
+
         public KonfigurationCtrl ctrl_konfig;
         public int m_ID_Projekt;
         public string[] tool;
@@ -56,6 +59,55 @@ namespace WindowsFormsApplication1
             simulation_solarthermie.Init();
             simulation_spk.Init();
             simulation_pv.Init();
+
+            // Neue Spalten (Prioritaet, Wärmequelle/-senke, Speicherregelung) sicherstellen,
+            // bevor darauf zugegriffen wird - die Simulation kann ohne vorheriges Öffnen
+            // des Konfigurationsdialogs gestartet werden.
+            WaermequelleClass.SchemaSicherstellen();
+
+            // ***********************************************************************
+            // Pufferspeicher-Zuordnung laden (Stufe 1: nur Wärmepumpe).
+            // Quelle: Z_ProjektPufferSp (Erzeuger, Vorlauf/Rücklauf, Priorität) und
+            // Tab_Pufferspeicher (Gesamtvolumen, Bereitschaftsverluste). Die erste
+            // Zuordnung je Erzeuger (höchste Priorität) wird verwendet.
+            // ***********************************************************************
+            puffer_wp = null;
+            Z_ProjektPufferSpCtrl pspZuordnung = new Z_ProjektPufferSpCtrl();
+            pspZuordnung.ReadAll("ID_Projekt=" + m_ID_Projekt);
+            for (int n = 0; n < pspZuordnung.rows; n++)
+            {
+                if (pspZuordnung.items[n].Erzeuger != "Wärmepumpe") continue;
+
+                PufferSpCtrl psp = new PufferSpCtrl();
+                psp.ReadAll("ID=" + pspZuordnung.items[n].ID_Pufferspeicher);
+                if (psp.rows == 0 && !string.IsNullOrEmpty(pspZuordnung.items[n].PufferSp))
+                {
+                    // Fallback für Altdaten ohne ID: über Bezeichner im Projekt suchen
+                    psp.ReadAll("Bezeichner='" + pspZuordnung.items[n].PufferSp.Replace("'", "''") +
+                                "' AND ID_Projekt=" + m_ID_Projekt);
+                }
+
+                if (psp.rows > 0)
+                {
+                    puffer_wp = new SimulationPufferspeicher();
+                    puffer_wp.Bezeichner = psp.items[0].Name;
+                    puffer_wp.Erzeuger = "Wärmepumpe";
+                    puffer_wp.Init(psp.items[0].Gesamtvolumen,
+                                   pspZuordnung.items[n].Vorlauf,
+                                   pspZuordnung.items[n].Ruecklauf,
+                                   psp.items[0].Betriebsbereitschaftverlust);
+
+                    // Konfigurierbare Schwellen der Speicherregelung [%]
+                    object sEin = WaermequelleClass.WertLesenStill("Z_ProjektPufferSp", "Schwelle_Ein", pspZuordnung.items[n].ID);
+                    object sAus = WaermequelleClass.WertLesenStill("Z_ProjektPufferSp", "Schwelle_Aus", pspZuordnung.items[n].ID);
+                    if (sEin != null && Convert.ToDouble(sEin) > 0)
+                        puffer_wp.SchwelleEin = Convert.ToDouble(sEin) / 100.0;
+                    if (sAus != null && Convert.ToDouble(sAus) > 0)
+                        puffer_wp.SchwelleAus = Convert.ToDouble(sAus) / 100.0;
+                }
+                break; // ReadAll sortiert nach Priorität -> erster Treffer gewinnt
+            }
+            simulation_wp.Pufferspeicher = puffer_wp;
 
             Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
             Restwaerme = 0;
@@ -164,7 +216,11 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
 
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP);
+            // Neue Spalten (Prioritaet, WQ_*) bei Bedarf anlegen und die WPs in
+            // der eingestellten Prioritätsreihenfolge einsetzen (Kaskade).
+            WaermequelleClass.SchemaSicherstellen();
+
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.WP_TYP + " order by Prioritaet, ID");
 
             simulation_wp.wp_list.Clear();
             
@@ -176,6 +232,10 @@ namespace WindowsFormsApplication1
 
             simulation_wp.Temperatur = Stundentemperatur;
             simulation_wp.Waermebedarf_stuendlich = Waermebedarf;
+            simulation_wp.PV_Ueberschuss_stuendlich = PV_Ueberschuss_Vorabberechnen();
+            // Warmwasseranteil für die Wärmesenken-Zuordnung der Module
+            simulation_wp.Warmwasserbedarf_stuendlich =
+                simulation_Waermebedarf != null ? simulation_Waermebedarf.brauchwasserwerte : null;
             simulation_wp.WP_Strombedarf_stuendlich = Strombedarf;
             simulation_wp.Mit_Heizstab = bHeizstab;
             
@@ -183,6 +243,58 @@ namespace WindowsFormsApplication1
             m_bError = !simulation_wp.Berechnung();
 
             return  m_bError ? Waermebedarf : simulation_wp.waermerestbedarf_stuendlich;
+        }
+
+        /// <summary>
+        /// Ermittelt den stündlichen PV-Überschuss [kW] für den Betriebsmodus
+        /// "PV-optimiert" der Wärmepumpe. Da die Photovoltaik erst nach den
+        /// Wärmeerzeugern gerechnet wird, wird ihr wetterabhängiges Potenzial
+        /// hier vorab bestimmt und um den übrigen Strombedarf reduziert.
+        /// Liefert null, wenn keine Wärmepumpe im PV-Modus betrieben wird.
+        /// </summary>
+        private float[] PV_Ueberschuss_Vorabberechnen()
+        {
+            // Läuft überhaupt eine Wärmepumpe im PV-Modus?
+            bool pvModus = false;
+            RecordSet rs = new RecordSet();
+            rs.Open("select ID from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt +
+                    " and ID_Type=" + WizardItemClass.WP_TYP);
+            while (rs.Next())
+            {
+                string modus = WaermequelleClass.WertLesen((int)rs.Read("ID"), "BM_Typ") as string;
+                if (modus == WaermequelleClass.MODUS_PV) { pvModus = true; break; }
+            }
+            rs.Close();
+
+            if (!pvModus || tool == null || tool.Length < 5 || tool[4] != "Photovoltaik") return null;
+
+            try
+            {
+                // PV-Potenzial vorab bestimmen (wetterabhängig, unabhängig vom Bedarf)
+                simulation_pv.m_ID_Projekt = m_ID_Projekt;
+                simulation_pv.Strombedarf = (float[])Rest_Strombedarf_viertelstuendlich.Clone();
+                simulation_pv.Berechnung(m_ID_Projekt);
+
+                float[] potenzial = (float[])simulation_pv.pvPotentialGesamt_stuendlich.Clone();
+                float[] bedarf = Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich);
+
+                float[] ueberschuss = new float[8760];
+                for (int i = 0; i < 8760; i++)
+                {
+                    float rest = potenzial[i] - (i < bedarf.Length ? bedarf[i] : 0);
+                    ueberschuss[i] = rest > 0 ? rest : 0;
+                }
+
+                // Zustand der PV-Simulation zurücksetzen - sie wird später regulär gerechnet
+                simulation_pv.Init();
+                return ueberschuss;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("PV-Überschuss konnte nicht vorab bestimmt werden: " + ex.Message);
+                simulation_pv.Init();
+                return null;
+            }
         }
 
         private float[] Simulation_BHKW_Ctrl(float[] Waermebedarf, float[] Strombedarf)

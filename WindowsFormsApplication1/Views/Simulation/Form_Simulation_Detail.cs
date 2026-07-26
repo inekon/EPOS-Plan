@@ -198,6 +198,107 @@ namespace WindowsFormsApplication1
 
             // tabControl_Einstellungen als ListView-Navigation darstellen (Original-TabControl bleibt erhalten)
             _einstellungenMapper = new TabListMapper(tabControl_Einstellungen, 200);
+
+            // CSV-Export-Buttons (programmatisch, kein Designer/.resx nötig)
+            InitCsvExportButtons();
+
+            // Bereich für den KI-Hilfe-Assistenten melden; die aktive
+            // Registerkarte wird automatisch mit erkannt.
+            this.Activated += (s, e) => HilfeKontext.SetzeBereich("Detaillierte Simulation");
+        }
+
+        /// <summary>
+        /// Legt die CSV-Export-Buttons auf den Bereichen Energiebedarf und Wärmepumpe an.
+        /// </summary>
+        private void InitCsvExportButtons()
+        {
+            // Bereich Energiebedarf (tabPage_Bedarf): Wärmelast + Strombedarf
+            Button btnExportBedarf = new Button();
+            btnExportBedarf.Name = "btn_CsvExportBedarf";
+            btnExportBedarf.Text = "CSV Export";
+            btnExportBedarf.Size = new Size(150, 36);
+            // Feste Position unterhalb des Wärmelast-Blocks - die Controls der TabPage
+            // werden zur Laufzeit in ein schmaleres Panel verschoben, daher keine
+            // Rechts-Verankerung verwenden (sonst liegt der Button außerhalb des Sichtbereichs).
+            btnExportBedarf.Location = new Point(22, 565);
+            btnExportBedarf.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            btnExportBedarf.BackColor = SystemColors.Control;
+            btnExportBedarf.ForeColor = Color.Black;
+            btnExportBedarf.UseVisualStyleBackColor = false;
+            btnExportBedarf.Click += btn_CsvExportBedarf_Click;
+            tooltip.SetToolTip(btnExportBedarf, "Wärmelast und Strombedarf als CSV exportieren\n(Zeitstempel, Außentemperatur, Werte)");
+            tabPage_Bedarf.Controls.Add(btnExportBedarf);
+            btnExportBedarf.BringToFront();
+
+            // Bereich Wärmepumpe (tabPage_Wärmepumpe)
+            Button btnExportWP = new Button();
+            btnExportWP.Name = "btn_CsvExportWP";
+            btnExportWP.Text = "CSV Export";
+            btnExportWP.Size = new Size(150, 32);
+            // Feste Position rechts neben der Bivalenzpunkt-Zeile, oberhalb der Modul-Tabelle
+            // (keine Rechts-Verankerung, siehe Kommentar beim Bedarf-Button).
+            btnExportWP.Location = new Point(1085, 350);
+            btnExportWP.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            btnExportWP.BackColor = SystemColors.Control;
+            btnExportWP.ForeColor = Color.Black;
+            btnExportWP.UseVisualStyleBackColor = false;
+            btnExportWP.Click += btn_CsvExportWP_Click;
+            tooltip.SetToolTip(btnExportWP, "Wärmepumpen-Simulation als CSV exportieren\n(Zeitstempel, Außentemperatur, Wärmebedarf, Heizstab, Wärmeproduktion, Strombedarf)");
+            tabPage_Wärmepumpe.Controls.Add(btnExportWP);
+            btnExportWP.BringToFront();
+        }
+
+        /// <summary>
+        /// CSV-Export Bereich Energiebedarf:
+        /// Zeitstempel; Außentemperatur; Wärmelast [kW]; Strombedarf [kW] (Stundenwerte).
+        /// </summary>
+        private void btn_CsvExportBedarf_Click(object sender, EventArgs e)
+        {
+            if (simulation_Waermebedarf == null || simulation_Waermebedarf.Waermebedarf_Gesamt <= 0)
+            {
+                MessageBox.Show("Keine Simulationsdaten vorhanden!\nBitte zuerst den Energiebedarf berechnen.",
+                    "CSV Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            List<CsvSpalte> spalten = new List<CsvSpalte>();
+            spalten.Add(new CsvSpalte("Wärmelast [kW]", simulation_Waermebedarf.Waermebedarf));
+            // Strombedarf liegt viertelstündlich vor und wird als Stundenmittel exportiert
+            spalten.Add(new CsvSpalte("Strombedarf [kW]", simulation_Strombedarf.Strombedarf_viertelStundenwerte));
+
+            CsvExportClass.Export("Energiebedarf_Projekt_" + m_ID_Projekt + ".csv",
+                simulation_Waermebedarf.Stundentemperatur, spalten, false);
+        }
+
+        /// <summary>
+        /// CSV-Export Bereich Wärmepumpe:
+        /// Zeitstempel; Außentemperatur; Wärmebedarf; Heizstab; Wärmeproduktion WP; Strombedarf WP (Stundenwerte).
+        /// </summary>
+        private void btn_CsvExportWP_Click(object sender, EventArgs e)
+        {
+            if (sim == null || !sim.bSimulationWP || sim.simulation_wp == null)
+            {
+                MessageBox.Show("Keine Simulationsdaten vorhanden!\nBitte zuerst die Simulation mit Wärmepumpe durchführen.",
+                    "CSV Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            List<CsvSpalte> spalten = new List<CsvSpalte>();
+            spalten.Add(new CsvSpalte("Wärmebedarf [kW]", sim.simulation_wp.Waermebedarf_stuendlich));
+            spalten.Add(new CsvSpalte("Heizstab [kW]", sim.simulation_wp.Heizstab_stuendlich));
+            spalten.Add(new CsvSpalte("Wärmeproduktion WP [kW]", sim.simulation_wp.WP_Waermeproduktion_stuendlich));
+            spalten.Add(new CsvSpalte("Strombedarf WP [kW]", sim.simulation_wp.WP_Strombedarf_stuendlich));
+
+            // Pufferspeicher-Ganglinien mit exportieren, falls ein Speicher zugeordnet ist
+            if (sim.puffer_wp != null)
+            {
+                spalten.Add(new CsvSpalte("Puffer Ladung [kWh]", sim.puffer_wp.Ladung_stuendlich));
+                spalten.Add(new CsvSpalte("Puffer Entladung [kWh]", sim.puffer_wp.Entladung_stuendlich));
+                spalten.Add(new CsvSpalte("Puffer Speicherinhalt [kWh]", sim.puffer_wp.SOC_stuendlich));
+            }
+
+            CsvExportClass.Export("Waermepumpe_Projekt_" + m_ID_Projekt + ".csv",
+                sim.simulation_wp.Temperatur, spalten, false);
         }
 
         public void SetControls()
@@ -1238,6 +1339,31 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Liefert den Warmwasser-(Brauchwasser-)Anteil des Wärmebedarfs als
+        /// Stundenganglinie, passend zur übergebenen Bedarfsganglinie.
+        ///
+        /// Die Wärmepumpe sieht ggf. nur einen Teil des Gesamtbedarfs (Kaskade,
+        /// vorgeschaltete Erzeuger). Der Warmwasseranteil wird deshalb je Stunde
+        /// auf den tatsächlich anliegenden Bedarf begrenzt.
+        /// </summary>
+        private float[] WarmwasserAnteil(float[] bedarf)
+        {
+            float[] ww = new float[8760];
+            if (simulation_Waermebedarf == null || simulation_Waermebedarf.brauchwasserwerte == null)
+                return ww;
+
+            float[] quelle = simulation_Waermebedarf.brauchwasserwerte;
+            for (int i = 0; i < 8760 && i < quelle.Length; i++)
+            {
+                float wert = quelle[i];
+                if (bedarf != null && i < bedarf.Length && wert > bedarf[i]) wert = bedarf[i];
+                if (wert < 0) wert = 0;
+                ww[i] = wert;
+            }
+            return ww;
+        }
+
         private void Endergebniss_Simulation()
         {
             // ********************************************************************************************/
@@ -1256,7 +1382,15 @@ namespace WindowsFormsApplication1
                 _chartManager[3].ChartTitle = "Wärmelast Jahresganglinie";
                 _chartManager[3].MitLegende = true;
                 _chartManager[3].Init();
-                _chartManager[3].AddSeries("Waermebedarf", Color.Red, sim.simulation_wp.Waermebedarf_stuendlich);
+
+                // Wärmebedarf getrennt nach Heizwärme und Warmwasser darstellen
+                float[] bedarfWW = WarmwasserAnteil(sim.simulation_wp.Waermebedarf_stuendlich);
+                float[] bedarfHeizung = new float[8760];
+                for (int n = 0; n < 8760; n++)
+                    bedarfHeizung[n] = sim.simulation_wp.Waermebedarf_stuendlich[n] - bedarfWW[n];
+
+                _chartManager[3].AddSeries("Heizwärmebedarf", Color.Red, bedarfHeizung);
+                _chartManager[3].AddSeries("Warmwasserbedarf", Color.DeepSkyBlue, bedarfWW);
                 _chartManager[3].AddSeries("Heizstab", Color.Yellow, sim.simulation_wp.Heizstab_stuendlich);
                 _chartManager[3].AddSeries("Wärmeproduktion", Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich);
 
@@ -1278,10 +1412,13 @@ namespace WindowsFormsApplication1
                 double b = (double)sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
                 double c = (double)sim.simulation_wp.Heizstab_gesamt / 1000;
 
-                if ((b / a * 100) > 100)
-                    textBox_WB_Deckung.Text = "100";
-                else
-                    textBox_WB_Deckung.Text = ((b + c) / a * 100).ToString("F2");
+                // Deckung über die echte Restwärme rechnen - mit Pufferspeicher verschiebt
+                // sich Energie zwischen den Stunden, "Produktion / Bedarf" wäre dann ungenau.
+                double restMWh = sim.simulation_wp.waermerestbedarf_gesamt / 1000.0;
+                double deckung = a > 0 ? (a - restMWh) / a * 100.0 : 0;
+                if (deckung > 100) deckung = 100;
+                if (deckung < 0) deckung = 0;
+                textBox_WB_Deckung.Text = deckung.ToString("F2");
 
 
                 if (sim.simulation_wp.Bivalenzpunkt != -100)
@@ -1290,11 +1427,15 @@ namespace WindowsFormsApplication1
                     textBox_Bivalenzpunkt.Text = "-";
 
                 textBox_WPWaermebedarf.Text = (sim.simulation_wp.Waermebedarf_gesamt / 1000).ToString("F2");
-                textBox_WPRestwermebedarf.Text = (sim.simulation_wp.Waermebedarf_gesamt / 1000 - sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000 - sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
+                textBox_WPRestwermebedarf.Text = (sim.simulation_wp.waermerestbedarf_gesamt / 1000).ToString("F2");
                 textBox_WPStromverbrauch.Text = (sim.simulation_wp.WP_Strombedarf_gesamt / 1000).ToString("F2");
                 textBox_HeizstabStromverbrauch.Text = (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
                 textBox_WPWaermeproduktion.Text = (sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000).ToString("F2");
-                textBox_Pufferspeicher.Text = (sim.simulation_wp.Volumen_Pufferspeicher * 1.16).ToString();
+                // Kapazität aus der Pufferspeicher-Zuordnung (Stufe 1), sonst wie bisher
+                if (sim.puffer_wp != null)
+                    textBox_Pufferspeicher.Text = sim.puffer_wp.Q_max.ToString("F1") + " kWh (" + sim.puffer_wp.Bezeichner + ")";
+                else
+                    textBox_Pufferspeicher.Text = (sim.simulation_wp.Volumen_Pufferspeicher * 1.16).ToString();
                 textBox_WPVollbenutzungsstunden.Text = (sim.simulation_wp.WP_Laufzeit / sim.simulation_wp.wp_list.Count).ToString("F0");
 
                 double Max_Spk = 0;
@@ -1757,6 +1898,12 @@ namespace WindowsFormsApplication1
             // Manager referenzieren für bessere Lesbarkeit
             var manager = _chartManager[3];
 
+            // Wärmebedarf in Heizwärme und Warmwasser aufteilen
+            float[] bedarfWW = WarmwasserAnteil(sim.simulation_wp.Waermebedarf_stuendlich);
+            float[] bedarfHeizung = new float[8760];
+            for (int i = 0; i < 8760; i++)
+                bedarfHeizung[i] = sim.simulation_wp.Waermebedarf_stuendlich[i] - bedarfWW[i];
+
             if (checkBox_WP_sortiert.Checked)
             {
                 // --- SORTIERTER MODUS (Numerische X-Achse) ---
@@ -1764,9 +1911,13 @@ namespace WindowsFormsApplication1
                 Array.Sort(sortedWBArray);
                 Array.Reverse(sortedWBArray);
 
-                float[] sortedBedarf = (float[])sim.simulation_wp.Waermebedarf_stuendlich.Clone();
-                Array.Sort(sortedBedarf);
-                Array.Reverse(sortedBedarf);
+                float[] sortedHeizung = (float[])bedarfHeizung.Clone();
+                Array.Sort(sortedHeizung);
+                Array.Reverse(sortedHeizung);
+
+                float[] sortedWW = (float[])bedarfWW.Clone();
+                Array.Sort(sortedWW);
+                Array.Reverse(sortedWW);
 
                 float[] sortedHeizstab = (float[])tempHeizstab.Clone();
                 Array.Sort(sortedHeizstab);
@@ -1776,7 +1927,8 @@ namespace WindowsFormsApplication1
                 manager.HardReset();
                 manager.Init();
 
-                manager.AddSeries("Wärmebedarf", Color.Red, sortedBedarf);
+                manager.AddSeries("Heizwärmebedarf", Color.Red, sortedHeizung);
+                manager.AddSeries("Warmwasserbedarf", Color.DeepSkyBlue, sortedWW);
                 manager.AddSeries("Heizstab", Color.Yellow, sortedHeizstab);
                 manager.AddSeries("Wärmeproduktion", Color.Blue, sortedWBArray);
             }
@@ -1787,7 +1939,8 @@ namespace WindowsFormsApplication1
                 manager.HardReset();
                 manager.Init(); // Hier wird FormatXAxisWithDate() aufgerufen
 
-                manager.AddSeries("Wärmebedarf", Color.Red, sim.simulation_wp.Waermebedarf_stuendlich);
+                manager.AddSeries("Heizwärmebedarf", Color.Red, bedarfHeizung);
+                manager.AddSeries("Warmwasserbedarf", Color.DeepSkyBlue, bedarfWW);
                 manager.AddSeries("Heizstab", Color.Yellow, tempHeizstab);
                 manager.AddSeries("Wärmeproduktion", Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich);
             }

@@ -37,6 +37,11 @@ namespace WindowsFormsApplication1
             label_AbschalttemperaturEinheit.Visible = false;
             label_Abschalttemperatur.Visible = false;
             label_Betriebsart.Visible = false;
+
+            // Pufferspeicher-Bereich (Volumen, Kapazität, Anteil Solaranlage, rende MIX)
+            // entfernt - der Pufferspeicher wird jetzt über die Zuordnung in der
+            // Simulation-Konfiguration gepflegt. Gespeicherte Werte bleiben erhalten.
+            groupBox1.Visible = false;
         }
 
         public Wizard_WPItem(string wpname)
@@ -56,6 +61,9 @@ namespace WindowsFormsApplication1
             comboBox_Betriebsart.Items.Add("Alternativbetrieb");
             comboBox_Betriebsart.Items.Add("Parallelbetrieb");
             comboBox_Betriebsart.Items.Add("Teilparallelbetrieb");
+
+            // Pufferspeicher-Bereich entfernt (siehe Kommentar im anderen Konstruktor)
+            groupBox1.Visible = false;
         }
 
         public void SetWPCombox(string wpname) { listBox_WP.Text = wpname; }
@@ -175,9 +183,14 @@ namespace WindowsFormsApplication1
             item.ID_Solar = 0;
             item.Heizstab = checkBox_Heizstab.Checked;
             item.Heizung = Int32.Parse(textBox_PHeizstab.Text);
-            item.Volumen = double.Parse(textBox_Volumen.Text);
+            // Pufferspeicher-Felder sind ausgeblendet - vorhandene Werte unverändert
+            // übernehmen (die Felder werden in SetControls aus dem Datensatz gefüllt),
+            // bei leeren Feldern den bisherigen Wert des Datensatzes behalten.
+            double dVolumen;
+            if (double.TryParse(textBox_Volumen.Text, out dVolumen)) item.Volumen = dVolumen;
             item.rendeMix = checkBox_rendeMIX.Checked;
-            item.Solaranteil = Int32.Parse(textBox_Anteil.Text);
+            int nAnteil;
+            if (Int32.TryParse(textBox_Anteil.Text, out nAnteil)) item.Solaranteil = nAnteil;
             item.Nutzungszeit = Int32.Parse(textBox_Nutzungszeit.Text);
             
             CloseWithOK = true;

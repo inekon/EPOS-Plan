@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // Allgemeine Informationen über eine Assembly werden über die folgenden 
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die mit einer Assembly verknüpft sind.
-[assembly: AssemblyTitle("WindowsFormsApplication1")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("EPOS-Plan")]
+[assembly: AssemblyDescription("EPOS-Plan - Energie, Optimierung, Planung, Simulation")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("WindowsFormsApplication1")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2025")]
+[assembly: AssemblyCompany("INEKON - Intelligente Energiekonzepte")]
+[assembly: AssemblyProduct("EPOS-Plan")]
+[assembly: AssemblyCopyright("Copyright © INEKON 2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

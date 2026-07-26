@@ -154,6 +154,13 @@ namespace WindowsFormsApplication1
                 {
                     WPStammCtrl wpctrl = new WPStammCtrl();
                     wpctrl.ReadAll("ID=" + idwp);
+                    if (wpctrl.rows == 0)
+                    {
+                        MessageBox.Show("Der Wärmepumpen-Stammdatensatz (ID " + idwp +
+                            ") wurde in der Datenbank nicht gefunden!", "Wärmepumpe",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
                     frm.m_werzitemlist[index].Regelung = wpctrl.items[0].Regelung;
                     frm.m_werzitemlist[index].Nennleistung = wpctrl.items[0].Nennleistung;
                     frm.m_werzitemlist[index].Modulkosten = wpctrl.items[0].Modulkosten;
@@ -190,8 +197,26 @@ namespace WindowsFormsApplication1
                     }
                 }
 
+                // Absicherung: Ohne Treffer läuft die Schleife bis index == Count durch -
+                // der Zugriff m_werzitemlist[index] würde dann mit
+                // ArgumentOutOfRangeException abstürzen.
+                if (idwp <= 0 || index >= frm.m_werzitemlist.Count)
+                {
+                    MessageBox.Show("Die ausgewählte Wärmepumpe '" + textBox_WP.Text +
+                        "' wurde in der Projektliste nicht gefunden!", "Wärmepumpe",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 WPCtrl wpctrl = new WPCtrl();
                 wpctrl.ReadAll("ID=" + frm.m_werzitemlist[index].ID_WP);
+                if (wpctrl.items.Count == 0)
+                {
+                    MessageBox.Show("Der Wärmepumpen-Datensatz (ID " + frm.m_werzitemlist[index].ID_WP +
+                        ") wurde in der Datenbank nicht gefunden!", "Wärmepumpe",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
                 frm.m_werzitemlist[index].Regelung = wpctrl.items[0].Regelung;
                 frm.m_werzitemlist[index].Nennleistung = wpctrl.items[0].Nennleistung;
                 frm.m_werzitemlist[index].Modulkosten = wpctrl.items[0].Modulkosten;
@@ -256,7 +281,21 @@ namespace WindowsFormsApplication1
                 WPCtrl wpctrl = new WPCtrl();
 
                 ctrl.ReadAllFilter("Bezeichner='" + lvitem.Text + "'");
+                if (ctrl.rows == 0)
+                {
+                    MessageBox.Show("Die Wärmepumpe '" + lvitem.Text +
+                        "' wurde in der Datenbank nicht gefunden!", "Wärmepumpe",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
                 wpctrl.ReadAll("ID=" + ctrl.items[0].ID_WP);
+                if (wpctrl.rows == 0)
+                {
+                    MessageBox.Show("Der Wärmepumpen-Datensatz (ID " + ctrl.items[0].ID_WP +
+                        ") wurde in der Datenbank nicht gefunden!", "Wärmepumpe",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
                 ctrl.items[0].Regelung = wpctrl.items[0].Regelung;
                 ctrl.items[0].Nennleistung = wpctrl.items[0].Nennleistung;
                 ctrl.items[0].Modulkosten = wpctrl.items[0].Modulkosten;

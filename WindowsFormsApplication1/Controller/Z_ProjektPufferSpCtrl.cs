@@ -39,16 +39,37 @@ namespace WindowsFormsApplication1
         {
             try
             {
+                // Seit der DB-Migration hat Z_ProjektPufferSp die Pflichtspalte ID_Pufferspeicher
+                // mit erzwungener Beziehung auf Tab_Pufferspeicher.ID (Projekt-Tabelle).
+                // Die ID wird hier immer frisch aus dem Bezeichner + Projekt aufgeloest;
+                // fehlt die Projektkopie, wird sie aus den Stammdaten angelegt (Muster wie
+                // bei Heizkessel/BHKW, siehe PufferSpCtrl.CopyFromStamm).
+                PufferSpCtrl psp = new PufferSpCtrl();
+                int idPuffer = psp.GetProjektId(PufferSp, ID_Projekt);
+                if (idPuffer <= 0) idPuffer = psp.CopyFromStamm(PufferSp, ID_Projekt);
+                if (idPuffer <= 0)
+                {
+                    System.Windows.Forms.MessageBox.Show(
+                        "Der Pufferspeicher '" + PufferSp + "' wurde weder im Projekt noch in den Stammdaten gefunden!\n" +
+                        "Die Zuordnung kann nicht gespeichert werden.",
+                        "Pufferspeicher Zuordnung",
+                        System.Windows.Forms.MessageBoxButtons.OK,
+                        System.Windows.Forms.MessageBoxIcon.Warning);
+                    return false;
+                }
+                ID_Pufferspeicher = idPuffer;
+
                 // Umstellung von unparametrisiertem SELECT-String auf standardkonformes VALUES-Statement mit Parametern
-                string sql = @"INSERT INTO Z_ProjektPufferSp 
+                string sql = @"INSERT INTO Z_ProjektPufferSp
                                (
-                                   ID_Projekt, Erzeuger, Pufferspeicher, 
+                                   ID_Projekt, ID_Pufferspeicher, Erzeuger, Pufferspeicher,
                                    Vorlauf, Ruecklauf, Prioritaet
-                               ) 
-                               VALUES (?, ?, ?, ?, ?, ?)";
+                               )
+                               VALUES (?, ?, ?, ?, ?, ?, ?)";
 
                 OleDbParameter[] ps = {
                     new OleDbParameter("@idProj", ID_Projekt),
+                    new OleDbParameter("@idPuf", idPuffer),
                     new OleDbParameter("@erz", Erzeuger ?? (object)DBNull.Value),
                     new OleDbParameter("@puf", PufferSp ?? (object)DBNull.Value),
                     new OleDbParameter("@vor", Vorlauf),
@@ -95,6 +116,9 @@ namespace WindowsFormsApplication1
 
                 if (dt.Columns.Contains("ID_Projekt") && row["ID_Projekt"] != DBNull.Value)
                     item.ID_Projekt = Convert.ToInt32(row["ID_Projekt"]);
+
+                if (dt.Columns.Contains("ID_Pufferspeicher") && row["ID_Pufferspeicher"] != DBNull.Value)
+                    item.ID_Pufferspeicher = Convert.ToInt32(row["ID_Pufferspeicher"]);
 
                 if (dt.Columns.Contains("Erzeuger") && row["Erzeuger"] != DBNull.Value)
                     item.Erzeuger = row["Erzeuger"].ToString();

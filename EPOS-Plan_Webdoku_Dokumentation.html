@@ -1,0 +1,153 @@
+<h2>EPOS-Plan im Überblick</h2>
+
+<p>EPOS-Plan ist eine Planungssoftware für die integrierte Auslegung von Wärme- und Stromversorgungssystemen. Sie richtet sich an Ingenieurbüros, Energieberaterinnen und Energieberater, Stadtwerke, Planungsabteilungen in Industrie und Wohnungswirtschaft sowie an Hochschulen. Das Programm bildet ein vollständiges Energiesystem in einem einzigen Modell ab: den Wärmebedarf von Gebäuden, Warmwasser und Prozessen, den Strombedarf, die erzeugende Technik von der Wärmepumpe über Heizkessel, BHKW und Solarthermie bis zur Photovoltaik sowie die thermischen und elektrischen Speicher. Auf dieser Grundlage rechnet EPOS-Plan ein komplettes Jahr in Stundenschritten durch und zeigt, wie sich die geplante Anlagenkonfiguration tatsächlich verhält.</p>
+
+<p>Der entscheidende Unterschied zu einer überschlägigen Auslegung liegt in dieser zeitlichen Auflösung. Erst wenn Bedarf und Erzeugung Stunde für Stunde gegenübergestellt werden, wird sichtbar, wie hoch der Anteil des Heizstabs im Februar wirklich ausfällt, wie viele Betriebsstunden eine Wärmepumpe im ausgelegten Betriebspunkt erreicht, wie viel Solarstrom im Sommer ungenutzt bleibt und ab welcher Speichergröße sich der Eigenverbrauch nicht mehr nennenswert steigern lässt. Genau diese Fragen entscheiden über Investition, Förderfähigkeit und Betriebskosten einer Anlage.</p>
+
+<h3>Was die Software leistet</h3>
+
+<p><strong>Energiebedarf ermitteln.</strong> Der Wärmebedarf lässt sich aus Gebäudekenndaten berechnen, aus vorhandenen Verbrauchsdaten zurückrechnen oder als gemessener Lastgang einlesen. Warmwasser- und Prozesswärmebedarf werden über Monatswerte und typspezifische Wochenprofile ergänzt, der Strombedarf über Verbraucherprofile oder einen importierten Viertelstundenlastgang.</p>
+
+<p><strong>Anlagen auslegen.</strong> Wärmepumpen, Heizkessel, BHKW-Module, Solarkollektoren, Photovoltaikmodule, Puffer- und Stromspeicher werden aus mitgelieferten Herstellerkatalogen ausgewählt oder als eigene Datensätze angelegt. Die Auslegung erfolgt mit den realen Kennfeldern der Geräte, nicht mit pauschalen Wirkungsgraden.</p>
+
+<p><strong>Betrieb simulieren.</strong> Eine Jahressimulation mit 8.760 Stundenwerten auf der Wärmeseite und 35.040 Viertelstundenwerten auf der Stromseite bildet die Erzeugerkaskade in der von Ihnen festgelegten Reihenfolge ab, einschließlich Speicherbewirtschaftung, Sperrzeiten und Betriebsstrategien.</p>
+
+<p><strong>Ergebnisse bewerten.</strong> Deckungsanteile, Bivalenzpunkt, Vollbenutzungsstunden, Jahresnutzungsgrade, Brennstoffverbräuche, Eigenverbrauch, Autarkiegrad und CO₂-Einsparung stehen als Kennzahlen, Diagramme und Tabellen bereit und lassen sich als CSV-Datei für die Weiterverarbeitung exportieren.</p>
+
+<p><strong>Kosten erfassen.</strong> Investitions-, Betriebs- und Energiekosten werden je Komponente mit Nutzungsdauer und Preishistorie hinterlegt und bilden damit die Eingangsgrößen der wirtschaftlichen Bewertung.</p>
+
+<h3>Einfache Handhabung</h3>
+
+<p>EPOS-Plan führt neue Projekte über einen Assistenten. Sie wählen zu Beginn aus, welche Komponenten Ihr Projekt überhaupt enthält; alle nicht benötigten Schritte werden anschließend übersprungen. Die Startseite zeigt danach für jeden Baustein eine Kachel, die farbig markiert ist, sobald dafür Daten vorliegen. So ist jederzeit erkennbar, was noch fehlt, und Sie können in beliebiger Reihenfolge zwischen den Bereichen wechseln.</p>
+
+<p>Umfangreiche Stammdatenkataloge nehmen Ihnen den größten Teil der Eingabearbeit ab: Gebäudetypen mit Baualtersklassen, Brauchwasser- und Prozesswärmeprofile, Stromverbraucherprofile, Wärmepumpen mit vollständigen Kennfeldern, Kessel, BHKW-Module, Kollektoren, PV-Module und Speicher. Was Sie im Projekt ändern, wirkt sich nie auf den Katalog aus, denn beim Zuordnen wird stets eine projekteigene Kopie angelegt. Klimadaten holt sich das Programm auf Wunsch selbst: Sie geben einen Ort ein, EPOS-Plan ermittelt die Koordinaten und lädt einen vollständigen Klimadatensatz herunter.</p>
+
+<p>Hilfe steht überall dort zur Verfügung, wo sie gebraucht wird. Beim Überfahren eines Eingabefelds erscheint ein Kurzhinweis mit Verweis auf das passende Kapitel dieser Online-Dokumentation. Zusätzlich lässt sich ein Hilfe-Assistent öffnen, der den Bereich kennt, in dem Sie gerade arbeiten, und Fragen zur Bedienung und zur Rechenlogik beantwortet.</p>
+
+<h2>Programmablauf</h2>
+
+<p>Ein Projekt durchläuft in EPOS-Plan sieben Stufen. Die Reihenfolge ist nicht zwingend, hat sich in der Praxis aber bewährt, weil jede Stufe auf den Ergebnissen der vorhergehenden aufbaut.</p>
+
+<h3>Schritt 1: Projekt anlegen</h3>
+
+<p>Über <em>Projekte &rsaquo; Neu</em> oder die Kachel <em>Neues Projekt</em> startet der Assistent. Auf der ersten Seite legen Sie durch Ankreuzen fest, welche Bausteine das Projekt umfasst – Gebäude, externer Wärmebedarf, Prozesswärme, Stromverbraucher, Stromlastgang, Wärmepumpe, Heizkessel, BHKW, Solarthermie, Photovoltaik und Stromspeicher. Auf der folgenden Seite tragen Sie Projektname, Bearbeiter, Kunde und Beschreibung ein und wählen die Klimaregion aus. Projektname und Klimaregion sind Pflichtangaben, alles Weitere lässt sich später ergänzen. Der Assistent führt anschließend nur durch die tatsächlich aktivierten Bausteine.</p>
+
+<p>Bestehende Projekte öffnen Sie über <em>Projekte &rsaquo; Öffnen</em>, wobei eine Liste mit Name und Beschreibung erscheint; das zuletzt bearbeitete Projekt lässt sich mit einem Klick direkt wieder aufrufen. <em>Projekte &rsaquo; Bearbeiten</em> öffnet dasselbe Projekt erneut im Assistenten, etwa um nachträglich eine Komponente hinzuzufügen. Das Löschen eines Projekts entfernt alle zugehörigen Daten und ist deshalb durch eine Sicherheitsabfrage geschützt.</p>
+
+<h3>Schritt 2: Klimadaten festlegen</h3>
+
+<p>Jedes Projekt ist genau einer Klimaregion zugeordnet. Ein Klimadatensatz enthält für alle 8.760 Stunden des Jahres die Außentemperatur, die Global-, Direkt- und Diffusstrahlung sowie die daraus berechneten Sonnenstände. In der Klimadatenverwaltung geben Sie entweder Koordinaten direkt ein oder wählen einen Ort aus der hinterlegten Ortsliste; das Programm ermittelt die Geokoordinaten und lädt anschließend einen typischen meteorologischen Jahresdatensatz (TMY) aus der europäischen PVGIS-Datenbank – getrennt für die Ausrichtungen Süd, Ost, West und Nord, damit später sowohl Fenstergewinne als auch Kollektor- und PV-Erträge richtungsabhängig berechnet werden können. Zwei Diagramme zeigen den Jahresgang der Temperatur und den Verlauf der Sonnenwinkel zur Kontrolle. Mitgelieferte Klimaregionen sind schreibgeschützt, eigene Regionen können beliebig angelegt werden.</p>
+
+<h3>Schritt 3: Wärmebedarf erfassen</h3>
+
+<p>Der Wärmebedarf setzt sich aus bis zu vier Anteilen zusammen, die getrennt erfasst und anschließend stundenweise addiert werden: Gebäudeheizwärme, Warmwasser, Prozesswärme und – falls vorhanden – ein extern eingelesener Lastgang. Ergänzend lassen sich Netzverluste entweder als Prozentsatz oder als absoluter Jahreswert aufschlagen; sie werden gleichmäßig über das Jahr verteilt.</p>
+
+<p>Für die Gebäudeheizwärme wählen Sie ein Gebäude aus dem Katalog. Gefiltert wird nach Wohn- oder Nichtwohngebäude, Gebäudeart und Baualtersklasse, wobei die Klassen von „vor 1919“ über die EnEV-Stufen bis zu BEG 55 und BEG 40 reichen; eine Volltextsuche mit Platzhaltern hilft bei großen Katalogen. Das zugeordnete Gebäude wird zu einer Projektkopie, in der Sie die Bezugsgröße anpassen – üblicherweise die Wohnfläche in Quadratmetern.</p>
+
+<p>Liegen statt Flächen Verbrauchsdaten vor, geben Sie diese direkt an: Ölverbrauch in Litern pro Jahr, Gasverbrauch in Kubikmetern oder Megawattstunden, allgemeiner Brennstoffverbrauch in Megawattstunden. EPOS-Plan rechnet den Verbrauch unter Berücksichtigung des Jahresnutzungsgrads der bisherigen Anlage in Nutzwärme um und skaliert das Gebäudemodell so, dass es genau diesen Bedarf abbildet. Damit lässt sich ein Bestandsgebäude allein aus der Heizkostenabrechnung realistisch beschreiben.</p>
+
+<p>Die physikalischen Kenngrößen eines Gebäudetyps umfassen Wohnfläche und Fläche je Nutzer, Raumhöhe, Fensterflächen getrennt nach Süd, Nord und Ost/West, den Fensterdurchlassgrad, die Flächen von Außenwand, Dach, Grundfläche und sonstigen Bauteilen mit den zugehörigen U-Werten, Wärmebrückenzuschläge mit ihren Anschlusslängen, die Luftwechselrate und die Speicherfähigkeit der Bauweise, die als leicht, schwer oder sehr schwer eingestuft wird. Auf einer zweiten Seite folgen die Nutzungsrandbedingungen: Raumsolltemperatur am Tag, Nachtabsenkung, Wochenend- und Ferienabsenkung, maximale Raumtemperatur sowie vier frei definierbare Ferienzeiträume für Winter, Ostern, Sommer und Herbst.</p>
+
+<p>Aus diesen Angaben berechnet das Programm für jeden der 365 Tage die solaren Gewinne aus den Fensterflächen, die spezifischen Transmissions- und Lüftungsverluste und daraus unter Berücksichtigung der Gebäudespeicherfähigkeit und der eingestellten Absenkungen die Tagesheizlast. Anschließend wird jeder Tageswert über eine typabhängige 24-Stunden-Verteilungskurve auf Stundenwerte umgelegt. Für Wohngebäude stehen dafür acht Kurven nach Jahreszeit und Wochentag bereit, für Nichtwohngebäude fünf Kurven nach Jahreszeit und Bewölkung. Das Ergebnis ist ein durchgängiger Jahresgang der Heizleistung, aus dem sich die maximale Wärmelast und die Jahresdauerlinie ableiten.</p>
+
+<p>Warmwasser und Prozesswärme werden nach demselben Muster erfasst: Sie wählen einen Typ aus dem Katalog, geben den Jahresverbrauch an, und das Programm verteilt diesen über die hinterlegten Monatsanteile und ein Wochenprofil mit 168 Stundenwerten auf das Jahr. Die Wochenprofile lassen sich in einem eigenen Editor tageweise bearbeiten, kopieren und auf alle Tage übertragen; eine Grafik zeigt das Ergebnis unmittelbar. Ein bereits vorliegender Wärmelastgang kann alternativ als Stundenreihe eingelesen und direkt zum berechneten Bedarf addiert werden.</p>
+
+<h3>Schritt 4: Strombedarf erfassen</h3>
+
+<p>Der Strombedarf entsteht auf demselben Weg aus Verbrauchertypen mit Monatswerten und 168-Stunden-Wochenprofilen. Da für Eigenverbrauchsbetrachtungen die Stundenauflösung zu grob ist, rechnet EPOS-Plan das Profil auf Viertelstunden um und arbeitet intern mit 35.040 Werten je Jahr. Gemessene Lastgänge lassen sich importieren und werden je nach Zeitraster – Stunden- oder Viertelstundenwerte – automatisch eingepasst und dem berechneten Profil überlagert. Als Ergebnis stehen der maximale Leistungsbedarf, der Jahresverbrauch, die Monatswerte und die geordnete Jahresdauerlinie zur Verfügung.</p>
+
+<h3>Schritt 5: Erzeuger und Speicher auswählen</h3>
+
+<p>In diesem Schritt bestücken Sie das Projekt mit der Technik. Für jede Gerätegattung existiert ein Katalog mit Herstellerdaten, aus dem Sie über Filter und Suche auswählen; die Auslegungsdaten des ausgewählten Geräts werden dann projektbezogen ergänzt. Die einzelnen Module sind weiter unten unter „Programmfunktionen“ ausführlich beschrieben.</p>
+
+<h3>Schritt 6: Simulation konfigurieren und starten</h3>
+
+<p>Im Dialog <em>Simulation Konfiguration</em> legen Sie fest, welche Erzeuger an der Deckung teilnehmen und in welcher Reihenfolge sie herangezogen werden. Vier Auswahlfelder stehen für die Wärmeerzeuger bereit – Wärmepumpe, Heizkessel, BHKW und Solarthermie –, dazu je ein Feld für Photovoltaik und Stromspeicher. Die Reihenfolge der Felder ist die Priorität: Der erste Erzeuger deckt so viel Bedarf wie möglich, der zweite bekommt den Rest, und so fort.</p>
+
+<p>Eine eigene Rubrik ist dem Pufferspeicher gewidmet. Hier ordnen Sie den ausgewählten Erzeugern Speicher zu und legen Vorlauf- und Rücklauftemperatur sowie die Ein- und Abschaltschwellen der Speicherbewirtschaftung fest. Eine Übersichtstabelle rechts zeigt fortlaufend alle ausgewählten Erzeuger mit den zugehörigen Anlagen des Projekts. Bei Wärmepumpen lassen sich dort per Doppelklick die Priorität, die Wärmequelle, die Wärmesenke und der Betriebsmodus einstellen. Die Konfiguration wird gespeichert und bleibt dem Projekt erhalten.</p>
+
+<h3>Schritt 7: Ergebnisse auswerten und Kosten hinterlegen</h3>
+
+<p>Nach dem Start der Simulation stehen die Ergebnisse in einer mehrstufigen Auswertung bereit – zunächst als Überblick über die Deckungsanteile, dann getrennt nach Erzeugern mit Jahresganglinien, Kennzahlen und Modultabellen. Alle Zeitreihen lassen sich als CSV-Datei exportieren. Parallel dazu erfassen Sie im Kostenmodul die Investitions-, Betriebs- und Energiekosten der Anlage, sodass technische und wirtschaftliche Bewertung auf demselben Datenstand beruhen.</p>
+
+<h2>Programmfunktionen</h2>
+
+<h3>Projektverwaltung</h3>
+
+<p>Alle Projekte liegen in einer gemeinsamen Datenbank, zusammen mit den Stammdatenkatalogen. Ein Projekt umfasst die Stammdaten, die gewählte Klimaregion, sämtliche Bedarfs- und Anlagendaten, die Simulationskonfiguration, das zuletzt gespeicherte Simulationsergebnis und die Kostendaten. Beim Zuordnen einer Katalogkomponente entsteht immer eine projekteigene Kopie – Änderungen an einer Wärmepumpe im Projekt A wirken sich also weder auf den Katalog noch auf Projekt B aus. Das zuletzt geöffnete Projekt wird gemerkt und lässt sich direkt wieder aufrufen.</p>
+
+<h3>Gebäude und Gebäudetypen</h3>
+
+<p>Die Gebäudeverwaltung trennt zwischen dem Katalog der Gebäudetypen und der Zuordnung im Projekt. Im Katalog werden Geometrie, Bauteilqualität, Nutzungsrandbedingungen und Ferienzeiten gepflegt, im Projekt lediglich die Bezugsgröße und der Jahresnutzungsgrad. Für die zeitliche Auflösung sorgen Tagesverteilungskurven, die je Gebäudetyp als Stundenprofile hinterlegt sind und ebenfalls bearbeitet werden können. Werksseitig gelieferte Typen sind schreibgeschützt, damit sie als Referenz erhalten bleiben; eigene Typen lassen sich jederzeit anlegen.</p>
+
+<h3>Wärmepumpe</h3>
+
+<p>Die Wärmepumpenauswahl greift auf einen umfangreichen Katalog zu, der nach Hersteller, Funktionsprinzip (Sole/Wasser, Wasser/Wasser, Luft/Wasser, Luft/Luft), Regelung (einstufig, zweistufig, stetig), Bauart, Aufstellungsart, vorhandener elektrischer Zusatzheizung, Vorlauftemperaturbereich und Nennleistung gefiltert werden kann; zusätzlich steht eine Freitextsuche mit Platzhaltern zur Verfügung.</p>
+
+<p>Grundlage der Berechnung ist das hinterlegte Kennfeld: Für die gewählte Vorlauftemperatur enthält es zu jeder Quellentemperatur die Wärmeleistung und die Leistungszahl. In der Simulation wird für jede Stunde zwischen den Stützstellen linear interpoliert, sodass Leistung und Stromaufnahme dem tatsächlichen Betriebspunkt entsprechen. Unterschreitet die Temperatur den Kennlinienbereich, weist das Programm darauf hin und fragt nach, ob extrapoliert werden soll.</p>
+
+<p>Je Wärmepumpe legen Sie Vor- und Rücklauftemperatur, den Umgang mit dem Heizstab und – bei bivalenten Anlagen – die Betriebsweise fest: alternativ, parallel oder teilparallel mit eigenem Abschaltpunkt. Sperrzeiten des Netzbetreibers werden über ein Zeitfenster berücksichtigt, in dem die Maschine nicht läuft. Der Bivalenzpunkt wird nicht vorgegeben, sondern aus der Simulation ermittelt: Er ergibt sich als die höchste Außentemperatur, bei der noch ungedeckter Wärmebedarf auftritt.</p>
+
+<p>Darüber hinaus lässt sich jede Wärmepumpe individuell einstellen. Als <strong>Wärmequelle</strong> stehen die Außenluft, eine konstante Quellentemperatur, ein Pufferspeicher, ein selbst definiertes Quellprofil aus Monats- und Wochenwerten oder ein als CSV-Datei eingelesenes Temperaturprofil mit Stundenwerten über ein Jahr zur Auswahl. Wird ein Speicher als Quelle genutzt, begrenzt dessen Inhalt die entnehmbare Wärme; Regeneration und Spreizung sind dabei einstellbar. Als <strong>Wärmesenke</strong> kann eine Maschine den gesamten Wärmebedarf decken oder gezielt nur den Warmwasser- beziehungsweise nur den Heizwärmeanteil. Der <strong>Betriebsmodus</strong> bestimmt die Fahrweise: laufzeitoptimiert mit maximaler Leistung, leistungsoptimiert mit genau der benötigten Wärmemenge oder PV-optimiert, wobei die Maschine bei verfügbarem Solarstrom hochfährt und sonst bedarfsgeführt arbeitet. Sind mehrere Wärmepumpen im Projekt vorhanden, bestimmt die Priorität ihre Einsatzreihenfolge.</p>
+
+<h3>Heizkessel</h3>
+
+<p>Kessel werden nach Brennstoffart und Leistungsklasse aus dem Katalog gewählt. Hinterlegt sind neben der Nennleistung getrennte Wirkungsgrade für Gas- und Ölbetrieb, die Kennzeichnung als Brennwert- oder Niedertemperaturgerät sowie der Betriebsbereitschaftsverlust. In der Simulation wird für jede Stunde unterschieden, ob der Kessel Wärme liefert – dann ergibt sich der Brennstoffeinsatz aus Leistung und Wirkungsgrad – oder stillsteht, wobei der Bereitschaftsverlust anfällt. Aus der Jahresbilanz berechnet das Programm den Jahresnutzungsgrad je Kessel. Der Brennstoffverbrauch wird nach Energieträgern getrennt ausgewiesen, ebenso die daraus resultierenden Emissionen an CO₂, SO₂, NO<sub>x</sub>, CO und Staub. Ein Elektrokessel lässt sich abbilden, indem als Energieträger Strom gewählt wird; sein Verbrauch fließt dann in die Strombilanz ein.</p>
+
+<h3>Blockheizkraftwerk</h3>
+
+<p>BHKW-Module werden nach Brennstoff und thermischer Leistungsklasse ausgewählt; hinterlegt sind thermische und elektrische Leistung, Gesamtwirkungsgrad und die untere Modulationsgrenze, unterhalb derer ein Modul abschaltet statt weiter herunterzuregeln. Für die Fahrweise stehen drei Strategien zur Verfügung. <strong>Wärmegeführt</strong> deckt vorrangig den Wärmebedarf; überschüssiger Strom wird eingespeist. <strong>Stromgeführt</strong> orientiert sich am Strombedarf; die anfallende Wärme geht in den Pufferspeicher, dessen Überlauf als Wärmeüberschuss ausgewiesen wird. <strong>Ohne Einspeisung</strong> begrenzt die Erzeugung so, dass kein Strom ins Netz abgegeben wird. Ein Pendelspeicher glättet den Betrieb und verhindert kurze Takte. Ergebnisgrößen sind Betriebsstunden je Modul, Wärme- und Stromproduktion, Brennstoffverbrauch nach Energieträger und die Emissionen.</p>
+
+<h3>Solarthermie</h3>
+
+<p>Kollektorfelder werden über Kollektortyp, Modulanzahl, Apertur- und Modulfläche sowie Neigung und Azimut beschrieben. Die Ertragsberechnung folgt dem Wirkungsgradmodell nach EN 12975 mit dem optischen Wirkungsgrad, den beiden Verlustkoeffizienten und dem Einfallswinkelkorrekturfaktor. Für jede Stunde werden die Einstrahlung auf die geneigte Fläche und die Temperaturdifferenz zur Umgebung ausgewertet, daraus der momentane Wirkungsgrad und der Ertrag bestimmt und Leitungsverluste berücksichtigt. Die Anlage deckt so viel Bedarf wie möglich; nicht nutzbare Erträge werden als Überschuss ausgewiesen, was bei der Dimensionierung des Kollektorfelds die entscheidende Kenngröße ist.</p>
+
+<h3>Photovoltaik</h3>
+
+<p>PV-Anlagen werden über die Modulauswahl, die Modulanzahl sowie Neigung und Azimut beschrieben; aus den Moduldaten stammen Nennleistung, Fläche, Wirkungsgrad und Temperaturkoeffizient. Die Berechnung ermittelt für jede Stunde den Einfallswinkel auf die Modulebene, die Einstrahlung, die daraus resultierende Zelltemperatur und den temperaturkorrigierten Wirkungsgrad; Wechselrichterverluste werden pauschal berücksichtigt. In der Strombilanz gilt die übliche Rangfolge: Der erzeugte Strom deckt zunächst den zeitgleichen Bedarf, lädt anschließend den Stromspeicher und wird erst danach als Überschuss ins Netz abgegeben. Reicht die Erzeugung nicht aus, wird zunächst der Speicher entladen und der Rest als Netzbezug ausgewiesen.</p>
+
+<h3>Pufferspeicher</h3>
+
+<p>Thermische Speicher werden über Volumen, Vor- und Rücklauftemperatur und den Bereitschaftsverlust beschrieben. Die nutzbare Kapazität ergibt sich aus dem Volumen und der nutzbaren Temperaturspreizung; ein 1.000-Liter-Speicher mit 20 Kelvin Spreizung fasst rund 23 Kilowattstunden. In der Simulation wird der Speicherinhalt stündlich bilanziert: Er nimmt überschüssige Wärme auf, gibt sie bei Bedarf wieder ab und verliert kontinuierlich Bereitschaftswärme. Die Bewirtschaftung folgt einer Hysterese mit einstellbarer Einschalt- und Abschaltschwelle, angegeben als Prozentsatz der Kapazität. Solange der Speicher den Bedarf deckt, bleibt der Erzeuger aus – im Sommerbetrieb einer Wärmepumpe wird dieser Effekt besonders deutlich sichtbar. Da Bereitschaftsverluste ebenfalls gedeckt werden müssen, liegt die Wärmeproduktion in der Jahresbilanz systembedingt etwas über dem Wärmebedarf; die Differenz entspricht den Speicherverlusten.</p>
+
+<h3>Stromspeicher</h3>
+
+<p>Batteriespeicher werden über Kapazität, Leistung, Ladezustandsgrenzen und Degradation beschrieben. In der Simulation nehmen sie Überschüsse der Erzeugung auf und geben sie zur Deckung des Reststrombedarfs wieder ab. Der Verlauf des Ladezustands lässt sich als eigene Kurve im Stromdiagramm einblenden, sodass die Wirkung unterschiedlicher Speichergrößen auf Eigenverbrauch und Autarkie unmittelbar erkennbar wird.</p>
+
+<h3>Simulation</h3>
+
+<p>Die Jahressimulation arbeitet die Wärmeerzeuger in der konfigurierten Reihenfolge ab. Ausgangsgröße ist der Wärmebedarf jeder einzelnen Stunde. Der erste Erzeuger deckt davon so viel, wie es sein Kennfeld, seine Betriebsgrenzen und die Speichersituation zulassen; die verbleibende Restwärme geht an den nächsten Erzeuger. Was am Ende der Kette offenbleibt, wird als Restwärmebedarf ausgewiesen und zeigt an, wo die Auslegung nicht ausreicht.</p>
+
+<p>Die Strombilanz wird parallel in Viertelstundenschritten geführt. Zum Strombedarf des Objekts kommen die Verbräuche der Wärmeerzeuger – Wärmepumpen, Heizstäbe und Hilfsantriebe – hinzu. Davon abgezogen werden nacheinander die Stromerzeugung des BHKW, die Photovoltaik und die Entladung des Stromspeichers. Was übrig bleibt, ist der Netzbezug; negative Werte entsprechen der Einspeisung.</p>
+
+<h3>Ergebnisdarstellung</h3>
+
+<p>Die Auswertung ist in Registerkarten gegliedert. Der <strong>Energiebedarf</strong> zeigt Wärmelast und Strombedarf als Jahresganglinie, wahlweise umschaltbar auf die geordnete Jahresdauerlinie, jeweils mit maximaler Last und Jahressumme. Die Wärmelast ist dabei nach Heizwärme und Warmwasser getrennt dargestellt.</p>
+
+<p>Die Registerkarte <strong>Wärmepumpe</strong> weist die Wärmebedarfsdeckung in Prozent, den ermittelten Bivalenzpunkt, die Kapazität des zugeordneten Pufferspeichers, die durchschnittlichen Vollbenutzungsstunden und die minimal erforderliche Spitzenkesselleistung aus. Drei Diagramme zeigen den Jahresgang von Wärmebedarf, Heizstab und Wärmeproduktion, den Stromverbrauch sowie die Leistung aufgetragen über der Außentemperatur. Eine Modultabelle listet je Maschine die Leistung, die Wärmeproduktion, den Stromverbrauch, den Heizstabanteil und die Betriebsstunden.</p>
+
+<p>Für <strong>Heizkessel</strong>, <strong>BHKW</strong>, <strong>Solarthermie</strong> und <strong>Photovoltaik</strong> gibt es jeweils eigene Registerkarten mit Deckungsanteil, Produktion, Restbedarf, den relevanten Verbrauchsgrößen und einer Modultabelle. Beim BHKW wird zusätzlich die Betriebsart eingestellt und erläutert, bei der Solarthermie der nicht nutzbare Überschuss ausgewiesen, bei der Photovoltaik der Speicherfüllstand mit dargestellt.</p>
+
+<p>Die <strong>Ergebnisseite</strong> fasst alles zusammen. Zwei Ringdiagramme zeigen Wärme- und Strombedarfsdeckung nach Erzeugern, Kennzahlkacheln den verbleibenden Rest an Wärme und Strom, eine Tabelle die Jahresarbeit jedes Erzeugers in Megawattstunden. Die <strong>Autarkieanalyse</strong> stellt monatsweise gegenüber, welcher Anteil des Strombedarfs direkt aus der Erzeugung, aus dem Speicher oder aus dem Netz gedeckt wird, und weist Autarkiegrad, solarthermische Deckung, thermischen Nutzungsgrad und die CO₂-Einsparung aus. Zwei weitere Ansichten zeigen die Wärme- und die Stromproduktion als Jahresganglinie, in denen sich einzelne Erzeuger und der Speicherfüllstand gezielt ein- und ausblenden lassen. Das jeweils letzte Simulationsergebnis eines Projekts kann gespeichert und später wieder aufgerufen werden.</p>
+
+<h3>Datenexport</h3>
+
+<p>Zeitreihen lassen sich an mehreren Stellen als CSV-Datei ausgeben. Der Export im Bereich Energiebedarf enthält Wärmelast und Strombedarf, der Export im Bereich Wärmepumpe zusätzlich Wärmebedarf, Heizstab, Wärmeproduktion und Stromverbrauch; außerdem lässt sich die jeweils angezeigte Grafik mit allen aktiven Kurven exportieren. Jede Datei beginnt mit einem Zeitstempel und der Außentemperatur, sodass die Werte in Excel unmittelbar weiterverwendet werden können. Der zuletzt verwendete Speicherort wird gemerkt.</p>
+
+<h3>Kosten und Energiepreise</h3>
+
+<p>Das Kostenmodul ist in Investitionskosten, Betriebskosten und Energiekosten gegliedert. Zu jeder im Projekt vorhandenen Komponente lassen sich Kostenpositionen mit Betrag, Einheit, Nutzungsdauer und einer Bandbreite zwischen günstigem und ungünstigem Fall erfassen; die im Technikmodul hinterlegten Anlagenkosten können auf Knopfdruck als Planwert übernommen werden. Summen werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen. Bei den Energiepreisen werden je Energieträger Arbeits-, Grund- und Leistungspreis, Heiz- beziehungsweise Brennwert und die Emissionsfaktoren gepflegt, jeweils mit Gültigkeitsdatum, sodass sich Preisentwicklungen nachvollziehbar hinterlegen lassen.</p>
+
+<h3>Stammdaten und Datenimport</h3>
+
+<p>Sämtliche Kataloge werden über das Menü <em>Administration</em> gepflegt: Gebäudetypen und Tagesverteilungen, Brauchwasser- und Prozesswärmetypen, Stromverbrauchertypen und Stromganglinien, Wärmepumpen mit Kennfeldern, Heizkessel, Pufferspeicher, BHKW-Module, Solarkollektoren, Kollektorganglinien, PV-Module, Stromspeicher, Klimaregionen sowie Energieträger und Kostenkennwerte. Für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren steht ein Import von Herstellerdatensätzen nach VDI 3805 zur Verfügung, dem Standard für den Austausch von Produktdaten in der technischen Gebäudeausrüstung. Werksseitige Datensätze sind schreibgeschützt und lassen sich nicht versehentlich überschreiben.</p>
+
+<h3>Einstellungen, Hilfe und Sprache</h3>
+
+<p>In den Einstellungen legen Sie die Verzeichnisse für Import und Export, den Pfad der VDI-3805-Daten, die Adresse dieser Online-Dokumentation sowie die Schnittstellen für Klimadaten und Geokodierung fest; alle Werte lassen sich auf die Voreinstellung zurücksetzen. Die Bedienoberfläche steht in Deutsch und Englisch zur Verfügung, umschaltbar über das Hauptmenü.</p>
+
+<p>Das Hilfesystem arbeitet auf drei Ebenen. Kurzhinweise erscheinen direkt am Eingabefeld und verweisen auf das zugehörige Kapitel dieser Dokumentation. Der Menüpunkt <em>Dokumentation</em> öffnet diese Seite im Browser. Der Hilfe-Assistent schließlich beantwortet Fragen in einem Chatfenster; er erkennt, in welchem Programmbereich Sie gerade arbeiten, und durchsucht zunächst die integrierten Hilfetexte. Die lokale Suche ist jederzeit kostenfrei nutzbar; für formulierte Antworten kann optional ein eigener Zugangsschlüssel hinterlegt werden, wobei ausschließlich Hilfetexte, die Frage und der Bereichsname übertragen werden – keine Projekt- oder Kundendaten. Unter <em>Lizenz</em> finden Sie die vollständige Lizenzvereinbarung mit den Allgemeinen Geschäftsbedingungen zum Nachlesen, Drucken und Speichern.</p>
+
+<h3>Systemvoraussetzungen</h3>
+
+<p>EPOS-Plan ist eine eigenständige Windows-Anwendung für Windows 10 und Windows 11. Sie benötigt keine Excel-Installation. Projekt- und Stammdaten liegen in einer lokalen Datenbank; für den Bezug von Klimadaten und für die Online-Dokumentation ist eine Internetverbindung erforderlich, für alle übrigen Funktionen nicht.</p>

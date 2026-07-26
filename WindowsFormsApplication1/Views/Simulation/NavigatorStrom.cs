@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -21,6 +22,53 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             sim = simctrl;
+            InitCsvExportButton();
+        }
+
+        /// <summary>
+        /// Legt den CSV-Export-Button rechts neben den Checkboxen an (programmatisch, kein Designer nötig).
+        /// </summary>
+        private void InitCsvExportButton()
+        {
+            Button btnExport = new Button();
+            btnExport.Name = "btn_CsvExport";
+            btnExport.Text = "CSV Export";
+            btnExport.Size = new Size(105, 28);
+            btnExport.Location = new Point(875, 516); // rechts neben checkBox_BHKW (y=520)
+            btnExport.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            btnExport.Click += btn_CsvExport_Click;
+            this.Controls.Add(btnExport);
+            btnExport.BringToFront();
+        }
+
+        /// <summary>
+        /// Exportiert die aktuell per Checkbox selektierten Serien des Strom-Charts als CSV
+        /// (Zeitstempel, Außentemperatur, Werte — Viertelstundenwerte).
+        /// </summary>
+        private void btn_CsvExport_Click(object sender, EventArgs e)
+        {
+            if (sim == null || sim.simulation_Strombedarf == null || temp_ges == null)
+            {
+                MessageBox.Show("Keine Simulationsdaten vorhanden!\nBitte zuerst die Simulation durchführen.",
+                    "CSV Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // nur die aktuell selektierten (angezeigten) Serien exportieren
+            List<CsvSpalte> spalten = new List<CsvSpalte>();
+            if (checkBox_Gesamt.Checked) spalten.Add(new CsvSpalte("Gesamt [kW]", temp_ges));
+            if (checkBox_WP.Checked) spalten.Add(new CsvSpalte("Wärmepumpe [kW]", temp_wp));
+            if (checkBox_Heizstab.Checked) spalten.Add(new CsvSpalte("Heizstab [kW]", temp_hs));
+            if (checkBox_SPK.Checked) spalten.Add(new CsvSpalte("Heizkessel [kW]", temp_hk));
+            if (checkBox_Profil_Lastgang.Checked) spalten.Add(new CsvSpalte("Profil/Lastgang [kW]", temp_profil));
+            if (checkBox_PV.Checked) spalten.Add(new CsvSpalte("PV [kW]", sim.simulation_pv != null ? sim.simulation_pv.Stromproduktion_viertelstunde : null));
+            if (checkBox_BHKW.Checked) spalten.Add(new CsvSpalte("BHKW [kW]", temp_bhkw));
+
+            float[] temperatur = (sim.simulation_Waermebedarf != null)
+                ? sim.simulation_Waermebedarf.Stundentemperatur
+                : null;
+
+            CsvExportClass.Export("Strombedarf.csv", temperatur, spalten, true);
         }
 
         public void RefreshContent()
