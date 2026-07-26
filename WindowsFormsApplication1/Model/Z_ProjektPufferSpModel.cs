@@ -10,6 +10,7 @@ namespace WindowsFormsApplication1
     {
         public int ID;
         public int ID_Projekt;
+        public int ID_Pufferspeicher;
         public string Erzeuger;
         public string PufferSp;
         public int Vorlauf;
@@ -21,6 +22,7 @@ namespace WindowsFormsApplication1
         {
             ID = 0;
             ID_Projekt = 0;
+            ID_Pufferspeicher = 0;
             Erzeuger = "";
             PufferSp = "";
             Vorlauf = 0;

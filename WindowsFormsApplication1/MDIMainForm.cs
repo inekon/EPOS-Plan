@@ -22,6 +22,191 @@ namespace WindowsFormsApplication1
             // Beim Start vollflächig, aber später vom Nutzer skalierbar.
             this.WindowState = FormWindowState.Maximized;
             this.StartPosition = FormStartPosition.CenterScreen;
+
+            // Produktname dezent im Kopfbereich anzeigen
+            InitMarke();
+
+            // KI-Hilfe-Assistent einbinden (Menüeintrag und F1)
+            InitKiHilfe();
+        }
+
+        /// <summary>Produktname für Titelleiste, Kopfzeile und Meldungen.</summary>
+        public const string PRODUKTNAME = "EPOS-Plan";
+
+        /// <summary>Auflösung des Namens: Energie, Optimierung, Planung, Simulation.</summary>
+        public const string PRODUKT_CLAIM = "Energie · Optimierung · Planung · Simulation";
+
+        /// <summary>
+        /// Zeigt den Produktnamen zurückhaltend an: in der Titelleiste sowie in
+        /// einer schmalen Kopfzeile unterhalb des Menüs. Die Kopfzeile enthält
+        /// links den Namen mit der Auflösung EPOS = Energie, Optimierung,
+        /// Planung, Simulation und rechts die Programmversion.
+        ///
+        /// Bewusst programmatisch, damit Designer und .resx unberührt bleiben.
+        /// </summary>
+        private void InitMarke()
+        {
+            try
+            {
+                this.Text = PRODUKTNAME;
+
+                Panel kopf = new Panel
+                {
+                    Dock = DockStyle.Top,
+                    Height = 34,
+                    BackColor = System.Drawing.Color.FromArgb(250, 251, 252)
+                };
+                kopf.Paint += (s, e) =>
+                {
+                    using (System.Drawing.Pen stift = new System.Drawing.Pen(System.Drawing.Color.FromArgb(218, 223, 228)))
+                        e.Graphics.DrawLine(stift, 0, kopf.Height - 1, kopf.Width, kopf.Height - 1);
+                };
+
+                Label name = new Label
+                {
+                    Text = PRODUKTNAME,
+                    AutoSize = true,
+                    Font = new System.Drawing.Font("Segoe UI", 12.5f, System.Drawing.FontStyle.Bold),
+                    ForeColor = System.Drawing.Color.FromArgb(0, 90, 160),
+                    Margin = new Padding(0, 4, 12, 0)
+                };
+
+                Label claim = new Label
+                {
+                    Text = PRODUKT_CLAIM,
+                    AutoSize = true,
+                    Font = new System.Drawing.Font("Segoe UI", 8.5f),
+                    ForeColor = System.Drawing.Color.FromArgb(110, 116, 122),
+                    Margin = new Padding(0, 10, 0, 0)
+                };
+
+                FlowLayoutPanel links = new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Left,
+                    FlowDirection = FlowDirection.LeftToRight,
+                    WrapContents = false,
+                    AutoSize = true,
+                    AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                    Padding = new Padding(14, 0, 0, 0),
+                    BackColor = System.Drawing.Color.Transparent
+                };
+                links.Controls.Add(name);
+                links.Controls.Add(claim);
+
+                Label version = new Label
+                {
+                    Text = "Version " + VersionText(),
+                    Dock = DockStyle.Right,
+                    AutoSize = true,
+                    Font = new System.Drawing.Font("Segoe UI", 8.5f),
+                    ForeColor = System.Drawing.Color.FromArgb(145, 151, 157),
+                    Padding = new Padding(0, 10, 16, 0),
+                    BackColor = System.Drawing.Color.Transparent
+                };
+
+                ToolTip hinweis = new ToolTip();
+                hinweis.SetToolTip(name, PRODUKTNAME + " - " + PRODUKT_CLAIM);
+                hinweis.SetToolTip(claim, PRODUKTNAME + " - " + PRODUKT_CLAIM);
+
+                kopf.Controls.Add(links);
+                kopf.Controls.Add(version);
+
+                this.Controls.Add(kopf);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Kopfzeile konnte nicht erstellt werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>Versionsnummer der Anwendung als Text (z. B. "1.0.0.0").</summary>
+        private static string VersionText()
+        {
+            try
+            {
+                Version v = Assembly.GetExecutingAssembly().GetName().Version;
+                return v == null ? "" : v.ToString();
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>
+        /// Bindet den KI-Hilfe-Assistenten ein: ein Menüeintrag unter "Hilfe"
+        /// (bzw. ein eigener Menüpunkt, falls kein Hilfe-Menü vorhanden ist)
+        /// sowie F1 als Tastenkürzel. Der Assistent bekommt automatisch den
+        /// Bereich mitgeteilt, in dem der Benutzer gerade arbeitet.
+        ///
+        /// Bewusst programmatisch, damit Designer und .resx unberührt bleiben.
+        /// </summary>
+        private void InitKiHilfe()
+        {
+            try
+            {
+                ToolStripMenuItem eintrag = new ToolStripMenuItem("Hilfe-Assistent (KI)...");
+                eintrag.ShortcutKeys = Keys.F1;
+                eintrag.ShowShortcutKeys = true;
+                eintrag.Click += (s, e) => Form_KiChat.Oeffnen(this);
+
+                MenuStrip strip = SucheMenuStrip(this);
+                if (strip != null)
+                {
+                    // Vorhandenes Hilfe-Menü suchen, sonst ein neues anlegen
+                    ToolStripMenuItem hilfeMenu = null;
+                    foreach (ToolStripItem item in strip.Items)
+                    {
+                        ToolStripMenuItem mi = item as ToolStripMenuItem;
+                        if (mi == null) continue;
+                        string text = (mi.Text ?? "").Replace("&", "");
+                        if (text.StartsWith("Hilfe", StringComparison.OrdinalIgnoreCase) ||
+                            text.StartsWith("Help", StringComparison.OrdinalIgnoreCase))
+                        {
+                            hilfeMenu = mi;
+                            break;
+                        }
+                    }
+
+                    if (hilfeMenu == null)
+                    {
+                        hilfeMenu = new ToolStripMenuItem("Hilfe");
+                        strip.Items.Add(hilfeMenu);
+                    }
+
+                    if (hilfeMenu.DropDownItems.Count > 0)
+                        hilfeMenu.DropDownItems.Add(new ToolStripSeparator());
+                    hilfeMenu.DropDownItems.Add(eintrag);
+                }
+
+                // F1 auch unabhängig vom Menü verfügbar machen
+                this.KeyPreview = true;
+                this.KeyDown += (s, e) =>
+                {
+                    if (e.KeyCode == Keys.F1)
+                    {
+                        e.Handled = true;
+                        Form_KiChat.Oeffnen(this);
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("KI-Hilfe konnte nicht eingebunden werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>Sucht die MenuStrip des Formulars (auch in Unterebenen).</summary>
+        private MenuStrip SucheMenuStrip(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                MenuStrip ms = c as MenuStrip;
+                if (ms != null) return ms;
+                if (c.Controls.Count > 0)
+                {
+                    MenuStrip treffer = SucheMenuStrip(c);
+                    if (treffer != null) return treffer;
+                }
+            }
+            return this.MainMenuStrip;
         }
 
         private void MenuItem_Neu_Click(object sender, EventArgs e)
@@ -163,13 +348,19 @@ namespace WindowsFormsApplication1
 
         private void MenuItem_Version_Click(object sender, EventArgs e)
         {
-            Version currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            MessageBox.Show("Version: " + currentVersion.ToString());
+            MessageBox.Show(
+                PRODUKTNAME + Environment.NewLine +
+                PRODUKT_CLAIM + Environment.NewLine + Environment.NewLine +
+                "Version " + VersionText() + Environment.NewLine +
+                "INEKON - Intelligente Energiekonzepte",
+                "Über " + PRODUKTNAME, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void MenuItem_Lizenz_Click(object sender, EventArgs e)
         {
-
+            // Lizenzvereinbarung und AGB anzeigen (Grundlage: LIZENZ-INEKON.rtf
+            // aus dem Projektstammverzeichnis)
+            Form_Lizenz.Anzeigen(this);
         }
 
         private void Deutsch_Click(object sender, EventArgs e)
@@ -304,11 +495,23 @@ namespace WindowsFormsApplication1
             frm.ShowDialog();
         }
 
+        /// <summary>Online-Dokumentation von epos-plan.de.</summary>
+        public const string DOKU_URL = "https://epos-plan.de/epos-plan/epos-plan-dokumetation/";
+
         private void MenuItem_Dokumentation_Click(object sender, EventArgs e)
         {
             try
             {
-                string _targetUrl = Properties .Settings.Default.WordPressUrl;
+                // Standard ist die Online-Dokumentation; ist in den Einstellungen
+                // eine abweichende (z. B. lokale) WordPress-Adresse hinterlegt,
+                // hat diese Vorrang.
+                string _targetUrl = Properties.Settings.Default.WordPressUrl;
+                if (string.IsNullOrWhiteSpace(_targetUrl) ||
+                    _targetUrl.Contains("localhost"))
+                {
+                    _targetUrl = DOKU_URL;
+                }
+
                 Process.Start(new ProcessStartInfo { FileName = _targetUrl, UseShellExecute = true });
             }
             catch (Exception ex)
