@@ -270,7 +270,7 @@
             ueb_label62 = new System.Windows.Forms.Label();
             tabPage_Simulation = new System.Windows.Forms.TabPage();
             tabPage_Wärmepumpe = new System.Windows.Forms.TabPage();
-            listView_SimWP = new System.Windows.Forms.DataGridView();
+            listView_SimWP = new System.Windows.Forms.ListView();
             label43 = new System.Windows.Forms.Label();
             tabControl2 = new System.Windows.Forms.TabControl();
             tabPage5 = new System.Windows.Forms.TabPage();
@@ -319,7 +319,7 @@
             label89 = new System.Windows.Forms.Label();
             label90 = new System.Windows.Forms.Label();
             flowLayoutPanelBrennstoffe = new System.Windows.Forms.FlowLayoutPanel();
-            dataGridView_BHKW = new System.Windows.Forms.DataGridView();
+            dataGridView_BHKW = new System.Windows.Forms.ListView();
             label126 = new System.Windows.Forms.Label();
             label125 = new System.Windows.Forms.Label();
             textBox_Stromdeckung = new System.Windows.Forms.TextBox();
@@ -347,6 +347,7 @@
             label13 = new System.Windows.Forms.Label();
             chart_BHKW_Waerme = new System.Windows.Forms.DataVisualization.Charting.Chart();
             tabPage_Stromspeicher = new System.Windows.Forms.TabPage();
+            btn_ErgebnisSpeichern = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)splitContainer_Parameter).BeginInit();
             splitContainer_Parameter.Panel1.SuspendLayout();
             splitContainer_Parameter.SuspendLayout();
@@ -374,7 +375,6 @@
             ((System.ComponentModel.ISupportInitialize)ueb_chart).BeginInit();
             tabPage_Simulation.SuspendLayout();
             tabPage_Wärmepumpe.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)listView_SimWP).BeginInit();
             tabControl2.SuspendLayout();
             tabPage5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)chart3).BeginInit();
@@ -382,7 +382,6 @@
             ((System.ComponentModel.ISupportInitialize)chart6).BeginInit();
             ((System.ComponentModel.ISupportInitialize)chart4).BeginInit();
             tabPage_BHKW.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView_BHKW).BeginInit();
             ((System.ComponentModel.ISupportInitialize)chart_BHKW_Waerme).BeginInit();
             SuspendLayout();
             // 
@@ -2131,9 +2130,9 @@
             // 
             // listView_SimWP
             // 
-            listView_SimWP.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             resources.ApplyResources(listView_SimWP, "listView_SimWP");
             listView_SimWP.Name = "listView_SimWP";
+            listView_SimWP.UseCompatibleStateImageBehavior = false;
             // 
             // label43
             // 
@@ -2552,10 +2551,9 @@
             // 
             // dataGridView_BHKW
             // 
-            dataGridView_BHKW.BackgroundColor = System.Drawing.Color.White;
-            dataGridView_BHKW.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             resources.ApplyResources(dataGridView_BHKW, "dataGridView_BHKW");
             dataGridView_BHKW.Name = "dataGridView_BHKW";
+            dataGridView_BHKW.UseCompatibleStateImageBehavior = false;
             // 
             // label126
             // 
@@ -2744,11 +2742,18 @@
             tabPage_Stromspeicher.Name = "tabPage_Stromspeicher";
             tabPage_Stromspeicher.UseVisualStyleBackColor = true;
             // 
+            // btn_ErgebnisSpeichern
+            // 
+            resources.ApplyResources(btn_ErgebnisSpeichern, "btn_ErgebnisSpeichern");
+            btn_ErgebnisSpeichern.Name = "btn_ErgebnisSpeichern";
+            btn_ErgebnisSpeichern.UseVisualStyleBackColor = true;
+            // 
             // Form_Simulation_Detail
             // 
             resources.ApplyResources(this, "$this");
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             BackColor = System.Drawing.Color.White;
+            Controls.Add(btn_ErgebnisSpeichern);
             Controls.Add(btn_Beenden);
             Controls.Add(tabControl_Simulation);
             Controls.Add(btn_Konfiguration);
@@ -2793,7 +2798,6 @@
             tabPage_Simulation.ResumeLayout(false);
             tabPage_Wärmepumpe.ResumeLayout(false);
             tabPage_Wärmepumpe.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)listView_SimWP).EndInit();
             tabControl2.ResumeLayout(false);
             tabPage5.ResumeLayout(false);
             tabPage5.PerformLayout();
@@ -2803,7 +2807,6 @@
             ((System.ComponentModel.ISupportInitialize)chart4).EndInit();
             tabPage_BHKW.ResumeLayout(false);
             tabPage_BHKW.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView_BHKW).EndInit();
             ((System.ComponentModel.ISupportInitialize)chart_BHKW_Waerme).EndInit();
             ResumeLayout(false);
 
@@ -3017,7 +3020,7 @@
         private System.Windows.Forms.CheckBox checkBox_Heizstab;
         private System.Windows.Forms.TextBox textBox_Bereitschaft;
         private System.Windows.Forms.TabPage tabPage_Wärmepumpe;
-        private System.Windows.Forms.DataGridView listView_SimWP;
+        private System.Windows.Forms.ListView listView_SimWP;
         private System.Windows.Forms.Label label43;
         private System.Windows.Forms.TabControl tabControl2;
         private System.Windows.Forms.TabPage tabPage5;
@@ -3075,7 +3078,7 @@
         private System.Windows.Forms.Label label123;
         private System.Windows.Forms.Label label126;
         private System.Windows.Forms.Label label125;
-        private System.Windows.Forms.DataGridView dataGridView_BHKW;
+        private System.Windows.Forms.ListView dataGridView_BHKW;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelBrennstoffe;
         private System.Windows.Forms.TextBox textBox_Reststrombedarf_BHKW;
         private System.Windows.Forms.TextBox textBox_Strombedarf_BHKW;
@@ -3092,5 +3095,6 @@
         private System.Windows.Forms.Label label95;
         private System.Windows.Forms.Label label96;
         private System.Windows.Forms.Label label97;
+        private System.Windows.Forms.Button btn_ErgebnisSpeichern;
     }
 }

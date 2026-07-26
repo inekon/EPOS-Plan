@@ -102,9 +102,9 @@ namespace WindowsFormsApplication1
                     {
                         m_Monat[i] = Convert.ToDouble(row[colName]);
                     }
-                    else if (dt.Columns.Count > (i + 4) && row[i + 4] != DBNull.Value)
+                    else if (dt.Columns.Count > (i + 5) && row[i + 5] != DBNull.Value)
                     {
-                        m_Monat[i] = Convert.ToDouble(row[i + 4]);
+                        m_Monat[i] = Convert.ToDouble(row[i + 5]);
                     }
                 }
 
