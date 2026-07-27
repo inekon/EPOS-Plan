@@ -61,6 +61,10 @@ namespace WindowsFormsApplication1
             label_Haus.BackColor = Color.Transparent;
             label_Haus.Location = new Point(30, (pictureBox2.Height -label_Haus.Height)/2); // Achtung: Location ist jetzt relativ zum Panel!
 
+            // Produktname auch im Kopfband der Startseite nennen (Beschriftung
+            // stammt aus den Ressourcen, wird hier zur Laufzeit gesetzt)
+            try { label20.Text = MDIMainForm.PRODUKTNAME; } catch { }
+
             // DropDownStyle auf DropDownList
             comboBox_Klima.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBox_Klima.FlatStyle = FlatStyle.Popup;

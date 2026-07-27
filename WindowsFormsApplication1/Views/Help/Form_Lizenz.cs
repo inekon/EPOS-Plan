@@ -7,13 +7,16 @@ using System.Windows.Forms;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Zeigt die Lizenzvereinbarung und AGB an (Menü "Hilfe &gt; Lizenz").
+    /// Zeigt die rechtlichen Informationen zu EPOS-Plan an (Menü "Hilfe &gt; Lizenz").
     ///
-    /// Grundlage ist die Datei "LIZENZ-INEKON.rtf" aus dem Projektstammverzeichnis.
-    /// Sie wird formatiert in eine RichTextBox geladen; alternativ wird die
-    /// DOCX-Fassung als Download angeboten. Wird keine Datei gefunden, zeigt das
-    /// Fenster einen Hinweis mit den durchsuchten Pfaden - so bleibt nachvollziehbar,
-    /// wo die Datei erwartet wird.
+    /// Der Dialog gliedert sich in drei Registerkarten:
+    ///   1. Lizenzvereinbarung  - der verbindliche Vertragstext aus "LIZENZ-INEKON.rtf"
+    ///   2. Rechtliche Hinweise - Anbieter, Nutzungsumfang, Haftung, Datenverarbeitung
+    ///   3. Komponenten         - verwendete Fremdkomponenten und Datenquellen
+    ///
+    /// Verbindlich ist ausschließlich die Lizenzvereinbarung auf der ersten
+    /// Registerkarte; die übrigen Seiten fassen den Inhalt lesbar zusammen und
+    /// verweisen darauf.
     ///
     /// Komplett programmatisch aufgebaut (kein Designer, keine .resx).
     /// </summary>
@@ -26,86 +29,250 @@ namespace WindowsFormsApplication1
             "LIZENZVEREINBARUNG UND ALLGEMEINE GESCHÄFTSBEDINGUNGEN- Wärmeplan.docx"
         };
 
+        private const string REG_SCHLUESSEL = @"Software\wp-plan";
+        private const string REG_ZUSTIMMUNG = "LizenzZugestimmt";
+
+        private TabControl _register;
         private RichTextBox _text;
+        private RichTextBox _hinweise;
+        private RichTextBox _komponenten;
+        private TextBox _suche;
         private Label _lblQuelle;
         private string _gefundeneDatei = "";
+        private float _schriftgroesse = 9.5f;
+
         private PrintDocument _druck;
         private string _druckText = "";
         private int _druckPosition = 0;
+        private int _druckSeite = 0;
 
-        public Form_Lizenz()
+        /// <summary>true, wenn der Dialog als Zustimmungsabfrage geöffnet wurde.</summary>
+        private readonly bool _zustimmungAbfragen;
+
+        public Form_Lizenz() : this(false) { }
+
+        public Form_Lizenz(bool zustimmungAbfragen)
         {
+            _zustimmungAbfragen = zustimmungAbfragen;
             BaueOberflaeche();
             LizenzLaden();
+            RechtlicheHinweiseFuellen();
+            KomponentenFuellen();
         }
+
+        // ------------------------------------------------------------------
+        // Oberfläche
+        // ------------------------------------------------------------------
 
         private void BaueOberflaeche()
         {
-            this.Text = "Lizenzvereinbarung und AGB";
+            this.Text = _zustimmungAbfragen
+                ? "EPOS-Plan - Lizenzvereinbarung"
+                : "EPOS-Plan - Lizenz und rechtliche Hinweise";
             this.StartPosition = FormStartPosition.CenterParent;
-            this.ClientSize = new Size(820, 620);
-            this.MinimumSize = new Size(560, 400);
+            this.ClientSize = new Size(920, 700);
+            this.MinimumSize = new Size(660, 480);
             this.MinimizeBox = false;
+            this.ShowIcon = false;
 
-            _text = new RichTextBox
+            // --- Kopfzeile ---
+            Panel kopf = new Panel { Dock = DockStyle.Top, Height = 58, BackColor = Color.White };
+            kopf.Paint += (s, e) =>
+            {
+                using (Pen stift = new Pen(Color.FromArgb(222, 227, 232)))
+                    e.Graphics.DrawLine(stift, 0, kopf.Height - 1, kopf.Width, kopf.Height - 1);
+            };
+
+            Label titel = new Label
+            {
+                Text = "Lizenz und rechtliche Hinweise",
+                AutoSize = true,
+                Font = new Font("Segoe UI Semibold", 13f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(0, 90, 160),
+                Location = new Point(18, 10)
+            };
+            Label untertitel = new Label
+            {
+                Text = "EPOS-Plan - Energieplanungs-Software - INEKON, Intelligente Energiekonzepte",
+                AutoSize = true,
+                Font = new Font("Segoe UI", 8.25f),
+                ForeColor = Color.FromArgb(112, 119, 126),
+                Location = new Point(20, 34)
+            };
+            kopf.Controls.Add(titel);
+            kopf.Controls.Add(untertitel);
+
+            // --- Registerkarten ---
+            _register = new TabControl { Dock = DockStyle.Fill, Padding = new Point(14, 5) };
+
+            TabPage seiteVertrag = new TabPage("Lizenzvereinbarung") { BackColor = Color.White, Padding = new Padding(0) };
+            TabPage seiteHinweise = new TabPage("Rechtliche Hinweise") { BackColor = Color.White, Padding = new Padding(0) };
+            TabPage seiteKomponenten = new TabPage("Komponenten") { BackColor = Color.White, Padding = new Padding(0) };
+
+            _text = NeueAnzeige();
+            _text.LinkClicked += (s, e) => LinkOeffnen(e.LinkText);
+
+            // Werkzeugleiste über dem Vertragstext: Suche und Schriftgröße
+            Panel werkzeuge = new Panel { Dock = DockStyle.Top, Height = 38, BackColor = Color.FromArgb(250, 251, 252), Padding = new Padding(10, 6, 10, 6) };
+
+            _suche = new TextBox { Width = 220, Dock = DockStyle.Left };
+            _suche.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Suchen(); } };
+
+            Button btnSuchen = new Button { Text = "Suchen", Width = 90, Dock = DockStyle.Left, Margin = new Padding(6, 0, 0, 0) };
+            btnSuchen.Click += (s, e) => Suchen();
+
+            Button btnGroesser = new Button { Text = "A+", Width = 44, Dock = DockStyle.Right };
+            btnGroesser.Click += (s, e) => SchriftAendern(+1f);
+            Button btnKleiner = new Button { Text = "A-", Width = 44, Dock = DockStyle.Right };
+            btnKleiner.Click += (s, e) => SchriftAendern(-1f);
+
+            FlowLayoutPanel links = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Left,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                BackColor = Color.Transparent
+            };
+            links.Controls.Add(new Label { Text = "Im Text suchen:", AutoSize = true, Margin = new Padding(0, 6, 8, 0), ForeColor = Color.DimGray });
+            links.Controls.Add(_suche);
+            links.Controls.Add(btnSuchen);
+
+            FlowLayoutPanel rechts = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Right,
+                FlowDirection = FlowDirection.RightToLeft,
+                WrapContents = false,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                BackColor = Color.Transparent
+            };
+            rechts.Controls.Add(btnGroesser);
+            rechts.Controls.Add(btnKleiner);
+
+            werkzeuge.Controls.Add(links);
+            werkzeuge.Controls.Add(rechts);
+
+            seiteVertrag.Controls.Add(_text);        // Fill zuerst
+            seiteVertrag.Controls.Add(werkzeuge);
+
+            _hinweise = NeueAnzeige();
+            _hinweise.LinkClicked += (s, e) => LinkOeffnen(e.LinkText);
+            seiteHinweise.Controls.Add(_hinweise);
+
+            _komponenten = NeueAnzeige();
+            _komponenten.LinkClicked += (s, e) => LinkOeffnen(e.LinkText);
+            seiteKomponenten.Controls.Add(_komponenten);
+
+            _register.TabPages.Add(seiteVertrag);
+            _register.TabPages.Add(seiteHinweise);
+            _register.TabPages.Add(seiteKomponenten);
+
+            // --- Fußzeile ---
+            Panel unten = new Panel { Dock = DockStyle.Bottom, Height = 52, Padding = new Padding(12, 10, 12, 10) };
+
+            _lblQuelle = new Label
+            {
+                Dock = DockStyle.Fill,
+                ForeColor = Color.DimGray,
+                AutoEllipsis = true,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            FlowLayoutPanel schalter = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Right,
+                FlowDirection = FlowDirection.RightToLeft,
+                WrapContents = false,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                BackColor = Color.Transparent
+            };
+
+            Button btnDrucken = new Button { Text = "Drucken...", Width = 110, Height = 30, Margin = new Padding(6, 0, 0, 0) };
+            btnDrucken.Click += (s, e) => Drucken();
+
+            Button btnSpeichern = new Button { Text = "Speichern unter...", Width = 140, Height = 30, Margin = new Padding(6, 0, 0, 0) };
+            btnSpeichern.Click += (s, e) => SpeichernUnter();
+
+            if (_zustimmungAbfragen)
+            {
+                Button btnAblehnen = new Button
+                {
+                    Text = "Ablehnen",
+                    Width = 110,
+                    Height = 30,
+                    Margin = new Padding(6, 0, 0, 0),
+                    DialogResult = DialogResult.Cancel
+                };
+                Button btnZustimmen = new Button
+                {
+                    Text = "Zustimmen",
+                    Width = 130,
+                    Height = 30,
+                    Margin = new Padding(6, 0, 0, 0),
+                    DialogResult = DialogResult.OK
+                };
+                btnZustimmen.Click += (s, e) => ZustimmungMerken();
+
+                // RightToLeft: zuerst hinzugefügt = ganz rechts
+                schalter.Controls.Add(btnZustimmen);
+                schalter.Controls.Add(btnAblehnen);
+                schalter.Controls.Add(btnDrucken);
+                schalter.Controls.Add(btnSpeichern);
+
+                this.AcceptButton = btnZustimmen;
+                this.CancelButton = btnAblehnen;
+                _lblQuelle.Text = "Bitte lesen Sie die Vereinbarung und bestätigen Sie sie, um das Programm zu nutzen.";
+            }
+            else
+            {
+                Button btnSchliessen = new Button
+                {
+                    Text = "Schließen",
+                    Width = 110,
+                    Height = 30,
+                    Margin = new Padding(6, 0, 0, 0),
+                    DialogResult = DialogResult.OK
+                };
+                btnSchliessen.Click += (s, e) => this.Close();
+
+                schalter.Controls.Add(btnSchliessen);
+                schalter.Controls.Add(btnDrucken);
+                schalter.Controls.Add(btnSpeichern);
+
+                this.AcceptButton = btnSchliessen;
+                this.CancelButton = btnSchliessen;
+            }
+
+            unten.Controls.Add(_lblQuelle);   // Fill zuerst
+            unten.Controls.Add(schalter);
+
+            // Reihenfolge beachten: Fill zuerst, dann Top/Bottom
+            this.Controls.Add(_register);
+            this.Controls.Add(kopf);
+            this.Controls.Add(unten);
+        }
+
+        /// <summary>Einheitlich formatierte Textanzeige für alle Registerkarten.</summary>
+        private RichTextBox NeueAnzeige()
+        {
+            return new RichTextBox
             {
                 Dock = DockStyle.Fill,
                 ReadOnly = true,
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.None,
-                Font = new Font("Segoe UI", 9.5f),
-                DetectUrls = true
+                Font = new Font("Segoe UI", _schriftgroesse),
+                DetectUrls = true,
+                ScrollBars = RichTextBoxScrollBars.Vertical
             };
-            _text.LinkClicked += (s, e) => LinkOeffnen(e.LinkText);
-
-            Panel unten = new Panel { Dock = DockStyle.Bottom, Height = 46 };
-
-            _lblQuelle = new Label
-            {
-                Location = new Point(12, 14),
-                Size = new Size(430, 20),
-                ForeColor = Color.DimGray,
-                AutoEllipsis = true,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
-            };
-
-            Button btnDrucken = new Button
-            {
-                Text = "Drucken...",
-                Size = new Size(100, 28),
-                Location = new Point(this.ClientSize.Width - 330, 9),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
-            };
-            btnDrucken.Click += (s, e) => Drucken();
-
-            Button btnSpeichern = new Button
-            {
-                Text = "Speichern unter...",
-                Size = new Size(130, 28),
-                Location = new Point(this.ClientSize.Width - 222, 9),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
-            };
-            btnSpeichern.Click += (s, e) => SpeichernUnter();
-
-            Button btnSchliessen = new Button
-            {
-                Text = "Schließen",
-                Size = new Size(84, 28),
-                Location = new Point(this.ClientSize.Width - 84 - 12, 9),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                DialogResult = DialogResult.OK
-            };
-
-            unten.Controls.Add(_lblQuelle);
-            unten.Controls.Add(btnDrucken);
-            unten.Controls.Add(btnSpeichern);
-            unten.Controls.Add(btnSchliessen);
-
-            this.Controls.Add(_text);
-            this.Controls.Add(unten);
-            this.AcceptButton = btnSchliessen;
-            this.CancelButton = btnSchliessen;
         }
+
+        // ------------------------------------------------------------------
+        // Inhalte
+        // ------------------------------------------------------------------
 
         /// <summary>Sucht die Lizenzdatei und lädt sie in die Anzeige.</summary>
         private void LizenzLaden()
@@ -116,15 +283,15 @@ namespace WindowsFormsApplication1
             if (treffer == null)
             {
                 _text.Text =
-                    "Die Lizenzdatei wurde nicht gefunden." + Environment.NewLine + Environment.NewLine +
-                    "Erwartet wird eine der folgenden Dateien im Programm- oder Projektverzeichnis:" +
-                    Environment.NewLine +
-                    "  • " + DATEINAMEN[0] + Environment.NewLine +
-                    "  • " + DATEINAMEN[1] + Environment.NewLine + Environment.NewLine +
+                    "Die Lizenzdatei wurde auf diesem Rechner nicht gefunden." + Environment.NewLine + Environment.NewLine +
+                    "Erwartet wird eine der folgenden Dateien im Programm- oder Projektverzeichnis:" + Environment.NewLine +
+                    "  - " + DATEINAMEN[0] + Environment.NewLine +
+                    "  - " + DATEINAMEN[1] + Environment.NewLine + Environment.NewLine +
                     "Durchsuchte Verzeichnisse:" + Environment.NewLine +
                     string.Join(Environment.NewLine, gesucht) + Environment.NewLine + Environment.NewLine +
                     "Die gültige Lizenzvereinbarung erhalten Sie bei:" + Environment.NewLine +
-                    "Dr. Dirk Engelmann, INEKON, Breitwiesenstr. 13, 70565 Stuttgart";
+                    "INEKON - Intelligente Energiekonzepte, Dr. Dirk Engelmann," + Environment.NewLine +
+                    "Breitwiesenstr. 13, 70565 Stuttgart";
 
                 _lblQuelle.Text = "Quelle: keine Lizenzdatei gefunden";
                 return;
@@ -137,12 +304,10 @@ namespace WindowsFormsApplication1
             {
                 if (treffer.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase))
                 {
-                    // RTF kann die RichTextBox direkt formatiert darstellen
                     _text.LoadFile(treffer, RichTextBoxStreamType.RichText);
                 }
                 else
                 {
-                    // DOCX lässt sich hier nicht darstellen - Hinweis und Öffnen anbieten
                     _text.Text =
                         "Die Lizenzvereinbarung liegt als Word-Dokument vor:" + Environment.NewLine +
                         treffer + Environment.NewLine + Environment.NewLine +
@@ -155,6 +320,178 @@ namespace WindowsFormsApplication1
                              treffer + Environment.NewLine + Environment.NewLine + ex.Message;
             }
         }
+
+        /// <summary>Füllt die Registerkarte "Rechtliche Hinweise".</summary>
+        private void RechtlicheHinweiseFuellen()
+        {
+            SchreibeUeberschrift(_hinweise, "Anbieter");
+            SchreibeAbsatz(_hinweise,
+                "INEKON - Intelligente Energiekonzepte, Dr. Dirk Engelmann, Breitwiesenstraße 13, " +
+                "70565 Stuttgart. Kontakt und vollständige Anbieterkennzeichnung: https://epos-plan.de/impressum/");
+
+            SchreibeUeberschrift(_hinweise, "Verbindliche Grundlage");
+            SchreibeAbsatz(_hinweise,
+                "Für die Nutzung von EPOS-Plan gilt ausschließlich die Lizenzvereinbarung einschließlich der " +
+                "Allgemeinen Geschäftsbedingungen auf der ersten Registerkarte dieses Fensters. Die folgenden " +
+                "Abschnitte fassen wesentliche Punkte zusammen; im Zweifel gilt der Wortlaut der Vereinbarung.");
+
+            SchreibeUeberschrift(_hinweise, "Nutzungsrecht");
+            SchreibeAbsatz(_hinweise,
+                "Der Anwender erhält ein nicht ausschließliches Recht zur Nutzung der Software im Umfang des " +
+                "geschlossenen Lizenz- beziehungsweise Wartungsvertrags. Die Software ist urheberrechtlich " +
+                "geschützt. Weitergabe, Vermietung, Dekompilierung und Veränderung sind nur in den gesetzlich " +
+                "zwingend erlaubten Grenzen zulässig. Mitgelieferte Stammdaten, Kennfelder und Klimadatensätze " +
+                "dürfen ausschließlich innerhalb der Software genutzt werden.");
+
+            SchreibeUeberschrift(_hinweise, "Ergebnisse und Verantwortung des Anwenders");
+            SchreibeAbsatz(_hinweise,
+                "EPOS-Plan ist ein Planungswerkzeug. Die Berechnungen beruhen auf den eingegebenen Daten, auf " +
+                "Herstellerangaben und auf modellhaften Annahmen; sie bilden das reale Anlagenverhalten " +
+                "näherungsweise ab. Ergebnisse ersetzen weder die fachliche Prüfung durch eine qualifizierte " +
+                "Planerin oder einen qualifizierten Planer noch eine Ausführungsplanung, eine Heizlastberechnung " +
+                "nach den einschlägigen Normen oder behördlich geforderte Nachweise. Für die Plausibilität der " +
+                "Eingangsdaten und für die Verwendung der Ergebnisse ist der Anwender verantwortlich.");
+
+            SchreibeUeberschrift(_hinweise, "Gewährleistung und Haftung");
+            SchreibeAbsatz(_hinweise,
+                "Es gelten die Regelungen der Lizenzvereinbarung. Eine Haftung für Schäden, die auf fehlerhaften " +
+                "Eingabedaten, unsachgemäßer Anwendung oder auf der Verwendung der Ergebnisse ohne fachliche " +
+                "Prüfung beruhen, ist ausgeschlossen, soweit dies gesetzlich zulässig ist. Unberührt bleibt die " +
+                "Haftung bei Vorsatz und grober Fahrlässigkeit, bei der Verletzung von Leben, Körper und " +
+                "Gesundheit sowie nach dem Produkthaftungsgesetz.");
+
+            SchreibeUeberschrift(_hinweise, "Datenverarbeitung");
+            SchreibeAbsatz(_hinweise,
+                "Projekt-, Kunden- und Simulationsdaten werden ausschließlich lokal auf diesem Rechner gespeichert " +
+                "und nicht an INEKON übertragen. Eine Internetverbindung nutzt das Programm für den Bezug von " +
+                "Klimadaten, für die Ortssuche und für den Aufruf der Online-Dokumentation. Wird der optionale " +
+                "Hilfe-Assistent mit eigenem Zugangsschlüssel verwendet, werden ausschließlich die gestellte " +
+                "Frage, der Name des Programmbereichs und die integrierten Hilfetexte an den Dienst des " +
+                "jeweiligen Anbieters übertragen - keine Projekt- oder Kundendaten. Ohne hinterlegten Schlüssel " +
+                "arbeitet die Hilfe rein lokal. Einzelheiten: https://epos-plan.de/datenschutz/");
+
+            SchreibeUeberschrift(_hinweise, "Marken und Urheberrecht");
+            SchreibeAbsatz(_hinweise,
+                "EPOS-Plan sowie Programmoberfläche, Dokumentation und Datenbestände sind urheberrechtlich " +
+                "geschützt. Genannte Produkt- und Firmennamen Dritter sind Marken ihrer jeweiligen Inhaber und " +
+                "werden ausschließlich zur Bezeichnung der betreffenden Produkte verwendet.");
+
+            SchreibeAbsatz(_hinweise,
+                Environment.NewLine + "Stand: " + DateTime.Now.ToString("MMMM yyyy") +
+                " - Programmversion " + VersionText() + ".");
+
+            _hinweise.SelectionStart = 0;
+            _hinweise.ScrollToCaret();
+        }
+
+        /// <summary>Füllt die Registerkarte "Komponenten" (Fremdkomponenten und Datenquellen).</summary>
+        private void KomponentenFuellen()
+        {
+            SchreibeUeberschrift(_komponenten, "Verwendete Komponenten und Datenquellen");
+            SchreibeAbsatz(_komponenten,
+                "EPOS-Plan verwendet die nachfolgend genannten Komponenten und Daten Dritter. Deren jeweilige " +
+                "Lizenz- und Nutzungsbedingungen gelten fort und werden durch die Lizenzvereinbarung zu " +
+                "EPOS-Plan nicht berührt.");
+
+            SchreibeUeberschrift(_komponenten, "Laufzeit und Bibliotheken");
+            SchreibeAbsatz(_komponenten,
+                "Microsoft .NET 8 mit Windows Forms (MIT-Lizenz, Microsoft Corporation) - Laufzeitumgebung und " +
+                "Bedienoberfläche." + Environment.NewLine +
+                "Microsoft Access Database Engine sowie OLE-DB- und ODBC-Treiber (Microsoft Corporation) - " +
+                "Zugriff auf die Kenndaten-Datenbank; Installation und Nutzung nach den Bedingungen von Microsoft.");
+
+            SchreibeUeberschrift(_komponenten, "Klima- und Geodaten");
+            SchreibeAbsatz(_komponenten,
+                "PVGIS - Photovoltaic Geographical Information System der Europäischen Kommission, Joint " +
+                "Research Centre: Herkunft der typischen meteorologischen Jahresdatensätze für Temperatur und " +
+                "Strahlung. Nutzung nach den Bedingungen der Europäischen Kommission, https://re.jrc.ec.europa.eu/" +
+                Environment.NewLine +
+                "OpenStreetMap / Nominatim: Ermittlung von Geokoordinaten zu Ortsnamen. Daten der " +
+                "OpenStreetMap-Mitwirkenden, verfügbar unter der Open Database License (ODbL), " +
+                "https://www.openstreetmap.org/copyright");
+
+            SchreibeUeberschrift(_komponenten, "Produkt- und Herstellerdaten");
+            SchreibeAbsatz(_komponenten,
+                "Datensätze zu Wärmepumpen, Heizkesseln, Pufferspeichern und Solarkollektoren können nach " +
+                "VDI 3805 aus Herstellerdatenbeständen eingelesen werden. Die Rechte an diesen Daten liegen bei " +
+                "den jeweiligen Herstellern; für Richtigkeit und Aktualität der Herstellerangaben wird keine " +
+                "Gewähr übernommen. Kennfelder und Kennwerte werden unverändert für die Berechnung verwendet.");
+
+            SchreibeUeberschrift(_komponenten, "Optionaler Hilfe-Assistent");
+            SchreibeAbsatz(_komponenten,
+                "Der Hilfe-Assistent kann auf Wunsch einen externen Sprachmodell-Dienst nutzen. Dafür ist ein " +
+                "eigener Zugangsschlüssel erforderlich, den der Anwender selbst hinterlegt; es gelten die " +
+                "Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich " +
+                "lokal und ohne Datenübertragung.");
+
+            _komponenten.SelectionStart = 0;
+            _komponenten.ScrollToCaret();
+        }
+
+        // ------------------------------------------------------------------
+        // Hilfsfunktionen für die Textausgabe
+        // ------------------------------------------------------------------
+
+        private void SchreibeUeberschrift(RichTextBox ziel, string text)
+        {
+            ziel.SelectionStart = ziel.TextLength;
+            ziel.SelectionLength = 0;
+            ziel.SelectionFont = new Font("Segoe UI Semibold", _schriftgroesse + 1.5f, FontStyle.Bold);
+            ziel.SelectionColor = Color.FromArgb(0, 90, 160);
+            ziel.AppendText((ziel.TextLength > 0 ? Environment.NewLine : "") + text + Environment.NewLine);
+        }
+
+        private void SchreibeAbsatz(RichTextBox ziel, string text)
+        {
+            ziel.SelectionStart = ziel.TextLength;
+            ziel.SelectionLength = 0;
+            ziel.SelectionFont = new Font("Segoe UI", _schriftgroesse, FontStyle.Regular);
+            ziel.SelectionColor = Color.FromArgb(40, 44, 48);
+            ziel.AppendText(text + Environment.NewLine);
+        }
+
+        /// <summary>Sucht den eingegebenen Begriff im Vertragstext und markiert ihn.</summary>
+        private void Suchen()
+        {
+            string begriff = (_suche.Text ?? "").Trim();
+            if (begriff.Length == 0) return;
+
+            int start = _text.SelectionStart + _text.SelectionLength;
+            int treffer = _text.Find(begriff, start, RichTextBoxFinds.None);
+            if (treffer < 0) treffer = _text.Find(begriff, 0, RichTextBoxFinds.None);
+
+            if (treffer < 0)
+            {
+                MessageBox.Show("Der Begriff wurde nicht gefunden.", "Suchen",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            _text.Select(treffer, begriff.Length);
+            _text.ScrollToCaret();
+            _text.Focus();
+        }
+
+        /// <summary>Vergrößert oder verkleinert die Schrift in allen Anzeigen.</summary>
+        private void SchriftAendern(float schritt)
+        {
+            _schriftgroesse = Math.Max(7.5f, Math.Min(18f, _schriftgroesse + schritt));
+            try
+            {
+                int start = _text.SelectionStart, laenge = _text.SelectionLength;
+                _text.SelectAll();
+                _text.SelectionFont = new Font(_text.Font.FontFamily, _schriftgroesse);
+                _text.Select(start, laenge);
+
+                _hinweise.Font = new Font("Segoe UI", _schriftgroesse);
+                _komponenten.Font = new Font("Segoe UI", _schriftgroesse);
+            }
+            catch { }
+        }
+
+        // ------------------------------------------------------------------
+        // Dateisuche, Speichern, Drucken
+        // ------------------------------------------------------------------
 
         /// <summary>
         /// Durchsucht die üblichen Ablageorte nach der Lizenzdatei und
@@ -205,29 +542,52 @@ namespace WindowsFormsApplication1
             return null;
         }
 
-        /// <summary>Speichert die gefundene Lizenzdatei an einem gewählten Ort.</summary>
+        /// <summary>Speichert den Inhalt der aktiven Registerkarte.</summary>
         private void SpeichernUnter()
         {
-            if (string.IsNullOrEmpty(_gefundeneDatei) || !File.Exists(_gefundeneDatei))
+            bool istVertrag = _register.SelectedIndex == 0;
+
+            if (istVertrag && !string.IsNullOrEmpty(_gefundeneDatei) && File.Exists(_gefundeneDatei))
             {
-                MessageBox.Show("Es wurde keine Lizenzdatei gefunden, die gespeichert werden könnte.",
-                    "Lizenz", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                SaveFileDialog dlgDatei = new SaveFileDialog();
+                dlgDatei.Title = "Lizenzvereinbarung speichern";
+                dlgDatei.FileName = Path.GetFileName(_gefundeneDatei);
+                dlgDatei.Filter = "Alle Dateien (*.*)|*.*";
+                dlgDatei.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                if (dlgDatei.ShowDialog(this) != DialogResult.OK) return;
+
+                try
+                {
+                    File.Copy(_gefundeneDatei, dlgDatei.FileName, true);
+                    MessageBox.Show("Die Lizenzvereinbarung wurde gespeichert:\n" + dlgDatei.FileName,
+                        "Lizenz", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Die Datei konnte nicht gespeichert werden:\n" + ex.Message,
+                        "Lizenz", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
                 return;
             }
 
+            RichTextBox quelle = AktiveAnzeige();
             SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Title = "Lizenzvereinbarung speichern";
-            dlg.FileName = Path.GetFileName(_gefundeneDatei);
-            dlg.Filter = "Alle Dateien (*.*)|*.*";
+            dlg.Title = "Text speichern";
+            dlg.FileName = (istVertrag ? "EPOS-Plan_Lizenz" :
+                            _register.SelectedIndex == 1 ? "EPOS-Plan_Rechtliche_Hinweise" : "EPOS-Plan_Komponenten") + ".rtf";
+            dlg.Filter = "Rich Text (*.rtf)|*.rtf|Textdatei (*.txt)|*.txt";
             dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-
             if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
             try
             {
-                File.Copy(_gefundeneDatei, dlg.FileName, true);
-                MessageBox.Show("Die Lizenzvereinbarung wurde gespeichert:\n" + dlg.FileName,
-                    "Lizenz", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (dlg.FileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                    File.WriteAllText(dlg.FileName, quelle.Text);
+                else
+                    quelle.SaveFile(dlg.FileName, RichTextBoxStreamType.RichText);
+
+                MessageBox.Show("Gespeichert:\n" + dlg.FileName, "Lizenz",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -236,16 +596,24 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Druckt den angezeigten Text (einfacher Fließtextdruck).</summary>
+        private RichTextBox AktiveAnzeige()
+        {
+            if (_register.SelectedIndex == 1) return _hinweise;
+            if (_register.SelectedIndex == 2) return _komponenten;
+            return _text;
+        }
+
+        /// <summary>Druckt den Text der aktiven Registerkarte mit Kopf- und Fußzeile.</summary>
         private void Drucken()
         {
             try
             {
-                _druckText = _text.Text;
+                _druckText = AktiveAnzeige().Text;
                 _druckPosition = 0;
+                _druckSeite = 0;
 
                 _druck = new PrintDocument();
-                _druck.DocumentName = "Lizenzvereinbarung";
+                _druck.DocumentName = "EPOS-Plan - Lizenz";
                 _druck.PrintPage += Druck_PrintPage;
 
                 PrintDialog dlg = new PrintDialog();
@@ -261,9 +629,22 @@ namespace WindowsFormsApplication1
 
         private void Druck_PrintPage(object sender, PrintPageEventArgs e)
         {
+            _druckSeite++;
+
             using (Font f = new Font("Segoe UI", 9f))
+            using (Font klein = new Font("Segoe UI", 7.5f))
             {
-                RectangleF bereich = e.MarginBounds;
+                RectangleF bereich = new RectangleF(
+                    e.MarginBounds.Left, e.MarginBounds.Top + 22,
+                    e.MarginBounds.Width, e.MarginBounds.Height - 44);
+
+                // Kopfzeile
+                e.Graphics.DrawString("EPOS-Plan - Lizenz und rechtliche Hinweise", klein, Brushes.Gray,
+                    e.MarginBounds.Left, e.MarginBounds.Top);
+                // Fußzeile mit Seitenzahl
+                e.Graphics.DrawString("Seite " + _druckSeite + "   -   Stand " + DateTime.Now.ToString("dd.MM.yyyy"),
+                    klein, Brushes.Gray, e.MarginBounds.Left, e.MarginBounds.Bottom - 12);
+
                 string rest = _druckText.Substring(_druckPosition);
 
                 int zeichen, zeilen;
@@ -275,7 +656,7 @@ namespace WindowsFormsApplication1
 
                 _druckPosition += zeichen;
                 e.HasMorePages = _druckPosition < _druckText.Length;
-                if (!e.HasMorePages) _druckPosition = 0;
+                if (!e.HasMorePages) { _druckPosition = 0; _druckSeite = 0; }
             }
         }
 
@@ -289,6 +670,62 @@ namespace WindowsFormsApplication1
                 });
             }
             catch { }
+        }
+
+        private static string VersionText()
+        {
+            try
+            {
+                Version v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                return v == null ? "" : v.ToString();
+            }
+            catch { return ""; }
+        }
+
+        // ------------------------------------------------------------------
+        // Zustimmung beim ersten Start (optional)
+        // ------------------------------------------------------------------
+
+        /// <summary>Merkt die erteilte Zustimmung samt Datum und Programmversion.</summary>
+        private void ZustimmungMerken()
+        {
+            try
+            {
+                using (Microsoft.Win32.RegistryKey key =
+                       Microsoft.Win32.Registry.CurrentUser.CreateSubKey(REG_SCHLUESSEL))
+                {
+                    if (key != null)
+                        key.SetValue(REG_ZUSTIMMUNG,
+                            VersionText() + " | " + DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Prüft, ob der Lizenzvereinbarung bereits zugestimmt wurde, und holt die
+        /// Zustimmung andernfalls nach. Rückgabe false bedeutet: abgelehnt - das
+        /// Programm sollte dann beendet werden.
+        ///
+        /// Aufruf beim Programmstart, zum Beispiel in Program.Main vor dem Öffnen
+        /// des Hauptfensters:  if (!Form_Lizenz.ZustimmungSicherstellen()) return;
+        /// </summary>
+        public static bool ZustimmungSicherstellen(IWin32Window besitzer = null)
+        {
+            try
+            {
+                using (Microsoft.Win32.RegistryKey key =
+                       Microsoft.Win32.Registry.CurrentUser.OpenSubKey(REG_SCHLUESSEL))
+                {
+                    object wert = key == null ? null : key.GetValue(REG_ZUSTIMMUNG);
+                    if (wert != null && wert.ToString().Length > 0) return true;
+                }
+            }
+            catch { return true; }   // im Zweifel den Start nicht blockieren
+
+            Form_Lizenz frm = new Form_Lizenz(true);
+            DialogResult ergebnis = besitzer != null ? frm.ShowDialog(besitzer) : frm.ShowDialog();
+            return ergebnis == DialogResult.OK;
         }
 
         /// <summary>Bequemer Einstiegspunkt für den Menüaufruf.</summary>
