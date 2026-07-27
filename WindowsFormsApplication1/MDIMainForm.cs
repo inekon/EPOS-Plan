@@ -33,8 +33,11 @@ namespace WindowsFormsApplication1
         /// <summary>Produktname für Titelleiste, Kopfzeile und Meldungen.</summary>
         public const string PRODUKTNAME = "EPOS-Plan";
 
-        /// <summary>Auflösung des Namens: Energie, Optimierung, Planung, Simulation.</summary>
-        public const string PRODUKT_CLAIM = "Energie · Optimierung · Planung · Simulation";
+        /// <summary>Gattungsbezeichnung, erscheint unter dem Produktnamen.</summary>
+        public const string PRODUKT_GATTUNG = "Energieplanungs-Software";
+
+        /// <summary>Auflösung des Namens EPOS: Energie, Planung, Optimierung, Simulation.</summary>
+        public const string PRODUKT_CLAIM = "Energie · Planung · Optimierung · Simulation";
 
         /// <summary>
         /// Zeigt den Produktnamen zurückhaltend an: in der Titelleiste sowie in
@@ -53,60 +56,64 @@ namespace WindowsFormsApplication1
                 Panel kopf = new Panel
                 {
                     Dock = DockStyle.Top,
-                    Height = 34,
-                    BackColor = System.Drawing.Color.FromArgb(250, 251, 252)
+                    Height = 52,
+                    BackColor = System.Drawing.Color.White
                 };
                 kopf.Paint += (s, e) =>
                 {
-                    using (System.Drawing.Pen stift = new System.Drawing.Pen(System.Drawing.Color.FromArgb(218, 223, 228)))
+                    // feine Trennlinie unten
+                    using (System.Drawing.Pen stift = new System.Drawing.Pen(System.Drawing.Color.FromArgb(222, 227, 232)))
                         e.Graphics.DrawLine(stift, 0, kopf.Height - 1, kopf.Width, kopf.Height - 1);
+                    // schmaler Farbakzent links, damit der Name Halt bekommt, ohne zu dominieren
+                    using (System.Drawing.SolidBrush pinsel = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(0, 90, 160)))
+                        e.Graphics.FillRectangle(pinsel, 0, 10, 4, kopf.Height - 22);
                 };
 
                 Label name = new Label
                 {
                     Text = PRODUKTNAME,
                     AutoSize = true,
-                    Font = new System.Drawing.Font("Segoe UI", 12.5f, System.Drawing.FontStyle.Bold),
+                    Font = new System.Drawing.Font("Segoe UI Semibold", 14f, System.Drawing.FontStyle.Bold),
                     ForeColor = System.Drawing.Color.FromArgb(0, 90, 160),
-                    Margin = new Padding(0, 4, 12, 0)
+                    Margin = new Padding(0, 0, 0, 0)
                 };
 
-                Label claim = new Label
+                Label untertitel = new Label
                 {
-                    Text = PRODUKT_CLAIM,
+                    Text = PRODUKT_GATTUNG + "  ·  " + PRODUKT_CLAIM,
                     AutoSize = true,
-                    Font = new System.Drawing.Font("Segoe UI", 8.5f),
-                    ForeColor = System.Drawing.Color.FromArgb(110, 116, 122),
-                    Margin = new Padding(0, 10, 0, 0)
+                    Font = new System.Drawing.Font("Segoe UI", 8.25f),
+                    ForeColor = System.Drawing.Color.FromArgb(112, 119, 126),
+                    Margin = new Padding(1, 1, 0, 0)
                 };
 
                 FlowLayoutPanel links = new FlowLayoutPanel
                 {
                     Dock = DockStyle.Left,
-                    FlowDirection = FlowDirection.LeftToRight,
+                    FlowDirection = FlowDirection.TopDown,
                     WrapContents = false,
                     AutoSize = true,
                     AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                    Padding = new Padding(14, 0, 0, 0),
+                    Padding = new Padding(16, 6, 0, 0),
                     BackColor = System.Drawing.Color.Transparent
                 };
                 links.Controls.Add(name);
-                links.Controls.Add(claim);
+                links.Controls.Add(untertitel);
 
                 Label version = new Label
                 {
                     Text = "Version " + VersionText(),
                     Dock = DockStyle.Right,
                     AutoSize = true,
-                    Font = new System.Drawing.Font("Segoe UI", 8.5f),
-                    ForeColor = System.Drawing.Color.FromArgb(145, 151, 157),
-                    Padding = new Padding(0, 10, 16, 0),
+                    Font = new System.Drawing.Font("Segoe UI", 8.25f),
+                    ForeColor = System.Drawing.Color.FromArgb(150, 156, 162),
+                    Padding = new Padding(0, 20, 18, 0),
                     BackColor = System.Drawing.Color.Transparent
                 };
 
                 ToolTip hinweis = new ToolTip();
-                hinweis.SetToolTip(name, PRODUKTNAME + " - " + PRODUKT_CLAIM);
-                hinweis.SetToolTip(claim, PRODUKTNAME + " - " + PRODUKT_CLAIM);
+                hinweis.SetToolTip(name, PRODUKTNAME + " - " + PRODUKT_GATTUNG + " (" + PRODUKT_CLAIM + ")");
+                hinweis.SetToolTip(untertitel, PRODUKTNAME + " - " + PRODUKT_GATTUNG + " (" + PRODUKT_CLAIM + ")");
 
                 kopf.Controls.Add(links);
                 kopf.Controls.Add(version);
