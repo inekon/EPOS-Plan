@@ -1,0 +1,261 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
+using System.Windows.Forms;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// Dupliziert ein komplettes Projekt (alle projektbezogenen Datensaetze) generisch per SQL.
+    ///
+    /// Ansatz: kompakter, tabellen-eigener OFFSET.
+    ///  - Fuer jede kopierte Tabelle T gilt:  offset(T) = MAX(T ueber alle Zeilen) - MIN(Quellzeilen) + 1.
+    ///    Die neuen IDs sind damit  alte ID + offset(T)  und liegen KOMPAKT direkt hinter dem
+    ///    bisherigen Maximum von T (kein Verdoppeln, keine Kollision, kein Int32-Overflow).
+    ///  - Jede ID-Spalte wird mit dem Offset IHRER Zieltabelle versetzt (per Spalten->Tabelle-Zuordnung):
+    ///      * Primaerschluessel  -> offset dieser Tabelle ("self")
+    ///      * ID_Projekt/ProjektID -> offset von Tab_Projekt (zeigt damit auf das neue Projekt)
+    ///      * Fremdschluessel     -> offset der referenzierten Tabelle
+    ///    Da Kinder-FKs den Offset des Elternteils verwenden, bleiben alle Beziehungen konsistent.
+    ///  - 0/NULL-Fremdschluessel ("kein Erzeuger") bleiben unveraendert (IIF([c] > 0, ...)).
+    ///  - FKs auf KATALOG-/STAMM-Tabellen sind NICHT in der Zuordnung und bleiben unveraendert.
+    ///
+    /// Alle Datensatz-Operationen sind reines SQL (INSERT ... SELECT), auch fuer die grossen
+    /// Datentabellen. Aufruf:  new ProjektDuplizierenCtrl().Duplizieren("Quelle", "Neu");
+    /// </summary>
+    public class ProjektDuplizierenCtrl
+    {
+        private class Kopie
+        {
+            public string Tabelle;
+            public string Pk;
+            public string Filter;                       // {0} = Quell-Projekt-ID
+            public Dictionary<string, string> OffsetMap;// Spalte -> Zieltabelle ("self" = diese Tabelle)
+            public string NameSpalte;                   // nur Tab_Projekt: Spalte -> neuer Name
+
+            public Kopie(string tabelle, string pk, string filter, Dictionary<string, string> map, string nameSpalte = null)
+            {
+                Tabelle = tabelle; Pk = pk; Filter = filter; OffsetMap = map; NameSpalte = nameSpalte;
+            }
+        }
+
+        // Kurzschreibweise fuer die Spalten->Tabelle-Zuordnung: M("ID","self", "ID_Projekt","Tab_Projekt", ...)
+        private static Dictionary<string, string> M(params string[] kv)
+        {
+            var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i + 1 < kv.Length; i += 2) d[kv[i]] = kv[i + 1];
+            return d;
+        }
+
+        // Kopierplan in Abhaengigkeitsreihenfolge. STAMM-/Katalogtabellen sind bewusst NICHT enthalten.
+        private static List<Kopie> Plan()
+        {
+            return new List<Kopie>
+            {
+                new Kopie("Tab_Projekt", "ID", "ID = {0}", M("ID","self","ID_Klimaregion","Tab_Klimaregion"), "Projektname"),
+
+                // Klima (Projektkopien)
+                new Kopie("Tab_Klimaregion","ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_Klimadaten", "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_Klimaregion","Tab_Klimaregion")),
+                new Kopie("Tab_Solar",      "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_Klimaregion","Tab_Klimaregion")),
+
+                // Komponenten
+                new Kopie("Tab_WP",              "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                // Tab_Kenndaten.ID_Projekt ist nicht gefuellt -> Zuordnung ueber ID_WP.
+                new Kopie("Tab_Kenndaten",       "ID","ID_WP IN (SELECT ID FROM Tab_WP WHERE ID_Projekt = {0})", M("ID","self","ID_WP","Tab_WP","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_Kenndaten_Kuehlung","ID","ID_WP IN (SELECT ID FROM Tab_WP WHERE ID_Projekt = {0})", M("ID","self","ID_WP","Tab_WP")),
+                new Kopie("Tab_Heizkessel",      "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_BHKW",            "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_PV",              "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_Solarkollektoren","ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_Stromspeicher",   "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_Pufferspeicher",  "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+
+                // Zentrale Zuordnung (interne FKs auf alle Komponenten)
+                new Kopie("Tab_Energieanlagen","ID","ID_Projekt = {0}",
+                    M("ID","self","ID_Projekt","Tab_Projekt",
+                      "ID_WP","Tab_WP","ID_SP","Tab_Stromspeicher","ID_PV","Tab_PV",
+                      "ID_Solar","Tab_Solarkollektoren","ID_Kessel","Tab_Heizkessel",
+                      "ID_BHKW","Tab_BHKW","ID_PUFFER","Tab_Pufferspeicher")),
+
+                // Gebaeude
+                new Kopie("Z_ProjektGebaeude","ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_Gebaeude",     "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_ProjektGebaeude","Z_ProjektGebaeude")),
+                new Kopie("Tab_DBTagV",       "ID","ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})", M("ID","self","ID_Gebaeude","Tab_Gebaeude")),
+                new Kopie("Tab_DBTagVDaten",  "ID","ID_TagV IN (SELECT ID FROM Tab_DBTagV WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))", M("ID","self","ID_TagV","Tab_DBTagV")),
+
+                // Ganglinien
+                new Kopie("Tab_Waermebedarf",     "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_WaermebedarfDaten","ID","ID_Ganglinie IN (SELECT ID FROM Tab_Waermebedarf WHERE ID_Projekt = {0})", M("ID","self","ID_Ganglinie","Tab_Waermebedarf")),
+                new Kopie("Z_ProjektWaermebedarf","ID_Z","ID_Projekt = {0}", M("ID_Z","self","ID_Projekt","Tab_Projekt","ID_Ganglinie","Tab_Waermebedarf")),
+
+                new Kopie("Tab_Stromganglinie",     "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_StromganglinieDaten","ID","ID_Ganglinie IN (SELECT ID FROM Tab_Stromganglinie WHERE ID_Projekt = {0})", M("ID","self","ID_Ganglinie","Tab_Stromganglinie")),
+                new Kopie("Z_ProjektStromganglinie","ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_Ganglinie","Tab_Stromganglinie")),
+
+                new Kopie("Tab_Solarganglinie",     "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_SolarganglinieDaten","ID","ID_Ganglinie IN (SELECT ID FROM Tab_Solarganglinie WHERE ID_Projekt = {0})", M("ID","self","ID_Ganglinie","Tab_Solarganglinie")),
+                new Kopie("Z_ProjektSolarganglinie","ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_Ganglinie","Tab_Solarganglinie")),
+
+                // Profile
+                new Kopie("Tab_Stromverbraucher",     "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_Stromverbrauchertyp",  "ID","ID_Stromverbraucher IN (SELECT ID FROM Tab_Stromverbraucher WHERE ID_Projekt = {0})", M("ID","self","ID_Stromverbraucher","Tab_Stromverbraucher")),
+                new Kopie("Z_Projekt_Stromverbraucher","ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_Stromverbraucher","Tab_Stromverbraucher")),
+
+                new Kopie("Tab_Prozesswaerme",     "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_Prozesstyp",        "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_Prozesswaerme","Tab_Prozesswaerme")),
+                new Kopie("Z_Projekt_Prozesswaerme","ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_Prozesswaerme","Tab_Prozesswaerme")),
+
+                new Kopie("Tab_Brauchwasser",     "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_Brauchwassertyp",  "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_Brauchwasser","Tab_Brauchwasser")),
+                new Kopie("Z_Projekt_Brauchwasser","ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_Brauchwasser","Tab_Brauchwasser")),
+
+                // Puffer-Zuordnung
+                new Kopie("Z_ProjektPufferSp","ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt","ID_Pufferspeicher","Tab_Pufferspeicher")),
+
+                // Konfiguration & sonstige Projektdaten
+                new Kopie("Tab_Einstellungen",     "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_Brennstoff_Projekt","ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("Tab_ProjektWerte",      "ID","ProjektID = {0}",  M("ID","self","ProjektID","Tab_Projekt")),
+
+                // Energie-Subsystem (carrier_id / ID_Energietraeger / ID_Umrechnung = Katalog -> kein Offset)
+                new Kopie("energy_price",            "id","ID_Projekt = {0}", M("id","self","ID_Projekt","Tab_Projekt")),
+                new Kopie("energy_project_settings", "ID","ID_Projekt = {0}", M("ID","self","ID_Projekt","Tab_Projekt")),
+            };
+        }
+
+        public int GetProjektId(string projektname)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_Projekt WHERE Projektname = ?",
+                new OleDbParameter("@n", projektname ?? ""));
+            return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
+        }
+
+        /// <summary>
+        /// Dupliziert 'quelleName' unter dem neuen Namen 'neuerName'.
+        /// Rueckgabe: neue Projekt-ID, oder -1 bei Fehler.
+        /// </summary>
+        public int Duplizieren(string quelleName, string neuerName)
+        {
+            if (string.IsNullOrWhiteSpace(quelleName) || string.IsNullOrWhiteSpace(neuerName))
+            {
+                MessageBox.Show("Quell- und Zielprojektname duerfen nicht leer sein.");
+                return -1;
+            }
+
+            int srcId = GetProjektId(quelleName);
+            if (srcId <= 0) { MessageBox.Show("Quellprojekt '" + quelleName + "' wurde nicht gefunden."); return -1; }
+            if (GetProjektId(neuerName) > 0) { MessageBox.Show("Es existiert bereits ein Projekt mit dem Namen '" + neuerName + "'."); return -1; }
+
+            List<Kopie> plan = Plan();
+
+            // 1) Fuer jede Tabelle den kompakten Offset bestimmen (nur Lesezugriffe).
+            var offset = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+            foreach (Kopie k in plan)
+            {
+                long o;
+                if (BerechneOffset(k, srcId, out o)) offset[k.Tabelle] = o;
+            }
+            if (!offset.ContainsKey("Tab_Projekt") || offset["Tab_Projekt"] <= 0)
+            {
+                MessageBox.Show("Offset fuer Tab_Projekt konnte nicht bestimmt werden.");
+                return -1;
+            }
+
+            var (conn, trans) = DataRepository.BeginTransaction();
+            try
+            {
+                foreach (Kopie k in plan)
+                {
+                    if (!offset.ContainsKey(k.Tabelle)) continue; // Tabelle fehlt oder keine Quellzeilen
+                    string sql = BaueInsertSql(k, srcId, offset);
+                    if (sql == null) continue;
+
+                    using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
+                    {
+                        if (k.NameSpalte != null)
+                            c.Parameters.Add(new OleDbParameter("@name", neuerName));
+                        System.Diagnostics.Debug.WriteLine(sql);  
+
+                       c.ExecuteNonQuery();
+                    }
+                }
+
+                trans.Commit();
+                return (int)(srcId + offset["Tab_Projekt"]); // neue Projekt-ID
+            }
+            catch (Exception ex)
+            {
+                try { trans.Rollback(); } catch { }
+                MessageBox.Show("Fehler beim Duplizieren des Projekts: " + ex.Message);
+                return -1;
+            }
+            finally { try { conn.Close(); } catch { } }
+        }
+
+        // offset(T) = MAX(T.pk ueber alle Zeilen) - MIN(pk der Quellzeilen) + 1.
+        // Rueckgabe false, wenn die Tabelle fehlt oder keine Quellzeilen hat.
+        private bool BerechneOffset(Kopie k, int srcId, out long offset)
+        {
+            offset = 0;
+            string where = string.Format(k.Filter, srcId);
+            object oMin, oMax;
+            try
+            {
+                oMax = DataRepository.ExecuteScalar("SELECT MAX([" + k.Pk + "]) FROM [" + k.Tabelle + "]");
+                oMin = DataRepository.ExecuteScalar("SELECT MIN([" + k.Pk + "]) FROM [" + k.Tabelle + "] WHERE " + where);
+            }
+            catch
+            {
+                return false; // Tabelle existiert nicht
+            }
+            if (oMin == null || oMin == DBNull.Value) return false; // keine Quellzeilen
+
+            long max = (oMax != null && oMax != DBNull.Value) ? Convert.ToInt64(oMax) : 0;
+            long min = Convert.ToInt64(oMin);
+            offset = max - min + 1;
+            if (offset < 1) offset = 1;
+            return true;
+        }
+
+        // Baut das generische INSERT ... SELECT fuer eine Tabelle.
+        private string BaueInsertSql(Kopie k, int srcId, Dictionary<string, long> offset)
+        {
+            DataTable schema;
+            try { schema = DataRepository.GetDataTable("SELECT * FROM [" + k.Tabelle + "] WHERE 1 = 0"); }
+            catch { return null; }
+            if (schema == null) return null;
+
+            var cols = new List<string>();
+            var exprs = new List<string>();
+            foreach (DataColumn dc in schema.Columns)
+            {
+                string col = dc.ColumnName;
+                cols.Add("[" + col + "]");
+
+                if (k.NameSpalte != null && string.Equals(col, k.NameSpalte, StringComparison.OrdinalIgnoreCase))
+                {
+                    exprs.Add("?"); // neuer Projektname als Parameter
+                }
+                else if (k.OffsetMap.ContainsKey(col))
+                {
+                    string zielTab = k.OffsetMap[col];
+                    if (string.Equals(zielTab, "self", StringComparison.OrdinalIgnoreCase)) zielTab = k.Tabelle;
+                    long off = offset.ContainsKey(zielTab) ? offset[zielTab] : 0;
+                    if (off == 0) exprs.Add("[" + col + "]"); // Zieltabelle nicht kopiert -> unveraendert
+                    else exprs.Add("IIF([" + col + "] > 0, [" + col + "] + " + off + ", [" + col + "])");
+                }
+                else
+                {
+                    exprs.Add("[" + col + "]");
+                }
+            }
+
+            string where = string.Format(k.Filter, srcId);
+            return "INSERT INTO [" + k.Tabelle + "] (" + string.Join(", ", cols) + ") " +
+                   "SELECT " + string.Join(", ", exprs) + " FROM [" + k.Tabelle + "] WHERE " + where;
+        }
+    }
+}

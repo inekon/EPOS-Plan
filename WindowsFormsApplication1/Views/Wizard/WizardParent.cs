@@ -412,6 +412,16 @@ namespace WindowsFormsApplication1
             this.Close();
         }
 
+        private void btnOeffnen_Click(object sender, EventArgs e)
+        {
+            // TODO: Aktion fuer "Oeffnen" festlegen (z. B. bestehendes Projekt oeffnen).
+            if (listBox_Projekte.Text == "") { MessageBox.Show("Projekt auswählen!"); return; }
+            Program.wizardctrl.Projektname = listBox_Projekte.Text;
+            Program.wizardctrl.speichern = false;
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
         public void FillProjektList()
         {
             ProjektCtrl ctrl = new ProjektCtrl();
@@ -693,7 +703,7 @@ namespace WindowsFormsApplication1
                 result = Program.wizardctrl.Update_Projekt(projektID, m_Projektmodel);
                 if (!result) return;
 
-                gespeichert = true; ;
+                gespeichert = true;
             }
             this.Close();
         }

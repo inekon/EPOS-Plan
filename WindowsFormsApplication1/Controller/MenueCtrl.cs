@@ -80,7 +80,7 @@ namespace WindowsFormsApplication1
 
         public void ProjektOeffnen(bool zuletzt = false)
         {
-            Form_ProjektOpen frm = new Form_ProjektOpen();
+            Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter();
             ApplikationCtrl ctrl = new ApplikationCtrl();
             ProjektCtrl ctrlproj = new ProjektCtrl();
 

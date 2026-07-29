@@ -269,7 +269,7 @@ namespace WindowsFormsApplication1
             frm.ShowDialog();
 
             // WP spezifische Daten ggf. aktualisieren im Dialog
-            WPStammCtrl wpctrl = new WPStammCtrl();
+            WPCtrl wpctrl = new WPCtrl();
             wpctrl.ReadAll("ID=" + item.ID_WP);
 
             textBox_Beschreibung.Text = wpctrl.items[0].Beschreibung;

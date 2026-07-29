@@ -650,6 +650,16 @@ namespace WindowsFormsApplication1
             t_maxSST = kenndaten.dat[0].Temperatur;
             ptherm_maxSST = kenndaten.dat[0].Leistung;
 
+            if (kenndaten.anz < 2)
+            {
+                result[0] = 1;
+                result[1] = cop_maxSST;
+                result[2] = ptherm_maxSST;
+                result[3] = ptherm_maxSST / cop_maxSST; // pel
+                return result;   
+            }
+
+
             if (temperatur >= t_maxSST)
             {
                 // t grösser als max sst der Kennlinie

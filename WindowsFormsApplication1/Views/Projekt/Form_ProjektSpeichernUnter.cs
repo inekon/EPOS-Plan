@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Form_ProjektOpen : Form
+    public partial class Form_ProjektSpeichernUnter : Form
     {
         public string m_szProjekt;
+        public string m_szNeuerProjektName;
         public int m_ID_Klimaregion;
         public int m_ID_Projekt;
         public string m_szKlimaregion;
@@ -19,7 +14,7 @@ namespace WindowsFormsApplication1
         public string m_szBearbeiter;
         public DateTime m_Datum;
 
-        public Form_ProjektOpen()
+        public Form_ProjektSpeichernUnter()
         {
             InitializeComponent();
             m_szProjekt = "";
@@ -61,24 +56,8 @@ namespace WindowsFormsApplication1
 
         private void button_Open_Click(object sender, EventArgs e)
         {
-            ApplikationCtrl ctrl_app = new ApplikationCtrl();
-            ProjektCtrl ctrl_projekt = new ProjektCtrl();
-            KlimaregionCtrl ctrl_klimaregion = new KlimaregionCtrl();
-
-            if (m_szProjekt == "") return;
-            ctrl_projekt.ReadSingle(m_szProjekt);
-
-            m_szProjekt = ctrl_projekt.m_szProjektname;
-            m_ID_Projekt = ctrl_projekt.m_ID;
-            m_Datum = ctrl_projekt.m_Aenderungsdatum;
-            m_szBearbeiter = ctrl_projekt.m_szBearbeiter;
-            m_szKunde = ctrl_projekt.m_szKunde;
-            m_ID_Klimaregion = ctrl_projekt.m_ID_Klimaregion;
-            
-            ctrl_app.m_ID_Projekt = ctrl_projekt.m_ID;
-            ctrl_app.m_szProjektname = ctrl_projekt.m_szProjektname;
-            ctrl_app.Update();
-
+            m_szNeuerProjektName = textBox_NeuerProjektName.Text;
+            if (listView_Projekt.FindItemWithText(m_szNeuerProjektName) != null) { MessageBox.Show("Projektname bereits vorhanden!","Hinweis",MessageBoxButtons.OK); return; }
             this.DialogResult = DialogResult.OK;
             Close();
         }

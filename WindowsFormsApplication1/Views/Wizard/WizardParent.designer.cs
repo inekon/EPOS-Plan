@@ -35,20 +35,17 @@
             listBox_Projekte = new System.Windows.Forms.ListBox();
             pictureBox_App = new System.Windows.Forms.PictureBox();
             pnlBottom = new System.Windows.Forms.Panel();
-            tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
-            btnBack = new System.Windows.Forms.Button();
-            tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            tblButtons = new System.Windows.Forms.TableLayoutPanel();
             btnSpeichern = new System.Windows.Forms.Button();
-            tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            btnCancel = new System.Windows.Forms.Button();
+            btnBack = new System.Windows.Forms.Button();
             btnNext = new System.Windows.Forms.Button();
+            btnCancel = new System.Windows.Forms.Button();
+            btnOeffnen = new System.Windows.Forms.Button();
             pnlContent = new System.Windows.Forms.Panel();
             pnlLeft.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox_App).BeginInit();
             pnlBottom.SuspendLayout();
-            tableLayoutPanel3.SuspendLayout();
-            tableLayoutPanel2.SuspendLayout();
-            tableLayoutPanel1.SuspendLayout();
+            tblButtons.SuspendLayout();
             SuspendLayout();
             // 
             // pnlLeft
@@ -97,30 +94,19 @@
             // pnlBottom
             // 
             pnlBottom.BackColor = System.Drawing.SystemColors.ControlLight;
-            pnlBottom.Controls.Add(tableLayoutPanel3);
-            pnlBottom.Controls.Add(tableLayoutPanel2);
-            pnlBottom.Controls.Add(tableLayoutPanel1);
+            pnlBottom.Controls.Add(tblButtons);
             resources.ApplyResources(pnlBottom, "pnlBottom");
             pnlBottom.Name = "pnlBottom";
             // 
-            // tableLayoutPanel3
+            // tblButtons
             // 
-            resources.ApplyResources(tableLayoutPanel3, "tableLayoutPanel3");
-            tableLayoutPanel3.Controls.Add(btnBack, 0, 0);
-            tableLayoutPanel3.Name = "tableLayoutPanel3";
-            // 
-            // btnBack
-            // 
-            resources.ApplyResources(btnBack, "btnBack");
-            btnBack.Name = "btnBack";
-            btnBack.UseVisualStyleBackColor = true;
-            btnBack.Click += btnBack_Click;
-            // 
-            // tableLayoutPanel2
-            // 
-            resources.ApplyResources(tableLayoutPanel2, "tableLayoutPanel2");
-            tableLayoutPanel2.Controls.Add(btnSpeichern, 0, 0);
-            tableLayoutPanel2.Name = "tableLayoutPanel2";
+            resources.ApplyResources(tblButtons, "tblButtons");
+            tblButtons.Controls.Add(btnSpeichern, 0, 0);
+            tblButtons.Controls.Add(btnBack, 1, 0);
+            tblButtons.Controls.Add(btnNext, 2, 0);
+            tblButtons.Controls.Add(btnCancel, 4, 0);
+            tblButtons.Controls.Add(btnOeffnen, 5, 0);
+            tblButtons.Name = "tblButtons";
             // 
             // btnSpeichern
             // 
@@ -130,12 +116,19 @@
             btnSpeichern.UseVisualStyleBackColor = true;
             btnSpeichern.Click += btnSpeichern_Click;
             // 
-            // tableLayoutPanel1
+            // btnBack
             // 
-            resources.ApplyResources(tableLayoutPanel1, "tableLayoutPanel1");
-            tableLayoutPanel1.Controls.Add(btnCancel, 0, 0);
-            tableLayoutPanel1.Controls.Add(btnNext, 2, 0);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            resources.ApplyResources(btnBack, "btnBack");
+            btnBack.Name = "btnBack";
+            btnBack.UseVisualStyleBackColor = true;
+            btnBack.Click += btnBack_Click;
+            // 
+            // btnNext
+            // 
+            resources.ApplyResources(btnNext, "btnNext");
+            btnNext.Name = "btnNext";
+            btnNext.UseVisualStyleBackColor = true;
+            btnNext.Click += btnNext_Click;
             // 
             // btnCancel
             // 
@@ -144,12 +137,12 @@
             btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += btnCancel_Click;
             // 
-            // btnNext
+            // btnOeffnen
             // 
-            resources.ApplyResources(btnNext, "btnNext");
-            btnNext.Name = "btnNext";
-            btnNext.UseVisualStyleBackColor = true;
-            btnNext.Click += btnNext_Click;
+            resources.ApplyResources(btnOeffnen, "btnOeffnen");
+            btnOeffnen.Name = "btnOeffnen";
+            btnOeffnen.UseVisualStyleBackColor = true;
+            btnOeffnen.Click += btnOeffnen_Click;
             // 
             // pnlContent
             // 
@@ -170,9 +163,7 @@
             pnlLeft.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBox_App).EndInit();
             pnlBottom.ResumeLayout(false);
-            tableLayoutPanel3.ResumeLayout(false);
-            tableLayoutPanel2.ResumeLayout(false);
-            tableLayoutPanel1.ResumeLayout(false);
+            tblButtons.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
 
@@ -186,14 +177,13 @@
         private System.Windows.Forms.PictureBox pictureBox_App;
         private System.Windows.Forms.ListBox listBox_Projekte;
         private System.Windows.Forms.Label label_Projekt;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.TableLayoutPanel tblButtons;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnNext;
         private System.Windows.Forms.Button btnBack;
         private System.Windows.Forms.Button btnSpeichern;
         private System.Windows.Forms.Button button_NeuProjekt;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
+        private System.Windows.Forms.Button btnOeffnen;
     }
 }
 

@@ -91,6 +91,7 @@ namespace WindowsFormsApplication1
                 Margin = new Padding(6, 0, 0, 0),
                 DialogResult = DialogResult.Cancel
             };
+            btnSchliessen.Click += (s, e) => Close();
 
             FlowLayoutPanel leisteRechts = new FlowLayoutPanel
             {
