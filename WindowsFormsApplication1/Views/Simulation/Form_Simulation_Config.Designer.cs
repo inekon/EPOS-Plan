@@ -108,7 +108,6 @@
             // 
             // btn_Speichern
             // 
-            btn_Speichern.Image = Properties.Resources.save_icon_36513;
             resources.ApplyResources(btn_Speichern, "btn_Speichern");
             btn_Speichern.Name = "btn_Speichern";
             btn_Speichern.UseVisualStyleBackColor = true;

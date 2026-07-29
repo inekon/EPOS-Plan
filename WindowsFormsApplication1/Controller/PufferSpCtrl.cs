@@ -7,6 +7,8 @@ namespace WindowsFormsApplication1
 {
     class PufferSpCtrl : PufferSpModel
     {
+        public const string TABLE = "Tab_Pufferspeicher";
+
         // --- Kompatibilitäts-Layer für bestehenden UI-Code ---
         private List<PufferSpModel> _internalList = new List<PufferSpModel>();
         private bool _hasSingleData = false;

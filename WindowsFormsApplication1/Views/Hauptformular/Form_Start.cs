@@ -293,19 +293,26 @@ namespace WindowsFormsApplication1
 
         private void pBox_ProjektOeffnen_Click(object sender, EventArgs e)
         {
-            Form_ProjektOpen frm = new Form_ProjektOpen();
+            MenueCtrl menu = new MenueCtrl();
+            menu.ProjektBearbeiten();
 
-            DialogResult ret = frm.ShowDialog();
-            if (ret == DialogResult.OK)
+            // Nach dem Schliessen des Wizards Form_Start auf das bearbeitete Projekt aktualisieren
+            // und die evtl. geaenderte Klimaregion in der ComboBox anzeigen.
+            if (Program.wizardctrl.Projektname != "")
             {
-                m_szProjektname = frm.m_szProjekt;
-                m_ID_Projekt = frm.m_ID_Projekt;
-                SetTextProjekt(frm.m_szProjekt);
-                for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
+                ProjektCtrl pc = new ProjektCtrl();
+                pc.ReadSingle(Program.wizardctrl.Projektname);
+                if (pc.m_ID > 0)
+                {
+                    m_szProjektname = pc.m_szProjektname;
+                    m_ID_Projekt = pc.m_ID;
+                    SetTextProjekt(pc.m_szProjektname);
+                    comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
+                    label_ProjektStatus.Text = "✔";
+                    label_ProjektStatus.ForeColor = Color.Green;
+                    for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
+                }
             }
-            label_ProjektStatus.Text = "✔";
-            label_ProjektStatus.ForeColor = Color.Green;
-            comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
         }
 
         public string GetKlimaregion(int ID_Klimaregion)
@@ -358,24 +365,15 @@ namespace WindowsFormsApplication1
             return szKlimaregion;
         }
 
-        private void pBox_Bearbeiten_Click(object sender, EventArgs e)
+        private void pBox_SpeichernUnter_Click(object sender, EventArgs e)
         {
-            MenueCtrl menu = new MenueCtrl();
-            menu.ProjektBearbeiten();
+            Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter();
 
-            // Nach dem Schliessen des Wizards Form_Start auf das bearbeitete Projekt aktualisieren
-            // und die evtl. geaenderte Klimaregion in der ComboBox anzeigen.
-            if (Program.wizardctrl.Projektname != "")
+            DialogResult ret = frm.ShowDialog();
+            if (ret == DialogResult.OK)
             {
-                ProjektCtrl pc = new ProjektCtrl();
-                pc.ReadSingle(Program.wizardctrl.Projektname);
-                if (pc.m_ID > 0)
-                {
-                    m_szProjektname = pc.m_szProjektname;
-                    m_ID_Projekt = pc.m_ID;
-                    SetTextProjekt(pc.m_szProjektname);
-                    comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
-                }
+                ProjektDuplizierenCtrl ctrl = new ProjektDuplizierenCtrl();
+                ctrl.Duplizieren(frm.m_szProjekt, frm.m_szNeuerProjektName);
             }
         }
 
@@ -1862,15 +1860,19 @@ namespace WindowsFormsApplication1
                 { "pBox_ProjektNeu", pBox_ProjektNeu_Click },
                 { "label_pBox_ProjektNeu", pBox_ProjektNeu_Click },
                 { "label2_pBox_ProjektNeu", pBox_ProjektNeu_Click },
+                
                 { "pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
                 { "label_pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
                 { "label2_pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
+                
                 { "pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
                 { "label_pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
                 { "label2_pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
-                { "pBox_Bearbeiten", pBox_Bearbeiten_Click },
-                { "label_pBox_Bearbeiten", pBox_Bearbeiten_Click },
-                { "label2_pBox_Bearbeiten", pBox_Bearbeiten_Click },
+                
+                { "pBox_SpeichernUnter", pBox_SpeichernUnter_Click },
+                { "label_pBox_SpeichernUnter", pBox_SpeichernUnter_Click },
+                { "label2_pBox_SpeichernUnter", pBox_SpeichernUnter_Click },
+                
                 { "pBox_Delete", pBox_Delete_Click },
                 { "label_pBox_Delete", pBox_Delete_Click },
                 { "label2_pBox_Delete", pBox_Delete_Click },

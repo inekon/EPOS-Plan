@@ -35,8 +35,8 @@
             label_pBox_ProjektDetails = new System.Windows.Forms.Label();
             label2_pBox_Delete = new System.Windows.Forms.Label();
             label_pBox_Delete = new System.Windows.Forms.Label();
-            label2_pBox_Bearbeiten = new System.Windows.Forms.Label();
-            label_pBox_Bearbeiten = new System.Windows.Forms.Label();
+            label2_pBox_SpeichernUnter = new System.Windows.Forms.Label();
+            label_pBox_SpeichernUnter = new System.Windows.Forms.Label();
             label2_pBox_ProjektZuletzt = new System.Windows.Forms.Label();
             label_pBox_ProjektZuletzt = new System.Windows.Forms.Label();
             label1 = new System.Windows.Forms.Label();
@@ -47,7 +47,7 @@
             label_pBox_ProjektNeu = new System.Windows.Forms.Label();
             pBox_ProjektDetails = new System.Windows.Forms.PictureBox();
             pBox_Delete = new System.Windows.Forms.PictureBox();
-            pBox_Bearbeiten = new System.Windows.Forms.PictureBox();
+            pBox_SpeichernUnter = new System.Windows.Forms.PictureBox();
             pBox_ProjektZuletzt = new System.Windows.Forms.PictureBox();
             pBox_ProjektOeffnen = new System.Windows.Forms.PictureBox();
             pBox_ProjektNeu = new System.Windows.Forms.PictureBox();
@@ -160,7 +160,7 @@
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pBox_ProjektDetails).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pBox_Delete).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_Bearbeiten).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pBox_SpeichernUnter).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pBox_ProjektZuletzt).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pBox_ProjektOeffnen).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pBox_ProjektNeu).BeginInit();
@@ -214,8 +214,8 @@
             tabPage1.Controls.Add(label_pBox_ProjektDetails);
             tabPage1.Controls.Add(label2_pBox_Delete);
             tabPage1.Controls.Add(label_pBox_Delete);
-            tabPage1.Controls.Add(label2_pBox_Bearbeiten);
-            tabPage1.Controls.Add(label_pBox_Bearbeiten);
+            tabPage1.Controls.Add(label2_pBox_SpeichernUnter);
+            tabPage1.Controls.Add(label_pBox_SpeichernUnter);
             tabPage1.Controls.Add(label2_pBox_ProjektZuletzt);
             tabPage1.Controls.Add(label_pBox_ProjektZuletzt);
             tabPage1.Controls.Add(label1);
@@ -226,7 +226,7 @@
             tabPage1.Controls.Add(label_pBox_ProjektNeu);
             tabPage1.Controls.Add(pBox_ProjektDetails);
             tabPage1.Controls.Add(pBox_Delete);
-            tabPage1.Controls.Add(pBox_Bearbeiten);
+            tabPage1.Controls.Add(pBox_SpeichernUnter);
             tabPage1.Controls.Add(pBox_ProjektZuletzt);
             tabPage1.Controls.Add(pBox_ProjektOeffnen);
             tabPage1.Controls.Add(pBox_ProjektNeu);
@@ -268,22 +268,22 @@
             label_pBox_Delete.Name = "label_pBox_Delete";
             label_pBox_Delete.Click += CentralControl_Click;
             // 
-            // label2_pBox_Bearbeiten
+            // label2_pBox_SpeichernUnter
             // 
-            resources.ApplyResources(label2_pBox_Bearbeiten, "label2_pBox_Bearbeiten");
-            label2_pBox_Bearbeiten.BackColor = System.Drawing.Color.White;
-            label2_pBox_Bearbeiten.Cursor = System.Windows.Forms.Cursors.Hand;
-            label2_pBox_Bearbeiten.ForeColor = System.Drawing.Color.DimGray;
-            label2_pBox_Bearbeiten.Name = "label2_pBox_Bearbeiten";
-            label2_pBox_Bearbeiten.Click += CentralControl_Click;
+            resources.ApplyResources(label2_pBox_SpeichernUnter, "label2_pBox_SpeichernUnter");
+            label2_pBox_SpeichernUnter.BackColor = System.Drawing.Color.White;
+            label2_pBox_SpeichernUnter.Cursor = System.Windows.Forms.Cursors.Hand;
+            label2_pBox_SpeichernUnter.ForeColor = System.Drawing.Color.DimGray;
+            label2_pBox_SpeichernUnter.Name = "label2_pBox_SpeichernUnter";
+            label2_pBox_SpeichernUnter.Click += CentralControl_Click;
             // 
-            // label_pBox_Bearbeiten
+            // label_pBox_SpeichernUnter
             // 
-            resources.ApplyResources(label_pBox_Bearbeiten, "label_pBox_Bearbeiten");
-            label_pBox_Bearbeiten.BackColor = System.Drawing.Color.White;
-            label_pBox_Bearbeiten.Cursor = System.Windows.Forms.Cursors.Hand;
-            label_pBox_Bearbeiten.Name = "label_pBox_Bearbeiten";
-            label_pBox_Bearbeiten.Click += CentralControl_Click;
+            resources.ApplyResources(label_pBox_SpeichernUnter, "label_pBox_SpeichernUnter");
+            label_pBox_SpeichernUnter.BackColor = System.Drawing.Color.White;
+            label_pBox_SpeichernUnter.Cursor = System.Windows.Forms.Cursors.Hand;
+            label_pBox_SpeichernUnter.Name = "label_pBox_SpeichernUnter";
+            label_pBox_SpeichernUnter.Click += CentralControl_Click;
             // 
             // label2_pBox_ProjektZuletzt
             // 
@@ -315,9 +315,9 @@
             // 
             // label2_pBox_ProjektOeffnen
             // 
-            resources.ApplyResources(label2_pBox_ProjektOeffnen, "label2_pBox_ProjektOeffnen");
             label2_pBox_ProjektOeffnen.BackColor = System.Drawing.Color.White;
             label2_pBox_ProjektOeffnen.Cursor = System.Windows.Forms.Cursors.Hand;
+            resources.ApplyResources(label2_pBox_ProjektOeffnen, "label2_pBox_ProjektOeffnen");
             label2_pBox_ProjektOeffnen.ForeColor = System.Drawing.Color.DimGray;
             label2_pBox_ProjektOeffnen.Name = "label2_pBox_ProjektOeffnen";
             label2_pBox_ProjektOeffnen.Click += CentralControl_Click;
@@ -365,14 +365,14 @@
             pBox_Delete.TabStop = false;
             pBox_Delete.Click += CentralControl_Click;
             // 
-            // pBox_Bearbeiten
+            // pBox_SpeichernUnter
             // 
-            pBox_Bearbeiten.BackgroundImage = Properties.Resources.PProjektBearbeiten;
-            resources.ApplyResources(pBox_Bearbeiten, "pBox_Bearbeiten");
-            pBox_Bearbeiten.Cursor = System.Windows.Forms.Cursors.Hand;
-            pBox_Bearbeiten.Name = "pBox_Bearbeiten";
-            pBox_Bearbeiten.TabStop = false;
-            pBox_Bearbeiten.Click += CentralControl_Click;
+            pBox_SpeichernUnter.BackgroundImage = Properties.Resources.PProjektBearbeiten;
+            resources.ApplyResources(pBox_SpeichernUnter, "pBox_SpeichernUnter");
+            pBox_SpeichernUnter.Cursor = System.Windows.Forms.Cursors.Hand;
+            pBox_SpeichernUnter.Name = "pBox_SpeichernUnter";
+            pBox_SpeichernUnter.TabStop = false;
+            pBox_SpeichernUnter.Click += CentralControl_Click;
             // 
             // pBox_ProjektZuletzt
             // 
@@ -1309,7 +1309,7 @@
             tabPage1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pBox_ProjektDetails).EndInit();
             ((System.ComponentModel.ISupportInitialize)pBox_Delete).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pBox_Bearbeiten).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pBox_SpeichernUnter).EndInit();
             ((System.ComponentModel.ISupportInitialize)pBox_ProjektZuletzt).EndInit();
             ((System.ComponentModel.ISupportInitialize)pBox_ProjektOeffnen).EndInit();
             ((System.ComponentModel.ISupportInitialize)pBox_ProjektNeu).EndInit();
@@ -1361,7 +1361,7 @@
         private System.Windows.Forms.Label Label2;
         private System.Windows.Forms.PictureBox pBox_WBHinweis;
         private System.Windows.Forms.PictureBox pBox_ProjektNeu;
-        private System.Windows.Forms.PictureBox pBox_Bearbeiten;
+        private System.Windows.Forms.PictureBox pBox_SpeichernUnter;
         private System.Windows.Forms.PictureBox pBox_ProjektZuletzt;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.TextBox textBox_ProjektOpen;
@@ -1406,8 +1406,8 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2_pBox_ProjektZuletzt;
         private System.Windows.Forms.Label label_pBox_ProjektZuletzt;
-        private System.Windows.Forms.Label label2_pBox_Bearbeiten;
-        private System.Windows.Forms.Label label_pBox_Bearbeiten;
+        private System.Windows.Forms.Label label2_pBox_SpeichernUnter;
+        private System.Windows.Forms.Label label_pBox_SpeichernUnter;
         private System.Windows.Forms.Label label2_pBox_Delete;
         private System.Windows.Forms.Label label_pBox_Delete;
         private System.Windows.Forms.Label label2_pBox_ProjektDetails;
