@@ -1,14 +1,11 @@
-﻿using Json.Schema.Generation.Intents;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Odbc;
 using System.Data.OleDb;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;

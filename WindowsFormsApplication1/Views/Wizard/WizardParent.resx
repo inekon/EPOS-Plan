@@ -254,7 +254,7 @@
     <value>4, 3, 4, 3</value>
   </data>
   <data name="pnlLeft.Size" type="System.Drawing.Size, System.Drawing">
-    <value>219, 714</value>
+    <value>219, 735</value>
   </data>
   <data name="pnlLeft.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -271,80 +271,11 @@
   <data name="&gt;&gt;pnlLeft.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="tblButtons.ColumnCount" type="System.Int32, mscorlib">
-    <value>6</value>
-  </data>
-  <data name="btnSpeichern.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>None</value>
-  </data>
-  <data name="btnSpeichern.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="btnSpeichern.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleLeft</value>
-  </data>
-  <data name="btnSpeichern.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 6</value>
-  </data>
-  <data name="btnSpeichern.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="btnSpeichern.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 41</value>
-  </data>
-  <data name="btnSpeichern.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="btnSpeichern.Text" xml:space="preserve">
-    <value>Speichern</value>
-  </data>
-  <data name="&gt;&gt;btnSpeichern.Name" xml:space="preserve">
-    <value>btnSpeichern</value>
-  </data>
-  <data name="&gt;&gt;btnSpeichern.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btnSpeichern.Parent" xml:space="preserve">
-    <value>tblButtons</value>
-  </data>
-  <data name="&gt;&gt;btnSpeichern.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="btnBack.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>None</value>
-  </data>
-  <data name="btnBack.Location" type="System.Drawing.Point, System.Drawing">
-    <value>224, 6</value>
-  </data>
-  <data name="btnBack.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>35, 3, 4, 3</value>
-  </data>
-  <data name="btnBack.Size" type="System.Drawing.Size, System.Drawing">
-    <value>99, 41</value>
-  </data>
-  <data name="btnBack.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="btnBack.Text" xml:space="preserve">
-    <value>◀ Back</value>
-  </data>
-  <data name="&gt;&gt;btnBack.Name" xml:space="preserve">
-    <value>btnBack</value>
-  </data>
-  <data name="&gt;&gt;btnBack.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;btnBack.Parent" xml:space="preserve">
-    <value>tblButtons</value>
-  </data>
-  <data name="&gt;&gt;btnBack.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
   <data name="btnNext.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>None</value>
   </data>
   <data name="btnNext.Location" type="System.Drawing.Point, System.Drawing">
-    <value>331, 6</value>
+    <value>540, 8</value>
   </data>
   <data name="btnNext.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 35, 3</value>
@@ -365,46 +296,46 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;btnNext.Parent" xml:space="preserve">
-    <value>tblButtons</value>
+    <value>pnlBottom</value>
   </data>
   <data name="&gt;&gt;btnNext.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>0</value>
   </data>
-  <data name="btnCancel.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+  <data name="btnBack.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>None</value>
   </data>
-  <data name="btnCancel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>964, 6</value>
+  <data name="btnBack.Location" type="System.Drawing.Point, System.Drawing">
+    <value>433, 8</value>
   </data>
-  <data name="btnCancel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+  <data name="btnBack.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>35, 3, 4, 3</value>
   </data>
-  <data name="btnCancel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>123, 41</value>
+  <data name="btnBack.Size" type="System.Drawing.Size, System.Drawing">
+    <value>99, 41</value>
   </data>
-  <data name="btnCancel.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
+  <data name="btnBack.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
   </data>
-  <data name="btnCancel.Text" xml:space="preserve">
-    <value>Abbrechen ❌</value>
+  <data name="btnBack.Text" xml:space="preserve">
+    <value>◀ Back</value>
   </data>
-  <data name="&gt;&gt;btnCancel.Name" xml:space="preserve">
-    <value>btnCancel</value>
+  <data name="&gt;&gt;btnBack.Name" xml:space="preserve">
+    <value>btnBack</value>
   </data>
-  <data name="&gt;&gt;btnCancel.Type" xml:space="preserve">
+  <data name="&gt;&gt;btnBack.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;btnCancel.Parent" xml:space="preserve">
-    <value>tblButtons</value>
+  <data name="&gt;&gt;btnBack.Parent" xml:space="preserve">
+    <value>pnlBottom</value>
   </data>
-  <data name="&gt;&gt;btnCancel.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="&gt;&gt;btnBack.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="btnOeffnen.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>None</value>
   </data>
   <data name="btnOeffnen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1095, 6</value>
+    <value>1094, 7</value>
   </data>
   <data name="btnOeffnen.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -425,40 +356,76 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;btnOeffnen.Parent" xml:space="preserve">
-    <value>tblButtons</value>
-  </data>
-  <data name="&gt;&gt;btnOeffnen.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="tblButtons.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="tblButtons.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 12</value>
-  </data>
-  <data name="tblButtons.RowCount" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="tblButtons.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1222, 53</value>
-  </data>
-  <data name="tblButtons.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;tblButtons.Name" xml:space="preserve">
-    <value>tblButtons</value>
-  </data>
-  <data name="&gt;&gt;tblButtons.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;tblButtons.Parent" xml:space="preserve">
     <value>pnlBottom</value>
   </data>
-  <data name="&gt;&gt;tblButtons.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;btnOeffnen.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
-  <data name="tblButtons.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="btnSpeichern" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="btnBack" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="btnNext" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="btnCancel" Row="0" RowSpan="1" Column="4" ColumnSpan="1" /&gt;&lt;Control Name="btnOeffnen" Row="0" RowSpan="1" Column="5" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,AutoSize,0,AutoSize,0,Percent,100,AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="Percent,100" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  <data name="btnCancel.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>None</value>
+  </data>
+  <data name="btnCancel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>951, 7</value>
+  </data>
+  <data name="btnCancel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="btnCancel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>123, 41</value>
+  </data>
+  <data name="btnCancel.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="btnCancel.Text" xml:space="preserve">
+    <value>Abbrechen ❌</value>
+  </data>
+  <data name="&gt;&gt;btnCancel.Name" xml:space="preserve">
+    <value>btnCancel</value>
+  </data>
+  <data name="&gt;&gt;btnCancel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnCancel.Parent" xml:space="preserve">
+    <value>pnlBottom</value>
+  </data>
+  <data name="&gt;&gt;btnCancel.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="btnSpeichern.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>None</value>
+  </data>
+  <data name="btnSpeichern.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="btnSpeichern.ImageAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="btnSpeichern.Location" type="System.Drawing.Point, System.Drawing">
+    <value>676, 8</value>
+  </data>
+  <data name="btnSpeichern.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="btnSpeichern.Size" type="System.Drawing.Size, System.Drawing">
+    <value>181, 41</value>
+  </data>
+  <data name="btnSpeichern.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="btnSpeichern.Text" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="&gt;&gt;btnSpeichern.Name" xml:space="preserve">
+    <value>btnSpeichern</value>
+  </data>
+  <data name="&gt;&gt;btnSpeichern.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnSpeichern.Parent" xml:space="preserve">
+    <value>pnlBottom</value>
+  </data>
+  <data name="&gt;&gt;btnSpeichern.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="pnlBottom.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
@@ -467,7 +434,7 @@
     <value>Segoe UI, 9.75pt</value>
   </data>
   <data name="pnlBottom.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 714</value>
+    <value>0, 735</value>
   </data>
   <data name="pnlBottom.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -476,7 +443,7 @@
     <value>12, 12, 12, 12</value>
   </data>
   <data name="pnlBottom.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1246, 77</value>
+    <value>1246, 56</value>
   </data>
   <data name="pnlBottom.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -509,7 +476,7 @@
     <value>12, 12, 12, 12</value>
   </data>
   <data name="pnlContent.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1027, 714</value>
+    <value>1027, 735</value>
   </data>
   <data name="pnlContent.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>

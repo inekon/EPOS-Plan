@@ -102,7 +102,7 @@ namespace WindowsFormsApplication1
                 "Z_Projekt_Stromverbraucher.ID_Stromverbraucher, Tab_Stromverbraucher.Bezeichner, Z_Projekt_Stromverbraucher.Summe " +
                 "FROM Z_Projekt_Stromverbraucher INNER JOIN Tab_Stromverbraucher ON " +
                 "Z_Projekt_Stromverbraucher.ID_Stromverbraucher = Tab_Stromverbraucher.ID " +
-                " where ID_Projekt=" + m_ID_Projekt;
+                " where Z_Projekt_Stromverbraucher.ID_Projekt=" + m_ID_Projekt;
 
             rs.Open(sql);
             while (rs.Next())

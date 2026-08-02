@@ -15,11 +15,6 @@ namespace WindowsFormsApplication1
     ///      * NICHT auf _STAMM endet,
     ///      * NICHT in der festen Katalog-Ausnahmeliste steht, und
     ///      * eine Spalte ID_Projekt bzw. ProjektID hat  ->  wird automatisch mitkopiert.
-    ///  - ZUSAETZLICH werden ueber den echten FK-Graphen (erzwungene Beziehungen) auch Tabellen OHNE
-    ///    eigenes ID_Projekt automatisch erkannt, sobald sie per Fremdschluessel an einer bereits
-    ///    kopierten Tabelle haengen (iterativ bis Fixpunkt -> auch Enkel/Urenkel). Ihr Filter wird aus
-    ///    dem Elternfilter zusammengesetzt. Eine neue Detailtabelle (z. B. mit FK auf Tab_DBTagV) wird
-    ///    damit ohne Code-Aenderung mitkopiert.
     ///  - Neu hinzugefuegte Projekt-Tabellen werden damit automatisch beruecksichtigt.
     ///
     /// FESTE AUSNAHMEN (bewusst hart kodiert):
@@ -47,7 +42,7 @@ namespace WindowsFormsApplication1
             "Tab_KostenGruppenKatalog", "Tab_KostenKategorie", "Tab_KostenKomponente", "Tab_Kostenfaktor",
             "energy_carrier", "energy_conversion", "energy_unit", "pricing_model",
             "Tab_Applikation",         // anwendungsweit, kein Projektbezug
-            "EinfÃ¼gefehler"            // Access-Fehlertabelle
+            "Einfügefehler"            // Access-Fehlertabelle
         };
 
         // Tabellen, die trotz Projektbezug NICHT dupliziert werden (feste Ausnahme).
@@ -63,7 +58,7 @@ namespace WindowsFormsApplication1
         private static readonly HashSet<string> KATALOG_SPALTEN = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "ID_Type", "ID_Stamm", "StammID", "KomponentenID", "KategorieID",
-            "carrier_id", "ID_EnergietrÃ¤ger", "ID_Umrechnung", "ID_Brennstoff"
+            "carrier_id", "ID_Energieträger", "ID_Umrechnung", "ID_Brennstoff"
         };
 
         // Interne Fremdschluessel mit eindeutigem Zielnamen (Spalte -> Zieltabelle).
@@ -128,22 +123,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Fortschrittsmeldung waehrend des Kopierens (pro Tabelle). Aktuell = Anzahl bereits
-        /// kopierter Tabellen, Gesamt = Anzahl zu kopierender Tabellen, Tabelle = gerade laufende.
-        /// </summary>
-        public class Fortschritt
-        {
-            public int Aktuell;
-            public int Gesamt;
-            public string Tabelle;
-        }
-
-        /// <summary>
         /// Dupliziert 'quelleName' unter dem neuen Namen 'neuerName'.
-        /// Optional meldet 'fortschritt' den Kopierfortschritt pro Tabelle (fuer eine ProgressBar).
         /// Rueckgabe: neue Projekt-ID, oder -1 bei Fehler.
         /// </summary>
-        public int Duplizieren(string quelleName, string neuerName, IProgress<Fortschritt> fortschritt = null)
+        public int Duplizieren(string quelleName, string neuerName)
         {
             if (string.IsNullOrWhiteSpace(quelleName) || string.IsNullOrWhiteSpace(neuerName))
             { MessageBox.Show("Quell- und Zielprojektname duerfen nicht leer sein."); return -1; }
@@ -152,16 +135,11 @@ namespace WindowsFormsApplication1
             if (srcId <= 0) { MessageBox.Show("Quellprojekt '" + quelleName + "' wurde nicht gefunden."); return -1; }
             if (GetProjektId(neuerName) > 0) { MessageBox.Show("Es existiert bereits ein Projekt mit dem Namen '" + neuerName + "'."); return -1; }
 
-            OleDbConnection conn = null;
-            OleDbTransaction trans = null;
+            var (conn, trans) = DataRepository.BeginTransaction();
             try
             {
-                var tx = DataRepository.BeginTransaction();
-                conn = tx.Item1;
-                trans = tx.Item2;
-
                 // 1) Tabellen generisch ermitteln.
-                List<Spec> specs = ErmittlePlan(conn, trans);
+                List<Spec> specs = ErmittlePlan(conn);
                 var copySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (Spec s in specs) copySet.Add(s.Tabelle);
 
@@ -175,58 +153,43 @@ namespace WindowsFormsApplication1
                 if (!offset.ContainsKey("Tab_Projekt"))
                 { try { trans.Rollback(); } catch { } MessageBox.Show("Projekt konnte nicht gelesen werden."); return -1; }
 
-                // 3) Kopieren. Nur Tabellen mit Quellzeilen (offset vorhanden) werden gezaehlt/gemeldet.
-                var zuKopieren = new List<Spec>();
+                // 3) Kopieren.
                 foreach (Spec s in specs)
-                    if (offset.ContainsKey(s.Tabelle)) zuKopieren.Add(s);
-
-                int gesamt = zuKopieren.Count;
-                for (int i = 0; i < zuKopieren.Count; i++)
                 {
-                    Spec s = zuKopieren[i];
-                    if (fortschritt != null)
-                        fortschritt.Report(new Fortschritt { Aktuell = i, Gesamt = gesamt, Tabelle = s.Tabelle });
-
+                    if (!offset.ContainsKey(s.Tabelle)) continue; // keine Quellzeilen
                     string sql = BaueInsertSql(s, srcId, offset, copySet);
                     if (sql == null) continue;
+                    System.Diagnostics.Debug.WriteLine(sql);
                     using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
                     {
                         if (s.NameSpalte != null) c.Parameters.Add(new OleDbParameter("@name", neuerName));
                         c.ExecuteNonQuery();
                     }
                 }
-                if (fortschritt != null)
-                    fortschritt.Report(new Fortschritt { Aktuell = gesamt, Gesamt = gesamt, Tabelle = "" });
 
                 trans.Commit();
                 return (int)(srcId + offset["Tab_Projekt"]);
             }
             catch (Exception ex)
             {
-                if (trans != null) { try { trans.Rollback(); } catch { } }
+                try { trans.Rollback(); } catch { }
                 MessageBox.Show("Fehler beim Duplizieren des Projekts: " + ex.Message);
                 return -1;
             }
-            finally
-            {
-                // Deterministische Freigabe: Transaktion und Verbindung immer schliessen/entsorgen,
-                // auch im Fehlerfall. (BeginTransaction kann selbst werfen -> dann sind beide null.)
-                if (trans != null) { try { trans.Dispose(); } catch { } }
-                if (conn != null) { try { conn.Close(); } catch { } try { conn.Dispose(); } catch { } }
-            }
+            finally { try { conn.Close(); } catch { } }
         }
 
         // Ermittelt die zu kopierenden Tabellen generisch aus dem Schema.
-        private List<Spec> ErmittlePlan(OleDbConnection conn, OleDbTransaction trans)
+        private List<Spec> ErmittlePlan(OleDbConnection conn)
         {
             // Zuerst die deklarierten Beziehungen einlesen (fuer Reihenfolge + Offset-Ziel).
-            _echteFks = LiesEchteFks(conn, trans);
-
-            var plan = new Dictionary<string, Spec>(StringComparer.OrdinalIgnoreCase);
-            var uebrig = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase); // Tabellen ohne eigenen Projektbezug -> evtl. FK-gebundene Kinder
+            _echteFks = LiesEchteFks(conn);
+            System.Diagnostics.Debug.WriteLine("echteFks=" + _echteFks.Count);
+            var alle = new List<Spec>();
 
             // Tab_Projekt als Wurzel (Name wird ersetzt).
-            plan["Tab_Projekt"] = new Spec { Tabelle = "Tab_Projekt", Pk = "ID", Filter = "ID = {0}", NameSpalte = "Projektname", Cols = Spalten("Tab_Projekt") };
+            var projekt = new Spec { Tabelle = "Tab_Projekt", Pk = "ID", Filter = "ID = {0}", NameSpalte = "Projektname", Cols = Spalten("Tab_Projekt") };
+            alle.Add(projekt);
 
             DataTable tabs = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
             foreach (DataRow row in tabs.Rows)
@@ -240,58 +203,18 @@ namespace WindowsFormsApplication1
 
                 if (KINDER.ContainsKey(name))
                 {
-                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = KINDER[name], Cols = cols };
+                    alle.Add(new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = KINDER[name], Cols = cols });
                 }
                 else if (Enthaelt(cols, "ID_Projekt"))
                 {
-                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = "[ID_Projekt] = {0}", Cols = cols };
+                    alle.Add(new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = "[ID_Projekt] = {0}", Cols = cols });
                 }
                 else if (Enthaelt(cols, "ProjektID"))
                 {
-                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = "[ProjektID] = {0}", Cols = cols };
+                    alle.Add(new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = "[ProjektID] = {0}", Cols = cols });
                 }
-                else
-                {
-                    // Kein eigener Projektbezug: koennte ueber einen Fremdschluessel an einer kopierten
-                    // Tabelle haengen (z. B. eine neue Detailtabelle mit FK auf Tab_DBTagV) -> unten pruefen.
-                    uebrig[name] = cols;
-                }
+                // sonst: keine Projekt-Tabelle -> ignorieren
             }
-
-            // Auto-Erkennung FK-gebundener Kind-Tabellen (ohne eigenes ID_Projekt), iterativ bis Fixpunkt.
-            // Eine uebrige Tabelle wird mitkopiert, sobald sie einen ERZWUNGENEN Fremdschluessel auf eine
-            // bereits im Plan stehende Tabelle hat. Ihr Filter wird aus dem Elternfilter zusammengesetzt,
-            // sodass genau die zum Projekt gehoerenden Zeilen kopiert werden (auch Enkel/Urenkel).
-            // (Erfordert echte FKs aus _echteFks; ohne diese greifen nur ID_Projekt-Tabellen + feste KINDER.)
-            bool neuHinzugefuegt = true;
-            while (neuHinzugefuegt)
-            {
-                neuHinzugefuegt = false;
-                foreach (KeyValuePair<string, List<string>> kv in new List<KeyValuePair<string, List<string>>>(uebrig))
-                {
-                    string name = kv.Key;
-                    List<string> cols = kv.Value;
-
-                    string fkCol = null, eltern = null;
-                    foreach (string col in cols)
-                    {
-                        string p;
-                        if (_echteFks.TryGetValue(name + "||" + col, out p) &&
-                            plan.ContainsKey(p) &&
-                            !string.Equals(p, name, StringComparison.OrdinalIgnoreCase))
-                        { fkCol = col; eltern = p; break; }
-                    }
-                    if (fkCol == null) continue;
-
-                    Spec pSpec = plan[eltern];
-                    string filter = "[" + fkCol + "] IN (SELECT [" + pSpec.Pk + "] FROM [" + eltern + "] WHERE " + pSpec.Filter + ")";
-                    plan[name] = new Spec { Tabelle = name, Pk = ErmittlePk(cols), Filter = filter, Cols = cols };
-                    uebrig.Remove(name);
-                    neuHinzugefuegt = true;
-                }
-            }
-
-            var alle = new List<Spec>(plan.Values);
 
             // Nach Fremdschluessel-Abhaengigkeiten sortieren: referenzierte Tabelle zuerst,
             // damit erzwungene Beziehungen (referentielle Integritaet) beim INSERT erfuellt sind.
@@ -303,54 +226,23 @@ namespace WindowsFormsApplication1
         /// Rueckgabe: "FK_Tabelle||FK_Spalte" -> PK_Tabelle (referenzierte Tabelle).
         /// Faellt bei nicht unterstuetztem Schema-Rowset auf eine leere Map zurueck.
         /// </summary>
-        private Dictionary<string, string> LiesEchteFks(OleDbConnection conn, OleDbTransaction trans)
+        private Dictionary<string, string> LiesEchteFks(OleDbConnection conn)
         {
             var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            // 1) Bevorzugt ueber das Standard-Schema-Rowset.
             try
             {
                 DataTable fk = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Foreign_Keys, null);
-                if (fk != null)
+                if (fk == null) return map;
+                foreach (DataRow r in fk.Rows)
                 {
-                    foreach (DataRow r in fk.Rows)
-                    {
-                        string fkT = r["FK_TABLE_NAME"] != DBNull.Value ? r["FK_TABLE_NAME"].ToString() : null;
-                        string fkC = r["FK_COLUMN_NAME"] != DBNull.Value ? r["FK_COLUMN_NAME"].ToString() : null;
-                        string pkT = r["PK_TABLE_NAME"] != DBNull.Value ? r["PK_TABLE_NAME"].ToString() : null;
-                        if (!string.IsNullOrEmpty(fkT) && !string.IsNullOrEmpty(fkC) && !string.IsNullOrEmpty(pkT))
-                            map[fkT + "||" + fkC] = pkT;
-                    }
+                    string fkT = r["FK_TABLE_NAME"] != DBNull.Value ? r["FK_TABLE_NAME"].ToString() : null;
+                    string fkC = r["FK_COLUMN_NAME"] != DBNull.Value ? r["FK_COLUMN_NAME"].ToString() : null;
+                    string pkT = r["PK_TABLE_NAME"] != DBNull.Value ? r["PK_TABLE_NAME"].ToString() : null;
+                    if (!string.IsNullOrEmpty(fkT) && !string.IsNullOrEmpty(fkC) && !string.IsNullOrEmpty(pkT))
+                        map[fkT + "||" + fkC] = pkT;
                 }
             }
-            catch { /* Provider unterstuetzt das Rowset nicht */ }
-
-            if (map.Count > 0) return map;
-
-            // 2) Fallback: Access-Systemtabelle MSysRelationships direkt lesen (dieselben Beziehungen).
-            //    szObject = FK-Tabelle, szColumn = FK-Spalte, szReferencedObject = PK-Tabelle,
-            //    grbit & 2 (dbRelationDontEnforce) gesetzt = NICHT erzwungen -> ueberspringen.
-            //    (Erfordert Leserecht auf Systemobjekte; schlaegt es fehl, greift die FK_MAP-Heuristik.)
-            try
-            {
-                using (var cmd = new OleDbCommand(
-                    "SELECT szObject, szColumn, szReferencedObject, grbit FROM MSysRelationships", conn, trans))
-                using (OleDbDataReader rd = cmd.ExecuteReader())
-                {
-                    while (rd.Read())
-                    {
-                        string fkT = rd["szObject"] != DBNull.Value ? rd["szObject"].ToString() : null;
-                        string fkC = rd["szColumn"] != DBNull.Value ? rd["szColumn"].ToString() : null;
-                        string pkT = rd["szReferencedObject"] != DBNull.Value ? rd["szReferencedObject"].ToString() : null;
-                        int grbit = rd["grbit"] != DBNull.Value ? Convert.ToInt32(rd["grbit"]) : 0;
-                        if ((grbit & 2) != 0) continue; // nicht erzwungen
-                        if (!string.IsNullOrEmpty(fkT) && !string.IsNullOrEmpty(fkC) && !string.IsNullOrEmpty(pkT))
-                            map[fkT + "||" + fkC] = pkT;
-                    }
-                }
-            }
-            catch { /* kein Zugriff auf MSysRelationships -> Fallback auf FK_MAP/FK_OVERRIDE */ }
-
+            catch { /* Provider unterstuetzt das Rowset nicht -> Fallback auf FK_MAP/FK_OVERRIDE */ }
             return map;
         }
 

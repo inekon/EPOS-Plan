@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -92,8 +93,10 @@ namespace WindowsFormsApplication1
             List<string> list = new List<string>();
             list.Add(listBox_Prozess_DB.Text);
             simulation.Prozesswaerme_berechnen(list);
-            simulation.Waermebedarf_Prozess = simulation.com.I_vector_summe(simulation.prozesswerte);
-            simulation.com.I_monats_summe(simulation.prozesswerte, simulation.Waermebedarf_Prozess_Monat, simulation.mo_anfang, simulation.mo_ende);
+            //simulation.Waermebedarf_Prozess = simulation.com.I_vector_summe(simulation.prozesswerte);
+            simulation.Waermebedarf_Prozess = simulation.prozesswerte.Sum() / 1000;
+            //simulation.com.I_monats_summe(simulation.prozesswerte, simulation.Waermebedarf_Prozess_Monat, simulation.mo_anfang, simulation.mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(simulation.prozesswerte, simulation.Waermebedarf_Prozess_Monat, simulation.mo_anfang, simulation.mo_ende);
 
             Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
             frm.Init(simulation);

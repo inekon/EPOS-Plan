@@ -1,12 +1,6 @@
-﻿using Microsoft.Office.Interop.Excel;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Data.Odbc;
-using System.Globalization;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Security.Cryptography;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -35,7 +29,7 @@ namespace WindowsFormsApplication1
         public float[] Dauerlinie = new float[8760 * 4];
         public float[] Dauerlinie_nicht_sortiert = new float[8760 * 4];
 
-        public CSExeCOMServer.SimpleObject com = new CSExeCOMServer.SimpleObject();
+       // public CSExeCOMServer.SimpleObject com = new CSExeCOMServer.SimpleObject();
 
         public SimulationStrombedarf()
         {
@@ -198,7 +192,8 @@ namespace WindowsFormsApplication1
                         rs_pwtyp.Close();
 
                         // Wärmebedarf jährlich gemäß wöchentlicher Verteilung
-                        temp = com.I_strom_wochetojahr(wochen_werte, monats_werte, mo_anfang, mo_ende);
+                        //temp = com.I_strom_wochetojahr(wochen_werte, monats_werte, mo_anfang, mo_ende);
+                        WPPlan.Core.BhkwPlan.StromWocheToJahr(wochen_werte, monats_werte, temp, mo_anfang, mo_ende);
                         //com.CSharp_I_vectoren_addieren(temp, prozesswerte);
                     }
                     rs.Close();
@@ -225,33 +220,6 @@ namespace WindowsFormsApplication1
             }
 
             return Strombedarf_Max;
-        }
-
-        public void SimulationErgebis_in_DB()
-        {
-            OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
-
-            string sql = "update Tab_Simulation_Ergebnis " +
-                "set Strombedarf_Max=" + Strombedarf_Max.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                ", Strombedarf_Gesamt=" + Strombedarf_gesamt.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                ", Strombedarf_Profil=" + Strombedarf_Gebaeude_gesamt.ToString(CultureInfo.CreateSpecificCulture("en-US")) +
-                ", Strombedarf_Extern=" + Stromganglinie_gesamt.ToString(CultureInfo.CreateSpecificCulture("en-US"));
-
-            Cursor.Current = Cursors.WaitCursor;
-
-            try
-            {
-                DBCommand.CommandText = sql;
-                DBCommand.ExecuteNonQuery();
-                DBCommand.Dispose();
-                Cursor.Current = Cursors.Default;
-            }
-            catch (SystemException ex)
-            {
-                Console.WriteLine("Fehler in Simulation: " + ex.Message);
-                DBCommand.Dispose();
-                Cursor.Current = Cursors.Default;
-            }
         }
 
         public float[] MonatsSumme_MW(float[] werte_array, int[] mo_anfang, int[] mo_ende)

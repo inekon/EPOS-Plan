@@ -3,7 +3,7 @@ using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
-    public class RecordSet
+    public class RecordSet : IDisposable
     {
         // Auf OleDbCommand umgestellt, damit Zuweisungen aus dem UI-Code (z.B. transaction) ohne Cast funktionieren
         public OleDbCommand DBCommand { get; set; }
@@ -17,6 +17,14 @@ namespace WindowsFormsApplication1
 
         public bool Open(string sql)
         {
+            // Evtl. noch offenen Reader aus einem vorherigen Open schliessen
+            // (auf einer Verbindung darf nur ein Reader gleichzeitig offen sein).
+            if (DBReader != null)
+            {
+                try { DBReader.Close(); DBReader.Dispose(); } catch { }
+                DBReader = null;
+            }
+
             try
             {
                 // Falls dem DBCommand von außen (über eine Transaktion) bereits eine Connection zugewiesen wurde, nutzen wir diese.
@@ -35,6 +43,8 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 Console.WriteLine("Fehler beim Öffnen des RecordSets: " + ex.Message);
+                // Aufraeumen, damit eine intern geoeffnete Verbindung im Fehlerfall nicht offen bleibt.
+                Close();
                 return false;
             }
         }
@@ -124,7 +134,20 @@ namespace WindowsFormsApplication1
                 _internalConnection.Close();
                 _internalConnection.Dispose();
                 _internalConnection = null;
-                DBCommand.Connection = null;
+                if (DBCommand != null) DBCommand.Connection = null;
+            }
+        }
+
+        // Ermoeglicht "using (var rs = new RecordSet()) { ... }": schliesst Reader/interne Verbindung
+        // und gibt zusaetzlich das OleDbCommand frei. Eine von aussen zugewiesene (Transaktions-)
+        // Verbindung wird NICHT geschlossen, da sie dem RecordSet nicht gehoert.
+        public void Dispose()
+        {
+            Close();
+            if (DBCommand != null)
+            {
+                DBCommand.Dispose();
+                DBCommand = null;
             }
         }
     }

@@ -223,10 +223,12 @@ namespace WindowsFormsApplication1
             result = simulation.Stromprofil_Strombedarf_berechnen(list);
             if (result == null) return;
  
-            simulation.Strombedarf_gesamt = simulation.com.I_vector_summe(result);
-            Array.Copy(result, simulation.Strombedarf_viertelStundenwerte, result.Length);
-            simulation.com.I_monats_summe(simulation.Strombedarf_viertelStundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
+            //simulation.Strombedarf_gesamt = simulation.com.I_vector_summe(result);
+            simulation.Strombedarf_gesamt = result.Sum(); 
 
+            Array.Copy(result, simulation.Strombedarf_viertelStundenwerte, result.Length);
+            //simulation.com.I_monats_summe(simulation.Strombedarf_viertelStundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(simulation.Strombedarf_viertelStundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
             simulation.Strombedarf_Max = simulation.Maximaler_Strombedarf(simulation.Strombedarf_viertelStundenwerte);
             simulation.Strombedarf_gesamt = simulation.Strombedarf_Gebaeude_gesamt;
 

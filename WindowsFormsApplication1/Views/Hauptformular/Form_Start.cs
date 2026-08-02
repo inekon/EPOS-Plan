@@ -55,11 +55,11 @@ namespace WindowsFormsApplication1
             btn_Zurueck.BackColor = Color.LightGray;
             btn_SimKonfig.MakeSmoothButton(6);
             btn_SimKonfig.BackColor = Color.LightGray;
-  
+
             label_Haus.Text = "\uE80F";
             label_Haus.Parent = pictureBox2;
             label_Haus.BackColor = Color.Transparent;
-            label_Haus.Location = new Point(30, (pictureBox2.Height -label_Haus.Height)/2); // Achtung: Location ist jetzt relativ zum Panel!
+            label_Haus.Location = new Point(30, (pictureBox2.Height - label_Haus.Height) / 2); // Achtung: Location ist jetzt relativ zum Panel!
 
             // Produktname auch im Kopfband der Startseite nennen (Beschriftung
             // stammt aus den Ressourcen, wird hier zur Laufzeit gesetzt)
@@ -109,7 +109,7 @@ namespace WindowsFormsApplication1
         public void SetTextProjekt(string szProjekt)
         {
             textBox_ProjektOpen.Text = szProjekt;
-            pBox_ProjektDetails.Enabled = true; 
+            pBox_ProjektDetails.Enabled = true;
         }
 
         private void pBox_Prozess_Click(object sender, EventArgs e)
@@ -311,6 +311,11 @@ namespace WindowsFormsApplication1
                     label_ProjektStatus.Text = "✔";
                     label_ProjektStatus.ForeColor = Color.Green;
                     for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
+
+                    ApplikationCtrl ctrl_app = new ApplikationCtrl();
+                    ; ctrl_app.m_ID_Projekt = m_ID_Projekt;
+                    ctrl_app.m_szProjektname = m_szProjektname;
+                    ctrl_app.Update();
                 }
             }
         }
@@ -343,7 +348,7 @@ namespace WindowsFormsApplication1
         public string GetProjektKlimaregion(int ID_Projekt)
         {
             RecordSet rs = new RecordSet();
-  
+
             string szKlimaregion = "";
             rs.Open("select * from Tab_Projekt where ID = " + ID_Projekt);
             if (rs.Next())
@@ -360,7 +365,7 @@ namespace WindowsFormsApplication1
                     }
                 }
             }
- 
+
             rs.Close();
             return szKlimaregion;
         }
@@ -369,12 +374,8 @@ namespace WindowsFormsApplication1
         {
             Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter();
 
-            DialogResult ret = frm.ShowDialog();
-            if (ret == DialogResult.OK)
-            {
-                ProjektDuplizierenCtrl ctrl = new ProjektDuplizierenCtrl();
-                ctrl.Duplizieren(frm.m_szProjekt, frm.m_szNeuerProjektName);
-            }
+            // Die Duplizierung (inkl. Fortschrittsanzeige) laeuft jetzt im Dialog selbst.
+            frm.ShowDialog();
         }
 
         private void pBox_StdLastProfil_Click(object sender, EventArgs e)
@@ -394,7 +395,7 @@ namespace WindowsFormsApplication1
                 " where Z_Projekt_Stromverbraucher.ID_Projekt=" + m_ID_Projekt;
 
             rs.Open(sql);
-            
+
             while (rs.Next())
             {
                 Z_ProjektStromverbraucherModel item = new Z_ProjektStromverbraucherModel();
@@ -469,7 +470,7 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Del_Stromganglinie(m_ID_Projekt);
                 wizctrl.Add_Stromganglinie(m_ID_Projekt, frm.DateiListe);
-  
+
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
                 projctrl.Update();
@@ -535,7 +536,7 @@ namespace WindowsFormsApplication1
                 item.Bezeichner = werzctrl.items[i].Bezeichner;
                 item.Vorlauf = werzctrl.items[i].Vorlauf;
                 item.Ruecklauf = werzctrl.items[i].Ruecklauf;
-                
+
                 frm.list_heizkesselmodel.Add(item);
             }
 
@@ -1024,7 +1025,7 @@ namespace WindowsFormsApplication1
         {
             ProjektCtrl ctrl = new ProjektCtrl();
             ctrl.ReadSingle(textBox_ProjektOpen.Text);
-            
+
             label_Name.Text = textBox_ProjektOpen.Text;
             simulationStrombedarf.Berechnung(ctrl.m_ID);
             label_Strom.Text = simulationStrombedarf.Strombedarf_gesamt.ToString("F2") + " MWh/a";
@@ -1032,10 +1033,10 @@ namespace WindowsFormsApplication1
             simulationWaermebedarf.Waermebedarf_berechnen(ctrl.m_ID, ctrl.m_ID_Klimaregion);
             label_WBedarf.Text = simulationWaermebedarf.Waermebedarf_Gesamt.ToString("F2") + " MWh/a";
 
-            label_Name.Left = pictureBox_Zusammenfassung.Width - label_Name.Width - 20;  
+            label_Name.Left = pictureBox_Zusammenfassung.Width - label_Name.Width - 20;
             label_WBedarf.Left = label_Name.Left + label_Name.Width - label_WBedarf.Width;
             label_Strom.Left = label_Name.Left + label_Name.Width - label_Strom.Width;
-            
+
             label_Komponenten.Text = "";
             if ((status & 1) == 1) label_Komponenten.Text += "Heizkessel";
             if ((status & 2) == 2) label_Komponenten.Text += ", Wärmepumpe";
@@ -1064,7 +1065,7 @@ namespace WindowsFormsApplication1
             }
 
             frm.SetControls(m_szProjektname);
-            frm.m_ID_Projekt = m_ID_Projekt; 
+            frm.m_ID_Projekt = m_ID_Projekt;
             DialogResult result = frm.ShowDialog();
 
             if (result == DialogResult.OK)
@@ -1134,9 +1135,9 @@ namespace WindowsFormsApplication1
             if (e.TabPageIndex >= 1 && textBox_ProjektOpen.Text == MyResource.Resource.Text_Select)
             {
                 e.Cancel = true;
-                Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis, 
+                Form_Hinweis frm = new Form_Hinweis(MyResource.Resource.Text_Hinweis,
                     "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox1 + "\r\n" + MyResource.Resource.Text_Form_Start_MessageBox2);
-                
+
                 System.Drawing.Point p1 = tabControl_Wizard.Location;
                 p1.X += tabControl_Wizard.Width / 2 - frm.Width / 2;
                 frm.Location = p1;
@@ -1153,10 +1154,10 @@ namespace WindowsFormsApplication1
         {
             MenueCtrl menu = new MenueCtrl();
             string szProjekt = menu.ProjektDelete();
-            if(szProjekt == textBox_ProjektOpen.Text)
+            if (szProjekt == textBox_ProjektOpen.Text)
             {
                 textBox_ProjektOpen.Text = "bitte auswählen!";
-                label_ProjektStatus.ForeColor = Color.FromArgb(192,0,0);
+                label_ProjektStatus.ForeColor = Color.FromArgb(192, 0, 0);
                 label_ProjektStatus.Text = "⚠";
                 comboBox_Klima.Text = "";
             }
@@ -1182,7 +1183,7 @@ namespace WindowsFormsApplication1
             Form_Simulation_Detail frm = new Form_Simulation_Detail(m_ID_Projekt);
             frm.simulation_Strombedarf = simulationStrombedarf;
             frm.simulation_Waermebedarf = simulationWaermebedarf;
-  
+
             frm.SetControls();
             frm.ShowDialog();
         }
@@ -1204,7 +1205,7 @@ namespace WindowsFormsApplication1
             p1 = tabControl_Wizard.PointToScreen(p1);
             p1.Y /= 2;
             p1.X /= 2;
-            
+
             if (radioButton_KollektorProfil.Checked)
             {
                 frm.list_werzmodel.Clear();
@@ -1272,7 +1273,7 @@ namespace WindowsFormsApplication1
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
             solgctrl.ReadAll("select * from Z_ProjektSolarganglinie where ID_Projekt=" + m_ID_Projekt.ToString());
 
-            if (werzctrl.rows > 0 || solgctrl.rows > 0) 
+            if (werzctrl.rows > 0 || solgctrl.rows > 0)
             {
                 radioButton_Ganglinie.BackColor = Color.FromArgb(90, 0, 255, 0);
                 radioButton_KollektorProfil.BackColor = Color.FromArgb(90, 0, 255, 0);
@@ -1284,7 +1285,7 @@ namespace WindowsFormsApplication1
                 radioButton_KollektorProfil.BackColor = Color.Transparent;
                 status &= ~512;
             }
-    
+
             pBox_Solarthermie.Invalidate();
         }
 
@@ -1464,7 +1465,7 @@ namespace WindowsFormsApplication1
         {
             pBox_Solarthermie_Click(sender, e);
         }
-        
+
         private void label63_Click(object sender, EventArgs e)
         {
             pBox_DetailSim_Click(sender, e);
@@ -1860,19 +1861,19 @@ namespace WindowsFormsApplication1
                 { "pBox_ProjektNeu", pBox_ProjektNeu_Click },
                 { "label_pBox_ProjektNeu", pBox_ProjektNeu_Click },
                 { "label2_pBox_ProjektNeu", pBox_ProjektNeu_Click },
-                
+
                 { "pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
                 { "label_pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
                 { "label2_pBox_ProjektOeffnen", pBox_ProjektOeffnen_Click },
-                
+
                 { "pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
                 { "label_pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
                 { "label2_pBox_ProjektZuletzt", pBox_ProjektZuletzt_Click },
-                
+
                 { "pBox_SpeichernUnter", pBox_SpeichernUnter_Click },
                 { "label_pBox_SpeichernUnter", pBox_SpeichernUnter_Click },
                 { "label2_pBox_SpeichernUnter", pBox_SpeichernUnter_Click },
-                
+
                 { "pBox_Delete", pBox_Delete_Click },
                 { "label_pBox_Delete", pBox_Delete_Click },
                 { "label2_pBox_Delete", pBox_Delete_Click },

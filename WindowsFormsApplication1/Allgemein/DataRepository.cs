@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+﻿using System.IO;
 using System;
 using System.Data;
 using System.Data.OleDb;
@@ -8,13 +8,16 @@ namespace WindowsFormsApplication1
 {
     public static class DataRepository
     {
-   
+        // Dateiname der Access-Datenbank (liegt im konfigurierten Datenbank-Ordner).
+        private const string DB_DATEINAME = "Kenndaten.accdb";
+
+
         // Zentraler Ort für den Pfad - einfach anzupassen
         public static string GetConnectionString()
         {
             // Beispiel: Datenbank liegt im Programmordner
             string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={GetDBPath()};";
-            return connString; 
+            return connString;
         }
 
         // Für SELECT-Abfragen: Liefert Daten in den Arbeitsspeicher
@@ -66,7 +69,7 @@ namespace WindowsFormsApplication1
                 }
             }
         }
-        
+
         // Für INSERT, UPDATE, DELETE – gibt die Anzahl der betroffenen Zeilen zurück
         public static int ExecuteNonQuery(string sql, params OleDbParameter[] parameters)
         {
@@ -164,19 +167,18 @@ namespace WindowsFormsApplication1
             return (conn, trans);
         }
 
+        // Vollstaendiger Pfad zur Access-Datenbank.
+        // Ordner: konfigurierter Standard-Datenbankpfad aus den Einstellungen (Form_AdminSettings),
+        // sonst Fallback %ProgramData%\EPOS_PLAN. Darunter liegt die Datei DB_DATEINAME.
         public static string GetDBPath()
         {
-            string db = "";
-            string userPath = $@"SOFTWARE\ODBC\ODBC.INI\TEST";
-
-            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(userPath))
+            string ordner = Properties.Settings.Default.DBPath;
+            if (string.IsNullOrWhiteSpace(ordner))
             {
-                if (key != null)
-                {
-                    db = key.GetValue("DBQ")?.ToString() ?? key.GetValue("Database")?.ToString();
-                }
+                string programData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                ordner = Path.Combine(programData, "EPOS_PLAN");
             }
-            return db;
+            return Path.Combine(ordner, DB_DATEINAME);
         }
 
         public static int GetMaxID(string tableName, string fieldName = "ID")

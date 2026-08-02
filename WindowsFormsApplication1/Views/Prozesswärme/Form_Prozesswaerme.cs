@@ -290,8 +290,10 @@ namespace WindowsFormsApplication1
             list = listView_Prozess_Auswahl.Items.Cast<ListViewItem>().Select(item => item.Text).ToList();
 
             simulation.Prozesswaerme_berechnen(list);
-            simulation.Waermebedarf_Prozess = simulation.com.I_vector_summe(simulation.prozesswerte);
-            simulation.com.I_monats_summe(simulation.prozesswerte, simulation.Waermebedarf_Prozess_Monat, simulation.mo_anfang, simulation.mo_ende);
+            //simulation.Waermebedarf_Prozess = simulation.com.I_vector_summe(simulation.prozesswerte);
+            simulation.Waermebedarf_Prozess = simulation.prozesswerte.Sum();
+            //simulation.com.I_monats_summe(simulation.prozesswerte, simulation.Waermebedarf_Prozess_Monat, simulation.mo_anfang, simulation.mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(simulation.prozesswerte, simulation.Waermebedarf_Prozess_Monat, simulation.mo_anfang, simulation.mo_ende);
 
             Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
             frm.Init(simulation);

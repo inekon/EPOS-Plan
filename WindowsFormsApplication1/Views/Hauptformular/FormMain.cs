@@ -482,7 +482,7 @@ namespace WindowsFormsApplication1
                "Z_ProjektWaermebedarf.ID_Ganglinie, Tab_Waermebedarf.Bezeichner " +
                "FROM Z_ProjektWaermebedarf INNER JOIN Tab_Waermebedarf ON " +
                "Z_ProjektWaermebedarf.ID_Ganglinie = Tab_Waermebedarf.ID " +
-               " where ID_Projekt=" + projctrl.m_ID;
+               " where Z_ProjektWaermebedarf.ID_Projekt=" + projctrl.m_ID;
 
             rs.Open(sql);
             while (rs.Next())
@@ -503,7 +503,7 @@ namespace WindowsFormsApplication1
         {
             ProjektCtrl projctrl = new ProjektCtrl();
             Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
-            BrauchwasserCtrl pwctrl = new BrauchwasserCtrl();
+            ProzesswaermeCtrl pwctrl = new ProzesswaermeCtrl();
 
             ctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + m_ID_Projekt);
 
@@ -515,7 +515,7 @@ namespace WindowsFormsApplication1
                 for (int j = 0; j < pwctrl.rows; j++)
                 {
                     ListViewItem lvitem = new ListViewItem();
-                    lvitem.Text = pwctrl.m_szBezeichner;
+                    lvitem.Text = pwctrl.m_szProzessname;
                     lvitem.SubItems.Add(pwctrl.m_szTyp);
                     lvitem.SubItems.Add(pwctrl.m_szBeschreibung);
                     lvitem.SubItems.Add(ctrl.items[i].ID_Z.ToString());
@@ -862,11 +862,6 @@ namespace WindowsFormsApplication1
             ctrl.Update();
         }
 
-        private void btn_StromSimulSpeichern_Click(object sender, EventArgs e)
-        {
-            simulation_strom.SimulationErgebis_in_DB();
-        }
-
         public void SetStrombedarfControl(int m_ID_Projekt)
         {
             ProjektCtrl projctrl = new ProjektCtrl();
@@ -931,18 +926,18 @@ namespace WindowsFormsApplication1
 
             listView_Stromganglinie.Items.Clear();
 
-            string sql = "SELECT Z_ProjektStromganglinie.ID_Z, Z_ProjektStromganglinie.ID_Projekt, " +
+            string sql = "SELECT Z_ProjektStromganglinie.ID, Z_ProjektStromganglinie.ID_Projekt, " +
                "Z_ProjektStromganglinie.ID_Ganglinie, Tab_Stromganglinie.Bezeichner " +
                "FROM Z_ProjektStromganglinie INNER JOIN Tab_Stromganglinie ON " +
                "Z_ProjektStromganglinie.ID_Ganglinie = Tab_Stromganglinie.ID " +
-               " where ID_Projekt=" + projctrl.m_ID;
+               " where Z_ProjektStromganglinie.ID_Projekt=" + projctrl.m_ID;
 
             rs.Open(sql);
             while (rs.Next())
             {
                 ListViewItem lvitem = new ListViewItem();
                 lvitem.Text = (string)rs.Read("Bezeichner");
-                lvitem.SubItems.Add(rs.Read("ID_Z").ToString());
+                lvitem.SubItems.Add(rs.Read("ID").ToString());
                 lvitem.SubItems.Add(rs.Read("ID_Ganglinie").ToString());
                 listView_Stromganglinie.Items.Add(lvitem);
             }

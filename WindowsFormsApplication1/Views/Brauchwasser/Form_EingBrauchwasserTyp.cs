@@ -1,7 +1,6 @@
 using System;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Drawing;
-using System.Globalization;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -11,7 +10,6 @@ namespace WindowsFormsApplication1
     {
         public double[,] arr = new double[7, 24];
         private double[] arr_seriell = new double[168];
-        OdbcCommand DBCommand = Program.DBConnection.CreateCommand();
 
         public Form_EingBrauchwasserTyp()
         {
@@ -24,7 +22,7 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Brauchwassertyp_STAMM order by Bezeichner");
-            listBox_Typname.Items.Clear();  
+            listBox_Typname.Items.Clear();
             while (rs.Next())
             {
                 listBox_Typname.Items.Add(rs.Read("Bezeichner"));
@@ -50,8 +48,8 @@ namespace WindowsFormsApplication1
         {
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Brauchwassertyp_STAMM where Bezeichner='" + listBox_Typname.Text + "'");
-            
-            if(rs.Next())
+
+            if (rs.Next())
             {
                 DatenEinlesen(rs);
 
@@ -63,16 +61,16 @@ namespace WindowsFormsApplication1
             }
             rs.Close();
 
-            chart1.Series[0].Points.DataBindY(arr_seriell); 
+            chart1.Series[0].Points.DataBindY(arr_seriell);
 
-            listBox_Tag.ClearSelected(); 
-            listBox_Tag.SelectedIndex = 0;   
+            listBox_Tag.ClearSelected();
+            listBox_Tag.SelectedIndex = 0;
         }
 
         private void listBox_Tag_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(listBox_Tag.SelectedIndex == -1) return;
-             Tagesdaten(listBox_Typname.Text, listBox_Tag.SelectedIndex); 
+            if (listBox_Tag.SelectedIndex == -1) return;
+            Tagesdaten(listBox_Typname.Text, listBox_Tag.SelectedIndex);
         }
 
         private void DatenEinlesen(RecordSet rs)
@@ -82,20 +80,20 @@ namespace WindowsFormsApplication1
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
                     arr[Tag, stunde] = (double)rs.Read(Tag * 24 + stunde + 3);
-                    arr_seriell[Tag*24+stunde] = arr[Tag, stunde];
+                    arr_seriell[Tag * 24 + stunde] = arr[Tag, stunde];
                 }
             }
         }
 
         private void btn_WocheUebernehmen_Click(object sender, EventArgs e)
         {
-            int Tag = listBox_Tag.SelectedIndex;  
+            int Tag = listBox_Tag.SelectedIndex;
 
             for (int stunde = 0; stunde < 24; stunde++)
             {
                 string szval = tabPage1.Controls["st" + (stunde + 1).ToString()].Text;
                 Control ctrl = tabPage1.Controls["st" + (stunde + 1).ToString()];
-                if(!Program.checkDouble(ctrl, szval)) return;
+                if (!Program.checkDouble(ctrl, szval)) return;
                 double dval = double.Parse(szval);
                 arr[Tag, stunde] = dval;
                 arr_seriell[Tag * 24 + stunde] = dval;
@@ -113,42 +111,34 @@ namespace WindowsFormsApplication1
             {
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
-                    if (!update(listBox_Typname.Text, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;  
+                    if (!update(listBox_Typname.Text, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;
                 }
             }
-            update(textBox_Beschreibung.Text,listBox_Typname.Text);
+            update(textBox_Beschreibung.Text, listBox_Typname.Text);
             MessageBox.Show("Datensatz gespeichert!");
-            chart1.Series[0].Points.DataBindY(arr_seriell); 
+            chart1.Series[0].Points.DataBindY(arr_seriell);
         }
 
         private bool update(string szBeschreibung, string szTyp)
         {
-            DBCommand.CommandText = "UPDATE Tab_Brauchwassertyp_STAMM SET Beschreibung='" + szBeschreibung + "' WHERE Bezeichner='" + szTyp + "'";
-            try
-            {
-                DBCommand.ExecuteNonQuery();
-            }
-            catch
-            {
-                MessageBox.Show("Aktualisieren nicht möglich!");
-                return false;
-            }
-            return true;
+            // OleDb ueber DataRepository, parametrisiert (kein String-Concat -> kein Quote-/Injection-Problem).
+            // DataRepository zeigt bei einem Fehler bereits eine Meldung und liefert -1 zurueck.
+            int n = DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_Brauchwassertyp_STAMM SET Beschreibung = ? WHERE Bezeichner = ?",
+                new OleDbParameter("?", szBeschreibung ?? ""),
+                new OleDbParameter("?", szTyp ?? ""));
+            return n >= 0;
         }
 
         private bool update(string typ, string feld, double value)
         {
-            DBCommand.CommandText = "UPDATE Tab_Brauchwassertyp_STAMM SET [" + feld + "]=" + value.ToString(CultureInfo.CreateSpecificCulture("en-US")) + " WHERE Bezeichner='" + typ + "'";
-            try
-            {
-                DBCommand.ExecuteNonQuery();
-            }
-            catch
-            {
-                MessageBox.Show("Aktualisieren nicht möglich!");
-                return false;
-            }
-            return true;
+            // Spaltenname (feld) ist ein Bezeichner und kann NICHT parametrisiert werden -> in eckige Klammern.
+            // Wert + Bezeichner als Parameter: der Provider setzt den Dezimalpunkt korrekt (keine Kultur-Formatierung noetig).
+            int n = DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_Brauchwassertyp_STAMM SET [" + feld + "] = ? WHERE Bezeichner = ?",
+                new OleDbParameter("?", value),
+                new OleDbParameter("?", typ ?? ""));
+            return n >= 0;
         }
 
         private void btn_Schliessen_Click(object sender, EventArgs e)
@@ -181,7 +171,7 @@ namespace WindowsFormsApplication1
                 for (int stunde = 0; stunde < 24; stunde++)
                 {
                     arr[Tag, stunde] = 0;
-                    arr_seriell[Tag * 24 + stunde] = 0; 
+                    arr_seriell[Tag * 24 + stunde] = 0;
                 }
             }
             if (BrauchwasserStammCtrl.TypNew(frm.m_szName) <= 0) return;
@@ -193,10 +183,10 @@ namespace WindowsFormsApplication1
                     if (!update(frm.m_szName, (Tag * 24 + stunde + 1).ToString(), arr[Tag, stunde])) return;
                 }
             }
-          
+
             update("", frm.m_szName);
             SetControls();
-            listBox_Typname.Text = frm.m_szName;  
+            listBox_Typname.Text = frm.m_szName;
         }
 
         private void btn_SpeichernUnter_Click(object sender, EventArgs e)
@@ -220,7 +210,7 @@ namespace WindowsFormsApplication1
 
             update(textBox_Beschreibung.Text, frm.m_szName);
             SetControls();
-            listBox_Typname.Text = frm.m_szName;  
+            listBox_Typname.Text = frm.m_szName;
         }
 
         private void init_Chart(Chart chart)

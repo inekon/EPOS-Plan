@@ -29,7 +29,6 @@ namespace WindowsFormsApplication1
             {
                 listBox_Extern.Items.Add(ctrl.items[i].m_szBezeichner);
             }
-
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
@@ -55,7 +54,6 @@ namespace WindowsFormsApplication1
                 model.m_ID_Ganglinie = DateiListe[i].m_ID_Stromganglinie;
                 listBox_Auswahl.Items.Add(model.m_szBezeichner);
             }
-
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)

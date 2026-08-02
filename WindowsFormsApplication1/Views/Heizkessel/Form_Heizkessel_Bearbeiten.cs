@@ -1,8 +1,4 @@
-using ScottPlot.Colormaps;
 using System;
-using System.Data;
-using System.Data.Odbc;
-using System.Data.OleDb;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1

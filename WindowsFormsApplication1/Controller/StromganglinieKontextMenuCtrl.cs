@@ -123,17 +123,17 @@ namespace WindowsFormsApplication1
 
             frm.DateiListe.Clear();
 
-            string sql = "SELECT Z_ProjektStromganglinie.ID AS ID_Z, Z_ProjektStromganglinie.ID_Projekt, " +
+            string sql = "SELECT Z_ProjektStromganglinie.ID AS ID, Z_ProjektStromganglinie.ID_Projekt, " +
                   "Z_ProjektStromganglinie.ID_Ganglinie, Tab_Stromganglinie.Bezeichner " +
                   "FROM Z_ProjektStromganglinie INNER JOIN Tab_Stromganglinie ON " +
                   "Z_ProjektStromganglinie.ID_Ganglinie = Tab_Stromganglinie.ID " +
-                  " where ID_Projekt=" + m_ID_Projekt;
+                  " where Z_ProjektStromganglinie.ID_Projekt=" + m_ID_Projekt;
    
             rs.Open(sql);
             while (rs.Next())
             {
                 Z_ProjektStromganglinieCtrl item = new Z_ProjektStromganglinieCtrl();
-                item.m_ID_Z = (int)rs.Read("ID_Z");
+                item.m_ID_Z = (int)rs.Read("ID");
                 item.m_ID_Projekt = m_ID_Projekt;
                 item.m_ID_Stromganglinie = (int)rs.Read("ID_Ganglinie");
                 item.m_szStromganglinie = (string)rs.Read("Bezeichner");//item.Text;

@@ -24,6 +24,9 @@
             this.label1 = new System.Windows.Forms.Label();
             this.txt_DBImportPath = new System.Windows.Forms.TextBox();
             this.btn_DBImportBrowse = new System.Windows.Forms.Button();
+            this.lbl_DBPath = new System.Windows.Forms.Label();
+            this.txt_DBPath = new System.Windows.Forms.TextBox();
+            this.btn_DBPathBrowse = new System.Windows.Forms.Button();
             this.lbl_DBExportPath = new System.Windows.Forms.Label();
             this.txt_DBExportPath = new System.Windows.Forms.TextBox();
             this.btn_DBExportBrowse = new System.Windows.Forms.Button();
@@ -111,6 +114,9 @@
             this.panel_Export.Controls.Add(this.label1);
             this.panel_Export.Controls.Add(this.txt_DBImportPath);
             this.panel_Export.Controls.Add(this.btn_DBImportBrowse);
+            this.panel_Export.Controls.Add(this.lbl_DBPath);
+            this.panel_Export.Controls.Add(this.txt_DBPath);
+            this.panel_Export.Controls.Add(this.btn_DBPathBrowse);
             this.panel_Export.Controls.Add(this.lbl_DBExportPath);
             this.panel_Export.Controls.Add(this.txt_DBExportPath);
             this.panel_Export.Controls.Add(this.btn_DBExportBrowse);
@@ -144,6 +150,30 @@
             this.btn_DBImportBrowse.Size = new System.Drawing.Size(95, 25);
             this.btn_DBImportBrowse.TabIndex = 5;
             this.btn_DBImportBrowse.Text = "Durchsuchen...";
+            // 
+            // lbl_DBPath
+            // 
+            this.lbl_DBPath.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lbl_DBPath.Location = new System.Drawing.Point(15, 162);
+            this.lbl_DBPath.Name = "lbl_DBPath";
+            this.lbl_DBPath.Size = new System.Drawing.Size(300, 20);
+            this.lbl_DBPath.TabIndex = 6;
+            this.lbl_DBPath.Text = "Standard Datenbank-Pfad:";
+            // 
+            // txt_DBPath
+            // 
+            this.txt_DBPath.Location = new System.Drawing.Point(18, 187);
+            this.txt_DBPath.Name = "txt_DBPath";
+            this.txt_DBPath.Size = new System.Drawing.Size(360, 23);
+            this.txt_DBPath.TabIndex = 7;
+            // 
+            // btn_DBPathBrowse
+            // 
+            this.btn_DBPathBrowse.Location = new System.Drawing.Point(385, 186);
+            this.btn_DBPathBrowse.Name = "btn_DBPathBrowse";
+            this.btn_DBPathBrowse.Size = new System.Drawing.Size(95, 25);
+            this.btn_DBPathBrowse.TabIndex = 8;
+            this.btn_DBPathBrowse.Text = "Durchsuchen...";
             // 
             // lbl_DBExportPath
             // 
@@ -441,6 +471,9 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txt_DBImportPath;
         private System.Windows.Forms.Button btn_DBImportBrowse;
+        private System.Windows.Forms.Label lbl_DBPath;
+        private System.Windows.Forms.TextBox txt_DBPath;
+        private System.Windows.Forms.Button btn_DBPathBrowse;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txt_GEOCodUrl;
     }

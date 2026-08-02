@@ -192,7 +192,7 @@ namespace WindowsFormsApplication1
             string szProjekt = "";
 
             DialogResult ret = frm.ShowDialog();
-            if (ret == DialogResult.OK)
+            if (ret == DialogResult.OK && frm.szProjekt != "")
             {
                 // --- NEU: MessageBox Sicherheitsabfrage vor dem tatsächlichen Löschen ---
                 DialogResult dialogResult = MessageBox.Show(

@@ -128,7 +128,7 @@ namespace WindowsFormsApplication1
                   "Z_ProjektWaermebedarf.ID_Ganglinie, Tab_Waermebedarf.Bezeichner " +
                   "FROM Z_ProjektWaermebedarf INNER JOIN Tab_Waermebedarf ON " +
                   "Z_ProjektWaermebedarf.ID_Ganglinie = Tab_Waermebedarf.ID " +
-                  " where ID_Projekt=" + m_ID_Projekt;
+                  " where Z_ProjektWaermebedarf.ID_Projekt=" + m_ID_Projekt;
    
             rs.Open(sql);
             while (rs.Next())

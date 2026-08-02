@@ -43,6 +43,7 @@
             checkBox_WP = new System.Windows.Forms.CheckBox();
             checkBox_Gesamt = new System.Windows.Forms.CheckBox();
             checkBox_BHKW = new System.Windows.Forms.CheckBox();
+            checkBox_Waermebedarf = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)chart_Waerme).BeginInit();
             SuspendLayout();
             // 
@@ -202,9 +203,25 @@
             checkBox_BHKW.UseVisualStyleBackColor = false;
             checkBox_BHKW.CheckedChanged += checkBox_BHKW_CheckedChanged;
             // 
+            // checkBox_Waermebedarf
+            // 
+            checkBox_Waermebedarf.AutoSize = true;
+            checkBox_Waermebedarf.BackColor = System.Drawing.Color.Transparent;
+            checkBox_Waermebedarf.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+            checkBox_Waermebedarf.ForeColor = System.Drawing.Color.Black;
+            checkBox_Waermebedarf.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            checkBox_Waermebedarf.Location = new System.Drawing.Point(199, 603);
+            checkBox_Waermebedarf.Name = "checkBox_Waermebedarf";
+            checkBox_Waermebedarf.Size = new System.Drawing.Size(175, 21);
+            checkBox_Waermebedarf.TabIndex = 293;
+            checkBox_Waermebedarf.Text = "Wärmebedarf einblenden";
+            checkBox_Waermebedarf.UseVisualStyleBackColor = false;
+            checkBox_Waermebedarf.CheckedChanged += checkBox_Waermebedarf_CheckedChanged;
+            // 
             // NavigatorWaerme
             // 
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            Controls.Add(checkBox_Waermebedarf);
             Controls.Add(checkBox_BHKW);
             Controls.Add(checkBox_ST);
             Controls.Add(checkBox_SPK);
@@ -229,5 +246,6 @@
         private System.Windows.Forms.CheckBox checkBox_WP;
         private System.Windows.Forms.CheckBox checkBox_Gesamt;
         private System.Windows.Forms.CheckBox checkBox_BHKW;
+        private System.Windows.Forms.CheckBox checkBox_Waermebedarf;
     }
 }
