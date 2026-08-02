@@ -28,6 +28,9 @@ namespace WindowsFormsApplication1
 
             // KI-Hilfe-Assistent einbinden (Menüeintrag und F1)
             InitKiHilfe();
+
+            // Lizenzverwaltung einbinden (Administration → Lizenz)
+            InitLizenzMenue();
         }
 
         /// <summary>Produktname für Titelleiste, Kopfzeile und Meldungen.</summary>
@@ -197,6 +200,42 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 Console.WriteLine("KI-Hilfe konnte nicht eingebunden werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Bindet die Lizenzverwaltung ein: Menüeintrag "Lizenz…" im Menü
+        /// Administration direkt unterhalb von "Einstellungen" sowie eine
+        /// stille Online-Nachprüfung des Lizenz-Tokens im Hintergrund.
+        ///
+        /// Bewusst programmatisch, damit Designer und .resx unberührt bleiben.
+        /// </summary>
+        private void InitLizenzMenue()
+        {
+            try
+            {
+                ToolStripMenuItem eintrag = new ToolStripMenuItem(
+                    Program.nLanguage == 1 ? "License…" : "Lizenz…");
+                eintrag.Click += (s, e) =>
+                {
+                    using (Form_LizenzVerwaltung frm = new Form_LizenzVerwaltung())
+                        frm.ShowDialog(this);
+                };
+
+                // Direkt unterhalb von "Einstellungen" einordnen
+                int position = Administration.DropDownItems.IndexOf(MenuItem_Einstellungen);
+                if (position >= 0)
+                    Administration.DropDownItems.Insert(position + 1, eintrag);
+                else
+                    Administration.DropDownItems.Add(eintrag);
+
+                // Stille Nachprüfung — Fehler bleiben bewusst folgenlos,
+                // die Karenzzeit im LizenzManager fängt Offline-Phasen ab.
+                _ = LizenzManager.NachpruefungImHintergrund();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lizenzmenü konnte nicht eingebunden werden: " + ex.Message);
             }
         }
 

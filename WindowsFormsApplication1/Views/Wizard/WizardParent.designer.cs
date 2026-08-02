@@ -35,17 +35,15 @@
             listBox_Projekte = new System.Windows.Forms.ListBox();
             pictureBox_App = new System.Windows.Forms.PictureBox();
             pnlBottom = new System.Windows.Forms.Panel();
-            tblButtons = new System.Windows.Forms.TableLayoutPanel();
-            btnSpeichern = new System.Windows.Forms.Button();
-            btnBack = new System.Windows.Forms.Button();
             btnNext = new System.Windows.Forms.Button();
-            btnCancel = new System.Windows.Forms.Button();
+            btnBack = new System.Windows.Forms.Button();
             btnOeffnen = new System.Windows.Forms.Button();
+            btnCancel = new System.Windows.Forms.Button();
+            btnSpeichern = new System.Windows.Forms.Button();
             pnlContent = new System.Windows.Forms.Panel();
             pnlLeft.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox_App).BeginInit();
             pnlBottom.SuspendLayout();
-            tblButtons.SuspendLayout();
             SuspendLayout();
             // 
             // pnlLeft
@@ -93,35 +91,14 @@
             // 
             // pnlBottom
             // 
-            pnlBottom.BackColor = System.Drawing.SystemColors.ControlLight;
-            pnlBottom.Controls.Add(tblButtons);
+            pnlBottom.BackColor = System.Drawing.Color.White;
+            pnlBottom.Controls.Add(btnNext);
+            pnlBottom.Controls.Add(btnBack);
+            pnlBottom.Controls.Add(btnOeffnen);
+            pnlBottom.Controls.Add(btnCancel);
+            pnlBottom.Controls.Add(btnSpeichern);
             resources.ApplyResources(pnlBottom, "pnlBottom");
             pnlBottom.Name = "pnlBottom";
-            // 
-            // tblButtons
-            // 
-            resources.ApplyResources(tblButtons, "tblButtons");
-            tblButtons.Controls.Add(btnSpeichern, 0, 0);
-            tblButtons.Controls.Add(btnBack, 1, 0);
-            tblButtons.Controls.Add(btnNext, 2, 0);
-            tblButtons.Controls.Add(btnCancel, 4, 0);
-            tblButtons.Controls.Add(btnOeffnen, 5, 0);
-            tblButtons.Name = "tblButtons";
-            // 
-            // btnSpeichern
-            // 
-            resources.ApplyResources(btnSpeichern, "btnSpeichern");
-            btnSpeichern.Image = Properties.Resources.save_icon_36513;
-            btnSpeichern.Name = "btnSpeichern";
-            btnSpeichern.UseVisualStyleBackColor = true;
-            btnSpeichern.Click += btnSpeichern_Click;
-            // 
-            // btnBack
-            // 
-            resources.ApplyResources(btnBack, "btnBack");
-            btnBack.Name = "btnBack";
-            btnBack.UseVisualStyleBackColor = true;
-            btnBack.Click += btnBack_Click;
             // 
             // btnNext
             // 
@@ -130,12 +107,12 @@
             btnNext.UseVisualStyleBackColor = true;
             btnNext.Click += btnNext_Click;
             // 
-            // btnCancel
+            // btnBack
             // 
-            resources.ApplyResources(btnCancel, "btnCancel");
-            btnCancel.Name = "btnCancel";
-            btnCancel.UseVisualStyleBackColor = true;
-            btnCancel.Click += btnCancel_Click;
+            resources.ApplyResources(btnBack, "btnBack");
+            btnBack.Name = "btnBack";
+            btnBack.UseVisualStyleBackColor = true;
+            btnBack.Click += btnBack_Click;
             // 
             // btnOeffnen
             // 
@@ -143,6 +120,21 @@
             btnOeffnen.Name = "btnOeffnen";
             btnOeffnen.UseVisualStyleBackColor = true;
             btnOeffnen.Click += btnOeffnen_Click;
+            // 
+            // btnCancel
+            // 
+            resources.ApplyResources(btnCancel, "btnCancel");
+            btnCancel.Name = "btnCancel";
+            btnCancel.UseVisualStyleBackColor = true;
+            btnCancel.Click += btnCancel_Click;
+            // 
+            // btnSpeichern
+            // 
+            resources.ApplyResources(btnSpeichern, "btnSpeichern");
+            btnSpeichern.Image = Properties.Resources.save_icon_36513;
+            btnSpeichern.Name = "btnSpeichern";
+            btnSpeichern.UseVisualStyleBackColor = true;
+            btnSpeichern.Click += btnSpeichern_Click;
             // 
             // pnlContent
             // 
@@ -163,7 +155,6 @@
             pnlLeft.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBox_App).EndInit();
             pnlBottom.ResumeLayout(false);
-            tblButtons.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
 
@@ -177,7 +168,6 @@
         private System.Windows.Forms.PictureBox pictureBox_App;
         private System.Windows.Forms.ListBox listBox_Projekte;
         private System.Windows.Forms.Label label_Projekt;
-        private System.Windows.Forms.TableLayoutPanel tblButtons;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnNext;
         private System.Windows.Forms.Button btnBack;

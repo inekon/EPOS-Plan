@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 using static Humanizer.In;
 
 namespace WindowsFormsApplication1
@@ -138,6 +139,7 @@ namespace WindowsFormsApplication1
             _chartManager.MaxXVALUE = 8760;
             _chartManager.MitViertelStunde = false;
             _chartManager.Init();
+            _chartManager.AddSeries("Wärmebedarf", Color.LightGray, temp_profil);
             _chartManager.AddSeries("Gesamt", Color.Green, temp_ges);
             _chartManager.AddSeries("Waermepumpe", Color.Orange, temp_wp);
             _chartManager.AddSeries("Heizstab", Color.Yellow, temp_hs);
@@ -145,12 +147,15 @@ namespace WindowsFormsApplication1
             _chartManager.AddSeries("Solarthermie", Color.Brown, temp_st);
             _chartManager.AddSeries("BHKW", Color.Red, temp_bhkw);
             _chartManager.AddSeries("Speicherfüllstand", Color.MediumVioletRed, temp_puffer);
+   
+            _chartManager._chart.Series["Wärmebedarf"].BorderDashStyle = ChartDashStyle.Solid;
             _chartManager._chart.Series["Waermepumpe"].Enabled = false;
             _chartManager._chart.Series["Heizstab"].Enabled = false;
             _chartManager._chart.Series["Heizkessel"].Enabled = false;
             _chartManager._chart.Series["Solarthermie"].Enabled = false;
             _chartManager._chart.Series["BHKW"].Enabled = false;
             _chartManager._chart.Series["Speicherfüllstand"].Enabled = false;
+            _chartManager._chart.Series["Wärmebedarf"].Enabled = false;
             checkBox_Gesamt.Checked = true;
 
             // Checkbox nur anbieten, wenn dem Projekt ein Pufferspeicher zugeordnet ist
@@ -248,6 +253,77 @@ namespace WindowsFormsApplication1
             else
             {
                 _chartManager._chart.Series["BHKW"].Enabled = false;
+            }
+        }
+
+        private void checkBox_Waermebedarf_CheckedChanged(object sender, EventArgs e)
+        {
+            double neueMax = 0;
+
+            chart_Waerme.Series["Wärmebedarf"].Enabled = checkBox_Waermebedarf.Checked;
+
+            if (checkBox_Waermebedarf.Checked)
+            {
+                neueMax = temp_profil.Max() * 1.1;
+                if (neueMax < 10) neueMax = 10; // Minimum setzen, damit die Achse nicht zu klein wird
+            }
+            else
+                neueMax = Math.Max(temp_ges.Max(), temp_puffer.Max()) + 1;
+
+            // Achsen-Maximum darf nie 0 oder negativ sein, sonst wirft RecalculateAxesScale
+            // "Axis Object - Auto interval does not have proper value" (z. B. wenn noch keine
+            // Bedarfsdaten vorliegen bzw. der Handler vor der Simulation feuert).
+            if (neueMax < 10 || double.IsNaN(neueMax)) neueMax = 10;
+
+            // Nur die Achse updaten ohne die Daten zu löschen:
+            var ca = chart_Waerme.ChartAreas[0];
+
+            ca.AxisY.Maximum = neueMax; // Den oben berechneten Wert direkt setzen
+            ca.AxisY.Interval = 0;      // Auf Auto stellen
+
+            // 2. Prüfen, ob die Serie existiert
+            if (chart_Waerme.Series.IndexOf("Wärmebedarf") != -1)
+            {
+                var s = chart_Waerme.Series["Wärmebedarf"];
+                bool anzeigen = checkBox_Waermebedarf.Checked;
+
+                s.Enabled = anzeigen;
+
+                if (anzeigen)
+                {
+                    // --- SPEZIALFALL: Y2-ACHSE AKTIVIEREN ---
+                    s.YAxisType = AxisType.Secondary; // Serie nach rechts binden
+                    ca.AxisY2.Enabled = AxisEnabled.True;
+
+                    // Optik der rechten Achse
+                    ca.AxisY2.Title = "Speicher [kWh]";
+                    ca.AxisY2.TitleForeColor = Color.Black;
+                    ca.AxisY2.LabelStyle.ForeColor = Color.Black;
+                    ca.AxisY2.MajorGrid.Enabled = false; // Gitter nur links lassen
+
+                    // Skalierung berechnen (falls nicht automatisch gewünscht)
+                    if (s.Points.Count > 0)
+                    {
+                        double maxVal = s.Points.Max(p => p.YValues[0]);
+                        ca.AxisY2.Maximum = maxVal > 0 ? maxVal * 1.1 : 10;
+                    }
+
+                    // Den inneren Bereich schrumpfen, damit rechts Platz für die 2. Achse ist
+                    ca.InnerPlotPosition.Auto = false;
+                    ca.InnerPlotPosition.X = 10;      // Start links
+                    ca.InnerPlotPosition.Width = 75;  // Vorher ca. 85, jetzt weniger für Y2-Platz
+                    ca.InnerPlotPosition.Y = 8;
+                    ca.InnerPlotPosition.Height = 75;
+
+                    // Sicherstellen, dass die Achse nicht abgeschnitten wird
+                    ca.AxisY2.LabelStyle.Enabled = true;
+
+                }
+                else
+                {
+                    // Y2-Achse wieder verstecken, wenn Speicher aus
+                    ca.AxisY2.Enabled = AxisEnabled.False;
+                }
             }
         }
     }

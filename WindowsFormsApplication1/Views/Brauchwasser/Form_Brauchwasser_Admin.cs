@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.Data.Odbc;
 
 namespace WindowsFormsApplication1
 {
@@ -84,7 +80,8 @@ namespace WindowsFormsApplication1
             list.Add(listBox_DB.Text);
             simulation.Brauchwasserwaerme_berechnen(list);
             simulation.Waermebedarf_Brauchwasser = simulation.brauchwasserwerte.Sum();
-            simulation.com.I_monats_summe(simulation.brauchwasserwerte, simulation.Waermebedarf_Brauchwasser_Monat, simulation.mo_anfang, simulation.mo_ende);
+            //simulation.com.I_monats_summe(simulation.brauchwasserwerte, simulation.Waermebedarf_Brauchwasser_Monat, simulation.mo_anfang, simulation.mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(simulation.brauchwasserwerte, simulation.Waermebedarf_Brauchwasser_Monat, simulation.mo_anfang, simulation.mo_ende);
 
             Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
             frm.Init(simulation);

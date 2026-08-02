@@ -1,7 +1,5 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Data.Odbc;
-using System.Data.OleDb;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -18,7 +16,6 @@ namespace WindowsFormsApplication1
         public static FormMain mainfrm = null;
         public static Form_Start startfrm = null;
         public static MenueCtrl menuectrl = null;
-        public static OdbcConnection DBConnection = null;
         public static WizardCtrl wizardctrl = null;
         public static string ApplicationPath_Common = "";
         public static string ApplicationPath_User = "";
@@ -65,28 +62,6 @@ namespace WindowsFormsApplication1
 
             menuectrl = new MenueCtrl();
             wizardctrl = new WizardCtrl();
-            DbClass db = new DbClass();
-
-            try
-            {
-                DBConnection = db.OpenDB("DSN=TEST");
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                MessageBox.Show("Datenbank kann nicht geöffnet werden!\nDSN=TEST überprüfen", "Fehler");
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                Application.Exit();
-                return;
-            }
-            catch (Exception ex)
-            {
-                // Allgemeine Fehler abfangen
-                Console.WriteLine("Allgemeiner Fehler: " + ex.Message);
-                MessageBox.Show("Datenbank kann nicht geöffnet werden!\nDSN=TEST überprüfen", "Fehler");
-                Application.Exit();
-                return;
-            }
 
             ApplicationPath_Common = Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData);
             ApplicationPath_Common = Path.Combine(ApplicationPath_Common, "WP-Plan");
@@ -108,10 +83,7 @@ namespace WindowsFormsApplication1
 
             mdifrm = new MDIMainForm();
             Application.Run(mdifrm);
-            
-            //StopLocalWebServer();
-            
-            db.CloseDB();
+           
             Application.Exit();
         }
 

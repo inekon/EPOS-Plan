@@ -108,7 +108,7 @@ namespace WindowsFormsApplication1
         const int PTHERM = 2;
         const int PEL = 3;
 
-        public CSExeCOMServer.SimpleObject com = new CSExeCOMServer.SimpleObject();
+        //public CSExeCOMServer.SimpleObject com = new CSExeCOMServer.SimpleObject();
 
         public bool Berechnung()
         {
@@ -591,7 +591,8 @@ namespace WindowsFormsApplication1
             } // end alle Stunden
 
             // absteigend sortieren
-            com.I_heapsort(WP_Waermeproduktion_stuendlich, WP_Waermeproduktion_stuendlich_sortiert);
+            //com.I_heapsort(WP_Waermeproduktion_stuendlich, WP_Waermeproduktion_stuendlich_sortiert);
+            WPPlan.Core.BhkwPlan.Heapsort(WP_Waermeproduktion_stuendlich, WP_Waermeproduktion_stuendlich_sortiert);
 
             // Wärmebedarf gesamt und Restwärme berechnen in kWh
             // Restwärme aus der Stundenganglinie summieren - mit Pufferspeicher ist

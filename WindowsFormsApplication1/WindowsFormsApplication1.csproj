@@ -58,7 +58,6 @@
     <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.de-DE.resx" />
     <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.en-US.resx" />
     <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.resx" />
-    <None Include="Controller\WPTestCtrl.cs" />
   </ItemGroup>
 
   <!-- NuGet-Pakete -->
@@ -74,6 +73,10 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="System.Management" Version="8.0.0" />
+
+    <!-- Lizenzverwaltung: Ed25519-Signaturprüfung + DPAPI-Ablage -->
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
 
     <!-- Originalbestand -->
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
@@ -157,11 +160,6 @@
   <!-- ClickOnce-Signaturdatei nicht kompilieren -->
   <ItemGroup>
     <None Include="WindowsFormsApplication1_TemporaryKey.pfx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="CSExeCOMServer">
-      <HintPath>bin\x86\Debug\net8.0-windows\CSExeCOMServer.exe</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

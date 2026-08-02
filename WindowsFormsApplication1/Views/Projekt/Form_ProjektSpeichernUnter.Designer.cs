@@ -35,6 +35,10 @@
             listView_Projekt = new System.Windows.Forms.ListView();
             label2 = new System.Windows.Forms.Label();
             textBox_NeuerProjektName = new System.Windows.Forms.TextBox();
+            panel_Fortschritt = new System.Windows.Forms.Panel();
+            lbl_Fortschritt = new System.Windows.Forms.Label();
+            progressBar_Duplizieren = new System.Windows.Forms.ProgressBar();
+            panel_Fortschritt.SuspendLayout();
             SuspendLayout();
             // 
             // button_Open
@@ -76,6 +80,31 @@
             resources.ApplyResources(textBox_NeuerProjektName, "textBox_NeuerProjektName");
             textBox_NeuerProjektName.Name = "textBox_NeuerProjektName";
             // 
+            // panel_Fortschritt
+            // 
+            panel_Fortschritt.Controls.Add(progressBar_Duplizieren);
+            panel_Fortschritt.Controls.Add(lbl_Fortschritt);
+            panel_Fortschritt.Dock = System.Windows.Forms.DockStyle.Bottom;
+            panel_Fortschritt.Name = "panel_Fortschritt";
+            panel_Fortschritt.Padding = new System.Windows.Forms.Padding(10, 4, 10, 6);
+            panel_Fortschritt.Size = new System.Drawing.Size(400, 46);
+            panel_Fortschritt.TabIndex = 6;
+            panel_Fortschritt.Visible = false;
+            // 
+            // lbl_Fortschritt
+            // 
+            lbl_Fortschritt.Dock = System.Windows.Forms.DockStyle.Top;
+            lbl_Fortschritt.Name = "lbl_Fortschritt";
+            lbl_Fortschritt.Size = new System.Drawing.Size(380, 18);
+            lbl_Fortschritt.TabIndex = 0;
+            // 
+            // progressBar_Duplizieren
+            // 
+            progressBar_Duplizieren.Dock = System.Windows.Forms.DockStyle.Bottom;
+            progressBar_Duplizieren.Name = "progressBar_Duplizieren";
+            progressBar_Duplizieren.Size = new System.Drawing.Size(380, 20);
+            progressBar_Duplizieren.TabIndex = 1;
+            // 
             // Form_ProjektSpeichernUnter
             // 
             resources.ApplyResources(this, "$this");
@@ -86,8 +115,10 @@
             Controls.Add(label1);
             Controls.Add(button_Abbrechen);
             Controls.Add(button_Open);
+            Controls.Add(panel_Fortschritt);
             Name = "Form_ProjektSpeichernUnter";
             Load += Form_ProjektOpen_Load;
+            panel_Fortschritt.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
 
@@ -101,5 +132,8 @@
         private System.Windows.Forms.ListView listView_Projekt;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox textBox_NeuerProjektName;
+        private System.Windows.Forms.Panel panel_Fortschritt;
+        private System.Windows.Forms.Label lbl_Fortschritt;
+        private System.Windows.Forms.ProgressBar progressBar_Duplizieren;
     }
 }

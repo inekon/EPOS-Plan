@@ -15,6 +15,7 @@ namespace WindowsFormsApplication1
             btn_VDIPathBrowse.Click += (s, e) => BrowseFolder(txt_VDIPath);
             btn_DBExportBrowse.Click += (s, e) => BrowseFolder(txt_DBExportPath);
             btn_DBImportBrowse.Click += (s, e) => BrowseFolder(txt_DBImportPath);
+            btn_DBPathBrowse.Click += (s, e) => BrowseFolder(txt_DBPath);
             btn_AllgemeinBrowse.Click += (s, e) => BrowseFolder(txt_AllgemeinPath);
 
             btn_Speichern.Click += Btn_Speichern_Click;
@@ -70,6 +71,7 @@ namespace WindowsFormsApplication1
             Properties.Settings.Default.VDI3805Path = txt_VDIPath.Text;
             Properties.Settings.Default.DBExportPath = txt_DBExportPath.Text;
             Properties.Settings.Default.DBImportPath = txt_DBImportPath.Text;
+            Properties.Settings.Default.DBPath = txt_DBPath.Text;
             Properties.Settings.Default.WordPressUrl = txt_OnlineDokuUrl.Text;
             Properties.Settings.Default.WordPressPrefix = txt_WPPrefix.Text;
             Properties.Settings.Default.PVGISUrl = txt_PVGISUrl.Text;
@@ -87,6 +89,11 @@ namespace WindowsFormsApplication1
                 if (!string.IsNullOrWhiteSpace(txt_DBImportPath.Text) && !Directory.Exists(txt_DBImportPath.Text))
                 {
                     Directory.CreateDirectory(txt_DBImportPath.Text);
+                }
+
+                if (!string.IsNullOrWhiteSpace(txt_DBPath.Text) && !Directory.Exists(txt_DBPath.Text))
+                {
+                    Directory.CreateDirectory(txt_DBPath.Text);
                 }
 
                 if (!string.IsNullOrWhiteSpace(txt_DBExportPath.Text) && !Directory.Exists(txt_DBExportPath.Text))
@@ -122,6 +129,7 @@ namespace WindowsFormsApplication1
             // welche die Verknüpfung zum VDI-Pfad nur bei leeren Settings herstellen!
             txt_DBExportPath.Text = GetConfiguredOrDefaultDBExportPath(txt_VDIPath.Text);
             txt_DBImportPath.Text = GetConfiguredOrDefaultDBImportPath(txt_VDIPath.Text);
+            txt_DBPath.Text = GetConfiguredOrDefaultDBPath();
 
             // 3. Allgemein-Pfad bestimmen
             txt_AllgemeinPath.Text = GetConfiguredOrDefaultPath("");
@@ -156,6 +164,7 @@ namespace WindowsFormsApplication1
                 txt_VDIPath.Text = GetConfiguredOrDefaultVDIPath();
                 txt_DBExportPath.Text = GetConfiguredOrDefaultDBExportPath(txt_VDIPath.Text);
                 txt_DBImportPath.Text = GetConfiguredOrDefaultDBImportPath(txt_VDIPath.Text);
+                txt_DBPath.Text = GetConfiguredOrDefaultDBPath();
                 txt_AllgemeinPath.Text = GetConfiguredOrDefaultPath("");
 
                 MessageBox.Show("Die Standardwerte wurden geladen. Klicken Sie auf 'Speichern', um sie zu übernehmen.", "Zurücksetzen erfolgreich", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -199,6 +208,18 @@ namespace WindowsFormsApplication1
             return Path.Combine(currentVdiPath, "Import");
         }
 
+        private string GetConfiguredOrDefaultDBPath()
+        {
+            // Standard-Datenbankpfad: gespeicherter Wert, sonst %ProgramData%\EPOS_PLAN
+            if (!string.IsNullOrWhiteSpace(Properties.Settings.Default.DBPath))
+            {
+                return Properties.Settings.Default.DBPath;
+            }
+
+            string programData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+            return Path.Combine(programData, "EPOS_PLAN");
+        }
+
         private string GetConfiguredOrDefaultPath(string szPath)
         {
             if (!string.IsNullOrWhiteSpace(Properties.Settings.Default.AllgemeinPath))
@@ -210,6 +231,6 @@ namespace WindowsFormsApplication1
             return Path.Combine(localAppData, "WP-Plan");
         }
 
- 
+
     }
 }

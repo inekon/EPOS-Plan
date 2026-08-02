@@ -102,7 +102,7 @@ namespace WindowsFormsApplication1
                 " Z_Projekt_Prozesswaerme.Summe " +
                 "FROM Z_Projekt_Prozesswaerme INNER JOIN Tab_Prozesswaerme ON " +
                 "Z_Projekt_Prozesswaerme.ID_Prozesswaerme = Tab_Prozesswaerme.ID " +
-                " where ID_Projekt=" + m_ID_Projekt;
+                " where Z_Projekt_Prozesswaerme.ID_Projekt=" + m_ID_Projekt;
                 //+ " and Tab_Prozesswaerme.Prozessname='" + lvitem.Text +
                 //"' and Z_Projekt_Prozesswaerme.ID=" + lvitem.SubItems[3].Text;
 

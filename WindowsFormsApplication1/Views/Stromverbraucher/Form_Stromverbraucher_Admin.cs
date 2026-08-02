@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -96,11 +97,14 @@ namespace WindowsFormsApplication1
             list.Add(listBox_Verbraucher_DB.Text);
             result = simulation.Stromprofil_Strombedarf_berechnen(list);
             if (result == null) return;
-            simulation.Strombedarf_Gebaeude_gesamt = simulation.com.I_vector_summe(result);
+            //simulation.Strombedarf_Gebaeude_gesamt = simulation.com.I_vector_summe(result);
+            simulation.Strombedarf_Gebaeude_gesamt = result.Sum() / 1000;
+
             //simulation.com.CSharp_I_vectoren_addieren(simulation.prozesswerte, simulation.Strombedarf_viertelStundenwerte);
             Array.Copy(result, simulation.Strombedarf_viertelStundenwerte, result.Length);
 
-            simulation.com.I_monats_summe(simulation.Strombedarf_viertelStundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
+            //simulation.com.I_monats_summe(simulation.Strombedarf_viertelStundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(simulation.Strombedarf_viertelStundenwerte, simulation.Strombedarf_monat, simulation.mo_anfang, simulation.mo_ende);
             simulation.Strombedarf_Max = simulation.Maximaler_Strombedarf(simulation.Strombedarf_viertelStundenwerte);
             simulation.Strombedarf_gesamt = simulation.Strombedarf_Gebaeude_gesamt;
             

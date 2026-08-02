@@ -1,22 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Data.Common;
-using System.Data.Odbc;
 using System.Drawing;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Input;
 
 namespace WindowsFormsApplication1
 {
     public partial class Form_AdminPV : Form
     {
-        OdbcCommand DBCommand;
         PhotovoltaikModel model = new PhotovoltaikModel();
         public List<WErzeugerModel> list_pvmodel = new List<WErzeugerModel>();
         public bool m_bItemBearbeiten = false;
@@ -25,7 +16,6 @@ namespace WindowsFormsApplication1
         public Form_AdminPV ()
         {
             InitializeComponent();
-            DBCommand = Program.DBConnection.CreateCommand();
         }
         
         public void SetControls(string projekt)
@@ -103,15 +93,6 @@ namespace WindowsFormsApplication1
                         MessageBox.Show("Datensatz gespeichert!");
                     }
                 }
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                MessageBox.Show("Fehler beim Speichern des Datensatzes!");
-                m_Neu = false;
-                InitControls();
-                return;
             }
             catch (Exception ex)
             {
@@ -233,13 +214,6 @@ namespace WindowsFormsApplication1
                 if (!ctrl.Delete(textBox_Bezeichner.Text)) return;
                 listBox_PV.Items.Remove(textBox_Bezeichner.Text);
                 listBox_PV.SelectedIndex = listBox_PV.Items.Count - 1;
-            }
-            catch (OdbcException sqlEx)
-            {
-                // Fehler beim Datenbankzugriff abfangen
-                MessageBox.Show("Modul kann nicht gelöscht werden.\nEs besteht eine Projektzordnung!");  
-                Console.WriteLine("SQL Fehler: " + sqlEx.Message);
-                return;
             }
             catch (Exception ex)
             {
