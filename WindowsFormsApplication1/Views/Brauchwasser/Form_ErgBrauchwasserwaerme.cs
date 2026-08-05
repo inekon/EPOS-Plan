@@ -17,6 +17,10 @@ namespace WindowsFormsApplication1
         // Statisches Array für die Monatsbeschriftungen auf der X-Achse
         private readonly string[] monate = { "Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
 
+        // ChartManager für die Jahresansicht: numerische X-Achse + Mausrad-Zoom
+        // (die Achsenbeschriftung passt sich beim Zoomen automatisch der Auflösung an)
+        private ChartManager _chartManager;
+
         public Form_ErgBrauchwasserwaerme()
         {
             InitializeComponent();
@@ -29,7 +33,7 @@ namespace WindowsFormsApplication1
 
             // Textfelder befüllen
             textBox_WB_Gebaeude.Text = simulation.Waermebedarf_Gebaeude_Gesamt.ToString("F2");
-            textBox_WB_Brauchwasser.Text = simulation.Waermebedarf_Brauchwasser.ToString("F2");
+            textBox_WB_Brauchwasser.Text = (simulation.Waermebedarf_Brauchwasser / 1000).ToString("F2");
             textBox_WB_Extern.Text = simulation.Waermebedarf_Extern_Gesamt.ToString("F2");
             textBox_MaxWaermelast.Text = simulation.Waermebedarf_Max.ToString("F2");
             textBox_Netzverluste.Text = simulation.Waermebedarf_Netzverluste.ToString("F2");
@@ -41,11 +45,11 @@ namespace WindowsFormsApplication1
             radioBtn_GrafikProzesse.Checked = true;
 
             // Sicherheits-Erstbefüllung der Grafik, falls Events beim Laden blockieren
-            ZeigeMonatsGrafik("Brauchwasserwärme", simulation.Waermebedarf_Brauchwasser_Monat, Color.Red);
+            AktualisiereGrafik();
         }
 
         /// <summary>
-        /// Bereitet das Chart-Control jungfräulich vor und fixiert das 12-Monats-Raster.
+        /// Bereitet das Chart-Control vor und fixiert das 12-Monats-Raster.
         /// </summary>
         private void ResetAndInitChart()
         {
@@ -76,7 +80,20 @@ namespace WindowsFormsApplication1
         {
             if (monatsDaten == null || monatsDaten.Length < 12) return;
 
+            ChartManagerAus();   // evtl. aktive Jahres-/Zoom-Ansicht sauber beenden
+
             chart1.Series.Clear();
+
+            // Monats-Layout auf der X-Achse wiederherstellen (falls zuvor Jahresansicht aktiv war)
+            Axis xMonat = chart1.ChartAreas[0].AxisX;
+            xMonat.Minimum = 1;
+            xMonat.Maximum = 12;
+            xMonat.Interval = 1;
+            xMonat.IsMarginVisible = true;
+            xMonat.Title = "";
+            xMonat.LabelStyle.Format = "";
+            xMonat.CustomLabels.Clear();   // evtl. Monats-CustomLabels der Jahresansicht entfernen
+            chart1.Titles[0].Text = "Monatsübersicht";
 
             Series serie = new Series(serienName)
             {
@@ -94,9 +111,179 @@ namespace WindowsFormsApplication1
 
             chart1.Series.Add(serie);
 
-            // --- VOLLKOMMEN GENERISCHE Y-ACHSEN-SKALIERUNG ---
-            double maxWert = monatsDaten.Max();
+            // Y-Achse generisch skalieren
+            SkaliereYAchse(monatsDaten.Max());
 
+            chart1.Legends[0].Enabled = false;
+            chart1.Invalidate();
+        }
+
+        // --- Event-Handler für die Grafik-RadioButtons ---
+
+        private void radioBtn_GrafikProzesse_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtn_GrafikProzesse.Checked) AktualisiereGrafik();
+        }
+
+        private void radioBtn_GrafikGebäude_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtn_GrafikGebäude.Checked) AktualisiereGrafik();
+        }
+
+        private void radioBtn_GrafikBrauchwasser_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtn_GrafikBrauchwasser.Checked) AktualisiereGrafik();
+        }
+
+        /// <summary>
+        /// Zeichnet die Grafik neu – je nach Zustand der Checkbox als Jahres- oder Monatsansicht.
+        /// </summary>
+        private void AktualisiereGrafik()
+        {
+            checkBox_MonatJahr.Visible = false;
+            if (simulation == null) return;
+
+            if (radioBtn_GrafikGebäude.Checked)
+                ZeigeMonatsGrafik("Gebäudewärme", simulation.Waermebedarf_Gebaeude_Monat, Color.Blue);
+            else if (radioBtn_GrafikBrauchwasser.Checked)
+            {
+                checkBox_MonatJahr.Visible = true;
+                if (checkBox_MonatJahr != null && checkBox_MonatJahr.Checked)
+                {
+                    ZeigeJahresGrafik("Brauchwasserwärme", simulation.brauchwasserwerte, Color.SteelBlue);
+                    return;
+                }
+                else ZeigeMonatsGrafik("Brauchwasserwärme", simulation.Waermebedarf_Brauchwasser_Monat, Color.Orange);
+            }
+            else
+                ZeigeMonatsGrafik("Prozesswärme", simulation.Waermebedarf_Prozess_Monat, Color.Red);
+        }
+
+        /// <summary>
+        /// Zeichnet den gesamten Wärmebedarf als Jahres-Lastkurve über alle 8760 Stunden.
+        /// </summary>
+        private void ZeigeJahresGrafik(string serienName, float[] stundenDaten, Color linienFarbe)
+        {
+            if (stundenDaten == null || stundenDaten.Length == 0) return;
+
+            // Jahresansicht über den ChartManager: numerische X-Achse + Mausrad-Zoom.
+            // Beim Spreizen mit dem Mausrad passt der ChartManager die X-Achsenbeschriftung
+            // automatisch an die sichtbare Auflösung an (Tages-/Wochen-/Monatsschritte).
+            if (_chartManager == null) _chartManager = new ChartManager(chart1);
+
+            _chartManager.XAxisAsNumber = false;    // numerische X-Achse (Jahresstunden)
+            _chartManager.IsXYChart = false;
+            _chartManager.AreaLine = false;        // Linie statt Fläche
+            _chartManager.WheelZoomed = true;      // Mausrad-Zoom aktiv
+            _chartManager.MitLegende = false;
+            _chartManager.MitViertelStunde = false;
+            _chartManager.MaxXVALUE = stundenDaten.Length;   // generisch (hier 8760) statt fix
+            _chartManager.XAxisTitle = "Jahresstunde";
+            _chartManager.YAxisTitle = "Wärmebedarf";
+            _chartManager.toolTipUnit = "kW";
+            _chartManager.ChartTitle = "Jahresübersicht (Mausrad = Zoom)";
+
+            double maxWert = 0;
+            for (int i = 0; i < stundenDaten.Length; i++)
+                if (stundenDaten[i] > maxWert) maxWert = stundenDaten[i];
+            _chartManager.YMinValue = 0;
+            _chartManager.YMaxValue = maxWert > 0 ? maxWert : 1;
+
+            _chartManager.Init();   // Achsen/Zoom/Legende/Titel neu aufbauen, Serien leeren
+            _chartManager.AddSeries(serienName, linienFarbe, stundenDaten);
+            chart1.Invalidate();
+        }
+
+        /// <summary>
+        /// Beendet eine ggf. aktive ChartManager-/Mausrad-Zoom-Ansicht und stellt das
+        /// Grundgerüst (ChartArea, Titel, Legende) für die Monatsdarstellung wieder her.
+        /// </summary>
+        private void ChartManagerAus()
+        {
+            if (_chartManager != null)
+            {
+                _chartManager.HardReset();   // Mausrad-Handler abmelden, Serien/Titel/Legenden leeren
+                _chartManager = null;
+            }
+
+            // Chart-Grundgerüst (ChartArea + fixes 12-Monats-Raster + Titel) neu aufbauen
+            ResetAndInitChart();
+
+            // Die Monatsansicht setzt chart1.Legends[0].Enabled = false -> Legende sicherstellen
+            if (chart1.Legends.Count == 0) chart1.Legends.Add(new Legend());
+        }
+
+        /// <summary>
+        /// Extrahiert aus einem Jahresverlauf (8760 h) genau eine Woche (168 h) in ein neues Array.
+        /// wochenNr = 1 liefert die Stunden 0..167, wochenNr = 2 die Stunden 168..335 usw.
+        /// Fehlende Stunden am Jahresende werden mit 0 aufgefüllt.
+        /// </summary>
+        private float[] ExtrahiereWoche(float[] jahresDaten, int wochenNr)
+        {
+            float[] woche = new float[168];
+            if (jahresDaten == null || jahresDaten.Length == 0) return woche;
+            if (wochenNr < 1) wochenNr = 1;
+
+            int start = (wochenNr - 1) * 168;
+            for (int i = 0; i < 168; i++)
+            {
+                int idx = start + i;
+                woche[i] = (idx < jahresDaten.Length) ? jahresDaten[idx] : 0f;
+            }
+            return woche;
+        }
+
+        /// <summary>
+        /// Zeichnet eine Woche (168 h) aus dem Jahresverlauf. Die X-Achse ist dezimal von 1..168.
+        /// </summary>
+        private void ZeigeWochenGrafik(string serienName, float[] jahresDaten, int wochenNr, Color linienFarbe)
+        {
+            // Basis-Array für das Chart: 168 Stundenwerte der gewählten Woche
+            float[] wochenDaten = ExtrahiereWoche(jahresDaten, wochenNr);
+
+            chart1.Series.Clear();
+
+            Series serie = new Series(serienName)
+            {
+                ChartType = SeriesChartType.FastLine,
+                Color = linienFarbe,
+                BorderWidth = 1
+            };
+
+            for (int i = 0; i < wochenDaten.Length; i++)
+            {
+                serie.Points.AddXY(i + 1, wochenDaten[i]);   // X = 1..168
+            }
+
+            chart1.Series.Add(serie);
+
+            // X-Achse dezimal 1..168 (evtl. Monats-CustomLabels der Jahresansicht entfernen)
+            Axis xWoche = chart1.ChartAreas[0].AxisX;
+            xWoche.CustomLabels.Clear();
+            xWoche.Minimum = 1;
+            xWoche.Maximum = 168;
+            xWoche.Interval = 24;                 // eine Beschriftung je Tag (24, 48, ...)
+            xWoche.IsMarginVisible = false;
+            xWoche.Title = "Stunde der Woche";
+            xWoche.LabelStyle.Format = "N0";
+          
+            chart1.Titles[0].Text = "Wochenübersicht (Woche " + wochenNr + ")";
+
+            // Y-Achse generisch skalieren
+            double maxWert = 0;
+            for (int i = 0; i < wochenDaten.Length; i++)
+                if (wochenDaten[i] > maxWert) maxWert = wochenDaten[i];
+            SkaliereYAchse(maxWert);
+
+            chart1.Legends[0].Enabled = false;
+            chart1.Invalidate();
+        }
+
+        /// <summary>
+        /// Vollkommen generische, "schöne" Y-Achsen-Skalierung anhand des Maximalwerts.
+        /// </summary>
+        private void SkaliereYAchse(double maxWert)
+        {
             if (maxWert > 0)
             {
                 // 1. Definiere typische, "schöne" Schrittweiten-Stufen für den Menschen
@@ -128,8 +315,10 @@ namespace WindowsFormsApplication1
                 if (finaleSchrittweite <= 0) { finaleSchrittweite = 0.5; geglaettetesMaximum = 2.0; }
 
                 // 6. Zuweisung an das Chart
+                chart1.ChartAreas[0].AxisY.Minimum = 0;
                 chart1.ChartAreas[0].AxisY.Interval = finaleSchrittweite;
                 chart1.ChartAreas[0].AxisY.Maximum = geglaettetesMaximum;
+                
 
                 // 7. Nachkommastellen dynamisch anpassen (Ganze Zahlen, wenn möglich, sonst 1-2 Stellen)
                 if (finaleSchrittweite >= 1.0)
@@ -142,38 +331,10 @@ namespace WindowsFormsApplication1
             else
             {
                 // Fallback, wenn alle Daten 0 sind
+                chart1.ChartAreas[0].AxisY.Minimum = 0;
                 chart1.ChartAreas[0].AxisY.Maximum = 5;
                 chart1.ChartAreas[0].AxisY.Interval = 1;
                 chart1.ChartAreas[0].AxisY.LabelStyle.Format = "N0";
-            }
-
-            chart1.Legends[0].Enabled = false;
-            chart1.Invalidate();
-        }
-
-        // --- Event-Handler für die Grafik-RadioButtons ---
-
-        private void radioBtn_GrafikProzesse_CheckedChanged(object sender, EventArgs e)
-        {
-            if (radioBtn_GrafikProzesse.Checked && simulation != null)
-            {
-                ZeigeMonatsGrafik("Prozesswärme", simulation.Waermebedarf_Prozess_Monat, Color.Red);
-            }
-        }
-
-        private void radioBtn_GrafikGebäude_CheckedChanged(object sender, EventArgs e)
-        {
-            if (radioBtn_GrafikGebäude.Checked && simulation != null)
-            {
-                ZeigeMonatsGrafik("Gebäudewärme", simulation.Waermebedarf_Gebaeude_Monat, Color.Blue);
-            }
-        }
-
-        private void radioBtn_GrafikBrauchwasser_CheckedChanged(object sender, EventArgs e)
-        {
-            if (radioBtn_GrafikBrauchwasser.Checked && simulation != null)
-            {
-                ZeigeMonatsGrafik("Brauchwasserwärme", simulation.Waermebedarf_Brauchwasser_Monat, Color.Orange);
             }
         }
 
@@ -234,17 +395,17 @@ namespace WindowsFormsApplication1
         public void SetPage(int page)
         {
             tabControl1.SelectedIndex = page;
-            if(page == 0)
+            if (page == 0)
             {
                 radioBtn_Prozesse.Checked = true;
-                radioBtn_GrafikProzesse.Checked = true; 
+                radioBtn_GrafikProzesse.Checked = true;
             }
-            else if(page == 1)
+            else if (page == 1)
             {
                 radioBtn_Gebäude.Checked = true;
                 radioBtn_GrafikGebäude.Checked = true;
             }
-            else if(page == 2)
+            else if (page == 2)
             {
                 radioBtn_Brauchwasser.Checked = true;
                 radioBtn_GrafikBrauchwasser.Checked = true;
@@ -254,6 +415,11 @@ namespace WindowsFormsApplication1
         private void btn_OK_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void checkBox_MonatJahr_CheckedChanged(object sender, EventArgs e)
+        {
+            AktualisiereGrafik();
         }
     }
 }

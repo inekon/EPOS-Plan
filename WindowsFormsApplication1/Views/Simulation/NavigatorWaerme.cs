@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-using static Humanizer.In;
 
 namespace WindowsFormsApplication1
 {
@@ -138,8 +133,10 @@ namespace WindowsFormsApplication1
             _chartManager.MitLegende = true;
             _chartManager.MaxXVALUE = 8760;
             _chartManager.MitViertelStunde = false;
+            _chartManager.LegendMarkerBreite = 5;
+            
             _chartManager.Init();
-            _chartManager.AddSeries("Wärmebedarf", Color.LightGray, temp_profil);
+            _chartManager.AddSeries("Wärmebedarf", Color.DarkCyan, temp_profil);
             _chartManager.AddSeries("Gesamt", Color.Green, temp_ges);
             _chartManager.AddSeries("Waermepumpe", Color.Orange, temp_wp);
             _chartManager.AddSeries("Heizstab", Color.Yellow, temp_hs);
@@ -260,7 +257,7 @@ namespace WindowsFormsApplication1
         {
             double neueMax = 0;
 
-            chart_Waerme.Series["Wärmebedarf"].Enabled = checkBox_Waermebedarf.Checked;
+            _chartManager._chart.Series["Wärmebedarf"].Enabled = checkBox_Waermebedarf.Checked;
 
             if (checkBox_Waermebedarf.Checked)
             {
@@ -276,15 +273,15 @@ namespace WindowsFormsApplication1
             if (neueMax < 10 || double.IsNaN(neueMax)) neueMax = 10;
 
             // Nur die Achse updaten ohne die Daten zu löschen:
-            var ca = chart_Waerme.ChartAreas[0];
+            var ca = _chartManager._chart.ChartAreas[0];
 
             ca.AxisY.Maximum = neueMax; // Den oben berechneten Wert direkt setzen
             ca.AxisY.Interval = 0;      // Auf Auto stellen
 
             // 2. Prüfen, ob die Serie existiert
-            if (chart_Waerme.Series.IndexOf("Wärmebedarf") != -1)
+            if (_chartManager._chart.Series.IndexOf("Wärmebedarf") != -1)
             {
-                var s = chart_Waerme.Series["Wärmebedarf"];
+                var s = _chartManager._chart.Series["Wärmebedarf"];
                 bool anzeigen = checkBox_Waermebedarf.Checked;
 
                 s.Enabled = anzeigen;
@@ -296,7 +293,7 @@ namespace WindowsFormsApplication1
                     ca.AxisY2.Enabled = AxisEnabled.True;
 
                     // Optik der rechten Achse
-                    ca.AxisY2.Title = "Speicher [kWh]";
+                    ca.AxisY2.Title = "Wärmebedarf [kWh]";
                     ca.AxisY2.TitleForeColor = Color.Black;
                     ca.AxisY2.LabelStyle.ForeColor = Color.Black;
                     ca.AxisY2.MajorGrid.Enabled = false; // Gitter nur links lassen

@@ -1026,6 +1026,13 @@ namespace WindowsFormsApplication1
             ProjektCtrl ctrl = new ProjektCtrl();
             ctrl.ReadSingle(textBox_ProjektOpen.Text);
 
+            if(ctrl.m_ID_Klimaregion == 0)
+            {
+                tabControl_Wizard.SelectedIndex = 0;
+                MessageBox.Show("Die Klimaregion ist nicht gesetzt! Bitte setzen Sie die Klimaregion im Projekt!");
+                return;
+            }
+
             label_Name.Text = textBox_ProjektOpen.Text;
             simulationStrombedarf.Berechnung(ctrl.m_ID);
             label_Strom.Text = simulationStrombedarf.Strombedarf_gesamt.ToString("F2") + " MWh/a";

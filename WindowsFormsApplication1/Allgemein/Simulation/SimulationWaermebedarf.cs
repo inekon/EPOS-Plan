@@ -617,7 +617,7 @@ namespace WindowsFormsApplication1
                         if (m_ID_Projekt != 0) // skalieren ggf. mit geändertem Projekt Jahresverbrauch
                         {
                             Z_ProjektProzesswaermeCtrl ctrl = new Z_ProjektProzesswaermeCtrl();
-                            ctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Prozessname") + "'");
+                            ctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + m_ID_Projekt + " AND Bezeichner='" + (string)rs.Read("Bezeichner") + "'");
                             if (ctrl.rows > 0)
                                 pjv = (float)ctrl.items[0].Summe;
                         }
