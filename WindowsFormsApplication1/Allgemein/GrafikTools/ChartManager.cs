@@ -22,6 +22,10 @@ namespace WindowsFormsApplication1
         public string ChartTitle = "";
         public bool MitChartBorder = false;
         public bool MitLegende = false;
+        // Dicke der farbigen Kennzeichnung in der Legende (gefuelltes Rechteck in Seriennfarbe).
+        // 0 = Standard (unveraendert). >0 = dicke farbige Markierung; die Hoehe skaliert mit dem Wert
+        // (Faktor 15 in Init, bei Bedarf anpassen). Nur die Legende, nicht die Kurven. Startwert ~8..14.
+        public int LegendMarkerBreite = 0;
         public bool MitViertelStunde = false;
         public bool AreaLine = false;
         // Plotflaechen-Hintergrund: neutrales Weiss (bessere Lesbarkeit der Serien).
@@ -49,8 +53,38 @@ namespace WindowsFormsApplication1
                 leg.Alignment = StringAlignment.Center;
                 leg.BackColor = Color.Transparent;
                 leg.Font = new Font("Arial", 8);
+
+                // Groesse des Farb-Symbols (kurze Linie) steuerbar machen: Ohne vergroesserte
+                // Symbolflaeche wird eine dicke Linie auf das Standard-Zellenmass abgeschnitten
+                // (deshalb wirkt reines BorderWidth kaum). Dafuer eigene Legenden-Spalten anlegen:
+                // eine Symbol-Spalte (Hoehe waechst mit LegendMarkerBreite) und eine Text-Spalte.
+                if (LegendMarkerBreite > 0)
+                {
+                    leg.CellColumns.Clear();
+
+                    LegendCellColumn symbolSpalte = new LegendCellColumn();
+                    symbolSpalte.ColumnType = LegendCellColumnType.SeriesSymbol;
+                    symbolSpalte.HeaderText = "";
+                    // Hoehe der Symbolzelle (relative Einheiten, Standard ~70) waechst mit der Breite,
+                    // damit die dicke Linie ueberhaupt Platz hat. Faktor bei Bedarf anpassen.
+                    symbolSpalte.SeriesSymbolSize = new Size(200, Math.Max(70, LegendMarkerBreite * 15));
+                    leg.CellColumns.Add(symbolSpalte);
+
+                    LegendCellColumn textSpalte = new LegendCellColumn();
+                    textSpalte.ColumnType = LegendCellColumnType.Text;
+                    textSpalte.Text = "#LEGENDTEXT";   // Platzhalter: zeigt den Serien-/Legendentext
+                    textSpalte.Alignment = ContentAlignment.MiddleLeft;
+                    textSpalte.HeaderText = "";
+                    leg.CellColumns.Add(textSpalte);
+                }
+
                 _chart.Legends.Add(leg);
             }
+
+            // Legendensymbol optional dicker: doppelt an-/abmelden vermeidet Mehrfach-Registrierung
+            // bei wiederholtem Init()/RefreshChart(). Der Handler wirkt nur, wenn LegendMarkerBreite > 0.
+            _chart.CustomizeLegend -= Chart_CustomizeLegend;
+            _chart.CustomizeLegend += Chart_CustomizeLegend;
 
             // --- PLATZ FÜR LEGENDE ---
             // --- DYNAMISCHE POSITIONIERUNG ---
@@ -186,6 +220,19 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // Zeichnet die kurze Farb-Linie in der Legende dicker – gesteuert ueber LegendMarkerBreite.
+        // 0 => nichts aendern (Standardaussehen). >0 => Symbol als Linie dieser Breite.
+        private void Chart_CustomizeLegend(object sender, CustomizeLegendEventArgs e)
+        {
+            if (LegendMarkerBreite <= 0) return;
+            foreach (LegendItem item in e.LegendItems)
+            {
+                // Gefuelltes Rechteck in Seriennfarbe: die Dicke ergibt sich aus der Symbolhoehe
+                // (SeriesSymbolSize unten) und wird NICHT von der duennen Serienlinie ueberschrieben.
+                item.ImageStyle = LegendImageStyle.Rectangle;
+            }
+        }
+
         public void RefreshChart()
         {
             if (_chart == null || _chart.ChartAreas.Count == 0) return;
@@ -302,7 +349,7 @@ namespace WindowsFormsApplication1
 
             ca.AxisX.Minimum = 0;
             // Achsen-Endwert (voller Wertebereich)
-            double xMax = MitViertelStunde ? 8760 * 4 : 8760;
+            double xMax = MitViertelStunde ? MaxXVALUE * 4 : MaxXVALUE;   // generisch statt fix 8760
             ca.AxisX.Maximum = xMax;
 
             ca.AxisX.Title = XAxisTitle;
@@ -331,6 +378,7 @@ namespace WindowsFormsApplication1
 
         public void HardReset()
         {
+            _chart.CustomizeLegend -= Chart_CustomizeLegend;
             if (_chartWheelManager != null)
             {
                 _chart.MouseWheel -= _chartWheelManager.HandleMouseWheel;

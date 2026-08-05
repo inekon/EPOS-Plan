@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.OleDb;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -12,12 +13,43 @@ namespace WindowsFormsApplication1
     {
         public double[,] arr = new double[7, 24];
         private double[] arr_seriell = new double[168];
+        private ChartManager _chartManager;
 
         public Form_EingStromTyp()
         {
             InitializeComponent();
-            chart1.ChartAreas[0].AxisY.Minimum = 0;
-            chart1.Series[0].BorderWidth = 2;
+
+            // Diagramm-Darstellung ueber den ChartManager (einmalige Grundkonfiguration).
+            _chartManager = new ChartManager(chart1);
+            _chartManager.XAxisAsNumber = true;    // X = Wochenstunden 1..168 (kein Datum, kein 8760)
+            _chartManager.AreaLine = true;         // Flaechendiagramm wie zuvor
+            _chartManager.MitLegende = false;      // nur eine Serie
+            _chartManager.WheelZoomed = false;     // Mausrad-Zoom ist auf 8760 h ausgelegt -> hier aus
+            _chartManager.MaxXVALUE = 168;
+            _chartManager.YMinValue = 0;
+            _chartManager.XAxisTitle = "Wochenstunde (1..168)";
+            _chartManager.YAxisTitle = "Verteilung";
+            _chartManager.ChartTitle = "";
+            _chartManager.toolTipUnit = "";
+        }
+
+        // Baut das Diagramm ueber den ChartManager neu auf und passt die Y-Skalierung an die Werte an.
+        private void ChartAktualisieren()
+        {
+            double max = (arr_seriell != null && arr_seriell.Length > 0) ? arr_seriell.Max() : 0;
+            _chartManager.YMaxValue = (max > 0 ? max : 1) * 1.1;   // 0 -> ChartManager wuerde 100 annehmen
+            _chartManager.Init();                          // Achsen/Stil neu setzen (leert die Serien)
+
+            float[] werte = new float[arr_seriell.Length];
+            for (int i = 0; i < arr_seriell.Length; i++) werte[i] = (float)arr_seriell[i];
+            _chartManager.AddSeries("Stromverbrauch", Color.FromArgb(100, Color.Blue), werte);
+
+            // Numerische X-Achse auf die Wochenstunden begrenzen (ChartManager-Standard waere 8760 h).
+            Axis xAchse = _chartManager._chart.ChartAreas[0].AxisX;
+            xAchse.Minimum = 0;
+            xAchse.Maximum = arr_seriell.Length;   // 168
+            xAchse.Interval = 24;                  // Tagesgrenzen
+            _chartManager._chart.Invalidate();
         }
 
         public void SetControls()
@@ -41,10 +73,8 @@ namespace WindowsFormsApplication1
 
             if (listBox_Typname.Items.Count > 0)
             {
-                listBox_Typname.SelectedIndex = 0;
+                listBox_Typname.SelectedIndex = 0; // loest SelectedIndexChanged -> ChartAktualisieren()
             }
-
-            init_Chart(chart1);
         }
 
         private void Tagesdaten(string szTyp, int Tag)
@@ -79,7 +109,7 @@ namespace WindowsFormsApplication1
                     textBox_Beschreibung.Text = "";
             }
 
-            chart1.Series[0].Points.DataBindY(arr_seriell);
+            ChartAktualisieren();
 
             listBox_Tag.ClearSelected();
             if (listBox_Tag.Items.Count > 0)
@@ -160,7 +190,8 @@ namespace WindowsFormsApplication1
             }
             Update(textBox_Beschreibung.Text, listBox_Typname.Text);
             MessageBox.Show("Datensatz gespeichert!");
-            chart1.Series[0].Points.DataBindY(arr_seriell);
+
+            ChartAktualisieren();
         }
 
         private bool Update(string szBeschreibung, string szTyp)
@@ -297,29 +328,5 @@ namespace WindowsFormsApplication1
             listBox_Typname.Text = frm.m_szName;
         }
 
-        private void init_Chart(Chart chart)
-        {
-            var ca = chart.ChartAreas[0];
-            ca.CursorX.IsUserEnabled = true;
-            ca.CursorX.IsUserSelectionEnabled = true;
-            ca.CursorY.IsUserEnabled = true;
-            ca.CursorY.IsUserSelectionEnabled = true;
-
-            ca.AxisY.ScaleView.Zoomable = true;
-            ca.AxisX.ScaleView.Zoomable = true;
-            ca.CursorX.AutoScroll = true;
-            ca.AxisX.ScrollBar.Enabled = true;
-
-            chart.Series[0].BorderWidth = 2;
-            chart.ChartAreas[0].AxisX.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
-            chart.ChartAreas[0].AxisY.MajorGrid.LineDashStyle = ChartDashStyle.Dot;
-            chart.ChartAreas[0].CursorX.LineDashStyle = ChartDashStyle.Dot;
-            chart.ChartAreas[0].CursorY.LineDashStyle = ChartDashStyle.Dot;
-            chart.ChartAreas[0].CursorX.LineColor = Color.Red;
-            chart.ChartAreas[0].CursorY.LineColor = Color.Red;
-
-            chart.Series[0].ChartType = SeriesChartType.Area;
-            chart.Series[0].Color = Color.FromArgb(100, Color.Blue);
-        }
     }
 }

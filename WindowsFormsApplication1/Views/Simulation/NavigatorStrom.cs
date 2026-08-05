@@ -112,6 +112,8 @@ namespace WindowsFormsApplication1
             _chartManager.MitLegende = true;
             _chartManager.MaxXVALUE = 8760 * 4;
             _chartManager.MitViertelStunde = true;
+            _chartManager.LegendMarkerBreite = 5;
+
             _chartManager.Init();
             _chartManager.AddSeries("Gesamt", Color.Green, temp_ges);
             _chartManager.AddSeries("Waermepumpe", Color.Orange, temp_wp);

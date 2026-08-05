@@ -285,8 +285,9 @@ namespace WindowsFormsApplication1
                 ctrl.UpdateSumme(double.Parse(textBox_Verbrauch.Text), textBox_Name.Text, m_ID_Projekt);
             }
 
-            List<string> list;
-            list = listView_Auswahl.Items.Cast<ListViewItem>().Select(item => item.Text).ToList();
+            List<string> list = new List<string>();
+            //list = listView_Auswahl.Items.Cast<ListViewItem>().Select(item => item.Text).ToList();
+            list.Add(textBox_Name.Text);
 
             simulation.Brauchwasserwaerme_berechnen(list);
             //simulation.Waermebedarf_Brauchwasser = simulation.com.I_vector_summe(simulation.brauchwasserwerte);
@@ -296,6 +297,7 @@ namespace WindowsFormsApplication1
             WPPlan.Core.BhkwPlan.MonatsSumme(simulation.brauchwasserwerte, simulation.Waermebedarf_Brauchwasser_Monat, simulation.mo_anfang, simulation.mo_ende);
 
             Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
+            frm.Text = frm.Text + " - " + textBox_Name.Text;   
             frm.Init(simulation);
             frm.SetPage(2); 
             frm.ShowDialog();
@@ -304,9 +306,9 @@ namespace WindowsFormsApplication1
 
         private void btn_ErgebnisseVerbrauch_Click(object sender, EventArgs e)
         {
-            Form_ErgProzesswaerme frm = new Form_ErgProzesswaerme();
+            Form_ErgBrauchwasserwaerme frm = new Form_ErgBrauchwasserwaerme();
             frm.Init(simulation);
-            frm.SetPage(1);
+            frm.SetPage(2);
             frm.ShowDialog(); 
         }
 
