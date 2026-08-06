@@ -59,7 +59,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                string dbPath = GetDBPath();
+                string dbPath =  DataRepository.GetDBPath();
                 string connString = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
 
                 using (OleDbConnection conn = new OleDbConnection(connString))

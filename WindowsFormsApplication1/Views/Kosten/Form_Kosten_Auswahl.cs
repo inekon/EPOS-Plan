@@ -29,9 +29,9 @@ namespace WindowsFormsApplication1
         private void LoadBrennstoffArten()
         {
             // Lädt die Namen aus Tab_Brennstoff_Stamm in die ComboBox
-            string sql = "SELECT ID, Name FROM Tab_Brennstoff_Stamm ORDER BY Name";
+            string sql = "SELECT ID, Bezeichner FROM Tab_Brennstoff_Stamm ORDER BY Bezeichner";
             cmbBrennstoffArt.DataSource = DataRepository.GetDataTable(sql);
-            cmbBrennstoffArt.DisplayMember = "Name";
+            cmbBrennstoffArt.DisplayMember = "Bezeichner";
             cmbBrennstoffArt.ValueMember = "ID";
             txtCode.Text = "";
         }
