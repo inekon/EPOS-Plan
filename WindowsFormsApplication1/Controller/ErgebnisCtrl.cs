@@ -30,6 +30,28 @@ namespace WindowsFormsApplication1
         public const string TAB_PV           = "Tab_ErgebnisPhotovoltaik";
         public const string TAB_PV_MODUL     = "Tab_ErgebnisPhotovoltaikModul";
 
+        public int Delete()
+        {
+            var (conn, trans) = DataRepository.BeginTransaction();
+            try
+            {
+                //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
+                using (OleDbCommand c = new OleDbCommand(
+                    "DELETE FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", conn, trans))
+                {
+                    c.ExecuteNonQuery();
+                }
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                try { trans.Rollback(); } catch { }
+                MessageBox.Show("Fehler beim Speichern des Simulationsergebnisses: " + ex.Message);
+                return -1;
+            }
+            finally { try { conn.Close(); } catch { } }
+        }
+
         // Speichert ein Ergebnis (loescht zuvor vorhandene des Projekts).
         // Rueckgabe: neue Kopf-ID, -1 bei Fehler.
         public int Save(ErgebnisModel m)
@@ -42,7 +64,7 @@ namespace WindowsFormsApplication1
                 // 1. "letztes Ergebnis je Projekt": vorhandene Ergebnisse entfernen.
                 //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
                 using (OleDbCommand c = new OleDbCommand(
-                    "DELETE FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", conn, trans))
+                    "DELETE ID_Projekt FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", conn, trans))
                 {
                     c.Parameters.Add("@p", OleDbType.Integer).Value = m.ID_Projekt;
                     c.ExecuteNonQuery();

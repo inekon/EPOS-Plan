@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Humanizer;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -117,14 +118,14 @@ namespace WindowsFormsApplication1
                 decimal betrag = row["Summe"] != DBNull.Value ? Convert.ToDecimal(row["Summe"]) : 0;
 
                 // Wenn es NICHT die aktuelle Komponente ist, zur Gesamtsumme addieren
-                if (komponente != aktuelleSelektion)
+           //     if (komponente != aktuelleSelektion)
                 {
-                    summeGesamt += betrag;
+                     summeGesamt += betrag;
                 }
             }
 
             // Jetzt die live berechnete Selektion zur Gesamtsumme addieren
-            summeGesamt += summeSelektion;
+            //summeGesamt += summeSelektion;
 
             // Anzeige aktualisieren
             if (aktuelleSelektion != "")
@@ -510,8 +511,8 @@ namespace WindowsFormsApplication1
                     }
 
                     string sqlInsertWert = @"INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, 
-                                     KategorieID, EingegebenerWert, Nutzungsdauer, Einheit) 
-                                     VALUES (?, ?, ?, ?, ?, 0, ?)";
+                                     KategorieID, EingegebenerWert, Nutzungsdauer, Einheit, Gruppe) 
+                                     VALUES (?, ?, ?, ?, ?, 0, ?,?)";
 
                     DataRepository.ExecuteSQL(sqlInsertWert,
                         new OleDbParameter("@pID", projektID),
@@ -519,7 +520,8 @@ namespace WindowsFormsApplication1
                         new OleDbParameter("@kID", GetKomponentenID(komponente)),
                         new OleDbParameter("@kat", tabMain.SelectedIndex + 1),
                         new OleDbParameter("@val", (double)initialeKosten), // Access mag Double oft lieber als Decimal
-                        new OleDbParameter("@unit", "€")
+                        new OleDbParameter("@unit", "€"),
+                        new OleDbParameter("gr", "Allgemein")
                     );
 
                 }
@@ -615,7 +617,8 @@ namespace WindowsFormsApplication1
                        WorstCase = ?,
                        Nutzungsdauer = ?,
                        BestCase_Nutzungsdauer = ?, 
-                       WorstCase_Nutzungsdauer = ?
+                       WorstCase_Nutzungsdauer = ?,
+                       Gruppe = ?
                    WHERE ID = ?";
 
             // Aufruf der neuen zentralen Methode
@@ -626,6 +629,7 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@nd", (double)pos.Nutzungsdauer),
                 new OleDbParameter("@bestNd", (double)pos.BestCase_Nutzungsdauer),
                 new OleDbParameter("@worstNd", (double)pos.WorstCase_Nutzungsdauer),
+                new OleDbParameter("gn", (string)pos.Gruppenname),
                 new OleDbParameter("@id", pos.ID)
             );
         }
@@ -667,6 +671,7 @@ namespace WindowsFormsApplication1
             {
                 flp = flpContainer_Energiekosten;
                 flp.Visible = false;
+                Gesamtkosten();
                 kategorieID = 3;
             }
 
@@ -769,23 +774,32 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public static List<EnergyCarrier> GetAllCarriers()
+        public static List<EnergyCarrier> GetAllCarriers(int ID_Projekt)
         {
             List<EnergyCarrier> carriers = new List<EnergyCarrier>();
 
             //string sql = "SELECT * FROM ENERGY_CARRIER WHERE is_active = true ORDER BY name ASC";
 
             string sql = @"SELECT
+                            energy_project_settings.ID_Projekt,
                             ec.*, 
                             pm.has_hi, 
                             pm.has_hs, 
                             pm.has_powerprice
                         FROM
-                            energy_carrier AS ec
-                        LEFT JOIN
-                            pricing_model AS pm ON ec.pricing_model = pm.code";
+                            energy_project_settings
+                            INNER JOIN (
+                                energy_carrier AS ec
+                                LEFT JOIN
+                                pricing_model AS pm ON ec.pricing_model = pm.code
+                            ) ON energy_project_settings.ID_Energieträger = ec.id
+                        WHERE energy_project_settings.ID_Projekt=?";
 
-            DataTable dt = DataRepository.GetDataTable(sql, null);
+            OleDbParameter[] ps = {
+                new OleDbParameter("@p", ID_Projekt),
+            };
+
+            DataTable dt = DataRepository.GetDataTable(sql, ps);
 
             foreach (DataRow row in dt.Rows)
             {
@@ -816,7 +830,7 @@ namespace WindowsFormsApplication1
         private void FillCarrierComboBox()
         {
             // Daten holen
-            List<EnergyCarrier> allCarriers = GetAllCarriers();
+            List<EnergyCarrier> allCarriers = GetAllCarriers(m_ID_Projekt);
             // ComboBox konfigurieren
             listBox_Energieträger.DataSource = allCarriers;
             // Darstellung
@@ -949,23 +963,49 @@ namespace WindowsFormsApplication1
         {
             if (listBox_Energieträger.SelectedItem is EnergyCarrier selectedCarrier)
             {
-                DeleteEnergyCarrierWithSettings(selectedCarrier.Name);
+                DeleteEnergyCarrierWithSettings(selectedCarrier.Name, m_ID_Projekt);
             }
         }
 
-        public bool DeleteEnergyCarrierWithSettings(string carrierName)
+        public bool DeleteEnergyCarrierWithSettings(string carrierName, int ID_Projekt)
         {
             // Erst die ID finden
             int id = DataRepository.GetIdByName("energy_carrier", "name", carrierName);
+            if(id==0) return false;
 
-            if (id == -1) return false;
+            // 1. Details löschen (z.B. project_settings)
+            var (conn, trans) = DataRepository.BeginTransaction();
+            try
+            {
+                string sqlDetail = $"DELETE FROM energy_project_settings WHERE ID_Energieträger=? AND ID_Projekt=?";
+                using (OleDbCommand cmd = new OleDbCommand(sqlDetail, conn, trans))
+                {
+                    cmd.Parameters.AddWithValue("?", id);
+                    cmd.Parameters.AddWithValue("?", ID_Projekt);
+                    cmd.ExecuteNonQuery();
+                }
 
-            // Dann kaskadierend löschen
-            bool ret = DataRepository.DeleteWithDependencies("energy_carrier", "energy_project_settings", "ID_Energieträger", id);
+                sqlDetail = $"DELETE FROM energy_price WHERE carrier_id=? AND ID_Projekt=?";
+                using (OleDbCommand cmd = new OleDbCommand(sqlDetail, conn, trans))
+                {
+                    cmd.Parameters.AddWithValue("?", id);
+                    cmd.Parameters.AddWithValue("?", ID_Projekt);
+                    cmd.ExecuteNonQuery();
+                }
 
-            FillCarrierComboBox();
- 
-            return ret;
+                trans.Commit();
+
+                FillCarrierComboBox();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                trans.Rollback();
+                MessageBox.Show($"Fehler beim Löschen in energy_project_settings: " + ex.Message);
+                return false;
+            }
+            finally { conn.Close(); }
         }
  
     }
