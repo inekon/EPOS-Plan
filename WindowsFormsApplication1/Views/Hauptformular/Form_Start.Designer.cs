@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Start));
             tabControl_Wizard = new System.Windows.Forms.TabControl();
             tabPage1 = new System.Windows.Forms.TabPage();
+            btn_Help_Kurzanleitung = new System.Windows.Forms.Button();
             label2_pBox_ProjektDetails = new System.Windows.Forms.Label();
             label_pBox_ProjektDetails = new System.Windows.Forms.Label();
             label2_pBox_Delete = new System.Windows.Forms.Label();
@@ -52,6 +53,7 @@
             pBox_ProjektOeffnen = new System.Windows.Forms.PictureBox();
             pBox_ProjektNeu = new System.Windows.Forms.PictureBox();
             tabPage2 = new System.Windows.Forms.TabPage();
+            btn_Help_Waermebedarf = new System.Windows.Forms.Button();
             label2_pBox_Brauchwasser = new System.Windows.Forms.Label();
             label_pBox_Brauchwasser = new System.Windows.Forms.Label();
             label2_pBox_Prozess = new System.Windows.Forms.Label();
@@ -71,6 +73,7 @@
             pBox_WBedarfDaten = new System.Windows.Forms.PictureBox();
             pBox_Gebaude = new System.Windows.Forms.PictureBox();
             tabPage3 = new System.Windows.Forms.TabPage();
+            btn_Help_Strombedarf = new System.Windows.Forms.Button();
             label2_pBox_StromMessdaten = new System.Windows.Forms.Label();
             label_pBox_StromMessdaten = new System.Windows.Forms.Label();
             label2_pBox_StromProfilEigenes = new System.Windows.Forms.Label();
@@ -156,6 +159,7 @@
             btn_Help = new System.Windows.Forms.Button();
             pictureBox2 = new System.Windows.Forms.PictureBox();
             pictureBox1 = new System.Windows.Forms.PictureBox();
+            btn_Varianten = new System.Windows.Forms.Button();
             tabControl_Wizard.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pBox_ProjektDetails).BeginInit();
@@ -210,6 +214,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(btn_Help_Kurzanleitung);
             tabPage1.Controls.Add(label2_pBox_ProjektDetails);
             tabPage1.Controls.Add(label_pBox_ProjektDetails);
             tabPage1.Controls.Add(label2_pBox_Delete);
@@ -233,6 +238,16 @@
             resources.ApplyResources(tabPage1, "tabPage1");
             tabPage1.Name = "tabPage1";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // btn_Help_Kurzanleitung
+            // 
+            btn_Help_Kurzanleitung.BackColor = System.Drawing.Color.Transparent;
+            btn_Help_Kurzanleitung.BackgroundImage = Properties.Resources.help_icon;
+            resources.ApplyResources(btn_Help_Kurzanleitung, "btn_Help_Kurzanleitung");
+            btn_Help_Kurzanleitung.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help_Kurzanleitung.FlatAppearance.BorderSize = 0;
+            btn_Help_Kurzanleitung.Name = "btn_Help_Kurzanleitung";
+            btn_Help_Kurzanleitung.UseVisualStyleBackColor = false;
             // 
             // label2_pBox_ProjektDetails
             // 
@@ -404,6 +419,7 @@
             // 
             // tabPage2
             // 
+            tabPage2.Controls.Add(btn_Help_Waermebedarf);
             tabPage2.Controls.Add(label2_pBox_Brauchwasser);
             tabPage2.Controls.Add(label_pBox_Brauchwasser);
             tabPage2.Controls.Add(label2_pBox_Prozess);
@@ -425,6 +441,16 @@
             resources.ApplyResources(tabPage2, "tabPage2");
             tabPage2.Name = "tabPage2";
             tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // btn_Help_Waermebedarf
+            // 
+            btn_Help_Waermebedarf.BackColor = System.Drawing.Color.Transparent;
+            btn_Help_Waermebedarf.BackgroundImage = Properties.Resources.help_icon;
+            resources.ApplyResources(btn_Help_Waermebedarf, "btn_Help_Waermebedarf");
+            btn_Help_Waermebedarf.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help_Waermebedarf.FlatAppearance.BorderSize = 0;
+            btn_Help_Waermebedarf.Name = "btn_Help_Waermebedarf";
+            btn_Help_Waermebedarf.UseVisualStyleBackColor = false;
             // 
             // label2_pBox_Brauchwasser
             // 
@@ -566,6 +592,7 @@
             // 
             // tabPage3
             // 
+            tabPage3.Controls.Add(btn_Help_Strombedarf);
             tabPage3.Controls.Add(label2_pBox_StromMessdaten);
             tabPage3.Controls.Add(label_pBox_StromMessdaten);
             tabPage3.Controls.Add(label2_pBox_StromProfilEigenes);
@@ -582,6 +609,16 @@
             resources.ApplyResources(tabPage3, "tabPage3");
             tabPage3.Name = "tabPage3";
             tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // btn_Help_Strombedarf
+            // 
+            btn_Help_Strombedarf.BackColor = System.Drawing.Color.Transparent;
+            btn_Help_Strombedarf.BackgroundImage = Properties.Resources.help_icon;
+            resources.ApplyResources(btn_Help_Strombedarf, "btn_Help_Strombedarf");
+            btn_Help_Strombedarf.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help_Strombedarf.FlatAppearance.BorderSize = 0;
+            btn_Help_Strombedarf.Name = "btn_Help_Strombedarf";
+            btn_Help_Strombedarf.UseVisualStyleBackColor = false;
             // 
             // label2_pBox_StromMessdaten
             // 
@@ -1153,6 +1190,7 @@
             // 
             // tabPage6
             // 
+            tabPage6.Controls.Add(btn_Varianten);
             tabPage6.Controls.Add(btn_Kosten);
             resources.ApplyResources(tabPage6, "tabPage6");
             tabPage6.Name = "tabPage6";
@@ -1283,6 +1321,13 @@
             resources.ApplyResources(pictureBox1, "pictureBox1");
             pictureBox1.Name = "pictureBox1";
             pictureBox1.TabStop = false;
+            // 
+            // btn_Varianten
+            // 
+            resources.ApplyResources(btn_Varianten, "btn_Varianten");
+            btn_Varianten.Name = "btn_Varianten";
+            btn_Varianten.UseVisualStyleBackColor = true;
+            btn_Varianten.Click += btn_Varianten_Click;
             // 
             // Form_Start
             // 
@@ -1479,5 +1524,9 @@
         private System.Windows.Forms.ComboBox comboBox_Klima;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Button btn_Speichern;
+        private System.Windows.Forms.Button btn_Help_Waermebedarf;
+        private System.Windows.Forms.Button btn_Help_Kurzanleitung;
+        private System.Windows.Forms.Button btn_Help_Strombedarf;
+        private System.Windows.Forms.Button btn_Varianten;
     }
 }

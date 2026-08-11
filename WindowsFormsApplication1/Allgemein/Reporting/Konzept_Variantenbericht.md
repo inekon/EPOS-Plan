@@ -1,0 +1,1 @@
+Aufgegangen in `Konzept_Berichtserstellung_EPOS-Plan.md` (Fassung 3) und `Konzept_Wirtschaftlichkeit.md` — siehe `LIESMICH.md`. Diese Datei kann gelöscht werden; der letzte Vollstand liegt im Claude-Projekt.

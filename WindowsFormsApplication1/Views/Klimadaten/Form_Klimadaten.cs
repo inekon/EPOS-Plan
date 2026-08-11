@@ -17,10 +17,14 @@ namespace WindowsFormsApplication1
     {
         private string m_szOrtName;
 
+        // Hilfsklasse, die die Verbindung zwischen Controls und Hilfeseiten herstellt
+        private HelpExtender _helpExtender;
+
         public Form_Klimadaten()
         {
             InitializeComponent();
             m_szOrtName = "";
+            _helpExtender = new HelpExtender(Program.HelpCatalog);
         }
 
         private void Form_Klimadaten_Load(object sender, EventArgs e)
@@ -44,6 +48,9 @@ namespace WindowsFormsApplication1
             initChart(chart1);
             initChart(chart2);
             chart2.ChartAreas[0].AxisY.MajorGrid.Interval = 10;
+
+            // jedes Control mit einem passenden Key in der Doku verbinden
+            _helpExtender.RegisterForm(this);
         }
 
         private void initChart(Chart chart)

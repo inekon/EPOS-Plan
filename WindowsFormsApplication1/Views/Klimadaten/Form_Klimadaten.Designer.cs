@@ -61,6 +61,7 @@
             tabPage2 = new System.Windows.Forms.TabPage();
             chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             panel2 = new System.Windows.Forms.Panel();
+            btn_Help = new System.Windows.Forms.Button();
             label10 = new System.Windows.Forms.Label();
             panel1.SuspendLayout();
             panel_KlimaGraph.SuspendLayout();
@@ -388,6 +389,7 @@
             // panel2
             // 
             panel2.BackColor = System.Drawing.Color.White;
+            panel2.Controls.Add(btn_Help);
             panel2.Controls.Add(label10);
             panel2.Controls.Add(label8);
             panel2.Controls.Add(label9);
@@ -402,6 +404,22 @@
             panel2.Name = "panel2";
             panel2.Size = new System.Drawing.Size(727, 155);
             panel2.TabIndex = 33;
+            // 
+            // btn_Help
+            // 
+            btn_Help.BackColor = System.Drawing.Color.Transparent;
+            btn_Help.BackgroundImage = Properties.Resources.help_icon;
+            btn_Help.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            btn_Help.Cursor = System.Windows.Forms.Cursors.Hand;
+            btn_Help.FlatAppearance.BorderSize = 0;
+            btn_Help.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btn_Help.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            btn_Help.Location = new System.Drawing.Point(660, 11);
+            btn_Help.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            btn_Help.Name = "btn_Help";
+            btn_Help.Size = new System.Drawing.Size(51, 39);
+            btn_Help.TabIndex = 112;
+            btn_Help.UseVisualStyleBackColor = false;
             // 
             // label10
             // 
@@ -481,5 +499,6 @@
         private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Button btn_Help;
     }
 }

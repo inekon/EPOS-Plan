@@ -63,6 +63,7 @@
   <!-- NuGet-Pakete -->
   <ItemGroup>
     <!-- Chart-Ersatz: Port mit identischem Namespace System.Windows.Forms.DataVisualization.Charting -->
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
     <PackageReference Include="WinForms.DataVisualization" Version="1.10.2" />
 
     <!-- Datenzugriff (Access via ACE OLEDB / ODBC) -->
@@ -160,6 +161,16 @@
   <!-- ClickOnce-Signaturdatei nicht kompilieren -->
   <ItemGroup>
     <None Include="WindowsFormsApplication1_TemporaryKey.pfx" />
+  </ItemGroup>
+
+  <!-- Berichtsmodul: Word-Rahmenvorlage in den Ausgabeordner kopieren
+       (WordBerichtGenerator.FindeVorlage sucht unter Vorlagen\Berichtsvorlage.docx) -->
+  <ItemGroup>
+    <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Vorlagen\Berichtsvorlage.docx</Link>
+      <TargetPath>Vorlagen\Berichtsvorlage.docx</TargetPath>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -181,7 +181,7 @@
     <value>1</value>
   </data>
   <data name="splitContainer_Parameter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="splitContainer_Parameter.SplitterDistance" type="System.Int32, mscorlib">
     <value>148</value>
@@ -302,7 +302,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Ergebnis.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="tabPage_Ergebnis.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -818,7 +818,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Photovoltaik.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="tabPage_Photovoltaik.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1379,7 +1379,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Solarthermie.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="tabPage_Solarthermie.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -3413,7 +3413,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Heizkessel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="tabPage_Heizkessel.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -4226,7 +4226,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Bedarf.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="tabPage_Bedarf.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -6657,7 +6657,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>4, 30</value>
   </data>
   <data name="tabPage_Uebersicht.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="tabPage_Uebersicht.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -6681,7 +6681,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>4, 30</value>
   </data>
   <data name="tabPage_Simulation.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="tabPage_Simulation.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -7923,7 +7923,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Wärmepumpe.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="tabPage_Wärmepumpe.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -9126,7 +9126,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_BHKW.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="tabPage_BHKW.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -9153,7 +9153,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabPage_Stromspeicher.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1420, 721</value>
+    <value>1448, 721</value>
   </data>
   <data name="tabPage_Stromspeicher.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>

@@ -49,6 +49,8 @@ namespace WindowsFormsApplication1
         public double Waermelast_Max;         // kW
         public double Strombedarf_Gesamt;     // MWh
         public double Strombedarf_Max;        // kW
+        public double Waermerestbedarf;       // MWh (Restwärmebedarf nach allen Erzeugern, sim.Restwaerme)
+        public double Stromrestbedarf;        // MWh (Reststrombedarf/Netzbezug, sim.Reststrom)
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.
@@ -93,8 +95,15 @@ namespace WindowsFormsApplication1
         public double Betriebsstunden_Durchschnitt; // h/a
         public double Waermebedarfsdeckung;         // %
         public double Strombedarfsdeckung;          // %
-        public double Gasverbrauch_Hu;              // MWh/a (Brennstoffverbrauch, unterer Heizwert)
-
+        public double Gasverbrauch;
+        public double Oelverbrauch;
+        public double Koks;
+        public double Rapsoelverbrauch;
+        public double Holzverbrauch;
+        public double Kohle;
+        public double Sonstigverbrauch;
+        public double Pellets;
+        public double TierischeFette;
         public List<ErgebnisBHKWModulModel> Module = new List<ErgebnisBHKWModulModel>();
     }
 
@@ -104,6 +113,9 @@ namespace WindowsFormsApplication1
         public string Modul = "";
         public double Waermeproduktion;   // MWh/a
         public double Stromproduktion;    // MWh/a
+        public string Brennstoff = "";
+        public double Verbrauch = 0.0;          // MWh/a
+        public int CarrierId;             // energy_carrier.id (0 = keine Zuordnung)
     }
 
     // Detail: Heizkessel/Spitzenkessel-Aggregat (Tab_ErgebnisHeizkessel) + Modulliste.
@@ -138,6 +150,11 @@ namespace WindowsFormsApplication1
         public string Modul = "";
         public double Waerme_Gas;          // MWh/a (Gas/Biogas/Rapsoel/Holz...)
         public double Waerme_Oel;          // MWh/a
+        public double Waermeproduktion;   // MWh/a
+        public string Brennstoff = "";
+        public double Verbrauch = 0.0;          // MWh/a
+        public int CarrierId;              // energy_carrier.id (0 = keine Zuordnung)
+
         public double Jahresnutzungsgrad;  // %
     }
 

@@ -17,21 +17,28 @@ namespace WindowsFormsApplication1
     // ---------------------------------------------------------------------------
     public class ErgebnisCtrl
     {
-        public const string TAB_KOPF        = "Tab_Ergebnis";
-        public const string TAB_ENERGIE     = "Tab_ErgebnisEnergiebedarf";
-        public const string TAB_WP          = "Tab_ErgebnisWaermepumpe";
-        public const string TAB_WP_MODUL    = "Tab_ErgebnisWaermepumpeModul";
-        public const string TAB_BHKW        = "Tab_ErgebnisBHKW";
-        public const string TAB_BHKW_MODUL  = "Tab_ErgebnisBHKWModul";
-        public const string TAB_KESSEL       = "Tab_ErgebnisHeizkessel";
+        public const string TAB_KOPF = "Tab_Ergebnis";
+        public const string TAB_ENERGIE = "Tab_ErgebnisEnergiebedarf";
+        public const string TAB_WP = "Tab_ErgebnisWaermepumpe";
+        public const string TAB_WP_MODUL = "Tab_ErgebnisWaermepumpeModul";
+        public const string TAB_BHKW = "Tab_ErgebnisBHKW";
+        public const string TAB_BHKW_MODUL = "Tab_ErgebnisBHKWModul";
+        public const string TAB_KESSEL = "Tab_ErgebnisHeizkessel";
         public const string TAB_KESSEL_MODUL = "Tab_ErgebnisHeizkesselModul";
-        public const string TAB_SOLAR        = "Tab_ErgebnisSolarthermie";
-        public const string TAB_SOLAR_MODUL  = "Tab_ErgebnisSolarthermieModul";
-        public const string TAB_PV           = "Tab_ErgebnisPhotovoltaik";
-        public const string TAB_PV_MODUL     = "Tab_ErgebnisPhotovoltaikModul";
+        public const string TAB_SOLAR = "Tab_ErgebnisSolarthermie";
+        public const string TAB_SOLAR_MODUL = "Tab_ErgebnisSolarthermieModul";
+        public const string TAB_PV = "Tab_ErgebnisPhotovoltaik";
+        public const string TAB_PV_MODUL = "Tab_ErgebnisPhotovoltaikModul";
 
-        public int Delete()
+        // Alte, funktionslose Signatur — nur für Übergangskompatibilität erhalten.
+        [Obsolete("Delete(int idProjekt) verwenden — diese Überladung löscht nichts.")]
+        public int Delete() { return -1; }
+
+        // Loescht die gespeicherten Ergebnisse eines Projekts (Befund B2 behoben:
+        // Projekt-Parameter, Parameterbindung und Commit ergänzt).
+        public int Delete(int idProjekt)
         {
+            if (idProjekt <= 0) return -1;
             var (conn, trans) = DataRepository.BeginTransaction();
             try
             {
@@ -39,14 +46,16 @@ namespace WindowsFormsApplication1
                 using (OleDbCommand c = new OleDbCommand(
                     "DELETE FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", conn, trans))
                 {
+                    c.Parameters.Add("@p", OleDbType.Integer).Value = idProjekt;
                     c.ExecuteNonQuery();
                 }
+                trans.Commit();
                 return 0;
             }
             catch (Exception ex)
             {
                 try { trans.Rollback(); } catch { }
-                MessageBox.Show("Fehler beim Speichern des Simulationsergebnisses: " + ex.Message);
+                MessageBox.Show("Fehler beim Löschen des Simulationsergebnisses: " + ex.Message);
                 return -1;
             }
             finally { try { conn.Close(); } catch { } }
@@ -57,6 +66,15 @@ namespace WindowsFormsApplication1
         public int Save(ErgebnisModel m)
         {
             if (m == null || m.ID_Projekt <= 0) return -1;
+
+            StelleEnergieSpaltenSicher();   // fehlende Restbedarf-Spalten einmalig ergänzen
+            StelleBHKWSpaltenSicher();      // fehlende Brennstoffspalten in Tab_ErgebnisBHKW einmalig ergänzen
+            StelleModulSpaltenSicher();     // carrier_id (B1) + Waermeproduktion Kesselmodul (B3) ergänzen
+
+            // Energieträger-Zuordnung einmal je Erzeuger bestimmen (Befund B1: echte
+            // carrier_id statt des Brennstoff-Strings — Basis für Kosten/Wirtschaftlichkeit).
+            int bhkwCarrier = CarrierIdFuerProjekt(m.ID_Projekt, "Tab_BHKW");
+            int kesselCarrier = CarrierIdFuerProjekt(m.ID_Projekt, "Tab_Heizkessel");
 
             var (conn, trans) = DataRepository.BeginTransaction();
             try
@@ -98,8 +116,9 @@ namespace WindowsFormsApplication1
                 {
                     int eId = NextId(conn, trans, TAB_ENERGIE);
                     string sql = "INSERT INTO " + TAB_ENERGIE + " (" +
-                        "ID, ID_Ergebnis, Waermebedarf_Gesamt, Waermelast_Max, Strombedarf_Gesamt, Strombedarf_Max) " +
-                        "VALUES (?,?,?,?,?,?)";
+                        "ID, ID_Ergebnis, Waermebedarf_Gesamt, Waermelast_Max, Strombedarf_Gesamt, Strombedarf_Max, " +
+                        "Waermerestbedarf, Stromrestbedarf) " +
+                        "VALUES (?,?,?,?,?,?,?,?)";
                     using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
                     {
                         c.Parameters.Add("@id", OleDbType.Integer).Value = eId;
@@ -108,6 +127,8 @@ namespace WindowsFormsApplication1
                         c.Parameters.Add("@a2", OleDbType.Double).Value = R(m.Energiebedarf.Waermelast_Max);
                         c.Parameters.Add("@a3", OleDbType.Double).Value = R(m.Energiebedarf.Strombedarf_Gesamt);
                         c.Parameters.Add("@a4", OleDbType.Double).Value = R(m.Energiebedarf.Strombedarf_Max);
+                        c.Parameters.Add("@a5", OleDbType.Double).Value = R(m.Energiebedarf.Waermerestbedarf);
+                        c.Parameters.Add("@a6", OleDbType.Double).Value = R(m.Energiebedarf.Stromrestbedarf);
                         c.ExecuteNonQuery();
                     }
                 }
@@ -170,8 +191,10 @@ namespace WindowsFormsApplication1
                     string sql = "INSERT INTO " + TAB_BHKW + " (" +
                         "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Strombedarf, Reststrombedarf, " +
                         "Waermeproduktion, Waermeueberschuss, Stromproduktion, Betriebsstunden_Gesamt, " +
-                        "Betriebsstunden_Durchschnitt, Waermebedarfsdeckung, Strombedarfsdeckung, Gasverbrauch_Hu) " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?,?)";
+                        "Betriebsstunden_Durchschnitt, Waermebedarfsdeckung, Strombedarfsdeckung, " +
+                        "Gasverbrauch, Oelverbrauch, Koks, Rapsoelverbrauch, Holzverbrauch, Kohle, " +
+                        "Sonstigverbrauch, Pellets, TierischeFette) " +
+                        "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?)";
                     using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
                     {
                         c.Parameters.Add("@id", OleDbType.Integer).Value = bId;
@@ -187,18 +210,34 @@ namespace WindowsFormsApplication1
                         c.Parameters.Add("@a9", OleDbType.Double).Value = R(m.BHKW.Betriebsstunden_Durchschnitt);
                         c.Parameters.Add("@a10", OleDbType.Double).Value = R(m.BHKW.Waermebedarfsdeckung);
                         c.Parameters.Add("@a11", OleDbType.Double).Value = R(m.BHKW.Strombedarfsdeckung);
-                        c.Parameters.Add("@a12", OleDbType.Double).Value = R(m.BHKW.Gasverbrauch_Hu);
+                        c.Parameters.Add("@a12", OleDbType.Double).Value = R(m.BHKW.Gasverbrauch);
+                        c.Parameters.Add("@a13", OleDbType.Double).Value = R(m.BHKW.Oelverbrauch);
+                        c.Parameters.Add("@a14", OleDbType.Double).Value = R(m.BHKW.Koks);
+                        c.Parameters.Add("@a15", OleDbType.Double).Value = R(m.BHKW.Rapsoelverbrauch);
+                        c.Parameters.Add("@a16", OleDbType.Double).Value = R(m.BHKW.Holzverbrauch);
+                        c.Parameters.Add("@a17", OleDbType.Double).Value = R(m.BHKW.Kohle);
+                        c.Parameters.Add("@a18", OleDbType.Double).Value = R(m.BHKW.Sonstigverbrauch);
+                        c.Parameters.Add("@a19", OleDbType.Double).Value = R(m.BHKW.Pellets);
+                        c.Parameters.Add("@a20", OleDbType.Double).Value = R(m.BHKW.TierischeFette);
                         c.ExecuteNonQuery();
                     }
 
                     if (m.BHKW.Module != null && m.BHKW.Module.Count > 0)
                     {
+                        // Dominanten Brennstoff + Gesamtverbrauch einmal bestimmen; der Verbrauch
+                        // wird anteilig nach Waermeproduktion auf die Module verteilt (Summe = Gesamt).
+                        string bhArt; double bhVerbrauch;
+                        BHKWBrennstoff(m.BHKW, out bhArt, out bhVerbrauch);
+                        double basis = 0;
+                        foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module) basis += mo.Waermeproduktion;
+
                         int modId = NextId(conn, trans, TAB_BHKW_MODUL);
                         string sqlM = "INSERT INTO " + TAB_BHKW_MODUL + " (" +
-                            "ID, ID_ErgebnisBHKW, Modul, Waermeproduktion, Stromproduktion) " +
-                            "VALUES (?,?,?,?,?)";
+                            "ID, ID_ErgebnisBHKW, Modul, Waermeproduktion, Stromproduktion, Brennstoff, Verbrauch, carrier_id) " +
+                            "VALUES (?,?,?,?,?,?,?,?)";
                         foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module)
                         {
+                            double anteil = basis > 0 ? mo.Waermeproduktion / basis : 1.0 / m.BHKW.Module.Count;
                             using (OleDbCommand c = new OleDbCommand(sqlM, conn, trans))
                             {
                                 c.Parameters.Add("@id", OleDbType.Integer).Value = modId++;
@@ -206,6 +245,18 @@ namespace WindowsFormsApplication1
                                 c.Parameters.Add("@mod", OleDbType.VarWChar).Value = (object)(mo.Modul ?? "");
                                 c.Parameters.Add("@w", OleDbType.Double).Value = R(mo.Waermeproduktion);
                                 c.Parameters.Add("@s", OleDbType.Double).Value = R(mo.Stromproduktion);
+                                if (bhArt != null)
+                                {
+                                    c.Parameters.Add("@b", OleDbType.VarWChar).Value = bhArt;
+                                    c.Parameters.Add("@v", OleDbType.Double).Value = R(bhVerbrauch * anteil);
+                                }
+                                else
+                                {
+                                    c.Parameters.Add("@b", OleDbType.VarWChar).Value = DBNull.Value;
+                                    c.Parameters.Add("@v", OleDbType.Double).Value = DBNull.Value;
+                                }
+                                c.Parameters.Add("@ca", OleDbType.Integer).Value =
+                                    bhkwCarrier > 0 ? (object)bhkwCarrier : DBNull.Value;
                                 c.ExecuteNonQuery();
                             }
                         }
@@ -250,9 +301,12 @@ namespace WindowsFormsApplication1
                     if (m.Heizkessel.Module != null && m.Heizkessel.Module.Count > 0)
                     {
                         int modId = NextId(conn, trans, TAB_KESSEL_MODUL);
+                        // Befund B3 behoben: Waermeproduktion wird persistiert; Verbrauch gerundet;
+                        // Parametername @g war doppelt vergeben.
                         string sqlM = "INSERT INTO " + TAB_KESSEL_MODUL + " (" +
-                            "ID, ID_ErgebnisHeizkessel, Modul, Waerme_Gas, Waerme_Oel, Jahresnutzungsgrad) " +
-                            "VALUES (?,?,?,?,?,?)";
+                            "ID, ID_ErgebnisHeizkessel, Modul, Waerme_Gas, Waerme_Oel, Waermeproduktion, " +
+                            "Brennstoff, Verbrauch, Jahresnutzungsgrad, carrier_id) " +
+                            "VALUES (?,?,?,?,?,?,?,?,?,?)";
                         foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
                         {
                             using (OleDbCommand c = new OleDbCommand(sqlM, conn, trans))
@@ -262,7 +316,12 @@ namespace WindowsFormsApplication1
                                 c.Parameters.Add("@mod", OleDbType.VarWChar).Value = (object)(mo.Modul ?? "");
                                 c.Parameters.Add("@g", OleDbType.Double).Value = R(mo.Waerme_Gas);
                                 c.Parameters.Add("@o", OleDbType.Double).Value = R(mo.Waerme_Oel);
+                                c.Parameters.Add("@w", OleDbType.Double).Value = R(mo.Waermeproduktion);
+                                c.Parameters.Add("@b", OleDbType.VarWChar).Value = (object)(mo.Brennstoff ?? "");
+                                c.Parameters.Add("@v", OleDbType.Double).Value = R(mo.Verbrauch);
                                 c.Parameters.Add("@j", OleDbType.Double).Value = R(mo.Jahresnutzungsgrad);
+                                c.Parameters.Add("@ca", OleDbType.Integer).Value =
+                                    kesselCarrier > 0 ? (object)kesselCarrier : DBNull.Value;
                                 c.ExecuteNonQuery();
                             }
                         }
@@ -401,6 +460,8 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.Waermelast_Max = D(re, "Waermelast_Max");
                 m.Energiebedarf.Strombedarf_Gesamt = D(re, "Strombedarf_Gesamt");
                 m.Energiebedarf.Strombedarf_Max = D(re, "Strombedarf_Max");
+                m.Energiebedarf.Waermerestbedarf = D(re, "Waermerestbedarf");
+                m.Energiebedarf.Stromrestbedarf = D(re, "Stromrestbedarf");
             }
 
             // Detail: Waermepumpe (+ Module).
@@ -461,7 +522,15 @@ namespace WindowsFormsApplication1
                 b.Betriebsstunden_Durchschnitt = D(rb, "Betriebsstunden_Durchschnitt");
                 b.Waermebedarfsdeckung = D(rb, "Waermebedarfsdeckung");
                 b.Strombedarfsdeckung = D(rb, "Strombedarfsdeckung");
-                b.Gasverbrauch_Hu = D(rb, "Gasverbrauch_Hu");
+                b.Gasverbrauch = D(rb, "Gasverbrauch");
+                b.Oelverbrauch = D(rb, "Oelverbrauch");
+                b.Koks = D(rb, "Koks");
+                b.Rapsoelverbrauch = D(rb, "Rapsoelverbrauch");
+                b.Holzverbrauch = D(rb, "Holzverbrauch");
+                b.Kohle = D(rb, "Kohle");
+                b.Sonstigverbrauch = D(rb, "Sonstigverbrauch");
+                b.Pellets = D(rb, "Pellets");
+                b.TierischeFette = D(rb, "TierischeFette");
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_BHKW_MODUL + " WHERE ID_ErgebnisBHKW = ? ORDER BY ID",
@@ -473,6 +542,9 @@ namespace WindowsFormsApplication1
                         mo.Modul = S(rm, "Modul");
                         mo.Waermeproduktion = D(rm, "Waermeproduktion");
                         mo.Stromproduktion = D(rm, "Stromproduktion");
+                        mo.Brennstoff = S(rm, "Brennstoff");
+                        mo.Verbrauch = D(rm, "Verbrauch");
+                        mo.CarrierId = I(rm, "carrier_id");
                         b.Module.Add(mo);
                     }
 
@@ -516,6 +588,10 @@ namespace WindowsFormsApplication1
                         mo.Modul = S(rm, "Modul");
                         mo.Waerme_Gas = D(rm, "Waerme_Gas");
                         mo.Waerme_Oel = D(rm, "Waerme_Oel");
+                        mo.Waermeproduktion = D(rm, "Waermeproduktion");
+                        mo.Brennstoff = S(rm, "Brennstoff");
+                        mo.Verbrauch = D(rm, "Verbrauch");
+                        mo.CarrierId = I(rm, "carrier_id");
                         mo.Jahresnutzungsgrad = D(rm, "Jahresnutzungsgrad");
                         h.Module.Add(mo);
                     }
@@ -596,6 +672,137 @@ namespace WindowsFormsApplication1
                 "SELECT COUNT(*) FROM " + TAB_KOPF + " WHERE ID_Projekt = ?",
                 new OleDbParameter("@p", idProjekt));
             return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
+        }
+
+        // Dominierender Brennstoff des BHKW samt Gesamtverbrauch (MWh/a); art = null, wenn keiner > 0.
+        private static void BHKWBrennstoff(ErgebnisBHKWModel b, out string art, out double verbrauch)
+        {
+            string[] arten = { "Gas", "Öl", "Pellets", "Holz", "Kohle", "Koks", "Rapsöl", "Tierische Fette", "Sonstige" };
+            double[] werte = { b.Gasverbrauch, b.Oelverbrauch, b.Pellets, b.Holzverbrauch, b.Kohle,
+                               b.Koks, b.Rapsoelverbrauch, b.TierischeFette, b.Sonstigverbrauch };
+            art = null; verbrauch = 0;
+            for (int i = 0; i < arten.Length; i++)
+                if (werte[i] > verbrauch) { art = arten[i]; verbrauch = werte[i]; }
+            if (verbrauch <= 0) { art = null; verbrauch = 0; }
+        }
+
+        // Ergaenzt fehlende Spalten in Tab_ErgebnisEnergiebedarf (Restbedarf) - einmalige, tolerante Migration.
+        private static void StelleEnergieSpaltenSicher()
+        {
+            string[] spalten = { "Waermerestbedarf", "Stromrestbedarf" };
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    DataTable cols = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
+                        new object[] { null, null, TAB_ENERGIE, null });
+                    var vorhanden = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    if (cols != null)
+                        foreach (DataRow rc in cols.Rows) vorhanden.Add(rc["COLUMN_NAME"].ToString());
+                    foreach (string sp in spalten)
+                    {
+                        if (vorhanden.Contains(sp)) continue;
+                        using (OleDbCommand c = new OleDbCommand(
+                            "ALTER TABLE " + TAB_ENERGIE + " ADD COLUMN " + sp + " DOUBLE", conn))
+                            c.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch { /* best effort - Spalten existieren dann ggf. schon */ }
+        }
+
+        // Ergaenzt fehlende Brennstoffspalten in Tab_ErgebnisBHKW - einmalige, tolerante Migration.
+        private static void StelleBHKWSpaltenSicher()
+        {
+            string[] spalten = { "Oelverbrauch", "Koks", "Rapsoelverbrauch", "Holzverbrauch", "Kohle",
+                                 "Sonstigverbrauch", "Pellets", "TierischeFette" };
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    DataTable cols = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
+                        new object[] { null, null, TAB_BHKW, null });
+                    var vorhanden = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    if (cols != null)
+                        foreach (DataRow rc in cols.Rows) vorhanden.Add(rc["COLUMN_NAME"].ToString());
+                    foreach (string sp in spalten)
+                    {
+                        if (vorhanden.Contains(sp)) continue;
+                        using (OleDbCommand c = new OleDbCommand(
+                            "ALTER TABLE " + TAB_BHKW + " ADD COLUMN " + sp + " DOUBLE", conn))
+                            c.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch { /* best effort - Spalten existieren dann ggf. schon */ }
+        }
+
+        // Ergaenzt carrier_id in beiden Modultabellen (Befund B1) und Waermeproduktion
+        // im Kesselmodul (Befund B3) - einmalige, tolerante Migration nach dem Muster
+        // der uebrigen StelleXSpaltenSicher-Methoden.
+        private static void StelleModulSpaltenSicher()
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    ErgaenzeSpalte(conn, TAB_BHKW_MODUL, "carrier_id", "LONG");
+                    ErgaenzeSpalte(conn, TAB_KESSEL_MODUL, "carrier_id", "LONG");
+                    ErgaenzeSpalte(conn, TAB_KESSEL_MODUL, "Waermeproduktion", "DOUBLE");
+                }
+            }
+            catch { /* best effort - Spalten existieren dann ggf. schon */ }
+        }
+
+        private static void ErgaenzeSpalte(OleDbConnection conn, string tabelle, string spalte, string typ)
+        {
+            DataTable cols = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
+                new object[] { null, null, tabelle, null });
+            if (cols != null)
+                foreach (DataRow rc in cols.Rows)
+                    if (string.Equals(rc["COLUMN_NAME"].ToString(), spalte, StringComparison.OrdinalIgnoreCase))
+                        return;   // vorhanden
+            using (OleDbCommand c = new OleDbCommand(
+                "ALTER TABLE " + tabelle + " ADD COLUMN " + spalte + " " + typ, conn))
+                c.ExecuteNonQuery();
+        }
+
+        // Ermittelt die energy_carrier-ID zum Brennstoff des Erzeugers eines Projekts
+        // (eingabeTabelle: "Tab_BHKW" oder "Tab_Heizkessel"; deren Spalte Brennstoff
+        // verweist auf Tab_Brennstoff_Stamm.ID = energy_carrier.id_brennstoff).
+        // Vorrang hat der dem Projekt zugeordnete Traeger (energy_project_settings);
+        // Fallback: erster Katalogtraeger des Brennstoffs. 0 = keine Zuordnung.
+        private static int CarrierIdFuerProjekt(int idProjekt, string eingabeTabelle)
+        {
+            try
+            {
+                object bs = DataRepository.ExecuteScalar(
+                    "SELECT TOP 1 Brennstoff FROM " + eingabeTabelle + " WHERE ID_Projekt = ?",
+                    new OleDbParameter("@p", idProjekt));
+                if (bs == null || bs == DBNull.Value) return 0;
+                int idBrennstoff;
+                try { idBrennstoff = Convert.ToInt32(bs); }
+                catch { return 0; }
+                if (idBrennstoff <= 0) return 0;
+
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT TOP 1 ec.id FROM energy_carrier AS ec " +
+                    "INNER JOIN energy_project_settings AS s ON s.[ID_Energieträger] = ec.id " +
+                    "WHERE ec.id_brennstoff = ? AND s.ID_Projekt = ?",
+                    new OleDbParameter("@b", idBrennstoff),
+                    new OleDbParameter("@p", idProjekt));
+                if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
+
+                o = DataRepository.ExecuteScalar(
+                    "SELECT TOP 1 id FROM energy_carrier WHERE id_brennstoff = ?",
+                    new OleDbParameter("@b", idBrennstoff));
+                if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
+            }
+            catch { }
+            return 0;
         }
 
         // --- Helpers ---
