@@ -57,13 +57,13 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.ImageList _quellenRowSizer; // erzwingt die Zeilenhöhe
 
         // Farbpalette (klassisches WP-Admin-Menü)
-        private static readonly Color cMenuBase     = Color.FromArgb(0x23, 0x28, 0x2d); // Grundfläche
-        private static readonly Color cMenuText     = Color.FromArgb(0xee, 0xee, 0xee); // Text normal
-        private static readonly Color cMenuIcon     = Color.FromArgb(0xa7, 0xaa, 0xad); // Icon normal (grau)
-        private static readonly Color cMenuHoverBg  = Color.FromArgb(0x19, 0x1e, 0x23); // Hover-Hintergrund
-        private static readonly Color cMenuHoverFg  = Color.FromArgb(0x00, 0xb9, 0xeb); // Hover-Text/Icon (cyan)
-        private static readonly Color cMenuSelBg    = Color.FromArgb(0x00, 0x73, 0xaa); // aktiv (blau)
-        private static readonly Color cMenuSelFg    = Color.White;                      // aktiv Text/Icon
+        private static readonly Color cMenuBase = Color.FromArgb(0x23, 0x28, 0x2d); // Grundfläche
+        private static readonly Color cMenuText = Color.FromArgb(0xee, 0xee, 0xee); // Text normal
+        private static readonly Color cMenuIcon = Color.FromArgb(0xa7, 0xaa, 0xad); // Icon normal (grau)
+        private static readonly Color cMenuHoverBg = Color.FromArgb(0x19, 0x1e, 0x23); // Hover-Hintergrund
+        private static readonly Color cMenuHoverFg = Color.FromArgb(0x00, 0xb9, 0xeb); // Hover-Text/Icon (cyan)
+        private static readonly Color cMenuSelBg = Color.FromArgb(0x00, 0x73, 0xaa); // aktiv (blau)
+        private static readonly Color cMenuSelFg = Color.White;                      // aktiv Text/Icon
         private static readonly Color cMenuDisabled = Color.FromArgb(0x55, 0x5d, 0x66); // deaktiviert
 
 
@@ -643,28 +643,28 @@ namespace WindowsFormsApplication1
                 switch (tag)
                 {
                     case "tabPage_Bedarf": // Energiebedarf – Blitz
-                    {
-                        PointF[] bolt =
                         {
+                            PointF[] bolt =
+                            {
                             P(0.58f, 0.06f), P(0.30f, 0.54f), P(0.48f, 0.54f),
                             P(0.40f, 0.94f), P(0.74f, 0.42f), P(0.54f, 0.42f)
                         };
-                        g.FillPolygon(brush, bolt);
-                        break;
-                    }
-                    case "tabPage_Heizkessel": // Flamme
-                    {
-                        using (var path = new System.Drawing.Drawing2D.GraphicsPath())
-                        {
-                            path.AddBezier(P(0.50f, 0.96f), P(0.14f, 0.86f), P(0.16f, 0.60f), P(0.30f, 0.50f));
-                            path.AddBezier(P(0.30f, 0.50f), P(0.40f, 0.42f), P(0.36f, 0.22f), P(0.50f, 0.05f));
-                            path.AddBezier(P(0.50f, 0.05f), P(0.60f, 0.26f), P(0.70f, 0.34f), P(0.72f, 0.54f));
-                            path.AddBezier(P(0.72f, 0.54f), P(0.80f, 0.66f), P(0.78f, 0.88f), P(0.50f, 0.96f));
-                            path.CloseFigure();
-                            g.FillPath(brush, path);
+                            g.FillPolygon(brush, bolt);
+                            break;
                         }
-                        break;
-                    }
+                    case "tabPage_Heizkessel": // Flamme
+                        {
+                            using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+                            {
+                                path.AddBezier(P(0.50f, 0.96f), P(0.14f, 0.86f), P(0.16f, 0.60f), P(0.30f, 0.50f));
+                                path.AddBezier(P(0.30f, 0.50f), P(0.40f, 0.42f), P(0.36f, 0.22f), P(0.50f, 0.05f));
+                                path.AddBezier(P(0.50f, 0.05f), P(0.60f, 0.26f), P(0.70f, 0.34f), P(0.72f, 0.54f));
+                                path.AddBezier(P(0.72f, 0.54f), P(0.80f, 0.66f), P(0.78f, 0.88f), P(0.50f, 0.96f));
+                                path.CloseFigure();
+                                g.FillPath(brush, path);
+                            }
+                            break;
+                        }
                     case "tabPage_BHKW": // Zahnrad
                         ZeichneZahnrad(g, pen, brush, box, farbe);
                         break;
@@ -674,60 +674,60 @@ namespace WindowsFormsApplication1
                         break;
 
                     case "tabPage_Solarthermie": // Sonne
-                    {
-                        float cx = box.X + box.Width * 0.5f;
-                        float cy = box.Y + box.Height * 0.5f;
-                        float rCore = box.Width * 0.17f;
-                        g.FillEllipse(brush, cx - rCore, cy - rCore, rCore * 2, rCore * 2);
-                        float r1 = box.Width * 0.30f, r2 = box.Width * 0.46f;
-                        for (int i = 0; i < 8; i++)
                         {
-                            double a = i * Math.PI / 4.0;
-                            float dx = (float)Math.Cos(a), dy = (float)Math.Sin(a);
-                            g.DrawLine(pen, cx + dx * r1, cy + dy * r1, cx + dx * r2, cy + dy * r2);
+                            float cx = box.X + box.Width * 0.5f;
+                            float cy = box.Y + box.Height * 0.5f;
+                            float rCore = box.Width * 0.17f;
+                            g.FillEllipse(brush, cx - rCore, cy - rCore, rCore * 2, rCore * 2);
+                            float r1 = box.Width * 0.30f, r2 = box.Width * 0.46f;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                double a = i * Math.PI / 4.0;
+                                float dx = (float)Math.Cos(a), dy = (float)Math.Sin(a);
+                                g.DrawLine(pen, cx + dx * r1, cy + dy * r1, cx + dx * r2, cy + dy * r2);
+                            }
+                            break;
                         }
-                        break;
-                    }
                     case "tabPage_Photovoltaik": // Solarpanel (Raster) auf Ständer
-                    {
-                        RectangleF panel = new RectangleF(
-                            box.X + box.Width * 0.16f, box.Y + box.Height * 0.18f,
-                            box.Width * 0.68f, box.Height * 0.46f);
-                        g.DrawRectangle(pen, panel.X, panel.Y, panel.Width, panel.Height);
-                        g.DrawLine(pen, panel.X + panel.Width / 3f, panel.Y, panel.X + panel.Width / 3f, panel.Bottom);
-                        g.DrawLine(pen, panel.X + 2f * panel.Width / 3f, panel.Y, panel.X + 2f * panel.Width / 3f, panel.Bottom);
-                        g.DrawLine(pen, panel.X, panel.Y + panel.Height / 2f, panel.Right, panel.Y + panel.Height / 2f);
-                        g.DrawLine(pen, P(0.50f, 0.64f).X, P(0.50f, 0.64f).Y, P(0.50f, 0.90f).X, P(0.50f, 0.90f).Y);
-                        g.DrawLine(pen, P(0.34f, 0.90f).X, P(0.34f, 0.90f).Y, P(0.66f, 0.90f).X, P(0.66f, 0.90f).Y);
-                        break;
-                    }
+                        {
+                            RectangleF panel = new RectangleF(
+                                box.X + box.Width * 0.16f, box.Y + box.Height * 0.18f,
+                                box.Width * 0.68f, box.Height * 0.46f);
+                            g.DrawRectangle(pen, panel.X, panel.Y, panel.Width, panel.Height);
+                            g.DrawLine(pen, panel.X + panel.Width / 3f, panel.Y, panel.X + panel.Width / 3f, panel.Bottom);
+                            g.DrawLine(pen, panel.X + 2f * panel.Width / 3f, panel.Y, panel.X + 2f * panel.Width / 3f, panel.Bottom);
+                            g.DrawLine(pen, panel.X, panel.Y + panel.Height / 2f, panel.Right, panel.Y + panel.Height / 2f);
+                            g.DrawLine(pen, P(0.50f, 0.64f).X, P(0.50f, 0.64f).Y, P(0.50f, 0.90f).X, P(0.50f, 0.90f).Y);
+                            g.DrawLine(pen, P(0.34f, 0.90f).X, P(0.34f, 0.90f).Y, P(0.66f, 0.90f).X, P(0.66f, 0.90f).Y);
+                            break;
+                        }
                     case "tabPage_Stromspeicher": // Batterie
-                    {
-                        RectangleF body = new RectangleF(
-                            box.X + box.Width * 0.24f, box.Y + box.Height * 0.30f,
-                            box.Width * 0.52f, box.Height * 0.60f);
-                        g.DrawRectangle(pen, body.X, body.Y, body.Width, body.Height);
-                        // Pluspol
-                        g.FillRectangle(brush, P(0.42f, 0.16f).X, P(0.42f, 0.16f).Y, box.Width * 0.16f, box.Height * 0.14f);
-                        // Ladestand-Linie
-                        g.DrawLine(pen, P(0.34f, 0.60f).X, P(0.34f, 0.60f).Y, P(0.66f, 0.60f).X, P(0.66f, 0.60f).Y);
-                        break;
-                    }
+                        {
+                            RectangleF body = new RectangleF(
+                                box.X + box.Width * 0.24f, box.Y + box.Height * 0.30f,
+                                box.Width * 0.52f, box.Height * 0.60f);
+                            g.DrawRectangle(pen, body.X, body.Y, body.Width, body.Height);
+                            // Pluspol
+                            g.FillRectangle(brush, P(0.42f, 0.16f).X, P(0.42f, 0.16f).Y, box.Width * 0.16f, box.Height * 0.14f);
+                            // Ladestand-Linie
+                            g.DrawLine(pen, P(0.34f, 0.60f).X, P(0.34f, 0.60f).Y, P(0.66f, 0.60f).X, P(0.66f, 0.60f).Y);
+                            break;
+                        }
                     case "tabPage_Ergebnis": // Balkendiagramm
-                    {
-                        g.DrawLine(pen, P(0.16f, 0.84f).X, P(0.16f, 0.84f).Y, P(0.86f, 0.84f).X, P(0.86f, 0.84f).Y);
-                        float bw = box.Width * 0.12f;
-                        DrawBar(g, brush, P(0.24f, 0.60f), bw, P(0.24f, 0.84f).Y);
-                        DrawBar(g, brush, P(0.44f, 0.46f), bw, P(0.44f, 0.84f).Y);
-                        DrawBar(g, brush, P(0.64f, 0.30f), bw, P(0.64f, 0.84f).Y);
-                        break;
-                    }
+                        {
+                            g.DrawLine(pen, P(0.16f, 0.84f).X, P(0.16f, 0.84f).Y, P(0.86f, 0.84f).X, P(0.86f, 0.84f).Y);
+                            float bw = box.Width * 0.12f;
+                            DrawBar(g, brush, P(0.24f, 0.60f), bw, P(0.24f, 0.84f).Y);
+                            DrawBar(g, brush, P(0.44f, 0.46f), bw, P(0.44f, 0.84f).Y);
+                            DrawBar(g, brush, P(0.64f, 0.30f), bw, P(0.64f, 0.84f).Y);
+                            break;
+                        }
                     default: // u. a. "DEAKTIVIERT" oder unbekannt – schlichter Punkt
-                    {
-                        float d = box.Width * 0.20f;
-                        g.DrawEllipse(pen, box.X + box.Width * 0.5f - d, box.Y + box.Height * 0.5f - d, d * 2, d * 2);
-                        break;
-                    }
+                        {
+                            float d = box.Width * 0.20f;
+                            g.DrawEllipse(pen, box.X + box.Width * 0.5f - d, box.Y + box.Height * 0.5f - d, d * 2, d * 2);
+                            break;
+                        }
                 }
             }
 
@@ -961,203 +961,9 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // Projektkontext (Klimaregion, Name) auslesen.
-            ProjektCtrl pc = new ProjektCtrl();
-            pc.ReadSingle(m_ID_Projekt);
-
-            ErgebnisModel m = new ErgebnisModel();
-            m.ID_Projekt = m_ID_Projekt;
-            m.ID_Klimaregion = pc.m_ID_Klimaregion;
-            m.Bezeichner = "Simulation " + pc.m_szProjektname;
-
-            // Welche Simulationsarten dieser Lauf enthaelt.
-            m.Sim_Energiebedarf  = true;
-            m.Sim_Waermepumpe    = sim.bSimulationWP;
-            m.Sim_Heizkessel     = sim.bSimulationKessel;
-            m.Sim_Solarthermie   = sim.bSimulationSolarthermie;
-            m.Sim_BHKW           = sim.bSimulationBHKW;
-            m.Sim_PV             = sim.bSimulationPV;
-            m.Sim_Stromspeicher  = sim.bSimulationSSP;
-
-            // Detail: Waerme-/Strombedarf (immer vorhanden).
-            m.Energiebedarf = new ErgebnisEnergiebedarfModel();
-            m.Energiebedarf.Waermebedarf_Gesamt = simulation_Waermebedarf.Waermebedarf_Gesamt;
-            m.Energiebedarf.Waermelast_Max      = simulation_Waermebedarf.Waermebedarf_Max;
-            m.Energiebedarf.Strombedarf_Gesamt  = simulation_Strombedarf.Strombedarf_gesamt;
-            m.Energiebedarf.Strombedarf_Max     = simulation_Strombedarf.Strombedarf_Max;
-
-            // Detail: Waermepumpe (nur wenn gerechnet), Werte wie in der WP-Ansicht (MWh).
-            if (sim.bSimulationWP)
-            {
-                SimulationWaermepumpe wp = sim.simulation_wp;
-                ErgebnisWaermepumpeModel w = new ErgebnisWaermepumpeModel();
-                w.Waermebedarf            = wp.Waermebedarf_gesamt / 1000.0;
-                w.Waermeproduktion_WP     = wp.WP_Waermeproduktion_gesamt / 1000.0;
-                w.Stromverbrauch_WP       = wp.WP_Strombedarf_gesamt / 1000.0;
-                w.Stromverbrauch_Heizstab = wp.Heizstab_gesamt / 1000.0;
-                w.Restwaermebedarf        = w.Waermebedarf - w.Waermeproduktion_WP - w.Stromverbrauch_Heizstab;
-                w.Kapazitaet_Pufferspeicher = wp.Volumen_Pufferspeicher * 1.16;
-                w.Vollbenutzungsstunden   = (wp.wp_list.Count > 0) ? wp.WP_Laufzeit / wp.wp_list.Count : 0;
-                w.Bivalenzpunkt           = (wp.Bivalenzpunkt != -100) ? (double?)wp.Bivalenzpunkt : null;
-
-                // Minimale Spitzenkesselleistung = max. stuendlicher Waermerestbedarf.
-                double maxSpk = 0;
-                for (int i = 0; i < wp.waermerestbedarf_stuendlich.Length; i++)
-                    if (wp.waermerestbedarf_stuendlich[i] > maxSpk) maxSpk = wp.waermerestbedarf_stuendlich[i];
-                w.Min_Spitzenkesselleistung = maxSpk;
-
-                // Waermebedarfsdeckung (%) = (WP-Waerme + Heizstab) / Gesamtwaermebedarf.
-                double basis = simulation_Waermebedarf.Waermebedarf_Gesamt;
-                if (basis > 0)
-                {
-                    double deckung = (w.Waermeproduktion_WP + w.Stromverbrauch_Heizstab) / basis * 100.0;
-                    w.Waermebedarfsdeckung = (deckung > 100) ? 100 : deckung;
-                }
-
-                // Modulauflistung.
-                for (int i = 0; i < wp.wp_list.Count; i++)
-                {
-                    ErgebnisWaermepumpeModulModel mo = new ErgebnisWaermepumpeModulModel();
-                    mo.Modul            = wp.WP_Modul[i];
-                    mo.Leistung         = (i < wp.wp_model.Count) ? wp.wp_model[i].Grenzleistung : 0;
-                    mo.Waermeproduktion = wp.Modul_WP_Waermeproduktion[i] / 1000.0;
-                    mo.Stromverbrauch   = wp.Modul_WP_Strombedarf[i] / 1000.0;
-                    mo.Heizstab         = wp.Modul_Heizstab[i] / 1000.0;
-                    mo.Betriebsstunden  = wp.Modul_WP_Laufzeit[i];
-                    w.Module.Add(mo);
-                }
-
-                m.Waermepumpe = w;
-            }
-
-            // Detail: BHKW (nur wenn gerechnet). Werte wie in der BHKW-Ergebnisansicht (MWh/a).
-            if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
-            {
-                SimulationBHKW bh = sim.simulation_bhkw;
-                ErgebnisBHKWModel b = new ErgebnisBHKWModel();
-
-                double waermebedarfMWh = bh.waermebedarf.Sum() / 1000.0;
-                double strombedarfMWh  = bh.strombedarf.Sum() / 1000.0;
-                float[] restwaermeBhkw = sim.SubVectors(bh.waermebedarf, bh.waermeproduktion);
-
-                b.Waermebedarf      = waermebedarfMWh;
-                b.Restwaermebedarf  = restwaermeBhkw.Sum() / 1000.0;
-                b.Strombedarf       = strombedarfMWh;
-                b.Reststrombedarf   = strombedarfMWh - bh.Stromproduktion_BHKW_MWh;
-                b.Waermeproduktion  = bh.Waermeproduktion_BHKW_MWh;
-                b.Waermeueberschuss = bh.Waermeueberschuss / 1000.0;
-                b.Stromproduktion   = bh.Stromproduktion_BHKW_MWh;
-                b.Betriebsstunden_Gesamt       = bh.Betriebsstunden;
-                b.Betriebsstunden_Durchschnitt = bh.dLaufzeiten;
-                b.Waermebedarfsdeckung = (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
-                    ? bh.Waermeproduktion_BHKW_MWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt : 0;
-                b.Strombedarfsdeckung = (simulation_Strombedarf.Strombedarf_gesamt > 0)
-                    ? bh.Stromproduktion_BHKW_MWh * 100.0 / simulation_Strombedarf.Strombedarf_gesamt : 0;
-                b.Gasverbrauch_Hu = bh.Gasverbrauch_BHKW;
-
-                // Modulauflistung (wie dataGridView_BHKW).
-                for (int i = 0; i < bh.bhkw_list.Count; i++)
-                {
-                    ErgebnisBHKWModulModel mo = new ErgebnisBHKWModulModel();
-                    mo.Modul            = bh.bhkw_list_Namen[i] ?? "Standard BHKW";
-                    mo.Waermeproduktion = bh.s_waerme_MWh[i];
-                    mo.Stromproduktion  = bh.s_strom_MWh[i];
-                    b.Module.Add(mo);
-                }
-
-                m.BHKW = b;
-            }
-
-            // Detail: Heizkessel/Spitzenkessel (nur wenn gerechnet). Werte wie in der Kessel-Ansicht.
-            if (sim.bSimulationKessel && sim.simulation_spk != null)
-            {
-                var spk = sim.simulation_spk;
-                ErgebnisHeizkesselModel h = new ErgebnisHeizkesselModel();
-                h.Waermebedarf     = spk.Waermebedarf_gesamt;
-                h.Waermeproduktion = spk.S_Waerme_spk;
-                h.Restwaermebedarf = spk.Waermebedarf_gesamt - spk.S_Waerme_spk;
-                h.Strombedarf      = spk.Strombedarf_gesamt / 1000.0;
-                h.Reststrombedarf  = spk.Strombedarf_gesamt / 1000.0 + spk.Stromverbrauch_Spk;
-                h.Stromverbrauch   = spk.Stromverbrauch_Spk;
-                h.Waermebedarfsdeckung = (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
-                    ? spk.S_Waerme_spk * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt : 0;
-                h.Maximale_Kesselleistung = spk.Maximale_Kesselleistung_Spk;
-                h.Gasspitze        = spk.Gasspitze_Spk;
-                h.Gasverbrauch     = spk.Gasverbrauch_SPK;
-                h.Oelverbrauch     = spk.Oelverbrauch_SPK;
-                h.Koks             = spk.Koks_SPK;
-                h.Rapsoelverbrauch = spk.Rapsoelverbrauch_SPK;
-                h.Holzverbrauch    = spk.Holzverbrauch_SPK;
-                h.Kohle            = spk.Kohle_SPK;
-                h.Sonstigverbrauch = spk.Sonstigverbrauch_SPK;
-                h.Pellets          = spk.Pellets_SPK;
-                h.TierischeFette   = spk.TierischeFette_SPK;
-
-                // Modulauflistung (wie listView_SimSPK).
-                for (int i = 0; i < spk.spk_list.Count(); i++)
-                {
-                    ErgebnisHeizkesselModulModel mo = new ErgebnisHeizkesselModulModel();
-                    mo.Modul              = spk.spk_list[i];
-                    mo.Waerme_Gas         = spk.s_waerme_Gas_Spk[i];
-                    mo.Waerme_Oel         = spk.s_waerme_Oel_Spk[i];
-                    mo.Jahresnutzungsgrad = spk.Kessel_Jahresnutzungsgrad_Spk[i];
-                    h.Module.Add(mo);
-                }
-
-                m.Heizkessel = h;
-            }
-
-            // Detail: Solarthermie (nur wenn gerechnet). Werte wie in der Solarthermie-Ansicht.
-            if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null)
-            {
-                var st = sim.simulation_solarthermie;
-                ErgebnisSolarthermieModel stm = new ErgebnisSolarthermieModel();
-                stm.Waermebedarf     = st.Waermebedarf_gesamt / 1000.0;
-                stm.Waermeproduktion = st.Waermeproduktion_gesamt / 1000.0;
-                stm.Restwaermebedarf = (st.Waermebedarf_gesamt - st.Waermeproduktion_gesamt) / 1000.0;
-                stm.Waermebedarfsdeckung = (st.Waermebedarf_gesamt > 0)
-                    ? st.Waermeproduktion_gesamt * 100.0 / st.Waermebedarf_gesamt : 0;
-                stm.Ueberschuss = st.Ueberschuss_summe / 1000.0;
-
-                if (st.Kollektor_Ergebnisse != null)
-                    foreach (SolarKollektorErgebnis k in st.Kollektor_Ergebnisse)
-                        stm.Module.Add(new ErgebnisSolarthermieModulModel
-                        {
-                            Modul = k.Name,
-                            Flaeche = k.Flaeche,
-                            Anzahl = k.Anzahl,
-                            Waermeproduktion = k.Waermeproduktion / 1000.0,
-                            Ueberschuss = k.Ueberschuss / 1000.0
-                        });
-
-                m.Solarthermie = stm;
-            }
-
-            // Detail: Photovoltaik (nur wenn gerechnet). Werte wie in der PV-Ansicht.
-            if (sim.bSimulationPV && sim.simulation_pv != null)
-            {
-                var pvs = sim.simulation_pv;
-                ErgebnisPhotovoltaikModel pvm = new ErgebnisPhotovoltaikModel();
-                pvm.Stromproduktion = pvs.Stromproduktion.Sum() / 1000.0;
-                pvm.Ueberschuss     = pvs.Ueberschuss.Sum() / 1000.0;
-                pvm.Strombedarf     = pvs.Strombedarf.Sum() / 4000.0;
-                pvm.Reststrombedarf = sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
-                pvm.Strombedarfsdeckung = (pvs.Strombedarf_stuendlich.Sum() > 0)
-                    ? pvs.Stromproduktion.Sum() * 100.0 / pvs.Strombedarf_stuendlich.Sum() : 0;
-                pvm.MaxSolareLeistung = pvs.MaxPSolar;
-
-                if (pvs.Modul_Ergebnisse != null)
-                    foreach (PVModulErgebnis p in pvs.Modul_Ergebnisse)
-                        pvm.Module.Add(new ErgebnisPhotovoltaikModulModel
-                        {
-                            Modul = p.Name,
-                            Flaeche = p.Flaeche,
-                            Anzahl = p.Anzahl,
-                            Stromproduktion = p.Stromproduktion / 1000.0
-                        });
-
-                m.Photovoltaik = pvm;
-            }
+            // Ergebnismodell zentral über den SimulationRunner aufbauen (eine Quelle der Wahrheit).
+            ErgebnisModel m = SimulationRunner.BaueErgebnis(m_ID_Projekt,
+                simulation_Waermebedarf, simulation_Strombedarf, sim);
 
             int id = new ErgebnisCtrl().Save(m);
             if (id > 0)
@@ -1335,7 +1141,7 @@ namespace WindowsFormsApplication1
             tabControl_Simulation.SelectedIndex = mainTabPageIndex;
             if (tabControl_Simulation.SelectedTab.Name == "tabPage_Simulation")
             {
- //               listViewQuellen.SelectedIndices.Add(mainTablistIndex);
+                //               listViewQuellen.SelectedIndices.Add(mainTablistIndex);
             }
         }
 
@@ -1718,13 +1524,13 @@ namespace WindowsFormsApplication1
 
             AktualisiereBrennstoffAnzeige(sim.simulation_bhkw);
 
-            textBox_Waermebedarf_BHKW.Text = (sim.simulation_bhkw.waermebedarf.Sum() / 1000).ToString("F2");  
-            textBox_Strombedarf_BHKW.Text = (sim.simulation_bhkw.strombedarf.Sum() / 1000).ToString("F2");  
+            textBox_Waermebedarf_BHKW.Text = (sim.simulation_bhkw.waermebedarf.Sum() / 1000).ToString("F2");
+            textBox_Strombedarf_BHKW.Text = (sim.simulation_bhkw.strombedarf.Sum() / 1000).ToString("F2");
             textBox_Waermeproduktion_gesamt_BHKW.Text = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh.ToString("F2");
             textBox_Stromproduktion_gesamt_BHKW.Text = sim.simulation_bhkw.Stromproduktion_BHKW_MWh.ToString("F2");
 
             float[] restwaerme = sim.SubVectors(sim.simulation_bhkw.waermebedarf, sim.simulation_bhkw.waermeproduktion);
-            textBox_Restwaermebedarf_BHKW.Text = (restwaerme.Sum() / 1000f).ToString("F2"); 
+            textBox_Restwaermebedarf_BHKW.Text = (restwaerme.Sum() / 1000f).ToString("F2");
 
             textBox_Reststrombedarf_BHKW.Text = ((sim.simulation_bhkw.strombedarf.Sum() / 1000) - sim.simulation_bhkw.Stromproduktion_BHKW_MWh).ToString("F2");
             textBox_Waermeueberschuss_BHKW.Text = (sim.simulation_bhkw.Waermeueberschuss / 1000).ToString("F2");
@@ -2504,6 +2310,32 @@ namespace WindowsFormsApplication1
                 flowLayoutPanelBrennstoffe.Controls.Add(zeile);
             }
 
+            if (simBHKW.Rapsoelverbrauch_BHKW > 0)
+            {
+                var zeile = ErstelleBrennstoffZeile("Rapsöl:", simBHKW.Rapsoelverbrauch_BHKW);
+                flowLayoutPanelBrennstoffe.Controls.Add(zeile);
+            }
+            if (simBHKW.TierischeFette_BHKW > 0)
+            {
+                var zeile = ErstelleBrennstoffZeile("Tierische Fette:", simBHKW.TierischeFette_BHKW);
+                flowLayoutPanelBrennstoffe.Controls.Add(zeile);
+            }
+            if (simBHKW.Koks_BHKW > 0)
+            {
+                var zeile = ErstelleBrennstoffZeile("Koks:", simBHKW.Koks_BHKW);
+                flowLayoutPanelBrennstoffe.Controls.Add(zeile);
+            }
+            if (simBHKW.Kohle_BHKW > 0)
+            {
+                var zeile = ErstelleBrennstoffZeile("Kohle:", simBHKW.Kohle_BHKW);
+                flowLayoutPanelBrennstoffe.Controls.Add(zeile);
+            }
+            if (simBHKW.Sonstigemenge_BHKW > 0)
+            {
+                var zeile = ErstelleBrennstoffZeile("Sonstigel:", simBHKW.Sonstigemenge_BHKW);
+                flowLayoutPanelBrennstoffe.Controls.Add(zeile);
+            }
+
             // Falls GAR kein Brennstoff aktiv war (z.B. Fehler im Datensatz)
             if (flowLayoutPanelBrennstoffe.Controls.Count == 0)
             {
@@ -2517,6 +2349,7 @@ namespace WindowsFormsApplication1
             // Layout wieder freigeben -> Windows Forms ordnet alles perfekt untereinander an!
             flowLayoutPanelBrennstoffe.ResumeLayout();
         }
+
     }
 
 }

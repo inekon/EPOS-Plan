@@ -1,0 +1,1 @@
+Inhalt als Archivnotiz in `LIESMICH.md` übernommen (Abschnitt „Reporting-Gerüst"). Diese Datei kann gelöscht werden; `Reporting_Geruest.zip` bleibt als Code-Referenz für den zurückgestellten PDF-Ausbaupfad.

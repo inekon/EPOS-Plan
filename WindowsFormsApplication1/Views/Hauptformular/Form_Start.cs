@@ -1026,7 +1026,7 @@ namespace WindowsFormsApplication1
             ProjektCtrl ctrl = new ProjektCtrl();
             ctrl.ReadSingle(textBox_ProjektOpen.Text);
 
-            if(ctrl.m_ID_Klimaregion == 0)
+            if (ctrl.m_ID_Klimaregion == 0)
             {
                 tabControl_Wizard.SelectedIndex = 0;
                 MessageBox.Show("Die Klimaregion ist nicht gesetzt! Bitte setzen Sie die Klimaregion im Projekt!");
@@ -1933,6 +1933,11 @@ namespace WindowsFormsApplication1
         private void comboBox_Klima_SelectedIndexChanged(object sender, EventArgs e)
         {
             this.panel1.Focus();
+        }
+
+        private void btn_Varianten_Click(object sender, EventArgs e)
+        {
+            new Form_Variantentest(m_ID_Projekt).ShowDialog();   
         }
     }
 }
