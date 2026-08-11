@@ -24,6 +24,7 @@ namespace WindowsFormsApplication1
         private Button btnSimulieren;
         private Button btnVergleich;
         private Button btnBericht;
+        private Button btnWirtschaft;
         private Label lblStatus;
 
         protected override void Dispose(bool disposing)
@@ -49,6 +50,7 @@ namespace WindowsFormsApplication1
             this.btnSimulieren = new Button();
             this.btnVergleich = new Button();
             this.btnBericht = new Button();
+            this.btnWirtschaft = new Button();
             this.lblStatus = new Label();
             this.SuspendLayout();
 
@@ -153,6 +155,14 @@ namespace WindowsFormsApplication1
             this.btnBericht.Text = "Bericht erstellen…";
             this.btnBericht.Click += new EventHandler(this.btnBericht_Click);
 
+            // btnWirtschaft (neu, Phase 6 — öffnet Form_Wirtschaftlichkeit)
+            this.btnWirtschaft.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            this.btnWirtschaft.Location = new Point(12, 480);
+            this.btnWirtschaft.Name = "btnWirtschaft";
+            this.btnWirtschaft.Size = new Size(536, 34);
+            this.btnWirtschaft.Text = "Wirtschaftlichkeit (Kapitalwertmethode)…";
+            this.btnWirtschaft.Click += new EventHandler(this.btnWirtschaft_Click);
+
             // lblStatus
             this.lblStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             this.lblStatus.ForeColor = Color.DimGray;
@@ -162,8 +172,8 @@ namespace WindowsFormsApplication1
 
             // Form_Variantentest
             this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(560, 500);
-            this.MinimumSize = new Size(500, 440);
+            this.ClientSize = new Size(560, 540);
+            this.MinimumSize = new Size(500, 480);
             this.Font = new Font("Segoe UI", 9f);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Name = "Form_Variantentest";
@@ -180,6 +190,7 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.btnSimulieren);
             this.Controls.Add(this.btnVergleich);
             this.Controls.Add(this.btnBericht);
+            this.Controls.Add(this.btnWirtschaft);
             this.Controls.Add(this.lblStatus);
             this.Load += new EventHandler(this.Form_Variantentest_Load);
             this.ResumeLayout(false);

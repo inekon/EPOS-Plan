@@ -59,6 +59,13 @@ namespace WindowsFormsApplication1
         /// <summary>Kennzahlwerte je Katalogschlüssel (null = für dieses Projekt nicht verfügbar).</summary>
         public Dictionary<string, double?> Kennzahlen = new Dictionary<string, double?>();
 
+        // Verrechnete Kosten-/Emissionswerte (KostenEmissionRechner, Phase 5) —
+        // null = mangels Preisen/Faktoren nicht bestimmbar (Anzeige „—").
+        public double? Energiekosten;      // €/a (Brennstoffe + Netzstrom inkl. Grundpreise)
+        public double? StromkostenNetz;    // €/a (Netzbezug)
+        public double? CO2Gesamt;          // t/a
+        public double? CO2Spezifisch;      // g/kWh Wärme
+
         /// <summary>Zeitreihen aus der In-Memory-Simulation (Phase 3; bis dahin null).</summary>
         public ZeitreihenSatz Zeitreihen;
 
@@ -86,12 +93,42 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// Stundenreihen der In-Memory-Simulation für die Ganglinien (Kap. 6.2).
-    /// Schlüssel z. B. "Waermebedarf", "WP_Erzeugung", "PV_Erzeugung", "Netzbezug",
-    /// "Puffer_Fuellstand" — Belegung erfolgt in Phase 3 durch den Sammler.
+    /// Befüllt vom ZeitreihenExtraktor nach einem frischen Simulationslauf.
+    /// Einheiten: Energie in kWh je Stunde, SOC in kWh, Temperatur in °C.
     /// </summary>
     public class ZeitreihenSatz
     {
         public const int Stunden = 8760;
+
+        // Standard-Schlüssel (Reihen können je Projekt fehlen — immer prüfen).
+        public const string WAERMEBEDARF = "Waermebedarf";
+        public const string TEMPERATUR = "Temperatur";
+        public const string STROMBEDARF = "Strombedarf";
+        public const string WP_WAERME = "WP_Waerme";
+        public const string WP_STROM = "WP_Strom";
+        public const string HEIZSTAB = "Heizstab";
+        public const string BHKW_WAERME = "BHKW_Waerme";
+        public const string BHKW_STROM = "BHKW_Strom";
+        public const string KESSEL_WAERME = "Kessel_Waerme";
+        public const string SOLAR_WAERME = "Solar_Waerme";
+        public const string PV_GENUTZT = "PV_Genutzt";
+        public const string PV_UEBERSCHUSS = "PV_Ueberschuss";
+        public const string NETZBEZUG = "Netzbezug";
+        public const string WAERMEREST = "Waermerest";
+        public const string PUFFER_SOC = "Puffer_SOC";
+        public const string PV_SPEICHER_SOC = "PVSpeicher_SOC";
+
         public Dictionary<string, double[]> Reihen = new Dictionary<string, double[]>();
+
+        public double[] Hole(string schluessel)
+        { return Reihen.ContainsKey(schluessel) ? Reihen[schluessel] : null; }
+
+        public bool Hat(string schluessel)
+        {
+            double[] r = Hole(schluessel);
+            if (r == null) return false;
+            for (int i = 0; i < r.Length; i++) if (r[i] != 0) return true;
+            return false;
+        }
     }
 }
