@@ -6,6 +6,9 @@ using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using A = DocumentFormat.OpenXml.Drawing;
+using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
+using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 
 namespace WindowsFormsApplication1
 {
@@ -84,9 +87,8 @@ namespace WindowsFormsApplication1
                 new KomponentenBaustein(),
                 new ErgebnisseBaustein(),
                 new VergleichBaustein(),
+                new WirtschaftlichkeitBaustein(),   // Phase 6: liest Tab_ErgebnisWirtschaftlichkeit
                 new AnhangBaustein(),
-                // Wirtschaftlichkeit: folgt als eigener Baustein, sobald der
-                // IWirtschaftlichkeitProvider rechnet (Konzept Kap. 7 / Phase 6).
             };
             return alle.Where(b => konfig == null || konfig.IstAktiv(b.Schluessel)).ToList();
         }
@@ -160,8 +162,8 @@ namespace WindowsFormsApplication1
         public readonly Body Body;
         private readonly SectionProperties _sect;
 
-        /// <summary>Kultur der Berichtssprache (Zahlen/Datum).</summary>
-        public readonly CultureInfo Kultur = CultureInfo.GetCultureInfo("de-DE");
+        /// <summary>Kultur der Berichtssprache (= UI-Sprache; BerichtTexte, Phase 5).</summary>
+        public readonly CultureInfo Kultur = BerichtTexte.Kultur;
 
         /// <summary>Max. Varianten je Tabellenblock (A4 hoch; Stamm-Spalte wird je Block wiederholt).</summary>
         public const int MAX_VARIANTEN_JE_BLOCK = 3;
@@ -180,6 +182,8 @@ namespace WindowsFormsApplication1
 
         public void MitStil(string styleId, string text)
         {
+            // Berichtssprache: bekannte Texte werden übersetzt, dynamische laufen durch.
+            text = BerichtTexte.T(text);
             var p = new Paragraph(new ParagraphProperties(new ParagraphStyleId { Val = styleId }));
             p.Append(new Run(new Text(text ?? "") { Space = SpaceProcessingModeValues.Preserve }));
             Fuege(p);
@@ -209,6 +213,53 @@ namespace WindowsFormsApplication1
             Fuege(p);
         }
 
+        // ------------------------------------------------------------- Bilder
+
+        private uint _bildId = 1;
+
+        /// <summary>
+        /// Bettet ein PNG als Inline-Grafik ein (Anzeigegröße in Pixel bei 96 dpi;
+        /// gerendert wird in doppelter Auflösung → scharfer Druck). Portierung der
+        /// BildDrawing-Logik aus dem Bestandsbericht. png == null wird ignoriert.
+        /// </summary>
+        public void Bild(byte[] png, int anzeigeBreitePx, int anzeigeHoehePx)
+        {
+            if (png == null || png.Length == 0) return;
+
+            ImagePart imgPart = Main.AddImagePart(ImagePartType.Png);
+            using (var ms = new System.IO.MemoryStream(png)) imgPart.FeedData(ms);
+            string relId = Main.GetIdOfPart(imgPart);
+
+            long cx = anzeigeBreitePx * 9525L;   // 1 px @96dpi = 9525 EMU
+            long cy = anzeigeHoehePx * 9525L;
+            uint id = _bildId++;
+
+            var drawing = new Drawing(
+                new DW.Inline(
+                    new DW.Extent { Cx = cx, Cy = cy },
+                    new DW.EffectExtent { LeftEdge = 0L, TopEdge = 0L, RightEdge = 0L, BottomEdge = 0L },
+                    new DW.DocProperties { Id = id, Name = "Diagramm" + id },
+                    new DW.NonVisualGraphicFrameDrawingProperties(new A.GraphicFrameLocks { NoChangeAspect = true }),
+                    new A.Graphic(
+                        new A.GraphicData(
+                            new PIC.Picture(
+                                new PIC.NonVisualPictureProperties(
+                                    new PIC.NonVisualDrawingProperties { Id = 0U, Name = "Diagramm" + id + ".png" },
+                                    new PIC.NonVisualPictureDrawingProperties()),
+                                new PIC.BlipFill(
+                                    new A.Blip { Embed = relId },
+                                    new A.Stretch(new A.FillRectangle())),
+                                new PIC.ShapeProperties(
+                                    new A.Transform2D(
+                                        new A.Offset { X = 0L, Y = 0L },
+                                        new A.Extents { Cx = cx, Cy = cy }),
+                                    new A.PresetGeometry(new A.AdjustValueList()) { Preset = A.ShapeTypeValues.Rectangle })))
+                        { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" }))
+                { DistanceFromTop = 0U, DistanceFromBottom = 0U, DistanceFromLeft = 0U, DistanceFromRight = 0U });
+
+            Fuege(new Paragraph(new Run(drawing)));
+        }
+
         // ------------------------------------------------------------- Tabellen
 
         public Table NeueTabelle(int[] breiten)
@@ -232,6 +283,9 @@ namespace WindowsFormsApplication1
 
         public TableCell Zelle(string text, int breite, bool fett, string fill, JustificationValues just)
         {
+            // Kopf-/Labelzellen (fett) durch die Berichtssprache übersetzen;
+            // Datenzellen (nicht fett) bleiben unangetastet.
+            if (fett) text = BerichtTexte.T(text);
             var tc = new TableCell();
             var tcp = new TableCellProperties();
             tcp.Append(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = breite.ToString() });

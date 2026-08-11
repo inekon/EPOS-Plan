@@ -242,6 +242,7 @@ namespace WindowsFormsApplication1
             btnAnlegen.Enabled = AktuellerStamm != null;
             btnVergleich.Enabled = AktuellerStamm != null;
             btnBericht.Enabled = AktuellerStamm != null;
+            btnWirtschaft.Enabled = AktuellerStamm != null;
         }
 
         // ------------------------------------------------------------ Aktionen
@@ -328,6 +329,18 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex) { Melde("Fehler bei der Simulation: " + ex.Message); }
             finally { Cursor = Cursors.Default; }
+        }
+
+        // Wirtschaftlichkeit (Phase 6): Kapitalwert-Reiter der Vergleichsgruppe.
+        private void btnWirtschaft_Click(object sender, EventArgs e)
+        {
+            ProjektEintrag stamm = AktuellerStamm;
+            if (stamm == null) { Melde("Kein Stammprojekt gewählt."); return; }
+
+            using (Form_Wirtschaftlichkeit dlg = new Form_Wirtschaftlichkeit(stamm.Id))
+                dlg.ShowDialog(this);
+
+            LadeAuswahl();   // Simulationsstände können sich geändert haben
         }
 
         // Neuer Berichtsweg (Phase 1): öffnet den Berichtsdialog mit Variantencheckliste.

@@ -134,17 +134,17 @@ namespace WindowsFormsApplication1
                     return a < 0 ? 0 : a;
                 }));
 
-            // ---------------- Emissionen (Verrechnung folgt: Faktoren × Verbräuche, Phase 5) ----------------
+            // ---------------- Emissionen (KostenEmissionRechner; null = Faktoren fehlen) ----------------
             l.Add(new Kennzahl("em.co2", "CO₂-Emissionen gesamt", "Total CO₂ emissions", "t/a", GR_EMISSION, "N1", true,
-                v => null));
+                v => v.CO2Gesamt));
             l.Add(new Kennzahl("em.co2_spez", "CO₂ spezifisch (Wärme)", "Specific CO₂ (heat)", "g/kWh", GR_EMISSION, "N0", true,
-                v => null));
+                v => v.CO2Spezifisch));
 
-            // ---------------- Kosten einfach (Menge × Preis über carrier_id, Phase 5) ----------------
+            // ---------------- Kosten einfach (KostenEmissionRechner; null = Preise fehlen) ----------------
             l.Add(new Kennzahl("ko.energie", "Energiekosten p. a.", "Annual energy cost", "€/a", GR_KOSTEN, "N0", true,
-                v => null));
-            l.Add(new Kennzahl("ko.stromsaldo", "Stromkosten/-erlöse Saldo", "Electricity cost/revenue balance", "€/a", GR_KOSTEN, "N0", true,
-                v => null));
+                v => v.Energiekosten));
+            l.Add(new Kennzahl("ko.stromsaldo", "Stromkosten Netzbezug", "Grid electricity cost", "€/a", GR_KOSTEN, "N0", true,
+                v => v.StromkostenNetz));
 
             return l;
         }

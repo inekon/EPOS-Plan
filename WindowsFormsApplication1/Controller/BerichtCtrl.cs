@@ -8,9 +8,9 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Ablauf- und Persistenzsteuerung des Berichtsmoduls (Konzept Kap. 8.4).
     /// Berichtskonfiguration je Stammprojekt in der DB (Tabelle Berichtskonfiguration:
-    /// ProjektID, KonfigJson, GeaendertAm); seit Phase 2 zusätzlich die Word-Erzeugung
-    /// (Dateiname, Zielordner, Kollisionsbehandlung → WordBerichtGenerator).
-    /// Die Excel-Erzeugung folgt in Phase 4.
+    /// ProjektID, KonfigJson, GeaendertAm) sowie Word- und Excel-Erzeugung
+    /// (Dateiname, Zielordner, Kollisionsbehandlung → WordBerichtGenerator /
+    /// ExcelBerichtGenerator).
     /// </summary>
     public class BerichtCtrl
     {
@@ -47,6 +47,38 @@ namespace WindowsFormsApplication1
                 {
                     // Datei gesperrt/nicht schreibbar → Alternativname versuchen.
                     pfad = Path.Combine(ordner, basis + "_" + n + ".docx");
+                    if (++n > 20) throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Erzeugt die Excel-Ausgabe (Konzept Kap. 9; ClosedXML) — gleiche Namens-
+        /// und Kollisionslogik wie ErzeugeWord, Endung .xlsx.
+        /// Rückgabe: Pfad der geschriebenen Datei.
+        /// </summary>
+        public string ErzeugeExcel(BerichtsDaten daten, BerichtsKonfiguration konfig)
+        {
+            string ordner = konfig != null && !string.IsNullOrWhiteSpace(konfig.ZielOrdner)
+                ? konfig.ZielOrdner
+                : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            Directory.CreateDirectory(ordner);
+
+            string basis = BereinigeDateiname(daten.Stammprojektname) + "_Bericht_" +
+                           DateTime.Now.ToString("yyyy-MM-dd");
+            string pfad = Path.Combine(ordner, basis + ".xlsx");
+            int n = 2;
+            while (File.Exists(pfad)) { pfad = Path.Combine(ordner, basis + "_" + n + ".xlsx"); n++; }
+
+            while (true)
+            {
+                try
+                {
+                    return new ExcelBerichtGenerator().Erzeuge(daten, konfig, pfad);
+                }
+                catch (IOException)
+                {
+                    pfad = Path.Combine(ordner, basis + "_" + n + ".xlsx");
                     if (++n > 20) throw;
                 }
             }

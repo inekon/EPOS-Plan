@@ -66,6 +66,12 @@
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
     <PackageReference Include="WinForms.DataVisualization" Version="1.10.2" />
 
+    <!-- Berichtsmodul Phase 4: Excel-Ausgabe ohne Office (MIT-Lizenz).
+         SixLabors.Fonts bewusst auf 1.0.x gepinnt — ab 2.x gilt die Six Labors
+         Split License (Release-Checkliste: dotnet list package - -include-transitive). -->
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.1" />
+
     <!-- Datenzugriff (Access via ACE OLEDB / ODBC) -->
     <PackageReference Include="System.Data.OleDb" Version="8.0.1" />
     <PackageReference Include="System.Data.Odbc" Version="8.0.1" />

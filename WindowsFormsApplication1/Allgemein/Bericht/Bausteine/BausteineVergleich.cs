@@ -47,15 +47,52 @@ namespace WindowsFormsApplication1
                     if (kz == null) continue;
                     double? wert = v.Kennzahlen.ContainsKey(schluessel) ? v.Kennzahlen[schluessel] : null;
                     if (!wert.HasValue) continue;   // fehlende Gewerke nicht als Leerzeilen führen
-                    paare.Add(kz.LabelDe);
+                    paare.Add(kz.Label(BerichtTexte.Englisch));
                     paare.Add(k.FW(wert, kz.Format) + (kz.Einheit == "–" ? "" : " " + kz.Einheit));
                 }
                 if (paare.Count > 0) k.Eigenschaften(paare.ToArray());
                 else k.Text("Keine Kennzahlen verfügbar.");
 
-                k.Hinweis("Ganglinien (Wärmeerzeugung, Jahresdauerlinie, Strombilanz, Speicherverlauf) " +
-                          "folgen mit der Diagramm-Ausbaustufe des Berichtsmoduls.");
+                // Die vier Ganglinientypen aus der In-Memory-Simulation (Konzept Kap. 6.2).
+                if (v.Zeitreihen != null)
+                    ZeichneGanglinien(k, v.Zeitreihen);
+                else
+                    k.Hinweis("Ganglinien nicht verfügbar — sie entstehen nur, wenn für den Bericht " +
+                              "frisch simuliert wurde (Baustein Ergebnisse je Variante aktiv).");
             }
+        }
+
+        private static void ZeichneGanglinien(WordKontext k, ZeitreihenSatz z)
+        {
+            byte[] png = Sicher(() => ChartRenderer.JahresverlaufWaerme(z));
+            if (png != null)
+            {
+                k.Bild(png, 620, 280);
+                k.Beschriftung("Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel)");
+            }
+            png = Sicher(() => ChartRenderer.DauerlinieWaerme(z));
+            if (png != null)
+            {
+                k.Bild(png, 620, 280);
+                k.Beschriftung("Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien)");
+            }
+            png = Sicher(() => ChartRenderer.StrombilanzMonate(z));
+            if (png != null)
+            {
+                k.Bild(png, 620, 280);
+                k.Beschriftung("Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung separat, Bedarf als Linie)");
+            }
+            png = Sicher(() => ChartRenderer.Speicherverlauf(z));
+            if (png != null)
+            {
+                k.Bild(png, 620, 260);
+                k.Beschriftung("Speicherverlauf in charakteristischen Wochen (Winter/Übergang/Sommer)");
+            }
+        }
+
+        private static byte[] Sicher(Func<byte[]> f)
+        {
+            try { return f(); } catch { return null; }   // ein Diagrammfehler kippt nicht den Bericht
         }
     }
 
@@ -106,6 +143,76 @@ namespace WindowsFormsApplication1
             {
                 k.Ueberschrift2("Abweichung zum Stamm (Schlüsselkennzahlen, in %)");
                 SchreibeDeltaTabelle(k, stamm, varianten, katalog);
+            }
+
+            // ---------------- Balkendiagramme je Schlüsselkennzahl (Konzept Kap. 6.1) ----------------
+            if (daten.Varianten.Count >= 2)
+            {
+                k.Ueberschrift2("Kennzahlen im Vergleich (Diagramme)");
+                foreach (string schluessel in new[] { "energie.brennstoff", "energie.netzbezug",
+                                                      "energie.waermerest", "eff.jaz" })
+                {
+                    Kennzahl kz = katalog.FirstOrDefault(x => x.Schluessel == schluessel);
+                    if (kz == null) continue;
+                    var balken = new List<ChartRenderer.Balken>();
+                    foreach (VariantenDaten v in daten.Varianten)
+                    {
+                        double? wert = Wert(v, schluessel);
+                        if (wert.HasValue)
+                            balken.Add(new ChartRenderer.Balken(
+                                v.IstStamm ? "Stamm" : v.Anzeige, wert.Value, v.IstStamm));
+                    }
+                    if (balken.Count < 2) continue;
+                    byte[] png = SicherB(() => ChartRenderer.BalkenHorizontal(kz.Label(BerichtTexte.Englisch), kz.Einheit, balken));
+                    if (png != null)
+                    {
+                        int hoehe = (150 + balken.Count * 64) / 2;
+                        k.Bild(png, 620, hoehe);
+                        k.Beschriftung(kz.Label(BerichtTexte.Englisch) + " je Variante (Stamm hervorgehoben)");
+                    }
+                }
+            }
+
+            // ---------------- Deckungsdiagramme je Projekt (aus dem Bestand übernommen) ----------------
+            k.Ueberschrift2("Deckungsdiagramme");
+            k.Hinweis("Anteile an der Wärme- bzw. Stromdeckung je Projekt (aus den Deckungsgraden " +
+                      "der Erzeuger; der Rest ist ungedeckte Wärme bzw. Netzbezug).");
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                ErgebnisModel m = v.Ergebnis;
+                if (m == null) continue;
+                k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
+
+                var segW = new List<ChartRenderer.Segment>();
+                double sumW = 0;
+                if (m.Waermepumpe != null && m.Waermepumpe.Waermebedarfsdeckung > 0)
+                { segW.Add(new ChartRenderer.Segment("Wärmepumpe", m.Waermepumpe.Waermebedarfsdeckung, ChartRenderer.C_WP)); sumW += m.Waermepumpe.Waermebedarfsdeckung; }
+                if (m.BHKW != null && m.BHKW.Waermebedarfsdeckung > 0)
+                { segW.Add(new ChartRenderer.Segment("BHKW", m.BHKW.Waermebedarfsdeckung, ChartRenderer.C_BHKW)); sumW += m.BHKW.Waermebedarfsdeckung; }
+                if (m.Heizkessel != null && m.Heizkessel.Waermebedarfsdeckung > 0)
+                { segW.Add(new ChartRenderer.Segment("Spitzenkessel", m.Heizkessel.Waermebedarfsdeckung, ChartRenderer.C_KESSEL)); sumW += m.Heizkessel.Waermebedarfsdeckung; }
+                if (m.Solarthermie != null && m.Solarthermie.Waermebedarfsdeckung > 0)
+                { segW.Add(new ChartRenderer.Segment("Solarthermie", m.Solarthermie.Waermebedarfsdeckung, ChartRenderer.C_SOLAR)); sumW += m.Solarthermie.Waermebedarfsdeckung; }
+                if (100.0 - sumW > 0.05) segW.Add(new ChartRenderer.Segment("Rest/ungedeckt", 100.0 - sumW, ChartRenderer.C_REST));
+
+                var segS = new List<ChartRenderer.Segment>();
+                double sumS = 0;
+                if (m.Photovoltaik != null && m.Photovoltaik.Strombedarfsdeckung > 0)
+                { segS.Add(new ChartRenderer.Segment("Photovoltaik", m.Photovoltaik.Strombedarfsdeckung, ChartRenderer.C_PV)); sumS += m.Photovoltaik.Strombedarfsdeckung; }
+                if (m.BHKW != null && m.BHKW.Strombedarfsdeckung > 0)
+                { segS.Add(new ChartRenderer.Segment("BHKW", m.BHKW.Strombedarfsdeckung, ChartRenderer.C_BHKW)); sumS += m.BHKW.Strombedarfsdeckung; }
+                if (100.0 - sumS > 0.05) segS.Add(new ChartRenderer.Segment("Netzbezug", 100.0 - sumS, ChartRenderer.C_KESSEL));
+
+                if (segW.Count > 0)
+                {
+                    byte[] png = SicherB(() => ChartRenderer.Kuchen("Wärmedeckung", segW));
+                    if (png != null) k.Bild(png, 420, 262);
+                }
+                if (segS.Count > 0)
+                {
+                    byte[] png = SicherB(() => ChartRenderer.Kuchen("Stromdeckung", segS));
+                    if (png != null) k.Bild(png, 420, 262);
+                }
             }
 
             // ---------------- Erzeuger-Einzellisten je Projekt ----------------
@@ -166,7 +273,7 @@ namespace WindowsFormsApplication1
                 foreach (Kennzahl kz in zeilen)
                 {
                     var tr = new TableRow();
-                    string label = kz.LabelDe + (kz.Einheit == "–" || kz.Einheit.Length == 0 ? "" : " [" + kz.Einheit + "]");
+                    string label = kz.Label(BerichtTexte.Englisch) + (kz.Einheit == "–" || kz.Einheit.Length == 0 ? "" : " [" + kz.Einheit + "]");
                     tr.Append(k.Zelle(label, w[0], false, null, JustificationValues.Left));
 
                     for (int i = 0; i < spalten.Count; i++)
@@ -210,7 +317,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < keys.Count; i++)
             {
                 Kennzahl kz = katalog.First(x => x.Schluessel == keys[i]);
-                kopf.Append(k.Zelle(kz.LabelDe, w[i + 1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                kopf.Append(k.Zelle(kz.Label(BerichtTexte.Englisch), w[i + 1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
             }
             t.Append(kopf);
 
@@ -231,6 +338,11 @@ namespace WindowsFormsApplication1
 
         private static double? Wert(VariantenDaten v, string schluessel)
         { return v.Kennzahlen.ContainsKey(schluessel) ? v.Kennzahlen[schluessel] : null; }
+
+        private static byte[] SicherB(Func<byte[]> f)
+        {
+            try { return f(); } catch { return null; }   // ein Diagrammfehler kippt nicht den Bericht
+        }
 
         // ------------------------------------------------------------- Einzellisten
 

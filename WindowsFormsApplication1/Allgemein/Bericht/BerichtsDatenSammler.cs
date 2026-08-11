@@ -107,11 +107,15 @@ namespace WindowsFormsApplication1
         /// Sammelt alle Berichtsdaten. variantenIds = gewählte Varianten (ohne Stamm).
         /// neuRechnen: alle Projekte vorab simulieren; fehlende Ergebnisse werden
         /// unabhängig davon immer gerechnet (Konzept Kap. 3.1/8.2).
+        /// mitZeitreihen: für die Ganglinien wird je Projekt IMMER frisch in-memory
+        /// simuliert und die Stundenreihen werden eingesammelt (Konzept Kap. 6.2) —
+        /// Kennzahlen und Ganglinien stammen dann garantiert aus demselben Lauf.
         /// </summary>
         public BerichtsDaten Sammle(int idStamm, string stammName, List<int> variantenIds,
-                                    bool neuRechnen,
+                                    bool neuRechnen, bool mitZeitreihen,
                                     IProgress<Fortschritt> fortschritt, CancellationToken abbruch)
         {
+            _mitZeitreihen = mitZeitreihen;
             var daten = new BerichtsDaten { IdStamm = idStamm, Stammprojektname = stammName ?? "" };
 
             // Reihenfolge: Stamm zuerst, dann die gewählten Varianten in Gruppenreihenfolge.
@@ -166,6 +170,8 @@ namespace WindowsFormsApplication1
             return daten;
         }
 
+        private bool _mitZeitreihen;
+
         private void SammleProjekt(VariantenDaten v, bool neuRechnen,
                                    IProgress<Fortschritt> fortschritt, int aktuell, int gesamt,
                                    CancellationToken abbruch)
@@ -178,18 +184,32 @@ namespace WindowsFormsApplication1
             v.ErgebnisFehlte = !stand.HasValue;
             v.ErgebnisVeraltet = stand.HasValue && aend.HasValue && stand.Value < aend.Value;
 
-            // 2. Simulieren, wenn gefordert oder kein Ergebnis vorliegt.
-            if (neuRechnen || v.ErgebnisFehlte)
+            // 2. Simulieren, wenn gefordert, kein Ergebnis vorliegt oder Zeitreihen
+            //    für Ganglinien gebraucht werden (die gibt es nur aus dem frischen Lauf).
+            if (neuRechnen || v.ErgebnisFehlte || _mitZeitreihen)
             {
                 abbruch.ThrowIfCancellationRequested();
                 Melde(fortschritt, aktuell, gesamt, "Simuliere: " + v.Projektname);
+
+                // Frische Instanz je Projekt (Muster btnSimulieren_Click) — die Instanz
+                // bleibt hier zugreifbar, damit der ZeitreihenExtraktor die Stundenreihen
+                // einsammeln kann, bevor sie verworfen wird.
+                var runner = new SimulationRunner();
                 string fehler;
-                int erg = new SimulationRunner().SimuliereUndSpeichere(v.IdProjekt, out fehler);
-                if (erg > 0) v.FrischSimuliert = true;
+                if (runner.Simuliere(v.IdProjekt, out fehler))
+                {
+                    ErgebnisModel frisch = SimulationRunner.BaueErgebnis(
+                        v.IdProjekt, runner.simulation_Waermebedarf, runner.simulation_Strombedarf, runner.sim);
+                    int erg = ergCtrl.Save(frisch);
+                    if (erg > 0) v.FrischSimuliert = true;
+                    if (_mitZeitreihen)
+                        try { v.Zeitreihen = ZeitreihenExtraktor.AusLauf(runner); }
+                        catch { v.Zeitreihen = null; }
+                }
                 else if (v.ErgebnisFehlte)
                     throw new InvalidOperationException("Simulation fehlgeschlagen: " + (fehler ?? "unbekannter Fehler"));
                 // War ein (älteres) Ergebnis vorhanden, läuft der Bericht damit weiter —
-                // der Zeitstempel weist den Stand aus.
+                // der Zeitstempel weist den Stand aus; Ganglinien entfallen dann mit Hinweis.
             }
 
             // 3. Ergebnisbaum + Projektstammdaten laden.
@@ -219,7 +239,9 @@ namespace WindowsFormsApplication1
             try { v.Brennstoffmengen = EnergieMengen.BaueBrennstoffmengen(v.IdProjekt); }
             catch { v.Brennstoffmengen = null; }
 
-            // 5. Kennzahlen aus dem Katalog.
+            // 5. Kosten-/Emissionsverrechnung (Phase 5), danach Kennzahlen aus dem
+            //    Katalog (dessen Emissions-/Kosten-Zeilen lesen die Rechnerwerte).
+            KostenEmissionRechner.Berechne(v);
             KennzahlenKatalog.Berechne(v);
 
             // 6. Detail-Daten (Gebäude, Anlage, Komponenten, Klimaregion) für

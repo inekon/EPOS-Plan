@@ -33,7 +33,6 @@ namespace WindowsFormsApplication1
 
         private CancellationTokenSource _cts;
         private bool _initialisiere;       // unterdrückt ItemCheck-Logik beim Befüllen
-        private int _idxWirtschaft = -1;   // Index des (gesperrten) Wirtschaftlichkeits-Bausteins
 
         // Steuerelemente
         private Label lblVarianten;
@@ -256,22 +255,15 @@ namespace WindowsFormsApplication1
                     lvVarianten.Items.Add(it);
                 }
 
-                // Bausteine.
+                // Bausteine. Wirtschaftlichkeit (Phase 6) ist wählbar; der Baustein
+                // liest die im Reiter Wirtschaftlichkeit persistierten Ergebnisse.
                 clbBausteine.Items.Clear();
-                _idxWirtschaft = -1;
                 foreach (BerichtsKonfiguration.BausteinDef b in BerichtsKonfiguration.AlleBausteine)
                 {
                     bool aktiv = konfig.AktiveBausteine.Count > 0
                         ? konfig.IstAktiv(b.Schluessel)
                         : b.Standard;
-                    string titel = b.Titel;
-                    if (b.Schluessel == BerichtsKonfiguration.B_WIRTSCHAFT)
-                    {
-                        titel += "  (noch ohne Berechnung)";
-                        aktiv = false;
-                        _idxWirtschaft = clbBausteine.Items.Count;
-                    }
-                    clbBausteine.Items.Add(titel, aktiv);
+                    clbBausteine.Items.Add(b.Titel, aktiv);
                 }
 
                 chkNeuRechnen.Checked = konfig.NeuRechnen;
@@ -303,15 +295,21 @@ namespace WindowsFormsApplication1
             }
         }
 
-        // Wirtschaftlichkeit bleibt gesperrt, bis der Provider verfügbar ist (Konzept Kap. 7).
+        // Hinweis beim Aktivieren der Wirtschaftlichkeit: Datenquelle ist der Reiter.
         private void clbBausteine_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (_initialisiere) return;
-            if (e.Index == _idxWirtschaft && e.NewValue == CheckState.Checked)
-            {
-                e.NewValue = CheckState.Unchecked;
-                Melde("Wirtschaftlichkeit: Berechnung noch nicht verfügbar (Konzept_Wirtschaftlichkeit.md).");
-            }
+            int idx = IndexVon(BerichtsKonfiguration.B_WIRTSCHAFT);
+            if (e.Index == idx && e.NewValue == CheckState.Checked)
+                Melde("Wirtschaftlichkeit: der Baustein übernimmt die im Reiter " +
+                      "„Wirtschaftlichkeit“ berechneten (gespeicherten) Ergebnisse.");
+        }
+
+        private static int IndexVon(string schluessel)
+        {
+            for (int i = 0; i < BerichtsKonfiguration.AlleBausteine.Length; i++)
+                if (BerichtsKonfiguration.AlleBausteine[i].Schluessel == schluessel) return i;
+            return -1;
         }
 
         private void SetzeAlleVarianten(bool an)
@@ -402,41 +400,43 @@ namespace WindowsFormsApplication1
             try
             {
                 CancellationToken ct = _cts.Token;
+                // Ganglinien (Word) und Monatswerte (Excel-Detailblätter) brauchen
+                // Stundenreihen — dafür wird je Projekt frisch in-memory simuliert
+                // (Konzept Kap. 6.2/9), sobald „Ergebnisse je Variante" aktiv ist.
+                bool mitZeitreihen = konfig.IstAktiv(BerichtsKonfiguration.B_ERGEBNISSE);
                 BerichtsDaten daten = await Task.Run(() =>
                     new BerichtsDatenSammler().Sammle(_idStamm, _stammName, konfig.VariantenIds,
-                                                      konfig.NeuRechnen, progressMelder, ct), ct);
+                                                      konfig.NeuRechnen, mitZeitreihen, progressMelder, ct), ct);
 
-                // Word-Erzeugung (Phase 2). Excel folgt in Phase 4.
-                string wordPfad = null;
+                // Word- und/oder Excel-Erzeugung (Konzept Kap. 4/9).
+                string wordPfad = null, excelPfad = null;
                 if (konfig.Ausgabe == "Word" || konfig.Ausgabe == "Beide")
                 {
                     Melde("Erzeuge Word-Bericht…");
                     ct.ThrowIfCancellationRequested();
                     wordPfad = await Task.Run(() => _bericht.ErzeugeWord(daten, konfig), ct);
                 }
-
-                if (wordPfad != null)
+                if (konfig.Ausgabe == "Excel" || konfig.Ausgabe == "Beide")
                 {
-                    Melde("Bericht erstellt: " + wordPfad);
-                    string meldung = "Bericht erstellt:\r\n" + wordPfad;
-                    if (konfig.Ausgabe == "Beide")
-                        meldung += "\r\n\r\nHinweis: Die Excel-Ausgabe folgt in Phase 4 des Berichtsmoduls.";
-                    if (daten.Warnungen.Count > 0)
-                        meldung += "\r\n\r\nHinweise:\r\n• " + string.Join("\r\n• ", daten.Warnungen);
-                    meldung += "\r\n\r\nBericht jetzt öffnen?";
+                    Melde("Erzeuge Excel-Bericht…");
+                    ct.ThrowIfCancellationRequested();
+                    excelPfad = await Task.Run(() => _bericht.ErzeugeExcel(daten, konfig), ct);
+                }
 
-                    if (MessageBox.Show(meldung, "Bericht erstellen",
-                            MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-                        System.Diagnostics.Process.Start(
-                            new System.Diagnostics.ProcessStartInfo(wordPfad) { UseShellExecute = true });
-                }
-                else
-                {
-                    Melde("Datensammlung abgeschlossen.");
-                    MessageBox.Show(BaueZusammenfassung(daten, konfig) +
-                        "\r\nDie Excel-Ausgabe folgt in Phase 4 des Berichtsmoduls.",
-                        "Bericht — Datenlage", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                string erster = wordPfad ?? excelPfad;
+                Melde("Bericht erstellt: " + erster);
+                string meldung = "Bericht erstellt:";
+                if (wordPfad != null) meldung += "\r\n" + wordPfad;
+                if (excelPfad != null) meldung += "\r\n" + excelPfad;
+                if (daten.Warnungen.Count > 0)
+                    meldung += "\r\n\r\nHinweise:\r\n• " + string.Join("\r\n• ", daten.Warnungen);
+                meldung += "\r\n\r\n" + (wordPfad != null && excelPfad != null
+                    ? "Word-Bericht jetzt öffnen?" : "Bericht jetzt öffnen?");
+
+                if (MessageBox.Show(meldung, "Bericht erstellen",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                    System.Diagnostics.Process.Start(
+                        new System.Diagnostics.ProcessStartInfo(erster) { UseShellExecute = true });
                 Form_Bericht_Load(this, EventArgs.Empty);   // Zeitstempel in der Liste auffrischen
             }
             catch (OperationCanceledException)
