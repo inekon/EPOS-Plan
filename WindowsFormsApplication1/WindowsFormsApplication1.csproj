@@ -125,12 +125,6 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
-    <COMReference Include="{21ab8ee2-b24a-493d-a57c-12d9a64deefb}">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>0</VersionMinor>
-      <VersionMajor>1</VersionMajor>
-      <Guid>21ab8ee2-b24a-493d-a57c-12d9a64deefb</Guid>
-    </COMReference>
   </ItemGroup>
 
   <!-- Settings (klassisches Properties\Settings.settings) -->

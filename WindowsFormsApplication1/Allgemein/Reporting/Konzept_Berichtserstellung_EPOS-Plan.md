@@ -1,8 +1,8 @@
 # Konzept: Erweiterte Berichtserstellung mit Variantenvergleich (konsolidiert)
 
 **Anwendung:** EPOS-Plan / WP-Plan (`WindowsFormsApplication1`, C#, net8.0-windows, WinForms MDI)
-**Fassung 3.1 (konsolidiert)** · Stand 11.08.2026 (abends) · abgestimmt mit P. Engelmann (Entscheidungsrunden 1–4)
-**Status:** Konzept beschlossen · Code- und DB-Verifikation **abgeschlossen** (Kap. 11) · Umsetzung Phase 1–6 **unabhängig nachgeprüft** (Prüf-Session 11.08. abends; Chart-Technik und Tabellenanlage an den Code-Stand angepasst, Befundliste erweitert; W1-Detailprüfung im Begleitkonzept Kap. 8)
+**Fassung 3 (konsolidiert)** · Stand 11.08.2026 · abgestimmt mit P. Engelmann (Entscheidungsrunden 1–4)
+**Status:** Konzept beschlossen · Code- und DB-Verifikation **abgeschlossen** (Kap. 11)
 Begleitdokument: `Konzept_Wirtschaftlichkeit.md` (Kapitalwertmethode nach DIN EN 17463, UI-Reiter, Datenvertrag)
 
 > **Konsolidierung.** Diese Fassung führt die beiden parallel entstandenen Konzepte
@@ -51,9 +51,7 @@ Berechnungsergebnisse mit Variantenvergleich sowie die Wirtschaftlichkeit
   Variante ↔ Stamm. `Form_Variantentest` („Projektvarianten") kann Varianten
   anlegen/löschen, headless simulieren (`SimulationRunner`) und ruft heute den
   Vergleich für **Stamm + eine** Variante auf. Beim Anlegen werden
-  `energy_project_settings`/`energy_price` mitkopiert — **derzeit doppelt**
-  (generisch durch `ProjektDuplizierenCtrl` *und* explizit durch
-  `VariantenCtrl.KopiereEnergieEinstellungen`; Befund B8).
+  `energy_project_settings`/`energy_price` mitkopiert.
 - **Berichtsbestand:** `Views/Varianten/ProjektvergleichBericht.cs` erzeugt bereits
   ein Word-Dokument über OpenXML: Übersicht, Energiebedarf, Erzeuger-Vergleich
   (WP/BHKW/Kessel/Solar/PV) mit Δ-Spalte, Erzeuger-Einzellisten je Modul,
@@ -73,10 +71,8 @@ Berechnungsergebnisse mit Variantenvergleich sowie die Wirtschaftlichkeit
   `energy_price` (Historie `valid_from`, `valid_to`) — alles DB-verifiziert.
   Kosten-Abfragen vorhanden (`Abfrage_Kosten_*`, `Abfrage_ProjektKostenEnergie`,
   `Abfrage_ProjektKostenInvestBetrieb`, `Abfrage_Energietraeger_Effektiv`).
-- **Charts:** `WinForms.DataVisualization` (UI-gebunden) und ScottPlot (im
-  Projekt vorhanden). **Umgesetzt ist der Druckpfad mit System.Drawing/GDI+**
-  (`ChartRenderer` — bewusste Abweichung: kein API-Risiko, gleiches Muster wie
-  der Bestandsbericht); ScottPlot bleibt als Option.
+- **Charts:** `WinForms.DataVisualization` (UI-gebunden) und **ScottPlot** (im
+  Projekt vorhanden; rendert off-screen deterministisch) — Druckpfad über ScottPlot.
 - **Randbedingung Statics:** `Program` hält globale Statics, die App arbeitet auf
   einem aktiven Projekt — der Berichtsweg liest deshalb ausschließlich über
   Repository/Controller in eigene DTOs (bestätigt, s. o.).
@@ -212,8 +208,7 @@ nie 0. Vier Gruppen:
 ## 6. Diagramme
 
 Off-screen-Rendering als **PNG** (Zielbreite 16 cm, 150–200 dpi) über
-**System.Drawing/GDI+** (`ChartRenderer`; bewusste Abweichung vom ursprünglich
-geplanten ScottPlot — Umstieg bleibt möglich); die vorhandenen Kuchendiagramme
+**ScottPlot** (`ChartRenderer`); die vorhandenen Kuchendiagramme
 (Wärme-/Stromdeckung) werden aus dem Bestand übernommen. Feste Farbzuordnung je
 Variante über alle Diagramme (Stamm neutral dunkel, Varianten aus Palette);
 Beschriftung in Berichtssprache.
@@ -271,7 +266,7 @@ Allgemein/Bericht/
 │                             #   Komponenten-Controller, EnergieMengen); triggert Simulation;
 │                             #   berechnet abgeleitete Kennzahlen/Emissionen/Deltas/Abweichungen
 ├─ KennzahlenKatalog.cs       # zentrale Kennzahl-Definitionen (de/en, Einheit, Format, Delta)
-├─ ChartRenderer.cs           # Kuchen (Bestand) + Balken + 4 Ganglinientypen → PNG (System.Drawing/GDI+)
+├─ ChartRenderer.cs           # Kuchen (Bestand) + Balken + 4 Ganglinientypen → PNG (ScottPlot)
 ├─ WordBerichtGenerator.cs    # OpenXML; Styles aus Vorlagen-docx; übernimmt Tabellen-/
 │                             #   Absatz-Helfer und Vergleichslogik aus ProjektvergleichBericht
 ├─ ExcelBerichtGenerator.cs   # ClosedXML (Kap. 9)
@@ -312,16 +307,9 @@ Zusatzbaustein.
 
 ### 8.4 Persistenz
 
-- **`Berichtskonfiguration`** (neu): `ID`, `ProjektID` (Stamm, UNIQUE),
-  `KonfigJson` (Memo), `GeaendertAm`. JSON über `System.Text.Json`; Anlage
-  **selbstanlegend zur Laufzeit** (`BerichtCtrl.StelleKonfigTabelleSicher()` —
-  gleiches Muster wie `Tab_Variante` in `VariantenCtrl` und die
-  Wirtschaftlichkeits-Tabellen). *Hinweis:* `UpdateDatabaseFromScript` kennt
-  keine TABELLEN/SPALTEN-Abschnitte, sondern Zeilenpräfixe (`SQL=`,
-  `BACKUP_REL:`, `CLEAN_COL:`, `RESTORE_REL:` — letztere hart auf
-  `Tab_ProjektWerte` verdrahtet) und nutzt einen eigenen
-  Registry-Connection-String; es bleibt das Werkzeug für Migrationsskripte,
-  nicht für die Laufzeit-Anlage.
+- **`Berichtskonfiguration`** (neu; DB-verifiziert: existiert noch nicht):
+  `ProjektID` (Stamm), `KonfigJson` (Memo), `GeaendertAm`. JSON über
+  `System.Text.Json`; Anlage über `UpdateDatabaseFromScript` (TABELLEN/SPALTEN).
 - **Simulationsergebnisse:** bleiben wie gehabt in `Tab_Ergebnis*` (ein Lauf je
   Projekt, `Zeitstempel` als Nachweis). Zeitreihen werden bewusst **nicht**
   persistiert — sie entstehen je Berichtslauf neu (6.2).
@@ -385,24 +373,17 @@ Schema von `C:\ProgramData\EPOS_PLAN\Kenndaten.accdb` (11.08.2026):
 | Kosten-/Emissionsdaten | `energy_*`-Tabellen inkl. CO₂/SO₂/NOx je Träger und Preishistorie (`valid_from`, `valid_to`); `Tab_ProjektWerte` mit Nutzungsdauer + Best/Worst; Abfragen `Abfrage_Kosten_*` u. a. vorhanden |
 | Bestehende Exporte | `CsvExportClass` (Allgemein/Export); Excel-Interop nur an anderer Stelle — kein Layout-Zwang für Kap. 9 |
 
-**Codebefunde (Status nach Prüf-Session 11.08.2026 abends):**
+**Bei der Umsetzung zu behebende Codebefunde:**
 
-| # | Befund | Status / Konsequenz |
+| # | Befund | Konsequenz |
 |---|---|---|
-| B1 | `Tab_ErgebnisBHKWModul.Brennstoff`/`…HeizkesselModul.Brennstoff` freie Strings; `EnergieMengen.CarrierFor()` rät ohne Projektbezug | **erledigt für die Ergebnistabellen** (`carrier_id` selbstanlegend, projektbezogen befüllt). **Rest offen:** `EnergieMengen.CarrierFor()` (Kapitel „Brennstoffmengen") weiterhin heuristisch + SQL-Konkatenation; Semantik `Tab_BHKW.Brennstoff` im Code widersprüchlich (FK auf `energy_carrier.id` vs. `id_brennstoff`) — an der DB klären |
-| B2 | `ErgebnisCtrl.Delete()` funktionsunfähig | **erledigt** (`Delete(int)` mit Parameter/Commit; Alt-Überladung `[Obsolete]`) |
-| B3 | Heizkessel-Modul-INSERT persistiert `Waermeproduktion` nicht | **erledigt** (inkl. Rundung `Verbrauch`) |
-| B4 | `ProjektModel.m_nNetzverluste`/`m_szEinheit` ohne Spalte in `Tab_Projekt` (DB-verifiziert) | offen — Quelle klären (`KonfigurationModel`?), Modell bereinigen |
-| B5 | `Tab_Variante` ohne Löschweitergabe → Waisen möglich | **teilweise:** `VariantenCtrl.EntferneWaisen()` existiert, wird aber noch von keinem Ablauf aufgerufen |
-| B6 | Kostenmodul: `Form_KostenAdmin`-Insert defekt; `energy_price`-Ersteintrag ohne `leistungspreis`; Speichern nur über ucFuelSettings-Button | offen — Details/Zusatzbefunde im Begleitkonzept 3.5 (u. a. `valid_from` mit Uhrzeit beim Ersteintrag, `price_power` nie gelesen) |
-| B7 | Δ-Spalte des Bestandsberichts rechnet auf formatierten Strings | **im Neumodul erledigt** (Δ aus Rohwerten); Altbericht unverändert, entfällt mit dessen Stilllegung |
-| B8 | **neu:** Energie-Einstellungen werden beim Variantenanlegen **doppelt** kopiert (`ProjektDuplizierenCtrl` generisch + `VariantenCtrl.KopiereEnergieEinstellungen`) → doppelte `energy_project_settings`-Sätze möglich; `energy_price`-Zweitkopie läuft auf den Unique-Index und erzeugt eine MessageBox aus `DataRepository` | eine der beiden Kopien entfernen |
-| B9 | **neu:** Projektduplizierung kopiert auch `Tab_Ergebnis*` mit → frische Variante zeigt den Simulationsstand des Stamms als eigenen (Aktualitätsprüfung meldet „vorhanden" statt „fehlt") | `Tab_Ergebnis` in die Ausnahmeliste des Duplizierers oder Zeitstempel/Ergebnis nach dem Anlegen löschen |
-| B10 | **neu:** `KennzahlenKatalog` deckt Kap. 5 noch nicht voll ab (es fehlen u. a. Wärmebedarf je Verwendungszweck, Nutzungsgrade Kessel/BHKW, Speicherverluste, Einspeise-Kennzahl) | Katalog schrittweise auffüllen oder Kap.-5-Anspruch je Kennzahl als „geplant" kennzeichnen |
-| B11 | **neu:** Anhang weist die tatsächlich verwendeten Emissionsfaktoren/Preise und den Strommix-Faktor noch nicht aus (Platzhaltertext aus Phase 2) | Anhang-Baustein um Faktoren-/Preistabelle ergänzen (Kap. 4 Baustein 8) |
-| B12 | **neu:** Neue Formulare (`Form_Bericht`, `Form_AlsVariante`, `Form_Wirtschaftlichkeit*`) sind komplett im Code aufgebaut, deutsche Texte hart codiert, keine Satelliten-`.resx`; `BerichtTexte`-Wörterbuch fehlen die Wirtschaftlichkeits-Labels (K9) | Lokalisierungskonvention nachziehen (en-Bericht sonst gemischtsprachig) |
-| B13 | **neu:** Menü-Verdrahtung offen — MDI-Menü hat weder „Bericht erstellen…" noch „Als Variante speichern…"; `[Wirtschaftlichkeit]`-Button in `Form_Start` fehlt (bewusst Designer-Handgriffe, `LIESMICH_Phase1`) | im Designer nachziehen |
-| — | W1-Detailbefunde K1–K10 (Zuschüsse, Parameternachweis, veraltete Simulationen, verwaiste Ergebnisse …) | **Begleitkonzept `Konzept_Wirtschaftlichkeit.md` Kap. 8** |
+| B1 | `Tab_ErgebnisBHKWModul.Brennstoff`/`…HeizkesselModul.Brennstoff` sind freie Strings; `EnergieMengen.CarrierFor()` rät den Träger ohne Projektbezug | **`carrier_id`-Spalte** in beide Modultabellen (Muster `StelleXSpaltenSicher()` in `ErgebnisCtrl`), beim Speichern setzen — Voraussetzung für „Kosten einfach" und Wirtschaftlichkeit |
+| B2 | `ErgebnisCtrl.Delete()` funktionsunfähig (Parameter fehlt, kein Commit) | beheben |
+| B3 | Heizkessel-Modul-INSERT persistiert `Waermeproduktion` nicht | ergänzen |
+| B4 | `ProjektModel.m_nNetzverluste`/`m_szEinheit` haben **keine Spalte** in `Tab_Projekt` (DB-verifiziert) | Quelle klären (`KonfigurationModel`?), Modell bereinigen |
+| B5 | `Tab_Variante` ohne Löschweitergabe → Waisen möglich | Aufräumprüfung in `VariantenCtrl` |
+| B6 | Kostenmodul: `Form_KostenAdmin`-Insert defekt; `energy_price`-Ersteintrag ohne `leistungspreis`; Speichern nur über ucFuelSettings-Button | **behoben (Phase 7, 11.08.2026)**: Insert/Delete mit Platzhaltern über `DataRepository`, Ersteintrag inkl. Leistungspreis, automatisches Speichern beim Schließen von `Form_Kosten` |
+| B7 | Δ-Spalte des Bestandsberichts rechnet auf formatierten Strings | bei Übernahme auf Rohwerte umstellen |
 
 ---
 
@@ -429,17 +410,17 @@ werden beim ersten Start der neuen Programmversion automatisch angelegt
 | **3 — Diagramme** | `ChartRenderer`: Balken + **4 Ganglinientypen** aus In-Memory-Simulation, Baustein 5 komplett | Vollbericht Word |
 | **4 — Excel** | `ExcelBerichtGenerator` (Übersicht, Vergleich, Detailblätter) | beide Formate |
 | **5 — Komfort** | Zeitstempel-/Warnlogik final, en-Lokalisierung, Feinschliff Vorlage/CI, Emissions-Verrechnung | produktionsreif |
-| **6 — Wirtschaftlichkeit** | Reiter + Rechenmodul + Baustein nach `Konzept_Wirtschaftlichkeit.md` — **Stufe W1 umgesetzt (11.08.2026)**: `KapitalwertRechner`/`WirtschaftlichkeitCtrl`/`Form_Wirtschaftlichkeit` + Word-Baustein + Excel-Blatt; **Rechenkern unabhängig nachgerechnet und bestätigt**, Korrekturliste K1–K10 (Begleitkonzept Kap. 8) vor Produktivsetzung abarbeiten; W2/W3 offen | W1 fertig (mit Korrekturliste), W2/W3 eigenes Arbeitspaket |
+| **6 — Wirtschaftlichkeit** | Reiter + Rechenmodul + Baustein nach `Konzept_Wirtschaftlichkeit.md` — **Stufe W1 umgesetzt (11.08.2026)**: `KapitalwertRechner`/`WirtschaftlichkeitCtrl`/`Form_Wirtschaftlichkeit` + Word-Baustein + Excel-Blatt | W1 fertig |
+| **7 — Wirtschaftlichkeit W2 + Kostenmodul** | **umgesetzt (11.08.2026)**: Sensitivitätsanalyse (`Tab_ErgebnisWirtSensitivitaet`), interner Zinsfuß, BEHG-CO₂-Abgabe, KWKG-Bonus mit Vbh-Kontingent; Kostenmodul-Befunde B4–B6 behoben | W2 fertig |
+| **8 — Wirtschaftlichkeit W3** | **umgesetzt (11.08.2026)**: Strommengen-Matrix HT/NT × Saison (`StromMatrix`/`Tab_ErgebnisStromMatrix`), Tarifstruktur je Stamm (`Tab_ProjektTarif` + Dialog, Leistungspreis-Staffel), KWKG-Split Eigenstrom/Einspeisung, Emissionsbilanz mit Kraftwerkspark-Katalog (`Tab_Kraftwerkspark`) in Reiter/Word/Excel | W3 fertig |
+| **9 — KWKG-2025-Nachtrag** | **umgesetzt (12.08.2026)**: degressive Vbh-Staffel (`Tab_KWKG_Staffel`, Katalog 2020–2030), Fristenlogik § 6 (Stichtag + 4 Jahre), Guards > 500 kW/Heizöl, Negativpreis-Abschlag, Novellen-Sensitivität (Wirtschaftlichkeitskonzept Kap. 8) | fertig; offen: Preisszenarien aus `energy_price`-Historie, exakte Spotpreis-Stunden |
 
 Grobaufwand Phasen 1–5: **20–28 PT** (voller Umfang inkl. Ganglinien);
 Wirtschaftlichkeit separat (Begleitkonzept).
 
 ---
 
-*Konsolidierte Fassung 3.1: Fassung 3 (Cowork-Session 11.08.2026) + unabhängige
-Code-Prüfung (zweite Cowork-Session, 11.08.2026 abends — Chart-Technik,
-Tabellenanlage und Befundliste an den realen Code-Stand angepasst;
-Prüfbericht: `Pruefbericht_Konsolidierung_2026-08-11.md`). Vorgänger:
+*Konsolidierte Fassung 3, Cowork-Session 11.08.2026. Vorgänger:
 `Konzept_Variantenbericht.md` (aufgegangen in dieser Fassung, Datei als Verweis
 erhalten) und Erstfassung dieses Dokuments vom 11.08.2026. Historisches
 Grundlagendokument: Reporting-Gerüst (`LIESMICH_Geruest.md`,

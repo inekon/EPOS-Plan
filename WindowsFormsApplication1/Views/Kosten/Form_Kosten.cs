@@ -84,6 +84,35 @@ namespace WindowsFormsApplication1
             Close();
         }
 
+        /// <summary>
+        /// Befund B6 (11.08.2026): Energiepreise wurden nur über den Speichern-Button
+        /// des ucFuelSettings-Controls persistiert — beim Schließen des Formulars
+        /// gingen offene Eingaben verloren. Jetzt speichert das Schließen den
+        /// aktuell geöffneten Energieträger mit (gleiche Logik wie der Button).
+        /// </summary>
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            try
+            {
+                foreach (Control c in flpContainer_Energiekosten.Controls)
+                {
+                    ucFuelSettings uc = c as ucFuelSettings;
+                    if (uc == null) continue;
+
+                    // Nur speichern, wenn der Träger dem Projekt noch zugeordnet ist —
+                    // sonst würde ein zuvor gelöschter Träger wieder angelegt.
+                    int zugeordnet = Convert.ToInt32(DataRepository.ExecuteScalar(
+                        "SELECT COUNT(*) FROM energy_project_settings " +
+                        "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                        new OleDbParameter("@p", m_ID_Projekt),
+                        new OleDbParameter("@c", uc.CarrierId)));
+                    if (zugeordnet > 0) uc.SaveProjectAndHistory();
+                }
+            }
+            catch { /* Schließen nie am Speichern scheitern lassen */ }
+            base.OnFormClosing(e);
+        }
+
         private void Gesamtkosten(string aktuelleSelektion = "")
         {
             decimal summeGesamt = 0;
@@ -904,9 +933,11 @@ namespace WindowsFormsApplication1
                     }
 
                     // 3) Projektbezogene Sätze anlegen (Preis-Historie + Projekt-Einstellungen)
+                    // Befund B5 (11.08.2026): der Ersteintrag ließ leistungspreis leer,
+                    // obwohl der Standardwert aus Tab_Brennstoff_Stamm ermittelt wurde.
                     string sqlHistory = @"INSERT INTO energy_price
-                 (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)";
+                 (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                     DataRepository.ExecuteSQL(sqlHistory, new OleDbParameter[] {
                 new OleDbParameter("@cid",  carrierId),
                 new OleDbParameter("@prid", m_ID_Projekt),
@@ -914,7 +945,8 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@hi",   Math.Round(dlg.SelectedHi, 4)),
                 new OleDbParameter("@gp",   Math.Round(default_grundpreis, 4)),
                 new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now },
-                new OleDbParameter("@au",   dlg.SelectedBillingUnit)
+                new OleDbParameter("@au",   dlg.SelectedBillingUnit),
+                new OleDbParameter("@lp",   Math.Round(default_leistungspreis, 4))
             });
 
                     string sqlInsert = @"INSERT INTO energy_Project_settings
@@ -999,6 +1031,10 @@ namespace WindowsFormsApplication1
 
                 trans.Commit();
 
+                // Review-Befund (Phase 7): das offene ucFuelSettings des gelöschten
+                // Trägers muss aus dem Panel, sonst legt das Speichern beim
+                // Schließen (B6) die Projektzuordnung wieder an.
+                flpContainer_Energiekosten.Controls.Clear();
                 FillCarrierComboBox();
 
                 return true;

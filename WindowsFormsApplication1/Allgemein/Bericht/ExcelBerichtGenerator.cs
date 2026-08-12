@@ -237,17 +237,25 @@ namespace WindowsFormsApplication1
             r += 2;
 
             // Kennzahl-Zeilen: Label, Format, Wertzugriff (null = leer).
+            // BEHG-/KWKG-/IRR-Zeilen nur, wenn sie im Datenbestand vorkommen.
+            bool mitBehg = alle.Any(x => x.CO2AbgabeJahr > 0);
+            bool mitKwkg = alle.Any(x => x.KwkgErloesJahr1 > 0);
+            bool mitIrr = alle.Any(x => x.IRR.HasValue);
             var zeilen = new List<Tuple<string, string, Func<WirtschaftlichkeitErgebnis, double?>>>
             {
                 Tuple.Create("Investition I₀ [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.Investition)),
                 Tuple.Create("Betriebskosten [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.BetriebskostenJahr)),
                 Tuple.Create("Energiekosten [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.EnergiekostenJahr)),
+                Tuple.Create("Stromkosten Tarif [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.StromkostenTarif)),
+                Tuple.Create("CO₂-Abgabe BEHG [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitBehg ? (double?)e.CO2AbgabeJahr : null)),
                 Tuple.Create("Einspeiseerlös [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.EinspeiseerloesJahr)),
+                Tuple.Create("KWKG-Erlös Jahr 1 [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => mitKwkg ? (double?)e.KwkgErloesJahr1 : null)),
                 Tuple.Create("Restwert (Barwert) [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (double?)e.RestwertBarwert)),
                 Tuple.Create("Nettobarwert über T [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.Kapitalwert)),
                 Tuple.Create("Kapitalwert vs. Stamm [€]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.IstStamm ? null : e.KapitalwertDiff)),
                 Tuple.Create("Annuität des KW [€/a]", "#,##0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.IstStamm ? null : e.AnnuitaetKW)),
                 Tuple.Create("Amortisation [a]", "#,##0.0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.IstStamm ? null : e.AmortisationJahre)),
+                Tuple.Create("Interner Zinsfuß [%]", "#,##0.0", (Func<WirtschaftlichkeitErgebnis, double?>)(e => (e.IstStamm || !mitIrr) ? null : e.IRR)),
                 Tuple.Create("Wärmegestehungskosten [€/kWh]", "#,##0.000", (Func<WirtschaftlichkeitErgebnis, double?>)(e => e.Gestehungskosten))
             };
 
@@ -279,6 +287,16 @@ namespace WindowsFormsApplication1
 
                 foreach (var z in zeilen)
                 {
+                    // Zeile komplett ausblenden, wenn kein Projekt einen Wert liefert
+                    // (z. B. BEHG/KWKG deaktiviert) — Konvention „nie 0-Zeilen".
+                    bool hatWert = false;
+                    foreach (VariantenDaten v in daten.Varianten)
+                    {
+                        WirtschaftlichkeitErgebnis pe = block.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
+                        if (pe != null && z.Item3(pe).HasValue) { hatWert = true; break; }
+                    }
+                    if (!hatWert) continue;
+
                     ws.Cell(r, 1).Value = BerichtTexte.T(z.Item1);
                     c = 2;
                     foreach (VariantenDaten v in daten.Varianten)
@@ -311,8 +329,215 @@ namespace WindowsFormsApplication1
                 r++;   // Leerzeile zwischen den Szenarien
             }
 
+            // ---------------- Kapitalwert-Verlauf (Phase 11, Szenario Erwartet) ----------------
+            // Jahresreihen frisch aus den Berichtsdaten gerechnet (T aus den Parametern);
+            // dieselben Werte wie die Diagramme in Word und im Verlaufs-Dialog.
+            // Konsistenz-Gate wie im Word-Baustein (Review 11): sind Tarif/KWKG aktiv,
+            // aber keine Stundenreihen im Berichtslauf, entfällt der Block mit Hinweis.
+            TarifParameter tarifV = provider.LadeTarif(daten.IdStamm);
+            bool zeitreihenNoetig = (tarifV != null && tarifV.Aktiv) ||
+                                    p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
+            int rStart = r;
+            try
+            {
+                if (zeitreihenNoetig &&
+                    daten.Varianten.Any(v => v.Fehler == null && v.Zeitreihen == null))
+                {
+                    ws.Cell(r, 1).Value = BerichtTexte.T(
+                        "Kapitalwert-Verlauf entfällt: Bericht ohne Stundenreihen erzeugt (Baustein „Ergebnisse je Variante“ aktivieren).");
+                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                    r += 2;
+                }
+                else
+                {
+                    WirtschaftlichkeitVerlauf verlauf = provider.BerechneVerlauf(
+                        daten, p, p.Betrachtungszeitraum, WirtschaftlichkeitSzenario.ERWARTET);
+                    var mitReihe = verlauf.Absolut.Where(s => s.Kumuliert != null).ToList();
+                    var mitDiff = verlauf.Differenz.Where(x => x.Kumuliert != null).ToList();
+                    if (mitReihe.Count > 0)
+                    {
+                        ws.Cell(r, 1).Value = BerichtTexte.T("Kapitalwert-Verlauf (kumulierte Barwerte, ohne Restwert) [€]");
+                        ws.Cell(r, 1).Style.Font.Bold = true;
+                        ws.Range(r, 1, r, 1 + mitReihe.Count + mitDiff.Count)
+                          .Style.Fill.BackgroundColor = GRUPPE;
+                        r++;
+
+                        ws.Cell(r, 1).Value = BerichtTexte.T("Jahr");
+                        int cv = 2;
+                        foreach (VerlaufSerie s in mitReihe)
+                        { ws.Cell(r, cv).Value = s.Anzeige; cv++; }
+                        foreach (VerlaufSerie s in mitDiff)
+                        { ws.Cell(r, cv).Value = "Δ " + s.Anzeige + " − Stamm"; cv++; }
+                        ws.Range(r, 1, r, cv - 1).Style.Font.Bold = true;
+                        ws.Range(r, 1, r, cv - 1).Style.Fill.BackgroundColor = KOPF;
+                        r++;
+
+                        for (int t = 0; t <= verlauf.Jahre; t++)
+                        {
+                            ws.Cell(r, 1).Value = t;
+                            cv = 2;
+                            foreach (VerlaufSerie s in mitReihe)
+                            {
+                                ws.Cell(r, cv).Value = s.Kumuliert[t];
+                                ws.Cell(r, cv).Style.NumberFormat.Format = "#,##0";
+                                cv++;
+                            }
+                            foreach (VerlaufSerie s in mitDiff)
+                            {
+                                ws.Cell(r, cv).Value = s.Kumuliert[t];
+                                ws.Cell(r, cv).Style.NumberFormat.Format = "#,##0";
+                                cv++;
+                            }
+                            r++;
+                        }
+                        ws.Cell(r, 1).Value = BerichtTexte.T(
+                            "Ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert.");
+                        ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                        r += 2;
+                    }
+                }
+            }
+            catch
+            {
+                // Halb geschriebenen Block räumen, damit keine Reste unter den
+                // Folgeblöcken stehen bleiben (Review-Verifikation 11).
+                try { ws.Range(rStart, 1, r + 1, 2 * daten.Varianten.Count + 1).Clear(XLClearOptions.All); }
+                catch { }
+                r = rStart;
+            }
+
+            // ---------------- Sensitivitätsanalyse (W2, Szenario Erwartet) ----------------
+            List<SensitivitaetZeile> sens = provider.LadeSensitivitaet(ids);
+            if (sens.Count > 0)
+            {
+                ws.Cell(r, 1).Value = BerichtTexte.T("Sensitivitätsanalyse (Szenario „Erwartet“)");
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 4).Style.Fill.BackgroundColor = GRUPPE;
+                r++;
+
+                foreach (VariantenDaten v in daten.Varianten.Where(x => !x.IstStamm))
+                {
+                    var zeilenSens = sens.Where(x => x.IdProjekt == v.IdProjekt).ToList();
+                    if (zeilenSens.Count == 0) continue;
+
+                    ws.Cell(r, 1).Value = BerichtTexte.T("Variante") + ": " + v.Anzeige;
+                    ws.Cell(r, 1).Style.Font.Bold = true;
+                    r++;
+
+                    ws.Cell(r, 1).Value = BerichtTexte.T("Parameter");
+                    ws.Cell(r, 2).Value = BerichtTexte.T("KW bei −Δ [€]");
+                    ws.Cell(r, 3).Value = BerichtTexte.T("KW Basis [€]");
+                    ws.Cell(r, 4).Value = BerichtTexte.T("KW bei +Δ [€]");
+                    ws.Range(r, 1, r, 4).Style.Font.Bold = true;
+                    ws.Range(r, 1, r, 4).Style.Fill.BackgroundColor = KOPF;
+                    r++;
+
+                    foreach (SensitivitaetZeile z in zeilenSens)
+                    {
+                        ws.Cell(r, 1).Value = z.Parameter;
+                        double?[] werte = { z.KwMinus, z.KwBasis, z.KwPlus };
+                        for (int i = 0; i < 3; i++)
+                            if (werte[i].HasValue)
+                            {
+                                ws.Cell(r, 2 + i).Value = werte[i].Value;
+                                ws.Cell(r, 2 + i).Style.NumberFormat.Format = "#,##0";
+                            }
+                        r++;
+                    }
+                    r++;
+                }
+            }
+
+            // ---------------- Strommengen-Matrix (W3) ----------------
+            Dictionary<int, StromMatrix> matrizen = provider.LadeStromMatrix(ids);
+            if (matrizen.Count > 0)
+            {
+                ws.Cell(r, 1).Value = BerichtTexte.T("Strommengen nach Tarifzonen [MWh]");
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = GRUPPE;
+                r++;
+                foreach (VariantenDaten v in daten.Varianten)
+                {
+                    if (!matrizen.ContainsKey(v.IdProjekt)) continue;
+                    StromMatrix m = matrizen[v.IdProjekt];
+
+                    ws.Cell(r, 1).Value = (v.IstStamm ? "Stamm" : v.Anzeige) +
+                        " — " + BerichtTexte.T("Bezugsspitze") + " " + m.MaxBezugKW.ToString("N0", BerichtTexte.Kultur) + " kW";
+                    ws.Cell(r, 1).Style.Font.Bold = true;
+                    r++;
+
+                    ws.Cell(r, 1).Value = BerichtTexte.T("Zone");
+                    ws.Cell(r, 2).Value = BerichtTexte.T("Netzbezug [MWh]");
+                    ws.Cell(r, 3).Value = BerichtTexte.T("PV-Einspeisung [MWh]");
+                    ws.Cell(r, 4).Value = BerichtTexte.T("KWK-Eigenstrom [MWh]");
+                    ws.Cell(r, 5).Value = BerichtTexte.T("KWK-Einspeisung [MWh]");
+                    ws.Range(r, 1, r, 5).Style.Font.Bold = true;
+                    ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = KOPF;
+                    r++;
+                    foreach (string zone in StromMatrix.Zonen)
+                    {
+                        StromMatrix.Zone z = m.Hole(zone);
+                        if (z == null) continue;
+                        ws.Cell(r, 1).Value = zone;
+                        double[] werte = { z.BezugMWh, z.EinspeisungPvMWh, z.KwkEigenMWh, z.KwkEinspeisungMWh };
+                        for (int i = 0; i < 4; i++)
+                        {
+                            ws.Cell(r, 2 + i).Value = werte[i];
+                            ws.Cell(r, 2 + i).Style.NumberFormat.Format = "#,##0.0";
+                        }
+                        r++;
+                    }
+                    r++;
+                }
+            }
+
+            // ---------------- Emissionsbilanz (W3) ----------------
+            if (p.IdKraftwerkspark > 0)
+            {
+                ws.Cell(r, 1).Value = BerichtTexte.T("Emissionsbilanz — gekoppelte vs. getrennte Erzeugung");
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 4).Style.Fill.BackgroundColor = GRUPPE;
+                r++;
+                foreach (VariantenDaten v in daten.Varianten)
+                {
+                    // Nur wenn das persistierte Ergebnis zum Simulationslauf passt —
+                    // sonst stünden zwei Rechenstände in einem Blatt (Review Phase 8).
+                    WirtschaftlichkeitErgebnis erw = alle.FirstOrDefault(x =>
+                        x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                    if (erw == null || !provider.ErgebnisAktuell(erw)) continue;
+                    EmissionsBilanz b = EmissionsBilanzRechner.Berechne(v.IdProjekt, p);
+                    if (b == null || (!b.CO2GekoppeltT.HasValue && !b.CO2GetrenntT.HasValue)) continue;
+
+                    ws.Cell(r, 1).Value = (v.IstStamm ? "Stamm" : v.Anzeige) + " — " + b.ParkName;
+                    ws.Cell(r, 1).Style.Font.Bold = true;
+                    r++;
+
+                    ws.Cell(r, 1).Value = BerichtTexte.T("Schadstoff");
+                    ws.Cell(r, 2).Value = BerichtTexte.T("Gekoppelt (System)");
+                    ws.Cell(r, 3).Value = BerichtTexte.T("Getrennt (Referenz)");
+                    ws.Cell(r, 4).Value = BerichtTexte.T("Vermeidung");
+                    ws.Range(r, 1, r, 4).Style.Font.Bold = true;
+                    ws.Range(r, 1, r, 4).Style.Fill.BackgroundColor = KOPF;
+                    r++;
+
+                    Action<string, double?, double?> bz = (label, gek, getr) =>
+                    {
+                        ws.Cell(r, 1).Value = label;
+                        if (gek.HasValue) { ws.Cell(r, 2).Value = gek.Value; ws.Cell(r, 2).Style.NumberFormat.Format = "#,##0.0"; }
+                        if (getr.HasValue) { ws.Cell(r, 3).Value = getr.Value; ws.Cell(r, 3).Style.NumberFormat.Format = "#,##0.0"; }
+                        if (gek.HasValue && getr.HasValue)
+                        { ws.Cell(r, 4).Value = getr.Value - gek.Value; ws.Cell(r, 4).Style.NumberFormat.Format = "#,##0.0"; }
+                        r++;
+                    };
+                    bz("CO₂ [t/a]", b.CO2GekoppeltT, b.CO2GetrenntT);
+                    bz("SO₂ [kg/a]", b.SO2GekoppeltKg, b.SO2GetrenntKg);
+                    bz("NOx [kg/a]", b.NOxGekoppeltKg, b.NOxGetrenntKg);
+                    r++;
+                }
+            }
+
             ws.Column(1).Width = 32;
-            for (int i = 2; i <= 1 + daten.Varianten.Count; i++) ws.Column(i).Width = 16;
+            for (int i = 2; i <= Math.Max(5, 2 * daten.Varianten.Count); i++) ws.Column(i).Width = 18;   // Δ-Spalten des Verlaufsblocks (Review 11)
             ws.SheetView.FreezeRows(2);
         }
 

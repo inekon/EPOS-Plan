@@ -36,6 +36,11 @@ namespace WindowsFormsApplication1
         private List<WirtschaftlichkeitErgebnis> _ergebnisse = new List<WirtschaftlichkeitErgebnis>();
         private readonly Dictionary<int, string> _namen = new Dictionary<int, string>();
 
+        // W3: Emissionsbilanzen + Parameter werden je Datenstand EINMAL ermittelt
+        // (Review Phase 8 — nicht bei jedem Szenariowechsel im UI-Thread rechnen).
+        private WirtschaftlichkeitParameter _parameterCache;
+        private readonly Dictionary<int, EmissionsBilanz> _bilanzen = new Dictionary<int, EmissionsBilanz>();
+
         // Steuerelemente
         private Label lblVarianten;
         private ListView lvVarianten;
@@ -46,7 +51,7 @@ namespace WindowsFormsApplication1
         private Label lblParameter;
         private Label lblStatus;
         private ProgressBar progress;
-        private Button btnParameter, btnBerechnen, btnSchliessen;
+        private Button btnTarif, btnParameter, btnVerlauf, btnBerechnen, btnSchliessen;
 
         public Form_Wirtschaftlichkeit(int idProjekt)
         {
@@ -83,7 +88,9 @@ namespace WindowsFormsApplication1
             this.lblParameter = new Label();
             this.lblStatus = new Label();
             this.progress = new ProgressBar();
+            this.btnTarif = new Button();
             this.btnParameter = new Button();
+            this.btnVerlauf = new Button();
             this.btnBerechnen = new Button();
             this.btnSchliessen = new Button();
             this.SuspendLayout();
@@ -100,7 +107,7 @@ namespace WindowsFormsApplication1
             this.lvVarianten.HideSelection = false;
             this.lvVarianten.Location = new Point(12, 32);
             this.lvVarianten.MultiSelect = false;
-            this.lvVarianten.Size = new Size(756, 120);
+            this.lvVarianten.Size = new Size(876, 120);
             this.lvVarianten.View = View.Details;
             this.lvVarianten.ItemCheck += new ItemCheckEventHandler(this.lvVarianten_ItemCheck);
 
@@ -137,48 +144,60 @@ namespace WindowsFormsApplication1
             this.grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
             this.grid.Location = new Point(12, 192);
-            this.grid.Size = new Size(756, 268);
+            this.grid.Size = new Size(876, 268);
 
             // Parameter-Nachweiszeile
             this.lblParameter.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             this.lblParameter.ForeColor = Color.DimGray;
             this.lblParameter.Location = new Point(12, 468);
-            this.lblParameter.Size = new Size(756, 18);
+            this.lblParameter.Size = new Size(876, 18);
 
             // Status + Fortschritt
             this.lblStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             this.lblStatus.ForeColor = Color.DimGray;
             this.lblStatus.Location = new Point(12, 490);
-            this.lblStatus.Size = new Size(400, 18);
+            this.lblStatus.Size = new Size(276, 18);
 
             this.progress.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             this.progress.Location = new Point(12, 512);
-            this.progress.Size = new Size(400, 14);
+            this.progress.Size = new Size(276, 14);
             this.progress.Visible = false;
 
             // Schaltflächen
+            this.btnTarif.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            this.btnTarif.Location = new Point(304, 494);
+            this.btnTarif.Size = new Size(124, 30);
+            this.btnTarif.Text = "Tarifstruktur…";
+            this.btnTarif.Click += new EventHandler(this.btnTarif_Click);
+
             this.btnParameter.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnParameter.Location = new Point(430, 494);
+            this.btnParameter.Location = new Point(434, 494);
             this.btnParameter.Size = new Size(110, 30);
             this.btnParameter.Text = "Parameter…";
             this.btnParameter.Click += new EventHandler(this.btnParameter_Click);
 
+            this.btnVerlauf.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            this.btnVerlauf.Location = new Point(550, 494);
+            this.btnVerlauf.Size = new Size(110, 30);
+            this.btnVerlauf.Text = "Verlauf…";
+            this.btnVerlauf.Click += new EventHandler(this.btnVerlauf_Click);
+
             this.btnBerechnen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnBerechnen.Location = new Point(546, 494);
+            this.btnBerechnen.Location = new Point(666, 494);
             this.btnBerechnen.Size = new Size(110, 30);
             this.btnBerechnen.Text = "Berechnen";
             this.btnBerechnen.Click += new EventHandler(this.btnBerechnen_Click);
 
             this.btnSchliessen.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            this.btnSchliessen.Location = new Point(662, 494);
+            this.btnSchliessen.Location = new Point(782, 494);
             this.btnSchliessen.Size = new Size(106, 30);
             this.btnSchliessen.Text = "Schließen";
             this.btnSchliessen.Click += new EventHandler(this.btnSchliessen_Click);
 
             // Form
             this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(780, 536);
-            this.MinimumSize = new Size(700, 480);
+            this.ClientSize = new Size(900, 536);
+            this.MinimumSize = new Size(900, 480);   // Client ≥ ~884 px: btnTarif überlappt lblStatus nicht (Review 11)
             this.Font = new Font("Segoe UI", 9f);
             this.StartPosition = FormStartPosition.CenterParent;
             this.Name = "Form_Wirtschaftlichkeit";
@@ -191,7 +210,9 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.lblParameter);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.progress);
+            this.Controls.Add(this.btnTarif);
             this.Controls.Add(this.btnParameter);
+            this.Controls.Add(this.btnVerlauf);
             this.Controls.Add(this.btnBerechnen);
             this.Controls.Add(this.btnSchliessen);
             this.Load += new EventHandler(this.Form_Wirtschaftlichkeit_Load);
@@ -212,6 +233,7 @@ namespace WindowsFormsApplication1
             _ergebnisse = _ctrl.LadeErgebnisse(GewaehlteIds(true));
             bool veraltet = _ergebnisse.Count > 0 &&
                             _ergebnisse.Any(x => x.Fehlgrund == null && !_ctrl.ErgebnisAktuell(x));
+            AktualisiereBilanzen();
             ZeigeErgebnisse();
             Melde(_ergebnisse.Count == 0
                 ? "Noch keine Wirtschaftlichkeitsberechnung gespeichert — bitte „Berechnen“."
@@ -262,8 +284,10 @@ namespace WindowsFormsApplication1
         private void ZeigeParameterzeile()
         {
             WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+            TarifParameter t = _ctrl.LadeTarif(_idStamm);
             lblParameter.Text = "Parameter: " + p.Nachweis(BerichtTexte.Kultur) +
-                                " · Referenz: Stammprojekt · Restwert linear";
+                                " · Referenz: Stammprojekt · Restwert linear · " +
+                                t.Nachweis(BerichtTexte.Kultur);
         }
 
         // ------------------------------------------------------------- Ereignisse
@@ -279,6 +303,19 @@ namespace WindowsFormsApplication1
             }
         }
 
+        private void btnTarif_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new Form_Tarifstruktur(_idStamm))
+            {
+                dlg.ShowDialog(this);
+                if (dlg.Gespeichert)
+                {
+                    ZeigeParameterzeile();
+                    Melde("Tarifstruktur gespeichert — bitte neu berechnen.");
+                }
+            }
+        }
+
         private void btnParameter_Click(object sender, EventArgs e)
         {
             using (var dlg = new Form_WirtschaftlichkeitParameter(_idStamm))
@@ -288,6 +325,35 @@ namespace WindowsFormsApplication1
                 {
                     ZeigeParameterzeile();
                     Melde("Parameter gespeichert — bitte neu berechnen.");
+                }
+            }
+        }
+
+        private void btnVerlauf_Click(object sender, EventArgs e)
+        {
+            // Kapitalwert-Verlauf (Phase 11): Zeitraum frei wählbar (auch > T).
+            var variantenIds = new List<int>();
+            foreach (ListViewItem it in lvVarianten.Items)
+            {
+                var st = it.Tag as BerichtsDatenSammler.VariantenStatus;
+                if (st != null && !st.IstStamm && it.Checked) variantenIds.Add(st.IdProjekt);
+            }
+            using (var dlg = new Form_WirtschaftlichkeitVerlauf(_idStamm, _stammName, variantenIds))
+            {
+                dlg.ShowDialog(this);
+
+                // Der Verlaufsdialog kann neu simuliert haben (Stundenreihen) — dann
+                // passen die persistierten Ergebnisse nicht mehr zum Simulationsstand
+                // (Review Phase 11): Anzeige auffrischen und offen darauf hinweisen.
+                if (dlg.DatenNeuGesammelt)
+                {
+                    AktualisiereListe(true);
+                    _ergebnisse = _ctrl.LadeErgebnisse(GewaehlteIds(true));
+                    AktualisiereBilanzen();
+                    ZeigeErgebnisse();
+                    if (_ergebnisse.Any(x => x.Fehlgrund == null && !_ctrl.ErgebnisAktuell(x)))
+                        Melde("⚠ Für den Verlauf wurde neu simuliert — gespeicherte Ergebnisse " +
+                              "passen nicht mehr zum Simulationsstand, bitte „Berechnen“.");
                 }
             }
         }
@@ -345,6 +411,11 @@ namespace WindowsFormsApplication1
             {
                 CancellationToken ct = _cts.Token;
                 WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+                TarifParameter tarif = _ctrl.LadeTarif(_idStamm);
+
+                // W3: Tarifmatrix und KWKG-Split brauchen Stundenreihen — dann wird
+                // je Projekt frisch in-memory simuliert (wie beim Ganglinien-Bericht).
+                bool mitZeitreihen = tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
 
                 // Prüfkette (Konzept Kap. 6, Punkt 2): fehlende/veraltete Simulations-
                 // ergebnisse rechnet der Sammler automatisch headless nach.
@@ -352,12 +423,13 @@ namespace WindowsFormsApplication1
                 {
                     BerichtsDaten daten = new BerichtsDatenSammler().Sammle(
                         _idStamm, _stammName, variantenIds,
-                        false, false, melder, ct);
+                        false, mitZeitreihen, melder, ct);
                     return _ctrl.Berechne(daten, p);
                 }, ct);
 
                 AktualisiereListe(true);      // Simulationsstände auffrischen, Auswahl erhalten
                 ZeigeParameterzeile();
+                AktualisiereBilanzen();
                 ZeigeErgebnisse();            // frisch berechnete Ergebnisse anzeigen
                 Melde("Berechnet am " + DateTime.Now.ToString("dd.MM.yyyy HH:mm") +
                       " — Ergebnisse gespeichert (Basis für den Berichts-Baustein Wirtschaftlichkeit).");
@@ -406,19 +478,55 @@ namespace WindowsFormsApplication1
             Zeile("Investition I₀ [€]", zeilen, x => W(x.Investition, "N0", kultur));
             Zeile("Betriebskosten [€/a]", zeilen, x => W(x.BetriebskostenJahr, "N0", kultur));
             Zeile("Energiekosten [€/a]", zeilen, x => W(x.EnergiekostenJahr, "N0", kultur));
+            if (zeilen.Any(x => x.StromkostenTarif.HasValue))   // W3: Tarifmatrix aktiv
+                Zeile("Stromkosten Tarif [€/a]", zeilen, x => W(x.StromkostenTarif, "N0", kultur));
+            if (zeilen.Any(x => x.CO2AbgabeJahr > 0))     // nur wenn BEHG aktiv (W2)
+                Zeile("CO₂-Abgabe BEHG [€/a]", zeilen, x => W(x.CO2AbgabeJahr, "N0", kultur));
             Zeile("Einspeiseerlös [€/a]", zeilen, x => W(x.EinspeiseerloesJahr, "N0", kultur));
+            if (zeilen.Any(x => x.KwkgErloesJahr1 > 0))   // nur wenn KWKG aktiv (W2)
+                Zeile("KWKG-Erlös Jahr 1 [€/a]", zeilen, x => W(x.KwkgErloesJahr1, "N0", kultur));
             Zeile("Restwert (Barwert) [€]", zeilen, x => W(x.RestwertBarwert, "N0", kultur));
             Zeile("Nettobarwert über T [€]", zeilen, x => W(x.Kapitalwert, "N0", kultur));
             Zeile("Kapitalwert vs. Stamm [€]", zeilen, x => x.IstStamm ? "(Referenz)" : W(x.KapitalwertDiff, "N0", kultur));
             Zeile("Annuität des KW [€/a]", zeilen, x => x.IstStamm ? "—" : W(x.AnnuitaetKW, "N0", kultur));
             Zeile("Amortisation [a]", zeilen, x => x.IstStamm ? "—" : W(x.AmortisationJahre, "N1", kultur));
+            if (zeilen.Any(x => x.IRR.HasValue))
+                Zeile("Interner Zinsfuß [%]", zeilen, x => x.IstStamm ? "—" : W(x.IRR, "N1", kultur));
             Zeile("Wärmegestehungskosten [€/kWh]", zeilen, x => W(x.Gestehungskosten, "N3", kultur));
 
-            // Hinweiszeile bei unvollständigen Rechnungen.
+            // W3: CO₂-Vermeidung gegenüber getrennter Erzeugung (aus dem Cache;
+            // nur für Projekte, deren Wirtschaftlichkeits-Ergebnis zum aktuellen
+            // Simulationslauf passt — sonst „—", Review Phase 8).
+            if (_bilanzen.Values.Any(x => x != null && x.CO2VermeidungT.HasValue))
+                Zeile("CO₂-Vermeidung vs. getrennt [t/a]", zeilen, x =>
+                {
+                    EmissionsBilanz b = _bilanzen.ContainsKey(x.IdProjekt) ? _bilanzen[x.IdProjekt] : null;
+                    return b == null ? "—" : W(b.CO2VermeidungT, "N1", kultur);
+                });
+
+            // Hinweiszeilen (nicht-fatal W3 / unvollständige Rechnungen).
+            if (zeilen.Any(x => x.Hinweis != null))
+                Zeile("Hinweis", zeilen, x => x.Hinweis != null ? "⚠ " + x.Hinweis : "");
             if (zeilen.Any(x => x.Fehlgrund != null))
                 Zeile("Hinweis", zeilen, x => x.Fehlgrund != null ? "⚠ " + x.Fehlgrund : "");
 
             grid.ClearSelection();
+        }
+
+        /// <summary>Emissionsbilanz-Cache neu füllen (nur aktuelle Ergebnisse, W3).</summary>
+        private void AktualisiereBilanzen()
+        {
+            _bilanzen.Clear();
+            _parameterCache = _ctrl.LadeParameter(_idStamm);
+            if (_parameterCache.IdKraftwerkspark <= 0) return;
+            foreach (WirtschaftlichkeitErgebnis erg in _ergebnisse
+                     .Where(x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET))
+            {
+                if (_bilanzen.ContainsKey(erg.IdProjekt)) continue;
+                _bilanzen[erg.IdProjekt] = _ctrl.ErgebnisAktuell(erg)
+                    ? EmissionsBilanzRechner.Berechne(erg.IdProjekt, _parameterCache)
+                    : null;
+            }
         }
 
         private void Zeile(string label, List<WirtschaftlichkeitErgebnis> zeilen,
@@ -439,7 +547,9 @@ namespace WindowsFormsApplication1
             if (!busy) progress.Value = 0;
             lvVarianten.Enabled = !busy;
             cbSzenario.Enabled = !busy;
+            btnTarif.Enabled = !busy;
             btnParameter.Enabled = !busy;
+            btnVerlauf.Enabled = !busy;
             btnBerechnen.Enabled = !busy;
             btnSchliessen.Text = busy ? "Abbrechen" : "Schließen";
             this.UseWaitCursor = busy;

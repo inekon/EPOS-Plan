@@ -25,6 +25,10 @@ namespace WindowsFormsApplication1
     ///  - Netzbezug: Faktor des projektzugeordneten Strom-Trägers über dieselbe
     ///    Kette (Projektwert → Tab_Brennstoff_Stamm → energy_carrier); erst wenn
     ///    dort nichts gepflegt ist, greift STROMMIX_CO2_G_JE_KWH als Vorgabewert.
+    ///  - CO2Brennstoff (BEHG-Basis, Phase 7/W2): nur ABGABEPFLICHTIGE Träger —
+    ///    Brennstoff-Kategorien Gas/Öl/Koks/Kohle/Sonstige (Tab_BrennstoffKategorien),
+    ///    ausgenommen „Biogas“. Näherung: Bio-Heizöl-Blends zählen voll als fossil,
+    ///    unbekannte Träger gelten als pflichtig (konservativ); Quoten erst mit W3.
     /// </summary>
     public static class KostenEmissionRechner
     {
@@ -38,7 +42,7 @@ namespace WindowsFormsApplication1
             catch
             {
                 v.Energiekosten = null; v.StromkostenNetz = null;
-                v.CO2Gesamt = null; v.CO2Spezifisch = null;
+                v.CO2Gesamt = null; v.CO2Spezifisch = null; v.CO2Brennstoff = null;
             }
         }
 
@@ -64,7 +68,7 @@ namespace WindowsFormsApplication1
                 foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module) add(mo.CarrierId, mo.Verbrauch);
 
             // ---------------- Brennstoffe: Kosten + CO₂ ----------------
-            double brennstoffKosten = 0, brennstoffCO2t = 0;
+            double brennstoffKosten = 0, brennstoffCO2t = 0, behgCO2t = 0;
             bool kostenVollstaendig = verbrauchOhneTraeger <= 0;
             bool co2Vollstaendig = verbrauchOhneTraeger <= 0;
 
@@ -88,9 +92,13 @@ namespace WindowsFormsApplication1
                 }
                 else kostenVollstaendig = false;
 
-                // CO₂ (Annahme g/kWh, s. Klassenkommentar).
+                // CO₂ (g/kWh, s. Klassenkommentar).
                 if (info.CO2.HasValue && info.CO2.Value > 0)
-                    brennstoffCO2t += kv.Value * info.CO2.Value / 1000.0;
+                {
+                    double t = kv.Value * info.CO2.Value / 1000.0;
+                    brennstoffCO2t += t;
+                    if (info.BehgPflichtig) behgCO2t += t;   // BEHG-Basis (Phase 7/W2)
+                }
                 else
                     co2Vollstaendig = false;
             }
@@ -123,11 +131,20 @@ namespace WindowsFormsApplication1
 
             bool hatBrennstoff = verbrauchJeTraeger.Count > 0 || verbrauchOhneTraeger > 0;
             if (!hatBrennstoff)
+            {
                 v.CO2Gesamt = netzCO2t;                     // reine Strom-Systeme
+                v.CO2Brennstoff = 0.0;
+            }
             else if (co2Vollstaendig)
+            {
                 v.CO2Gesamt = brennstoffCO2t + netzCO2t;
+                v.CO2Brennstoff = behgCO2t;                 // nur abgabepflichtige Träger
+            }
             else
+            {
                 v.CO2Gesamt = null;
+                v.CO2Brennstoff = null;
+            }
 
             double waermeMWh = m.Energiebedarf != null ? m.Energiebedarf.Waermebedarf_Gesamt : 0;
             v.CO2Spezifisch = (v.CO2Gesamt.HasValue && waermeMWh > 0)
@@ -141,8 +158,9 @@ namespace WindowsFormsApplication1
         {
             public double? PreisArbeit;   // € je Abrechnungseinheit bzw. €/kWh (Direktabrechnung)
             public double? Grundpreis;    // €/a
-            public double? CO2;           // g/kWh (Annahme)
+            public double? CO2;           // g/kWh (verifiziert, s. Klassenkommentar)
             public double? EffHi;         // kWh je Abrechnungseinheit (null/0 = Direktabrechnung)
+            public bool BehgPflichtig = true;   // fossiler Brennstoff (Phase 7/W2)
         }
 
         private static TraegerInfo LadeTraeger(int idProjekt, int carrierId)
@@ -189,18 +207,33 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
-            // Emissionsfaktor aus dem Brennstoff-Katalog der Kenndaten-DB
-            // (Tab_Brennstoff_Stamm.CO2, über energy_carrier.id_brennstoff).
+            // Emissionsfaktor + BEHG-Einstufung aus dem Brennstoff-Katalog
+            // (Tab_Brennstoff_Stamm über energy_carrier.id_brennstoff).
             double? bsCO2 = null;
             try
             {
                 DataTable b = DataRepository.GetDataTable(
-                    "SELECT bs.CO2 FROM energy_carrier AS ec " +
+                    "SELECT bs.CO2, bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
                     "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
                     "WHERE ec.id = ?",
                     new OleDbParameter("@c", carrierId));
                 if (b != null && b.Rows.Count > 0)
+                {
                     bsCO2 = W(b.Rows[0], "CO2");
+
+                    // BEHG-pflichtig: Kategorien 1 Gas / 2 Öl / 3 Koks / 4 Kohle /
+                    // 11 Sonstige (Tab_BrennstoffKategorien); Biogas ausgenommen.
+                    // Holz/Pellets/Rapsöl/Tier. Fette/Strom/Fernwärme/Wasserstoff frei.
+                    double? kat = W(b.Rows[0], "ID_Kategorie");
+                    string bez = b.Rows[0]["Bezeichner"] != DBNull.Value
+                                 ? b.Rows[0]["Bezeichner"].ToString() : "";
+                    if (kat.HasValue)
+                    {
+                        int k2 = (int)kat.Value;
+                        info.BehgPflichtig = (k2 == 1 || k2 == 2 || k2 == 3 || k2 == 4 || k2 == 11)
+                                             && !bez.Trim().Equals("Biogas", StringComparison.OrdinalIgnoreCase);
+                    }
+                }
             }
             catch { }
 

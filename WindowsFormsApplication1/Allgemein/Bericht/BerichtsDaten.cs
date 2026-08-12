@@ -65,6 +65,7 @@ namespace WindowsFormsApplication1
         public double? StromkostenNetz;    // €/a (Netzbezug)
         public double? CO2Gesamt;          // t/a
         public double? CO2Spezifisch;      // g/kWh Wärme
+        public double? CO2Brennstoff;      // t/a nur BEHG-pflichtige Brennstoffe (Phase 7/W2)
 
         /// <summary>Zeitreihen aus der In-Memory-Simulation (Phase 3; bis dahin null).</summary>
         public ZeitreihenSatz Zeitreihen;
