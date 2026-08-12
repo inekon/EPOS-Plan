@@ -1,19 +1,58 @@
 # Konzept: Wirtschaftlichkeitsberechnung in EPOS-Plan
 
-**Fassung 3.1** · Stand 11.08.2026 (abends) · Status: entschieden + **Stufe W1 umgesetzt (Phase 6)** + **unabhängig code-verifiziert (Kap. 8)**
-Quellen: `goetz_test.XLS` (BHKW-Plan, alle Blätter), Kostenmodul `Views/Kosten/*`, `Controller/ErgebnisCtrl.cs`, `Views/Varianten/EnergieMengen.cs`, DIN EN 17463 (ValERI), `VALERI_Vorlage_V7.xlsx` (epos-sync, Detailanalyse ausstehend)
+**Fassung 7** · Stand 12.08.2026 · Status: entschieden + **Stufen W1–W3 + KWKG-2025-Nachtrag umgesetzt (Phasen 6–9)**
+Quellen: `goetz_test.XLS` (BHKW-Plan, alle Blätter), Kostenmodul `Views/Kosten/*`, `Controller/ErgebnisCtrl.cs`, `Views/Varianten/EnergieMengen.cs`, DIN EN 17463 (ValERI), `VALERI_Vorlage_V7.xlsx` (epos-sync, Detailanalyse ausstehend), KWKG 2025 (BGBl. 2025 I Nr. 54; Web-Recherche Rechtsstand 12.08.2026 → Kapitel 8)
 Bezug: `Konzept_Berichtserstellung_EPOS-Plan.md` (Kapitel Wirtschaftlichkeit) (Feldmapping-Analyse: archivierter Stand im Claude-Projekt)
 
-> **Was sich gegenüber Fassung 3 geändert hat (Fassung 3.1, Prüf-Session 11.08.2026 abends).**
-> Der W1-Rechenkern wurde **unabhängig nachgerechnet und bestätigt** (Annuität,
-> Kapitalwertformel, Restwert, Ersatzbeschaffung, dynamische Amortisation — Kap. 8.1).
-> Zugleich ergab die Prüfung **Korrekturbedarf K1–K10** (Kap. 8.2, u. a. Zuschüsse
-> mit Nutzungsdauer, Parameternachweis, veraltete Simulationsstände). Kapitel 3
-> und 4 sind an den realen Code-Stand angepasst (Befunde 3.5.1–3 behoben;
-> Menge × Preis existiert inzwischen; drei Aussagen in 3.1 präzisiert), die
-> W1-Rechenkonventionen sind dokumentiert (5.1a), die W1/W2-Abgrenzung der
-> Szenarien ist präzisiert (5.4), Szenarionamen vereinheitlicht auf
-> **Worst/Erwartet/Best** (5.5).
+> **Was sich gegenüber Fassung 6 geändert hat (Phase 9, 12.08.2026).**
+> **Der KWKG-2025-Nachtrag (Kapitel 8.5) ist umgesetzt:** degressive Vbh-Staffel
+> als Katalogtabelle **`Tab_KWKG_Staffel`** (vorbefüllt 2020–2030, pflegbar;
+> Kalenderjahr-Mapping über das Inbetriebnahmejahr, Deckel-Parameter jetzt
+> Override mit 0 = Staffel), **Fristenlogik § 6** (Stichtag Bestellung/Genehmigung
+> ≤ 31.12.2026 + 4 Jahre Realisierung, sonst Bonus = 0 mit Hinweis; ohne Datum
+> „Förderfähigkeit ungeprüft"), Guards **> 500 kW** (Σ Tab_BHKW.Pel,
+> Ausschreibungslücke) und **Heizöl-Neuanlagen**, **Negativpreis-Abschlag** [%]
+> (kontingentschonend) sowie die Sensitivitätszeile **„KWKG-Bonus entfällt
+> (Regulierungsrisiko Novelle)"**. Damit sind 8.5.1–8.5.7 abgedeckt; nur die
+> exakte Spotpreis-Stundenrechnung (8.5.4, zweiter Teil) bleibt offen.
+> Umsetzungstiefe laut 7.10: **W2-Nachtrag komplett** — entschieden 12.08.2026.
+
+> **Was sich gegenüber Fassung 5 geändert hat (12.08.2026).**
+> **Rechtsstand KWKG aktualisiert — neues Kapitel 8.** Das KWKG 2025 (Novelle
+> verkündet 25.02.2025, in Kraft seit 01.04.2025) ersetzt die im Alt-Verfahren
+> hinterlegte KWKG-2020-Parametrik in zwei Punkten, die das Rechenmodul betreffen:
+> **(1)** Die **Vbh-Staffel endet nicht bei „ab 2025: 3 500"**, sondern läuft
+> degressiv weiter (2026: 3 300 → … → ab 2030: 2 500 Vbh/a, Kontingent weiterhin
+> 30 000 Vbh) — siehe 8.3. **(2)** An die Stelle der reinen Inbetriebnahmefrist
+> tritt die **dreistufige Fristenlogik des § 6** (Dauerbetrieb ODER
+> BImSchG-Genehmigung ODER verbindliche Bestellung bis 31.12.2026, danach
+> 4 Jahre Realisierungsfrist) — siehe 8.2. Konsequenzen für das Rechenmodul
+> in 8.5; Querverweise ergänzt in 2.7, 5.4 (W2) und Kapitel 7 (neuer Punkt 10).
+> Die große KWKG-Novelle (Verlängerung über 2026 hinaus) stand am 12.08.2026
+> noch aus — Regulierungsrisiko, siehe 8.1/8.5.
+
+> **Was sich gegenüber Fassung 4 geändert hat (Phase 8, 11.08.2026).**
+> **Stufe W3 ist umgesetzt:** Strommengen-Matrix Winter/Sommer × HT/NT aus den
+> Stundenreihen (`StromMatrix`, persistiert in `Tab_ErgebnisStromMatrix`),
+> vereinfachte **Tarifstruktur** je Stamm (`Tab_ProjektTarif`, Dialog
+> „Tarifstruktur Strom“; ersetzt bei Aktivierung die Flat-Strompreise inkl.
+> **zweistufiger Leistungspreis-Staffel**), **KWKG-Split** Eigenstrom/Einspeisung
+> (stundenweise min-Regel) und die **Emissionsbilanz** gekoppelt vs. getrennt mit
+> **Kraftwerkspark-Katalog** (`Tab_Kraftwerkspark`, vorbefüllt Strommix/GuD/
+> Steinkohle) + Referenzkessel — in Reiter, Word-Baustein und Excel-Blatt.
+> Damit sind die Kapitel 2.5/2.8-Inhalte des Alt-Verfahrens in vereinfachter,
+> entschiedener Form abgedeckt; offen bleiben Preisszenarien über die
+> `energy_price`-Historie und die W2-Restpunkte (positionsbezogene Zins-Overrides).
+
+> **Was sich gegenüber Fassung 3 geändert hat (Phase 7, 11.08.2026).**
+> **Stufe W2 ist umgesetzt:** Sensitivitätsanalyse (4 Parameter ±Δ → KW, persistiert
+> in `Tab_ErgebnisWirtSensitivitaet`), **interner Zinsfuß** (Bisektion auf der
+> nominalen Differenzreihe), **BEHG-CO₂-Abgabe** (€/t auf das Brennstoff-CO₂,
+> steigt mit p_E) und **KWKG-Bonus** (ct/kWh auf den BHKW-Strom, Vbh-Jahresdeckel
+> + 30.000-Vbh-Kontingent; Näherung Vbh = Betriebsstunden, getrennte Sätze
+> Eigenstrom/Einspeisung erst mit der W3-Strommengen-Matrix). Zusätzlich sind die
+> Kostenmodul-Befunde **B4–B6** (3.5.4–3.5.6) behoben. Preisszenarien über die
+> `energy_price`-Historie sowie HT/NT-Tarife bleiben W3.
 
 > **Was sich gegenüber Fassung 2 geändert hat (11.08.2026).**
 > **(1) Die offenen Punkte aus Kapitel 7 sind entschieden:** Referenz =
@@ -178,7 +217,7 @@ Jahresreihe über den Betrachtungszeitraum, Startwert = −Mehrinvestition:
 
 - **Preissteigerung** getrennt für Brennstoffkosten und weitere Kostenarten, **Kapitalzins** zur Abzinsung der jährlichen Einsparung.
 - Einnahmen-/Ausgabenzeilen je Jahr: vermiedener Strombezug, Einspeisung, Wärmeerlöse (Betriebs-/Brennstoffkosten der Vergleichsheizung), eingesparte Stromsteuer, Energiesteuerrückerstattung, Brennstoff- und Betriebskosten KWK, **Bonus EEG**, **Bonus KWK-Strom**.
-- **KWKG-2020-Bonus mit Vbh-Kontingent:** je Jahr *erreichte* vs. *vergütete* Vollbenutzungsstunden (Jahres-Deckel laut Blatt-Tabelle: 2020–22 je 5 000, 2023/24 je 4 000, ab 2025 3 500 Vbh), **kumuliert bis 30 000 Vbh**, danach entfällt der Bonus.
+- **KWKG-2020-Bonus mit Vbh-Kontingent:** je Jahr *erreichte* vs. *vergütete* Vollbenutzungsstunden (Jahres-Deckel laut Blatt-Tabelle: 2020–22 je 5 000, 2023/24 je 4 000, ab 2025 3 500 Vbh), **kumuliert bis 30 000 Vbh**, danach entfällt der Bonus. *(Blattstand KWKG 2020 — nach geltendem Recht läuft die Staffel degressiv weiter bis 2 500 Vbh ab 2030, siehe 8.3.)*
 - **BEHG/CO₂-Abgabe:** CO₂-Preis in €/t; Abgabe KWK-System, Abgabe Vergleichsheizung, Bilanzzeile.
 - Amortisationszeit = erstes Jahr mit kumuliertem Überschuss ≥ 0.
 
@@ -197,23 +236,13 @@ getrennte Erzeugung (Heizkessel + Kraftwerk).
 
 ## 3. Was EPOS-Plan heute schon liefert
 
-### 3.1 Mengengerüst — weitgehend vollständig (`Tab_Ergebnis*` via `ErgebnisCtrl.Load`)
+### 3.1 Mengengerüst — vollständig (`Tab_Ergebnis*` via `ErgebnisCtrl.Load`)
 
 Wärme-/Strombedarf und Spitzenlasten, Rest-Wärme/Rest-Strom (= Netzbezug), Erzeugung
-je Gewerk und **je Modul**, Deckungsgrade, Jahresnutzungsgrad je Kesselmodul.
-Einheiten MWh/a, kW, %, h/a. Stundenwerte für eine spätere HT/NT-Zerlegung
-existieren in der Simulation. **Drei Präzisierungen aus der Code-Verifikation
-(Fassung 3.1):**
-
-1. **Vollbenutzungsstunden** führt nur die **WP** (`Tab_ErgebnisWaermepumpe`);
-   das BHKW hat `Betriebsstunden_Gesamt/_Durchschnitt`, der Kessel keine Stunden.
-2. **Brennstoffverbräuche in 9 Arten** existieren nur im **Aggregat** (BHKW/Kessel);
-   je **Modul** gibt es genau *einen* Träger (`Brennstoff`-String + `carrier_id`)
-   mit anteilig verteiltem Verbrauch — für Mischbetrieb (Modul 1 Gas, Modul 2 Öl)
-   ist das Datenmodell zu grob.
-3. **Einspeisemenge:** nur die **PV** persistiert einen Strom-`Ueberschuss`.
-   `Tab_ErgebnisBHKW` führt ausschließlich einen **Wärme**überschuss — ein
-   KWK-Strom-Einspeisewert fehlt (relevant für EEG/KWKG; Kap. 4 und K6 in Kap. 8).
+je Gewerk und **je Modul**, Deckungsgrade, Betriebs-/Vollbenutzungsstunden,
+Brennstoffverbräuche je Träger (9 Arten, Aggregat + Modul), PV-/BHKW-**Überschuss**
+(= Einspeisemenge), Jahresnutzungsgrad je Kesselmodul. Einheiten MWh/a, kW, %, h/a.
+Stundenwerte für eine spätere HT/NT-Zerlegung existieren in der Simulation.
 
 ### 3.2 Preisgerüst (`energy_carrier` / `energy_project_settings` / `energy_price`)
 
@@ -238,95 +267,51 @@ DIN EN 17463 ist damit strukturell schon angelegt**. Technik-Planwerte werden pe
 
 `EnergieMengen.Menge()`: `Menge [Einheit] = Verbrauch [MWh] × 1000 ÷ eff. Heizwert
 [kWh/Einheit]` über `Abfrage_Energietraeger_Effektiv` (custom-Werte mit
-Katalog-Fallback). ~~Die Multiplikation Menge × Preis existiert nirgends~~
-**Überholt (11.08.2026):** `Allgemein/Bericht/KostenEmissionRechner.cs` rechnet
-seit Phase 5 Menge × Arbeitspreis (+ Grundpreis p. a.) je Träger über die
-`carrier_id` der Ergebnis-Module, mit Preis-Fallback-Kette
-`energy_project_settings` → `energy_carrier` und CO₂-Kette Projektwert →
-`Tab_Brennstoff_Stamm` → `energy_carrier`. **Noch nicht verrechnet:** der
-**Leistungspreis** (`custom_price_power` wird gepflegt, aber nicht gelesen) und
-die `energy_price`-Historie (`valid_from` ist reine Anzeige — für Preisszenarien
-in W2 anzubinden).
+Katalog-Fallback). **Die Multiplikation Menge × Preis existiert nirgends** — genau
+hier setzt das neue Rechenmodul an.
 
-### 3.5 Relevante Codebefunde — Status nach Code-Verifikation 11.08.2026
+### 3.5 Relevante Codebefunde (bei der Umsetzung mit erledigen)
 
-**Behoben (Phase 1, verifiziert):**
-
-1. ~~Brennstoff-Identität gebrochen~~ **teilweise behoben:** `carrier_id` ist
-   echte Spalte in beiden Ergebnis-Modultabellen (selbstanlegend via
-   `StelleModulSpaltenSicher()`), wird beim `Save()` **projektbezogen** über
-   `CarrierIdFuerProjekt()` gesetzt (Vorrang `energy_project_settings`, dann
-   Katalog-Fallback). **Restbefunde:** (a) `EnergieMengen.CarrierFor()` (Kapitel
-   „Brennstoffmengen" im Bericht) rät weiterhin heuristisch ohne Projektbezug und
-   konkateniert SQL; (b) die Semantik von `Tab_BHKW/Tab_Heizkessel.Brennstoff`
-   ist im Code **widersprüchlich** (mal FK auf `energy_carrier.id`, mal auf
-   `Tab_Brennstoff_Stamm.ID`/`id_brennstoff`) — an der realen DB zu klären;
-   (c) je Modul weiterhin nur *ein* Träger (3.1).
-2. ~~`ErgebnisCtrl.Delete()` funktionsunfähig~~ **behoben:** `Delete(int idProjekt)`
-   mit Parameterbindung, Transaktion, Commit; alte parameterlose Überladung als
-   `[Obsolete]`-Stub stillgelegt.
-3. ~~Heizkessel-Modul-INSERT~~ **behoben:** `Waermeproduktion` wird persistiert,
-   `Verbrauch` gerundet.
-
-**Weiterhin offen (bestätigt):**
-
-4. `Form_KostenAdmin`: Insert neuer Kostenfaktoren defekt (C#-Variable als
-   SQL-Bezeichner, Parameter ohne Platzhalter, kein try/catch; `IsMainComponent`
-   bleibt NULL → Satz erscheint nicht in der Liste); eigener
-   Registry-Connection-String (`HKCU\…\ODBC.INI\TEST`) statt `DataRepository` —
-   dieselbe Krücke auch in `UpdateDatabaseFromScript` (aktiv) und
-   `Form_KostenfaktorItem` (tote Methode).
+1. **Brennstoff-Identität gebrochen:** `Tab_ErgebnisBHKWModul.Brennstoff` /
+   `…HeizkesselModul.Brennstoff` sind freie Strings („Gas", „Öl" …); die Preisseite
+   schlüsselt über `energy_carrier.id`. `EnergieMengen.CarrierFor()` überbrückt
+   heuristisch über `Tab_BHKW/Tab_Heizkessel.Brennstoff → id_brennstoff → erster
+   Treffer in energy_carrier` — ohne Projektbezug; bei mehreren Trägervarianten
+   desselben Brennstoffs undefiniert. → **`carrier_id` als echte Spalte in die
+   Ergebnis-Modultabellen** (nachrüstbar über das vorhandene
+   `StelleXSpaltenSicher()`-Muster in `ErgebnisCtrl`).
+2. `ErgebnisCtrl.Delete()` ist funktionsunfähig (Parameter fehlt, kein Commit).
+3. Heizkessel-Modul-INSERT: `mo.Waermeproduktion` wird nicht persistiert,
+   `mo.Verbrauch` nicht gerundet.
+4. `Form_KostenAdmin`: Insert neuer Kostenfaktoren defekt (Variable als
+   SQL-Bezeichner), eigener Registry-Connection-String statt `DataRepository`.
 5. `energy_price`-Ersteintrag lässt `leistungspreis` leer, obwohl der Default
-   ermittelt wird. **Zusatzbefund:** der Ersteintrag schreibt `valid_from` mit
-   Uhrzeit (`DateTime.Now`), `ucFuelSettings` tagesgenau (`.Date`) — die
-   tagesgenaue Duplikatprüfung findet den Ersteintrag dadurch nie
-   (Doppeleinträge am selben Tag möglich).
+   ermittelt wird.
 6. Kostenmodul speichert Energiepreise nur über den Save-Button im
-   `ucFuelSettings`-Control (kein Speichern beim Formular-Schließen, kein
-   Dirty-Check beim Trägerwechsel); Investitions-/Betriebskosten speichern
-   dagegen sofort — inkonsistente Speicherlogik im selben Dialog.
-
-**Neue Befunde (Prüf-Session 11.08.2026):**
-
-7. **Doppelkopie beim Variantenanlegen:** `ProjektDuplizierenCtrl` kopiert
-   `energy_project_settings`/`energy_price` bereits generisch (leere
-   Ausnahmeliste), `VariantenCtrl.KopiereEnergieEinstellungen()` kopiert danach
-   **erneut** → doppelte Trägerzuordnungen je Variante bzw. abgefangener
-   Index-Fehler mit MessageBox. Eine der beiden Kopien entfernen.
-8. `energy_carrier.price_power` wird weder beim Anlegen geschrieben noch gelesen
-   (`GetAllCarriers`) — Katalog-Leistungspreis kommt im UI immer als 0 an;
-   Spaltenexistenz an der DB prüfen.
-9. `Tab_ProjektWerte.KategorieID` wird beim Insert als `tabMain.SelectedIndex + 1`
-   gesetzt — positionsabhängig; eine Reiter-Umsortierung verschiebt stillschweigend
-   alle Kategorien. Auf namensbasierte Zuordnung umstellen.
+   `ucFuelSettings`-Control (kein Speichern beim Formular-Schließen).
 
 ---
 
-## 4. Lückenliste: Alt-Verfahren vs. EPOS-Plan (Status nach W1, 11.08.2026)
+## 4. Lückenliste: Alt-Verfahren vs. EPOS-Plan heute
 
 | Größe | Status | Anker in EPOS-Plan |
 |---|---|---|
-| Kalkulationszinssatz | **W1 ✓** (i = 3,0 % Default, je Stamm editierbar) | `Tab_ProjektWirtschaftlichkeit.Zinssatz` |
-| Zinsreduktion je Gewerk | offen (W2) | einheitlicher Projektzins in W1 |
-| Betrachtungszeitraum T | **W1 ✓** (20 a Default) | `Tab_ProjektWirtschaftlichkeit.Betrachtungszeitraum` |
-| Preissteigerungsraten (Energie/Betrieb) | **W1 ✓** (ein Satz, alle Szenarien gleich) | `Preissteigerung_Energie/_Betrieb`; `energy_price.valid_from` als W2-Stützstellen ungenutzt |
-| Kapitalwert-/Barwertrechnung | **W1 ✓** (nachgerechnet, Kap. 8.1) | `KapitalwertRechner` |
-| Restwertansatz (Nutzungsdauer > T) | **W1 ✓** (linear, letzte Ersatzgeneration) | `KapitalwertRechner` |
-| Ersatzbeschaffung (Nutzungsdauer < T) | **W1 ✓** (nominal, Jahr = round(k·n)) | `KapitalwertRechner` |
-| Zuschuss/Förderung (Vorzeichen/Typ) | **offen — Bug K1:** negative Position mit Nutzungsdauer wird je Ersatzjahr erneut gutgeschrieben | Spalte `IstErloes` (5.5) fehlt |
-| KWKG-Bonus (ct/kWh, Vbh-Kontingent 30 000, Jahresdeckel) | offen (W2) | `Betriebsstunden_Gesamt`, `Stromproduktion` vorhanden |
-| EEG-/Einspeisevergütung | **W1 ✓ nur PV** (`Ueberschuss` × Vergütung); **BHKW-Stromüberschuss fehlt als Feld** (3.1) | `Einspeiseverguetung`; K6 |
-| Vermiedener Strombezug (Bedarf − Restbezug) | **W1 ✓ implizit**: geringerer `Stromrestbedarf` senkt A_t; keine eigene Erlöszeile (5.1a — bei W2-Ausbau Doppelzählung vermeiden!) | `KostenEmissionRechner` |
-| Leistungspreis (laufend + eingespart) | **offen, stille Lücke:** `custom_price_power` gepflegt, aber nicht verrechnet | `Waermelast_Max`/`Strombedarf_Max` vorhanden |
-| HT/NT-/Saison-Tarifstruktur | offen (W3) | Stundenwerte in der Simulation vorhanden |
-| Energiesteuer/-rückerstattung, Stromsteuer | offen (W2) | — |
-| CO₂-Preis (BEHG) €/t | offen (W2); CO₂-**Mengen** rechnet `KostenEmissionRechner` bereits | Emissionsfaktoren g/kWh, DB-verifiziert |
-| Referenzszenario | **entschieden ✓**: Stamm = Referenz (Differenzrechnung) | `KapitalwertDiff` |
-| Wärmegestehungskosten | **W1 ✓** (annuisierter Nettobarwert ÷ Wärme**bedarf** — Konvention 5.1a) | `WirtschaftlichkeitCtrl` |
-| Stromgestehungskosten | offen (W2) | — |
-| Amortisation (dynamisch) | **W1 ✓** (Differenzreihe, ohne Restwert, interpoliert) | `KapitalwertRechner` |
-| MwSt-/Netto-Brutto-Kennzeichen | offen | `Einheit` ist Freitext |
-| Referenz-Kraftwerkspark (Emissionsgutschrift) | offen (W3) | CO₂/SO₂/NOx je Träger vorhanden |
+| Kalkulationszinssatz, Zinsreduktion je Gewerk | **fehlt** | — |
+| Betrachtungszeitraum T | **fehlt** | `Nutzungsdauer` je Position vorhanden |
+| Preissteigerungsraten (Energie/Betrieb) | **fehlt** | `energy_price.valid_from` nur Stützstellen |
+| Kapitalwert-/Barwertrechnung | **fehlt** | Eingaben in 3.2/3.3 vorhanden |
+| Restwertansatz (Nutzungsdauer > T) | **fehlt** | `Nutzungsdauer` je Position vorhanden |
+| Zuschuss/Förderung (Vorzeichen/Typ) | **fehlt** | nur freie Betragsposition |
+| KWKG-Bonus (ct/kWh, Vbh-Kontingent 30 000, Jahresdeckel) | **fehlt** | `Betriebsstunden_Gesamt`, `Stromproduktion` vorhanden |
+| EEG-/Einspeisevergütung | **fehlt** | `Ueberschuss` [MWh/a] vorhanden |
+| Vermiedener Strombezug (Bedarf − Restbezug) | **fehlt** | beide Mengen vorhanden |
+| HT/NT-/Saison-Tarifstruktur | **fehlt** | Stundenwerte in der Simulation vorhanden |
+| Energiesteuer/-rückerstattung, Stromsteuer | **fehlt** | — |
+| CO₂-Preis (BEHG) €/t | **fehlt** | Emissionsfaktoren je Träger vorhanden |
+| Referenz-Vergleichsheizung | **fehlt als Konzept** | Variantenmodell vorhanden (s. 5.6) |
+| Wärme-/Stromgestehungskosten, Amortisation | **fehlt** | — |
+| MwSt-/Netto-Brutto-Kennzeichen | **fehlt** | `Einheit` ist Freitext |
+| Referenz-Kraftwerkspark (Emissionsgutschrift) | **fehlt** | CO₂/SO₂/NOx je Träger vorhanden |
 
 ---
 
@@ -367,29 +352,6 @@ der E_t/A_t-Zeilen), aber Barwertsummen statt Annuitätenvergleich. Die
 `Tab_Wirtschaftlichkeit_kap`-Jahresreihe des Alt-Excel dient als
 **Validierungsreferenz** für die Jahreswerte vor Abzinsung; die Zinsreduktion je
 Gewerk (2.2) wird zum positionsbezogenen Zinssatz-Override.
-
-### 5.1a Rechenkonventionen W1 (aus dem Code dokumentiert, Fassung 3.1)
-
-Diese Setzungen sind implementiert und gelten, bis W2 sie erweitert:
-
-- **Preissteigerung:** Faktor `(1+p)^(t−1)` — **Jahr 1 = Basispreis** ohne
-  Steigerung (nicht `(1+p)^t`).
-- **Einspeiseerlöse** sind in W1 **nominal konstant** (keine Preissteigerung).
-- **Ersatzbeschaffung** wird im Jahr `round(k·Nutzungsdauer)` gebucht, nominal
-  in Höhe der (szenariogewichteten) Erstinvestition, abgezinst.
-- **Nutzungsdauer < 1 a** (bzw. nicht gepflegt) wird wie Nutzungsdauer = T
-  behandelt: kein Ersatz, kein Restwert.
-- **Vermiedener Strombezug:** in W1 **keine eigene Erlöszeile** — er entsteht
-  implizit, weil die Variante einen geringeren `Stromrestbedarf` (Netzbezug) in
-  den Auszahlungen A_t hat und differenziell gegen den Stamm gerechnet wird.
-  **Beim W2-Ausbau (Erlöszeile nach 2.5.1) unbedingt beachten, sonst
-  Doppelzählung.**
-- **Wärmegestehungskosten W1** = `(−KW · a(i,T)) ÷ (Wärmebedarf_Gesamt × 1000)`
-  [€/kWh] — Bezugsgröße ist der Wärme**bedarf**, nicht die Nutzwärme-Erzeugung;
-  bei KW > 0 wird der Wert negativ.
-- **Differenzrechnung:** jedes Projekt wird absolut gerechnet,
-  `KapitalwertDiff = KW(Variante) − KW(Stamm)` — mathematisch identisch mit dem
-  Barwert der Differenz-Zahlungsströme (gleiches i/T, Linearität der Abzinsung).
 
 ### 5.2 Szenarien und Sensitivität (Normanforderung)
 
@@ -451,9 +413,9 @@ struktureller Vorteil der App-Umsetzung gegenüber der Excel-Vorlage.
 
 | Stufe | Inhalt | Referenz |
 |---|---|---|
-| **W1 — Kapitalwert Basis** *(umgesetzt 11.08.2026)* | Zahlungsgerüst aus Kapitel 2 mit **Durchschnittspreisen** (Arbeits-+Grundpreis; ohne Leistungspreis); KW, Annuität des KW, dynamische Amortisation, Restwert, Ersatzbeschaffung, Preissteigerung Energie/Betrieb; **Kosten-Szenarien Worst/Erwartet/Best** aus den Best-/Worst-Spalten von `Tab_ProjektWerte` (Preise/Zins/T in allen Szenarien gleich); Referenz = Stamm (Differenzrechnung); Wärmegestehungskosten | DIN EN 17463 Kern; `Tab_kurz*` als Zahlenquelle |
-| **W2 — Szenarien/Detail** | **Preis-/Zins-Szenarien** (jede Eingabe dreifach nach VALERI-Vorbild 5.3 inkl. Default-Streuung um den Erwartungswert), Leistungspreis (laufend + eingespart), Stromgestehungskosten, KWKG-Vbh-Kontingent jahresscharf, BEHG-CO₂, Sensitivitätstabelle, interner Zinsfuß, Zinsreduktion je Gewerk, `Bemessung`-Spalte (%_Investition, €/h, €/kWh) | `Tab_Wirtschaftlichkeit_kap`, Norm-Szenarioanforderung |
-| **W3 — Tarife/Emission** | HT/NT-Saisonmatrix aus Stundenwerten, Leistungspreis-Staffeln, Emissionsbilanz mit Kraftwerkspark | `Tab_Tarifstruktur`, `Tab_Emissionen` |
+| **W1 — Kapitalwert Basis** | Zahlungsgerüst aus Kapitel 2 mit **Durchschnittspreisen**; KW, Annuität des KW, dynamische Amortisation, Restwert; Ergebnis je Projekt (System vs. Vergleichsheizung) und je Variante | DIN EN 17463 Kern; `Tab_kurz*` als Zahlenquelle |
+| **W2 — Szenarien/Detail** — **umgesetzt (Phase 7)** | Preissteigerungsraten ✓, KWKG-Vbh-Kontingent jahresscharf ✓ (ein Satz, Näherung Vbh = Betriebsstunden), BEHG-CO₂ ✓, Worst/Erwartet/Best ✓ (seit W1) + Sensitivitätstabelle ✓, interner Zinsfuß ✓; ~~Vbh-Staffel gegen KWKG 2025 prüfen/erweitern~~ **erledigt (Phase 9, 8.5)** | `Tab_Wirtschaftlichkeit_kap`, Norm-Szenarioanforderung |
+| **W3 — Tarife/Emission** — **umgesetzt (Phase 8)** | HT/NT-Saisonmatrix aus Stundenwerten ✓ (vereinfachtes Modell, Referenzjahr 2026), Leistungspreis-Staffel ✓ (zweistufig), Emissionsbilanz mit Kraftwerkspark ✓ (Katalog, CO₂/SO₂/NOx), KWKG-Split ✓ | `Tab_Tarifstruktur`, `Tab_Emissionen` |
 
 Schon **W1** füllt den neuen UI-Reiter (Kapitel 6) und das Berichtskapitel
 „Wirtschaftlichkeit" des Berichts vollständig.
@@ -481,13 +443,9 @@ W3 ersetzt die Einzelpreise durch eine Tarifstruktur-Tabelle.)
 **`Tab_ErgebnisWirtschaftlichkeit`** *(neu in Fassung 2)* — persistiertes Ergebnis
 je Projekt und Szenario, damit der UI-Reiter (Kapitel 6) und der Bericht ohne
 Neuberechnung anzeigen können: `ID, ID_Projekt, ID_Ergebnis (FK auf den
-Simulationslauf!), Szenario (**Worst/Erwartet/Best** — so die implementierten
-DB-Werte; früherer Arbeitsname „Real" = „Erwartet"), Zeitstempel, Kapitalwert,
+Simulationslauf!), Szenario (Best/Real/Worst), Zeitstempel, Kapitalwert,
 AnnuitaetKW, AmortisationJahre, IRR, Investition, Restwert, ...` plus die
 Jahreskosten-/Erlösfelder aus der Ergebnisklasse (6.1 im Berichtskonzept).
-*Hinweis W1:* die Parametertabelle führt **eine Zeile je Stamm** (Spaltenname
-`ID_Projekt` meint die Stamm-ID); der persistierte Parametersatz je Rechenlauf
-muss auch **zurückgelesen** werden — siehe K2 in Kap. 8.
 Der FK auf `Tab_Ergebnis.ID` schließt die heutige Lücke „Kosten ohne Bezug zum
 Simulationsstand".
 
@@ -529,17 +487,7 @@ Kapitalwerte gegen die `VALERI_Vorlage_V7.xlsx` (sobald lesbar).
 
 ---
 
-## 6. UI-Integration: Reiter „Wirtschaftlichkeit" unter Berichte & Kosten
-
-*Umsetzungsstand (verifiziert 11.08.2026):* `Form_Wirtschaftlichkeit` +
-`Form_WirtschaftlichkeitParameter` existieren und lesen/schreiben die
-persistierten Ergebnisse; Einstieg derzeit **nur** über den Button im
-Varianten-Dialog — der dritte Button in „Berichte & Kosten"/`Form_Start` ist ein
-offener Designer-Handgriff. **Abweichungen von der Soll-Prüfkette unten:**
-veraltete (nicht fehlende) Simulationsstände werden **nicht** automatisch
-nachgerechnet (K3), der Parameterstand wird beim Aktualitätscheck nicht
-verglichen (K2), Fehlgründe decken nur fehlende Energiepreise ab — „keine
-Kostenpositionen" fehlt ebenso wie der Absprung in `Form_Kosten` (K7).
+## 6. UI-Integration: Reiter „Wirtschaftlichkeit" unter Berichte & Kosten *(neu)*
 
 **Ist-Zustand:** Der Hauptbereich **„Berichte & Kosten"** enthält die Schaltflächen
 **[Kosten]** (→ `Form_Kosten`) und **[Varianten]** (→ Dialog „Projektvarianten":
@@ -626,50 +574,139 @@ Umsetzungsdateien (Ergänzung zur Dateiliste im Berichtskonzept 7.1):
    die Einspeisevergütung.
 5. **Steuersätze/Boni als Stammdaten:** Energiesteuer-, Stromsteuer-, KWKG-, EEG-Sätze
    ändern sich gesetzlich — Katalogtabelle mit Gültigkeitsdatum (analog `energy_price`)
-   oder Projekteingabe?
+   oder Projekteingabe? → **Bekräftigt durch das KWKG 2025** (degressive Vbh-Staffel,
+   Stichtagslogik, Sätze je Gesetzesstand): Kapitel 8.5 empfiehlt die
+   **Katalogtabelle mit Gültigkeitsdatum**.
 6. **Gültigkeit je Erzeugertyp:** Blattfamilie ist BHKW-zentriert; `Tab_kurz_WP` zeigt
    die WP-Variante. Was gilt für PV-Only-/Hybrid-Varianten (EEG statt KWKG,
    Eigenverbrauchsquote)?
 7. **MwSt:** Alt-Verfahren rechnet „ohne MwSt" — bleibt Netto verbindlich?
-8. **Emissionsbilanz W3:** Referenz-Kraftwerkspark als Katalog — wer pflegt die Datensätze?
+8. ~~Emissionsbilanz W3~~ **entschieden (11.08.2026): Katalogtabelle
+   `Tab_Kraftwerkspark`**, beim ersten Start vorbefüllt (Dt. Strommix, Erdgas-GuD,
+   Steinkohle) und in den Kenndaten pflegbar; Auswahl je Stamm im Parameterdialog.
 9. **Validierungsfälle:** `goetz_test.XLS` (BHKW/Öl), `englmar haus der
    gastlichkeit.XLS` (Realprojekt) für das Zahlungsgerüst; `VALERI_Vorlage_V7.xlsx`
    für die Kapitalwert-Kennzahlen.
+10. ~~KWKG-2025-Nachtrag im Rechenmodul~~ **umgesetzt (Phase 9, 12.08.2026)**
+    als W2-Nachtrag komplett: Vbh-Staffel bis „ab 2030: 2 500"
+    (Katalog `Tab_KWKG_Staffel`), Förderfähigkeits-Stichtag + 4-Jahres-Frist,
+    Negativpreis-Abschlag (%-Näherung), > 500-kW- und Heizöl-Guard,
+    Novellen-Sensitivität. Offen nur die exakte Spotpreis-Stundenrechnung (8.5.4).
+
 
 ---
 
-## 8. Unabhängige Code-Verifikation W1 (Prüf-Session 11.08.2026, Fassung 3.1)
+## 8. Rechtsstand KWKG 2025/2026 und Nachtrag für das Rechenmodul *(neu, 12.08.2026)*
 
-### 8.1 Bestätigt (numerisch nachgerechnet)
+*(Web-Recherche 12.08.2026. Kapitel 1/2 dokumentieren die Excel-Mappe auf Stand
+KWKG 2016/2020 — dieser Abschnitt hält den geltenden Rechtsstand für das
+Rechenmodul fest. Keine Rechtsberatung; vor Projektzusagen am Gesetzestext bzw.
+BAFA-Merkblatt prüfen.)*
 
-Der Rechenkern `KapitalwertRechner` wurde unabhängig reimplementiert und
-gegengerechnet: Annuität `a(i,n)` inkl. Grenzfall i=0 (→ 1/n) ✓ ·
-Konzept-Validierungswerte 17 150 € · a(0,35 %; 13,33 a) = **1 319,07 €/a** und
-3 731 € · a(1,5 %; 20 a) = **217,31 €/a** ✓ · KW-Formel 5.1 exakt reproduziert ✓ ·
-Restwert linear auf die **letzte Ersatzgeneration** ✓ · dynamische Amortisation
-(kumulierter Barwert der Differenzreihe, ohne Restwert, interpoliert) ✓ ·
-Differenzrechnung ≡ Barwert der Differenz-Zahlungsströme ✓ · SQL durchgängig
-parametrisiert, keine Kultur-/Dezimalfalle ✓ · Reiter, Word-Baustein und
-Excel-Blatt lesen dieselben persistierten Ergebnisse, keiner rechnet selbst ✓ ·
-Tabellenschema entspricht dem W1-Umfang aus 5.5 ✓ · Defaults i=3,0 %/T=20 a ✓.
+### 8.1 Gesetzesstand
 
-### 8.2 Korrekturliste K1–K10 (Code, Priorität absteigend)
+- **KWKG 2025 in Kraft:** Gesetz zur Änderung des KWKG und der KWKAusV vom
+  21.02.2025 (**BGBl. 2025 I Nr. 54**, verkündet 25.02.2025), wesentliche Teile
+  **in Kraft seit 01.04.2025**; zuletzt geändert durch Art. 24 des Gesetzes vom
+  18.12.2025 (BGBl. 2025 I Nr. 347).
+- **Große Modernisierungsnovelle steht aus:** Stand 12.08.2026 kein
+  Referentenentwurf; BMWE-Zusage (10.07.2026): Vorlage „bis Ende 2026". Verbände
+  (BDEW/AGFW/VKU/B.KWK) fordern Inkrafttreten spätestens 01.01.2027 und
+  Verlängerung bis 2035/2038.
+- **EuGH-Urteil 09.07.2026 (C-242/24 P):** Die KWKG-Förderung ist **keine
+  staatliche Beihilfe** → künftige Änderungen brauchen keine EU-Notifizierung
+  mehr; der jahrelange Hauptbremsklotz der Novellen entfällt.
 
-| # | Befund | Korrektur |
+### 8.2 Fristenlogik § 6 KWKG 2025 — Stichtag ist nicht mehr die Inbetriebnahme
+
+Zuschlagberechtigt ist eine Anlage, wenn sie **einen** der drei Pfade erfüllt:
+
+| Pfad | Bedingung bis **31.12.2026** | Realisierungsfrist |
 |---|---|---|
-| **K1** | **Zuschüsse:** negative Kat.-1-Position mit Nutzungsdauer < T wird in jedem Ersatzjahr erneut „beschafft" (= erneut gutgeschrieben); Beispiel −5 000 €, n=10, T=20, i=3 % → KW +8 720 € statt +5 000 € | Ersatz/Restwert nur für Betrag > 0 bilden oder Spalte `IstErloes` (5.5) einführen |
-| **K2** | **Parameternachweis:** Parametersatz wird je Lauf persistiert, aber nie zurückgelesen; Nachweiszeilen in Reiter/Word/Excel zeigen die *aktuellen* Parameter — nach Parameteränderung ohne Neuberechnung behauptet der Bericht falsche Annahmen (Normanforderung 5.2!). `ErgebnisAktuell()` prüft nur `ID_Ergebnis`, nicht den Parameterstand (6.2b) | `WirtschaftlichkeitErgebnis` um Parameterfelder ergänzen, in `LadeErgebnisse()` mappen, Nachweis aus dem Ergebnis speisen; Parametervergleich in `ErgebnisAktuell()` |
-| **K3** | **Veraltete Simulationen:** Reiter rechnet mit `neuRechnen:false` — veraltete (nicht fehlende) Stände werden nicht nachsimuliert, nur rot markiert; Ergebnis gilt danach als „aktuell" | im Sammler `ErgebnisVeraltet` in die Simulationsbedingung aufnehmen (wirkt auch im Bericht) |
-| **K4** | **Verwaiste Ergebnisse:** Persistieren löscht nur die beteiligten Projekte; abgewählte Varianten behalten Alt-Ergebnisse anderer Läufe — Bericht mischt Rechenstände | je Lauf die ganze Stammgruppe löschen oder Lauf-ID mitführen |
-| **K5** | **Leistungspreis still ignoriert** (`custom_price_power` gepflegt, nie gelesen) | in W2 verrechnen; bis dahin Hinweis „Leistungspreis nicht berücksichtigt" in Reiter/Bericht |
-| **K6** | **BHKW-Einspeisung:** nur `Photovoltaik.Ueberschuss` wird vergütet; BHKW hat kein Stromüberschuss-Feld → BHKW-Varianten systematisch unterbewertet | Feld `Stromueberschuss` in `Tab_ErgebnisBHKW` (StelleXSpaltenSicher-Muster) + Bewertung; bis dahin Warnung bei BHKW-Projekten |
-| **K7** | Fehlgrund nur bei fehlenden Energiepreisen; Projekt ohne Kostenpositionen liefert scheinbar valide KW mit I₀=0; `Investition` nicht nullable → „0" statt „—" | Fehlgrund „keine Kostenpositionen", `Investition` nullable, Absprung in `Form_Kosten` (6.2c) |
-| **K8** | Stamm-Erkennung hängt an Listenreihenfolge („Stamm zuerst"); scheitert der Stamm, zeigen alle Varianten kommentarlos „—" | Stamm explizit suchen, Fehlgrund an Varianten durchreichen |
-| **K9** | ~15 neue Wirtschaftlichkeits-Labels fehlen im `BerichtTexte`-Wörterbuch → englischer Bericht bleibt dort deutsch (LIESMICH-Behauptung „+Übersetzungen" nicht eingelöst) | `_en`-Einträge nachtragen |
-| **K10** | Lesepfade der Hintergrund-Berechnung laufen über `DataRepository` (MessageBox aus Worker-Thread möglich); Szenarien ohne gepflegte Best-/Worst-Werte zeigen dreimal dieselbe Zahl ohne Hinweis; keine Plausibilitätsprüfung Worst/Erwartet/Best | stilles Fehlerhandling im Rechenpfad; Hinweis „keine Szenariowerte gepflegt"; Prüfung beim Speichern in `Form_Kosten` |
+| 1 | Aufnahme des Dauerbetriebs | — |
+| 2 | BImSchG-Genehmigung erteilt | Dauerbetrieb bis Ablauf des 4. Jahres nach Genehmigungserteilung (bis Ende 2030 möglich) |
+| 3 | **verbindliche Bestellung** (Anlagen ohne BImSchG-Pflicht — der typische EPOS-Fall kleiner BHKW) | 4 Jahre ab Bestellung |
 
-*Ergänzende Dokument-Korrekturen sind in dieser Fassung 3.1 bereits eingearbeitet
-(3.1, 3.4, 3.5, 4, 5.1a, 5.4, 5.5, 6). LIESMICH_Phase1: die Behauptungen „App-Start
-legt Tabellen an" (tatsächlich lazy beim ersten Reiter-/Rechenzugriff, harmlos),
-„veraltete Simulationen werden nachgerechnet" (K3) und „BerichtTexte +Übersetzungen"
-(K9) sind zu korrigieren.*
+Anlagen mit Genehmigung/Bestellung **nach dem 31.12.2026** erhalten nach geltendem
+Recht **keine Förderung** (änderbar nur durch die ausstehende Novelle).
+Wärme-/Kältenetze analog: Investitionsentscheidung + landesrechtliche Genehmigungen
+bis 31.12.2026, 4 Jahre Realisierung; Fördersatz einheitlich 40 %, Höchstbetrag
+50 Mio. € je Projekt.
+
+**Modellkonsequenz:** Der harte Stichtag für die Förderfähigkeit ist das
+**Bestell-/Genehmigungsdatum**, nicht das Inbetriebnahmedatum. Für
+Wärmeplanungsprojekte mit Realisierung 2027–2030 entscheidet die Bestellung bis
+Ende 2026 über den KWKG-Bonus.
+
+### 8.3 Vbh-Staffel § 8 KWKG — Korrektur der Blatt-Tabelle „ab 2025: 3 500"
+
+Die Blatt-Tabelle des Alt-Verfahrens (2.7) endet mit „ab 2025: 3 500 Vbh"
+(KWKG-2020-Stand). Die geltende Staffel der je Kalenderjahr **maximal vergüteten
+Vollbenutzungsstunden** läuft degressiv weiter:
+
+| Jahr | 2020–2022 | 2023/2024 | 2025 | 2026 | 2027 | 2028 | 2029 | ab 2030 |
+|---|---|---|---|---|---|---|---|---|
+| max. Vbh/a | 5 000 | 4 000 | 3 500 | **3 300** | **3 100** | **2 900** | **2 700** | **2 500** |
+
+Gesamtkontingent für neue Anlagen unverändert **30 000 Vbh**. Durch die sinkenden
+Jahresdeckel streckt sich die Auszahlung über deutlich mehr Kalenderjahre —
+**barwertrelevant**, da spätere Jahre stärker abgezinst werden.
+
+### 8.4 Weitere modellrelevante Punkte des KWKG 2025
+
+- **Zuschlagssätze § 7 unverändert.** Einspeisung je Leistungsanteil: bis 50 kW
+  8,0 · 50–100 kW 6,0 · 100–250 kW 5,0 · 250 kW–2 MW 4,4 · über 2 MW 3,4
+  (nachgerüstet 3,1) ct/kWh. **Neuanlagen bis 50 kW nach § 7 Abs. 3a: 16 ct/kWh
+  Einspeisung / 8 ct/kWh Eigenversorgung**; Eigenversorgung sonst je Klasse
+  ca. 1,0–5,41 ct/kWh.
+- **Kein Zuschlag bei Spotpreis ≤ 0 €/MWh** (§ 7 Abs. 5) — gilt seit 01.04.2025
+  **auch für Anlagen unter 50 kW** (Privilegierung entfallen).
+- **Heizöl-BHKW nicht mehr förderfähig** (fossile flüssige Brennstoffe raus; bei
+  neuen/modernisierten Anlagen nur noch Erdgas), Emissionsgrenze **unter
+  270 g CO₂/kWh** (Strom + Nutzwärme) für Neuanlagen. → Der Validierungsfall
+  `goetz_test.XLS` (BHKW/Öl) bleibt fürs Zahlungsgerüst gültig; ein neues
+  Öl-BHKW bekäme heute aber KWKG-Bonus = 0.
+- **Ausschreibungslücke über 500 kW:** Die KWKAusV regelt Volumina nur bis 2025;
+  letzter Gebotstermin 01.12.2025 (Ø-Zuschlag 5,02 ct/kWh KWK, 6,67 ct/kWh iKWK).
+  Für Anlagen **über 500 kW bis 50 MW** existiert seit 01.01.2026 **kein
+  Förderweg**. Anlagen **bis 500 kW** (EPOS-Zielgruppe) erhalten den Zuschlag
+  weiterhin **gesetzlich direkt, ohne Ausschreibung**.
+
+### 8.5 Konsequenzen für das Rechenmodul *(umgesetzt in Phase 9, 12.08.2026 — bis auf die exakte Spotpreis-Stundenrechnung in Punkt 4)*
+
+1. **Vbh-Staffel jahresscharf fortschreiben (8.3):** Der W2-KWKG-Bonus (Phase 7)
+   rechnet den Jahresdeckel bereits jahresscharf — Staffelwerte gegen KWKG 2025
+   prüfen und bis „ab 2030: 2 500" erweitern. Ablage als **Katalogtabelle mit
+   Gültigkeitsdatum** (analog `energy_price`) statt Konstanten; entscheidet
+   zugleich Frage 7.5.
+2. **Förderfähigkeits-Stichtag als Parameter:** `Tab_ProjektWirtschaftlichkeit`
+   (5.5) um **Bestell-/Genehmigungsdatum** ergänzen (das vorhandene Feld
+   `Inbetriebnahme` genügt nicht). Prüfregel: Datum ≤ 31.12.2026 **und**
+   Inbetriebnahme binnen 4 Jahren → Bonus aktiv, sonst 0.
+3. **Gesetzesstand als Kennung:** analog `Tab_kurz_KWKG2016/2020` eine Kennung
+   **KWKG 2016 / 2020 / 2025** je Rechnung (Bestandsanlagen rechnen mit ihrem
+   historischen Satz weiter) — praktisch abgebildet über die Gültigkeitsdaten
+   der Katalogtabelle aus Punkt 1.
+4. **Negativpreis-Abschlag:** vergütete Vbh um Stunden mit Spotpreis ≤ 0 kürzen —
+   als W2-Näherung ein Prozent-Parameter („Abschlag Negativstunden"), später
+   exakt über die W3-Stundenmatrix.
+5. **Anlagen über 500 kW: Bonus = 0** ansetzen (Ausschreibungslücke seit
+   01.01.2026); optional Sensitivität mit 5,02 ct/kWh (letzter Ausschreibungswert)
+   für den Fall einer Wiedereinführung.
+6. **Brennstoff-Guard:** KWKG-Bonus nur für zulässige Träger (kein Heizöl bei
+   Neuanlagen) — prüfbar über `carrier_id` (3.5.1). *Umsetzung Phase 9: Prüfung
+   über die Brennstoff-Kategorie „Öl" (`Tab_Brennstoff_Stamm.ID_Kategorie = 2`) —
+   dokumentierte Näherung: sie erfasst auch Bio-Heizöl-Blends (Heizöl Bio 5–20);
+   der Guard greift nur bei erkennbaren Neuanlagen (Inbetriebnahme ≥ 2025),
+   Bestandsanlagen rechnen weiter. Die Realisierungsfrist wird als „Ablauf des
+   4. Jahres nach dem Stichtag" geprüft (§ 6 Pfad 2; für den Bestellungs-Pfad 3
+   um maximal ein Jahr großzügig).*
+7. **Novellen-Szenarien im Bericht:** Förderung für Bestellung/Genehmigung nach
+   2026 als **Regulierungsrisiko** ausweisen; Sensitivität mit 0 % /
+   Fortschreibung heutiger Sätze (Verbandsforderung: Verlängerung bis 2035/2038).
+
+**Quellen (Recherche 12.08.2026):** BGBl. 2025 I Nr. 54 (KWKG-ÄndG,
+recht.bund.de) · BAFA-Mitteilung „Änderung des KWKG zum 01.04.2025" ·
+BNetzA-Pressemitteilung 15.01.2026 (letzte KWK-/iKWK-Ausschreibung) ·
+EuGH C-242/24 P (09.07.2026) · BDEW-Pressemitteilung 09.07.2026 ·
+ZFK-Energiegesetze-Ticker (Stand 07.08.2026).

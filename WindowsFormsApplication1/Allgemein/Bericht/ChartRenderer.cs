@@ -371,6 +371,140 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // ============================================== Kapitalwert-Verlauf (Phase 11)
+
+        /// <summary>Serienfarben der Verlaufslinien (Variante 1…n; Stamm = C_STAMM).</summary>
+        public static readonly Color[] C_SERIEN =
+        {
+            Color.FromArgb(0xED, 0x7D, 0x31),   // Orange
+            Color.FromArgb(0x70, 0xAD, 0x47),   // Grün
+            Color.FromArgb(0x41, 0x72, 0xC4),   // Blau
+            Color.FromArgb(0x9E, 0x48, 0x0E),   // Braun
+            Color.FromArgb(0x7A, 0x5C, 0xA8),   // Violett
+            Color.FromArgb(0x2E, 0x8B, 0x8B),   // Petrol
+            Color.FromArgb(0xC0, 0x50, 0x4D),   // Rot
+            Color.FromArgb(0xBF, 0x8F, 0x00)    // Ocker
+        };
+
+        /// <summary>Verlaufsserien → Diagramm-Reihen (Stamm dunkel/dick, Varianten
+        /// aus der Serien-Palette; Reihen ohne Werte werden übersprungen).</summary>
+        public static List<Reihe> VerlaufsReihen(List<VerlaufSerie> serien, bool mitStamm)
+        {
+            var reihen = new List<Reihe>();
+            int i = 0;
+            foreach (VerlaufSerie s in serien)
+            {
+                if (s.Kumuliert == null) continue;
+                if (s.IstStamm)
+                {
+                    if (mitStamm) reihen.Add(new Reihe(s.Anzeige, s.Kumuliert, C_STAMM));
+                    continue;
+                }
+                reihen.Add(new Reihe(s.Anzeige, s.Kumuliert, C_SERIEN[i++ % C_SERIEN.Length]));
+            }
+            return reihen;
+        }
+
+        /// <summary>
+        /// Liniendiagramm „Kapitalwert über den Nutzungszeitraum" (Phase 11):
+        /// kumulierte diskontierte Zahlungsströme je Jahr 0…N, y-Achse mit
+        /// negativem Bereich und hervorgehobener Nulllinie (Schnittpunkt der
+        /// Differenzlinie = dynamische Amortisation). X-Achse in Jahren.
+        /// </summary>
+        public static byte[] KapitalwertVerlauf(string titel, List<Reihe> reihen, string fussnote)
+        {
+            int W = 1240, H = 620;
+            using (var bmp = new Bitmap(W, H))
+            using (var g = Start(bmp))
+            {
+                Titel(g, titel + "  [€]", W);
+                var rc = new RectangleF(110f, 80f, W - 150f, 400f);
+
+                var gueltig = reihen.Where(r => r.Werte != null && r.Werte.Length >= 2 &&
+                                           r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w)))
+                                    .ToList();
+                if (gueltig.Count == 0)
+                {
+                    using (var f = new Font("Calibri", 18f))
+                        g.DrawString("Keine berechenbaren Reihen.", f, Brushes.DimGray, rc.X, rc.Y + 20f);
+                    return Png(bmp);
+                }
+                int n = gueltig.Max(r => r.Werte.Length);          // Stützstellen (Jahre + 1)
+
+                // Vorzeichenfähige Skala mit „schönen" Stufen (5 Rasterlinien).
+                double min = Math.Min(0, gueltig.Min(r => r.Werte.Min()));
+                double max = Math.Max(0, gueltig.Max(r => r.Werte.Max()));
+                if (max - min < 1e-9) { max = min + 1; }
+                double roh = (max - min) / 5.0;
+                double zehner = Math.Pow(10, Math.Floor(Math.Log10(roh)));
+                double schritt = zehner;
+                foreach (double f in new[] { 1.0, 2.0, 2.5, 5.0, 10.0 })
+                    if (zehner * f >= roh) { schritt = zehner * f; break; }
+                min = Math.Floor(min / schritt) * schritt;
+                max = Math.Ceiling(max / schritt) * schritt;
+
+                // Raster + y-Beschriftung.
+                using (var raster = new Pen(Color.Gainsboro, 1f))
+                using (var f = new Font("Calibri", 15f))
+                    for (double wert = min; wert <= max + schritt / 2; wert += schritt)
+                    {
+                        float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
+                        g.DrawLine(raster, rc.X, y, rc.Right, y);
+                        string lab = wert.ToString("N0", DE);
+                        var gr = g.MeasureString(lab, f);
+                        g.DrawString(lab, f, Brushes.DimGray, rc.X - gr.Width - 6f, y - gr.Height / 2f);
+                    }
+
+                // X-Achse: Jahre 0…N, Beschriftung in sinnvollen Schritten.
+                int jahre = n - 1;
+                int xschritt = jahre <= 12 ? 1 : jahre <= 25 ? 2 : jahre <= 50 ? 5 : 10;
+                using (var raster = new Pen(Color.Gainsboro, 1f))
+                using (var f = new Font("Calibri", 15f))
+                    for (int t = 0; t <= jahre; t += xschritt)
+                    {
+                        float x = rc.X + (float)t / Math.Max(jahre, 1) * rc.Width;
+                        g.DrawLine(raster, x, rc.Y, x, rc.Bottom);
+                        string lab = t.ToString(DE);
+                        var gr = g.MeasureString(lab, f);
+                        g.DrawString(lab, f, Brushes.DimGray, x - gr.Width / 2f, rc.Bottom + 8f);
+                    }
+                using (var f = new Font("Calibri", 15f))
+                    g.DrawString(BerichtTexte.T("Jahr"), f, Brushes.DimGray, rc.Right + 10f, rc.Bottom + 8f);
+
+                // Achsen + hervorgehobene Nulllinie.
+                using (var achse = new Pen(Color.DimGray, 2f))
+                {
+                    g.DrawLine(achse, rc.X, rc.Y, rc.X, rc.Bottom);
+                    g.DrawLine(achse, rc.X, rc.Bottom, rc.Right, rc.Bottom);
+                }
+                float y0 = (float)(rc.Bottom - (0 - min) / (max - min) * rc.Height);
+                using (var stift = new Pen(Color.DimGray, 2f) { DashStyle = DashStyle.Dash })
+                    g.DrawLine(stift, rc.X, y0, rc.Right, y0);
+
+                // Linien (kürzere Reihen enden früher; x bezieht sich auf N).
+                foreach (Reihe r in gueltig)
+                {
+                    var punkte = new PointF[r.Werte.Length];
+                    for (int t = 0; t < r.Werte.Length; t++)
+                    {
+                        float x = rc.X + (float)t / Math.Max(jahre, 1) * rc.Width;
+                        float y = (float)(rc.Bottom - (r.Werte[t] - min) / (max - min) * rc.Height);
+                        punkte[t] = new PointF(x, Math.Max(rc.Y, Math.Min(rc.Bottom, y)));
+                    }
+                    using (var stift = new Pen(r.Farbe, r.Farbe == C_STAMM ? 3.5f : 2.5f)
+                                       { LineJoin = LineJoin.Round })
+                        g.DrawLines(stift, punkte);
+                }
+
+                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+                        110f, H - 104f, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
+                if (!string.IsNullOrEmpty(fussnote))
+                    using (var f = new Font("Calibri", 14f, FontStyle.Italic))
+                        g.DrawString(fussnote, f, Brushes.DimGray, 110f, H - 28f);
+                return Png(bmp);
+            }
+        }
+
         // =================================================================== Helfer
 
         private static Graphics Start(Bitmap bmp)
@@ -464,15 +598,20 @@ namespace WindowsFormsApplication1
             return new PointF(x, Math.Max(rc.Y, Math.Min(rc.Bottom, y)));
         }
 
-        private static void Legende(Graphics g, List<Segment> eintraege, float x, float y)
+        private static void Legende(Graphics g, List<Segment> eintraege, float x, float y,
+                                    float umbruchBei = 0)
         {
+            float startX = x;
             using (var f = new Font("Calibri", 16f))
                 foreach (Segment s in eintraege)
                 {
+                    float breite = 40f + g.MeasureString(s.Label, f).Width + 24f;
+                    if (umbruchBei > 0 && x > startX && x + breite > umbruchBei)
+                    { x = startX; y += 30f; }   // Umbruch bei vielen Serien (Review 11)
                     using (var b = new SolidBrush(s.Farbe)) g.FillRectangle(b, x, y, 22f, 22f);
                     g.DrawRectangle(Pens.Gray, x, y, 22f, 22f);
                     g.DrawString(s.Label, f, Brushes.Black, x + 28f, y + 1f);
-                    x += 40f + g.MeasureString(s.Label, f).Width + 24f;
+                    x += breite;
                 }
         }
 

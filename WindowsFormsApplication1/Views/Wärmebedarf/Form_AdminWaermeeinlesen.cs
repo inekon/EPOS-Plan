@@ -80,9 +80,6 @@ namespace WindowsFormsApplication1
                 listBox_Extern.Items.Add(model.m_szBezeichner);
                 DateiListe.Add(model);
             }
-
-            string szAppDataPath = Path.Combine(Properties.Settings.Default.VDI3805Path, "Waermebedarf");
-            textBox_Ordner.Text = szAppDataPath;
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
@@ -91,20 +88,13 @@ namespace WindowsFormsApplication1
             Close();
         }
 
-        private void GetDateiInfo(string dateiname)
-        {
-            textBox_Name.Text = dateiname + ".txt";
-            string szPath = Path.Combine(Properties.Settings.Default.VDI3805Path, "Waermebedarf");
-            szPath = Path.Combine(szPath, dateiname);
-        }
-
         private void btn_Oeffnen_Click(object sender, EventArgs e)
         {
             ToolsClass tool = new ToolsClass();
 
-            string szAppDataPath = Path.Combine(Properties.Settings.Default.VDI3805Path, "Waermebedarf");
-            szAppDataPath = Path.Combine(szAppDataPath, textBox_Name.Text);
-            tool.OpenFileWithDefaultApp(szAppDataPath);
+            //string szAppDataPath = Path.Combine(Properties.Settings.Default.VDI3805Path, "Waermebedarf");
+            //szAppDataPath = Path.Combine(szAppDataPath, textBox_Name.Text);
+            tool.OpenFileWithDefaultApp(textBox_Name.Text);
         }
 
         private void btn_Loeschen_Click(object sender, EventArgs e)
@@ -139,7 +129,6 @@ namespace WindowsFormsApplication1
 
                 try
                 {
-                    string szQuelle = Path.Combine(textBox_Ordner.Text, filebasename);
                     if (!File.Exists(textBox_Ordner.Text + "\\" + filebasename))
                     {
                         File.Copy(filename, textBox_Ordner.Text + "\\" + filebasename, true);

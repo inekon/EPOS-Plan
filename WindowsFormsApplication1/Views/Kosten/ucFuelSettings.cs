@@ -278,6 +278,12 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Träger-ID dieses Controls (für den Zuordnungs-Check beim Schließen, Phase 7).</summary>
+        public int CarrierId
+        {
+            get { return _carrier != null ? _carrier.ID : 0; }
+        }
+
         public void SaveProjectAndHistory()
         {
             // Bei Strom gibt es keine Conversion aus der Combo

@@ -125,7 +125,10 @@ namespace WindowsFormsApplication1
             try
             {
                 // Startet die Datei mit der Standardanwendung des Systems.
-                Process.Start(filePath);
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(filePath)
+                {
+                    UseShellExecute = true
+                });
                 return true;
             }
             catch (Exception ex)

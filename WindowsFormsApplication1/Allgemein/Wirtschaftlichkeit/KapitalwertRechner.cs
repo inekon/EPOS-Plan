@@ -20,6 +20,13 @@ namespace WindowsFormsApplication1
     ///    kein Restwert) — betrifft Positionen ohne (sinnvoll) gepflegte Nutzungsdauer.
     ///  - Betriebskosten steigen mit p_B, Energiekosten mit p_E [%/a];
     ///    Einspeiseerlöse bleiben nominal konstant (feste Vergütung, W1).
+    ///
+    /// Erweiterungen der Stufe W2 (Phase 7):
+    ///  - BEHG-CO₂-Abgabe: Jahr-1-Betrag [€/a], steigt mit p_E (CO₂-Preispfad).
+    ///  - Zusätzliche nominale Erlösreihe je Jahr (KWKG-Bonus mit Vbh-Kontingent —
+    ///    die Jahreslogik baut der Aufrufer, hier wird nur abgezinst).
+    ///  - Nominalreihe + nominaler Restwert im Zahlungsbild → interner Zinsfuß
+    ///    (IRR) der Differenzreihe per Bisektion.
     /// </summary>
     public static class KapitalwertRechner
     {
@@ -42,6 +49,13 @@ namespace WindowsFormsApplication1
             /// <summary>Barwert-Zahlungsreihe: Index 0 = −I₀, Index t = Barwert des
             /// Netto-Zahlungsstroms im Jahr t OHNE Restwert (für Amortisation).</summary>
             public double[] BarwertReihe;
+
+            /// <summary>Nominale Zahlungsreihe (unabgezinst), gleicher Aufbau —
+            /// Grundlage des internen Zinsfußes (W2).</summary>
+            public double[] NominalReihe;
+
+            /// <summary>Restwert zum Zeitpunkt T, unabgezinst (für den IRR).</summary>
+            public double RestwertNominal;
         }
 
         /// <summary>Annuitätenfaktor a(i,n); i als Dezimalzahl (0,03), n in Jahren.</summary>
@@ -61,14 +75,15 @@ namespace WindowsFormsApplication1
         public static Zahlungsbild Rechne(List<InvestPosition> investitionen,
                                           double betriebJahr, double energieJahr, double erloesJahr,
                                           double zinsProzent, int jahre,
-                                          double preisstBetriebProzent, double preisstEnergieProzent)
+                                          double preisstBetriebProzent, double preisstEnergieProzent,
+                                          double behgJahr = 0, double[] zusatzErloesJeJahr = null)
         {
             double i = zinsProzent / 100.0;
             double pB = preisstBetriebProzent / 100.0;
             double pE = preisstEnergieProzent / 100.0;
             int T = Math.Max(1, jahre);
 
-            var z = new Zahlungsbild { BarwertReihe = new double[T + 1] };
+            var z = new Zahlungsbild { BarwertReihe = new double[T + 1], NominalReihe = new double[T + 1] };
 
             // ---------------- Investition t=0 + Ersatzbeschaffungen + Restwert ----------------
             double[] ersatzJeJahr = new double[T + 1];
@@ -104,22 +119,63 @@ namespace WindowsFormsApplication1
 
             // ---------------- Jahresreihe abzinsen ----------------
             z.BarwertReihe[0] = -z.Investition;
+            z.NominalReihe[0] = -z.Investition;
             for (int t = 1; t <= T; t++)
             {
                 double faktor = Math.Pow(1.0 + i, -t);
                 double ausgaben = betriebJahr * Math.Pow(1.0 + pB, t - 1)
-                                + energieJahr * Math.Pow(1.0 + pE, t - 1)
+                                + (energieJahr + behgJahr) * Math.Pow(1.0 + pE, t - 1)
                                 + ersatzJeJahr[t];
-                double einnahmen = erloesJahr;   // W1: feste Vergütung, nominal konstant
+                double einnahmen = erloesJahr    // feste Einspeisevergütung, nominal konstant
+                    + (zusatzErloesJeJahr != null && t < zusatzErloesJeJahr.Length
+                       ? zusatzErloesJeJahr[t] : 0);   // z. B. KWKG-Bonus (jahresscharf, W2)
 
                 z.BarwertAusgaben += ausgaben * faktor;
                 z.BarwertEinnahmen += einnahmen * faktor;
                 z.BarwertReihe[t] = (einnahmen - ausgaben) * faktor;
+                z.NominalReihe[t] = einnahmen - ausgaben;
             }
 
+            z.RestwertNominal = restwertT;
             z.RestwertBarwert = restwertT * Math.Pow(1.0 + i, -T);
             z.Kapitalwert = -z.Investition - z.BarwertAusgaben + z.BarwertEinnahmen + z.RestwertBarwert;
             return z;
+        }
+
+        /// <summary>
+        /// Interner Zinsfuß [%] der Differenzreihe Variante − Stamm (inkl. Restwert-
+        /// differenz im letzten Jahr): Nullstelle von KW(r) per Bisektion in
+        /// (−99 %, 1000 %). null = kein Vorzeichenwechsel (keine klassische
+        /// Investitionsreihe) oder keine Konvergenz.
+        /// </summary>
+        public static double? InternerZinsfuss(Zahlungsbild variante, Zahlungsbild stamm)
+        {
+            if (variante == null || stamm == null ||
+                variante.NominalReihe == null || stamm.NominalReihe == null) return null;
+            int T = Math.Min(variante.NominalReihe.Length, stamm.NominalReihe.Length) - 1;
+
+            double[] fluss = new double[T + 1];
+            for (int t = 0; t <= T; t++) fluss[t] = variante.NominalReihe[t] - stamm.NominalReihe[t];
+            fluss[T] += variante.RestwertNominal - stamm.RestwertNominal;
+
+            Func<double, double> kw = r =>
+            {
+                double summe = 0;
+                for (int t = 0; t <= T; t++) summe += fluss[t] / Math.Pow(1.0 + r, t);
+                return summe;
+            };
+
+            double lo = -0.99, hi = 10.0;
+            double fLo = kw(lo), fHi = kw(hi);
+            if (double.IsNaN(fLo) || double.IsNaN(fHi) || fLo * fHi > 0) return null;
+
+            for (int iter = 0; iter < 200; iter++)
+            {
+                double mid = (lo + hi) / 2.0, fMid = kw(mid);
+                if (Math.Abs(fMid) < 1e-6 || (hi - lo) < 1e-9) return Math.Round(mid * 100.0, 2);
+                if (fLo * fMid <= 0) { hi = mid; fHi = fMid; } else { lo = mid; fLo = fMid; }
+            }
+            return Math.Round((lo + hi) / 2.0 * 100.0, 2);
         }
 
         /// <summary>

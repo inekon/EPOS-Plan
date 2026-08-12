@@ -58,7 +58,7 @@ namespace WindowsFormsApplication1
                     ZeichneGanglinien(k, v.Zeitreihen);
                 else
                     k.Hinweis("Ganglinien nicht verfügbar — sie entstehen nur, wenn für den Bericht " +
-                              "frisch simuliert wurde (Baustein Ergebnisse je Variante aktiv).");
+                              "frisch simuliert wurde (Baustein „Ergebnisse je Variante“ aktiv).");
             }
         }
 

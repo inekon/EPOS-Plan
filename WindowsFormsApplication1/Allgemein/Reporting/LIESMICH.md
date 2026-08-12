@@ -1,13 +1,14 @@
 # LIESMICH — Konzeptdokumente Berichtserstellung & Wirtschaftlichkeit
 
-Stand 11.08.2026 · Ordner `Allgemein\Reporting\` · konsolidiert auf **3 Dateien** (Cowork-Session)
+Stand 12.08.2026 · Ordner `Allgemein\Reporting\` · konsolidiert (Cowork-Sessions 11.–12.08.2026)
 
 ## Welche Datei gilt wofür
 
 | Datei | Rolle |
 |---|---|
-| **`Konzept_Berichtserstellung_EPOS-Plan.md`** | **Leitkonzept** (Fassung 3, konsolidiert): Variantenvergleichs-Bericht Word + Excel, Dialog `Form_Bericht`, Architektur `Allgemein/Bericht/`, Kennzahlenkatalog, Diagramme/Ganglinien, Code-/DB-Verifikation, Codebefunde, Phasenplan |
-| **`Konzept_Wirtschaftlichkeit.md`** | Begleitkonzept Wirtschaftlichkeit (Fassung 2): Kapitalwertmethode nach DIN EN 17463 (ValERI), Analyse des Alt-Verfahrens (BHKW-Plan-Excel), Datenvertrag, DB-Zusätze, UI-Reiter „Wirtschaftlichkeit" |
+| **`Konzept_Berichtserstellung_EPOS-Plan.md`** | **Leitkonzept** (Fassung 3.1, konsolidiert und code-geprüft): Variantenvergleichs-Bericht Word + Excel, Dialog `Form_Bericht`, Architektur `Allgemein/Bericht/`, Kennzahlenkatalog, Diagramme/Ganglinien, Verifikation + Befundstatus, Phasenplan mit Ist-Stand |
+| **`Konzept_Wirtschaftlichkeit.md`** | Begleitkonzept Wirtschaftlichkeit (Fassung 2.1): Kapitalwertmethode nach DIN EN 17463 (ValERI), Analyse des Alt-Verfahrens (BHKW-Plan-Excel), **Datenvertrag (Kap. 5.8)**, DB-Zusätze, UI-Reiter „Wirtschaftlichkeit" |
+| **`Pruefbericht_Berichtsmodul_2026-08-12.md`** | Unabhängige Prüfung (12.08.2026): Code der Phasen 1–5 gegen das Leitkonzept, Befundstatus B1–B7, neue Befunde N1–N27, Konsistenzabgleich der Konzepte, offene DB-Checkliste für `Kenndaten.accdb` |
 | **`LIESMICH.md`** | dieser Index + Archivnotizen |
 
 **Löschbare Alt-Dateien** (inhaltlich hier bzw. im Leitkonzept aufgegangen, nur
@@ -30,6 +31,17 @@ Wirtschaftlichkeit per Kapitalwertmethode DIN EN 17463 mit eigenem UI-Reiter ·
 Menüweg „Als Variante speichern…" für den Variantenbezeichner im Stammprojekt.
 
 Details: Leitkonzept Kap. 1 (Entscheidungen) und Kap. 11 (Verifikation + Codebefunde).
+
+## Umsetzungs- und Prüfstand (12.08.2026)
+
+Phasen 1–5 sind implementiert (`Allgemein\Bericht\LIESMICH_Phase1.md`). Das
+unabhängige Code-Review vom 12.08.2026 (Prüfbericht) bestätigt Struktur und
+Konzepttreue, meldet aber kritische Restpunkte **N1–N5** (u. a.:
+Spitzenkessel-Brennstoff fehlt in Kosten/CO₂; Preis 0 maskiert den
+Katalogpreis) — die Kennzahlgruppen Emissionen/Kosten sind bis zu deren
+Behebung nicht belastbar. Die unabhängige **DB-Nachprüfung an `Kenndaten.accdb`
+steht aus** (Zugriff auf `C:\ProgramData\EPOS_PLAN` war in der Prüfsession
+nicht erteilt) — Checkliste im Prüfbericht Kap. 6.
 
 ## Archivnotiz: Reporting-Gerüst (zurückgestellter PDF-Ausbaupfad)
 

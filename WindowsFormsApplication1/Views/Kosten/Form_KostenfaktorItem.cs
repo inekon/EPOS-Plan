@@ -40,21 +40,6 @@ namespace WindowsFormsApplication1
             comboBox1.ValueMember = "ID";     // Was der Code verarbeitet
         }
 
-        private string GetDBPath()
-        {
-            string db = "";
-            string userPath = $@"SOFTWARE\ODBC\ODBC.INI\TEST";
-            
-            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(userPath))
-            {
-                if (key != null)
-                {
-                    db = key.GetValue("DBQ")?.ToString() ?? key.GetValue("Database")?.ToString();
-                }
-            }
-            return db;
-        }
-
         private void Form_KostenfaktorItem_Load(object sender, EventArgs e)
         {
             try
