@@ -16,6 +16,15 @@ Paket B1, Kapitel 9.
 (1007, 1008, 1010, 1011, 1017, 1018, 1021, 1023, 1024). Jeder neue Vergleich läuft gegen
 diesen Ordner.
 
+**Bekannte gewollte Abweichung seit B0-13** (Laufzeit nur bei tatsächlicher
+Wärmelieferung zählen, siehe
+`../WindowsFormsApplication1/Allgemein/Simulation/B0_Bestandsfehler_Protokoll.md`):
+`vergleich` meldet in **Projekt 1021** genau zwei FAIL-Werte —
+`WaermepumpeModul[0].Betriebsstunden` 6.692,41 → 4,41 und
+`Waermepumpe.Vollbenutzungsstunden` 3.846,66 → 502,66. Alles andere muss PASS
+bleiben. Die Basis wird mit dem nächsten Engine-Paket (Paket 4) neu eingefroren;
+bis dahin gilt: diese zwei Abweichungen sind korrekt, jede weitere ist ein Fehler.
+
 `2026-08-14_B0/` bleibt als **historischer Stand** liegen (Zustand vor Paket 1/3/7, acht
 Projekte). Ein Vergleich gegen B0 meldet zwangsläufig FAIL — der Basiswechsel ist gewollt
 und in `2026-08-14_Paket7/vergleich_protokoll.md` sowie in
