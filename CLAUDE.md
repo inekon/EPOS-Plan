@@ -42,7 +42,9 @@ Vor jedem Schreibzugriff prüfen, ob `Kenndaten.laccdb` existiert (dann ist die 
 vorher eine datierte Kopie anlegen. `C:\ProgramData\EPOS_PLAN` erlaubt normalen Benutzern nur das
 Anlegen neuer Dateien, nicht das Ändern vorhandener — eine vom Installer angelegte `Kenndaten.accdb`
 ist deshalb schreibgeschützt, bis sie einmal über „Komprimieren und reparieren" neu geschrieben
-wurde.
+wurde. Dieselbe ACL blockiert den Start auf einem **zweiten Windows-Konto**, solange das erste das
+Programm offen hat (Sperrdatei nicht beschreibbar) — Ursache, `icacls`-Lösung und Installer-Hinweis
+in [`BETRIEB_Mehrbenutzer_Datenbank.md`](BETRIEB_Mehrbenutzer_Datenbank.md).
 
 `.accdb` ist in `.gitignore` ausgeschlossen: Änderungen an der Datenbank landen nie in einem Commit
 und müssen separat gesichert werden (`DB-Backup/`).
