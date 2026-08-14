@@ -98,12 +98,29 @@ namespace WindowsFormsApplication1
             Strombedarf_gesamt = Strombedarf_stuendlich.Sum();
             HeizkesselCtrl heizkesselctrl = new HeizkesselCtrl();
             Anzahl = spk_list.Count;
-            if (Anzahl == 0) { Restwaerme = Waermebedarf; return true; }
+            // B0-2: Kein Aliasing! "Restwaerme = Waermebedarf" band dasselbe Array-Objekt —
+            // Init() des nächsten Laufs (Array.Clear) löschte damit den Projekt-Wärmebedarf.
+            if (Anzahl == 0) { Restwaerme = (float[])Waermebedarf.Clone(); return true; }
 
             // 2. Kesseldaten laden und Wirkungsgrade normieren
             for (int i = 0; i < Anzahl; i++)
             {
-                heizkesselctrl.ReadAll("Bezeichner='" + spk_list[i] + "'");
+                // B0-3: Projektfilter — gleicher Kesselname in mehreren Projekten lieferte
+                // sonst die Daten des ersten Treffers (falsche Leistung/Brennstoff/Emissionen).
+                heizkesselctrl.ReadAll("Bezeichner='" + spk_list[i].Replace("'", "''") + "' AND ID_Projekt=" + m_ID_Projekt);
+
+                // B0-3: Mit dem Projektfilter kann die Treffermenge leer sein (Kessel aus
+                // dem Projekt entfernt, Altdaten ohne ID_Projekt) — vorher lieferte der
+                // erste Namenstreffer falsche, aber vorhandene Daten. Sauber abbrechen
+                // statt items[0]-Zugriff mit ArgumentOutOfRangeException.
+                if (heizkesselctrl.rows == 0)
+                {
+                    System.Windows.Forms.MessageBox.Show(
+                        "Der Heizkessel '" + spk_list[i] + "' ist im Projekt nicht hinterlegt.\n" +
+                        "Die Kessel-Simulation wird abgebrochen.");
+                    return false;
+                }
+
                 Kessel_Name[i] = heizkesselctrl.items[0].Name;
                 Kessel_Leistung_Spk[i] = heizkesselctrl.items[0].Ptherm;
 
@@ -160,7 +177,9 @@ namespace WindowsFormsApplication1
                 {
                     // Elektrowärme / Wärmepumpe
                     Stromverbrauch_Spk += Kessel_Nutzkraft_Jahr;
-                    Stromverbrauch_stuendlich = Kesselleistung_stuendlich;
+                    // B0-2: auch hier kein Aliasing — sonst bleibt der Strom-Vektor ab dem
+                    // zweiten Lauf dauerhaft an die Kessel-Ganglinie gebunden.
+                    Stromverbrauch_stuendlich = (float[])Kesselleistung_stuendlich.Clone();
                 }
                 else if (Brennstoff_Art[i] == 15) Pellets_SPK += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 16) Rapsoelverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
