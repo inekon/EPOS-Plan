@@ -86,7 +86,7 @@ namespace WindowsFormsApplication1
             
             for (int n = 0; n < waectrl.rows; n++)
             {
-                rs.Open("select * from Abfrage_ProjektStromGanglinie where Tab_Stromganglinie.ID=" + waectrl.items[n].m_ID_Stromganglinie + " order by Tab_StromganglinieDaten.ID_GanglinieDaten");
+                rs.Open("select * from Abfrage_ProjektStromGanglinie where Tab_Stromganglinie.ID=" + waectrl.items[n].m_ID_Stromganglinie + " order by Tab_StromganglinieDaten.ID");
 
                 index = 0;
                 wert = 0;

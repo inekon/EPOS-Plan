@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Fehler beim Öffnen des RecordSets: " + ex.Message);
+                Console.WriteLine("Fehler beim Öffnen des RecordSets: " + ex.Message + " | SQL: " + sql);
                 // Aufraeumen, damit eine intern geoeffnete Verbindung im Fehlerfall nicht offen bleibt.
                 Close();
                 return false;
