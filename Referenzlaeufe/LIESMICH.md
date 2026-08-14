@@ -1,0 +1,183 @@
+﻿# Referenzlauf-Suite (Paket B1)
+
+Regressionsbasis für den Simulationskern von EPOS-Plan.
+
+Vor jedem Umbau an der Engine wird der aktuelle Stand als CSV eingefroren; nach dem Umbau
+läuft derselbe Satz Projekte erneut und wird mit Toleranz gegen den eingefrorenen Stand
+verglichen. Was sich dabei ändert, ist entweder gewollt — dann wird die Referenz neu
+gesetzt — oder ein Fehler.
+
+Grundlage: `WindowsFormsApplication1/Allgemein/Simulation/Konzept_Simulation_QuellenSenken.md`,
+Paket B1, Kapitel 9.
+
+## Was hier liegt
+
+| Pfad | Inhalt |
+|---|---|
+| `<yyyy-MM-dd>_<Marke>/` | Ein eingefrorener Lauf: je Projekt ein Unterordner `Projekt_<ID>/`, dazu `lauf_protokoll.md` |
+| `<...>/Projekt_<ID>/aggregate.csv` | Alle Skalare des Laufs: `Tab_Ergebnis*`-Zeilen, Restgrößen aus `SimulationControl`, Jahressumme jedes Vektors |
+| `<...>/Projekt_<ID>/*.csv` | Die Ganglinien: 8760 Stundenwerte bzw. 35040 Viertelstundenwerte, `Index;Wert` |
+| `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
+
+Der Werkzeugcode liegt in `../Referenzlauf/`.
+
+## Die wichtigste Regel
+
+**Die produktive `Kenndaten.accdb` wird nie beschrieben.**
+
+Die Suite kopiert sie nach `Referenzlaeufe/Arbeitskopie/`, biegt den DB-Pfad der Anwendung
+per Reflection auf diesen Ordner um und prüft anschließend über
+`DataRepository.GetDBPath()` nach, dass die Anwendung wirklich auf der Kopie arbeitet.
+Zeigt der Pfad woanders hin — oder auf eine der bekannten produktiven Ablagen — bricht der
+Lauf sofort ab. Auch jeder Kindprozess prüft das für sich noch einmal.
+
+Liegt neben der Quelle eine `Kenndaten.laccdb`, ist die Datenbank gerade geöffnet. Kopiert
+wird trotzdem (lesend), aber das Protokoll weist darauf hin: die Kopie kann dann Änderungen
+der laufenden Sitzung noch nicht enthalten. Für einen belastbaren Referenzlauf die
+Anwendung vorher schließen.
+
+## Bauen
+
+Nur über das MSBuild von Visual Studio — `dotnet build` scheitert an MSB4803
+(COM-Referenzen des App-Projekts).
+
+```powershell
+& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" `
+    C:\Waermeplan\WP_Plan\Referenzlauf\Referenzlauf.csproj `
+    -p:Configuration=Debug -p:Platform=x86
+```
+
+Beim allerersten Mal davor einmal `-t:Restore` mit denselben Parametern. Das Projekt ist
+bewusst **nicht** Teil von `WP-Plan.sln`.
+
+Ergebnis: `Referenzlauf\bin\x86\Debug\net8.0-windows\Referenzlauf.exe`
+
+## Bedienung
+
+```powershell
+$exe = "C:\Waermeplan\WP_Plan\Referenzlauf\bin\x86\Debug\net8.0-windows\Referenzlauf.exe"
+```
+
+### `lauf` — Stand einfrieren
+
+```powershell
+& $exe lauf                                  # Ziel: Referenzlaeufe\<heute>_B0
+& $exe lauf --ziel D:\Temp\NachUmbau         # anderer Zielordner
+& $exe lauf --projekte 1010,1023             # feste Projektliste statt Automatik
+& $exe lauf --timeout 600                    # Zeitlimit je Projekt in Sekunden (Standard 300)
+```
+
+Kopiert die Datenbank, wählt die Projekte, rechnet und schreibt CSVs plus
+`lauf_protokoll.md`. Exit-Code 0, wenn alle Projekte durchgelaufen sind.
+
+### `vergleich` — gegen die Referenz prüfen
+
+```powershell
+& $exe vergleich <refOrdner> <neuOrdner>
+```
+
+Exit-Code 0 = alles PASS, 1 = mindestens ein FAIL. Je Projekt werden die zehn größten
+Abweichungen ausgegeben, sortiert nach dem Vielfachen der erlaubten Toleranz.
+
+### `pruefen` — Plausibilität eines Laufs
+
+```powershell
+& $exe pruefen <ordner>
+```
+
+Prüft Rasterlänge (8760 oder 35040 Zeilen), NaN/Inf und Jahressummen größer null dort, wo
+dem Projekt ein Modul zugeordnet ist. Ein aktiviertes Gewerk ohne Modul ergibt zwangsläufig
+null und wird nur als Hinweis gemeldet.
+
+### `liste` — Projektlandschaft ansehen
+
+```powershell
+& $exe liste
+```
+
+Zeigt alle Projekte mit Ausstattung und die automatische Auswahl samt Begründung, ohne zu
+rechnen.
+
+## Toleranzen
+
+Für Skalare und für jedes einzelne Vektorelement gilt dieselbe Regel:
+
+| Wertebereich | Toleranz |
+|---|---|
+| Betrag ≥ 1 | relative Abweichung bis **1e-4** |
+| Betrag < 1 | absolute Abweichung bis **0,01** |
+
+Nichtnumerische Werte (Modulnamen, Schalter wie `Sim_Waermepumpe`) müssen exakt
+übereinstimmen. Fehlende oder zusätzliche Dateien und Einträge gelten als FAIL.
+
+Volatile Größen sind bewusst nicht Teil des Vergleichs: die Autowert-IDs der
+`Tab_Ergebnis*`-Zeilen und der Zeitstempel des Laufs.
+
+## Ablauf vor einer Änderung an der Engine (Paket 1 ff.)
+
+1. **Sauberen Ausgangszustand herstellen.** Anwendung schließen, Arbeitsverzeichnis auf dem
+   Stand, gegen den verglichen werden soll.
+2. **Referenz einfrieren** — falls für diesen Stand noch keine existiert:
+   ```powershell
+   & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_B0
+   & $exe pruefen C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_B0
+   ```
+3. **Änderung umsetzen** und die Anwendung neu bauen.
+4. **Neu rechnen und vergleichen:**
+   ```powershell
+   & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket1
+   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_B0 `
+                    C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket1
+   ```
+5. **Abweichungen bewerten.** Jede gemeldete Abweichung ist entweder gewollt — dann im
+   Umsetzungsprotokoll begründen und den neuen Ordner zur Referenz erklären — oder ein
+   Fehler.
+
+Wichtig: Beide Läufe müssen von derselben Quelldatenbank ausgehen. Ändern sich zwischendurch
+die Projektdaten, vergleicht man Äpfel mit Birnen. Die Quelle steht im Kopf von
+`lauf_protokoll.md`.
+
+## Die Projektauswahl
+
+Ohne `--projekte` wählt die Suite selbst, deterministisch und aus der Arbeitskopie heraus.
+Sie deckt zuerst fünf Pflichtkategorien ab — Wärmepumpe mit Pufferspeicher, Heizkessel,
+BHKW, Solarthermie und den Minimalfall „nur Wärmepumpe" — und füllt dann auf acht Projekte
+auf: erst mit neuen Erzeugerkombinationen, danach mit abweichender Anlagenausstattung.
+Übergangen werden Projekte ohne Eintrag in `Tab_Einstellungen` und ohne Klimaregion; die
+stehen mit Begründung im Protokoll.
+
+Ändert sich die Projektlandschaft, ändert sich womöglich auch die Auswahl — und damit
+lassen sich die Ordner nicht mehr vergleichen. Wer über längere Zeit dieselbe Basis braucht,
+gibt die Projekte fest vor:
+
+```powershell
+& $exe lauf --projekte 1007,1008,1010,1011,1017,1018,1023,1024
+```
+
+## Dialoge der Engine
+
+Engine und `DataRepository` zeigen im Fehler- und Grenzfall MessageBoxen (Konzept
+Kapitel 13.4). Ein headless-Lauf würde daran hängen bleiben, deshalb läuft ein
+Dialogwächter mit: er findet die Dialogfenster des eigenen Prozesses und drückt den
+bejahenden Knopf (Ja vor OK vor Ignorieren).
+
+Das ist bewusst kein blindes Wegklicken. Die häufigste Rückfrage lautet „Temperatur
+unterschreitet Kennlinien-Untergrenze, soll extrapoliert werden? Bei nein wird Simulation
+abgebrochen!" — mit „Nein" würde die Wärmepumpe für diese Stunden schlicht null liefern.
+Der Referenzlauf muss denselben Weg gehen wie ein Anwender, und der antwortet „Ja".
+
+Jede beantwortete Rückfrage steht mit Titel, Text und gedrücktem Knopf im
+`lauf_protokoll.md`. Taucht dort eine neue Meldung auf, lohnt der Blick: sie zeigt einen
+Grenzfall in den Projektdaten.
+
+Bleibt ein Projekt trotzdem hängen — etwa an einem Dialog, den der Wächter nicht bedienen
+kann — greift das Zeitlimit. Jedes Projekt läuft in einem eigenen Kindprozess, der nach
+Ablauf abgeräumt wird; die halbfertige Ausgabe wird gelöscht, das Projekt im Protokoll als
+übersprungen vermerkt, und die übrigen Projekte laufen weiter.
+
+## Aufräumen
+
+Ein Lauf belegt rund 27 MB. Die CSVs gehören ins Git — sie sind die Referenz —, alte
+Laufordner dagegen nicht auf Dauer. Nicht mehr benötigte Ordner löschen, statt sie
+anzusammeln. `Arbeitskopie/` bleibt ohnehin außen vor: `Kenndaten.accdb` steht in
+`.gitignore`.

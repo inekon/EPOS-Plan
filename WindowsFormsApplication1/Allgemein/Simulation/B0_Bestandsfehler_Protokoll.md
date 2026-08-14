@@ -43,9 +43,16 @@ Referenzläufe, die vor den weiteren Paketen einzufrieren sind.
   Testselects). Urteil erste Runde: 6× korrekt, 2× Problem (B0-3, B0-7),
   3× unvollständig (B0-1, B0-6a, B0-9). **Alle fünf Befunde sind nachgearbeitet**
   (siehe Tabellenzeilen), Build danach erneut grün.
-- **Referenzläufe (B1):** noch offen — vor Paket 1 ff. sind 5–8 Realprojekte als
-  CSV einzufrieren. Die Spalten `Restwaermebedarf`/`Waermebedarfsdeckung` werden
-  dabei bereits die **neuen** (korrekten) Werte tragen.
+- **Referenzläufe (B1): erledigt (14.08.2026).** Acht Realprojekte eingefroren
+  (`Referenzlaeufe/2026-08-14_B0/`, 183 CSVs; Selbstvergleich PASS über
+  2.033.047 Werte, zweiter unabhängiger Lauf bitidentisch, Negativtest schlägt
+  korrekt fehl). Werkzeug: `Referenzlauf/` (Konsolentool, arbeitet ausschließlich
+  auf einer DB-Kopie), Bedienung in `Referenzlaeufe/LIESMICH.md`. Die Referenzen
+  tragen den Stand **nach B0** — `Restwaermebedarf`/`Waermebedarfsdeckung` also
+  bereits die korrigierten Werte. Hinweis: Fünf Projekte beantworten die
+  Extrapolations-Rückfrage automatisiert mit „Ja" (dokumentiert im
+  Laufprotokoll) — mit der `Extrapolation_erlaubt`-Einstellung aus Konzept 13.4
+  wird das später zur regulären Vorab-Einstellung.
 
 ## Review-Funde außerhalb des Paketumfangs (offen, vorbestehend)
 

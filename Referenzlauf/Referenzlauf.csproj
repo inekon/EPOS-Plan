@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Referenzlauf-Suite (Paket B1, Kapitel 9 des Simulationskonzepts).
+
+    Eigenstaendiges Konsolenwerkzeug: friert die Ergebnisvektoren mehrerer Realprojekte
+    als CSV ein und vergleicht spaetere Laeufe mit Toleranz dagegen.
+
+    BEWUSST NICHT IN WP-Plan.sln aufgenommen - das Werkzeug wird separat gebaut:
+      "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ^
+        Referenzlauf\Referenzlauf.csproj -p:Configuration=Debug -p:Platform=x86
+    "dotnet build" scheitert an MSB4803 (COM-Referenzen des referenzierten App-Projekts).
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+
+    <!-- Wegen der Projektreferenz auf die WinForms-App zwingend erforderlich. -->
+    <UseWindowsForms>true</UseWindowsForms>
+
+    <!-- x86 wie die App: Microsoft.ACE.OLEDB.12.0 ist bitness-gebunden. -->
+    <PlatformTarget>x86</PlatformTarget>
+    <Platforms>x86</Platforms>
+
+    <RootNamespace>WindowsFormsApplication1.Referenzlauf</RootNamespace>
+    <AssemblyName>Referenzlauf</AssemblyName>
+
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+
+    <!-- Gleiche Toleranz gegenueber Legacy-Warnungen wie im App-Projekt. -->
+    <NoWarn>$(NoWarn);CA1416;MSB3568;CS1701;CS1702;NU1701;MSB3277;NETSDK1206;WFAC010</NoWarn>
+    <SatelliteResourceLanguages>de-DE;en-US</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WindowsFormsApplication1\WindowsFormsApplication1.csproj" />
+  </ItemGroup>
+
+</Project>
