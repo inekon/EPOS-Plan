@@ -103,3 +103,31 @@ liegen uncommittet im Working Tree; empfohlene Commit-Aufteilung:
 4. B0-6a + B0-8 (Puffer-Lebenszyklus UI)
 5. B0-9 + B0-10 (Lokalisierungs-Vorgriff)
 6. B0-4 (Aufräumarbeit)
+
+## Nachtrag 14.08.2026 — Stille SQL-Fehler aus dem ersten B1-Referenzlauf
+
+Der headless-Referenzlauf (Projekte 1008, 1011) zeigte Konsolenmeldungen
+`Fehler beim Öffnen des RecordSets: Für mindestens einen erforderlichen Parameter
+wurde kein Wert angegeben.` — Access' Umschreibung für einen unbekannten
+Spaltennamen. `RecordSet.Open` schluckt den Fehler und liefert ein leeres
+Ergebnis; die Aufrufer rechnen still mit 0 weiter. Ursachenanalyse per
+Schemaabgleich und Testselects gegen die Arbeitskopie:
+
+| # | Datei | Fehler | Fix | Ergebniswirkung |
+|---|---|---|---|---|
+| **B1-F1** | `SimulationStrombedarf.cs:89` | `order by Tab_StromganglinieDaten.ID_GanglinieDaten` — die Spalte heißt im neuen Schema `ID`. Jede externe Stromganglinie fiel dadurch **komplett** aus dem Strombedarf | ORDER BY auf `Tab_StromganglinieDaten.ID` (analog zum Wärmebedarf-Pendant `SimulationWaermebedarf.cs:205`) | **Alle Projekte mit zugeordneter Stromganglinie.** 1008: Strombedarf 365 → 9 945 MWh/a (2 Zuordnungen à 8 760 h fehlten); 1011: 672 → 5 462 MWh/a (35 040 Viertelstundenwerte fehlten). Nachgelagert: Reststrom, PV-Eigenverbrauch/-Deckung, Stromspeicher, Wirtschaftlichkeit |
+| **B1-F2** | `SimulationWaermebedarf.cs:600` | `rs.Read("Prozessname")` — `Abfrage_Monatswaerme_Prozesse` liefert seit der Migration `Bezeichner`. Die `IndexOutOfRangeException` (Meldungstext = nackter Spaltenname `Prozessname`) wurde vom `catch (SystemException)` verschluckt → Prozesswärme = 0 | Spaltenname auf `Bezeichner` | **Alle Projekte mit Prozesswärme.** 1011: Prozesswärme 0 → 365 MWh/a, Wärmebedarf gesamt 4 740 → 5 105 MWh/a; nachgelagert WP-Produktion (142 → 275 MWh), Bivalenzpunkt, Kessel, Solar-Überschuss |
+| — | `RecordSet.cs:45`, `SimulationWaermebedarf.cs` (2 catches) | Fehler ohne Kontext (`Open` ohne SQL, `catch` druckt nur `ex.Message`) | `Open`-Fehlermeldung nennt jetzt das SQL; die beiden catches benennen Prozess-/Brauchwasser-Kontext | Keine Rechenwirkung, reine Diagnostizierbarkeit |
+
+Verifiziert per Referenzlauf mit gefixter App-DLL: beide Projekte ohne
+RecordSet-Fehler; auf der Wärmeseite von 1008 (von den Fixes unberührt) sind
+alte und neue Skalare identisch — die Differenzen sind damit den Fixes
+zuzuordnen.
+
+**Offener Folgefund (UI-Pfade, nicht Simulation):** `WaermebedarfCtrl`,
+`WaermebedarfDatenCtrl`, `StromganglinieCtrl/DatenCtrl` und
+`SolarganglinieCtrl/DatenCtrl` lesen/schreiben weiterhin die Alt-Spalte
+`ID_GanglinieDaten` (`SELECT MAX`, `INSERT`, `DELETE`), die es in
+`Tab_Waermebedarf(Daten)`/`Tab_StromganglinieDaten` nicht mehr gibt —
+Ganglinien-Import und -Löschung dürften gegen das neue Schema fehlschlagen.
+Separat zu prüfen.
