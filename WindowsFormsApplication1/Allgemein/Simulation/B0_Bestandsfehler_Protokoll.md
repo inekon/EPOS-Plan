@@ -27,6 +27,12 @@ Referenzläufe, die vor den weiteren Paketen einzufrieren sind.
 | **B0-10** | `Form_PufferSp.cs:183`, `Form_PufferSp_Admin.cs:59` | `szFilterVolumen` mit `Gesamtvolumen Like '%'` vorbelegt (Fallback „alle Volumina") | **Keine Rechenwirkung.** Beseitigt den Laufzeit-SQL-Syntaxfehler `… and␣␣order by …` bei unbekannten Filtertexten; Filterverhalten bei den bekannten Literalen unverändert |
 | **B0-11** | `Form_Simulation_Config.cs` (btn_Speichern) | Rückwärts-Mapping matcht auch gegen `DbValue`; Mapping-Liste vor die Schleife gezogen | **Deutsche Oberfläche: unverändert** (DisplayName = DbValue trifft weiterhin zuerst). Verhindert, dass nach Sprachwechsel der lokalisierte Anzeigename als `Erzeuger` in `Z_ProjektPufferSp` landet und die Zuordnung still wirkungslos wird |
 
+## Nachtrag 14.08.2026: B0-12 (aus den offenen Review-Funden)
+
+| # | Datei(en) | Fix | Ergebniswirkung |
+|---|---|---|---|
+| **B0-12** | `SimulationSPK.cs` (Berechnung + Heizkessel_Simulation) | `Anzahl` wird nach dem Einlesen mit Hinweismeldung auf `MAX_SPK` (10) begrenzt; `Gasspitze_Kessel` von `double[5]` auf `MAX_SPK` dimensioniert (gleiche Größe wie alle übrigen Kessel-Arrays) | **Bis 5 Kessel: bitidentisch.** Ab dem 6. Kessel brach der Lauf bisher mit `IndexOutOfRangeException` in der Gasspitzenberechnung ab (kein Ergebnis) — jetzt rechnet er durch; ab dem 11. Kessel liefen alle Kessel-Arrays über — jetzt werden die ersten 10 gerechnet und eine Hinweismeldung angezeigt |
+
 ## Verifikation
 
 - **Build:** `WP-Plan.sln`, Debug/x86 — fehlerfrei (nur vorbestehende Warnungen).
@@ -49,9 +55,8 @@ Referenzläufe, die vor den weiteren Paketen einzufrieren sind.
 
 ## Review-Funde außerhalb des Paketumfangs (offen, vorbestehend)
 
-- **`SimulationSPK`: fehlende Array-Grenzen.** `Anzahl = spk_list.Count` wird nicht
-  gegen die Arraygrößen geprüft; `Gasspitze_Kessel` ist nur `double[5]` — ab dem
-  6. Kessel droht eine `IndexOutOfRangeException`.
+- ~~**`SimulationSPK`: fehlende Array-Grenzen.**~~ **Behoben als B0-12** (siehe
+  Nachtrag oben).
 - **`Form_Heizkessel.cs:445` / `Form_Heizkessel_Admin.cs:82`:** gleiche Filterlücke
   wie B0-10 (`szFilterLeistung` ohne Fallback); die BHKW-Formulare haben den
   Fallback bereits.
