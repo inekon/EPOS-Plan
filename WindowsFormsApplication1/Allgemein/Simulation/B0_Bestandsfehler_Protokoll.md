@@ -92,6 +92,36 @@ als gewollt begründet.
 - **Konzept 13.7 (Abschnitt 4):** Wiedergabe der Erzeuger-Abfragen um das
   `HAVING ID_Projekt=8` ergänzt (Nachtrag eingearbeitet).
 
+## Nachtrag 14.08.2026 — Alt-Spaltenname `ID_GanglinieDaten` (Ganglinien)
+
+Gleiche Fehlerklasse wie die stillen SQL-Fehler B1-F1/B1-F2: Sechs Controller und eine
+Simulationsabfrage verwendeten den Alt-Spaltennamen `ID_GanglinieDaten`, den es im
+aktuellen Schema nicht mehr gibt (Kopftabellen `Tab_Waermebedarf`/`Tab_Stromganglinie`/
+`Tab_Solarganglinie` führen `ID`, Datentabellen `ID_Ganglinie`; per Schemadump gegen die
+DB-Arbeitskopie verifiziert, alle `ID`-Spalten AutoNumber).
+
+- **UI-Pfade (anlegen/importieren/löschen):** `WaermebedarfCtrl` (MAX/INSERT),
+  `WaermebedarfDatenCtrl` (DELETE/INSERT), `SolarganglinieCtrl` (MAX/INSERT),
+  `SolarganglinieDatenCtrl` (DELETE/INSERT), `StromganglinieDatenCtrl` (DELETE) —
+  Muster: `ID_GanglinieDaten` → `ID` (Kopftabelle) bzw. `ID_Ganglinie` (Datentabelle).
+  Zusätzlich in allen drei Kopf-Controllern das tote ReadAll/ReadSingle-Mapping ersetzt:
+  `m_ID_Ganglinie` wurde über einen Fallback auf nicht existierende Spalten gelesen und
+  blieb still 0 — jetzt direkt aus `ID`.
+- **Simulationspfad:** `SimulationStrombedarf.cs:89` sortierte über
+  `Tab_StromganglinieDaten.ID_GanglinieDaten`; den Access-Fehler („Für mindestens einen
+  erforderlichen Parameter …") schluckt `RecordSet.Open`, projektzugeordnete
+  Stromganglinien gingen dadurch still mit 0 in den Strombedarf ein. Jetzt
+  `ORDER BY Tab_StromganglinieDaten.ID`.
+
+**Verifikation:** Schemadump und Testselects per 32-bit-PowerShell/ACE gegen die
+DB-Arbeitskopie; Reflection-Testaufruf aller drei Gewerke gegen eine Wegwerf-Kopie
+(anlegen → Daten schreiben → Daten löschen → Kopf löschen, 24 Checks OK); Referenzlauf
+mit getauschter App-DLL über die acht B1-Projekte: sechs Projekte PASS (bitidentisch),
+nur 1008 und 1011 — die einzigen mit zugeordneter Stromganglinie — zeigen die gewollte
+Reparaturwirkung (der importierte Lastgang geht erstmals in
+`strombedarf_viertelstunde`/`reststrom` ein). Lauf: `Referenzlaeufe/2026-08-14_GanglinienFix`.
+Nach Übernahme ist die Referenz für 1008/1011 neu zu setzen.
+
 ## Auslieferungshinweis
 
 Das Konzept sieht die B0-Fixes **einzeln ausgeliefert** vor (E9). Die Änderungen

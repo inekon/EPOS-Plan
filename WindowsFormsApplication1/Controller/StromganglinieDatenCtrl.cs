@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
             try
             {
                 // Standardkonforme DELETE-Syntax ohne "*" und Typkorrektur über expliziten Parameter
-                string sql = "DELETE FROM Tab_StromganglinieDaten WHERE ID_GanglinieDaten = ?";
+                string sql = "DELETE FROM Tab_StromganglinieDaten WHERE ID_Ganglinie = ?";
 
                 OleDbParameter paramId = new OleDbParameter("@idGang", OleDbType.Integer);
                 paramId.Value = m_ID_GanglinieDaten;
@@ -69,7 +69,6 @@ namespace WindowsFormsApplication1
                         {
                             cmd.Connection = conn;
                             cmd.Transaction = trans;
-                            // Korrektur: Verwendung des konsistenten Spaltennamens ID_GanglinieDaten
                             cmd.CommandText = "INSERT INTO Tab_StromganglinieDaten (ID_Ganglinie, Wert) VALUES (?, ?)";
 
                             // Parameter einmalig mit expliziten OleDbTypes initialisieren, um Laufzeitfehler zu verhindern

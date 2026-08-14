@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
             try
             {
                 // Standardkonformes DELETE ohne "*" und typsichere Parameterübergabe
-                string sql = "DELETE FROM Tab_SolarganglinieDaten WHERE ID_GanglinieDaten = ?";
+                string sql = "DELETE FROM Tab_SolarganglinieDaten WHERE ID_Ganglinie = ?";
 
                 OleDbParameter paramId = new OleDbParameter("@idGang", OleDbType.Integer);
                 paramId.Value = m_ID_GanglinieDaten;
@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
                         {
                             cmd.Connection = conn;
                             cmd.Transaction = trans;
-                            cmd.CommandText = "INSERT INTO Tab_SolarganglinieDaten (ID_GanglinieDaten, Wert) VALUES (?, ?)";
+                            cmd.CommandText = "INSERT INTO Tab_SolarganglinieDaten (ID_Ganglinie, Wert) VALUES (?, ?)";
 
                             // Parameter vorab mit expliziten OleDbTypes definieren (verhindert den Laufzeitfehler)
                             cmd.Parameters.Add("@id", OleDbType.Integer);
