@@ -49,14 +49,13 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    // Korrektur: Nutzt einheitlich den Spaltennamen aus der DB (hier ID_GanglinieDaten gemäß Altanwendung)
-                    string sqlMax = "SELECT MAX(ID_GanglinieDaten) FROM Tab_Waermebedarf";
+                    string sqlMax = "SELECT MAX(ID) FROM Tab_Waermebedarf";
                     object maxResult = DataRepository.ExecuteScalar(sqlMax, null);
                     m_ID_Ganglinie = (maxResult != null ? Convert.ToInt32(maxResult) : 0) + 1;
                 }
 
                 // Standardkonformes INSERT INTO ... VALUES-Statement
-                string sql = "INSERT INTO Tab_Waermebedarf (ID_GanglinieDaten, Bezeichner) VALUES (?, ?)";
+                string sql = "INSERT INTO Tab_Waermebedarf (ID, Bezeichner) VALUES (?, ?)";
                 OleDbParameter[] ps = {
                     new OleDbParameter("@id", m_ID_Ganglinie),
                     new OleDbParameter("@bez", m_szBezeichner ?? (object)DBNull.Value)
@@ -88,10 +87,8 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
                     item.ID = Convert.ToInt32(row["ID"]);
 
-                if (dt.Columns.Contains("ID_GanglinieDaten") && row["ID_GanglinieDaten"] != DBNull.Value)
-                    item.m_ID_Ganglinie = Convert.ToInt32(row["ID_GanglinieDaten"]);
-                else if (dt.Columns.Contains("ID_Ganglinie") && row["ID_Ganglinie"] != DBNull.Value)
-                    item.m_ID_Ganglinie = Convert.ToInt32(row["ID_Ganglinie"]);
+                // Die Ganglinien-ID ist im aktuellen Schema der Primärschlüssel der Kopftabelle
+                item.m_ID_Ganglinie = item.ID;
 
                 if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
                     item.m_szBezeichner = row["Bezeichner"].ToString();
@@ -121,10 +118,8 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
                     ID = Convert.ToInt32(row["ID"]);
 
-                if (dt.Columns.Contains("ID_GanglinieDaten") && row["ID_GanglinieDaten"] != DBNull.Value)
-                    m_ID_Ganglinie = Convert.ToInt32(row["ID_GanglinieDaten"]);
-                else if (dt.Columns.Contains("ID_Ganglinie") && row["ID_Ganglinie"] != DBNull.Value)
-                    m_ID_Ganglinie = Convert.ToInt32(row["ID_Ganglinie"]);
+                // Die Ganglinien-ID ist im aktuellen Schema der Primärschlüssel der Kopftabelle
+                m_ID_Ganglinie = ID;
 
                 if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
                     m_szBezeichner = row["Bezeichner"].ToString();
