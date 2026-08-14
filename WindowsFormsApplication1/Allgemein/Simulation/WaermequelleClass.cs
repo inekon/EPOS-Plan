@@ -278,12 +278,59 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Tabellenabfrage ohne Dialog (Paket 2, Konzept 13.4) - Gegenstück zu
+        /// <see cref="SkalarStill"/> für den Quellspeicher-Aufbau im Engine-Pfad.
+        /// </summary>
+        private static DataTable TabelleStill(string sql, params OleDbParameter[] parameter)
+        {
+            try
+            {
+                DataTable dt = new DataTable();
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        if (parameter != null) cmd.Parameters.AddRange(parameter);
+                        using (OleDbDataAdapter ad = new OleDbDataAdapter(cmd))
+                        {
+                            ad.Fill(dt);
+                        }
+                    }
+                }
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Stille Tabellenabfrage fehlgeschlagen: " + ex.Message);
+                return null;
+            }
+        }
+
         /// <summary>Ganzzahl aus einem Datenbankwert; 0 bei null, DBNull oder Unfug.</summary>
         private static int ZahlOderNull(object o)
         {
             if (o == null || o == DBNull.Value) return 0;
             try { return Convert.ToInt32(o); }
             catch { return 0; }
+        }
+
+        /// <summary>
+        /// Wie <see cref="WertLesen(int,string)"/>, aber STILL (Paket 2, Konzept 13.4).
+        ///
+        /// <see cref="WertLesen(int,string)"/> geht über <c>DataRepository.ExecuteScalar</c>
+        /// und kann im Fehlerfall eine MessageBox zeigen — mitten im Rechenlauf ist das ein
+        /// hängender Referenzlauf. Alles, was aus dem ENGINE-Pfad heraus liest
+        /// (<see cref="Quelltemperatur"/>, <see cref="Quellspeicher"/>), benutzt deshalb
+        /// diese Fassung. Der Rückgabewert ist identisch: der Spaltenwert oder <c>null</c>.
+        ///
+        /// <see cref="WertLesen(int,string)"/> bleibt für die Oberfläche bestehen — dort ist
+        /// ein Fehlerdialog erwünscht und der breite Aufrufkreis unangetastet.
+        /// </summary>
+        public static object WertLesenStill(int idEnergieanlage, string spalte)
+        {
+            return WertLesenStill("Tab_Energieanlagen", spalte, idEnergieanlage);
         }
 
         /// <summary>
@@ -302,6 +349,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Schreibt einen Wert (WQ_*, Prioritaet) einer Energieanlage.
+        ///
+        /// Der Typ des Parameters wird aus dem WERT abgeleitet. Das trägt für alles, was
+        /// tatsächlich einen Wert hat — für <see cref="DBNull"/> nicht: dort gibt es
+        /// nichts abzuleiten. Wer NULL schreibt, nimmt die Überladung mit
+        /// ausdrücklichem <see cref="OleDbType"/>.
         /// </summary>
         public static bool WertSchreiben(int idEnergieanlage, string spalte, object wert)
         {
@@ -309,7 +361,35 @@ namespace WindowsFormsApplication1
             {
                 string sql = "UPDATE Tab_Energieanlagen SET [" + spalte + "] = ? WHERE ID = " + idEnergieanlage;
                 return DataRepository.ExecuteSQL(sql,
-                    new System.Data.OleDb.OleDbParameter("@w", wert ?? (object)DBNull.Value));
+                    new OleDbParameter("@w", wert ?? (object)DBNull.Value));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("WertSchreiben " + spalte + " fehlgeschlagen: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Wie <see cref="WertSchreiben(int,string,object)"/>, aber mit AUSDRÜCKLICHEM
+        /// Spaltentyp — die Regel, nach der auch <c>StilleDb.Par</c> und
+        /// <c>ProjektPuffer.Par</c> gebaut sind.
+        ///
+        /// Aus <see cref="DBNull"/> allein leitet der OLE-DB-Provider keinen Typ ab; er
+        /// rät. Bei den drei Fremdschlüsselspalten der Wärmesenke
+        /// (<c>WS_ID_Puffer</c>, <c>WS_ID_Puffer2</c>) und bei <c>WS_Ziel2</c> ist NULL
+        /// aber der Normalfall — „keine Zweitsenke" heißt genau das, und 0 wäre wegen der
+        /// erzwungenen Beziehung aus Schritt 4 der SchemaMigration nicht einmal erlaubt.
+        /// Mit dem ausdrücklichen Typ hängt das Ergebnis nicht mehr daran, wie ACE rät.
+        /// </summary>
+        public static bool WertSchreiben(int idEnergieanlage, string spalte,
+                                         OleDbType typ, object wert)
+        {
+            try
+            {
+                string sql = "UPDATE Tab_Energieanlagen SET [" + spalte + "] = ? WHERE ID = " + idEnergieanlage;
+                return DataRepository.ExecuteSQL(sql,
+                    new OleDbParameter("@w", typ) { Value = wert ?? (object)DBNull.Value });
             }
             catch (Exception ex)
             {
@@ -331,7 +411,9 @@ namespace WindowsFormsApplication1
             // Luft-Wasser: immer Außenluft
             if (string.IsNullOrEmpty(wpTyp) || wpTyp == "Luft-Wasser") return aussentemp;
 
-            string typ = WertLesen(idEnergieanlage, "WQ_Typ") as string;
+            // Paket 2 / Konzept 13.4: im Engine-Pfad wird STILL gelesen - ein Fehlerdialog
+            // aus DataRepository heraus würde den Rechenlauf anhalten.
+            string typ = WertLesenStill(idEnergieanlage, "WQ_Typ") as string;
             if (string.IsNullOrEmpty(typ) || typ == TYP_AUSSENLUFT) return aussentemp;
 
             try
@@ -340,7 +422,7 @@ namespace WindowsFormsApplication1
                 {
                     case TYP_KONSTANT:
                         {
-                            object v = WertLesen(idEnergieanlage, "WQ_Temp");
+                            object v = WertLesenStill(idEnergieanlage, "WQ_Temp");
                             if (v == null) return aussentemp;
                             return KonstantesProfil(Convert.ToSingle(v));
                         }
@@ -348,7 +430,7 @@ namespace WindowsFormsApplication1
                     case TYP_PUFFER:
                         {
                             // Temperatur des als Wärmequelle gewählten Pufferspeichers
-                            object v = WertLesen(idEnergieanlage, "WQ_Temp");
+                            object v = WertLesenStill(idEnergieanlage, "WQ_Temp");
                             if (v != null) return KonstantesProfil(Convert.ToSingle(v));
 
                             // Fallback: mittlere Temperatur (Vorlauf + Rücklauf) / 2.
@@ -365,7 +447,7 @@ namespace WindowsFormsApplication1
                             // leer ist, liefert Stufe 2 dieselben Zahlen wie Stufe 3.
                             int vorlauf, ruecklauf;
 
-                            int idQuellPuffer = ZahlOderNull(WertLesen(idEnergieanlage, "WQ_ID_Puffer"));
+                            int idQuellPuffer = ZahlOderNull(WertLesenStill(idEnergieanlage, "WQ_ID_Puffer"));
                             if (PufferSpCtrl.TemperaturenLesen(idQuellPuffer, out vorlauf, out ruecklauf))
                                 return KonstantesProfil((vorlauf + ruecklauf) / 2f);
 
@@ -376,11 +458,11 @@ namespace WindowsFormsApplication1
                             if (PufferSpCtrl.TemperaturenLesen(idZuordnungsPuffer, out vorlauf, out ruecklauf))
                                 return KonstantesProfil((vorlauf + ruecklauf) / 2f);
 
-                            // Altdaten: mittlere Temperatur der Zuordnung
-                            object vor = DataRepository.ExecuteScalar(
+                            // Altdaten: mittlere Temperatur der Zuordnung (still, Paket 2)
+                            object vor = SkalarStill(
                                 "SELECT Vorlauf FROM Z_ProjektPufferSp WHERE ID_Projekt=" + idProjekt +
                                 " AND Erzeuger='Wärmepumpe' ORDER BY Prioritaet");
-                            object rue = DataRepository.ExecuteScalar(
+                            object rue = SkalarStill(
                                 "SELECT Ruecklauf FROM Z_ProjektPufferSp WHERE ID_Projekt=" + idProjekt +
                                 " AND Erzeuger='Wärmepumpe' ORDER BY Prioritaet");
                             if (vor == null || vor == DBNull.Value || rue == null || rue == DBNull.Value)
@@ -391,15 +473,15 @@ namespace WindowsFormsApplication1
 
                     case TYP_PROFIL:
                         {
-                            string monat = WertLesen(idEnergieanlage, "WQ_Monatswerte") as string;
-                            string woche = WertLesen(idEnergieanlage, "WQ_Wochenwerte") as string;
+                            string monat = WertLesenStill(idEnergieanlage, "WQ_Monatswerte") as string;
+                            string woche = WertLesenStill(idEnergieanlage, "WQ_Wochenwerte") as string;
                             float[] profil = ProfilAusMonatsUndWochenwerten(monat, woche);
                             return profil ?? aussentemp;
                         }
 
                     case TYP_CSV:
                         {
-                            string pfad = WertLesen(idEnergieanlage, "WQ_CSV") as string;
+                            string pfad = WertLesenStill(idEnergieanlage, "WQ_CSV") as string;
                             float[] profil = ProfilAusCsv(pfad);
                             return profil ?? aussentemp;
                         }
@@ -409,10 +491,10 @@ namespace WindowsFormsApplication1
                             // Erdreichmodell nach VDI 4640 Blatt 1 (Konzept 4.5/13.1).
                             // Kein eigener DB-Zugriff auf die Klimadaten: der
                             // 8760er-Außentemperaturvektor ist bereits durchgereicht.
-                            string quellsystem = WertLesen(idEnergieanlage, "WQ_Quellsystem") as string;
-                            string bodentyp = WertLesen(idEnergieanlage, "WQ_Bodentyp") as string;
+                            string quellsystem = WertLesenStill(idEnergieanlage, "WQ_Quellsystem") as string;
+                            string bodentyp = WertLesenStill(idEnergieanlage, "WQ_Bodentyp") as string;
 
-                            object oTiefe = WertLesen(idEnergieanlage, "WQ_Tiefe");
+                            object oTiefe = WertLesenStill(idEnergieanlage, "WQ_Tiefe");
                             double tiefe = oTiefe != null ? Convert.ToDouble(oTiefe) : 0;
 
                             // Konsistenz-Check gegen teilgeschriebene Feldsätze:
@@ -470,19 +552,23 @@ namespace WindowsFormsApplication1
             // Luft-Wasser-WP entnimmt keine Wärme aus einem Speicher
             if (string.IsNullOrEmpty(wpTyp) || wpTyp == "Luft-Wasser") return null;
 
-            string typ = WertLesen(idEnergieanlage, "WQ_Typ") as string;
+            // Paket 2 / Konzept 13.4: Stufe 1 des Quellspeicher-Zugriffs läuft still.
+            // Vorher hing hier der komplette Aufbau an DataRepository - eine fehlende
+            // Spalte oder eine gesperrte Datei hätte mitten im Rechenlauf eine MessageBox
+            // gezeigt. Gelesen werden dieselben Werte, das Ergebnis ist unverändert.
+            string typ = WertLesenStill(idEnergieanlage, "WQ_Typ") as string;
             if (typ != TYP_PUFFER) return null;
 
             // "unbegrenzt verfügbar" -> nur die Temperatur wirkt, keine Bilanz
-            object unbegrenzt = WertLesen(idEnergieanlage, "WQ_Unbegrenzt");
+            object unbegrenzt = WertLesenStill(idEnergieanlage, "WQ_Unbegrenzt");
             if (unbegrenzt != null && Convert.ToBoolean(unbegrenzt)) return null;
 
-            string bezeichner = WertLesen(idEnergieanlage, "WQ_Puffer") as string;
+            string bezeichner = WertLesenStill(idEnergieanlage, "WQ_Puffer") as string;
             if (string.IsNullOrEmpty(bezeichner)) return null;
 
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
+                DataTable dt = TabelleStill(
                     "SELECT ID, Gesamtvolumen, Bereitschaftsverluste FROM [" + PufferSpStammCtrl.TABLE +
                     "] WHERE Bezeichner = ?",
                     new OleDbParameter("@bez", bezeichner));
@@ -496,11 +582,11 @@ namespace WindowsFormsApplication1
                     ? Convert.ToDouble(dt.Rows[0]["Bereitschaftsverluste"]) : 0;
                 if (volumen <= 0) return null;
 
-                object oSpreizung = WertLesen(idEnergieanlage, "WQ_Spreizung");
+                object oSpreizung = WertLesenStill(idEnergieanlage, "WQ_Spreizung");
                 double spreizung = oSpreizung != null ? Convert.ToDouble(oSpreizung) : 5;
                 if (spreizung <= 0) spreizung = 5;
 
-                object oRegeneration = WertLesen(idEnergieanlage, "WQ_Regeneration");
+                object oRegeneration = WertLesenStill(idEnergieanlage, "WQ_Regeneration");
                 double regeneration = oRegeneration != null ? Convert.ToDouble(oRegeneration) : 0;
 
                 SimulationPufferspeicher sp = new SimulationPufferspeicher();

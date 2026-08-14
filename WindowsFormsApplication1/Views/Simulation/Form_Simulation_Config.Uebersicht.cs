@@ -1,0 +1,1256 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// Erzeuger-Übersicht der Simulationskonfiguration (Konzept 4.1) — Layout, Anzeige
+    /// und die Dialoge, die per Doppelklick daraus geöffnet werden.
+    ///
+    /// Aus <c>Form_Simulation_Config.cs</c> herausgelöst (Paket 2): die Hauptdatei hatte
+    /// über 2000 Zeilen und mischte Auswahl, Alt-Zuordnung und Übersicht. Hier steht
+    /// ausschließlich die Übersicht samt Fußzeile.
+    ///
+    /// Was NICHT hier steht: die Alt-Zuordnung <c>listView1</c>/<c>_zuordnungen</c> und
+    /// ihr Speicherpfad. Sie bleibt in der Hauptdatei, weil sie mit Etappe B (Konzept 4.4)
+    /// im Ganzen entfällt.
+    /// </summary>
+    public partial class Form_Simulation_Config : Form
+    {
+        // --- Spaltenindizes der Übersicht --------------------------------------------
+
+        // ZWINGENDE VORARBEIT aus Konzept 4.1: Die Indizes standen an drei Stellen
+        // doppelt (Columns.Add, Tooltip-switch, Doppelklick-Dispatcher). Mit zwei neuen
+        // Spalten hätte das stille Fehlbedienungen ergeben - ein Doppelklick auf
+        // "Wärmesenke" hätte den Betriebsmodus geöffnet. Ab jetzt gibt es die Wahrheit
+        // genau einmal, hier.
+        private const int COL_PRIO = 0;
+        private const int COL_ERZEUGER = 1;
+        private const int COL_ANLAGE = 2;
+        private const int COL_WPPRIO = 3;
+        private const int COL_QUELLE = 4;
+        private const int COL_SENKE = 5;
+        private const int COL_ZWEITSENKE = 6;   // neu (Konzept 4.1/4.2)
+        private const int COL_BETRIEBSMODUS = 7;
+        private const int COL_PUFFER = 8;
+
+        /// <summary>
+        /// Spalten, die per Doppelklick einen Dialog öffnen (Konzept 4.1, „Whitelist").
+        ///
+        /// Der frühere Dispatcher hatte ein <c>else</c>-Fallback <c>int spalte = 4</c>:
+        /// jeder Doppelklick, der keine der bekannten Spalten traf, öffnete die
+        /// Wärmequelle. Solange nur Wärmepumpen-Zeilen ein <c>Tag</c> trugen, fiel das
+        /// nicht auf. Seit ALLE Zeilen ein <c>Tag</c> haben (4.1), öffnete ein
+        /// Doppelklick auf die Bezeichnerspalte eines Heizkessels den
+        /// Wärmequellen-Dialog. Jetzt gilt: was nicht in dieser Liste steht, tut nichts.
+        /// </summary>
+        private static readonly int[] SPALTEN_MIT_DIALOG =
+        {
+            COL_WPPRIO, COL_QUELLE, COL_SENKE, COL_ZWEITSENKE, COL_BETRIEBSMODUS, COL_PUFFER
+        };
+
+        // --- Etappe A: Zuordnungs-Rubrik (Konzept 4.4) --------------------------------
+
+        /// <summary>
+        /// Etappe A von Konzept 4.4: Die programmatische Rubrik „Pufferspeicher:" samt
+        /// Zuordnungstabelle ist unsichtbar. Der Code bleibt vollständig stehen und
+        /// <c>_zuordnungen</c> wird weiter geladen und gespeichert — die Engine liest den
+        /// WP-Pufferspeicher bis Paket 4 aus <c>Z_ProjektPufferSp</c>.
+        ///
+        /// Auf <c>true</c> gesetzt kommt die alte Bedienung unverändert zurück; das ist
+        /// der Rückweg, falls sich in Realprojekten etwas zeigt.
+        ///
+        /// Bewusst <c>static readonly</c> statt <c>const</c>: Bei einer Konstanten faltet
+        /// der Compiler <c>if (!RUBRIK_SICHTBAR) return;</c> weg und meldet den Rest von
+        /// <c>AktualisierePufferSpSichtbarkeit</c> als unerreichbar (CS0162). Der Code
+        /// SOLL aber stehen bleiben — er ist der Rückweg für Etappe B. Mit
+        /// <c>static readonly</c> bleibt der Schalter genauso wirksam, ohne die Warnung.
+        /// </summary>
+        private static readonly bool RUBRIK_SICHTBAR = false;
+
+        /// <summary>Höhe, die unter der Übersicht für die Fußzeile frei bleibt [px].</summary>
+        private const int PLATZ_FUSSZEILE = 62;
+
+        /// <summary>
+        /// Feste Spaltenbreiten der Übersicht [px], in der Reihenfolge der
+        /// <c>COL_*</c>-Konstanten (Konzept 4.1, zweiter Layoutzwang).
+        ///
+        /// Vorher liefen zwei <c>AutoResizeColumns</c> hintereinander:
+        /// <c>ColumnContent</c> und danach <c>HeaderSize</c>. Die zweite überschreibt die
+        /// erste vollständig — die Breiten hingen also allein an der LÄNGE DER KOPFTEXTE.
+        /// Mit „Wärmeerzeuger", „Anlage(n) im Projekt" … „Zuordnung (Altmodell)" ergab das
+        /// rund 910 px in einer 491 px breiten Liste: waagerechter Rollbalken bei jedem
+        /// Öffnen, und die inhaltlich wichtigen Spalten waren die schmalsten.
+        ///
+        /// Jetzt: kompakte Kopftexte, feste Breiten, und das Formular wird einmalig so
+        /// weit verbreitert, dass die Summe hineinpasst (<see cref="UebersichtBreiteAnpassen"/>).
+        /// Zu lange Zellinhalte (lange Anlagennamen) kürzt die ListView mit „…" — das ist
+        /// gewollt; der volle Text steht im Mouseover-Hinweis der Zeile.
+        /// </summary>
+        private static readonly int[] SPALTEN_BREITEN =
+        {
+            40,   // COL_PRIO           "Prio"        1…4
+            84,   // COL_ERZEUGER       "Erzeuger"    längster Wert "Solarthermie"
+            140,  // COL_ANLAGE         "Anlage"      Herstellerbezeichner, kürzt bei Bedarf
+            62,   // COL_WPPRIO         "WP-Prio"     1…9 bzw. "-"
+            100,  // COL_QUELLE         "Quelle"      "Erdreich Kollektor 1,5 m" kürzt
+            120,  // COL_SENKE          "Senke"       "Puffer Heizung: <Name>"
+            100,  // COL_ZWEITSENKE     "Zweitsenke"
+            92,   // COL_BETRIEBSMODUS  "Modus"       "laufzeitoptimiert"
+            112   // COL_PUFFER         "Zuordnung (alt)"
+        };
+
+        /// <summary>
+        /// Zuschlag der ListView auf die Spaltensumme: 3D-Rahmen, die senkrechte
+        /// Bildlaufleiste (erscheint ab der fünften Erzeugerzeile) und eine kleine
+        /// Reserve. Die Breite der Bildlaufleiste kommt aus dem System, nicht aus einer
+        /// hier festgeschriebenen 17 — sonst rutscht bei abweichenden Systemmaßen genau
+        /// die letzte Spalte wieder hinaus.
+        /// </summary>
+        private static int ListeZuschlag()
+        {
+            return 2 + SystemInformation.VerticalScrollBarWidth + 6;
+        }
+
+        // --- Steuerelemente -----------------------------------------------------------
+
+        // Live-Übersicht der ausgewählten Wärmeerzeuger (rechts oben),
+        // wird in InitErzeugerUebersicht programmatisch angelegt
+        private GroupBox groupBox_Uebersicht;
+        private ListView listView_Uebersicht;
+
+        // Fußzeile: Projekt-Pufferspeicher und Einstieg in die Verwaltung (Konzept 4.1)
+        private Label label_PufferListe;
+        private Button btn_PufferVerwalten;
+
+        // Inline-Editor für die Wärmequelle in der Übersicht
+        private ComboBox _wqCombo;
+        private AnlagenInfo _wqInfo;
+        private bool _wqUpdating = false;
+
+        // Außentemperatur der Klimaregion (8760 Stundenwerte) für die Vorschau des
+        // Erdreichdialogs. Wird beim ersten Öffnen einmal geladen und gecacht
+        // (Konzept 4.5) - nicht bei jeder Parameteränderung.
+        private float[] _aussentempCache = null;
+        private bool _aussentempGeladen = false;
+
+        // Mouseover-Hinweise in der Übersicht
+        private ToolTip _uebersichtTip = new ToolTip();
+        private ListViewItem _tipItem = null;
+        private int _tipSpalte = -1;
+
+        /// <summary>Eine im Projekt angelegte Anlage (Zeile der Übersicht).</summary>
+        private class AnlagenInfo
+        {
+            public int ID;              // Tab_Energieanlagen.ID
+            public int ID_Type;         // 1 WP, 2 Solarthermie, 10 Heizkessel, 11 BHKW
+            public string Bezeichner = "";
+            public int Prioritaet;      // Einsatzreihenfolge (0 = nicht gesetzt)
+            public string WpTyp = "";   // Luft-Wasser / Sole-Wasser / Wasser-Wasser
+            public string WQ_Typ = "";  // Wärmequelle (WaermequelleClass.TYP_*)
+            public double WQ_Temp;
+            public string WS_Typ = "";  // Bedarfsart der Heizkreis-Senke (WaermequelleClass.SENKE_*)
+            public string BM_Typ = "";  // Betriebsmodus (WaermequelleClass.MODUS_*)
+
+            /// <summary>Haupt- und Zweitsenke (Konzept 5.3), aus derselben Abfrage gelesen.</summary>
+            public WaermesenkeClass.SenkeDaten Senke = new WaermesenkeClass.SenkeDaten();
+
+            public bool IstWaermepumpe
+            {
+                get { return ID_Type == ProjektPuffer.TYP_WP; }
+            }
+        }
+
+        // --- Aufbau -------------------------------------------------------------------
+
+        /// <summary>
+        /// Legt rechts oben die Übersicht an, die ALLE ausgewählten Wärmeerzeuger mit
+        /// Wärmequelle, Wärmesenke und Zweitsenke zeigt (Konzept 4.1). Sie aktualisiert
+        /// sich bei jeder Änderung der Auswahl und der Zuordnungen.
+        ///
+        /// Die Höhe folgt weiterhin <c>groupBox_PufferSp.Top</c>. Mit der ausgeblendeten
+        /// Rubrik (Etappe A) steht diese Gruppe am unteren Rand — der freiwerdende
+        /// Bereich geht damit an die Übersicht, ohne dass die Formel eine zweite Wahrheit
+        /// bekommt (Konzept 4.1, Layoutzwang in Fassung 12).
+        /// </summary>
+        private void InitErzeugerUebersicht()
+        {
+            // Erst die Breite (die Gruppe unten misst sich an groupBox_PufferSp), dann bauen
+            UebersichtBreiteAnpassen();
+
+            groupBox_Uebersicht = new GroupBox();
+            groupBox_Uebersicht.Name = "groupBox_Uebersicht";
+            groupBox_Uebersicht.Text = "Übersicht Wärmeerzeuger";
+            groupBox_Uebersicht.Location = new Point(groupBox_PufferSp.Left, 109);
+            groupBox_Uebersicht.Size = new Size(groupBox_PufferSp.Width,
+                groupBox_PufferSp.Top - 109 - 10);
+            this.Controls.Add(groupBox_Uebersicht);
+            groupBox_Uebersicht.BringToFront();
+
+            listView_Uebersicht = new ListView();
+            listView_Uebersicht.Name = "listView_Uebersicht";
+            listView_Uebersicht.View = View.Details;
+            listView_Uebersicht.FullRowSelect = true;
+            listView_Uebersicht.GridLines = true;
+            listView_Uebersicht.MultiSelect = false;
+            listView_Uebersicht.HeaderStyle = ColumnHeaderStyle.Nonclickable;
+            listView_Uebersicht.Font = listView1.Font;
+            listView_Uebersicht.Location = new Point(7, 20);
+            listView_Uebersicht.Size = new Size(groupBox_Uebersicht.Width - 14,
+                groupBox_Uebersicht.Height - 27);
+            listView_Uebersicht.Anchor = AnchorStyles.Top | AnchorStyles.Left |
+                AnchorStyles.Right | AnchorStyles.Bottom;
+
+            // ACHTUNG: Reihenfolge und Anzahl müssen zu den COL_*-Konstanten und zu
+            // SPALTEN_BREITEN passen. Kopftexte bewusst kurz (Konzept 4.1, Layoutzwang);
+            // was die Spalte bedeutet und dass sie per Doppelklick bearbeitbar ist, steht
+            // im Mouseover-Hinweis - das trägt der Kopf nicht mehr mit.
+            listView_Uebersicht.Columns.Add("Prio", SPALTEN_BREITEN[COL_PRIO], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add("Erzeuger", SPALTEN_BREITEN[COL_ERZEUGER], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add("Anlage", SPALTEN_BREITEN[COL_ANLAGE], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add("WP-Prio", SPALTEN_BREITEN[COL_WPPRIO], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add("Quelle", SPALTEN_BREITEN[COL_QUELLE], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add("Senke", SPALTEN_BREITEN[COL_SENKE], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add("Zweitsenke", SPALTEN_BREITEN[COL_ZWEITSENKE], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add("Modus", SPALTEN_BREITEN[COL_BETRIEBSMODUS], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add("Zuordnung (alt)", SPALTEN_BREITEN[COL_PUFFER], HorizontalAlignment.Left);
+
+            listView_Uebersicht.MouseDoubleClick += listView_Uebersicht_MouseDoubleClick;
+
+            // Mouseover-Hinweise zu den bearbeitbaren Spalten
+            _uebersichtTip.AutoPopDelay = 15000;
+            _uebersichtTip.InitialDelay = 400;
+            _uebersichtTip.ReshowDelay = 100;
+            listView_Uebersicht.MouseMove += listView_Uebersicht_MouseMove;
+            listView_Uebersicht.MouseLeave += (s, e) => { _tipItem = null; _tipSpalte = -1; _uebersichtTip.Hide(listView_Uebersicht); };
+
+            groupBox_Uebersicht.Controls.Add(listView_Uebersicht);
+
+            // Bleibt nach der Verbreiterung Platz übrig (der Schirm gab mehr her, als
+            // gebraucht wurde), bekommt ihn die Anlagenspalte - dort sind die Texte am
+            // längsten. Einmalig; ein Resize-Ereignis wird bewusst nicht abonniert.
+            int summe = 0;
+            foreach (int b in SPALTEN_BREITEN) summe += b;
+            int rest = listView_Uebersicht.Width - ListeZuschlag() - summe;
+            if (rest > 0) listView_Uebersicht.Columns[COL_ANLAGE].Width += rest;
+
+            AktualisiereErzeugerUebersicht();
+        }
+
+        /// <summary>
+        /// Verbreitert Formular und Übersicht so weit, dass die neun Spalten
+        /// (<see cref="SPALTEN_BREITEN"/>) ohne waagerechten Rollbalken hineinpassen —
+        /// der zweite Layoutzwang aus Konzept 4.1.
+        ///
+        /// Die Übersicht erbt ihre Breite von <c>groupBox_PufferSp</c> (505 px aus dem
+        /// Designer); darin blieben der Liste 491 px für rund 850 px Spalten. Statt die
+        /// Spalten unlesbar zu quetschen wächst das Formular: 791 → bis zu 1169 px
+        /// Clientbreite.
+        ///
+        /// GEKAPPT AM SCHIRM: Passt das nicht mehr in den Arbeitsbereich, wird nur so
+        /// weit verbreitert wie möglich — dann kommt der Rollbalken für die letzten
+        /// Spalten zurück. Das ist der ehrliche Rückfall; das Formular ist in der Größe
+        /// veränderbar, der Anwender kann selbst nachhelfen.
+        ///
+        /// Kein Designer, keine .resx: die Werte dort bleiben unangetastet, verschoben
+        /// wird ausschließlich im Code-Behind — wie es <c>InitPufferspeicherRubrik</c>
+        /// mit der Höhe bereits tut.
+        /// </summary>
+        private void UebersichtBreiteAnpassen()
+        {
+            int summe = 0;
+            foreach (int b in SPALTEN_BREITEN) summe += b;
+
+            // groupBox_Uebersicht = groupBox_PufferSp.Width, ListView = Gruppe - 14
+            int gewuenscht = summe + ListeZuschlag() + 14;
+            int zusatz = gewuenscht - groupBox_PufferSp.Width;
+            if (zusatz <= 0) return;
+
+            // Nicht über den Arbeitsbereich hinaus (DpiUnaware: Pixel sind Pixel).
+            Screen schirm = Screen.PrimaryScreen;
+            if (schirm != null)
+            {
+                int rahmen = this.Width - this.ClientSize.Width;
+                int moeglich = schirm.WorkingArea.Width - 40 - rahmen - this.ClientSize.Width;
+                if (zusatz > moeglich) zusatz = moeglich;
+            }
+            if (zusatz <= 0) return;
+
+            this.ClientSize = new Size(this.ClientSize.Width + zusatz, this.ClientSize.Height);
+            groupBox_PufferSp.Width += zusatz;
+
+            // Die Fußzeile unten rechts mitziehen; sie hat keine Verankerung (Bestand).
+            btn_Speichern.Location = new Point(btn_Speichern.Left + zusatz, btn_Speichern.Top);
+            btn_OK.Location = new Point(btn_OK.Left + zusatz, btn_OK.Top);
+            lblStatus.Location = new Point(lblStatus.Left + zusatz, lblStatus.Top);
+        }
+
+        /// <summary>
+        /// Fußzeile unter der Übersicht (Mockup 4.1): Aufzählung der Projekt-Puffer und
+        /// der Einstieg in die Verwaltung (4.3). Ohne diesen Weg wäre nach dem Entfall
+        /// der Rubrik (4.4) kein Pufferspeicher mehr anzulegen.
+        /// </summary>
+        private void InitPufferFusszeile()
+        {
+            label_PufferListe = new Label();
+            label_PufferListe.Name = "label_PufferListe";
+            label_PufferListe.AutoSize = false;
+            label_PufferListe.Location = new Point(groupBox_Uebersicht.Left,
+                                                   groupBox_Uebersicht.Bottom + 6);
+            label_PufferListe.Size = new Size(groupBox_Uebersicht.Width, 20);
+            label_PufferListe.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            this.Controls.Add(label_PufferListe);
+            label_PufferListe.BringToFront();
+
+            btn_PufferVerwalten = new Button();
+            btn_PufferVerwalten.Name = "btn_PufferVerwalten";
+            btn_PufferVerwalten.Text = "Pufferspeicher anlegen / verwalten…";
+            btn_PufferVerwalten.Location = new Point(groupBox_Uebersicht.Left,
+                                                    label_PufferListe.Bottom + 4);
+            btn_PufferVerwalten.Size = new Size(240, 28);
+            btn_PufferVerwalten.Click += btn_PufferVerwalten_Click;
+            this.Controls.Add(btn_PufferVerwalten);
+            btn_PufferVerwalten.BringToFront();
+
+            AktualisierePufferFusszeile();
+        }
+
+        /// <summary>Schreibt die Projekt-Puffer in die Fußzeile.</summary>
+        private void AktualisierePufferFusszeile()
+        {
+            if (label_PufferListe == null) return;
+
+            if (m_ID_Projekt <= 0)
+            {
+                label_PufferListe.Text = "Pufferspeicher im Projekt: -";
+                return;
+            }
+
+            List<WaermesenkeClass.PufferInfo> puffer = WaermesenkeClass.ProjektPufferListe(m_ID_Projekt, null);
+            if (puffer.Count == 0)
+            {
+                label_PufferListe.Text = "Pufferspeicher im Projekt: keiner angelegt";
+                return;
+            }
+
+            List<string> teile = new List<string>();
+            foreach (WaermesenkeClass.PufferInfo p in puffer)
+                teile.Add(p.Bezeichner + " (" + WaermesenkeClass.WirksameVerwendung(p) + ", " +
+                          p.Gesamtvolumen + " l)");
+
+            label_PufferListe.Text = "Pufferspeicher im Projekt:  " + string.Join(" · ", teile);
+        }
+
+        private void btn_PufferVerwalten_Click(object sender, EventArgs e)
+        {
+            if (m_ID_Projekt <= 0) return;
+
+            Form_PufferSp_Projekt frm = new Form_PufferSp_Projekt();
+            frm.ID_Projekt = m_ID_Projekt;
+            // Einstieg über die Fußzeile: KEINE Verwendungsvorgabe - hier will der
+            // Anwender den Bestand sehen, nicht einen bestimmten Kanal. Der Absprung aus
+            // dem Senkendialog setzt die Vorgabe dagegen (Konzept 4.2).
+            frm.Verwendung = null;
+            frm.SetControls();
+            frm.ShowDialog(this);
+
+            // Die Verwaltung schreibt sofort; deshalb unabhängig vom DialogResult neu
+            // aufbauen. Ein entfernter Puffer kann außerdem Senken der Anlagen betreffen
+            // (ReferenzenLoesen), und die Alt-Zuordnung wird mit ihm gelöscht.
+            //
+            // ZUERST die Übergangsbrücke, DANN neu laden — sonst schreibt „Speichern" die
+            // in der Verwaltung geänderten Betriebstemperaturen still wieder weg:
+            // btn_Speichern_Click überträgt die Temperaturen der führenden WP-Zuordnung
+            // über PufferSpCtrl.SetTemperaturen an den Puffer (Etappe 4, „führende
+            // Ablage"). Stünde in der unsichtbaren Alt-Zuordnung noch der alte Vorlauf,
+            // ginge die soeben eingegebene Änderung beim nächsten Speichern verloren.
+            // Der UPDATE-Zweig von WpSenkeSpiegeln führt Vorlauf/Rücklauf der Zuordnung
+            // dem Puffer nach; erst danach ist _zuordnungen wieder die Wahrheit.
+            ZuordnungBrueckeAnwenden();
+            ZuordnungenLaden();
+            RefreshZuordnungAnzeige();
+            AktualisierePufferFusszeile();
+        }
+
+        // --- Inhalt der Übersicht -----------------------------------------------------
+
+        /// <summary>
+        /// Baut die Erzeuger-Übersicht neu auf: ausgewählte Wärmeerzeuger in
+        /// Prioritätsreihenfolge, je Anlage eine Zeile mit Wärmequelle, Wärmesenke,
+        /// Zweitsenke und Betriebsmodus.
+        ///
+        /// Konzept 4.1: Der frühere <c>istWP</c>-Filter entfällt — Senke und Zweitsenke
+        /// gibt es für JEDEN Erzeuger, und <c>zeile.Tag</c> trägt deshalb jede Zeile.
+        /// WP-spezifisch bleiben nur WP-Priorität, Wärmequelle und Betriebsmodus.
+        /// </summary>
+        private void AktualisiereErzeugerUebersicht()
+        {
+            if (listView_Uebersicht == null) return;
+
+            listView_Uebersicht.Items.Clear();
+
+            int prio = 1;
+            foreach (string dbWert in listErzeuger)
+            {
+                if (dbWert == "Gesamtsystem") continue; // eigener Eintrag weiter unten
+
+                string anzeige = _waermeerzeugerItems.FirstOrDefault(x => x.DbValue == dbWert)?.DisplayName ?? dbWert;
+                string puffer = ZugeordnetePufferSp(anzeige);
+                List<AnlagenInfo> anlagen = AnlagenImProjekt(dbWert);
+
+                if (anlagen.Count == 0)
+                {
+                    listView_Uebersicht.Items.Add(new ListViewItem(new[]
+                        { prio.ToString(), anzeige, "-", "", "", "", "", "", puffer }));
+                }
+                else
+                {
+                    // Jede im Projekt angelegte Anlage bekommt eine eigene Zeile
+                    // (z. B. beide Wärmepumpen); Prio/Erzeuger/Zuordnung nur in der
+                    // ersten Zeile, damit die Gruppierung erkennbar bleibt.
+                    for (int a = 0; a < anlagen.Count; a++)
+                    {
+                        AnlagenInfo info = anlagen[a];
+                        bool istWP = info.IstWaermepumpe;
+
+                        ListViewItem zeile = new ListViewItem(new[]
+                        {
+                            a == 0 ? prio.ToString() : "",
+                            a == 0 ? anzeige : "",
+                            info.Bezeichner,
+                            istWP ? (info.Prioritaet > 0 ? info.Prioritaet.ToString() : "-") : "",
+                            istWP ? WaermequelleAnzeige(info) : "–",
+                            WaermesenkeAnzeige(info),
+                            ZweitsenkeAnzeige(info),
+                            istWP ? BetriebsmodusAnzeige(info) : "",
+                            a == 0 ? puffer : ""
+                        });
+
+                        // Konzept 4.1: Tag für ALLE Erzeugerzeilen, nicht nur für Wärmepumpen.
+                        zeile.Tag = info;
+                        listView_Uebersicht.Items.Add(zeile);
+                    }
+                }
+                prio++;
+            }
+
+            // Zuordnungen zum Gesamtsystem ebenfalls anzeigen, falls vorhanden
+            string gesamt = MyResource.Resource.KONFIG_GESAMTSYSTEM;
+            string gesamtSp = ZugeordnetePufferSp(gesamt);
+            if (gesamtSp != "-")
+                listView_Uebersicht.Items.Add(new ListViewItem(new[]
+                    { "", gesamt, "", "", "", "", "", "", gesamtSp }));
+
+            // KEIN AutoResizeColumns mehr: die Breiten stehen fest in SPALTEN_BREITEN
+            // (siehe dort). Ein erneutes Autosize würde sie bei jedem Neuaufbau wieder
+            // auf die Kopftextlänge zurücksetzen.
+        }
+
+        /// <summary>
+        /// Liefert alle im Projekt angelegten Anlagen des Erzeuger-Typs aus
+        /// Tab_Energieanlagen (inkl. Priorität, WP-Typ, Wärmequelle und den
+        /// Senkenfeldern aus Konzept 5.3), sortiert nach Einsatz-Priorität.
+        /// </summary>
+        private List<AnlagenInfo> AnlagenImProjekt(string dbWert)
+        {
+            List<AnlagenInfo> anlagen = new List<AnlagenInfo>();
+
+            int typ = 0;
+            switch (dbWert)
+            {
+                case "Wärmepumpe": typ = WizardItemClass.WP_TYP; break;
+                case "Heizkessel": typ = WizardItemClass.KESSEL_TYP; break;
+                case "BHKW": typ = WizardItemClass.BHKW_TYP; break;
+                case "Solarthermie": typ = WizardItemClass.SOLAR_TYP; break;
+            }
+            if (typ == 0 || m_ID_Projekt == 0) return anlagen;
+
+            // Konzept 4.1: Die Abfrage führt die neuen WS_*-Spalten mit, damit die
+            // Übersicht Senke und Zweitsenke ohne zusätzliche Abfrage je Zeile anzeigt.
+            System.Data.DataTable dt = DataRepository.GetDataTable(
+                "SELECT a.ID, a.Bezeichner, a.Prioritaet, a.WQ_Typ, a.WQ_Temp, a.WS_Typ, a.BM_Typ, " +
+                "       a.WS_Ziel, a.WS_ID_Puffer, a.WS_Ladeprio, a.WS_Ladegrenze, a.WS_Ladeprio_PV, " +
+                "       a.WS_Ziel2, a.WS_ID_Puffer2, a.WS_Ladeprio2, a.WS_Ladegrenze2, " +
+                "       w.Typ AS WPTyp " +
+                "FROM Tab_Energieanlagen AS a LEFT JOIN Tab_WP AS w ON a.ID_WP = w.ID " +
+                "WHERE a.ID_Projekt=" + m_ID_Projekt + " AND a.ID_Type=" + typ +
+                " ORDER BY a.Prioritaet, a.ID");
+            if (dt == null) return anlagen;
+
+            foreach (System.Data.DataRow r in dt.Rows)
+            {
+                AnlagenInfo info = new AnlagenInfo();
+                info.ID_Type = typ;
+                if (r["ID"] != DBNull.Value) info.ID = Convert.ToInt32(r["ID"]);
+                if (r["Bezeichner"] != DBNull.Value) info.Bezeichner = r["Bezeichner"].ToString();
+                if (r["Prioritaet"] != DBNull.Value) info.Prioritaet = Convert.ToInt32(r["Prioritaet"]);
+                if (r["WPTyp"] != DBNull.Value) info.WpTyp = r["WPTyp"].ToString();
+                if (r["WQ_Typ"] != DBNull.Value) info.WQ_Typ = r["WQ_Typ"].ToString();
+                if (r["WQ_Temp"] != DBNull.Value) info.WQ_Temp = Convert.ToDouble(r["WQ_Temp"]);
+                if (r["WS_Typ"] != DBNull.Value) info.WS_Typ = r["WS_Typ"].ToString();
+                if (r["BM_Typ"] != DBNull.Value) info.BM_Typ = r["BM_Typ"].ToString();
+                info.Senke = WaermesenkeClass.AusDatenzeile(r);
+                if (!string.IsNullOrEmpty(info.Bezeichner)) anlagen.Add(info);
+            }
+
+            return anlagen;
+        }
+
+        /// <summary>Kompakte Anzeige der Wärmequelle einer Wärmepumpe.</summary>
+        private string WaermequelleAnzeige(AnlagenInfo a)
+        {
+            // Luft-Wasser-WP: Quelle ist immer die Außenluft (Klimadaten)
+            if (string.IsNullOrEmpty(a.WpTyp) || a.WpTyp == "Luft-Wasser") return "Außenluft";
+
+            switch (a.WQ_Typ)
+            {
+                case WaermequelleClass.TYP_KONSTANT: return "Konstant (" + a.WQ_Temp.ToString("0.#") + " °C)";
+                case WaermequelleClass.TYP_PUFFER:
+                    {
+                        string name = WaermequelleClass.WertLesen(a.ID, "WQ_Puffer") as string;
+                        return string.IsNullOrEmpty(name) ? "Pufferspeicher" : "Puffer: " + name;
+                    }
+                case WaermequelleClass.TYP_PROFIL: return "Quellprofil";
+                case WaermequelleClass.TYP_CSV: return "CSV-Profil";
+                case WaermequelleClass.TYP_ERDREICH: return ErdreichAnzeige(a.ID);
+                default: return "Außenluft";
+            }
+        }
+
+        /// <summary>
+        /// Kompakte Anzeige der Wärmequelle Erdreich, z. B.
+        /// "Erdreich Kollektor 1,5 m" oder "Erdsonde 2×90 m".
+        /// </summary>
+        private string ErdreichAnzeige(int idAnlage)
+        {
+            string quellsystem = WaermequelleClass.WertLesen(idAnlage, "WQ_Quellsystem") as string;
+            object oTiefe = WaermequelleClass.WertLesen(idAnlage, "WQ_Tiefe");
+            double tiefe = oTiefe != null ? Convert.ToDouble(oTiefe) : 0;
+
+            if (string.Equals(quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE,
+                              StringComparison.OrdinalIgnoreCase))
+            {
+                object oAnzahl = WaermequelleClass.WertLesen(idAnlage, "WQ_Anzahl");
+                int anzahl = oAnzahl != null ? Convert.ToInt32(oAnzahl) : 0;
+                if (anzahl < 1) anzahl = 1;
+                return "Erdsonde " + anzahl + "×" + tiefe.ToString("0.#") + " m";
+            }
+
+            if (tiefe <= 0) tiefe = ErdreichTemperatur.TIEFE_DEFAULT;
+            return "Erdreich Kollektor " + tiefe.ToString("0.#") + " m";
+        }
+
+        /// <summary>
+        /// Kompakte Anzeige der Hauptsenke (Konzept 4.1): Heizkreis mit Bedarfsart oder
+        /// „Puffer Heizung: &lt;Name&gt;". Ersetzt inhaltlich die frühere, rein
+        /// WP-spezifische Senkenspalte, die nur die Bedarfsart zeigte.
+        /// </summary>
+        private string WaermesenkeAnzeige(AnlagenInfo a)
+        {
+            return WaermesenkeClass.HauptsenkeAnzeige(a.Senke);
+        }
+
+        /// <summary>Kompakte Anzeige der Zweitsenke; „–" ohne Zweitsenke (Konzept 4.1).</summary>
+        private string ZweitsenkeAnzeige(AnlagenInfo a)
+        {
+            return WaermesenkeClass.ZweitsenkeAnzeige(a.Senke);
+        }
+
+        // --- Klimadaten für den Erdreichdialog ---------------------------------------
+
+        /// <summary>
+        /// Liefert die Außentemperatur der Projekt-Klimaregion (8760 Stundenwerte).
+        /// Der Vektor wird einmal je Formularsitzung geladen und gecacht; er ist
+        /// derselbe, den die Simulation über SimulationWaermebedarf.Stundentemperatur
+        /// verwendet (Tab_Solar.Temperatur der Klimaregion). Liefert null, wenn dem
+        /// Projekt keine Klimaregion zugeordnet ist oder keine 8760 Werte vorliegen.
+        /// </summary>
+        private float[] AussentemperaturLaden()
+        {
+            if (_aussentempGeladen) return _aussentempCache;
+            _aussentempGeladen = true;
+
+            try
+            {
+                object oRegion = DataRepository.ExecuteScalar(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = " + m_ID_Projekt);
+                if (oRegion == null || oRegion == DBNull.Value) return null;
+                int idRegion = Convert.ToInt32(oRegion);
+                if (idRegion <= 0) return null;
+
+                System.Data.DataTable dt = DataRepository.GetDataTable(
+                    "SELECT Temperatur FROM Tab_Solar WHERE ID_Klimaregion = " + idRegion + " ORDER BY ID");
+                if (dt == null || dt.Rows.Count < 8760) return null;
+
+                float[] temp = new float[8760];
+                for (int i = 0; i < 8760; i++)
+                {
+                    object v = dt.Rows[i]["Temperatur"];
+                    temp[i] = (v == DBNull.Value) ? 0f : Convert.ToSingle(v);
+                }
+                _aussentempCache = temp;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Außentemperatur konnte nicht geladen werden: " + ex.Message);
+            }
+
+            return _aussentempCache;
+        }
+
+        /// <summary>DIN-4710-Klimazone der Projekt-Klimaregion; 0 = nicht zugeordnet.</summary>
+        private int KlimazoneDesProjekts()
+        {
+            try
+            {
+                object oRegion = DataRepository.ExecuteScalar(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = " + m_ID_Projekt);
+                if (oRegion == null || oRegion == DBNull.Value) return 0;
+                return KlimaregionCtrl.GetKlimazone(Convert.ToInt32(oRegion));
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>Speichert die DIN-4710-Klimazone an der Projekt-Klimaregion.</summary>
+        private void KlimazoneSpeichern(int zone)
+        {
+            try
+            {
+                object oRegion = DataRepository.ExecuteScalar(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = " + m_ID_Projekt);
+                if (oRegion == null || oRegion == DBNull.Value) return;
+                KlimaregionCtrl.SetKlimazone(Convert.ToInt32(oRegion), zone);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Klimazone konnte nicht gespeichert werden: " + ex.Message);
+            }
+        }
+
+        // --- Betriebsmodus ------------------------------------------------------------
+
+        /// <summary>Kompakte Anzeige des Betriebsmodus einer Wärmepumpe.</summary>
+        private string BetriebsmodusAnzeige(AnlagenInfo a)
+        {
+            switch (a.BM_Typ)
+            {
+                case WaermequelleClass.MODUS_LEISTUNG: return "leistungsoptimiert";
+                case WaermequelleClass.MODUS_PV: return "PV-optimiert";
+                default: return "laufzeitoptimiert";
+            }
+        }
+
+        /// <summary>
+        /// Auswahl des Betriebsmodus (Leistungssteuerung) einer Wärmepumpe.
+        ///
+        /// Konzept 4.1: Seit alle Erzeugerzeilen ein <c>Tag</c> tragen, ist der Dialog
+        /// auch aus einer Kessel- oder BHKW-Zeile erreichbar. Seine drei Modi und ihre
+        /// Texte sind aber durchgehend WP-spezifisch, und die Engine wertet
+        /// <c>BM_Typ</c> ausschließlich in <c>SimulationWaermepumpe</c> aus. Für die
+        /// übrigen Erzeuger wird deshalb GESPERRT statt umgetextet — ein Modus, den
+        /// niemand liest, wäre eine Zusage ohne Wirkung.
+        /// </summary>
+        private void BetriebsmodusBearbeiten(AnlagenInfo info)
+        {
+            if (!info.IstWaermepumpe)
+            {
+                MessageBox.Show(
+                    "Der Betriebsmodus (Leistungssteuerung) ist heute nur für Wärmepumpen wirksam.\n\n" +
+                    "Anlage: " + info.Bezeichner + "\n" +
+                    "Für Heizkessel, BHKW und Solarthermie ergibt sich das Verhalten aus der\n" +
+                    "Kaskadenstellung und der Wärmesenke.",
+                    "Betriebsmodus", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            Form frm = new Form();
+            frm.Text = "Betriebsmodus - " + info.Bezeichner;
+            frm.FormBorderStyle = FormBorderStyle.FixedDialog;
+            frm.StartPosition = FormStartPosition.CenterParent;
+            frm.MinimizeBox = false;
+            frm.MaximizeBox = false;
+            frm.ClientSize = new Size(520, 300);
+
+            Label kopf = new Label
+            {
+                Text = "Leistungssteuerung der Wärmepumpe:",
+                AutoSize = true,
+                Font = new Font(this.Font, FontStyle.Bold),
+                Location = new Point(14, 14)
+            };
+
+            RadioButton rbLaufzeit = new RadioButton
+            {
+                Text = "Laufzeitoptimiert - maximale Leistung",
+                AutoSize = true,
+                Location = new Point(24, 48)
+            };
+            Label lLaufzeit = new Label
+            {
+                Text = "Die Wärmepumpe fährt volle Leistung; die über den Bedarf hinaus\n" +
+                       "erzeugte Wärme lädt den Pufferspeicher. Lange Laufzeiten, wenig Takten.",
+                AutoSize = false,
+                Size = new Size(460, 34),
+                Location = new Point(46, 70)
+            };
+
+            RadioButton rbLeistung = new RadioButton
+            {
+                Text = "Leistungsoptimiert - nur den Bedarf decken",
+                AutoSize = true,
+                Location = new Point(24, 112)
+            };
+            Label lLeistung = new Label
+            {
+                Text = "Die Wärmepumpe moduliert exakt auf den Wärmebedarf und erzeugt\n" +
+                       "keinen Überschuss. Der Speicher wird nicht gezielt beladen.",
+                AutoSize = false,
+                Size = new Size(460, 34),
+                Location = new Point(46, 134)
+            };
+
+            RadioButton rbPV = new RadioButton
+            {
+                Text = "PV-optimiert - Überschuss nur mit PV-Strom",
+                AutoSize = true,
+                Location = new Point(24, 176)
+            };
+            Label lPV = new Label
+            {
+                Text = "Bei verfügbarem PV-Strom fährt die Wärmepumpe erhöhte Leistung\n" +
+                       "(begrenzt auf den PV-Überschuss) und lädt den Speicher; sonst\n" +
+                       "arbeitet sie leistungsoptimiert.",
+                AutoSize = false,
+                Size = new Size(460, 48),
+                Location = new Point(46, 198)
+            };
+
+            switch (info.BM_Typ)
+            {
+                case WaermequelleClass.MODUS_LEISTUNG: rbLeistung.Checked = true; break;
+                case WaermequelleClass.MODUS_PV: rbPV.Checked = true; break;
+                default: rbLaufzeit.Checked = true; break;
+            }
+
+            Button ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Location = new Point(332, 258), Width = 85 };
+            Button abbruch = new Button { Text = "Abbrechen", DialogResult = DialogResult.Cancel, Location = new Point(423, 258), Width = 85 };
+
+            frm.Controls.Add(kopf);
+            frm.Controls.Add(rbLaufzeit); frm.Controls.Add(lLaufzeit);
+            frm.Controls.Add(rbLeistung); frm.Controls.Add(lLeistung);
+            frm.Controls.Add(rbPV); frm.Controls.Add(lPV);
+            frm.Controls.Add(ok);
+            frm.Controls.Add(abbruch);
+            frm.AcceptButton = ok;
+            frm.CancelButton = abbruch;
+
+            if (frm.ShowDialog(this) != DialogResult.OK) return;
+
+            string modus = WaermequelleClass.MODUS_LAUFZEIT;
+            if (rbLeistung.Checked) modus = WaermequelleClass.MODUS_LEISTUNG;
+            else if (rbPV.Checked) modus = WaermequelleClass.MODUS_PV;
+
+            WaermequelleClass.WertSchreiben(info.ID, "BM_Typ", modus);
+
+            if (modus == WaermequelleClass.MODUS_PV && (comboBox5.SelectedIndex < 0 || !checkBox5.Checked))
+            {
+                MessageBox.Show("Hinweis: Für den PV-optimierten Betrieb muss im Bereich " +
+                    "'Stromerzeuger' die Photovoltaik ausgewählt sein.\n" +
+                    "Ohne PV-Anlage verhält sich die Wärmepumpe leistungsoptimiert.",
+                    "Betriebsmodus PV", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            AktualisiereErzeugerUebersicht();
+        }
+
+        // --- Mouseover und Doppelklick ------------------------------------------------
+
+        /// <summary>
+        /// Mouseover-Hinweise: erklärt die per Doppelklick bearbeitbaren Spalten
+        /// der Übersicht (WP-Priorität, Wärmequelle, Wärmesenke, Zweitsenke,
+        /// Betriebsmodus).
+        /// </summary>
+        private void listView_Uebersicht_MouseMove(object sender, MouseEventArgs e)
+        {
+            ListViewHitTestInfo hit = listView_Uebersicht.HitTest(e.Location);
+            if (hit.Item == null || !(hit.Item.Tag is AnlagenInfo info))
+            {
+                if (_tipItem != null) { _tipItem = null; _tipSpalte = -1; _uebersichtTip.Hide(listView_Uebersicht); }
+                return;
+            }
+
+            int spalte = hit.SubItem != null ? hit.Item.SubItems.IndexOf(hit.SubItem) : -1;
+
+            // Nur bei Wechsel neu anzeigen (sonst flackert der Hinweis)
+            if (_tipItem == hit.Item && _tipSpalte == spalte) return;
+            _tipItem = hit.Item;
+            _tipSpalte = spalte;
+
+            string text;
+            switch (spalte)
+            {
+                case COL_WPPRIO:
+                    text = info.IstWaermepumpe
+                        ? "WP-Priorität (Doppelklick zum Ändern)\n" +
+                          "Einsatz-Reihenfolge der Wärmepumpen: 1 = wird zuerst eingesetzt,\n" +
+                          "die nächste deckt jeweils den verbleibenden Bedarf der Stunde."
+                        : "WP-Priorität gilt nur für Wärmepumpen.";
+                    break;
+
+                case COL_QUELLE:
+                    text = info.IstWaermepumpe
+                        ? "Wärmequelle (Doppelklick zum Ändern)\n" +
+                          "Luft-Wasser: immer Außenluft aus den Klimadaten.\n" +
+                          "Sole-/Wasser-Wasser: Erdreich, Konstante Temperatur, Pufferspeicher,\n" +
+                          "Quellprofil (Monats- und Wochenwerte) oder CSV-Datei."
+                        : "Eine Wärmequelle hat nur die Wärmepumpe.\n" +
+                          "Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.";
+                    break;
+
+                case COL_SENKE:
+                    text = "Wärmesenke (Doppelklick zum Ändern)\n" +
+                           "Wohin gibt dieser Erzeuger seine Wärme ab?\n" +
+                           "• Heizkreis - deckt den Bedarf der Stunde unmittelbar\n" +
+                           "  (Bedarfsart Warmwasser / Heizwärme / beides)\n" +
+                           "• Pufferspeicher Heizung bzw. Brauchwasser - lädt einen\n" +
+                           "  Projekt-Pufferspeicher; dort werden auch Ladepriorität und\n" +
+                           "  Ladeobergrenze gepflegt.";
+                    break;
+
+                case COL_ZWEITSENKE:
+                    text = "Zweitsenke (Doppelklick zum Ändern)\n" +
+                           "Optionaler zweiter Pufferspeicher, der NUR Überschuss bzw.\n" +
+                           "verbleibendes Ladepotenzial aufnimmt - nie Pflichtbedarf.\n" +
+                           "„–\" bedeutet: keine Zweitsenke.";
+                    break;
+
+                case COL_BETRIEBSMODUS:
+                    text = info.IstWaermepumpe
+                        ? "Betriebsmodus (Doppelklick zum Ändern)\n" +
+                          "• laufzeitoptimiert - volle Leistung, Überschuss lädt den Speicher\n" +
+                          "• leistungsoptimiert - moduliert exakt auf den Wärmebedarf\n" +
+                          "• PV-optimiert - erhöhte Leistung nur bei verfügbarem PV-Strom,\n" +
+                          "  sonst leistungsoptimiert"
+                        : "Der Betriebsmodus ist heute nur für Wärmepumpen wirksam.";
+                    break;
+
+                case COL_PUFFER:
+                    text = "Zuordnung im Altmodell (Doppelklick öffnet die Speicherregelung)\n" +
+                           "Diese Spalte zeigt die Zuordnung aus Z_ProjektPufferSp, die die\n" +
+                           "Simulation bis zur Umstellung der Engine noch auswertet. Sie wird\n" +
+                           "aus der Wärmesenke der Wärmepumpe automatisch nachgeführt.\n" +
+                           "Ein- und Abschaltschwelle in % der nutzbaren Kapazität.";
+                    break;
+
+                default:
+                    text = "Anlage: " + info.Bezeichner + "\n" +
+                           "Doppelklick auf Wärmesenke, Zweitsenke oder - bei Wärmepumpen -\n" +
+                           "WP-Prio, Wärmequelle und Betriebsmodus zum Bearbeiten.";
+                    break;
+            }
+
+            _uebersichtTip.Show(text, listView_Uebersicht, e.X + 16, e.Y + 18, 15000);
+        }
+
+        /// <summary>
+        /// Doppelklick in der Übersicht. Geöffnet wird ausschließlich, was in
+        /// <see cref="SPALTEN_MIT_DIALOG"/> steht — jede andere Spalte tut nichts
+        /// (Konzept 4.1, Ersatz für das frühere <c>else</c>-Fallback auf Spalte 4).
+        /// </summary>
+        private void listView_Uebersicht_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            ListViewHitTestInfo hit = listView_Uebersicht.HitTest(e.Location);
+            if (hit.Item == null) return;
+            if (!(hit.Item.Tag is AnlagenInfo info)) return; // Zeilen ohne Anlage (z. B. Gesamtsystem)
+
+            if (hit.SubItem == null) return;
+            int spalte = hit.Item.SubItems.IndexOf(hit.SubItem);
+            if (Array.IndexOf(SPALTEN_MIT_DIALOG, spalte) < 0) return;
+
+            switch (spalte)
+            {
+                case COL_WPPRIO:
+                    WpPrioritaetBearbeiten(info);
+                    break;
+
+                case COL_SENKE:
+                case COL_ZWEITSENKE:
+                    // Beide Spalten führen in denselben Dialog - Haupt- und Zweitsenke
+                    // gehören fachlich zusammen (Konzept 4.2).
+                    WaermesenkeBearbeiten(info);
+                    break;
+
+                case COL_BETRIEBSMODUS:
+                    BetriebsmodusBearbeiten(info);
+                    break;
+
+                case COL_PUFFER:
+                    SpeicherregelungBearbeiten();
+                    break;
+
+                case COL_QUELLE:
+                    WaermequelleBearbeiten(info, hit.SubItem.Bounds);
+                    break;
+            }
+        }
+
+        /// <summary>Einsatz-Reihenfolge einer Wärmepumpe (nur dort sinnvoll).</summary>
+        private void WpPrioritaetBearbeiten(AnlagenInfo info)
+        {
+            if (!info.IstWaermepumpe)
+            {
+                MessageBox.Show(
+                    "Die WP-Priorität regelt die Reihenfolge der Wärmepumpen untereinander.\n" +
+                    "Für " + info.Bezeichner + " ist sie ohne Bedeutung.",
+                    "WP-Priorität", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string eingabe = EingabeDialog("Wärmepumpen-Priorität",
+                "Einsatz-Reihenfolge der Wärmepumpe\n'" + info.Bezeichner + "'\n(1 = wird zuerst eingesetzt):",
+                info.Prioritaet > 0 ? info.Prioritaet.ToString() : "1");
+
+            int prioNeu;
+            if (eingabe != null && Int32.TryParse(eingabe, out prioNeu) && prioNeu > 0)
+            {
+                WaermequelleClass.WertSchreiben(info.ID, "Prioritaet", prioNeu);
+                AktualisiereErzeugerUebersicht();
+            }
+        }
+
+        /// <summary>Wärmequelle: nur Wärmepumpen, und dort nur Sole-/Wasser-Wasser.</summary>
+        private void WaermequelleBearbeiten(AnlagenInfo info, Rectangle zelle)
+        {
+            if (!info.IstWaermepumpe)
+            {
+                MessageBox.Show(
+                    "Eine Wärmequelle hat nur die Wärmepumpe.\n\n" +
+                    "Heizkessel, BHKW und Solarthermie erzeugen ihre Wärme selbst; ihre\n" +
+                    "Einsatzgrenzen stehen in den jeweiligen Eingabemasken.",
+                    "Wärmequelle", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(info.WpTyp) || info.WpTyp == "Luft-Wasser")
+            {
+                MessageBox.Show("Für Luft-Wasser-Wärmepumpen ist die Wärmequelle immer die Außenluft\n" +
+                    "(Außentemperatur der gewählten Klimaregion).\n\n" +
+                    "WP-Typ: " + (string.IsNullOrEmpty(info.WpTyp) ? "(nicht gepflegt)" : info.WpTyp),
+                    "Wärmequelle", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            WaermequelleAuswahlAnzeigen(info, zelle);
+        }
+
+        // --- Senkendialog (Konzept 4.2) -----------------------------------------------
+
+        /// <summary>
+        /// Öffnet den Senkendialog <see cref="Form_Waermesenke"/> und schreibt das
+        /// Ergebnis über <see cref="WaermesenkeClass.Schreiben"/> an die Anlage.
+        ///
+        /// Anschließend läuft die ÜBERGANGSBRÜCKE (Konzept 4.4, Etappe A): Die Engine
+        /// liest den Wärmepumpen-Pufferspeicher bis Paket 4 aus <c>Z_ProjektPufferSp</c>.
+        /// <see cref="WaermesenkeClass.WpSenkeSpiegeln"/> hält diese Alt-Zuordnung mit
+        /// dem neuen Modell im Gleichstand; danach wird <c>_zuordnungen</c> neu geladen,
+        /// damit der Delete/Insert-Zyklus beim nächsten „Speichern" den gerade erzeugten
+        /// Stand nicht wieder wegschreibt. Mit Paket 4 entfallen beide Schritte.
+        /// </summary>
+        private void WaermesenkeBearbeiten(AnlagenInfo info)
+        {
+            Form_Waermesenke frm = new Form_Waermesenke();
+            frm.ID_Projekt = m_ID_Projekt;
+            frm.ID_Anlage = info.ID;
+            frm.ID_Type = info.ID_Type;
+            frm.AnlagenName = info.Bezeichner;
+            frm.BM_Typ = info.BM_Typ;
+            frm.Daten = WaermesenkeClass.Lesen(info.ID);
+            frm.SetControls();
+
+            DialogResult ergebnis = frm.ShowDialog(this);
+
+            if (ergebnis == DialogResult.OK)
+            {
+                if (!WaermesenkeClass.Schreiben(info.ID, frm.Daten))
+                    ShowStatus("⚠ Die Wärmesenke konnte nicht vollständig gespeichert werden",
+                               Color.Firebrick);
+                else
+                    ShowStatus("✔ Wärmesenke gespeichert (" +
+                               WaermesenkeClass.HauptsenkeAnzeige(frm.Daten) + ")", Color.ForestGreen);
+
+                ZuordnungBrueckeAnwenden();
+            }
+
+            // Auch nach Abbruch neu aufbauen: der Dialog kann über
+            // "Pufferspeicher anlegen..." einen neuen Projekt-Puffer erzeugt haben.
+            ZuordnungenLaden();
+            RefreshZuordnungAnzeige();
+            AktualisierePufferFusszeile();
+        }
+
+        /// <summary>
+        /// ÜBERGANGSBRÜCKE auf das Altmodell (Konzept 4.4, Etappe A) — ENTFÄLLT MIT
+        /// PAKET 4.
+        ///
+        /// Solange <c>SimulationControl.Do_Simulation</c> den Wärmepumpen-Speicher aus
+        /// <c>Z_ProjektPufferSp</c> holt, muss eine im Senkendialog gesetzte Puffer-Senke
+        /// dort ankommen — sonst bliebe die Eingabe bis Paket 4 wirkungslos, und der
+        /// Anwender sähe eine Einstellung ohne Ergebnis.
+        ///
+        /// Die Regel steht in <see cref="WaermesenkeClass.WpSenkeSpiegeln"/>:
+        /// Hauptsenke <c>PufferHeizung</c> einer WP ⇒ genau eine Zuordnungszeile
+        /// <c>Erzeuger = 'Wärmepumpe'</c> auf diesen Puffer; Senke <c>Heizkreis</c> ⇒
+        /// Zuordnungszeile entfernen.
+        /// </summary>
+        private void ZuordnungBrueckeAnwenden()
+        {
+            if (m_ID_Projekt <= 0) return;
+            WaermesenkeClass.WpSenkeSpiegeln(m_ID_Projekt);
+        }
+
+        // --- Wärmequellen-Auswahl (Bestand) -------------------------------------------
+
+        /// <summary>
+        /// Zeigt das Wärmequellen-Dropdown (Sole-/Wasser-Wasser-WP) direkt in der
+        /// Übersicht an - analog zur Zellbearbeitung in der Zuordnungstabelle.
+        /// </summary>
+        private void WaermequelleAuswahlAnzeigen(AnlagenInfo info, Rectangle zellBounds)
+        {
+            if (_wqCombo == null)
+            {
+                _wqCombo = new ComboBox { Visible = false, DropDownStyle = ComboBoxStyle.DropDownList };
+                _wqCombo.SelectedIndexChanged += WqCombo_SelectedIndexChanged;
+                _wqCombo.LostFocus += (s, ev) => _wqCombo.Visible = false;
+            }
+            if (!this.Controls.Contains(_wqCombo)) this.Controls.Add(_wqCombo);
+
+            _wqInfo = info;
+
+            _wqUpdating = true;
+            _wqCombo.Items.Clear();
+            _wqCombo.Items.AddRange(WaermequelleClass.TypAnzeige);
+            int aktuell = Array.IndexOf(WaermequelleClass.TypWerte,
+                string.IsNullOrEmpty(info.WQ_Typ) ? WaermequelleClass.TYP_AUSSENLUFT : info.WQ_Typ);
+            _wqCombo.SelectedIndex = aktuell >= 0 ? aktuell : 0;
+            _wqUpdating = false;
+
+            Point screenPoint = listView_Uebersicht.PointToScreen(zellBounds.Location);
+            Point formPoint = this.PointToClient(screenPoint);
+            _wqCombo.Bounds = new Rectangle(formPoint, new Size(Math.Max(zellBounds.Width, 190), zellBounds.Height));
+            _wqCombo.Visible = true;
+            _wqCombo.BringToFront();
+            _wqCombo.Focus();
+            _wqCombo.DroppedDown = true;
+        }
+
+        private void WqCombo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_wqUpdating || _wqInfo == null || _wqCombo.SelectedIndex < 0) return;
+
+            string typNeu = WaermequelleClass.TypWerte[_wqCombo.SelectedIndex];
+            AnlagenInfo info = _wqInfo;
+            _wqCombo.Visible = false;
+
+            switch (typNeu)
+            {
+                case WaermequelleClass.TYP_AUSSENLUFT:
+                    WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
+                    break;
+
+                case WaermequelleClass.TYP_KONSTANT:
+                    {
+                        string eingabe = EingabeDialog("Konstante Quelltemperatur",
+                            "Quelltemperatur der Wärmepumpe\n'" + info.Bezeichner + "' [°C]:",
+                            info.WQ_Temp != 0 ? info.WQ_Temp.ToString("0.#") : "10");
+                        float temp;
+                        if (eingabe == null || !WaermequelleClass.ZahlParsen(eingabe, out temp)) return;
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Temp", (double)temp);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
+                        break;
+                    }
+
+                case WaermequelleClass.TYP_PUFFER:
+                    {
+                        // Auswahl des Pufferspeichers, der als Wärmequelle dient
+                        Form_QuellePufferspeicher frmQuelle = new Form_QuellePufferspeicher();
+                        frmQuelle.WPName = info.Bezeichner;
+                        frmQuelle.Pufferspeicher = WaermequelleClass.WertLesen(info.ID, "WQ_Puffer") as string;
+
+                        object oTemp = WaermequelleClass.WertLesen(info.ID, "WQ_Temp");
+                        if (oTemp != null) frmQuelle.Quelltemperatur = Convert.ToDouble(oTemp);
+                        object oSpreiz = WaermequelleClass.WertLesen(info.ID, "WQ_Spreizung");
+                        if (oSpreiz != null && Convert.ToDouble(oSpreiz) > 0) frmQuelle.Spreizung = Convert.ToDouble(oSpreiz);
+                        object oReg = WaermequelleClass.WertLesen(info.ID, "WQ_Regeneration");
+                        if (oReg != null) frmQuelle.Regeneration = Convert.ToDouble(oReg);
+                        object oUnb = WaermequelleClass.WertLesen(info.ID, "WQ_Unbegrenzt");
+                        if (oUnb != null) frmQuelle.Unbegrenzt = Convert.ToBoolean(oUnb);
+
+                        frmQuelle.SetControls();
+                        if (frmQuelle.ShowDialog(this) != DialogResult.OK) return;
+
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Puffer", frmQuelle.Pufferspeicher);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Temp", frmQuelle.Quelltemperatur);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Spreizung", frmQuelle.Spreizung);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Regeneration", frmQuelle.Regeneration);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Unbegrenzt", frmQuelle.Unbegrenzt);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
+                        break;
+                    }
+
+                case WaermequelleClass.TYP_PROFIL:
+                    {
+                        // Quellprofil über Monats- und Wochenwerte
+                        // (analog "Brauchwassertypen Stundenverteilung")
+                        Form_Quellprofil frmProfil = new Form_Quellprofil();
+                        frmProfil.WPName = info.Bezeichner;
+                        frmProfil.Monatswerte = WaermequelleClass.WertLesen(info.ID, "WQ_Monatswerte") as string;
+                        frmProfil.Wochenwerte = WaermequelleClass.WertLesen(info.ID, "WQ_Wochenwerte") as string;
+                        frmProfil.SetControls();
+
+                        if (frmProfil.ShowDialog(this) != DialogResult.OK) return;
+
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Monatswerte", frmProfil.Monatswerte);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Wochenwerte", frmProfil.Wochenwerte);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
+                        break;
+                    }
+
+                case WaermequelleClass.TYP_CSV:
+                    {
+                        if (MessageBox.Show(WaermequelleClass.CSV_FORMAT_HINWEIS + "\n\nJetzt Datei auswählen?",
+                            "Quelltemperatur aus CSV-Datei", MessageBoxButtons.OKCancel,
+                            MessageBoxIcon.Information) != DialogResult.OK) return;
+
+                        OpenFileDialog dlg = new OpenFileDialog();
+                        dlg.Title = "Quelltemperatur-Profil auswählen";
+                        dlg.Filter = "CSV Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*";
+                        if (dlg.ShowDialog() != DialogResult.OK) return;
+
+                        if (WaermequelleClass.ProfilAusCsv(dlg.FileName) == null)
+                        {
+                            MessageBox.Show("Die Datei konnte nicht gelesen werden oder enthält keine 8760 Stundenwerte!\n\n" +
+                                WaermequelleClass.CSV_FORMAT_HINWEIS, "CSV-Datei ungültig",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_CSV", dlg.FileName);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
+                        break;
+                    }
+
+                case WaermequelleClass.TYP_ERDREICH:
+                    {
+                        // Erdreich nach VDI 4640 (Konzept 4.5): Kollektor oder Sonde.
+                        Form_QuelleErdreich frmErde = new Form_QuelleErdreich();
+                        frmErde.WPName = info.Bezeichner;
+
+                        string quellsystem = WaermequelleClass.WertLesen(info.ID, "WQ_Quellsystem") as string;
+                        if (!string.IsNullOrEmpty(quellsystem)) frmErde.Quellsystem = quellsystem;
+
+                        object oTiefe = WaermequelleClass.WertLesen(info.ID, "WQ_Tiefe");
+                        if (oTiefe != null && Convert.ToDouble(oTiefe) > 0) frmErde.Tiefe = Convert.ToDouble(oTiefe);
+                        object oFlaeche = WaermequelleClass.WertLesen(info.ID, "WQ_Flaeche");
+                        if (oFlaeche != null) frmErde.Flaeche = Convert.ToDouble(oFlaeche);
+                        object oAnzahl = WaermequelleClass.WertLesen(info.ID, "WQ_Anzahl");
+                        if (oAnzahl != null && Convert.ToInt32(oAnzahl) > 0) frmErde.Anzahl = Convert.ToInt32(oAnzahl);
+                        string bodentyp = WaermequelleClass.WertLesen(info.ID, "WQ_Bodentyp") as string;
+                        if (!string.IsNullOrEmpty(bodentyp)) frmErde.Bodentyp = bodentyp;
+                        // Nutzbare Spreizung (Konzept 13.1) - dieselbe Spalte wie beim
+                        // Pufferspeicher-Quellendialog, jetzt auch hier pflegbar.
+                        object oSpreizErde = WaermequelleClass.WertLesen(info.ID, "WQ_Spreizung");
+                        if (oSpreizErde != null && Convert.ToDouble(oSpreizErde) > 0)
+                            frmErde.Spreizung = Convert.ToDouble(oSpreizErde);
+
+                        // Klimazone aus der Region vorbelegen (0 = nicht zugeordnet),
+                        // Außentemperaturvektor einmalig laden und gecacht übergeben.
+                        int zoneVorher = KlimazoneDesProjekts();
+                        frmErde.Klimazone = zoneVorher;
+                        frmErde.Aussentemperatur = AussentemperaturLaden();
+
+                        // Ergebnisanbindung der Auslegungsprüfung (Paket 7): Liegt für
+                        // diese Anlage ein Simulationslauf der Sitzung vor, bekommt der
+                        // Dialog die echten Werte statt "(noch kein Simulationslauf)".
+                        ErdreichAuswertung.AnlageErgebnis erdErg =
+                            ErdreichAuswertung.FuerAnlage(m_ID_Projekt, info.ID);
+                        if (erdErg != null)
+                        {
+                            frmErde.ErgebnisseVorhanden = erdErg.MaxEntzugBelastbar;
+                            frmErde.MaxEntzugW = erdErg.MaxEntzugW;
+                            frmErde.JahresentzugKWh = erdErg.JahresentzugKWh;
+                            frmErde.VolllastStunden = erdErg.VolllastStunden;
+                            if (erdErg.Unwirksam)
+                                // Luft-Wasser: die Konfiguration wird gar nicht gerechnet.
+                                // Das muss im Dialog stehen, sonst pflegt der Anwender
+                                // Bodentyp und Sondenlänge ins Leere (Konzept 4.5).
+                                frmErde.HinweisErgebnis = "Diese Konfiguration bleibt wirkungslos:\r\n\r\n" + erdErg.Grenze;
+                            else if (!erdErg.MaxEntzugBelastbar)
+                                frmErde.HinweisErgebnis = "Auslegungsprüfung nicht möglich:\r\n\r\n" + erdErg.Grenze;
+                            else
+                            {
+                                if (erdErg.MaxEntzugGeschaetzt)
+                                    frmErde.HinweisVorbehalt = erdErg.Grenze;
+                                if (erdErg.InklSpeicherladung)
+                                    frmErde.HinweisVorbehalt = (frmErde.HinweisVorbehalt.Length > 0
+                                        ? frmErde.HinweisVorbehalt + " "
+                                        : "") +
+                                        "Entzugsarbeit und Spitze enthalten die Wärme, mit der die " +
+                                        "Wärmepumpe den Pufferspeicher lädt.";
+                                if (erdErg.FrostWarnung)
+                                    frmErde.HinweisFrost = erdErg.Frosttext();
+                            }
+                        }
+
+                        frmErde.SetControls();
+                        if (frmErde.ShowDialog(this) != DialogResult.OK) return;
+
+                        // Die Klimazone ist eine Eigenschaft der Region, nicht der Anlage
+                        // (Konzept 13.1) - eine Änderung im Dialog geht deshalb an die Region.
+                        if (frmErde.Klimazone != zoneVorher) KlimazoneSpeichern(frmErde.Klimazone);
+
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Quellsystem", frmErde.Quellsystem);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Tiefe", frmErde.Tiefe);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Flaeche", frmErde.Flaeche);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Anzahl", frmErde.Anzahl);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Bodentyp", frmErde.Bodentyp);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Spreizung", frmErde.Spreizung);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
+                        break;
+                    }
+            }
+
+            AktualisiereErzeugerUebersicht();
+        }
+
+        /// <summary>
+        /// Kleiner modaler Eingabedialog (Titel, Beschriftung, Vorgabewert).
+        /// Liefert den eingegebenen Text oder null bei Abbruch.
+        /// </summary>
+        private string EingabeDialog(string titel, string beschriftung, string vorgabe)
+        {
+            Form frm = new Form();
+            frm.Text = titel;
+            frm.FormBorderStyle = FormBorderStyle.FixedDialog;
+            frm.StartPosition = FormStartPosition.CenterParent;
+            frm.MinimizeBox = false;
+            frm.MaximizeBox = false;
+            frm.ClientSize = new Size(340, 140);
+
+            Label lbl = new Label { Text = beschriftung, AutoSize = true, Location = new Point(12, 12) };
+            TextBox txt = new TextBox { Location = new Point(12, 75), Width = 316, Text = vorgabe ?? "" };
+            Button ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Location = new Point(172, 105), Width = 75 };
+            Button abbruch = new Button { Text = "Abbrechen", DialogResult = DialogResult.Cancel, Location = new Point(253, 105), Width = 75 };
+
+            frm.Controls.Add(lbl);
+            frm.Controls.Add(txt);
+            frm.Controls.Add(ok);
+            frm.Controls.Add(abbruch);
+            frm.AcceptButton = ok;
+            frm.CancelButton = abbruch;
+
+            return frm.ShowDialog(this) == DialogResult.OK ? txt.Text : null;
+        }
+    }
+}
