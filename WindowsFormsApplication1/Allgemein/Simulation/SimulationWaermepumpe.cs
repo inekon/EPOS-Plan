@@ -529,15 +529,19 @@ namespace WindowsFormsApplication1
                     {
                         if (Rest_waerme > WP_Heizung[index])
                         {
-                            Heizstab_stuendlich[stunde] = WP_Heizung[index];
-                            Heizstab_gesamt += Heizstab_stuendlich[stunde];
+                            // B0-5: "+=" statt "=" — bei mehreren WP-Modulen überschrieb die
+                            // Ganglinie sonst den Beitrag der vorherigen Module, während
+                            // Heizstab_gesamt korrekt weiter addierte (inkonsistente Summen).
+                            // Addiert wird jeweils der Modul-Beitrag, nicht der Stundenstand.
+                            Heizstab_stuendlich[stunde] += WP_Heizung[index];
+                            Heizstab_gesamt += WP_Heizung[index];
                             Modul_Heizstab[index] += WP_Heizung[index];
                             Rest_waerme = Rest_waerme - WP_Heizung[index];
                         }
                         else
                         {
-                            Heizstab_stuendlich[stunde] = (float)Rest_waerme;
-                            Heizstab_gesamt += Heizstab_stuendlich[stunde];
+                            Heizstab_stuendlich[stunde] += (float)Rest_waerme;
+                            Heizstab_gesamt += (float)Rest_waerme;
                             Modul_Heizstab[index] += Rest_waerme;
                             Rest_waerme = 0;
                         }
@@ -763,6 +767,11 @@ namespace WindowsFormsApplication1
             Heizstab_gesamt = 0;
             WP_Strombedarf_gesamt = 0;
             WP_Laufzeit = 0;
+            // B0-7: Bilanzgrößen mit zurücksetzen — bei einem Abbruch der Berechnung
+            // blieben sonst Werte des Vorlaufs stehen und BaueErgebnis meldete eine
+            // falsche Deckung/einen falschen Restbedarf.
+            Waermebedarf_gesamt = 0;
+            waermerestbedarf_gesamt = 0;
             Bivalenzpunkt = -100;
         }
     }

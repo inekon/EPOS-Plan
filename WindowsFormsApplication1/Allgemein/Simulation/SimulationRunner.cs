@@ -134,7 +134,11 @@ namespace WindowsFormsApplication1
                 w.Waermeproduktion_WP = wp.WP_Waermeproduktion_gesamt / 1000.0;
                 w.Stromverbrauch_WP = wp.WP_Strombedarf_gesamt / 1000.0;
                 w.Stromverbrauch_Heizstab = wp.Heizstab_gesamt / 1000.0;
-                w.Restwaermebedarf = w.Waermebedarf - w.Waermeproduktion_WP - w.Stromverbrauch_Heizstab;
+                // B0-7a: Restbedarf aus der Stundenganglinie statt aus der Differenzformel —
+                // die alte Formel ignorierte Speichereffekte und zog zudem den Heizstab
+                // (Stromgröße) von einer Wärmemenge ab. Quelle ist dieselbe Größe,
+                // die auch die Detailansicht anzeigt (waermerestbedarf_gesamt).
+                w.Restwaermebedarf = wp.waermerestbedarf_gesamt / 1000.0;
                 w.Kapazitaet_Pufferspeicher = wp.Volumen_Pufferspeicher * 1.16;
                 w.Vollbenutzungsstunden = (wp.wp_list.Count > 0) ? wp.WP_Laufzeit / wp.wp_list.Count : 0;
                 w.Bivalenzpunkt = (wp.Bivalenzpunkt != -100) ? (double?)wp.Bivalenzpunkt : null;
@@ -145,12 +149,20 @@ namespace WindowsFormsApplication1
                     if (wp.waermerestbedarf_stuendlich[i] > maxSpk) maxSpk = wp.waermerestbedarf_stuendlich[i];
                 w.Min_Spitzenkesselleistung = maxSpk;
 
-                // Waermebedarfsdeckung (%) = (WP-Waerme + Heizstab) / Gesamtwaermebedarf.
+                // B0-7b: Waermebedarfsdeckung (%) restbedarfsbasiert als EIGENANTEIL der
+                // WP-Stufe: (Stufeneingang - Rest) / Gesamtbedarf. Bericht und
+                // Wirtschaftlichkeit addieren die Erzeugeranteile zu 100 % — eine Differenz
+                // gegen den Gesamtbedarf würde vorgelagerte Erzeuger doppelt zählen, wenn
+                // die WP nicht an erster Kaskadenposition steht. Mit WP an erster Stelle
+                // identisch zur Detailansicht; die alte produktionsbasierte Formel zählte
+                // Speicherladung als Deckung.
                 double basis = simulation_Waermebedarf.Waermebedarf_Gesamt;
                 if (basis > 0)
                 {
-                    double deckung = (w.Waermeproduktion_WP + w.Stromverbrauch_Heizstab) / basis * 100.0;
-                    w.Waermebedarfsdeckung = (deckung > 100) ? 100 : deckung;
+                    double deckung = (w.Waermebedarf - w.Restwaermebedarf) / basis * 100.0;
+                    if (deckung > 100) deckung = 100;
+                    if (deckung < 0) deckung = 0;
+                    w.Waermebedarfsdeckung = deckung;
                 }
 
                 // Modulauflistung.
