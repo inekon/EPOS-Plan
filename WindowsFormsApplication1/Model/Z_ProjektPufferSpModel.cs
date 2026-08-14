@@ -16,6 +16,9 @@ namespace WindowsFormsApplication1
         public int Vorlauf;
         public int Ruecklauf;
         public int Prioritaet;
+        // B0-1: Schwellen der Speicherregelung [%]; null = nicht gesetzt (Defaults 10/95)
+        public double? Schwelle_Ein;
+        public double? Schwelle_Aus;
         public Z_ProjektPufferSpModel[] items;
 
         public Z_ProjektPufferSpModel()
@@ -28,6 +31,8 @@ namespace WindowsFormsApplication1
             Vorlauf = 0;
             Ruecklauf = 0;
             Prioritaet = 0;
+            Schwelle_Ein = null;
+            Schwelle_Aus = null;
             items = null;
         }
     }
