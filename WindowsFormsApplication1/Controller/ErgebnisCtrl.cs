@@ -29,6 +29,7 @@ namespace WindowsFormsApplication1
         public const string TAB_SOLAR_MODUL = "Tab_ErgebnisSolarthermieModul";
         public const string TAB_PV = "Tab_ErgebnisPhotovoltaik";
         public const string TAB_PV_MODUL = "Tab_ErgebnisPhotovoltaikModul";
+        public const string TAB_PUFFER = "Tab_ErgebnisPufferspeicher";
 
         // Alte, funktionslose Signatur — nur für Übergangskompatibilität erhalten.
         [Obsolete("Delete(int idProjekt) verwenden — diese Überladung löscht nichts.")]
@@ -42,6 +43,12 @@ namespace WindowsFormsApplication1
             var (conn, trans) = DataRepository.BeginTransaction();
             try
             {
+                // Defensiv VOR dem Kopf-Delete - dieselbe Begruendung wie in Save:
+                // auf einer Datenbank ohne FK_ErgPuffer gibt es keine Loeschweitergabe,
+                // die Pufferzeilen blieben als Waisen stehen und zeigten wegen der
+                // MAX(ID)+1-Vergabe spaeter auf fremde Laeufe (Konzept 6.6).
+                PufferzeilenLoeschen(conn, trans, idProjekt);
+
                 //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
                 using (OleDbCommand c = new OleDbCommand(
                     "DELETE FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", conn, trans))
@@ -70,6 +77,7 @@ namespace WindowsFormsApplication1
             StelleEnergieSpaltenSicher();   // fehlende Restbedarf-Spalten einmalig ergänzen
             StelleBHKWSpaltenSicher();      // fehlende Brennstoffspalten in Tab_ErgebnisBHKW einmalig ergänzen
             StelleModulSpaltenSicher();     // carrier_id (B1) + Waermeproduktion Kesselmodul (B3) ergänzen
+            StellePufferTabelleSicher();    // Tab_ErgebnisPufferspeicher (Konzept 6.6) - Rückfallebene
 
             // Energieträger-Zuordnung einmal je Erzeuger bestimmen (Befund B1: echte
             // carrier_id statt des Brennstoff-Strings — Basis für Kosten/Wirtschaftlichkeit).
@@ -81,6 +89,29 @@ namespace WindowsFormsApplication1
             {
                 // 1. "letztes Ergebnis je Projekt": vorhandene Ergebnisse entfernen.
                 //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
+
+                //    Defensiv VOR dem Kopf-Delete: Die Puffer-Zeilen haengen zwar per
+                //    FK_ErgPuffer mit DEL-CASCADE am Kopf (Migration Schritt 3), auf einer
+                //    Datenbank, deren Tabelle von StellePufferTabelleSicher() ohne
+                //    Constraint entstanden ist, gaebe es die Weitergabe aber nicht.
+                //    Ohne dieses Delete blieben Waisenzeilen stehen, die wegen der
+                //    MAX(ID)+1-Vergabe spaeter auf fremde Laeufe zeigen wuerden (6.6).
+                PufferzeilenLoeschen(conn, trans, m.ID_Projekt);
+
+                //    Zusaetzlich alle Waisen abraeumen, deren Kopf nicht mehr existiert.
+                //    Notwendig, weil ein frueherer Kopf-Delete OHNE Loeschweitergabe
+                //    Zeilen hinterlassen haben kann: die Kopf-ID wird per MAX(ID)+1
+                //    wiederverwendet, die alte Zeile haengt danach an einem FREMDEN
+                //    Projekt und faelscht dessen Ergebnisausweis (Konzept 6.6).
+                try
+                {
+                    using (OleDbCommand c = new OleDbCommand(
+                        "DELETE FROM " + TAB_PUFFER + " WHERE ID_Ergebnis NOT IN " +
+                        "(SELECT ID FROM " + TAB_KOPF + ")", conn, trans))
+                        c.ExecuteNonQuery();
+                }
+                catch { /* Tabelle (noch) nicht vorhanden - dann gibt es auch keine Waisen */ }
+
                 using (OleDbCommand c = new OleDbCommand(
                     "DELETE ID_Projekt FROM " + TAB_KOPF + " WHERE ID_Projekt = ?", conn, trans))
                 {
@@ -412,6 +443,40 @@ namespace WindowsFormsApplication1
                     }
                 }
 
+                // 9. Detail: Pufferspeicher (Konzept 6.6) - eine Zeile je beteiligtem
+                //    Speicher, Senken- wie Quellspeicher. IDs wie bei den
+                //    Geschwistertabellen ueber MAX(ID)+1 und dann hochzaehlend.
+                if (m.Pufferspeicher != null && m.Pufferspeicher.Count > 0)
+                {
+                    int pufId = NextId(conn, trans, TAB_PUFFER);
+                    string sqlP = "INSERT INTO " + TAB_PUFFER + " (" +
+                        "ID, ID_Ergebnis, ID_Pufferspeicher, Bezeichner, Verwendung, Q_max, " +
+                        "Ladung_gesamt, Entladung_gesamt, Verluste_gesamt, SOC_Ende, SOC_Mittel, " +
+                        "SOC_Max, Vollzyklen) " +
+                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?)";
+                    foreach (ErgebnisPufferspeicherModel sp in m.Pufferspeicher)
+                    {
+                        using (OleDbCommand c = new OleDbCommand(sqlP, conn, trans))
+                        {
+                            c.Parameters.Add("@id", OleDbType.Integer).Value = pufId++;
+                            c.Parameters.Add("@erg", OleDbType.Integer).Value = kopfId;
+                            c.Parameters.Add("@sp", OleDbType.Integer).Value =
+                                sp.ID_Pufferspeicher > 0 ? (object)sp.ID_Pufferspeicher : DBNull.Value;
+                            c.Parameters.Add("@bez", OleDbType.VarWChar).Value = (object)(sp.Bezeichner ?? "");
+                            c.Parameters.Add("@ver", OleDbType.VarWChar).Value = (object)(sp.Verwendung ?? "");
+                            c.Parameters.Add("@a1", OleDbType.Double).Value = R(sp.Q_max);
+                            c.Parameters.Add("@a2", OleDbType.Double).Value = R(sp.Ladung_gesamt);
+                            c.Parameters.Add("@a3", OleDbType.Double).Value = R(sp.Entladung_gesamt);
+                            c.Parameters.Add("@a4", OleDbType.Double).Value = R(sp.Verluste_gesamt);
+                            c.Parameters.Add("@a5", OleDbType.Double).Value = R(sp.SOC_Ende);
+                            c.Parameters.Add("@a6", OleDbType.Double).Value = R(sp.SOC_Mittel);
+                            c.Parameters.Add("@a7", OleDbType.Double).Value = R(sp.SOC_Max);
+                            c.Parameters.Add("@a8", OleDbType.Double).Value = R(sp.Vollzyklen);
+                            c.ExecuteNonQuery();
+                        }
+                    }
+                }
+
                 trans.Commit();
                 m.ID = kopfId;
                 return kopfId;
@@ -663,6 +728,35 @@ namespace WindowsFormsApplication1
                 m.Photovoltaik = p;
             }
 
+            // Detail: Pufferspeicher (Konzept 6.6). Tolerant gegen Datenbanken, auf denen
+            // weder die Migration noch ein Save gelaufen ist - dann fehlt die Tabelle und
+            // die Liste bleibt leer.
+            //
+            // WICHTIG: NICHT ueber DataRepository.GetDataTable. Die Methode wirft bei
+            // einer fehlenden Tabelle nicht, sondern zeigt eine MessageBox und liefert
+            // eine leere Tabelle zurueck - das try/catch hier lief also ins Leere und der
+            // Anwender (bzw. der headless-Referenzlauf) bekam eine Fehlermeldung statt
+            // der stillen Ruecklaufebene. PufferZeilenLesenStill greift mit eigener,
+            // stiller Verbindung direkt zu und liefert null, wenn es die Tabelle nicht gibt.
+            DataTable dsp = PufferZeilenLesenStill(m.ID);
+            if (dsp != null)
+                foreach (DataRow rsp in dsp.Rows)
+                {
+                    ErgebnisPufferspeicherModel sp = new ErgebnisPufferspeicherModel();
+                    sp.ID_Pufferspeicher = I(rsp, "ID_Pufferspeicher");
+                    sp.Bezeichner = S(rsp, "Bezeichner");
+                    sp.Verwendung = S(rsp, "Verwendung");
+                    sp.Q_max = D(rsp, "Q_max");
+                    sp.Ladung_gesamt = D(rsp, "Ladung_gesamt");
+                    sp.Entladung_gesamt = D(rsp, "Entladung_gesamt");
+                    sp.Verluste_gesamt = D(rsp, "Verluste_gesamt");
+                    sp.SOC_Ende = D(rsp, "SOC_Ende");
+                    sp.SOC_Mittel = D(rsp, "SOC_Mittel");
+                    sp.SOC_Max = D(rsp, "SOC_Max");
+                    sp.Vollzyklen = D(rsp, "Vollzyklen");
+                    m.Pufferspeicher.Add(sp);
+                }
+
             return m;
         }
 
@@ -755,6 +849,190 @@ namespace WindowsFormsApplication1
                 }
             }
             catch { /* best effort - Spalten existieren dann ggf. schon */ }
+        }
+
+        // ---------------------------------------------------------------------------
+        // Tab_ErgebnisPufferspeicher (Konzept 6.6)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// Rückfallebene für Datenbanken, deren SchemaMigration (Schritt 3) noch nicht
+        /// gelaufen ist: legt Tab_ErgebnisPufferspeicher samt Index und Löschweitergabe
+        /// an. Muster ist der Ddl()-Helfer aus WirtschaftlichkeitCtrl - jeder Schritt
+        /// einzeln abgesichert, damit ein Fehlschlag die übrigen nicht mitreißt.
+        ///
+        /// Duplikat-tolerant: Auf migrierten Datenbanken existieren Tabelle, Index und
+        /// Constraint bereits; dann passiert hier nichts (Tabellenprüfung vorab, die
+        /// beiden Folgeschritte laufen nur nach einer echten Neuanlage).
+        ///
+        /// WICHTIG: Fehlt die Constraint (z. B. weil sie an einer Altdatenbank nicht
+        /// angelegt werden konnte), greift zusätzlich das explizite DELETE in Save.
+        /// </summary>
+        private static void StellePufferTabelleSicher()
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+
+                    if (!PufferTabelleVorhanden(conn))
+                    {
+                        // Spaltensatz identisch zu SchemaMigration.SQL_CREATE_ERGEBNISPUFFER.
+                        try
+                        {
+                            Ddl(conn, "CREATE TABLE " + TAB_PUFFER + " (ID LONG NOT NULL PRIMARY KEY, " +
+                                      "ID_Ergebnis LONG, ID_Pufferspeicher LONG, Bezeichner TEXT(255), " +
+                                      "Verwendung TEXT(50), Q_max DOUBLE, Ladung_gesamt DOUBLE, " +
+                                      "Entladung_gesamt DOUBLE, Verluste_gesamt DOUBLE, SOC_Ende DOUBLE, " +
+                                      "SOC_Mittel DOUBLE, SOC_Max DOUBLE, Vollzyklen DOUBLE)");
+                        }
+                        catch { return; /* ohne Tabelle sind Index und Constraint sinnlos */ }
+                    }
+
+                    // Index und Löschweitergabe werden AUCH auf einer bereits vorhandenen
+                    // Tabelle geprueft: eine Tabelle kann aus einem abgebrochenen Lauf
+                    // dieser Rueckfallebene stammen (CREATE TABLE gelungen, Index oder
+                    // Constraint nicht) oder aus einer Handanlage. Fehlt FK_ErgPuffer,
+                    // gibt es keine Loeschweitergabe - genau der Waisenfall aus 6.6.
+                    // Duplikat-tolerant: auf migrierten Datenbanken sind beide vorhanden,
+                    // die Pruefung stellt das fest und es passiert nichts.
+                    if (!IndexVorhanden(conn, TAB_PUFFER, "idx_ErgPuffer"))
+                    {
+                        try { Ddl(conn, "CREATE INDEX idx_ErgPuffer ON " + TAB_PUFFER + " (ID_Ergebnis)"); }
+                        catch { }
+                    }
+
+                    // Dieselbe Löschweitergabe wie bei allen Geschwistertabellen (13.7).
+                    if (!FremdschluesselVorhanden(conn, TAB_PUFFER, "ID_Ergebnis"))
+                    {
+                        // Waisen zuerst: Access weist ADD CONSTRAINT zurueck, solange
+                        // Zeilen ohne gueltigen Kopf existieren. Genau die entstehen
+                        // aber, wenn die Beziehung bisher fehlte - ohne dieses Delete
+                        // liesse sich die Loeschweitergabe nie mehr nachziehen.
+                        try
+                        {
+                            Ddl(conn, "DELETE FROM " + TAB_PUFFER + " WHERE ID_Ergebnis NOT IN " +
+                                      "(SELECT ID FROM " + TAB_KOPF + ")");
+                        }
+                        catch { }
+
+                        try
+                        {
+                            Ddl(conn, "ALTER TABLE " + TAB_PUFFER + " ADD CONSTRAINT FK_ErgPuffer " +
+                                      "FOREIGN KEY (ID_Ergebnis) REFERENCES " + TAB_KOPF + " (ID) ON DELETE CASCADE");
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch { /* best effort - Save faengt einen echten Fehler ohnehin ab */ }
+        }
+
+        private static bool PufferTabelleVorhanden(OleDbConnection conn)
+        {
+            DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables,
+                new object[] { null, null, TAB_PUFFER, "TABLE" });
+            return schema != null && schema.Rows.Count > 0;
+        }
+
+        /// <summary>Gibt es den benannten Index auf der Tabelle? (Muster Migrationslauf.IndexVorhanden)</summary>
+        private static bool IndexVorhanden(OleDbConnection conn, string tabelle, string index)
+        {
+            try
+            {
+                DataTable dt = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Indexes,
+                    new object[] { null, null, null, null, tabelle });
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                        if (string.Equals(r["INDEX_NAME"].ToString(), index, StringComparison.OrdinalIgnoreCase))
+                            return true;
+            }
+            catch { }
+            return false;
+        }
+
+        /// <summary>
+        /// Gibt es auf der Tabelle einen Fremdschluessel ueber die genannte Spalte?
+        /// Geprueft wird die Spalte, nicht der Name der Constraint - eine von Hand oder
+        /// von der Migration angelegte Beziehung kann anders heissen, erfuellt aber
+        /// denselben Zweck; ein zweites ADD CONSTRAINT wuerde nur scheitern.
+        /// </summary>
+        private static bool FremdschluesselVorhanden(OleDbConnection conn, string tabelle, string spalte)
+        {
+            try
+            {
+                DataTable dt = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Foreign_Keys, null);
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                        if (string.Equals(Txt(r, "FK_TABLE_NAME"), tabelle, StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(Txt(r, "FK_COLUMN_NAME"), spalte, StringComparison.OrdinalIgnoreCase))
+                            return true;
+            }
+            catch { }
+            return false;
+        }
+
+        private static string Txt(DataRow r, string spalte)
+        {
+            return (r.Table.Columns.Contains(spalte) && r[spalte] != DBNull.Value) ? r[spalte].ToString() : "";
+        }
+
+        /// <summary>
+        /// Loescht die Pufferzeilen aller Ergebniskoepfe eines Projekts innerhalb der
+        /// laufenden Transaktion. Fehlt die Tabelle, gibt es auch keine Zeilen -
+        /// der Aufrufer soll deswegen nicht abbrechen.
+        /// </summary>
+        private static void PufferzeilenLoeschen(OleDbConnection conn, OleDbTransaction trans, int idProjekt)
+        {
+            try
+            {
+                using (OleDbCommand c = new OleDbCommand(
+                    "DELETE FROM " + TAB_PUFFER + " WHERE ID_Ergebnis IN " +
+                    "(SELECT ID FROM " + TAB_KOPF + " WHERE ID_Projekt = ?)", conn, trans))
+                {
+                    c.Parameters.Add("@p", OleDbType.Integer).Value = idProjekt;
+                    c.ExecuteNonQuery();
+                }
+            }
+            catch { /* Tabelle (noch) nicht vorhanden - dann gibt es auch keine Waisen */ }
+        }
+
+        /// <summary>
+        /// Liest die Pufferzeilen eines Ergebniskopfes ueber eine EIGENE, stille
+        /// OleDb-Verbindung. Rueckgabe null, wenn die Tabelle fehlt oder der Zugriff
+        /// scheitert.
+        ///
+        /// Bewusst nicht ueber <c>DataRepository.GetDataTable</c>: das zeigt bei einem
+        /// Fehler eine MessageBox und liefert eine leere Tabelle statt zu werfen - eine
+        /// nicht migrierte Datenbank haette damit eine Fehlermeldung erzeugt, obwohl die
+        /// leere Liste der vorgesehene Normalfall ist (Muster: WaermequelleClass.SkalarStill).
+        /// </summary>
+        public static DataTable PufferZeilenLesenStill(int idErgebnis)
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    if (!PufferTabelleVorhanden(conn)) return null;
+
+                    DataTable dt = new DataTable();
+                    using (OleDbCommand cmd = new OleDbCommand(
+                        "SELECT * FROM " + TAB_PUFFER + " WHERE ID_Ergebnis = ? ORDER BY ID", conn))
+                    {
+                        cmd.Parameters.Add("@e", OleDbType.Integer).Value = idErgebnis;
+                        using (OleDbDataAdapter ad = new OleDbDataAdapter(cmd)) ad.Fill(dt);
+                    }
+                    return dt;
+                }
+            }
+            catch { return null; }
+        }
+
+        private static void Ddl(OleDbConnection conn, string sql)
+        {
+            using (OleDbCommand cmd = new OleDbCommand(sql, conn)) cmd.ExecuteNonQuery();
         }
 
         private static void ErgaenzeSpalte(OleDbConnection conn, string tabelle, string spalte, string typ)

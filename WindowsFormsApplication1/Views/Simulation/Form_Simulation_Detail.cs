@@ -26,6 +26,15 @@ namespace WindowsFormsApplication1
         public int m_ID_Projekt;
         private System.Windows.Forms.ListView listView_SimSolar;
         private System.Windows.Forms.ListView listView_SimPV;
+
+        // Ergebnistabelle der Pufferspeicher (Konzept 13.3) - ersetzt die
+        // textBox_Pufferspeicher, die nur einen Speicher zeigen konnte. Programmatisch
+        // angelegt wie listView_SimSolar/listView_SimPV; kein Designer-, kein .resx-Eingriff.
+        private System.Windows.Forms.ListView listView_SimPuffer;
+
+        // Kompakte Textzeile mit den Warnungen der VDI-4640-Auslegungsprüfung
+        // (Konzept 4.5/13.1, Ergebnisanbindung aus Paket 3).
+        private System.Windows.Forms.Label label_Erdreich;
         public double m_Waermebedarf_Gesamt;
         public double m_Strombedarf_Gesamt;
 
@@ -185,7 +194,11 @@ namespace WindowsFormsApplication1
                 chart_PV.Parent.Controls.Add(listView_SimPV);
             }
 
-            // HIER DIE KORREKTUR: ReihenfolgeTabPages() komplett weglassen 
+            // Pufferspeicher-Ergebnistabelle und Erdreich-Hinweis im Wärmepumpen-Tab
+            // (programmatisch, Muster listView_SimSolar/listView_SimPV).
+            InitPufferspeicherRubrik();
+
+            // HIER DIE KORREKTUR: ReihenfolgeTabPages() komplett weglassen
             // und stattdessen direkt unsere neue Update-Logik starten!
             UpdateTabPages();
 
@@ -250,6 +263,150 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Legt die Pufferspeicher-Ergebnistabelle und die Erdreich-Hinweiszeile im
+        /// Wärmepumpen-Tab an (Konzept 13.3 bzw. 4.5/13.1).
+        ///
+        /// Die bisherige <c>textBox_Pufferspeicher</c> konnte nur EINEN Speicher zeigen
+        /// und blieb bei mehreren stillschweigend unvollständig. Sie bleibt im Designer
+        /// erhalten (kein Designer-/.resx-Eingriff), wird aber ausgeblendet, sobald der
+        /// Lauf mindestens einen Speicher hatte; ohne Speicher zeigt sie weiter den
+        /// bisherigen Text. Die Tabelle entsteht programmatisch nach dem Muster von
+        /// listView_SimSolar/listView_SimPV.
+        ///
+        /// Alle sichtbaren Texte sind deutsch hartkodiert - das entspricht dem
+        /// Bestandsmuster des Simulationsbereichs; die durchgängige Lokalisierung
+        /// gehört zu Paket 9.
+        /// </summary>
+        private void InitPufferspeicherRubrik()
+        {
+            if (listView_SimWP == null || listView_SimWP.Parent == null) return;
+
+            // Platz schaffen: die Modul-Liste ist für ihre wenigen Zeilen sehr hoch.
+            int hoeheWP = Math.Max(120, listView_SimWP.Height - 110);
+            listView_SimWP.Height = hoeheWP;
+
+            listView_SimPuffer = new System.Windows.Forms.ListView();
+            listView_SimPuffer.Name = "listView_SimPuffer";
+            listView_SimPuffer.View = View.Details;
+            listView_SimPuffer.FullRowSelect = true;
+            listView_SimPuffer.GridLines = true;
+            listView_SimPuffer.MultiSelect = false;
+            listView_SimPuffer.Font = listView_SimSPK.Font;
+            listView_SimPuffer.Columns.Add("Speicher", -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add("Rolle", -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add("Kapazität [kWh]", -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add("Ladung [kWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add("Entladung [kWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add("Verluste [kWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add("Vollzyklen", -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add("Füllstand Ende [kWh]", -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Location = new Point(listView_SimWP.Left, listView_SimWP.Bottom + 10);
+            listView_SimPuffer.Width = listView_SimWP.Width;
+            listView_SimPuffer.Height = 82;
+            listView_SimPuffer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            // Erst nach einem Lauf mit Speicher sichtbar (siehe PufferspeicherErgebnisAnzeigen).
+            listView_SimPuffer.Visible = false;
+            listView_SimWP.Parent.Controls.Add(listView_SimPuffer);
+
+            label_Erdreich = new Label();
+            label_Erdreich.Name = "label_Erdreich";
+            label_Erdreich.AutoSize = false;
+            label_Erdreich.Font = listView_SimSPK.Font;
+            label_Erdreich.Location = new Point(listView_SimPuffer.Left, listView_SimPuffer.Bottom + 6);
+            label_Erdreich.Size = new Size(listView_SimWP.Width, 44);
+            label_Erdreich.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            label_Erdreich.Text = "";
+            label_Erdreich.Visible = false;
+            listView_SimWP.Parent.Controls.Add(label_Erdreich);
+        }
+
+        /// <summary>
+        /// Füllt die Pufferspeicher-Ergebnistabelle aus denselben Speicherobjekten, die
+        /// auch Tab_ErgebnisPufferspeicher speisen (eine Quelle der Wahrheit, Konzept 6.6).
+        /// </summary>
+        private void PufferspeicherErgebnisAnzeigen()
+        {
+            List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
+
+            if (listView_SimPuffer != null)
+            {
+                listView_SimPuffer.Items.Clear();
+                foreach (SimulationPufferspeicher sp in speicher)
+                {
+                    ListViewItem li = new ListViewItem(sp.BezeichnerAnzeige());
+                    li.SubItems.Add(sp.RolleAnzeige());
+                    li.SubItems.Add(sp.Q_max.ToString("F1"));
+                    li.SubItems.Add(sp.Ladung_gesamt.ToString("F0"));
+                    li.SubItems.Add(sp.Entladung_gesamt.ToString("F0"));
+                    li.SubItems.Add(sp.Verluste_gesamt.ToString("F0"));
+                    li.SubItems.Add(sp.Vollzyklen.ToString("F1"));
+                    li.SubItems.Add(sp.SOC.ToString("F1"));
+                    listView_SimPuffer.Items.Add(li);
+                }
+                listView_SimPuffer.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+                listView_SimPuffer.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+                listView_SimPuffer.Visible = speicher.Count > 0;
+            }
+
+            // Ohne Speicher bleibt es beim bisherigen Textfeld (Legacy-Ausdruck);
+            // mit Speicher übernimmt die Tabelle - der Übergangshinweis
+            // "Speicher 1 von n" aus Konzept 6.7 entfällt damit.
+            bool mitSpeicher = speicher.Count > 0;
+            textBox_Pufferspeicher.Visible = !mitSpeicher;
+            Control[] beschriftung = tabPage_Wärmepumpe.Controls.Find("label38", true);
+            if (beschriftung.Length == 0 && textBox_Pufferspeicher.Parent != null)
+                beschriftung = textBox_Pufferspeicher.Parent.Controls.Find("label38", true);
+            foreach (Control c in beschriftung) c.Visible = !mitSpeicher;
+
+            if (!mitSpeicher)
+                textBox_Pufferspeicher.Text = (sim.simulation_wp != null)
+                    ? (sim.simulation_wp.Volumen_Pufferspeicher * 1.16).ToString()
+                    : "";
+        }
+
+        /// <summary>
+        /// Zeigt die Warnungen der VDI-4640-Auslegungsprüfung als kompakte Textzeilen
+        /// im Wärmepumpen-Ergebnisbereich (Konzept 4.5: die Prüfung muss den Anwender
+        /// auch dann erreichen, wenn er den Quellendialog nicht mehr öffnet).
+        /// </summary>
+        private void ErdreichHinweisAnzeigen()
+        {
+            if (label_Erdreich == null) return;
+
+            List<ErdreichAuswertung.AnlageErgebnis> erg = ErdreichAuswertung.FuerProjekt(m_ID_Projekt);
+            if (erg.Count == 0)
+            {
+                label_Erdreich.Visible = false;
+                label_Erdreich.Text = "";
+                return;
+            }
+
+            List<string> zeilen = new List<string>();
+            bool warnung = false;
+            foreach (ErdreichAuswertung.AnlageErgebnis a in erg)
+            {
+                zeilen.Add(a.Kurztext());
+                if ((a.Pruefung != null && a.Pruefung.Moeglich && a.Pruefung.Warnung) || a.FrostWarnung)
+                    warnung = true;
+            }
+
+            label_Erdreich.Text = string.Join(Environment.NewLine, zeilen);
+            label_Erdreich.ForeColor = warnung ? Color.Firebrick : SystemColors.ControlText;
+
+            // Höhe an den tatsächlichen Umbruch anpassen. AutoSize = true würde die
+            // Breite sprengen (eine einzige lange Zeile), deshalb wird bei fester
+            // Breite gemessen und nur die Höhe nachgezogen - sonst schneidet die im
+            // Konstruktor gesetzte Festhöhe von 44 px alles ab der dritten Zeile ab,
+            // und ausgerechnet die Warnungen stehen am Ende.
+            Size gemessen = TextRenderer.MeasureText(label_Erdreich.Text, label_Erdreich.Font,
+                new Size(label_Erdreich.Width, int.MaxValue),
+                TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
+            label_Erdreich.Height = Math.Max(44, gemessen.Height + 6);
+
+            label_Erdreich.Visible = true;
+        }
+
+        /// <summary>
         /// CSV-Export Bereich Energiebedarf:
         /// Zeitstempel; Außentemperatur; Wärmelast [kW]; Strombedarf [kW] (Stundenwerte).
         /// </summary>
@@ -290,12 +447,16 @@ namespace WindowsFormsApplication1
             spalten.Add(new CsvSpalte("Wärmeproduktion WP [kW]", sim.simulation_wp.WP_Waermeproduktion_stuendlich));
             spalten.Add(new CsvSpalte("Strombedarf WP [kW]", sim.simulation_wp.WP_Strombedarf_stuendlich));
 
-            // Pufferspeicher-Ganglinien mit exportieren, falls ein Speicher zugeordnet ist
-            if (sim.puffer_wp != null)
+            // Speicher-Ganglinien mit exportieren: DREI Spalten je Speicher (Ladung,
+            // Entladung, Speicherinhalt) mit dem Bezeichner im Kopf - Senken- wie
+            // Quellspeicher (Konzept 13.3). Die Kopfzeile bleibt deutsch, sie ist
+            // Exportformat und nicht Oberfläche (13.6).
+            foreach (SimulationPufferspeicher sp in sim.AlleSpeicher())
             {
-                spalten.Add(new CsvSpalte("Puffer Ladung [kWh]", sim.puffer_wp.Ladung_stuendlich));
-                spalten.Add(new CsvSpalte("Puffer Entladung [kWh]", sim.puffer_wp.Entladung_stuendlich));
-                spalten.Add(new CsvSpalte("Puffer Speicherinhalt [kWh]", sim.puffer_wp.SOC_stuendlich));
+                string name = sp.Anzeige();
+                spalten.Add(new CsvSpalte(name + " Ladung [kWh]", sp.Ladung_stuendlich));
+                spalten.Add(new CsvSpalte(name + " Entladung [kWh]", sp.Entladung_stuendlich));
+                spalten.Add(new CsvSpalte(name + " Speicherinhalt [kWh]", sp.SOC_stuendlich));
             }
 
             CsvExportClass.Export("Waermepumpe_Projekt_" + m_ID_Projekt + ".csv",
@@ -1286,11 +1447,10 @@ namespace WindowsFormsApplication1
                 textBox_WPStromverbrauch.Text = (sim.simulation_wp.WP_Strombedarf_gesamt / 1000).ToString("F2");
                 textBox_HeizstabStromverbrauch.Text = (sim.simulation_wp.Heizstab_gesamt / 1000).ToString("F2");
                 textBox_WPWaermeproduktion.Text = (sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000).ToString("F2");
-                // Kapazität aus der Pufferspeicher-Zuordnung (Stufe 1), sonst wie bisher
-                if (sim.puffer_wp != null)
-                    textBox_Pufferspeicher.Text = sim.puffer_wp.Q_max.ToString("F1") + " kWh (" + sim.puffer_wp.Bezeichner + ")";
-                else
-                    textBox_Pufferspeicher.Text = (sim.simulation_wp.Volumen_Pufferspeicher * 1.16).ToString();
+                // Speicher-Ergebnisse als kleine Tabelle statt als eine Textzeile
+                // (Konzept 13.3) und die Warnungen der VDI-4640-Auslegungsprüfung
+                // werden weiter unten für JEDEN Lauf gefüllt - auch für einen ohne
+                // Wärmepumpe, damit die Rubrik dann geleert wird.
                 textBox_WPVollbenutzungsstunden.Text = (sim.simulation_wp.WP_Laufzeit / sim.simulation_wp.wp_list.Count).ToString("F0");
 
                 double Max_Spk = 0;
@@ -1393,6 +1553,14 @@ namespace WindowsFormsApplication1
                 _chartManager[4].AddSeries("Heizstab", Color.FromArgb(120, Color.Yellow), ps_heizstab, 0);
                 _chartManager[4].AddSeries("Wärmeproduktion", Color.FromArgb(120, Color.Blue), ps_produktion, 0);
             }
+
+            // Speicher-Ergebnisse und Erdreich-Hinweis BEWUSST ausserhalb von
+            // "if (sim.bSimulationWP)": wird die Wärmepumpe in einem Folgelauf
+            // abgewählt, muss die Rubrik geleert werden statt die Zahlen des
+            // Vorlaufs stehen zu lassen. Beide Methoden vertragen einen Lauf ohne
+            // Wärmepumpe und blenden dann alles aus.
+            PufferspeicherErgebnisAnzeigen();
+            ErdreichHinweisAnzeigen();
 
             // ********************************************************************************************/
             // Heizkessel

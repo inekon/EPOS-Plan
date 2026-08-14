@@ -152,7 +152,14 @@ namespace WindowsFormsApplication1
                 // (Stromgröße) von einer Wärmemenge ab. Quelle ist dieselbe Größe,
                 // die auch die Detailansicht anzeigt (waermerestbedarf_gesamt).
                 w.Restwaermebedarf = wp.waermerestbedarf_gesamt / 1000.0;
-                w.Kapazitaet_Pufferspeicher = wp.Volumen_Pufferspeicher * 1.16;
+                // Paket 7 / Konzept 6.6: Kapazität kommt aus dem zugeordneten Speicher
+                // (SimulationPufferspeicher.Q_max in kWh), nicht mehr aus dem Legacy-
+                // Ausdruck Volumen · 1,16. Der alte Ausdruck rechnete ohne ΔT (also
+                // implizit mit 1 K) und ohne /1000, nahm das Volumen zudem aus dem
+                // WP-Datensatz statt aus dem Puffer - und widersprach damit der Anzeige.
+                // DOKUMENTIERTE ERGEBNISÄNDERUNG in Projekten mit Puffer-Zuordnung.
+                // Ohne zugeordneten Puffer wird 0 gespeichert (es gibt keine Kapazität).
+                w.Kapazitaet_Pufferspeicher = (sim.puffer_wp != null) ? sim.puffer_wp.Q_max : 0;
                 w.Vollbenutzungsstunden = (wp.wp_list.Count > 0) ? wp.WP_Laufzeit / wp.wp_list.Count : 0;
                 w.Bivalenzpunkt = (wp.Bivalenzpunkt != -100) ? (double?)wp.Bivalenzpunkt : null;
 
@@ -366,6 +373,28 @@ namespace WindowsFormsApplication1
                         });
 
                 m.Photovoltaik = pvm;
+            }
+
+            // Detail: Pufferspeicher (Konzept 6.6). Befüllt wird je Lauf der
+            // Senken-Puffer (sim.puffer_wp) UND jeder Quellspeicher der WP-Module;
+            // die Rolle steht in Verwendung. Quelle ist dieselbe Speicherliste, aus
+            // der sich auch Navigator, CSV-Export und die Ergebnistabelle speisen.
+            foreach (SimulationPufferspeicher sp in sim.AlleSpeicher())
+            {
+                m.Pufferspeicher.Add(new ErgebnisPufferspeicherModel
+                {
+                    ID_Pufferspeicher = sp.ID_Pufferspeicher,
+                    Bezeichner = sp.Bezeichner ?? "",
+                    Verwendung = sp.Verwendung ?? "",
+                    Q_max = sp.Q_max,
+                    Ladung_gesamt = sp.Ladung_gesamt,
+                    Entladung_gesamt = sp.Entladung_gesamt,
+                    Verluste_gesamt = sp.Verluste_gesamt,
+                    SOC_Ende = sp.SOC,
+                    SOC_Mittel = sp.SOC_Mittel,
+                    SOC_Max = sp.SOC_Max,
+                    Vollzyklen = sp.Vollzyklen
+                });
             }
 
             return m;

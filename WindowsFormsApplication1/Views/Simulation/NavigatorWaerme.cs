@@ -19,10 +19,30 @@ namespace WindowsFormsApplication1
         private float[] temp_st;
         private float[] temp_bhkw;
         private float[] temp_ges;
-        private float[] temp_puffer;   // Pufferspeicher-Füllstand [kWh]
+
+        // Alle Speicher des Laufs (Senken- und Quellspeicher) in stabiler Reihenfolge -
+        // dieselbe Liste, die auch Ergebnis-Persistenz und Detailansicht speist
+        // (Konzept 6.6/13.3, eine Quelle der Wahrheit).
+        private List<SimulationPufferspeicher> speicherListe = new List<SimulationPufferspeicher>();
+
+        // Technische Serienschlüssel (PUFFER_<ID> / QUELLE_<AnlagenID>) in derselben
+        // Reihenfolge wie speicherListe. Der Anzeigetext steht ausschließlich in
+        // Series.LegendText, damit die Umstellung nicht mit der Lokalisierung
+        // kollidiert (Konzept 13.3; Lokalisierung des Bereichs = Paket 9).
+        private List<string> speicherSchluessel = new List<string>();
 
         // Checkbox für den Speicherfüllstand (programmatisch, kein Designer nötig)
         private CheckBox checkBox_Puffer;
+
+        // Auswahlliste der Speicher (13.3) - nur sichtbar, wenn es mehr als einen gibt.
+        private ComboBox comboBox_Puffer;
+
+        /// <summary>Farbfolge der Speicherserien (wiederholt sich bei vielen Speichern).</summary>
+        private static readonly Color[] SPEICHER_FARBEN =
+        {
+            Color.MediumVioletRed, Color.DarkViolet, Color.Teal,
+            Color.SaddleBrown, Color.DarkSlateGray, Color.Crimson
+        };
 
         public NavigatorWaerme(SimulationControl simctrl)
         {
@@ -33,7 +53,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Legt die Checkbox "Speicherfüllstand" neben den übrigen Serien-Checkboxen an.
+        /// Legt die Checkbox "Speicherfüllstand" und die Speicher-Auswahlliste neben den
+        /// übrigen Serien-Checkboxen an (programmatisch, kein Designer nötig).
+        /// Die Checkbox schaltet die Speicherserien gemeinsam ein und aus, die
+        /// Auswahlliste schränkt bei mehreren Speichern auf einen einzelnen ein.
         /// </summary>
         private void InitPufferCheckBox()
         {
@@ -45,6 +68,22 @@ namespace WindowsFormsApplication1
             checkBox_Puffer.CheckedChanged += checkBox_Puffer_CheckedChanged;
             this.Controls.Add(checkBox_Puffer);
             checkBox_Puffer.BringToFront();
+
+            comboBox_Puffer = new ComboBox();
+            comboBox_Puffer.Name = "comboBox_Puffer";
+            comboBox_Puffer.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox_Puffer.Width = 220;
+            // Zweite Checkbox-Zeile, rechts neben "Wärmebedarf einblenden" (dort ist
+            // Platz frei). Die erste Zeile ist bis "BHKW" belegt; hinter der neuen
+            // Checkbox "Speicherfüllstand" wären die 220 px der Liste über die rechte
+            // Diagrammkante hinausgelaufen und die Auswahl damit unerreichbar gewesen.
+            comboBox_Puffer.Location = new Point(checkBox_Waermebedarf.Right + 6,
+                                                 checkBox_Waermebedarf.Top - 2);
+            comboBox_Puffer.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            comboBox_Puffer.Visible = false;
+            comboBox_Puffer.SelectedIndexChanged += comboBox_Puffer_SelectedIndexChanged;
+            this.Controls.Add(comboBox_Puffer);
+            comboBox_Puffer.BringToFront();
         }
 
         /// <summary>
@@ -86,8 +125,17 @@ namespace WindowsFormsApplication1
             if (checkBox_SPK.Checked) spalten.Add(new CsvSpalte("Heizkessel [kW]", temp_hk));
             if (checkBox_ST.Checked) spalten.Add(new CsvSpalte("Solarthermie [kW]", temp_st));
             if (checkBox_BHKW.Checked) spalten.Add(new CsvSpalte("BHKW [kW]", temp_bhkw));
+
+            // Je angezeigtem Speicher eine eigene Spalte, Bezeichner im Kopf (13.3).
+            // Die Kopfzeile bleibt deutsch - sie ist Exportformat, nicht Oberfläche.
             if (checkBox_Puffer != null && checkBox_Puffer.Checked)
-                spalten.Add(new CsvSpalte("Speicherfüllstand [kWh]", temp_puffer));
+                for (int i = 0; i < speicherListe.Count; i++)
+                {
+                    if (!SpeicherSichtbar(i)) continue;
+                    spalten.Add(new CsvSpalte(
+                        "Speicherfüllstand " + SpeicherAnzeige(speicherListe[i]) + " [kWh]",
+                        speicherListe[i].SOC_stuendlich));
+                }
 
             CsvExportClass.Export("Waermeproduktion.csv",
                 sim.simulation_Waermebedarf.Stundentemperatur, spalten, false);
@@ -112,18 +160,27 @@ namespace WindowsFormsApplication1
             temp_bhkw = sim.simulation_bhkw.waermeproduktion;
             temp_ges = new float[8760];
 
-            // Pufferspeicher-Füllstand (Energieinhalt) der Wärmepumpe
-            temp_puffer = (sim.puffer_wp != null && sim.puffer_wp.SOC_stuendlich != null)
-                ? sim.puffer_wp.SOC_stuendlich
-                : new float[8760];
+            // Speicherfüllstände: eine Serie je vorhandenem Speicher (Senken-Puffer und
+            // Quellspeicher), nicht mehr nur der eine puffer_wp (Konzept 13.3).
+            speicherListe = sim.AlleSpeicher();
+            speicherSchluessel.Clear();
+            for (int i = 0; i < speicherListe.Count; i++)
+            {
+                // Series.Name muss eindeutig sein - Chart.Series.Add wirft sonst.
+                // Der Schlüssel ist es von sich aus (verschiedene Präfixe, verschiedene
+                // IDs); der Zähler ist nur die Absicherung gegen fehlende IDs.
+                string s = speicherListe[i].Schluessel(i);
+                while (speicherSchluessel.Contains(s)) s += "_" + i;
+                speicherSchluessel.Add(s);
+            }
 
             for (int i = 0; i < 8760; i++) temp_ges[i] = temp_wp[i] + temp_hs[i] + temp_hk[i] + temp_st[i] + temp_bhkw[i];
 
             _chartManager = new ChartManager(chart_Waerme);
             _chartManager.BackColor = Color.White;
             _chartManager._chart.BackColor = Color.LightGray;
-            // Skalierung so wählen, dass auch der Speicherfüllstand vollständig sichtbar ist
-            _chartManager.YMaxValue = Math.Max(temp_ges.Max(), temp_puffer.Max()) + 1;
+            // Skalierung so wählen, dass auch die Speicherfüllstände vollständig sichtbar sind
+            _chartManager.YMaxValue = Math.Max(temp_ges.Max(), SpeicherMax()) + 1;
             _chartManager.YMinValue = 0;
             _chartManager.XAxisAsNumber = false;
             _chartManager.XAxisTitle = "Monate";
@@ -143,20 +200,111 @@ namespace WindowsFormsApplication1
             _chartManager.AddSeries("Heizkessel", Color.Blue, temp_hk);
             _chartManager.AddSeries("Solarthermie", Color.Brown, temp_st);
             _chartManager.AddSeries("BHKW", Color.Red, temp_bhkw);
-            _chartManager.AddSeries("Speicherfüllstand", Color.MediumVioletRed, temp_puffer);
-   
+
+            // Eine Serie je Speicher. Series.Name ist der technische Schlüssel,
+            // der Anzeigetext geht in LegendText (Konzept 13.3).
+            for (int i = 0; i < speicherListe.Count; i++)
+            {
+                _chartManager.AddSeries(speicherSchluessel[i],
+                    SPEICHER_FARBEN[i % SPEICHER_FARBEN.Length],
+                    speicherListe[i].SOC_stuendlich);
+                Series s = _chartManager._chart.Series[speicherSchluessel[i]];
+                s.LegendText = SpeicherAnzeige(speicherListe[i]);
+                s.Enabled = false;
+            }
+
             _chartManager._chart.Series["Wärmebedarf"].BorderDashStyle = ChartDashStyle.Solid;
             _chartManager._chart.Series["Waermepumpe"].Enabled = false;
             _chartManager._chart.Series["Heizstab"].Enabled = false;
             _chartManager._chart.Series["Heizkessel"].Enabled = false;
             _chartManager._chart.Series["Solarthermie"].Enabled = false;
             _chartManager._chart.Series["BHKW"].Enabled = false;
-            _chartManager._chart.Series["Speicherfüllstand"].Enabled = false;
             _chartManager._chart.Series["Wärmebedarf"].Enabled = false;
             checkBox_Gesamt.Checked = true;
 
-            // Checkbox nur anbieten, wenn dem Projekt ein Pufferspeicher zugeordnet ist
-            if (checkBox_Puffer != null) checkBox_Puffer.Enabled = (sim.puffer_wp != null);
+            // Checkbox nur anbieten, wenn der Lauf überhaupt einen Speicher hatte.
+            if (checkBox_Puffer != null) checkBox_Puffer.Enabled = (speicherListe.Count > 0);
+            AktualisiereSpeicherAuswahl();
+        }
+
+        /// <summary>
+        /// Füllt die Auswahlliste der Speicher. Sie erscheint erst ab zwei Speichern -
+        /// bei genau einem bleibt es bei der reinen Checkbox wie bisher.
+        /// Texte deutsch hartkodiert (Lokalisierung des Bereichs = Paket 9).
+        /// </summary>
+        private void AktualisiereSpeicherAuswahl()
+        {
+            if (comboBox_Puffer == null) return;
+
+            comboBox_Puffer.SelectedIndexChanged -= comboBox_Puffer_SelectedIndexChanged;
+            comboBox_Puffer.Items.Clear();
+            comboBox_Puffer.Items.Add("Alle Speicher");
+            foreach (SimulationPufferspeicher sp in speicherListe)
+                comboBox_Puffer.Items.Add(SpeicherAnzeige(sp));
+            comboBox_Puffer.SelectedIndex = 0;
+            comboBox_Puffer.SelectedIndexChanged += comboBox_Puffer_SelectedIndexChanged;
+
+            comboBox_Puffer.Visible = AuswahlAktiv();
+        }
+
+        /// <summary>Anzeigetext eines Speichers: Bezeichner und Rolle (Konzept 13.3).</summary>
+        private static string SpeicherAnzeige(SimulationPufferspeicher sp)
+        {
+            return sp.Anzeige();
+        }
+
+        /// <summary>Wird die Auswahlliste überhaupt benutzt? (Kriterium wie beim Anlegen)</summary>
+        private bool AuswahlAktiv()
+        {
+            return speicherListe.Count > 1;
+        }
+
+        /// <summary>
+        /// Soll der Speicher mit diesem Index angezeigt werden (Auswahlliste)?
+        ///
+        /// Das Kriterium ist bewusst die Speicherzahl und NICHT comboBox_Puffer.Visible:
+        /// Control.Visible liefert false, solange das Steuerelement (oder eine seiner
+        /// Elternebenen) noch nicht angezeigt wird. Wird der Navigator im Hintergrund
+        /// aufgebaut oder der CSV-Export vor dem ersten Anzeigen ausgelöst, hätte die
+        /// Prüfung "nicht sichtbar => alle Speicher" gegolten und die getroffene Auswahl
+        /// wäre stillschweigend übergangen worden.
+        /// </summary>
+        private bool SpeicherSichtbar(int index)
+        {
+            if (comboBox_Puffer == null || !AuswahlAktiv()) return true;
+            int sel = comboBox_Puffer.SelectedIndex;
+            return sel <= 0 || sel - 1 == index;   // 0 = "Alle Speicher"
+        }
+
+        /// <summary>Größter Füllstand über alle Speicher (Y-Skalierung).</summary>
+        private double SpeicherMax()
+        {
+            double max = 0;
+            foreach (SimulationPufferspeicher sp in speicherListe)
+                if (sp.SOC_stuendlich != null && sp.SOC_stuendlich.Length > 0)
+                {
+                    float m = sp.SOC_stuendlich.Max();
+                    if (m > max) max = m;
+                }
+            return max;
+        }
+
+        /// <summary>Schaltet die Speicherserien gemäß Checkbox und Auswahlliste.</summary>
+        private void SpeicherSerienAktualisieren()
+        {
+            if (_chartManager == null || _chartManager._chart == null) return;
+            bool an = (checkBox_Puffer != null && checkBox_Puffer.Checked);
+
+            for (int i = 0; i < speicherSchluessel.Count; i++)
+            {
+                if (_chartManager._chart.Series.IndexOf(speicherSchluessel[i]) < 0) continue;
+                _chartManager._chart.Series[speicherSchluessel[i]].Enabled = an && SpeicherSichtbar(i);
+            }
+        }
+
+        private void comboBox_Puffer_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SpeicherSerienAktualisieren();
         }
 
         private void ApplyCheckboxStates()
@@ -170,15 +318,13 @@ namespace WindowsFormsApplication1
                 _chartManager._chart.Series["Heizkessel"].Enabled = checkBox_SPK.Checked;
                 _chartManager._chart.Series["Solarthermie"].Enabled = checkBox_ST.Checked;
                 _chartManager._chart.Series["BHKW"].Enabled = checkBox_BHKW.Checked;
-                if (checkBox_Puffer != null && _chartManager._chart.Series.IndexOf("Speicherfüllstand") >= 0)
-                    _chartManager._chart.Series["Speicherfüllstand"].Enabled = checkBox_Puffer.Checked;
+                SpeicherSerienAktualisieren();
             }
         }
 
         private void checkBox_Puffer_CheckedChanged(object sender, EventArgs e)
         {
-            if (_chartManager == null || _chartManager._chart.Series.IndexOf("Speicherfüllstand") < 0) return;
-            _chartManager._chart.Series["Speicherfüllstand"].Enabled = checkBox_Puffer.Checked;
+            SpeicherSerienAktualisieren();
         }
 
         private void checkBox_Gesamt_CheckedChanged(object sender, EventArgs e)
@@ -265,7 +411,7 @@ namespace WindowsFormsApplication1
                 if (neueMax < 10) neueMax = 10; // Minimum setzen, damit die Achse nicht zu klein wird
             }
             else
-                neueMax = Math.Max(temp_ges.Max(), temp_puffer.Max()) + 1;
+                neueMax = Math.Max(temp_ges.Max(), SpeicherMax()) + 1;
 
             // Achsen-Maximum darf nie 0 oder negativ sein, sonst wirft RecalculateAxesScale
             // "Axis Object - Auto interval does not have proper value" (z. B. wenn noch keine

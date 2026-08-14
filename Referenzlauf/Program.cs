@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1.Referenzlauf
     ///   lauf       [--ziel &lt;ordner&gt;] [--projekte 1007,1009] [--timeout &lt;sek&gt;]
     ///   vergleich  &lt;refOrdner&gt; &lt;neuOrdner&gt;
     ///   pruefen    &lt;ordner&gt;
-    ///   liste
+    ///   liste      [&lt;dbOrdner&gt;]
     ///   migration  &lt;quellDb&gt; &lt;zielOrdner&gt; [--nokopie] [--schreibschutz]
     ///   projekt    &lt;id&gt; &lt;zielordner&gt; &lt;dbordner&gt;     (intern: ein Projekt im Kindprozess)
     ///
@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1.Referenzlauf
                     case "pruefen":
                         if (args.Length < 2) { Hilfe(); return 2; }
                         return Plausibilitaet.Pruefen(args[1]);
-                    case "liste": return ModusListe();
+                    case "liste": return ModusListe(args.Skip(1).ToArray());
                     case "migration": return Migrationslauf.Ausfuehren(args.Skip(1).ToArray());
                     default: Hilfe(); return 2;
                 }
@@ -76,7 +76,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             Console.WriteLine("  Referenzlauf.exe lauf [--ziel <ordner>] [--projekte 1007,1009] [--timeout <sek>]");
             Console.WriteLine("  Referenzlauf.exe vergleich <refOrdner> <neuOrdner>");
             Console.WriteLine("  Referenzlauf.exe pruefen <ordner>");
-            Console.WriteLine("  Referenzlauf.exe liste");
+            Console.WriteLine("  Referenzlauf.exe liste [<dbOrdner>]");
             Console.WriteLine("  Referenzlauf.exe migration <quellDb> <zielOrdner> [--nokopie] [--schreibschutz]");
         }
 
@@ -116,6 +116,16 @@ namespace WindowsFormsApplication1.Referenzlauf
 
             // --- 2. DB-Pfad umbiegen und hart pruefen -----------------------------------
             DbUmgebung.AufArbeitskopieUmschaltenUndPruefen(arbeitskopieOrdner, log);
+            log.Leerzeile();
+
+            // --- 2b. Arbeitskopie migrieren ---------------------------------------------
+            // Ohne diesen Schritt rechnete "lauf" auf einer Kopie im Stand der Quelle:
+            // fehlende Spalten und eine fehlende Tab_ErgebnisPufferspeicher wurden dann
+            // nur von den Rueckfallebenen im Anwendungscode notduerftig ausgeglichen -
+            // das Ergebnis war nicht mit einem Lauf auf einer migrierten Datenbank
+            // vergleichbar. Die Migration ist idempotent; auf einer bereits aktuellen
+            // Kopie ist sie ein No-op.
+            MigrationAusfuehren(log);
             log.Leerzeile();
 
             // --- 3. Projektauswahl -------------------------------------------------------
@@ -174,6 +184,35 @@ namespace WindowsFormsApplication1.Referenzlauf
                 ProtokollSchreiben(log, zielWurzel, quelle, arbeitskopieOrdner, auswahl, ergebnisse, dauer, timeoutSekunden);
 
                 return ergebnisse.All(e => e.Erfolg) ? 0 : 1;
+            }
+        }
+
+        /// <summary>
+        /// Bringt die Arbeitskopie auf den Zielstand des Schemas. Der DB-Pfad muss
+        /// vorher umgebogen und geprueft sein - SchemaMigration arbeitet auf der
+        /// Verbindung der Anwendung.
+        /// </summary>
+        private static void MigrationAusfuehren(Protokoll log)
+        {
+            log.Zeile("Schema-Migration der Arbeitskopie ...");
+            try
+            {
+                string bericht;
+                bool ok;
+                using (new DialogWaechter())
+                {
+                    ok = SchemaMigration.Ausfuehren(out bericht);
+                }
+
+                foreach (string z in (bericht ?? "").Replace("\r\n", "\n").Split('\n'))
+                    if (z.Trim().Length > 0) log.Roh("  " + z);
+
+                if (ok) log.Zeile("Migration: ERFOLG (Zielstand " + SchemaMigration.ZIEL_VERSION + ").");
+                else log.Warnung("Migration FEHLGESCHLAGEN - der Lauf rechnet auf einem unvollstaendigen Schema.");
+            }
+            catch (Exception ex)
+            {
+                log.Warnung("Migration nicht ausfuehrbar: " + ex.Message);
             }
         }
 
@@ -308,15 +347,34 @@ namespace WindowsFormsApplication1.Referenzlauf
         // Modus "liste"
         // =================================================================================
 
-        private static int ModusListe()
+        /// <summary>
+        /// Zeigt Projektlandschaft und Auswahl. Ohne Argument wird dafuer die
+        /// Arbeitskopie neu aus der produktiven Datenbank angelegt; mit einem
+        /// Ordnerargument wird eine VORHANDENE Kopie benutzt und nichts kopiert -
+        /// so laesst sich die Auswahl auf einer eigenen, migrierten Kopie ausserhalb
+        /// des Repos nachpruefen, ohne die Arbeitskopie eines laufenden Vergleichs
+        /// zu ueberschreiben.
+        /// </summary>
+        private static int ModusListe(string[] args)
         {
             var log = new Protokoll();
             string wurzel = ProjektWurzelFinden();
-            string arbeitskopieOrdner = Path.Combine(wurzel, ORDNER_REFERENZLAEUFE, ORDNER_ARBEITSKOPIE);
+            string arbeitskopieOrdner = (args.Length > 0 && !args[0].StartsWith("--", StringComparison.Ordinal))
+                ? Path.GetFullPath(args[0])
+                : null;
 
-            string quelle = DbUmgebung.ProduktivQuelleFinden(log);
-            if (quelle == null) return 2;
-            DbUmgebung.ArbeitskopieAnlegen(quelle, arbeitskopieOrdner, log);
+            if (arbeitskopieOrdner == null)
+            {
+                arbeitskopieOrdner = Path.Combine(wurzel, ORDNER_REFERENZLAEUFE, ORDNER_ARBEITSKOPIE);
+                string quelle = DbUmgebung.ProduktivQuelleFinden(log);
+                if (quelle == null) return 2;
+                DbUmgebung.ArbeitskopieAnlegen(quelle, arbeitskopieOrdner, log);
+            }
+            else
+            {
+                log.Zeile("Vorhandene Kopie wird gelesen: " + arbeitskopieOrdner);
+            }
+
             DbUmgebung.AufArbeitskopieUmschaltenUndPruefen(arbeitskopieOrdner, log);
 
             using (new DialogWaechter())

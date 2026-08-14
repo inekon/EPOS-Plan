@@ -53,6 +53,18 @@ namespace WindowsFormsApplication1
         public int Klimazone = 0;
 
         /// <summary>
+        /// Nutzbare Spreizung der Quelle [K] (WQ_Spreizung). Sie ist die Temperatur-
+        /// differenz zwischen Quelleintritt und -austritt und geht in die zweite
+        /// Warnbedingung aus Konzept 13.1 ein: gewarnt wird, wenn
+        /// „Quelltemperatur − Spreizung" dauerhaft unter 0 °C liegt.
+        ///
+        /// Bis Paket 7 war der Wert nur über den Pufferspeicher-Quellendialog pflegbar -
+        /// bei einer Erdreichquelle gab es gar keine Eingabemöglichkeit und die Prüfung
+        /// rechnete immer mit der Vorgabe von 5 K.
+        /// </summary>
+        public double Spreizung = ErdreichAuswertung.SPREIZUNG_DEFAULT;
+
+        /// <summary>
         /// Außentemperatur der Klimaregion (8760 Stundenwerte). Wird vom Aufrufer
         /// gesetzt; fehlt der Vektor, rechnet das Modell mit Ersatzwerten weiter.
         /// </summary>
@@ -72,6 +84,27 @@ namespace WindowsFormsApplication1
         /// <summary>Jahresvolllaststunden der Wärmepumpe [h/a].</summary>
         public double VolllastStunden = 0;
 
+        /// <summary>
+        /// Grund, aus dem die Prüfung nicht mit Ergebnissen versorgt werden konnte
+        /// (Paket 7): entweder „noch kein Lauf" oder die Grenze der Zuordnung
+        /// (mehrere Wärmepumpen mit unterschiedlichen Quellen). Leer = Vorgabetext.
+        /// </summary>
+        public string HinweisErgebnis = "";
+
+        /// <summary>
+        /// Vorbehalt zu belastbaren Ergebnissen (z. B. „Spitze anteilig aus der
+        /// Summenganglinie geschätzt"). Wird unter die Prüfung geschrieben.
+        /// </summary>
+        public string HinweisVorbehalt = "";
+
+        /// <summary>
+        /// Meldung der zweiten Warnbedingung (Konzept 13.1) samt Normbasis. Steht
+        /// bewusst getrennt vom Prüfergebnis: „Grenzwert eingehalten" und eine
+        /// Frostmeldung schließen einander nicht aus, weil VDI 4640 Bl. 2 gegen
+        /// −5 °C Soleaustritt bemisst.
+        /// </summary>
+        public string HinweisFrost = "";
+
         // ---- Steuerelemente -----------------------------------------------
 
         private RadioButton _rbKollektor;
@@ -82,6 +115,7 @@ namespace WindowsFormsApplication1
         private TextBox _tbAnzahl;
         private ComboBox _cbBoden;
         private ComboBox _cbZone;
+        private TextBox _tbSpreizung;
         private Chart _chart;
         private Label _lblKennwerte;
         private Label _lblBoden;
@@ -105,7 +139,9 @@ namespace WindowsFormsApplication1
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
             this.MaximizeBox = false;
-            this.ClientSize = new Size(700, 690);
+            // Höhe um eine Zeile gewachsen: die nutzbare Spreizung braucht ein
+            // Eingabefeld (Konzept 13.1) - siehe unten bei _tbSpreizung.
+            this.ClientSize = new Size(700, 718);
 
             // --- Quellsystem ------------------------------------------------
             GroupBox gbSystem = new GroupBox
@@ -200,15 +236,37 @@ namespace WindowsFormsApplication1
                 Location = new Point(392, 198)
             };
 
+            // --- Nutzbare Spreizung ------------------------------------------
+            // Eingangsgröße der zweiten Warnbedingung (Konzept 13.1). Ohne dieses Feld
+            // war WQ_Spreizung bei einer Erdreichquelle nicht pflegbar und die Prüfung
+            // rechnete immer mit 5 K.
+            Label lS = new Label { Text = "Nutzbare Spreizung [K]:", AutoSize = true, Location = new Point(28, 228) };
+            _tbSpreizung = new TextBox
+            {
+                Location = new Point(150, 225),
+                Width = 70,
+                Text = ErdreichAuswertung.SPREIZUNG_DEFAULT.ToString("0.##", CultureInfo.CurrentCulture)
+            };
+            Label lSH = new Label
+            {
+                Text = "(Quelleintritt minus Quellaustritt; Warnung, wenn Quelltemperatur − Spreizung " +
+                       "dauerhaft unter 0 °C liegt)",
+                AutoSize = true,
+                Location = new Point(232, 228),
+                ForeColor = SystemColors.GrayText
+            };
+            _tbSpreizung.TextChanged += (s, e) => Aktualisieren();
+
             this.Controls.Add(lB); this.Controls.Add(_cbBoden); this.Controls.Add(lBH);
             this.Controls.Add(_lblBoden);
             this.Controls.Add(lZ); this.Controls.Add(_cbZone); this.Controls.Add(lZH);
+            this.Controls.Add(lS); this.Controls.Add(_tbSpreizung); this.Controls.Add(lSH);
 
             // --- Vorschau ----------------------------------------------------
             GroupBox gbVorschau = new GroupBox
             {
                 Text = "Vorschau: Jahresgang der Quelltemperatur",
-                Location = new Point(12, 228),
+                Location = new Point(12, 256),
                 Size = new Size(676, 270)
             };
             this.Controls.Add(gbVorschau);
@@ -269,7 +327,7 @@ namespace WindowsFormsApplication1
             GroupBox gbPruefung = new GroupBox
             {
                 Text = "Auslegungsprüfung nach VDI 4640 Blatt 2 (nach der Simulation)",
-                Location = new Point(12, 506),
+                Location = new Point(12, 534),
                 Size = new Size(676, 130)
             };
             this.Controls.Add(gbPruefung);
@@ -288,14 +346,14 @@ namespace WindowsFormsApplication1
             {
                 Text = "OK",
                 DialogResult = DialogResult.OK,
-                Location = new Point(this.ClientSize.Width - 190, 648),
+                Location = new Point(this.ClientSize.Width - 190, 676),
                 Width = 85
             };
             Button btnAbbruch = new Button
             {
                 Text = "Abbrechen",
                 DialogResult = DialogResult.Cancel,
-                Location = new Point(this.ClientSize.Width - 97, 648),
+                Location = new Point(this.ClientSize.Width - 97, 676),
                 Width = 85
             };
             btnOk.Click += btnOk_Click;
@@ -344,6 +402,9 @@ namespace WindowsFormsApplication1
             _cbBoden.SelectedIndex = bi >= 0 ? bi : ErdreichTemperatur.KatalogIndex(ErdreichTemperatur.BODENTYP_DEFAULT);
 
             _cbZone.SelectedIndex = (Klimazone >= 0 && Klimazone <= VDI4640Pruefung.KLIMAZONEN) ? Klimazone : 0;
+
+            _tbSpreizung.Text = (Spreizung > 0 ? Spreizung : ErdreichAuswertung.SPREIZUNG_DEFAULT)
+                .ToString("0.##", CultureInfo.CurrentCulture);
 
             _uiAufbau = false;
 
@@ -425,9 +486,11 @@ namespace WindowsFormsApplication1
         {
             if (!ErgebnisseVorhanden)
             {
-                _lblPruefung.Text = "(noch kein Simulationslauf)\r\n\r\n" +
-                    "Die Prüfung braucht maximale Entzugsleistung, Jahresentzugsarbeit und\r\n" +
-                    "Jahresvolllaststunden aus einem Simulationslauf.";
+                _lblPruefung.Text = !string.IsNullOrEmpty(HinweisErgebnis)
+                    ? HinweisErgebnis
+                    : "(noch kein Simulationslauf)\r\n\r\n" +
+                      "Die Prüfung braucht maximale Entzugsleistung, Jahresentzugsarbeit und\r\n" +
+                      "Jahresvolllaststunden aus einem Simulationslauf.";
                 return;
             }
 
@@ -452,6 +515,10 @@ namespace WindowsFormsApplication1
             string text = erg.Anzeigetext();
             if (erg.Moeglich && erg.FestgesteinNaeherung)
                 text += "\r\n  Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 abgebildet — nur Orientierung.";
+            if (!string.IsNullOrEmpty(HinweisVorbehalt))
+                text += "\r\n  Hinweis: " + HinweisVorbehalt;
+            if (!string.IsNullOrEmpty(HinweisFrost))
+                text += "\r\n  " + HinweisFrost;
 
             _lblPruefung.Text = text;
             _lblPruefung.ForeColor = (erg.Moeglich && erg.Warnung) ? Color.Firebrick : SystemColors.ControlText;
@@ -535,6 +602,15 @@ namespace WindowsFormsApplication1
                 Anzahl = (int)Math.Round(anzahl);
             }
 
+            float spreizung;
+            if (!WaermequelleClass.ZahlParsen(_tbSpreizung.Text, out spreizung) || spreizung <= 0)
+            {
+                Meldung("Bitte eine nutzbare Spreizung größer als 0 K eintragen!\n" +
+                        "Sie ist Eingangsgröße der Frostprüfung der Quelle.", titel);
+                return;
+            }
+
+            Spreizung = spreizung;
             Bodentyp = AktuellerBodentyp();
             Klimazone = AktuelleZone();
         }

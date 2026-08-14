@@ -140,6 +140,10 @@ namespace WindowsFormsApplication1
                     puffer_wp = new SimulationPufferspeicher();
                     puffer_wp.Bezeichner = psp.items[0].Name;
                     puffer_wp.Erzeuger = "Wärmepumpe";
+                    // Konzept 6.6: Rolle und Speicher-ID wandern in die Ergebniszeile
+                    // und bilden den technischen Serienschlüssel der Anzeigen (13.3).
+                    puffer_wp.ID_Pufferspeicher = psp.items[0].ID;
+                    puffer_wp.Verwendung = SimulationPufferspeicher.VERWENDUNG_HEIZUNG;
                     puffer_wp.Init(psp.items[0].Gesamtvolumen,
                                    vorlauf,
                                    ruecklauf,
@@ -258,6 +262,37 @@ namespace WindowsFormsApplication1
             // Falls deine Quell-Vektoren stündliche kW-Mittelwerte/kWh enthalten:
             Reststrom = Rest_Strombedarf_viertelstuendlich.Sum() / 4000f;
 
+            // ***********************************************************************
+            // Nachlauf (Paket 7): Kennzahlen aller beteiligten Speicher aus ihren
+            // Ganglinien bilden (SOC_Mittel/SOC_Max/Vollzyklen, Konzept 6.6) und die
+            // Eingangsgrößen der VDI-4640-Auslegungsprüfung bereitstellen (13.1).
+            // Beides ist reine Auswertung - es verändert kein Simulationsergebnis.
+            // ***********************************************************************
+            foreach (SimulationPufferspeicher sp in AlleSpeicher())
+                sp.KennzahlenBerechnen();
+
+            ErdreichAuswertung.AusLauf(this);
+        }
+
+        /// <summary>
+        /// Alle am Lauf beteiligten Speicher in stabiler Reihenfolge: erst der
+        /// Senkenspeicher der Wärmepumpe (Alias <see cref="puffer_wp"/>), danach die
+        /// Quellspeicher der WP-Module in Modulreihenfolge.
+        ///
+        /// Das ist die EINE Quelle der Wahrheit für Ergebnis-Persistenz
+        /// (Tab_ErgebnisPufferspeicher), Navigator-Serien, CSV-Export und die
+        /// Ergebnistabelle der Detailansicht (Konzept 6.6/13.3).
+        /// </summary>
+        public System.Collections.Generic.List<SimulationPufferspeicher> AlleSpeicher()
+        {
+            var liste = new System.Collections.Generic.List<SimulationPufferspeicher>();
+            if (puffer_wp != null) liste.Add(puffer_wp);
+
+            if (simulation_wp != null && simulation_wp.Quellspeicher != null)
+                foreach (SimulationPufferspeicher q in simulation_wp.Quellspeicher)
+                    if (q != null && !liste.Contains(q)) liste.Add(q);
+
+            return liste;
         }
 
         private float[] Simulation_WP_Ctrl(float[] Waermebedarf, float[] Strombedarf, bool bHeizstab)

@@ -1103,12 +1103,50 @@ namespace WindowsFormsApplication1
                         if (oAnzahl != null && Convert.ToInt32(oAnzahl) > 0) frmErde.Anzahl = Convert.ToInt32(oAnzahl);
                         string bodentyp = WaermequelleClass.WertLesen(info.ID, "WQ_Bodentyp") as string;
                         if (!string.IsNullOrEmpty(bodentyp)) frmErde.Bodentyp = bodentyp;
+                        // Nutzbare Spreizung (Konzept 13.1) - dieselbe Spalte wie beim
+                        // Pufferspeicher-Quellendialog, jetzt auch hier pflegbar.
+                        object oSpreizErde = WaermequelleClass.WertLesen(info.ID, "WQ_Spreizung");
+                        if (oSpreizErde != null && Convert.ToDouble(oSpreizErde) > 0)
+                            frmErde.Spreizung = Convert.ToDouble(oSpreizErde);
 
                         // Klimazone aus der Region vorbelegen (0 = nicht zugeordnet),
                         // Außentemperaturvektor einmalig laden und gecacht übergeben.
                         int zoneVorher = KlimazoneDesProjekts();
                         frmErde.Klimazone = zoneVorher;
                         frmErde.Aussentemperatur = AussentemperaturLaden();
+
+                        // Ergebnisanbindung der Auslegungsprüfung (Paket 7): Liegt für
+                        // diese Anlage ein Simulationslauf der Sitzung vor, bekommt der
+                        // Dialog die echten Werte statt "(noch kein Simulationslauf)".
+                        ErdreichAuswertung.AnlageErgebnis erdErg =
+                            ErdreichAuswertung.FuerAnlage(m_ID_Projekt, info.ID);
+                        if (erdErg != null)
+                        {
+                            frmErde.ErgebnisseVorhanden = erdErg.MaxEntzugBelastbar;
+                            frmErde.MaxEntzugW = erdErg.MaxEntzugW;
+                            frmErde.JahresentzugKWh = erdErg.JahresentzugKWh;
+                            frmErde.VolllastStunden = erdErg.VolllastStunden;
+                            if (erdErg.Unwirksam)
+                                // Luft-Wasser: die Konfiguration wird gar nicht gerechnet.
+                                // Das muss im Dialog stehen, sonst pflegt der Anwender
+                                // Bodentyp und Sondenlänge ins Leere (Konzept 4.5).
+                                frmErde.HinweisErgebnis = "Diese Konfiguration bleibt wirkungslos:\r\n\r\n" + erdErg.Grenze;
+                            else if (!erdErg.MaxEntzugBelastbar)
+                                frmErde.HinweisErgebnis = "Auslegungsprüfung nicht möglich:\r\n\r\n" + erdErg.Grenze;
+                            else
+                            {
+                                if (erdErg.MaxEntzugGeschaetzt)
+                                    frmErde.HinweisVorbehalt = erdErg.Grenze;
+                                if (erdErg.InklSpeicherladung)
+                                    frmErde.HinweisVorbehalt = (frmErde.HinweisVorbehalt.Length > 0
+                                        ? frmErde.HinweisVorbehalt + " "
+                                        : "") +
+                                        "Entzugsarbeit und Spitze enthalten die Wärme, mit der die " +
+                                        "Wärmepumpe den Pufferspeicher lädt.";
+                                if (erdErg.FrostWarnung)
+                                    frmErde.HinweisFrost = erdErg.Frosttext();
+                            }
+                        }
 
                         frmErde.SetControls();
                         if (frmErde.ShowDialog(this) != DialogResult.OK) return;
@@ -1122,6 +1160,7 @@ namespace WindowsFormsApplication1
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Flaeche", frmErde.Flaeche);
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Anzahl", frmErde.Anzahl);
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Bodentyp", frmErde.Bodentyp);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Spreizung", frmErde.Spreizung);
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
                         break;
                     }
