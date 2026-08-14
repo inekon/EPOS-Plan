@@ -22,6 +22,18 @@ namespace WindowsFormsApplication1
         /// <summary>Verwendung "Quelle": Quellspeicher einer Wärmepumpe (Wärmequelle).</summary>
         public const string VERWENDUNG_QUELLE = "Quelle";
 
+        /// <summary>
+        /// Verwendung "Brauchwasser": Senkenspeicher im Warmwasserkanal (Konzept 5.1).
+        ///
+        /// Damit trägt <see cref="Verwendung"/> drei Werte: die beiden KANÄLE der
+        /// Projektkopie ("Heizung" | "Brauchwasser", Spalte <c>Tab_Pufferspeicher.Verwendung</c>)
+        /// und die ROLLE "Quelle", die es dort nicht gibt. Das ist gewollt: Für Anzeige
+        /// (<see cref="RolleAnzeige"/>), Serienschlüssel (<see cref="Schluessel"/>) und
+        /// Vollzyklen-Bezug zählt allein, ob es sich um einen Quellspeicher handelt —
+        /// alles andere ist ein Senkenspeicher.
+        /// </summary>
+        public const string VERWENDUNG_BRAUCHWASSER = "Brauchwasser";
+
         public string Bezeichner = "";
         public string Erzeuger = "";
 
@@ -73,6 +85,93 @@ namespace WindowsFormsApplication1
         /// Stunde absenken.
         /// </summary>
         public double SchwelleAus = 0.95;
+
+        // ------------------------------------------------------------------
+        // Registry-Felder (Paket 4 - Konzept 6.2/3.4/3.6)
+        //
+        // Sie werden von SimulationControl.SpeicherRegistryAufbauen aus der
+        // Projektkopie Tab_Pufferspeicher gefüllt. Im EINKANALIGEN Altpfad sind sie
+        // nicht im Rechenpfad; ausgewertet werden sie im zweikanaligen Weg (Etappe 4b):
+        // die aus der Kaskade gelöste Ladephase (6.3 C/D) mit Prioritätsauflösung
+        // (3.4) und die Entladereihenfolge bei mehreren Puffern je Kanal (3.6).
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Abschaltschwelle für NACHRANGIGE Erzeuger als Anteil der nutzbaren Kapazität
+        /// (0..1), Spalte <c>Schwelle_Aus_Nachrang</c> (Konzept 3.4, zweite Stufe der
+        /// Ladeobergrenzen). Vorbelegt mit <see cref="SchwelleAus"/> — dann ist die
+        /// zweite Stufe wirkungslos, und genau das ist der verhaltensneutrale Default.
+        /// </summary>
+        public double SchwelleAusNachrang = 0.95;
+
+        /// <summary>
+        /// Entladereihenfolge bei mehreren Puffern desselben Kanals (Konzept 3.6),
+        /// Spalte <c>Entladeprio</c>. 0 = automatisch.
+        /// </summary>
+        public int Entladeprio = 0;
+
+        /// <summary>Projekt, zu dem die Speicherzeile gehört (Tab_Pufferspeicher.ID_Projekt).</summary>
+        public int ID_Projekt = 0;
+
+        /// <summary>
+        /// Hysteresezustand des Speichers: <c>true</c>, solange er nachgeladen wird.
+        ///
+        /// Ersetzt ab Etappe 4b den heute MODULÜBERGREIFENDEN <c>bool _speicherLaden</c>
+        /// in <c>SimulationWaermepumpe</c> (Konzept 6.2). Der ist bei mehreren Speichern
+        /// nicht mehr tragfähig: Ein Zustand kann nicht für zwei Speicher gleichzeitig
+        /// gelten. Hier gehört er dorthin, wo er hingehört — an den Speicher.
+        ///
+        /// ALTPFAD: gesetzt, aber ungelesen — dort gilt weiter das modulübergreifende
+        /// Feld. Im zweikanaligen Weg ist dieses Feld der Hysteresezustand
+        /// (<see cref="HystereseFortschreiben"/>, Phase A der Reihenfolge-Invariante).
+        ///
+        /// Vorbelegung <c>true</c> — dieselbe wie beim abzulösenden Feld: Der Lauf
+        /// startet mit leerem Speicher, also zuerst laden.
+        /// </summary>
+        public bool LaedtGerade = true;
+
+        /// <summary>
+        /// <c>true</c>, wenn dieser Speicher im laufenden Rechengang tatsächlich
+        /// mitrechnet.
+        ///
+        /// Im ALTPFAD trägt das GENAU der Senkenspeicher, den die Z-basierte
+        /// Initialisierung ermittelt (Alias <c>SimulationControl.puffer_wp</c>), sowie
+        /// jeder Quellspeicher eines WP-Moduls. Alle übrigen Registry-Einträge sind
+        /// Vorbereitung und stehen auf <c>false</c>.
+        ///
+        /// Warum das nötig ist — und nicht bloß Zierde: <c>puffer_wp</c> ist laut Konzept
+        /// 6.7 der „erste Heizungs-Puffer der Registry". Die Registry enthält aber seit
+        /// der Datenmigration 5.5 auch Puffer, die niemand rechnet — etwa den von
+        /// Regel R6 angelegten „BHKW-Pendelspeicher" oder den Puffer einer reinen
+        /// Solarthermie-Zuordnung. Ohne diese Einschränkung zeigte <c>puffer_wp</c> in
+        /// Projekten ohne Wärmepumpen-Zuordnung plötzlich auf einen solchen Speicher, und
+        /// aus einem „kein Puffer" würde still ein „Puffer mit Q_max" — mit voller
+        /// Wirkung auf Ergebnis und Anzeige.
+        ///
+        /// IM ZWEIKANALIGEN WEG bleibt die Einschränkung bestehen, nur mit einem anderen
+        /// Kriterium: Dort tragen das Flag die Speicher mit einer SENKEN-Referenz
+        /// (<c>WS_ID_Puffer</c>, <c>WS_ID_Puffer2</c> einer Projektanlage) und die
+        /// Quellspeicher (<c>WQ_ID_Puffer</c>) — also genau die, die ein Erzeuger laden
+        /// oder entladen kann (<c>SimulationControl.RegistryFuerZweikanaligOeffnen</c>).
+        /// Ein Puffer, der nur über die Alt-Zuordnung <c>Z_ProjektPufferSp</c> im Projekt
+        /// hängt und keine Senkenreferenz trägt, rechnet auch dort nicht mit: Er würde
+        /// sonst mit lauter Nullen in der Ergebnispersistenz erscheinen und über
+        /// <c>puffer_wp</c> eine Speicherkapazität melden, die kein Erzeuger benutzt.
+        /// </summary>
+        public bool ImRechenpfad = false;
+
+        /// <summary>
+        /// Zähler der <see cref="StundeAbschliessen"/>-Aufrufe seit <see cref="Reset"/>.
+        ///
+        /// Konzept 6.3 verlangt GENAU EINEN Aufruf je Speicher und Stunde (Phase G) —
+        /// heute ruft die Wärmepumpe ihn teils innerhalb der Modulschleife, wodurch die
+        /// Bereitschaftsverluste eines von zwei Modulen genutzten Quellspeichers doppelt
+        /// gezählt werden. Der Zähler macht die Einhaltung MESSBAR: Nach einem
+        /// vollständigen Jahreslauf muss er 8760 sein.
+        ///
+        /// Reine Instrumentierung — er geht in kein Ergebnis und in keine Ganglinie ein.
+        /// </summary>
+        public int Abschluesse = 0;
 
         // Ganglinien für Auswertung, Charts und CSV-Export
         public float[] SOC_stuendlich = new float[8760];
@@ -133,6 +232,9 @@ namespace WindowsFormsApplication1
         /// <summary>Setzt den Speicherzustand für einen neuen Simulationslauf zurück.</summary>
         public void Reset()
         {
+            // Hysterese wie beim abzulösenden _speicherLaden: Der Lauf beginnt mit
+            // leerem Speicher, also zuerst laden (im Altpfad bleibt das Feld ungelesen).
+            LaedtGerade = true;
             SOC = 0;
             Ladung_gesamt = 0;
             Entladung_gesamt = 0;
@@ -140,6 +242,7 @@ namespace WindowsFormsApplication1
             SOC_Mittel = 0;
             SOC_Max = 0;
             Vollzyklen = 0;
+            Abschluesse = 0;
             Array.Clear(SOC_stuendlich, 0, SOC_stuendlich.Length);
             Array.Clear(Ladung_stuendlich, 0, Ladung_stuendlich.Length);
             Array.Clear(Entladung_stuendlich, 0, Entladung_stuendlich.Length);
@@ -151,9 +254,34 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double Laden(double energieKWh, int stunde)
         {
+            return Laden(energieKWh, stunde, 0);
+        }
+
+        /// <summary>
+        /// Laden mit DURCHLASS — der Speicher als hydraulische Weiche (Paket 4,
+        /// Nutzerentscheidung zu Befund 4b-1 vom 14.08.2026).
+        ///
+        /// Ein Pufferspeicher drosselt die Anlage nicht auf seinen Inhalt: Er wird
+        /// geladen, WÄHREND die Last aus ihm entnimmt. In der Stundenbilanz heißt das,
+        /// dass die Aufnahme einer Stunde die freie Kapazität um genau die Menge
+        /// übersteigen darf, die im selben Zeitschritt wieder entnommen wird
+        /// (<paramref name="durchlass"/>, ermittelt über <see cref="Bilanzraum"/>).
+        /// Der Füllstand liegt dann VORÜBERGEHEND über <see cref="Q_max"/>; die
+        /// Nachentladung (Phase E) zieht ihn im selben Zeitschritt wieder herunter,
+        /// bevor Phase G die Bereitschaftsverluste rechnet und den Wert in die
+        /// Ganglinie schreibt. Ohne Durchlass (<c>0</c>) ist das Verhalten exakt das
+        /// bisherige — der Altpfad ruft ausschließlich diese Form auf.
+        /// </summary>
+        /// <param name="durchlass">
+        /// Im selben Zeitschritt absehbare Entnahme [kWh], um die die Aufnahme über die
+        /// freie Kapazität hinausgehen darf. Negative Werte gelten als 0.
+        /// </param>
+        public double Laden(double energieKWh, int stunde, double durchlass)
+        {
             if (energieKWh <= 0 || Q_max <= 0) return 0;
 
-            double frei = Q_max - SOC;
+            if (durchlass < 0) durchlass = 0;
+            double frei = Q_max - SOC + durchlass;
             double ladung = Math.Min(energieKWh, frei);
             if (ladung <= 0) return 0;
 
@@ -186,9 +314,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void StundeAbschliessen(int stunde)
         {
+            Abschluesse++;
+
             if (Q_max > 0 && SOC > 0)
             {
-                double verlust = VerlustProStunde * (SOC / Q_max);
+                // Der Anteil ist auf 1 begrenzt: Mit dem Durchlass (Laden mit
+                // hydraulischer Weiche) kann SOC innerhalb einer Stunde über Q_max
+                // liegen. Bis Phase G ist er normalerweise wieder darunter — bliebe
+                // doch etwas stehen, dürfte daraus kein überhöhter Bereitschaftsverlust
+                // werden. Ohne Durchlass gilt SOC <= Q_max, die Klemmung greift dann nie
+                // und der Altpfad rechnet bitgleich wie bisher.
+                double anteil = SOC / Q_max;
+                if (anteil > 1) anteil = 1;
+
+                double verlust = VerlustProStunde * anteil;
                 if (verlust > SOC) verlust = SOC;
                 SOC -= verlust;
                 Verluste_gesamt += verlust;
@@ -224,6 +363,119 @@ namespace WindowsFormsApplication1
             // Rollenabhängige Bezugsgröße - siehe Kommentar an Vollzyklen.
             double umsatz = (Verwendung == VERWENDUNG_QUELLE) ? Entladung_gesamt : Ladung_gesamt;
             Vollzyklen = (Q_max > 0) ? umsatz / Q_max : 0;
+        }
+
+        // ------------------------------------------------------------------
+        // Kanal, Rolle und Ladefähigkeit (Paket 4, Etappe 4b - Konzept 3.2/3.4)
+        // ------------------------------------------------------------------
+
+        /// <summary>true = QUELLspeicher (Rolle), sonst Senkenspeicher.</summary>
+        public bool IstQuelle
+        {
+            get { return Verwendung == VERWENDUNG_QUELLE; }
+        }
+
+        /// <summary>
+        /// true = der Speicher bedient den BRAUCHWASSERkanal (Konzept 3.2).
+        ///
+        /// Alles andere — auch eine leere Verwendung aus dem früheren impliziten
+        /// <c>CopyFromStamm</c> — zählt als Heizungskanal. Das ist dieselbe Regel wie in
+        /// <c>WaermesenkeClass.WirksameVerwendung</c>; einen namenlosen Kanal gibt es
+        /// nicht.
+        /// </summary>
+        public bool IstBrauchwasserkanal
+        {
+            get { return Verwendung == VERWENDUNG_BRAUCHWASSER; }
+        }
+
+        /// <summary>
+        /// Ladefähigkeit [kWh] gegen eine Obergrenze nach Konzept 3.4:
+        /// <c>Q_max · Obergrenze − SOC</c>, nie negativ.
+        /// </summary>
+        /// <param name="obergrenzeAnteil">
+        /// Obergrenze als ANTEIL der nutzbaren Kapazität (0…1), bereits aufgelöst
+        /// (<c>Ladeordnung.ObergrenzenAufloesen</c>). Werte ≤ 0 gelten als „nicht
+        /// gesetzt" und fallen auf <see cref="SchwelleAus"/> zurück.
+        /// </param>
+        public double Ladefaehigkeit(double obergrenzeAnteil)
+        {
+            if (Q_max <= 0) return 0;
+
+            double grenze = obergrenzeAnteil > 0 ? obergrenzeAnteil : SchwelleAus;
+            double frei = Q_max * grenze - SOC;
+            return frei > 0 ? frei : 0;
+        }
+
+        /// <summary>
+        /// Höchste Entnahme [kWh] in EINER Stunde.
+        ///
+        /// Vorgemerkter Parameter (Paket 4, Nutzerentscheidung zu 4b-1): Eine Lade- bzw.
+        /// Entladeleistung je Speicher [kW] ist fachlich sinnvoll — ein 800-l-Puffer mit
+        /// DN 25 kann keine 200 kW durchreichen —, existiert aber weder im Datenmodell
+        /// noch in der Oberfläche. Bis dahin gilt UNBEGRENZT; das ist zugleich die
+        /// bisherige Annahme des Modells („keine Begrenzung der Be-/Entladeleistung",
+        /// siehe Kopfkommentar).
+        /// </summary>
+        public double EntladeleistungMax = 0;   // 0 = unbegrenzt
+
+        /// <summary>Entnahmefähigkeit einer Stunde [kWh]; unbegrenzt, solange kein Wert gepflegt ist.</summary>
+        public double Entnahmefaehigkeit()
+        {
+            return EntladeleistungMax > 0 ? EntladeleistungMax : double.MaxValue;
+        }
+
+        /// <summary>
+        /// BILANZRAUM einer Stunde [kWh] — wie viel Wärme der Speicher in diesem
+        /// Zeitschritt insgesamt aufnehmen kann (Paket 4, Nutzerentscheidung zu Befund
+        /// 4b-1 vom 14.08.2026):
+        ///
+        /// <code>
+        /// Bilanzraum = (Q_max · Obergrenze − SOC)                       [SOC-Zielwert, 3.4]
+        ///            + min(offener Kanalbedarf, Entnahmefähigkeit)      [Durchsatz]
+        /// </code>
+        ///
+        /// Der erste Summand ist die Ladefähigkeit aus Konzept 3.4 — der ZIELFÜLLSTAND
+        /// samt Reservezone. Der zweite ist der DURCHSATZ: Ein Pufferspeicher ist eine
+        /// hydraulische Weiche und drosselt die Anlage nicht auf seinen Inhalt; was im
+        /// selben Zeitschritt wieder entnommen wird, kann er zusätzlich aufnehmen.
+        /// Beide Größen sind bewusst getrennt — der Zielfüllstand steuert, WIE VOLL der
+        /// Speicher wird, der Durchsatz, WIE VIEL durch ihn hindurchgeht.
+        ///
+        /// Ohne offenen Kanalbedarf ist der Bilanzraum genau die Ladefähigkeit.
+        /// </summary>
+        /// <param name="obergrenzeAnteil">Obergrenze als Anteil (0…1), siehe <see cref="Ladefaehigkeit"/>.</param>
+        /// <param name="offenerKanalbedarf">
+        /// Noch offener Bedarf des Kanals, den DIESER Speicher bedient [kWh]. Er wird vom
+        /// Aufrufer über alle Ladevorgänge einer Stunde hinweg nur EINMAL vergeben —
+        /// sonst reichten zwei Speicher desselben Kanals dieselbe Entnahme doppelt durch.
+        /// </param>
+        public double Bilanzraum(double obergrenzeAnteil, double offenerKanalbedarf)
+        {
+            double lade = Ladefaehigkeit(obergrenzeAnteil);
+            if (offenerKanalbedarf <= 0) return lade;
+
+            return lade + Math.Min(offenerKanalbedarf, Entnahmefaehigkeit());
+        }
+
+        /// <summary>
+        /// Schreibt die Hysterese der Speicherregelung fort (Konzept 6.2,
+        /// <see cref="LaedtGerade"/>) und liefert zurück, ob der Speicher in dieser
+        /// Stunde ENTLADEN darf.
+        ///
+        /// Dieselbe Regel wie im einkanaligen Altpfad, nur nicht mehr modulübergreifend,
+        /// sondern am Speicher: Unter der Einschaltschwelle beginnt die Nachladung, ab der
+        /// Abschaltschwelle endet sie. Solange nachgeladen wird, deckt der Speicher keinen
+        /// Bedarf vorab (Phase A) — die Nachentladung (Phase E) greift davon unabhängig,
+        /// genau wie heute die Entladung vor Heizstab und Folge-Erzeuger.
+        /// </summary>
+        public bool HystereseFortschreiben()
+        {
+            if (Q_max <= 0) return false;
+
+            if (!LaedtGerade && SOC <= Q_max * SchwelleEin) LaedtGerade = true;
+            if (LaedtGerade && SOC >= Q_max * SchwelleAus) LaedtGerade = false;
+
+            return !LaedtGerade;
         }
 
         /// <summary>Anzeigetext der Rolle (deutsch; Lokalisierung folgt mit Paket 9).</summary>

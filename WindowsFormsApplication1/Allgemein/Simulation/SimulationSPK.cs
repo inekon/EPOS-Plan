@@ -23,6 +23,22 @@ namespace WindowsFormsApplication1
 
         // Listen und Projektdaten
         public List<string> spk_list = new List<string>();
+
+        /// <summary>
+        /// <c>Tab_Energieanlagen.ID</c> je Kessel, INDEXGLEICH zu <see cref="spk_list"/>
+        /// (Konzept 6.2). Gefüllt von <c>SimulationControl.Simulation_SPK_Ctrl</c>.
+        ///
+        /// Warum eine zweite Liste statt einer Umstellung von <see cref="spk_list"/>:
+        /// Der Bezeichner dort ist nicht nur Suchschlüssel der Kesseldaten, er ist
+        /// zugleich der MODULNAME der Ergebniszeile (<c>SimulationRunner</c>). Eine
+        /// Umstellung auf IDs hätte die Modulnamen aller Kesselergebnisse verändert.
+        ///
+        /// Gefüllt, aber noch von keinem Rechenpfad ausgewertet — auch der zweikanalige
+        /// Weg wertet in Etappe 4b nur Wärmepumpen-Senken aus. Vorbereitung für
+        /// Senkenauswertung und Ladepriorität je Kessel (Paket 5).
+        /// </summary>
+        public List<int> spk_anlagen_ids = new List<int>();
+
         public int m_ID_Projekt = 0;
         public double Max_Waermebedarf;
         public float[] Waermebedarf = new float[8760];

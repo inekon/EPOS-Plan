@@ -901,6 +901,10 @@ namespace WindowsFormsApplication1
 
             // Fußzeile kennt das Projekt erst jetzt (Konzept 4.1)
             AktualisierePufferFusszeile();
+
+            // Feature-Flag der zweikanaligen Kaskade aus der Datenbank vorbelegen
+            // (Paket 4, Etappe 4a - Konzept Kapitel 9)
+            AktualisiereKaskadeSchalter();
         }
 
         /// <summary>

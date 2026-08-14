@@ -204,6 +204,79 @@ namespace WindowsFormsApplication1.Referenzlauf
             "SOC_Max", "Vollzyklen"
         };
 
+        /// <summary>
+        /// Die 23 Spalten, die <c>KonfigurationCtrl.ReadSingle</c> POSITIONSBASIERT ueber
+        /// row[0]…row[22] liest - in genau dieser Reihenfolge.
+        ///
+        /// Jede angehaengte Spalte (Extrapolation_erlaubt aus Schritt 2,
+        /// Kaskade_Zweikanalig aus Schritt 6) muss dahinter liegen; verschoebe sich
+        /// eine dieser 23, laese die Anwendung stillschweigend falsche Werte.
+        /// </summary>
+        private static readonly string[] EINSTELLUNGEN_ORDINALKETTE =
+        {
+            "ID", "ID_Projekt", "BHKW_Grenzleistung", "Netzverluste", "NetzverlusteEinheit",
+            "WP_Heizstab", "Kessel_Betriebsbereitschaft",
+            "Tool_1", "Tool_2", "Tool_3", "Tool_4", "Tool_5", "Tool_6",
+            "Ladefuellstand_Min", "Ladefuellstand_Max", "Ladeleistung_Max",
+            "Ladefuellstand_Min_Auswahl", "Ladefuellstand_Max_Auswahl",
+            "Ladeleistung_Max_Auswahl", "Ladeschwellwert",
+            "Betriebsart", "Leistungsgrenze", "Pendelspeicher"
+        };
+
+        /// <summary>Spalten, die ANGEHAENGT sein muessen (Position &gt;= 23).</summary>
+        private static readonly string[] EINSTELLUNGEN_ANGEHAENGT =
+        {
+            "Extrapolation_erlaubt", "Kaskade_Zweikanalig"
+        };
+
+        /// <summary>
+        /// Nachweis fuer Tab_Einstellungen: Die Ordinalkette row[0..22] ist unveraendert,
+        /// und die angehaengten Spalten liegen dahinter. Rueckgabe: Zahl der Abweichungen.
+        /// </summary>
+        private static int EinstellungenNachweis(List<string> spalten, Protokoll log)
+        {
+            int fehler = 0;
+
+            log.Roh("  Tab_Einstellungen: " + spalten.Count + " Spalten");
+
+            // 1. Ordinalkette row[0..22] Position fuer Position
+            for (int i = 0; i < EINSTELLUNGEN_ORDINALKETTE.Length; i++)
+            {
+                string ist = i < spalten.Count ? spalten[i] : "(fehlt)";
+                if (!string.Equals(ist, EINSTELLUNGEN_ORDINALKETTE[i], StringComparison.OrdinalIgnoreCase))
+                {
+                    log.Roh("    ABWEICHUNG row[" + i + "]: erwartet " +
+                            EINSTELLUNGEN_ORDINALKETTE[i] + ", gefunden " + ist);
+                    fehler++;
+                }
+            }
+            if (fehler == 0)
+                log.Roh("    row[0..22] unveraendert (KonfigurationCtrl.ReadSingle liest positionsbasiert)");
+
+            // 2. Angehaengte Spalten
+            foreach (string name in EINSTELLUNGEN_ANGEHAENGT)
+            {
+                int pos = spalten.FindIndex(c => string.Equals(c, name, StringComparison.OrdinalIgnoreCase));
+                if (pos < 0)
+                {
+                    log.Roh("    FEHLT: " + name);
+                    fehler++;
+                }
+                else if (pos < EINSTELLUNGEN_ORDINALKETTE.Length)
+                {
+                    log.Roh("    ACHTUNG: " + name + " an Position " + pos +
+                            " - liegt INNERHALB der Ordinalkette!");
+                    fehler++;
+                }
+                else
+                {
+                    log.Roh("    " + name + " an Position " + pos + "  (angehaengt)");
+                }
+            }
+
+            return fehler;
+        }
+
         private static int SchemaNachweis(string dbDatei, Protokoll log)
         {
             int fehlend = 0;
@@ -226,14 +299,7 @@ namespace WindowsFormsApplication1.Referenzlauf
 
                 // --- Position von Extrapolation_erlaubt (row[0..22] darf unberuehrt bleiben)
                 List<string> einstellungen = SpaltenInReihenfolge(conn, "Tab_Einstellungen");
-                int posExtra = einstellungen.FindIndex(c =>
-                    string.Equals(c, "Extrapolation_erlaubt", StringComparison.OrdinalIgnoreCase));
-                log.Roh("  Tab_Einstellungen: " + einstellungen.Count + " Spalten, " +
-                        "Extrapolation_erlaubt an Position " + posExtra +
-                        (posExtra == einstellungen.Count - 1 && posExtra >= 23
-                            ? "  (angehaengt - row[0..22] unberuehrt)"
-                            : "  ACHTUNG: nicht am Ende!"));
-                if (posExtra < 23) fehlend++;
+                fehlend += EinstellungenNachweis(einstellungen, log);
 
                 // --- Neue Tabelle ---------------------------------------------------
                 log.Roh("--- Tabelle Tab_ErgebnisPufferspeicher ---");

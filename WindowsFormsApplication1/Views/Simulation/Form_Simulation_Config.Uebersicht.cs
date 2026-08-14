@@ -126,6 +126,10 @@ namespace WindowsFormsApplication1
         private Label label_PufferListe;
         private Button btn_PufferVerwalten;
 
+        // Fußzeile, rechts: Feature-Flag der zweikanaligen Kaskade (Konzept Kapitel 9)
+        private CheckBox checkBox_KaskadeZweikanalig;
+        private bool _kaskadeUiUpdate = false;   // verhindert Schreiben beim Vorbelegen
+
         // Inline-Editor für die Wärmequelle in der Übersicht
         private ComboBox _wqCombo;
         private AnlagenInfo _wqInfo;
@@ -315,7 +319,107 @@ namespace WindowsFormsApplication1
             this.Controls.Add(btn_PufferVerwalten);
             btn_PufferVerwalten.BringToFront();
 
+            InitKaskadeSchalter();
+
             AktualisierePufferFusszeile();
+        }
+
+        /// <summary>
+        /// Schalter „Zweikanalige Kaskade (Vorschau)" am rechten Ende der Fußzeile
+        /// (Paket 4; Konzept Kapitel 9 „Feature-Flag empfohlen").
+        ///
+        /// Er schreibt die Projekteinstellung <c>Tab_Einstellungen.Kaskade_Zweikanalig</c>,
+        /// und die ist seit Etappe 4b <b>wirksam</b>: <c>SimulationControl</c> verzweigt
+        /// darauf in die zweikanalige Kaskade mit herausgelöster Ladephase
+        /// (Reihenfolge-Invariante 6.3). Das ändert Ergebnisse — bei Projekten mit
+        /// Puffer-Senke deutlich, sonst nur im Rahmen der float-Rundung. Genau das sagt
+        /// der Mouseover-Hinweis; der frühere Text („merkt die Entscheidung nur vor")
+        /// stammt aus Etappe 4a und wäre jetzt irreführend.
+        ///
+        /// Kein Designer, keine .resx: wie die übrige Fußzeile rein programmatisch
+        /// (Konzept 7, „Layout im Code-Behind"). Der Text ist deutsch — die
+        /// durchgängige Lokalisierung des Simulationsbereichs ist Paket 9.
+        /// </summary>
+        private void InitKaskadeSchalter()
+        {
+            checkBox_KaskadeZweikanalig = new CheckBox();
+            checkBox_KaskadeZweikanalig.Name = "checkBox_KaskadeZweikanalig";
+            checkBox_KaskadeZweikanalig.Text = "Zweikanalige Kaskade (Vorschau)";
+            checkBox_KaskadeZweikanalig.AutoSize = true;
+            checkBox_KaskadeZweikanalig.Enabled = false;   // erst mit bekanntem Projekt
+
+            // Rechtsbündig in der Fußzeile, aber nie über dem Verwalten-Knopf.
+            int x = groupBox_Uebersicht.Right - 230;
+            if (x < btn_PufferVerwalten.Right + 12) x = btn_PufferVerwalten.Right + 12;
+            checkBox_KaskadeZweikanalig.Location = new Point(x, btn_PufferVerwalten.Top + 6);
+            checkBox_KaskadeZweikanalig.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+            _uebersichtTip.SetToolTip(checkBox_KaskadeZweikanalig,
+                "Rechnet Heiz- und Warmwasserbedarf als getrennte Kanäle und löst die" +
+                Environment.NewLine +
+                "Speicherladung aus der Erzeugerkaskade heraus (Vorschau)." +
+                Environment.NewLine + Environment.NewLine +
+                "Das ÄNDERT die Ergebnisse: Anlagen mit Pufferspeicher als Senke laden" +
+                Environment.NewLine +
+                "diesen, statt den Bedarf direkt zu decken; gedeckt wird aus dem Speicher." +
+                Environment.NewLine +
+                "Was sich im Einzelnen ändert, steht im Umsetzungsprotokoll zu Paket 4" +
+                Environment.NewLine +
+                "(Teil 7, Dokumentierte Ergebnisaenderungen). Ohne Haken rechnet die" +
+                Environment.NewLine +
+                "bisherige, einkanalige Kaskade unverändert weiter.");
+
+            checkBox_KaskadeZweikanalig.CheckedChanged += checkBox_KaskadeZweikanalig_CheckedChanged;
+            this.Controls.Add(checkBox_KaskadeZweikanalig);
+            checkBox_KaskadeZweikanalig.BringToFront();
+        }
+
+        /// <summary>
+        /// Belegt den Schalter aus der Datenbank vor. Wird aus <c>SetControls</c>
+        /// gerufen, sobald das Projekt bekannt ist.
+        /// </summary>
+        private void AktualisiereKaskadeSchalter()
+        {
+            if (checkBox_KaskadeZweikanalig == null) return;
+
+            _kaskadeUiUpdate = true;
+            try
+            {
+                checkBox_KaskadeZweikanalig.Enabled = m_ID_Projekt > 0;
+                checkBox_KaskadeZweikanalig.Checked =
+                    m_ID_Projekt > 0 && KonfigurationCtrl.KaskadeZweikanaligLesen(m_ID_Projekt);
+            }
+            finally { _kaskadeUiUpdate = false; }
+        }
+
+        private void checkBox_KaskadeZweikanalig_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_kaskadeUiUpdate || m_ID_Projekt <= 0) return;
+
+            bool wert = checkBox_KaskadeZweikanalig.Checked;
+
+            // Sofort schreiben, nicht erst beim „Speichern": Der Schalter gehört nicht zu
+            // dem Einstellungssatz, den btn_Speichern_Click über KonfigurationCtrl.Update
+            // wegschreibt (dessen Spaltenliste bleibt unangetastet, siehe
+            // KonfigurationCtrl.KaskadeZweikanaligSchreiben).
+            if (KonfigurationCtrl.KaskadeZweikanaligSchreiben(m_ID_Projekt, wert))
+            {
+                ShowStatus(wert
+                    ? "Zweikanalige Kaskade eingeschaltet - der nächste Lauf rechnet damit " +
+                      "und liefert andere Ergebnisse."
+                    : "Zweikanalige Kaskade abgewählt - es rechnet wieder die einkanalige Kaskade.",
+                    Color.DarkGreen);
+                return;
+            }
+
+            // Kein Einstellungssatz oder Spalte fehlt (Datenbank nicht auf Schemastand 6):
+            // Der Schalter geht zurück, damit die Anzeige nicht mehr behauptet als die
+            // Datenbank hergibt.
+            _kaskadeUiUpdate = true;
+            try { checkBox_KaskadeZweikanalig.Checked = !wert; }
+            finally { _kaskadeUiUpdate = false; }
+
+            ShowStatus("Die Einstellung konnte nicht gespeichert werden.", Color.DarkRed);
         }
 
         /// <summary>Schreibt die Projekt-Puffer in die Fußzeile.</summary>

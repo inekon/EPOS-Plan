@@ -86,6 +86,13 @@ namespace WindowsFormsApplication1
         private List<string> wp_modus = new List<string>();
 
         /// <summary>
+        /// Betriebsmodus je WP-Modul in Modulreihenfolge (<c>BM_Typ</c>). Lesezugriff für
+        /// den Kontextaufbau der zweikanaligen Kaskade: Die zeitabhängige Ladepriorität
+        /// (Konzept 3.5) greift nur bei Betriebsmodus <see cref="WaermequelleClass.MODUS_PV"/>.
+        /// </summary>
+        public IReadOnlyList<string> Betriebsmodi { get { return wp_modus; } }
+
+        /// <summary>
         /// Stündlicher PV-Überschuss [kW] für den Betriebsmodus "PV-optimiert".
         /// Wird von SimulationControl gesetzt; null = kein PV-Strom verfügbar.
         /// </summary>
@@ -142,16 +149,38 @@ namespace WindowsFormsApplication1
 
         public bool Berechnung()
         {
-            RecordSet rs = new RecordSet();
-
             if (wp_list.Count >= 10) return false;
-
-            WErzeugerCtrl wp = new WErzeugerCtrl();
 
             Cursor.Current = Cursors.WaitCursor;
 
+            // Modulaufbau (Kenndaten, Wärmequelle, Wärmesenke, Betriebsmodus) und
+            // Stundenschleife stehen seit Etappe 4b in zwei eigenen Methoden. Grund: Der
+            // zweikanalige Rechenweg braucht denselben Modulaufbau, aber eine andere
+            // Stundenschleife. Die AUSGEFÜHRTEN Anweisungen und ihre Reihenfolge sind
+            // gegenüber der Fassung davor unverändert — nur die Methodengrenze ist neu;
+            // die Regression über neun Referenzprojekte belegt das wertgenau.
+            if (!ModuleAufbauen()) return false;
+
+            return Berechnung_Stundenschleife();
+        }
+
+        /// <summary>
+        /// Baut die Module der Kaskade auf: Kenndaten (Kennlinie je Vorlauf), Bauart,
+        /// Wärmequelle (Quelltemperatur und ggf. Quellspeicher), Wärmesenke und
+        /// Betriebsmodus je Anlage aus <see cref="wp_list"/>.
+        ///
+        /// Der Block stand bis Etappe 4b wörtlich am Anfang von <see cref="Berechnung"/>
+        /// und ist von dort unverändert hierher gewandert — beide Rechenwege (einkanalig
+        /// und zweikanalig) brauchen ihn Zeile für Zeile gleich, und zwei Kopien wären die
+        /// sichere Quelle künftiger Abweichungen.
+        /// </summary>
+        /// <returns>false = Abbruch (fehlende Kenndaten); die Meldung ist bereits gezeigt.</returns>
+        private bool ModuleAufbauen()
+        {
+            RecordSet rs = new RecordSet();
+            WErzeugerCtrl wp = new WErzeugerCtrl();
+
             Volumen_Pufferspeicher = 0;
-            List<double> biv = new List<double>();
 
             Init();
 
@@ -249,6 +278,21 @@ namespace WindowsFormsApplication1
 
                 wp_kenndaten.Add(item);
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// EINKANALIGE Stundenschleife der Wärmepumpen-Kaskade — der Rechenweg des
+        /// Bestands, Anweisung für Anweisung unverändert. Er läuft, solange die
+        /// Projekteinstellung <c>Kaskade_Zweikanalig</c> nicht gesetzt ist.
+        ///
+        /// Voraussetzung: <see cref="ModuleAufbauen"/> ist gelaufen.
+        /// Die zweikanalige Fassung steht in <see cref="Berechnung_Zweikanalig"/>.
+        /// </summary>
+        private bool Berechnung_Stundenschleife()
+        {
+            List<double> biv = new List<double>();
 
             WP_Strombedarf_gesamt = 0;
             WP_Waermeproduktion_gesamt = 0;
@@ -516,8 +560,16 @@ namespace WindowsFormsApplication1
                         Modul_WP_Waermeproduktion[index] += (float)result[PTHERM];
                         Modul_WP_Strombedarf[index] += result[PEL];
 
-                        WP_Laufzeit = WP_Laufzeit + 1;
-                        Modul_WP_Laufzeit[index] += 1;
+                        // B0-13: Laufzeit nur zählen, wenn die Wärmepumpe auch gelaufen
+                        // ist. result[PTHERM] kann hier 0 sein (Sperrzeit, begrenzte
+                        // Quelle, Alternativbetrieb) - dann wurde eine volle Stunde
+                        // Betriebszeit gebucht, ohne dass eine kWh entstanden ist.
+                        // Derselbe Guard, den der Teillast-Zweig unten längst hat.
+                        if (result[PTHERM] > 0)
+                        {
+                            WP_Laufzeit = WP_Laufzeit + 1;
+                            Modul_WP_Laufzeit[index] += 1;
+                        }
 
                         SenkeAbziehen(senke, result[PTHERM], ref rest_ww, ref rest_heiz);
                     }
@@ -664,6 +716,807 @@ namespace WindowsFormsApplication1
             if (biv.Count > 0)
                 Bivalenzpunkt = biv.Max();
             return true;
+        }
+
+        // ===================================================================
+        // Zweikanaliger Rechenweg (Paket 4, Etappe 4b — Konzept 6.3)
+        //
+        // Bewusst als EIGENE Methodenvariante neben Berechnung_Stundenschleife und
+        // nicht als Umbau von Berechnung() in-place. Abgewogen wurde beides:
+        //
+        //   Umbau in-place  hätte den einen Rechenweg erhalten, aber jede der rund
+        //                   zwanzig Verzweigungen (Senke je Modul, Ladefähigkeit statt
+        //                   Bedarf, Entladen nach Kanal, StundeAbschliessen zentral)
+        //                   in den Bestandscode getragen. Der Altpfad wäre danach nicht
+        //                   mehr durch Lesen als unverändert nachweisbar gewesen — nur
+        //                   noch durch Messen. Bei einem Feature-Flag, dessen Zweck die
+        //                   Rückfallebene ist, ist das die falsche Reihenfolge.
+        //   Eigene Methode  kostet eine zweite Stundenschleife (~200 Zeilen). Der
+        //                   gemeinsame Teil — Modulaufbau, Kennlinienauswertung,
+        //                   SenkeAbziehen — wird geteilt, nicht kopiert; die Doppelung
+        //                   beschränkt sich auf die Ablaufsteuerung, und genau die ist
+        //                   in beiden Fassungen unterschiedlich.
+        //
+        // Mit Paket 5/6 (Kessel, BHKW, Solarthermie zweikanalig) wird der einkanalige
+        // Weg entbehrlich; dann verschwindet die Doppelung mit dem Flag.
+        // ===================================================================
+
+        /// <summary>
+        /// Bereitet den zweikanaligen Lauf vor: Modulaufbau wie im Altpfad, danach die
+        /// Zusammenführung mehrfach benutzter Quellspeicher.
+        ///
+        /// Getrennt von <see cref="Berechnung_Zweikanalig"/>, weil
+        /// <c>SimulationControl</c> dazwischen die Speicher-Registry vervollständigen
+        /// muss: Die Quellspeicher entstehen erst beim Modulaufbau, und die Registry ist
+        /// die Menge, über die Phase G läuft.
+        /// </summary>
+        public bool Vorbereiten_Zweikanalig()
+        {
+            if (wp_list.Count >= MAX_WP) return false;
+
+            Cursor.Current = Cursors.WaitCursor;
+
+            if (!ModuleAufbauen()) return false;
+
+            QuellspeicherZusammenfuehren();
+            return true;
+        }
+
+        /// <summary>
+        /// Mehrere Module am SELBEN Quellpuffer teilen sich ab Etappe 4b EINE Instanz
+        /// (Konzept 6.2/6.3, offener Punkt 4 aus Etappe 4a).
+        ///
+        /// Bis dahin baute <see cref="WaermequelleClass.Quellspeicher"/> je Modul ein
+        /// eigenes Objekt. Zwei Module am selben Speicher rechneten damit gegen zwei
+        /// getrennte Füllstände — jedes durfte die volle Quellwärme entnehmen —, und
+        /// <c>StundeAbschliessen</c> zog die Bereitschaftsverluste doppelt ab. Beides ist
+        /// mit der gemeinsamen Instanz und der zentralen Phase G behoben.
+        ///
+        /// Es gewinnt die Instanz des ERSTEN Moduls in Modulreihenfolge. Ihre nutzbare
+        /// Kapazität folgt der Spreizung <c>WQ_Spreizung</c> jener Anlage; unterscheiden
+        /// sich die Spreizungen zweier Anlagen am selben Speicher, ist das eine
+        /// Konfigurationsfrage und keine Rechenfrage — der Speicher hat einen
+        /// Betriebszustand. Der Fall wird protokolliert.
+        /// </summary>
+        private void QuellspeicherZusammenfuehren()
+        {
+            Dictionary<int, SimulationPufferspeicher> ersteInstanz =
+                new Dictionary<int, SimulationPufferspeicher>();
+
+            for (int i = 0; i < wp_quellspeicher.Count; i++)
+            {
+                SimulationPufferspeicher q = wp_quellspeicher[i];
+                if (q == null || q.ID_Pufferspeicher <= 0) continue;
+
+                SimulationPufferspeicher vorhanden;
+                if (!ersteInstanz.TryGetValue(q.ID_Pufferspeicher, out vorhanden))
+                {
+                    ersteInstanz[q.ID_Pufferspeicher] = q;
+                    continue;
+                }
+
+                Console.WriteLine("Quellspeicher " + q.ID_Pufferspeicher +
+                                  " wird von mehreren Modulen benutzt — ab Etappe 4b rechnen sie " +
+                                  "gegen EINEN Füllstand (Konzept 6.3). Maßgeblich bleiben die " +
+                                  "Quellparameter der Anlage " + vorhanden.ID_Anlage + ".");
+                wp_quellspeicher[i] = vorhanden;
+            }
+        }
+
+        /// <summary>
+        /// ZWEIKANALIGE Stundenschleife nach der Reihenfolge-Invariante aus Konzept 6.3:
+        ///
+        /// <code>
+        /// je Stunde h:
+        ///   A) Vorabentladung   — Speicher decken Bedarf in IHREM Kanal (Hysterese),
+        ///                         Reihenfolge nach Entladepriorität (3.6)
+        ///   B) Bedarfsdeckung   — Module mit Hauptsenke HEIZKREIS, SenkeAbziehen(WS_Typ)
+        ///   C) Speicherladung   — Module mit Hauptsenke PUFFER_*, kaskadenübergreifend
+        ///                         nach Ladepriorität der Stunde (3.4/3.5), KEIN
+        ///                         SenkeAbziehen
+        ///   D) Zweitsenken      — aus dem verbleibenden Ladepotenzial, gleiche Ordnung
+        ///   E) Nachentladung    — Speicher decken den noch offenen Bedarf
+        ///   F) Heizstab         — auf den dann verbleibenden Kanalrest
+        ///   G) StundeAbschliessen je Registry-Speicher — GENAU EINMAL
+        /// </code>
+        ///
+        /// Die Kanäle werden IN PLACE fortgeschrieben: Am Ende jeder Stunde stehen in
+        /// <paramref name="kanaele"/> die Restbedarfe, mit denen der nächste Erzeuger der
+        /// Kaskade weiterrechnet.
+        ///
+        /// Voraussetzung: <see cref="Vorbereiten_Zweikanalig"/> ist gelaufen und
+        /// <paramref name="kontext"/> ist aufgebaut.
+        /// </summary>
+        public bool Berechnung_Zweikanalig(Waermekanaele kanaele, Kaskadenkontext kontext)
+        {
+            if (kanaele == null || kontext == null) return false;
+
+            List<double> biv = new List<double>();
+
+            // Eingangsgrößen als EIGENE Vektoren festhalten (kein Aliasing auf die
+            // Kanäle, die gleich fortgeschrieben werden — B0-2).
+            Waermebedarf_stuendlich = kanaele.Summe();
+            Warmwasserbedarf_stuendlich = (float[])kanaele.WW.Clone();
+
+            WP_Strombedarf_gesamt = 0;
+            WP_Waermeproduktion_gesamt = 0;
+            Heizstab_gesamt = 0;
+            WP_Laufzeit = 0;
+            Bivalenzpunkt = -100;
+
+            // Senkenspeicher auf den Laufanfang. QUELLspeicher NICHT: sie starten
+            // gefüllt (WaermequelleClass.Quellspeicher setzt SOC = Q_max), ein Reset
+            // würde die vorhandene Wärmequelle löschen.
+            foreach (SimulationPufferspeicher sp in kontext.AlleSpeicher)
+                if (sp != null && !sp.IstQuelle) sp.Reset();
+
+            int module = wp_model.Count;
+
+            // Ladeaufträge je Modul vorab auflösen — die Ladephase iteriert über die
+            // Prioritätsordnung, die Bedarfsphase braucht denselben Auftrag für die
+            // Ladefähigkeit als Bezugsgröße.
+            Ladeauftrag[] hauptauftrag = new Ladeauftrag[module];
+            Ladeauftrag[] zweitauftrag = new Ladeauftrag[module];
+            foreach (Ladeauftrag a in kontext.LadenOhnePV)
+            {
+                if (a == null || a.Modulindex < 0 || a.Modulindex >= module) continue;
+                if (a.Zweitsenke) zweitauftrag[a.Modulindex] = a;
+                else hauptauftrag[a.Modulindex] = a;
+            }
+
+            double[] ladeTherm = new double[module];   // Ladepotenzial der Stunde [kWh]
+            double[] ladeEl = new double[module];      // zugehörige Stromaufnahme [kWh]
+            double[] ladeRest = new double[module];    // davon noch nicht verbraucht
+            bool[] pvGebunden = new bool[module];      // Modul im Betriebsmodus PV (13.5)
+
+            // Absehbare Entnahme je Kanal in der laufenden Stunde [kWh] — der Durchsatz
+            // der hydraulischen Weiche (Nutzerentscheidung zu 4b-1). Index 0 = Heizkanal,
+            // 1 = Warmwasserkanal. Das Budget wird über die Phasen C und D hinweg NUR
+            // EINMAL vergeben: Zwei Speicher desselben Kanals dürfen nicht beide dieselbe
+            // Entnahme durchreichen, sonst bliebe nach Phase E Wärme im Speicher stehen,
+            // die niemand angefordert hat.
+            double[] absehbar = new double[2];
+
+            for (int stunde = 0; stunde < 8760; stunde++)
+            {
+                double rest_heiz = kanaele.Heiz[stunde];
+                double rest_ww = kanaele.WW[stunde];
+
+                WP_Strombedarf_stuendlich[stunde] = 0;
+                WP_Waermeproduktion_stuendlich[stunde] = 0;
+                waermerestbedarf_stuendlich[stunde] = 0;
+                Heizstab_stuendlich[stunde] = 0;
+
+                Array.Clear(ladeTherm, 0, module);
+                Array.Clear(ladeEl, 0, module);
+                Array.Clear(ladeRest, 0, module);
+                Array.Clear(pvGebunden, 0, module);
+
+                double pvRest = (PV_Ueberschuss_stuendlich != null &&
+                                 stunde < PV_Ueberschuss_stuendlich.Length)
+                    ? PV_Ueberschuss_stuendlich[stunde] : 0;
+
+                // Kriterium der zeitabhängigen Ladepriorität (Konzept 3.5): der
+                // PV-Überschuss VOR seinem Verbrauch in dieser Stunde.
+                bool pvUeberschuss = pvRest > 0;
+
+                // Regeneration der Quellspeicher — EINMAL je Speicher und Stunde. Im
+                // Altpfad steht sie in der Modulschleife; mit der gemeinsamen Instanz
+                // (QuellspeicherZusammenfuehren) würde sie dort mehrfach gutgeschrieben.
+                foreach (SimulationPufferspeicher q in kontext.AlleSpeicher)
+                    if (q != null && q.IstQuelle && q.RegenerationProStunde > 0)
+                        q.Laden(q.RegenerationProStunde, stunde);
+
+                // --- A) Vorabentladung ------------------------------------------------
+                Entladephase(kontext, stunde, true, ref rest_heiz, ref rest_ww);
+
+                // --- B) Bedarfsdeckung -------------------------------------------------
+                for (int index = 0; index < module; index++)
+                {
+                    WErzeugerModel model = wp_model[index];
+                    _Kenndaten kenndaten = wp_kenndaten[index];
+                    Senkenzuordnung zuordnung = kontext.SenkeJeModul[index];
+                    SimulationPufferspeicher quelle = wp_quellspeicher[index];
+
+                    double[] result = berechne_wptherm(wp_quelltemp[index][stunde], model, kenndaten);
+                    if (result[STATUS] == 0)
+                    {
+                        AbbruchAufraeumen();
+                        return false;
+                    }
+
+                    // KANALGERECHTE BEZUGSGRÖSSE (Konzept 6.3): der Bedarf der eigenen
+                    // Senke bzw. — bei Puffer-Hauptsenke — der Bilanzraum des Speichers
+                    // (Ladefähigkeit + absehbare Entnahme, Nutzerentscheidung zu 4b-1).
+                    // Im Altpfad steht hier der aggregierte Rest_waerme; das ist im
+                    // Speicherbetrieb nicht mehr die maßgebliche Größe.
+                    double verfuegbar = Verfuegbar(zuordnung, hauptauftrag[index],
+                                                   rest_heiz, rest_ww, pvUeberschuss);
+
+                    // Betriebsarten-Steuerung (unverändert zum Altpfad, nur die
+                    // Bezugsgröße des Alternativbetriebs ist jetzt kanalgerecht)
+                    if (model.Bivalenter_Betrieb && model.Betriebsart == "Teilparallelbetrieb")
+                    {
+                        if (Temperatur[stunde] <= model.Abschaltpunkt)
+                        {
+                            result[PTHERM] = 0;
+                            result[PEL] = 0;
+                        }
+                    }
+                    else if (model.Bivalenter_Betrieb && model.Betriebsart == "Parallelbetrieb")
+                    {
+                        // die Wärmepumpe läuft weiter, der zweite Erzeuger unterstützt
+                    }
+                    else if (model.Bivalenter_Betrieb && model.Betriebsart == "Alternativbetrieb")
+                    {
+                        // Bezugsgröße ist der offene KANALBEDARF, nicht der Bilanzraum
+                        // des Speichers (Paket-4-Review, Punkt 1) — siehe AlternativBezug.
+                        if (result[PTHERM] < AlternativBezug(zuordnung, hauptauftrag[index],
+                                                             rest_heiz, rest_ww))
+                        {
+                            result[PTHERM] = 0;
+                            result[PEL] = 0;
+                        }
+                    }
+
+                    // Sperrzeiten berücksichtigen
+                    int std = stunde % 24;
+                    if (std >= model.Sperrzeit_von && std < model.Sperrzeit_bis && model.Sperrung)
+                    {
+                        result[PTHERM] = 0;
+                        result[PEL] = 0;
+                    }
+
+                    // Wärmequelle Pufferspeicher: die Verdampferwärme muss aus dem
+                    // Speicher gedeckt werden (Regeneration steht oben, zentral).
+                    if (quelle != null && result[PTHERM] > 0)
+                    {
+                        double quellAnteil = result[PTHERM] - result[PEL];
+                        if (quellAnteil > 0 && quelle.SOC < quellAnteil)
+                        {
+                            double faktor = quelle.SOC / quellAnteil;
+                            if (faktor < 0) faktor = 0;
+                            result[PTHERM] *= faktor;
+                            result[PEL] *= faktor;
+                        }
+                    }
+
+                    // ABBRUCHBEDINGUNG (Konzept 6.3): aus „kein Bedarf" wird
+                    // „kein Bedarf UND kein Ladepotenzial". Ein Modul mit Zweitsenke muss
+                    // auch dann laufen, wenn sein Kanal gerade nichts verlangt.
+                    bool kannLaden = Ladefaehig(hauptauftrag[index], pvUeberschuss, rest_heiz, rest_ww) ||
+                                     Ladefaehig(zweitauftrag[index], pvUeberschuss, rest_heiz, rest_ww);
+                    if (verfuegbar <= 0 && !kannLaden) continue;
+
+                    // Betriebsmodus -> Ladepotenzial dieser Stunde
+                    LadepotenzialBestimmen(index, zuordnung, result, pvRest,
+                                           ladeTherm, ladeEl, pvGebunden);
+
+                    float vorherTherm = WP_Waermeproduktion_stuendlich[stunde];
+                    float vorherEl = WP_Strombedarf_stuendlich[stunde];
+
+                    // Bedarfsdeckung NUR bei Hauptsenke Heizkreis. Eine Anlage mit
+                    // Puffer-Hauptsenke lädt ausschließlich (Phase C) — genau daraus
+                    // folgt, dass es keine Doppelzählung geben kann (Konzept 6.3).
+                    if (zuordnung.Haupt == Senke.Heizkreis && verfuegbar > 0)
+                    {
+                        if (result[PTHERM] < verfuegbar)
+                        {
+                            WP_Waermeproduktion_stuendlich[stunde] += (float)result[PTHERM];
+                            WP_Waermeproduktion_gesamt += result[PTHERM];
+                            WP_Strombedarf_stuendlich[stunde] += (float)result[PEL];
+                            WP_Strombedarf_gesamt += result[PEL];
+                            Modul_WP_Waermeproduktion[index] += result[PTHERM];
+                            Modul_WP_Strombedarf[index] += result[PEL];
+
+                            // B0-13 (aus der Parallelsitzung übernommen, Commit ae7b705):
+                            // Laufzeit nur bei tatsächlicher Produktion - derselbe Guard
+                            // wie im Teillast-Zweig und wie im Altpfad.
+                            if (result[PTHERM] > 0)
+                            {
+                                WP_Laufzeit = WP_Laufzeit + 1;
+                                Modul_WP_Laufzeit[index] += 1;
+                            }
+
+                            SenkeAbziehen(zuordnung.WSTyp, result[PTHERM], ref rest_ww, ref rest_heiz);
+                        }
+                        else
+                        {
+                            WP_Waermeproduktion_stuendlich[stunde] += (float)verfuegbar;
+                            WP_Waermeproduktion_gesamt += verfuegbar;
+                            WP_Strombedarf_stuendlich[stunde] += (float)verfuegbar / (float)result[COP];
+                            WP_Strombedarf_gesamt += verfuegbar / result[COP];
+                            Modul_WP_Waermeproduktion[index] += verfuegbar;
+                            Modul_WP_Strombedarf[index] += verfuegbar / result[COP];
+
+                            // bei begrenzter Quelle bzw. Sperrzeit kann PTHERM 0 sein
+                            if (result[PTHERM] > 0)
+                            {
+                                WP_Laufzeit = WP_Laufzeit + (verfuegbar / (float)result[PTHERM]);
+                                Modul_WP_Laufzeit[index] += (verfuegbar / (float)result[PTHERM]);
+                            }
+
+                            SenkeAbziehen(zuordnung.WSTyp, verfuegbar, ref rest_ww, ref rest_heiz);
+                        }
+                    }
+
+                    // Tatsächlich entnommene Quellwärme abziehen. StundeAbschliessen
+                    // steht NICHT hier, sondern zentral in Phase G.
+                    double erzeugt = WP_Waermeproduktion_stuendlich[stunde] - vorherTherm;
+                    double strom = WP_Strombedarf_stuendlich[stunde] - vorherEl;
+                    if (quelle != null)
+                    {
+                        double entnahme = erzeugt - strom;
+                        if (entnahme > 0) quelle.Entladen(entnahme, stunde);
+                    }
+
+                    // Was vom Ladepotenzial nach der Bedarfsdeckung übrig ist, steht den
+                    // Phasen C und D zur Verfügung.
+                    ladeRest[index] = ladeTherm[index] - erzeugt;
+                    if (ladeRest[index] < 0) ladeRest[index] = 0;
+
+                } // end alle WP-Module
+
+                // Durchsatzbudget der Stunde festhalten — Stand NACH der Bedarfsdeckung.
+                // Genau diesen Rest kann Phase E aus den Speichern ziehen; zwischen C und
+                // E verändert ihn nichts.
+                absehbar[0] = rest_heiz > 0 ? rest_heiz : 0;
+                absehbar[1] = rest_ww > 0 ? rest_ww : 0;
+
+                // --- C) Speicherladung (Hauptsenken) ------------------------------------
+                Ladephase(kontext, stunde, false, pvUeberschuss, ladeTherm, ladeEl, ladeRest,
+                          pvGebunden, ref pvRest, absehbar);
+
+                // --- D) Zweitsenken ------------------------------------------------------
+                Ladephase(kontext, stunde, true, pvUeberschuss, ladeTherm, ladeEl, ladeRest,
+                          pvGebunden, ref pvRest, absehbar);
+
+                // --- E) Nachentladung -----------------------------------------------------
+                Entladephase(kontext, stunde, false, ref rest_heiz, ref rest_ww);
+
+                // Bivalenzpunkt — dieselbe Stelle wie im Altpfad: nach der Entladung,
+                // vor dem Heizstab.
+                if (rest_heiz + rest_ww > 0) biv.Add(Temperatur[stunde]);
+
+                // --- F) Heizstab ----------------------------------------------------------
+                Heizstabphase(stunde, ref rest_heiz, ref rest_ww);
+
+                // --- G) StundeAbschliessen je Registry-Speicher, GENAU EINMAL -------------
+                foreach (SimulationPufferspeicher sp in kontext.AlleSpeicher)
+                {
+                    if (sp == null) continue;
+
+                    // Abschaltprüfung VOR den Bereitschaftsverlusten (wie im Altpfad),
+                    // sonst wird der Vollstand nie erreicht.
+                    if (!sp.IstQuelle && sp.Q_max > 0 && sp.LaedtGerade &&
+                        sp.SOC >= sp.Q_max * sp.SchwelleAus)
+                        sp.LaedtGerade = false;
+
+                    sp.StundeAbschliessen(stunde);
+                }
+
+                // Restbedarf in die Kanäle zurückschreiben — Eingang des nächsten
+                // Erzeugers der Kaskade.
+                if (rest_heiz < 0) rest_heiz = 0;
+                if (rest_ww < 0) rest_ww = 0;
+                kanaele.Heiz[stunde] = (float)rest_heiz;
+                kanaele.WW[stunde] = (float)rest_ww;
+                waermerestbedarf_stuendlich[stunde] = (float)(rest_heiz + rest_ww);
+
+            } // end alle Stunden
+
+            WPPlan.Core.BhkwPlan.Heapsort(WP_Waermeproduktion_stuendlich, WP_Waermeproduktion_stuendlich_sortiert);
+
+            Waermebedarf_gesamt = 0;
+            Array.ForEach(Waermebedarf_stuendlich, value => Waermebedarf_gesamt += value);
+            waermerestbedarf_gesamt = 0;
+            Array.ForEach(waermerestbedarf_stuendlich, value => waermerestbedarf_gesamt += value);
+
+            Cursor.Current = Cursors.Default;
+
+            if (biv.Count > 0)
+                Bivalenzpunkt = biv.Max();
+            return true;
+        }
+
+        /// <summary>
+        /// Bezugsgröße eines Moduls in dieser Stunde — die DREI Fälle aus Konzept 6.3:
+        /// Warmwasserkanal, Heizkanal (bzw. beides mit Warmwasservorrang) und, dritter
+        /// Fall, der BILANZRAUM der Hauptsenke bei einer Anlage, die einen Puffer lädt.
+        ///
+        /// Der dritte Fall stand bis zur Paket-4-Review auf der reinen Ladefähigkeit
+        /// <c>Q_max · Obergrenze − SOC</c>. Damit drosselte der Speicherinhalt den
+        /// Stundendurchsatz der Anlage (Befund 4b-1): Ein 600-l-Puffer ließ höchstens
+        /// ~13 kWh/h durch, während der Momentanbedarf ein Vielfaches betragen kann.
+        /// Fachlich ist ein Pufferspeicher aber eine hydraulische Weiche — er wird
+        /// geladen, WÄHREND die Last aus ihm entnimmt. Nach der Nutzerentscheidung vom
+        /// 14.08.2026 ist die Bezugsgröße deshalb
+        /// <c>Ladefähigkeit + min(offener Kanalbedarf, Entnahmefähigkeit)</c>
+        /// (<see cref="SimulationPufferspeicher.Bilanzraum"/>). Die Phasenstruktur bleibt
+        /// unangetastet: Phase C lädt weiterhin ohne <c>SenkeAbziehen</c>, Phase E
+        /// entlädt — nur darf die Aufnahme einer Stunde jetzt die freie Kapazität um die
+        /// im selben Zeitschritt absehbare Entnahme übersteigen.
+        /// </summary>
+        private double Verfuegbar(Senkenzuordnung zuordnung, Ladeauftrag haupt,
+                                  double rest_heiz, double rest_ww, bool pvUeberschuss)
+        {
+            if (zuordnung == null) return rest_ww + rest_heiz;
+
+            if (zuordnung.Haupt != Senke.Heizkreis)
+            {
+                if (haupt == null || haupt.Speicher == null) return 0;
+                return haupt.Speicher.Bilanzraum(haupt.ObergrenzeStunde(pvUeberschuss),
+                                                 Kanalbedarf(haupt.Speicher, rest_heiz, rest_ww));
+            }
+
+            if (zuordnung.WSTyp == WaermequelleClass.SENKE_WARMWASSER) return rest_ww;
+            if (zuordnung.WSTyp == WaermequelleClass.SENKE_HEIZUNG) return rest_heiz;
+            return rest_ww + rest_heiz;
+        }
+
+        /// <summary>
+        /// Offener Bedarf des Kanals, den DIESER Speicher bedient (Konzept 3.2). Ein
+        /// Brauchwasserspeicher sieht den WW-Kanal, jeder andere den Heizkanal — dieselbe
+        /// Regel wie bei der Entladung (<see cref="EntladeKanal"/>).
+        /// </summary>
+        private static double Kanalbedarf(SimulationPufferspeicher sp, double rest_heiz, double rest_ww)
+        {
+            if (sp == null) return 0;
+            return sp.IstBrauchwasserkanal ? rest_ww : rest_heiz;
+        }
+
+        /// <summary>
+        /// Bezugsgröße des ALTERNATIVBETRIEBS (Konzept 6.3, in der Paket-4-Review
+        /// nachgeschärft): der offene BEDARF, den das Modul bedient — auch dann, wenn es
+        /// über einen Puffer arbeitet.
+        ///
+        /// Die Betriebsart heißt „die Wärmepumpe trägt die Last allein, bis der zweite
+        /// Erzeuger sie ablöst". Verglichen wird also Leistung gegen LAST. Stünde hier
+        /// wie in <see cref="Verfuegbar"/> die Ladefähigkeit oder der Bilanzraum, hinge
+        /// die Abschaltung am Füllstand des Speichers: Ein fast voller Puffer hätte die
+        /// Wärmepumpe im Alternativbetrieb schon bei milden Temperaturen stillgelegt,
+        /// ein leerer sie bei Frost weiterlaufen lassen. Beides hat mit dem
+        /// Bivalenzgedanken nichts zu tun.
+        /// </summary>
+        private double AlternativBezug(Senkenzuordnung zuordnung, Ladeauftrag haupt,
+                                       double rest_heiz, double rest_ww)
+        {
+            if (zuordnung == null) return rest_ww + rest_heiz;
+
+            if (zuordnung.Haupt != Senke.Heizkreis)
+                return (haupt != null) ? Kanalbedarf(haupt.Speicher, rest_heiz, rest_ww) : 0;
+
+            if (zuordnung.WSTyp == WaermequelleClass.SENKE_WARMWASSER) return rest_ww;
+            if (zuordnung.WSTyp == WaermequelleClass.SENKE_HEIZUNG) return rest_heiz;
+            return rest_ww + rest_heiz;
+        }
+
+        /// <summary>
+        /// true, wenn der Auftrag in dieser Stunde noch Wärme aufnehmen kann — Ladung in
+        /// den Speicher ODER Durchsatz zur Last (Bilanzraum, siehe <see cref="Verfuegbar"/>).
+        /// </summary>
+        private static bool Ladefaehig(Ladeauftrag auftrag, bool pvUeberschuss,
+                                       double rest_heiz, double rest_ww)
+        {
+            if (auftrag == null || auftrag.Speicher == null) return false;
+
+            return auftrag.Speicher.Bilanzraum(auftrag.ObergrenzeStunde(pvUeberschuss),
+                                               Kanalbedarf(auftrag.Speicher, rest_heiz, rest_ww)) > 0;
+        }
+
+        /// <summary>
+        /// Ladepotenzial der Stunde je Modul nach Betriebsmodus (Konzept 3.5, 13.5).
+        ///
+        ///   Laufzeit  — volle Leistung, der Überschuss darf laden,
+        ///   Leistung  — kein Überschuss; die WP moduliert exakt auf den Bedarf,
+        ///   PV        — Überschuss nur, soweit PV-Strom verfügbar ist.
+        ///
+        /// DAS PV-BUDGET WIRD HIER NICHT VERBRAUCHT (Paket-4-Review, Punkt 2).
+        /// <paramref name="pvRest"/> geht als OBERGRENZE ein, abgezogen wird es erst in
+        /// der Ladephase, und zwar um die TATSÄCHLICH geladene Menge (13.5). Der Grund
+        /// ist die Reihenfolge der Phasen: Das Potenzial aller Module steht in Phase B
+        /// fest, geladen wird erst in C und D. Hätte Modul 1 sein Potenzial hier
+        /// abgebucht, es dann aber nicht unterbringen können — weil sein Speicher voll
+        /// ist oder gar keiner zugeordnet ist —, wäre das Budget für Modul 2 schon
+        /// verbraucht, ohne dass eine kWh PV-Strom geflossen wäre. Nicht untergebrachtes
+        /// Potenzial bleibt so dem nächsten Modul erhalten; die modulübergreifende
+        /// Reihenfolge (Anlagenpriorität) bleibt dieselbe, weil die Ladephase die
+        /// Aufträge in Ladeprioritätsordnung abarbeitet und dabei sequenziell abbucht.
+        ///
+        /// SONDERFALL PUFFER-HAUPTSENKE: Dort IST die Ladung der Auftrag und nicht der
+        /// Überschuss über einen Bedarf hinaus. „Leistung" hätte hier keine Bedeutung —
+        /// der Bilanzraum begrenzt ohnehin —, deshalb gilt für diese Anlagen dieselbe
+        /// Regel wie für „Laufzeit". Andernfalls stünde eine korrekt konfigurierte
+        /// Speicheranlage still.
+        /// </summary>
+        private void LadepotenzialBestimmen(int index, Senkenzuordnung zuordnung, double[] result,
+                                            double pvRest, double[] ladeTherm, double[] ladeEl,
+                                            bool[] pvGebunden)
+        {
+            string modus = wp_modus[index];
+            bool pufferSenke = zuordnung != null && zuordnung.Haupt != Senke.Heizkreis;
+
+            if (modus == WaermequelleClass.MODUS_PV)
+            {
+                pvGebunden[index] = true;
+
+                double copPV = result[COP] > 0 ? result[COP] : 1;
+                double maxThermPV = pvRest * copPV;
+                double thermPV = Math.Min(result[PTHERM], maxThermPV);
+                if (thermPV > 0)
+                {
+                    ladeTherm[index] += thermPV;
+                    ladeEl[index] += thermPV / copPV;
+                }
+                return;
+            }
+
+            if (modus == WaermequelleClass.MODUS_LEISTUNG && !pufferSenke)
+                return;   // kein Ladepotenzial
+
+            ladeTherm[index] += result[PTHERM];
+            ladeEl[index] += result[PEL];
+        }
+
+        /// <summary>
+        /// Phasen A und E der Reihenfolge-Invariante: Die Speicher decken den Bedarf in
+        /// IHREM Kanal, sortiert nach Entladepriorität (Konzept 3.6).
+        /// </summary>
+        /// <param name="vorab">
+        /// true = Phase A. Dann entscheidet die Hysterese des Speichers, ob er entlädt;
+        /// ein Speicher im Nachladebetrieb bleibt zu. false = Phase E: Dort greift der
+        /// Speicher unabhängig von der Hysterese auf den noch offenen Rest zu — genau wie
+        /// die heutige Entladung vor Heizstab und Folge-Erzeuger.
+        /// </param>
+        private void Entladephase(Kaskadenkontext kontext, int stunde, bool vorab,
+                                  ref double rest_heiz, ref double rest_ww)
+        {
+            if (!vorab)
+            {
+                // DURCHSATZ ZUERST (Nutzerentscheidung zu 4b-1): Was Phase C über die
+                // Ladefähigkeit hinaus aufgenommen hat, war nie ein Speicherinhalt,
+                // sondern der Durchfluss der hydraulischen Weiche. Er wird vor der
+                // regulären Entladereihenfolge zurückgegeben, damit er zuverlässig
+                // beim Verbraucher landet und nicht bei einem anderen Speicher desselben
+                // Kanals hängen bleibt, der in der Entladeordnung vor ihm steht. Bei nur
+                // einem Speicher je Kanal — dem heute geprüften Fall — ändert die
+                // Vorziehung nichts: dieselbe Menge, derselbe Speicher.
+                DurchsatzEntladen(kontext.EntladenHeizung, false, stunde, ref rest_heiz, ref rest_ww);
+                DurchsatzEntladen(kontext.EntladenBrauchwasser, true, stunde, ref rest_heiz, ref rest_ww);
+            }
+
+            EntladeKanal(kontext.EntladenHeizung, false, vorab, stunde, ref rest_heiz, ref rest_ww);
+            EntladeKanal(kontext.EntladenBrauchwasser, true, vorab, stunde, ref rest_heiz, ref rest_ww);
+        }
+
+        /// <summary>
+        /// Gibt den Teil des Füllstands zurück, der über <see cref="SimulationPufferspeicher.Q_max"/>
+        /// hinausgeht — der Durchfluss dieser Stunde (siehe <see cref="Entladephase"/>).
+        /// Ohne Durchlass in Phase C gibt es diesen Anteil nicht, und die Methode tut nichts.
+        /// </summary>
+        private void DurchsatzEntladen(List<SimulationPufferspeicher> speicher, bool brauchwasser,
+                                       int stunde, ref double rest_heiz, ref double rest_ww)
+        {
+            if (speicher == null) return;
+
+            for (int i = 0; i < speicher.Count; i++)
+            {
+                SimulationPufferspeicher sp = speicher[i];
+                if (sp == null || sp.Q_max <= 0) continue;
+
+                double ueber = sp.SOC - sp.Q_max;
+                if (ueber <= 0) continue;
+
+                double bedarf = brauchwasser ? rest_ww : rest_heiz;
+                if (bedarf <= 0) continue;
+
+                double gedeckt = sp.Entladen(Math.Min(ueber, bedarf), stunde);
+                if (gedeckt <= 0) continue;
+
+                SenkeAbziehen(brauchwasser ? WaermequelleClass.SENKE_WARMWASSER
+                                           : WaermequelleClass.SENKE_HEIZUNG,
+                              gedeckt, ref rest_ww, ref rest_heiz);
+            }
+        }
+
+        private void EntladeKanal(List<SimulationPufferspeicher> speicher, bool brauchwasser,
+                                  bool vorab, int stunde, ref double rest_heiz, ref double rest_ww)
+        {
+            if (speicher == null) return;
+
+            for (int i = 0; i < speicher.Count; i++)
+            {
+                SimulationPufferspeicher sp = speicher[i];
+                if (sp == null || sp.Q_max <= 0) continue;
+
+                // Die Hysterese wird in Phase A für JEDEN Speicher fortgeschrieben, auch
+                // wenn sein Kanal gerade keinen Bedarf hat — sonst bliebe ein Speicher
+                // ohne Bedarf für immer im zuletzt gesetzten Zustand.
+                bool darfEntladen = vorab ? sp.HystereseFortschreiben() : true;
+                if (!darfEntladen) continue;
+
+                double bedarf = brauchwasser ? rest_ww : rest_heiz;
+                if (bedarf <= 0) continue;
+
+                double gedeckt = sp.Entladen(bedarf, stunde);
+                if (gedeckt <= 0) continue;
+
+                // KANAL DES PUFFERS entscheidet, nicht SENKE_BEIDES (Konzept 6.3):
+                // Ein Brauchwasserspeicher darf keinen Heizbedarf decken.
+                SenkeAbziehen(brauchwasser ? WaermequelleClass.SENKE_WARMWASSER
+                                           : WaermequelleClass.SENKE_HEIZUNG,
+                              gedeckt, ref rest_ww, ref rest_heiz);
+
+                // Reicht der Speicher nicht, muss wieder nachgeladen werden.
+                if (vorab && (brauchwasser ? rest_ww : rest_heiz) > 0.0001) sp.LaedtGerade = true;
+            }
+        }
+
+        /// <summary>
+        /// Phasen C und D: die aus der Kaskade GELÖSTE Ladephase (Konzept 6.3).
+        ///
+        /// Iteriert über die kaskadenübergreifende Prioritätsordnung der Stunde — nicht
+        /// über die Modulliste. Dass Solarthermie in Kaskadenposition 3 vor einer
+        /// Wärmepumpe in Position 1 laden darf, ist der Zweck der Ladepriorität (3.4);
+        /// in Etappe 4b sind allerdings nur Wärmepumpen-Anlagen in der Ordnung, weil
+        /// Kessel, BHKW und Solarthermie ihre Senkenauswertung erst mit Paket 5/6
+        /// bekommen.
+        ///
+        /// KEIN <c>SenkeAbziehen</c> — die geladene Wärme deckt keinen Bedarf, sie liegt
+        /// im Speicher. Genau hier entstünde sonst die Doppelzählung, die der
+        /// Deckungsgrad in der Detailansicht durch seine 100-%-Kappung verstecken würde.
+        /// </summary>
+        private void Ladephase(Kaskadenkontext kontext, int stunde, bool zweitsenken,
+                               bool pvUeberschuss, double[] ladeTherm, double[] ladeEl,
+                               double[] ladeRest, bool[] pvGebunden, ref double pvRest,
+                               double[] absehbar)
+        {
+            List<Ladeauftrag> ordnung = kontext.Ladeordnung_Stunde(pvUeberschuss);
+            if (ordnung == null) return;
+
+            for (int n = 0; n < ordnung.Count; n++)
+            {
+                Ladeauftrag a = ordnung[n];
+                if (a == null || a.Zweitsenke != zweitsenken) continue;
+
+                int index = a.Modulindex;
+                if (index < 0 || index >= ladeRest.Length) continue;
+                if (ladeRest[index] <= 0) continue;
+
+                SimulationPufferspeicher sp = a.Speicher;
+                if (sp == null) continue;
+
+                // BILANZRAUM statt reiner Ladefähigkeit (Nutzerentscheidung zu 4b-1):
+                // Was in dieser Stunde ohnehin wieder entnommen wird, darf der Speicher
+                // zusätzlich aufnehmen — er ist eine hydraulische Weiche. Das Budget je
+                // Kanal wird nur einmal vergeben (absehbar), damit zwei Speicher desselben
+                // Kanals nicht dieselbe Entnahme doppelt durchreichen.
+                int kanal = sp.IstBrauchwasserkanal ? 1 : 0;
+                double ladefaehig = sp.Ladefaehigkeit(a.ObergrenzeStunde(pvUeberschuss));
+                double durchlass = Math.Min(absehbar[kanal] > 0 ? absehbar[kanal] : 0,
+                                            sp.Entnahmefaehigkeit());
+                if (ladefaehig + durchlass <= 0) continue;
+
+                double menge = Math.Min(ladeRest[index], ladefaehig + durchlass);
+
+                // Stromseite über den mittleren COP des Ladepotenzials — dieselbe
+                // Verbuchung wie im Bestand (dort copMittel aus dem Modulsummen-Paar).
+                double cop = ladeEl[index] > 0 ? ladeTherm[index] / ladeEl[index] : 0;
+                if (cop <= 0) continue;
+
+                // PV-BUDGET (13.5, Paket-4-Review Punkt 2): Ein Modul im Betriebsmodus PV
+                // lädt nur, soweit PV-Strom übrig ist. Abgebucht wird die tatsächlich
+                // geladene Menge — weiter unten, nach sp.Laden.
+                if (pvGebunden[index])
+                {
+                    double maxTherm = pvRest * cop;
+                    if (menge > maxTherm) menge = maxTherm;
+                }
+
+                // QUELLBILANZ AUCH BEIM LADEN (Konzept 6.3, Prüfbefund): Die
+                // Speicherladung entnimmt der Quelle heute keine Wärme — im
+                // zweikanaligen Weg tut sie es, und die Quelle begrenzt die Ladung.
+                SimulationPufferspeicher quelle = wp_quellspeicher[index];
+                if (quelle != null && quelle.Q_max > 0 && cop > 1)
+                {
+                    double entnahmeVoll = menge * (1.0 - 1.0 / cop);
+                    if (entnahmeVoll > quelle.SOC)
+                    {
+                        double faktor = entnahmeVoll > 0 ? quelle.SOC / entnahmeVoll : 0;
+                        if (faktor < 0) faktor = 0;
+                        menge *= faktor;
+                    }
+                }
+                if (menge <= 0) continue;
+
+                double ladung = sp.Laden(menge, stunde, durchlass);
+                if (ladung <= 0) continue;
+
+                // Verbrauchtes Durchsatzbudget des Kanals abbuchen: alles, was über die
+                // Ladefähigkeit hinausging, ist die Menge, die Phase E wieder entnimmt.
+                double genutzterDurchlass = ladung - ladefaehig;
+                if (genutzterDurchlass > 0)
+                {
+                    absehbar[kanal] -= genutzterDurchlass;
+                    if (absehbar[kanal] < 0) absehbar[kanal] = 0;
+                }
+
+                if (pvGebunden[index])
+                {
+                    pvRest -= ladung / cop;
+                    if (pvRest < 0) pvRest = 0;
+                }
+
+                ladeRest[index] -= ladung;
+                if (ladeRest[index] < 0) ladeRest[index] = 0;
+
+                WP_Waermeproduktion_stuendlich[stunde] += (float)ladung;
+                WP_Waermeproduktion_gesamt += ladung;
+                Modul_WP_Waermeproduktion[index] += ladung;
+
+                double strom = ladung / cop;
+                WP_Strombedarf_stuendlich[stunde] += (float)strom;
+                WP_Strombedarf_gesamt += strom;
+                Modul_WP_Strombedarf[index] += strom;
+
+                if (ladeTherm[index] > 0)
+                {
+                    WP_Laufzeit += ladung / ladeTherm[index];
+                    Modul_WP_Laufzeit[index] += ladung / ladeTherm[index];
+                }
+
+                if (quelle != null)
+                {
+                    double entnahme = ladung - strom;
+                    if (entnahme > 0) quelle.Entladen(entnahme, stunde);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Phase F: Heizstab auf den Kanalrest, mit der Semantik des Bestands — er sieht
+        /// den AGGREGIERTEN Rest und ist je Modul auf <c>Tab_WP.Heizung</c> begrenzt.
+        /// Die Aufteilung auf die Kanäle folgt dem Warmwasservorrang von
+        /// <c>SENKE_BEIDES</c>; die Additionslogik ist die aus B0-5 (<c>+=</c> statt
+        /// <c>=</c>, sonst überschreiben sich die Modulbeiträge in der Ganglinie).
+        /// </summary>
+        private void Heizstabphase(int stunde, ref double rest_heiz, ref double rest_ww)
+        {
+            if (!Mit_Heizstab) return;
+
+            for (int index = 0; index < wp_model.Count; index++)
+            {
+                double rest = rest_heiz + rest_ww;
+                if (rest <= 0) break;
+                if (WP_Heizung[index] <= 0) continue;
+
+                double menge = Math.Min(rest, WP_Heizung[index]);
+                Heizstab_stuendlich[stunde] += (float)menge;
+                Heizstab_gesamt += menge;
+                Modul_Heizstab[index] += menge;
+
+                SenkeAbziehen(WaermequelleClass.SENKE_BEIDES, menge, ref rest_ww, ref rest_heiz);
+            }
+        }
+
+        /// <summary>
+        /// Aufräumen beim Abbruch der Kennlinienauswertung — dieselben Größen wie im
+        /// Altpfad, damit ein abgebrochener Lauf keine Teilergebnisse hinterlässt.
+        /// </summary>
+        private void AbbruchAufraeumen()
+        {
+            for (int i = 0; i < MAX_WP; i++)
+            {
+                Modul_WP_Strombedarf[i] = 0;
+                Modul_WP_Waermeproduktion[i] = 0;
+                Modul_Heizstab[i] = 0;
+                Modul_WP_Laufzeit[i] = 0;
+                WP_Modul[i] = "";
+            }
+            WP_Waermeproduktion_gesamt = 0;
+            WP_Strombedarf_gesamt = 0;
+            Heizstab_gesamt = 0;
+            Cursor.Current = Cursors.Default;
         }
 
         /// <summary>

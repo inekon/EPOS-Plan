@@ -65,8 +65,73 @@ namespace WindowsFormsApplication1
                 if (row[21] != DBNull.Value) model.Leistungsgrenze = Convert.ToInt32(row[21]);
                 if (row[22] != DBNull.Value) model.Pendelspeicher = Convert.ToDouble(row[22]);
 
+                // --- Feature-Flag der zweikanaligen Kaskade (Paket 4, Etappe 4a) -------
+                //
+                // NAMENSBASIERT, bewusst NICHT als row[24] an die Ordinalkette angehängt:
+                // Die Kette oben ist an die physische Spaltenreihenfolge von
+                // Tab_Einstellungen gebunden und damit die brüchigste Stelle des
+                // Datenzugriffs - jede weitere Position macht sie nur länger. Über den
+                // Spaltennamen ist der Zugriff unabhängig davon, an welcher Position die
+                // Migration die Spalte angehängt hat.
+                //
+                // Fehlt die Spalte (Datenbank noch nicht auf Schemastand 6), bleibt es
+                // bei "aus" - dem Vorgabeverhalten des Flags. Deshalb wird der Wert in
+                // BEIDEN Zweigen gesetzt und nicht nur bei Treffer: ein wiederverwendetes
+                // Model dürfte sonst den Stand des zuvor gelesenen Projekts behalten.
+                model.Kaskade_Zweikanalig =
+                    dt.Columns.Contains(SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG) &&
+                    row[SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG] != DBNull.Value &&
+                    Convert.ToBoolean(row[SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG]);
+
                 rows = 1;
             }
+        }
+
+        /// <summary>
+        /// Liest das Feature-Flag <c>Kaskade_Zweikanalig</c> eines Projekts DIALOGFREI
+        /// (Paket 4, Etappe 4a) - für die Oberfläche, die den Schalter anzeigt, ohne den
+        /// ganzen Einstellungssatz zu laden.
+        ///
+        /// Fehlende Spalte, fehlende Zeile und NULL liefern gleichermaßen <c>false</c>;
+        /// das ist die Vorbelegung des Flags.
+        /// </summary>
+        public static bool KaskadeZweikanaligLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return false;
+
+            object v = StilleDb.Scalar(
+                "SELECT [" + SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            if (v == null) return false;
+            try { return Convert.ToBoolean(v); }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Schreibt das Feature-Flag <c>Kaskade_Zweikanalig</c> eines Projekts.
+        ///
+        /// Bewusst ein EIGENES, zielgenaues UPDATE statt einer Erweiterung von
+        /// <see cref="Update"/>: Dessen Spaltenliste und die von <see cref="Insert"/>
+        /// sind an die Ordinalkette in <see cref="ReadSingle"/> gekoppelt, und auf einer
+        /// Datenbank ohne Schemastand 6 würde ein erweitertes UPDATE das Speichern der
+        /// GESAMTEN Konfiguration scheitern lassen - wegen eines Vorschauschalters.
+        ///
+        /// Dialogfrei (Konzept 13.4). Rückgabe false, wenn keine Zeile getroffen wurde
+        /// (Projekt ohne Einstellungssatz) oder die Spalte fehlt.
+        /// </summary>
+        public static bool KaskadeZweikanaligSchreiben(int idProjekt, bool wert)
+        {
+            if (idProjekt <= 0) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", OleDbType.Boolean, wert),
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            return betroffen > 0;
         }
 
         public bool Insert(int ID_Projekt)

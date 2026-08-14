@@ -35,6 +35,24 @@
         /// </summary>
         public double Pendelspeicher;
 
+        /// <summary>
+        /// Feature-Flag der zweikanaligen Kaskade (Konzept Kapitel 9, „Feature-Flag
+        /// empfohlen"), Spalte <c>Tab_Einstellungen.Kaskade_Zweikanalig</c>.
+        /// <b>Vorbelegung aus</b> — Altprojekte rechnen weiter auf dem einkanaligen Pfad.
+        ///
+        /// Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ReadSingle</c>), nicht über
+        /// die Ordinalkette row[0..22]; geschrieben ausschließlich über
+        /// <see cref="KonfigurationCtrl.KaskadeZweikanaligSchreiben"/>, damit die
+        /// INSERT-/UPDATE-Spaltenlisten der Konfiguration unverändert bleiben und ein
+        /// noch nicht migrierter Bestand das Speichern nicht scheitern lässt.
+        ///
+        /// WIRKSAM seit Etappe 4b: <c>SimulationControl.Do_Simulation</c> verzweigt auf
+        /// diesen Wert in die zweikanalige Kaskade mit herausgelöster Ladephase; ohne ihn
+        /// rechnet der unveränderte einkanalige Altpfad. Die dokumentierten
+        /// Ergebnisänderungen stehen im Umsetzungsprotokoll zu Paket 4, Teil 7.
+        /// </summary>
+        public bool Kaskade_Zweikanalig;
+
         public KonfigurationModel()
         {
             m_ID = 0;
@@ -60,6 +78,7 @@
             Betriebsart = 0;
             Leistungsgrenze = 0;
             Pendelspeicher = 0;
+            Kaskade_Zweikanalig = false;
         }
     }
 }

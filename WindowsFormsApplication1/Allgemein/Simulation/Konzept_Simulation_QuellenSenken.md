@@ -298,6 +298,34 @@ Ladefähigkeit = Q_max · Obergrenze − SOC
 
 Vorrangig ist die Anlage mit der kleinsten Ladeprioritätszahl an diesem Puffer.
 
+> **Nachtrag Paket 4 (14.08.2026), Nutzerentscheidung — die Formel ist ein SOC-Zielwert,
+> kein Stundendurchsatz.**
+>
+> `Ladefähigkeit = Q_max · Obergrenze − SOC` beantwortet die Frage *„wie voll darf dieser
+> Erzeuger den Speicher machen?"* — sie beschreibt die **Reservezone**, also die Aufteilung
+> des Speicherinhalts zwischen vorrangigen und nachrangigen Erzeugern. Sie beantwortet
+> **nicht** die Frage *„wie viel Wärme darf in dieser Stunde durch den Speicher fließen?"*.
+> Beides zu vermengen war der Fehler, der als Befund 4b-1 aufgefallen ist: Ein 600-l-Puffer
+> mit 20 K Spreizung hätte eine Anlage auf ~13 kWh/h gedrosselt, obwohl der Momentanbedarf
+> ein Vielfaches beträgt (Projekt 1023: WP-Produktion halbiert, Heizstab +31,3 MWh).
+>
+> Ein Pufferspeicher ist eine **hydraulische Weiche**: Er wird geladen, während die Last aus
+> ihm entnimmt. Der Stundendurchsatz ist deshalb eine eigene Größe. Die Engine bildet ihn als
+> **Bilanzraum** ab (Umsetzung in 6.3):
+>
+> ```
+> Bilanzraum_h = (Q_max · Obergrenze − SOC)                      [SOC-Zielwert, diese Regel]
+>              + min(offener Kanalbedarf, Entnahmefähigkeit)     [Durchsatz]
+> ```
+>
+> **Lade-/Entladeleistung je Speicher [kW] — vorgemerkt.** Die *Entnahmefähigkeit* ist der
+> Platzhalter für eine echte Leistungsgrenze am Speicher (Anschlussnennweite, Wärmeübertrager,
+> Schichtung). Sie gehört als optionaler Parameter an `Tab_Pufferspeicher` und in die
+> Puffer-Verwaltung (4.3) — **Default unbegrenzt**, damit die Vorbelegung verhaltensneutral
+> bleibt. Bis dahin ist der zweite Summand genau der offene Kanalbedarf. Die Engine hält die
+> Stelle bereits offen (`SimulationPufferspeicher.EntladeleistungMax`, 0 = unbegrenzt); zu tun
+> sind Datenmodell, Migration, Dialog und die Übernahme in den Registry-Aufbau.
+
 **Default-Verhalten:** `Schwelle_Aus_Nachrang` wird bei der Migration und bei
 Neuanlage auf `Schwelle_Aus` gesetzt, `WS_Ladegrenze` auf 0 (nicht gesetzt). Damit
 wirkt zunächst **nur die Reihenfolge**, ohne Reservezone — verhaltensneutral zum
@@ -892,6 +920,51 @@ Ebenfalls anzupassen (Prüfbefund, in Fassung 1 nicht adressiert):
   Module; mit Zweitsenke muss dasselbe Budget auf zwei Senken aufgeteilt werden —
   Reihenfolge festlegen. Dieselbe Stelle liefert zugleich das Kriterium
   „PV-Überschuss in dieser Stunde" für die zeitabhängige Ladepriorität (3.5).
+
+> **Nachtrag Paket 4 (14.08.2026), Nutzerentscheidung zu Befund 4b-1 — der Puffer drosselt
+> die Anlage nicht.**
+>
+> Die Phasen A–G bleiben unverändert, ebenso die Doppelzählungsfreiheit: Phase C ruft
+> weiterhin **kein** `SenkeAbziehen`, Phase E entlädt wie beschrieben. Geändert wird
+> ausschließlich die **Bezugsgröße der Phase C** — aus der Ladefähigkeit wird der
+> **Bilanzraum** der Stunde (Herleitung in 3.4):
+>
+> ```
+> Ladefähigkeit_h = (Q_max · Obergrenze − SOC)
+>                 + min(offener Kanalbedarf des Pufferkanals, Entnahmefähigkeit)
+> ```
+>
+> Der zweite Summand ist der **Durchsatz** der hydraulischen Weiche: Wärme, die im selben
+> Zeitschritt aus dem Speicher wieder entnommen wird, muss er nicht vorhalten. Phase C darf
+> die freie Kapazität um genau diesen Betrag überschreiten; der Füllstand liegt dann
+> innerhalb der Stunde über `Q_max` und wird in Phase E zurückgeholt, **bevor** Phase G die
+> Bereitschaftsverluste rechnet und den Wert in die SOC-Ganglinie schreibt. `SOC_Max` und
+> `Vollzyklen` bleiben damit unverfälscht.
+>
+> Drei Regeln gehören zwingend dazu:
+>
+> 1. **Das Durchsatzbudget wird je Kanal nur EINMAL vergeben.** Zwei Speicher desselben
+>    Kanals dürfen nicht beide dieselbe absehbare Entnahme durchreichen — sonst bliebe nach
+>    Phase E Wärme stehen, die niemand angefordert hat.
+> 2. **Phase E gibt den Durchfluss zuerst zurück**, vor der regulären Entladereihenfolge
+>    (3.6). Sonst könnte ein anderer Speicher desselben Kanals den Bedarf decken und der
+>    durchflossene bliebe über `Q_max` stehen. Bei einem Speicher je Kanal ist die
+>    Vorziehung wirkungslos.
+> 3. **Der Alternativbetrieb vergleicht gegen den offenen Kanalbedarf**, nicht gegen den
+>    Bilanzraum. Die Betriebsart fragt „trägt die Wärmepumpe die Last allein?" — hinge sie
+>    am Füllstand, legte ein voller Puffer die Anlage bei milden Temperaturen still und ein
+>    leerer ließe sie bei Frost laufen.
+>
+> **Das PV-Ladebudget (13.5) wird beim LADEN verbraucht, nicht beim Bestimmen des
+> Potenzials.** Das Potenzial aller Module steht in Phase B fest, geladen wird erst in C/D:
+> Ein Modul, das sein Potenzial nicht unterbringt, darf das Budget des nächsten nicht
+> aufzehren. Abgezogen wird `(geladene Menge Haupt + geladene Menge Zweit) / COP`.
+>
+> **Die Ladeobergrenzen werden zeitabhängig aufgelöst.** In Stunden mit PV-Überschuss gilt
+> nach 3.5 eine andere Priorität — also womöglich ein anderer Vorrang am Puffer und damit
+> eine andere Obergrenze. Reihenfolge und Obergrenze werden deshalb mit **derselben**
+> Prioritätsfunktion bestimmt (`Ladeordnung.ObergrenzenAufloesen` mit
+> `WirksameLadeprioPV`); je Auftrag stehen beide Werte vorsortiert bereit.
 
 ### 6.4 Solarthermie
 

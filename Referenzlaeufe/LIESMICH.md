@@ -12,13 +12,27 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-14_Paket7/`** — seit dem 14.08.2026 die gültige Referenz, **neun Projekte**
-(1007, 1008, 1010, 1011, 1017, 1018, 1021, 1023, 1024). Jeder neue Vergleich läuft gegen
-diesen Ordner.
+**`2026-08-14_Paket4/`** — seit der Abnahme der Paket-4-Review-Nacharbeit (14.08.2026) die
+gültige Referenz, **neun Projekte** (1007, 1008, 1010, 1011, 1017, 1018, 1021, 1023, 1024).
+Jeder neue Vergleich läuft gegen diesen Ordner.
 
-`2026-08-14_B0/` bleibt als **historischer Stand** liegen (Zustand vor Paket 1/3/7, acht
-Projekte). Ein Vergleich gegen B0 meldet zwangsläufig FAIL — der Basiswechsel ist gewollt
-und in `2026-08-14_Paket7/vergleich_protokoll.md` sowie in
+> **Die Basis ist mit Feature-Flag `Kaskade_Zweikanalig` = AUS gerechnet** und bildet damit
+> weiter den einkanaligen Altpfad ab. Das bleibt so, bis die Bestandsprojekte projektweise
+> auf die zweikanalige Kaskade umgestellt werden. Ein Lauf mit gesetztem Flag ist **kein**
+> Regressionsfall gegen diese Basis — er wird gegen den Flag-aus-Lauf desselben Codes
+> verglichen (Umsetzungsprotokoll Paket 4).
+
+Gegenüber `2026-08-14_Paket7` sind genau **drei** Werte neu, alle in Projekt 1021 und alle
+begründet in `2026-08-14_Paket4/lauf_protokoll.md`: die ID-Semantik des Quellspeichers
+(`Pufferspeicher[0].ID_Pufferspeicher` 8 → 1018014) und die beiden laufzeitbasierten
+Skalare aus dem Bestandsfehler **B0-13** (`WaermepumpeModul[0].Betriebsstunden`
+6692,41 → 4,41; `Waermepumpe.Vollbenutzungsstunden` 3846,66 → 502,66). Alle übrigen
+2.260.920 Werte sind byte-genau gleich.
+
+`2026-08-14_Paket7/` bleibt als **vorheriger Stand** liegen, `2026-08-14_B0/` als
+**historischer Stand** (Zustand vor Paket 1/3/7, acht Projekte). Ein Vergleich gegen B0
+meldet zwangsläufig FAIL — der Basiswechsel ist gewollt und in
+`2026-08-14_Paket7/vergleich_protokoll.md` sowie in
 `../WindowsFormsApplication1/Allgemein/Simulation/Paket7_Ergebnis_Anzeigen_Protokoll.md`
 begründet:
 
@@ -159,12 +173,12 @@ ist zwingend, wenn parallel gearbeitet wird oder die Kopie außerhalb des Repos 
    Stand, gegen den verglichen werden soll.
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
-3. **Neu rechnen und vergleichen** — Referenz ist die aktuelle Basis, seit dem
-   14.08.2026 also `2026-08-14_Paket7`:
+3. **Neu rechnen und vergleichen** — Referenz ist die aktuelle Basis, seit der
+   Paket-4-Abnahme also `2026-08-14_Paket4`:
    ```powershell
-   & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket2
-   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_Paket7 `
-                    C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket2
+   & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket5
+   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_Paket4 `
+                    C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket5
    ```
    `lauf` kopiert **und migriert** die Arbeitskopie selbst.
 
@@ -183,7 +197,7 @@ foreach ($id in 1007,1008,1010,1011,1017,1018,1021,1023,1024) {
 }
 
 # 4. Gegen die aktuelle Basis vergleichen und plausibilisieren
-& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_Paket7 C:\Waermeplan\MeinTest\Lauf
+& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_Paket4 C:\Waermeplan\MeinTest\Lauf
 & $exe pruefen   C:\Waermeplan\MeinTest\Lauf
 ```
 

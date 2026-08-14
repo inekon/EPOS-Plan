@@ -8,6 +8,23 @@ namespace WindowsFormsApplication1
     {
         public List<int> bhkw_list = new List<int>();
         public List<string> bhkw_list_Namen = new List<string>();
+
+        /// <summary>
+        /// <c>Tab_Energieanlagen.ID</c> je BHKW, INDEXGLEICH zu <see cref="bhkw_list"/>
+        /// (Konzept 6.2). Gefüllt von <c>SimulationControl.Simulation_BHKW_Ctrl</c>.
+        ///
+        /// <see cref="bhkw_list"/> trägt die <c>ID_BHKW</c> — die KATALOGZEILE, nicht die
+        /// Anlage. Senke, Ladepriorität und Speicherzuordnung hängen aber an der Anlage;
+        /// zwei BHKW desselben Typs im Projekt wären über <see cref="bhkw_list"/> nicht
+        /// unterscheidbar.
+        ///
+        /// Gefüllt, aber noch von keinem Rechenpfad ausgewertet — auch der zweikanalige
+        /// Weg wertet in Etappe 4b nur Wärmepumpen-Senken aus. Vorbereitung für die Ablösung des
+        /// skalaren <see cref="kapazitaetPendelspeicher"/> durch einen zugeordneten
+        /// Pufferspeicher (Konzept 6.5, Paket 6).
+        /// </summary>
+        public List<int> bhkw_anlagen_ids = new List<int>();
+
         public int m_ID_Projekt = 0;
 
         public float[] waermebedarf = new float[8760];
