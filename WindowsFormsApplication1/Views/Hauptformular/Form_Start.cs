@@ -1602,6 +1602,8 @@ namespace WindowsFormsApplication1
                 WizardCtrl wizctrl = new WizardCtrl();
                 wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_pufferspmodel);
+                // B0-6a: Im Dialog entfernte Puffer hinterlassen sonst Waisen
+                new PufferSpCtrl().ProjektWaisenEntfernen(m_ID_Projekt);
             }
 
             if (frm.list_pufferspmodel.Count > 0)

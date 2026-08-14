@@ -90,7 +90,12 @@ namespace WindowsFormsApplication1
             {
                 ListViewItem item = listView_PufferSp.Items[indexes[0]];
                 listView_PufferSp.Items[indexes[0]].Remove();
+
+                // B0-6a: Anlagenzeile löschen und verwaiste Projektkopien in
+                // Tab_Pufferspeicher aufräumen — bisher blieb die Kopie stehen und
+                // der "gelöschte" Puffer rechnete in der Simulation weiter.
                 wizctrl.Del_Projekt_ID_Waermeerzeuger(m_ID_Projekt, Int32.Parse(item.SubItems[4].Text));
+                new PufferSpCtrl().ProjektWaisenEntfernen(m_ID_Projekt);
 
                 projctrl.ReadSingle(m_szProjektname);
                 projctrl.m_Aenderungsdatum = DateTime.Now;
@@ -132,6 +137,8 @@ namespace WindowsFormsApplication1
                 WizardCtrl wizctrl = new WizardCtrl();
                 wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, id_type);
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, frm.list_pufferspmodel);
+                // B0-6a: Im Dialog entfernte Puffer hinterlassen sonst Waisen
+                new PufferSpCtrl().ProjektWaisenEntfernen(m_ID_Projekt);
 
                 ProjektCtrl projctrl = new ProjektCtrl();
                 projctrl.ReadSingle(m_szProjektname);

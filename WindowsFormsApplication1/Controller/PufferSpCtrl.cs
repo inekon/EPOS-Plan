@@ -211,6 +211,27 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@idProj", idProjekt));
         }
 
+        /// <summary>
+        /// B0-6a: Entfernt Projektkopien in Tab_Pufferspeicher, zu denen keine
+        /// Puffer-Anlage (ID_Type = 12) mehr im Projekt existiert. Nach jedem
+        /// Löschpfad der Puffer-Anlagen aufzurufen (Kontextmenü-Löschen, Dialog
+        /// Hinzufügen/Bearbeiten, Startseite). Die Zuordnungen in Z_ProjektPufferSp
+        /// räumt die Löschweitergabe (FK auf Tab_Pufferspeicher.ID) mit ab.
+        /// Die fehlende Projekt-Kaskade der Tabelle selbst (B0-6b) ist eine
+        /// Schemaänderung und zurückgestellt.
+        /// </summary>
+        public bool ProjektWaisenEntfernen(int idProjekt)
+        {
+            string sql = @"DELETE FROM Tab_Pufferspeicher
+                           WHERE ID_Projekt = ?
+                             AND Bezeichner NOT IN (SELECT Bezeichner FROM Tab_Energieanlagen
+                                                    WHERE ID_Projekt = ? AND ID_Type = " +
+                                                    WizardItemClass.PUFFER_TYP + ")";
+            return DataRepository.ExecuteSQL(sql,
+                new OleDbParameter("@idProj", idProjekt),
+                new OleDbParameter("@idProj2", idProjekt));
+        }
+
         private static OleDbParameter P(string name, object value)
         {
             return new OleDbParameter(name, value ?? DBNull.Value);
