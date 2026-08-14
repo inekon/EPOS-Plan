@@ -1,10 +1,15 @@
 # Konzept: Quellen und Senken von Wärmeerzeugern, Pufferspeicher und Brauchwasser-Stundenbilanz
 
-**Fassung 11** · Stand 12.08.2026 · Status: abgestimmt (E1–E13), am Code, an der produktiven Datenbank **und an VDI 4640 Blatt 1 + Blatt 2** verifiziert, Entwurf zur Umsetzung
-Bezug: `Konzept_TWW-Zapfprofile_WP-Plan_1.md` (Ausbaupfad Brauchwasser),
-`Konzept_Variantenbericht.md`, `Konzept_Wirtschaftlichkeit.md`
-Codebasis: verifiziert am Stand 12.08.2026 (`Allgemein/Simulation/*`, `Views/Simulation/*`,
-`Controller/*`, `WaermequelleClass`, `Z_ProjektPufferSp`, Brauchwasser-Modul, Wizard)
+**Fassung 12** · Stand 14.08.2026 · Status: abgestimmt (E1–E13), am Code, an der produktiven Datenbank **und an VDI 4640 Blatt 1 + Blatt 2** verifiziert, Entwurf zur Umsetzung · **Umsetzungsstand im Code: 0 %**
+Bezug: `Konzept_TWW-Zapfprofile_WP-Plan_1.md` (Ausbaupfad Brauchwasser; liegt doppelt
+vor — **maßgeblich ist die Fassung in der Repo-Wurzel**, die Kopie unter
+`Allgemein/Waermespeicher/` ist inhaltsgleich, Stand 29.07.2026),
+`Konzept_Variantenbericht.md`, `Konzept_Wirtschaftlichkeit.md`,
+**[`ADR-001_Schema-Ausrollung.md`](ADR-001_Schema-Ausrollung.md)** (angenommen
+14.08.2026 — ersetzt die Kapitel 5.6 und 13.2)
+Codebasis: verifiziert am Stand 14.08.2026 — 49 Einzelaussagen der Fassung 11 durch
+fünf unabhängige Prüfläufe kontrolliert, jede Abweichung adversarial gegengeprüft;
+42 bestätigt, 7 in dieser Fassung korrigiert
 
 ### Fassungshistorie
 
@@ -20,13 +25,14 @@ Codebasis: verifiziert am Stand 12.08.2026 (`Allgemein/Simulation/*`, `Views/Sim
 | 8 | Schema an `Kenndaten.accdb` verifiziert (13.7), alle fünf Punkte geklärt. `Rücklauf` trägt den Umlaut (B0-4 ohne Ergebniswirkung); Löschweitergaben **existieren**; `ID_PUFFER` hat **keine** Beziehung; `Tab_Pufferspeicher` hängt **nicht** an der Projekt-Kaskade | — |
 | 9 | Erdreichmodell auf VDI 4640 Blatt 1 umgestellt (13.1): Bodentyp-Katalog aus Tabelle 1 der Norm (λ und ρ·c_p, daraus a abgeleitet); Sondenformel um den normbegründeten 20-m-Abzug korrigiert; neutrale Zone 10–20 m bestätigt | — |
 | 10 | Normgrundlage festgelegt: Der Entwurf 2021-12 von Blatt 1 ist die verbindliche Basis | + E13 |
-| **11** | **VDI 4640 Blatt 2:2019 eingearbeitet** (13.1): Die Plausibilitätsprüfung nutzt jetzt die Auslegungstabellen der Norm — Kollektoren nach Klimazone (15 Zonen, DIN 4710) und Bodenart (Tab. A2), Sonden nach Wärmeleitfähigkeit, Sondenzahl und Volllaststunden (Tab. B2). Die bisherigen Faustwerte stammten aus der Ausgabe 2001 und sind überholt | — |
+| 11 | **VDI 4640 Blatt 2:2019 eingearbeitet** (13.1): Die Plausibilitätsprüfung nutzt jetzt die Auslegungstabellen der Norm — Kollektoren nach Klimazone (15 Zonen, DIN 4710) und Bodenart (Tab. A2), Sonden nach Wärmeleitfähigkeit, Sondenzahl und Volllaststunden (Tab. B2). Die bisherigen Faustwerte stammten aus der Ausgabe 2001 und sind überholt | — |
+| **12** | **Codeverifikation 14.08.2026 eingearbeitet.** Schema-Ausrollung und Datenmigration auf **ADR-001** umgestellt (5.6 und 13.2 ersetzt; `UpdateDatabaseFromScript` und das extern erzeugte Migrationsskript endgültig verworfen — das externe DB-Migrationswerkzeug ist grundsätzlich nicht Teil der Anwendungsarchitektur). Sieben bestätigte Abweichungen korrigiert: MessageBox-Inventar (13.4, acht statt sechs Stellen plus DataRepository-Pfad), Ressourcenlage (13.6/11: de-DE-Variante und en-US-Formularsatelliten existieren), CREATE-TABLE-Vorbild vorhanden (6.6), Übergabeweg der Pufferliste (2.2), `Form_Quellprofil`-`.resx` (2.1), ID-Stabilität differenziert (2.3/5.2), Kapazitätsanzeige präzisiert (13.3). Neu: dritter Puffer-Speicherpfad über `Form_Start` (2.3), `wp_quellspeicher`-Integration (6.2), B0-7 erweitert, **B0-11** ergänzt, Layoutherleitung 4.1 korrigiert, Befundliste Kapitel 8 erweitert. Aufwand neu: **64–81,5 PT** | — |
 
 > **Die vier sachlichen Korrekturen aus der Codeverifikation (Fassung 2).**
 >
 > 1. **Pufferspeicher sind bereits Anlagen.** `WizardItemClass.PUFFER_TYP = 12`;
 >    der Projektbaum legt Puffer als Zeile in `Tab_Energieanlagen` an
->    (`WizardCtrl.cs:161-165, 214`). Es existieren damit **drei** konkurrierende
+>    (`WizardCtrl.cs:162-166, 214`). Es existieren damit **drei** konkurrierende
 >    Repräsentationen eines Projekt-Puffers. Kapitel 2.3 und 5 sind daraufhin neu
 >    geschrieben; der Fremdschlüssel zeigt auf `Tab_Pufferspeicher.ID`
 >    (E7, Begründung 5.2).
@@ -68,7 +74,7 @@ Codebasis: verifiziert am Stand 12.08.2026 (`Allgemein/Simulation/*`, `Views/Sim
 | **E9** | **Bestandsfehler** | Die bei der Prüfung gefundenen Bestandsfehler (Kapitel 8) werden als **eigenes Vorab-Paket B0** ausgeliefert, jeder Fix mit dokumentierter Ergebnisänderung — vor dem eigentlichen Umbau |
 | **E10** | **Ladevorrang am Puffer** | Laden mehrere Erzeuger denselben Speicher, entscheidet eine **Ladepriorität je Anlage und Senke** — mit Vorgabe **Solarthermie → Wärmepumpe → BHKW → Heizkessel** (nach Grenzkosten) und manueller Übersteuerung. Ergänzend eine **Ladeobergrenze** in zwei Stufen: eine zweite Abschaltschwelle am Puffer für nachrangige Erzeuger (Solar-Reservezone) und optional eine eigene Obergrenze je Anlage. Beide Grenzen sind per Default verhaltensneutral (3.4) |
 | **E11** | **PV-Sonderfall und Entladereihenfolge** | Beide Regeln werden **vorbelegt und sind übersteuerbar**: (a) Eine Wärmepumpe im Betriebsmodus `PV` bleibt gegenüber Solarthermie **nachrangig**; über eine eigene PV-Ladepriorität je Anlage lässt sich das umkehren (3.5). (b) Bedienen mehrere Puffer denselben Kanal, wird **in gleicher Reihenfolge wie die Ladepriorität entladen** — der Speicher mit der günstigsten Nachladung zuerst; je Speicher übersteuerbar (3.6) |
-| **E12** | **Umsetzungsdetails (Kapitel 13)** | Erdreichmodell wird gegen **VDI 4640** plausibilisiert, Bodentyp-Katalog mit belegten Kennwerten (13.1). Schema- und Migrationsskript nutzen **ausschließlich den DB-Pfad von `DataRepository`** (13.2). Anzeigen werden auf **n Pufferspeicher** umgestellt statt auf einen Alias (13.3). MessageBoxen in der Engine werden durch einen **Protokoll-/Fehlerkanal** nach dem Muster `SimuliereUndSpeichere(id, out fehler)` ersetzt (13.4). Das PV-Ladebudget geht **erst an die Hauptsenke, dann an die Zweitsenke** (13.5). Der Simulationsbereich wird **durchgängig lokalisiert** (13.6, eigenes Paket) |
+| **E12** | **Umsetzungsdetails (Kapitel 13)** | Erdreichmodell wird gegen **VDI 4640** plausibilisiert, Bodentyp-Katalog mit belegten Kennwerten (13.1). Schema und Datenmigration laufen über die versionierte **`SchemaMigration`** nach ADR-001, ausschließlich über den DB-Pfad von `DataRepository` (13.2). Anzeigen werden auf **n Pufferspeicher** umgestellt statt auf einen Alias (13.3). MessageBoxen in der Engine werden durch einen **Protokoll-/Fehlerkanal** nach dem Muster `SimuliereUndSpeichere(id, out fehler)` ersetzt (13.4). Das PV-Ladebudget geht **erst an die Hauptsenke, dann an die Zweitsenke** (13.5). Der Simulationsbereich wird **durchgängig lokalisiert** (13.6, eigenes Paket) |
 | **E13** | **Normgrundlage Erdreichmodell** | Verbindliche Basis ist **VDI 4640 Blatt 1, Entwurf 2021-12** (Tabelle 1). Auf den Weißdruck wird **nicht** gewartet — die Umsetzung beginnt mit den Entwurfswerten. Ergebnisse und Dokumentation weisen den Entwurfsstand aus; erscheint der Weißdruck später, ist nur Tabelle 1 gegenzuprüfen (13.1) |
 
 ---
@@ -86,7 +92,11 @@ Die Grundmechanik für Quelle/Senke ist für **Wärmepumpen** gebaut und dient a
 - **Quellentypen** (`WaermequelleClass.TypWerte`, `:54-57`): `Aussenluft`, `Konstant`,
   `Pufferspeicher`, `Profil` (12 Monats- + 168 Wochenwerte), `CSV` (8760 Stundenwerte).
   Eingabedialoge `Form_Quellprofil` und `Form_QuellePufferspeicher` existieren,
-  beide **vollständig programmatisch** ohne Designer/`.resx`.
+  beide **programmatisch ohne Designer**. `Form_QuellePufferspeicher` hat auch keine
+  `.resx`; zu `Form_Quellprofil` existiert eine inhaltlich leere, wirkungslose
+  `Form_Quellprofil.resx` (VS-Gerüst ohne Ressourceneinträge, per SDK-Glob als
+  EmbeddedResource eingebunden — der Code-Kommentar `:20-21` „keine .resx" ist
+  falsch; Datei bei Gelegenheit entfernen).
 - **`WS_Typ`** (`Beides`/`Warmwasser`/`Heizung`) ist eine **Bedarfsart**, keine
   hydraulische Senke; ausgewertet ausschließlich in `SimulationWaermepumpe`
   (`SenkeAbziehen`, `:618-639`, mit Warmwasservorrang bei `Beides`).
@@ -107,9 +117,12 @@ Die Grundmechanik für Quelle/Senke ist für **Wärmepumpen** gebaut und dient a
    wenn der Speicherdatensatz fehlt). Zuordnungen zu Kessel/BHKW/Solarthermie sind
    heute **wirkungslos**, obwohl der Dialog sie anbietet.
 3. **Genau ein Speicher projektweit**, keine Trennung Heizung/Brauchwasser.
-4. **Puffer-Auswahl aus den Stammdaten:** `Form_QuellePufferspeicher.cs:176-178`
-   listet `Tab_Pufferspeicher_STAMM` direkt; `Form_KonfigPufferspeicher` erhält die
-   Liste von `Form_Simulation_Config.cs:1474`. `Z_ProjektPufferSpCtrl.Insert()`
+4. **Puffer-Auswahl aus den Stammdaten:** `Form_QuellePufferspeicher.cs:177-179`
+   listet `Tab_Pufferspeicher_STAMM` direkt; `Form_Simulation_Config.cs:1473-1477`
+   füllt die Rubrik-ComboBox aus derselben Quelle, und erst `btn_Hinzu_Click`
+   (`:1617-1621`) übergibt `Form_KonfigPufferspeicher` die Liste — **gefiltert** über
+   `AktivePufferSp()`, die volle Stammliste nur als Fallback ohne aktive
+   Puffer-Checkbox. `Z_ProjektPufferSpCtrl.Insert()`
    (`:45-49`) kopiert beim Speichern implizit ins Projekt. Referenzierung per
    **Bezeichner-String**, nicht per ID.
 5. **Quellentyp „Erdreich" fehlt.** Luft-Wasser-WP wird per Literalvergleich
@@ -121,6 +134,10 @@ Die Grundmechanik für Quelle/Senke ist für **Wärmepumpen** gebaut und dient a
    Gesamtvektor addiert (`SimulationWaermebedarf.cs:239-245`) — nur die WP kennt ihn
    danach noch, und zwar **ungekürzt** statt als Rest nach vorgeschalteten Erzeugern
    (`SimulationControl.cs:236-238`). Kessel, BHKW und Solarthermie sehen ihn nicht.
+   Verschärfend kappt die WP den vollen WW-Vektor stündlich auf den Restbedarf
+   (`SimulationWaermepumpe.cs:238-243`) — steht sie **nicht** an erster
+   Kaskadenposition, wird der gesamte Rest als Warmwasser klassifiziert
+   (`rest_heiz = 0`) und WP-Module mit `WS_Typ='Heizung'` bleiben systematisch aus.
 7. **Solarthermie-Überschuss wird verworfen** (`SimulationSolarthermie.cs:167-169`:
    Kappung am Momentanbedarf, `Ueberschuss[]` nur gezählt) — größter fachlicher Hebel.
 8. **BHKW-Pendelspeicher** ist ein Skalar (`SimulationControl.cs:321`:
@@ -134,7 +151,7 @@ Die Grundmechanik für Quelle/Senke ist für **Wärmepumpen** gebaut und dient a
 
 | Ebene | Tabelle | Entsteht durch | Bedeutung |
 |---|---|---|---|
-| **Anlage** | `Tab_Energieanlagen`, `ID_Type = 12` (`PUFFER_TYP`) | Projektbaum-Kontextmenü → `PufferSpKontextMenuCtrl.cs:133-134` → `WizardCtrl.Add_WP_Waermeerzeuger` | „Der Anwender hat einen Puffer im Projekt angelegt" |
+| **Anlage** | `Tab_Energieanlagen`, `ID_Type = 12` (`PUFFER_TYP`) | Projektbaum-Kontextmenü → `PufferSpKontextMenuCtrl.cs:133-134` **oder** Startseite → `Form_Start.cs:1580-1605` (`pBox_Pufferspeicher_Click`) — beide typgefiltert über `WizardCtrl.Add_WP_Waermeerzeuger`; nur der `Form_Start`-Pfad überträgt vollständige Modelle | „Der Anwender hat einen Puffer im Projekt angelegt" |
 | **Gerätedaten** | `Tab_Pufferspeicher` (`ID_Projekt`) | `PufferSpCtrl.CopyFromStamm` (`:151-197`) — aufgerufen aus `WizardCtrl.cs:164` **und** implizit aus `Z_ProjektPufferSpCtrl.Insert` (`:47-49`) | Projektkopie der Stammdaten |
 | **Zuordnung** | `Z_ProjektPufferSp` | `Form_Simulation_Config.btn_Speichern_Click` (`:1535-1555`) | Gewerk ↔ Speicher, Vor-/Rücklauf, Schwellen |
 
@@ -149,15 +166,21 @@ Daraus folgen die zentralen Inkonsistenzen:
   (Volltextsuche `PUFFER_TYP`: nur `WizardItemClass`, `WizardCtrl`,
   `PufferSpKontextMenuCtrl`, `Form_PufferSp`). Für Puffer-Zeilen bleiben `Vorlauf`,
   `Rücklauf`, `Volumen` konstant 0, weil die erzeugenden Stellen nur vier Felder
-  setzen (`Form_PufferSp.cs:98-104`, `PufferSpKontextMenuCtrl.cs:115-119`).
-- **`Form_PufferSp.cs:100` schreibt die STAMM-ID in `ID_PUFFER`**, obwohl dort laut
+  setzen (`Form_PufferSp.cs:98-104`, `PufferSpKontextMenuCtrl.cs:115-119`) —
+  Ausnahme ist der `Form_Start`-Pfad (`:1594`), der als einziger die vollständigen
+  Modelle aus `werzctrl.items` übergibt.
+- **`Form_PufferSp.cs:101` schreibt die STAMM-ID in `ID_PUFFER`**, obwohl dort laut
   `PufferSpCtrl.cs:148-150` die Projekt-ID stehen muss. Repariert wird das
   nachträglich in `WizardCtrl.cs:164-165` über den Bezeichner — schlägt die
   Auflösung fehl, überlebt die falsche ID stillschweigend.
-- **`Tab_Energieanlagen.ID` ist instabil:** Beide Speicherpfade
-  (`PufferSpKontextMenuCtrl.cs:133-134`, `WizardParent.cs:661-664`) löschen alle
-  Anlagen des Projekts und fügen sie neu ein; die ID ist ein Access-AutoWert. **Nach
-  jedem Speichern haben alle Anlagen neue IDs.** Das ist der Grund für E7.
+- **`Tab_Energieanlagen.ID` ist bei Puffern instabil** *(präzisiert in Fassung 12)*:
+  Der Wizard-Pfad (`WizardParent.cs:661-664`) löscht **alle** Anlagen des Projekts
+  und fügt sie neu ein; Kontextmenü und Startseite
+  (`PufferSpKontextMenuCtrl.cs:133-134`, `Form_Start.cs:1603`) nutzen die
+  **typgefilterte** Überladung (`WizardCtrl.cs:32-36`, `AND ID_Type = ?`) und
+  erneuern nur die Puffer-Zeilen. Die ID ist ein Access-AutoWert — nach jedem
+  Speichern haben mindestens die **Puffer**-Anlagen neue IDs, über den Wizard alle.
+  Das ist der Grund für E7.
 
 ---
 
@@ -377,13 +400,16 @@ Brauchwasserspeicher bedienen getrennte Kanäle und konkurrieren nicht.
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Layoutzwang (Prüfbefund):** Die Übersicht misst heute 491 × 91 px
-(`Form_Simulation_Config.cs:207-209`), berechnet aus der Position der
-Pufferspeicher-Rubrik (`:1127-1128`, `VERSCHIEBUNG = 105`). Das reicht für 3–4 Zeilen
-und 8 Spalten. Mit zwei zusätzlichen Spalten und Zeilen für **alle** Erzeuger ist der
-Platz nicht ausreichend. **Der Umbau der Übersicht und der Entfall der
-Pufferspeicher-Rubrik (4.4) sind deshalb nicht getrennt planbar** — der freiwerdende
-Bereich (y ≈ 109…500) geht an die Übersicht.
+**Layoutzwang (Prüfbefund, Herleitung korrigiert in Fassung 12):** Die Übersicht wird
+dynamisch bemessen — ihre Höhe folgt der Position der Pufferspeicher-Rubrik
+(`groupBox_Uebersicht.Size = new Size(…, groupBox_PufferSp.Top − 109 − 10)`,
+`Form_Simulation_Config.cs:194`; ListView vierseitig verankert, `:208-210`; die Rubrik
+selbst verschiebt das Layout um `VERSCHIEBUNG = 105`, `:1051`). Das ergibt Platz für
+3–4 Zeilen und 8 Spalten. Mit zwei zusätzlichen Spalten und Zeilen für **alle**
+Erzeuger reicht das nicht. **Der Umbau der Übersicht und der Entfall der
+Pufferspeicher-Rubrik (4.4) sind deshalb nicht getrennt planbar** — der Bereich der
+Rubrik geht an die Übersicht, und weil die Höhe an `groupBox_PufferSp.Top` hängt,
+wächst die Übersicht erst mit deren Entfall.
 
 **Zwingende Vorarbeit:** Die Spaltenindizes 3/4/5/6/7 stehen an drei Stellen doppelt
 (Tooltip-`switch` `:571-606`, Doppelklick-Dispatcher `:637-661`, Reihenfolge der
@@ -391,7 +417,10 @@ Bereich (y ≈ 109…500) geht an die Übersicht.
 einzuführen (`COL_PRIO`, `COL_QUELLE`, `COL_SENKE`, …), sonst entstehen stille
 Fehlbedienungen. Ebenso ist das `else`-Fallback `int spalte = 4;` (`:630`) auf eine
 Whitelist umzustellen — sobald jede Zeile ein `Tag` trägt, öffnet sonst ein
-Doppelklick auf die Bezeichnerspalte den Wärmequellen-Dialog.
+Doppelklick auf die Bezeichnerspalte den Wärmequellen-Dialog. Ein **zweiter** Satz
+hartkodierter Indizes hängt an der Zuordnungstabelle `listView1` (`:392-427` gegen
+die positionale Spaltenanlage `:81-85`) — er entfällt mit der Rubrik (Etappe B in
+4.4), ist bis dahin aber bei jeder Spaltenänderung mitzudenken.
 
 Änderungen im Einzelnen:
 
@@ -600,7 +629,7 @@ Gewählt: **`Tab_Pufferspeicher.ID`**.
 
 | Kriterium | `Tab_Pufferspeicher.ID` (gewählt) | `Tab_Energieanlagen.ID` (verworfen) |
 |---|---|---|
-| ID-Stabilität | stabil: Vergabe `GetMaxID+1` (`PufferSpCtrl.cs:171`), kein aufgerufener Löschpfad | **instabil**: AutoWert, `DELETE all + INSERT` bei jedem Speichern (`PufferSpKontextMenuCtrl.cs:133-134`, `WizardParent.cs:661-664`) |
+| ID-Stabilität | stabil: Vergabe `GetMaxID+1` (`PufferSpCtrl.cs:171`), kein aufgerufener Löschpfad | **instabil**: AutoWert, `DELETE + INSERT` bei jedem Speichern — typgefiltert über Kontextmenü/`Form_Start` (`WizardCtrl.cs:32-36`), projektweit über den Wizard (`WizardParent.cs:661-664`) |
 | „im Projekt angelegt" ausdrückbar | ja, sobald das implizite `CopyFromStamm` entfällt (5.4) | ja, direkt |
 | Mehrere baugleiche Puffer | erst nach Aufhebung der Dedup-Regel (siehe unten) | ja, ohne Änderung |
 | Aufwand | gering | +3–5 PT: `Add_WP_Waermeerzeuger` müsste auf ID-erhaltendes UPSERT umgestellt werden — das betrifft **alle** Gewerke und den Wizard |
@@ -672,7 +701,13 @@ Zu beachten: `WaermequelleClass.cs:270-279` nutzt `Z_ProjektPufferSp.Vorlauf/Rue
 als Altdaten-Fallback für die Quell-Puffertemperatur; dieser Pfad wird auf die neuen
 Puffer-Spalten umgestellt.
 
-### 5.5 Migration (einmalig je Projekt)
+### 5.5 Datenmigration (Schritt 5 der `SchemaMigration`, einmalig je Datenbank)
+
+Die Migration läuft als **Schritt 5 der `SchemaMigration`** (ADR-001) genau einmal je
+Datenbank über alle Projekte. Die Run-once-Garantie kommt vom
+`SchemaVersion`-Marker — **nicht** aus einer Heuristik über den Datenbestand, die
+Anwenderentscheidungen (z. B. ein bewusst zurückgestelltes `WS_Ziel='Heizkreis'`)
+bei jedem Start überschreiben würde.
 
 | Altbestand | Übernahme |
 |---|---|
@@ -686,13 +721,31 @@ Puffer-Spalten umgestellt.
 | Alle übrigen Anlagen ohne `WS_Ziel` | `WS_Ziel='Heizkreis'` |
 | BHKW mit `Tab_Einstellungen.Pendelspeicher > 0` | Projekt-Puffer „BHKW-Pendelspeicher" (Verwendung `Heizung`) anlegen, Volumen aus dem Parameter, `WS_Ziel='PufferHeizung'` an der BHKW-Anlage |
 
-### 5.6 Schema-Ausrollung
+### 5.6 Schema-Ausrollung — entschieden in ADR-001
 
-**Spalten** über `SchemaSicherstellen()` — bewährt, idempotent, läuft automatisch bei
-Öffnen der Konfiguration und bei jedem Simulationsstart
-(`Form_Simulation_Config.cs:1447`, `SimulationControl.cs:66`, `:221`).
+**Die Ausrollung ist in [`ADR-001_Schema-Ausrollung.md`](ADR-001_Schema-Ausrollung.md)
+festgelegt** (angenommen 14.08.2026): eine **versionierte In-Code-Migration**
+(`Allgemein/Update/SchemaMigration.cs`) mit Schemamarker
+`Tab_Applikation.SchemaVersion`, ausgeführt einmalig beim Programmstart in
+`Program.Main`, mit Sammelfehlerbericht und Startblockade des Simulationsbereichs
+bei Fehlschlag. Sie deckt alle drei Änderungsklassen ab: additives DDL (**24 neue
+Spalten in vier Tabellen**, Kapitel 12), strukturelles DDL
+(`Tab_ErgebnisPufferspeicher`, Index, fünf Beziehungen — 6.6 und 5.3) und die
+einmalige Datenmigration (5.5).
 
-Zwei Einschränkungen des Mechanismus sind zu beheben:
+Der frühere Weg über `UpdateDatabaseFromScript` und eine ausgelieferte Skriptdatei
+ist **endgültig verworfen** — die Klasse wurde absichtlich gelöscht (Ordner
+`Allgemein/Update/` neu belegt), und das externe DB-Migrationswerkzeug
+(`DB_Migration`, dynamisch erzeugtes `migration*.sql`) ist grundsätzlich nicht Teil
+der Anwendungsarchitektur.
+
+`SchemaSicherstellen()` bleibt als Rückfallebene bestehen — bewährt, idempotent,
+läuft automatisch bei Öffnen der Konfiguration und bei jedem Simulationsstart
+(`Form_Simulation_Config.cs:1447`, `SimulationControl.cs:66`, `:221`) — und ruft
+künftig **denselben Spaltenkatalog** wie die Migration auf (eine Quelle,
+ADR-Aufgabe 4).
+
+Zwei Einschränkungen des Mechanismus sind dabei zu beheben:
 - Die private Überladung (`WaermequelleClass.cs:160-176`) hat `Tab_Energieanlagen`
   **hartkodiert** (`:167`); für `Tab_Pufferspeicher` ist die öffentliche Überladung
   (`:130-158`) zu nutzen, die je Spalte eine eigene `OleDbConnection` öffnet — besser
@@ -701,21 +754,9 @@ Zwei Einschränkungen des Mechanismus sind zu beheben:
   `:154-157`, `:172-175`). In einer `WinExe` ohne Konsole ist das spurloses Scheitern:
   Schlägt `ALTER TABLE` fehl (Datei schreibgeschützt, DB exklusiv geöffnet), liest
   `WertLesen` stumm `null` und der Anwender sieht Defaults statt seiner Eingaben. Bei
-  13 neuen Spalten steigt das Risiko spürbar → **Rückgabewert `bool` + einmalige
-  Sammelmeldung.**
-
-**Datenmigration und die neue Ergebnistabelle** laufen nicht über diesen Mechanismus
-(er kann nur `ADD COLUMN`). Dafür ist `UpdateDatabaseFromScript` vorgesehen — mit
-zwei Vorbehalten, die zuerst zu klären sind: Die Klasse liest den DB-Pfad aus
-`HKCU\SOFTWARE\ODBC\ODBC.INI\TEST` → `DBQ` (`:18-31`), während `DataRepository`
-`Settings.DBPath` bzw. `%ProgramData%\EPOS_PLAN\Kenndaten.accdb` nutzt (`:173-182`) —
-**beide zeigen nicht zwingend auf dieselbe Datei**. Und sie hat im geprüften Umfang
-keinen Aufrufer. Vor der Verwendung: Pfadermittlung angleichen und Aufruf verdrahten.
-
-*(Randnotiz: Die in `CLAUDE.md:108-109` genannten Skript-Sektionen TABELLEN/SPALTEN/
-DATENTYPEN/IMPORT/DELETE existieren im Code nicht — unterstützt werden `SQL=`,
-`BACKUP_REL:`, `CLEAN_COL:`, `RESTORE_REL:`. CLAUDE.md ist an dieser Stelle zu
-korrigieren.)*
+  **24 neuen Spalten** steigt das Risiko spürbar → **Rückgabewert `bool` + einmalige
+  Sammelmeldung** — im Migrationskontext übernimmt das der Fehlerkanal der
+  `SchemaMigration` (ADR-001).
 
 ---
 
@@ -777,6 +818,12 @@ Umzustellen sind `bhkw_list` (enthält `ID_BHKW`, `SimulationControl.cs:311`) un
 `SimulationSPK.cs:106`). Beim Kessel ist zusätzlich zu beachten, dass `spk_list[i]`
 zugleich der Modulname im Ergebnis ist (`SimulationRunner.cs:284`) — es braucht eine
 parallele Namensliste, wie beim BHKW mit `bhkw_list_Namen` (`:312`) bereits vorhanden.
+
+**Bestehende Quellspeicher-Liste** *(neu in Fassung 12)*: Quellseitig existiert
+bereits `List<SimulationPufferspeicher> wp_quellspeicher` je WP-Modul
+(`SimulationWaermepumpe.cs:49`, befüllt über `WaermequelleClass.Quellspeicher()`).
+Die Registry muss diese Instanzen **übernehmen oder ablösen** — sonst entstehen zwei
+parallele Speicherverwaltungen mit getrennter Bilanz.
 
 ### 6.3 Reihenfolge-Invariante der Kaskade
 
@@ -888,35 +935,43 @@ Neu: **`Tab_ErgebnisPufferspeicher`** je Simulationslauf und Puffer —
 `ID, ID_Ergebnis, ID_Pufferspeicher, Bezeichner, Verwendung, Q_max, Ladung_gesamt,
 Entladung_gesamt, Verluste_gesamt, SOC_Ende, SOC_Mittel, SOC_Max, Vollzyklen`.
 
-**Korrektur gegenüber Fassung 1:** Das Muster `StelleEnergieSpaltenSicher()` /
-`StelleBHKWSpaltenSicher()` (`ErgebnisCtrl.cs:664-714`) kann **ausschließlich
-`ALTER TABLE … ADD COLUMN`**; ein `CREATE TABLE` existiert nirgends im Repository.
-Entscheidend ist außerdem: `ErgebnisCtrl.Save` (`:68-74`) räumt den Vorgängerlauf per
-`DELETE FROM Tab_Ergebnis WHERE ID_Projekt = ?` ab und verlässt sich laut Kommentar
-(`:66-67`) auf die **Löschweitergabe im Access-Schema**. Diese existiert tatsächlich —
+**Korrektur gegenüber Fassung 1, präzisiert in Fassung 12:** Das Muster
+`StelleEnergieSpaltenSicher()` / `StelleBHKWSpaltenSicher()` /
+`StelleModulSpaltenSicher()` (`ErgebnisCtrl.cs:690, :716, :745` — alle drei laufen
+bei **jedem** `Save` mit leerem `catch`, kein `_schemaGeprueft`-Flag) kann
+**ausschließlich `ALTER TABLE … ADD COLUMN`**. Ein `CREATE TABLE` existiert im
+Repository dagegen durchaus — an neun Stellen in vier Dateien, u. a. über den
+`Ddl()`-Helfer in `WirtschaftlichkeitCtrl.cs:72-190`, in `BerichtCtrl.cs:150` und
+`VariantenCtrl.cs:245`; nur `ErgebnisCtrl` selbst hat keins. **Dieses erprobte
+In-Code-Muster ist das Vorbild für `StellePufferTabelleSicher()`.**
+Entscheidend ist außerdem: `ErgebnisCtrl.Save` (`:66`) räumt den Vorgängerlauf per
+`DELETE ID_Projekt FROM Tab_Ergebnis WHERE ID_Projekt = ?` ab (`:85`, Access-Syntax)
+und verlässt sich laut Kommentar
+(`:83-84`) auf die **Löschweitergabe im Access-Schema**. Diese existiert tatsächlich —
 alle sechs Detailtabellen hängen mit `DEL-CASCADE` an `Tab_Ergebnis.ID`, die
 Modultabellen wiederum an ihren Kopftabellen (an der Datenbank verifiziert, 13.7).
-Eine zur Laufzeit per `CREATE TABLE` erzeugte Tabelle hätte diese Beziehung jedoch
+Eine zur Laufzeit ohne Constraint erzeugte Tabelle hätte diese Beziehung jedoch
 **nicht** — und da IDs über `MAX(ID)+1` **wiederverwendet** werden, würden Waisenzeilen
 später auf fremde Läufe zeigen und stillschweigend falsche Speicherbilanzen in Bericht
 und Wirtschaftlichkeit erzeugen. Die neue Tabelle bekommt deshalb dieselbe Beziehung
 wie ihre Geschwister.
 
-Richtiger Weg über das Update-Skript:
+Angelegt wird sie in **Schritt 3 der `SchemaMigration`** (ADR-001):
 
 ```
-SQL=CREATE TABLE Tab_ErgebnisPufferspeicher (ID LONG NOT NULL PRIMARY KEY,
+CREATE TABLE Tab_ErgebnisPufferspeicher (ID LONG NOT NULL PRIMARY KEY,
     ID_Ergebnis LONG, ID_Pufferspeicher LONG, Bezeichner TEXT(255),
     Verwendung TEXT(50), Q_max DOUBLE, Ladung_gesamt DOUBLE, Entladung_gesamt DOUBLE,
     Verluste_gesamt DOUBLE, SOC_Ende DOUBLE, SOC_Mittel DOUBLE, SOC_Max DOUBLE,
     Vollzyklen DOUBLE)
-SQL=CREATE INDEX idx_ErgPuffer ON Tab_ErgebnisPufferspeicher (ID_Ergebnis)
-SQL=ALTER TABLE Tab_ErgebnisPufferspeicher ADD CONSTRAINT FK_ErgPuffer
+CREATE INDEX idx_ErgPuffer ON Tab_ErgebnisPufferspeicher (ID_Ergebnis)
+ALTER TABLE Tab_ErgebnisPufferspeicher ADD CONSTRAINT FK_ErgPuffer
     FOREIGN KEY (ID_Ergebnis) REFERENCES Tab_Ergebnis (ID) ON DELETE CASCADE
 ```
 
 Zusätzlich in `ErgebnisCtrl` eine `StellePufferTabelleSicher()` als Fallback für
-Datenbanken, die das Skript nicht durchlaufen haben — mit `CREATE TABLE`, FK-Constraint
+Datenbanken, deren Migration noch nicht gelaufen ist (nach dem `Ddl()`-Vorbild,
+s. o.) — mit `CREATE TABLE`, FK-Constraint
 **und** einem defensiven expliziten Delete in `Save`, falls die Constraint fehlt.
 `Vollzyklen = Ladung_gesamt / Q_max` mit Division-durch-Null-Absicherung;
 `SOC_Mittel`/`SOC_Max` erfordern eine Auswertung von `SOC_stuendlich`, die es noch
@@ -925,7 +980,7 @@ nicht gibt.
 ### 6.7 Kompatibilität der Anzeigen
 
 `puffer_wp` bleibt als Alias auf den ersten Heizungs-Puffer erhalten, damit
-`NavigatorWaerme.cs:116-117, 159`, `Form_Simulation_Detail.cs:291-298` (CSV-Export)
+`NavigatorWaerme.cs:116-118, 146, 159`, `Form_Simulation_Detail.cs:292-298` (CSV-Export)
 und `:1241-1244` unverändert funktionieren. **Aber:** Sobald ein Projekt zwei Puffer
 hat, zeigen diese Stellen stillschweigend nur einen — das ist in der UI kenntlich zu
 machen („Puffer 1 von 2") und im Paket 7 aufzulösen.
@@ -965,7 +1020,9 @@ die dort beschriebene Weiche mit Default „alt". An Kaskade, Senken und Speiche
 | `Views/Pufferspeicher/Form_PufferSp_Bearbeiten.cs` | ändern | **Projektmodus ist Neubau** (heute nur STAMM, `:45`), Ordinal-Lesung `:53-57` auf Namenszugriff |
 | `Controller/PufferSpCtrl.cs` | ändern | neue Spalten, `ReadAllProjekt(idProjekt, verwendung)`, Dedup-Regel aufheben (5.2), `CopyFromStamm`-Spaltenliste |
 | `Controller/ProjektDuplizierenCtrl.cs` | ändern | `FK_MAP` um `WS_ID_Puffer`, `WS_ID_Puffer2`, `WQ_ID_Puffer` (5.3) |
-| `Allgemein/Update/MigrationQuellenSenken.cs` | neu | Migration 5.5 inkl. Protokoll |
+| `Allgemein/Update/SchemaMigration.cs` | neu | Versionierte Migration nach ADR-001: Schrittregister, `SchemaVersion`-Marker, Sammelfehlerbericht; enthält die Datenmigration 5.5 als Schritt 5 |
+| `Controller/ApplikationCtrl.cs` | ändern | `SchemaVersion` in `Tab_Applikation` lesen/schreiben |
+| `Program.cs` | ändern | Startsequenz: `SchemaMigration.Ausfuehren()` vor dem MDI-Start, Startblockade des Simulationsbereichs bei Fehlschlag |
 
 **Projekteinbindung:** Die `.csproj` ist SDK-Style ohne
 `EnableDefaultCompileItems=false` — neue `.cs`-Dateien werden **automatisch**
@@ -990,17 +1047,42 @@ einem Bugfix stammt.
 | B0-4 | **Spaltenname `Rücklauf` vs. `Ruecklauf`.** Die Spalte heißt `Rücklauf` **mit** Umlaut (an der DB verifiziert, 13.7) — `ReadAllFilter` und `WizardCtrl` sind korrekt, `WErzeugerCtrl.Insert`/`Update`/`ReadSingle` nicht | `WErzeugerCtrl.cs:24`, `:81`, `:191` | **Keine Ergebniswirkung** — die drei Methoden werden für Energieanlagen nicht aufgerufen. Aufräumarbeit, um die stille Fehlerquelle zu beseitigen |
 | B0-5 | **Heizstab-Ganglinie überschreibt statt zu addieren** (`=` statt `+=`), während `Heizstab_gesamt` korrekt addiert | `SimulationWaermepumpe.cs:532`, `:539` | Bei ≥2 WP-Modulen inkonsistente Ganglinie; geht über `SimulationControl.cs:143-144` in den Strombedarf ein |
 | B0-6 | **Keine Löschkaskade beim Puffer**, zwei Ursachen: (a) Löschen im Projektbaum entfernt nur die Anlagenzeile; (b) `Tab_Pufferspeicher` hängt als einzige Projektkopie **nicht** an der Löschweitergabe von `Tab_Projekt` (13.7) | `PufferSpKontextMenuCtrl.cs:82-100`, `WizardCtrl.cs:38-42`; Schema | Gelöschter Puffer rechnet weiter; beim Projektlöschen bleiben Waisen. Fix: Aufräumen im Code **und** Beziehung `Tab_Projekt.ID → Tab_Pufferspeicher.ID_Projekt` nachtragen |
-| B0-7 | **Restbedarfsformel widerspricht der Ganglinie.** `Waermebedarf − Produktion − Heizstab` statt der Summe aus `waermerestbedarf_gesamt`; Speicherverluste fehlen in der Bilanz | `SimulationRunner.cs:137` gegen `SimulationWaermepumpe.cs:603-604` | Zwei Ergebnisgrößen widersprechen sich; mit mehreren Speichern wird die Abweichung auffällig |
+| B0-7 | **Restbedarfsformel und Deckungsgrad widersprechen der Ganglinie** *(erweitert in Fassung 12)*. (a) `Waermebedarf − Produktion − Heizstab` statt der Summe aus `waermerestbedarf_gesamt` — dabei wird mit `Stromverbrauch_Heizstab` eine **Strommenge** von einer Wärmemenge abgezogen; Speicherverluste fehlen in der Bilanz. (b) Der **Deckungsgrad** wird doppelt und widersprüchlich gerechnet: `SimulationRunner.cs:148-153` produktionsbasiert (landet in `Tab_Ergebnis` → Bericht/Wirtschaftlichkeit), `Form_Simulation_Detail.cs:1223-1227` restbedarfsbasiert — genau die Formel, die der dortige Kommentar als „mit Pufferspeicher ungenau" verwirft; beide kappen bei 100 % | `SimulationRunner.cs:137, :148-153` gegen `SimulationWaermepumpe.cs:603-604` und `Form_Simulation_Detail.cs:1223-1227` | Gespeichertes Ergebnis und Anzeige widersprechen sich; mit mehreren Speichern wird die Abweichung auffällig |
 | B0-8 | **`Form_PufferSp` löscht aus den Stammdaten.** Der Löschbutton im Projektdialog ruft `PufferSpStammCtrl.Delete` | `Form_PufferSp.cs:229` (`pufferspctrl` ist `PufferSpStammCtrl`, `:12`) | Katalogdatensatz verschwindet global |
 | B0-9 | **Lokalisierter Anzeigename direkt im SQL.** `Abfrage_Erzeuger_Vorlauftemperaturen where Typ='<Anzeigename>'` | `Form_KonfigPufferspeicher.cs:43`, `:50` | In englischer Oberfläche findet die Abfrage nichts → Vor-/Rücklauf bleiben leer. Zusätzlich SQL-Injection-anfällig (13.6) |
-| B0-10 | **Anzeigetext als Filter-Steuerwert.** Volumenfilter vergleicht `comboBox_Volumen.Text` gegen deutsche Literale; ohne Treffer bleibt das Prädikat leer | `Form_PufferSp.cs:184-189`, `Form_PufferSp_Admin.cs:60-65` | Erzeugt `… where  order by …` → **SQL-Syntaxfehler zur Laufzeit** (13.6) |
+| B0-10 | **Anzeigetext als Filter-Steuerwert.** Volumenfilter vergleicht `comboBox_Volumen.Text` gegen deutsche Literale; ohne Treffer bleibt der Volumenteil des Prädikats leer | `Form_PufferSp.cs:184-189`, `Form_PufferSp_Admin.cs:60-65` | Der erste Filterteil ist nie leer — ohne Volumen-Treffer entsteht `… where <filter> and  order by …` (`Form_PufferSp.cs:198`, `Form_PufferSp_Admin.cs:74`) → **SQL-Syntaxfehler zur Laufzeit** (13.6) |
+| B0-11 | **Anzeigename landet als DB-Steuerwert** *(neu in Fassung 12)*. Beim Speichern der Zuordnungen sucht das Rückwärts-Mapping den lokalisierten Anzeigetext in der LanguageItem-Liste; ohne Treffer wird der **Anzeigename** als `Erzeuger` in `Z_ProjektPufferSp` geschrieben (`match?.DbValue ?? z[0]`) — die Leseseite sucht hart nach `Erzeuger='Wärmepumpe'` | `Form_Simulation_Config.cs:1548-1549` | Sprachwechsel zwischen Anlegen und Lesen macht die Zuordnung stillschweigend wirkungslos; gleiche Familie wie B0-9/B0-10, wird mit 5.4 obsolet, wirkt aber heute (13.6) |
 
-Weitere Befunde ohne unmittelbare Ergebniswirkung, die bei Berührung mitzunehmen sind:
-`PufferSpCtrl.Delete()`/`Update()` sind funktionsunfähig (keine `Connection`, `:27`);
-`WizardParent.LoadWEFromDB` liest `ID_PUFFER` nicht (`:511-559`);
-`WizardItemClass.PUFFER_ITEM = 13` ist out-of-range gegenüber `MenueCtrl` (`:29-41`)
-und der Wizard-Zweig in `Form_PufferSp` ist unerreichbar; `KlimaregionCtrl.Update()`
-schreibt Spalten, die `ReadSingle` nicht kennt.
+Weitere Befunde ohne unmittelbare Ergebniswirkung, die bei Berührung mitzunehmen sind
+*(erweitert in Fassung 12)*:
+
+- `PufferSpCtrl.Delete()`/`Update()` sind funktionsunfähig (keine `Connection`, `:27`).
+- `WizardParent.LoadWEFromDB` liest `ID_PUFFER` nicht (`:511-560`) — nur dadurch geht
+  die Puffer-Referenz beim Wizard-Speichern verloren; der Kontextmenü-Pfad
+  (`PufferSpKontextMenuCtrl.cs:117`) übernimmt sie.
+- `WizardItemClass.PUFFER_ITEM = 13` ist out-of-range gegenüber `MenueCtrl` (`:29-41`),
+  der Wizard-Zweig in `Form_PufferSp` ist unerreichbar.
+- Das stille ID-Reparaturmuster aus 2.3 (`if (idX > 0)`) verschluckt
+  `CopyFromStamm`-Fehler in **allen** Gewerken von `Add_WP_Waermeerzeuger`
+  (WP `:144-145`, BHKW `:149-150`, Kessel `:154-155`, Stromspeicher `:159-160`,
+  PV `:169-170`, Solar `:174-175`), nicht nur beim Puffer.
+- **`KlimaregionCtrl`:** `Add()`, `Update()` und `Delete()` schreiben auf
+  Spaltennamen (`Name`, `Längengrad`, `Breitengrad`, `Beschreibung`), die die
+  produktiv genutzte Leseseite (`Bezeichner`, `Longitude`, `Latitude`, `Details`)
+  nicht kennt — und widersprechen sich untereinander; `Update()`/`Delete()` laufen
+  zur Laufzeit zwangsläufig auf OleDb-Fehler. **Vor der Erweiterung von
+  `Tab_Klimaregion` in Paket 3 (13.1) zu reparieren.**
+- `SimulationSPK.cs:140/:210` übergibt `Max_Waermebedarf` by-value — das Feld
+  (`:27`) bleibt immer 0 (anders als `ref double GasSpitze`).
+- `SimulationSPK.cs:163` weist `Stromverbrauch_stuendlich` die **Referenz** der
+  Kesselganglinie zu (Aliasing wie B0-2) — bei Brennstoffart 13 zeigen Strom- und
+  Wärmeganglinie auf dieselbe Instanz.
+- `SimulationControl.cs:211` überschreibt `Reststrom` am Ende — die Additionen
+  `:114`/`:138-139` sind wirkungslos (toter Code).
+- `SimulationWaermepumpe.cs:296-299`: Deckt der Puffer die Stunde vollständig,
+  verlässt `break` die Modulschleife — Quellspeicher erhalten in diesen Stunden
+  weder Regeneration noch `StundeAbschliessen`, ihre SOC-Ganglinie bleibt 0
+  (verschärft die Quellbilanz-Punkte in 6.3).
 
 ---
 
@@ -1017,19 +1099,19 @@ dagegen vorhanden, siehe 13.7).
 
 | # | Paket | Inhalt | Aufwand |
 |---|---|---|---|
-| **B0** | Bestandsfehler | Kapitel 8, einzeln ausgeliefert | **1–2 PT** |
+| **B0** | Bestandsfehler | Kapitel 8 (inkl. B0-11 und erweitertem B0-7), einzeln ausgeliefert | **1,5–2,5 PT** |
 | **B1** | Referenzlauf-Suite | 5–8 Realprojekte, Ergebnisvektoren als CSV eingefroren, automatisierter Toleranzvergleich. **Ohne dieses Paket ist keine der folgenden Änderungen verifizierbar** | **2 PT** |
-| **1** | Schema + Migration | 5.1/5.3, `SchemaSicherstellen` härten (5.6), Migration 5.5, `FK_MAP`, Dedup-Aufhebung, Ordinal-Leser absichern | **4–6 PT** |
+| **1** | Schema + Migration | **`SchemaMigration`-Mechanismus mit `SchemaVersion`-Marker und Startsequenz (ADR-001)**, 5.1/5.3, Spaltenkatalog aus `SchemaSicherstellen` herauslösen und härten (5.6), Datenmigration 5.5, `FK_MAP`, Dedup-Aufhebung, Ordinal-Leser absichern | **5,5–8 PT** |
 | **2** | Konfigurations-UI | Spaltenkonstanten, Layout-Neuverteilung, Übersicht für alle Erzeuger, `Form_Waermesenke`, Projekt-Puffer-Verwaltung, Rubrik-Entfall (Etappe A), Validierung | **6–9 PT** |
-| **3** | Erdreichmodell | `ErdreichTemperatur`, Dialog, Vorschau-Chart, Bodentyp-Katalog nach VDI 4640 Bl. 1 Tab. 1, Sondenformel, Plausibilitätsprüfung mit den Auslegungstabellen A2/B2 aus Bl. 2 inkl. Klimazonen-Zuordnung (13.1) | **4–5 PT** |
+| **3** | Erdreichmodell | `ErdreichTemperatur`, Dialog, Vorschau-Chart, Bodentyp-Katalog nach VDI 4640 Bl. 1 Tab. 1, Sondenformel, Plausibilitätsprüfung mit den Auslegungstabellen A2/B2 aus Bl. 2 inkl. Klimazonen-Zuordnung (13.1); **Vorarbeit: `KlimaregionCtrl`-Reparatur (Kapitel 8)** | **4,5–5,5 PT** |
 | **4** | Engine-Kern | Registry, `Waermekanaele`, zweikanalige Kaskade, aus der Kaskade gelöste Ladephase mit Prioritätsauflösung (3.4), WP-Umstellung, Reihenfolge-Invariante | **9–12 PT** |
 | **5** | Solarthermie + Heizkessel | Überschuss → Puffer inkl. Fix `SimulationRunner.cs:301-304`; Kessel zweikanalig + Senken | **4–6 PT** |
 | **6** | BHKW | Pendelspeicher-Ablösung in drei Fahrweisen, Bilanzfehler `SimulationControl.cs:327` | **6–9 PT** |
 | **7** | Ergebnis + Anzeigen | `Tab_ErgebnisPufferspeicher` (6.6), Navigator/Detail/CSV auf n Puffer nach 13.3 | **3–4 PT** |
-| **8** | Engine-Protokoll | Protokoll-/Fehlerkanal statt MessageBox (13.4), Einstellung `Extrapolation_erlaubt`, Anbindung an `SimuliereUndSpeichere(… out fehler)` | **1,5–2 PT** |
+| **8** | Engine-Protokoll | Protokoll-/Fehlerkanal statt MessageBox (13.4, acht Stellen), Einstellung `Extrapolation_erlaubt`, Anbindung an `SimuliereUndSpeichere(… out fehler)`; **DataRepository-Fehlerpfad ohne MessageBox im Engine-Kontext** | **2–2,5 PT** |
 | **9** | Lokalisierung | Simulationsbereich durchgängig zweisprachig, Teilpakete L0–L8 nach 13.6, inkl. Behebung B0-9/B0-10 | **17,5 PT** |
 | **10** | Abnahme | Realprojekt-Tests (nur Heizkreis / WP+WW-Puffer / Solar-Zweitsenke / BHKW / zwei Puffer je Kanal / WP im PV-Modus mit Solar und Zweitsenke / Migration Altprojekte / Projekt ohne Puffer), Energieerhaltungstest, Sprachvergleich DE/EN, Rubrik-Entfall Etappe B | **4–6 PT** |
-| | **Summe** | | **61–78 PT** |
+| | **Summe** *(Fassung 12: +3–3,5 PT für ADR-001-Mechanismus und neue Befunde)* | | **64–81,5 PT** |
 
 **Feature-Flag empfohlen** (~0,5 PT, in Paket 4 enthalten): eine Projekteinstellung
 `Kaskade_Zweikanalig`, Default aus. Altprojekte rechnen weiter auf dem alten Pfad,
@@ -1086,20 +1168,27 @@ Heizstab-Ganglinie bei ≥2 Modulen (B0-5); Kesselergebnisse bei Bezeichnerkolli
 | ~~O3~~ | ~~Zweitsenke × Betriebsmodus `PV`~~ | **entschieden** (13.5): sequenziell, Hauptsenke bis zu ihrer Ladeobergrenze zuerst, erst der Rest an die Zweitsenke. Testfall in Paket 10 (Abnahme) |
 | ~~O4~~ | ~~`MessageBox`-Aufrufe blockieren Headless-Läufe~~ | **entschieden** (13.4): Protokoll-/Fehlerkanal nach dem Muster `SimuliereUndSpeichere(… out fehler)` aus `Konzept_Variantenbericht.md` (E10 und Kap. 3.4 dort); Extrapolationsrückfrage wird zur Vorab-Einstellung. Eigenes Paket 8 |
 | ~~O5~~ | ~~Erdreichmodell ohne Validierungsreferenz~~ | **erledigt** (13.1): gegen VDI 4640 plausibilisiert, Bodentyp-Katalog mit belegten Kennwerten, Phasenverschiebung exakt reproduziert, Entzugsleistung als Warnung. Normtext-Verifikation vor Auslieferung bleibt offen |
-| ~~O6~~ | ~~Abweichender DB-Pfad in `UpdateDatabaseFromScript`~~ | **entschieden** (13.2): ausschließlich `DataRepository.GetDBPath()`; Aufruf wird beim Programmstart verdrahtet, Pfad im Log ausgewiesen |
+| ~~O6~~ | ~~Abweichender DB-Pfad in `UpdateDatabaseFromScript`~~ | **gegenstandslos** (ADR-001, angenommen 14.08.2026): Die Klasse ist endgültig verworfen; die `SchemaMigration` läuft ausschließlich über `DataRepository` (13.2) |
 | ~~O7~~ | ~~Anzeigen zeigen bei mehreren Puffern nur einen~~ | **entschieden** (13.3): Chart-Serie, CSV-Spalten und Detailanzeige je Puffer; Übergangshinweis „Speicher 1 von n" bis zur Umstellung in Paket 7 |
 | ~~O8~~ | ~~Reales Access-Schema unbestätigt~~ | **erledigt** (13.7): alle fünf Punkte an `Kenndaten.accdb` verifiziert. `Rücklauf` mit Umlaut (B0-4 ohne Ergebniswirkung), `Tab_Einstellungen`-Reihenfolge bestätigt, Löschweitergaben **vorhanden**, beide Erzeuger-Abfragen ausgelesen, keine Spaltenkollision. Zwei neue Befunde: `ID_PUFFER` ohne Beziehung, `Tab_Pufferspeicher` ohne Projekt-Kaskade — beide in B0-6 bzw. 5.3 aufgenommen |
 | ~~O9~~ | ~~Lokalisierung faktisch aufgegeben~~ | **entschieden** (13.6): Simulationsbereich wird durchgängig zweisprachig, eigenes Paket 9 (17,5 PT). 287 Codestellen, 156 eindeutige Texte; DB-Werte bleiben deutsch (Drei-Schichten-Regel) |
-| O10 | Keine automatisierten Tests; jede Verifikation ist ein manueller Lauf unter Windows/x86 mit ACE 32-bit | Paket B1 ist damit nicht optional. *(Korrektur: `WP-Plan.sln` und ein `.git`-Verzeichnis existieren sehr wohl — `CLAUDE.md` ist an dieser Stelle veraltet, siehe 13.7. Versionskontrolle als Rollback-Pfad ist damit vorhanden.)* |
+| O10 | Keine automatisierten Tests; jede Verifikation ist ein manueller Lauf unter Windows/x86 mit ACE 32-bit | Paket B1 ist damit nicht optional. *(`WP-Plan.sln` und `.git` existieren; `CLAUDE.md` ist inzwischen korrigiert, siehe 13.7. Versionskontrolle als Rollback-Pfad ist vorhanden.)* |
 | ~~O11~~ | ~~VDI 4640 nicht im Normtext verfügbar~~ | **erledigt**: Blatt 1 (Entwurf 2021-12, E13) und Blatt 2:2019-06 liegen vor und sind eingearbeitet — Untergrundkennwerte aus Bl. 1 Tab. 1, Auslegungstabellen aus Bl. 2 Anhang A/B (13.1). Offen bleibt nur die Klärung, ob die vorhandenen EPOS-Klimaregionen den 15 DIN-4710-Zonen entsprechen |
 
 ---
 
-## 11. Prüfprotokoll der Codeverifikation (12.08.2026)
+## 11. Prüfprotokoll der Codeverifikation (12.08.2026, nachgeprüft 14.08.2026)
 
 Drei unabhängige Prüfläufe gegen den Quellcode. Ergebnis: **13 von 14 geprüften
 Aussagen aus Fassung 1 bestätigt**, vier sachliche Korrekturen, acht neue
 Bestandsfehler (Kapitel 8).
+
+**Nachprüfung zur Fassung 12 (14.08.2026):** 49 Einzelaussagen der Fassung 11 durch
+fünf unabhängige Prüfläufe kontrolliert, jede gemeldete Abweichung adversarial
+gegengeprüft — **42 bestätigt, 7 korrigiert** (Details in der Fassungshistorie); ein
+Fehlalarm des Erstprüfers wurde in der Gegenprüfung verworfen (B0-7 war korrekt
+referenziert). Der Umsetzungsstand des Konzepts im Code betrug zum Prüfzeitpunkt
+**0 %**; alle zehn (jetzt elf) B0-Bestandsfehler waren unverändert vorhanden.
 
 **Bestätigt:** Spaltenliste in `SchemaSicherstellen`; Quellentypen und fehlendes
 „Erdreich"; `break` nach dem ersten WP-Eintrag; `Quellspeicher()` aus STAMM per
@@ -1125,13 +1214,15 @@ Entladereihenfolge bei mehreren Puffern je Kanal (3.6). Alle drei sind per Defau
 verhaltensneutral zum Bestand und über die Spalten `WS_Ladeprio*`, `WS_Ladegrenze*`,
 `WS_Ladeprio_PV`, `Schwelle_Aus_Nachrang` und `Entladeprio` übersteuerbar.
 
-**Nachgetragen in Fassung 5:** Die Lokalisierungsanalyse (13.6) hat den Bestand
-ausgezählt (287 Codestellen, 156 eindeutige Texte, nur 7 vorhandene
-Ressourcenschlüssel) und zwei weitere Bestandsfehler aufgedeckt (B0-9, B0-10 in
-Kapitel 8). Die Satelliten-`.resx`-Frage ist damit beantwortet: Es gibt nur
-`MyResource\Resource.resx` (neutral = deutsch) und `Resource.en-US.resx`; für
-`Form_Simulation_Config` und `Form_KonfigPufferspeicher` fehlen die englischen
-Satelliten, beide Formulare stehen aber bereits auf `Localizable = true`.
+**Nachgetragen in Fassung 5, korrigiert in Fassung 12:** Die Lokalisierungsanalyse
+(13.6) hat den Bestand ausgezählt (287 Codestellen, 156 eindeutige Texte, nur 7
+vorhandene Ressourcenschlüssel) und zwei weitere Bestandsfehler aufgedeckt (B0-9,
+B0-10 in Kapitel 8). Die Satelliten-Lage stellte sich in Fassung 12 anders dar als
+in Fassung 5 angenommen: Es gibt **auch** `MyResource\Resource.de-DE.resx` (redundant
+zur neutralen Datei), und die englischen Satelliten von `Form_Simulation_Config` und
+`Form_KonfigPufferspeicher` **existieren bereits** — unvollständig, mit echten
+Übersetzungen (Details und Bereinigung in 13.6). Beide Formulare stehen auf
+`Localizable = true`.
 
 **Normquellen (Fassungen 9–11):** Das Erdreichmodell ist gegen **VDI 4640 Blatt 1**
 (Entwurf 2021-12, Tabelle 1: Wärmeleitfähigkeit und volumenbezogene Wärmekapazität)
@@ -1153,7 +1244,7 @@ verifiziert; offen ist allein die Frage, ob die vorhandenen EPOS-Klimaregionen d
 ## 12. Zusammenfassung der neuen Datenfelder
 
 Konsolidierte Übersicht aller in diesem Konzept eingeführten Spalten — als Vorlage
-für das Schema-Skript und die Abnahme.
+für die `SchemaMigration` (ADR-001) und die Abnahme.
 
 **`Tab_Energieanlagen`** (je Wärmeerzeuger-Anlage, über `SchemaSicherstellen`):
 
@@ -1412,31 +1503,24 @@ unterschreiten — bleibt unverändert bestehen.
 > eingearbeitet; die Berichtigung 2020-04 betrifft nur Rohrmaterialien und ist ohne Belang
 > für die Auslegungstabellen.
 
-### 13.2 Datenbankpfad vereinheitlichen (vormals O6)
+### 13.2 Datenbankpfad und Ausrollmechanismus (vormals O6) — ersetzt durch ADR-001
 
-**Entscheidung:** Schema- und Migrationsskripte verwenden ausschließlich den DB-Pfad,
-den auch die Anwendung nutzt.
+**Gegenstandslos geworden** *(Fassung 12)*: Der hier ursprünglich behandelte
+Pfadkonflikt betraf `UpdateDatabaseFromScript.GetDBPath()` (Registry
+`HKCU\…\ODBC.INI\TEST`) gegenüber `DataRepository.GetDBPath()`. Mit
+[ADR-001](ADR-001_Schema-Ausrollung.md) (angenommen 14.08.2026) ist die Klasse
+endgültig verworfen; Schema und Datenmigration laufen als versionierte
+In-Code-Migration (`SchemaMigration`) **ausschließlich über `DataRepository`** — es
+gibt nur noch einen DB-Pfad. Drei Detailanforderungen aus der früheren Fassung
+bleiben sinngemäß erhalten und wandern in den ADR-Mechanismus:
 
-`UpdateDatabaseFromScript.GetDBPath()` (`:18-31`) liest heute
-`HKCU\SOFTWARE\ODBC\ODBC.INI\TEST` → `DBQ` (Fallback `Database`), während
-`DataRepository.GetDBPath()` (`:173-182`) `Properties.Settings.Default.DBPath` bzw.
-`%ProgramData%\EPOS_PLAN\Kenndaten.accdb` verwendet. Beide können auf verschiedene
-Dateien zeigen — ein Migrationsskript würde dann eine andere Datenbank patchen als
-die laufende Anwendung, ohne dass es auffällt.
-
-Umsetzung:
-
-1. `GetDBPath()` in `UpdateDatabaseFromScript` entfällt; die Klasse ruft
-   `DataRepository.GetDBPath()` bzw. `DataRepository.GetConnectionString()`.
-2. Der Aufruf wird verdrahtet — heute existiert keiner. Vorgesehen: beim
-   Programmstart nach der Lizenz-/Versionsprüfung in `Program.cs`, vor dem Öffnen
-   des Hauptfensters, mit Protokoll in `db_update_log.txt` (bereits vorhanden).
-3. Das Log erhält zusätzlich den tatsächlich verwendeten Pfad als erste Zeile, damit
-   im Supportfall sofort erkennbar ist, welche Datei bearbeitet wurde.
-4. Die Fehlerbehandlung wird geschärft: Heute landen „Spalte existiert bereits" und
-   „echter Fehler" gleichermaßen als `ÜBERSPRUNGEN` im Log (`:98-101`). Künftig wird
-   der OLE-DB-Fehlercode ausgewertet und nur der Duplikatsfall als unkritisch
-   protokolliert.
+1. Aufruf beim Programmstart nach der Lizenz-/Versionsprüfung in `Program.cs`, vor
+   dem Öffnen des Hauptfensters.
+2. Das Migrationsprotokoll weist den tatsächlich verwendeten DB-Pfad als erste Zeile
+   aus, damit im Supportfall sofort erkennbar ist, welche Datei bearbeitet wurde.
+3. Die Fehlerbehandlung unterscheidet „Spalte/Objekt existiert bereits"
+   (unkritisch, protokolliert) vom echten Fehler (Marker bleibt stehen,
+   Startblockade) über den OLE-DB-Fehlercode.
 
 ### 13.3 Anzeigen für mehrere Pufferspeicher (vormals O7)
 
@@ -1445,9 +1529,9 @@ mehreren Puffern stillschweigend nur einen; sie werden in Paket 7 umgestellt:
 
 | Stelle | Heute | Künftig |
 |---|---|---|
-| `NavigatorWaerme.cs:116-117, 159` | eine Chartserie „Speicherfüllstand" aus `sim.puffer_wp.SOC_stuendlich`; Checkbox aktiv nur wenn `puffer_wp != null` | **eine Serie je Puffer**, benannt nach Speicher und Verwendung. Statt einer Checkbox eine kleine Auswahlliste der Puffer. **Wichtig:** `Series.Name` muss ein technischer Schlüssel werden (`PUFFER_<ID>`), der Anzeigetext geht in `LegendText` — sonst kollidiert die Umstellung mit der Lokalisierung (13.6) |
-| `Form_Simulation_Detail.cs:291-298` | CSV-Export mit drei festen Pufferspalten | **drei Spalten je Puffer** (SOC, Ladung, Entladung), Spaltenkopf mit Speicherbezeichner. Die Kopfzeile bleibt deutsch (Exportformat, 13.6) |
-| `Form_Simulation_Detail.cs:1241-1244` | `textBox_Pufferspeicher` mit einer Kapazität, gefüllt aus dem Legacy-Ausdruck `Volumen · 1,16` | **kleine Ergebnistabelle** je Puffer: Bezeichner, Verwendung, Q_max, Ladung, Entladung, Verluste, Vollzyklen, SOC-Ende. Speist sich direkt aus `Tab_ErgebnisPufferspeicher` (6.6) und ist damit identisch mit Bericht und Wirtschaftlichkeit |
+| `NavigatorWaerme.cs:116-118, 146, 159` | eine Chartserie „Speicherfüllstand" aus `sim.puffer_wp.SOC_stuendlich`; Checkbox aktiv nur wenn `puffer_wp != null` (auch CSV-Spalte `:89-90` und Y-Skalierung `:126` hängen an derselben Serie) | **eine Serie je Puffer**, benannt nach Speicher und Verwendung. Statt einer Checkbox eine kleine Auswahlliste der Puffer. **Wichtig:** `Series.Name` muss ein technischer Schlüssel werden (`PUFFER_<ID>`), der Anzeigetext geht in `LegendText` — sonst kollidiert die Umstellung mit der Lokalisierung (13.6) |
+| `Form_Simulation_Detail.cs:292-298` | CSV-Export mit drei fest verdrahteten Pufferspalten (Ladung, Entladung, SOC) für den einen `puffer_wp`, ohne Speicherbezeichner im Kopf | **drei Spalten je Puffer** (SOC, Ladung, Entladung), Spaltenkopf mit Speicherbezeichner. Die Kopfzeile bleibt deutsch (Exportformat, 13.6) |
+| `Form_Simulation_Detail.cs:1241-1244` | `textBox_Pufferspeicher` zeigt `Q_max` + Bezeichner des einen `puffer_wp`; nur **ohne** Zuordnung greift der Legacy-Ausdruck `Volumen · 1,16`. Der eigentliche Fehler liegt im Runner (`:138`): `Volumen · 1,16` ohne ΔT und ohne /1000, Volumen aus dem **WP-Datensatz** statt aus dem zugeordneten Puffer — der gespeicherte Wert widerspricht der Anzeige (6.6) | **kleine Ergebnistabelle** je Puffer: Bezeichner, Verwendung, Q_max, Ladung, Entladung, Verluste, Vollzyklen, SOC-Ende. Speist sich direkt aus `Tab_ErgebnisPufferspeicher` (6.6) und ist damit identisch mit Bericht und Wirtschaftlichkeit |
 
 Ergänzend: Solange die Umstellung nicht abgeschlossen ist, weist die
 Detailansicht bei mehr als einem Speicher sichtbar darauf hin („Speicher 1 von 2");
@@ -1467,7 +1551,8 @@ new SimulationRunner().SimuliereUndSpeichere(id, out string fehler);
 mit einer frischen Instanz je Projekt. Genau dieses `out fehler`-Muster ist die
 Vorlage: Die Engine gibt Fehler **zurück**, statt sie anzuzeigen.
 
-Heute brechen sechs Stellen diese Zusage, weil sie eine `MessageBox` öffnen und damit
+Heute brechen **mindestens acht** Stellen diese Zusage *(Fassung 12: zwei mehr als
+bisher gezählt)*, weil sie eine `MessageBox` öffnen und damit
 einen unbeaufsichtigten Lauf blockieren:
 
 | Stelle | Anlass | Künftige Behandlung |
@@ -1477,6 +1562,15 @@ einen unbeaufsichtigten Lauf blockieren:
 | `SimulationWaermebedarf.cs:167` | Gebäudetyp nicht definiert | Warnung, Standardprofil verwenden |
 | `SimulationWaermebedarf.cs:642`, `:749` | Prozess-/Brauchwassertyp nicht definiert (enthält zudem den Tippfehler „DerTyp") | Warnung, Anteil = 0 |
 | `Z_ProjektPufferSpCtrl.cs:52` | Pufferspeicher weder im Projekt noch im Stamm gefunden | entfällt mit der Ablösung der Tabelle (5.4) |
+| `SimulationStrombedarf.cs:68`, `:207` *(neu in Fassung 12)* | Fehler bei der Stromprofil-Berechnung (Sammel-`catch`); im Headless-Pfad erreichbar über `SimulationRunner.cs:75` | Fehler → Protokolleintrag, Lauf abbrechen |
+
+**Dazu kommt der DB-Fehlerpfad** *(neu in Fassung 12)*: `DataRepository` zeigt bei
+jedem Datenbankfehler selbst eine `MessageBox` (`:44, :67, :94, :123, :155, :226`),
+und die Simulationsklassen greifen durchgängig darüber zu — die Kommentare in
+`WaermequelleClass.cs:77` und `:181` halten genau das fest. Der Protokollkanal löst
+den Headless-Lauf deshalb nur, wenn dieser Pfad mitbehandelt wird: ein Engine-Modus,
+der statt des Dialogs eine Exception bzw. einen Fehlercode liefert, den
+`SimulationProtokoll` einsammelt.
 
 **Lösung.** Eine schlanke Protokollklasse, die alle Module befüllen:
 
@@ -1568,13 +1662,21 @@ nur die neuen Dialoge. Grundlage ist eine Auszählung des Bestands.
   `…_WAERMEPUMPE`, `…_PHOTOVOLTAIK`, `…_STROMSPEICHER`, `…_GESAMTSYSTEM`). Es gibt
   also **kein Gerüst zum Erweitern, sondern eines aufzubauen** — das vorhandene
   `LanguageItem`-Muster (DisplayName / DbValue) ist dabei die richtige Idee.
-- Es existieren nur `MyResource\Resource.resx` (neutral = deutsch) und
-  `Resource.en-US.resx`. Eine `de-DE`-Variante gibt es nicht und wird nicht gebraucht:
-  Deutsch ist die Fallback-Kultur. **Jeder Schlüssel ist an genau zwei Stellen zu
-  pflegen.**
-- `Form_Simulation_Config` und `Form_KonfigPufferspeicher` stehen bereits auf
-  `Localizable = true`; dort fehlen nur die englischen Satelliten (23 Texte) —
-  reines Übersetzen ohne Codeänderung.
+- *(korrigiert in Fassung 12)* Im Ressourcenkatalog existieren
+  `MyResource\Resource.resx` (neutral = deutsch), `Resource.en-US.resx` **und —
+  entgegen früherer Fassungen — auch `Resource.de-DE.resx`** (21 Einträge,
+  inhaltlich redundant zur neutralen Datei), dazu eine 0-Byte-Datei
+  `Resource.en-US.Designer.cs`. **Bereinigung vorab:** de-DE-Satellit löschen
+  (Deutsch ist die Fallback-Kultur) und die 0-Byte-Datei entfernen — danach gilt
+  wieder: **jeder Schlüssel ist an genau zwei Stellen zu pflegen.**
+- *(korrigiert in Fassung 12)* `Form_Simulation_Config` und
+  `Form_KonfigPufferspeicher` stehen bereits auf `Localizable = true`, und die
+  englischen Satelliten **existieren** mit echten Übersetzungen — aber
+  unvollständig: `Form_Simulation_Config.en-US.resx` deckt 65 von 298 Einträgen der
+  neutralen `.resx` ab, `Form_KonfigPufferspeicher.en-US.resx` 10 von 98. Die
+  de-DE-Satelliten beider Formulare sind Restbestände
+  (`Form_Simulation_Config.de-DE.resx` enthält nur zwei Layout-Einträge, die
+  Position/Größe eines Buttons kulturabhängig überschreiben) und werden bereinigt.
 
 #### Die zentrale Regel: drei Schichten
 
@@ -1596,26 +1698,27 @@ Fehlermeldung. Dasselbe gilt für `Form_Simulation_Detail.cs:441-481` und die
 Bestandsdatenbanken deutsche Werte, deren Lokalisierung eine Datenmigration
 erzwingen würde.
 
-#### Zwei Bestandsfehler derselben Ursache
+#### Drei Bestandsfehler derselben Ursache
 
-Beide entstehen dadurch, dass ein **Anzeigetext als Steuerwert** dient — und beide
+Alle drei entstehen dadurch, dass ein **Anzeigetext als Steuerwert** dient — und alle
 werden im Zuge der Lokalisierung behoben (Ergänzung zum Vorab-Paket B0):
 
 | # | Fehler | Fundstelle | Wirkung |
 |---|---|---|---|
 | B0-9 | `Form_KonfigPufferspeicher` setzt den **lokalisierten** Erzeugernamen direkt in die SQL-Abfrage `Abfrage_Erzeuger_Vorlauftemperaturen` ein | `Form_KonfigPufferspeicher.cs:43`, `:50` | In englischer Oberfläche findet die Abfrage nichts; Vor-/Rücklauf bleiben leer. Zusätzlich Stringkonkatenation statt Parameter |
-| B0-10 | Volumenfilter vergleicht `comboBox_Volumen.Text` gegen deutsche Literale; ohne Treffer bleibt das SQL-Prädikat leer | `Form_PufferSp.cs:184-189`, `Form_PufferSp_Admin.cs:60-65` | Erzeugt `… where  order by …` → **SQL-Syntaxfehler zur Laufzeit** |
+| B0-10 | Volumenfilter vergleicht `comboBox_Volumen.Text` gegen deutsche Literale; ohne Treffer bleibt der Volumenteil des Prädikats leer | `Form_PufferSp.cs:184-189`, `Form_PufferSp_Admin.cs:60-65` | Erzeugt `… where <filter> and  order by …` (`:198` bzw. `:74`) → **SQL-Syntaxfehler zur Laufzeit** |
+| B0-11 | Rückwärts-Mapping Anzeigetext → DB-Wert beim Speichern der Zuordnungen; ohne Treffer wird der **Anzeigename** als `Erzeuger` geschrieben (`match?.DbValue ?? z[0]`) | `Form_Simulation_Config.cs:1548-1549` | Sprachwechsel zwischen Anlegen und Lesen macht die Zuordnung stillschweigend wirkungslos |
 
 #### Vorgehen
 
 | Paket | Inhalt | PT |
 |---|---|---|
 | L0 | Encoding vereinheitlichen (mehrere Dateien sind ISO-8859-1 ohne BOM, u. a. `Form_PufferSp_Bearbeiten.cs`, `Form_PufferSp_einlesen.cs`) → UTF-8 mit BOM, `.editorconfig`; Konstantenklasse `DbWerte.cs` für die 62 verstreuten DB-Wert-Literale; Glossar DE→EN für ca. 40 Fachbegriffe | 2,0 |
-| L1 | Englische Satelliten für `Form_Simulation_Config` und `Form_KonfigPufferspeicher` über den Designer (23 Texte, kein Coderisiko) | 0,5 |
+| L1 | Vorhandene en-US-Satelliten von `Form_Simulation_Config` und `Form_KonfigPufferspeicher` über den Designer **vervollständigen** (Abdeckung heute 65/298 bzw. 10/98); de-DE-Satelliten und `MyResource`-Redundanz bereinigen (kein Coderisiko) | 0,5 |
 | L2 | Ressourcenkatalog: 156 Schlüssel in beiden `.resx`, Namensschema `SIM_*`, `SIMQ_*`, `PSP_*`, `SIMENG_*`, `CHART_*` | 2,0 |
 | L3 | Programmatische Dialoge `Form_QuellePufferspeicher`, `Form_Quellprofil` (71 Texte); Monats-/Wochentagsnamen über `CultureInfo` statt eigener Arrays | 1,5 |
 | L4 | `Form_Simulation_Config.cs` (86 Texte); dabei die **drei duplizierten `LanguageItem`-Listen** zusammenführen (sie haben heute unterschiedlichen Inhalt: 4 vs. 5 Einträge) und `_zuordnungen` intern auf DbValue statt DisplayName umstellen | 3,0 |
-| L5 | Behebung B0-9 und B0-10 plus 17 MessageBoxen in den Pufferspeicher-Dialogen | 1,5 |
+| L5 | Behebung B0-9, B0-10 und B0-11 plus 17 MessageBoxen in den Pufferspeicher-Dialogen | 1,5 |
 | L6 | `NavigatorWaerme`: Chart-Serien auf technische Schlüssel + `LegendText`, 30 Lookups nachziehen, Designer auf `Localizable`; `WaermequelleClass.TypAnzeige` und `CSV_FORMAT_HINWEIS` (dabei `const` → `static readonly`, da Konstanten keine Ressourcen referenzieren können) | 2,0 |
 | L7 | Regressionstest beide Sprachen — **entscheidend: identische Simulationsergebnisse in DE und EN** | 2,0 |
 | L8 | Build-Prüfung gegen neue Hardcodings, `CLAUDE.md`-Ergänzung | 0,5 |
@@ -1632,6 +1735,13 @@ Programm ändern — eigenes Vorhaben mit eigenem Regressionsrisiko. Im
 Simulationsbereich werden lediglich die fünf hartkodierten Dezimalkomma-Vorgaben
 (z. B. `"10,0"` in `Form_QuellePufferspeicher.cs:100`) kulturneutral gemacht, weil sie
 auf einem englischen Windows heute schon Parse-Fehler erzeugen.
+
+*(Randnotiz, Fassung 12: `Program.cs:45/:48` öffnet den Sprach-Registry-Schlüssel mit
+`@"Software\\wp-plan"` — im Verbatim-String ist das ein **literaler
+Doppel-Backslash** im Schlüsselnamen; Konzept und CLAUDE.md schreiben
+`Software\wp-plan`. Beim Lokalisierungspaket nicht stillschweigend „korrigieren":
+Bestandsinstallationen tragen ihre Spracheinstellung unter genau diesem Schlüssel —
+eine Bereinigung braucht eine Übernahme des Altwerts.)*
 
 ### 13.7 Verifikation des Access-Schemas (vormals O8)
 
@@ -1651,7 +1761,7 @@ Tab_Energieanlagen: … [Vorlauf] Long Integer, [Rücklauf] Long Integer, …
 | Zugriffspfad | Schreibweise | Bewertung |
 |---|---|---|
 | `WErzeugerCtrl.ReadAllFilter` (`:146`) — von der Simulation genutzt | `Rücklauf` | ✔ korrekt |
-| `WizardCtrl.cs:180` (INSERT) | `Rücklauf` | ✔ korrekt |
+| `WizardCtrl.cs:181` (INSERT) | `Rücklauf` | ✔ korrekt |
 | `WErzeugerCtrl.Insert` (`:81`), `Update` (`:24`), `ReadSingle` (`:191`) | `Ruecklauf` | ✘ defekt |
 
 **Die Simulation rechnet mit korrekten Rücklaufwerten.** B0-4 bleibt im Vorab-Paket,
@@ -1716,7 +1826,15 @@ Abfrage_Erzeuger_Ruecklauftemperaturen:
 ```
 
 Sie liefern je Projekt und Erzeugertyp den **kleinsten Vorlauf** bzw. **größten
-Rücklauf** — die konservative Auslegung für einen gemeinsamen Speicher. Der
+Rücklauf** — die konservative Auslegung für einen gemeinsamen Speicher.
+
+> **Nachtrag B0-Review (14.08.2026):** Die Wiedergabe oben ist unvollständig — die
+> realen Definitionen enden auf ein hartkodiertes
+> `HAVING (((Tab_Energieanlagen.ID_Projekt)=8))` und liefern damit für **jedes**
+> Projekt 0 Zeilen; der äußere Filter ist wirkungslos. B0-9 umgeht die gespeicherten
+> Abfragen deshalb per direktem SQL (`Form_KonfigPufferspeicher`). Sollen die
+> Abfragen selbst erhalten bleiben, ist das `HAVING` zu entfernen — Schemaänderung,
+> zurückgestellt. Der
 Typbezug läuft über **`Tab_Typ_Energieanlagen.Bezeichner`**, also über deutsche
 Datenwerte:
 
@@ -1760,7 +1878,7 @@ Speichertyp, Bereitschaftsverluste, Gesamtvolumen, Investitionskosten — es pas
 **(a) `Tab_Energieanlagen.ID_PUFFER` hat keine Beziehung.** Alle anderen
 Komponentenverweise sind gesichert — `ID_WP`, `ID_BHKW`, `ID_Kessel`, `ID_Solar`,
 `ID_PV`, `ID_SP` jeweils mit `UPD+DEL-CASCADE` —, **`ID_PUFFER` als einziger nicht**.
-Das erklärt, warum `Form_PufferSp.cs:100` unbemerkt die STAMM-ID hineinschreiben
+Das erklärt, warum `Form_PufferSp.cs:101` unbemerkt die STAMM-ID hineinschreiben
 kann (2.3): Access lehnt es nicht ab, weil keine Integritätsregel greift. Der
 Kommentar in `PufferSpCtrl.cs:148-150` („Beziehung verweist auf die Projekt-Tabelle")
 beschreibt einen Sollzustand, keinen Ist-Zustand.
@@ -1783,10 +1901,9 @@ beheben: Beziehung `Tab_Projekt.ID → Tab_Pufferspeicher.ID_Projekt` mit
 Löschweitergabe nachtragen. Da E7 `Tab_Pufferspeicher` zur führenden Ebene macht,
 ist das nicht optional.
 
-#### Nebenbefund: `CLAUDE.md` ist in zwei Punkten veraltet
+#### Nebenbefund: `CLAUDE.md` war in zwei Punkten veraltet *(erledigt, Fassung 12)*
 
-Im Repository existieren sowohl **`WP-Plan.sln`** als auch ein **`.git`-Verzeichnis**.
-Die Aussagen „kein `.sln`" und „kein Git-Repo" in `CLAUDE.md` (Abschnitt
-„Fallstricke") treffen nicht mehr zu und sind zu korrigieren. Für dieses Konzept
-bedeutet das eine Erleichterung: Versionskontrolle ist vorhanden, der in 13.6
-geforderte Rollback-Pfad für die Lokalisierung existiert bereits.
+Im Repository existieren sowohl **`WP-Plan.sln`** als auch ein **`.git`-Verzeichnis**;
+die früher gegenteiligen Aussagen in `CLAUDE.md` sind inzwischen korrigiert (Stand
+14.08.2026). Für dieses Konzept bleibt die Erleichterung: Versionskontrolle ist
+vorhanden, der in 13.6 geforderte Rollback-Pfad für die Lokalisierung existiert.
