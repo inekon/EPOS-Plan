@@ -529,15 +529,10 @@ namespace WindowsFormsApplication1
 
         public void FillKlimaList()
         {
-            KlimaregionCtrl ctrl = new KlimaregionCtrl();
+            // Katalog (Tab_Klimaregion_STAMM) anzeigen, nicht die Projekt-Kopien aller Projekte.
+            KlimaregionStammCtrl ctrl = new KlimaregionStammCtrl();
             ctrl.ReadAll();
-            // ctrl.FillListBox(listBox_Klima);
-
-            comboBox_Klima.Items.Clear();
-            for (int i = 0; i < ctrl.rows; i++)
-            {
-                comboBox_Klima.Items.Add(ctrl.items[i].m_szName);
-            }
+            ctrl.FillComboBox(comboBox_Klima);
         }
 
         private void comboBox_Klima_SelectedIndexChanged(object sender, EventArgs e)
@@ -547,25 +542,20 @@ namespace WindowsFormsApplication1
 
         private int GetIDKlimaregion()
         {
-            int ID_Klimaregion = 0;
-            RecordSet rs = new RecordSet();
-            rs.Open("select * from Tab_Klimaregion where Name = '" + comboBox_Klima.Text + "'");
-            if (rs.Next())
-            {
-                ID_Klimaregion = (int)rs.Read("ID_Klimaregion");
-            }
-            rs.Close();
-            return ID_Klimaregion;
+            // Liefert die ID der Projekt-Kopie (Tab_Klimaregion.ID) zum gewaehlten Bezeichner;
+            // 0, wenn im Projekt keine Kopie dieses Namens existiert.
+            return KlimaregionStammCtrl.GetProjektRegionId(comboBox_Klima.Text, m_ID_Projekt);
         }
 
         public string GetKlimaregion(int ID_Klimaregion)
         {
             RecordSet rs = new RecordSet();
             string szKlimaregion = "";
-            rs.Open("select * from Tab_Klimaregion where ID_Klimaregion = " + ID_Klimaregion);
+            // Am Projekt ist die ID der Projekt-Kopie (Tab_Klimaregion.ID) gespeichert.
+            rs.Open("select * from Tab_Klimaregion where ID = " + ID_Klimaregion);
             if (rs.Next())
             {
-                szKlimaregion = (string)rs.Read("Name");
+                szKlimaregion = (string)rs.Read("Bezeichner");
             }
             rs.Close();
             return szKlimaregion;
@@ -853,12 +843,30 @@ namespace WindowsFormsApplication1
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
             ProjektCtrl ctrl = new ProjektCtrl();
+            // Aktuelle Werte als Basis laden, damit nicht ueberschriebene Felder
+            // (u.a. ID_Klimaregion, Erstelldatum) erhalten bleiben.
+            ctrl.ReadSingle(m_szProjektname);
             ctrl.m_Aenderungsdatum = DateTime.Now;
             ctrl.m_szBearbeiter = textBox_Bearbeiter.Text;
             ctrl.m_szBeschreibung = textBox_Beschreibung.Text;
             ctrl.m_szKunde = textBox_Kunde.Text;
             ctrl.m_szProjektname = m_szProjektname;
-            ctrl.m_ID_Klimaregion = m_ID_Klimaregion;
+
+            // Vorbild Form_Start: Stamm-Region (falls noetig) samt Klimadaten/Solar ins Projekt
+            // kopieren; am Projekt wird die ID der PROJEKT-Kopie gespeichert, nicht die STAMM-ID.
+            int projektRegionId = KlimaregionStammCtrl.ApplyRegionByNameToProjekt(comboBox_Klima.Text, m_ID_Projekt);
+            if (projektRegionId <= 0)
+            {
+                // Fallback: Name existiert evtl. nur noch als Projekt-Kopie (nicht mehr im Katalog).
+                projektRegionId = KlimaregionStammCtrl.GetProjektRegionId(comboBox_Klima.Text, m_ID_Projekt);
+            }
+            if (projektRegionId > 0)
+            {
+                m_ID_Klimaregion = projektRegionId;
+                ctrl.m_ID_Klimaregion = projektRegionId;
+            }
+            // Bei leerer/unbekannter Auswahl bleibt die bisherige Zuordnung aus ReadSingle erhalten.
+
             ctrl.Update();
         }
 
