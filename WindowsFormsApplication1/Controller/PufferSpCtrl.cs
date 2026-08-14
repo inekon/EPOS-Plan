@@ -145,11 +145,26 @@ namespace WindowsFormsApplication1
 
         // --- STAMM -> PROJEKT KOPIE (analog HeizkesselCtrl/BHKWCtrl) ---
 
-        // Liefert die Projekt-ID (Tab_Pufferspeicher.ID) eines Bezeichners im Projekt, oder 0.
+        /// <summary>
+        /// Liefert die Projekt-ID (Tab_Pufferspeicher.ID) eines Bezeichners im Projekt, oder 0.
+        ///
+        /// Paket 2 / Konzept 5.2: Seit der Dedup-Aufhebung darf es MEHRERE Projektzeilen
+        /// gleichen Bezeichners geben (Mehrfachanlage desselben Katalogtyps, E7). Die
+        /// bezeichnerbasierten Altpfade (<c>Z_ProjektPufferSpCtrl.Insert</c>,
+        /// <c>PufferSpCtrl.CopyFromStamm</c>, <c>WaermequelleClass.Quellspeicher</c>)
+        /// brauchen trotzdem ein eindeutiges Ergebnis. <c>MIN(ID)</c> macht die Auswahl
+        /// deterministisch und trifft dieselbe Zeile wie die übrigen Altpfade
+        /// (<c>PufferSpCtrl.PendelspeicherId</c>: <c>TOP 1 … ORDER BY ID</c>, Migration R6).
+        ///
+        /// Ohne diese Festlegung entschiede die Datenbankreihenfolge — genau der stille
+        /// Datenfehler, den Konzept 3.4 an anderer Stelle ausdrücklich ausschließt.
+        /// Die Verwaltung (4.3) hängt bei Namensgleichheit deshalb zusätzlich ein Suffix
+        /// an, siehe <see cref="EindeutigerBezeichner"/>.
+        /// </summary>
         public int GetProjektId(string szBezeichner, int idProjekt)
         {
             object v = DataRepository.ExecuteScalar(
-                "SELECT ID FROM Tab_Pufferspeicher WHERE Bezeichner = ? AND ID_Projekt = ?",
+                "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE Bezeichner = ? AND ID_Projekt = ?",
                 new OleDbParameter("@bez", szBezeichner ?? ""),
                 new OleDbParameter("@idProj", idProjekt));
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
@@ -264,6 +279,267 @@ namespace WindowsFormsApplication1
                 "DELETE FROM Tab_Pufferspeicher WHERE " + filter,
                 new OleDbParameter("@idProj", idProjekt),
                 new OleDbParameter("@idProj2", idProjekt));
+        }
+
+        // --- Projekt-Puffer-Verwaltung (Paket 2, Konzept 4.3 / 5.2) ------------------
+
+        /// <summary>
+        /// EXPLIZITE Übernahme aus dem Katalog: legt IMMER eine neue Projektzeile an
+        /// (Konzept 4.3, Punkt 4 und 5.2 „Mehrfachanlage desselben Katalogtyps ist
+        /// zulässig", E7).
+        ///
+        /// Bewusst getrennt von <see cref="CopyFromStamm(int,int)"/>: der Altpfad wird
+        /// implizit aus <c>Z_ProjektPufferSpCtrl.Insert</c> heraus bei JEDEM Speichern der
+        /// Konfiguration gerufen. Würde dort die Dedup-Prüfung entfallen, entstünde bei
+        /// jedem Speichern ein weiterer Duplikat-Puffer (Befund aus Paket 1). Die
+        /// Aufhebung gilt deshalb nur hier — im Pfad, den der Anwender ausdrücklich
+        /// auslöst.
+        ///
+        /// Bei Namensgleichheit hängt <see cref="EindeutigerBezeichner"/> ein Suffix an,
+        /// damit die verbleibenden bezeichnerbasierten Altpfade eindeutig bleiben.
+        /// </summary>
+        /// <returns>ID der neuen Projektzeile, -1 bei Fehler.</returns>
+        public int CopyFromStammNeu(int stammId, int idProjekt, string verwendung,
+                                    int? vorlauf = null, int? ruecklauf = null)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + PufferSpStammCtrl.TABLE + "] WHERE ID = ?",
+                new OleDbParameter("@id", stammId));
+
+            if (dt == null || dt.Rows.Count == 0)
+            {
+                Console.WriteLine("Pufferspeicher-Stammdatensatz nicht gefunden (ID " + stammId + ").");
+                return -1;
+            }
+
+            DataRow s = dt.Rows[0];
+
+            return ProjektPufferAnlegen(
+                idProjekt,
+                s["Bezeichner"].ToString(),
+                Text(ColOrNull(s, "Hersteller")),
+                Text(ColOrNull(s, "Speichertyp")),
+                StilleDb.Zahl(ColOrNull(s, "Gesamtvolumen")),
+                StilleDb.Kommazahl(ColOrNull(s, "Bereitschaftsverluste")),
+                StilleDb.Kommazahl(ColOrNull(s, "Investitionskosten")),
+                verwendung,
+                vorlauf ?? SystemVorlauf(idProjekt),
+                ruecklauf ?? SystemRuecklauf(idProjekt),
+                ProjektPuffer.SCHWELLE_EIN_DEFAULT,
+                ProjektPuffer.SCHWELLE_AUS_DEFAULT,
+                ProjektPuffer.SCHWELLE_AUS_DEFAULT,
+                0);
+        }
+
+        /// <summary>
+        /// Legt einen Projekt-Pufferspeicher an — Puffer-Zeile UND Anlagenzeile
+        /// (<c>ID_Type = 12</c>), wie es die Konsistenzregel aus Konzept 5.2 verlangt:
+        /// „Beim Anlegen eines Puffers über die Verwaltung wird zusätzlich die
+        /// Anlagenzeile geschrieben, damit der Projektbaum den Puffer weiterhin zeigt."
+        ///
+        /// Der Bezeichner wird über <see cref="EindeutigerBezeichner"/> geführt.
+        /// </summary>
+        /// <returns>ID des neuen Puffers, -1 bei Fehler.</returns>
+        public static int ProjektPufferAnlegen(int idProjekt, string bezeichner, string hersteller,
+                                               string speichertyp, int volumenLiter, double verluste,
+                                               double investitionskosten, string verwendung,
+                                               int? vorlauf, int? ruecklauf,
+                                               double schwelleEin, double schwelleAus,
+                                               double schwelleAusNachrang, int entladeprio)
+        {
+            if (idProjekt <= 0 || string.IsNullOrEmpty(bezeichner)) return -1;
+
+            string name = EindeutigerBezeichner(idProjekt, bezeichner, 0);
+
+            // Tab_Pufferspeicher.ID ist kein AutoWert (Muster CopyFromStamm).
+            int neueId = StilleDb.Zahl(StilleDb.Scalar("SELECT MAX(ID) FROM Tab_Pufferspeicher")) + 1;
+            if (neueId <= 0) return -1;
+
+            if (StilleDb.NonQuery(ProjektPuffer.SQL_PUFFER_INSERT_VOLL,
+                                  ProjektPuffer.PufferParameterVoll(
+                                      neueId, idProjekt, name, hersteller, speichertyp,
+                                      volumenLiter, verluste, investitionskosten, verwendung,
+                                      vorlauf, ruecklauf,
+                                      schwelleEin, schwelleAus, schwelleAusNachrang, entladeprio)) < 0)
+                return -1;
+
+            // Anlagenzeile nachtragen - eine je Projekt + Bezeichner (Regel R4 der Migration)
+            if (!AnlagenzeileVorhanden(idProjekt, name))
+                StilleDb.NonQuery(ProjektPuffer.SQL_ANLAGENZEILE_INSERT,
+                                  ProjektPuffer.AnlagenzeileParameter(idProjekt, name, neueId));
+
+            return neueId;
+        }
+
+        /// <summary>Ändert einen vorhandenen Projekt-Puffer (Konzept 4.3).</summary>
+        public static bool ProjektPufferAendern(int idPuffer, int idProjekt, string bezeichner,
+                                                string hersteller, string speichertyp, int volumenLiter,
+                                                double verluste, double investitionskosten,
+                                                string verwendung, int? vorlauf, int? ruecklauf,
+                                                double schwelleEin, double schwelleAus,
+                                                double schwelleAusNachrang, int entladeprio)
+        {
+            if (idPuffer <= 0 || string.IsNullOrEmpty(bezeichner)) return false;
+
+            string alterName = StilleDb.Text(StilleDb.Scalar(
+                "SELECT Bezeichner FROM Tab_Pufferspeicher WHERE ID = ?",
+                StilleDb.Par("@id", OleDbType.Integer, idPuffer)));
+
+            string name = string.Equals(alterName, bezeichner, StringComparison.Ordinal)
+                ? bezeichner
+                : EindeutigerBezeichner(idProjekt, bezeichner, idPuffer);
+
+            if (StilleDb.NonQuery(ProjektPuffer.SQL_PUFFER_UPDATE_VOLL,
+                                  ProjektPuffer.PufferParameterVollUpdate(
+                                      idPuffer, name, hersteller, speichertyp, volumenLiter,
+                                      verluste, investitionskosten, verwendung,
+                                      vorlauf, ruecklauf,
+                                      schwelleEin, schwelleAus, schwelleAusNachrang, entladeprio)) < 0)
+                return false;
+
+            // Die Anlagenzeile führt denselben Bezeichner - sonst greift
+            // ProjektWaisenEntfernen zu (Abgleich läuft über den Namen).
+            if (!string.Equals(alterName, name, StringComparison.Ordinal) && alterName.Length > 0)
+            {
+                StilleDb.NonQuery(
+                    "UPDATE Tab_Energieanlagen SET Bezeichner = ? " +
+                    "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
+                    StilleDb.Par("@neu", OleDbType.VarWChar, name),
+                    StilleDb.Par("@proj", OleDbType.Integer, idProjekt),
+                    StilleDb.Par("@typ", OleDbType.Integer, ProjektPuffer.TYP_PUFFER),
+                    StilleDb.Par("@alt", OleDbType.VarWChar, alterName));
+
+                // Und die Alt-Zuordnung: Z_ProjektPufferSp.Pufferspeicher ist eine
+                // TEXTreferenz. Bleibt dort der alte Name stehen, legt das nächste
+                // "Speichern" einen DUPLIKAT-PUFFER an - Z_ProjektPufferSpCtrl.Insert
+                // löst den Namen über GetProjektId auf, findet ihn nach dem Umbenennen
+                // nicht mehr und ruft CopyFromStamm, das eine zweite Projektkopie unter
+                // dem ALTEN Namen erzeugt. Reproduziert im Review zu Paket 2.
+                //
+                // Schlüssel ist die ID_Pufferspeicher, nicht der Name: sie ist seit der
+                // Migration Pflichtspalte mit erzwungener Beziehung und trifft genau die
+                // Zeilen dieses Speichers - gleichnamige Zeilen anderer Speicher bleiben
+                // unangetastet.
+                StilleDb.NonQuery(
+                    "UPDATE Z_ProjektPufferSp SET Pufferspeicher = ? WHERE ID_Pufferspeicher = ?",
+                    StilleDb.Par("@neu", OleDbType.VarWChar, name),
+                    StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Ein im Projekt noch nicht vergebener Bezeichner: „PS 800", „PS 800 (2)", …
+        ///
+        /// Die Dedup-Aufhebung aus Konzept 5.2 erlaubt mehrere baugleiche Puffer je
+        /// Projekt. Gleiche NAMEN darf es trotzdem nicht geben: <c>GetProjektId</c>,
+        /// <c>Z_ProjektPufferSp.Pufferspeicher</c>, <c>WaermequelleClass.Quellspeicher</c>
+        /// und <c>ProjektWaisenEntfernen</c> lösen weiterhin über den Bezeichner auf. Das
+        /// Suffix hält diese Altpfade eindeutig, ohne die Mehrfachanlage zu verhindern.
+        /// </summary>
+        /// <param name="idAusnahme">Puffer-ID, die beim Namensvergleich übergangen wird (Ändern).</param>
+        public static string EindeutigerBezeichner(int idProjekt, string wunsch, int idAusnahme)
+        {
+            string basis = (wunsch ?? "").Trim();
+            if (basis.Length == 0) basis = "Pufferspeicher";
+
+            for (int n = 1; n < 1000; n++)
+            {
+                string kandidat = n == 1 ? basis : basis + " (" + n + ")";
+
+                int treffer = StilleDb.Zahl(StilleDb.Scalar(
+                    "SELECT COUNT(*) FROM Tab_Pufferspeicher " +
+                    "WHERE ID_Projekt = ? AND Bezeichner = ? AND ID <> ?",
+                    StilleDb.Par("@proj", OleDbType.Integer, idProjekt),
+                    StilleDb.Par("@bez", OleDbType.VarWChar, kandidat),
+                    StilleDb.Par("@aus", OleDbType.Integer, idAusnahme)));
+
+                if (treffer == 0) return kandidat;
+            }
+
+            return basis + " (" + DateTime.Now.ToString("HHmmss") + ")";
+        }
+
+        /// <summary>
+        /// Anlagen, die den Puffer als Quelle oder Senke referenzieren — Grundlage für
+        /// die Blockade beim Entfernen (Konzept 5.2, Konsistenzregel). Je Treffer ein
+        /// fertiger Anzeigetext.
+        /// </summary>
+        public static List<string> ReferenzenAufPuffer(int idPuffer)
+        {
+            List<string> treffer = new List<string>();
+            if (idPuffer <= 0) return treffer;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT Bezeichner, ID_Type, WS_ID_Puffer, WS_ID_Puffer2, WQ_ID_Puffer " +
+                "FROM Tab_Energieanlagen " +
+                "WHERE WS_ID_Puffer = ? OR WS_ID_Puffer2 = ? OR WQ_ID_Puffer = ? " +
+                "ORDER BY Bezeichner",
+                StilleDb.Par("@a", OleDbType.Integer, idPuffer),
+                StilleDb.Par("@b", OleDbType.Integer, idPuffer),
+                StilleDb.Par("@c", OleDbType.Integer, idPuffer));
+            if (dt == null) return treffer;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string bezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
+                string erzeuger = Ladeordnung.ErzeugerName(StilleDb.Zahl(StilleDb.Feld(r, "ID_Type")));
+
+                List<string> rollen = new List<string>();
+                if (StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer")) == idPuffer) rollen.Add("Hauptsenke");
+                if (StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer2")) == idPuffer) rollen.Add("Zweitsenke");
+                if (StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer")) == idPuffer) rollen.Add("Wärmequelle");
+
+                treffer.Add(bezeichner + " (" + erzeuger + ") - " + string.Join(", ", rollen));
+            }
+
+            return treffer;
+        }
+
+        /// <summary>
+        /// Entfernt einen Projekt-Pufferspeicher samt Anlagenzeile (Konzept 5.2).
+        ///
+        /// Der Aufrufer muss vorher über <see cref="ReferenzenAufPuffer"/> prüfen und mit
+        /// Hinweis blockieren; hier wird nur noch geräumt. <c>ReferenzenLoesen</c> läuft
+        /// trotzdem mit — die Beziehungen aus Schritt 4 der SchemaMigration sind
+        /// RESTRIKTIV, und ein Rest-Verweis (etwa das alte <c>ID_PUFFER</c> der eigenen
+        /// Anlagenzeile) ließe das DELETE sonst scheitern.
+        /// </summary>
+        public static bool ProjektPufferEntfernen(int idPuffer, int idProjekt)
+        {
+            if (idPuffer <= 0 || idProjekt <= 0) return false;
+
+            string bezeichner = StilleDb.Text(StilleDb.Scalar(
+                "SELECT Bezeichner FROM Tab_Pufferspeicher WHERE ID = ?",
+                StilleDb.Par("@id", OleDbType.Integer, idPuffer)));
+
+            // Alt-Zuordnungen dieses Speichers zuerst - sie hängen über
+            // Z_ProjektPufferSp.ID_Pufferspeicher am Puffer.
+            StilleDb.NonQuery("DELETE FROM Z_ProjektPufferSp WHERE ID_Pufferspeicher = ?",
+                              StilleDb.Par("@id", OleDbType.Integer, idPuffer));
+
+            // Anlagenzeile (ID_Type = 12) des Speichers
+            if (bezeichner.Length > 0)
+                StilleDb.NonQuery(
+                    "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
+                    StilleDb.Par("@proj", OleDbType.Integer, idProjekt),
+                    StilleDb.Par("@typ", OleDbType.Integer, ProjektPuffer.TYP_PUFFER),
+                    StilleDb.Par("@bez", OleDbType.VarWChar, bezeichner));
+
+            ReferenzenLoesen(new List<int> { idPuffer });
+
+            bool ok = StilleDb.NonQuery("DELETE FROM Tab_Pufferspeicher WHERE ID = ?",
+                                        StilleDb.Par("@id", OleDbType.Integer, idPuffer)) >= 0;
+
+            // Waisen aufräumen (B0-6a) - Projektkopien ohne Anlagenzeile
+            new PufferSpCtrl().ProjektWaisenEntfernen(idProjekt);
+            return ok;
+        }
+
+        private static string Text(object o)
+        {
+            return (o == null || o == DBNull.Value) ? "" : o.ToString();
         }
 
         // --- Systemvorgaben und Betriebstemperaturen (Etappe 4, 14.08.2026) ----------

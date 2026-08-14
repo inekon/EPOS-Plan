@@ -28,6 +28,18 @@ namespace WindowsFormsApplication1
         /// <summary>Verwendung eines Heizungspuffers (Konzept 5.1).</summary>
         public const string VERWENDUNG_HEIZUNG = "Heizung";
 
+        /// <summary>Verwendung eines Brauchwasserspeichers (Konzept 5.1, Paket 2).</summary>
+        public const string VERWENDUNG_BRAUCHWASSER = "Brauchwasser";
+
+        /// <summary>Einschaltschwelle der Nachladung [%] bei Neuanlage (Konzept 5.1).</summary>
+        public const double SCHWELLE_EIN_DEFAULT = 10.0;
+
+        /// <summary>
+        /// Abschaltschwelle [%] bei Neuanlage (Konzept 5.1). <c>Schwelle_Aus_Nachrang</c>
+        /// bekommt denselben Wert — keine Reservezone, verhaltensneutral (Konzept 3.4).
+        /// </summary>
+        public const double SCHWELLE_AUS_DEFAULT = 95.0;
+
         /// <summary>
         /// Literal des Erzeugers in <c>Z_ProjektPufferSp.Erzeuger</c>, auf das die Engine
         /// vergleicht (<c>SimulationControl.Do_Simulation</c>: alles andere wird mit
@@ -199,6 +211,92 @@ namespace WindowsFormsApplication1
                 Par("@verw",  OleDbType.VarWChar, VERWENDUNG_HEIZUNG),
                 Par("@vor",   OleDbType.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
                 Par("@rueck", OleDbType.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value)
+            };
+        }
+
+        // --- Projekt-Puffer aus der Verwaltung (Paket 2, Konzept 4.3) -----------------
+
+        /// <summary>
+        /// Vollständiger INSERT für die Puffer-Verwaltung (Konzept 4.3). Gegenüber
+        /// <see cref="SQL_PUFFER_INSERT"/> kommen <c>Hersteller</c> (Katalogübernahme)
+        /// sowie die drei Schwellen und die Entladepriorität dazu — die Verwaltung pflegt
+        /// alle Felder aus Konzept 5.1 in EINEM Schreibvorgang, statt sie nachzureichen.
+        /// </summary>
+        public const string SQL_PUFFER_INSERT_VOLL =
+            "INSERT INTO Tab_Pufferspeicher " +
+            "(ID, ID_Projekt, Bezeichner, Hersteller, Speichertyp, Gesamtvolumen, " +
+            " Bereitschaftsverluste, Investitionskosten, Verwendung, Vorlauf, Ruecklauf, " +
+            " Schwelle_Ein, Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio) " +
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+        /// <summary>Gegenstück zu <see cref="SQL_PUFFER_INSERT_VOLL"/> zum Ändern.</summary>
+        public const string SQL_PUFFER_UPDATE_VOLL =
+            "UPDATE Tab_Pufferspeicher SET " +
+            "Bezeichner = ?, Hersteller = ?, Speichertyp = ?, Gesamtvolumen = ?, " +
+            "Bereitschaftsverluste = ?, Investitionskosten = ?, Verwendung = ?, " +
+            "Vorlauf = ?, Ruecklauf = ?, Schwelle_Ein = ?, Schwelle_Aus = ?, " +
+            "Schwelle_Aus_Nachrang = ?, Entladeprio = ? WHERE ID = ?";
+
+        /// <summary>
+        /// Parameter zu <see cref="SQL_PUFFER_INSERT_VOLL"/>.
+        ///
+        /// Vorlauf/Rücklauf werden nur als BRAUCHBARES Paar geschrieben — dieselbe Regel
+        /// wie in <see cref="PufferParameter"/>: eine halbe oder vertauschte Angabe ergäbe
+        /// keine auswertbare Spreizung und verdeckte nur den Rückfallweg.
+        /// </summary>
+        public static OleDbParameter[] PufferParameterVoll(
+            int idPuffer, int idProjekt, string bezeichner, string hersteller, string speichertyp,
+            int volumenLiter, double verluste, double investitionskosten, string verwendung,
+            int? vorlauf, int? ruecklauf,
+            double schwelleEin, double schwelleAus, double schwelleAusNachrang, int entladeprio)
+        {
+            bool paar = IstTemperaturpaar(vorlauf, ruecklauf);
+
+            return new[]
+            {
+                Par("@id",       OleDbType.Integer,  idPuffer),
+                Par("@proj",     OleDbType.Integer,  idProjekt),
+                Par("@bez",      OleDbType.VarWChar, bezeichner),
+                Par("@her",      OleDbType.VarWChar, hersteller ?? ""),
+                Par("@typ",      OleDbType.VarWChar, string.IsNullOrEmpty(speichertyp) ? SPEICHERTYP_PUFFER : speichertyp),
+                Par("@vol",      OleDbType.Integer,  volumenLiter),
+                Par("@verl",     OleDbType.Double,   verluste),
+                Par("@inv",      OleDbType.Double,   investitionskosten),
+                Par("@verw",     OleDbType.VarWChar, string.IsNullOrEmpty(verwendung) ? VERWENDUNG_HEIZUNG : verwendung),
+                Par("@vor",      OleDbType.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
+                Par("@rueck",    OleDbType.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value),
+                Par("@sEin",     OleDbType.Double,   schwelleEin),
+                Par("@sAus",     OleDbType.Double,   schwelleAus),
+                Par("@sNachr",   OleDbType.Double,   schwelleAusNachrang),
+                Par("@entlade",  OleDbType.Integer,  entladeprio)
+            };
+        }
+
+        /// <summary>Parameter zu <see cref="SQL_PUFFER_UPDATE_VOLL"/> (ID zuletzt).</summary>
+        public static OleDbParameter[] PufferParameterVollUpdate(
+            int idPuffer, string bezeichner, string hersteller, string speichertyp,
+            int volumenLiter, double verluste, double investitionskosten, string verwendung,
+            int? vorlauf, int? ruecklauf,
+            double schwelleEin, double schwelleAus, double schwelleAusNachrang, int entladeprio)
+        {
+            bool paar = IstTemperaturpaar(vorlauf, ruecklauf);
+
+            return new[]
+            {
+                Par("@bez",      OleDbType.VarWChar, bezeichner),
+                Par("@her",      OleDbType.VarWChar, hersteller ?? ""),
+                Par("@typ",      OleDbType.VarWChar, string.IsNullOrEmpty(speichertyp) ? SPEICHERTYP_PUFFER : speichertyp),
+                Par("@vol",      OleDbType.Integer,  volumenLiter),
+                Par("@verl",     OleDbType.Double,   verluste),
+                Par("@inv",      OleDbType.Double,   investitionskosten),
+                Par("@verw",     OleDbType.VarWChar, string.IsNullOrEmpty(verwendung) ? VERWENDUNG_HEIZUNG : verwendung),
+                Par("@vor",      OleDbType.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
+                Par("@rueck",    OleDbType.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value),
+                Par("@sEin",     OleDbType.Double,   schwelleEin),
+                Par("@sAus",     OleDbType.Double,   schwelleAus),
+                Par("@sNachr",   OleDbType.Double,   schwelleAusNachrang),
+                Par("@entlade",  OleDbType.Integer,  entladeprio),
+                Par("@id",       OleDbType.Integer,  idPuffer)
             };
         }
 
