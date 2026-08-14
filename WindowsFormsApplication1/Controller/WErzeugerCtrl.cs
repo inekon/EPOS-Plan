@@ -21,7 +21,7 @@ namespace WindowsFormsApplication1
             {
                 string sql = @"UPDATE Tab_Energieanlagen 
                                SET ID_Projekt = ?, Bezeichner = ?, ID_Type = ?, ID_WP = ?, Betriebsart = ?, 
-                                   Sperrung = ?, Sperrzeit_von = ?, Sperrzeit_bis = ?, Vorlauf = ?, Ruecklauf = ?, 
+                                   Sperrung = ?, Sperrzeit_von = ?, Sperrzeit_bis = ?, Vorlauf = ?, Rücklauf = ?,
                                    Bivalenter_Betrieb = ?, Abschaltpunkt = ?, Nutzungszeit = ?, ID_SP = ?, ID_PV = ?, ID_Solar = ?
                                WHERE ID = ?";
 
@@ -78,7 +78,7 @@ namespace WindowsFormsApplication1
                string sql = @"INSERT INTO Tab_Energieanlagen 
                                (
                                    ID_Projekt, Bezeichner, ID_Type, ID_WP, Betriebsart, Sperrung, 
-                                   Sperrzeit_von, Sperrzeit_bis, Vorlauf, Ruecklauf, Bivalenter_Betrieb, 
+                                   Sperrzeit_von, Sperrzeit_bis, Vorlauf, Rücklauf, Bivalenter_Betrieb,
                                    Abschaltpunkt, Nutzungszeit, ID_SP, ID_PV, ID_Solar
                                ) 
                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -188,7 +188,7 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Sperrzeit_von") && row["Sperrzeit_von"] != DBNull.Value) Sperrzeit_von = Convert.ToInt32(row["Sperrzeit_von"]);
                 if (dt.Columns.Contains("Sperrzeit_bis") && row["Sperrzeit_bis"] != DBNull.Value) Sperrzeit_bis = Convert.ToInt32(row["Sperrzeit_bis"]);
                 if (dt.Columns.Contains("Vorlauf") && row["Vorlauf"] != DBNull.Value) Vorlauf = Convert.ToInt32(row["Vorlauf"]);
-                if (dt.Columns.Contains("Ruecklauf") && row["Ruecklauf"] != DBNull.Value) Ruecklauf = Convert.ToInt32(row["Ruecklauf"]);
+                if (dt.Columns.Contains("Rücklauf") && row["Rücklauf"] != DBNull.Value) Ruecklauf = Convert.ToInt32(row["Rücklauf"]);
                 if (dt.Columns.Contains("Bivalenter_Betrieb") && row["Bivalenter_Betrieb"] != DBNull.Value) Bivalenter_Betrieb = Convert.ToBoolean(row["Bivalenter_Betrieb"]);
                 if (dt.Columns.Contains("Abschaltpunkt") && row["Abschaltpunkt"] != DBNull.Value) Abschaltpunkt = Convert.ToDouble(row["Abschaltpunkt"]);
                 if (dt.Columns.Contains("Nutzungszeit") && row["Nutzungszeit"] != DBNull.Value) Nutzungszeit = Convert.ToInt32(row["Nutzungszeit"]);
