@@ -387,7 +387,8 @@ namespace WindowsFormsApplication1
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass. BHKW_TYP);
 
             simulation_bhkw.bhkw_list.Clear();
-            
+            simulation_bhkw.bhkw_list_Namen.Clear();
+
             int i = 0;
             while (rs.Next())
             {
