@@ -180,7 +180,11 @@ namespace WindowsFormsApplication1
             string szFilterVolumen = "";
             string sql = "";
 
-            szFilterVolumen = "";
+            // B0-10: Vorbelegung "alle Volumina" — ohne Treffer in der Literalkette blieb
+            // der Volumenteil sonst leer und das SQL endete in "... and  order by ...".
+            // Auslöser ist Freitext in der editierbaren ComboBox; das Symptom war eine
+            // stumme Leerliste (RecordSet fängt den Syntaxfehler ab).
+            szFilterVolumen = "Gesamtvolumen Like '%'";
             if (comboBox_Volumen.Text == "Alle" || comboBox_Volumen.Text == "") szFilterVolumen = "Gesamtvolumen Like '%'";
             else if (comboBox_Volumen.Text == "bis 100 l") szFilterVolumen = "Gesamtvolumen <100";
             else if (comboBox_Volumen.Text == ">100 bis 200 l") szFilterVolumen = "Gesamtvolumen >=100 and Gesamtvolumen <200";
@@ -225,6 +229,17 @@ namespace WindowsFormsApplication1
         private void btn_Löschen_Click(object sender, EventArgs e)
         {
             if (listBox_Pufferspeicher_DB.SelectedIndex == -1) { MessageBox.Show("Bitte ein Modul auswählen!"); return; }
+
+            // B0-8: Der Button löscht aus dem KATALOG (Tab_Pufferspeicher_STAMM), nicht
+            // aus dem Projekt — bisher ohne Rückfrage und damit global wirksam.
+            // Explizite Bestätigung, damit kein Katalogdatensatz versehentlich verschwindet.
+            if (MessageBox.Show(
+                    "Der Pufferspeicher '" + listBox_Pufferspeicher_DB.Text + "' wird aus dem Katalog\n" +
+                    "(Stammdaten) gelöscht und steht danach in keinem Projekt mehr zur Auswahl.\n\n" +
+                    "Wirklich aus den Stammdaten löschen?",
+                    "Katalog-Löschung",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning) != DialogResult.Yes) return;
 
             if (!pufferspctrl.Delete(listBox_Pufferspeicher_DB.Text)) return;
 

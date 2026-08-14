@@ -56,7 +56,11 @@ namespace WindowsFormsApplication1
             string szFilterVolumen = "";
             string sql = "";
 
-            szFilterVolumen = "";
+            // B0-10: Vorbelegung "alle Volumina" — ohne Treffer in der Literalkette blieb
+            // der Volumenteil sonst leer und das SQL endete in "... and  order by ...".
+            // Auslöser ist Freitext in der editierbaren ComboBox; das Symptom war eine
+            // stumme Leerliste (RecordSet fängt den Syntaxfehler ab).
+            szFilterVolumen = "Gesamtvolumen Like '%'";
             if (comboBox_Volumen.Text == "Alle" || comboBox_Volumen.Text == "") szFilterVolumen = "Gesamtvolumen Like '%'";
             else if (comboBox_Volumen.Text == "bis 100 l") szFilterVolumen = "Gesamtvolumen <100";
             else if (comboBox_Volumen.Text == ">100 bis 200 l") szFilterVolumen = "Gesamtvolumen >=100 and Gesamtvolumen <200";
