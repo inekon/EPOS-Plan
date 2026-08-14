@@ -35,6 +35,25 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // B0-1: Einmalige Prüfung je Prozess, ob die Schwellen-Spalten existieren.
+        // SchemaSicherstellen legt sie zwar an, schluckt ein fehlgeschlagenes ALTER
+        // aber still (schreibgeschützte/gesperrte DB). Insert fällt dann auf die alte
+        // 7-Spalten-Variante zurück, statt nach dem Delete des Speicherns sämtliche
+        // Zuordnungen des Projekts zu verlieren.
+        private static bool? _schwellenSpalten;
+        private static bool SchwellenSpaltenVorhanden()
+        {
+            if (_schwellenSpalten.HasValue) return _schwellenSpalten.Value;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable("SELECT TOP 1 * FROM Z_ProjektPufferSp");
+                _schwellenSpalten = dt != null && dt.Columns.Contains("Schwelle_Ein")
+                                               && dt.Columns.Contains("Schwelle_Aus");
+            }
+            catch { _schwellenSpalten = false; }
+            return _schwellenSpalten.Value;
+        }
+
         public bool Insert()
         {
             try
@@ -60,24 +79,55 @@ namespace WindowsFormsApplication1
                 ID_Pufferspeicher = idPuffer;
 
                 // Umstellung von unparametrisiertem SELECT-String auf standardkonformes VALUES-Statement mit Parametern
-                string sql = @"INSERT INTO Z_ProjektPufferSp
-                               (
-                                   ID_Projekt, ID_Pufferspeicher, Erzeuger, Pufferspeicher,
-                                   Vorlauf, Ruecklauf, Prioritaet
-                               )
-                               VALUES (?, ?, ?, ?, ?, ?, ?)";
+                // B0-1: Schwelle_Ein/Schwelle_Aus mitschreiben — sie hängen an der
+                // Zuordnungszeile und gingen beim Delete/Insert-Zyklus des Speicherns
+                // sonst verloren (stiller Rückfall auf 10/95 %).
+                if (SchwellenSpaltenVorhanden())
+                {
+                    string sql = @"INSERT INTO Z_ProjektPufferSp
+                                   (
+                                       ID_Projekt, ID_Pufferspeicher, Erzeuger, Pufferspeicher,
+                                       Vorlauf, Ruecklauf, Prioritaet, Schwelle_Ein, Schwelle_Aus
+                                   )
+                                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                OleDbParameter[] ps = {
-                    new OleDbParameter("@idProj", ID_Projekt),
-                    new OleDbParameter("@idPuf", idPuffer),
-                    new OleDbParameter("@erz", Erzeuger ?? (object)DBNull.Value),
-                    new OleDbParameter("@puf", PufferSp ?? (object)DBNull.Value),
-                    new OleDbParameter("@vor", Vorlauf),
-                    new OleDbParameter("@rue", Ruecklauf),
-                    new OleDbParameter("@prio", Prioritaet)
-                };
+                    OleDbParameter[] ps = {
+                        new OleDbParameter("@idProj", ID_Projekt),
+                        new OleDbParameter("@idPuf", idPuffer),
+                        new OleDbParameter("@erz", Erzeuger ?? (object)DBNull.Value),
+                        new OleDbParameter("@puf", PufferSp ?? (object)DBNull.Value),
+                        new OleDbParameter("@vor", Vorlauf),
+                        new OleDbParameter("@rue", Ruecklauf),
+                        new OleDbParameter("@prio", Prioritaet),
+                        new OleDbParameter("@sEin", Schwelle_Ein.HasValue ? (object)Schwelle_Ein.Value : DBNull.Value),
+                        new OleDbParameter("@sAus", Schwelle_Aus.HasValue ? (object)Schwelle_Aus.Value : DBNull.Value)
+                    };
 
-                return DataRepository.ExecuteSQL(sql, ps);
+                    return DataRepository.ExecuteSQL(sql, ps);
+                }
+                else
+                {
+                    // Rückfallebene: Schema ohne Schwellen-Spalten — Zuordnung ohne
+                    // Schwellen speichern (Verhalten wie vor B0-1), kein Datenverlust.
+                    string sql = @"INSERT INTO Z_ProjektPufferSp
+                                   (
+                                       ID_Projekt, ID_Pufferspeicher, Erzeuger, Pufferspeicher,
+                                       Vorlauf, Ruecklauf, Prioritaet
+                                   )
+                                   VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+                    OleDbParameter[] ps = {
+                        new OleDbParameter("@idProj", ID_Projekt),
+                        new OleDbParameter("@idPuf", idPuffer),
+                        new OleDbParameter("@erz", Erzeuger ?? (object)DBNull.Value),
+                        new OleDbParameter("@puf", PufferSp ?? (object)DBNull.Value),
+                        new OleDbParameter("@vor", Vorlauf),
+                        new OleDbParameter("@rue", Ruecklauf),
+                        new OleDbParameter("@prio", Prioritaet)
+                    };
+
+                    return DataRepository.ExecuteSQL(sql, ps);
+                }
             }
             catch (Exception ex)
             {
@@ -135,6 +185,14 @@ namespace WindowsFormsApplication1
 
                 if (dt.Columns.Contains("Prioritaet") && row["Prioritaet"] != DBNull.Value)
                     item.Prioritaet = Convert.ToInt32(row["Prioritaet"]);
+
+                // B0-1: Schwellen der Speicherregelung mitlesen (Spalten existieren nach
+                // SchemaSicherstellen; in Alt-Datenbanken bleiben sie ggf. null)
+                if (dt.Columns.Contains("Schwelle_Ein") && row["Schwelle_Ein"] != DBNull.Value)
+                    item.Schwelle_Ein = Convert.ToDouble(row["Schwelle_Ein"]);
+
+                if (dt.Columns.Contains("Schwelle_Aus") && row["Schwelle_Aus"] != DBNull.Value)
+                    item.Schwelle_Aus = Convert.ToDouble(row["Schwelle_Aus"]);
 
                 // Das Element der dynamischen Liste hinzufügen
                 _internalList.Add(item);

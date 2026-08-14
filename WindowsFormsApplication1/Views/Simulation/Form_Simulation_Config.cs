@@ -1528,31 +1528,69 @@ namespace WindowsFormsApplication1
 
             ctrlpsp.ID_Projekt = m_ID_Projekt;
 
+            // B0-1: Die Schwellen der Speicherregelung hängen an der Zuordnungszeile und
+            // überleben den Delete/Insert-Zyklus nicht (stiller Rückfall auf 10/95 %).
+            // Vor dem Löschen sichern; Schlüssel: Erzeuger (DB-Wert) + Pufferspeicher.
+            var alteSchwellen = new Dictionary<string, double?[]>();
+            ctrlpsp.ReadAll("ID_Projekt=" + m_ID_Projekt);
+            for (int i = 0; i < ctrlpsp.rows; i++)
+            {
+                var alt = ctrlpsp.items[i];
+                alteSchwellen[alt.Erzeuger + "|" + alt.PufferSp] =
+                    new double?[] { alt.Schwelle_Ein, alt.Schwelle_Aus };
+            }
+
             if (!ctrlpsp.Delete()) return;
+
+            // B0-11: Mapping-Liste einmal statt in jedem Schleifendurchlauf aufbauen.
+            var items = new List<LanguageItem>
+            {
+                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_BHKW, DbValue = "BHKW" },
+                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_HEIZKESSEL, DbValue = "Heizkessel" },
+                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_SOLARTHERMIE, DbValue = "Solarthermie" },
+                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_GESAMTSYSTEM, DbValue = "Gesamtsystem" },
+                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_WAERMEPUMPE, DbValue = "Wärmepumpe" },
+            };
 
             // WICHTIG: Gespeichert wird der komplette Datenbestand - nicht nur die
             // aktuell (per Pufferspeicher-Checkbox gefiltert) angezeigten Zeilen!
+            int fehlgeschlagen = 0;
             for (int i = 0; i < _zuordnungen.Count; i++)
             {
                 string[] z = _zuordnungen[i];
                 ctrlpsp.PufferSp = z[1];
 
-                var items = new List<LanguageItem>
-                {
-                    new LanguageItem { DisplayName = MyResource.Resource.KONFIG_BHKW, DbValue = "BHKW" },
-                    new LanguageItem { DisplayName = MyResource.Resource.KONFIG_HEIZKESSEL, DbValue = "Heizkessel" },
-                    new LanguageItem { DisplayName = MyResource.Resource.KONFIG_SOLARTHERMIE, DbValue = "Solarthermie" },
-                    new LanguageItem { DisplayName = MyResource.Resource.KONFIG_GESAMTSYSTEM, DbValue = "Gesamtsystem" },
-                    new LanguageItem { DisplayName = MyResource.Resource.KONFIG_WAERMEPUMPE, DbValue = "Wärmepumpe" },
-                };
-                var match = items.FirstOrDefault(x => x.DisplayName == z[0]);
+                // B0-11: erst über den Anzeigenamen matchen, nur bei Misserfolg über den
+                // DB-Wert — defensiv gegen Alt-/Fremdwerte in _zuordnungen, damit nie ein
+                // lokalisierter Anzeigename als Erzeuger in der Datenbank landet.
+                var match = items.FirstOrDefault(x => x.DisplayName == z[0])
+                         ?? items.FirstOrDefault(x => x.DbValue == z[0]);
                 ctrlpsp.Erzeuger = match?.DbValue ?? z[0];
+
+                // B0-1: gesicherte Schwellen der Zuordnung wieder mitgeben
+                double?[] schwellen;
+                if (alteSchwellen.TryGetValue(ctrlpsp.Erzeuger + "|" + ctrlpsp.PufferSp, out schwellen))
+                {
+                    ctrlpsp.Schwelle_Ein = schwellen[0];
+                    ctrlpsp.Schwelle_Aus = schwellen[1];
+                }
+                else
+                {
+                    ctrlpsp.Schwelle_Ein = null;
+                    ctrlpsp.Schwelle_Aus = null;
+                }
 
                 ctrlpsp.Vorlauf = Int32.Parse(z[2]);
                 ctrlpsp.Ruecklauf = Int32.Parse(z[3]);
                 ctrlpsp.Prioritaet = prioritaet++;
-                ctrlpsp.Insert();
+                // B0-1: Rückgabewert auswerten — nach dem Delete ist ein stiller
+                // Insert-Fehlschlag ein Datenverlust und muss sichtbar werden.
+                if (!ctrlpsp.Insert()) fehlgeschlagen++;
             }
+
+            if (fehlgeschlagen > 0)
+                ShowStatus("⚠ " + fehlgeschlagen + " Pufferspeicher-Zuordnung(en) konnten nicht gespeichert werden",
+                    Color.Firebrick);
         }
 
         private void AddErzeuger()
