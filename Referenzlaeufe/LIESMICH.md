@@ -12,9 +12,9 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-14_Paket4/`** — seit der Abnahme der Paket-4-Review-Nacharbeit (14.08.2026) die
-gültige Referenz, **neun Projekte** (1007, 1008, 1010, 1011, 1017, 1018, 1021, 1023, 1024).
-Jeder neue Vergleich läuft gegen diesen Ordner.
+**`2026-08-14_B1-Fixes/`** — seit dem Abend des 14.08.2026 die gültige Referenz,
+**neun Projekte** (1007, 1008, 1010, 1011, 1017, 1018, 1021, 1023, 1024). Jeder neue
+Vergleich läuft gegen diesen Ordner.
 
 > **Die Basis ist mit Feature-Flag `Kaskade_Zweikanalig` = AUS gerechnet** und bildet damit
 > weiter den einkanaligen Altpfad ab. Das bleibt so, bis die Bestandsprojekte projektweise
@@ -22,15 +22,27 @@ Jeder neue Vergleich läuft gegen diesen Ordner.
 > Regressionsfall gegen diese Basis — er wird gegen den Flag-aus-Lauf desselben Codes
 > verglichen (Umsetzungsprotokoll Paket 4).
 
-Gegenüber `2026-08-14_Paket7` sind genau **drei** Werte neu, alle in Projekt 1021 und alle
+Gegenüber `2026-08-14_Paket4` weichen **drei Projekte** ab, vollständig zugeordnet in
+`2026-08-14_B1-Fixes/vergleich_protokoll.md`: **1008** und **1011** durch die
+Bestandsfehler-Fixes **B1-F1/B1-F2** (Stromganglinien fließen erstmals in den Strombedarf
+ein; Prozesswärme war still 0 — B0-Protokoll, Nachtrag B1-F1/B1-F2), **1024** durch
+**geänderte Projektdaten** (Heizkessel nach dem Paket4-Snapshot in die Kaskade
+aufgenommen; Alt- vs. Neu-Code auf identischer DB ist für 1024 vollständig PASS —
+kein Code-Effekt). Die übrigen sechs Projekte: PASS.
+
+## Frühere Stände
+
+`2026-08-14_Paket4/` bleibt als **vorheriger Stand** liegen. Gegenüber
+`2026-08-14_Paket7` waren dort genau **drei** Werte neu, alle in Projekt 1021 und alle
 begründet in `2026-08-14_Paket4/lauf_protokoll.md`: die ID-Semantik des Quellspeichers
 (`Pufferspeicher[0].ID_Pufferspeicher` 8 → 1018014) und die beiden laufzeitbasierten
 Skalare aus dem Bestandsfehler **B0-13** (`WaermepumpeModul[0].Betriebsstunden`
 6692,41 → 4,41; `Waermepumpe.Vollbenutzungsstunden` 3846,66 → 502,66). Alle übrigen
 2.260.920 Werte sind byte-genau gleich.
 
-`2026-08-14_Paket7/` bleibt als **vorheriger Stand** liegen, `2026-08-14_B0/` als
-**historischer Stand** (Zustand vor Paket 1/3/7, acht Projekte). Ein Vergleich gegen B0
+`2026-08-14_Paket7/` und `2026-08-14_B0/` bleiben als **historische Stände** liegen
+(Paket7: vor Paket 1/2/4, B0-12/13 und B1-Fixes; B0: vor Paket 1/3/7, acht Projekte).
+Ein Vergleich gegen B0
 meldet zwangsläufig FAIL — der Basiswechsel ist gewollt und in
 `2026-08-14_Paket7/vergleich_protokoll.md` sowie in
 `../WindowsFormsApplication1/Allgemein/Simulation/Paket7_Ergebnis_Anzeigen_Protokoll.md`
