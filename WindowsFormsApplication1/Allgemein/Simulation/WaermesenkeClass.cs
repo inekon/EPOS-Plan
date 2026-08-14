@@ -275,6 +275,44 @@ namespace WindowsFormsApplication1
             return id > 0 ? (object)id : DBNull.Value;
         }
 
+        /// <summary>
+        /// Zieht die Vorbelegung der Ladeprioritäten für ein Projekt nach: <c>NULL</c> wird
+        /// zu <c>0</c> („nach Vorgabe" bzw. „nicht gesetzt", Konzept 3.4).
+        ///
+        /// Dieselbe Anweisung wie Migrationsregel R5 — nur läuft die genau einmal je
+        /// Datenbank. Anlagen, die DANACH entstehen, tragen wieder NULL: Die
+        /// INSERT-Anweisungen der Erzeugerpfade führen diese Spalten nicht, und zwei von
+        /// ihnen (<c>WizardCtrl</c>, <c>Form_BHKWEing</c>/<c>Form_Heizkessel</c>) sind für
+        /// diese Paketarbeit gesperrt. Genau das hat der Schema-Nachweis des
+        /// Referenzlaufs sichtbar gemacht („Anlagen ohne Ladeprio-Vorgabe: 2" — zwei über
+        /// die Oberfläche angelegte Erzeuger in Projekt 1024).
+        ///
+        /// RECHNERISCH ändert sich dadurch nichts: <c>StilleDb.Zahl(NULL)</c> liefert 0,
+        /// die Engine behandelt beides gleich. Es geht um die Konsistenz des Bestands —
+        /// und darum, dass der Nachweis wieder das misst, wofür er gedacht ist.
+        ///
+        /// Dialogfrei (Konzept 13.4) und fehlertolerant: Fehlt eine Spalte, bleibt es beim
+        /// Bestand. Aufgerufen am Engine-Einstieg, wo auch das Schema sichergestellt wird.
+        /// </summary>
+        /// <returns>Zahl der geänderten Zeilen; 0 auch im Fehlerfall.</returns>
+        public static int VorbelegungNachziehen(int idProjekt)
+        {
+            if (idProjekt <= 0) return 0;
+
+            int summe = 0;
+            foreach (string spalte in new[]
+                     { "WS_Ladeprio", "WS_Ladeprio2", "WS_Ladeprio_PV", "WS_Ladegrenze", "WS_Ladegrenze2" })
+            {
+                int n = StilleDb.NonQuery(
+                    "UPDATE Tab_Energieanlagen SET [" + spalte + "] = 0 " +
+                    "WHERE ID_Projekt = ? AND [" + spalte + "] IS NULL",
+                    StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+                if (n > 0) summe += n;
+            }
+
+            return summe;
+        }
+
         // --- Projekt-Pufferspeicher ---------------------------------------------------
 
         /// <summary>
@@ -343,6 +381,57 @@ namespace WindowsFormsApplication1
             if (p.SchwelleAus <= 0) p.SchwelleAus = Ladeordnung.SCHWELLE_AUS_DEFAULT;
             if (p.SchwelleAusNachrang <= 0) p.SchwelleAusNachrang = p.SchwelleAus;
             return p;
+        }
+
+        /// <summary>
+        /// Senkenzuordnungen ALLER Wärmeerzeuger eines Projekts in Kaskadenreihenfolge
+        /// (Konzept 6.1) — die Form, in der die Engine sie ab Etappe 4b braucht.
+        ///
+        /// Gegenüber <see cref="Lesen"/> zwei Unterschiede: EINE Abfrage für das ganze
+        /// Projekt statt einer je Anlage, und das Ergebnis ist die Rechendarstellung
+        /// <see cref="Senkenzuordnung"/> (enum <see cref="Senke"/>) statt der
+        /// Datenbanksicht <see cref="SenkeDaten"/>. Normalisiert wird über denselben Weg
+        /// (<see cref="AusDatenzeile"/>), damit es keine zweite Auslegung der Felder gibt.
+        ///
+        /// Dialogfrei (Konzept 13.4). Fehlende Spalten liefern eine leere Liste statt
+        /// einer MessageBox; nie <c>null</c>.
+        ///
+        /// Aufgerufen wird sie von <c>SimulationControl</c> je Lauf; ausgewertet wird das
+        /// Ergebnis ausschließlich im ZWEIKANALIGEN Rechenweg
+        /// (<c>Kaskadenkontext.SenkeJeModul</c>). Der einkanalige Altpfad liest es nicht.
+        /// </summary>
+        public static List<Senkenzuordnung> SenkenLaden(int idProjekt)
+        {
+            List<Senkenzuordnung> liste = new List<Senkenzuordnung>();
+            if (idProjekt <= 0) return liste;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, WS_Ziel, WS_ID_Puffer, WS_Typ, WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV, " +
+                "       WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2 " +
+                "FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
+                "ORDER BY Prioritaet, ID",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                SenkeDaten d = AusDatenzeile(r);            // enthält Normalisieren
+                Senkenzuordnung z = new Senkenzuordnung();
+
+                z.AnlagenID = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                z.Haupt = Senkenzuordnung.SenkeAusZiel(d.Ziel);
+                z.IDPufferHaupt = d.ID_Puffer;
+                z.WSTyp = d.Bedarfsart;
+
+                // Nach Normalisieren gilt: HatZweitsenke ⇒ Ziel2 ist ein Puffer-Ziel.
+                z.Zweit = d.HatZweitsenke ? (Senke?)Senkenzuordnung.SenkeAusZiel(d.Ziel2) : null;
+                z.IDPufferZweit = d.HatZweitsenke ? d.ID_Puffer2 : 0;
+
+                liste.Add(z);
+            }
+
+            return liste;
         }
 
         /// <summary>Verwendung eines Puffers; leere Angabe gilt als „Heizung" (siehe ProjektPuffer).</summary>

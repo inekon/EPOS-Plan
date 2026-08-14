@@ -33,12 +33,13 @@ namespace WindowsFormsApplication1
     /// damit gegenstandslos.
     ///
     /// ETAPPE 1 deckt die Schritte 1-4 ab (Schema), ETAPPE 2 den Schritt 5 - die
-    /// einmalige Projektdatenmigration nach Konzept 5.5.
+    /// einmalige Projektdatenmigration nach Konzept 5.5. Schritt 6 kommt mit Paket 4
+    /// (Etappe 4a) hinzu und legt das Feature-Flag der zweikanaligen Kaskade an.
     /// </summary>
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 5;
+        public const int ZIEL_VERSION = 6;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -47,6 +48,14 @@ namespace WindowsFormsApplication1
         /// die Datenmigration hinein, ohne die Schemaschritte zu wiederholen.
         /// </summary>
         public const int SCHRITT_5_DATENMIGRATION = 5;
+
+        /// <summary>
+        /// Nummer des Feature-Flags der zweikanaligen Kaskade (Paket 4, Etappe 4a).
+        /// Rein additives DDL aus dem Spaltenkatalog - eine Datenbank auf Stand 5 läuft
+        /// allein in diesen Schritt hinein, ohne die Schemaschritte oder die
+        /// Datenmigration zu wiederholen.
+        /// </summary>
+        public const int SCHRITT_6_FEATUREFLAG = 6;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -151,6 +160,12 @@ namespace WindowsFormsApplication1
                         "Datenmigration Quellen/Senken (Konzept 5.5)",
                         "Die Projektdaten konnten nicht auf das neue Senkenmodell umgestellt werden.",
                         Schritt_5_ProjektdatenQuellenSenken),
+
+            // PAKET 4, ETAPPE 4a - Feature-Flag der zweikanaligen Kaskade (Kapitel 9).
+            new Schritt(SCHRITT_6_FEATUREFLAG,
+                        "Feature-Flag Kaskade_Zweikanalig in Tab_Einstellungen (Konzept Kapitel 9)",
+                        "Die Projekteinstellung für die zweikanalige Kaskade konnte nicht angelegt werden.",
+                        Schritt_6_FeatureFlag),
         };
 
         // =================================================================================
@@ -435,6 +450,17 @@ namespace WindowsFormsApplication1
         private static bool Schritt_2_SpaltenPuffer(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt2_Speicher);
+        }
+
+        /// <summary>
+        /// Schritt 6 (Paket 4, Etappe 4a): die eine Spalte des Feature-Flags. Bewusst
+        /// derselbe additive Weg wie Schritt 1 und 2 - eigener Schritt nur deshalb, weil
+        /// eine bereits auf Stand 5 stehende Datenbank die Schritte 1-5 nicht wiederholen
+        /// darf (Schritt 5 ist das einzige DML des Vorhabens).
+        /// </summary>
+        private static bool Schritt_6_FeatureFlag(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt6_FeatureFlag);
         }
 
         /// <summary>

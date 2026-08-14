@@ -546,6 +546,30 @@ namespace WindowsFormsApplication1
         /// Der Speicher wird in der Simulation je Stunde um die Verdampferwärme
         /// entladen (Wärmeproduktion - Stromaufnahme) und durch die eingestellte
         /// Regeneration nachgeladen.
+        ///
+        /// AUFLÖSUNG DES SPEICHERS seit Paket 4 (Etappe 4a) - Konzept 7, Zeile
+        /// <c>WaermequelleClass</c>: „<c>WQ_ID_Puffer</c> statt Bezeichner, Projekt-
+        /// statt Stammtabelle". Die Kette hat drei Stufen:
+        ///
+        ///   1. <c>WQ_ID_Puffer</c> -> Zeile in <c>Tab_Pufferspeicher</c> (Projektkopie).
+        ///      Migrationsregel R3 hat die Spalte aus dem Bezeichner aufgelöst.
+        ///   2. <c>WQ_Puffer</c> (Bezeichner) in der PROJEKTKOPIE, kleinste ID -
+        ///      deterministisch wie <c>WaermesenkeClass.QuellPufferDerAnlage</c>.
+        ///   3. <c>WQ_Puffer</c> im KATALOG <c>_STAMM</c> - der bisherige Weg, jetzt nur
+        ///      noch Rückfallebene für Altbestand ohne Projektkopie.
+        ///
+        /// ERWARTETE UND EINZIGE ERGEBNISWIRKUNG: <c>ID_Pufferspeicher</c> zeigt nicht
+        /// mehr auf die Katalogzeile, sondern auf die Projektkopie. Der Wert landet in
+        /// <c>Tab_ErgebnisPufferspeicher.ID_Pufferspeicher</c> und im Serienschlüssel der
+        /// Anzeigen. Alle RECHENGRÖSSEN bleiben gleich, weil die Projektkopie dieselben
+        /// Katalogwerte trägt (Volumen, Bereitschaftsverluste) und Spreizung wie
+        /// Regeneration ohnehin an der ANLAGE hängen, nicht am Speicher.
+        ///
+        /// Warum die Umstellung fachlich nötig ist: Die Katalogzeile ist projektweit
+        /// geteilt. Zwei Projekte mit demselben Speichertyp zeigten bisher auf dieselbe
+        /// ID - Ergebniszeilen und Anzeigen konnten sie nicht auseinanderhalten, und der
+        /// Kurzschluss-Test „derselbe Speicher als Quelle UND Senke" (Konzept 4.6) hätte
+        /// nie greifen können, weil die Senke immer eine Projekt-ID trägt.
         /// </summary>
         public static SimulationPufferspeicher Quellspeicher(int idEnergieanlage, string wpTyp)
         {
@@ -563,23 +587,18 @@ namespace WindowsFormsApplication1
             object unbegrenzt = WertLesenStill(idEnergieanlage, "WQ_Unbegrenzt");
             if (unbegrenzt != null && Convert.ToBoolean(unbegrenzt)) return null;
 
-            string bezeichner = WertLesenStill(idEnergieanlage, "WQ_Puffer") as string;
-            if (string.IsNullOrEmpty(bezeichner)) return null;
-
             try
             {
-                DataTable dt = TabelleStill(
-                    "SELECT ID, Gesamtvolumen, Bereitschaftsverluste FROM [" + PufferSpStammCtrl.TABLE +
-                    "] WHERE Bezeichner = ?",
-                    new OleDbParameter("@bez", bezeichner));
-                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow zeile = QuellspeicherZeile(idEnergieanlage);
+                if (zeile == null) return null;
 
-                int idSpeicher = dt.Rows[0]["ID"] != DBNull.Value
-                    ? Convert.ToInt32(dt.Rows[0]["ID"]) : 0;
-                double volumen = dt.Rows[0]["Gesamtvolumen"] != DBNull.Value
-                    ? Convert.ToDouble(dt.Rows[0]["Gesamtvolumen"]) : 0;
-                double verluste = dt.Rows[0]["Bereitschaftsverluste"] != DBNull.Value
-                    ? Convert.ToDouble(dt.Rows[0]["Bereitschaftsverluste"]) : 0;
+                int idSpeicher = zeile["ID"] != DBNull.Value ? Convert.ToInt32(zeile["ID"]) : 0;
+                string bezeichner = zeile["Bezeichner"] != DBNull.Value
+                    ? Convert.ToString(zeile["Bezeichner"]) : "";
+                double volumen = zeile["Gesamtvolumen"] != DBNull.Value
+                    ? Convert.ToDouble(zeile["Gesamtvolumen"]) : 0;
+                double verluste = zeile["Bereitschaftsverluste"] != DBNull.Value
+                    ? Convert.ToDouble(zeile["Bereitschaftsverluste"]) : 0;
                 if (volumen <= 0) return null;
 
                 object oSpreizung = WertLesenStill(idEnergieanlage, "WQ_Spreizung");
@@ -592,10 +611,12 @@ namespace WindowsFormsApplication1
                 SimulationPufferspeicher sp = new SimulationPufferspeicher();
                 sp.Bezeichner = bezeichner;
                 sp.Erzeuger = "Wärmequelle";
-                // Konzept 6.6: Rolle und Speicher-ID für die Ergebniszeile.
-                // Der Quellspeicher stammt aus dem Katalog (_STAMM), nicht aus der
-                // Projektkopie - die ID zeigt deshalb dorthin.
+                // Konzept 6.6: Rolle und Speicher-ID für die Ergebniszeile - seit
+                // Etappe 4a die ID der PROJEKTKOPIE (siehe Auflösungskette oben).
                 sp.ID_Pufferspeicher = idSpeicher;
+                sp.ID_Projekt = zeile.Table.Columns.Contains("ID_Projekt") &&
+                                zeile["ID_Projekt"] != DBNull.Value
+                    ? Convert.ToInt32(zeile["ID_Projekt"]) : 0;
                 sp.Verwendung = SimulationPufferspeicher.VERWENDUNG_QUELLE;
                 // Spreizung als Temperaturhub der nutzbaren Kapazität verwenden
                 sp.Init(volumen, (int)Math.Round(spreizung), 0, verluste);
@@ -609,6 +630,67 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Quellspeicher konnte nicht aufgebaut werden: " + ex.Message);
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Die Speicherzeile hinter der Wärmequelle einer Anlage, nach der dreistufigen
+        /// Auflösungskette aus <see cref="Quellspeicher"/>. Liefert immer die Spalten
+        /// <c>ID</c>, <c>Bezeichner</c>, <c>Gesamtvolumen</c>,
+        /// <c>Bereitschaftsverluste</c> (aus der Projektkopie zusätzlich
+        /// <c>ID_Projekt</c>) oder <c>null</c>, wenn nichts gefunden wurde.
+        ///
+        /// Getrennt von <see cref="Quellspeicher"/>, damit die Kette an einer Stelle
+        /// steht und nachvollziehbar bleibt, aus welcher Tabelle die Zeile stammt.
+        /// </summary>
+        private static DataRow QuellspeicherZeile(int idEnergieanlage)
+        {
+            // --- Stufe 1: Fremdschlüssel auf die Projektkopie ------------------------
+            int idPuffer = ZahlOderNull(WertLesenStill(idEnergieanlage, "WQ_ID_Puffer"));
+            if (idPuffer > 0)
+            {
+                DataTable dt = TabelleStill(
+                    "SELECT ID, ID_Projekt, Bezeichner, Gesamtvolumen, Bereitschaftsverluste " +
+                    "FROM [" + PufferSpCtrl.TABLE + "] WHERE ID = ?",
+                    new OleDbParameter("@id", OleDbType.Integer) { Value = idPuffer });
+                if (dt != null && dt.Rows.Count > 0) return dt.Rows[0];
+
+                Console.WriteLine("Quellspeicher: WQ_ID_Puffer = " + idPuffer + " der Anlage " +
+                                  idEnergieanlage + " zeigt auf keine Speicherzeile - " +
+                                  "es gilt der Bezeichner.");
+            }
+
+            string bezeichner = WertLesenStill(idEnergieanlage, "WQ_Puffer") as string;
+            if (string.IsNullOrEmpty(bezeichner)) return null;
+
+            // --- Stufe 2: Bezeichner in der Projektkopie -----------------------------
+            // Deterministisch die kleinste ID: Projekte können denselben Speichertyp
+            // durch wiederholtes Duplizieren mehrfach enthalten (Dedup-Aufhebung 5.2).
+            int idProjekt = ZahlOderNull(SkalarStill(
+                "SELECT ID_Projekt FROM Tab_Energieanlagen WHERE ID = " + idEnergieanlage));
+            if (idProjekt > 0)
+            {
+                DataTable dt = TabelleStill(
+                    "SELECT TOP 1 ID, ID_Projekt, Bezeichner, Gesamtvolumen, Bereitschaftsverluste " +
+                    "FROM [" + PufferSpCtrl.TABLE + "] WHERE Bezeichner = ? AND ID_Projekt = ? " +
+                    "ORDER BY ID",
+                    new OleDbParameter("@bez", bezeichner),
+                    new OleDbParameter("@proj", OleDbType.Integer) { Value = idProjekt });
+                if (dt != null && dt.Rows.Count > 0) return dt.Rows[0];
+            }
+
+            // --- Stufe 3: Bezeichner im Katalog (Altbestand ohne Projektkopie) -------
+            DataTable stamm = TabelleStill(
+                "SELECT ID, Bezeichner, Gesamtvolumen, Bereitschaftsverluste FROM [" +
+                PufferSpStammCtrl.TABLE + "] WHERE Bezeichner = ?",
+                new OleDbParameter("@bez", bezeichner));
+            if (stamm != null && stamm.Rows.Count > 0)
+            {
+                Console.WriteLine("Quellspeicher: Anlage " + idEnergieanlage + " hat keine " +
+                                  "Projektkopie von \"" + bezeichner + "\" - es gilt der Katalog.");
+                return stamm.Rows[0];
+            }
+
+            return null;
         }
 
         private static float[] KonstantesProfil(float temperatur)

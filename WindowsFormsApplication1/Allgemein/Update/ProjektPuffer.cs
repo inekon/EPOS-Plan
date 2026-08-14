@@ -314,6 +314,17 @@ namespace WindowsFormsApplication1
         ///     Spalten scheitert mit "ein Datensatz in der Tabelle 'Tab_BHKW' muss in
         ///     Beziehung stehen". Genau deshalb schreibt auch der Wizard überall DBNull.
         ///     Einzige Ausnahme ist ID_PUFFER, das auf die Projektkopie zeigt.
+        ///
+        /// LADEPRIORITÄTEN AUF 0, NICHT NULL (Paket-4-Review, Punkt 9): <c>WS_Ladeprio*</c>,
+        /// <c>WS_Ladeprio_PV</c> und <c>WS_Ladegrenze*</c> sind keine Fremdschlüssel — 0
+        /// heißt dort „nach Vorgabe" bzw. „nicht gesetzt" (Konzept 3.4). Die Migration
+        /// (Regel R5) setzt genau das für den Bestand; eine danach ANGELEGTE Zeile stand
+        /// bisher wieder auf NULL, und der Schema-Nachweis des Referenzlaufs meldete
+        /// „Anlagen ohne Ladeprio-Vorgabe: 2" — die beiden Puffer-Anlagenzeilen, die R4
+        /// bzw. R6 selbst erzeugen. Rechnerisch ist NULL unschädlich
+        /// (<c>StilleDb.Zahl</c> liefert 0), aber der Nachweis soll aussagekräftig
+        /// bleiben. Dieselbe Anweisung benutzen Migration und Oberfläche
+        /// (<c>PufferSpCtrl</c>, Puffer-Verwaltung im Projekt).
         /// </summary>
         public const string SQL_ANLAGENZEILE_INSERT =
             "INSERT INTO Tab_Energieanlagen " +
@@ -321,8 +332,9 @@ namespace WindowsFormsApplication1
             " Vorlauf, Rücklauf, Bivalenter_Betrieb, Abschaltpunkt, Nutzungszeit, Grenzleistung, " +
             " Kollektormodulanzahl, PV_Leistung, Neigung, Azimut, " +
             " ID_WP, ID_Solar, ID_PV, ID_SP, ID_Kessel, ID_BHKW, ID_PUFFER, ID_Carrier, " +
-            " Heizstab, Volumen, rendeMix, Solaranteil) " +
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            " Heizstab, Volumen, rendeMix, Solaranteil, " +
+            " WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV, WS_Ladeprio2, WS_Ladegrenze2) " +
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         /// <summary>Parameter zu <see cref="SQL_ANLAGENZEILE_INSERT"/>.</summary>
         public static OleDbParameter[] AnlagenzeileParameter(int idProjekt, string bezeichner, int idPuffer)
@@ -361,7 +373,14 @@ namespace WindowsFormsApplication1
                 Par("@stab",    OleDbType.Boolean,  false),
                 Par("@vol",     OleDbType.Double,   0.0),
                 Par("@mix",     OleDbType.Boolean,  false),
-                Par("@solan",   OleDbType.Integer,  0)
+                Par("@solan",   OleDbType.Integer,  0),
+                // Ladeprioritäten und -grenzen: 0 = „nach Vorgabe" / „nicht gesetzt"
+                // (Konzept 3.4) - siehe Kopfkommentar der Anweisung.
+                Par("@lprio",   OleDbType.Integer,  0),
+                Par("@lgrenz",  OleDbType.Double,   0.0),
+                Par("@lprioPV", OleDbType.Integer,  0),
+                Par("@lprio2",  OleDbType.Integer,  0),
+                Par("@lgrenz2", OleDbType.Double,   0.0)
             };
         }
 

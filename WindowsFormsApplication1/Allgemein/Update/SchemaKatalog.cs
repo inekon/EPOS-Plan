@@ -134,6 +134,35 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// Name des Feature-Flags für die zweikanalige Kaskade (Konzept Kapitel 9,
+        /// „Feature-Flag empfohlen"). EINE Wahrheit für Migration, Leseseite
+        /// (<c>KonfigurationCtrl.ReadSingle</c>), Schreibseite und Oberfläche.
+        /// </summary>
+        public const string SPALTE_KASKADE_ZWEIKANALIG = "Kaskade_Zweikanalig";
+
+        /// <summary>
+        /// Schritt 6 der Migration — die Projekteinstellung <c>Kaskade_Zweikanalig</c>
+        /// (Paket 4, Etappe 4a). Sie ist die einzige belastbare Rückfallebene des
+        /// Engine-Umbaus: Altprojekte rechnen auf dem alten, einkanaligen Pfad weiter,
+        /// die Umstellung erfolgt projektweise.
+        ///
+        /// <b>Default aus.</b> <c>ALTER TABLE … ADD COLUMN … YESNO</c> belegt bestehende
+        /// Zeilen in Access mit <c>False</c>; ein ausdrücklicher <c>DEFAULT</c> ist
+        /// deshalb weder nötig noch erwünscht (ein Ja/Nein-Feld kennt kein NULL).
+        ///
+        /// ACHTUNG <c>Tab_Einstellungen</c> — dieselbe Regel wie bei
+        /// <c>Extrapolation_erlaubt</c>: Die Tabelle wird in
+        /// <c>KonfigurationCtrl.ReadSingle</c> positionsbasiert über row[0]…row[22]
+        /// gelesen. Die Spalte darf deshalb ausschließlich ANGEHÄNGT werden — was
+        /// ALTER TABLE ADD COLUMN in Access immer tut — und die Leseseite greift
+        /// NAMENSBASIERT darauf zu, statt die Ordinalkette zu verlängern.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt6_FeatureFlag =
+        {
+            new SchemaSpalte(TAB_EINSTELLUNGEN,  SPALTE_KASKADE_ZWEIKANALIG, "YESNO"),  // nur anhängen!
+        };
+
+        /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
         /// und ist deshalb nicht Teil von <see cref="Alle"/>.
@@ -153,6 +182,7 @@ namespace WindowsFormsApplication1
                 foreach (SchemaSpalte s in Bestand) yield return s;
                 foreach (SchemaSpalte s in Schritt1_Energieanlagen) yield return s;
                 foreach (SchemaSpalte s in Schritt2_Speicher) yield return s;
+                foreach (SchemaSpalte s in Schritt6_FeatureFlag) yield return s;
             }
         }
     }

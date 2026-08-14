@@ -75,13 +75,19 @@ namespace WindowsFormsApplication1
         {
             try
             {
-               string sql = @"INSERT INTO Tab_Energieanlagen 
+               // WS_Ladeprio*/WS_Ladegrenze* ausdrücklich mit 0 (Paket-4-Review, Punkt 9):
+               // 0 heißt "nach Vorgabe" bzw. "nicht gesetzt" (Konzept 3.4), NULL wäre ein
+               // unbelegter Zustand, den der Schema-Nachweis der Migration als Lücke
+               // meldet. Es sind KEINE Fremdschlüssel - anders als WS_ID_Puffer, das NULL
+               // bleiben muss.
+               string sql = @"INSERT INTO Tab_Energieanlagen
                                (
-                                   ID_Projekt, Bezeichner, ID_Type, ID_WP, Betriebsart, Sperrung, 
+                                   ID_Projekt, Bezeichner, ID_Type, ID_WP, Betriebsart, Sperrung,
                                    Sperrzeit_von, Sperrzeit_bis, Vorlauf, Rücklauf, Bivalenter_Betrieb,
-                                   Abschaltpunkt, Nutzungszeit, ID_SP, ID_PV, ID_Solar
-                               ) 
-                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                   Abschaltpunkt, Nutzungszeit, ID_SP, ID_PV, ID_Solar,
+                                   WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV, WS_Ladeprio2, WS_Ladegrenze2
+                               )
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 OleDbParameter[] ps = {
                     new OleDbParameter("@idProj", ID_Projekt),
@@ -99,7 +105,12 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@nutz", Nutzungszeit),
                     new OleDbParameter("@idSp", ID_SP),
                     new OleDbParameter("@idPv", ID_PV),
-                    new OleDbParameter("@idSol", ID_Solar)
+                    new OleDbParameter("@idSol", ID_Solar),
+                    new OleDbParameter("@lprio",   0),
+                    new OleDbParameter("@lgrenz",  0.0),
+                    new OleDbParameter("@lprioPV", 0),
+                    new OleDbParameter("@lprio2",  0),
+                    new OleDbParameter("@lgrenz2", 0.0)
                 };
 
                 return DataRepository.ExecuteSQL(sql, ps);

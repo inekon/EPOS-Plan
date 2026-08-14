@@ -284,9 +284,40 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void Sortieren(List<LadeEintrag> liste)
         {
+            SortierenNachLadeprio(liste, PrioEintrag);
+        }
+
+        /// <summary>Priorität eines Eintrags ohne Stundenbezug — die gespeicherte Ladeprio.</summary>
+        private static int PrioEintrag(LadeEintrag e)
+        {
+            return e.Ladeprio;
+        }
+
+        /// <summary>
+        /// Die Ordnungsregel aus Konzept 3.4 als EINE Implementierung für Anzeige und
+        /// Engine:
+        ///
+        ///   Ladepriorität → Kaskadenposition → Tab_Energieanlagen.Prioritaet →
+        ///   Anlagen-ID → Hauptsenke vor Zweitsenke
+        ///
+        /// Die Priorität kommt aus <paramref name="prio"/> statt fest aus
+        /// <see cref="LadeEintrag.Ladeprio"/>, weil sie ab Konzept 3.5 ZEITABHÄNGIG ist:
+        /// Die Engine reicht in Stunden mit PV-Überschuss die Auflösung nach
+        /// <see cref="WirksameLadeprioPV"/> herein, die Anzeige die gespeicherte. Alles
+        /// Übrige — und damit die Deterministik der Reihenfolge — ist dasselbe.
+        ///
+        /// Die Sortierung ist stabil im Ergebnis, nicht im Verfahren: Die Kette endet mit
+        /// der Anlagen-ID und dem Senkenrang, ist also für zwei verschiedene Aufträge nie
+        /// unentschieden und damit nie von der Datenbank- oder Listenreihenfolge abhängig.
+        /// </summary>
+        public static void SortierenNachLadeprio(List<LadeEintrag> liste,
+                                                 Converter<LadeEintrag, int> prio)
+        {
+            if (liste == null || prio == null) return;
+
             liste.Sort(delegate (LadeEintrag a, LadeEintrag b)
             {
-                int c = a.Ladeprio.CompareTo(b.Ladeprio);
+                int c = prio(a).CompareTo(prio(b));
                 if (c != 0) return c;
                 c = a.Kaskadenposition.CompareTo(b.Kaskadenposition);
                 if (c != 0) return c;
@@ -313,19 +344,45 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void ObergrenzenAufloesen(List<LadeEintrag> liste, int idPuffer)
         {
-            if (liste.Count == 0) return;
+            ObergrenzenAufloesen(liste, idPuffer, PrioEintrag);
+        }
+
+        /// <summary>
+        /// Dieselbe Auflösung mit einer FREI WÄHLBAREN Priorität — die zeitabhängige
+        /// Fassung (Konzept 3.5).
+        ///
+        /// Der Vorrang an einem Puffer entscheidet über die Obergrenze (Schwelle_Aus
+        /// gegen Schwelle_Aus_Nachrang). In Stunden mit PV-Überschuss gilt aber eine
+        /// ANDERE Priorität als die gespeicherte (<see cref="WirksameLadeprioPV"/>) —
+        /// also kann auch eine andere Anlage die vorrangige sein. Würde die Engine die
+        /// Reihenfolge nach der PV-Priorität bilden, die Obergrenzen aber nach der
+        /// gespeicherten, bekäme die in dieser Stunde vorrangige Anlage die Reservezone
+        /// nicht, für die sie gerade nach vorn gezogen wurde. Anzeige und Engine
+        /// benutzen deshalb dieselbe Funktion, nur mit der jeweils gültigen Priorität.
+        ///
+        /// Der Vorrang wird hier über das MINIMUM von <paramref name="prio"/> bestimmt
+        /// und nicht über den ersten Listenplatz: Die Liste kann nach einer anderen
+        /// Priorität sortiert sein als der, nach der aufgelöst wird.
+        /// </summary>
+        public static void ObergrenzenAufloesen(List<LadeEintrag> liste, int idPuffer,
+                                                Converter<LadeEintrag, int> prio)
+        {
+            if (liste == null || liste.Count == 0 || prio == null) return;
 
             double schwelleAus, schwelleAusNachrang;
             SchwellenLesen(idPuffer, out schwelleAus, out schwelleAusNachrang);
 
-            // Die Liste ist nach Ladeprio aufsteigend sortiert - der erste Eintrag trägt
-            // die kleinste.
-            int besteLadeprio = liste[0].Ladeprio;
+            int besteLadeprio = prio(liste[0]);
+            for (int i = 1; i < liste.Count; i++)
+            {
+                int p = prio(liste[i]);
+                if (p < besteLadeprio) besteLadeprio = p;
+            }
 
             for (int i = 0; i < liste.Count; i++)
             {
                 LadeEintrag e = liste[i];
-                e.Vorrangig = (e.Ladeprio == besteLadeprio);
+                e.Vorrangig = (prio(e) == besteLadeprio);
 
                 if (e.Ladegrenze > 0)
                 {

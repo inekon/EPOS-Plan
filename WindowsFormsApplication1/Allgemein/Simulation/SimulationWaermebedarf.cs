@@ -288,6 +288,85 @@ namespace WindowsFormsApplication1
             Array.Reverse(Dauerlinie);
         }
 
+        // ===================================================================
+        // Kanalmodell (Paket 4, Etappe 4b - Konzept 3.2)
+        // ===================================================================
+
+        /// <summary>
+        /// Stunden, in denen der Heizkanal auf 0 gekappt werden musste, weil der
+        /// Brauchwasserwert über dem Gesamtwärmebedarf lag (siehe <see cref="Kanaele"/>).
+        /// Erwartungswert 0; ein Wert &gt; 0 ist ein Befund, kein Betriebszustand.
+        /// </summary>
+        public int Kanal_Kappungen = 0;
+
+        /// <summary>Summe der gekappten Wärmemenge [kWh] (siehe <see cref="Kanal_Kappungen"/>).</summary>
+        public double Kanal_Kappung_kWh = 0;
+
+        /// <summary>
+        /// Die beiden Bedarfskanäle des Projekts (Konzept 3.2, Entscheidung E6):
+        ///
+        /// <code>
+        /// Kanal BRAUCHWASSER [8760] = brauchwasserwerte
+        /// Kanal HEIZUNG      [8760] = Waermebedarf − brauchwasserwerte   (elementweise, ≥ 0)
+        /// </code>
+        ///
+        /// Der Heizkanal wird bewusst als RESIDUUM gebildet und nicht aus seinen
+        /// Bestandteilen neu zusammengesetzt. Grund: <see cref="Waermebedarf"/> trägt
+        /// zusätzlich zu Gebäude-, Prozess- und Brauchwasserwärme die NETZVERLUSTE, die
+        /// weiter oben (<see cref="WPPlan.Core.BhkwPlan.NetzverlusteC"/>) als konstanter
+        /// Stundenbetrag auf ALLE 8760 Stunden aufgeschlagen werden — also erst NACH der
+        /// Addition der Brauchwasserwerte. Das Residuum trägt sie damit vollständig; genau
+        /// das ist die heutige implizite Zuordnung und laut Konzept 3.2 (vormals O2) die
+        /// einzige altverhaltenserhaltende Variante.
+        ///
+        /// Summenfelder und alle bestehenden Vektoren bleiben unberührt — die Methode
+        /// rechnet ausschließlich lesend und liefert ein neues Objekt. Es gilt
+        /// <c>Heiz + WW == Waermebedarf</c>, solange nicht gekappt wurde.
+        ///
+        /// KAPPUNGSFÄLLE. Elementweise ≥ 0 verlangt zwei Klemmungen, die im Normalbetrieb
+        /// beide nicht auftreten:
+        ///
+        /// 1. <b>negativer Brauchwasserwert</b> — kann aus einer fehlerhaften Ganglinie
+        ///    stammen; er wird auf 0 gesetzt, damit der WW-Kanal keine „negative Deckung"
+        ///    an die Kaskade weitergibt.
+        /// 2. <b>Brauchwasser über Gesamtbedarf</b> — rechnerisch unmöglich, weil
+        ///    <c>Waermebedarf</c> die Brauchwasserwerte ENTHÄLT und alle weiteren
+        ///    Summanden nichtnegativ sind. Übrig bleibt der Rundungsfall in <c>float</c>
+        ///    (Vektorsumme gegen Einzelwert). Dann wird der Heizkanal auf 0 gesetzt und
+        ///    der WW-Kanal auf den Gesamtbedarf begrenzt: Die SUMME bleibt exakt der
+        ///    Gesamtbedarf — die Energieerhaltung geht dem Kanalanteil vor. Jeder solche
+        ///    Fall wird gezählt (<see cref="Kanal_Kappungen"/>) und ist ein Befund, der
+        ///    in die Verifikation gehört.
+        /// </summary>
+        public Waermekanaele Kanaele()
+        {
+            Kanal_Kappungen = 0;
+            Kanal_Kappung_kWh = 0;
+
+            Waermekanaele k = new Waermekanaele();
+            for (int h = 0; h < Waermekanaele.STUNDEN_JAHR; h++)
+            {
+                float gesamt = (h < Waermebedarf.Length) ? Waermebedarf[h] : 0f;
+                float ww = (h < brauchwasserwerte.Length) ? brauchwasserwerte[h] : 0f;
+
+                if (ww < 0f) ww = 0f;                       // Kappungsfall 1
+
+                float heiz = gesamt - ww;
+                if (heiz < 0f)                              // Kappungsfall 2
+                {
+                    Kanal_Kappungen++;
+                    Kanal_Kappung_kWh += -heiz;
+                    heiz = 0f;
+                    ww = gesamt > 0f ? gesamt : 0f;
+                }
+
+                k.Heiz[h] = heiz;
+                k.WW[h] = ww;
+            }
+
+            return k;
+        }
+
         private void Bewohner_und_Flaeche_berechnen(ProjektGebaeudeModel item, int index)
         {
             double VerbrauchNeu = 0.0;
