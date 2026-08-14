@@ -16,17 +16,29 @@ namespace WindowsFormsApplication1
         public bool CloseWithOK = false;
         private int m_nID_WP = 0;
 
+        /// <summary>
+        /// Vorschlagswerte der Rücklauf-Auswahl [°C].
+        ///
+        /// Etappe 4: Die frühere Liste begann bei 25 °C und sprang in 5-K-Schritten
+        /// (25/30/35/40/45) — für ein Niedertemperatursystem wie 35/28 gab es damit
+        /// keinen passenden Eintrag, obwohl die ComboBox frei beschreibbar ist. Der
+        /// Anwender wurde also auf hohe Rückläufe gelenkt, und über
+        /// <c>Tab_Energieanlagen.[Rücklauf]</c> wanderte das direkt in die
+        /// Systemvorgabe des Projekts (PufferSpCtrl.SystemRuecklauf).
+        ///
+        /// Die Liste ist nach unten erweitert und im unteren Bereich feiner gestuft;
+        /// sie bleibt eine reine VORSCHLAGSLISTE ohne Grenzwirkung.
+        /// </summary>
+        private static readonly string[] RUECKLAUF_VORSCHLAEGE =
+            { "20", "22", "25", "28", "30", "32", "35", "40", "45" };
+
         public Wizard_WPItem()
         {
             item = new WErzeugerModel();
             InitializeComponent();
             FillWPList();
-   
-            comboBox_Ruecklauf.Items.Add("25");
-            comboBox_Ruecklauf.Items.Add("30");
-            comboBox_Ruecklauf.Items.Add("35");
-            comboBox_Ruecklauf.Items.Add("40");
-            comboBox_Ruecklauf.Items.Add("45");
+
+            comboBox_Ruecklauf.Items.AddRange(RUECKLAUF_VORSCHLAEGE);
 
             comboBox_Betriebsart.Items.Add("Alternativbetrieb");
             comboBox_Betriebsart.Items.Add("Parallelbetrieb");
@@ -52,11 +64,7 @@ namespace WindowsFormsApplication1
             FillWPList();
             FillVorlaufCombo(WPName);
 
-            comboBox_Ruecklauf.Items.Add("25");
-            comboBox_Ruecklauf.Items.Add("30");
-            comboBox_Ruecklauf.Items.Add("35");
-            comboBox_Ruecklauf.Items.Add("40");
-            comboBox_Ruecklauf.Items.Add("45");
+            comboBox_Ruecklauf.Items.AddRange(RUECKLAUF_VORSCHLAEGE);
 
             comboBox_Betriebsart.Items.Add("Alternativbetrieb");
             comboBox_Betriebsart.Items.Add("Parallelbetrieb");
@@ -149,20 +157,21 @@ namespace WindowsFormsApplication1
                 MessageBox.Show("Bitte Wärmepumpe auswählen!");
                 return;
             }   
-            if(comboBox_Ruecklauf.Text == "" || Int32.Parse(comboBox_Ruecklauf.Text) == 0)
+            // Etappe 4: dieselbe Prüfung wie überall, wo Vor-/Rücklauf eingegeben wird
+            // (ProjektPuffer.TemperaturenPruefen). Behebt drei Schwächen der bisherigen
+            // Fassung:
+            //   - Int32.Parse auf einer FREI beschreibbaren ComboBox riss das Formular
+            //     bei jeder Nicht-Zahl mit einer FormatException ab,
+            //   - "<" statt "<=" ließ Vorlauf == Rücklauf durch (Spreizung 0, die
+            //     Engine fiel danach still auf ihre Vorgabe zurück),
+            //   - keine Obergrenze.
+            // Eine Untergrenze gibt es weiterhin nicht: 35/28 und tiefer sind gültig.
+            int nVorlauf, nRuecklauf;
+            string fehlerTemperatur;
+            if (!ProjektPuffer.TemperaturenPruefen(comboBox_Vorlauf.Text, comboBox_Ruecklauf.Text,
+                                                   out nVorlauf, out nRuecklauf, out fehlerTemperatur))
             {
-                MessageBox.Show("Bitte Rücklauftemperatur auswählen!");
-                return;
-            }   
-            if (comboBox_Vorlauf.Text == "" || Int32.Parse(comboBox_Vorlauf.Text) == 0)
-            {
-                MessageBox.Show("Bitte Vorlauftemperatur auswählen!");
-                return;
-            }
-
-            if(Int32.Parse(comboBox_Vorlauf.Text) < Int32.Parse(comboBox_Ruecklauf.Text))
-            {
-                MessageBox.Show("Vorlauftemperatur muss größer als Rücklauftemperatur gewählt werden!");
+                MessageBox.Show(fehlerTemperatur);
                 return;
             }
 
@@ -172,8 +181,8 @@ namespace WindowsFormsApplication1
             item.Sperrung = checkBox_Sperrzeit.Checked;
             item.Sperrzeit_bis = Int32.Parse(textBox_bis.Text);
             item.Sperrzeit_von = Int32.Parse(textBox_von.Text);
-            item.Ruecklauf = Int32.Parse(comboBox_Ruecklauf.Text);
-            item.Vorlauf = Int32.Parse(comboBox_Vorlauf.Text);
+            item.Ruecklauf = nRuecklauf;
+            item.Vorlauf = nVorlauf;
             item.Bivalenter_Betrieb = checkBox_Bivalent.Checked;
             item.Abschaltpunkt = double.Parse(textBox_Abschalttemp.Text);
             item.Nutzungszeit = 0;

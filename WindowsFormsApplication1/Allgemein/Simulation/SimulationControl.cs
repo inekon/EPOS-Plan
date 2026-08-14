@@ -28,6 +28,15 @@ namespace WindowsFormsApplication1
         public float[] Stundentemperatur = new float[8760];
         public int modeBHKW;
         public int GrenzleistungBHKW;
+
+        /// <summary>
+        /// Volumen des BHKW-Pendelspeichers in LITERN (Etappe 3, 14.08.2026).
+        ///
+        /// Bis dahin stand hier der Alt-Parameter Tab_Einstellungen.Pendelspeicher in m³.
+        /// Quelle ist jetzt ausschließlich der Projekt-Puffer "BHKW-Pendelspeicher"
+        /// (PufferSpCtrl.PendelspeicherVolumenLiter); die Migration hat den Alt-Wert
+        /// dorthin als m³ × 1000 übernommen.
+        /// </summary>
         public int VolumenPendelspeicherBHKW;
 
 
@@ -44,8 +53,28 @@ namespace WindowsFormsApplication1
         public bool bSimulationSSP = false;
         public bool bSimulationBHKW = false;
 
+        /// <summary>
+        /// Grund, aus dem der letzte Simulationsversuch gar nicht erst angelaufen ist
+        /// (leer, wenn gerechnet wurde). Gefüllt von der Migrationsblockade, damit
+        /// aufrufende Formulare den Anwender informieren können, statt Nullwerte
+        /// anzuzeigen.
+        /// </summary>
+        public string Sperrgrund = "";
+
         public void Do_Simulation(int ID_Projekt)
         {
+            // Engine-Einstieg: Blockade bei nicht abgeschlossener Schema-Migration
+            // (ADR-001, Aufgabe 6). Bewusst ohne MessageBox - die Engine bleibt
+            // dialogfrei (Konzept 13.4); der Grund steht in Sperrgrund.
+            Sperrgrund = "";
+            string sperrgrund;
+            if (SchemaMigration.SimulationGesperrt(out sperrgrund))
+            {
+                Sperrgrund = sperrgrund;
+                Console.WriteLine("Simulation abgebrochen: " + sperrgrund);
+                return;
+            }
+
             float[] temp = new float[8760 * 4];
             float[] Eingang;
             float[] Ausgang;
@@ -89,12 +118,31 @@ namespace WindowsFormsApplication1
 
                 if (psp.rows > 0)
                 {
+                    // Etappe 4: Die PUFFER-Zeile ist die führende Ablage der
+                    // Betriebstemperaturen (Konzept 5.1) - ein Speicher hat genau einen
+                    // Betriebszustand, unabhängig davon, wie viele Anlagen ihn laden.
+                    // Nur wenn dort kein vollständiges Paar steht (Alt-Datenbank, nie
+                    // migriert, Werte gelöscht), gilt weiter die Zuordnungszeile.
+                    //
+                    // Regressionsneutral: Migration R1 hat genau die Werte DIESER
+                    // Zuordnungszeile an den Puffer geschrieben - der Vorrang liefert
+                    // auf migrierten Beständen dieselben Zahlen wie bisher.
+                    int vorlauf = pspZuordnung.items[n].Vorlauf;
+                    int ruecklauf = pspZuordnung.items[n].Ruecklauf;
+
+                    int vPuffer, rPuffer;
+                    if (PufferSpCtrl.TemperaturenLesen(psp.items[0].ID, out vPuffer, out rPuffer))
+                    {
+                        vorlauf = vPuffer;
+                        ruecklauf = rPuffer;
+                    }
+
                     puffer_wp = new SimulationPufferspeicher();
                     puffer_wp.Bezeichner = psp.items[0].Name;
                     puffer_wp.Erzeuger = "Wärmepumpe";
                     puffer_wp.Init(psp.items[0].Gesamtvolumen,
-                                   pspZuordnung.items[n].Vorlauf,
-                                   pspZuordnung.items[n].Ruecklauf,
+                                   vorlauf,
+                                   ruecklauf,
                                    psp.items[0].Betriebsbereitschaftverlust);
 
                     // Konfigurierbare Schwellen der Speicherregelung [%]
@@ -318,7 +366,21 @@ namespace WindowsFormsApplication1
             simulation_bhkw.waermebedarf = Waermebedarf;
             simulation_bhkw.strombedarf = Strombedarf;
             simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
-            simulation_bhkw.kapazitaetPendelspeicher = (float)VolumenPendelspeicherBHKW * 20000 / 860;
+            // Kapazität des Pendelspeichers aus dem Volumen in LITERN (Etappe 3):
+            //   Liter · 1,163 Wh/(l·K) · 20 K / 1000 = Liter · 20 / 860 [kWh]
+            // Formelgleich zur Altfassung "m³ · 20000 / 860", weil die Migration den
+            // Alt-Parameter mit dem Faktor 1000 in Liter überführt hat: 800 l ergeben
+            // 16000/860 = 18,60 kWh, genau wie 0,8 · 20000/860. Die Zwischenprodukte
+            // (Liter · 20 bzw. m³ · 20000) sind gleich groß und in float exakt
+            // darstellbar, das Ergebnis ist damit bitgleich.
+            //
+            // ACHTUNG, bewusster Verhaltensunterschied: das Feld war IMMER int. Der
+            // Alt-Parameter in m³ wurde deshalb auf ganze Kubikmeter abgeschnitten
+            // ((int)0,8 = 0, (int)1,5 = 1) - die Nachkommastelle der Eingabe war
+            // wirkungslos. In Litern verschwindet dieser Effekt; Projekte mit einem
+            // Alt-Wert, der keine ganze Zahl war, rechnen jetzt mit dem eingegebenen
+            // Volumen statt mit dem abgeschnittenen.
+            simulation_bhkw.kapazitaetPendelspeicher = (float)VolumenPendelspeicherBHKW * 20 / 860;
             simulation_bhkw.modeBHKW = modeBHKW;
 
             // Simulation starten

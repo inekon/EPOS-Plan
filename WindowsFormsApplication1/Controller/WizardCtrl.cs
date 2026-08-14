@@ -162,7 +162,12 @@ namespace WindowsFormsApplication1
                     else if (item.ID_Type == WizardItemClass.PUFFER_TYP)
                     {
                         int idPuf = new PufferSpCtrl().CopyFromStamm(item.Bezeichner, projektID);
-                        if (idPuf > 0) item.ID_PUFFER = idPuf;
+                        // Seit Schritt 4 der SchemaMigration hat ID_PUFFER eine erzwungene
+                        // Beziehung auf Tab_Pufferspeicher.ID. Scheitert die Auflösung, darf
+                        // die alte ID nicht stehen bleiben - Form_PufferSp schreibt dort die
+                        // STAMM-ID (Konzept 2.3), und die verletzt die Beziehung. 0 bedeutet
+                        // "kein Puffer" und wird unten als NULL geschrieben.
+                        item.ID_PUFFER = (idPuf > 0) ? idPuf : 0;
                     }
                     else if (CheckType(item, WizardItemClass.PV_TYP, WizardItemClass.REF_PV_TYP))
                     {
@@ -181,7 +186,7 @@ namespace WindowsFormsApplication1
                          Vorlauf, Rücklauf, Bivalenter_Betrieb, Abschaltpunkt, Nutzungszeit, Grenzleistung, 
                          Kollektormodulanzahl, PV_Leistung, Neigung, Azimut, ID_Type, 
                          ID_WP, ID_Solar, ID_PV, ID_SP, ID_KESSEL, ID_BHKW, ID_PUFFER, 
-                         Heizstab, Volumen, rendeMix, Solaranteil) 
+                         Heizstab, Volumen, rendeMix, Solaranteil)
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
                     // Parameter exakt in der Reihenfolge des SQL-Strings
@@ -211,7 +216,7 @@ namespace WindowsFormsApplication1
                         new OleDbParameter("@sp", CheckType(item, WizardItemClass.SP_TYP, WizardItemClass.REF_SP_TYP) ? item.ID_SP : (object)DBNull.Value),
                         new OleDbParameter("@kes", CheckType(item, WizardItemClass.KESSEL_TYP, WizardItemClass.REF_KESSEL_TYP) ? item.ID_Kessel : (object)DBNull.Value),
                         new OleDbParameter("@bhkw", (item.ID_Type == WizardItemClass.BHKW_TYP) ? item.ID_BHKW : (object)DBNull.Value),
-                        new OleDbParameter("@puf", (item.ID_Type == WizardItemClass.PUFFER_TYP) ? item.ID_PUFFER : (object)DBNull.Value),
+                        new OleDbParameter("@puf", (item.ID_Type == WizardItemClass.PUFFER_TYP && item.ID_PUFFER > 0) ? item.ID_PUFFER : (object)DBNull.Value),
 
                         new OleDbParameter("@stab", item.Heizstab),
                         new OleDbParameter("@vol", item.Volumen),

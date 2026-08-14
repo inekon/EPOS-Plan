@@ -64,6 +64,82 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, parameters);
         }
 
+        // =========================================================================
+        // Schemamarker (ADR-001, Aufgabe 2)
+        //
+        // Tab_Applikation ist die anwendungsweite Einzelzeilen-Statustabelle und damit
+        // der natuerliche Ort fuer den Schemastand. Die Spalte selbst legt die
+        // SchemaMigration als Bootstrap an - die beiden Methoden hier sind bewusst
+        // TOLERANT: fehlt die Spalte (oder die Zeile, oder die Tabelle), gilt
+        // Version 0, ohne Dialog und ohne Ausnahme.
+        //
+        // Bewusst mit eigener, stiller OleDb-Verbindung: DataRepository zeigt bei
+        // Fehlern MessageBoxen - beim Programmstart vor dem ersten Fenster ist das
+        // nicht hinnehmbar.
+        // =========================================================================
+
+        /// <summary>Name der Markerspalte in Tab_Applikation.</summary>
+        public const string SPALTE_SCHEMAVERSION = "SchemaVersion";
+
+        /// <summary>
+        /// Liefert den gespeicherten Schemastand. 0 bedeutet "noch nichts migriert" -
+        /// das ist auch die Antwort, wenn Spalte, Zeile oder Tabelle fehlen.
+        /// </summary>
+        public static int GetSchemaVersion()
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+
+                    DataTable dt = new DataTable();
+                    using (OleDbCommand cmd = new OleDbCommand("SELECT TOP 1 * FROM Tab_Applikation", conn))
+                    using (OleDbDataAdapter adapter = new OleDbDataAdapter(cmd))
+                    {
+                        adapter.Fill(dt);
+                    }
+
+                    if (!dt.Columns.Contains(SPALTE_SCHEMAVERSION)) return 0; // Spalte fehlt -> Version 0
+                    if (dt.Rows.Count == 0) return 0;                          // Zeile fehlt  -> Version 0
+
+                    object v = dt.Rows[0][SPALTE_SCHEMAVERSION];
+                    if (v == null || v == DBNull.Value) return 0;
+                    return Convert.ToInt32(v);
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Schreibt den Schemastand. Rueckgabe false, wenn nichts geschrieben werden
+        /// konnte (fehlende Spalte, leere Tabelle, schreibgeschuetzte Datenbank) - die
+        /// SchemaMigration wertet das als Fehlschlag des Schritts.
+        /// </summary>
+        public static bool SetSchemaVersion(int version)
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(
+                        "UPDATE Tab_Applikation SET [" + SPALTE_SCHEMAVERSION + "] = ?", conn))
+                    {
+                        cmd.Parameters.Add(new OleDbParameter("@v", version));
+                        return cmd.ExecuteNonQuery() > 0;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void FillModelFromRow(ApplikationModel target, DataRow row)
         {
             target.m_ID = row["ID"] != DBNull.Value ? Convert.ToInt32(row["ID"]) : 0;

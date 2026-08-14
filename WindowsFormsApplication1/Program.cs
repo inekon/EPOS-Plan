@@ -60,6 +60,30 @@ namespace WindowsFormsApplication1
                 Thread.CurrentThread.CurrentUICulture = culture_en;
             }
 
+            // -----------------------------------------------------------------------
+            // Schema-Ausrollung (ADR-001): die versionierte Migration laeuft genau
+            // einmal je Programmstart, VOR dem Oeffnen der MDI-Oberflaeche.
+            //
+            // Bei Fehlschlag gibt es GENAU EINE Meldung; das Programm startet trotzdem
+            // (Kataloge, Projekte und Berichte bleiben nutzbar), aber der
+            // Simulationsbereich verweigert den Start - siehe
+            // SchemaMigration.SimulationGesperrt().
+            // -----------------------------------------------------------------------
+            string migrationsBericht;
+            if (!SchemaMigration.Ausfuehren(out migrationsBericht))
+            {
+                MessageBox.Show(
+                    "Die Datenbank konnte nicht auf den benötigten Stand gebracht werden." +
+                    Environment.NewLine + Environment.NewLine +
+                    SchemaMigration.FehlerKopf() +
+                    Environment.NewLine + Environment.NewLine +
+                    "Das Programm startet trotzdem, der Simulationsbereich bleibt jedoch gesperrt." +
+                    Environment.NewLine +
+                    "Ausführliches Protokoll: " + SchemaMigration.ProtokollPfad(),
+                    "Datenbank-Aktualisierung",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
             menuectrl = new MenueCtrl();
             wizardctrl = new WizardCtrl();
 

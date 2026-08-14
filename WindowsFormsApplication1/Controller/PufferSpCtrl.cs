@@ -74,8 +74,25 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Löscht ALLE Zeilen dieses Bezeichners - projektübergreifend.
+        ///
+        /// Seit Schritt 4 der SchemaMigration sind die vier Anlagen-Referenzen auf
+        /// Tab_Pufferspeicher.ID erzwungen und RESTRIKTIV; ohne vorheriges Lösen lehnt
+        /// Access das DELETE ab ("includes related records"). Deshalb hier derselbe
+        /// Vorlauf wie in <see cref="DeleteFromProjekt"/>.
+        ///
+        /// Achtung: der Aufrufkreis dieser Methode ist heute leer (Form_PufferSp_Admin
+        /// und Form_PufferSp arbeiten auf den STAMM-Tabellen). Sie bleibt trotzdem
+        /// stehen und wird mitgepflegt, damit ein späterer Aufruf nicht in die
+        /// Beziehung läuft.
+        /// </summary>
         public bool Delete(string szName)
         {
+            ReferenzenLoesen(BetroffeneIds(
+                "SELECT ID FROM Tab_Pufferspeicher WHERE Bezeichner = ?",
+                new OleDbParameter("@bez", szName ?? (object)DBNull.Value)));
+
             try
             {
                 string sql = "DELETE FROM Tab_Pufferspeicher WHERE Bezeichner = ?";
@@ -205,6 +222,14 @@ namespace WindowsFormsApplication1
 
         public bool DeleteFromProjekt(string szBezeichner, int idProjekt)
         {
+            // Die Beziehungen aus Schritt 4 der SchemaMigration sind RESTRIKTIV (kein
+            // DEL-CASCADE, siehe SchemaMigration.Schritt_4_Beziehungen). Ohne das
+            // vorherige Loesen der Referenzen wuerde Access das DELETE ablehnen.
+            ReferenzenLoesen(BetroffeneIds(
+                "SELECT ID FROM Tab_Pufferspeicher WHERE Bezeichner = ? AND ID_Projekt = ?",
+                new OleDbParameter("@bez", szBezeichner ?? ""),
+                new OleDbParameter("@idProj", idProjekt)));
+
             string sql = "DELETE FROM Tab_Pufferspeicher WHERE Bezeichner = ? AND ID_Projekt = ?";
             return DataRepository.ExecuteSQL(sql,
                 new OleDbParameter("@bez", szBezeichner ?? ""),
@@ -222,14 +247,444 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool ProjektWaisenEntfernen(int idProjekt)
         {
-            string sql = @"DELETE FROM Tab_Pufferspeicher
-                           WHERE ID_Projekt = ?
-                             AND Bezeichner NOT IN (SELECT Bezeichner FROM Tab_Energieanlagen
-                                                    WHERE ID_Projekt = ? AND ID_Type = " +
-                                                    WizardItemClass.PUFFER_TYP + ")";
-            return DataRepository.ExecuteSQL(sql,
+            string filter = @"ID_Projekt = ?
+                              AND Bezeichner NOT IN (SELECT Bezeichner FROM Tab_Energieanlagen
+                                                     WHERE ID_Projekt = ? AND ID_Type = " +
+                                                     WizardItemClass.PUFFER_TYP + ")";
+
+            // Erst die Referenzen loesen (restriktive Beziehungen aus Schritt 4 der
+            // SchemaMigration), dann loeschen. Heute liest kein Engine-Code die
+            // WS_*/WQ_*-Spalten; das Nullen ist deshalb verhaltensneutral.
+            ReferenzenLoesen(BetroffeneIds(
+                "SELECT ID FROM Tab_Pufferspeicher WHERE " + filter,
+                new OleDbParameter("@idProj", idProjekt),
+                new OleDbParameter("@idProj2", idProjekt)));
+
+            return DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Pufferspeicher WHERE " + filter,
                 new OleDbParameter("@idProj", idProjekt),
                 new OleDbParameter("@idProj2", idProjekt));
+        }
+
+        // --- Systemvorgaben und Betriebstemperaturen (Etappe 4, 14.08.2026) ----------
+
+        /// <summary>
+        /// Vorlauftemperatur-Vorgabe des Projekts [°C]: der KLEINSTE Vorlauf über alle
+        /// Wärmeerzeuger-Anlagen (Wärmepumpe, Solarthermie, Heizkessel, BHKW) - die
+        /// konservative Auslegung für einen gemeinsamen Speicher (Konzept 13.7).
+        ///
+        /// <c>null</c>, wenn im Projekt keine Anlage einen gepflegten Vorlauf trägt.
+        /// Dann bleibt die Vorbelegung leer, statt eine Zahl zu erfinden.
+        ///
+        /// Still wie die übrigen Engine-nahen Methoden (nur Console.WriteLine): die
+        /// Vorbelegung läuft auch aus der Migration heraus, und die zeigt keine Dialoge.
+        /// </summary>
+        public static int? SystemVorlauf(int idProjekt)
+        {
+            return SystemTemperatur(idProjekt, ProjektPuffer.SQL_SYSTEM_VORLAUF);
+        }
+
+        /// <summary>
+        /// Rücklauftemperatur-Vorgabe des Projekts [°C]: der GRÖSSTE Rücklauf über
+        /// dieselben Anlagen. Gegenstück zu <see cref="SystemVorlauf"/>.
+        /// </summary>
+        public static int? SystemRuecklauf(int idProjekt)
+        {
+            return SystemTemperatur(idProjekt, ProjektPuffer.SQL_SYSTEM_RUECKLAUF);
+        }
+
+        private static int? SystemTemperatur(int idProjekt, string sql)
+        {
+            if (idProjekt <= 0) return null;
+
+            object v = StillScalar(sql, ProjektPuffer.SystemTemperaturParameter(idProjekt));
+            if (v == null || v == DBNull.Value) return null;
+
+            try { return Convert.ToInt32(v); }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// Betriebstemperaturen einer Puffer-Zeile. Seit Etappe 4 ist der Puffer die
+        /// FÜHRENDE Ablage (Konzept 5.1) - diese Methode ist der erste Griff aller
+        /// Leser, die Zuordnung nur noch der Rückfallweg.
+        ///
+        /// Liefert nur dann <c>true</c>, wenn BEIDE Werte gesetzt und &gt; 0 sind: eine
+        /// halbe Angabe ergibt keine auswertbare Spreizung. Ein Rückgabewert
+        /// <c>false</c> bedeutet also "am Puffer steht nichts Brauchbares - nimm den
+        /// Rückfallweg", nicht "Fehler".
+        ///
+        /// Ausdrücklich OHNE Untergrenze: 35/28 (Niedertemperatur) ist ein gültiges
+        /// Paar und wird unverändert durchgereicht.
+        /// </summary>
+        public static bool TemperaturenLesen(int idPuffer, out int vorlauf, out int ruecklauf)
+        {
+            vorlauf = 0;
+            ruecklauf = 0;
+            if (idPuffer <= 0) return false;
+
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(ProjektPuffer.SQL_PUFFER_TEMPERATUREN, conn))
+                    {
+                        cmd.Parameters.Add(new OleDbParameter("@id", idPuffer));
+                        using (OleDbDataReader r = cmd.ExecuteReader())
+                        {
+                            if (!r.Read()) return false;
+                            if (r.IsDBNull(0) || r.IsDBNull(1)) return false;
+
+                            vorlauf = Convert.ToInt32(r.GetValue(0));
+                            ruecklauf = Convert.ToInt32(r.GetValue(1));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Fehlende Spalten (Datenbank noch nicht migriert) landen hier - das ist
+                // kein Fehlerfall, sondern genau der Grund fuer den Rueckfallweg.
+                Console.WriteLine("Puffertemperaturen nicht lesbar: " + ex.Message);
+                vorlauf = 0;
+                ruecklauf = 0;
+                return false;
+            }
+
+            return vorlauf > 0 && ruecklauf > 0;
+        }
+
+        /// <summary>
+        /// Schreibt die Betriebstemperaturen an die Puffer-Zeile. Geschrieben wird nur
+        /// ein Paar, das als Betriebsvorgabe taugt - geprueft ueber
+        /// <see cref="ProjektPuffer.IstTemperaturpaar"/> (beide gesetzt, Ruecklauf &gt; 0,
+        /// Vorlauf &gt; Ruecklauf). Sonst bleibt der Bestand stehen und der Rueckfallweg
+        /// greift weiter.
+        ///
+        /// Das blosse "&gt; 0" reichte nicht: ein vertauschtes Paar wie 35/45 (Bestand,
+        /// Projekt 1008) haette den Test bestanden, am Speicher aber eine Spreizung
+        /// &lt;= 0 hinterlassen - der Speicher saehe gepflegt aus und faende doch nur den
+        /// stillen Rueckfall auf die Engine-Vorgabe.
+        ///
+        /// Bewusst OHNE fachliche UNTERgrenze: die Plausibilitaet der Eingabe gehoert an
+        /// die Oberflaeche (ProjektPuffer.TemperaturenPruefen). Hier darf deshalb auch
+        /// 35/28 landen.
+        /// </summary>
+        public static bool SetTemperaturen(int idPuffer, int vorlauf, int ruecklauf)
+        {
+            if (idPuffer <= 0) return false;
+            if (!ProjektPuffer.IstTemperaturpaar(vorlauf, ruecklauf)) return false;
+
+            return StillNonQuery(ProjektPuffer.SQL_PUFFER_TEMPERATUREN_UPDATE,
+                                 new OleDbParameter("@vor", vorlauf),
+                                 new OleDbParameter("@rueck", ruecklauf),
+                                 new OleDbParameter("@id", idPuffer)) >= 0;
+        }
+
+        /// <summary>
+        /// Setzt Vorlauf und Ruecklauf der Puffer-Zeile auf NULL - die RUECKNAHME einer
+        /// Vorgabe (Etappe 4 / Review-Nacharbeit).
+        ///
+        /// Leert der Anwender die Temperaturzellen, darf am Speicher kein alter Wert
+        /// stehen bleiben: die Puffer-Zeile ist seit Etappe 4 die FUEHRENDE Ablage, ein
+        /// zurueckgebliebenes Paar wuerde die Zuordnung dauerhaft verdecken. Mit NULL
+        /// faellt die Engine geordnet auf Stufe 2 (Zuordnung) und Stufe 3
+        /// (Engine-Vorgabe 10 K) zurueck.
+        ///
+        /// Bewusst getrennt von <see cref="SetTemperaturen"/>: dort ist "unbrauchbares
+        /// Paar" ein Grund, NICHTS zu tun; hier ist das Leeren die Absicht.
+        /// </summary>
+        public static bool TemperaturenLoeschen(int idPuffer)
+        {
+            if (idPuffer <= 0) return false;
+
+            return StillNonQuery(ProjektPuffer.SQL_PUFFER_TEMPERATUREN_UPDATE,
+                                 ProjektPuffer.Par("@vor", OleDbType.Integer, DBNull.Value),
+                                 ProjektPuffer.Par("@rueck", OleDbType.Integer, DBNull.Value),
+                                 new OleDbParameter("@id", idPuffer)) >= 0;
+        }
+
+        // --- BHKW-Pendelspeicher (Etappe 3, 14.08.2026) ------------------------------
+
+        /// <summary>
+        /// Volumen des BHKW-Pendelspeichers eines Projekts in LITERN; 0, wenn es im
+        /// Projekt keinen Puffer mit diesem Bezeichner gibt.
+        ///
+        /// Das ist seit Etappe 3 die EINZIGE Quelle - fuer die Engine
+        /// (SimulationRunner, Form_Simulation_Detail) wie fuer die Eingabe. Der
+        /// Alt-Parameter Tab_Einstellungen.Pendelspeicher (m3) wird nirgends mehr
+        /// gelesen; die Spalte bleibt physisch bestehen, ihr Wert ist bedeutungslos.
+        ///
+        /// Gelesen wird die Zeile mit der kleinsten ID - dieselbe Auswahl, mit der
+        /// SchemaMigration R6 einen vorhandenen Puffer wiederverwendet.
+        ///
+        /// Bewusst still (nur Console.WriteLine, kein Dialog): die Methode haengt im
+        /// Engine-Pfad, und der bleibt dialogfrei (Konzept 13.4).
+        /// </summary>
+        public static int PendelspeicherVolumenLiter(int idProjekt)
+        {
+            if (idProjekt <= 0) return 0;
+
+            object v = StillScalar(
+                "SELECT TOP 1 Gesamtvolumen FROM Tab_Pufferspeicher " +
+                "WHERE ID_Projekt = ? AND Bezeichner = ? ORDER BY ID",
+                new OleDbParameter("@idProj", idProjekt),
+                new OleDbParameter("@bez", ProjektPuffer.BEZ_PENDELSPEICHER));
+
+            if (v == null || v == DBNull.Value) return 0;
+            try { return Convert.ToInt32(v); }
+            catch { return 0; }
+        }
+
+        /// <summary>
+        /// Setzt das Volumen des BHKW-Pendelspeichers in LITERN:
+        ///
+        ///   - Zeile vorhanden          -> Gesamtvolumen aktualisieren. Das gilt auch
+        ///     fuer 0: die Zeile bleibt stehen, damit ein bewusst geleerter Speicher
+        ///     nicht heimlich verschwindet (und mit ihm seine Betriebsparameter).
+        ///   - keine Zeile, liter &gt; 0 -> Puffer, Anlagenzeile (ID_Type = 12) und
+        ///     BHKW-Senke exakt nach dem Muster von SchemaMigration R6 anlegen. Die
+        ///     Bausteine dafuer stehen in ProjektPuffer, nicht hier nachgebaut.
+        ///   - keine Zeile, liter = 0   -> nichts zu tun.
+        ///
+        /// Negative Werte werden abgelehnt (Rueckgabe false, nichts geschrieben).
+        /// Still wie <see cref="PendelspeicherVolumenLiter"/>: der Aufrufer entscheidet,
+        /// ob er den Fehlschlag anzeigt.
+        /// </summary>
+        public static bool SetPendelspeicherVolumenLiter(int idProjekt, int liter)
+        {
+            if (idProjekt <= 0 || liter < 0) return false;
+
+            int idPuffer = PendelspeicherId(idProjekt);
+
+            if (idPuffer > 0)
+            {
+                return StillNonQuery(
+                    "UPDATE Tab_Pufferspeicher SET Gesamtvolumen = ? WHERE ID = ?",
+                    new OleDbParameter("@vol", liter),
+                    new OleDbParameter("@id", idPuffer)) >= 0;
+            }
+
+            if (liter == 0) return true;
+
+            // Tab_Pufferspeicher.ID ist kein AutoWert (Muster CopyFromStamm).
+            object max = StillScalar("SELECT MAX(ID) FROM Tab_Pufferspeicher");
+            int neueId = 1;
+            if (max != null && max != DBNull.Value)
+            {
+                try { neueId = Convert.ToInt32(max) + 1; }
+                catch { return false; }
+            }
+
+            // Etappe 4: Der neue Puffer bekommt die SYSTEMVORGABEN des Projekts als
+            // Vorbelegung mit. Fehlen sie, bleiben beide Spalten NULL - eine erfundene
+            // Vorbelegung (etwa 70/50) waere bei einem Niedertemperatursystem falsch.
+            //
+            // Heute ergebnisneutral: die Kapazitaet des Pendelspeichers rechnet
+            // SimulationControl weiterhin mit fest 20 K. Erst Paket 6 zieht sie aus
+            // SimulationPufferspeicher - dann bestimmt die hier abgelegte Spreizung
+            // die Kapazitaet.
+            if (StillNonQuery(ProjektPuffer.SQL_PUFFER_INSERT,
+                              ProjektPuffer.PufferParameter(neueId, idProjekt,
+                                                            ProjektPuffer.BEZ_PENDELSPEICHER,
+                                                            liter,
+                                                            SystemVorlauf(idProjekt),
+                                                            SystemRuecklauf(idProjekt))) < 0)
+                return false;
+
+            // Anlagenzeile nachtragen, damit der Speicher im Projektbaum erscheint -
+            // dieselbe Regel wie R4 der Migration (eine Zeile je Projekt+Bezeichner).
+            if (!AnlagenzeileVorhanden(idProjekt, ProjektPuffer.BEZ_PENDELSPEICHER))
+                StillNonQuery(ProjektPuffer.SQL_ANLAGENZEILE_INSERT,
+                              ProjektPuffer.AnlagenzeileParameter(idProjekt,
+                                                                  ProjektPuffer.BEZ_PENDELSPEICHER,
+                                                                  neueId));
+
+            // BHKW-Anlagen des Projekts auf die neue Senke (R6). Heute noch ohne
+            // Wirkung auf das Rechenergebnis - die Engine liest WS_Ziel erst in Paket 2.
+            StillNonQuery(ProjektPuffer.SQL_BHKW_AUF_PUFFER,
+                          ProjektPuffer.BhkwAufPufferParameter(idProjekt, neueId));
+
+            return true;
+        }
+
+        /// <summary>ID des Pendelspeichers eines Projekts (kleinste), 0 wenn keiner.</summary>
+        private static int PendelspeicherId(int idProjekt)
+        {
+            object v = StillScalar(
+                "SELECT TOP 1 ID FROM Tab_Pufferspeicher " +
+                "WHERE ID_Projekt = ? AND Bezeichner = ? ORDER BY ID",
+                new OleDbParameter("@idProj", idProjekt),
+                new OleDbParameter("@bez", ProjektPuffer.BEZ_PENDELSPEICHER));
+
+            if (v == null || v == DBNull.Value) return 0;
+            try { return Convert.ToInt32(v); }
+            catch { return 0; }
+        }
+
+        private static bool AnlagenzeileVorhanden(int idProjekt, string bezeichner)
+        {
+            object v = StillScalar(
+                "SELECT COUNT(*) FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
+                new OleDbParameter("@idProj", idProjekt),
+                new OleDbParameter("@typ", ProjektPuffer.TYP_PUFFER),
+                new OleDbParameter("@bez", bezeichner ?? ""));
+
+            if (v == null || v == DBNull.Value) return false;
+            try { return Convert.ToInt32(v) > 0; }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Skalare Abfrage auf eigener Verbindung, OHNE Dialog. DataRepository zeigt im
+        /// Fehlerfall eine MessageBox - im Engine-Pfad waere das ein haengender Lauf
+        /// (der Referenzlauf braucht dafuer eigens einen Dialogwaechter).
+        /// </summary>
+        private static object StillScalar(string sql, params OleDbParameter[] parameter)
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        if (parameter != null) cmd.Parameters.AddRange(parameter);
+                        return cmd.ExecuteScalar();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Pufferspeicher-Abfrage fehlgeschlagen: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>Schreibende Anweisung ohne Dialog; -1 bei Fehler.</summary>
+        private static int StillNonQuery(string sql, params OleDbParameter[] parameter)
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        if (parameter != null) cmd.Parameters.AddRange(parameter);
+                        return cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Schreibzugriff auf Pufferspeicher fehlgeschlagen: " + ex.Message);
+                return -1;
+            }
+        }
+
+        // --- Referenzen auf Projekt-Pufferspeicher (restriktive Beziehungen) ---------
+
+        /// <summary>
+        /// Spalten in Tab_Energieanlagen, die auf Tab_Pufferspeicher.ID zeigen
+        /// (Konzept 5.3). Alle vier haben seit Schritt 4 der SchemaMigration eine
+        /// erzwungene Beziehung OHNE Loeschweitergabe.
+        /// </summary>
+        private static readonly string[] PUFFER_REFERENZEN =
+            { "ID_PUFFER", "WS_ID_Puffer", "WS_ID_Puffer2", "WQ_ID_Puffer" };
+
+        /// <summary>
+        /// Löst alle Anlagen-Verweise auf die Projekt-Pufferspeicher EINES PROJEKTS.
+        ///
+        /// Vor dem Löschen eines Projekts aufzurufen (B0-6b): die Puffer-Projektkopien
+        /// selbst fallen über die Löschweitergabe
+        /// <c>Tab_Projekt.ID -&gt; Tab_Pufferspeicher.ID_Projekt</c> weg. Die vier
+        /// Anlagen-Referenzen auf <c>Tab_Pufferspeicher.ID</c> sind dagegen restriktiv -
+        /// zeigt beim Projekt-DELETE noch eine Anlage auf einen dieser Puffer, lehnt
+        /// Access die ganze Kaskade ab.
+        ///
+        /// Die Anlagen des Projekts werden von den Löschpfaden zwar ohnehin vorher
+        /// entfernt (<c>WErzeugerCtrl.Delete</c>) - aber genau diese Reihenfolge soll
+        /// keine Voraussetzung sein. Deshalb steht der Aufruf zentral in
+        /// <c>ProjektCtrl.Delete</c> und nicht in den Aufrufern.
+        /// </summary>
+        public static void ReferenzenLoesenFuerProjekt(int idProjekt)
+        {
+            if (idProjekt <= 0) return;
+
+            ReferenzenLoesen(BetroffeneIds(
+                "SELECT ID FROM Tab_Pufferspeicher WHERE ID_Projekt = ?",
+                new OleDbParameter("@idProj", idProjekt)));
+        }
+
+        /// <summary>Liefert die IDs der Puffer-Zeilen, die ein Filter trifft.</summary>
+        private static List<int> BetroffeneIds(string sql, params OleDbParameter[] parameter)
+        {
+            List<int> ids = new List<int>();
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        if (parameter != null) cmd.Parameters.AddRange(parameter);
+                        using (OleDbDataReader r = cmd.ExecuteReader())
+                        {
+                            while (r.Read())
+                                if (!r.IsDBNull(0)) ids.Add(Convert.ToInt32(r.GetValue(0)));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Betroffene Pufferspeicher konnten nicht ermittelt werden: " + ex.Message);
+            }
+            return ids;
+        }
+
+        /// <summary>
+        /// Setzt alle Verweise auf die uebergebenen Puffer-IDs auf NULL, damit das
+        /// anschliessende DELETE nicht an der restriktiven Beziehung scheitert.
+        /// Still: fehlt eine der Spalten (Datenbank noch nicht migriert), wird der
+        /// Fehler uebergangen.
+        /// </summary>
+        private static void ReferenzenLoesen(List<int> pufferIds)
+        {
+            if (pufferIds == null || pufferIds.Count == 0) return;
+
+            string liste = string.Join(",", pufferIds);
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    foreach (string spalte in PUFFER_REFERENZEN)
+                    {
+                        try
+                        {
+                            using (OleDbCommand cmd = new OleDbCommand(
+                                "UPDATE Tab_Energieanlagen SET [" + spalte + "] = NULL " +
+                                "WHERE [" + spalte + "] IN (" + liste + ")", conn))
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // z. B. Spalte noch nicht angelegt - kein Grund, das Loeschen zu stoppen
+                            Console.WriteLine("Referenz " + spalte + " nicht geloest: " + ex.Message);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Referenzen auf Pufferspeicher konnten nicht geloest werden: " + ex.Message);
+            }
         }
 
         private static OleDbParameter P(string name, object value)

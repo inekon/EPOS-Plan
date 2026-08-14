@@ -68,11 +68,54 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
+        /// <summary>
+        /// Löscht das Projekt. Die Detailtabellen fallen über ihre Löschweitergaben mit
+        /// weg - seit Schritt 4 der SchemaMigration auch die Puffer-Projektkopien
+        /// (B0-6b: Tab_Projekt.ID -> Tab_Pufferspeicher.ID_Projekt, ON DELETE CASCADE).
+        ///
+        /// Vorher werden die Anlagen-Verweise auf diese Puffer gelöst. Grund: die vier
+        /// Referenzen ID_PUFFER / WS_ID_Puffer / WS_ID_Puffer2 / WQ_ID_Puffer sind
+        /// bewusst RESTRIKTIV angelegt (keine Löschweitergabe, sonst risse ein gelöschter
+        /// Speicher die referenzierende Wärmepumpe mit). Zeigt beim Projekt-DELETE noch
+        /// eine Anlage auf einen Projekt-Puffer, lehnt Access die gesamte Kaskade ab.
+        ///
+        /// Die Aufrufer (MenueCtrl.ProjektDelete, VariantenCtrl.LoescheVariante) löschen
+        /// die Energieanlagen zwar vorher - aber die B0-6b-Kaskade soll nicht von der
+        /// Aufrufreihenfolge abhängen. Deshalb steht das Lösen hier, an der einen
+        /// zentralen Stelle, durch die beide Wege laufen.
+        /// </summary>
         public bool Delete(string szProjekt)
         {
+            PufferReferenzenLoesen(szProjekt);
+
             string sql = "DELETE FROM Tab_Projekt WHERE Projektname=?";
             OleDbParameter[] ps = { new OleDbParameter("@pname", szProjekt) };
             return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        /// <summary>
+        /// Löst die Anlagen-Verweise auf die Pufferspeicher aller Projekte dieses Namens.
+        /// Still: schlägt es fehl, soll das Löschen trotzdem versucht werden - die
+        /// Beziehung meldet sich dann von selbst.
+        /// </summary>
+        private static void PufferReferenzenLoesen(string szProjekt)
+        {
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID FROM Tab_Projekt WHERE Projektname=?",
+                    new OleDbParameter("@pname", szProjekt ?? ""));
+
+                if (dt == null) return;
+
+                foreach (DataRow r in dt.Rows)
+                    if (r[0] != DBNull.Value)
+                        PufferSpCtrl.ReferenzenLoesenFuerProjekt(Convert.ToInt32(r[0]));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Puffer-Referenzen des Projekts konnten nicht gelöst werden: " + ex.Message);
+            }
         }
 
         public void ReadAll()

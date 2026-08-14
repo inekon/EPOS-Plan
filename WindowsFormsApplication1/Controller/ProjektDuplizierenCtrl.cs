@@ -72,6 +72,14 @@ namespace WindowsFormsApplication1
             {"ID_WP","Tab_WP"}, {"ID_SP","Tab_Stromspeicher"}, {"ID_PV","Tab_PV"},
             {"ID_Solar","Tab_Solarkollektoren"}, {"ID_Kessel","Tab_Heizkessel"}, {"ID_BHKW","Tab_BHKW"},
             {"ID_PUFFER","Tab_Pufferspeicher"}, {"ID_Pufferspeicher","Tab_Pufferspeicher"},
+            // Quellen-/Senken-Modell (Konzept 5.3): die drei neuen Puffer-Referenzen in
+            // Tab_Energieanlagen. Seit Schritt 4 der SchemaMigration sind das echte
+            // Access-Beziehungen, die _echteFks ohnehin erkennt - der Eintrag hier ist
+            // Guertel und Hosentraeger fuer Datenbanken, in denen die Migration (noch)
+            // nicht gelaufen ist. Ohne Versatz zeigten Varianten auf die Speicher des
+            // Quellprojekts; das faellt erst im Ergebnis auf.
+            {"WS_ID_Puffer","Tab_Pufferspeicher"}, {"WS_ID_Puffer2","Tab_Pufferspeicher"},
+            {"WQ_ID_Puffer","Tab_Pufferspeicher"},
             {"ID_Klimaregion","Tab_Klimaregion"}, {"ID_ProjektGebaeude","Z_ProjektGebaeude"},
             {"ID_Gebaeude","Tab_Gebaeude"}, {"ID_TagV","Tab_DBTagV"},
             {"ID_Stromverbraucher","Tab_Stromverbraucher"}, {"ID_Prozesswaerme","Tab_Prozesswaerme"},

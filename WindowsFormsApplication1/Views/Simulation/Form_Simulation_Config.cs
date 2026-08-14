@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -1435,7 +1436,8 @@ namespace WindowsFormsApplication1
             }
             else if (subItemIndex == 2 || subItemIndex == 3) // "Vorlauf" oder "Rücklauf"
             {
-                TextBox textBox = new TextBox { Bounds = displayBounds, Text = item.SubItems[subItemIndex].Text };
+                string alterWert = item.SubItems[subItemIndex].Text;
+                TextBox textBox = new TextBox { Bounds = displayBounds, Text = alterWert };
 
                 // Verhindert die Eingabe von Buchstaben
                 textBox.KeyPress += (s, ev) => {
@@ -1448,12 +1450,31 @@ namespace WindowsFormsApplication1
                 // Event beim Verlassen der TextBox
                 textBox.LostFocus += (s, ev) =>
                 {
-                    // Validierung: Nur speichern, wenn es eine Zahl ist (optional)
-                    item.SubItems[subItemIndex].Text = textBox.Text;
+                    string neuerText = textBox.Text;
+
+                    // B4-2: Die Eingabe läuft jetzt über dieselbe Prüfung wie überall
+                    // sonst (ProjektPuffer.TemperaturenPruefen, siehe
+                    // Form_KonfigPufferspeicher und Wizard_WPItem). Geprüft wird das
+                    // PAAR und nicht die einzelne Zelle - erst Vorlauf UND Rücklauf
+                    // ergeben eine Spreizung. Die Gegenzelle steht schon im ListView.
+                    int gegenSpalte = (subItemIndex == 2) ? 3 : 2;
+                    string gegenText = item.SubItems[gegenSpalte].Text;
+                    string vorlaufText = (subItemIndex == 2) ? neuerText : gegenText;
+                    string ruecklaufText = (subItemIndex == 2) ? gegenText : neuerText;
+
+                    string fehler;
+                    if (!TemperaturPaarPruefen(vorlaufText, ruecklaufText, out fehler))
+                    {
+                        MessageBox.Show(fehler, "Temperatur prüfen",
+                                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        neuerText = alterWert;   // Zelle auf den letzten gültigen Stand zurück
+                    }
+
+                    item.SubItems[subItemIndex].Text = neuerText;
 
                     // Änderung in den Datenbestand übernehmen (Spalte 2=Vorlauf, 3=Rücklauf)
                     if (item.Tag is int idxZ && idxZ >= 0 && idxZ < _zuordnungen.Count)
-                        _zuordnungen[idxZ][subItemIndex] = textBox.Text;
+                        _zuordnungen[idxZ][subItemIndex] = neuerText;
 
                     textBox.Dispose();
                 };
@@ -1478,6 +1499,52 @@ namespace WindowsFormsApplication1
                 frm.m_bReadOnly = true;
                 frm.ShowDialog();
             }
+        }
+
+        /// <summary>
+        /// Prüft das Temperaturpaar einer Zuordnungszeile beim Verlassen einer Zelle
+        /// (B4-2). Grundlage ist <see cref="ProjektPuffer.TemperaturenPruefen"/> — eine
+        /// Stelle für alle Temperatureingaben, ohne Untergrenze: 35/28 ist gültig.
+        ///
+        /// Zwei Zustände gelten ausdrücklich als in Ordnung, obwohl
+        /// <c>TemperaturenPruefen</c> sie ablehnen würde:
+        ///
+        ///   - **beide Zellen leer oder 0** — das ist die RÜCKNAHME einer Vorgabe
+        ///     (B4-3). Beim Speichern werden Vorlauf/Ruecklauf am Puffer dann auf NULL
+        ///     gesetzt, und die Engine fällt geordnet zurück.
+        ///   - **genau eine Zelle gefüllt** — der unvermeidliche Zwischenstand während
+        ///     der Eingabe. Wer die erste von zwei Zellen füllt, darf dabei nicht mit
+        ///     einer Meldung unterbrochen werden. Ein halbes Paar wird ohnehin nirgends
+        ///     an den Puffer geschrieben.
+        ///
+        /// Abgefangen wird damit genau das, was schaden würde: ein VOLLSTÄNDIGES, aber
+        /// unbrauchbares Paar (vertauscht, Spreizung 0, über 110 °C).
+        /// </summary>
+        private static bool TemperaturPaarPruefen(string vorlaufText, string ruecklaufText, out string fehler)
+        {
+            fehler = null;
+
+            bool vorlaufLeer = IstLeerwert(vorlaufText);
+            bool ruecklaufLeer = IstLeerwert(ruecklaufText);
+            if (vorlaufLeer || ruecklaufLeer) return true;
+
+            int vorlauf, ruecklauf;
+            return ProjektPuffer.TemperaturenPruefen(vorlaufText, ruecklaufText,
+                                                     out vorlauf, out ruecklauf, out fehler);
+        }
+
+        /// <summary>
+        /// "Nicht gepflegt": leere Zelle oder die 0. Beides bedeutet in diesen Spalten
+        /// dasselbe — der Zelleditor lässt kein Minus zu, und 0 °C Rücklauf ist auch in
+        /// der Datenbank der Wert für "nichts eingetragen".
+        /// </summary>
+        private static bool IstLeerwert(string text)
+        {
+            text = (text ?? "").Trim();
+            if (text.Length == 0) return true;
+
+            int zahl;
+            return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out zahl) && zahl == 0;
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
@@ -1569,8 +1636,29 @@ namespace WindowsFormsApplication1
             if (!checkBox6.Checked) { comboBox6.Text = ""; comboBox6.SelectedIndex = -1; }
         }
 
+        /// <summary>
+        /// Schaltet die Eingaben ab, wenn die Schema-Migration nicht durchkam
+        /// (ADR-001, Aufgabe 6). Bewusst nur die Kindsteuerelemente und nicht das
+        /// Formular selbst - sonst ließe sich das Fenster nicht mehr schließen.
+        /// </summary>
+        private void SimulationsbereichSperren()
+        {
+            foreach (Control c in this.Controls) c.Enabled = false;
+        }
+
         public void SetControls(int ID_Projekt)
         {
+            // Blockade bei nicht abgeschlossener Schema-Migration (ADR-001, Aufgabe 6):
+            // auf halb migriertem Schema zu konfigurieren, führt zu stillen Datenfehlern.
+            string sperrgrund;
+            if (SchemaMigration.SimulationGesperrt(out sperrgrund))
+            {
+                MessageBox.Show(sperrgrund, "Simulation nicht verfügbar",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                SimulationsbereichSperren();
+                return;
+            }
+
             var items = new List<LanguageItem>
             {
                 new LanguageItem { DisplayName = MyResource.Resource.KONFIG_BHKW, DbValue = "BHKW" },
@@ -1694,6 +1782,26 @@ namespace WindowsFormsApplication1
             // WICHTIG: Gespeichert wird der komplette Datenbestand - nicht nur die
             // aktuell (per Pufferspeicher-Checkbox gefiltert) angezeigten Zeilen!
             int fehlgeschlagen = 0;
+
+            // B4-1: An den PUFFER schreibt nur die eine Zeile, die die Engine auch
+            // auswertet. SimulationControl.Do_Simulation überspringt jede Zuordnung mit
+            // einem anderen Erzeuger (continue) und bricht nach dem ersten
+            // Wärmepumpen-Treffer ab (break) - die Reihenfolge ist ORDER BY Prioritaet.
+            // Genau diese Zeile wird hier bestimmt: die Priorität vergibt die Schleife
+            // unten fortlaufend in Listenreihenfolge (prioritaet++), also gewinnt die
+            // ERSTE Wärmepumpen-Zeile der Liste. Sie bekommt zugleich die kleinste ID,
+            // womit auch der Gleichstandsfall der Migration (R1: ORDER BY Prioritaet, ID)
+            // dieselbe Zeile wählt.
+            //
+            // Alles andere - BHKW-, Kessel-, Solarthermie- und Gesamtsystem-Zeilen sowie
+            // jede weitere WP-Zeile - schreibt NICHT an den Puffer. Vorher tat es das:
+            // die zuletzt gespeicherte Zeile überschrieb die Betriebstemperaturen des
+            // Speichers, obwohl die Engine sie nie gelesen hat. Das hätte die
+            // R2-Entscheidung der Migration ausgehebelt (wirkungslose Altzuordnungen
+            // bleiben wirkungslos) und über den Vorrang der führenden Ablage sogar
+            // ergebniswirksam werden können.
+            bool pufferZeileGeschrieben = false;
+
             for (int i = 0; i < _zuordnungen.Count; i++)
             {
                 string[] z = _zuordnungen[i];
@@ -1719,12 +1827,56 @@ namespace WindowsFormsApplication1
                     ctrlpsp.Schwelle_Aus = null;
                 }
 
-                ctrlpsp.Vorlauf = Int32.Parse(z[2]);
-                ctrlpsp.Ruecklauf = Int32.Parse(z[3]);
+                // Konzept 4.6: TryParse statt Int32.Parse. Ein leeres oder unlesbares
+                // Feld warf hier bisher eine unbehandelte FormatException — und zwar
+                // NACH dem Delete, also mitten im Datenverlust. Unlesbares wird zu 0;
+                // die Engine fällt dann auf ihre Vorgabespreizung zurück.
+                int vorlauf, ruecklauf;
+                if (!Int32.TryParse(z[2], out vorlauf)) vorlauf = 0;
+                if (!Int32.TryParse(z[3], out ruecklauf)) ruecklauf = 0;
+
+                ctrlpsp.Vorlauf = vorlauf;
+                ctrlpsp.Ruecklauf = ruecklauf;
                 ctrlpsp.Prioritaet = prioritaet++;
+
+                bool istWaermepumpe = string.Equals(ctrlpsp.Erzeuger,
+                                                    ProjektPuffer.ERZEUGER_WAERMEPUMPE,
+                                                    StringComparison.Ordinal);
+
                 // B0-1: Rückgabewert auswerten — nach dem Delete ist ein stiller
                 // Insert-Fehlschlag ein Datenverlust und muss sichtbar werden.
                 if (!ctrlpsp.Insert()) fehlgeschlagen++;
+                else if (istWaermepumpe && !pufferZeileGeschrieben)
+                {
+                    pufferZeileGeschrieben = true;
+
+                    // Etappe 4: Die Puffer-Zeile ist die FÜHRENDE Ablage der
+                    // Betriebstemperaturen (Konzept 5.1) — die Zuordnung wird nur noch
+                    // mitgeschrieben, damit Alt-Datenbanken lesbar bleiben. Insert()
+                    // hat ID_Pufferspeicher gerade frisch aufgelöst (und die
+                    // Projektkopie bei Bedarf angelegt), der Wert zeigt also sicher auf
+                    // Tab_Pufferspeicher.
+                    if (ProjektPuffer.IstTemperaturpaar(vorlauf, ruecklauf))
+                    {
+                        // Niedrige Paare wie 35/28 laufen unverändert durch — hier wird
+                        // nichts geklemmt.
+                        PufferSpCtrl.SetTemperaturen(ctrlpsp.ID_Pufferspeicher, vorlauf, ruecklauf);
+                    }
+                    else if (vorlauf <= 0 && ruecklauf <= 0)
+                    {
+                        // B4-3, Rücknahme: Der Anwender hat beide Zellen geleert. Am
+                        // Speicher darf dann kein alter Wert stehen bleiben — er wäre
+                        // die führende Ablage und verdeckte die Zuordnung dauerhaft.
+                        // Mit NULL fällt die Engine geordnet zurück (Zuordnung, sonst
+                        // Vorgabe 10 K).
+                        PufferSpCtrl.TemperaturenLoeschen(ctrlpsp.ID_Pufferspeicher);
+                    }
+                    // Halb gefülltes oder vertauschtes Paar: unverändert lassen. Die
+                    // Eingabe wird bereits im Zelleditor über
+                    // ProjektPuffer.TemperaturenPruefen abgefangen; kommt hier doch so
+                    // etwas an (Altbestand in _zuordnungen), ist Nichtstun die sichere
+                    // Wahl — es entsteht weder eine Scheinvorgabe noch ein Datenverlust.
+                }
             }
 
             if (fehlgeschlagen > 0)
