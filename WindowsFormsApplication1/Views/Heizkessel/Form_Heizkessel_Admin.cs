@@ -78,8 +78,12 @@ namespace WindowsFormsApplication1
             string szFilterLeistung = "";
             string sql = "";
 
-            szFilterLeistung = "";
-            if (comboBox_Leistung.Text == "Alle") szFilterLeistung = "Ptherm Like '%'";
+            // Vorbelegung "alle Leistungen" (gleiche Fehlerklasse wie B0-10 im Pufferspeicher):
+            // ohne Treffer in der Literalkette blieb der Leistungsteil sonst leer und das
+            // SQL endete in "... and  order by ...". Auslöser ist Freitext in der
+            // editierbaren ComboBox; das Symptom war eine stumme Leerliste.
+            szFilterLeistung = "Ptherm Like '%'";
+            if (comboBox_Leistung.Text == "Alle" || comboBox_Leistung.Text == "") szFilterLeistung = "Ptherm Like '%'";
             else if (comboBox_Leistung.Text == "bis 50 kW") szFilterLeistung = "Ptherm <50";
             else if (comboBox_Leistung.Text == ">50 bis 200 kW") szFilterLeistung = "Ptherm >=50 and Ptherm <200";
             else if (comboBox_Leistung.Text == ">200 bis 500 kW") szFilterLeistung = "Ptherm >=200 and Ptherm <500";
