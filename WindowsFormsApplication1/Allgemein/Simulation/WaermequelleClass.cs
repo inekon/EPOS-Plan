@@ -92,8 +92,17 @@ namespace WindowsFormsApplication1
         private static bool _schemaGeprueft = false;
 
         /// <summary>
-        /// Legt die benötigten Spalten in Tab_Energieanlagen an, falls sie fehlen.
-        /// Wird nur einmal pro Programmlauf tatsächlich geprüft.
+        /// Rückfallebene der Schema-Ausrollung (ADR-001): legt die benötigten Spalten an,
+        /// falls sie fehlen. Wird nur einmal pro Programmlauf tatsächlich geprüft.
+        ///
+        /// Der reguläre Weg ist die versionierte <see cref="SchemaMigration"/> beim
+        /// Programmstart. Diese Methode bleibt bestehen, damit die Konfiguration und der
+        /// Simulationsstart auch dann tragfähig sind, wenn die Migration (noch) nicht
+        /// gelaufen ist. Sie iteriert über DENSELBEN Spaltenkatalog
+        /// (<see cref="SchemaKatalog.Alle"/>) - es gibt keine zweite Spaltenliste mehr.
+        ///
+        /// Verhalten unverändert: still (keine Dialoge, Fehler nur auf die Konsole),
+        /// idempotent, ohne Rückgabewert.
         ///
         /// WICHTIG: bewusst über eine eigene, stille OleDb-Verbindung - die
         /// DataRepository-Methoden zeigen bei Fehlern MessageBoxen an und liefern
@@ -110,50 +119,51 @@ namespace WindowsFormsApplication1
                 {
                     conn.Open();
 
-                    // Vorhandene Spalten in einem Rutsch ermitteln
-                    DataTable dt = new DataTable();
-                    using (OleDbCommand cmd = new OleDbCommand("SELECT TOP 1 * FROM Tab_Energieanlagen", conn))
-                    using (OleDbDataAdapter adapter = new OleDbDataAdapter(cmd))
+                    string aktuelleTabelle = null;
+                    DataTable dt = null;
+
+                    // Der Katalog ist nach Tabellen gruppiert abgelegt; das Schema wird
+                    // deshalb je Tabelle nur einmal gelesen.
+                    foreach (SchemaSpalte s in SchemaKatalog.Alle)
                     {
-                        adapter.FillSchema(dt, SchemaType.Source);
+                        if (!string.Equals(aktuelleTabelle, s.Tabelle, StringComparison.OrdinalIgnoreCase))
+                        {
+                            aktuelleTabelle = s.Tabelle;
+                            dt = TabellenSchemaLesen(conn, s.Tabelle);
+                        }
+
+                        if (dt == null) continue;          // Tabelle nicht lesbar - still übergehen
+                        SpalteSicherstellen(conn, dt, s.Tabelle, s.Name, s.TypDefinition);
                     }
-
-                    SpalteSicherstellen(conn, dt, "Prioritaet", "LONG");
-                    SpalteSicherstellen(conn, dt, "WQ_Typ", "TEXT(50)");
-                    SpalteSicherstellen(conn, dt, "WQ_Temp", "DOUBLE");
-                    SpalteSicherstellen(conn, dt, "WQ_Monatswerte", "TEXT(255)");
-                    SpalteSicherstellen(conn, dt, "WQ_Wochenwerte", "MEMO"); // 168 Werte
-                    SpalteSicherstellen(conn, dt, "WQ_CSV", "TEXT(255)");
-                    SpalteSicherstellen(conn, dt, "WQ_Puffer", "TEXT(255)");      // Quell-Pufferspeicher
-                    SpalteSicherstellen(conn, dt, "WQ_Spreizung", "DOUBLE");      // nutzbare Spreizung [K]
-                    SpalteSicherstellen(conn, dt, "WQ_Regeneration", "DOUBLE");   // Nachladung [kW]
-                    SpalteSicherstellen(conn, dt, "WQ_Unbegrenzt", "YESNO");      // Quelle immer verfügbar
-                    SpalteSicherstellen(conn, dt, "WS_Typ", "TEXT(50)");          // Wärmesenke
-                    SpalteSicherstellen(conn, dt, "BM_Typ", "TEXT(50)");          // Betriebsmodus
-
-                    // Wärmequelle Erdreich (Paket 3, Konzept 5.3)
-                    SpalteSicherstellen(conn, dt, "WQ_Tiefe", "DOUBLE");          // Verlegetiefe bzw. Sondenlänge [m]
-                    SpalteSicherstellen(conn, dt, "WQ_Flaeche", "DOUBLE");        // Kollektorfläche [m²]
-                    SpalteSicherstellen(conn, dt, "WQ_Anzahl", "LONG");           // Anzahl Sonden
-                    SpalteSicherstellen(conn, dt, "WQ_Bodentyp", "TEXT(50)");     // Katalogschlüssel VDI 4640 Bl. 1
-                    SpalteSicherstellen(conn, dt, "WQ_Quellsystem", "TEXT(50)");  // Kollektor | Sonde
                 }
-
-                // Speicherregelung je Pufferspeicher-Zuordnung (Ein-/Abschaltschwelle in %)
-                SpalteSicherstellen("Z_ProjektPufferSp", "Schwelle_Ein", "DOUBLE");
-                SpalteSicherstellen("Z_ProjektPufferSp", "Schwelle_Aus", "DOUBLE");
-
-                // Klimazone nach DIN 4710 (1…15) je Klimaregion; 0/NULL = unbestimmt.
-                // Eingangsgröße der Auslegungsprüfung nach VDI 4640 Bl. 2, Tabelle A2
-                // (Konzept 13.1). Die Zone ist eine Eigenschaft der Region und wird
-                // deshalb einmal je Region gepflegt, nicht je Projekt.
-                SpalteSicherstellen("Tab_Klimaregion", "Klimazone_DIN4710", "LONG DEFAULT 0");
 
                 _schemaGeprueft = true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("SchemaSicherstellen fehlgeschlagen: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Spaltenliste einer Tabelle; null, wenn die Tabelle nicht lesbar ist.
+        /// </summary>
+        private static DataTable TabellenSchemaLesen(OleDbConnection conn, string tabelle)
+        {
+            try
+            {
+                DataTable dt = new DataTable();
+                using (OleDbCommand cmd = new OleDbCommand("SELECT TOP 1 * FROM [" + tabelle + "]", conn))
+                using (OleDbDataAdapter adapter = new OleDbDataAdapter(cmd))
+                {
+                    adapter.FillSchema(dt, SchemaType.Source);
+                }
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Schema von " + tabelle + " nicht lesbar: " + ex.Message);
+                return null;
             }
         }
 
@@ -192,21 +202,28 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static void SpalteSicherstellen(OleDbConnection conn, DataTable schema, string spalte, string typDefinition)
+        /// <summary>
+        /// Legt eine Spalte auf einer bereits offenen Verbindung an. Die Tabelle wird
+        /// übergeben - die frühere Fassung hatte Tab_Energieanlagen hartkodiert und war
+        /// damit für Tab_Pufferspeicher, Tab_Klimaregion und Tab_Einstellungen unbrauchbar
+        /// (Konzept 5.6).
+        /// </summary>
+        private static void SpalteSicherstellen(OleDbConnection conn, DataTable schema,
+                                                string tabelle, string spalte, string typDefinition)
         {
             if (schema.Columns.Contains(spalte)) return; // Spalte existiert bereits
 
             try
             {
                 using (OleDbCommand cmd = new OleDbCommand(
-                    "ALTER TABLE Tab_Energieanlagen ADD COLUMN [" + spalte + "] " + typDefinition, conn))
+                    "ALTER TABLE [" + tabelle + "] ADD COLUMN [" + spalte + "] " + typDefinition, conn))
                 {
                     cmd.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Spalte " + spalte + " konnte nicht angelegt werden: " + ex.Message);
+                Console.WriteLine("Spalte " + tabelle + "." + spalte + " konnte nicht angelegt werden: " + ex.Message);
             }
         }
 
@@ -234,6 +251,39 @@ namespace WindowsFormsApplication1
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Beliebige skalare Abfrage - still, ohne Fehlerdialoge (Etappe 4). Eine noch
+        /// nicht migrierte Datenbank liefert hier null statt einer MessageBox mitten im
+        /// Engine-Lauf; genau dafür ist der Rückfallweg da.
+        /// </summary>
+        private static object SkalarStill(string sql)
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    using (OleDbCommand cmd = new OleDbCommand(sql, conn))
+                    {
+                        object v = cmd.ExecuteScalar();
+                        return (v == DBNull.Value) ? null : v;
+                    }
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>Ganzzahl aus einem Datenbankwert; 0 bei null, DBNull oder Unfug.</summary>
+        private static int ZahlOderNull(object o)
+        {
+            if (o == null || o == DBNull.Value) return 0;
+            try { return Convert.ToInt32(o); }
+            catch { return 0; }
         }
 
         /// <summary>
@@ -301,7 +351,32 @@ namespace WindowsFormsApplication1
                             object v = WertLesen(idEnergieanlage, "WQ_Temp");
                             if (v != null) return KonstantesProfil(Convert.ToSingle(v));
 
-                            // Fallback (Altdaten): mittlere Temperatur der Zuordnung
+                            // Fallback: mittlere Temperatur (Vorlauf + Rücklauf) / 2.
+                            // Seit Etappe 4 in drei Stufen (Konzept 5.4 kündigt genau
+                            // diese Umstellung an) - führend ist immer der SPEICHER:
+                            //
+                            //   1. der als Quelle gewählte Puffer (WQ_ID_Puffer, von
+                            //      Migrationsregel R3 aus dem Bezeichner aufgelöst),
+                            //   2. der Puffer der Wärmepumpen-Zuordnung,
+                            //   3. Altdaten: die Zuordnungszeile selbst.
+                            //
+                            // Regressionsneutral: R1 hat die Werte der Zuordnung an
+                            // genau den Puffer aus Stufe 2 geschrieben - wo Stufe 1
+                            // leer ist, liefert Stufe 2 dieselben Zahlen wie Stufe 3.
+                            int vorlauf, ruecklauf;
+
+                            int idQuellPuffer = ZahlOderNull(WertLesen(idEnergieanlage, "WQ_ID_Puffer"));
+                            if (PufferSpCtrl.TemperaturenLesen(idQuellPuffer, out vorlauf, out ruecklauf))
+                                return KonstantesProfil((vorlauf + ruecklauf) / 2f);
+
+                            int idZuordnungsPuffer = ZahlOderNull(SkalarStill(
+                                "SELECT TOP 1 ID_Pufferspeicher FROM Z_ProjektPufferSp " +
+                                "WHERE ID_Projekt=" + idProjekt +
+                                " AND Erzeuger='Wärmepumpe' ORDER BY Prioritaet"));
+                            if (PufferSpCtrl.TemperaturenLesen(idZuordnungsPuffer, out vorlauf, out ruecklauf))
+                                return KonstantesProfil((vorlauf + ruecklauf) / 2f);
+
+                            // Altdaten: mittlere Temperatur der Zuordnung
                             object vor = DataRepository.ExecuteScalar(
                                 "SELECT Vorlauf FROM Z_ProjektPufferSp WHERE ID_Projekt=" + idProjekt +
                                 " AND Erzeuger='Wärmepumpe' ORDER BY Prioritaet");

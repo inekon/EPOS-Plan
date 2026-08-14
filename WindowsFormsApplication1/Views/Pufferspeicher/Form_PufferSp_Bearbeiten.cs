@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Data;
 using System.Data.OleDb;
 using System.Windows.Forms;
@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
             textBox_Name.Text = szName;
             m_szPufferSp = szName;
 
-            // 1. Daten über das DataRepository mittels DataTable abfragen (Ersetzt RecordSet)
+            // 1. Daten Ã¼ber das DataRepository mittels DataTable abfragen (Ersetzt RecordSet)
             string sql = "SELECT * FROM Tab_Pufferspeicher_STAMM WHERE Bezeichner = ?";
             DataTable dt = DataRepository.GetDataTable(sql, new OleDbParameter("?", szName ?? (object)DBNull.Value));
 
@@ -49,12 +49,36 @@ namespace WindowsFormsApplication1
 
             DataRow row = dt.Rows[0];
 
-            // Zuordnung basierend auf der Tabellenstruktur (Indizes analog zur ReadAll-Logik)
-            if (row[2] != DBNull.Value) textBox_Hersteller.Text = row[2].ToString();
-            if (row[3] != DBNull.Value) comboBox_Speichertyp.Text = row[3].ToString();
-            if (row[5] != DBNull.Value) textBox_Volumen.Text = row[5].ToString();
-            if (row[4] != DBNull.Value) textBox_Verluste.Text = Convert.ToDouble(row[4]).ToString("F2");
-            if (row[6] != DBNull.Value) textBox_Investitionskosten.Text = Convert.ToDouble(row[6]).ToString("F2");
+            // Zuordnung ueber Spaltennamen statt ueber Ordinalzahlen. Die frueheren
+            // row[2]..row[6] waren an die aktuelle Spaltenreihenfolge von
+            // Tab_Pufferspeicher_STAMM gebunden - die ist kein Vertrag. Die
+            // SchemaMigration haengt neue Spalten zwar immer hinten an, aber ein
+            // Tabellenumbau (Import aus einer Vorlage, "Komprimieren und reparieren"
+            // nach manuellen Aenderungen) verschoebe die Zuordnung stillschweigend.
+            SetzeText(textBox_Hersteller, row, "Hersteller");
+            SetzeText(comboBox_Speichertyp, row, "Speichertyp");
+            SetzeText(textBox_Volumen, row, "Gesamtvolumen");
+            SetzeZahl(textBox_Verluste, row, "Bereitschaftsverluste");
+            SetzeZahl(textBox_Investitionskosten, row, "Investitionskosten");
+        }
+
+        /// <summary>Uebernimmt einen Textwert, wenn Spalte und Wert vorhanden sind.</summary>
+        private static void SetzeText(Control ziel, DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return;
+            object v = row[spalte];
+            if (v == DBNull.Value) return;
+            ziel.Text = v.ToString();
+        }
+
+        /// <summary>Uebernimmt einen Zahlenwert mit zwei Nachkommastellen (wie bisher).</summary>
+        private static void SetzeZahl(Control ziel, DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return;
+            object v = row[spalte];
+            if (v == DBNull.Value) return;
+            try { ziel.Text = Convert.ToDouble(v).ToString("F2"); }
+            catch { /* unerwarteter Typ - Vorbelegung stehen lassen */ }
         }
 
         private void btn_Abbrechen_Click(object sender, EventArgs e)
@@ -72,7 +96,7 @@ namespace WindowsFormsApplication1
             {
                 if (string.IsNullOrEmpty(frmLabel.m_szName))
                 {
-                    MessageBox.Show("Bitte einen gültigen Bezeichner eingeben!");
+                    MessageBox.Show("Bitte einen gÃ¼ltigen Bezeichner eingeben!");
                     return;
                 }
 
@@ -178,7 +202,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Fehler beim Überschreiben: " + ex.Message);
+                Console.WriteLine("Fehler beim Ãœberschreiben: " + ex.Message);
                 MessageBox.Show("Ein Fehler ist aufgetreten: " + ex.Message);
             }
         }

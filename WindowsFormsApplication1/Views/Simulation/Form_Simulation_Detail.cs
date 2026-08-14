@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -823,6 +824,18 @@ namespace WindowsFormsApplication1
             MacheTextAbschnittFett(richTextBox_Info, "Ohne Einspeisung (Zero-Export)");
 
             LeseKonfiguration();
+            PendelspeicherFeldEinrichten();
+
+            // Blockade bei nicht abgeschlossener Schema-Migration (ADR-001, Aufgabe 6):
+            // gar nicht erst automatisch rechnen. Die Prüfung steht hier VOR dem Lauf
+            // und nicht in btn_Simulation_Click allein, damit die Meldung auch dann
+            // kommt, wenn schon Tab_Einstellungen nicht lesbar ist - und sie kommt genau
+            // einmal, weil dieser Zweig den automatischen Lauf überspringt.
+            if (SimulationBlockiert())
+            {
+                tabControl_Simulation.SelectedTab = tabPage_Uebersicht;
+                return;
+            }
 
             // Beim Öffnen automatisch simulieren (wie btn_Simulation in Form_Simulation_Kurz)
             // und anschließend den Übersicht-Tab in den Vordergrund holen.
@@ -885,9 +898,41 @@ namespace WindowsFormsApplication1
             frm.ShowDialog();
         }
 
+        /// <summary>
+        /// Blockade bei nicht abgeschlossener Schema-Migration (ADR-001, Aufgabe 6).
+        ///
+        /// Sitzt VOR jedem Rechenlauf dieses Formulars - der automatische aus
+        /// <c>Form_Simulation_Detail_Load</c> läuft über dieselbe Methode
+        /// <c>btn_Simulation_Click</c>, es gibt also genau eine Prüfung und genau eine
+        /// Meldung.
+        ///
+        /// Vorher fiel die Sperre hier gar nicht auf: <c>SimulationControl.Do_Simulation</c>
+        /// kehrt zwar früh zurück (dialogfrei, wie es sich für die Engine gehört), das
+        /// Formular rechnete danach aber ungerührt <c>Endergebniss_Simulation</c> und
+        /// <c>FuelleUebersicht</c> auf leeren Objekten - der Anwender sah ein
+        /// vollständig aussehendes Ergebnis aus Nullwerten und konnte es speichern.
+        /// </summary>
+        /// <returns>true, wenn NICHT gerechnet werden darf.</returns>
+        private bool SimulationBlockiert()
+        {
+            string sperrgrund;
+            if (!SchemaMigration.SimulationGesperrt(out sperrgrund)) return false;
+
+            // Kein Ergebnis darf entstehen - also auch keines gespeichert werden.
+            btn_ErgebnisSpeichern.Enabled = false;
+
+            MessageBox.Show(sperrgrund, "Simulation nicht verfügbar",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return true;
+        }
+
         private void btn_Simulation_Click(object sender, EventArgs e)
         {
-            // TextBoxe leeren  
+            // Blockade zuerst: weder rechnen noch Ergebnisfelder füllen, solange die
+            // Datenbank nicht auf dem benötigten Stand ist.
+            if (SimulationBlockiert()) return;
+
+            // TextBoxe leeren
             for (int i = 0; i < tabControl_Simulation.TabCount; i++)
             {
                 InitTextBoxen(tabControl_Simulation.TabPages[i]);
@@ -927,7 +972,11 @@ namespace WindowsFormsApplication1
             textBox_gesWaermebedarf.Text = simulation_Waermebedarf.Waermebedarf_Gesamt.ToString("F2");
 
             sim.GrenzleistungBHKW = (int)numericUpDown_UnteresteLG.Value;
-            sim.VolumenPendelspeicherBHKW = (int)numericUpDown_Volumen.Value;
+            // Etappe 3: Das Pendelspeichervolumen kommt aus dem Projekt-Puffer
+            // "BHKW-Pendelspeicher" in LITERN - dieselbe Quelle wie im SimulationRunner.
+            // Das Eingabefeld schreibt beim Verlassen dorthin, gerechnet wird also mit
+            // dem gespeicherten Stand (Tab_Einstellungen.Pendelspeicher ist tot).
+            sim.VolumenPendelspeicherBHKW = PufferSpCtrl.PendelspeicherVolumenLiter(m_ID_Projekt);
             sim.modeBHKW = bhkwSimulationsArt;
 
             // Tool Simulation WP, SPK usw. durchführen
@@ -2148,6 +2197,41 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Richtet das Eingabefeld des BHKW-Pendelspeichers auf LITER ein und laedt den
+        /// Wert aus dem Projekt-Puffer "BHKW-Pendelspeicher" (Etappe 3, 14.08.2026).
+        ///
+        /// Der Alt-Parameter Tab_Einstellungen.Pendelspeicher stand in m3 und wird nicht
+        /// mehr gelesen; die Migration hat ihn als m3 x 1000 in den Puffer uebernommen.
+        ///
+        /// Beschriftung und Wertebereich stehen bewusst HIER und nicht im Designer bzw.
+        /// in der .resx: der Designer wuerde die Aenderung beim naechsten Oeffnen
+        /// zurueckschreiben, und die Satellitendateien dieses Ordners kennen label56.Text
+        /// ohnehin nicht. Die durchgaengige Lokalisierung der Simulationsformulare ist
+        /// Paket 9 - dort gehoert dieser Text in die de-DE-/en-US-.resx.
+        /// </summary>
+        private void PendelspeicherFeldEinrichten()
+        {
+            label56.Text = "Volumen Pendelspeicher [l]";
+
+            // Liter sind ganzzahlig; die Vorgaben des Designers (eine Nachkommastelle,
+            // Schrittweite 0,1, Maximum 100) stammen aus der m3-Zeit.
+            numericUpDown_Volumen.DecimalPlaces = 0;
+            numericUpDown_Volumen.Increment = 50;
+            numericUpDown_Volumen.Minimum = 0;
+            numericUpDown_Volumen.Maximum = 1000000;
+
+            // Wert beim Laden in den Wertebereich klemmen. NumericUpDown.Value wirft eine
+            // ArgumentOutOfRangeException, sobald der Wert ausserhalb von Minimum/Maximum
+            // liegt - und das laesst sich hier nicht ausschliessen: Gesamtvolumen kommt
+            // aus der Datenbank und kann jede Zahl tragen (Altbestand, Import, Tippfehler
+            // in Access). Ein Volumen, das die Anzeige nicht fassen kann, darf das
+            // Formular nicht am Oeffnen hindern.
+            decimal gelesen = PufferSpCtrl.PendelspeicherVolumenLiter(m_ID_Projekt);
+            numericUpDown_Volumen.Value = Math.Max(numericUpDown_Volumen.Minimum,
+                                                   Math.Min(numericUpDown_Volumen.Maximum, gelesen));
+        }
+
         private void LeseKonfiguration()
         {
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
@@ -2158,7 +2242,6 @@ namespace WindowsFormsApplication1
                 textBox_Netzverluste.Text = ctrl.model.m_Netzverluste.ToString();
                 comboBox_NetzvEinheit.Text = ctrl.model.m_szNetzverlusteEinheit;
                 numericUpDown_UnteresteLG.Value = (decimal)ctrl.model.Leistungsgrenze;
-                numericUpDown_Volumen.Value = (decimal)ctrl.model.Pendelspeicher;
                 textBox_Bereitschaft.Text = ctrl.model.m_Kessel_Betriebsbereitschaft.ToString();
                 int mode = ctrl.model.Betriebsart;
                 radioButton_OhneStromEinspeisung.CheckedChanged -= radioButton_Stromgefuehrt_CheckedChanged;
@@ -2181,9 +2264,27 @@ namespace WindowsFormsApplication1
             SpeichereKonfigurationsAenderung(model => model.Leistungsgrenze = (int)numericUpDown_UnteresteLG.Value);
         }
 
+        /// <summary>
+        /// Speichert das Pendelspeichervolumen in LITERN im Projekt-Puffer
+        /// "BHKW-Pendelspeicher" (Etappe 3). Frueher ging der Wert als m3 nach
+        /// Tab_Einstellungen.Pendelspeicher - diese Spalte wird nicht mehr gelesen und
+        /// bewusst auch nicht mehr geschrieben.
+        /// </summary>
         private void numericUpDown_Volumen_Leave(object sender, EventArgs e)
         {
-            SpeichereKonfigurationsAenderung(model => model.Pendelspeicher = (double)numericUpDown_Volumen.Value);
+            int liter;
+            if (!int.TryParse(numericUpDown_Volumen.Value.ToString("F0", CultureInfo.InvariantCulture),
+                              NumberStyles.Integer, CultureInfo.InvariantCulture, out liter))
+                return;                                   // unlesbarer Wert: nichts speichern
+
+            if (liter < 0)                                // negative Volumina ablehnen
+            {
+                liter = 0;
+                numericUpDown_Volumen.Value = 0;
+            }
+
+            if (!PufferSpCtrl.SetPendelspeicherVolumenLiter(m_ID_Projekt, liter))
+                Console.WriteLine("Das Volumen des BHKW-Pendelspeichers konnte nicht gespeichert werden.");
         }
 
         private void textBox_Netzverluste_Leave(object sender, EventArgs e)

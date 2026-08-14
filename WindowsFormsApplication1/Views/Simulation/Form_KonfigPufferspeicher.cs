@@ -32,10 +32,33 @@ namespace WindowsFormsApplication1
 
         private void btn_OK_Click(object sender, EventArgs e)
         {
+            // Etappe 4: einheitliche Prüfung der Betriebstemperaturen.
+            //
+            // Vorher stand hier Int32.Parse — eine Eingabe wie "35 °C" oder "dreißig"
+            // riss den Dialog mit einer unbehandelten FormatException ab (Konzept 4.6),
+            // und ein leeres Feld wurde stillschweigend zu 0, was am Speicher eine
+            // Spreizung ohne Bedeutung ergab.
+            //
+            // Die Regeln stehen in ProjektPuffer.TemperaturenPruefen und kennen
+            // BEWUSST keine Untergrenze außer "Rücklauf > 0": Niedertemperatursysteme
+            // (Flächenheizung, 35/28 und tiefer) müssen hier durchgehen.
+            int vorlauf, ruecklauf;
+            string fehler;
+            if (!ProjektPuffer.TemperaturenPruefen(textBox_Vorlauf.Text, textBox_Ruecklauf.Text,
+                                                   out vorlauf, out ruecklauf, out fehler))
+            {
+                MessageBox.Show(fehler, "Pufferspeicher-Zuordnung",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+                // Dialog offen lassen, damit die Eingabe korrigiert werden kann.
+                this.DialogResult = DialogResult.None;
+                return;
+            }
+
             model.Erzeuger = comboBox_Erzeuger.Text;
             model.PufferSp = comboBox_Puffer.Text;
-            model.Vorlauf = string.IsNullOrWhiteSpace(textBox_Vorlauf.Text) ? 0 : Int32.Parse(textBox_Vorlauf.Text);
-            model.Ruecklauf = string.IsNullOrWhiteSpace(textBox_Ruecklauf.Text) ? 0 : Int32.Parse(textBox_Ruecklauf.Text);
+            model.Vorlauf = vorlauf;
+            model.Ruecklauf = ruecklauf;
             this.DialogResult = DialogResult.OK;
         }
 
@@ -50,10 +73,15 @@ namespace WindowsFormsApplication1
             // Projekt 0 Zeilen — die Vorbelegung war unabhängig von der Sprache tot.
             string typ = ErzeugerDbWert(comboBox_Erzeuger.Text);
 
+            // Etappe 4: "> 0" ergaenzt. Tab_Energieanlagen.Vorlauf/[Rücklauf] tragen den
+            // Access-Spaltendefault 0 und sind nie NULL - eine einzige unvollstaendig
+            // erfasste Anlage zog die Vorbelegung bisher auf 0. Das ist KEINE
+            // Temperatur-Untergrenze, sondern der Test auf "gepflegt"; dieselbe Regel
+            // wie in ProjektPuffer.SQL_SYSTEM_VORLAUF.
             DataTable dtV = DataRepository.GetDataTable(
                 "SELECT Min(e.Vorlauf) AS Vorlauf " +
                 "FROM Tab_Energieanlagen AS e INNER JOIN Tab_Typ_Energieanlagen AS t ON t.ID = e.ID_Type " +
-                "WHERE e.ID_Projekt = ? AND t.Bezeichner = ?",
+                "WHERE e.ID_Projekt = ? AND t.Bezeichner = ? AND e.Vorlauf > 0",
                 new OleDbParameter("@idProj", m_ID_Projekt), new OleDbParameter("@typ", typ));
             if (dtV != null && dtV.Rows.Count > 0 && dtV.Columns.Contains("Vorlauf")
                 && dtV.Rows[0]["Vorlauf"] != DBNull.Value)
@@ -62,7 +90,7 @@ namespace WindowsFormsApplication1
             DataTable dtR = DataRepository.GetDataTable(
                 "SELECT Max(e.[Rücklauf]) AS Ruecklauf " +
                 "FROM Tab_Energieanlagen AS e INNER JOIN Tab_Typ_Energieanlagen AS t ON t.ID = e.ID_Type " +
-                "WHERE e.ID_Projekt = ? AND t.Bezeichner = ?",
+                "WHERE e.ID_Projekt = ? AND t.Bezeichner = ? AND e.[Rücklauf] > 0",
                 new OleDbParameter("@idProj", m_ID_Projekt), new OleDbParameter("@typ", typ));
             if (dtR != null && dtR.Rows.Count > 0 && dtR.Columns.Contains("Ruecklauf")
                 && dtR.Rows[0]["Ruecklauf"] != DBNull.Value)

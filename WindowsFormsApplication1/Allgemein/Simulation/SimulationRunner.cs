@@ -30,6 +30,16 @@ namespace WindowsFormsApplication1
         {
             fehler = null;
 
+            // Engine-Einstieg: Blockade bei nicht abgeschlossener Schema-Migration
+            // (ADR-001, Aufgabe 6). Auf einem halb migrierten Schema zu rechnen liefert
+            // stillschweigend falsche Ergebnisse - lieber sauber abbrechen.
+            string sperrgrund;
+            if (SchemaMigration.SimulationGesperrt(out sperrgrund))
+            {
+                fehler = sperrgrund;
+                return false;
+            }
+
             // Konfiguration des Projekts lesen.
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
             ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + idProjekt);
@@ -75,14 +85,17 @@ namespace WindowsFormsApplication1
             simulation_Strombedarf.Berechnung(idProjekt);
 
             // SimulationControl konfigurieren (BHKW-Parameter kommen aus der Konfiguration
-            // statt aus den UI-Steuerelementen: Leistungsgrenze/Pendelspeicher/Betriebsart).
+            // statt aus den UI-Steuerelementen: Leistungsgrenze/Betriebsart). Das Volumen
+            // des Pendelspeichers kommt seit Etappe 3 aus dem Projekt-Puffer
+            // "BHKW-Pendelspeicher" in LITERN; Tab_Einstellungen.Pendelspeicher (m³) wird
+            // nicht mehr gelesen.
             sim.tool = tool;
             sim.Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
             sim.simulation_Waermebedarf = simulation_Waermebedarf;
             sim.simulation_Strombedarf = simulation_Strombedarf;
             sim.ctrl_konfig = ctrl;
             sim.GrenzleistungBHKW = (int)ctrl.model.Leistungsgrenze;
-            sim.VolumenPendelspeicherBHKW = (int)ctrl.model.Pendelspeicher;
+            sim.VolumenPendelspeicherBHKW = PufferSpCtrl.PendelspeicherVolumenLiter(idProjekt);
             sim.modeBHKW = ctrl.model.Betriebsart;
 
             // Erzeuger-Simulationen (WP, Kessel, BHKW, Solar, PV, Speicher).

@@ -16,6 +16,7 @@ namespace WindowsFormsApplication1.Referenzlauf
     ///   vergleich  &lt;refOrdner&gt; &lt;neuOrdner&gt;
     ///   pruefen    &lt;ordner&gt;
     ///   liste
+    ///   migration  &lt;quellDb&gt; &lt;zielOrdner&gt; [--nokopie] [--schreibschutz]
     ///   projekt    &lt;id&gt; &lt;zielordner&gt; &lt;dbordner&gt;     (intern: ein Projekt im Kindprozess)
     ///
     /// Jedes Projekt laeuft in einem EIGENEN Kindprozess. Das ist der einzige zuverlaessige
@@ -56,6 +57,7 @@ namespace WindowsFormsApplication1.Referenzlauf
                         if (args.Length < 2) { Hilfe(); return 2; }
                         return Plausibilitaet.Pruefen(args[1]);
                     case "liste": return ModusListe();
+                    case "migration": return Migrationslauf.Ausfuehren(args.Skip(1).ToArray());
                     default: Hilfe(); return 2;
                 }
             }
@@ -75,6 +77,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             Console.WriteLine("  Referenzlauf.exe vergleich <refOrdner> <neuOrdner>");
             Console.WriteLine("  Referenzlauf.exe pruefen <ordner>");
             Console.WriteLine("  Referenzlauf.exe liste");
+            Console.WriteLine("  Referenzlauf.exe migration <quellDb> <zielOrdner> [--nokopie] [--schreibschutz]");
         }
 
         // =================================================================================
