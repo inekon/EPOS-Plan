@@ -39,6 +39,12 @@ namespace WindowsFormsApplication1
         private AnlagenInfo _wqInfo;
         private bool _wqUpdating = false;
 
+        // Außentemperatur der Klimaregion (8760 Stundenwerte) für die Vorschau des
+        // Erdreichdialogs. Wird beim ersten Öffnen einmal geladen und gecacht
+        // (Konzept 4.5) - nicht bei jeder Parameteränderung.
+        private float[] _aussentempCache = null;
+        private bool _aussentempGeladen = false;
+
         /// <summary>Eine im Projekt angelegte Anlage (Zeile der Übersicht).</summary>
         private class AnlagenInfo
         {
@@ -351,7 +357,100 @@ namespace WindowsFormsApplication1
                     }
                 case WaermequelleClass.TYP_PROFIL: return "Quellprofil";
                 case WaermequelleClass.TYP_CSV: return "CSV-Profil";
+                case WaermequelleClass.TYP_ERDREICH: return ErdreichAnzeige(a.ID);
                 default: return "Außenluft";
+            }
+        }
+
+        /// <summary>
+        /// Kompakte Anzeige der Wärmequelle Erdreich, z. B.
+        /// "Erdreich Kollektor 1,5 m" oder "Erdsonde 2×90 m".
+        /// </summary>
+        private string ErdreichAnzeige(int idAnlage)
+        {
+            string quellsystem = WaermequelleClass.WertLesen(idAnlage, "WQ_Quellsystem") as string;
+            object oTiefe = WaermequelleClass.WertLesen(idAnlage, "WQ_Tiefe");
+            double tiefe = oTiefe != null ? Convert.ToDouble(oTiefe) : 0;
+
+            if (string.Equals(quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE,
+                              StringComparison.OrdinalIgnoreCase))
+            {
+                object oAnzahl = WaermequelleClass.WertLesen(idAnlage, "WQ_Anzahl");
+                int anzahl = oAnzahl != null ? Convert.ToInt32(oAnzahl) : 0;
+                if (anzahl < 1) anzahl = 1;
+                return "Erdsonde " + anzahl + "×" + tiefe.ToString("0.#") + " m";
+            }
+
+            if (tiefe <= 0) tiefe = ErdreichTemperatur.TIEFE_DEFAULT;
+            return "Erdreich Kollektor " + tiefe.ToString("0.#") + " m";
+        }
+
+        /// <summary>
+        /// Liefert die Außentemperatur der Projekt-Klimaregion (8760 Stundenwerte).
+        /// Der Vektor wird einmal je Formularsitzung geladen und gecacht; er ist
+        /// derselbe, den die Simulation über SimulationWaermebedarf.Stundentemperatur
+        /// verwendet (Tab_Solar.Temperatur der Klimaregion). Liefert null, wenn dem
+        /// Projekt keine Klimaregion zugeordnet ist oder keine 8760 Werte vorliegen.
+        /// </summary>
+        private float[] AussentemperaturLaden()
+        {
+            if (_aussentempGeladen) return _aussentempCache;
+            _aussentempGeladen = true;
+
+            try
+            {
+                object oRegion = DataRepository.ExecuteScalar(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = " + m_ID_Projekt);
+                if (oRegion == null || oRegion == DBNull.Value) return null;
+                int idRegion = Convert.ToInt32(oRegion);
+                if (idRegion <= 0) return null;
+
+                System.Data.DataTable dt = DataRepository.GetDataTable(
+                    "SELECT Temperatur FROM Tab_Solar WHERE ID_Klimaregion = " + idRegion + " ORDER BY ID");
+                if (dt == null || dt.Rows.Count < 8760) return null;
+
+                float[] temp = new float[8760];
+                for (int i = 0; i < 8760; i++)
+                {
+                    object v = dt.Rows[i]["Temperatur"];
+                    temp[i] = (v == DBNull.Value) ? 0f : Convert.ToSingle(v);
+                }
+                _aussentempCache = temp;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Außentemperatur konnte nicht geladen werden: " + ex.Message);
+            }
+
+            return _aussentempCache;
+        }
+
+        /// <summary>DIN-4710-Klimazone der Projekt-Klimaregion; 0 = nicht zugeordnet.</summary>
+        private int KlimazoneDesProjekts()
+        {
+            try
+            {
+                object oRegion = DataRepository.ExecuteScalar(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = " + m_ID_Projekt);
+                if (oRegion == null || oRegion == DBNull.Value) return 0;
+                return KlimaregionCtrl.GetKlimazone(Convert.ToInt32(oRegion));
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>Speichert die DIN-4710-Klimazone an der Projekt-Klimaregion.</summary>
+        private void KlimazoneSpeichern(int zone)
+        {
+            try
+            {
+                object oRegion = DataRepository.ExecuteScalar(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = " + m_ID_Projekt);
+                if (oRegion == null || oRegion == DBNull.Value) return;
+                KlimaregionCtrl.SetKlimazone(Convert.ToInt32(oRegion), zone);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Klimazone konnte nicht gespeichert werden: " + ex.Message);
             }
         }
 
@@ -982,6 +1081,46 @@ namespace WindowsFormsApplication1
                             return;
                         }
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_CSV", dlg.FileName);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
+                        break;
+                    }
+
+                case WaermequelleClass.TYP_ERDREICH:
+                    {
+                        // Erdreich nach VDI 4640 (Konzept 4.5): Kollektor oder Sonde.
+                        Form_QuelleErdreich frmErde = new Form_QuelleErdreich();
+                        frmErde.WPName = info.Bezeichner;
+
+                        string quellsystem = WaermequelleClass.WertLesen(info.ID, "WQ_Quellsystem") as string;
+                        if (!string.IsNullOrEmpty(quellsystem)) frmErde.Quellsystem = quellsystem;
+
+                        object oTiefe = WaermequelleClass.WertLesen(info.ID, "WQ_Tiefe");
+                        if (oTiefe != null && Convert.ToDouble(oTiefe) > 0) frmErde.Tiefe = Convert.ToDouble(oTiefe);
+                        object oFlaeche = WaermequelleClass.WertLesen(info.ID, "WQ_Flaeche");
+                        if (oFlaeche != null) frmErde.Flaeche = Convert.ToDouble(oFlaeche);
+                        object oAnzahl = WaermequelleClass.WertLesen(info.ID, "WQ_Anzahl");
+                        if (oAnzahl != null && Convert.ToInt32(oAnzahl) > 0) frmErde.Anzahl = Convert.ToInt32(oAnzahl);
+                        string bodentyp = WaermequelleClass.WertLesen(info.ID, "WQ_Bodentyp") as string;
+                        if (!string.IsNullOrEmpty(bodentyp)) frmErde.Bodentyp = bodentyp;
+
+                        // Klimazone aus der Region vorbelegen (0 = nicht zugeordnet),
+                        // Außentemperaturvektor einmalig laden und gecacht übergeben.
+                        int zoneVorher = KlimazoneDesProjekts();
+                        frmErde.Klimazone = zoneVorher;
+                        frmErde.Aussentemperatur = AussentemperaturLaden();
+
+                        frmErde.SetControls();
+                        if (frmErde.ShowDialog(this) != DialogResult.OK) return;
+
+                        // Die Klimazone ist eine Eigenschaft der Region, nicht der Anlage
+                        // (Konzept 13.1) - eine Änderung im Dialog geht deshalb an die Region.
+                        if (frmErde.Klimazone != zoneVorher) KlimazoneSpeichern(frmErde.Klimazone);
+
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Quellsystem", frmErde.Quellsystem);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Tiefe", frmErde.Tiefe);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Flaeche", frmErde.Flaeche);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Anzahl", frmErde.Anzahl);
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Bodentyp", frmErde.Bodentyp);
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
                         break;
                     }
