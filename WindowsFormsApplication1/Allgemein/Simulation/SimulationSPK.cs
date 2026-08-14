@@ -102,6 +102,17 @@ namespace WindowsFormsApplication1
             // Init() des nächsten Laufs (Array.Clear) löschte damit den Projekt-Wärmebedarf.
             if (Anzahl == 0) { Restwaerme = (float[])Waermebedarf.Clone(); return true; }
 
+            // B0-12: Alle Kessel-Arrays sind fest auf MAX_SPK dimensioniert — mehr Einträge
+            // in spk_list liefen ungeprüft in die Einlese-Schleife und ab dem 11. Kessel
+            // in einen Überlauf sämtlicher Kessel-Arrays.
+            if (Anzahl > MAX_SPK)
+            {
+                System.Windows.Forms.MessageBox.Show(
+                    "Im Projekt sind " + Anzahl + " Heizkessel hinterlegt, die Simulation unterstützt maximal " + MAX_SPK + ".\n" +
+                    "Es werden nur die ersten " + MAX_SPK + " Kessel berücksichtigt.");
+                Anzahl = MAX_SPK;
+            }
+
             // 2. Kesseldaten laden und Wirkungsgrade normieren
             for (int i = 0; i < Anzahl; i++)
             {
@@ -231,12 +242,14 @@ namespace WindowsFormsApplication1
         {
             double KesselLeistung;
             double Gasleistung;
-            double[] Gasspitze_Kessel = new double[5];
+            // B0-12: war double[5] — ab dem 6. Kessel IndexOutOfRangeException bei der
+            // Gasspitzenberechnung. Jetzt gleiche Größe wie alle übrigen Kessel-Arrays.
+            double[] Gasspitze_Kessel = new double[MAX_SPK];
             double waerme;
 
             Max_Waermebedarf = 0;
             GasSpitze = 0;
-            for (int i = 0; i < 5; i++) { Gasspitze_Kessel[i] = 0; }
+            for (int i = 0; i < MAX_SPK; i++) { Gasspitze_Kessel[i] = 0; }
 
             // Stündliche Lastverteilung (Einheit: kW)
             for (int Stunde = 0; Stunde < 8760; Stunde++)
