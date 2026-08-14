@@ -11,11 +11,16 @@ namespace WindowsFormsApplication1
     ///
     /// Neue Spalten (werden bei Bedarf automatisch angelegt):
     ///   Prioritaet      - Einsatzreihenfolge der WPs in der Kaskade (1 = zuerst)
-    ///   WQ_Typ          - Wärmequelle: Aussenluft | Konstant | Pufferspeicher | Profil | CSV
+    ///   WQ_Typ          - Wärmequelle: Aussenluft | Konstant | Pufferspeicher | Profil | CSV | Erdreich
     ///   WQ_Temp         - konstante Quelltemperatur [°C] (Typ Konstant)
     ///   WQ_Monatswerte  - "t1;...;t12" Monats-Mitteltemperaturen [°C] (Typ Profil)
     ///   WQ_Wochenwerte  - "w1;...;w168" Tagesgang je Wochentag [K] (Typ Profil)
     ///   WQ_CSV          - Pfad zur CSV-Datei mit 8760 Stundenwerten (Typ CSV)
+    ///   WQ_Quellsystem  - Erdreich: Kollektor | Sonde
+    ///   WQ_Tiefe        - Erdreich: Verlegetiefe bzw. Länge je Sonde [m]
+    ///   WQ_Flaeche      - Erdreich: Kollektorfläche [m²] (Auslegungsprüfung)
+    ///   WQ_Anzahl       - Erdreich: Anzahl Sonden (Auslegungsprüfung)
+    ///   WQ_Bodentyp     - Erdreich: Katalogschlüssel VDI 4640 Bl. 1 (ErdreichTemperatur)
     ///   WS_Typ          - Wärmesenke: Beides | Warmwasser | Heizung
     ///
     /// Für Luft-Wasser-Wärmepumpen ist die Quelle immer die Außenluft
@@ -40,20 +45,37 @@ namespace WindowsFormsApplication1
         public const string TYP_PUFFER = "Pufferspeicher";
         public const string TYP_PROFIL = "Profil";
         public const string TYP_CSV = "CSV";
+        public const string TYP_ERDREICH = "Erdreich";
 
-        /// <summary>Anzeigetexte für die Auswahl im Dialog.</summary>
+        /// <summary>
+        /// Größte plausible Verlegetiefe eines Erdkollektors [m]. Reale Kollektoren
+        /// liegen bei 1…2 m; der Erdreichdialog begrenzt die Eingabe auf 10 m.
+        /// Steht in WQ_Tiefe mehr, kann es nur eine Sondenlänge sein - siehe den
+        /// Konsistenz-Check in Quelltemperatur().
+        /// </summary>
+        public const double MAX_KOLLEKTORTIEFE_M = 10.0;
+
+        /// <summary>
+        /// Anzeigetexte für die Auswahl im Dialog.
+        ///
+        /// ACHTUNG: TypAnzeige und TypWerte sind indexgekoppelt
+        /// (Form_Simulation_Config: WaermequelleAuswahlAnzeigen / WqCombo_SelectedIndexChanged).
+        /// Neue Wärmequellen deshalb immer ANHÄNGEN, nie einfügen oder umsortieren -
+        /// sonst zeigen bestehende Projekte auf die falsche Quelle (Konzept 5.3).
+        /// </summary>
         public static readonly string[] TypAnzeige =
         {
             "Außenluft (Klimadaten)",
             "Konstante Temperatur",
             "Pufferspeicher",
             "Quellprofil (Monatswerte)",
-            "CSV-Datei (Stundenwerte)"
+            "CSV-Datei (Stundenwerte)",
+            "Erdreich (VDI 4640)"
         };
 
         public static readonly string[] TypWerte =
         {
-            TYP_AUSSENLUFT, TYP_KONSTANT, TYP_PUFFER, TYP_PROFIL, TYP_CSV
+            TYP_AUSSENLUFT, TYP_KONSTANT, TYP_PUFFER, TYP_PROFIL, TYP_CSV, TYP_ERDREICH
         };
 
         /// <summary>
@@ -108,11 +130,24 @@ namespace WindowsFormsApplication1
                     SpalteSicherstellen(conn, dt, "WQ_Unbegrenzt", "YESNO");      // Quelle immer verfügbar
                     SpalteSicherstellen(conn, dt, "WS_Typ", "TEXT(50)");          // Wärmesenke
                     SpalteSicherstellen(conn, dt, "BM_Typ", "TEXT(50)");          // Betriebsmodus
+
+                    // Wärmequelle Erdreich (Paket 3, Konzept 5.3)
+                    SpalteSicherstellen(conn, dt, "WQ_Tiefe", "DOUBLE");          // Verlegetiefe bzw. Sondenlänge [m]
+                    SpalteSicherstellen(conn, dt, "WQ_Flaeche", "DOUBLE");        // Kollektorfläche [m²]
+                    SpalteSicherstellen(conn, dt, "WQ_Anzahl", "LONG");           // Anzahl Sonden
+                    SpalteSicherstellen(conn, dt, "WQ_Bodentyp", "TEXT(50)");     // Katalogschlüssel VDI 4640 Bl. 1
+                    SpalteSicherstellen(conn, dt, "WQ_Quellsystem", "TEXT(50)");  // Kollektor | Sonde
                 }
 
                 // Speicherregelung je Pufferspeicher-Zuordnung (Ein-/Abschaltschwelle in %)
                 SpalteSicherstellen("Z_ProjektPufferSp", "Schwelle_Ein", "DOUBLE");
                 SpalteSicherstellen("Z_ProjektPufferSp", "Schwelle_Aus", "DOUBLE");
+
+                // Klimazone nach DIN 4710 (1…15) je Klimaregion; 0/NULL = unbestimmt.
+                // Eingangsgröße der Auslegungsprüfung nach VDI 4640 Bl. 2, Tabelle A2
+                // (Konzept 13.1). Die Zone ist eine Eigenschaft der Region und wird
+                // deshalb einmal je Region gepflegt, nicht je Projekt.
+                SpalteSicherstellen("Tab_Klimaregion", "Klimazone_DIN4710", "LONG DEFAULT 0");
 
                 _schemaGeprueft = true;
             }
@@ -292,6 +327,49 @@ namespace WindowsFormsApplication1
                             string pfad = WertLesen(idEnergieanlage, "WQ_CSV") as string;
                             float[] profil = ProfilAusCsv(pfad);
                             return profil ?? aussentemp;
+                        }
+
+                    case TYP_ERDREICH:
+                        {
+                            // Erdreichmodell nach VDI 4640 Blatt 1 (Konzept 4.5/13.1).
+                            // Kein eigener DB-Zugriff auf die Klimadaten: der
+                            // 8760er-Außentemperaturvektor ist bereits durchgereicht.
+                            string quellsystem = WertLesen(idEnergieanlage, "WQ_Quellsystem") as string;
+                            string bodentyp = WertLesen(idEnergieanlage, "WQ_Bodentyp") as string;
+
+                            object oTiefe = WertLesen(idEnergieanlage, "WQ_Tiefe");
+                            double tiefe = oTiefe != null ? Convert.ToDouble(oTiefe) : 0;
+
+                            // Konsistenz-Check gegen teilgeschriebene Feldsätze:
+                            // Der Dialog schreibt WQ_Quellsystem, WQ_Tiefe, WQ_Flaeche,
+                            // WQ_Anzahl und WQ_Bodentyp als fünf einzelne UPDATEs ohne
+                            // Transaktion; WertSchreiben schluckt Fehler. Bleibt dabei
+                            // ausgerechnet WQ_Quellsystem auf "Kollektor" stehen, während
+                            // WQ_Tiefe schon die Sondenlänge trägt, würde die Kusuda-
+                            // Dämpfung exp(−90/2,72) ≈ 0 die Quelle stillschweigend auf
+                            // eine Konstante von T_m zusammenfallen lassen. Reale
+                            // Verlegetiefen eines Kollektors liegen bei 1…2 m, der Dialog
+                            // begrenzt sie auf 10 m - alles darüber ist eine Sondenlänge.
+                            bool alsSonde = string.Equals(quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE,
+                                                          StringComparison.OrdinalIgnoreCase);
+                            if (!alsSonde && tiefe > MAX_KOLLEKTORTIEFE_M)
+                            {
+                                Console.WriteLine("Quelltemperatur: WQ_Quellsystem = '" + (quellsystem ?? "") +
+                                                  "' mit WQ_Tiefe = " + tiefe + " m ist unstimmig - " +
+                                                  "die Anlage wird als Erdsonde gerechnet.");
+                                alsSonde = true;
+                            }
+
+                            if (alsSonde)
+                            {
+                                // Erdsonde: konstante Quelltemperatur. Fehlt die Länge,
+                                // entfällt der geothermische Anteil (max(0, …) = 0).
+                                return ErdreichTemperatur.JahresprofilSonde(aussentemp, tiefe);
+                            }
+
+                            // Fallback: Kollektor mit Vorgabetiefe 1,5 m und Sand feucht
+                            // (ErdreichTemperatur setzt beides bei fehlenden Werten selbst).
+                            return ErdreichTemperatur.JahresprofilKollektor(aussentemp, tiefe, bodentyp);
                         }
                 }
             }
