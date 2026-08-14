@@ -182,7 +182,8 @@
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tabWartung
-            // 
+            //
+            this.tabWartung.AutoScroll = true;
             this.tabWartung.Controls.Add(this.panel4);
             this.tabWartung.Controls.Add(this.panel6);
             this.tabWartung.Font = new System.Drawing.Font("Segoe UI", 9.75F);
@@ -278,7 +279,8 @@
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tabEnergie
-            // 
+            //
+            this.tabEnergie.AutoScroll = true;
             this.tabEnergie.Controls.Add(this.panel8);
             this.tabEnergie.Controls.Add(this.panel7);
             this.tabEnergie.Location = new System.Drawing.Point(4, 30);
