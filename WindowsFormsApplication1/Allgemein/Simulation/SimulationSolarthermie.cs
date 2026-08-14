@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.OleDb;
 using System.Linq;
 
 namespace WindowsFormsApplication1
@@ -27,22 +28,182 @@ namespace WindowsFormsApplication1
         public double Waermeproduktion_max = 0;
         public double Restwaerme_summe = 0;
 
+        // ===================================================================
+        // Zweikanaliger Weg (Paket 5 - Konzept 6.4)
+        // ===================================================================
+
+        /// <summary>
+        /// <c>Tab_Energieanlagen.ID</c> je Kollektorfeld, INDEXGLEICH zur Reihenfolge der
+        /// Felder im zweikanaligen Weg (Konzept 6.2). Nur dort gefüllt; der einkanalige
+        /// Altpfad braucht sie nicht.
+        ///
+        /// Über sie findet <c>SimulationControl.LadeordnungAufbauen</c> zu einer
+        /// Senkenzuordnung das rechnende Modul — <c>solarthermie_list</c> trägt die
+        /// Katalog-ID (<c>ID_SOLAR</c>) und ist als Schlüssel ungeeignet.
+        /// </summary>
+        public List<int> solar_anlagen_ids = new List<int>();
+
+        /// <summary>
+        /// In Pufferspeicher geladene Solarwärme je Stunde [kWh] (zweikanaliger Weg).
+        ///
+        /// Sie ist ein TEIL von <see cref="Waermeproduktion"/>: Dort steht ab Paket 5 der
+        /// gesamte NUTZBARE Ertrag, also Direktdeckung PLUS Speicherladung. Getrennt
+        /// geführt wird die Ladung, weil die Ergebnispersistenz den Restbedarf aus der
+        /// DIREKTDECKUNG bilden muss — sonst wird er negativ und die Deckung überschreitet
+        /// 100 % (Konzept 6.4, zwingende Mitkorrektur an <c>SimulationRunner</c>).
+        /// </summary>
+        public double[] Speicherladung_stuendlich = new double[8760];
+
+        /// <summary>Jahressumme der Speicherladung [kWh]; im Altpfad immer exakt 0.</summary>
+        public double Speicherladung_gesamt = 0;
+
+        /// <summary>
+        /// Anteil der Produktion, der den Momentanbedarf DIREKT deckt [kWh].
+        /// <c>Waermeproduktion_gesamt = Direktdeckung_gesamt + Speicherladung_gesamt</c>.
+        /// </summary>
+        public double Direktdeckung_gesamt = 0;
+
+        /// <summary>
+        /// Der Anteil dieses Erzeugers an der SPEICHERENTLADUNG, die Bedarf gedeckt hat
+        /// [kWh] (Paket-5-Nacharbeit N2, Interimsregel „Vermischung im Speicher").
+        ///
+        /// Gefüllt von <see cref="Kaskadenschleife"/>; im Altpfad und ohne Puffer-Senke
+        /// exakt 0. Direktdeckung PLUS dieser Anteil ist der EIGENANTEIL der Solarthermie
+        /// an der Bedarfsdeckung — die Größe hinter
+        /// <c>Tab_ErgebnisSolarthermie.Waermebedarfsdeckung</c>.
+        /// </summary>
+        public double Speicherentladung_Anteil = 0;
+
+        /// <summary>Potenzieller Bruttoertrag je Kollektorfeld und Stunde [kWh].</summary>
+        private double[][] _potenzialFeld = new double[0][];
+
+        /// <summary>Noch nicht untergebrachtes Potenzial je Feld in der laufenden Stunde [kWh].</summary>
+        private double[] _restPotenzial = new double[0];
+
+        /// <summary>Jahressumme des nutzbaren Ertrags je Feld [kWh] (Deckung + Ladung).</summary>
+        private double[] _prodFeld = new double[0];
+
+        /// <summary>Jahressumme des verworfenen Überschusses je Feld [kWh].</summary>
+        private double[] _ueberFeld = new double[0];
+
+        private readonly List<string> _feldName = new List<string>();
+        private readonly List<double> _feldFlaeche = new List<double>();
+        private readonly List<long> _feldAnzahl = new List<long>();
+        private readonly List<Senkenzuordnung> _feldSenke = new List<Senkenzuordnung>();
+
+        /// <summary>Anzahl der Kollektorfelder des zweikanaligen Wegs.</summary>
+        public int FelderAnzahl { get { return _feldName.Count; } }
+
+        /// <summary>Senkenzuordnung eines Kollektorfelds (nie null nach dem Aufbau).</summary>
+        public Senkenzuordnung FeldSenke(int index)
+        {
+            if (index < 0 || index >= _feldSenke.Count) return null;
+            return _feldSenke[index];
+        }
+
         public bool Berechnung(int ID_Projekt)
         {
-            RecordSet rs = new RecordSet();
-            WErzeugerCtrl ctrl = new WErzeugerCtrl();
-
             m_ID_Projekt = ID_Projekt;
 
-            // 1. ID_Klimaregion ermitteln
-            rs.Open("select * from Tab_Projekt where ID=" + m_ID_Projekt);
-            if (rs.Next())
-            {
-                nID_Klimaregion = (int)rs.Read("ID_Klimaregion");
-            }
-            rs.Close();
+            // 1./2. ID_Klimaregion und Geokoordinaten — EINE Fassung für beide Rechenwege
+            // (Paket-5-Nacharbeit, Befund N6/N9).
+            KlimaregionUndGeoLesen();
 
-            // 2. Geokoordinaten auslesen
+            Init();
+
+            // 3. Wärmebedarf initialisieren
+            Waermebedarf_gesamt = Waermebedarf.Sum();
+            Max_Waermebedarf = Waermebedarf.Max();
+
+            // 4. Kollektorfelder samt STÜNDLICHEM POTENZIAL einlesen — Schritte 1 und 2
+            // des Kollektormodells, gemeinsam mit dem zweikanaligen Weg (N6).
+            List<SolarFeld> felder = Kollektorfelder_Lesen();
+
+            for (int i = 0; i < 8760; i++) Restwaerme[i] = Waermebedarf[i];
+
+            // 5. Bilanzierung je Feld — der KAPPUNGSPUNKT des Altpfads: Was über den
+            // Momentanbedarf hinausgeht, ist verworfen (im zweikanaligen Weg darf es
+            // stattdessen einen Puffer laden, Konzept 6.4).
+            for (int n = 0; n < felder.Count; n++)
+            {
+                SolarFeld f = felder[n];
+
+                // Jahressummen dieses Kollektor(felds) fuer die Auflistung.
+                double prodSummeKoll = 0;
+                double ueberSummeKoll = 0;
+
+                for (int i = 0; i < f.Stunden; i++)
+                {
+                    var (prod, rest, ueber) = Bilanzieren(Restwaerme[i], f.Potenzial[i]);
+
+                    // Ergebnisse aufsummieren (für mehrere Kollektorfelder)
+                    Waermeproduktion[i] += prod;
+                    Restwaerme[i] = rest; // Restwärme wird pro Zeitschritt überschrieben
+                    Ueberschuss[i] += ueber;
+
+                    prodSummeKoll += prod;
+                    ueberSummeKoll += ueber;
+                }
+
+                Kollektor_Ergebnisse.Add(new SolarKollektorErgebnis
+                {
+                    Name = f.Name,
+                    Flaeche = f.Flaeche,
+                    Anzahl = f.Anzahl,
+                    Waermeproduktion = prodSummeKoll,
+                    Ueberschuss = ueberSummeKoll
+                });
+            }
+
+            Waermeproduktion_gesamt = Waermeproduktion.Sum();
+            Waermeproduktion_max = Waermeproduktion.Max();
+            Ueberschuss_summe = Ueberschuss.Sum();
+            Restwaerme_summe = Restwaerme.Sum();
+
+            return true;
+        }
+
+        /// <summary>
+        /// EIN Kollektorfeld des Projekts samt seinem stündlichen Bruttopotenzial.
+        /// Zwischenergebnis von <see cref="Kollektorfelder_Lesen"/>; beide Rechenwege
+        /// arbeiten damit weiter (Paket-5-Nacharbeit, Befund N6).
+        /// </summary>
+        private sealed class SolarFeld
+        {
+            /// <summary>Tab_Energieanlagen.ID des Felds.</summary>
+            public int ID_Anlage;
+            public string Name = "";
+            /// <summary>Aperturfläche gesamt [m²] = Modulfläche · Anzahl.</summary>
+            public double Flaeche;
+            public long Anzahl;
+            /// <summary>Zahl der ausgewerteten Stunden (Zeilen der Klimadaten, höchstens 8760).</summary>
+            public int Stunden;
+            /// <summary>Potenzieller Bruttoertrag je Stunde [kWh].</summary>
+            public double[] Potenzial = new double[8760];
+        }
+
+        /// <summary>
+        /// Klimaregion des Projekts und ihre Geokoordinaten — Schritte 1 und 2 aus
+        /// <see cref="Berechnung"/>, seit der Paket-5-Nacharbeit gemeinsam mit
+        /// <see cref="Vorbereiten_Zweikanalig"/> (Befund N6).
+        ///
+        /// Die Projektabfrage läuft über <see cref="StilleDb"/> statt über den
+        /// Altzugriff <c>RecordSet</c> (Befund N9): Der schluckt SQL-Fehler still — bei
+        /// einem Fehlschlag bliebe <c>nID_Klimaregion</c> auf dem Wert des VORLAUFS
+        /// stehen und die Solarthermie rechnete mit dem Wetter eines anderen Projekts.
+        /// Jetzt steht der Fehlschlag wenigstens auf der Konsole. Die Abfrage ist
+        /// parametrisiert und liefert denselben Wert wie zuvor — der byte-identische
+        /// Regressionslauf mit Flag AUS belegt das.
+        /// </summary>
+        private void KlimaregionUndGeoLesen()
+        {
+            object v = StilleDb.Scalar("SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?",
+                                       StilleDb.Par("@id", OleDbType.Integer, m_ID_Projekt));
+            if (v != null) nID_Klimaregion = StilleDb.Zahl(v);
+            else Console.WriteLine("Solarthermie: Zu Projekt " + m_ID_Projekt + " ließ sich keine " +
+                                   "Klimaregion lesen - es gilt der zuletzt gelesene Wert (" +
+                                   nID_Klimaregion + ").");
+
             KlimaregionCtrl ctrlklima = new KlimaregionCtrl();
             ctrlklima.ReadSingle("select * from Tab_Klimaregion where ID=" + nID_Klimaregion);
 
@@ -51,17 +212,29 @@ namespace WindowsFormsApplication1
                 Lon = ctrlklima.Longitude;
                 Lat = ctrlklima.Latitude;
             }
+        }
 
-            Init();
-
-            // 3. Wärmebedarf initialisieren
-            Waermebedarf_gesamt = Waermebedarf.Sum();
-            Max_Waermebedarf = Waermebedarf.Max();
-
-            // 4. Schleife über Solarkollektoren
+        /// <summary>
+        /// Liest die Kollektorfelder des Projekts und rechnet ihr STÜNDLICHES POTENZIAL
+        /// für das ganze Jahr — die Schritte 1 und 2 des Kollektormodells (spezifische
+        /// Leistung, potenzielle Erzeugung), also alles, was NICHT vom Wärmebedarf und
+        /// nicht vom Speicherfüllstand abhängt.
+        ///
+        /// EINE Fassung für beide Rechenwege (Paket-5-Nacharbeit, Befund N6): Bis dahin
+        /// stand dieser Block zweimal im Modul — einmal in <see cref="Berechnung"/>,
+        /// einmal in <see cref="Vorbereiten_Zweikanalig"/>. Term für Term waren beide
+        /// gleich, aber ein Fix am Altpfad hätte im neuen Weg nicht gewirkt, und die
+        /// Regressionssuite (Flag aus) hätte das nie gemeldet. Zwei Abweichungen waren
+        /// bereits entstanden: die Stundenzahl (<c>rows</c> gegen
+        /// <c>Math.Min(rows, 8760)</c>) — hier auf die abgesicherte Fassung vereinheitlicht,
+        /// die zugleich einen möglichen Indexüberlauf des Altpfads schließt.
+        /// </summary>
+        private List<SolarFeld> Kollektorfelder_Lesen()
+        {
+            WErzeugerCtrl ctrl = new WErzeugerCtrl();
             ctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
 
-            for (int i = 0; i < 8760; i++) Restwaerme[i] = Waermebedarf[i];
+            List<SolarFeld> felder = new List<SolarFeld>();
 
             for (int n = 0; n < ctrl.rows; n++)
             {
@@ -85,11 +258,14 @@ namespace WindowsFormsApplication1
                 double tStorage = 50; // Annahme Speichertemperatur
                 double leitungsverluste = 0.92;
 
-                // Jahressummen dieses Kollektor(felds) fuer die Auflistung.
-                double prodSummeKoll = 0;
-                double ueberSummeKoll = 0;
+                SolarFeld f = new SolarFeld();
+                f.ID_Anlage = ctrl.items[n].ID;
+                f.Name = ctrlsol.m_szKollektorname;
+                f.Flaeche = nFlaeche * nAnzahl;
+                f.Anzahl = nAnzahl;
+                f.Stunden = Math.Min(ctrldat.rows, 8760);
 
-                for (int i = 0; i < ctrldat.rows; i++)
+                for (int i = 0; i < f.Stunden; i++)
                 {
                     // CalculateHourly berechnet bereits die effektive Strahlung auf der geneigten Fläche [cite: 52, 69, 71]
                     double gTilted = SolarCalculator.CalculateHourly(
@@ -106,40 +282,16 @@ namespace WindowsFormsApplication1
                     // Wir nutzen hier den internen Wert aus dem Calculator
                     double currentCosTheta = SolarCalculator.lastCosTheta;
 
-                    // Falls lastCosTheta nicht verfügbar, nutzen wir 1.0 als Näherung, 
-                    // da gTilted bereits die Hauptwinkelkorrektur enthält.
-                    var (prod, rest, ueber) = BerechneSolarthermie(
-                        Restwaerme[i],
-                        gTilted,
-                        nFlaeche * nAnzahl,
-                        h0, k1, k2, kdir50,
-                        tStorage, ta, currentCosTheta, leitungsverluste);
-
-                    // Ergebnisse aufsummieren (für mehrere Kollektorfelder)
-                    Waermeproduktion[i] += prod;
-                    Restwaerme[i] = rest; // Restwärme wird pro Zeitschritt überschrieben
-                    Ueberschuss[i] += ueber;
-
-                    prodSummeKoll += prod;
-                    ueberSummeKoll += ueber;
+                    // Schritt 1: spezifische Leistung [W/m²], Schritt 2: Bruttoertrag [kWh]
+                    double leistungProQm = CalculateThermalPower(gTilted, ta, tStorage, currentCosTheta,
+                                                                 h0, k1, k2, kdir50);
+                    f.Potenzial[i] = (leistungProQm * f.Flaeche * leitungsverluste) / 1000.0;
                 }
 
-                Kollektor_Ergebnisse.Add(new SolarKollektorErgebnis
-                {
-                    Name = ctrlsol.m_szKollektorname,
-                    Flaeche = nFlaeche * nAnzahl,
-                    Anzahl = nAnzahl,
-                    Waermeproduktion = prodSummeKoll,
-                    Ueberschuss = ueberSummeKoll
-                });
+                felder.Add(f);
             }
 
-            Waermeproduktion_gesamt = Waermeproduktion.Sum();
-            Waermeproduktion_max = Waermeproduktion.Max();
-            Ueberschuss_summe = Ueberschuss.Sum();
-            Restwaerme_summe = Restwaerme.Sum();    
-
-            return true;
+            return felder;
         }
 
         public void Init()
@@ -150,6 +302,13 @@ namespace WindowsFormsApplication1
             Waermeproduktion_gesamt = 0;
             Ueberschuss_summe = 0;
             Kollektor_Ergebnisse.Clear();
+
+            // Zweikanaliger Weg (Paket 5) - im Altpfad bleiben alle Größen auf 0, damit
+            // die Mitkorrektur in SimulationRunner dort nachweislich wirkungslos ist.
+            Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
+            Speicherladung_gesamt = 0;
+            Direktdeckung_gesamt = 0;
+            Speicherentladung_Anteil = 0;
         }
 
         public (double produktion, double restbedarf, double ueberschuss) BerechneSolarthermie(
@@ -164,6 +323,21 @@ namespace WindowsFormsApplication1
             double potenzielleErzeugung = (leistungProQm * flaeche * leitungsverluste) / 1000.0;
 
             // 3. Bilanzierung
+            return Bilanzieren(waermebedarf, potenzielleErzeugung);
+        }
+
+        /// <summary>
+        /// Schritt 3 des Kollektormodells: der KAPPUNGSPUNKT. Was über den Momentanbedarf
+        /// hinausgeht, ist im einkanaligen Weg verworfen.
+        ///
+        /// Eigene Methode seit der Paket-5-Nacharbeit (Befund N6): Der zweikanalige Weg
+        /// braucht die Schritte 1 und 2 OHNE Schritt 3 — er entscheidet erst in der
+        /// Stunde, ob der Ertrag deckt, lädt oder verworfen wird. Die Anweisungen sind
+        /// unverändert.
+        /// </summary>
+        public static (double produktion, double restbedarf, double ueberschuss) Bilanzieren(
+            double waermebedarf, double potenzielleErzeugung)
+        {
             double produktion = Math.Min(potenzielleErzeugung, waermebedarf);
             double ueberschuss = Math.Max(0, potenzielleErzeugung - waermebedarf);
             double restbedarf = Math.Max(0, waermebedarf - produktion);
@@ -197,6 +371,260 @@ namespace WindowsFormsApplication1
 
             double leistung = gTilted * wirkungsgrad;
             return Math.Max(0, leistung);
+        }
+
+        // ===================================================================
+        // Zweikanaliger Weg - Aufbau, Stundenschritte, Abschluss (Konzept 6.4)
+        // ===================================================================
+
+        /// <summary>
+        /// Baut die Kollektorfelder des zweikanaligen Wegs auf und bestimmt ihr
+        /// STÜNDLICHES POTENZIAL für das ganze Jahr.
+        ///
+        /// Der Bruttoertrag eines Kollektorfelds hängt ausschließlich vom Wetter, von der
+        /// Ausrichtung und von den Kollektorkennwerten ab — nicht vom Wärmebedarf und
+        /// nicht vom Speicherfüllstand (siehe <see cref="BerechneSolarthermie"/>: die
+        /// Bilanzierung in Schritt 3 kappt nur, was Schritt 2 vorher unabhängig davon
+        /// gerechnet hat). Genau deshalb lässt sich die Solarthermie überhaupt in die
+        /// Stundenschleife der Kaskade einfügen: Ihr Potenzial steht vorab fest, die
+        /// Verwendung (Direktdeckung, Speicherladung, Verwurf) entscheidet sich erst in
+        /// der Stunde.
+        ///
+        /// Gerechnet wird mit denselben Aufrufen und in derselben Reihenfolge wie in
+        /// <see cref="Berechnung"/> — die Potenzialwerte sind damit dieselben Zahlen.
+        /// </summary>
+        /// <param name="senken">Senkenzuordnungen des Projekts (Konzept 6.1).</param>
+        public bool Vorbereiten_Zweikanalig(int ID_Projekt, List<Senkenzuordnung> senken)
+        {
+            m_ID_Projekt = ID_Projekt;
+
+            // Klimaregion, Geokoordinaten und Kollektorfelder samt Potenzial kommen aus
+            // denselben Methoden wie im Altpfad (Paket-5-Nacharbeit, Befund N6) — damit
+            // ist „dieselben Aufrufe, dieselbe Reihenfolge, dieselben Zahlen" nicht mehr
+            // eine Zusage über zwei Kopien, sondern dieselbe Anweisungsfolge.
+            KlimaregionUndGeoLesen();
+
+            Init();
+            Array.Clear(Waermebedarf, 0, Waermebedarf.Length);
+
+            solar_anlagen_ids.Clear();
+            _feldName.Clear();
+            _feldFlaeche.Clear();
+            _feldAnzahl.Clear();
+            _feldSenke.Clear();
+
+            List<SolarFeld> felder = Kollektorfelder_Lesen();
+            List<double[]> potenziale = new List<double[]>();
+
+            for (int n = 0; n < felder.Count; n++)
+            {
+                SolarFeld f = felder[n];
+
+                potenziale.Add(f.Potenzial);
+                solar_anlagen_ids.Add(f.ID_Anlage);
+                _feldName.Add(f.Name);
+                _feldFlaeche.Add(f.Flaeche);
+                _feldAnzahl.Add(f.Anzahl);
+                _feldSenke.Add(SenkeZuAnlage(senken, f.ID_Anlage));
+            }
+
+            _potenzialFeld = potenziale.ToArray();
+            _restPotenzial = new double[_potenzialFeld.Length];
+            _prodFeld = new double[_potenzialFeld.Length];
+            _ueberFeld = new double[_potenzialFeld.Length];
+
+            return true;
+        }
+
+        /// <summary>
+        /// Senkenzuordnung einer Anlage; ohne Zeile gilt die Vorbelegung Heizkreis/Beides —
+        /// dieselbe Regel wie beim Kontextaufbau der Wärmepumpe (Konzept 4.6).
+        /// </summary>
+        private static Senkenzuordnung SenkeZuAnlage(List<Senkenzuordnung> senken, int idAnlage)
+        {
+            if (senken != null)
+                foreach (Senkenzuordnung z in senken)
+                    if (z != null && z.AnlagenID == idAnlage) return z;
+
+            return new Senkenzuordnung { AnlagenID = idAnlage };
+        }
+
+        /// <summary>Stundenbeginn: das Potenzial der Stunde steht jedem Feld voll zur Verfügung.</summary>
+        public void Stunde_Start(int stunde)
+        {
+            for (int f = 0; f < _restPotenzial.Length; f++)
+                _restPotenzial[f] = (stunde >= 0 && stunde < 8760) ? _potenzialFeld[f][stunde] : 0;
+        }
+
+        /// <summary>
+        /// Phase B der Reihenfolge-Invariante (Konzept 6.3) für die Solarthermie: Die
+        /// Felder mit Hauptsenke HEIZKREIS decken den Momentanbedarf ihres Kanals.
+        ///
+        /// Ein Feld mit Puffer-Hauptsenke deckt hier NICHTS — es lädt ausschließlich
+        /// (Phase C). Daraus folgt derselbe Doppelzählungs-Freibeweis wie bei der
+        /// Wärmepumpe: Eine Anlage ist eindeutig in Phase B ODER in Phase C.
+        /// </summary>
+        public void Stunde_Bedarf(int stunde, ref double rest_heiz, ref double rest_ww)
+        {
+            if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = rest_heiz + rest_ww;
+
+            for (int f = 0; f < _restPotenzial.Length; f++)
+            {
+                if (_restPotenzial[f] <= 0) continue;
+
+                Senkenzuordnung z = _feldSenke[f];
+                if (z != null && z.Haupt != Senke.Heizkreis) continue;
+
+                string wsTyp = (z != null) ? z.WSTyp : WaermequelleClass.SENKE_BEIDES;
+                double verfuegbar;
+                if (wsTyp == WaermequelleClass.SENKE_WARMWASSER) verfuegbar = rest_ww;
+                else if (wsTyp == WaermequelleClass.SENKE_HEIZUNG) verfuegbar = rest_heiz;
+                else verfuegbar = rest_heiz + rest_ww;
+
+                if (verfuegbar <= 0) continue;
+
+                double prod = Math.Min(_restPotenzial[f], verfuegbar);
+                if (prod <= 0) continue;
+
+                Kaskadenschleife.SenkeAbziehen(wsTyp, prod, ref rest_ww, ref rest_heiz);
+
+                _restPotenzial[f] -= prod;
+                _prodFeld[f] += prod;
+                Direktdeckung_gesamt += prod;
+                if (stunde >= 0 && stunde < 8760) Waermeproduktion[stunde] += prod;
+            }
+
+            if (stunde >= 0 && stunde < 8760) Restwaerme[stunde] = rest_heiz + rest_ww;
+        }
+
+        /// <summary>
+        /// Phasen C/D für EINEN Ladeauftrag (Konzept 6.3/6.4): Der Überschuss des Felds
+        /// geht in den zugeordneten Puffer — Hauptsenke zuerst, die Zweitsenke bekommt
+        /// nur, was danach übrig ist (Konzept 13.5, Variante A; die Ladephase ruft diese
+        /// Methode zuerst für alle Haupt- und danach für alle Zweitsenken auf).
+        ///
+        /// KEIN <c>SenkeAbziehen</c> — die geladene Wärme deckt keinen Bedarf, sie liegt
+        /// im Speicher. Der Bilanzraum aus der Nutzerentscheidung zu 4b-1 gilt unverändert:
+        /// Die Aufnahme darf die freie Kapazität um die im selben Zeitschritt absehbare
+        /// Entnahme übersteigen, und dieses Durchsatzbudget wird je Kanal nur einmal
+        /// vergeben.
+        /// </summary>
+        /// <returns>tatsächlich geladene Wärmemenge [kWh]</returns>
+        public double Zweikanalig_Laden(Ladeauftrag a, int stunde, bool pvUeberschuss, double[] absehbar)
+        {
+            if (a == null || a.Speicher == null) return 0;
+
+            int f = a.Modulindex;
+            if (f < 0 || f >= _restPotenzial.Length) return 0;
+            if (_restPotenzial[f] <= 0) return 0;
+
+            SimulationPufferspeicher sp = a.Speicher;
+
+            int kanal = sp.IstBrauchwasserkanal ? 1 : 0;
+            double ladefaehig = sp.Ladefaehigkeit(a.ObergrenzeStunde(pvUeberschuss));
+            double durchlass = Math.Min(absehbar[kanal] > 0 ? absehbar[kanal] : 0, sp.Entnahmefaehigkeit());
+            if (ladefaehig + durchlass <= 0) return 0;
+
+            double menge = Math.Min(_restPotenzial[f], ladefaehig + durchlass);
+            if (menge <= 0) return 0;
+
+            double ladung = sp.Laden(menge, stunde, durchlass);
+            if (ladung <= 0) return 0;
+
+            double genutzterDurchlass = ladung - ladefaehig;
+            if (genutzterDurchlass > 0)
+            {
+                absehbar[kanal] -= genutzterDurchlass;
+                if (absehbar[kanal] < 0) absehbar[kanal] = 0;
+            }
+
+            _restPotenzial[f] -= ladung;
+            _prodFeld[f] += ladung;
+            Speicherladung_gesamt += ladung;
+            if (stunde >= 0 && stunde < 8760)
+            {
+                Waermeproduktion[stunde] += ladung;
+                Speicherladung_stuendlich[stunde] += ladung;
+            }
+
+            return ladung;
+        }
+
+        /// <summary>
+        /// Stundenende: Was weder den Bedarf gedeckt hat noch in einen Speicher passte,
+        /// ist VERWORFEN und wird als Überschuss gebucht — die Größe, die vor Paket 5 der
+        /// gesamte Überschuss war (Kappungspunkt in <see cref="BerechneSolarthermie"/>).
+        /// </summary>
+        public void Stunde_Ende(int stunde)
+        {
+            for (int f = 0; f < _restPotenzial.Length; f++)
+            {
+                double rest = _restPotenzial[f];
+                if (rest <= 0) continue;
+
+                _ueberFeld[f] += rest;
+                if (stunde >= 0 && stunde < 8760) Ueberschuss[stunde] += rest;
+                _restPotenzial[f] = 0;
+            }
+        }
+
+        /// <summary>Jahressummen und Feldauflistung des zweikanaligen Wegs.</summary>
+        public void Abschluss_Zweikanalig()
+        {
+            Kollektor_Ergebnisse.Clear();
+            for (int f = 0; f < _feldName.Count; f++)
+            {
+                Kollektor_Ergebnisse.Add(new SolarKollektorErgebnis
+                {
+                    Name = _feldName[f],
+                    Flaeche = _feldFlaeche[f],
+                    Anzahl = _feldAnzahl[f],
+                    Waermeproduktion = _prodFeld[f],
+                    Ueberschuss = _ueberFeld[f]
+                });
+            }
+
+            Waermebedarf_gesamt = Waermebedarf.Sum();
+            Max_Waermebedarf = Waermebedarf.Max();
+            Waermeproduktion_gesamt = Waermeproduktion.Sum();
+            Waermeproduktion_max = Waermeproduktion.Max();
+            Ueberschuss_summe = Ueberschuss.Sum();
+            Restwaerme_summe = Restwaerme.Sum();
+        }
+
+        /// <summary>
+        /// Zweikanalige Stufe OHNE Speicherbeteiligung: dieselben Stundenschritte, aber in
+        /// einer eigenen Jahresschleife an der Kaskadenposition der Solarthermie.
+        ///
+        /// Sie ist der Weg für Projekte, in denen kein Kollektorfeld eine Puffer-Senke
+        /// trägt. Ohne Speicher gibt es nichts zu ordnen: Die Phasen A, C, D, E und G
+        /// haben für diese Stufe keinen Inhalt, und die Stufe bleibt — wie im Altpfad —
+        /// ein Vektormodul an ihrer Kaskadenposition. Der einzige Unterschied zum Altpfad
+        /// ist die Kanalführung: Statt auf der Kanalsumme zu rechnen und den Rest über
+        /// <c>Waermekanaele.Uebernehmen</c> proportional zurückzuverteilen, deckt die
+        /// Anlage ihren Kanal nach <c>WS_Typ</c> (bei „Beides" mit Warmwasservorrang).
+        /// </summary>
+        public bool Berechnung_Zweikanalig(int ID_Projekt, Waermekanaele kanaele,
+                                           List<Senkenzuordnung> senken)
+        {
+            if (kanaele == null) return false;
+            if (!Vorbereiten_Zweikanalig(ID_Projekt, senken)) return false;
+
+            for (int stunde = 0; stunde < 8760; stunde++)
+            {
+                double rest_heiz = kanaele.Heiz[stunde];
+                double rest_ww = kanaele.WW[stunde];
+
+                Stunde_Start(stunde);
+                Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
+                Stunde_Ende(stunde);
+
+                kanaele.Heiz[stunde] = (float)rest_heiz;
+                kanaele.WW[stunde] = (float)rest_ww;
+            }
+
+            Abschluss_Zweikanalig();
+            return true;
         }
     }
 

@@ -204,6 +204,16 @@ namespace WindowsFormsApplication1
         /// Räumt einen Datensatz auf: unbekanntes Ziel wird zu <see cref="ZIEL_HEIZKREIS"/>
         /// (Konzept 4.6, erste Zeile der Tabelle), Puffer-IDs ohne Puffer-Ziel entfallen,
         /// eine Zweitsenke ohne Ziel wird ganz gelöscht.
+        ///
+        /// UND SEIT DER PAKET-5-NACHARBEIT (Befund N5) auch die Gegenrichtung: ein
+        /// Puffer-ZIEL ohne Puffer-REFERENZ. Diese halbe Konfiguration entsteht aus
+        /// Altdaten und aus abgebrochenen Dialogeingaben, und sie war der stille
+        /// Totalausfall eines Erzeugers: Die Engine erkennt ihn (mangels
+        /// <c>WS_ID_Puffer</c>) nicht als ladende Anlage — er bekommt also keinen
+        /// Ladeauftrag —, aber die Bedarfsphase überspringt ihn, weil seine Hauptsenke
+        /// nicht der Heizkreis ist. Ergebnis: Er produziert das ganze Jahr nichts, ohne
+        /// jeden Hinweis (gemessen an einem präparierten 1018: Kesselproduktion
+        /// 34,27 -> 0 MWh). Ein Ziel ohne Ziel ist kein Ziel — es gilt der Heizkreis.
         /// </summary>
         public static void Normalisieren(SenkeDaten d)
         {
@@ -232,6 +242,23 @@ namespace WindowsFormsApplication1
             if (d.ID_Puffer2 < 0) d.ID_Puffer2 = 0;
             if (d.Ladegrenze < 0) d.Ladegrenze = 0;
             if (d.Ladegrenze2 < 0) d.Ladegrenze2 = 0;
+
+            // N5: Puffer-Ziel OHNE Puffer -> Heizkreis (siehe Kopfkommentar). Steht hier
+            // am Ende, damit die Negativ-Klemmung oben schon gelaufen ist.
+            if (IstPufferZiel(d.Ziel) && d.ID_Puffer <= 0)
+            {
+                d.Ziel = ZIEL_HEIZKREIS;
+                d.Ladeprio = 0;
+                d.Ladegrenze = 0;
+                d.LadeprioPV = 0;
+            }
+
+            if (d.HatZweitsenke && d.ID_Puffer2 <= 0)
+            {
+                d.Ziel2 = "";
+                d.Ladeprio2 = 0;
+                d.Ladegrenze2 = 0;
+            }
         }
 
         /// <summary>
@@ -420,6 +447,22 @@ namespace WindowsFormsApplication1
                 Senkenzuordnung z = new Senkenzuordnung();
 
                 z.AnlagenID = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+
+                // N5 (Paket-5-Nacharbeit): Eine halbe Puffer-Konfiguration - Ziel gesetzt,
+                // Puffer nicht - hat Normalisieren gerade auf den Heizkreis zurückgesetzt.
+                // Das ist die Rettung des Erzeugers vor dem stillen Totalausfall, aber es
+                // ist auch eine stille Datenkorrektur: Sie gehört ins Lauf-Protokoll.
+                string rohZiel = StilleDb.Text(StilleDb.Feld(r, "WS_Ziel"));
+                if (IstPufferZiel(rohZiel) && !IstPufferZiel(d.Ziel))
+                    Console.WriteLine("Wärmesenke: Die Anlage " + z.AnlagenID + " ist auf " + rohZiel +
+                                      " gesetzt, hat aber KEINEN Pufferspeicher zugeordnet " +
+                                      "(WS_ID_Puffer leer). Sie rechnet deshalb auf den HEIZKREIS.");
+
+                string rohZiel2 = StilleDb.Text(StilleDb.Feld(r, "WS_Ziel2"));
+                if (IstPufferZiel(rohZiel2) && !d.HatZweitsenke)
+                    Console.WriteLine("Wärmesenke: Die Anlage " + z.AnlagenID + " hat eine Zweitsenke " +
+                                      rohZiel2 + " ohne zugeordneten Pufferspeicher (WS_ID_Puffer2 " +
+                                      "leer). Die Zweitsenke bleibt unberücksichtigt.");
                 z.Haupt = Senkenzuordnung.SenkeAusZiel(d.Ziel);
                 z.IDPufferHaupt = d.ID_Puffer;
                 z.WSTyp = d.Bedarfsart;
