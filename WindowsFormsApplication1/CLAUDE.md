@@ -1,170 +1,107 @@
-# CLAUDE.md — Projektgedächtnis WP-Plan (WindowsFormsApplication1)
+# CLAUDE.md — WP-Plan / EPOS-Plan, Anwendungsprojekt
 
-Diese Datei gibt Claude (und künftigen Cowork-Sessions) den nötigen Kontext, um in
-diesem Repository sofort produktiv zu arbeiten. Antworten und Code-Kommentare auf
-Deutsch, da Codebasis und Domäne deutschsprachig sind.
+Kontext zum **Code** dieses Projekts. Fachdomäne, Datenmodell, Migration und Umgang mit
+`Kenndaten.accdb` stehen in der [`CLAUDE.md` der Repo-Wurzel](../CLAUDE.md) — hier nicht wiederholen.
+Antworten und Code-Kommentare auf Deutsch.
 
-## Überblick
+## Build
 
-**WP-Plan / „Wärmeplan"** ist eine Windows-Desktop-Anwendung zur Planung und
-Simulation von Energie- und Wärmeversorgungskonzepten für Gebäude und Projekte.
-Abgedeckte Gewerke u. a.: Wärmebedarf, Brauchwasser, Prozesswärme, Heizkessel,
-BHKW, Wärmepumpe, Solarthermie, Photovoltaik, Stromspeicher, Pufferspeicher,
-Klimadaten. Es gibt einen Wizard-geführten Workflow, Import von Herstellerdaten
-(VDI 3805, CEC, PAN) und eine Simulations-Engine mit Ganglinien-/Chartauswertung.
-
-## Tech-Stack
-
-- **Sprache/Runtime:** C#, `net8.0-windows` (migriert von .NET Framework — siehe
-  `WindowsFormsApplication1.csproj.netfx-backup`). `LangVersion=latest`,
-  `Nullable=disable`.
-- **UI:** Windows Forms (`UseWindowsForms=true`), zusätzlich WPF aktiviert
-  (`UseWPF=true`). MDI-Oberfläche.
-- **Ausgabe:** `WinExe`. Namespace & Assembly: `WindowsFormsApplication1`.
-- **Plattform:** primär **x86** (zwingend wegen `Microsoft.ACE.OLEDB.12.0`,
-  bitness-gebunden). Zusätzliche Configs: `x64`, `AnyCPU`.
-- **Datenbank:** Microsoft Access (`.accdb`) über ODBC (`OdbcConnection`) und
-  OLEDB (ACE 12.0). Pakete `System.Data.Odbc`, `System.Data.OleDb`.
-- **Wichtige NuGet-Pakete:** `WinForms.DataVisualization` (Chart-Port),
-  `ScottPlot.WinForms`, `SkiaSharp(*)`, `MathNet.Numerics`,
-  `Mscc.GenerativeAI` (Google Gemini), `Humanizer.Core`, `JsonSchema.Net(.Generation)`,
-  `System.Configuration.ConfigurationManager`, `Microsoft.Win32.Registry`,
-  `System.Management`, `Microsoft.Extensions.Http/Logging`.
-- **COM-Interop:** `Microsoft.Office.Interop.Excel`, `VBIDE`, sowie eine
-  Geschwister-EXE `..\CSExeCOMServer.exe` (.NET-Framework-COM-Server).
-- **Lokalisierung:** Satellitenkulturen `de-DE` und `en-US` (Standard: Deutsch).
-- **DPI:** DpiUnaware (in `app.manifest` `dpiAware=false` und zur Laufzeit
-  `Application.SetHighDpiMode(HighDpiMode.DpiUnaware)` in `Program.cs`). Der
-  anderslautende PerMonitorV2-Kommentar im `.csproj` ist veraltet.
-
-## Build & Ausführen
-
-> Voraussetzung: **Windows** (WinForms/WPF, COM-Interop, ACE-OLEDB-Provider).
-> Lässt sich nicht auf Linux/macOS bauen oder ausführen. Für den ACE-OLEDB-Zugriff
-> muss die **32-bit Access Database Engine (ACE 12.0)** installiert sein.
-
-Es existiert **keine `.sln`** — Projekt direkt über die `.csproj` öffnen/bauen.
+`net8.0-windows`, WinForms + WPF, `WinExe`, Namespace/Assembly `WindowsFormsApplication1`.
+Solution: `..\WP-Plan.sln` (Debug/Release × x86/x64).
 
 ```powershell
-# Bauen (x86 wegen ACE OLEDB)
-dotnet build WindowsFormsApplication1.csproj -c Debug -p:Platform=x86
-
-# Ausführen
-dotnet run --project WindowsFormsApplication1.csproj -p:Platform=x86
-
-# Release-Build
-dotnet build WindowsFormsApplication1.csproj -c Release -p:Platform=x86
+dotnet build ..\WP-Plan.sln -c Debug -p:Platform=x86
 ```
 
-In Visual Studio: die `.csproj` öffnen und die Plattform **x86** wählen.
 
 ## Architektur
 
-Grob nach **MVC** getrennt; Verschaltung über globale Statics in `Program`:
+Grob MVC, verschaltet über prozessweite Statics in `Program`:
 
-- **Einstieg:** `Program.cs` → `static Main` startet die MDI-Oberfläche
-  (`MDIMainForm`). `Program` hält globale, prozessweite Statics:
-  `mdifrm`, `mainfrm`, `startfrm`, `menuectrl`, `wizardctrl`, `DBConnection`,
-  `HelpCatalog`, Pfade (`ApplicationPath_Common/_User`), `nLanguage`.
-  Sprache wird aus der Registry `HKCU\Software\wp-plan` (`Language`) gelesen.
-- **Controller/** (~51 Dateien, Suffix `*Ctrl.cs`): Anwendungslogik je Gewerk
-  (z. B. `WaermebedarfCtrl`, `BHKWCtrl`, `PhotovoltaikCtrl`, `WPCtrl`,
-  `ProjektCtrl`, `WizardCtrl`, `MenueCtrl`). Kontextmenüs als `*KontextMenuCtrl`.
-- **Model/** (~33 Dateien, Suffix `*Model.cs`): Datenmodelle je Gewerk
-  (z. B. `WaermebedarfModel`, `PhotovoltaikModel`, `ProjektModel`).
-  Projektbezogene Verknüpfungstabellen mit Präfix `Z_Projekt*`.
-- **Views/** (~362 Dateien): WinForms-Formulare, organisiert in Domänen-Unterordnern
-  (`BHKW`, `Photovoltaik`, `Solarthermie`, `Wärmepumpe`, `Simulation`, `Wizard`,
-  `Hauptformular`, `Projekt`, `Admin`, `Help`, …). Formulare heißen `Form_*`.
-- **Allgemein/** (~44 Dateien): geteilte Infrastruktur:
-  - Datenzugriff: `DbClass`, `DataRepository`, `RecordSet`, `Update/`
-  - Grafik: `GrafikTools/` (`ChartManager`, `RoundedPanel`, `Form_ChartZoom`)
-  - Import: `Import/` → `VDI 3805/`, `CEC/`, `Pan/`, `CsvReader`, `IniFileParser`
-  - Simulation: `Simulation/` (Engine, siehe unten)
-  - Hilfe: `Hilfe/HelpCatalog` (WordPress-basiert)
-  - Tools: `ToolsClass`, `SolarPVGISCalculator`, `WizardItemClass`
+- **`Program.cs`** — `Main` startet die MDI-Oberfläche. Hält `mdifrm`, `mainfrm`, `startfrm`,
+  `menuectrl`, `wizardctrl`, `HelpCatalog`, `ApplicationPath_Common/_User`, `nLanguage`
+  (Sprache aus Registry `HKCU\Software\wp-plan`). Globaler veränderlicher Zustand — Seiteneffekte
+  bei Änderungen mitdenken.
+- **`Controller/`** (70 Dateien, `*Ctrl.cs`) — Logik je Gewerk; Kontextmenüs als `*KontextMenuCtrl`,
+  Katalogpflege als `*StammCtrl`, Projektzuordnungen als `Z_Projekt*Ctrl`.
+- **`Model/`** (36 Dateien, `*Model.cs`) — Datenmodelle je Gewerk.
+- **`Views/`** (185 `.cs`, 384 Dateien) — `Form_*` in Domänen-Unterordnern (BHKW, Photovoltaik,
+  Wärmepumpe, Simulation, Wizard, Bericht, Wirtschaftlichkeit, Varianten, Admin, Help …).
+- **`Allgemein/`** (73 Dateien) — geteilte Infrastruktur, siehe unten.
 
-## Namens- & Code-Konventionen
+## Module in `Allgemein/`
 
-- Einheitlicher Root-Namespace `WindowsFormsApplication1` (trotz Domänen-Ordnern).
-- Klassensuffixe: Controller `*Ctrl`, Modelle `*Model`, Formulare `Form_*`.
-- Bezeichner, Kommentare und UI-Texte überwiegend **deutsch**.
-- Pro Formular bis zu 5 Dateien: `X.cs`, `X.Designer.cs`, `X.resx`,
-  `X.de-DE.resx`, `X.en-US.resx`. **Designer- und `.resx`-Dateien nicht von Hand
-  editieren** — über den WinForms-Designer pflegen; Strings über die
-  Satelliten-`.resx` lokalisieren.
-- `Properties/AssemblyInfo.cs` wird manuell gepflegt
-  (`GenerateAssemblyInfo=false`).
-- Vom Build ausgeschlossen (siehe `.csproj`): `ChartManagerNeu.cs`,
-  `WPTestCtrl.cs` sowie die „- Kopie"-Dateien unter `Views/Simulation/`.
+| Ordner | Inhalt |
+|---|---|
+| `Bericht/` | Berichtsmodul: `WordBerichtGenerator` (OpenXML, Vorlage `Vorlagen/Berichtsvorlage.docx`), `ExcelBerichtGenerator` (ClosedXML), `ChartRenderer` (GDI+/PNG), `Bausteine/` (konfigurierbare Berichtsteile), `BerichtTexte` (de/en) |
+| `Wirtschaftlichkeit/` | `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl` |
+| `Simulation/` | Engine: `SimulationControl`, `Init`, `SimulationRunner` + Module je Erzeuger/Bedarf (`SimulationWaermebedarf`, `…Waermepumpe`, `…BHKW`, `…PV`, `…Solarthermie`, `…SPK`, `…SSP`, `…Pufferspeicher`) |
+| `Lizenz/` | `LizenzManager`, `LizenzToken`, `LizenzServerClient`, `GeraeteId` — signiertes Token, DPAPI-Ablage, Zustände von `NichtAktiviert` bis `Lesemodus` |
+| `KI/` | `KiChatService` (Gemini 2.5 Flash-Lite über REST), `HilfeKontext`, `HilfeWissen`; API-Key in der Registry |
+| `Import/` | `VDI 3805/` (Kessel, Puffer, Kollektoren, WP), `CEC/` + `Pan/` (PV-Module), `CsvReader`, `IniFileParser` |
+| `GrafikTools/` | `ChartManager`, `Form_ChartZoom`, `RoundedPanel` |
+| `Hilfe/` | `HelpCatalog` — WordPress-basiert, Standard `https://epos-plan.de` |
+| `Reporting/`, `Waermespeicher/` | **nur Konzept-/Standdokumente**, kein Code |
 
-## Datenzugriff
+**Datenzugriff:** `DataRepository.cs` (OLE DB, `?`-Parameter) — Standard, in 98 Dateien.
+`RecordSet.cs` (ODBC, string-konkateniertes SQL) ist Altbestand in 55 Dateien; `Program.DBConnection`
+faktisch tot. Neuer Code ausschließlich über `DataRepository`.
 
-- Backend: **MS Access** (`.accdb`). Zugriff via `OdbcConnection` (`DbClass`,
-  DSN-/Connection-String) und ACE-OLEDB (`app.config` `connectionStrings`).
-- Die in `app.config` hinterlegte Beispiel-Verbindung verweist auf einen alten
-  absoluten Pfad (`...\WP-Plan\Kenndaten.accdb`); der tatsächliche Pfad wird zur
-  Laufzeit gesetzt. Beim Arbeiten an DB-Code beachten.
-- Schema-/Datenpflege über `Allgemein/Update/UpdateDatabaseFromScript.cs`
-  (Skripte: TABELLEN, SPALTEN, DATENTYPEN, IMPORT, DELETE).
+**Rechenkern:** vollständig verwaltet in `Allgemein/BhkwPlan.cs` (Namespace `WPPlan.Core`), aufgerufen
+aus den `Simulation*`-Klassen und einigen Eingabeformularen. Keine native DLL, kein COM-Server, kein
+`DllImport` — der frühere Weg über `..\CSExeCOMServer` ist abgelöst, die verbliebenen
+`CSExeCOMServer.SimpleObject`-Zeilen in den Simulationsklassen sind auskommentierter Altbestand und
+können weg.
 
-## Simulation (`Allgemein/Simulation/`)
+Der Port bildet das Verhalten des Vorgängers bewusst genau nach: Feldgrößen fest auf 8760 Stunden,
+168 Wochenwerte, 365 Tage, 12 Monate, 24 Tagesstunden; Vektoren `float` mit Zwischenrechnung in
+`double`; Arrays werden **in-place** überschrieben, der Rückgabewert wird fast überall ignoriert.
+Diese Konventionen beim Erweitern beibehalten.
 
-Engine mit `SimulationControl` und `Init`, plus Module je Erzeuger/Bedarf:
-`SimulationWaermebedarf`, `SimulationStrombedarf`, `SimulationWaermepumpe`,
-`SimulationBHKW`, `SimulationPV`, `SimulationSolarthermie`, `SimulationSPK`,
-`SimulationSSP`. Auswertung als Ganglinien/Charts in den Views.
+## Konventionen
 
-## Import (`Allgemein/Import/`)
+- Root-Namespace `WindowsFormsApplication1` für alles, trotz Domänen-Ordnern.
+- Suffixe: `*Ctrl`, `*Model`, `Form_*`. Bezeichner, Kommentare und UI-Texte deutsch.
+- Pro Formular bis zu 5 Dateien: `X.cs`, `X.Designer.cs`, `X.resx`, `X.de-DE.resx`, `X.en-US.resx`.
+  **Designer- und `.resx`-Dateien nicht von Hand editieren** — über den WinForms-Designer pflegen,
+  Strings über die Satelliten-`.resx` lokalisieren.
+- Vom Build ausgeschlossen (`.csproj`): `ChartManagerNeu.cs`, `WPTestCtrl.cs`, `Form_Simulation_Kurz.*`
+  und die „- Kopie"-Dateien unter `Views/Simulation/`.
 
-- **VDI 3805:** Heizkessel, Pufferspeicher, Solarkollektoren, Wärmepumpen.
-- **CEC / PAN:** PV-Moduldatenbanken (`CECDataService`, `PanDataService`,
-  `UnifiedModule`).
-- **Generisch:** `CsvReader`, `IniFileParser`.
+## Wichtige Pakete
 
-## Externe Dienste & Integration
+`WinForms.DataVisualization` (Chart-Port mit Original-Namespace) · `ScottPlot.WinForms` + `SkiaSharp`
+· `MathNet.Numerics` · `DocumentFormat.OpenXml` und `ClosedXML` (Berichte ohne Office) ·
+`BouncyCastle.Cryptography` + `System.Security.Cryptography.ProtectedData` (Lizenz) ·
+`System.Data.OleDb` / `.Odbc` · `Mscc.GenerativeAI`.
 
-- **PVGIS** (`https://re.jrc.ec.europa.eu/api/tmy`) für TMY-/Solardaten
-  (`SolarPVGISCalculator`).
-- **Nominatim / OpenStreetMap** für Geokodierung.
-- **WordPress-Hilfe** (`HelpCatalog`, `WordPressUrl`, Standard `localhost:8080`).
-- **Google Gemini** via `Mscc.GenerativeAI`.
-- **Excel/VBIDE-COM** und **`CSExeCOMServer.exe`** (Geschwisterordner) — nur unter
-  Windows mit installiertem Office/COM-Server verfügbar.
-- Einstellungen: `Properties/Settings.settings` + `app.config` `userSettings`
-  (`VDI3805Path`, `PVGISUrl`, `GeoKodierung`, `WordPressUrl/Prefix`, Import/Export-Pfade).
+**`SixLabors.Fonts` ist bewusst auf 1.0.1 gepinnt** — ab 2.x gilt die Six Labors Split License.
+Vor Releases `dotnet list package --include-transitive` prüfen.
 
-## Fallstricke / Wichtige Hinweise
+COM-Referenzen: `Microsoft.Office.Interop.Excel`, `VBIDE` (`EmbedInteropTypes=True`).
 
-- **Immer x86 bauen**, sonst schlägt der ACE-OLEDB-Zugriff fehl.
-- **Kein `.sln`** und (aktuell) **kein Git-Repo** im Ordner.
-- `Nullable` ist deaktiviert — keine projektweiten NRT-Annahmen.
-- COM-/Office-Interop und der externe COM-Server machen den Build
-  **Windows-gebunden**.
-- Viele veraltete/Legacy-Warnungen sind im `.csproj` bewusst per `NoWarn`
-  unterdrückt (CA1416, MSB3568, CS1701/1702, NU1701, NETSDK1206, WFAC010).
-- Globale, veränderliche Statics in `Program` — Zustand ist prozessweit; bei
-  Änderungen Seiteneffekte bedenken.
-- UI zweisprachig (de/en) — neue sichtbare Texte in beiden Satelliten-`.resx`
-  pflegen.
+## Fallstricke
 
-## Verzeichnisstruktur (Kurzform)
+- **Suchen/Greppen nur in diesem Ordner.** `..\WindowsFormsApplication1 - Kopie` und
+  `..\mit_Puffer_KI_Lösungsversuch` sind je ~210 MB alte Vollkopien mit fast identischen Dateinamen —
+  Treffer daraus sind wertlos und führen zu Änderungen am falschen Code.
+- **93 von 372 `.cs`-Dateien sind nicht UTF-8** kodiert (Umlaute als Ersatzzeichen). Beim Bearbeiten
+  die vorhandene Kodierung beibehalten, sonst zerschießt der Diff die Datei.
+- **DPI:** faktisch DpiUnaware (`app.manifest` `dpiAware=false` + `Application.SetHighDpiMode(DpiUnaware)`
+  in `Program.cs`). Der `PerMonitorV2`-Kommentar im `.csproj` ist falsch.
+- **`app.config`** enthält einen toten absoluten Beispielpfad zur `.accdb`; der echte Pfad wird zur
+  Laufzeit über `DataRepository.GetDBPath()` gesetzt.
+- **Lokalisierung lückenhaft:** `Admin`, `BHKW`, `Bericht`, `Brauchwasser`, `Help`, `Klimadaten`,
+  `Photovoltaik`, `Varianten`, `Wirtschaftlichkeit` haben keine `de-DE.resx`. Bei neuen sichtbaren
+  Texten in bestehenden Ordnern beide Satelliten-Dateien pflegen.
+- `.gitignore` schließt `*.accdb` aus — Datenbankänderungen landen nie im Commit.
+  `..\GitHub_Sync.bat` committet mit `git add -A` und pusht nach `origin/main`.
 
-```
-WindowsFormsApplication1/
-├─ Program.cs                 # Einstieg, globale Statics, Sprache/Registry
-├─ MDIMainForm.*              # MDI-Hauptfenster (+ de-DE/en-US .resx)
-├─ WindowsFormsApplication1.csproj
-├─ app.config / app.manifest
-├─ Controller/                # *Ctrl.cs — Logik je Gewerk
-├─ Model/                     # *Model.cs — Datenmodelle
-├─ Views/                     # Form_*.cs — Formulare (Domänen-Unterordner)
-├─ Allgemein/                 # Geteilte Infrastruktur
-│  ├─ DbClass / DataRepository / RecordSet / Update
-│  ├─ GrafikTools / Hilfe
-│  ├─ Import (VDI 3805, CEC, Pan, CSV, INI)
-│  └─ Simulation
-├─ Properties/                # AssemblyInfo, Settings, Resources
-├─ Resources/ · MyResource/   # Ressourcen (Bilder, lokalisierte Strings)
-└─ bin/ · obj/                # Build-Artefakte (nicht versionieren)
-```
+## Stand & Konzepte
+
+Aktueller Umsetzungsstand von Bericht und Wirtschaftlichkeit:
+[`Allgemein/Reporting/UMSETZUNGSSTAND.md`](Allgemein/Reporting/UMSETZUNGSSTAND.md).
+Konzepte daneben im selben Ordner (`Konzept_Berichtserstellung_EPOS-Plan.md`,
+`Konzept_Wirtschaftlichkeit.md`, `Konzept_Variantenbericht.md`), Phasen-Historie in
+`Allgemein/Bericht/LIESMICH_Phase1.md`, Simulationskonzept in
+`Allgemein/Simulation/Konzept_Simulation_QuellenSenken.md`.

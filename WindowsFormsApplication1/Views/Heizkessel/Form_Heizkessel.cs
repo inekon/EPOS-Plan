@@ -159,6 +159,8 @@ namespace WindowsFormsApplication1
 
         private void btn_Kessel_Hinzu_Click(object sender, EventArgs e)
         {
+            int nBrennstoff = 0;
+
             WizardParent wizardparent = (WizardParent)getWizardPage();
 
             if (listBox_Kessel_DB.Text == "") return;
@@ -187,6 +189,7 @@ namespace WindowsFormsApplication1
                 DataRow sr = dtStamm.Rows[0];
                 model.Vorlauf = IntCol(sr, "Vorlauf");
                 model.Ruecklauf = IntCol(sr, "Ruecklauf", "Rücklauf");
+                nBrennstoff = IntCol(sr, "Brennstoff");
             }
 
             // Analog zu BHKW: im direkten Projektmodus den Stammdatensatz sofort in die Projekt-Tabelle
@@ -211,6 +214,132 @@ namespace WindowsFormsApplication1
             list_heizkesselmodel.Add(model);
             AddKesselRow(model);
             if (m_bWizard) wizardparent.list_werzmodel = list_heizkesselmodel;
+
+            CreateNewEnergyCarrier(nBrennstoff);
+        }
+
+        private static double ToDouble(object o)
+        {
+            return (o != null && o != DBNull.Value) ? Convert.ToDouble(o) : 0.0;
+        }
+
+        private string CreateNewEnergyCarrier(int nBrennstoff)
+        {
+            using (var dlg = new Form_Kosten_Auswahl())
+            {
+                string szBrennstoff = "";
+                object br = DataRepository.ExecuteScalar(
+                    "SELECT Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID = ?",
+                    new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) });
+                if (br != null && br != DBNull.Value)
+                    szBrennstoff = br.ToString();
+
+                dlg.m_szBVrennstoff = szBrennstoff;
+                dlg.bOhneVariante = true;
+
+                if (dlg.ShowDialog() != DialogResult.OK) return "";
+
+                try
+                {
+                    // Default-Werte aus dem Brennstoff-Stamm (Preise/Emissionen)
+                    double default_arbeitspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", dlg.SelectedBrennstoffID));
+                    double default_grundpreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", dlg.SelectedBrennstoffID));
+                    double default_leistungspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", dlg.SelectedBrennstoffID));
+                    double default_co2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "CO2", dlg.SelectedBrennstoffID));
+                    double default_so2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", dlg.SelectedBrennstoffID));
+                    double default_nox = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", dlg.SelectedBrennstoffID));
+
+                    // 1) Katalog-Träger suchen; existiert er, wird er wiederverwendet
+                    int carrierId = -1;
+                    object existing = DataRepository.ExecuteScalar(
+                        "SELECT id FROM energy_carrier WHERE name = ?",
+                        new OleDbParameter[] { new OleDbParameter("@name", dlg.SelectedName) });
+                    if (existing != null && existing != DBNull.Value)
+                        carrierId = Convert.ToInt32(existing);
+
+                    if (carrierId < 0)
+                    {
+                        // Katalog-Datensatz nur anlegen, wenn wirklich neu
+                        string insertSql = @"INSERT INTO energy_carrier
+                             (ID_Brennstoff, code, name, group_code, pricing_model, billing_unit, hi_kwh_per_unit,
+                              hs_kwh_per_unit, price_work, price_base, co2, so2, nox, is_active)
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        OleDbParameter[] ps = {
+                            new OleDbParameter("@idB",   dlg.SelectedBrennstoffID),
+                            new OleDbParameter("@code",  dlg.SelectedCode),
+                            new OleDbParameter("@name",  dlg.SelectedName),
+                            new OleDbParameter("@gc",    dlg.SelectedGroupCode),
+                            new OleDbParameter("@pm",    dlg.SelectedBrennstoffCode),
+                            new OleDbParameter("@unit",  dlg.SelectedBillingUnit),
+                            new OleDbParameter("@shi",   dlg.SelectedHi),
+                            new OleDbParameter("@shs",   dlg.SelectedHs),
+                            new OleDbParameter("@defap", default_arbeitspreis),
+                            new OleDbParameter("@defgp", default_grundpreis),
+                            new OleDbParameter("@co2",   default_co2),
+                            new OleDbParameter("@so2",   default_so2),
+                            new OleDbParameter("@nox",   default_nox),
+                            new OleDbParameter("@active", OleDbType.Boolean) { Value = true }
+                        };
+                        carrierId = DataRepository.ExecuteInsertAndGetId(insertSql, ps);
+                    }
+
+                    // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln
+                    int vorhanden = Convert.ToInt32(DataRepository.ExecuteScalar(
+                        "SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
+                        new OleDbParameter[] {
+                    new OleDbParameter("@pid", m_ID_Projekt),
+                    new OleDbParameter("@eid", carrierId)
+                        }));
+                    if (vorhanden > 0)
+                    {
+                        MessageBox.Show($"Die Energieträgervariante '{dlg.SelectedName}' ist diesem Projekt bereits zugeordnet.");
+                        return dlg.SelectedName;
+                    }
+
+                    // 3) Projektbezogene Sätze anlegen (Preis-Historie + Projekt-Einstellungen)
+                    // Befund B5 (11.08.2026): der Ersteintrag ließ leistungspreis leer,
+                    // obwohl der Standardwert aus Tab_Brennstoff_Stamm ermittelt wurde.
+                    string sqlHistory = @"INSERT INTO energy_price
+                         (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    DataRepository.ExecuteSQL(sqlHistory, new OleDbParameter[] {
+                        new OleDbParameter("@cid",  carrierId),
+                        new OleDbParameter("@prid", m_ID_Projekt),
+                        new OleDbParameter("@ap",   Math.Round(default_arbeitspreis, 4)),
+                        new OleDbParameter("@hi",   Math.Round(dlg.SelectedHi, 4)),
+                        new OleDbParameter("@gp",   Math.Round(default_grundpreis, 4)),
+                        new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now },
+                        new OleDbParameter("@au",   dlg.SelectedBillingUnit),
+                        new OleDbParameter("@lp",   Math.Round(default_leistungspreis, 4))
+                    });
+
+                    string sqlInsert = @"INSERT INTO energy_Project_settings
+                         (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
+                          custom_price_base, ID_Umrechnung, co2, so2, nox)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    DataRepository.ExecuteSQL(sqlInsert, new OleDbParameter[] {
+                        new OleDbParameter("@pid",    m_ID_Projekt),
+                        new OleDbParameter("@eid",    carrierId),
+                        new OleDbParameter("@p",      Math.Round(default_arbeitspreis, 4)),
+                        new OleDbParameter("@pl",     Math.Round(default_leistungspreis, 4)),
+                        new OleDbParameter("@h",      Math.Round(dlg.SelectedHi, 4)),
+                        new OleDbParameter("@hs",     Math.Round(dlg.SelectedHs, 4)),
+                        new OleDbParameter("@b",      Math.Round(default_grundpreis, 4)),
+                        new OleDbParameter("@convid", dlg.SelectedConvID),
+                        new OleDbParameter("@co2",    default_co2),
+                        new OleDbParameter("@so2",    default_so2),
+                        new OleDbParameter("@nox",    default_nox)
+                    });
+
+                    MessageBox.Show("Energieträgervariante erfolgreich angelegt.");
+                    return dlg.SelectedName;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Fehler beim Speichern: " + ex.Message);
+                }
+            }
+            return "";
         }
 
         private void btn_Kessel_Entfernen_Click(object sender, EventArgs e)

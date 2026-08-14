@@ -8,7 +8,7 @@ namespace WindowsFormsApplication1
     public partial class Form_Kosten_Auswahl : Form
     {
         // Diese Eigenschaften liest das Hauptprogramm nach dem Schließen aus
-        public string SelectedName => txtCode.Text;
+        public string SelectedName => TextBox_Variante.Text;
         public int SelectedBrennstoffID => (int)cmbBrennstoffArt.SelectedValue;
         public string SelectedCode => cmbBrennstoffArt.Text;
         public string SelectedBrennstoffCode;
@@ -18,7 +18,10 @@ namespace WindowsFormsApplication1
         public string SelectedBillingUnit { get; private set; }
         public double SelectedHi { get; private set; }
         public double SelectedHs { get; private set; }
-        public int SelectedConvID { get; private set; } 
+        public int SelectedConvID { get; private set; }
+
+        public bool bOhneVariante { get; set; } = false; // Wenn true, wird die Auswahl ohne Variante (Code) erlaubt    
+        public string m_szBVrennstoff { get; set; } = ""; // Optional: Vorgabe für die Brennstoffart (Bezeichner) in der ComboBox
 
         public Form_Kosten_Auswahl()
         {
@@ -33,12 +36,12 @@ namespace WindowsFormsApplication1
             cmbBrennstoffArt.DataSource = DataRepository.GetDataTable(sql);
             cmbBrennstoffArt.DisplayMember = "Bezeichner";
             cmbBrennstoffArt.ValueMember = "ID";
-            txtCode.Text = "";
+            TextBox_Variante.Text = "";
         }
 
         private void btnOk_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtCode.Text))
+            if (string.IsNullOrWhiteSpace(TextBox_Variante.Text))
             {
                 MessageBox.Show("Bitte einen Variantennamen (Code) eingeben.");
                 return;
@@ -62,7 +65,7 @@ namespace WindowsFormsApplication1
             var tb = DataRepository.GetDataTable(sql, new OleDbParameter[] {
                 new OleDbParameter("@id", SelectedBrennstoffID)
             });
-                var row = tb.Rows.Count > 0 ? tb.Rows[0] : null;
+            var row = tb.Rows.Count > 0 ? tb.Rows[0] : null;
             if (row != null)
             {
                 SelectedGroupCode = row["Gruppe"].ToString();
@@ -71,7 +74,7 @@ namespace WindowsFormsApplication1
                 SelectedHi = (double)row["Hi"];
                 SelectedHs = (double)row["Hs"];
             }
-            
+
             SelectedConvID = SelectedConvID = GetConvID(new EnergyConversion
             {
                 IDBrennstoff = SelectedBrennstoffID,
@@ -113,7 +116,17 @@ namespace WindowsFormsApplication1
 
         private void cmbBrennstoffArt_SelectedIndexChanged(object sender, EventArgs e)
         {
-            txtCode.Text = cmbBrennstoffArt.Text;
+            TextBox_Variante.Text = cmbBrennstoffArt.Text;
+        }
+
+        private void Form_Kosten_Auswahl_Load(object sender, EventArgs e)
+        {
+            if (bOhneVariante)
+            {
+                TextBox_Variante.Visible = false;
+                label_Variante.Visible = false;
+                cmbBrennstoffArt.Text = m_szBVrennstoff;
+            }
         }
     }
 }
