@@ -676,7 +676,7 @@ namespace WindowsFormsApplication1
                     rs.Open("select * from Abfrage_Monatswaerme_Prozesse where ID_Projekt=" + m_ID_Projekt);
                     while (rs.Next())
                     {
-                        pw_list.Add((string)rs.Read("Prozessname").ToString());
+                        pw_list.Add((string)rs.Read("Bezeichner").ToString());
                     }
                     rs.Close();
                 }
@@ -747,7 +747,7 @@ namespace WindowsFormsApplication1
 
                 }
             }
-            catch (SystemException ex) { Console.Write(ex.Message); }
+            catch (SystemException ex) { Console.WriteLine("Fehler bei der Prozesswärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
             finally
             {
                 try { rs.Close(); } catch { }
@@ -853,7 +853,7 @@ namespace WindowsFormsApplication1
 
                 }
             }
-            catch (SystemException ex) { Console.Write(ex.Message); }
+            catch (SystemException ex) { Console.WriteLine("Fehler bei der Brauchwasserwärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
             finally
             {
                 try { rs.Close(); } catch { }
