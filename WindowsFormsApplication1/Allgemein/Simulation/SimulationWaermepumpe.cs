@@ -803,35 +803,56 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // ------------------------------------------------------------------
+        // Zustand der zweikanaligen Stundenschleife (Paket 5)
+        //
+        // Bis Paket 4 waren das lokale Variablen von Berechnung_Zweikanalig. Seit
+        // Paket 5 führt die Stundenschleife nicht mehr die Wärmepumpe, sondern die
+        // KASKADE (Kaskadenschleife): Solarthermie und Heizkessel sind eigene Stufen
+        // derselben Schleife geworden, und ein Projekt ohne Wärmepumpe (1017, 1018)
+        // braucht die Schleife trotzdem. Deshalb liegen die Größen jetzt als Felder
+        // beim Modul und die Phasen als Stundenschritte vor. Die ausgeführten
+        // Anweisungen und ihre Reihenfolge sind gegenüber Paket 4 unverändert.
+        // ------------------------------------------------------------------
+
         /// <summary>
-        /// ZWEIKANALIGE Stundenschleife nach der Reihenfolge-Invariante aus Konzept 6.3:
+        /// Anteil der WP-Produktion, der den Momentanbedarf in Phase B DIREKT gedeckt hat
+        /// [kWh] (Paket-5-Nacharbeit, Befund N2). Nur im zweikanaligen Weg gefüllt.
         ///
-        /// <code>
-        /// je Stunde h:
-        ///   A) Vorabentladung   — Speicher decken Bedarf in IHREM Kanal (Hysterese),
-        ///                         Reihenfolge nach Entladepriorität (3.6)
-        ///   B) Bedarfsdeckung   — Module mit Hauptsenke HEIZKREIS, SenkeAbziehen(WS_Typ)
-        ///   C) Speicherladung   — Module mit Hauptsenke PUFFER_*, kaskadenübergreifend
-        ///                         nach Ladepriorität der Stunde (3.4/3.5), KEIN
-        ///                         SenkeAbziehen
-        ///   D) Zweitsenken      — aus dem verbleibenden Ladepotenzial, gleiche Ordnung
-        ///   E) Nachentladung    — Speicher decken den noch offenen Bedarf
-        ///   F) Heizstab         — auf den dann verbleibenden Kanalrest
-        ///   G) StundeAbschliessen je Registry-Speicher — GENAU EINMAL
-        /// </code>
-        ///
-        /// Die Kanäle werden IN PLACE fortgeschrieben: Am Ende jeder Stunde stehen in
-        /// <paramref name="kanaele"/> die Restbedarfe, mit denen der nächste Erzeuger der
-        /// Kaskade weiterrechnet.
+        /// <c>WP_Waermeproduktion_gesamt = Direktdeckung_gesamt + Speicherladung</c>. Die
+        /// Größe ist die Basis des EIGENANTEILS der Wärmepumpe an der Bedarfsdeckung:
+        /// Bis zur Nacharbeit bildete <c>SimulationRunner</c> ihn als
+        /// „Stufeneingang − Rest nach der Stufe" — mit einem zweiten Erzeuger in der
+        /// Speicherstufe enthielt das dessen Lieferung mit, und beide meldeten sie.
+        /// </summary>
+        public double Direktdeckung_gesamt = 0;
+
+        /// <summary>
+        /// Der Anteil dieses Erzeugers an der SPEICHERENTLADUNG, die Bedarf gedeckt hat
+        /// [kWh] (Paket-5-Nacharbeit N2, Interimsregel „Vermischung im Speicher").
+        /// Gefüllt von <see cref="Kaskadenschleife"/>; mit genau EINEM Lader je Speicher
+        /// ist es dessen gesamte bedarfsdeckende Entladung.
+        /// </summary>
+        public double Speicherentladung_Anteil = 0;
+
+        private int _zkModule = 0;
+        private Ladeauftrag[] _zkHauptauftrag = new Ladeauftrag[0];
+        private Ladeauftrag[] _zkZweitauftrag = new Ladeauftrag[0];
+        private double[] _zkLadeTherm = new double[0];   // Ladepotenzial der Stunde [kWh]
+        private double[] _zkLadeEl = new double[0];      // zugehörige Stromaufnahme [kWh]
+        private double[] _zkLadeRest = new double[0];    // davon noch nicht verbraucht
+        private bool[] _zkPvGebunden = new bool[0];      // Modul im Betriebsmodus PV (13.5)
+
+        /// <summary>
+        /// Beginn des zweikanaligen Laufs: Eingangsgrößen festhalten, Zähler nullen,
+        /// Senkenspeicher zurücksetzen und die Ladeaufträge je Modul auflösen.
         ///
         /// Voraussetzung: <see cref="Vorbereiten_Zweikanalig"/> ist gelaufen und
         /// <paramref name="kontext"/> ist aufgebaut.
         /// </summary>
-        public bool Berechnung_Zweikanalig(Waermekanaele kanaele, Kaskadenkontext kontext)
+        public bool Zweikanalig_Start(Waermekanaele kanaele, Kaskadenkontext kontext)
         {
             if (kanaele == null || kontext == null) return false;
-
-            List<double> biv = new List<double>();
 
             // Eingangsgrößen als EIGENE Vektoren festhalten (kein Aliasing auf die
             // Kanäle, die gleich fortgeschrieben werden — B0-2).
@@ -851,6 +872,7 @@ namespace WindowsFormsApplication1
                 if (sp != null && !sp.IstQuelle) sp.Reset();
 
             int module = wp_model.Count;
+            _zkModule = module;
 
             // Ladeaufträge je Modul vorab auflösen — die Ladephase iteriert über die
             // Prioritätsordnung, die Bedarfsphase braucht denselben Auftrag für die
@@ -859,58 +881,53 @@ namespace WindowsFormsApplication1
             Ladeauftrag[] zweitauftrag = new Ladeauftrag[module];
             foreach (Ladeauftrag a in kontext.LadenOhnePV)
             {
-                if (a == null || a.Modulindex < 0 || a.Modulindex >= module) continue;
+                if (a == null || a.Erzeugerart != ProjektPuffer.TYP_WP) continue;
+                if (a.Modulindex < 0 || a.Modulindex >= module) continue;
                 if (a.Zweitsenke) zweitauftrag[a.Modulindex] = a;
                 else hauptauftrag[a.Modulindex] = a;
             }
 
-            double[] ladeTherm = new double[module];   // Ladepotenzial der Stunde [kWh]
-            double[] ladeEl = new double[module];      // zugehörige Stromaufnahme [kWh]
-            double[] ladeRest = new double[module];    // davon noch nicht verbraucht
-            bool[] pvGebunden = new bool[module];      // Modul im Betriebsmodus PV (13.5)
+            _zkHauptauftrag = hauptauftrag;
+            _zkZweitauftrag = zweitauftrag;
+            _zkLadeTherm = new double[module];
+            _zkLadeEl = new double[module];
+            _zkLadeRest = new double[module];
+            _zkPvGebunden = new bool[module];
+            return true;
+        }
 
-            // Absehbare Entnahme je Kanal in der laufenden Stunde [kWh] — der Durchsatz
-            // der hydraulischen Weiche (Nutzerentscheidung zu 4b-1). Index 0 = Heizkanal,
-            // 1 = Warmwasserkanal. Das Budget wird über die Phasen C und D hinweg NUR
-            // EINMAL vergeben: Zwei Speicher desselben Kanals dürfen nicht beide dieselbe
-            // Entnahme durchreichen, sonst bliebe nach Phase E Wärme im Speicher stehen,
-            // die niemand angefordert hat.
-            double[] absehbar = new double[2];
+        /// <summary>Stundenbeginn: Ganglinienwerte und Ladepotenziale der Stunde nullen.</summary>
+        public void Zweikanalig_StundeStart(int stunde)
+        {
+            WP_Strombedarf_stuendlich[stunde] = 0;
+            WP_Waermeproduktion_stuendlich[stunde] = 0;
+            waermerestbedarf_stuendlich[stunde] = 0;
+            Heizstab_stuendlich[stunde] = 0;
 
-            for (int stunde = 0; stunde < 8760; stunde++)
-            {
-                double rest_heiz = kanaele.Heiz[stunde];
-                double rest_ww = kanaele.WW[stunde];
+            Array.Clear(_zkLadeTherm, 0, _zkModule);
+            Array.Clear(_zkLadeEl, 0, _zkModule);
+            Array.Clear(_zkLadeRest, 0, _zkModule);
+            Array.Clear(_zkPvGebunden, 0, _zkModule);
+        }
 
-                WP_Strombedarf_stuendlich[stunde] = 0;
-                WP_Waermeproduktion_stuendlich[stunde] = 0;
-                waermerestbedarf_stuendlich[stunde] = 0;
-                Heizstab_stuendlich[stunde] = 0;
+        /// <summary>
+        /// Phase B der Reihenfolge-Invariante (Konzept 6.3) für die Wärmepumpen-Module:
+        /// Bedarfsdeckung in Anlagenpriorität, Kennlinie, Betriebsarten, Sperrzeiten,
+        /// Quellbegrenzung und die Bestimmung des Ladepotenzials der Stunde.
+        /// </summary>
+        /// <returns>false = Abbruch der Kennlinienauswertung.</returns>
+        public bool Zweikanalig_Bedarfsphase(int stunde, Kaskadenkontext kontext,
+                                             bool pvUeberschuss, double pvRest,
+                                             ref double rest_heiz, ref double rest_ww)
+        {
+                int module = _zkModule;
+                Ladeauftrag[] hauptauftrag = _zkHauptauftrag;
+                Ladeauftrag[] zweitauftrag = _zkZweitauftrag;
+                double[] ladeTherm = _zkLadeTherm;
+                double[] ladeEl = _zkLadeEl;
+                double[] ladeRest = _zkLadeRest;
+                bool[] pvGebunden = _zkPvGebunden;
 
-                Array.Clear(ladeTherm, 0, module);
-                Array.Clear(ladeEl, 0, module);
-                Array.Clear(ladeRest, 0, module);
-                Array.Clear(pvGebunden, 0, module);
-
-                double pvRest = (PV_Ueberschuss_stuendlich != null &&
-                                 stunde < PV_Ueberschuss_stuendlich.Length)
-                    ? PV_Ueberschuss_stuendlich[stunde] : 0;
-
-                // Kriterium der zeitabhängigen Ladepriorität (Konzept 3.5): der
-                // PV-Überschuss VOR seinem Verbrauch in dieser Stunde.
-                bool pvUeberschuss = pvRest > 0;
-
-                // Regeneration der Quellspeicher — EINMAL je Speicher und Stunde. Im
-                // Altpfad steht sie in der Modulschleife; mit der gemeinsamen Instanz
-                // (QuellspeicherZusammenfuehren) würde sie dort mehrfach gutgeschrieben.
-                foreach (SimulationPufferspeicher q in kontext.AlleSpeicher)
-                    if (q != null && q.IstQuelle && q.RegenerationProStunde > 0)
-                        q.Laden(q.RegenerationProStunde, stunde);
-
-                // --- A) Vorabentladung ------------------------------------------------
-                Entladephase(kontext, stunde, true, ref rest_heiz, ref rest_ww);
-
-                // --- B) Bedarfsdeckung -------------------------------------------------
                 for (int index = 0; index < module; index++)
                 {
                     WErzeugerModel model = wp_model[index];
@@ -1019,6 +1036,7 @@ namespace WindowsFormsApplication1
                             }
 
                             SenkeAbziehen(zuordnung.WSTyp, result[PTHERM], ref rest_ww, ref rest_heiz);
+                            Direktdeckung_gesamt += result[PTHERM];   // N2: Eigenanteil
                         }
                         else
                         {
@@ -1037,6 +1055,7 @@ namespace WindowsFormsApplication1
                             }
 
                             SenkeAbziehen(zuordnung.WSTyp, verfuegbar, ref rest_ww, ref rest_heiz);
+                            Direktdeckung_gesamt += verfuegbar;       // N2: Eigenanteil
                         }
                     }
 
@@ -1057,54 +1076,18 @@ namespace WindowsFormsApplication1
 
                 } // end alle WP-Module
 
-                // Durchsatzbudget der Stunde festhalten — Stand NACH der Bedarfsdeckung.
-                // Genau diesen Rest kann Phase E aus den Speichern ziehen; zwischen C und
-                // E verändert ihn nichts.
-                absehbar[0] = rest_heiz > 0 ? rest_heiz : 0;
-                absehbar[1] = rest_ww > 0 ? rest_ww : 0;
+            return true;
+        }
 
-                // --- C) Speicherladung (Hauptsenken) ------------------------------------
-                Ladephase(kontext, stunde, false, pvUeberschuss, ladeTherm, ladeEl, ladeRest,
-                          pvGebunden, ref pvRest, absehbar);
+        /// <summary>Stundenende: der Restbedarf der Stunde nach allen Phasen.</summary>
+        public void Zweikanalig_StundeEnde(int stunde, double rest_heiz, double rest_ww)
+        {
+            waermerestbedarf_stuendlich[stunde] = (float)(rest_heiz + rest_ww);
+        }
 
-                // --- D) Zweitsenken ------------------------------------------------------
-                Ladephase(kontext, stunde, true, pvUeberschuss, ladeTherm, ladeEl, ladeRest,
-                          pvGebunden, ref pvRest, absehbar);
-
-                // --- E) Nachentladung -----------------------------------------------------
-                Entladephase(kontext, stunde, false, ref rest_heiz, ref rest_ww);
-
-                // Bivalenzpunkt — dieselbe Stelle wie im Altpfad: nach der Entladung,
-                // vor dem Heizstab.
-                if (rest_heiz + rest_ww > 0) biv.Add(Temperatur[stunde]);
-
-                // --- F) Heizstab ----------------------------------------------------------
-                Heizstabphase(stunde, ref rest_heiz, ref rest_ww);
-
-                // --- G) StundeAbschliessen je Registry-Speicher, GENAU EINMAL -------------
-                foreach (SimulationPufferspeicher sp in kontext.AlleSpeicher)
-                {
-                    if (sp == null) continue;
-
-                    // Abschaltprüfung VOR den Bereitschaftsverlusten (wie im Altpfad),
-                    // sonst wird der Vollstand nie erreicht.
-                    if (!sp.IstQuelle && sp.Q_max > 0 && sp.LaedtGerade &&
-                        sp.SOC >= sp.Q_max * sp.SchwelleAus)
-                        sp.LaedtGerade = false;
-
-                    sp.StundeAbschliessen(stunde);
-                }
-
-                // Restbedarf in die Kanäle zurückschreiben — Eingang des nächsten
-                // Erzeugers der Kaskade.
-                if (rest_heiz < 0) rest_heiz = 0;
-                if (rest_ww < 0) rest_ww = 0;
-                kanaele.Heiz[stunde] = (float)rest_heiz;
-                kanaele.WW[stunde] = (float)rest_ww;
-                waermerestbedarf_stuendlich[stunde] = (float)(rest_heiz + rest_ww);
-
-            } // end alle Stunden
-
+        /// <summary>Abschluss des zweikanaligen Laufs: Sortierung, Jahressummen, Bivalenzpunkt.</summary>
+        public void Zweikanalig_Ende(List<double> biv)
+        {
             WPPlan.Core.BhkwPlan.Heapsort(WP_Waermeproduktion_stuendlich, WP_Waermeproduktion_stuendlich_sortiert);
 
             Waermebedarf_gesamt = 0;
@@ -1114,9 +1097,8 @@ namespace WindowsFormsApplication1
 
             Cursor.Current = Cursors.Default;
 
-            if (biv.Count > 0)
+            if (biv != null && biv.Count > 0)
                 Bivalenzpunkt = biv.Max();
-            return true;
         }
 
         /// <summary>
@@ -1259,132 +1241,35 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Phasen A und E der Reihenfolge-Invariante: Die Speicher decken den Bedarf in
-        /// IHREM Kanal, sortiert nach Entladepriorität (Konzept 3.6).
-        /// </summary>
-        /// <param name="vorab">
-        /// true = Phase A. Dann entscheidet die Hysterese des Speichers, ob er entlädt;
-        /// ein Speicher im Nachladebetrieb bleibt zu. false = Phase E: Dort greift der
-        /// Speicher unabhängig von der Hysterese auf den noch offenen Rest zu — genau wie
-        /// die heutige Entladung vor Heizstab und Folge-Erzeuger.
-        /// </param>
-        private void Entladephase(Kaskadenkontext kontext, int stunde, bool vorab,
-                                  ref double rest_heiz, ref double rest_ww)
-        {
-            if (!vorab)
-            {
-                // DURCHSATZ ZUERST (Nutzerentscheidung zu 4b-1): Was Phase C über die
-                // Ladefähigkeit hinaus aufgenommen hat, war nie ein Speicherinhalt,
-                // sondern der Durchfluss der hydraulischen Weiche. Er wird vor der
-                // regulären Entladereihenfolge zurückgegeben, damit er zuverlässig
-                // beim Verbraucher landet und nicht bei einem anderen Speicher desselben
-                // Kanals hängen bleibt, der in der Entladeordnung vor ihm steht. Bei nur
-                // einem Speicher je Kanal — dem heute geprüften Fall — ändert die
-                // Vorziehung nichts: dieselbe Menge, derselbe Speicher.
-                DurchsatzEntladen(kontext.EntladenHeizung, false, stunde, ref rest_heiz, ref rest_ww);
-                DurchsatzEntladen(kontext.EntladenBrauchwasser, true, stunde, ref rest_heiz, ref rest_ww);
-            }
-
-            EntladeKanal(kontext.EntladenHeizung, false, vorab, stunde, ref rest_heiz, ref rest_ww);
-            EntladeKanal(kontext.EntladenBrauchwasser, true, vorab, stunde, ref rest_heiz, ref rest_ww);
-        }
-
-        /// <summary>
-        /// Gibt den Teil des Füllstands zurück, der über <see cref="SimulationPufferspeicher.Q_max"/>
-        /// hinausgeht — der Durchfluss dieser Stunde (siehe <see cref="Entladephase"/>).
-        /// Ohne Durchlass in Phase C gibt es diesen Anteil nicht, und die Methode tut nichts.
-        /// </summary>
-        private void DurchsatzEntladen(List<SimulationPufferspeicher> speicher, bool brauchwasser,
-                                       int stunde, ref double rest_heiz, ref double rest_ww)
-        {
-            if (speicher == null) return;
-
-            for (int i = 0; i < speicher.Count; i++)
-            {
-                SimulationPufferspeicher sp = speicher[i];
-                if (sp == null || sp.Q_max <= 0) continue;
-
-                double ueber = sp.SOC - sp.Q_max;
-                if (ueber <= 0) continue;
-
-                double bedarf = brauchwasser ? rest_ww : rest_heiz;
-                if (bedarf <= 0) continue;
-
-                double gedeckt = sp.Entladen(Math.Min(ueber, bedarf), stunde);
-                if (gedeckt <= 0) continue;
-
-                SenkeAbziehen(brauchwasser ? WaermequelleClass.SENKE_WARMWASSER
-                                           : WaermequelleClass.SENKE_HEIZUNG,
-                              gedeckt, ref rest_ww, ref rest_heiz);
-            }
-        }
-
-        private void EntladeKanal(List<SimulationPufferspeicher> speicher, bool brauchwasser,
-                                  bool vorab, int stunde, ref double rest_heiz, ref double rest_ww)
-        {
-            if (speicher == null) return;
-
-            for (int i = 0; i < speicher.Count; i++)
-            {
-                SimulationPufferspeicher sp = speicher[i];
-                if (sp == null || sp.Q_max <= 0) continue;
-
-                // Die Hysterese wird in Phase A für JEDEN Speicher fortgeschrieben, auch
-                // wenn sein Kanal gerade keinen Bedarf hat — sonst bliebe ein Speicher
-                // ohne Bedarf für immer im zuletzt gesetzten Zustand.
-                bool darfEntladen = vorab ? sp.HystereseFortschreiben() : true;
-                if (!darfEntladen) continue;
-
-                double bedarf = brauchwasser ? rest_ww : rest_heiz;
-                if (bedarf <= 0) continue;
-
-                double gedeckt = sp.Entladen(bedarf, stunde);
-                if (gedeckt <= 0) continue;
-
-                // KANAL DES PUFFERS entscheidet, nicht SENKE_BEIDES (Konzept 6.3):
-                // Ein Brauchwasserspeicher darf keinen Heizbedarf decken.
-                SenkeAbziehen(brauchwasser ? WaermequelleClass.SENKE_WARMWASSER
-                                           : WaermequelleClass.SENKE_HEIZUNG,
-                              gedeckt, ref rest_ww, ref rest_heiz);
-
-                // Reicht der Speicher nicht, muss wieder nachgeladen werden.
-                if (vorab && (brauchwasser ? rest_ww : rest_heiz) > 0.0001) sp.LaedtGerade = true;
-            }
-        }
-
-        /// <summary>
-        /// Phasen C und D: die aus der Kaskade GELÖSTE Ladephase (Konzept 6.3).
-        ///
-        /// Iteriert über die kaskadenübergreifende Prioritätsordnung der Stunde — nicht
-        /// über die Modulliste. Dass Solarthermie in Kaskadenposition 3 vor einer
-        /// Wärmepumpe in Position 1 laden darf, ist der Zweck der Ladepriorität (3.4);
-        /// in Etappe 4b sind allerdings nur Wärmepumpen-Anlagen in der Ordnung, weil
-        /// Kessel, BHKW und Solarthermie ihre Senkenauswertung erst mit Paket 5/6
-        /// bekommen.
+        /// Phasen C/D für EINEN Ladeauftrag (Konzept 6.3): der Anweisungsblock, der bis
+        /// Paket 4 im Rumpf von <c>Ladephase</c> stand. Die Schleife über die
+        /// kaskadenübergreifende Prioritätsordnung führt seit Paket 5 die
+        /// <see cref="Kaskadenschleife"/> — sie muss Wärmepumpen, Solarthermie und
+        /// Heizkessel in EINER Ordnung abarbeiten, und die Ordnung gehört nicht in ein
+        /// einzelnes Erzeugermodul. Die ausgeführten Anweisungen sind unverändert; aus
+        /// jedem <c>continue</c> ist ein <c>return 0</c> geworden.
         ///
         /// KEIN <c>SenkeAbziehen</c> — die geladene Wärme deckt keinen Bedarf, sie liegt
         /// im Speicher. Genau hier entstünde sonst die Doppelzählung, die der
         /// Deckungsgrad in der Detailansicht durch seine 100-%-Kappung verstecken würde.
         /// </summary>
-        private void Ladephase(Kaskadenkontext kontext, int stunde, bool zweitsenken,
-                               bool pvUeberschuss, double[] ladeTherm, double[] ladeEl,
-                               double[] ladeRest, bool[] pvGebunden, ref double pvRest,
-                               double[] absehbar)
+        /// <returns>tatsächlich geladene Wärmemenge [kWh]</returns>
+        public double Zweikanalig_Laden(Ladeauftrag a, int stunde, bool pvUeberschuss,
+                                        double[] absehbar, ref double pvRest)
         {
-            List<Ladeauftrag> ordnung = kontext.Ladeordnung_Stunde(pvUeberschuss);
-            if (ordnung == null) return;
+                double[] ladeTherm = _zkLadeTherm;
+                double[] ladeEl = _zkLadeEl;
+                double[] ladeRest = _zkLadeRest;
+                bool[] pvGebunden = _zkPvGebunden;
 
-            for (int n = 0; n < ordnung.Count; n++)
-            {
-                Ladeauftrag a = ordnung[n];
-                if (a == null || a.Zweitsenke != zweitsenken) continue;
+                if (a == null) return 0;
 
                 int index = a.Modulindex;
-                if (index < 0 || index >= ladeRest.Length) continue;
-                if (ladeRest[index] <= 0) continue;
+                if (index < 0 || index >= ladeRest.Length) return 0;
+                if (ladeRest[index] <= 0) return 0;
 
                 SimulationPufferspeicher sp = a.Speicher;
-                if (sp == null) continue;
+                if (sp == null) return 0;
 
                 // BILANZRAUM statt reiner Ladefähigkeit (Nutzerentscheidung zu 4b-1):
                 // Was in dieser Stunde ohnehin wieder entnommen wird, darf der Speicher
@@ -1395,14 +1280,14 @@ namespace WindowsFormsApplication1
                 double ladefaehig = sp.Ladefaehigkeit(a.ObergrenzeStunde(pvUeberschuss));
                 double durchlass = Math.Min(absehbar[kanal] > 0 ? absehbar[kanal] : 0,
                                             sp.Entnahmefaehigkeit());
-                if (ladefaehig + durchlass <= 0) continue;
+                if (ladefaehig + durchlass <= 0) return 0;
 
                 double menge = Math.Min(ladeRest[index], ladefaehig + durchlass);
 
                 // Stromseite über den mittleren COP des Ladepotenzials — dieselbe
                 // Verbuchung wie im Bestand (dort copMittel aus dem Modulsummen-Paar).
                 double cop = ladeEl[index] > 0 ? ladeTherm[index] / ladeEl[index] : 0;
-                if (cop <= 0) continue;
+                if (cop <= 0) return 0;
 
                 // PV-BUDGET (13.5, Paket-4-Review Punkt 2): Ein Modul im Betriebsmodus PV
                 // lädt nur, soweit PV-Strom übrig ist. Abgebucht wird die tatsächlich
@@ -1427,10 +1312,10 @@ namespace WindowsFormsApplication1
                         menge *= faktor;
                     }
                 }
-                if (menge <= 0) continue;
+                if (menge <= 0) return 0;
 
                 double ladung = sp.Laden(menge, stunde, durchlass);
-                if (ladung <= 0) continue;
+                if (ladung <= 0) return 0;
 
                 // Verbrauchtes Durchsatzbudget des Kanals abbuchen: alles, was über die
                 // Ladefähigkeit hinausging, ist die Menge, die Phase E wieder entnimmt.
@@ -1470,7 +1355,8 @@ namespace WindowsFormsApplication1
                     double entnahme = ladung - strom;
                     if (entnahme > 0) quelle.Entladen(entnahme, stunde);
                 }
-            }
+
+                return ladung;
         }
 
         /// <summary>
@@ -1480,7 +1366,7 @@ namespace WindowsFormsApplication1
         /// <c>SENKE_BEIDES</c>; die Additionslogik ist die aus B0-5 (<c>+=</c> statt
         /// <c>=</c>, sonst überschreiben sich die Modulbeiträge in der Ganglinie).
         /// </summary>
-        private void Heizstabphase(int stunde, ref double rest_heiz, ref double rest_ww)
+        public void Heizstabphase(int stunde, ref double rest_heiz, ref double rest_ww)
         {
             if (!Mit_Heizstab) return;
 
@@ -1526,25 +1412,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void SenkeAbziehen(string senke, double menge, ref double rest_ww, ref double rest_heiz)
         {
-            if (menge <= 0) return;
-
-            if (senke == WaermequelleClass.SENKE_WARMWASSER)
-            {
-                rest_ww -= menge;
-            }
-            else if (senke == WaermequelleClass.SENKE_HEIZUNG)
-            {
-                rest_heiz -= menge;
-            }
-            else
-            {
-                double ww = Math.Min(menge, rest_ww);
-                rest_ww -= ww;
-                rest_heiz -= (menge - ww);
-            }
-
-            if (rest_ww < 0) rest_ww = 0;
-            if (rest_heiz < 0) rest_heiz = 0;
+            // EINE Implementierung für alle Erzeugerstufen (Paket 5): Die Regel steht seit
+            // der Aufteilung der Stundenschleife in Kaskadenschleife.SenkeAbziehen, damit
+            // Wärmepumpe, Solarthermie, Heizkessel und die Speicherentladung denselben
+            // Warmwasservorrang benutzen. Der Rumpf ist unverändert übernommen; der
+            // einkanalige Altpfad ruft weiter diese Methode.
+            Kaskadenschleife.SenkeAbziehen(senke, menge, ref rest_ww, ref rest_heiz);
         }
 
         double[] berechne_wptherm(float temperatur, WErzeugerModel model, _Kenndaten kenndaten)
@@ -1689,6 +1562,12 @@ namespace WindowsFormsApplication1
             Waermebedarf_gesamt = 0;
             waermerestbedarf_gesamt = 0;
             Bivalenzpunkt = -100;
+
+            // Paket-5-Nacharbeit N2: Eigenanteils-Größen des zweikanaligen Wegs. Im
+            // Altpfad bleiben sie auf 0 - dort bildet SimulationRunner den Deckungsgrad
+            // unverändert nach der Formel aus B0-7b.
+            Direktdeckung_gesamt = 0;
+            Speicherentladung_Anteil = 0;
         }
     }
 }

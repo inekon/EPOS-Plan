@@ -100,6 +100,16 @@ namespace WindowsFormsApplication1
 
             // Erzeuger-Simulationen (WP, Kessel, BHKW, Solar, PV, Speicher).
             sim.Do_Simulation(idProjekt);
+
+            // Paket-5-Nacharbeit, Befund N10: Der zweikanalige Weg meldet Abbrüche
+            // dialogfrei über den Fehlerkanal statt über eine MessageBox (Konzept 13.4).
+            // Ein solcher Lauf hat kein vollständiges Ergebnis und darf keines speichern.
+            if (!string.IsNullOrEmpty(sim.Fehlertext))
+            {
+                fehler = sim.Fehlertext;
+                return false;
+            }
+
             return true;
         }
 
@@ -176,10 +186,34 @@ namespace WindowsFormsApplication1
                 // die WP nicht an erster Kaskadenposition steht. Mit WP an erster Stelle
                 // identisch zur Detailansicht; die alte produktionsbasierte Formel zählte
                 // Speicherladung als Deckung.
+                //
+                // PAKET-5-NACHARBEIT, BEFUND N2: Mit MEHREREN Erzeugern in der
+                // Speicherstufe ist "Stufeneingang − Rest nach der Stufe" kein
+                // Eigenanteil mehr. Waermebedarf_stuendlich steht auf dem Eintritt in die
+                // GANZE Stufe, waermerestbedarf_stuendlich auf dem Rest NACH ihr — die
+                // Differenz enthält damit auch die Lieferung von Solarthermie und
+                // Heizkessel, die ihre Deckung zusätzlich selbst melden. Gemessen an
+                // einem präparierten 1023: Summe der ausgewiesenen Deckungen 85,71 % bei
+                // tatsächlich 67,06 %.
+                //
+                // Im zweikanaligen Weg wird der Eigenanteil deshalb aus den Größen
+                // gebildet, die die Kaskadenschleife je Erzeuger führt:
+                //   Direktdeckung (Phase B) + zugerechnete Speicherentladung + Heizstab.
+                // Der Heizstab gehört zur Wärmepumpe (Tab_WP.Heizung je Modul); die
+                // Zurechnung der Entladung folgt der Interimsregel "Vermischung im
+                // Speicher" (siehe Kaskadenschleife). Mit genau EINEM Erzeuger in der
+                // Stufe — dem Fall aller neun Referenzprojekte — ist das dieselbe Menge
+                // wie bisher.
                 double basis = simulation_Waermebedarf.Waermebedarf_Gesamt;
                 if (basis > 0)
                 {
-                    double deckung = (w.Waermebedarf - w.Restwaermebedarf) / basis * 100.0;
+                    double deckung;
+                    if (sim.KaskadeZweikanalig)
+                        deckung = (wp.Direktdeckung_gesamt + wp.Speicherentladung_Anteil +
+                                   wp.Heizstab_gesamt) / 1000.0 / basis * 100.0;
+                    else
+                        deckung = (w.Waermebedarf - w.Restwaermebedarf) / basis * 100.0;
+
                     if (deckung > 100) deckung = 100;
                     if (deckung < 0) deckung = 0;
                     w.Waermebedarfsdeckung = deckung;
@@ -289,14 +323,41 @@ namespace WindowsFormsApplication1
             {
                 var spk = sim.simulation_spk;
                 ErgebnisHeizkesselModel h = new ErgebnisHeizkesselModel();
+                // PAKET-5-NACHARBEIT, BEFUND N1 — dieselbe Mitkorrektur wie bei der
+                // Solarthermie (Konzept 6.4), die für den Kessel gefehlt hat:
+                //
+                // S_Waerme_spk ist die gesamte NUTZWÄRME des Kessels, seit Paket 5 also
+                // Direktdeckung PLUS Speicherladung — und genau so gehört sie in
+                // Waermeproduktion, denn der Brennstoffverbrauch und der
+                // Jahresnutzungsgrad beziehen sich auf sie. Als BEDARFSDECKUNG taugt sie
+                // nicht: Restwaermebedarf wurde negativ (gemessen an einem präparierten
+                // 1018: −12,99 MWh) und die Summe der Deckungen überschritt 100 %.
+                //
+                // Bezugsgröße für Restbedarf und Deckung ist deshalb die DIREKTDECKUNG
+                // (Variante A der offenen Nutzerentscheidung 5-1, jetzt einheitlich für
+                // Solarthermie UND Heizkessel), für die Deckung erweitert um den
+                // zugerechneten Anteil an der Speicherentladung (Befund N2). Im Altpfad
+                // und ohne Puffer-Senke sind beide Zusatzgrößen exakt 0 — der Ausdruck
+                // ist dann bitgleich der bisherige.
+                double kesselDirekt = spk.S_Waerme_spk - spk.Speicherladung_gesamt / 1000.0;
+                if (kesselDirekt < 0) kesselDirekt = 0;                      // Rundungsschutz
+                double kesselEigen = kesselDirekt + spk.Speicherentladung_Anteil / 1000.0;
+
                 h.Waermebedarf = spk.Waermebedarf_gesamt;
                 h.Waermeproduktion = spk.S_Waerme_spk;
-                h.Restwaermebedarf = spk.Waermebedarf_gesamt - spk.S_Waerme_spk;
+                h.Restwaermebedarf = spk.Waermebedarf_gesamt - kesselDirekt;
+                if (h.Restwaermebedarf < 0) h.Restwaermebedarf = 0;
                 h.Strombedarf = spk.Strombedarf_gesamt / 1000.0;
                 h.Reststrombedarf = spk.Strombedarf_gesamt / 1000.0 + spk.Stromverbrauch_Spk;
                 h.Stromverbrauch = spk.Stromverbrauch_Spk;
-                h.Waermebedarfsdeckung = (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
-                    ? spk.S_Waerme_spk * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt : 0;
+                h.Waermebedarfsdeckung = 0;
+                if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
+                {
+                    double deckungK = kesselEigen * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt;
+                    if (deckungK > 100) deckungK = 100;
+                    if (deckungK < 0) deckungK = 0;
+                    h.Waermebedarfsdeckung = deckungK;
+                }
                 h.Maximale_Kesselleistung = spk.Maximale_Kesselleistung_Spk;
                 h.Gasspitze = spk.Gasspitze_Spk;
                 h.Gasverbrauch = spk.Gasverbrauch_SPK;
@@ -328,11 +389,56 @@ namespace WindowsFormsApplication1
             {
                 var st = sim.simulation_solarthermie;
                 ErgebnisSolarthermieModel stm = new ErgebnisSolarthermieModel();
+
+                // Paket 5 / Konzept 6.4, ZWINGENDE MITKORREKTUR: Sobald die Solarthermie
+                // zusätzlich einen Puffer lädt, wächst Waermeproduktion_gesamt über den
+                // Momentanbedarf hinaus. Die alte Formel
+                //   Restwaermebedarf = (Waermebedarf_gesamt − Waermeproduktion_gesamt)
+                // wurde damit NEGATIV und die Deckung überschritt 100 % — beides landete
+                // ungeprüft in Tab_ErgebnisSolarthermie und von dort in Variantenbericht
+                // und Wirtschaftlichkeit.
+                //
+                // Bezugsgröße ist deshalb die DIREKTDECKUNG, also der Teil der Produktion,
+                // der den Momentanbedarf gedeckt hat. Die gespeicherte Wärme deckt Bedarf
+                // erst später und über den Speicher; sie einem Erzeuger zuzurechnen wäre
+                // eine Doppelzählung, sobald zwei Erzeuger denselben Puffer laden. Die
+                // Größe steht weiterhin vollständig in Waermeproduktion (und getrennt in
+                // Speicherladung_gesamt).
+                //
+                // IM ALTPFAD IST DIE KORREKTUR WIRKUNGSLOS: Dort lädt die Solarthermie
+                // keinen Puffer, Speicherladung_gesamt ist exakt 0,0 und der Ausdruck
+                // damit bitgleich der bisherige.
+                double solarDirekt = st.Waermeproduktion_gesamt - st.Speicherladung_gesamt;
+                // Rundungsschutz: Beide Summen entstehen getrennt; geht die gesamte
+                // Produktion in den Speicher, kann die Differenz um wenige 1e-10 unter
+                // null liegen. Im Altpfad ist Speicherladung_gesamt exakt 0,0 und
+                // Waermeproduktion_gesamt eine Summe nichtnegativer Werte — die Klemmung
+                // greift dort nachweislich nie.
+                if (solarDirekt < 0) solarDirekt = 0;
+
+                // BEFUND N2 (Nacharbeit): Der DECKUNGSGRAD ist der Eigenanteil dieses
+                // Erzeugers — Direktdeckung PLUS der Anteil an der Speicherentladung, die
+                // Bedarf gedeckt hat (Zurechnung nach der Interimsregel "Vermischung im
+                // Speicher", siehe Kaskadenschleife). Damit taucht keine kWh in zwei
+                // Erzeuger-Deckungen auf, und ein Kollektorfeld, das ausschließlich einen
+                // Puffer lädt, meldet nicht länger 0 % (offene Nutzerentscheidung 5-1).
+                // Der RESTBEDARF bleibt die Größe der Kaskadenposition: Er zeigt, was
+                // nach dieser Stufe offen ist, und die Speicherentladung an anderer
+                // Stelle verringert ihn nicht — so bleibt "Restbedarf >= 0" konstruktiv
+                // erfüllt. Im Altpfad sind beide Zusatzgrößen exakt 0.
+                double solarEigen = solarDirekt + st.Speicherentladung_Anteil;
+
                 stm.Waermebedarf = st.Waermebedarf_gesamt / 1000.0;
                 stm.Waermeproduktion = st.Waermeproduktion_gesamt / 1000.0;
-                stm.Restwaermebedarf = (st.Waermebedarf_gesamt - st.Waermeproduktion_gesamt) / 1000.0;
-                stm.Waermebedarfsdeckung = (st.Waermebedarf_gesamt > 0)
-                    ? st.Waermeproduktion_gesamt * 100.0 / st.Waermebedarf_gesamt : 0;
+                stm.Restwaermebedarf = (st.Waermebedarf_gesamt - solarDirekt) / 1000.0;
+                stm.Waermebedarfsdeckung = 0;
+                if (st.Waermebedarf_gesamt > 0)
+                {
+                    double deckungS = solarEigen * 100.0 / st.Waermebedarf_gesamt;
+                    if (deckungS > 100) deckungS = 100;
+                    if (deckungS < 0) deckungS = 0;
+                    stm.Waermebedarfsdeckung = deckungS;
+                }
                 stm.Ueberschuss = st.Ueberschuss_summe / 1000.0;
 
                 if (st.Kollektor_Ergebnisse != null)

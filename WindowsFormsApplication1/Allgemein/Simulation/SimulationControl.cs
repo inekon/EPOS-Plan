@@ -157,12 +157,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Sperrgrund = "";
 
+        /// <summary>
+        /// Fehlertext eines Erzeugermoduls des ZWEIKANALIGEN Wegs (leer, wenn alles
+        /// gerechnet hat). Konzept 13.4 verlangt eine dialogfreie Engine; der
+        /// zweikanalige Weg meldet deshalb hierüber statt über eine MessageBox, und
+        /// <c>SimulationRunner</c> reicht den Text an den Aufrufer weiter
+        /// (Paket-5-Nacharbeit, Befund N10). Der einkanalige Altpfad ist unberührt — er
+        /// zeigt seine Meldungen unverändert als Dialog.
+        /// </summary>
+        public string Fehlertext = "";
+
         public void Do_Simulation(int ID_Projekt)
         {
             // Engine-Einstieg: Blockade bei nicht abgeschlossener Schema-Migration
             // (ADR-001, Aufgabe 6). Bewusst ohne MessageBox - die Engine bleibt
             // dialogfrei (Konzept 13.4); der Grund steht in Sperrgrund.
             Sperrgrund = "";
+            Fehlertext = "";
             string sperrgrund;
             if (SchemaMigration.SimulationGesperrt(out sperrgrund))
             {
@@ -360,25 +371,31 @@ namespace WindowsFormsApplication1
         /// Altpfad, aber auf den beiden Bedarfskanälen (Konzept 3.2) statt auf einem
         /// Summenvektor.
         ///
-        /// ARBEITSTEILUNG in Etappe 4b:
+        /// ARBEITSTEILUNG seit Paket 5:
         ///
-        ///   Wärmepumpe  rechnet ZWEIKANALIG und führt die vollständige
-        ///               Reihenfolge-Invariante A–G aus (Vorabentladung, Bedarfsdeckung,
-        ///               Ladephase, Zweitsenken, Nachentladung, Heizstab,
-        ///               StundeAbschliessen). Sie ist in 4b der einzige Erzeuger mit
-        ///               Senkenauswertung.
-        ///   Kessel,     rechnen EINKANALIG über ihre bestehenden Module auf
-        ///   BHKW,       <c>Waermekanaele.Summe()</c>; ihr Rest wird über
-        ///   Solar       <c>Uebernehmen()</c> proportional auf die Kanäle zurückverteilt
-        ///               (Kompatibilitätsanker Konzept 6.1). Ihre Zweikanaligkeit und
-        ///               ihre Senken kommen mit Paket 5 und 6.
+        ///   SPEICHERSTUFE — eine gemeinsame Stundenschleife (<see cref="Kaskadenschleife"/>)
+        ///               mit der vollständigen Reihenfolge-Invariante A–G. In ihr rechnen
+        ///               die WÄRMEPUMPE (immer, wenn sie in der Kaskade steht) sowie
+        ///               SOLARTHERMIE und HEIZKESSEL, sobald mindestens eine ihrer
+        ///               Anlagen einen Puffer als Senke führt. Nur so kann ein Speicher
+        ///               von zwei Erzeugern bedient werden, und nur so läuft
+        ///               <c>StundeAbschliessen</c> genau einmal je Stunde und Speicher.
+        ///   VEKTORSTUFEN — Solarthermie und Heizkessel OHNE Puffer-Senke rechnen
+        ///               zweikanalig, aber weiterhin als eigene Jahresschleife an ihrer
+        ///               Kaskadenposition. Sie berühren keinen Speicher; ihr Ergebnis
+        ///               hängt allein vom Kanalzustand an dieser Position ab.
+        ///   BHKW        rechnet EINKANALIG über sein bestehendes Modul auf
+        ///               <c>Waermekanaele.Summe()</c>; sein Rest wird über
+        ///               <c>Uebernehmen()</c> proportional auf die Kanäle zurückverteilt
+        ///               (Kompatibilitätsanker Konzept 6.1). Zweikanaligkeit und
+        ///               Senkenauswertung des BHKW kommen mit Paket 6.
         ///
-        /// Daraus folgt die wichtigste Abgrenzung dieser Etappe: Die Phasen A, C, D, E
-        /// und G laufen an der KASKADENPOSITION DER WÄRMEPUMPE, nicht vor der gesamten
-        /// Kaskade. Solange nur die Wärmepumpe Speicher bedient, ist das identisch —
-        /// kein anderer Erzeuger lädt oder entlädt. Erst wenn Kessel und BHKW eigene
-        /// Senken bekommen, muss die Stundenschleife über alle Erzeuger geführt werden;
-        /// dann sind auch deren Module stundenweise aufrufbar.
+        /// ABGRENZUNG: Die Speicherstufe läuft an der Kaskadenposition ihres ERSTEN
+        /// Mitglieds; weitere Mitglieder werden dort mitgerechnet, in ihrer
+        /// Kaskadenreihenfolge (Phase B). Steht eine Stufe OHNE Speicherbeteiligung
+        /// zwischen zwei Mitgliedern, rechnet sie erst nach der Speicherstufe. Das
+        /// betrifft ausschließlich das BHKW — und dort nur Projekte, in denen es zwischen
+        /// zwei speicherführenden Erzeugern steht. Der Fall wird protokolliert.
         /// </summary>
         private void Kaskade_Zweikanalig()
         {
@@ -394,17 +411,43 @@ namespace WindowsFormsApplication1
 
             float[] temp;
 
+            // Welche Erzeugerarten gehören in die gemeinsame Speicherstufe? Kriterium ist
+            // die SENKENREFERENZ einer Anlage (WS_ID_Puffer / WS_ID_Puffer2 mit
+            // Puffer-Ziel) — dieselbe Referenz, aus der Ladeordnung.Ladereihenfolge die
+            // Ladeaufträge bildet. Die Wärmepumpe ist immer dabei: Sie führt Heizstab,
+            // Quellspeicher und Bivalenzpunkt und rechnet seit Etappe 4b ohnehin in
+            // dieser Schleife.
+            _wpInSchleife = KaskadeEnthaelt("Wärmepumpe");
+            _solarInSchleife = KaskadeEnthaelt("Solarthermie") &&
+                               ErzeugerMitPufferSenke(ProjektPuffer.TYP_SOLARTHERMIE);
+            _kesselInSchleife = KaskadeEnthaelt("Heizkessel") &&
+                                ErzeugerMitPufferSenke(ProjektPuffer.TYP_KESSEL);
+
+            // Paket-5-Nacharbeit, Befund N4: Stufen, die ZWISCHEN zwei Mitgliedern
+            // stünden, werden ebenfalls Mitglied - sonst rechneten sie stillschweigend
+            // NACH der gesamten Speicherstufe.
+            ZwischenstufenAufnehmen();
+
+            bool schleifeGelaufen = false;
+
             for (int i = 0; i < 4; i++)
             {
-                if (tool[i] == "Wärmepumpe")
+                bool istSchleifenstufe = IstSchleifenstufe(i);
+
+                if (istSchleifenstufe)
                 {
-                    // Rückfallebene: Bricht die Wärmepumpe ab, bleiben die Kanäle
-                    // unverändert - dasselbe, was der Altpfad mit "Ausgang = Eingang" tut.
+                    if (schleifeGelaufen) continue;   // an ihrer ersten Position gerechnet
+                    schleifeGelaufen = true;
+
+                    // Rückfallebene: Bricht die Kennlinienauswertung ab, bleiben die
+                    // Kanäle unverändert - dasselbe, was der Altpfad mit
+                    // "Ausgang = Eingang" tut.
                     Waermekanaele vorher = kanaele.Clone();
 
-                    Simulation_WP_Ctrl_Zweikanalig(kanaele,
+                    Speicherstufe_Rechnen(kanaele,
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich),
-                        ctrl_konfig.model.m_WP_Heizstab);
+                        ctrl_konfig.model.m_WP_Heizstab,
+                        ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
 
                     if (m_bError)
                     {
@@ -412,21 +455,51 @@ namespace WindowsFormsApplication1
                         Array.Copy(vorher.WW, kanaele.WW, Waermekanaele.STUNDEN_JAHR);
                     }
 
-                    Reststrom += (float)simulation_wp.WP_Strombedarf_gesamt / 1000f; // in MWh
-                    Reststrom += (float)simulation_wp.Heizstab_gesamt / 1000f;       // in MWh
+                    if (_wpInSchleife)
+                    {
+                        Reststrom += (float)simulation_wp.WP_Strombedarf_gesamt / 1000f; // in MWh
+                        Reststrom += (float)simulation_wp.Heizstab_gesamt / 1000f;       // in MWh
 
-                    temp = Stundenwerte_zu_viertelstunden(simulation_wp.WP_Strombedarf_stuendlich);
-                    Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
-                    temp = Stundenwerte_zu_viertelstunden(simulation_wp.Heizstab_stuendlich);
-                    Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
-                    bSimulationWP = true;
+                        temp = Stundenwerte_zu_viertelstunden(simulation_wp.WP_Strombedarf_stuendlich);
+                        Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
+                        temp = Stundenwerte_zu_viertelstunden(simulation_wp.Heizstab_stuendlich);
+                        Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
+                        bSimulationWP = true;
+                    }
+
+                    if (_kesselInSchleife)
+                    {
+                        // Paket-5-Nacharbeit, Befund N3 (zweiter Teil): BEZUGSPUNKT des
+                        // Kessel-Strombedarfs. Im Altpfad wird der Kessel NACH der
+                        // Wärmepumpe gerufen und sieht deshalb den Strombedarf nach
+                        // deren Verbrauch. In der gemeinsamen Stundenschleife gibt es
+                        // diese Reihenfolge nicht mehr — der Wert wird deshalb hier
+                        // nachgezogen, sobald der WP-Strom feststeht, und zwar über
+                        // exakt dieselbe Vektorkette wie im Altpfad. Steht der Kessel in
+                        // der Kaskade VOR der Wärmepumpe, bleibt es beim Stufeneingang.
+                        if (_wpInSchleife && KesselHinterWaermepumpe())
+                        {
+                            float[] stromNachWP =
+                                Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich);
+                            simulation_spk.Strombedarf_stuendlich = stromNachWP;
+                            simulation_spk.Strombedarf_gesamt = stromNachWP.Sum();
+                        }
+
+                        temp = Stundenwerte_zu_viertelstunden(simulation_spk.Stromverbrauch_stuendlich);
+                        Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
+                        bSimulationKessel = true;
+                    }
+
+                    if (_solarInSchleife) bSimulationSolarthermie = true;
+                    continue;
                 }
-                else if (tool[i] == "Heizkessel")
+
+                if (tool[i] == "Heizkessel")
                 {
-                    float[] rest = Simulation_SPK_Ctrl(kanaele.Summe(),
+                    // Vektorstufe: zweikanalig, aber ohne Speicherbeteiligung.
+                    Simulation_SPK_Ctrl_Zweikanalig(kanaele,
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich),
                         ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
-                    RestAufKanaeleZurueck(kanaele, rest);
 
                     temp = Stundenwerte_zu_viertelstunden(simulation_spk.Stromverbrauch_stuendlich);
                     Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
@@ -435,13 +508,23 @@ namespace WindowsFormsApplication1
                 }
                 else if (tool[i] == "Solarthermie")
                 {
-                    float[] rest = Simulation_Solarthermie_Ctrl(kanaele.Summe());
-                    RestAufKanaeleZurueck(kanaele, rest);
+                    // Vektorstufe: zweikanalig, aber ohne Speicherbeteiligung.
+                    Simulation_Solarthermie_Ctrl_Zweikanalig(kanaele);
 
                     bSimulationSolarthermie = true;
                 }
                 else if (tool[i] == "BHKW")
                 {
+                    // Steht das BHKW VOR oder NACH der Speicherstufe, ist die
+                    // Kaskadenreihenfolge unverändert richtig. ZWISCHEN zwei Mitgliedern
+                    // kann es dagegen nicht stehen bleiben: Sein Modul rechnet das ganze
+                    // Jahr am Stück und ist nicht stundenweise aufrufbar (Paket 6). Es
+                    // rechnet dann nach der gesamten Speicherstufe - protokolliert.
+                    if (schleifeGelaufen && SchleifenstufeNach(i))
+                        Console.WriteLine("Kaskade: Das BHKW steht in der Kaskade zwischen zwei " +
+                                          "Erzeugern der Speicherstufe. Es rechnet bis Paket 6 " +
+                                          "einkanalig als Vektormodul und deshalb NACH der " +
+                                          "gesamten Speicherstufe.");
                     float[] rest = Simulation_BHKW_Ctrl(kanaele.Summe(),
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich));
                     RestAufKanaeleZurueck(kanaele, rest);
@@ -481,54 +564,450 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Wärmepumpen-Stufe des zweikanaligen Wegs. Aufbau der Modulliste und der
-        /// Eingangsgrößen wie in <see cref="Simulation_WP_Ctrl"/>; danach
+        /// true, wenn der Heizkessel in der Kaskade HINTER der Wärmepumpe steht — die
+        /// Bedingung dafür, dass er den Strombedarf NACH dem WP-Verbrauch sieht
+        /// (Paket-5-Nacharbeit, Befund N3).
+        /// </summary>
+        private bool KesselHinterWaermepumpe()
+        {
+            if (tool == null) return false;
+
+            int wp = -1, kessel = -1;
+            for (int i = 0; i < 4 && i < tool.Length; i++)
+            {
+                if (tool[i] == "Wärmepumpe" && wp < 0) wp = i;
+                if (tool[i] == "Heizkessel" && kessel < 0) kessel = i;
+            }
+
+            return wp >= 0 && kessel > wp;
+        }
+
+        /// <summary>true, wenn <c>Tool_1..4</c> den Erzeuger enthält.</summary>
+        private bool KaskadeEnthaelt(string erzeuger)
+        {
+            if (tool == null) return false;
+            for (int i = 0; i < 4 && i < tool.Length; i++)
+                if (tool[i] == erzeuger) return true;
+            return false;
+        }
+
+        /// <summary>true, wenn an einer Kaskadenposition NACH <paramref name="position"/> eine Stufe der Speicherstufe steht.</summary>
+        private bool SchleifenstufeNach(int position)
+        {
+            if (tool == null) return false;
+            for (int i = position + 1; i < 4 && i < tool.Length; i++)
+                if (IstSchleifenstufe(i)) return true;
+            return false;
+        }
+
+        /// <summary>true, wenn die Stufe an dieser Kaskadenposition in der Speicherstufe rechnet.</summary>
+        private bool IstSchleifenstufe(int position)
+        {
+            if (tool == null || position < 0 || position >= 4 || position >= tool.Length) return false;
+
+            return (tool[position] == "Wärmepumpe" && _wpInSchleife) ||
+                   (tool[position] == "Solarthermie" && _solarInSchleife) ||
+                   (tool[position] == "Heizkessel" && _kesselInSchleife);
+        }
+
+        /// <summary>
+        /// Nimmt Solarthermie- und Kesselstufen, die in der Kaskade ZWISCHEN zwei
+        /// Mitgliedern der Speicherstufe stehen, ebenfalls in die Schleife auf
+        /// (Paket-5-Nacharbeit, Befund N4).
         ///
-        ///   1. Modulaufbau samt Zusammenführung mehrfach benutzter Quellspeicher,
+        /// DAS PROBLEM: Die Speicherstufe rechnet an der Kaskadenposition ihres ERSTEN
+        /// Mitglieds. Eine Stufe ohne Puffer-Senke dazwischen wäre damit hinter die
+        /// gesamte Stufe gerutscht — inklusive Nachentladung und Heizstab — und hätte
+        /// stillschweigend ein anderes Ergebnis geliefert (gemessen: Solarproduktion in
+        /// einem präparierten 1011 von 0,64 auf 0,28 MWh). Für das BHKW wurde dieser Fall
+        /// bereits protokolliert, für Solarthermie und Heizkessel nicht.
+        ///
+        /// DIE LÖSUNG ist strukturell statt hinweisend: Beide Stufen KÖNNEN stundenweise
+        /// rechnen (Paket 5 hat sie dafür zerlegt). Sie nehmen dann ohne Puffer-Senke als
+        /// reine Heizkreis-Lieferanten an Phase B teil — an genau ihrer
+        /// Kaskadenposition —, und der Positionswechsel verschwindet. Nur das BHKW bleibt
+        /// bis Paket 6 draußen; für dieses eine verbleibende Vorkommen steht die Warnung
+        /// weiterhin in <see cref="Kaskade_Zweikanalig"/>.
+        ///
+        /// EIN DURCHLAUF GENÜGT: Ein neu aufgenommenes Mitglied liegt selbst zwischen dem
+        /// ersten und dem letzten - das Intervall wächst dadurch nicht.
+        ///
+        /// ABGRENZUNG: Stufen VOR dem ersten und NACH dem letzten Mitglied bleiben
+        /// Vektorstufen. Ihre Kaskadenposition stimmt dort ohnehin (die Schleife als
+        /// Ganzes steht zwischen ihnen), und sie in die Schleife zu ziehen würde die
+        /// Bezugsgrößen der übrigen Stufen verschieben, ohne etwas zu gewinnen. Genau
+        /// deshalb bleiben die neun Referenzprojekte unverändert: Keines hat heute mehr
+        /// als EIN Mitglied.
+        /// </summary>
+        private void ZwischenstufenAufnehmen()
+        {
+            if (tool == null) return;
+
+            int erste = -1, letzte = -1;
+            for (int i = 0; i < 4 && i < tool.Length; i++)
+                if (IstSchleifenstufe(i)) { if (erste < 0) erste = i; letzte = i; }
+
+            if (erste < 0 || letzte <= erste + 1) return;
+
+            for (int i = erste + 1; i < letzte; i++)
+            {
+                if (tool[i] == "Solarthermie" && !_solarInSchleife)
+                {
+                    _solarInSchleife = true;
+                    Console.WriteLine("Kaskade: Die Solarthermie steht zwischen zwei Erzeugern der " +
+                                      "Speicherstufe. Sie rechnet deshalb als Mitglied der " +
+                                      "Stundenschleife an ihrer Kaskadenposition mit (Phase B) - " +
+                                      "ohne Puffer-Senke als reine Heizkreis-Stufe.");
+                }
+                else if (tool[i] == "Heizkessel" && !_kesselInSchleife)
+                {
+                    _kesselInSchleife = true;
+                    Console.WriteLine("Kaskade: Der Heizkessel steht zwischen zwei Erzeugern der " +
+                                      "Speicherstufe. Er rechnet deshalb als Mitglied der " +
+                                      "Stundenschleife an seiner Kaskadenposition mit (Phase B) - " +
+                                      "ohne Puffer-Senke als reine Heizkreis-Stufe.");
+                }
+            }
+        }
+
+        // Mitglieder der gemeinsamen Speicherstufe des laufenden Simulationslaufs
+        // (Paket 5). Sie werden in Kaskade_Zweikanalig bestimmt und von
+        // LadeordnungAufbauen gelesen.
+        private bool _wpInSchleife = false;
+        private bool _solarInSchleife = false;
+        private bool _kesselInSchleife = false;
+
+        /// <summary>Hat die Wärmepumpe in diesem Lauf in der gemeinsamen Speicherstufe gerechnet?</summary>
+        public bool WPInSpeicherstufe { get { return _wpInSchleife; } }
+
+        /// <summary>Hat die Solarthermie in diesem Lauf in der gemeinsamen Speicherstufe gerechnet?</summary>
+        public bool SolarInSpeicherstufe { get { return _solarInSchleife; } }
+
+        /// <summary>Hat der Heizkessel in diesem Lauf in der gemeinsamen Speicherstufe gerechnet?</summary>
+        public bool KesselInSpeicherstufe { get { return _kesselInSchleife; } }
+
+        /// <summary>
+        /// true, wenn mindestens eine Anlage dieser Erzeugerart im Projekt einen
+        /// PUFFER als Haupt- oder Zweitsenke führt (Konzept 6.1).
+        ///
+        /// Geprüft wird gegen dieselbe Bedingung, mit der
+        /// <see cref="Ladeordnung.Ladereihenfolge"/> eine ladende Anlage erkennt: gesetzte
+        /// Puffer-ID UND Puffer-Ziel. Altdaten können eine <c>WS_ID_Puffer</c> tragen und
+        /// trotzdem auf den Heizkreis zeigen; solche Reste dürfen keine Speicherstufe
+        /// auslösen, denn es entstünde kein einziger Ladeauftrag daraus.
+        ///
+        /// Dialogfrei über <see cref="StilleDb"/> (Konzept 13.4).
+        /// </summary>
+        private bool ErzeugerMitPufferSenke(int idType)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT WS_Ziel, WS_ID_Puffer, WS_Ziel2, WS_ID_Puffer2 FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", OleDbType.Integer, idType));
+
+            if (dt == null) return false;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                if (StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer")) > 0 &&
+                    WaermesenkeClass.IstPufferZiel(StilleDb.Text(StilleDb.Feld(r, "WS_Ziel"))))
+                    return true;
+
+                if (StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer2")) > 0 &&
+                    WaermesenkeClass.IstPufferZiel(StilleDb.Text(StilleDb.Feld(r, "WS_Ziel2"))))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Die gemeinsame SPEICHERSTUFE des zweikanaligen Wegs (Paket 5). Aufbau der
+        /// Modullisten und der Eingangsgrößen wie in den einkanaligen Ctrl-Methoden;
+        /// danach
+        ///
+        ///   1. Modulaufbau aller beteiligten Erzeuger samt Zusammenführung mehrfach
+        ///      benutzter Quellspeicher,
         ///   2. Übernahme der Quellspeicher in die Registry (sie entstehen erst jetzt),
         ///   3. Öffnen der Registry für den Rechenpfad und Nachziehen der Felder, die
         ///      nur an der Projektkopie stehen,
         ///   4. Aufbau des <see cref="Kaskadenkontext"/> (Entlade- und Ladeordnung),
-        ///   5. die zweikanalige Stundenschleife A–G.
+        ///   5. die gemeinsame Stundenschleife A–G (<see cref="Kaskadenschleife"/>).
         ///
         /// Die Kanäle werden dabei in place fortgeschrieben.
         /// </summary>
-        private void Simulation_WP_Ctrl_Zweikanalig(Waermekanaele kanaele, float[] Strombedarf,
-                                                    bool bHeizstab)
+        private void Speicherstufe_Rechnen(Waermekanaele kanaele, float[] Strombedarf,
+                                           bool bHeizstab, int nBereitschaft)
         {
-            RecordSet rs = new RecordSet();
-
             WaermequelleClass.SchemaSicherstellen();
 
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt +
-                    " and ID_Type=" + WizardItemClass.WP_TYP + " order by Prioritaet, ID");
+            Kaskadenschleife schleife = new Kaskadenschleife();
 
-            simulation_wp.wp_list.Clear();
+            // Paket-5-Nacharbeit, Befund N3 (erster Teil): EIGENE KOPIE des
+            // Stufeneingangs der Stromseite. Das Wärmepumpen-Modul übernimmt das
+            // übergebene Array als sein AUSGABEARRAY (WP_Strombedarf_stuendlich) und
+            // nullt es in Init(); wer danach daraus liest, bekommt Nullen. Genau das
+            // hatte der Heizkessel getan — Tab_ErgebnisHeizkessel.Strombedarf und
+            // .Reststrombedarf standen auf 0 (gemessen 1023: 133,35 -> 0 MWh).
+            float[] stromStufeneingang = (float[])Strombedarf.Clone();
 
-            while (rs.Next())
+            // --- 1. Modulaufbau je beteiligter Erzeugerart ---------------------------
+            if (_wpInSchleife)
             {
-                simulation_wp.wp_list.Add((int)rs.Read("ID"));
+                WP_Liste_Laden();
+
+                simulation_wp.Temperatur = Stundentemperatur;
+                simulation_wp.PV_Ueberschuss_stuendlich = PV_Ueberschuss_Vorabberechnen();
+                simulation_wp.WP_Strombedarf_stuendlich = Strombedarf;
+                simulation_wp.Mit_Heizstab = bHeizstab;
+                // Waermebedarf_stuendlich und Warmwasserbedarf_stuendlich setzt das Modul
+                // selbst aus den Kanälen - im zweikanaligen Weg ist der Kanal die Wahrheit,
+                // nicht ein vorab zugewiesener Summenvektor.
+
+                m_bError = !simulation_wp.Vorbereiten_Zweikanalig();
+                if (m_bError) return;
+
+                QuellspeicherUebernehmen();
+                schleife.WP = simulation_wp;
             }
-            rs.Close();
 
-            simulation_wp.Temperatur = Stundentemperatur;
-            simulation_wp.PV_Ueberschuss_stuendlich = PV_Ueberschuss_Vorabberechnen();
-            simulation_wp.WP_Strombedarf_stuendlich = Strombedarf;
-            simulation_wp.Mit_Heizstab = bHeizstab;
-            // Waermebedarf_stuendlich und Warmwasserbedarf_stuendlich setzt das Modul
-            // selbst aus den Kanälen - im zweikanaligen Weg ist der Kanal die Wahrheit,
-            // nicht ein vorab zugewiesener Summenvektor.
+            if (_solarInSchleife)
+            {
+                Solar_Liste_Laden();
+                if (!simulation_solarthermie.Vorbereiten_Zweikanalig(m_ID_Projekt, senkenzuordnungen))
+                {
+                    m_bError = true;
+                    return;
+                }
+                schleife.Solar = simulation_solarthermie;
+            }
 
-            m_bError = !simulation_wp.Vorbereiten_Zweikanalig();
-            if (m_bError) return;
+            if (_kesselInSchleife)
+            {
+                SPK_Liste_Laden();
+                // EIGENER Vektor aus der Kopie des Stufeneingangs (N3): Die Wärmepumpe
+                // überschreibt den ihren stundenweise (WP_Strombedarf_stuendlich).
+                simulation_spk.Strombedarf_stuendlich = (float[])stromStufeneingang.Clone();
+                simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
 
-            QuellspeicherUebernehmen();
+                if (!simulation_spk.Vorbereiten_Zweikanalig(m_ID_Projekt, senkenzuordnungen))
+                {
+                    // N10: Der zweikanalige Weg meldet dialogfrei über den Fehlerkanal.
+                    if (!string.IsNullOrEmpty(simulation_spk.Fehlertext))
+                        Fehlertext = simulation_spk.Fehlertext;
+                    m_bError = true;
+                    return;
+                }
+                schleife.Kessel = simulation_spk;
+            }
+
+            // --- 2./3. Registry öffnen ------------------------------------------------
             RegistryFuerZweikanaligOeffnen();
 
+            // --- 4. Kontext (Entlade- und Ladeordnung) --------------------------------
             Kaskadenkontext kontext = KontextAufbauen();
             foreach (string hinweis in kontext.Hinweise) Console.WriteLine(hinweis);
 
-            m_bError = !simulation_wp.Berechnung_Zweikanalig(kanaele, kontext);
+            // Paket-5-Nacharbeit, Befund N5: Eine Puffer-Hauptsenke, aus der kein
+            // Ladeauftrag entstanden ist, darf den Erzeuger nicht stillegen.
+            PufferSenkenOhneAuftragZurueckfallen(kontext);
+
+            schleife.Kontext = kontext;
+            schleife.Bedarfsreihenfolge = BedarfsreihenfolgeAufbauen();
+
+            // --- 5. Stundenschleife A–G ------------------------------------------------
+            m_bError = !schleife.Rechnen(kanaele);
+        }
+
+        /// <summary>
+        /// SICHERHEITSNETZ gegen den stillen Totalausfall eines Erzeugers
+        /// (Paket-5-Nacharbeit, Befund N5).
+        ///
+        /// Eine Anlage mit Puffer-HAUPTsenke deckt in Phase B nichts — sie lädt
+        /// ausschließlich (Konzept 6.3, Doppelzählungs-Freibeweis). Entsteht aus ihrer
+        /// Senkenreferenz aber kein Ladeauftrag, lädt sie auch nicht: Sie produziert das
+        /// ganze Jahr nichts, und bis zur Nacharbeit ohne jeden Hinweis (gemessen an
+        /// einem präparierten 1018: Kesselproduktion 34,27 -> 0 MWh). Ursachen sind
+        /// Konfigurationsfehler, die die Oberfläche nicht verhindert: eine
+        /// <c>WS_ID_Puffer</c>, die auf den Puffer eines FREMDEN Projekts zeigt, oder ein
+        /// Puffer, den die Registry aus anderen Gründen nicht in den Rechenpfad nimmt.
+        /// (Der zweite Fall — Puffer-Ziel ganz OHNE <c>WS_ID_Puffer</c> — wird schon eine
+        /// Schicht früher abgefangen, in <c>WaermesenkeClass.Normalisieren</c>.)
+        ///
+        /// Die Rückfallebene ist der Heizkreis: Die Anlage deckt Bedarf wie eine Anlage
+        /// ohne Puffer-Senke. Das ist die konservative Richtung — es entsteht keine
+        /// Wärme, die niemand angefordert hat — und es wird protokolliert.
+        ///
+        /// Die Zuordnungsobjekte sind dieselben Instanzen, mit denen die Module rechnen
+        /// (<c>senkenzuordnungen</c> ist die eine Quelle): Die Korrektur wirkt deshalb
+        /// auch für Solarthermie und Heizkessel, deren Modulaufbau bereits gelaufen ist.
+        /// </summary>
+        private void PufferSenkenOhneAuftragZurueckfallen(Kaskadenkontext kontext)
+        {
+            if (kontext == null) return;
+
+            if (_wpInSchleife)
+                for (int i = 0; i < simulation_wp.wp_list.Count && i < kontext.SenkeJeModul.Count; i++)
+                    SenkeAufHeizkreisZurueck(kontext, simulation_wp.wp_list[i],
+                                             kontext.SenkeJeModul[i], "Wärmepumpe");
+
+            if (_solarInSchleife)
+                for (int f = 0; f < simulation_solarthermie.solar_anlagen_ids.Count; f++)
+                    SenkeAufHeizkreisZurueck(kontext, simulation_solarthermie.solar_anlagen_ids[f],
+                                             simulation_solarthermie.FeldSenke(f), "Solarthermie");
+
+            if (_kesselInSchleife)
+                for (int i = 0; i < simulation_spk.spk_anlagen_ids.Count; i++)
+                    SenkeAufHeizkreisZurueck(kontext, simulation_spk.spk_anlagen_ids[i],
+                                             simulation_spk.KesselSenke(i), "Heizkessel");
+        }
+
+        /// <summary>Eine Anlage ohne Ladeauftrag auf die Hauptsenke Heizkreis zurücksetzen.</summary>
+        private static void SenkeAufHeizkreisZurueck(Kaskadenkontext kontext, int idAnlage,
+                                                     Senkenzuordnung z, string art)
+        {
+            if (z == null || z.Haupt == Senke.Heizkreis) return;
+
+            foreach (Ladeauftrag a in kontext.LadenOhnePV)
+                if (a != null && !a.Zweitsenke && a.AnlagenID == idAnlage) return;
+
+            Console.WriteLine("Wärmesenke: Die Anlage " + idAnlage + " (" + art + ") ist als " +
+                              "Hauptsenke auf " + Senkenzuordnung.ZielAusSenke(z.Haupt) +
+                              " (Puffer " + z.IDPufferHaupt + ") konfiguriert, bekommt in diesem " +
+                              "Lauf aber KEINEN Ladeauftrag - der Puffer gehört zu einem anderen " +
+                              "Projekt oder rechnet nicht mit. Die Anlage deckt deshalb den " +
+                              "HEIZKREIS; ohne diesen Rückfall würde sie das ganze Jahr nichts " +
+                              "produzieren.");
+
+            z.Haupt = Senke.Heizkreis;
+        }
+
+        /// <summary>
+        /// Erzeugerarten der Phase B in KASKADENREIHENFOLGE — nur die Stufen, die in der
+        /// gemeinsamen Stundenschleife rechnen (Konzept 6.3, Phase B).
+        /// </summary>
+        private List<int> BedarfsreihenfolgeAufbauen()
+        {
+            List<int> reihenfolge = new List<int>();
+            if (tool == null) return reihenfolge;
+
+            for (int i = 0; i < 4 && i < tool.Length; i++)
+            {
+                if (tool[i] == "Wärmepumpe" && _wpInSchleife) reihenfolge.Add(ProjektPuffer.TYP_WP);
+                else if (tool[i] == "Solarthermie" && _solarInSchleife) reihenfolge.Add(ProjektPuffer.TYP_SOLARTHERMIE);
+                else if (tool[i] == "Heizkessel" && _kesselInSchleife) reihenfolge.Add(ProjektPuffer.TYP_KESSEL);
+            }
+
+            return reihenfolge;
+        }
+
+        /// <summary>
+        /// Anlagenliste der Wärmepumpen in Kaskadenreihenfolge (wie
+        /// <see cref="Simulation_WP_Ctrl"/>).
+        ///
+        /// Paket-5-Nacharbeit, Befund N9: Diese drei Listen-Lader gehören zum NEUEN
+        /// Rechenweg und laufen deshalb über den stillen, parametrisierten Zugriff
+        /// (<see cref="StilleDb"/>) statt über den Altbestand <c>RecordSet</c>. Der
+        /// schluckt SQL-Fehler stillschweigend — die Ursache der Bestandsbefunde
+        /// B1-F1/B1-F2 —, und eine leere Modulliste sähe hier aus wie „das Projekt hat
+        /// keine Anlagen dieser Art". Die Abfragen sind Wort für Wort dieselben; der
+        /// Altpfad bleibt unverändert bei <c>RecordSet</c>, damit er byte-identisch
+        /// rechnet.
+        /// </summary>
+        private void WP_Liste_Laden()
+        {
+            simulation_wp.wp_list.Clear();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
+                "ORDER BY Prioritaet, ID",
+                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", OleDbType.Integer, WizardItemClass.WP_TYP));
+
+            if (dt == null)
+            {
+                Console.WriteLine("Speicherstufe: Die Wärmepumpen des Projekts " + m_ID_Projekt +
+                                  " ließen sich nicht lesen - die Stufe rechnet ohne Module.");
+                return;
+            }
+
+            foreach (DataRow r in dt.Rows)
+                simulation_wp.wp_list.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
+        }
+
+        /// <summary>Kesselliste und Anlagen-IDs (wie <see cref="Simulation_SPK_Ctrl"/>); N9 wie oben.</summary>
+        private void SPK_Liste_Laden()
+        {
+            simulation_spk.spk_list.Clear();
+            simulation_spk.spk_anlagen_ids.Clear();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT Bezeichner, ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", OleDbType.Integer, WizardItemClass.KESSEL_TYP));
+
+            if (dt == null)
+            {
+                Console.WriteLine("Speicherstufe: Die Heizkessel des Projekts " + m_ID_Projekt +
+                                  " ließen sich nicht lesen - die Stufe rechnet ohne Module.");
+                return;
+            }
+
+            foreach (DataRow r in dt.Rows)
+            {
+                simulation_spk.spk_list.Add(StilleDb.Text(StilleDb.Feld(r, "Bezeichner")));
+                simulation_spk.spk_anlagen_ids.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
+            }
+        }
+
+        /// <summary>Kollektorliste (wie <see cref="Simulation_Solarthermie_Ctrl"/>); N9 wie oben.</summary>
+        private void Solar_Liste_Laden()
+        {
+            simulation_solarthermie.solarthermie_list.Clear();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID_SOLAR FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", OleDbType.Integer, WizardItemClass.SOLAR_TYP));
+
+            if (dt == null)
+            {
+                Console.WriteLine("Speicherstufe: Die Kollektorfelder des Projekts " + m_ID_Projekt +
+                                  " ließen sich nicht lesen - die Stufe rechnet ohne Module.");
+                return;
+            }
+
+            foreach (DataRow r in dt.Rows)
+                simulation_solarthermie.solarthermie_list.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID_SOLAR")));
+        }
+
+        /// <summary>
+        /// Heizkessel als zweikanalige VEKTORSTUFE (Paket 5): eigene Jahresschleife an der
+        /// Kaskadenposition, ohne Speicherbeteiligung.
+        /// </summary>
+        private void Simulation_SPK_Ctrl_Zweikanalig(Waermekanaele kanaele, float[] Strombedarf,
+                                                     int nBereitschaft)
+        {
+            SPK_Liste_Laden();
+
+            simulation_spk.Strombedarf_stuendlich = Strombedarf;
+            simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
+
+            if (!simulation_spk.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, senkenzuordnungen) &&
+                !string.IsNullOrEmpty(simulation_spk.Fehlertext))
+                Fehlertext = simulation_spk.Fehlertext;   // N10: dialogfrei melden
+        }
+
+        /// <summary>
+        /// Solarthermie als zweikanalige VEKTORSTUFE (Paket 5): eigene Jahresschleife an
+        /// der Kaskadenposition, ohne Speicherbeteiligung.
+        /// </summary>
+        private void Simulation_Solarthermie_Ctrl_Zweikanalig(Waermekanaele kanaele)
+        {
+            Solar_Liste_Laden();
+
+            simulation_solarthermie.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, senkenzuordnungen);
         }
 
         /// <summary>
@@ -724,12 +1203,12 @@ namespace WindowsFormsApplication1
         /// Kaskadenübergreifende Ladeordnung (Konzept 6.3 C/D) in ihren beiden
         /// Ausprägungen: für Stunden ohne und mit PV-Überschuss (3.5).
         ///
-        /// ABGRENZUNG DER ETAPPE 4b: Aufgenommen werden nur Anlagen, die in diesem Lauf
-        /// als WÄRMEPUMPEN-Modul rechnen. Eine migrierte Puffer-Senke an Kessel, BHKW
-        /// oder Solarthermie wird protokolliert und ruht — diese Erzeuger rechnen bis
-        /// Paket 5/6 einkanalig auf der Kanalsumme und decken damit weiter Bedarf, statt
-        /// zu laden. Das ist die konservative Richtung: Es entsteht keine Wärme, die
-        /// niemand anfordert, und keine Doppelzählung.
+        /// ABGRENZUNG SEIT PAKET 5: Aufgenommen werden Anlagen, die in diesem Lauf als
+        /// WÄRMEPUMPEN-, SOLARTHERMIE- oder HEIZKESSEL-Modul in der gemeinsamen
+        /// Speicherstufe rechnen. Eine migrierte Puffer-Senke am BHKW wird protokolliert
+        /// und ruht — es rechnet bis Paket 6 einkanalig auf der Kanalsumme und deckt
+        /// damit weiter Bedarf, statt zu laden. Das ist die konservative Richtung: Es
+        /// entsteht keine Wärme, die niemand anfordert, und keine Doppelzählung.
         /// </summary>
         private void LadeordnungAufbauen(Kaskadenkontext k)
         {
@@ -747,19 +1226,20 @@ namespace WindowsFormsApplication1
 
                 foreach (Ladeordnung.LadeEintrag e in proPuffer)
                 {
-                    int modulindex = simulation_wp.wp_list.IndexOf(e.ID_Anlage);
-                    if (e.ID_Type != ProjektPuffer.TYP_WP || modulindex < 0)
+                    int modulindex = ModulindexDerAnlage(e.ID_Type, e.ID_Anlage);
+                    if (modulindex < 0)
                     {
                         k.Hinweise.Add("Ladeordnung: Anlage " + e.ID_Anlage + " (" + e.Erzeuger +
                                        ") lädt laut Konfiguration den Speicher " + sp.ID_Pufferspeicher +
-                                       " (" + sp.BezeichnerAnzeige() + "). Etappe 4b wertet nur " +
-                                       "Wärmepumpen-Senken aus; die Anlage rechnet bis Paket 5/6 " +
-                                       "einkanalig wie eine Heizkreis-Anlage.");
+                                       " (" + sp.BezeichnerAnzeige() + "). Diese Erzeugerart rechnet " +
+                                       "in diesem Lauf nicht in der Speicherstufe (BHKW: Paket 6); " +
+                                       "die Anlage rechnet einkanalig wie eine Heizkreis-Anlage.");
                         continue;
                     }
 
                     Ladeauftrag a = new Ladeauftrag();
                     a.Modulindex = modulindex;
+                    a.Erzeugerart = e.ID_Type;
                     a.AnlagenID = e.ID_Anlage;
                     a.Zweitsenke = e.Zweitsenke;
                     a.Speicher = sp;
@@ -770,7 +1250,14 @@ namespace WindowsFormsApplication1
                     // entfallen (Paket-4-Review).
                     a.Obergrenze = e.Obergrenze / 100.0;
                     a.Ladeprio = e.Ladeprio;
-                    a.BMTyp = BetriebsmodusDesModuls(modulindex);
+                    // Paket-5-Nacharbeit, Befund N7: über die ANLAGE auflösen, nicht über
+                    // den Modulindex. Seit Paket 5 ist der Modulindex bei Solarthermie und
+                    // Heizkessel ein Index in DEREN Modulliste — BetriebsmodusDesModuls
+                    // hätte ihn gegen simulation_wp.Betriebsmodi aufgelöst und damit den
+                    // Modus einer beliebigen Wärmepumpe geliefert. Es ist dieselbe
+                    // Prioritätsfunktion wie zwei Zeilen weiter unten bei den Obergrenzen
+                    // (Konzept 3.5/6.3: Reihenfolge und Obergrenze aus EINER Quelle).
+                    a.BMTyp = BetriebsmodusDerAnlage(e.ID_Anlage);
 
                     eintraege.Add(e);
                     auftrag[e] = a;
@@ -813,6 +1300,24 @@ namespace WindowsFormsApplication1
                                                       auftrag[e].BMTyp, true);
             });
             foreach (Ladeordnung.LadeEintrag e in eintraege) k.LadenMitPV.Add(auftrag[e]);
+        }
+
+        /// <summary>
+        /// Index einer Anlage in der Modulliste IHRER Erzeugerart, sofern diese Art in
+        /// diesem Lauf in der Speicherstufe rechnet; sonst −1 (Paket 5).
+        /// </summary>
+        private int ModulindexDerAnlage(int idType, int idAnlage)
+        {
+            if (idType == ProjektPuffer.TYP_WP)
+                return _wpInSchleife ? simulation_wp.wp_list.IndexOf(idAnlage) : -1;
+
+            if (idType == ProjektPuffer.TYP_SOLARTHERMIE)
+                return _solarInSchleife ? simulation_solarthermie.solar_anlagen_ids.IndexOf(idAnlage) : -1;
+
+            if (idType == ProjektPuffer.TYP_KESSEL)
+                return _kesselInSchleife ? simulation_spk.spk_anlagen_ids.IndexOf(idAnlage) : -1;
+
+            return -1;   // BHKW: Paket 6
         }
 
         /// <summary>Betriebsmodus (BM_Typ) eines WP-Moduls; leer, wenn unbekannt.</summary>

@@ -446,8 +446,21 @@ namespace WindowsFormsApplication1
     /// </summary>
     public class Ladeauftrag
     {
-        /// <summary>Index des Erzeugermoduls in seiner Modulliste (in 4b: WP-Modul).</summary>
+        /// <summary>
+        /// Index des Erzeugermoduls in der Modulliste SEINER Erzeugerart: bei
+        /// <c>TYP_WP</c> die Position in <c>SimulationWaermepumpe.wp_list</c>, bei
+        /// <c>TYP_SOLARTHERMIE</c> das Kollektorfeld
+        /// (<c>SimulationSolarthermie.solar_anlagen_ids</c>), bei <c>TYP_KESSEL</c> der
+        /// Kessel (<c>SimulationSPK.spk_anlagen_ids</c>).
+        /// </summary>
         public int Modulindex;
+
+        /// <summary>
+        /// Erzeugerart der ladenden Anlage (<c>ProjektPuffer.TYP_*</c>) — sie entscheidet,
+        /// welches Modul <see cref="Modulindex"/> auflöst und die Ladung bucht
+        /// (Paket 5: Solarthermie und Heizkessel stehen mit in der Ladeordnung).
+        /// </summary>
+        public int Erzeugerart = ProjektPuffer.TYP_WP;
 
         /// <summary>Tab_Energieanlagen.ID der ladenden Anlage.</summary>
         public int AnlagenID;
