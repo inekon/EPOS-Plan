@@ -87,6 +87,22 @@ namespace WindowsFormsApplication1.Referenzlauf
                 dateien += Vektor(zielOrdner, "puffer_entladung.csv", sim.puffer_wp.Entladung_stuendlich, summen);
             }
 
+            // --- Quellspeicher der WP-Module (Paket 7): eigene Ganglinien je Speicher.
+            //     Die Dateinamen tragen die Anlagen-ID, damit sie stabil bleiben.
+            {
+                int q = 0;
+                foreach (SimulationPufferspeicher sp in sim.AlleSpeicher())
+                {
+                    if (sp == null || sp.Verwendung != SimulationPufferspeicher.VERWENDUNG_QUELLE) continue;
+                    string kennung = (sp.ID_Anlage > 0) ? sp.ID_Anlage.ToString(CultureInfo.InvariantCulture)
+                                                        : q.ToString(CultureInfo.InvariantCulture);
+                    dateien += Vektor(zielOrdner, "quellspeicher_" + kennung + "_soc.csv", sp.SOC_stuendlich, summen);
+                    dateien += Vektor(zielOrdner, "quellspeicher_" + kennung + "_ladung.csv", sp.Ladung_stuendlich, summen);
+                    dateien += Vektor(zielOrdner, "quellspeicher_" + kennung + "_entladung.csv", sp.Entladung_stuendlich, summen);
+                    q++;
+                }
+            }
+
             // --- Heizkessel / Spitzenkessel ----------------------------------------------
             if (sim.bSimulationKessel && sim.simulation_spk != null)
             {
@@ -154,6 +170,45 @@ namespace WindowsFormsApplication1.Referenzlauf
                 skalare.Add(Neu("Puffer.Ladung_gesamt", Zahl(sim.puffer_wp.Ladung_gesamt)));
                 skalare.Add(Neu("Puffer.Entladung_gesamt", Zahl(sim.puffer_wp.Entladung_gesamt)));
                 skalare.Add(Neu("Puffer.Verluste_gesamt", Zahl(sim.puffer_wp.Verluste_gesamt)));
+                skalare.Add(Neu("Puffer.SOC_Mittel", Zahl(sim.puffer_wp.SOC_Mittel)));
+                skalare.Add(Neu("Puffer.SOC_Max", Zahl(sim.puffer_wp.SOC_Max)));
+                skalare.Add(Neu("Puffer.Vollzyklen", Zahl(sim.puffer_wp.Vollzyklen)));
+            }
+            skalare.Add(Neu("Sim.Speicher_Anzahl",
+                sim.AlleSpeicher().Count.ToString(CultureInfo.InvariantCulture)));
+
+            // --- Erdreich-Auslegungspruefung (Paket 7) -----------------------------------
+            // Die Werte werden bewusst nicht persistiert (Protokoll 6.5), waren damit
+            // aber auch nicht regressionsfaehig: eine Aenderung an Entzugsarbeit, Spitze
+            // oder Volllaststunden waere unbemerkt durchgegangen. Sie stehen deshalb als
+            // Skalare in aggregate.csv. Projekte ohne WQ_Typ = 'Erdreich' erzeugen keinen
+            // einzigen Eintrag - die Referenzmenge bleibt unberuehrt.
+            {
+                var erd = ErdreichAuswertung.FuerProjekt(idProjekt);
+                // Kein Erdreich => KEIN Eintrag. Ein "Erdreich.Anzahl = 0" waere in jeder
+                // aggregate.csv aufgetaucht und haette die eingefrorene Abweichungsliste
+                // gegenueber B0 um acht Eintraege verlaengert, ohne etwas auszusagen.
+                if (erd.Count > 0)
+                    skalare.Add(Neu("Erdreich.Anzahl", erd.Count.ToString(CultureInfo.InvariantCulture)));
+                for (int i = 0; i < erd.Count; i++)
+                {
+                    string p = "Erdreich[" + i + "].";
+                    var a = erd[i];
+                    skalare.Add(Neu(p + "ID_Anlage", a.ID_Anlage.ToString(CultureInfo.InvariantCulture)));
+                    skalare.Add(Neu(p + "Modul", a.Modul));
+                    skalare.Add(Neu(p + "Unwirksam", a.Unwirksam.ToString()));
+                    skalare.Add(Neu(p + "MaxEntzugBelastbar", a.MaxEntzugBelastbar.ToString()));
+                    skalare.Add(Neu(p + "MaxEntzugGeschaetzt", a.MaxEntzugGeschaetzt.ToString()));
+                    skalare.Add(Neu(p + "InklSpeicherladung", a.InklSpeicherladung.ToString()));
+                    skalare.Add(Neu(p + "JahresentzugKWh", Zahl(a.JahresentzugKWh)));
+                    skalare.Add(Neu(p + "MaxEntzugW", Zahl(a.MaxEntzugW)));
+                    skalare.Add(Neu(p + "VolllastStunden", Zahl(a.VolllastStunden)));
+                    skalare.Add(Neu(p + "BetriebsStunden", a.BetriebsStunden.ToString(CultureInfo.InvariantCulture)));
+                    skalare.Add(Neu(p + "FrostStunden", a.FrostStunden.ToString(CultureInfo.InvariantCulture)));
+                    skalare.Add(Neu(p + "FrostWarnung", a.FrostWarnung.ToString()));
+                    skalare.Add(Neu(p + "Pruefung_Moeglich", a.Pruefung.Moeglich.ToString()));
+                    skalare.Add(Neu(p + "Pruefung_Warnung", a.Pruefung.Warnung.ToString()));
+                }
             }
 
             skalare.AddRange(ErgebnisTabellenLesen(kopfId));
@@ -203,6 +258,19 @@ namespace WindowsFormsApplication1.Referenzlauf
             DetailMitModulen(werte, kopfId,
                 "Photovoltaik", "Tab_ErgebnisPhotovoltaik",
                 "Tab_ErgebnisPhotovoltaikModul", "ID_ErgebnisPhotovoltaik");
+
+            // Pufferspeicher-Zeilen des Laufs (Paket 7, Konzept 6.6). Auf einer noch
+            // nicht migrierten Datenbank existiert die Tabelle nicht - dann bleibt der
+            // Block leer, statt den Lauf abzubrechen.
+            //
+            // Ueber den stillen Direktzugriff aus ErgebnisCtrl: DataRepository.GetDataTable
+            // wirft bei fehlender Tabelle NICHT, sondern zeigt eine MessageBox und liefert
+            // eine leere Tabelle - im headless-Lauf haette der Dialogwaechter sie
+            // wegdruecken und als Engine-Rueckfrage protokollieren muessen.
+            DataTable puffer = ErgebnisCtrl.PufferZeilenLesenStill(kopfId);
+            if (puffer != null)
+                for (int i = 0; i < puffer.Rows.Count; i++)
+                    SpaltenUebernehmen(werte, "Pufferspeicher[" + i + "]", puffer, puffer.Rows[i]);
 
             return werte;
         }

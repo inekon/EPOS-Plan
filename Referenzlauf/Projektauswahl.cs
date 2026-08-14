@@ -25,6 +25,16 @@ namespace WindowsFormsApplication1.Referenzlauf
         /// <summary>Pufferspeicher-Zuordnung fuer irgendeinen Erzeuger.</summary>
         public bool PufferIrgendwo;
 
+        /// <summary>
+        /// Mindestens eine Waermepumpe nutzt einen Pufferspeicher als WAERMEQUELLE
+        /// (Tab_Energieanlagen.WQ_Typ = 'Pufferspeicher'). Das ist ein eigener Codepfad:
+        /// nur diese Projekte legen einen Quellspeicher an, erzeugen die
+        /// QUELLE_&lt;AnlagenID&gt;-Serien, die quellspeicher_*.csv und eine
+        /// Tab_ErgebnisPufferspeicher-Zeile mit Verwendung = 'Quelle'.
+        /// Ohne so ein Projekt bliebe die halbe Speicherlogik regressionsfrei.
+        /// </summary>
+        public bool QuellspeicherWP;
+
         public IEnumerable<string> GesetzteTools
         {
             get { return Tools.Where(t => !string.IsNullOrWhiteSpace(t)); }
@@ -61,14 +71,19 @@ namespace WindowsFormsApplication1.Referenzlauf
         {
             get
             {
-                return ToolSignatur + "|" + string.Join(",", Anlagentypen) + "|" + (PufferFuerWP ? "PufWP" : "-");
+                return ToolSignatur + "|" + string.Join(",", Anlagentypen) + "|" +
+                       (PufferFuerWP ? "PufWP" : "-") + "|" + (QuellspeicherWP ? "QuellSp" : "-");
             }
         }
 
         /// <summary>Vielfalt: mehr Gewerke und mehr Anlagen = interessanterer Regressionsfall.</summary>
         public int Vielfalt
         {
-            get { return GesetzteTools.Count() * 2 + Anlagentypen.Count + (PufferFuerWP ? 2 : 0); }
+            get
+            {
+                return GesetzteTools.Count() * 2 + Anlagentypen.Count +
+                       (PufferFuerWP ? 2 : 0) + (QuellspeicherWP ? 2 : 0);
+            }
         }
 
         public string Ausstattung
@@ -79,7 +94,8 @@ namespace WindowsFormsApplication1.Referenzlauf
                 if (tools.Length == 0) tools = "(keine)";
                 string typen = string.Join(",", Anlagentypen.Select(TypName));
                 return "Tools: " + tools + " | Anlagen: " + typen +
-                       (PufferFuerWP ? " | Puffer(WP)" : PufferIrgendwo ? " | Puffer(anderer Erzeuger)" : "");
+                       (PufferFuerWP ? " | Puffer(WP)" : PufferIrgendwo ? " | Puffer(anderer Erzeuger)" : "") +
+                       (QuellspeicherWP ? " | Quellspeicher(WP)" : "");
             }
         }
 
@@ -106,7 +122,12 @@ namespace WindowsFormsApplication1.Referenzlauf
     internal static class Projektauswahl
     {
         public const int MIN_PROJEKTE = 5;
-        public const int MAX_PROJEKTE = 8;
+
+        // Paket 7: von 8 auf 9 erhoeht. Die neunte Stelle traegt die Pflichtkategorie
+        // "Waermepumpe mit Quellspeicher" - ohne sie deckt die Referenzmenge den
+        // QUELLE_-Pfad (Quellspeicher, quellspeicher_*.csv, Verwendung='Quelle')
+        // nirgends ab. Die bisherigen acht Projekte bleiben unveraendert gewaehlt.
+        public const int MAX_PROJEKTE = 9;
 
         /// <summary>Liest alle Projekte samt Konfiguration und Anlagenausstattung.</summary>
         public static List<Projektprofil> ProfileLesen()
@@ -163,6 +184,22 @@ namespace WindowsFormsApplication1.Referenzlauf
                     p.PufferFuerWP = true;
             }
 
+            // Quellspeicher der Waermepumpe (Paket 7). Die Spalte WQ_Typ entsteht erst
+            // mit SchemaSicherstellen bzw. der Migration - auf einer alten Datenbank
+            // bleibt das Merkmal deshalb still ungesetzt, statt den Lauf abzubrechen.
+            try
+            {
+                DataTable quelle = DataRepository.GetDataTable(
+                    "SELECT ID_Projekt FROM Tab_Energieanlagen WHERE ID_Type = 1 AND WQ_Typ = 'Pufferspeicher'");
+                if (quelle != null)
+                    foreach (DataRow r in quelle.Rows)
+                    {
+                        Projektprofil p;
+                        if (profile.TryGetValue(ZuInt(r["ID_Projekt"]), out p)) p.QuellspeicherWP = true;
+                    }
+            }
+            catch { /* Spalte (noch) nicht vorhanden */ }
+
             return profile.Values.OrderBy(p => p.ID).ToList();
         }
 
@@ -207,6 +244,11 @@ namespace WindowsFormsApplication1.Referenzlauf
             // Beim Minimalfall gewinnt das einfachste Projekt, nicht das reichhaltigste.
             nimm(BesteWahl(kandidaten, ids, p => p.NurWaermepumpe, true),
                  "Pflichtkategorie: nur Waermepumpe (Minimalfall)");
+            // Paket 7: der Quellspeicher-Pfad. BEWUSST als letzte Pflichtkategorie -
+            // so bleiben die fuenf bisherigen Wahlen (und damit die eingefrorene
+            // Referenzmenge) unveraendert, es kommt nur ein Projekt hinzu.
+            nimm(BesteWahl(kandidaten, ids, p => p.QuellspeicherWP, false),
+                 "Pflichtkategorie: Waermepumpe mit Quellspeicher");
 
             // 2a. Auffuellen mit noch nicht vertretenen Erzeugerkombinationen.
             var toolSignaturen = new HashSet<string>(gewaehlt.Select(g => g.Item1.ToolSignatur));

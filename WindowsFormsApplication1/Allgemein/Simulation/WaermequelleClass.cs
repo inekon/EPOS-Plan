@@ -483,11 +483,13 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT Gesamtvolumen, Bereitschaftsverluste FROM [" + PufferSpStammCtrl.TABLE +
+                    "SELECT ID, Gesamtvolumen, Bereitschaftsverluste FROM [" + PufferSpStammCtrl.TABLE +
                     "] WHERE Bezeichner = ?",
                     new OleDbParameter("@bez", bezeichner));
                 if (dt == null || dt.Rows.Count == 0) return null;
 
+                int idSpeicher = dt.Rows[0]["ID"] != DBNull.Value
+                    ? Convert.ToInt32(dt.Rows[0]["ID"]) : 0;
                 double volumen = dt.Rows[0]["Gesamtvolumen"] != DBNull.Value
                     ? Convert.ToDouble(dt.Rows[0]["Gesamtvolumen"]) : 0;
                 double verluste = dt.Rows[0]["Bereitschaftsverluste"] != DBNull.Value
@@ -504,6 +506,11 @@ namespace WindowsFormsApplication1
                 SimulationPufferspeicher sp = new SimulationPufferspeicher();
                 sp.Bezeichner = bezeichner;
                 sp.Erzeuger = "Wärmequelle";
+                // Konzept 6.6: Rolle und Speicher-ID für die Ergebniszeile.
+                // Der Quellspeicher stammt aus dem Katalog (_STAMM), nicht aus der
+                // Projektkopie - die ID zeigt deshalb dorthin.
+                sp.ID_Pufferspeicher = idSpeicher;
+                sp.Verwendung = SimulationPufferspeicher.VERWENDUNG_QUELLE;
                 // Spreizung als Temperaturhub der nutzbaren Kapazität verwenden
                 sp.Init(volumen, (int)Math.Round(spreizung), 0, verluste);
                 sp.RegenerationProStunde = regeneration;

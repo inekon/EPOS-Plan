@@ -154,11 +154,11 @@ namespace WindowsFormsApplication1
             // UTF-8 mit BOM, damit Excel Umlaute korrekt anzeigt
             using (StreamWriter sw = new StreamWriter(dateiname, false, new UTF8Encoding(true)))
             {
-                // Kopfzeile
+                // Kopfzeile - Spaltennamen entschärft und eindeutig gemacht.
                 StringBuilder kopf = new StringBuilder();
                 kopf.Append("Zeitstempel").Append(SEP).Append("Außentemperatur [°C]");
-                foreach (CsvSpalte sp in spalten)
-                    kopf.Append(SEP).Append(sp.Name);
+                foreach (string name in Spaltenkoepfe(spalten, SEP))
+                    kopf.Append(SEP).Append(name);
                 sw.WriteLine(kopf.ToString());
 
                 // Datenzeilen
@@ -184,6 +184,48 @@ namespace WindowsFormsApplication1
                     zeit += schritt;
                 }
             }
+        }
+
+        /// <summary>
+        /// Baut die Spaltenüberschriften der Kopfzeile auf.
+        ///
+        /// Zwei Dinge, die vorher fehlten und mit den Speicher-Spalten aus Paket 7
+        /// erstmals real auftreten konnten - dort geht der Bezeichner eines Speichers
+        /// ungefiltert in den Kopf:
+        ///
+        ///  - Das Trennzeichen im Namen (ein Speicher darf "600 l; Vitocell" heißen)
+        ///    hätte die Kopfzeile um eine Spalte verschoben und die ganze Datei gegen
+        ///    die Datenzeilen verrutschen lassen. Es wird durch ein Komma ersetzt,
+        ///    ebenso Zeilenumbrüche.
+        ///  - Zwei Speicher dürfen denselben Bezeichner tragen (Katalog und
+        ///    Projektkopie). Gleichnamige Spalten macht Excel beim Auswerten
+        ///    ununterscheidbar; die zweite bekommt deshalb "_2", die dritte "_3" usw.
+        /// </summary>
+        private static List<string> Spaltenkoepfe(List<CsvSpalte> spalten, string separator)
+        {
+            var ergebnis = new List<string>(spalten.Count);
+            var zaehler = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (CsvSpalte sp in spalten)
+            {
+                string name = (sp.Name ?? "").Replace(separator, ",")
+                                             .Replace("\r", " ").Replace("\n", " ").Trim();
+                if (name.Length == 0) name = "Spalte";
+
+                int n;
+                if (zaehler.TryGetValue(name, out n))
+                {
+                    zaehler[name] = n + 1;
+                    ergebnis.Add(name + "_" + (n + 1));
+                }
+                else
+                {
+                    zaehler[name] = 1;
+                    ergebnis.Add(name);
+                }
+            }
+
+            return ergebnis;
         }
 
         /// <summary>

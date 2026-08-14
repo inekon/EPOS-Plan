@@ -10,6 +10,30 @@ gesetzt — oder ein Fehler.
 Grundlage: `WindowsFormsApplication1/Allgemein/Simulation/Konzept_Simulation_QuellenSenken.md`,
 Paket B1, Kapitel 9.
 
+## Aktuelle Basis
+
+**`2026-08-14_Paket7/`** — seit dem 14.08.2026 die gültige Referenz, **neun Projekte**
+(1007, 1008, 1010, 1011, 1017, 1018, 1021, 1023, 1024). Jeder neue Vergleich läuft gegen
+diesen Ordner.
+
+`2026-08-14_B0/` bleibt als **historischer Stand** liegen (Zustand vor Paket 1/3/7, acht
+Projekte). Ein Vergleich gegen B0 meldet zwangsläufig FAIL — der Basiswechsel ist gewollt
+und in `2026-08-14_Paket7/vergleich_protokoll.md` sowie in
+`../WindowsFormsApplication1/Allgemein/Simulation/Paket7_Ergebnis_Anzeigen_Protokoll.md`
+begründet:
+
+| Was | Alt (B0) | Neu (Paket 7) |
+|---|---|---|
+| Projektmenge | acht | neun — **1021** kommt hinzu und deckt als einziges den Quellspeicher-Pfad ab |
+| `Waermepumpe.Kapazitaet_Pufferspeicher` | `Volumen · 1,16` aus dem WP-Datensatz (in allen Projekten 11,6) | `SimulationPufferspeicher.Q_max` des zugeordneten Puffers; 0 ohne Puffer |
+| Pufferspeicher-Persistenz | gab es nicht | `Pufferspeicher[i].*` je Speicher in `aggregate.csv` (aus `Tab_ErgebnisPufferspeicher`) |
+| Speicher-Kennzahlen | gab es nicht | `Puffer.SOC_Mittel`, `Puffer.SOC_Max`, `Puffer.Vollzyklen`, `Sim.Speicher_Anzahl` |
+| Quellspeicher-Ganglinien | gab es nicht | `quellspeicher_<AnlagenID>_{soc,ladung,entladung}.csv` (nur in 1021) |
+| Erdreich-Auslegungsprüfung | gab es nicht | `Erdreich[i].*` in `aggregate.csv` — **nur** bei Projekten mit `WQ_Typ = 'Erdreich'`, in der Referenzmenge also nirgends |
+
+Gerechnet wurde die neue Basis auf einer **eigenen, vollständig migrierten Kopie außerhalb
+des Repos** im Modus `projekt` (siehe `2026-08-14_Paket7/lauf_protokoll.md`).
+
 ## Was hier liegt
 
 | Pfad | Inhalt |
@@ -67,8 +91,16 @@ $exe = "C:\Waermeplan\WP_Plan\Referenzlauf\bin\x86\Debug\net8.0-windows\Referenz
 & $exe lauf --timeout 600                    # Zeitlimit je Projekt in Sekunden (Standard 300)
 ```
 
-Kopiert die Datenbank, wählt die Projekte, rechnet und schreibt CSVs plus
-`lauf_protokoll.md`. Exit-Code 0, wenn alle Projekte durchgelaufen sind.
+Kopiert die Datenbank, **migriert sie auf den Zielstand des Schemas**, wählt die Projekte,
+rechnet und schreibt CSVs plus `lauf_protokoll.md`. Exit-Code 0, wenn alle Projekte
+durchgelaufen sind.
+
+Die Migration (Schritt 2b) gehört seit der Paket-7-Nacharbeit dazu. Vorher rechnete `lauf`
+auf einer Kopie im Stand der Quelldatenbank: fehlende Spalten und eine fehlende
+`Tab_ErgebnisPufferspeicher` wurden nur von den Rückfallebenen im Anwendungscode
+notdürftig ausgeglichen, und das Ergebnis war mit einem Lauf auf einer migrierten
+Datenbank nicht vergleichbar. Die Migration ist idempotent — auf einer aktuellen Kopie
+ist sie ein No-op.
 
 ### `vergleich` — gegen die Referenz prüfen
 
@@ -92,11 +124,14 @@ null und wird nur als Hinweis gemeldet.
 ### `liste` — Projektlandschaft ansehen
 
 ```powershell
-& $exe liste
+& $exe liste                                 # legt die Arbeitskopie neu an
+& $exe liste C:\Waermeplan\Paket7_Nach\DB_Basis   # liest eine vorhandene Kopie
 ```
 
 Zeigt alle Projekte mit Ausstattung und die automatische Auswahl samt Begründung, ohne zu
-rechnen.
+rechnen. Mit Ordnerargument wird **nichts kopiert** — so lässt sich die Auswahl auf einer
+eigenen Kopie außerhalb des Repos nachprüfen, ohne die `Arbeitskopie` eines laufenden
+Vergleichs zu überschreiben.
 
 ## Toleranzen
 
@@ -115,23 +150,51 @@ Volatile Größen sind bewusst nicht Teil des Vergleichs: die Autowert-IDs der
 
 ## Ablauf vor einer Änderung an der Engine (Paket 1 ff.)
 
+Zwei gleichwertige Wege. **Weg B** ist der, mit dem die aktuelle Basis entstanden ist; er
+ist zwingend, wenn parallel gearbeitet wird oder die Kopie außerhalb des Repos liegen soll.
+
+### Weg A — mit `lauf` (bequem, benutzt `Referenzlaeufe\Arbeitskopie`)
+
 1. **Sauberen Ausgangszustand herstellen.** Anwendung schließen, Arbeitsverzeichnis auf dem
    Stand, gegen den verglichen werden soll.
-2. **Referenz einfrieren** — falls für diesen Stand noch keine existiert:
+2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
+   `Referenzlauf.csproj`).
+3. **Neu rechnen und vergleichen** — Referenz ist die aktuelle Basis, seit dem
+   14.08.2026 also `2026-08-14_Paket7`:
    ```powershell
-   & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_B0
-   & $exe pruefen C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_B0
+   & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket2
+   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_Paket7 `
+                    C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket2
    ```
-3. **Änderung umsetzen** und die Anwendung neu bauen.
-4. **Neu rechnen und vergleichen:**
-   ```powershell
-   & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket1
-   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_B0 `
-                    C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket1
-   ```
-5. **Abweichungen bewerten.** Jede gemeldete Abweichung ist entweder gewollt — dann im
-   Umsetzungsprotokoll begründen und den neuen Ordner zur Referenz erklären — oder ein
-   Fehler.
+   `lauf` kopiert **und migriert** die Arbeitskopie selbst.
+
+### Weg B — eigene Kopie außerhalb des Repos (`migration` + `projekt`)
+
+```powershell
+# 1. Eigene, vollständig migrierte Kopie anlegen (schreibt NIE in die produktive DB)
+& $exe migration C:\ProgramData\EPOS_PLAN\Kenndaten.accdb C:\Waermeplan\MeinTest\DB
+
+# 2. Auswahl kontrollieren (rein lesend, kopiert nichts)
+& $exe liste C:\Waermeplan\MeinTest\DB
+
+# 3. Die neun Referenzprojekte einzeln rechnen
+foreach ($id in 1007,1008,1010,1011,1017,1018,1021,1023,1024) {
+    & $exe projekt $id "C:\Waermeplan\MeinTest\Lauf\Projekt_$id" C:\Waermeplan\MeinTest\DB
+}
+
+# 4. Gegen die aktuelle Basis vergleichen und plausibilisieren
+& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_Paket7 C:\Waermeplan\MeinTest\Lauf
+& $exe pruefen   C:\Waermeplan\MeinTest\Lauf
+```
+
+Der Modus `projekt` migriert **nicht** — er erwartet eine fertige Kopie aus Schritt 1.
+Ohne Schritt 1 rechnet er auf einem unvollständigen Schema.
+
+### Danach
+
+**Abweichungen bewerten.** Jede gemeldete Abweichung ist entweder gewollt — dann im
+Umsetzungsprotokoll begründen und den neuen Ordner zur Referenz erklären — oder ein
+Fehler.
 
 Wichtig: Beide Läufe müssen von derselben Quelldatenbank ausgehen. Ändern sich zwischendurch
 die Projektdaten, vergleicht man Äpfel mit Birnen. Die Quelle steht im Kopf von
@@ -140,18 +203,22 @@ die Projektdaten, vergleicht man Äpfel mit Birnen. Die Quelle steht im Kopf von
 ## Die Projektauswahl
 
 Ohne `--projekte` wählt die Suite selbst, deterministisch und aus der Arbeitskopie heraus.
-Sie deckt zuerst fünf Pflichtkategorien ab — Wärmepumpe mit Pufferspeicher, Heizkessel,
-BHKW, Solarthermie und den Minimalfall „nur Wärmepumpe" — und füllt dann auf acht Projekte
-auf: erst mit neuen Erzeugerkombinationen, danach mit abweichender Anlagenausstattung.
-Übergangen werden Projekte ohne Eintrag in `Tab_Einstellungen` und ohne Klimaregion; die
-stehen mit Begründung im Protokoll.
+Sie deckt zuerst **sechs** Pflichtkategorien ab — Wärmepumpe mit Pufferspeicher,
+Heizkessel, BHKW, Solarthermie, den Minimalfall „nur Wärmepumpe" und (seit Paket 7)
+Wärmepumpe mit **Quellspeicher** — und füllt dann auf neun Projekte auf: erst mit neuen
+Erzeugerkombinationen, danach mit abweichender Anlagenausstattung. Übergangen werden
+Projekte ohne Eintrag in `Tab_Einstellungen` und ohne Klimaregion; die stehen mit
+Begründung im Protokoll.
+
+Die Kategorie „Quellspeicher" steht bewusst **hinter** den fünf ursprünglichen: so bleiben
+deren Wahlen unverändert und es kommt nur ein Projekt hinzu (1021).
 
 Ändert sich die Projektlandschaft, ändert sich womöglich auch die Auswahl — und damit
 lassen sich die Ordner nicht mehr vergleichen. Wer über längere Zeit dieselbe Basis braucht,
 gibt die Projekte fest vor:
 
 ```powershell
-& $exe lauf --projekte 1007,1008,1010,1011,1017,1018,1023,1024
+& $exe lauf --projekte 1007,1008,1010,1011,1017,1018,1021,1023,1024
 ```
 
 ## Dialoge der Engine
@@ -177,7 +244,7 @@ Ablauf abgeräumt wird; die halbfertige Ausgabe wird gelöscht, das Projekt im P
 
 ## Aufräumen
 
-Ein Lauf belegt rund 27 MB. Die CSVs gehören ins Git — sie sind die Referenz —, alte
+Ein Lauf belegt rund 30 MB (neun Projekte). Die CSVs gehören ins Git — sie sind die Referenz —, alte
 Laufordner dagegen nicht auf Dauer. Nicht mehr benötigte Ordner löschen, statt sie
 anzusammeln. `Arbeitskopie/` bleibt ohnehin außen vor: `Kenndaten.accdb` steht in
 `.gitignore`.

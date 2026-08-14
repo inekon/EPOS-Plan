@@ -48,6 +48,36 @@ namespace WindowsFormsApplication1
         // oder Quelle als unbegrenzt verfügbar konfiguriert).
         private List<SimulationPufferspeicher> wp_quellspeicher = new List<SimulationPufferspeicher>();
 
+        /// <summary>
+        /// Quellspeicher je WP-Modul in Modulreihenfolge (Einträge können null sein).
+        /// Lesezugriff für Ergebnis-Persistenz und Anzeigen (Konzept 6.6/13.3) -
+        /// die Liste selbst bleibt in der Hand der Simulation.
+        /// </summary>
+        public IReadOnlyList<SimulationPufferspeicher> Quellspeicher { get { return wp_quellspeicher; } }
+
+        /// <summary>
+        /// Quelltemperatur-Jahresprofil je WP-Modul in Modulreihenfolge.
+        /// Lesezugriff für die zweite Warnbedingung der Erdreich-Prüfung
+        /// (Quelltemperatur minus Spreizung dauerhaft &lt; 0 °C, Konzept 13.1).
+        /// </summary>
+        public IReadOnlyList<float[]> Quelltemperaturen { get { return wp_quelltemp; } }
+
+        // Bauart der Wärmepumpe je Modul (Tab_WP.Typ): "Luft-Wasser",
+        // "Sole-Wasser", "Wasser-Wasser". Wird beim Aufbau der Kaskade gelesen.
+        private List<string> wp_typ = new List<string>();
+
+        /// <summary>
+        /// Bauart je WP-Modul in Modulreihenfolge (Tab_WP.Typ).
+        ///
+        /// Sie ist die WIRKSAMKEITSREGEL der Wärmequelle: Für "Luft-Wasser" liefern
+        /// <see cref="WaermequelleClass.Quelltemperatur"/> und
+        /// <see cref="WaermequelleClass.Quellspeicher"/> immer Außenluft bzw. null -
+        /// eine gepflegte WQ_*-Konfiguration bleibt dort ohne jede Wirkung. Auswertungen
+        /// (Erdreich-Auslegungsprüfung) müssen das mitprüfen, sonst weisen sie Zahlen
+        /// für eine Quelle aus, die gar nicht gerechnet wurde.
+        /// </summary>
+        public IReadOnlyList<string> WPTypen { get { return wp_typ; } }
+
         // Wärmesenke je WP-Modul: Beides | Warmwasser | Heizung
         // (WS_Typ der Energieanlage; steuert, welchen Bedarfsanteil das Modul deckt)
         private List<string> wp_senke = new List<string>();
@@ -129,6 +159,7 @@ namespace WindowsFormsApplication1
             wp_kenndaten.Clear();
             wp_quelltemp.Clear();
             wp_quellspeicher.Clear();
+            wp_typ.Clear();
             wp_senke.Clear();
             wp_modus.Clear();
             for (int i = 0; i < wp_list.Count; i++)
@@ -153,6 +184,9 @@ namespace WindowsFormsApplication1
                 rs.Close();
 
                 wp_model.Add(model);
+                // Bauart merken - sie entscheidet, ob die WQ_*-Konfiguration überhaupt
+                // wirkt (siehe WPTypen); Auswertungen brauchen dieselbe Regel.
+                wp_typ.Add(wpTyp ?? "");
 
                 // Wärmequelle des Moduls: Luft-Wasser = Außenluft, sonst gemäß
                 // WQ_Typ der Energieanlage (Fallback ist immer die Außenluft).
@@ -160,7 +194,11 @@ namespace WindowsFormsApplication1
 
                 // Dient ein Pufferspeicher als Wärmequelle, muss die Quellwärme
                 // tatsächlich aus diesem gedeckt werden (Bilanz je Stunde).
-                wp_quellspeicher.Add(WaermequelleClass.Quellspeicher(wp_list[i], wpTyp));
+                SimulationPufferspeicher quellSp = WaermequelleClass.Quellspeicher(wp_list[i], wpTyp);
+                // Zuordnung zur Energieanlage merken: sie bildet den technischen
+                // Serienschlüssel QUELLE_<AnlagenID> der Anzeigen (Konzept 13.3).
+                if (quellSp != null) quellSp.ID_Anlage = wp_list[i];
+                wp_quellspeicher.Add(quellSp);
 
                 // Wärmesenke des Moduls (Warmwasser und/oder Heizwärme)
                 string senke = WaermequelleClass.WertLesen(wp_list[i], "WS_Typ") as string;
@@ -293,9 +331,23 @@ namespace WindowsFormsApplication1
 
                 double[] result = new double[4] { 0, 0, 0, 0 };
 
+                // ***********************************************************************
+                // Wärmepumpe bleibt in dieser Stunde aus (Bedarf ist aus dem Senken-
+                // Pufferspeicher gedeckt). Die QUELLspeicher müssen ihre Stunde trotzdem
+                // abschließen: StundeAbschliessen verrechnet die Bereitschaftsverluste
+                // UND schreibt den Füllstand in SOC_stuendlich. Ohne diesen Aufruf bleibt
+                // die Ganglinie in jeder solchen Stunde auf 0 stehen, obwohl der Speicher
+                // voll ist - SOC_Mittel und SOC_Max fallen systematisch zu niedrig aus
+                // (die Ganglinie speist Anzeige, CSV-Export und Tab_ErgebnisPufferspeicher).
+                // Betroffen sind nur Projekte MIT Quellspeicher; ohne Senken-Puffer wird
+                // wpEinsatz nie false.
+                // ***********************************************************************
+                if (!wpEinsatz)
+                    for (int index = 0; index < wp_quellspeicher.Count; index++)
+                        if (wp_quellspeicher[index] != null) wp_quellspeicher[index].StundeAbschliessen(stunde);
+
                 for (int index = 0; index < wp_model.Count; index++)
                 {
-                    // Wärmepumpe bleibt in dieser Stunde aus (Bedarf aus dem Speicher gedeckt)
                     if (!wpEinsatz) break;
 
                     WErzeugerModel model = wp_model[index];
@@ -746,6 +798,17 @@ namespace WindowsFormsApplication1
 
         public void Init()
         {
+            // Quellenbezogene Listen mit zurücksetzen. Sie werden in Berechnung() neu
+            // aufgebaut - ein Lauf, der die Wärmepumpe NICHT rechnet (Gewerk abgewählt)
+            // oder vorzeitig abbricht, käme sonst nie dazu: SimulationControl.AlleSpeicher()
+            // liefert dann weiter die Quellspeicher des Vorlaufs, und der veraltete
+            // Speicher landete in Anzeige, CSV-Export und Tab_ErgebnisPufferspeicher.
+            // Die Clear()-Aufrufe am Anfang von Berechnung() bleiben stehen (Init wird
+            // dort als Erstes gerufen) - doppeltes Leeren ist unschädlich.
+            wp_quelltemp.Clear();
+            wp_quellspeicher.Clear();
+            wp_typ.Clear();
+
             for (int i = 0; i < MAX_WP; i++)
             {
                 Modul_WP_Strombedarf[i] = 0;

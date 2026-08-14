@@ -36,6 +36,11 @@ namespace WindowsFormsApplication1
         public ErgebnisSolarthermieModel Solarthermie;
         public ErgebnisPhotovoltaikModel Photovoltaik;
 
+        // Pufferspeicher des Laufs (Tab_ErgebnisPufferspeicher, Konzept 6.6):
+        // eine Zeile je beteiligtem Speicher - Senkenspeicher UND Quellspeicher.
+        // Leere Liste = dieser Lauf hatte keinen Speicher.
+        public List<ErgebnisPufferspeicherModel> Pufferspeicher = new List<ErgebnisPufferspeicherModel>();
+
         public ErgebnisModel()
         {
             Zeitstempel = DateTime.Now;
