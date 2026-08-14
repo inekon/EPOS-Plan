@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
             try
             {
                 // Standardkonforme DELETE-Syntax ohne "*" und Typkorrektur über Parameter
-                string sql = "DELETE FROM Tab_WaermebedarfDaten WHERE ID_GanglinieDaten = ?";
+                string sql = "DELETE FROM Tab_WaermebedarfDaten WHERE ID_Ganglinie = ?";
                 OleDbParameter[] ps = {
                     new OleDbParameter("@idGang", m_ID_GanglinieDaten)
                 };
@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
             try
             {
                 // Vorbereitung des parametrisierten SQL-Statements mit standardkonformer VALUES-Klausel
-                string sql = "INSERT INTO Tab_WaermebedarfDaten (ID_GanglinieDaten, Wert) VALUES (?, ?)";
+                string sql = "INSERT INTO Tab_WaermebedarfDaten (ID_Ganglinie, Wert) VALUES (?, ?)";
 
                 // Schleife über die dynamische Liste unter Verwendung von foreach statt dem langsameren .ElementAt(i)
                 foreach (var item in list_GanglinieDaten)
