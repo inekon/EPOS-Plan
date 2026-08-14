@@ -516,8 +516,14 @@ namespace WindowsFormsApplication1
                         Modul_WP_Waermeproduktion[index] += (float)result[PTHERM];
                         Modul_WP_Strombedarf[index] += result[PEL];
 
-                        WP_Laufzeit = WP_Laufzeit + 1;
-                        Modul_WP_Laufzeit[index] += 1;
+                        // Absicherung: bei begrenzter Quelle bzw. Sperrzeit kann
+                        // result[PTHERM] 0 sein - dann keine Laufzeit anrechnen,
+                        // sonst zählen Stunden ohne Wärmelieferung als Betriebszeit.
+                        if (result[PTHERM] > 0)
+                        {
+                            WP_Laufzeit = WP_Laufzeit + 1;
+                            Modul_WP_Laufzeit[index] += 1;
+                        }
 
                         SenkeAbziehen(senke, result[PTHERM], ref rest_ww, ref rest_heiz);
                     }

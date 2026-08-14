@@ -27,6 +27,24 @@ Referenzläufe, die vor den weiteren Paketen einzufrieren sind.
 | **B0-10** | `Form_PufferSp.cs:183`, `Form_PufferSp_Admin.cs:59` | `szFilterVolumen` mit `Gesamtvolumen Like '%'` vorbelegt (Fallback „alle Volumina") | **Keine Rechenwirkung.** Beseitigt den Laufzeit-SQL-Syntaxfehler `… and␣␣order by …` bei unbekannten Filtertexten; Filterverhalten bei den bekannten Literalen unverändert |
 | **B0-11** | `Form_Simulation_Config.cs` (btn_Speichern) | Rückwärts-Mapping matcht auch gegen `DbValue`; Mapping-Liste vor die Schleife gezogen | **Deutsche Oberfläche: unverändert** (DisplayName = DbValue trifft weiterhin zuerst). Verhindert, dass nach Sprachwechsel der lokalisierte Anzeigename als `Erzeuger` in `Z_ProjektPufferSp` landet und die Zuordnung still wirkungslos wird |
 
+## Nachtrag 14.08.2026: B0-13 (aus der Paket-4-Review)
+
+| # | Datei(en) | Fix | Ergebniswirkung |
+|---|---|---|---|
+| **B0-13** | `SimulationWaermepumpe.cs` (Modulschleife, Volllast-Zweig) | `WP_Laufzeit`/`Modul_WP_Laufzeit` zählen nur noch, wenn das Modul tatsächlich Wärme liefert (`result[PTHERM] > 0`) — dieselbe Absicherung, die der Teillast-Zweig bereits hatte | **Nur Stunden, in denen `PTHERM` trotz Bedarf auf 0 fällt** (leergefahrener Quellspeicher → Quellbegrenzungs-Faktor 0, oder Sperrzeit): Bisher zählte jede solche Stunde als volle Betriebsstunde — die Paket-4-Review fand im Mehrmodul-Quellspeicher-Szenario 6.691 Betriebsstunden bei 0 kWh Wärme. Betroffen sind ausschließlich die laufzeitbasierten Größen: `Vollbenutzungsstunden` (gespeichertes Ergebnis, Berichts-Kennzahl `eff.wp_vbh`, Projektvergleich, Detailansicht) und die Modul-`Betriebsstunden` (Paket-7-Persistenz) sinken auf die Stunden mit tatsächlicher Lieferung. Wärme, Strom und Restbedarf: bitidentisch (der Zweig addierte in solchen Stunden ohnehin 0). **Hinweis:** Der neue Quellen-/Senken-Pfad aus Paket 4 (Stand Review: uncommittet) enthält dieselbe unbedingte Zählung an zwei Stellen und braucht dieselbe Absicherung |
+
+**Verifikation B0-13 (14.08.2026):** A/B-Referenzlauf mit Baseline- und Fix-DLL auf
+derselben migrierten DB-Kopie, alle neun Referenzprojekte. Die Baseline reproduziert
+die eingefrorene Basis `2026-08-14_Paket7` exakt (GESAMT PASS, 2.260.923 Werte —
+Quelldatenbank für diese Projekte unverändert). Der Fix ändert **ausschließlich** in
+Projekt 1021 (Mehrmodul + Quellspeicher) die zwei laufzeitbasierten Skalare:
+`WaermepumpeModul[0].Betriebsstunden` 6.692,41 → 4,41 und
+`Waermepumpe.Vollbenutzungsstunden` 3.846,66 → 502,66; Modul 1, sämtliche Wärme-,
+Strom- und Restgrößen sowie alle Ganglinien aller Projekte: unverändert (PASS).
+Die Basis wurde bewusst **nicht** neu eingefroren — Paket 4 friert ohnehin neu ein;
+bis dahin meldet `vergleich` gegen `2026-08-14_Paket7` in 1021 genau diese zwei
+gewollten Abweichungen (siehe Hinweis in `Referenzlaeufe/LIESMICH.md`).
+
 ## Verifikation
 
 - **Build:** `WP-Plan.sln`, Debug/x86 — fehlerfrei (nur vorbestehende Warnungen).
