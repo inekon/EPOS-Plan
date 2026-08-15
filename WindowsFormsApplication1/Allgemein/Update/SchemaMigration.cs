@@ -36,12 +36,13 @@ namespace WindowsFormsApplication1
     /// einmalige Projektdatenmigration nach Konzept 5.5. Schritt 6 kommt mit Paket 4
     /// (Etappe 4a) hinzu und legt das Feature-Flag der zweikanaligen Kaskade an,
     /// Schritt 7 mit Paket 8 und belegt die Einstellung Extrapolation_erlaubt vor
-    /// (Konzept 13.4).
+    /// (Konzept 13.4). Schritt 8 trägt den Energieträger-Verweis
+    /// Tab_Energieanlagen.ID_Carrier nach.
     /// </summary>
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 7;
+        public const int ZIEL_VERSION = 8;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -65,6 +66,15 @@ namespace WindowsFormsApplication1
         /// ihren WERT einmalig auf WAHR und ist damit das zweite DML des Vorhabens.
         /// </summary>
         public const int SCHRITT_7_EXTRAPOLATION = 7;
+
+        /// <summary>
+        /// Nummer des Energieträger-Verweises <c>Tab_Energieanlagen.ID_Carrier</c>.
+        /// Rein additives DDL aus dem Spaltenkatalog - die Spalte wurde in der
+        /// Produktivdatenbank von Hand angelegt, während der Code sie schon voraussetzt
+        /// (<c>ProjektPuffer</c>, <c>WizardCtrl.Add_WP_Waermeerzeuger</c>). Auf einer frisch
+        /// ausgelieferten Datenbank fehlte sie bisher.
+        /// </summary>
+        public const int SCHRITT_8_ENERGIETRAEGER = 8;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -187,6 +197,12 @@ namespace WindowsFormsApplication1
                         "Vorbelegung Extrapolation_erlaubt in Tab_Einstellungen (Konzept 13.4)",
                         "Die Projekteinstellung für die Kennlinien-Extrapolation konnte nicht vorbelegt werden.",
                         Schritt_7_ExtrapolationVorbelegung),
+
+            // Energieträger-Verweis an der Anlage - Nachtrag der von Hand angelegten Spalte.
+            new Schritt(SCHRITT_8_ENERGIETRAEGER,
+                        "Energieträger-Verweis ID_Carrier in Tab_Energieanlagen",
+                        "Die Spalte für den Energieträger der Anlage konnte nicht angelegt werden.",
+                        Schritt_8_Energietraeger),
         };
 
         // =================================================================================
@@ -534,6 +550,25 @@ namespace WindowsFormsApplication1
             l.Notiz("Extrapolation_erlaubt: " + betroffen + " Einstellungssätze auf WAHR vorbelegt " +
                     "(entspricht der bisherigen Antwort auf die Extrapolationsrückfrage)");
             return true;
+        }
+
+        /// <summary>
+        /// Schritt 8: der Energieträger-Verweis <c>Tab_Energieanlagen.ID_Carrier</c>.
+        ///
+        /// Bewusst derselbe additive Weg wie Schritt 1, 2 und 6 und aus demselben Katalog -
+        /// eigener Schritt nur deshalb, weil eine bereits auf Stand 7 stehende Datenbank die
+        /// Schritte 1-7 nicht wiederholen darf (Schritt 5 und 7 sind die DML-Schritte des
+        /// Vorhabens).
+        ///
+        /// KEIN BACKFILL. Die Spalte ist NULL-fähig; „kein Energieträger" wird als NULL
+        /// bzw. 0 geführt und vom lesenden Code gleich behandelt. Auf der Produktivdatenbank
+        /// ist der Schritt ein No-op („bereits vorhanden") - die Spalte wurde dort von Hand
+        /// angelegt, und genau diese Handanlage holt der Schritt für alle übrigen
+        /// Datenbanken nach.
+        /// </summary>
+        private static bool Schritt_8_Energietraeger(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt8_Energietraeger);
         }
 
         /// <summary>
