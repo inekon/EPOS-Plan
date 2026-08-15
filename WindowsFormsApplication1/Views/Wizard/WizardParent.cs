@@ -508,6 +508,27 @@ namespace WindowsFormsApplication1
             rs.Close();
         }
 
+        /// <summary>
+        /// Liest die Energieanlagen eines bestehenden Projekts in <see cref="list_werzmodel"/>
+        /// - die Liste, die der Bearbeiten-Zweig in <c>btnSpeichern_Click</c> nach
+        /// <c>Del_Projekt_Waermeerzeuger</c> an <c>Add_WP_Waermeerzeuger</c> uebergibt.
+        ///
+        /// <para>
+        /// Die vollstaendig gelesenen Modelle werden DURCHGEREICHT statt Feld fuer Feld
+        /// umkopiert - dieselbe Umstellung wie in den Kontextmenue-Controllern
+        /// (<c>HeizkesselKontextMenuCtrl</c> &amp; Co.) und auf den Karten der Startseite.
+        /// Die fruehere Teilkopie legte je Anlage ein NEUES <c>WErzeugerModel</c> an und
+        /// fuehrte 28 der 57 Spalten; nicht kopiert wurden <c>ID_PUFFER</c> und die
+        /// komplette Quellen-/Senken-Konfiguration (<c>WS_*</c>, <c>WQ_*</c>,
+        /// <c>Prioritaet</c>, <c>BM_Typ</c>). Weil der Speicherweg Loeschen +
+        /// Neuanlegen ist, war alles davon nach dem Speichern weg - gemessen 34
+        /// Feldabweichungen in Projekt 1023 und 13 in Projekt 1024, u. a.
+        /// <c>WS_Typ</c>/<c>WS_Ziel2</c>/<c>WS_ID_Puffer2</c> am BHKW, der komplette
+        /// Erdreich-Satz und <c>ID_PUFFER</c> eines nicht katalogisierten
+        /// Projekt-Puffers. Jede kuenftige Spalte kommt jetzt automatisch mit, sobald
+        /// <c>WErzeugerCtrl.AusZeile</c> sie liest.
+        /// </para>
+        /// </summary>
         public void LoadWEFromDB(string projekt)
         {
             if (projekt != "")
@@ -522,40 +543,13 @@ namespace WindowsFormsApplication1
 
                 for (int n = 0; n < werzctrl.rows; n++)
                 {
-                    WErzeugerModel item = new WErzeugerModel();
-                    ListViewItem lvitem = new ListViewItem();
+                    // Einziges Feld, das die Teilkopie BEWUSST gesetzt hat: Es bleibt
+                    // erhalten. Durch den Filter ist der Wert derselbe, den die Zeile
+                    // fuehrt; die Zuweisung greift nur, falls die Spalte in einer alten
+                    // Datenbank fehlt (AusZeile laesst ID_Projekt dann auf 0 stehen).
+                    werzctrl.items[n].ID_Projekt = projctrl.m_ID;
 
-                    item.ID = werzctrl.items[n].ID;
-                    item.ID_Projekt = projctrl.m_ID;
-                    item.Bezeichner = werzctrl.items[n].Bezeichner;
-                    item.ID_Type = werzctrl.items[n].ID_Type;
-                    item.Abschaltpunkt = (double)werzctrl.items[n].Abschaltpunkt;
-                    item.Betriebsart = (string)werzctrl.items[n].Betriebsart;
-                    item.Bivalenter_Betrieb = werzctrl.items[n].Bivalenter_Betrieb;
-                    item.Nutzungszeit = werzctrl.items[n].Nutzungszeit;
-                    item.Ruecklauf = werzctrl.items[n].Ruecklauf;
-                    item.Sperrung = werzctrl.items[n].Sperrung;
-                    item.Sperrzeit_bis = werzctrl.items[n].Sperrzeit_bis;
-                    item.Sperrzeit_von = werzctrl.items[n].Sperrzeit_von;
-                    item.Vorlauf = werzctrl.items[n].Vorlauf;
-                    item.Heizstab = werzctrl.items[n].Heizstab;
-                    item.Volumen = werzctrl.items[n].Volumen;
-                    item.rendeMix = werzctrl.items[n].rendeMix;
-                    item.Solaranteil = werzctrl.items[n].Solaranteil;
-                    item.ID_WP = werzctrl.items[n].ID_WP;
-                    item.ID_SP = werzctrl.items[n].ID_SP;
-                    item.ID_PV = werzctrl.items[n].ID_PV;
-                    item.ID_Solar = werzctrl.items[n].ID_Solar;
-                    item.ID_Kessel = werzctrl.items[n].ID_Kessel;
-                    item.ID_BHKW = werzctrl.items[n].ID_BHKW;
-                    item.Grenzleistung = werzctrl.items[n].Grenzleistung;
-                    item.Kollektormodulanzahl = werzctrl.items[n].Kollektormodulanzahl;
-                    item.m_Azimut = werzctrl.items[n].m_Azimut;
-                    item.m_Neigung = werzctrl.items[n].m_Neigung;
-                    item.PV_Leistung = werzctrl.items[n].PV_Leistung;
-                    item.ID_Carrier = werzctrl.items[n].ID_Carrier;
-
-                    list_werzmodel.Add(item);
+                    list_werzmodel.Add(werzctrl.items[n]);
                 }
             }
         }

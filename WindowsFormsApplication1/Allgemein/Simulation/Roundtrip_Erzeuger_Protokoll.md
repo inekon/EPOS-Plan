@@ -298,25 +298,85 @@ Zeilenenden (CRLF) der drei Dateien unverändert, kein Mojibake.
 
 ---
 
-## 4. Offener Restbefund — `WizardParent.LoadWEFromDB`
+## 4. Nachtrag 15.08.2026 — `WizardParent.LoadWEFromDB` (Restbefund **erledigt**)
 
-**Der Wizard-Bearbeiten-Zweig verliert die Konfiguration weiterhin**, und zwar in einer
-Teilkopie **vor** dem Speicherweg: `Views/Wizard/WizardParent.cs:511-561` legt für jede
-gelesene Anlage ein **neues** `WErzeugerModel` an und kopiert 28 Felder einzeln. Nicht
-kopiert werden `ID_PUFFER` **und alle 27 Spalten der Quellen-/Senken-Konfiguration**.
-`list_werzmodel` aus dieser Schleife (`WizardParent.cs:233`) ist genau die Liste, die
-`WizardParent.cs:670-673` nach `Del_Projekt_Waermeerzeuger` an `Add_WP_Waermeerzeuger`
-übergibt. Die Datei war für diese Arbeit gesperrt und wurde **nicht** angefasst.
+Der Restbefund war eine Teilkopie **vor** dem Speicherweg: `Views/Wizard/WizardParent.cs`
+legte für jede gelesene Anlage ein **neues** `WErzeugerModel` an und kopierte 28 Felder
+einzeln. Nicht kopiert wurden `ID_PUFFER` **und alle 27 Spalten der
+Quellen-/Senken-Konfiguration**. `list_werzmodel` aus dieser Schleife
+(`WizardParent.cs:233`) ist genau die Liste, die der Bearbeiten-Zweig von
+`btnSpeichern_Click` nach `Del_Projekt_Waermeerzeuger` an `Add_WP_Waermeerzeuger`
+übergibt — der Verlust entstand also, bevor der seit Fix 1–4 verlustfreie Speicherweg
+überhaupt anlief.
 
-Gemessen mit dem Harness (Teilkopie nachgebildet, Projekt 1023, gefixter Build):
-**36 Feldabweichungen** — u. a. `WS_Ziel`, `WS_ID_Puffer`, `WQ_ID_Puffer`, der komplette
-Erdreich-Satz, `BM_Typ`, `Prioritaet`, `WS_Ladegrenze` 55,5 → 0, `WS_Ladeprio2` 7 → 0 und
-`ID_PUFFER`. Es ist dieselbe Klasse von Teilkopie, die `0d52caa` in den sechs
-Kontextmenü-Controllern beseitigt hat, und sie behebt sich genauso: die vollständig
-gelesenen Modelle durchreichen statt Feld für Feld umzukopieren.
+### Fix 5 — vollständige Modelle durchreichen statt umkopieren
 
-Ohne diese Nacharbeit sind vier der fünf gemessenen Speicherwege sauber; der
-Wizard-Bearbeiten-Weg der echten Oberfläche bleibt verlustbehaftet.
+`Views/Wizard/WizardParent.cs:511-554`. Die Schleife lautet jetzt
+`list_werzmodel.Add(werzctrl.items[n])` — dieselbe Umstellung, die `0d52caa` in den sechs
+Kontextmenü-Controllern und `3b3ea26` auf den Karten der Startseite vorgenommen hat. Damit
+kommt jede künftige Spalte automatisch mit, sobald `WErzeugerCtrl.AusZeile` sie liest.
+
+**Erhalten geblieben ist die einzige bewusste Zuweisung der Teilkopie:**
+`item.ID_Projekt = projctrl.m_ID` (`WizardParent.cs:549`). Sie ist durch den Filter
+`ID_Projekt=<m_ID>` wertgleich mit der gelesenen Zeile und greift nur, falls die Spalte in
+einer alten Datenbank fehlt — `AusZeile` ließe `ID_Projekt` dann auf 0 stehen. Alle
+übrigen 27 Zuweisungen der alten Schleife waren reine 1:1-Kopien und entfallen; der
+unbenutzte `ListViewItem lvitem` ebenfalls.
+
+### Verifikation des Nachtrags
+
+Zwei Builds derselben Quelle (`8596564` mit und ohne diese Änderung), Reflection-Harness
+über den **echten** Weg: `new WizardParent()` → `LoadWEFromDB(<Projektname>)` →
+`Del_Projekt_Waermeerzeuger(projektID)` + `Add_WP_Waermeerzeuger(projektID,
+list_werzmodel)`. Je Lauf eine frische DB-Kopie mit den Probenzuständen aus 3.1
+(Anlage 11203 NULL-Ladeprios + `WQ_Typ='Pufferspeicher'`/`WQ_ID_Puffer=1018023`,
+Anlage 11204 kompletter Erdreich-Satz, `WS_Ladeprio2=7`, `WS_Ladegrenze=55,5`,
+`BM_Typ='Laufzeit'`, `Prioritaet=2`, `WS_Typ='Heizung'`).
+
+| Projekt | Anlagen | Feldvergleiche | vorher | nachher |
+|---|---|---|---|---|
+| 1023 | 7 | 392 | **34 Abweichungen** | **0** |
+| 1024 | 5 | 280 | **13 Abweichungen** | **0** |
+
+Verloren gingen vorher u. a.: `WQ_Typ`, `WQ_Temp`, `WQ_Wochenwerte` (168 Werte),
+`WQ_Spreizung`, `WQ_Regeneration`, `WQ_Unbegrenzt`, `WQ_Tiefe`, `WQ_Anzahl`,
+`WQ_Bodentyp`, `WQ_Quellsystem`, `WQ_ID_Puffer`, `BM_Typ`, `Prioritaet`, `WS_Typ`,
+`WS_Ziel`, `WS_ID_Puffer`, `WS_Ladegrenze` 55,5 → 0, `WS_Ladeprio2` 7 → 0, die
+NULL→0-Umschrift der fünf Ladeprio-Felder — und `ID_Carrier` NULL → 0, weil die Teilkopie
+über die `int`-Sicht statt über `ID_CarrierRoh` lief.
+
+Am realen BHKW **„A-Tron_21_F" (Projekt 1024)** verlor der Wizard-Weg vorher
+`WS_Typ='Beides'`, `WS_Ziel='Heizkreis'`, `WS_Ziel2='PufferBrauchwasser'` und
+`WS_ID_Puffer2=1054164`; nachher überleben alle 56 Werte. Ebenso überlebt jetzt
+`ID_PUFFER` der nicht katalogisierten Projekt-Puffer: 1018022 („test"), 1024050
+(„Vitocell 140-E 600 Liter", 1023), 1036082 und 1054164 (1024) — vorher fielen sie
+sämtlich auf NULL.
+
+**Gegenprobe Wizard-NEU-Zweig.** `Next()` ruft `LoadWEFromDB` auch im NEU-Modus, dort mit
+einem Projektnamen, den es noch nicht gibt. Beide Builds liefern 0 Modelle ohne Ausnahme,
+und die anschließend über ein frisches `WErzeugerModel` (`ID_Type=12`) geschriebene Zeile
+ist in **allen 56 Spalten** zeichengleich zwischen Baseline und Fix.
+
+**Gegenprobe Energieträger-Kette (512b904).** In Projekt 1024 überlebt `ID_Carrier=71`
+Laden und Speichern; nach dem Leeren von `energy_price`/`energy_Project_settings` legt
+`Add_Projekt_Energietraeger` **genau ein Paar** an (1 / 1 bei einem verschiedenen Träger
+> 0). Projekt 1023 führt keinen Träger > 0 — dort bleibt es erwartungsgemäß bei 0 / 0.
+
+**Engine-Regression.** `Referenzlauf.exe lauf --projekte 1007,1008,1010,1011,1017,1018,
+1021,1023,1024` mit dem Fix-Build gegen `Referenzlaeufe/2026-08-15_B2`:
+9 × PASS, GESAMT PASS (2 295 987 Werte); Byte-/MD5-Gegenprobe **208 von 208 CSV gleich**,
+0 abweichend, 0 fehlend. Erwartungsgemäß — `WizardParent` liegt nicht im Rechenpfad.
+
+**Build.** `MSBuild WindowsFormsApplication1.csproj -t:Rebuild -p:Configuration=Debug
+-p:Platform=x86 -p:OutDir=…` → **0 Fehler, 6 Warnungen**, dieselben sechs Bestandswarnungen
+wie oben. Kodierung (UTF-8 mit BOM) und Zeilenenden (CRLF) von `WizardParent.cs`
+unverändert.
+
+Damit sind **alle fünf** gemessenen Speicherwege verlustfrei.
+
+> Noch offen (außerhalb der Schreibmenge dieser Arbeit): `Konzept_Simulation_QuellenSenken.md:1134`
+> führt „`WizardParent.LoadWEFromDB` liest `ID_PUFFER` nicht" weiterhin als Restbefund —
+> die Zeile ist mit Fix 5 überholt und beim nächsten Anfassen der Konzeptdatei zu streichen.
 
 ## 5. Restrisiken
 
