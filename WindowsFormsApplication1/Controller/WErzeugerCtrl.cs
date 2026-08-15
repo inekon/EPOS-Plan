@@ -175,6 +175,11 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Neigung") && row["Neigung"] != DBNull.Value) item.m_Neigung = Convert.ToInt32(row["Neigung"]);
                 if (dt.Columns.Contains("Azimut") & row["Azimut"] != DBNull.Value) item.m_Azimut = Convert.ToInt32(row["Azimut"]);
                 if (dt.Columns.Contains("ID_PUFFER") && row["ID_PUFFER"] != DBNull.Value) item.ID_PUFFER = Convert.ToInt32(row["ID_PUFFER"]);
+                // Ohne diese Zeile verliert der Bearbeiten-Zweig des Wizards den Energietraeger:
+                // WizardParent.LoadWEFromDB uebernimmt ID_Carrier aus diesen Modellen, und
+                // Del_Projekt_Waermeerzeuger + Add_WP_Waermeerzeuger schrieben die Anlagen
+                // anschliessend mit ID_Carrier = 0 zurueck.
+                if (dt.Columns.Contains("ID_Carrier") && row["ID_Carrier"] != DBNull.Value) item.ID_Carrier = Convert.ToInt32(row["ID_Carrier"]);
 
                 _internalList.Add(item);
             }
@@ -218,6 +223,7 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Neigung") && row["Neigung"] != DBNull.Value) m_Neigung = Convert.ToInt32(row["Neigung"]);
                 if (dt.Columns.Contains("Azimut") && row["Azimut"] != DBNull.Value) m_Azimut = Convert.ToInt32(row["Azimut"]);
                 if (dt.Columns.Contains("ID_PUFFER") && row["ID_PUFFER"] != DBNull.Value) ID_PUFFER = Convert.ToInt32(row["ID_PUFFER"]);
+                if (dt.Columns.Contains("ID_Carrier") && row["ID_Carrier"] != DBNull.Value) ID_Carrier = Convert.ToInt32(row["ID_Carrier"]);
 
             }
         }

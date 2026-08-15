@@ -211,11 +211,13 @@ namespace WindowsFormsApplication1
                 model.ID_Kessel = stammId;
             }
 
+            int caarierID = 0;
+            CreateNewEnergyCarrier(nBrennstoff, ref caarierID);
+            model.ID_Carrier = caarierID;
+
             list_heizkesselmodel.Add(model);
             AddKesselRow(model);
             if (m_bWizard) wizardparent.list_werzmodel = list_heizkesselmodel;
-
-            CreateNewEnergyCarrier(nBrennstoff);
         }
 
         private static double ToDouble(object o)
@@ -223,7 +225,7 @@ namespace WindowsFormsApplication1
             return (o != null && o != DBNull.Value) ? Convert.ToDouble(o) : 0.0;
         }
 
-        private string CreateNewEnergyCarrier(int nBrennstoff)
+        private string CreateNewEnergyCarrier(int nBrennstoff, ref int carrierId)
         {
             using (var dlg = new Form_Kosten_Auswahl())
             {
@@ -235,7 +237,7 @@ namespace WindowsFormsApplication1
                     szBrennstoff = br.ToString();
 
                 dlg.m_szBVrennstoff = szBrennstoff;
-                dlg.bOhneVariante = true;
+                dlg.bOhneVariante = false;
 
                 if (dlg.ShowDialog() != DialogResult.OK) return "";
 
@@ -250,7 +252,7 @@ namespace WindowsFormsApplication1
                     double default_nox = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", dlg.SelectedBrennstoffID));
 
                     // 1) Katalog-Träger suchen; existiert er, wird er wiederverwendet
-                    int carrierId = -1;
+                    carrierId = -1;
                     object existing = DataRepository.ExecuteScalar(
                         "SELECT id FROM energy_carrier WHERE name = ?",
                         new OleDbParameter[] { new OleDbParameter("@name", dlg.SelectedName) });
@@ -281,6 +283,23 @@ namespace WindowsFormsApplication1
                             new OleDbParameter("@active", OleDbType.Boolean) { Value = true }
                         };
                         carrierId = DataRepository.ExecuteInsertAndGetId(insertSql, ps);
+                    }
+
+                    // 1b) Ab hier PROJEKTGEBUNDENE Sätze - die gehen nur mit einem wirklich
+                    // gespeicherten Projekt. Im Wizard ist m_ID_Projekt lediglich die in
+                    // WizardParent geratene ProjektCtrl.GetMaxID()+1; die Tab_Projekt-Zeile
+                    // entsteht erst beim Speichern über Add_Projekt/@@IDENTITY. energy_price
+                    // und energy_Project_settings haben aber je eine erzwungene Beziehung auf
+                    // Tab_Projekt.ID - mit der Rate-ID scheiterten beide INSERTs (zwei
+                    // "Datenbankfehler"-Meldungen), und das Projekt hatte anschließend einen
+                    // Energieträger an der Anlage, aber KEINEN Preis-/Emissionssatz.
+                    // Im Wizard bleibt es deshalb beim Katalogträger; die projektgebundenen
+                    // Sätze trägt WizardCtrl.Add_Projekt_Energietraeger beim Speichern nach.
+                    if (m_bWizard || m_ID_Projekt <= 0)
+                    {
+                        MessageBox.Show("Energieträgervariante vorgemerkt. Die Preis- und Emissionssätze " +
+                                        "werden beim Speichern des Projekts angelegt.");
+                        return dlg.SelectedName;
                     }
 
                     // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln

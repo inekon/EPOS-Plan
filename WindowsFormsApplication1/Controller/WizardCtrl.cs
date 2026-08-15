@@ -186,8 +186,8 @@ namespace WindowsFormsApplication1
                          Vorlauf, Rücklauf, Bivalenter_Betrieb, Abschaltpunkt, Nutzungszeit, Grenzleistung, 
                          Kollektormodulanzahl, PV_Leistung, Neigung, Azimut, ID_Type, 
                          ID_WP, ID_Solar, ID_PV, ID_SP, ID_KESSEL, ID_BHKW, ID_PUFFER, 
-                         Heizstab, Volumen, rendeMix, Solaranteil)
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                         Heizstab, Volumen, rendeMix, Solaranteil,ID_Carrier)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
                     // Parameter exakt in der Reihenfolge des SQL-Strings
                     OleDbParameter[] ps = {
@@ -221,7 +221,8 @@ namespace WindowsFormsApplication1
                         new OleDbParameter("@stab", item.Heizstab),
                         new OleDbParameter("@vol", item.Volumen),
                         new OleDbParameter("@mix", item.rendeMix),
-                        new OleDbParameter("@solan", item.Solaranteil)
+                        new OleDbParameter("@solan", item.Solaranteil),
+                        new OleDbParameter("@idcarrier", item.ID_Carrier)
                     };
 
                     if (!DataRepository.ExecuteSQL(sql, ps)) return false;
@@ -243,6 +244,135 @@ namespace WindowsFormsApplication1
             return item.ID_Type == typ || item.ID_Type == refTyp;
         }
         
+        /// <summary>
+        /// Legt die PROJEKTGEBUNDENEN Energieträgersätze zu den Anlagen einer Wizard-Auswahl
+        /// an: je DISTINKTEM <c>ID_Carrier</c> ein Paar aus <c>energy_price</c> (Preishistorie)
+        /// und <c>energy_Project_settings</c> (Projekteinstellungen) - dasselbe Datenbild, das
+        /// eine Zuordnung über den Kosten-Dialog erzeugt (<c>Form_Kosten.CreateNewEnergyCarrier</c>).
+        ///
+        /// WARUM HIER UND NICHT IM FORMULAR. Beide Tabellen haben eine erzwungene Beziehung auf
+        /// <c>Tab_Projekt.ID</c>. Im Neuanlage-Wizard existiert die Projektzeile beim Auswählen
+        /// von Kessel oder BHKW aber noch nicht - <c>WizardParent</c> führt dort nur eine
+        /// GERATENE ID (<c>ProjektCtrl.GetMaxID() + 1</c>), die echte entsteht erst in
+        /// <c>Add_Projekt</c> über @@IDENTITY. Die Formulare legen deshalb nur noch den
+        /// KATALOG-Träger an (<c>energy_carrier</c>, projektfrei) und merken dessen ID am Modell
+        /// vor; die projektgebundenen Sätze entstehen erst hier, mit der echten Projekt-ID.
+        ///
+        /// WERTEHERKUNFT. Aus der Katalogzeile kommt nur <c>ID_Brennstoff</c>; alle Zahlen
+        /// stammen danach aus <c>Tab_Brennstoff_Stamm</c> - exakt die Quellen, aus denen auch
+        /// der Kosten-Weg liest: <c>Form_Kosten_Auswahl</c> holt Hi, Hs und Einheit von dort,
+        /// <c>Form_Kosten</c> die Standardpreise und Emissionsfaktoren. <c>ID_Umrechnung</c> ist
+        /// im Dialog ebenfalls abgeleitet (Brennstoff + Einheit) und wird hier genauso ermittelt.
+        ///
+        /// IDEMPOTENT. Derselbe COUNT-Test wie im Kosten-Dialog verhindert doppelte Sätze - er
+        /// trägt den Bearbeiten-Zweig des Wizards, der bei jedem Speichern erneut durchläuft.
+        /// </summary>
+        public bool Add_Projekt_Energietraeger(int projektID, List<WErzeugerModel> list)
+        {
+            if (projektID <= 0 || list == null) return true;
+
+            // je Träger nur EIN Satz, auch wenn mehrere Anlagen denselben Träger nutzen
+            List<int> erledigt = new List<int>();
+
+            foreach (var item in list)
+            {
+                int carrierId = item.ID_Carrier;
+                if (carrierId <= 0 || erledigt.Contains(carrierId)) continue;
+                erledigt.Add(carrierId);
+
+                object oBrennstoff = DataRepository.ExecuteScalar(
+                    "SELECT ID_Brennstoff FROM energy_carrier WHERE id = ?",
+                    new OleDbParameter[] { new OleDbParameter("@cid", carrierId) });
+                if (oBrennstoff == null) continue;   // Katalogzeile fehlt -> nichts anzulegen
+                int idBrennstoff = Convert.ToInt32(oBrennstoff);
+
+                // Default-Werte aus dem Brennstoff-Stamm (Preise/Emissionen)
+                double default_arbeitspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", idBrennstoff));
+                double default_grundpreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", idBrennstoff));
+                double default_leistungspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", idBrennstoff));
+                double default_co2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "CO2", idBrennstoff));
+                double default_so2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", idBrennstoff));
+                double default_nox = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", idBrennstoff));
+
+                // Hi, Hs und Abrechnungseinheit - im Kosten-Dialog die Felder
+                // SelectedHi / SelectedHs / SelectedBillingUnit aus derselben Stammzeile
+                double hi = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Hi", idBrennstoff));
+                double hs = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Hs", idBrennstoff));
+                object oEinheit = DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Einheit", idBrennstoff);
+                string einheit = (oEinheit != null) ? oEinheit.ToString() : "";
+
+                int convId = ConvIdErmitteln(idBrennstoff, einheit);
+
+                // Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln
+                object oVorhanden = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
+                    new OleDbParameter[] {
+                        new OleDbParameter("@pid", projektID),
+                        new OleDbParameter("@eid", carrierId)
+                    });
+                if (oVorhanden != null && Convert.ToInt32(oVorhanden) > 0) continue;
+
+                // Preis-Historie. leistungspreis wird ausdrücklich mitgeschrieben (Befund B5).
+                string sqlHistory = @"INSERT INTO energy_price
+                     (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                if (!DataRepository.ExecuteSQL(sqlHistory, new OleDbParameter[] {
+                    new OleDbParameter("@cid",  carrierId),
+                    new OleDbParameter("@prid", projektID),
+                    new OleDbParameter("@ap",   Math.Round(default_arbeitspreis, 4)),
+                    new OleDbParameter("@hi",   Math.Round(hi, 4)),
+                    new OleDbParameter("@gp",   Math.Round(default_grundpreis, 4)),
+                    new OleDbParameter("@date", OleDbType.Date) { Value = DateTime.Now },
+                    new OleDbParameter("@au",   einheit),
+                    new OleDbParameter("@lp",   Math.Round(default_leistungspreis, 4))
+                })) return false;
+
+                // Projekt-Einstellungen
+                string sqlInsert = @"INSERT INTO energy_Project_settings
+                     (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
+                      custom_price_base, ID_Umrechnung, co2, so2, nox)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                if (!DataRepository.ExecuteSQL(sqlInsert, new OleDbParameter[] {
+                    new OleDbParameter("@pid",    projektID),
+                    new OleDbParameter("@eid",    carrierId),
+                    new OleDbParameter("@p",      Math.Round(default_arbeitspreis, 4)),
+                    new OleDbParameter("@pl",     Math.Round(default_leistungspreis, 4)),
+                    new OleDbParameter("@h",      Math.Round(hi, 4)),
+                    new OleDbParameter("@hs",     Math.Round(hs, 4)),
+                    new OleDbParameter("@b",      Math.Round(default_grundpreis, 4)),
+                    new OleDbParameter("@convid", convId),
+                    new OleDbParameter("@co2",    default_co2),
+                    new OleDbParameter("@so2",    default_so2),
+                    new OleDbParameter("@nox",    default_nox)
+                })) return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Dieselbe Ableitung wie <c>Form_Kosten_Auswahl.GetConvID</c>: Umrechnungssatz über
+        /// Brennstoff und Abrechnungseinheit (from_unit = to_unit). -1, wenn es keinen gibt -
+        /// genau der Wert, den der Dialog in diesem Fall ebenfalls schreibt.
+        /// </summary>
+        private static int ConvIdErmitteln(int idBrennstoff, string einheit)
+        {
+            object o = DataRepository.ExecuteScalar(
+                "SELECT ID FROM ENERGY_CONVERSION WHERE id_brennstoff = ? AND from_unit = ? AND to_unit = ?",
+                new OleDbParameter[] {
+                    new OleDbParameter("@cid", idBrennstoff),
+                    new OleDbParameter("@fu", einheit),
+                    new OleDbParameter("@tu", einheit)
+                });
+            return (o != null) ? Convert.ToInt32(o) : -1;
+        }
+
+        /// <summary>Kleiner Helfer gegen null/DBNull - wie in Form_Kosten.</summary>
+        private static double ToDouble(object o)
+        {
+            return (o != null && o != DBNull.Value) ? Convert.ToDouble(o) : 0.0;
+        }
+
         public bool Add_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list)
         {
             GebaeudeStammCtrl ctrlStamm = new GebaeudeStammCtrl();

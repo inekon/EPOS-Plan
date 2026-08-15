@@ -197,6 +197,41 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// Name des Energieträger-Verweises an der Anlage. EINE Wahrheit für Migration,
+        /// Schreibseite (<c>WizardCtrl.Add_WP_Waermeerzeuger</c>) und Leseseite
+        /// (<c>WErzeugerCtrl</c>, <c>ProjektPuffer</c>).
+        /// </summary>
+        public const string SPALTE_ID_CARRIER = "ID_Carrier";
+
+        /// <summary>
+        /// Schritt 8 der Migration — der Energieträger-Verweis
+        /// <see cref="SPALTE_ID_CARRIER"/> in <c>Tab_Energieanlagen</c>.
+        ///
+        /// <b>Warum ein eigener Schritt.</b> Die Spalte wurde in der Produktivdatenbank von
+        /// Hand angelegt, während im Code bereits darauf zugegriffen wird
+        /// (<c>ProjektPuffer</c> listet sie in seinem Spaltensatz, der Wizard schreibt sie).
+        /// Auf einer frisch ausgelieferten Datenbank fehlte sie damit — genau die Lücke,
+        /// die der Migrationsmechanismus schließen soll.
+        ///
+        /// <b>LONG, NULL-fähig, kein Backfill.</b> Der Typ entspricht dem Befund aus der
+        /// Produktivdatenbank (adInteger, nullable). „Kein Energieträger" wird als NULL
+        /// bzw. 0 geführt; der lesende Code behandelt beides gleich, ein Vorbelegen ist
+        /// deshalb nicht nötig. Eine erzwungene Beziehung auf <c>energy_carrier.id</c> gibt
+        /// es bewusst NICHT — auch in der Produktivdatenbank besteht keine, und Altzeilen
+        /// tragen dort die 0, die eine solche Beziehung sofort verletzen würde.
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt die Spalte in Access
+        /// immer hinten an; in der Produktivdatenbank steht sie durch die Handanlage weiter
+        /// vorn. Das ist folgenlos: <c>Tab_Energieanlagen</c> wird ausschließlich
+        /// NAMENSBASIERT gelesen (<c>WErzeugerCtrl.ReadAllFilter/ReadSingle</c>,
+        /// <c>RecordSet.Read("…")</c>), es gibt keine <c>row[0…n]</c>-Kette auf dieser Tabelle.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt8_Energietraeger =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_ID_CARRIER, "LONG"),
+        };
+
+        /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
         /// und ist deshalb nicht Teil von <see cref="Alle"/>.
@@ -214,6 +249,10 @@ namespace WindowsFormsApplication1
         /// <see cref="Schritt2_Speicher"/>, ein zweiter Eintrag wäre die Überschneidung,
         /// die dieser Kommentar ausschließt. Schritt 7 ist ein DML-Schritt (Vorbelegung),
         /// sein DDL-Anteil nur die idempotente Absicherung.
+        ///
+        /// <see cref="Schritt8_Energietraeger"/> steht dagegen sehr wohl hier — die Spalte
+        /// kommt in keiner anderen Auswahl vor, und die stille Rückfallebene soll sie
+        /// genauso sicherstellen wie die übrigen additiven Spalten.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
@@ -223,6 +262,7 @@ namespace WindowsFormsApplication1
                 foreach (SchemaSpalte s in Schritt1_Energieanlagen) yield return s;
                 foreach (SchemaSpalte s in Schritt2_Speicher) yield return s;
                 foreach (SchemaSpalte s in Schritt6_FeatureFlag) yield return s;
+                foreach (SchemaSpalte s in Schritt8_Energietraeger) yield return s;
             }
         }
     }

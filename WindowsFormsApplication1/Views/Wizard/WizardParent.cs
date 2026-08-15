@@ -553,6 +553,7 @@ namespace WindowsFormsApplication1
                     item.m_Azimut = werzctrl.items[n].m_Azimut;
                     item.m_Neigung = werzctrl.items[n].m_Neigung;
                     item.PV_Leistung = werzctrl.items[n].PV_Leistung;
+                    item.ID_Carrier = werzctrl.items[n].ID_Carrier;
 
                     list_werzmodel.Add(item);
                 }
@@ -634,6 +635,14 @@ namespace WindowsFormsApplication1
                     result = Program.wizardctrl.Add_WP_Waermeerzeuger(projektID, list_werzmodel);
                     if (!result) return;
 
+                    // Erst hier steht die ECHTE Projekt-ID (Add_Projekt/@@IDENTITY). Die
+                    // Formulare haben in ihrem CreateNewEnergyCarrier nur den Katalogträger
+                    // angelegt und dessen ID am Modell vermerkt; energy_price und
+                    // energy_Project_settings hängen an Tab_Projekt.ID und entstehen deshalb
+                    // erst jetzt.
+                    result = Program.wizardctrl.Add_Projekt_Energietraeger(projektID, list_werzmodel);
+                    if (!result) return;
+
                     result = Program.wizardctrl.Add_Projekt_Prozess(projektID, list_prozmodel);
                     if (!result) return;
 
@@ -662,6 +671,11 @@ namespace WindowsFormsApplication1
                 if (!result) return;
 
                 result = Program.wizardctrl.Add_WP_Waermeerzeuger(projektID, list_werzmodel);
+                if (!result) return;
+
+                // Auch im Bearbeiten-Zweig: neu hinzugekommene Träger bekommen ihre
+                // projektgebundenen Sätze, bereits zugeordnete fängt der COUNT-Test ab.
+                result = Program.wizardctrl.Add_Projekt_Energietraeger(projektID, list_werzmodel);
                 if (!result) return;
 
                 result = Program.wizardctrl.Del_Projekt_ZuordungGebäude(projektID);

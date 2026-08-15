@@ -31,6 +31,7 @@
         public int m_Neigung;
         public int m_Azimut;
         public int ID_PUFFER;
+        public int ID_Carrier;
 
         public WErzeugerModel()
         {
@@ -60,6 +61,7 @@
             m_Neigung = 0;
             m_Azimut = 0;
             ID_PUFFER = 0;
+            ID_Carrier = 0;
         } 
     }
 

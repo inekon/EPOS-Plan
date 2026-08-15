@@ -389,7 +389,10 @@ namespace WindowsFormsApplication1
                 // Reiner Wizard-Vorschaumodus ohne Projekt: kein DB-Satz, Stamm-ID als Platzhalter.
                 model.ID_BHKW = stammId;
             }
-            
+
+            int caarierID = 0;
+            CreateNewEnergyCarrier(nBrennstoff, ref caarierID);
+            model.ID_Carrier = caarierID;   
 
             list_werzmodel.Add(model);
             if (m_bWizard) wizardparent.list_werzmodel = list_werzmodel;
@@ -401,15 +404,14 @@ namespace WindowsFormsApplication1
             model = new WErzeugerModel();
 
             textBox_Summe_Leistung.Text = SummeLeistung().ToString();
-
-            CreateNewEnergyCarrier(nBrennstoff);
+  
         }
         private static double ToDouble(object o)
         {
             return (o != null && o != DBNull.Value) ? Convert.ToDouble(o) : 0.0;
         }
 
-        private string CreateNewEnergyCarrier(int nBrennstoff)
+        private string CreateNewEnergyCarrier(int nBrennstoff, ref int carrierId)
         {
             using (var dlg = new Form_Kosten_Auswahl())
             {
@@ -421,7 +423,7 @@ namespace WindowsFormsApplication1
                     szBrennstoff = br.ToString();
                 
                 dlg.m_szBVrennstoff = szBrennstoff;
-                dlg.bOhneVariante = true;
+                dlg.bOhneVariante = false;
 
                 if (dlg.ShowDialog() != DialogResult.OK) return "";
 
@@ -436,7 +438,7 @@ namespace WindowsFormsApplication1
                     double default_nox = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", dlg.SelectedBrennstoffID));
 
                     // 1) Katalog-Tr‰ger suchen; existiert er, wird er wiederverwendet
-                    int carrierId = -1;
+                    carrierId = -1;
                     object existing = DataRepository.ExecuteScalar(
                         "SELECT id FROM energy_carrier WHERE name = ?",
                         new OleDbParameter[] { new OleDbParameter("@name", dlg.SelectedName) });
@@ -467,6 +469,24 @@ namespace WindowsFormsApplication1
                             new OleDbParameter("@active", OleDbType.Boolean) { Value = true }
                         };
                         carrierId = DataRepository.ExecuteInsertAndGetId(insertSql, ps);
+                    }
+
+                    // 1b) Ab hier PROJEKTGEBUNDENE S‰tze - die gehen nur mit einem wirklich
+                    // gespeicherten Projekt. SetControls belegt m_ID_Projekt NICHT (es bekommt
+                    // nur den Projektnamen); die Nicht-Wizard-Aufrufer setzen das Feld vor
+                    // ShowDialog selbst (BHKWKontextMenuCtrl, Form_Start), im Wizard bleibt es
+                    // deshalb auf 0. energy_price und energy_Project_settings haben aber
+                    // je eine erzwungene Beziehung auf Tab_Projekt.ID - beide INSERTs
+                    // scheiterten damit (zwei "Datenbankfehler"-Meldungen), und das Projekt
+                    // hatte anschlieﬂend einen Energietr‰ger an der Anlage, aber KEINEN
+                    // Preis-/Emissionssatz. Im Wizard bleibt es deshalb beim Katalogtr‰ger;
+                    // die projektgebundenen S‰tze tr‰gt WizardCtrl.Add_Projekt_Energietraeger
+                    // beim Speichern nach.
+                    if (m_bWizard || m_ID_Projekt <= 0)
+                    {
+                        MessageBox.Show("Energietr‰gervariante vorgemerkt. Die Preis- und Emissionss‰tze " +
+                                        "werden beim Speichern des Projekts angelegt.");
+                        return dlg.SelectedName;
                     }
 
                     // 2) Ist der Tr‰ger diesem Projekt schon zugeordnet? -> nicht doppeln
