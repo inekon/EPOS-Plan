@@ -12,8 +12,8 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-15_B2/`** — seit dem 15.08.2026, 12:37 Uhr die gültige Referenz,
-**neun Projekte** (1007, 1008, 1010, 1011, 1017, 1018, 1021, 1023, 1024). Jeder neue
+**`2026-08-15_B3/`** — seit dem 15.08.2026, 23:04 Uhr die gültige Referenz,
+**acht Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024). Jeder neue
 Vergleich läuft gegen diesen Ordner.
 
 > **Die Basis ist mit Feature-Flag `Kaskade_Zweikanalig` = AUS gerechnet** und bildet damit
@@ -22,7 +22,74 @@ Vergleich läuft gegen diesen Ordner.
 > Regressionsfall gegen diese Basis — er wird gegen den Flag-aus-Lauf desselben Codes
 > verglichen (Umsetzungsprotokoll Paket 4).
 
-### Warum die Basis gewechselt wurde
+### Warum die Basis auf B3 gewechselt wurde
+
+**Zwei Anlässe — beide getrennt nachgewiesen.** Vollständige Zuordnung je Projekt im
+[Laufprotokoll der Basis](2026-08-15_B3/lauf_protokoll.md).
+
+**(1) Ergebnisänderung K-3.** Die Bivalenz-Umschaltung des bivalent-alternativen
+Wärmepumpenbetriebs schaltet ab jetzt an der **Bivalenztemperatur**
+(`Tab_Energieanlagen.Abschaltpunkt`) statt stundenweise nach Leistungsunterdeckung — in
+beiden Rechenwegen. Umsetzung, Datenbefund, Regelentscheidung und alle Zahlen:
+[`../WindowsFormsApplication1/Allgemein/Simulation/K3_BivalenzTemperatur_Protokoll.md`](../WindowsFormsApplication1/Allgemein/Simulation/K3_BivalenzTemperatur_Protokoll.md).
+
+**Davon betroffene Referenzprojekte: keines.** Der Datenbefund vor dem Lauf zeigt, dass im
+gesamten Bestand **keine einzige** Anlage `Bivalenter_Betrieb = TRUE` **und**
+`Betriebsart = "Alternativbetrieb"` führt — der geänderte Zweig ist in keinem gespeicherten
+Projekt aktiv. (Die eine `Alternativbetrieb`-Zeile, Anlage 10132 in Projekt 1008, trägt
+`Bivalenter_Betrieb = False`; die Bedingung ist eine Und-Verknüpfung.) Dementsprechend:
+
+```
+A/B gegen a0a623a, Flag AUS : 9/9 PASS (2 295 987 Werte), 208/208 byte-/MD5-gleich
+A/B gegen a0a623a, Flag AN  : 9/9 PASS (2 295 998 Werte), 208/208 byte-/MD5-gleich
+```
+
+Der A/B-Lauf umfasst noch **neun** Projekte: Er lief auf einer gemeinsamen Datenbankkopie
+vom 22:26 Uhr — also vor der Löschung unten — und deckt Projekt 1010 damit mit ab.
+
+Wirksam ist K-3 sehr wohl — nachgewiesen an eigens präparierten Kopien der Projekte **1026**
+(WP + Kessel + Puffer, auf `Alternativbetrieb` gestellt: WP-Produktion 28,3 → 40,2 MWh,
+Kessel 36,4 → 24,6 MWh, WP-Ein/Aus-Wechsel einkanalig 2 962 → 2 524 und zweikanalig
+**1 126 → 140**, Frostbetrieb der WP 330 h → 0 h) und **1024** (Sommer-Warmwassermuster:
+**714 Sommerstunden**, in denen die WP bisher an Warmwasserspitzen ausfiel, laufen wieder mit
+der Wärmepumpe). Stundengenaue Bilanzproben schließen in allen Varianten (max. Abweichung
+7·10⁻⁶ kWh, 0 Stunden über 0,01 kWh).
+
+**(2) Projektlöschung durch den Anwender.** Am 15.08.2026 gegen 22:50 Uhr hat der Anwender
+die Projekte **1010, 1016, 1020 und 1025** aus der produktiven Datenbank gelöscht. Von der
+Referenzmenge trifft das **1010 „Kurs EE"** — es existiert nicht mehr. **B3 umfasst deshalb
+acht Projekte, B2 hatte neun.**
+
+> **Folgebedarf:** 1010 war in der Referenzmenge die Kategorie **„Wärmepumpe ohne weitere
+> Erzeuger"** (`Anlagen: WP`). Fällt sie dauerhaft weg, sollte ein Ersatzprojekt derselben
+> Kategorie nachrücken (`Projektauswahl.MAX_PROJEKTE` steht auf 9).
+
+**Zuordnung B2 → B3, Projekt für Projekt:**
+
+| Projekt | Abweichung zu B2 | Ursache |
+|---|---|---|
+| 1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024 | **keine — alle 190 Dateien byte-/MD5-gleich** | — |
+| 1010 | **Ordner entfällt** (18 Dateien) | **Projektlöschung**, kein Codeeffekt |
+
+Für die acht verbliebenen Projekte ist B3 also wertgleich mit B2 bis auf das Byte; **kein
+einziger Wert weicht durch K-3 ab**. Der Basiswechsel erfolgt damit aus zwei Gründen, von
+denen keiner „geänderte Zahlen" heißt: die geschrumpfte Projektmenge und die **Zuordnung** —
+ab hier ist die gültige Basis mit dem K-3-Code gerechnet, und eine spätere Abweichung lässt
+sich zweifelsfrei einer Folgeänderung zuschreiben statt K-3.
+
+**Selbstvergleich der neuen Basis:** Ein zweiter Lauf desselben Codes auf derselben Quelle
+ergibt **8/8 PASS (2 094 447 Werte)** und **190/190 byte-/MD5-gleich** — die Basis ist
+reproduzierbar.
+
+**Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel **15.08.2026 22:50**, nur gelesen
+(keine `Kenndaten.laccdb`).
+
+## Frühere Stände
+
+`2026-08-15_B2/` bleibt als **vorheriger Stand** liegen (Codestand `925c37f`, Datenstand
+15.08.2026 11:58, **neun** Projekte) — für die acht gemeinsamen Projekte byte-gleich mit B3
+und die einzige verbliebene Quelle für die Ganglinien des gelöschten Projekts 1010. Warum B2
+seinerzeit gesetzt wurde:
 
 Gerechnet auf Codestand **`925c37f`** (Paket 9, Etappe 2) und auf der produktiven
 `Kenndaten.accdb` mit Zeitstempel **15.08.2026 11:58**. Ein Codeeffekt liegt dem Wechsel
@@ -57,9 +124,7 @@ Basis ist reproduzierbar.
 Die Anwendung des Anwenders lief während des Laufs, hatte die Datenbank aber **nicht**
 geöffnet (keine `Kenndaten.laccdb`). Die produktive Datei wurde ausschließlich gelesen.
 
-## Frühere Stände
-
-`2026-08-14_B1-Fixes/` bleibt als **vorheriger Stand** liegen (Datenstand vom 14.08.2026,
+`2026-08-14_B1-Fixes/` bleibt als **vorvorheriger Stand** liegen (Datenstand vom 14.08.2026,
 neun Projekte). Gegenüber `2026-08-14_Paket4` weichen dort **drei Projekte** ab, vollständig
 zugeordnet in
 `2026-08-14_B1-Fixes/vergleich_protokoll.md`: **1008** und **1011** durch die
@@ -69,7 +134,7 @@ ein; Prozesswärme war still 0 — B0-Protokoll, Nachtrag B1-F1/B1-F2), **1024**
 aufgenommen; Alt- vs. Neu-Code auf identischer DB ist für 1024 vollständig PASS —
 kein Code-Effekt). Die übrigen sechs Projekte: PASS.
 
-`2026-08-14_Paket4/` bleibt als **vorvorheriger Stand** liegen. Gegenüber
+`2026-08-14_Paket4/` bleibt als **älterer Stand** liegen. Gegenüber
 `2026-08-14_Paket7` waren dort genau **drei** Werte neu, alle in Projekt 1021 und alle
 begründet in `2026-08-14_Paket4/lauf_protokoll.md`: die ID-Semantik des Quellspeichers
 (`Pufferspeicher[0].ID_Pufferspeicher` 8 → 1018014) und die beiden laufzeitbasierten
@@ -298,8 +363,13 @@ lassen sich die Ordner nicht mehr vergleichen. Wer über längere Zeit dieselbe 
 gibt die Projekte fest vor:
 
 ```powershell
-& $exe lauf --projekte 1007,1008,1010,1011,1017,1018,1021,1023,1024
+& $exe lauf --projekte 1007,1008,1011,1017,1018,1021,1023,1024
 ```
+
+> **Seit dem 15.08.2026 sind es acht statt neun IDs.** Projekt **1010 „Kurs EE"** hat der
+> Anwender gelöscht; es war die Kategorie **„nur Wärmepumpe"**. Bis ein Ersatzprojekt dieser
+> Kategorie nachrückt, ist die Pflichtkategorie unbesetzt — bei einer Auswahl ohne
+> `--projekte` füllt die Suite stattdessen mit einer weiteren Erzeugerkombination auf.
 
 ## Dialoge der Engine
 
