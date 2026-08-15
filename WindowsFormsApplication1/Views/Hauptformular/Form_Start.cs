@@ -1192,7 +1192,11 @@ namespace WindowsFormsApplication1
             string szProjekt = menu.ProjektDelete();
             if (szProjekt == textBox_ProjektOpen.Text)
             {
-                textBox_ProjektOpen.Text = "bitte auswählen!";
+                // Platzhalter aus der Ressource, nicht als deutsches Literal: an zwei
+                // Stellen (Reiterwechsel, "Weiter") wird genau gegen
+                // MyResource.Resource.Text_Select verglichen. Ein festes deutsches
+                // Literal haette diese Pruefung im englischen Modus ausgehebelt.
+                textBox_ProjektOpen.Text = MyResource.Resource.Text_Select;
                 label_ProjektStatus.ForeColor = Color.FromArgb(192, 0, 0);
                 label_ProjektStatus.Text = "⚠";
                 comboBox_Klima.Text = "";

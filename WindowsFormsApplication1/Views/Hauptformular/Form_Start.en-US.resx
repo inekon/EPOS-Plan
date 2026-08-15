@@ -163,6 +163,12 @@
   <data name="label_pBox_ProjektZuletzt.Text" xml:space="preserve">
     <value>Last opened</value>
   </data>
+  <data name="label_pBox_SpeichernUnter.Text" xml:space="preserve">
+    <value>Save as</value>
+  </data>
+  <data name="label2_pBox_SpeichernUnter.Text" xml:space="preserve">
+    <value>Save a project under a different name</value>
+  </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>341, 21</value>
   </data>
@@ -335,7 +341,43 @@
     <value>53, 21</value>
   </data>
   <data name="label_pBox_Heizkessel.Text" xml:space="preserve">
-    <value>boiler</value>
+    <value>Boiler</value>
+  </data>
+  <data name="label_pBox_WP.Text" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="label2_pBox_WP.Text" xml:space="preserve">
+    <value>Efficient heat generation from ambient heat</value>
+  </data>
+  <data name="label_pBox_BHKW.Text" xml:space="preserve">
+    <value>CHP unit</value>
+  </data>
+  <data name="label2_pBox_BHKW.Text" xml:space="preserve">
+    <value>Combined heat and power generation</value>
+  </data>
+  <data name="label_pBox_Solarthermie.Text" xml:space="preserve">
+    <value>Solar thermal</value>
+  </data>
+  <data name="label2_pBox_Solarthermie.Text" xml:space="preserve">
+    <value>Heat generation from solar energy</value>
+  </data>
+  <data name="label_pBox_PV.Text" xml:space="preserve">
+    <value>Photovoltaics</value>
+  </data>
+  <data name="label2_pBox_PV.Text" xml:space="preserve">
+    <value>Electricity generation from solar energy</value>
+  </data>
+  <data name="label_pBox_Stromspeicher.Text" xml:space="preserve">
+    <value>Electricity storage</value>
+  </data>
+  <data name="label2_pBox_Stromspeicher.Text" xml:space="preserve">
+    <value>Battery storage for surplus electricity</value>
+  </data>
+  <data name="label_pBox_Pufferspeicher.Text" xml:space="preserve">
+    <value>Buffer storage</value>
+  </data>
+  <data name="label2_pBox_Pufferspeicher.Text" xml:space="preserve">
+    <value>Stores surplus heat from the heating system</value>
   </data>
   <data name="label28.Size" type="System.Drawing.Size, System.Drawing">
     <value>453, 21</value>
@@ -353,16 +395,13 @@
     <value>101, 25</value>
   </data>
   <data name="radioButton_Ganglinie.Text" xml:space="preserve">
-    <value>Curve line</value>
+    <value>Load profile</value>
   </data>
   <data name="radioButton_KollektorProfil.Size" type="System.Drawing.Size, System.Drawing">
     <value>76, 25</value>
   </data>
   <data name="radioButton_KollektorProfil.Text" xml:space="preserve">
     <value>Profile</value>
-  </data>
-  <data name="pBox_Pufferspeicher.Location" type="System.Drawing.Point, System.Drawing">
-    <value>412, 504</value>
   </data>
   <data name="pBox_Heizkessel.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -512,6 +551,33 @@
   <data name="label70.Text" xml:space="preserve">
     <value>Project summary</value>
   </data>
+  <data name="tabPage5.Text" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="label_ProjektName.Text" xml:space="preserve">
+    <value>Project name:</value>
+  </data>
+  <data name="label6_WBedarf.Text" xml:space="preserve">
+    <value>Heat demand:</value>
+  </data>
+  <data name="label_Strombedarf.Text" xml:space="preserve">
+    <value>Electricity demand:</value>
+  </data>
+  <data name="label_ProjektKomp.Text" xml:space="preserve">
+    <value>Selected technologies:</value>
+  </data>
+  <data name="label_pBox_DetailSim.Text" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="label2_pBox_DetailSim.Text" xml:space="preserve">
+    <value>Precise annual simulation with full detail</value>
+  </data>
+  <data name="label_pBox_Optimierung.Text" xml:space="preserve">
+    <value>Optimisation</value>
+  </data>
+  <data name="label2_pBox_Optinierung.Text" xml:space="preserve">
+    <value>Automatic system optimisation</value>
+  </data>
   <data name="btn_SimKonfig.Text" xml:space="preserve">
     <value>Simulation configuration...</value>
   </data>
@@ -531,43 +597,46 @@
     <value>67, 23</value>
   </data>
   <data name="label_Komponenten.Text" xml:space="preserve">
-    <value>project</value>
+    <value>Project</value>
   </data>
   <data name="label_Strom.Size" type="System.Drawing.Size, System.Drawing">
     <value>67, 23</value>
   </data>
   <data name="label_Strom.Text" xml:space="preserve">
-    <value>project</value>
+    <value>Project</value>
   </data>
   <data name="label_WBedarf.Size" type="System.Drawing.Size, System.Drawing">
     <value>67, 23</value>
   </data>
   <data name="label_WBedarf.Text" xml:space="preserve">
-    <value>project</value>
+    <value>Project</value>
   </data>
   <data name="label_Name.Size" type="System.Drawing.Size, System.Drawing">
     <value>67, 23</value>
   </data>
   <data name="label_Name.Text" xml:space="preserve">
-    <value>project</value>
+    <value>Project</value>
   </data>
   <data name="btn_Kosten.Text" xml:space="preserve">
-    <value>Cost</value>
+    <value>Costs</value>
+  </data>
+  <data name="btn_Varianten.Text" xml:space="preserve">
+    <value>Variants</value>
   </data>
   <data name="tabPage6.Text" xml:space="preserve">
-    <value>Reports</value>
+    <value>Reports &amp;&amp; Costs</value>
   </data>
   <data name="label21.Size" type="System.Drawing.Size, System.Drawing">
     <value>260, 17</value>
   </data>
   <data name="label21.Text" xml:space="preserve">
-    <value>Enter a meaningful name for your project</value>
+    <value>Select region</value>
   </data>
   <data name="label22.Size" type="System.Drawing.Size, System.Drawing">
     <value>101, 20</value>
   </data>
   <data name="label22.Text" xml:space="preserve">
-    <value>Project name</value>
+    <value>Applies to all calculations in the project</value>
   </data>
   <data name="textBox_ProjektOpen.Text" xml:space="preserve">
     <value>Please select!</value>
@@ -594,7 +663,7 @@
     <value>221, 21</value>
   </data>
   <data name="label12.Text" xml:space="preserve">
-    <value>Access recently edited projects</value>
+    <value>Select climate region:</value>
   </data>
   <data name="comboBox_Klima.Size" type="System.Drawing.Size, System.Drawing">
     <value>320, 29</value>
