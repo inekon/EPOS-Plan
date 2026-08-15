@@ -1851,4 +1851,37 @@ Boilers, CHP units and solar thermal generate the heat themselves.</value>
   <data name="SIMQ_WPTYP_NICHT_GEPFLEGT" xml:space="preserve">
     <value>(not maintained)</value>
   </data>
+  <data name="CHART_LEGENDE_HEIZWAERMEBEDARF" xml:space="preserve">
+    <value>Space heating demand</value>
+  </data>
+  <data name="CHART_LEGENDE_PROFIL_LASTGANG" xml:space="preserve">
+    <value>Profile/load curve</value>
+  </data>
+  <data name="CHART_LEGENDE_UEBERSCHUSS" xml:space="preserve">
+    <value>Surplus</value>
+  </data>
+  <data name="CHART_LEGENDE_WAERMEPRODUKTION" xml:space="preserve">
+    <value>Heat generation</value>
+  </data>
+  <data name="CHART_LEGENDE_WARMWASSERBEDARF" xml:space="preserve">
+    <value>DHW demand</value>
+  </data>
+  <data name="CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Electricity profile, annual load profile </value>
+  </data>
+  <data name="SIM_BTN_WAERMEBEDARF_UEBERSICHT" xml:space="preserve">
+    <value>Heat demand overview...</value>
+  </data>
+  <data name="SIM_CHK_WAERMEBEDARF_EINBLENDEN" xml:space="preserve">
+    <value>Show heat demand</value>
+  </data>
+  <data name="SIM_DASH_GRUPPE_PV" xml:space="preserve">
+    <value>Photovoltaic self-sufficiency</value>
+  </data>
+  <data name="SIM_DASH_GRUPPE_ST" xml:space="preserve">
+    <value>Solar thermal coverage</value>
+  </data>
+  <data name="SIM_DASH_SPEICHER_INFO" xml:space="preserve">
+    <value>Theoretical storage (PV) (kWh):</value>
+  </data>
 </root>

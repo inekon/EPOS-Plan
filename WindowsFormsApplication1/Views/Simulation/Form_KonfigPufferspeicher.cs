@@ -47,7 +47,7 @@ namespace WindowsFormsApplication1
             if (!ProjektPuffer.TemperaturenPruefen(textBox_Vorlauf.Text, textBox_Ruecklauf.Text,
                                                    out vorlauf, out ruecklauf, out fehler))
             {
-                MessageBox.Show(fehler, "Pufferspeicher-Zuordnung",
+                MessageBox.Show(fehler, MyResource.Resource.PSP_TITEL_ZUORDNUNG,
                                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
                 // Dialog offen lassen, damit die Eingabe korrigiert werden kann.
@@ -71,7 +71,7 @@ namespace WindowsFormsApplication1
             // Definitionen von Abfrage_Erzeuger_Vor-/Ruecklauftemperaturen enden auf
             // ein hartkodiertes "HAVING ID_Projekt=8" und liefern damit für JEDES
             // Projekt 0 Zeilen — die Vorbelegung war unabhängig von der Sprache tot.
-            string typ = ErzeugerDbWert(comboBox_Erzeuger.Text);
+            string typ = ErzeugerKatalog.DbWert(comboBox_Erzeuger.Text);
 
             // Etappe 4: "> 0" ergaenzt. Tab_Energieanlagen.Vorlauf/[Rücklauf] tragen den
             // Access-Spaltendefault 0 und sind nie NULL - eine einzige unvollstaendig
@@ -97,17 +97,10 @@ namespace WindowsFormsApplication1
                 textBox_Ruecklauf.Text = dtR.Rows[0]["Ruecklauf"].ToString();
         }
 
-        // B0-9: Übersetzung Anzeigename -> DB-Bezeichner (Persistenzwerte bleiben
-        // deutsch — Drei-Schichten-Regel, Konzept Quellen/Senken Kap. 13.6).
-        // Unbekannte Werte laufen unverändert durch (deutsche Oberfläche).
-        private static string ErzeugerDbWert(string anzeige)
-        {
-            if (anzeige == MyResource.Resource.KONFIG_BHKW) return "BHKW";
-            if (anzeige == MyResource.Resource.KONFIG_HEIZKESSEL) return "Heizkessel";
-            if (anzeige == MyResource.Resource.KONFIG_SOLARTHERMIE) return "Solarthermie";
-            if (anzeige == MyResource.Resource.KONFIG_WAERMEPUMPE) return "Wärmepumpe";
-            if (anzeige == MyResource.Resource.KONFIG_GESAMTSYSTEM) return "Gesamtsystem";
-            return anzeige;
-        }
+        // Die Übersetzung Anzeigename -> DB-Bezeichner (B0-9) stand hier bis Paket 9 / L7
+        // als vierte, eigenständige Kopie im Quelltext. Sie liegt jetzt einmalig in
+        // ErzeugerKatalog.DbWert (Paket 9 / L4) und wird von dort benutzt - dieselbe
+        // Zuordnung, dieselbe tolerante Regel für unbekannte Werte, aber nur noch EINE
+        // Wahrheit (Drei-Schichten-Regel, Konzept Quellen/Senken Kap. 13.6).
     }
 }

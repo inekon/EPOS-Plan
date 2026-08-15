@@ -1261,3 +1261,587 @@ In-Memory-Etikett, nirgends persistiert — schon in Etappe 1, Abschnitt 2 beleg
 - **Produktive Datenbank nur lesend** benutzt (über die Arbeitskopie der Suite). Die
   Läufe dieser Etappe liegen außerhalb des Repos in einem Arbeitsverzeichnis; unter
   `Referenzlaeufe/` ist kein neuer Ordner entstanden.
+
+---
+
+# Etappe 2b — Rest-Simulationsbereich, Konsolidierung, Verdeckungsfix
+
+**Stand: 15.08.2026.** Ausgangsstand: Commit `925c37f` (Paket 9, Etappe 2). Diese Etappe
+schließt den in Abschnitt 13, Punkt 8 benannten Restblock, räumt die letzte doppelte
+Erzeugerzuordnung weg und behebt einen im Harness nachgewiesenen Anzeigefehler in
+`Form_Simulation_Config`.
+
+**Kurzbilanz:** **318 neue Fundstellen** greifen jetzt zusätzlich auf den Katalog zu
+(31 → 349 in den betroffenen Dateien), **11 Schlüssel** kamen dazu (530 → **541**).
+Der Rechenweg ist unverändert: **208 von 208 Ergebnisdateien byte-identisch** gegen die
+neue Basis `2026-08-15_B2` — und **208 von 208 byte-identisch zwischen deutscher und
+englischer Oberfläche**.
+
+## 15. Neue Referenzbasis `2026-08-15_B2`
+
+### 15.1 Warum
+
+Der Etappe-2-Befund aus Abschnitt 12.2 ist damit erledigt: Die produktive
+`Kenndaten.accdb` trägt den Zeitstempel **15.08.2026 11:58**; der Anwender hat in
+**Projekt 1024** das zweite Wärmepumpenmodul (`CS7800iLW 12`) entfernt. Gegen die alte
+Basis `2026-08-14_B1-Fixes` war Projekt 1024 dadurch dauerhaft FAIL, ohne dass eine
+Codeänderung daran beteiligt gewesen wäre.
+
+```
+2026-08-14_B1-Fixes vs 2026-08-15_B2 : 193 byte-/MD5-gleich, 15 abweichend
+                                       (alle 15 in Projekt_1024)
+Toleranzvergleich                    : 8 x PASS, Projekt_1024 FAIL (75.575 Abweichungen)
+   aggregate.csv [WaermepumpeModul[1].*] : 6 Eintraege fehlen im neuen Lauf
+```
+
+### 15.2 Wie
+
+Gerechnet mit dem Referenzlauf-Werkzeug, feste Projektliste
+`1007,1008,1010,1011,1017,1018,1021,1023,1024`, Arbeitskopie-Mechanismus der Suite.
+Die produktive Datenbank wurde ausschließlich **gelesen**; eine `Kenndaten.laccdb` lag
+nicht daneben (die Anwendung des Anwenders lief, hatte die Datei aber nicht geöffnet).
+
+Die Basis wurde **zweimal** gerechnet und beide Läufe gegeneinander geprüft:
+
+| Lauf | Herkunft des Codes |
+|---|---|
+| erster Lauf | Arbeitsverzeichnis auf `925c37f`; abweichend nur die fünf gesperrten Dateien |
+| Kontrolllauf | eigener **git-Arbeitsbaum auf `925c37f`**, also der reine Commit-Stand |
+
+```
+Arbeitsverzeichnis vs reiner HEAD : 208 byte-/MD5-gleich, 0 abweichend
+```
+
+Damit ist zugleich belegt, dass die unkommittierten Änderungen an den fünf gesperrten
+Dateien den Rechenweg nicht berühren — die eingefrorene Basis **ist** der Commit-Stand.
+
+### 15.3 Selbstvergleich
+
+Ein zweiter Lauf desselben Codes auf derselben Quelle:
+
+```
+Projekt_1007..1024 : 9 von 9 PASS   (2.295.987 Werte innerhalb der Toleranz)
+CSV-Dateien byte-/MD5-gleich : 208
+CSV-Dateien abweichend       : 0
+```
+
+`Referenzlaeufe/LIESMICH.md` ist um die neue Basis samt Begründung ergänzt; `B1-Fixes`
+steht dort jetzt als vorheriger Stand. Die eingefrorenen Ordner der Vorgänger wurden
+**nicht** angefasst.
+
+## 16. Stellen-Bilanz Etappe 2b
+
+Gezählt werden Zugriffe auf `MyResource.Resource.*` außerhalb von Kommentaren.
+
+| Datei | vorher | nachher | neu | Schlüssel | Rest |
+|---|---:|---:|---:|---:|---|
+| `Views/Simulation/Form_Simulation_Detail.cs` | 0 | 147 | **147** | 98 | 5 (begründet) |
+| `Views/Simulation/Form_Waermesenke.cs` | 0 | 42 | **42** | 35 | 0 |
+| `Views/Simulation/Form_QuelleErdreich.cs` | 0 | 38 | **38** | 37 | 3 (begründet) |
+| `Views/Simulation/NavigatorStrom.cs` | 0 | 28 | **28** | 21 | 0 |
+| `Views/Simulation/NavigatorUebersicht.cs` | 0 | 22 | **22** | 18 | 3 (Schriftnamen) |
+| `Views/Simulation/DashboardForm.cs` | 0 | 12 | **12** | 12 | 0 |
+| `Views/Simulation/TabNavigationManager.cs` | 0 | 4 | **4** | 4 | 0 |
+| `Views/Simulation/NavigatorWaerme.cs` | 24 | 32 | **8** | 24 | 0 |
+| `Allgemein/Simulation/WaermesenkeClass.cs` | 2 | 23 | **21** | 20 | 2 (Engine-Protokoll) |
+| `Views/Simulation/Form_KonfigPufferspeicher.cs` | 5 | 1 | **−4** | 1 | 0 |
+| | **31** | **349** | **+318** | **233** | |
+
+`Form_KonfigPufferspeicher` verliert Fundstellen, weil die dortige vierte Kopie der
+Erzeugerzuordnung entfallen ist (Abschnitt 18).
+
+### 16.1 Was in den einzelnen Dateien passiert ist
+
+**`Form_Simulation_Detail.cs`** — der größte Brocken. Umgestellt sind die
+Spaltenköpfe aller sechs Ergebnistabellen (Heizkessel, BHKW, Solarthermie,
+Photovoltaik, Wärmepumpe, Pufferspeicher), beide CSV-Export-Knöpfe samt Mouseover und
+Kopfzeilen, alle 13 MessageBoxen, die Menüliste links, die Legende und die fünf
+Segmente des Übersichts-Kreisdiagramms, sämtliche Diagrammtitel und Achsen, die neun
+Brennstoffzeilen des BHKW und die Pendelspeicher-Beschriftung.
+
+Dazu die **Drei-Schichten-Trennung an der Stelle, die das Etappe-2-Protokoll
+ausdrücklich benannt hat** (Abschnitt 13, Punkt 3): In `UpdateTabPages` stehen Vergleich
+und Anzeige im selben `if`-Block. Der Vergleich läuft jetzt gegen `DbWerte.ERZEUGER_*`,
+die unmittelbar folgende `new ListViewItem(…)` bekommt den Ressourcenschlüssel — vier
+Wärmeerzeuger plus Photovoltaik und Stromspeicher.
+
+**Chart-Serien auf technische Schlüssel**, Muster aus L6: neun `private const string`
+(`HEIZWAERMEBEDARF`, `WARMWASSERBEDARF`, `HEIZSTAB`, `WAERMEPRODUKTION`, `WAERMEBEDARF`,
+`STROMBEDARF`, `SPEICHERFUELLSTAND`, `UEBERSCHUSS`, `PHOTOVOLTAIK`), zwei
+`SerieAnlegen`-Überladungen (Vektor und `PointF[]`), der Anzeigetext ausschließlich in
+`Series.LegendText`. Alle Nachschlagestellen sind nachgezogen —
+`chart_PV.Series.IndexOf(…)` und `_chartManager[9]._chart.Series[…]` in den beiden
+Checkbox-Handlern der PV-Seite wären sonst mit einer übersetzten Legende ins Leere
+gelaufen. Nebenbei ist damit dieselbe Uneinheitlichkeit beseitigt wie in
+`NavigatorWaerme`: Diagramm 4 hieß „Wärmebedarf" mit Umlaut, die Diagramme 8 und 10
+„Waermebedarf" ohne.
+
+**`Form_Waermesenke.cs`** — vollständig umgestellt (Fenstertitel, beide Gruppen,
+Radiobuttons, alle Auswahlfelder, die Prioritätslisten, der Positionstext „Lädt als n.
+von m", alle vier MessageBoxen). Die Rollennamen „Hauptsenke"/„Zweitsenke", die als
+Platzhalter in die Fehlermeldungen wandern, kommen aus `SIM_ROLLE_*`; die
+Steuerlogik arbeitet unverändert mit `WaermesenkeClass.ZIEL_*` und
+`WaermequelleClass.SENKE_*` — Persistenzwerte, die nicht übersetzt werden.
+
+**`Form_QuelleErdreich.cs`** — vollständig umgestellt. Zwei Besonderheiten:
+Die Zeichenkette „1,5" mit hartkodiertem Dezimalkomma ist durch die
+`Vorgabe(double)`-Hilfsfunktion aus L3 ersetzt (`ErdreichTemperatur.TIEFE_DEFAULT`,
+formatiert mit `"0.##"` wie alle übrigen Ausgaben des Dialogs). Und die
+Bodenkennwertzeile setzt die **Formatangaben des Quelltexts** (`0.0`, `0.00`) jetzt auf
+die *Werte* statt auf die Formatzeichenkette — der Katalog führt die Platzhalter
+normalisiert, die Zahlendarstellung bleibt dadurch unverändert.
+
+**`NavigatorStrom.cs`** — sieben technische Serienschlüssel, `SerieAnlegen` wie in
+`NavigatorWaerme`, CSV-Export und Diagrammbeschriftung. „PV" bleibt zugleich Schlüssel
+und Anzeigetext: das Kürzel ist in beiden Sprachen dasselbe, ein eigener `LegendText`
+wäre eine Ressource mit zweimal demselben Wert.
+
+**`NavigatorUebersicht.cs`** — beide Donut-Diagramme (Segmentnamen und Kachelüberschriften),
+die beiden KPI-Kacheln, die Tabellenüberschrift und die fünf Zeilen der Ergebnistabelle.
+Die `Name`-Eigenschaften der beiden DataGridView-Spalten („Erzeuger", „Ergebnis")
+bleiben technische Zugriffsschlüssel; übersetzt wird `HeaderText`.
+
+**`DashboardForm.cs`** — drei technische Serienschlüssel, die drei Legendentexte, beide
+Achsentitel und die vier Anzeigetexte. Die **Monatsnamen kommen jetzt aus
+`CultureInfo.CurrentUICulture`** statt aus `CurrentCulture` — dieselbe Festlegung wie in
+L3 (`Form_Quellprofil`): der Monatsname ist Anzeige und folgt der Oberflächensprache.
+`CurrentCulture` bleibt unangetastet.
+
+**`TabNavigationManager.cs`** — die vier Navigationsknöpfe. Die `.resx` legt Umbrüche als
+LF ab, der Bestand setzte `Environment.NewLine`; deshalb steht an jeder der vier Stellen
+`.Replace("\n", Environment.NewLine)` (Muster aus L4).
+
+### 16.2 Designer-gebundene Texte — programmatisch statt `Localizable`
+
+`NavigatorStrom`, `NavigatorUebersicht`, `NavigatorWaerme` und `DashboardForm` tragen
+ihre Beschriftungen in der Designer-`.resx`. Der Auftraggeber hat entschieden, diese
+Dateien **nicht** auf `Localizable` umzubauen: Eine solche Ressource trägt je Kultur auch
+Position und Größe, und ein Handumbau ohne den WinForms-Designer verschöbe
+Steuerelemente.
+
+Stattdessen setzt jede der vier Klassen die Texte in einer eigenen Methode
+`BeschriftungenSetzen()` **im Konstruktor, direkt nach `InitializeComponent()`**, aus dem
+Katalog. Die Designer-Fassung bleibt als deutsche Entwurfszeit-Vorbelegung stehen.
+
+| Klasse | gesetzte Steuerelemente |
+|---|---|
+| `NavigatorStrom` | 7 Serien-Checkboxen + Entwurfszeit-Titel des Charts |
+| `NavigatorWaerme` | 7 Serien-Checkboxen + Entwurfszeit-Titel — **schließt Punkt 3 aus Abschnitt 13** |
+| `NavigatorUebersicht` | `bt_WaermebedarfUebersicht` |
+| `DashboardForm` | `groupPV`, `groupST`, `lblSpeicherInfo` |
+
+> **Reihenfolge ist in `NavigatorWaerme` wesentlich.** `BeschriftungenSetzen()` steht dort
+> **vor** `InitPufferCheckBox()`, weil diese die programmatischen Steuerelemente an
+> `checkBox_BHKW.Right` bzw. `checkBox_Waermebedarf.Right` ausrichtet — und die Breite
+> hängt am Text. Auf deutscher Oberfläche ändert sich nichts (zeichengleiche Texte), auf
+> englischer rücken Checkbox und Auswahlliste passend mit.
+
+**Nicht gesetzt** wurden: `NavigatorUebersicht.label_1`/`label_2` (beide stehen im
+Designer auf `Visible = false` und werden nirgends eingeblendet), die reinen
+Entwurfszeit-Vorbelegungen in `DashboardForm` (`lblNutzungsgradST`, `lblCO2`, `lblTest` —
+sie werden von `UpdateSimulationData` vor der ersten Anzeige überschrieben) und der
+Fenstertitel von `DashboardForm` (das Formular wird mit `TopLevel = false` und
+`FormBorderStyle.None` eingebettet, seine Titelzeile ist nie sichtbar).
+
+### 16.3 Nachtrag: `WaermesenkeClass.Pruefen` war noch deutsch
+
+Beim Restzählen fiel auf, dass die **Prüf- und Anzeigefunktionen** von
+`WaermesenkeClass` in Etappe 2 nicht mitgenommen worden waren, obwohl der Katalog die
+Schlüssel führt (`SIM_KEIN_PUFFER_GEWAEHLT`, `SIM_PUFFER_VERWENDUNG_PASST_NICHT`,
+`SIM_PUFFER_QUELLE_UND_SENKE`, `SIM_ZWEITSENKE_GLEICH_HAUPTSENKE`,
+`SIM_KEIN_BRAUCHWASSERBEDARF`, `SIM_HEIZKREIS*`, `SIM_PUFFER_*_KURZ`,
+`SIM_ZIEL_PUFFERSPEICHER_*`, `SIM_KEINE_SENKENDATEN`, `SIM_PUFFER_MIT_VOLUMEN`).
+Die L6-Bilanz in Abschnitt 9 wies für diese Datei nur 2 Fundstellen aus.
+
+Das ist nachgeholt (21 Fundstellen). Es war **nicht optional**: Diese Meldungen erscheinen
+in genau den Dialogen, die diese Etappe übersetzt hat — `Form_Waermesenke` reicht
+`erg.Fehler` unverändert an die MessageBox durch. Ohne den Nachtrag hätte eine englische
+Oberfläche einen englischen Fenstertitel über einer deutschen Meldung gezeigt.
+
+Dabei ist zugleich der in Etappe 1 (Abschnitt 5.5) angemeldete Vorbehalt für diese
+Meldungen erledigt: Die eingesetzten Verwendungswerte laufen über
+`WaermesenkeClass.VerwendungAnzeige(...)` und sind damit übersetzt, statt als deutscher
+Persistenzwert in einer englischen Meldung zu stehen.
+
+## 17. Ressourcenkatalog: +11 Schlüssel
+
+Alle elf sind **additiv** in beiden `.resx` und in `Resource.Designer.cs` ergänzt.
+Bestand jetzt **541 Schlüssel** (vorher 530).
+
+| Schlüssel | DE | EN | Grund |
+|---|---|---|---|
+| `CHART_LEGENDE_HEIZWAERMEBEDARF` | Heizwärmebedarf | Space heating demand | Legendentext, hing bisher am Seriennamen (Glossar Z. 43) |
+| `CHART_LEGENDE_WARMWASSERBEDARF` | Warmwasserbedarf | DHW demand | dito; Kürzel DHW nach Glossar |
+| `CHART_LEGENDE_WAERMEPRODUKTION` | Wärmeproduktion | Heat generation | dito |
+| `CHART_LEGENDE_UEBERSCHUSS` | Überschuss | Surplus | dito (Glossar Z. 147) |
+| `CHART_LEGENDE_PROFIL_LASTGANG` | Profil/Lastgang | Profile/load curve | dito; Wortwahl wie `CHART_CSV_PROFIL_LASTGANG` |
+| `CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE` | Stromverlauf Jahresganglinie␠ | Electricity profile, annual load profile␠ | Entwurfszeit-Titel `NavigatorStrom.chart7`; **abschließendes Leerzeichen** wie im Bestand, über `xml:space="preserve"` erhalten |
+| `SIM_BTN_WAERMEBEDARF_UEBERSICHT` | Wärmebedarf Übersicht... | Heat demand overview... | Designer-Knopf `NavigatorUebersicht` |
+| `SIM_CHK_WAERMEBEDARF_EINBLENDEN` | Wärmebedarf einblenden | Show heat demand | Designer-Checkbox `NavigatorWaerme` |
+| `SIM_DASH_GRUPPE_PV` | Photovoltaik Autarkie | Photovoltaic self-sufficiency | Designer-Gruppe `DashboardForm` |
+| `SIM_DASH_GRUPPE_ST` | Solarthermie Deckung | Solar thermal coverage | dito |
+| `SIM_DASH_SPEICHER_INFO` | Theoretischer Speicher (PV) (kWh): | Theoretical storage (PV) (kWh): | dito |
+
+**Wiederverwendet statt neu angelegt** — der Katalog führt gleiche deutsche Texte unter
+einem Schlüssel (Etappe 1, Abschnitt 5.1): `CHART_ACHSE_STROMBEDARF` („Strombedarf") dient
+zugleich als Legendentext der Strombedarfs-Serien, `PSP_CHECKBOX_SPEICHERFUELLSTAND`
+(„Speicherfüllstand") als Legendentext der PV-Speicherserie, `CHART_LEGENDE_WAERMEBEDARF`
+für die drei Wärmebedarfs-Serien und `CHART_SEGMENT_HEIZSTAB` für die vier
+Heizstab-Serien.
+
+## 18. Aufräumen: die vierte Erzeugerzuordnung ist weg
+
+`Form_KonfigPufferspeicher.ErzeugerDbWert` — die in Abschnitt 13, Punkt 2 benannte
+vierte Kopie — ist entfernt. Die eine Aufrufstelle benutzt jetzt
+`ErzeugerKatalog.DbWert(...)`; Verhalten und tolerante Regel für unbekannte Werte sind
+identisch (die Kopie kannte fünf Erzeuger, `ErzeugerKatalog` kennt dieselben fünf plus
+Photovoltaik und Stromspeicher, die an dieser Stelle nie auftreten). Damit gibt es die
+Zuordnung „DB-Wert ↔ Anzeigename" **nur noch einmal im Projekt**. Nebenbei ist der
+Fenstertitel der Fehlermeldung dieses Dialogs auf `PSP_TITEL_ZUORDNUNG` umgestellt.
+
+**Suche nach weiteren Duplikaten** — Volltextsuche über alle `KONFIG_*`-Zugriffe und alle
+`*Anzeige`-Funktionen des Simulationsbereichs:
+
+| Fundstelle | Bewertung |
+|---|---|
+| `Form_Simulation_Config.cs:1146`, `.Uebersicht.cs:684` (`KONFIG_GESAMTSYSTEM`) | **keine Zuordnung**, sondern zwei einzelne Anzeigen. Kein Duplikat. |
+| `WaermesenkeClass.VerwendungAnzeige`, `.ZielAnzeige` | je die EINE Quelle; `Form_PufferSp_Projekt` und `Form_Simulation_Config.Uebersicht` greifen darauf zu |
+| `SimulationPufferspeicher.RolleAnzeige/BezeichnerAnzeige`, `Ladeordnung.ErzeugerName`, `WaermequelleClass.TypAnzeige`, `ErdreichTemperatur.KatalogAnzeige` | je die EINE Quelle, in L6 angelegt |
+| `Form_PufferSp_Projekt.VerwendungItem` (Zeile 182–192) | greift auf dieselben zwei Ressourcenschlüssel zu wie `VerwendungAnzeige`. **Keine zweite Wahrheit** (identische Schlüssel), aber eine zweite Fundstelle — als Kandidat für L8 vermerkt, nicht angefasst. |
+
+Weitere Anzeige↔DB-Zuordnungen gibt es im Simulationsbereich nicht.
+
+## 19. Verdeckungsfix `Form_Simulation_Config` — Befund und Behebung
+
+### 19.1 Der Befund des Auftrags ließ sich NICHT bestätigen
+
+Der Auftrag nannte `groupBox_PufferSp` und `lblStatus` als letzte Kandidaten des
+Musters aus Commit `d49075e` („BaseForm-Erbe"). Ein Reflexions-Harness (x86, gegen die
+gebaute Assembly, drei Fenstergrößen) misst das Gegenteil:
+
+```
+Basisklasse             : System.Windows.Forms.Form          <- NICHT BaseForm
+AutoScroll              : False
+AutoScrollPosition      : {X=0,Y=0}   VScroll sichtbar=False
+  -> Ursache aus d49075e (verpasster Scrollversatz) AUSGESCHLOSSEN
+```
+
+Das gilt in **allen drei** gemessenen Größen (552, 380 und 300 px Nutzhöhe). `d49075e`
+behob den Fall, dass unsichtbar gestartete Steuerelemente den **AutoScroll-Versatz** der
+`BaseForm` verpassen. `Form_Simulation_Config` erbt von `Form`, setzt `AutoScroll` nicht
+und hat in keiner Größe einen Scrollversatz — das Muster „sichtbar starten, in `OnLoad`
+ausblenden" wäre hier wirkungslos.
+
+**`groupBox_PufferSp` hat zudem gar keinen Anzeigeweg.** `RUBRIK_SICHTBAR` steht seit
+Paket 2, Etappe A auf `false`; `AktualisierePufferSpSichtbarkeit()` steigt dann sofort
+aus, und der einzige verbleibende Auslöser `checkBox_PufferSp` ist selbst
+`Visible = false`. Im Harness über den produktiven Weg gemessen:
+
+```
+groupBox_PufferSp : Visible=False  (checkBox_PufferSp.Visible=False)
+   ok: bleibt ausgeblendet (Konzept 4.4, Etappe A) - kein Anzeigeweg, keine Verdeckung moeglich.
+```
+
+Die Gruppe wird von `InitPufferspeicherRubrik` **absichtlich** an den unteren Rand
+geparkt (`btn_Speichern.Top - PLATZ_FUSSZEILE`), damit der freiwerdende Bereich an die
+Übersicht geht. Sie bleibt unangetastet.
+
+### 19.2 Zwei ANDERE, gemessene Fehler an `lblStatus`
+
+Der Harness fand am selben Formular zwei echte Anzeigefehler — nicht durch einen
+verpassten Scrollversatz, sondern durch die **Verankerung**:
+
+```
+=== Normalgroesse (wie geoeffnet) ===
+  ClientSize    : {Width=1175, Height=552}
+  lblStatus     : Bounds={X=585,Y=535,Width=263,Height=20}      -> Unterkante 555
+  btn_Speichern : Bounds={X=854,Y=510,Width=193,Height=30}
+      BEFUND: lblStatus ragt aus der Nutzflaeche heraus; sichtbarer Anteil Height=17
+
+=== verkleinert auf 380 px Nutzhoehe ===
+  lblStatus     : Bounds={X=585,Y=363,Width=263,Height=20}
+      BEFUND: lblStatus ragt aus der Nutzflaeche heraus
+      BEFUND: lblStatus verdeckt von groupBox_Uebersicht {X=267,Y=109,Width=889,Height=309}
+              (ZIndex 4 vor 5)
+
+ERGEBNIS: 5 Befund(e).
+```
+
+1. **Unterkante abgeschnitten, immer.** Die Entwurfsposition (y = 390 bei 427 px
+   Nutzhöhe) wandert über `Anchor = Bottom` mit, während `InitPufferspeicherRubrik`
+   (+105 px) und `ExtrapolationSchalterPlatzieren` (+`fehlt`) die Nutzhöhe erhöhen **und**
+   die Zeile zusätzlich absolut verschieben. Ergebnis: Unterkante 555, Nutzfläche endet
+   bei 552 — die letzten drei Pixel der Meldung „✔ Konfiguration erfolgreich
+   gespeichert" fehlten.
+2. **Verdeckung beim Verkleinern.** Der Dialog ist `Sizable` und hat keinen
+   Scrollbereich. Zieht man ihn kleiner, wandert die untenverankerte Statuszeile nach
+   oben über `groupBox_Uebersicht` — und die stand mit Z-Index 4 **vor** der Zeile
+   (Z-Index 5).
+
+### 19.3 Die Behebung
+
+Neu in `Form_Simulation_Config.cs`: `StatuszeileAusrichten()`, aufgerufen im Konstruktor
+**nach** `InitPufferFusszeile()` — dort verschiebt `ExtrapolationSchalterPlatzieren` die
+Zeile zuletzt.
+
+- **Senkrecht auf die Knopfzeile zentrieren** statt fester Absolutposition. Die Knöpfe
+  werden von beiden Umbauschritten ohnehin nachgezogen und liegen damit garantiert in
+  der Nutzfläche.
+- **`lblStatus.BringToFront()`** — kein Geschwister kann die Zeile mehr verdecken.
+- **`MindestgroesseFestlegen()`** setzt `MinimumSize` auf die Größe des fertig
+  aufgebauten Inhalts, **gedeckelt auf die Arbeitsfläche des Bildschirms**. Dieselbe
+  Vorgehensweise wie `BaseForm.OnLoad` („automatische Mindestgröße"), nur ohne den
+  dortigen Scrollbereich. Die Deckelung verhindert, dass der Dialog auf einem kleinen
+  Bildschirm größer als dieser wird und sich dann nicht mehr verkleinern ließe.
+
+### 19.4 Harness-Beweis nachher
+
+Derselbe Harness, dieselben drei Größen, gegen die neu gebaute Assembly:
+
+```
+=== Normalgroesse (wie geoeffnet) ===
+  lblStatus : Bounds={X=585,Y=515,Width=263,Height=20}
+      ok: lblStatus liegt vollstaendig in der Nutzflaeche {X=0,Y=0,Width=1175,Height=552}
+      ok: lblStatus hat ZIndex 0 - kein verdeckendes Geschwister-Control
+
+=== verkleinert auf 380 px / 300 px Nutzhoehe ===
+      ok: lblStatus liegt vollstaendig in der Nutzflaeche
+      ok: lblStatus hat ZIndex 0 - kein verdeckendes Geschwister-Control
+
+ERGEBNIS: BESTANDEN - lblStatus vollstaendig sichtbar und unverdeckt,
+                     Fusszeile aus Paket 8 vollstaendig.
+```
+
+### 19.5 Keine Regression an der Paket-8-Fußzeile
+
+Der Harness prüft die vier von Paket 8 eingebauten Steuerelemente in jeder Größe mit:
+vorhanden, sichtbar, Text gesetzt, vollständig **oberhalb** der Knopfzeile.
+
+```
+label_PufferListe          : Visible=True  Bounds={X=267,Y=424,W=889,H=20}  Text=gesetzt  ueber der Knopfzeile=True
+btn_PufferVerwalten        : Visible=True  Bounds={X=267,Y=448,W=240,H=28}  Text=gesetzt  ueber der Knopfzeile=True
+checkBox_KaskadeZweikanalig: Visible=True  Bounds={X=811,Y=454,W=219,H=23}  Text=gesetzt  ueber der Knopfzeile=True
+checkBox_Extrapolation     : Visible=True  Bounds={X=811,Y=481,W=264,H=23}  Text=gesetzt  ueber der Knopfzeile=True
+```
+
+Werte **vor und nach** dem Fix identisch — `InitPufferFusszeile` und
+`ExtrapolationSchalterPlatzieren` sind unverändert; die neue Methode liest deren
+Ergebnis nur aus.
+
+## 20. Verifikation
+
+### 20.1 Build
+
+```
+MSBuild.exe WP-Plan.sln -p:Configuration=Debug -p:Platform=x86
+MSBuild.exe Referenzlauf\Referenzlauf.csproj -p:Configuration=Debug -p:Platform=x86
+```
+
+**0 Fehler, exakt 6 Bestandswarnungen** — dieselben wie in Etappe 1 und 2:
+2 × CS0108 (`WErzeugerModel.ID_Projekt`, `StromverbraucherStammCtrl.items`),
+2 × CS0109 (`KlimaregionStammCtrl.rows`, `.items`), 1 × CS4014 und 1 × CS1998
+(beide `MDIMainForm.cs`). `Referenzlauf.csproj` ebenfalls 0 Fehler.
+
+> **Ein Fehler, der beim ersten Bauen auffiel und behoben ist:**
+> `TabNavigationManager.cs` liegt als einzige Datei des Bereichs **außerhalb** des
+> Namensraums `WindowsFormsApplication1` (globaler Namensraum, nur `using`). Dort löst
+> `MyResource.Resource` nicht auf; die vier Zugriffe sind deshalb voll qualifiziert
+> (`WindowsFormsApplication1.MyResource.Resource.…`).
+
+### 20.2 Regressionslauf — aus einem eigenen Arbeitsbaum
+
+Während dieser Etappe hat der Anwender im Arbeitsverzeichnis **parallel gearbeitet**
+(`SchemaKatalog.cs`, `SchemaMigration.cs`, `WErzeugerCtrl.cs`, `MDIMainForm.cs`,
+`Form_Start.cs`, `Form_PufferSp.cs` — zwischen 12:56 und 13:00 geändert). Zwei dieser
+Dateien gehören zur Schema-Migration, die die Referenzlauf-Suite auf ihrer Arbeitskopie
+ausführt.
+
+Die Verifikation läuft deshalb **nicht aus dem Arbeitsverzeichnis**, sondern aus zwei
+eigenen git-Arbeitsbäumen auf `925c37f`:
+
+| Arbeitsbaum | Inhalt |
+|---|---|
+| `head` | reiner Commit-Stand — hat die Basis `2026-08-15_B2` gerechnet |
+| `mine` | Commit-Stand **plus ausschließlich die 14 Dateien dieser Etappe** |
+
+Damit sind die parallelen Änderungen des Anwenders aus beiden Seiten des Vergleichs
+draußen.
+
+```
+Projekt_1007: PASS (29 Dateien, 324210 Werte)
+Projekt_1008: PASS (21 Dateien, 227847 Werte)
+Projekt_1010: PASS (18 Dateien, 201540 Werte)
+Projekt_1011: PASS (29 Dateien, 324232 Werte)
+Projekt_1017: PASS (20 Dateien, 245378 Werte)
+Projekt_1018: PASS (19 Dateien, 210343 Werte)
+Projekt_1021: PASS (21 Dateien, 227840 Werte)
+Projekt_1023: PASS (25 Dateien, 262917 Werte)
+Projekt_1024: PASS (26 Dateien, 271680 Werte)
+
+GESAMT: PASS (2.295.987 Werte innerhalb der Toleranz)
+
+CSV-Dateien byte-/MD5-gleich : 208
+CSV-Dateien abweichend       : 0
+CSV-Dateien fehlend          : 0
+```
+
+**9 von 9 PASS, 208 von 208 byte-identisch** gegen `Referenzlaeufe/2026-08-15_B2`.
+
+> **Gegenprobe aus dem vollständigen Arbeitsverzeichnis.** Zum Abschluss wurde derselbe
+> Lauf noch einmal aus dem echten Arbeitsverzeichnis gerechnet — also **mit** den
+> parallelen Änderungen des Anwenders und dem inzwischen dazugekommenen Commit `e8836c6`
+> („UI-Sichttest-Fixes: Projektkontext nach Neu/Bearbeiten, Pufferspeicher-Moduldaten per
+> ID"). Ergebnis: ebenfalls **208 von 208 byte-identisch**. Die Trennung über die
+> Arbeitsbäume war eine Vorsichtsmaßnahme, keine Notwendigkeit — auch die
+> Schema-Migrationsarbeit des Anwenders verändert die Referenzergebnisse (noch) nicht.
+
+### 20.3 Sprachgleichheit DE ↔ EN
+
+Derselbe Arbeitsbaum, dieselben neun Projekte, einmal ohne und einmal mit
+`EPOS_REFLAUF_UICULTURE=en-US`:
+
+```
+SPRACHGLEICHHEIT DE vs EN : 208 byte-gleich, 0 abweichend
+EN gegen Basis (Toleranz) : 9 von 9 PASS, 2.295.987 Werte
+```
+
+**208 von 208 Ergebnisdateien byte-identisch** über alle neun Projekte. Damit ist
+nachgewiesen, dass keiner der 318 neu umgestellten Texte als Steuerwert dient.
+
+### 20.4 Ressourcen-Ladeprüfung und Platzhalterproben
+
+Testtreiber außerhalb des Repos, lädt die gebaute Assembly per `Assembly.LoadFrom` und
+arbeitet über Reflexion:
+
+```
+Ressourcenbloecke geprueft : 94
+Einzelabrufe geprueft      : 34.545   (jeder Zeichenketten-Schluessel unter Invariant, de-DE, en-US)
+resx neutral / en-US       : 541 / 541
+MyResource.Resource        : 541 Schluessel / 541 Eigenschaften
+Leere Werte de-DE / en-US  : 0 / 0
+Eintraege mit Platzhaltern : 103
+Probeformatierungen        : 206      (je Eintrag neutral UND en-US)
+DbWerte-Konstanten         : 51
+ERGEBNIS: BESTANDEN - kein Fehler.
+```
+
+Geprüft wird damit: kein Block, der sich nicht laden lässt; kein Schlüssel, der unter
+einer Kultur `null` liefert; Gleichstand `.resx` ↔ `Resource.Designer.cs`; gleiche
+Schlüsselmenge in beiden `.resx`; für **jeden** Eintrag mit `{n}` eine Probeformatierung
+in beiden Sprachen **und** der Vergleich der Platzhalter*nummern* zwischen neutral und
+en-US (eine Übersetzung mit vergessenem `{1}` fiele hier auf). Zusätzlich: die zwölf
+Leitkonstanten aus `DbWerte` sind unverändert deutsch.
+
+Fokusprobe der **elf neuen Schlüssel** — jeder liefert in beiden Sprachen einen Wert:
+
+```
+CHART_LEGENDE_HEIZWAERMEBEDARF             DE=[Heizwärmebedarf]  EN=[Space heating demand]
+CHART_LEGENDE_PROFIL_LASTGANG              DE=[Profil/Lastgang]  EN=[Profile/load curve]
+CHART_LEGENDE_UEBERSCHUSS                  DE=[Überschuss]  EN=[Surplus]
+CHART_LEGENDE_WAERMEPRODUKTION             DE=[Wärmeproduktion]  EN=[Heat generation]
+CHART_LEGENDE_WARMWASSERBEDARF             DE=[Warmwasserbedarf]  EN=[DHW demand]
+CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE   DE=[Stromverlauf Jahresganglinie ]  EN=[Electricity profile, annual load profile ]
+SIM_BTN_WAERMEBEDARF_UEBERSICHT            DE=[Wärmebedarf Übersicht...]  EN=[Heat demand overview...]
+SIM_CHK_WAERMEBEDARF_EINBLENDEN            DE=[Wärmebedarf einblenden]  EN=[Show heat demand]
+SIM_DASH_GRUPPE_PV                         DE=[Photovoltaik Autarkie]  EN=[Photovoltaic self-sufficiency]
+SIM_DASH_GRUPPE_ST                         DE=[Solarthermie Deckung]  EN=[Solar thermal coverage]
+SIM_DASH_SPEICHER_INFO                     DE=[Theoretischer Speicher (PV) (kWh):]  EN=[Theoretical storage (PV) (kWh):]
+Neue Schluessel: 11   ohne Wert: 0
+```
+
+### 20.5 Hardcoding-Restzählung
+
+Volltextsuche über die zwölf in dieser und der letzten Etappe bearbeiteten Dateien des
+Bereichs; gezählt werden Zeichenkettenliterale außerhalb von Kommentarzeilen, ohne reine
+Bezeichner, Zahlen und Formatangaben. **43 Treffer, davon 0 unbegründet:**
+
+| Gruppe | Anzahl | Begründung |
+|---|---:|---|
+| SQL-Fragmente und Spaltenlisten | 15 | Datenzugriff, laut L2 außerhalb des Katalogs |
+| Schriftartnamen (`"Segoe UI"`) | 5 | technisch, sprachneutral |
+| Kommentartext **hinter** Code auf derselben Zeile | 8 | Scanner-Treffer, kein Laufzeittext |
+| Einheiten- und Trennzeichen-Verkettung (`" l)"`, `" h/a"`, `" — "`, `" · "`, `": "`, `"\r\n  "`, `" %"`) | 11 | sprachneutral; die eingesetzten Teile kommen bereits übersetzt |
+| Datums-/Zeitformat `"dd/MM H:mm ["` | 2 | Formatmuster, sprachneutral |
+| `HilfeKontext.SetzeBereich(...)` | 2 | Bedienkontext für den KI-Assistenten; in L2 ausdrücklich vom Katalog ausgenommen |
+
+**Bleibt genau ein echter Rest, dokumentiert statt umgestellt:**
+
+| Stelle | Text | Grund |
+|---|---|---|
+| `WaermesenkeClass.cs:460-467` | zwei `SimulationProtokoll`-Warnungen zur Senkennormalisierung | Gehören zum **Engine-Protokollkanal**, für den der Katalog nur 29 der rund 70 Meldungen führt (Etappe 2, Abschnitt 9.5). Ohne Katalogeintrag wäre eine Übersetzung eine Erfindung. Offener Punkt, siehe Abschnitt 21. |
+
+Der Bereich `Allgemein/Simulation/` außerhalb von `WaermesenkeClass` wurde **nicht**
+umgestellt und ist in dieser Zählung nicht enthalten — dort liegen die übrigen
+Engine-Protokollmeldungen ohne Katalogschlüssel (siehe Abschnitt 21, Punkt 1).
+
+### 20.6 Kodierung und Zeilenenden
+
+Alle 14 geänderten Quelldateien behalten ihre Kodierung: **UTF-8 mit BOM**, kein
+Mojibake, geprüft mit einem eigenen Prüfer. Die drei Dateien mit reinen LF-Zeilenenden
+(`WaermesenkeClass.cs`, `Form_QuelleErdreich.cs`, `Form_Waermesenke.cs`) behalten LF; die
+übrigen CRLF. Ein beim Skripteinsatz eingeschlepptes CRLF in `WaermesenkeClass.cs`
+(Zeile 151) und 15 zusätzliche Leerzeilen wurden zurückgenommen und nachgemessen:
+
+```
+WaermesenkeClass.cs     UTF8-BOM  LF        leere Plus-Zeilen im Diff: 0
+Form_QuelleErdreich.cs  UTF8-BOM  LF        leere Plus-Zeilen im Diff: 0
+Form_Simulation_Detail  UTF8-BOM  CRLF      leere Plus-Zeilen im Diff: 0
+```
+
+## 21. Offene Punkte für die Reviews, L7 und L8
+
+1. **Engine-Protokollmeldungen ohne Katalogschlüssel — der größte verbliebene Block.**
+   Der Katalog führt 29 `SIMENG_*`-Schlüssel; die Engine erzeugt deutlich mehr
+   Protokolltexte. Betroffen sind `SimulationControl.cs`, `SimulationBHKW.cs`,
+   `SimulationWaermebedarf.cs`, `WaermequelleClass.cs`, `ErdreichAuswertung.cs`,
+   `VDI4640Pruefung.cs`, `ErdreichTemperatur.cs` sowie die zwei Reststellen in
+   `WaermesenkeClass.cs`. Das ist eine eigene Katalogerhebung (L2-Nachtrag) plus Umbau
+   — nicht Teil dieses Auftrags.
+2. **`richTextBox_Info.Text` in `Form_Simulation_Detail` ist nicht übersetzt.**
+   Der Erklärtext zu den drei BHKW-Betriebsarten steht in der **neutralen** `.resx` des
+   Formulars; `Form_Simulation_Detail.en-US.resx` (240 Einträge) kennt ihn nicht. Die
+   drei Suchbegriffe für den Fettdruck kommen jetzt aus dem Katalog
+   (`SIM_BETRIEBSART_*`) — auf englischer Oberfläche findet `IndexOf` sie im deutschen
+   Text nicht, es bleibt also beim unformatierten deutschen Erklärtext. Kein Fehler,
+   keine Ausnahme; die saubere Lösung ist ein `richTextBox_Info.Text`-Eintrag in der
+   `en-US.resx` über den WinForms-Designer.
+3. **UI-Sichttest auf englischer Oberfläche steht weiter aus** (Punkt 1 aus Abschnitt 13,
+   unverändert). Neu hinzu kommen: die sieben Serien-Checkboxen beider Navigatoren
+   (jetzt übersetzt, feste Positionen aus dem Designer), die Legenden der elf
+   Diagramme in `Form_Simulation_Detail`, die Spaltenbreiten der sechs Ergebnistabellen
+   (`-2` = automatisch, unkritisch) und die vier Navigationsknöpfe des
+   `TabNavigationManager` (feste Zellen im TableLayoutPanel).
+4. **`Form_PufferSp_Projekt.VerwendungItem`** greift auf dieselben zwei
+   Ressourcenschlüssel zu wie `WaermesenkeClass.VerwendungAnzeige` — keine zweite
+   Wahrheit, aber eine zweite Fundstelle. Zusammenlegen wäre eine Aufräumarbeit für L8.
+5. **Bestandsübersetzungen** von `Form_Simulation_Config.en-US.resx` und
+   `Form_KonfigPufferspeicher.en-US.resx` widersprechen weiter dem Glossar
+   („buffer memory", „producer") — Punkt 4 aus Abschnitt 13, unverändert.
+6. **43 verwaiste Einträge** in `Form_Simulation_Config.en-US.resx` — Punkt 5 aus
+   Abschnitt 13, unverändert.
+7. **Zeilenenden** (jetzt 3 der geänderten Dateien mit LF) und **Encoding-Baustellen
+   außerhalb des Simulationsbereichs** — unverändert.
+8. **`Form_Simulation_Config` erbt nicht von `BaseForm`.** Das ist der Grund, warum das
+   Muster aus `d49075e` hier nicht greift (Abschnitt 19.1) — und zugleich der Grund,
+   warum der Dialog ohne `MinimumSize` beliebig klein gezogen werden konnte. Die neue
+   `MindestgroesseFestlegen()` deckt das ab; ob das Formular langfristig auf `BaseForm`
+   umgestellt werden soll (dann mit Scrollbereich), ist eine Architekturentscheidung.
+   Dieselbe Frage steht laut `d49075e` noch für `Form_Gebaeude`,
+   `Form_Solarganglinie_Admin`, `Form_AdminWaermeeinlesen` und `Form_WPAuswahl`.
+
+## 22. Was diese Etappe NICHT getan hat
+
+- **Kein Commit.** Der Arbeitsstand liegt unkommittiert im Arbeitsverzeichnis.
+- **Gesperrte Dateien unberührt:** `Controller/WizardCtrl.cs`, `Model/WErzeugerModel.cs`,
+  `Views/BHKW/Form_BHKWEing.cs`, `Views/Heizkessel/Form_Heizkessel.cs`,
+  `Views/Wizard/WizardParent.cs`; ebenso `Referenzlaeufe/2026-08-14_B0/lauf_protokoll.md`,
+  `DB-Backup/` und alle bestehenden `Referenzlaeufe/*`-Ordner. Neu angelegt wurde
+  ausschließlich `Referenzlaeufe/2026-08-15_B2/`.
+- **Die parallel geänderten Dateien des Anwenders nicht angefasst** — sie sind aus der
+  Verifikation herausgehalten (Abschnitt 20.2), nicht verändert.
+- **Keine `.Designer.cs` und keine Formular-`.resx` geändert** — auch nicht additiv. Die
+  Designer-Texte werden programmatisch überschrieben (Abschnitt 16.2).
+- **`CurrentCulture` nicht gesetzt.** Nur `CurrentUICulture`; die
+  Monatsnamen-Umstellung in `DashboardForm` liest `CurrentUICulture`, sie setzt nichts.
+- **Registry nicht angefasst.** Der Sprachtest lief über `EPOS_REFLAUF_UICULTURE`.
+- **Produktive Datenbank nur lesend** benutzt (über die Arbeitskopie der Suite).

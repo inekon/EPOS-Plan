@@ -23,9 +23,11 @@ namespace WindowsFormsApplication1
     /// und bleibt leer, solange kein Lauf vorliegt.
     ///
     /// Das Formular wird - wie Form_QuellePufferspeicher und Form_Quellprofil -
-    /// komplett programmatisch aufgebaut (kein Designer, keine .resx). Die
-    /// sichtbaren Texte sind deutsch hartkodiert; die durchgängige Lokalisierung
-    /// des Simulationsbereichs ist Gegenstand von Paket 9 (Konzept 13.6).
+    /// komplett programmatisch aufgebaut (kein Designer, keine .resx). Die sichtbaren
+    /// Texte kommen seit Paket 9 / L7 aus dem Ressourcenkatalog
+    /// (<c>MyResource.Resource.SIMQ_ERDREICH_*</c>, Konzept 13.6); Bodentyp-Schlüssel
+    /// und Quellsystem bleiben deutsche Persistenzwerte aus <see cref="DbWerte"/>
+    /// (Drei-Schichten-Regel).
     /// </summary>
     public class Form_QuelleErdreich : Form
     {
@@ -123,9 +125,28 @@ namespace WindowsFormsApplication1
 
         private bool _uiAufbau = true;   // unterdrückt Ereignisse während SetControls
 
+        // --- Technische Serienschlüssel (Paket 9 / L7) --------------------------------
+        // Schicht 2 der Drei-Schichten-Regel: sprachneutral, ASCII, unveränderlich.
+        // Der Anzeigetext steht ausschließlich in Series.LegendText.
+        private const string S_QUELLTEMPERATUR = "QUELLTEMPERATUR";
+        private const string S_AUSSENTEMPERATUR = "AUSSENTEMPERATUR";
+
         public Form_QuelleErdreich()
         {
             BaueOberflaeche();
+        }
+
+        /// <summary>
+        /// Zahlenwert als Feldvorbelegung — kulturneutral im Quelltext, formatiert wie
+        /// alle übrigen Ausgaben dieses Dialogs (<c>ToString("0.##")</c>). Gelesen wird
+        /// über <see cref="WaermequelleClass.ZahlParsen"/>, das Komma UND Punkt annimmt;
+        /// <c>CurrentCulture</c> wird nicht gesetzt (Konzept 13.6). Bis Paket 9 stand
+        /// hier die Zeichenkette „1,5" mit hartkodiertem Dezimalkomma. Muster aus L3
+        /// (<see cref="Form_Quellprofil"/>).
+        /// </summary>
+        private static string Vorgabe(double wert)
+        {
+            return wert.ToString("0.##", CultureInfo.CurrentCulture);
         }
 
         // ------------------------------------------------------------------
@@ -134,7 +155,7 @@ namespace WindowsFormsApplication1
 
         private void BaueOberflaeche()
         {
-            this.Text = "Wärmequelle Erdreich";
+            this.Text = MyResource.Resource.SIMQ_ERDREICH_TITEL;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
@@ -146,7 +167,7 @@ namespace WindowsFormsApplication1
             // --- Quellsystem ------------------------------------------------
             GroupBox gbSystem = new GroupBox
             {
-                Text = "Quellsystem",
+                Text = MyResource.Resource.SIMQ_ERDREICH_GB_QUELLSYSTEM,
                 Location = new Point(12, 10),
                 Size = new Size(676, 120)
             };
@@ -154,28 +175,28 @@ namespace WindowsFormsApplication1
 
             _rbKollektor = new RadioButton
             {
-                Text = "Erdkollektor",
+                Text = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR,
                 AutoSize = true,
                 Checked = true,
                 Location = new Point(16, 26)
             };
             _rbSonde = new RadioButton
             {
-                Text = "Erdsonde",
+                Text = MyResource.Resource.SIMQ_ERDREICH_RB_SONDE,
                 AutoSize = true,
                 Location = new Point(16, 76)
             };
             _rbKollektor.CheckedChanged += (s, e) => { SystemUmschalten(); Aktualisieren(); };
             _rbSonde.CheckedChanged += (s, e) => { SystemUmschalten(); Aktualisieren(); };
 
-            Label lT = new Label { Text = "Verlegetiefe [m]:", AutoSize = true, Location = new Point(160, 28) };
-            _tbTiefe = new TextBox { Location = new Point(285, 25), Width = 70, Text = "1,5" };
-            Label lF = new Label { Text = "Fläche [m²]:", AutoSize = true, Location = new Point(390, 28) };
+            Label lT = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_VERLEGETIEFE, AutoSize = true, Location = new Point(160, 28) };
+            _tbTiefe = new TextBox { Location = new Point(285, 25), Width = 70, Text = Vorgabe(ErdreichTemperatur.TIEFE_DEFAULT) };
+            Label lF = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_FLAECHE, AutoSize = true, Location = new Point(390, 28) };
             _tbFlaeche = new TextBox { Location = new Point(490, 25), Width = 70, Text = "0" };
 
-            Label lL = new Label { Text = "Länge je Sonde [m]:", AutoSize = true, Location = new Point(160, 78) };
+            Label lL = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_LAENGE_SONDE, AutoSize = true, Location = new Point(160, 78) };
             _tbLaenge = new TextBox { Location = new Point(285, 75), Width = 70, Text = "90" };
-            Label lA = new Label { Text = "Anzahl Sonden:", AutoSize = true, Location = new Point(390, 78) };
+            Label lA = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_ANZAHL_SONDEN, AutoSize = true, Location = new Point(390, 78) };
             _tbAnzahl = new TextBox { Location = new Point(490, 75), Width = 70, Text = "1" };
 
             _tbTiefe.TextChanged += (s, e) => Aktualisieren();
@@ -191,7 +212,7 @@ namespace WindowsFormsApplication1
             gbSystem.Controls.Add(lA); gbSystem.Controls.Add(_tbAnzahl);
 
             // --- Bodentyp und Klimazone -------------------------------------
-            Label lB = new Label { Text = "Bodentyp:", AutoSize = true, Location = new Point(28, 145) };
+            Label lB = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_BODENTYP, AutoSize = true, Location = new Point(28, 145) };
             _cbBoden = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -202,7 +223,7 @@ namespace WindowsFormsApplication1
             _cbBoden.SelectedIndexChanged += (s, e) => Aktualisieren();
             Label lBH = new Label
             {
-                Text = "(Katalog VDI 4640 Blatt 1, Entwurf 2021-12)",
+                Text = MyResource.Resource.SIMQ_ERDREICH_BODENTYP_HINWEIS,
                 AutoSize = true,
                 Location = new Point(392, 145)
             };
@@ -215,14 +236,14 @@ namespace WindowsFormsApplication1
                 ForeColor = SystemColors.GrayText
             };
 
-            Label lZ = new Label { Text = "Klimazone:", AutoSize = true, Location = new Point(28, 198) };
+            Label lZ = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE, AutoSize = true, Location = new Point(28, 198) };
             _cbZone = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Location = new Point(150, 195),
                 Width = 230
             };
-            _cbZone.Items.Add("0 — nicht zugeordnet");
+            _cbZone.Items.Add(MyResource.Resource.SIMQ_ERDREICH_ZONE_NICHT_ZUGEORDNET);
             for (int z = 1; z <= VDI4640Pruefung.KLIMAZONEN; z++)
             {
                 _cbZone.Items.Add(z.ToString(CultureInfo.CurrentCulture) + " — " +
@@ -231,7 +252,7 @@ namespace WindowsFormsApplication1
             _cbZone.SelectedIndexChanged += (s, e) => Aktualisieren();
             Label lZH = new Label
             {
-                Text = "(DIN 4710, Vorbelegung aus der Klimaregion)",
+                Text = MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE_HINWEIS,
                 AutoSize = true,
                 Location = new Point(392, 198)
             };
@@ -240,7 +261,7 @@ namespace WindowsFormsApplication1
             // Eingangsgröße der zweiten Warnbedingung (Konzept 13.1). Ohne dieses Feld
             // war WQ_Spreizung bei einer Erdreichquelle nicht pflegbar und die Prüfung
             // rechnete immer mit 5 K.
-            Label lS = new Label { Text = "Nutzbare Spreizung [K]:", AutoSize = true, Location = new Point(28, 228) };
+            Label lS = new Label { Text = MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG, AutoSize = true, Location = new Point(28, 228) };
             _tbSpreizung = new TextBox
             {
                 Location = new Point(150, 225),
@@ -249,8 +270,7 @@ namespace WindowsFormsApplication1
             };
             Label lSH = new Label
             {
-                Text = "(Quelleintritt minus Quellaustritt; Warnung, wenn Quelltemperatur − Spreizung " +
-                       "dauerhaft unter 0 °C liegt)",
+                Text = MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG_HINWEIS,
                 AutoSize = true,
                 Location = new Point(232, 228),
                 ForeColor = SystemColors.GrayText
@@ -265,7 +285,7 @@ namespace WindowsFormsApplication1
             // --- Vorschau ----------------------------------------------------
             GroupBox gbVorschau = new GroupBox
             {
-                Text = "Vorschau: Jahresgang der Quelltemperatur",
+                Text = MyResource.Resource.SIMQ_ERDREICH_GB_VORSCHAU,
                 Location = new Point(12, 256),
                 Size = new Size(676, 270)
             };
@@ -277,8 +297,8 @@ namespace WindowsFormsApplication1
                 Size = new Size(652, 210)
             };
             ChartArea ca = new ChartArea("Jahr");
-            ca.AxisX.Title = "Monat";
-            ca.AxisY.Title = "Quelltemperatur [°C]";
+            ca.AxisX.Title = MyResource.Resource.CHART_ACHSE_MONAT;
+            ca.AxisY.Title = MyResource.Resource.CHART_ACHSE_QUELLTEMPERATUR;
             ca.AxisX.Minimum = 0;
             ca.AxisX.Maximum = 12;
             ca.AxisX.Interval = 1;
@@ -289,22 +309,26 @@ namespace WindowsFormsApplication1
             ca.AxisX.ScaleView.Zoomable = true;
             _chart.ChartAreas.Add(ca);
 
-            // FastLine: 8760 Punkte je Neuzeichnung (Konzept 4.5)
-            Series sQuelle = new Series("Quelltemperatur")
+            // FastLine: 8760 Punkte je Neuzeichnung (Konzept 4.5).
+            // Series.Name ist der technische Schlüssel (Schicht 2), der Anzeigetext steht
+            // in LegendText — Muster wie NavigatorWaerme (Paket 9 / L6).
+            Series sQuelle = new Series(S_QUELLTEMPERATUR)
             {
                 ChartType = SeriesChartType.FastLine,
                 Color = Color.FromArgb(200, Color.SaddleBrown),
                 BorderWidth = 2,
-                XValueType = ChartValueType.Double
+                XValueType = ChartValueType.Double,
+                LegendText = MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR
             };
             _chart.Series.Add(sQuelle);
 
-            Series sAussen = new Series("Außentemperatur")
+            Series sAussen = new Series(S_AUSSENTEMPERATUR)
             {
                 ChartType = SeriesChartType.FastLine,
                 Color = Color.FromArgb(90, Color.SteelBlue),
                 BorderWidth = 1,
-                XValueType = ChartValueType.Double
+                XValueType = ChartValueType.Double,
+                LegendText = MyResource.Resource.CHART_SERIE_AUSSENTEMPERATUR
             };
             _chart.Series.Add(sAussen);
 
@@ -326,7 +350,7 @@ namespace WindowsFormsApplication1
             // --- Auslegungsprüfung -------------------------------------------
             GroupBox gbPruefung = new GroupBox
             {
-                Text = "Auslegungsprüfung nach VDI 4640 Blatt 2 (nach der Simulation)",
+                Text = MyResource.Resource.SIMQ_ERDREICH_GB_PRUEFUNG,
                 Location = new Point(12, 534),
                 Size = new Size(676, 130)
             };
@@ -344,14 +368,14 @@ namespace WindowsFormsApplication1
             // --- Schaltflächen ------------------------------------------------
             Button btnOk = new Button
             {
-                Text = "OK",
+                Text = MyResource.Resource.SIM_BTN_OK,
                 DialogResult = DialogResult.OK,
                 Location = new Point(this.ClientSize.Width - 190, 676),
                 Width = 85
             };
             Button btnAbbruch = new Button
             {
-                Text = "Abbrechen",
+                Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 DialogResult = DialogResult.Cancel,
                 Location = new Point(this.ClientSize.Width - 97, 676),
                 Width = 85
@@ -376,7 +400,8 @@ namespace WindowsFormsApplication1
         {
             _uiAufbau = true;
 
-            if (!string.IsNullOrEmpty(WPName)) this.Text = "Wärmequelle Erdreich — " + WPName;
+            if (!string.IsNullOrEmpty(WPName))
+                this.Text = string.Format(MyResource.Resource.SIMQ_ERDREICH_TITEL_MIT_WP, WPName);
 
             bool sonde = string.Equals(Quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE,
                                        StringComparison.OrdinalIgnoreCase);
@@ -448,10 +473,15 @@ namespace WindowsFormsApplication1
                 : ErdreichTemperatur.JahresprofilKollektor(Aussentemperatur, tiefe, bodenSchluessel);
 
             // Kennwerte des Bodens
+            // Die Formatangaben (0.0 / 0.00) kommen aus dem Quelltext; der Katalog führt
+            // die Platzhalter normalisiert als {0}…{4} (Lesehinweis des Katalogs). Sie
+            // werden deshalb hier auf die Werte angewandt, nicht auf die Formatzeichenkette.
             _lblBoden.Text = string.Format(CultureInfo.CurrentCulture,
-                "λ = {0:0.0} W/(m·K)   ρ·c_p = {1:0.00} MJ/(m³·K)   a = {2:0.00} mm²/s   " +
-                "Dämpfungstiefe d = {3:0.00} m   Bodenart nach Tabelle A1: {4}",
-                boden.Lambda, boden.RhoCp, boden.A_mm2s, boden.Daempfungstiefe,
+                MyResource.Resource.SIMQ_ERDREICH_BODENKENNWERTE,
+                boden.Lambda.ToString("0.0", CultureInfo.CurrentCulture),
+                boden.RhoCp.ToString("0.00", CultureInfo.CurrentCulture),
+                boden.A_mm2s.ToString("0.00", CultureInfo.CurrentCulture),
+                boden.Daempfungstiefe.ToString("0.00", CultureInfo.CurrentCulture),
                 VDI4640Pruefung.BodenartAusBodentyp(bodenSchluessel));
 
             // Chart
@@ -475,7 +505,7 @@ namespace WindowsFormsApplication1
             ErdreichTemperatur.Kennwerte k = ErdreichTemperatur.ProfilKennwerte(profil);
             ErdreichTemperatur.Jahresgang jg = ErdreichTemperatur.AnalysiereJahresgang(Aussentemperatur);
             _lblKennwerte.Text = k.Zeile() +
-                (jg.AusKlimadaten ? "" : "   (ohne Klimadaten — Ersatzwerte 9,5 °C / 8,5 K)");
+                (jg.AusKlimadaten ? "" : MyResource.Resource.SIMQ_ERDREICH_OHNE_KLIMADATEN);
 
             PruefungAktualisieren(bodenSchluessel, tiefe, flaeche, laenge, anzahl);
         }
@@ -486,11 +516,11 @@ namespace WindowsFormsApplication1
         {
             if (!ErgebnisseVorhanden)
             {
+                // Die .resx legt Umbrüche als LF ab (XML-Normierung); der Bestand schrieb
+                // hier CRLF. Deshalb vor der Anzeige zurückbiegen.
                 _lblPruefung.Text = !string.IsNullOrEmpty(HinweisErgebnis)
                     ? HinweisErgebnis
-                    : "(noch kein Simulationslauf)\r\n\r\n" +
-                      "Die Prüfung braucht maximale Entzugsleistung, Jahresentzugsarbeit und\r\n" +
-                      "Jahresvolllaststunden aus einem Simulationslauf.";
+                    : MyResource.Resource.SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF.Replace("\n", "\r\n");
                 return;
             }
 
@@ -514,9 +544,10 @@ namespace WindowsFormsApplication1
             // Ergebnisausweis in Paket 7); der Dialog macht ihn zusätzlich sichtbar.
             string text = erg.Anzeigetext();
             if (erg.Moeglich && erg.FestgesteinNaeherung)
-                text += "\r\n  Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 abgebildet — nur Orientierung.";
+                text += MyResource.Resource.SIMQ_ERDREICH_HINWEIS_FESTGESTEIN.Replace("\n", "\r\n");
             if (!string.IsNullOrEmpty(HinweisVorbehalt))
-                text += "\r\n  Hinweis: " + HinweisVorbehalt;
+                text += string.Format(MyResource.Resource.SIMQ_ERDREICH_HINWEIS_VORBEHALT.Replace("\n", "\r\n"),
+                                      HinweisVorbehalt);
             if (!string.IsNullOrEmpty(HinweisFrost))
                 text += "\r\n  " + HinweisFrost;
 
@@ -542,7 +573,7 @@ namespace WindowsFormsApplication1
 
         private void btnOk_Click(object sender, EventArgs e)
         {
-            const string titel = "Wärmequelle Erdreich";
+            string titel = MyResource.Resource.SIMQ_ERDREICH_TITEL;
 
             float tiefe, flaeche, laenge, anzahl;
 
@@ -551,24 +582,22 @@ namespace WindowsFormsApplication1
                 if (!WaermequelleClass.ZahlParsen(_tbTiefe.Text, out tiefe) ||
                     !WaermequelleClass.ZahlParsen(_tbFlaeche.Text, out flaeche))
                 {
-                    Meldung("Bitte gültige Zahlenwerte für Verlegetiefe und Fläche eintragen!", titel);
+                    Meldung(MyResource.Resource.SIMQ_ERDREICH_MSG_ZAHL_KOLLEKTOR, titel);
                     return;
                 }
                 if (tiefe <= 0)
                 {
-                    Meldung("Die Verlegetiefe muss größer als 0 m sein!", titel);
+                    Meldung(MyResource.Resource.SIMQ_ERDREICH_MSG_TIEFE_NULL, titel);
                     return;
                 }
                 if (tiefe > 10)
                 {
-                    Meldung("Ein Erdkollektor wird nicht tiefer als 10 m verlegt.\n" +
-                            "Für größere Tiefen das Quellsystem 'Erdsonde' wählen.", titel);
+                    Meldung(MyResource.Resource.SIMQ_ERDREICH_MSG_TIEFE_MAX, titel);
                     return;
                 }
                 if (flaeche <= 0)
                 {
-                    Meldung("Bitte die Kollektorfläche eintragen — sie ist Eingangsgröße\n" +
-                            "der Auslegungsprüfung nach VDI 4640 Blatt 2.", titel);
+                    Meldung(MyResource.Resource.SIMQ_ERDREICH_MSG_FLAECHE, titel);
                     return;
                 }
 
@@ -582,17 +611,17 @@ namespace WindowsFormsApplication1
                 if (!WaermequelleClass.ZahlParsen(_tbLaenge.Text, out laenge) ||
                     !WaermequelleClass.ZahlParsen(_tbAnzahl.Text, out anzahl))
                 {
-                    Meldung("Bitte gültige Zahlenwerte für Sondenlänge und Anzahl eintragen!", titel);
+                    Meldung(MyResource.Resource.SIMQ_ERDREICH_MSG_ZAHL_SONDE, titel);
                     return;
                 }
                 if (laenge <= 0)
                 {
-                    Meldung("Die Sondenlänge muss größer als 0 m sein!", titel);
+                    Meldung(MyResource.Resource.SIMQ_ERDREICH_MSG_LAENGE_NULL, titel);
                     return;
                 }
                 if (anzahl < 1)
                 {
-                    Meldung("Es muss mindestens eine Sonde vorhanden sein!", titel);
+                    Meldung(MyResource.Resource.SIMQ_ERDREICH_MSG_ANZAHL_MIN, titel);
                     return;
                 }
 
@@ -605,8 +634,7 @@ namespace WindowsFormsApplication1
             float spreizung;
             if (!WaermequelleClass.ZahlParsen(_tbSpreizung.Text, out spreizung) || spreizung <= 0)
             {
-                Meldung("Bitte eine nutzbare Spreizung größer als 0 K eintragen!\n" +
-                        "Sie ist Eingangsgröße der Frostprüfung der Quelle.", titel);
+                Meldung(MyResource.Resource.SIMQ_ERDREICH_MSG_SPREIZUNG, titel);
                 return;
             }
 

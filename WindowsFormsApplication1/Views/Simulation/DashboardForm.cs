@@ -15,12 +15,42 @@ namespace WindowsFormsApplication1
         public double speicherKWh = 0;
         
         private bool isUpdatingUI = false; // Event Sperre
-        
+
+        // --- Technische Serienschlüssel (Paket 9 / L7) --------------------------------
+        //
+        // Schicht 2 der Drei-Schichten-Regel: sprachneutral, ASCII, unveränderlich.
+        // Sie sind der ZUGRIFFSSCHLÜSSEL auf die Chart-Serien; der angezeigte Text steht
+        // ausschließlich in Series.LegendText und kommt aus dem Ressourcenkatalog.
+        // Muster wie NavigatorWaerme (Paket 9 / L6).
+        private const string S_DIREKTVERBRAUCH = "DIREKTVERBRAUCH";
+        private const string S_SPEICHERNUTZUNG = "SPEICHERNUTZUNG";
+        private const string S_NETZBEZUG = "NETZBEZUG";
+
         public DashboardForm()
         {
             InitializeComponent();
 
+            BeschriftungenSetzen();
             SetupChart(); // Ruft die neue Setup-Methode auf
+        }
+
+        /// <summary>
+        /// Setzt die im Designer angelegten Beschriftungen aus dem Ressourcenkatalog
+        /// (Paket 9 / L7). Zur Begründung, warum das programmatisch und nicht über eine
+        /// <c>Localizable</c>-Designer-Ressource geschieht, siehe <see cref="NavigatorStrom"/>.
+        ///
+        /// Nicht gesetzt werden die reinen Entwurfszeit-Vorbelegungen
+        /// (<c>lblNutzungsgradST</c>, <c>lblCO2</c>, <c>lblTest</c>): sie werden von
+        /// <see cref="UpdateSimulationData"/> vor der ersten Anzeige überschrieben.
+        /// Ebenso wenig der Fenstertitel — das Formular wird von
+        /// <c>TabNavigationManager</c> mit <c>TopLevel = false</c> und
+        /// <c>FormBorderStyle.None</c> eingebettet, seine Titelzeile ist nie sichtbar.
+        /// </summary>
+        private void BeschriftungenSetzen()
+        {
+            groupPV.Text = MyResource.Resource.SIM_DASH_GRUPPE_PV;
+            groupST.Text = MyResource.Resource.SIM_DASH_GRUPPE_ST;
+            lblSpeicherInfo.Text = MyResource.Resource.SIM_DASH_SPEICHER_INFO;
         }
 
         public void Init()
@@ -49,34 +79,34 @@ namespace WindowsFormsApplication1
             // Serien für gestapelte Säulen definieren
     
             // Serie 1 (Ganz unten): Der Direktverbrauch (Sonne -> Haus)
-            Series serDirekt = new Series("Direktverbrauch")
+            Series serDirekt = new Series(S_DIREKTVERBRAUCH)
             {
                 ChartType = SeriesChartType.StackedColumn,
                 Color = Color.Gold, // Gold/Sonnengelb
-                LegendText = "Eigenverbrauch (Direkt)"
+                LegendText = MyResource.Resource.CHART_LEGENDE_EIGENVERBRAUCH_DIREKT
             };
             chartSolar.Series.Add(serDirekt);
 
             // Serie 2 (Mitte): Was aus dem Speicher kommt
-            Series serSpeicher = new Series("Speichernutzung")
+            Series serSpeicher = new Series(S_SPEICHERNUTZUNG)
             {
                 ChartType = SeriesChartType.StackedColumn,
                 Color = Color.LightGreen, // Grün für Speicherstrom
-                LegendText = "Eigenverbrauch (Speicher)"
+                LegendText = MyResource.Resource.CHART_LEGENDE_EIGENVERBRAUCH_SPEICHER
             };
             chartSolar.Series.Add(serSpeicher);
 
             // Serie 3 (Ganz oben, der Rest): Die Autarkie-Lücke (Netzbezug)
-            Series serNetz = new Series("Lücke (Netzbezug)")
+            Series serNetz = new Series(S_NETZBEZUG)
             {
                 ChartType = SeriesChartType.StackedColumn,
                 Color = Color.Red, // Rot für Kosten/Abhängigkeit
-                LegendText = "Autarkie-Lücke (Netz)"
+                LegendText = MyResource.Resource.CHART_LEGENDE_AUTARKIELUECKE
             };
             chartSolar.Series.Add(serNetz);
 
             // Achsen-Konfiguration
-            chartSolar.ChartAreas[0].AxisY.Title = "Energie-Bedarf & Deckung (kWh)";
+            chartSolar.ChartAreas[0].AxisY.Title = MyResource.Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG;
             chartSolar.ChartAreas[0].AxisY.TitleFont = new Font("Arial", 10, FontStyle.Bold);
 
             // Y-Achse automatisch skalieren, damit der Winter-Bedarf gut sichtbar ist
@@ -84,7 +114,7 @@ namespace WindowsFormsApplication1
             chartSolar.ChartAreas[0].AxisY.IsStartedFromZero = true;
 
             chartSolar.ChartAreas[0].AxisX.Interval = 1; // Jeden Monat anzeigen
-            chartSolar.ChartAreas[0].AxisX.Title = "Monat";
+            chartSolar.ChartAreas[0].AxisX.Title = MyResource.Resource.CHART_ACHSE_MONAT;
         }
 
         public void UpdateSimulationData()
@@ -145,17 +175,22 @@ namespace WindowsFormsApplication1
 
             pbPV.Value = (int)Math.Min(100, autarkiePV);
 
-            lblSTDeckung.Text = deckungST > 0 ? $"{deckungST:F1} %" : "nicht benötigt";
+            lblSTDeckung.Text = deckungST > 0 ? $"{deckungST:F1} %" : MyResource.Resource.SIM_ANZEIGE_NICHT_BENOETIGT;
             pbST.Value = (int)Math.Min(100, deckungST);
 
-            lblNutzungsgradST.Text = $"Therm. Nutzungsgrad: {nutzungsgradST:F1} %";
-            lblCO2.Text = $"{co2Saved:N0} kg CO2 / Jahr gespart";
+            // Formatangaben aus dem Bestand übernommen (F1 bzw. N0) - der Katalog
+            // führt die Platzhalter normalisiert als {0} (Lesehinweis des Katalogs).
+            lblNutzungsgradST.Text = string.Format(MyResource.Resource.SIM_ANZEIGE_THERM_NUTZUNGSGRAD,
+                                                   nutzungsgradST.ToString("F1"));
+            lblCO2.Text = string.Format(MyResource.Resource.SIM_ANZEIGE_CO2_ERSPARNIS,
+                                        co2Saved.ToString("N0"));
 
             // Chart
             FillMonthlyChart();
 
             // Speichernutzen
-            lblTest.Text = $"Speichernutzen: {pvAusSpeicherSumme:N0} kWh/Jahr";
+            lblTest.Text = string.Format(MyResource.Resource.SIM_ANZEIGE_SPEICHERNUTZEN,
+                                         pvAusSpeicherSumme.ToString("N0"));
 
             isUpdatingUI = false; // Event SPERRE DEAKTIVIEREN
         }
@@ -207,13 +242,17 @@ namespace WindowsFormsApplication1
                     monatsLuecke += restbedarfNachSpeicher;
                 }
 
-                // Monatspunkt hinzufügen (gestapelt übereinander)
-                string monthName = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(m + 1);
+                // Monatspunkt hinzufügen (gestapelt übereinander).
+                // Monatsnamen kommen aus der Oberflächenkultur - wie in L3 festgelegt
+                // (Form_Quellprofil): der Monatsname ist Anzeige und folgt der UI-Sprache,
+                // nicht der Zahlenkultur. CurrentCulture bleibt unangetastet.
+                string monthName = System.Globalization.CultureInfo.CurrentUICulture
+                                       .DateTimeFormat.GetAbbreviatedMonthName(m + 1);
 
                 // Reihenfolge von unten nach oben hinzufügen
-                chartSolar.Series["Direktverbrauch"].Points.AddXY(monthName, monatsDirekt); // Gold unten
-                chartSolar.Series["Speichernutzung"].Points.AddXY(monthName, monatsSpeicher); // Grün mitte
-                chartSolar.Series["Lücke (Netzbezug)"].Points.AddXY(monthName, monatsLuecke); // Rot oben
+                chartSolar.Series[S_DIREKTVERBRAUCH].Points.AddXY(monthName, monatsDirekt); // Gold unten
+                chartSolar.Series[S_SPEICHERNUTZUNG].Points.AddXY(monthName, monatsSpeicher); // Grün mitte
+                chartSolar.Series[S_NETZBEZUG].Points.AddXY(monthName, monatsLuecke); // Rot oben
             }
         }
 

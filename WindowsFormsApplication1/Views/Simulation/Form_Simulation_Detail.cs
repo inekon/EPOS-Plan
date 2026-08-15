@@ -99,6 +99,45 @@ namespace WindowsFormsApplication1
         private static readonly Color cMenuDisabled = Color.FromArgb(0x55, 0x5d, 0x66); // deaktiviert
 
 
+        // --- Technische Serienschlüssel (Paket 9 / L7) --------------------------------
+        //
+        // Schicht 2 der Drei-Schichten-Regel: sprachneutral, ASCII, unveränderlich.
+        // Sie sind der ZUGRIFFSSCHLÜSSEL auf die Chart-Serien (Series["…"],
+        // Series.IndexOf(…)); der angezeigte Text steht ausschließlich in
+        // Series.LegendText und kommt aus dem Ressourcenkatalog. Muster wie
+        // NavigatorWaerme (Paket 9 / L6).
+        //
+        // Vorher trugen die Serien ihre deutschen Anzeigenamen — und zwar uneinheitlich:
+        // „Wärmebedarf" mit Umlaut in Diagramm 4, „Waermebedarf" ohne in den
+        // Diagrammen 8 und 10. Ein übersetzter Name ließe die Nachschlagestellen in
+        // checkBox_Ueberschuss_CheckedChanged und checkBox_Speicherzustand_CheckedChanged
+        // ins Leere laufen.
+        private const string S_HEIZWAERMEBEDARF = "HEIZWAERMEBEDARF";
+        private const string S_WARMWASSERBEDARF = "WARMWASSERBEDARF";
+        private const string S_HEIZSTAB = "HEIZSTAB";
+        private const string S_WAERMEPRODUKTION = "WAERMEPRODUKTION";
+        private const string S_WAERMEBEDARF = "WAERMEBEDARF";
+        private const string S_STROMBEDARF = "STROMBEDARF";
+        private const string S_SPEICHERFUELLSTAND = "SPEICHERFUELLSTAND";
+        private const string S_UEBERSCHUSS = "UEBERSCHUSS";
+        private const string S_PHOTOVOLTAIK = "PHOTOVOLTAIK";
+        /// <summary>
+        /// Legt eine Serie unter ihrem technischen Schlüssel an und hängt den Anzeigetext
+        /// an <c>LegendText</c> (Muster aus NavigatorWaerme, Paket 9 / L6).
+        /// </summary>
+        private static void SerieAnlegen(ChartManager cm, string schluessel, string legende,
+                                         Color farbe, float[] werte)
+        {
+            cm.AddSeries(schluessel, farbe, werte);
+            cm._chart.Series[schluessel].LegendText = legende;
+        }
+        /// <summary>Wie oben, für die XY-Variante mit <see cref="PointF"/>-Punkten.</summary>
+        private static void SerieAnlegen(ChartManager cm, string schluessel, string legende,
+                                         Color farbe, PointF[] punkte, int borderWidth)
+        {
+            cm.AddSeries(schluessel, farbe, punkte, borderWidth);
+            cm._chart.Series[schluessel].LegendText = legende;
+        }
         public Form_Simulation_Detail(int iD_Projekt)
         {
             InitializeComponent();
@@ -113,18 +152,18 @@ namespace WindowsFormsApplication1
             ueb_chart.Legends[0].LegendStyle = LegendStyle.Table;
             ueb_chart.Legends[0].Docking = Docking.Right;
             ueb_chart.Legends[0].Alignment = StringAlignment.Center;
-            ueb_chart.Legends[0].Title = "Wärmebedarfsdeckung";
+            ueb_chart.Legends[0].Title = MyResource.Resource.CHART_LEGENDE_WAERMEBEDARFSDECKUNG;
             ueb_chart.Legends[0].BorderColor = Color.Green;
             ueb_chart.Series[0].IsValueShownAsLabel = false;
             ueb_chart.Series[0]["PieLabelStyle"] = "Outside";
             ueb_chart.Series[0].Points.Clear();
 
             listView_SimSPK.View = View.Details;
-            listView_SimSPK.Columns.Add("Heizkessel", -2, HorizontalAlignment.Left);
-            listView_SimSPK.Columns.Add("Name", -2, HorizontalAlignment.Left);
-            listView_SimSPK.Columns.Add("Gas/Biogas/Rapsöl/Holz... [MWh/a]", -2, HorizontalAlignment.Left);
-            listView_SimSPK.Columns.Add("Öl [MWh/a]", -2, HorizontalAlignment.Left);
-            listView_SimSPK.Columns.Add("Jahresnutzungsgrad [%]", -2, HorizontalAlignment.Left);
+            listView_SimSPK.Columns.Add(MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, -2, HorizontalAlignment.Left);
+            listView_SimSPK.Columns.Add(MyResource.Resource.SIM_SPALTE_NAME, -2, HorizontalAlignment.Left);
+            listView_SimSPK.Columns.Add(MyResource.Resource.SIM_SPALTE_BRENNSTOFFE, -2, HorizontalAlignment.Left);
+            listView_SimSPK.Columns.Add(MyResource.Resource.SIM_SPALTE_OEL, -2, HorizontalAlignment.Left);
+            listView_SimSPK.Columns.Add(MyResource.Resource.SIM_SPALTE_JAHRESNUTZUNGSGRAD, -2, HorizontalAlignment.Left);
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
@@ -153,10 +192,10 @@ namespace WindowsFormsApplication1
             dataGridView_BHKW.FullRowSelect = true;
             dataGridView_BHKW.GridLines = true;
             dataGridView_BHKW.MultiSelect = false;
-            dataGridView_BHKW.Columns.Add("BHKW", -2, HorizontalAlignment.Left);
-            dataGridView_BHKW.Columns.Add("Name", -2, HorizontalAlignment.Left);
-            dataGridView_BHKW.Columns.Add("Wärmeprod. [MWh/a]", -2, HorizontalAlignment.Left);
-            dataGridView_BHKW.Columns.Add("Stromprod. [MWh/a]", -2, HorizontalAlignment.Left);
+            dataGridView_BHKW.Columns.Add(MyResource.Resource.SIM_ERZEUGERNAME_BHKW, -2, HorizontalAlignment.Left);
+            dataGridView_BHKW.Columns.Add(MyResource.Resource.SIM_SPALTE_NAME, -2, HorizontalAlignment.Left);
+            dataGridView_BHKW.Columns.Add(MyResource.Resource.SIM_SPALTE_WAERMEPRODUKTION, -2, HorizontalAlignment.Left);
+            dataGridView_BHKW.Columns.Add(MyResource.Resource.SIM_SPALTE_STROMPRODUKTION, -2, HorizontalAlignment.Left);
 
             VereinheitlichePageSchriftarten(this.tabPage_Bedarf);
             VereinheitlichePageSchriftarten(this.tabPage_Wärmepumpe);
@@ -173,12 +212,12 @@ namespace WindowsFormsApplication1
             listView_SimSolar.GridLines = true;
             // Schriftart/-groesse exakt von der Heizkessel-Liste uebernehmen.
             listView_SimSolar.Font = listView_SimSPK.Font;
-            listView_SimSolar.Columns.Add("Solarkollektor", -2, HorizontalAlignment.Left);
-            listView_SimSolar.Columns.Add("Name", -2, HorizontalAlignment.Left);
-            listView_SimSolar.Columns.Add("Fläche [m²]", -2, HorizontalAlignment.Left);
-            listView_SimSolar.Columns.Add("Anzahl", -2, HorizontalAlignment.Left);
-            listView_SimSolar.Columns.Add("Wärmeprod. [MWh/a]", -2, HorizontalAlignment.Left);
-            listView_SimSolar.Columns.Add("Überschuß [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add(MyResource.Resource.SIM_SPALTE_SOLARKOLLEKTOR, -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add(MyResource.Resource.SIM_SPALTE_NAME, -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add(MyResource.Resource.SIM_SPALTE_FLAECHE, -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add(MyResource.Resource.SIM_SPALTE_ANZAHL, -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add(MyResource.Resource.SIM_SPALTE_WAERMEPRODUKTION, -2, HorizontalAlignment.Left);
+            listView_SimSolar.Columns.Add(MyResource.Resource.SIM_SPALTE_UEBERSCHUSS, -2, HorizontalAlignment.Left);
             if (chart8 != null && chart8.Parent != null)
             {
                 listView_SimSolar.Location = new System.Drawing.Point(chart8.Left, chart8.Bottom + 12);
@@ -202,11 +241,11 @@ namespace WindowsFormsApplication1
             listView_SimPV.FullRowSelect = true;
             listView_SimPV.GridLines = true;
             listView_SimPV.Font = listView_SimSPK.Font;
-            listView_SimPV.Columns.Add("Photovoltaik", -2, HorizontalAlignment.Left);
-            listView_SimPV.Columns.Add("Name", -2, HorizontalAlignment.Left);
-            listView_SimPV.Columns.Add("Fläche [m²]", -2, HorizontalAlignment.Left);
-            listView_SimPV.Columns.Add("Anzahl", -2, HorizontalAlignment.Left);
-            listView_SimPV.Columns.Add("Stromprod. [MWh/a]", -2, HorizontalAlignment.Left);
+            listView_SimPV.Columns.Add(MyResource.Resource.SIM_PHOTOVOLTAIK, -2, HorizontalAlignment.Left);
+            listView_SimPV.Columns.Add(MyResource.Resource.SIM_SPALTE_NAME, -2, HorizontalAlignment.Left);
+            listView_SimPV.Columns.Add(MyResource.Resource.SIM_SPALTE_FLAECHE, -2, HorizontalAlignment.Left);
+            listView_SimPV.Columns.Add(MyResource.Resource.SIM_SPALTE_ANZAHL, -2, HorizontalAlignment.Left);
+            listView_SimPV.Columns.Add(MyResource.Resource.SIM_SPALTE_STROMPRODUKTION, -2, HorizontalAlignment.Left);
             if (chart_PV != null && chart_PV.Parent != null)
             {
                 listView_SimPV.Location = new System.Drawing.Point(chart_PV.Left, chart_PV.Bottom + 12);
@@ -251,7 +290,7 @@ namespace WindowsFormsApplication1
             // Bereich Energiebedarf (tabPage_Bedarf): Wärmelast + Strombedarf
             Button btnExportBedarf = new Button();
             btnExportBedarf.Name = "btn_CsvExportBedarf";
-            btnExportBedarf.Text = "CSV Export";
+            btnExportBedarf.Text = MyResource.Resource.SIM_BTN_CSV_EXPORT;
             btnExportBedarf.Size = new Size(150, 36);
             // Feste Position unterhalb des Wärmelast-Blocks - die Controls der TabPage
             // werden zur Laufzeit in ein schmaleres Panel verschoben, daher keine
@@ -262,14 +301,14 @@ namespace WindowsFormsApplication1
             btnExportBedarf.ForeColor = Color.Black;
             btnExportBedarf.UseVisualStyleBackColor = false;
             btnExportBedarf.Click += btn_CsvExportBedarf_Click;
-            tooltip.SetToolTip(btnExportBedarf, "Wärmelast und Strombedarf als CSV exportieren\n(Zeitstempel, Außentemperatur, Werte)");
+            tooltip.SetToolTip(btnExportBedarf, MyResource.Resource.SIM_TOOLTIP_CSV_BEDARF);
             tabPage_Bedarf.Controls.Add(btnExportBedarf);
             btnExportBedarf.BringToFront();
 
             // Bereich Wärmepumpe (tabPage_Wärmepumpe)
             Button btnExportWP = new Button();
             btnExportWP.Name = "btn_CsvExportWP";
-            btnExportWP.Text = "CSV Export";
+            btnExportWP.Text = MyResource.Resource.SIM_BTN_CSV_EXPORT;
             btnExportWP.Size = new Size(150, 32);
             // Feste Position rechts neben der Bivalenzpunkt-Zeile, oberhalb der Modul-Tabelle
             // (keine Rechts-Verankerung, siehe Kommentar beim Bedarf-Button).
@@ -279,7 +318,7 @@ namespace WindowsFormsApplication1
             btnExportWP.ForeColor = Color.Black;
             btnExportWP.UseVisualStyleBackColor = false;
             btnExportWP.Click += btn_CsvExportWP_Click;
-            tooltip.SetToolTip(btnExportWP, "Wärmepumpen-Simulation als CSV exportieren\n(Zeitstempel, Außentemperatur, Wärmebedarf, Heizstab, Wärmeproduktion, Strombedarf)");
+            tooltip.SetToolTip(btnExportWP, MyResource.Resource.SIM_TOOLTIP_CSV_WAERMEPUMPE);
             tabPage_Wärmepumpe.Controls.Add(btnExportWP);
             btnExportWP.BringToFront();
         }
@@ -314,14 +353,14 @@ namespace WindowsFormsApplication1
             listView_SimPuffer.GridLines = true;
             listView_SimPuffer.MultiSelect = false;
             listView_SimPuffer.Font = listView_SimSPK.Font;
-            listView_SimPuffer.Columns.Add("Speicher", -2, HorizontalAlignment.Left);
-            listView_SimPuffer.Columns.Add("Rolle", -2, HorizontalAlignment.Left);
-            listView_SimPuffer.Columns.Add("Kapazität [kWh]", -2, HorizontalAlignment.Left);
-            listView_SimPuffer.Columns.Add("Ladung [kWh/a]", -2, HorizontalAlignment.Left);
-            listView_SimPuffer.Columns.Add("Entladung [kWh/a]", -2, HorizontalAlignment.Left);
-            listView_SimPuffer.Columns.Add("Verluste [kWh/a]", -2, HorizontalAlignment.Left);
-            listView_SimPuffer.Columns.Add("Vollzyklen", -2, HorizontalAlignment.Left);
-            listView_SimPuffer.Columns.Add("Füllstand Ende [kWh]", -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add(MyResource.Resource.PSP_BEZEICHNER_ERSATZ, -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add(MyResource.Resource.PSP_SPALTE_ROLLE, -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add(MyResource.Resource.PSP_SPALTE_KAPAZITAET, -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add(MyResource.Resource.PSP_SPALTE_LADUNG, -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add(MyResource.Resource.PSP_SPALTE_ENTLADUNG, -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add(MyResource.Resource.PSP_SPALTE_VERLUSTE, -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add(MyResource.Resource.PSP_SPALTE_VOLLZYKLEN, -2, HorizontalAlignment.Left);
+            listView_SimPuffer.Columns.Add(MyResource.Resource.PSP_SPALTE_FUELLSTAND_ENDE, -2, HorizontalAlignment.Left);
             listView_SimPuffer.Location = new Point(listView_SimWP.Left, listView_SimWP.Bottom + 10);
             listView_SimPuffer.Width = listView_SimWP.Width;
             listView_SimPuffer.Height = 82;
@@ -436,17 +475,17 @@ namespace WindowsFormsApplication1
         {
             if (simulation_Waermebedarf == null || simulation_Waermebedarf.Waermebedarf_Gesamt <= 0)
             {
-                MessageBox.Show("Keine Simulationsdaten vorhanden!\nBitte zuerst den Energiebedarf berechnen.",
-                    "CSV Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(MyResource.Resource.SIM_MSG_KEINE_DATEN_ENERGIEBEDARF,
+                    MyResource.Resource.SIM_BTN_CSV_EXPORT, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             List<CsvSpalte> spalten = new List<CsvSpalte>();
-            spalten.Add(new CsvSpalte("Wärmelast [kW]", simulation_Waermebedarf.Waermebedarf));
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMELAST, simulation_Waermebedarf.Waermebedarf));
             // Strombedarf liegt viertelstündlich vor und wird als Stundenmittel exportiert
-            spalten.Add(new CsvSpalte("Strombedarf [kW]", simulation_Strombedarf.Strombedarf_viertelStundenwerte));
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_STROMBEDARF, simulation_Strombedarf.Strombedarf_viertelStundenwerte));
 
-            CsvExportClass.Export("Energiebedarf_Projekt_" + m_ID_Projekt + ".csv",
+            CsvExportClass.Export(string.Format(MyResource.Resource.CHART_DATEI_ENERGIEBEDARF, m_ID_Projekt),
                 simulation_Waermebedarf.Stundentemperatur, spalten, false);
         }
 
@@ -458,16 +497,16 @@ namespace WindowsFormsApplication1
         {
             if (sim == null || !sim.bSimulationWP || sim.simulation_wp == null)
             {
-                MessageBox.Show("Keine Simulationsdaten vorhanden!\nBitte zuerst die Simulation mit Wärmepumpe durchführen.",
-                    "CSV Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(MyResource.Resource.SIM_MSG_KEINE_DATEN_WAERMEPUMPE,
+                    MyResource.Resource.SIM_BTN_CSV_EXPORT, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             List<CsvSpalte> spalten = new List<CsvSpalte>();
-            spalten.Add(new CsvSpalte("Wärmebedarf [kW]", sim.simulation_wp.Waermebedarf_stuendlich));
-            spalten.Add(new CsvSpalte("Heizstab [kW]", sim.simulation_wp.Heizstab_stuendlich));
-            spalten.Add(new CsvSpalte("Wärmeproduktion WP [kW]", sim.simulation_wp.WP_Waermeproduktion_stuendlich));
-            spalten.Add(new CsvSpalte("Strombedarf WP [kW]", sim.simulation_wp.WP_Strombedarf_stuendlich));
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEBEDARF, sim.simulation_wp.Waermebedarf_stuendlich));
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZSTAB, sim.simulation_wp.Heizstab_stuendlich));
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEPRODUKTION_WP, sim.simulation_wp.WP_Waermeproduktion_stuendlich));
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_STROMBEDARF_WP, sim.simulation_wp.WP_Strombedarf_stuendlich));
 
             // Speicher-Ganglinien mit exportieren: DREI Spalten je Speicher (Ladung,
             // Entladung, Speicherinhalt) mit dem Bezeichner im Kopf - Senken- wie
@@ -476,12 +515,12 @@ namespace WindowsFormsApplication1
             foreach (SimulationPufferspeicher sp in sim.AlleSpeicher())
             {
                 string name = sp.Anzeige();
-                spalten.Add(new CsvSpalte(name + " Ladung [kWh]", sp.Ladung_stuendlich));
-                spalten.Add(new CsvSpalte(name + " Entladung [kWh]", sp.Entladung_stuendlich));
-                spalten.Add(new CsvSpalte(name + " Speicherinhalt [kWh]", sp.SOC_stuendlich));
+                spalten.Add(new CsvSpalte(string.Format(MyResource.Resource.CHART_CSV_SPEICHER_LADUNG, name), sp.Ladung_stuendlich));
+                spalten.Add(new CsvSpalte(string.Format(MyResource.Resource.CHART_CSV_SPEICHER_ENTLADUNG, name), sp.Entladung_stuendlich));
+                spalten.Add(new CsvSpalte(string.Format(MyResource.Resource.CHART_CSV_SPEICHER_INHALT, name), sp.SOC_stuendlich));
             }
 
-            CsvExportClass.Export("Waermepumpe_Projekt_" + m_ID_Projekt + ".csv",
+            CsvExportClass.Export(string.Format(MyResource.Resource.CHART_DATEI_WAERMEPUMPE, m_ID_Projekt),
                 sim.simulation_wp.Temperatur, spalten, false);
         }
 
@@ -605,7 +644,7 @@ namespace WindowsFormsApplication1
             listViewQuellen.Items.Clear();
 
             // --- POS 1: Wärme-/Strombedarf (MUSS IMMER AN ERSTER STELLE SEIN) ---
-            ListViewItem itemBedarf = new ListViewItem("Energiebedarf");
+            ListViewItem itemBedarf = new ListViewItem(MyResource.Resource.SIM_MENUE_ENERGIEBEDARF);
             itemBedarf.Tag = "tabPage_Bedarf";
             listViewQuellen.Items.Add(itemBedarf);
 
@@ -622,30 +661,30 @@ namespace WindowsFormsApplication1
                     if (hinzugefuegteGerete.Contains(geraetName))
                         continue;
 
-                    if (geraetName == "Wärmepumpe")
+                    if (geraetName == DbWerte.ERZEUGER_WAERMEPUMPE)
                     {
-                        ListViewItem itemWP = new ListViewItem("Wärmepumpe");
+                        ListViewItem itemWP = new ListViewItem(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE);
                         itemWP.Tag = "tabPage_Wärmepumpe";
                         listViewQuellen.Items.Add(itemWP);
                         hinzugefuegteGerete.Add(geraetName);
                     }
-                    else if (geraetName == "Heizkessel")
+                    else if (geraetName == DbWerte.ERZEUGER_HEIZKESSEL)
                     {
-                        ListViewItem itemKessel = new ListViewItem("Heizkessel");
+                        ListViewItem itemKessel = new ListViewItem(MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL);
                         itemKessel.Tag = "tabPage_Heizkessel";
                         listViewQuellen.Items.Add(itemKessel);
                         hinzugefuegteGerete.Add(geraetName);
                     }
-                    else if (geraetName == "BHKW")
+                    else if (geraetName == DbWerte.ERZEUGER_BHKW)
                     {
-                        ListViewItem itemBHKW = new ListViewItem("BHKW");
+                        ListViewItem itemBHKW = new ListViewItem(MyResource.Resource.SIM_ERZEUGERNAME_BHKW);
                         itemBHKW.Tag = "tabPage_BHKW";
                         listViewQuellen.Items.Add(itemBHKW);
                         hinzugefuegteGerete.Add(geraetName);
                     }
-                    else if (geraetName == "Solarthermie")
+                    else if (geraetName == DbWerte.ERZEUGER_SOLARTHERMIE)
                     {
-                        ListViewItem itemSolar = new ListViewItem("Solarthermie");
+                        ListViewItem itemSolar = new ListViewItem(MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE);
                         itemSolar.Tag = "tabPage_Solarthermie";
                         listViewQuellen.Items.Add(itemSolar);
                         hinzugefuegteGerete.Add(geraetName);
@@ -654,23 +693,23 @@ namespace WindowsFormsApplication1
             }
 
             // --- POS 3: Photovoltaik (Fest zugewiesen an Tool 5 / Index 4) ---
-            if (tool[4] == "Photovoltaik" || tool[4] == "true" || tool.Contains("Photovoltaik"))
+            if (tool[4] == DbWerte.ERZEUGER_PHOTOVOLTAIK || tool[4] == "true" || tool.Contains(DbWerte.ERZEUGER_PHOTOVOLTAIK))
             {
-                ListViewItem itemPV = new ListViewItem("Photovoltaik");
+                ListViewItem itemPV = new ListViewItem(MyResource.Resource.SIM_PHOTOVOLTAIK);
                 itemPV.Tag = "tabPage_Photovoltaik";
                 listViewQuellen.Items.Add(itemPV);
             }
 
             // --- POS 4: Stromspeicher (Fest zugewiesen an Tool 6 / Index 5) ---
-            if (tool[5] == "Stromspeicher" || tool[5] == "true" || tool.Contains("Stromspeicher"))
+            if (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER || tool[5] == "true" || tool.Contains(DbWerte.ERZEUGER_STROMSPEICHER))
             {
-                ListViewItem itemSpeicher = new ListViewItem("Stromspeicher");
+                ListViewItem itemSpeicher = new ListViewItem(MyResource.Resource.SIM_STROMSPEICHER);
                 itemSpeicher.Tag = "tabPage_Stromspeicher";
                 listViewQuellen.Items.Add(itemSpeicher);
             }
 
             // --- AM ENDE DER LISTE: Ergebnisauswertung (MUSS IMMER DA SEIN) ---
-            ListViewItem itemErgebnis = new ListViewItem("Ergebnis");
+            ListViewItem itemErgebnis = new ListViewItem(MyResource.Resource.SIM_ERGEBNIS);
             itemErgebnis.Tag = "tabPage_Ergebnis";
             listViewQuellen.Items.Add(itemErgebnis);
 
@@ -1002,9 +1041,9 @@ namespace WindowsFormsApplication1
 
             radioButton_Waermegefuehrt.Checked = true;
 
-            MacheTextAbschnittFett(richTextBox_Info, "Wärmegeführt (Standard)");
-            MacheTextAbschnittFett(richTextBox_Info, "Stromgeführt (Wirtschaftlich)");
-            MacheTextAbschnittFett(richTextBox_Info, "Ohne Einspeisung (Zero-Export)");
+            MacheTextAbschnittFett(richTextBox_Info, MyResource.Resource.SIM_BETRIEBSART_WAERMEGEFUEHRT);
+            MacheTextAbschnittFett(richTextBox_Info, MyResource.Resource.SIM_BETRIEBSART_STROMGEFUEHRT);
+            MacheTextAbschnittFett(richTextBox_Info, MyResource.Resource.SIM_BETRIEBSART_OHNE_EINSPEISUNG);
 
             LeseKonfiguration();
             PendelspeicherFeldEinrichten();
@@ -1106,7 +1145,7 @@ namespace WindowsFormsApplication1
             // übrigen Sperrstellen, damit der Knopf und das Merkmal nie auseinanderlaufen.)
             ErgebnisUngueltig();
 
-            MessageBox.Show(sperrgrund, "Simulation nicht verfügbar",
+            MessageBox.Show(sperrgrund, MyResource.Resource.SIM_TITEL_SIMULATION_NICHT_VERFUEGBAR,
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return true;
         }
@@ -1148,7 +1187,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + m_ID_Projekt);
             if (ctrl.rows == 0)
             {
-                MessageBox.Show("Bitte zuerst die Konfiguration festlegen.", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(MyResource.Resource.SIM_MSG_KONFIGURATION_FEHLT, MyResource.Resource.SIM_TITEL_FEHLER, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -1263,10 +1302,10 @@ namespace WindowsFormsApplication1
             string fehlerZusatz = SimulationProtokoll.Aktuell.FehlertextFuerAnzeige(grund);
             string text = string.IsNullOrEmpty(fehlerZusatz)
                 ? grund
-                : grund + Environment.NewLine + Environment.NewLine + "Weitere Fehlermeldungen des Laufs:" +
+                : grund + Environment.NewLine + Environment.NewLine + MyResource.Resource.SIM_MSG_WEITERE_FEHLERMELDUNGEN +
                   Environment.NewLine + fehlerZusatz;
 
-            MessageBox.Show(text, "Simulation abgebrochen", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(text, MyResource.Resource.SIM_TITEL_SIMULATION_ABGEBROCHEN, MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             LaufmeldungenAnzeigen();
             return true;
@@ -1315,8 +1354,8 @@ namespace WindowsFormsApplication1
             _laufmeldungenText = p.HinweistextFuerAnzeige();
             label_Laufmeldungen.Visible = true;
             label_Laufmeldungen.Text = anzahl == 1
-                ? "1 Hinweis zum Lauf (anklicken)"
-                : anzahl + " Hinweise zum Lauf (anklicken)";
+                ? MyResource.Resource.SIM_LAUFMELDUNG_EINER
+                : string.Format(MyResource.Resource.SIM_LAUFMELDUNG_MEHRERE, anzahl);
             tooltip.SetToolTip(label_Laufmeldungen, _laufmeldungenText);
         }
 
@@ -1348,7 +1387,7 @@ namespace WindowsFormsApplication1
         private void label_Laufmeldungen_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(_laufmeldungenText)) return;
-            MessageBox.Show(_laufmeldungenText, "Meldungen des Simulationslaufs",
+            MessageBox.Show(_laufmeldungenText, MyResource.Resource.SIM_TITEL_MELDUNGEN_LAUF,
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -1364,7 +1403,7 @@ namespace WindowsFormsApplication1
         {
             if (m_ID_Projekt <= 0)
             {
-                MessageBox.Show("Kein Projekt geladen.", "Hinweis");
+                MessageBox.Show(MyResource.Resource.SIM_MSG_KEIN_PROJEKT, MyResource.Resource.SIM_TITEL_HINWEIS);
                 return;
             }
 
@@ -1379,12 +1418,8 @@ namespace WindowsFormsApplication1
             if (!_ergebnisGueltig)
             {
                 MessageBox.Show(
-                    "Es liegt kein vollständiges Simulationsergebnis vor." + Environment.NewLine +
-                    Environment.NewLine +
-                    "Bitte zuerst die Simulation ausführen. Ein abgebrochener oder noch nicht " +
-                    "gerechneter Lauf wird nicht gespeichert - das bisher gespeicherte Ergebnis " +
-                    "des Projekts bleibt dadurch erhalten.",
-                    "Ergebnis speichern", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MyResource.Resource.SIM_MSG_KEIN_VOLLSTAENDIGES_ERGEBNIS.Replace("\n", Environment.NewLine),
+                    MyResource.Resource.SIM_TITEL_ERGEBNIS_SPEICHERN, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -1394,9 +1429,9 @@ namespace WindowsFormsApplication1
 
             int id = new ErgebnisCtrl().Save(m);
             if (id > 0)
-                MessageBox.Show("Simulationsergebnis gespeichert.", "Ergebnis");
+                MessageBox.Show(MyResource.Resource.SIM_MSG_ERGEBNIS_GESPEICHERT, MyResource.Resource.SIM_ERGEBNIS);
             else
-                MessageBox.Show("Das Ergebnis konnte nicht gespeichert werden.", "Fehler");
+                MessageBox.Show(MyResource.Resource.SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT, MyResource.Resource.SIM_TITEL_FEHLER);
         }
 
         // Befüllt den Übersicht-Tab mit den Simulationsergebnissen
@@ -1418,15 +1453,15 @@ namespace WindowsFormsApplication1
 
             ueb_chart.Series[0].Points.Clear();
             if (sim.simulation_wp.WP_Waermeproduktion_gesamt > 0)
-                ueb_chart.Series[0].Points.AddXY("Wärmepumpe", sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000);
+                ueb_chart.Series[0].Points.AddXY(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000);
             if (sim.simulation_wp.Heizstab_gesamt > 0)
-                ueb_chart.Series[0].Points.AddXY("Heizstab", sim.simulation_wp.Heizstab_gesamt / 1000);
+                ueb_chart.Series[0].Points.AddXY(MyResource.Resource.CHART_SEGMENT_HEIZSTAB, sim.simulation_wp.Heizstab_gesamt / 1000);
             if (sim.simulation_spk.S_Waerme_spk > 0)
-                ueb_chart.Series[0].Points.AddXY("Heizkessel", sim.simulation_spk.S_Waerme_spk);
+                ueb_chart.Series[0].Points.AddXY(MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, sim.simulation_spk.S_Waerme_spk);
             if (sim.simulation_bhkw.Waermeproduktion_BHKW_MWh > 0)
-                ueb_chart.Series[0].Points.AddXY("BHKW", sim.simulation_bhkw.Waermeproduktion_BHKW_MWh);
+                ueb_chart.Series[0].Points.AddXY(MyResource.Resource.SIM_ERZEUGERNAME_BHKW, sim.simulation_bhkw.Waermeproduktion_BHKW_MWh);
             if (sim.Restwaerme > 0)
-                ueb_chart.Series[0].Points.AddXY("Rest", sim.Restwaerme);
+                ueb_chart.Series[0].Points.AddXY(MyResource.Resource.CHART_SEGMENT_REST, sim.Restwaerme);
         }
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
@@ -1434,7 +1469,7 @@ namespace WindowsFormsApplication1
             int netzverluste = (int)ctrl.m_Netzverluste;
             if (ctrl.m_szNetzverlusteEinheit == "%" && netzverluste > 100)
             {
-                MessageBox.Show("die Netzverluste dürfen nicht größer als 100 % sein!");
+                MessageBox.Show(MyResource.Resource.SIM_MSG_NETZVERLUSTE_ZU_GROSS);
                 return false;
             }
 
@@ -1442,7 +1477,7 @@ namespace WindowsFormsApplication1
             int nKlimaregion = projektCtrl.m_ID_Klimaregion;
             if (nKlimaregion == 0)
             {
-                MessageBox.Show("Klimaregion auswählen!");
+                MessageBox.Show(MyResource.Resource.SIM_MSG_KLIMAREGION_WAEHLEN);
                 return false;
             }
 
@@ -1475,8 +1510,8 @@ namespace WindowsFormsApplication1
                     string.IsNullOrEmpty(fehlerZusatz)
                         ? grund
                         : grund + Environment.NewLine + Environment.NewLine +
-                          "Weitere Fehlermeldungen des Laufs:" + Environment.NewLine + fehlerZusatz,
-                    "Simulation abgebrochen", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                          MyResource.Resource.SIM_MSG_WEITERE_FEHLERMELDUNGEN + Environment.NewLine + fehlerZusatz,
+                    MyResource.Resource.SIM_TITEL_SIMULATION_ABGEBROCHEN, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
@@ -1632,10 +1667,10 @@ namespace WindowsFormsApplication1
                 _chartManager[3].YMaxValue = sim.simulation_Waermebedarf.Waermebedarf.Max();
                 _chartManager[3].YMinValue = 0;
                 _chartManager[3].XAxisAsNumber = false;
-                _chartManager[3].XAxisTitle = "Jahresstunden";
-                _chartManager[3].YAxisTitle = "Wärmelast";
+                _chartManager[3].XAxisTitle = MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN;
+                _chartManager[3].YAxisTitle = MyResource.Resource.CHART_ACHSE_WAERMELAST;
                 _chartManager[3].toolTipUnit = "kW";
-                _chartManager[3].ChartTitle = "Wärmelast Jahresganglinie";
+                _chartManager[3].ChartTitle = MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE;
                 _chartManager[3].MitLegende = true;
                 _chartManager[3].Init();
 
@@ -1645,10 +1680,10 @@ namespace WindowsFormsApplication1
                 for (int n = 0; n < 8760; n++)
                     bedarfHeizung[n] = sim.simulation_wp.Waermebedarf_stuendlich[n] - bedarfWW[n];
 
-                _chartManager[3].AddSeries("Heizwärmebedarf", Color.Red, bedarfHeizung);
-                _chartManager[3].AddSeries("Warmwasserbedarf", Color.DeepSkyBlue, bedarfWW);
-                _chartManager[3].AddSeries("Heizstab", Color.Yellow, sim.simulation_wp.Heizstab_stuendlich);
-                _chartManager[3].AddSeries("Wärmeproduktion", Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich);
+                SerieAnlegen(_chartManager[3], S_HEIZWAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF, Color.Red, bedarfHeizung);
+                SerieAnlegen(_chartManager[3], S_WARMWASSERBEDARF, MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF, Color.DeepSkyBlue, bedarfWW);
+                SerieAnlegen(_chartManager[3], S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, sim.simulation_wp.Heizstab_stuendlich);
+                SerieAnlegen(_chartManager[3], S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich);
 
                 // Chart Wärmepumpe Strombedarf und Produktion
                 float[] temp = simulation_Strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich, sim.simulation_wp.Heizstab_stuendlich);
@@ -1656,12 +1691,12 @@ namespace WindowsFormsApplication1
                 _chartManager[6].YMaxValue = temp.Max();
                 _chartManager[6].YMinValue = 0;
                 _chartManager[6].XAxisAsNumber = false;
-                _chartManager[6].XAxisTitle = "Jahresstunden";
-                _chartManager[6].YAxisTitle = "Strombedarf";
+                _chartManager[6].XAxisTitle = MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN;
+                _chartManager[6].YAxisTitle = MyResource.Resource.CHART_ACHSE_STROMBEDARF;
                 _chartManager[6].toolTipUnit = "kW";
-                _chartManager[6].ChartTitle = "Strombedarf Jahresganglinie";
+                _chartManager[6].ChartTitle = MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE;
                 _chartManager[6].Init();
-                _chartManager[6].AddSeries("Strombedarf", Color.Red, temp);
+                SerieAnlegen(_chartManager[6], S_STROMBEDARF, MyResource.Resource.CHART_ACHSE_STROMBEDARF, Color.Red, temp);
 
                 textBox_WB_Deckung.Text = "";
                 double a = (double)simulation_Waermebedarf.Waermebedarf_Gesamt;
@@ -1708,12 +1743,12 @@ namespace WindowsFormsApplication1
                     listView_SimWP.GridLines = true;
                     listView_SimWP.MultiSelect = false;
                     listView_SimWP.Font = listView_SimSPK.Font;
-                    listView_SimWP.Columns.Add("Modul", -2, HorizontalAlignment.Left);
-                    listView_SimWP.Columns.Add("Leistung [kW]", -2, HorizontalAlignment.Left);
-                    listView_SimWP.Columns.Add("Wärmeprod. [MWh/a]", -2, HorizontalAlignment.Left);
-                    listView_SimWP.Columns.Add("Stromverbr. [MWh/a]", -2, HorizontalAlignment.Left);
-                    listView_SimWP.Columns.Add("Heizstab [MWh/a]", -2, HorizontalAlignment.Left);
-                    listView_SimWP.Columns.Add("Betriebsstunden [h/a]", -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add(MyResource.Resource.SIM_SPALTE_MODUL, -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add(MyResource.Resource.SIM_SPALTE_LEISTUNG, -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add(MyResource.Resource.SIM_SPALTE_WAERMEPRODUKTION, -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add(MyResource.Resource.SIM_SPALTE_STROMVERBRAUCH, -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add(MyResource.Resource.SIM_SPALTE_HEIZSTAB, -2, HorizontalAlignment.Left);
+                    listView_SimWP.Columns.Add(MyResource.Resource.SIM_SPALTE_BETRIEBSSTUNDEN, -2, HorizontalAlignment.Left);
                 }
 
                 // Daten zeilenweise eintragen
@@ -1779,9 +1814,9 @@ namespace WindowsFormsApplication1
 
                 // ChartManager instanziieren
                 _chartManager[4] = new ChartManager(chart4);
-                _chartManager[4].ChartTitle = "Leistung über Außentemperatur";
-                _chartManager[4].XAxisTitle = "Temperatur [°C]";
-                _chartManager[4].YAxisTitle = "Leistung [kW]";
+                _chartManager[4].ChartTitle = MyResource.Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR;
+                _chartManager[4].XAxisTitle = MyResource.Resource.CHART_ACHSE_TEMPERATUR;
+                _chartManager[4].YAxisTitle = MyResource.Resource.SIM_SPALTE_LEISTUNG;
                 _chartManager[4].IsXYChart = true;
                 _chartManager[4].AreaLine = true; // Area Chart Effekt
                 _chartManager[4].MitLegende = true;
@@ -1789,9 +1824,9 @@ namespace WindowsFormsApplication1
                 _chartManager[4].Init();
 
                 // Daten hinzufügen (gefilterte PointF[] Arrays)
-                _chartManager[4].AddSeries("Wärmebedarf", Color.FromArgb(120, Color.Red), ps_bedarf, 0);
-                _chartManager[4].AddSeries("Heizstab", Color.FromArgb(120, Color.Yellow), ps_heizstab, 0);
-                _chartManager[4].AddSeries("Wärmeproduktion", Color.FromArgb(120, Color.Blue), ps_produktion, 0);
+                SerieAnlegen(_chartManager[4], S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, Color.FromArgb(120, Color.Red), ps_bedarf, 0);
+                SerieAnlegen(_chartManager[4], S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.FromArgb(120, Color.Yellow), ps_heizstab, 0);
+                SerieAnlegen(_chartManager[4], S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, Color.FromArgb(120, Color.Blue), ps_produktion, 0);
             }
 
             // Speicher-Ergebnisse und Erdreich-Hinweis BEWUSST ausserhalb von
@@ -1871,16 +1906,16 @@ namespace WindowsFormsApplication1
                 _chartManager[8].YMaxValue = sim.simulation_solarthermie.Waermebedarf.Max();
                 _chartManager[8].YMinValue = 0;
                 _chartManager[8].XAxisAsNumber = false;
-                _chartManager[8].XAxisTitle = "Jahresstunden";
-                _chartManager[8].YAxisTitle = "Wärmelast";
+                _chartManager[8].XAxisTitle = MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN;
+                _chartManager[8].YAxisTitle = MyResource.Resource.CHART_ACHSE_WAERMELAST;
                 _chartManager[8].toolTipUnit = "kW";
-                _chartManager[8].ChartTitle = "Wärmelast Jahresganglinie";
+                _chartManager[8].ChartTitle = MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE;
                 _chartManager[8].MitLegende = true;
                 _chartManager[8].MitChartBorder = true;
                 _chartManager[8].AreaLine = false;
                 _chartManager[8].Init();
-                _chartManager[8].AddSeries("Waermebedarf", Color.Red, Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermebedarf, x => (float)x));
-                _chartManager[8].AddSeries("Wärmeproduktion", Color.Blue, Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermeproduktion, x => (float)x));
+                SerieAnlegen(_chartManager[8], S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, Color.Red, Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermebedarf, x => (float)x));
+                SerieAnlegen(_chartManager[8], S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, Color.Blue, Array.ConvertAll<double, float>(sim.simulation_solarthermie.Waermeproduktion, x => (float)x));
 
                 // Auflistung der einzelnen Solarkollektoren (analog listView_SimSPK beim Heizkessel).
                 listView_SimSolar.Items.Clear();
@@ -1915,21 +1950,21 @@ namespace WindowsFormsApplication1
             _chartManager[9].YMaxValue = sim.simulation_pv.Strombedarf.Max();
             _chartManager[9].YMinValue = 0;
             _chartManager[9].XAxisAsNumber = false;
-            _chartManager[9].XAxisTitle = "Monate";
-            _chartManager[9].YAxisTitle = "Leistung";
+            _chartManager[9].XAxisTitle = MyResource.Resource.CHART_ACHSE_MONATE;
+            _chartManager[9].YAxisTitle = MyResource.Resource.CHART_ACHSE_LEISTUNG;
             _chartManager[9].toolTipUnit = "kW";
-            _chartManager[9].ChartTitle = "Strombedarf, Photovoltaik Jahresganglinie";
+            _chartManager[9].ChartTitle = MyResource.Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE;
             _chartManager[9].MitLegende = true;
             _chartManager[9].MaxXVALUE = 8760 * 4;
             _chartManager[9].MitViertelStunde = true;
             _chartManager[9].Init();
             // NUR DER SPEICHER geht auf die rechte Achse (true = Sekundärachse kWh)
-            _chartManager[9].AddSeries("Speicherfüllstand", Color.FromArgb(120, 130, 140), sim.simulation_pv.Speicherfuellstand_viertelstunde);
-            _chartManager[9].AddSeries("Überschuss", Color.Yellow, sim.simulation_pv.Ueberschuss_viertelstunde);
-            _chartManager[9].AddSeries("Strombedarf", Color.Red, sim.simulation_pv.Strombedarf);
-            _chartManager[9].AddSeries("Photovoltaik", Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
-            _chartManager[9]._chart.Series["Überschuss"].Enabled = false;
-            _chartManager[9]._chart.Series["Speicherfüllstand"].Enabled = false;
+            SerieAnlegen(_chartManager[9], S_SPEICHERFUELLSTAND, MyResource.Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND, Color.FromArgb(120, 130, 140), sim.simulation_pv.Speicherfuellstand_viertelstunde);
+            SerieAnlegen(_chartManager[9], S_UEBERSCHUSS, MyResource.Resource.CHART_LEGENDE_UEBERSCHUSS, Color.Yellow, sim.simulation_pv.Ueberschuss_viertelstunde);
+            SerieAnlegen(_chartManager[9], S_STROMBEDARF, MyResource.Resource.CHART_ACHSE_STROMBEDARF, Color.Red, sim.simulation_pv.Strombedarf);
+            SerieAnlegen(_chartManager[9], S_PHOTOVOLTAIK, MyResource.Resource.SIM_PHOTOVOLTAIK, Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
+            _chartManager[9]._chart.Series[S_UEBERSCHUSS].Enabled = false;
+            _chartManager[9]._chart.Series[S_SPEICHERFUELLSTAND].Enabled = false;
             checkBox_Ueberschuss.Checked = false;
             checkBox_Speicherzustand.Checked = false;
             textBox_MaxPSolar.Text = sim.simulation_pv.MaxPSolar.ToString("F2");
@@ -1962,19 +1997,19 @@ namespace WindowsFormsApplication1
             _chartManager[10].YMaxValue = sim.simulation_bhkw.waermebedarf.Max();
             _chartManager[10].YMinValue = 0;
             _chartManager[10].XAxisAsNumber = true;
-            _chartManager[10].XAxisTitle = "Jahresstunden";
-            _chartManager[10].YAxisTitle = "Wärmelast";
+            _chartManager[10].XAxisTitle = MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN;
+            _chartManager[10].YAxisTitle = MyResource.Resource.CHART_ACHSE_WAERMELAST;
             _chartManager[10].toolTipUnit = "kW";
-            _chartManager[10].ChartTitle = "Wärmelast Jahresganglinie";
+            _chartManager[10].ChartTitle = MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE;
             _chartManager[10].MitLegende = true;
             _chartManager[10].MitChartBorder = true;
             _chartManager[10].AreaLine = false;
             _chartManager[10].Init();
 
             float[] waermebedarfSortiert = sim.simulation_bhkw.waermebedarf.OrderByDescending(w => w).ToArray();
-            _chartManager[10].AddSeries("Waermebedarf", Color.Red, waermebedarfSortiert);
+            SerieAnlegen(_chartManager[10], S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, Color.Red, waermebedarfSortiert);
             float[] waermeproduktionSortiert = sim.simulation_bhkw.waermeproduktion.OrderByDescending(w => w).ToArray();
-            _chartManager[10].AddSeries("Wärmeproduktion", Color.Blue, waermeproduktionSortiert);
+            SerieAnlegen(_chartManager[10], S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, Color.Blue, waermeproduktionSortiert);
 
             textBox_Betriebsstunden.Text = sim.simulation_bhkw.Betriebsstunden.ToString("F0");
             textBox_Betriebsstunden_Durchschnitt.Text = sim.simulation_bhkw.dLaufzeiten.ToString("F0");
@@ -2007,7 +2042,7 @@ namespace WindowsFormsApplication1
             {
                 for (int i = 0; i < sim.simulation_bhkw.bhkw_list.Count; i++)
                 {
-                    string name = sim.simulation_bhkw.bhkw_list_Namen[i] ?? "Standard BHKW";
+                    string name = sim.simulation_bhkw.bhkw_list_Namen[i] ?? MyResource.Resource.SIM_BHKW_MODUL_STANDARD;
                     ListViewItem lvitem = new ListViewItem((i + 1).ToString());
                     lvitem.SubItems.Add(name);
                     lvitem.SubItems.Add(sim.simulation_bhkw.s_waerme_MWh[i].ToString("F2"));
@@ -2110,7 +2145,7 @@ namespace WindowsFormsApplication1
                 chartControl.Series[0].Points.AddXY(d, Dauerlinie_sortiert[j]);
             }
             chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Hours;
-            chartControl.ChartAreas[0].AxisX.Title = "Jahresstunden";
+            chartControl.ChartAreas[0].AxisX.Title = MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN;
 
             return;
         }
@@ -2141,7 +2176,7 @@ namespace WindowsFormsApplication1
             }
 
             chartControl.ChartAreas[0].AxisX.IntervalOffsetType = DateTimeIntervalType.Hours;
-            chartControl.ChartAreas[0].AxisX.Title = "Jahresstunden";
+            chartControl.ChartAreas[0].AxisX.Title = MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN;
 
             return;
         }
@@ -2190,10 +2225,10 @@ namespace WindowsFormsApplication1
                 manager.HardReset();
                 manager.Init();
 
-                manager.AddSeries("Heizwärmebedarf", Color.Red, sortedHeizung);
-                manager.AddSeries("Warmwasserbedarf", Color.DeepSkyBlue, sortedWW);
-                manager.AddSeries("Heizstab", Color.Yellow, sortedHeizstab);
-                manager.AddSeries("Wärmeproduktion", Color.Blue, sortedWBArray);
+                SerieAnlegen(manager, S_HEIZWAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF, Color.Red, sortedHeizung);
+                SerieAnlegen(manager, S_WARMWASSERBEDARF, MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF, Color.DeepSkyBlue, sortedWW);
+                SerieAnlegen(manager, S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, sortedHeizstab);
+                SerieAnlegen(manager, S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, Color.Blue, sortedWBArray);
             }
             else
             {
@@ -2202,10 +2237,10 @@ namespace WindowsFormsApplication1
                 manager.HardReset();
                 manager.Init(); // Hier wird FormatXAxisWithDate() aufgerufen
 
-                manager.AddSeries("Heizwärmebedarf", Color.Red, bedarfHeizung);
-                manager.AddSeries("Warmwasserbedarf", Color.DeepSkyBlue, bedarfWW);
-                manager.AddSeries("Heizstab", Color.Yellow, tempHeizstab);
-                manager.AddSeries("Wärmeproduktion", Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich);
+                SerieAnlegen(manager, S_HEIZWAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF, Color.Red, bedarfHeizung);
+                SerieAnlegen(manager, S_WARMWASSERBEDARF, MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF, Color.DeepSkyBlue, bedarfWW);
+                SerieAnlegen(manager, S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, tempHeizstab);
+                SerieAnlegen(manager, S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich);
             }
 
             // Skalierung erzwingen
@@ -2349,9 +2384,9 @@ namespace WindowsFormsApplication1
         private void checkBox_Ueberschuss_CheckedChanged(object sender, EventArgs e)
         {
             // 1. Serie im Chart suchen und umschalten
-            if (chart_PV.Series.IndexOf("Überschuss") != -1)
+            if (chart_PV.Series.IndexOf(S_UEBERSCHUSS) != -1)
             {
-                chart_PV.Series["Überschuss"].Enabled = checkBox_Ueberschuss.Checked;
+                chart_PV.Series[S_UEBERSCHUSS].Enabled = checkBox_Ueberschuss.Checked;
             }
 
             // 2. Skalierung über den Manager korrigieren
@@ -2362,7 +2397,7 @@ namespace WindowsFormsApplication1
         {
             double neueMax = 0;
 
-            _chartManager[9]._chart.Series["Speicherfüllstand"].Enabled = checkBox_Speicherzustand.Checked;
+            _chartManager[9]._chart.Series[S_SPEICHERFUELLSTAND].Enabled = checkBox_Speicherzustand.Checked;
 
             if (checkBox_Speicherzustand.Checked)
             {
@@ -2384,9 +2419,9 @@ namespace WindowsFormsApplication1
             ca.AxisY.Interval = 0;      // Auf Auto stellen
 
             // 2. Prüfen, ob die Serie existiert
-            if (_chartManager[9]._chart.Series.IndexOf("Speicherfüllstand") != -1)
+            if (_chartManager[9]._chart.Series.IndexOf(S_SPEICHERFUELLSTAND) != -1)
             {
-                var s = _chartManager[9]._chart.Series["Speicherfüllstand"];
+                var s = _chartManager[9]._chart.Series[S_SPEICHERFUELLSTAND];
                 bool anzeigen = checkBox_Speicherzustand.Checked;
 
                 s.Enabled = anzeigen;
@@ -2398,7 +2433,7 @@ namespace WindowsFormsApplication1
                     ca.AxisY2.Enabled = AxisEnabled.True;
 
                     // Optik der rechten Achse
-                    ca.AxisY2.Title = "Speicher [kWh]";
+                    ca.AxisY2.Title = MyResource.Resource.CHART_ACHSE_SPEICHER_KWH;
                     ca.AxisY2.TitleForeColor = Color.Black;
                     ca.AxisY2.LabelStyle.ForeColor = Color.Black;
                     ca.AxisY2.MajorGrid.Enabled = false; // Gitter nur links lassen
@@ -2620,7 +2655,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void PendelspeicherFeldEinrichten()
         {
-            label56.Text = "Volumen Pendelspeicher [l]";
+            label56.Text = MyResource.Resource.PSP_LABEL_VOLUMEN_PENDELSPEICHER;
 
             // Liter sind ganzzahlig; die Vorgaben des Designers (eine Nachkommastelle,
             // Schrittweite 0,1, Maximum 100) stammen aus der m3-Zeit.
@@ -2797,51 +2832,51 @@ namespace WindowsFormsApplication1
 
             if (simBHKW.Gasverbrauch_BHKW > 0)
             {
-                var zeile = ErstelleBrennstoffZeile("Gasverbrauch (Hu):", simBHKW.Gasverbrauch_BHKW);
+                var zeile = ErstelleBrennstoffZeile(MyResource.Resource.SIM_LABEL_GASVERBRAUCH, simBHKW.Gasverbrauch_BHKW);
                 flowLayoutPanelBrennstoffe.Controls.Add(zeile);
             }
 
             if (simBHKW.Oelverbrauch_BHKW > 0)
             {
-                var zeile = ErstelleBrennstoffZeile("Ölverbrauch:", simBHKW.Oelverbrauch_BHKW);
+                var zeile = ErstelleBrennstoffZeile(MyResource.Resource.SIM_LABEL_OELVERBRAUCH, simBHKW.Oelverbrauch_BHKW);
                 flowLayoutPanelBrennstoffe.Controls.Add(zeile);
             }
 
             if (simBHKW.Holzmenge_BHKW > 0)
             {
-                var zeile = ErstelleBrennstoffZeile("Holzverbrauch:", simBHKW.Holzmenge_BHKW);
+                var zeile = ErstelleBrennstoffZeile(MyResource.Resource.SIM_LABEL_HOLZVERBRAUCH, simBHKW.Holzmenge_BHKW);
                 flowLayoutPanelBrennstoffe.Controls.Add(zeile);
             }
 
             if (simBHKW.Pellets_BHKW > 0)
             {
-                var zeile = ErstelleBrennstoffZeile("Pellets:", simBHKW.Pellets_BHKW);
+                var zeile = ErstelleBrennstoffZeile(MyResource.Resource.SIM_LABEL_PELLETS, simBHKW.Pellets_BHKW);
                 flowLayoutPanelBrennstoffe.Controls.Add(zeile);
             }
 
             if (simBHKW.Rapsoelverbrauch_BHKW > 0)
             {
-                var zeile = ErstelleBrennstoffZeile("Rapsöl:", simBHKW.Rapsoelverbrauch_BHKW);
+                var zeile = ErstelleBrennstoffZeile(MyResource.Resource.SIM_LABEL_RAPSOEL, simBHKW.Rapsoelverbrauch_BHKW);
                 flowLayoutPanelBrennstoffe.Controls.Add(zeile);
             }
             if (simBHKW.TierischeFette_BHKW > 0)
             {
-                var zeile = ErstelleBrennstoffZeile("Tierische Fette:", simBHKW.TierischeFette_BHKW);
+                var zeile = ErstelleBrennstoffZeile(MyResource.Resource.SIM_LABEL_TIERISCHE_FETTE, simBHKW.TierischeFette_BHKW);
                 flowLayoutPanelBrennstoffe.Controls.Add(zeile);
             }
             if (simBHKW.Koks_BHKW > 0)
             {
-                var zeile = ErstelleBrennstoffZeile("Koks:", simBHKW.Koks_BHKW);
+                var zeile = ErstelleBrennstoffZeile(MyResource.Resource.SIM_LABEL_KOKS, simBHKW.Koks_BHKW);
                 flowLayoutPanelBrennstoffe.Controls.Add(zeile);
             }
             if (simBHKW.Kohle_BHKW > 0)
             {
-                var zeile = ErstelleBrennstoffZeile("Kohle:", simBHKW.Kohle_BHKW);
+                var zeile = ErstelleBrennstoffZeile(MyResource.Resource.SIM_LABEL_KOHLE, simBHKW.Kohle_BHKW);
                 flowLayoutPanelBrennstoffe.Controls.Add(zeile);
             }
             if (simBHKW.Sonstigemenge_BHKW > 0)
             {
-                var zeile = ErstelleBrennstoffZeile("Sonstigel:", simBHKW.Sonstigemenge_BHKW);
+                var zeile = ErstelleBrennstoffZeile(MyResource.Resource.SIM_LABEL_SONSTIGE, simBHKW.Sonstigemenge_BHKW);
                 flowLayoutPanelBrennstoffe.Controls.Add(zeile);
             }
 
@@ -2849,7 +2884,7 @@ namespace WindowsFormsApplication1
             if (flowLayoutPanelBrennstoffe.Controls.Count == 0)
             {
                 Label lblHinweis = new Label();
-                lblHinweis.Text = "Kein Brennstoff für dieses BHKW definiert.";
+                lblHinweis.Text = MyResource.Resource.SIM_MSG_KEIN_BRENNSTOFF;
                 lblHinweis.ForeColor = Color.Red;
                 lblHinweis.AutoSize = true;
                 flowLayoutPanelBrennstoffe.Controls.Add(lblHinweis);

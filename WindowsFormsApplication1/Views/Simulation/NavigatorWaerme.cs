@@ -67,9 +67,42 @@ namespace WindowsFormsApplication1
         public NavigatorWaerme(SimulationControl simctrl)
         {
             InitializeComponent();
+            BeschriftungenSetzen();
             InitPufferCheckBox();
             SetControl(sim = simctrl);
             InitCsvExportButton();
+        }
+
+        /// <summary>
+        /// Setzt die im Designer angelegten Beschriftungen aus dem Ressourcenkatalog
+        /// (Paket 9 / L7). Sie schließt den in Etappe 2 offen gebliebenen Punkt 3:
+        /// die Serien-Checkboxen blieben bis dahin deutsch.
+        ///
+        /// <b>Bewusste Abweichung vom WinForms-Weg</b> (wie vom Auftraggeber entschieden):
+        /// Eine <c>Localizable</c>-Ressource trüge je Kultur auch Position und Größe; ein
+        /// Handumbau der Designer-.resx ohne den WinForms-Designer verschöbe
+        /// Steuerelemente. Die Texte werden deshalb programmatisch gesetzt, die
+        /// Designer-Fassung bleibt als deutsche Entwurfszeit-Vorbelegung stehen.
+        ///
+        /// <b>Reihenfolge beachten:</b> Der Aufruf steht VOR <see cref="InitPufferCheckBox"/>,
+        /// weil dort <c>checkBox_BHKW.Right</c> und <c>checkBox_Waermebedarf.Right</c> die
+        /// Position der programmatischen Steuerelemente bestimmen — die Breite hängt am
+        /// Text.
+        /// </summary>
+        private void BeschriftungenSetzen()
+        {
+            checkBox_Gesamt.Text = MyResource.Resource.CHART_LEGENDE_GESAMT;
+            checkBox_WP.Text = MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE;
+            checkBox_Heizstab.Text = MyResource.Resource.CHART_SEGMENT_HEIZSTAB;
+            checkBox_SPK.Text = MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL;
+            checkBox_ST.Text = MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE;
+            checkBox_BHKW.Text = MyResource.Resource.SIM_ERZEUGERNAME_BHKW;
+            checkBox_Waermebedarf.Text = MyResource.Resource.SIM_CHK_WAERMEBEDARF_EINBLENDEN;
+
+            // Entwurfszeit-Titel des Charts. Er ist nur zu sehen, solange SetControl noch
+            // nicht gelaufen ist - ChartManager.Init() ersetzt die Titelsammlung danach.
+            if (chart_Waerme.Titles.Count > 0)
+                chart_Waerme.Titles[0].Text = MyResource.Resource.CHART_TITEL_WAERMEPRODUKTION_JAHRESGANGLINIE;
         }
 
         /// <summary>

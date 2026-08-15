@@ -12,7 +12,7 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-14_B1-Fixes/`** — seit dem Abend des 14.08.2026 die gültige Referenz,
+**`2026-08-15_B2/`** — seit dem 15.08.2026, 12:37 Uhr die gültige Referenz,
 **neun Projekte** (1007, 1008, 1010, 1011, 1017, 1018, 1021, 1023, 1024). Jeder neue
 Vergleich läuft gegen diesen Ordner.
 
@@ -22,7 +22,46 @@ Vergleich läuft gegen diesen Ordner.
 > Regressionsfall gegen diese Basis — er wird gegen den Flag-aus-Lauf desselben Codes
 > verglichen (Umsetzungsprotokoll Paket 4).
 
-Gegenüber `2026-08-14_Paket4` weichen **drei Projekte** ab, vollständig zugeordnet in
+### Warum die Basis gewechselt wurde
+
+Gerechnet auf Codestand **`925c37f`** (Paket 9, Etappe 2) und auf der produktiven
+`Kenndaten.accdb` mit Zeitstempel **15.08.2026 11:58**. Ein Codeeffekt liegt dem Wechsel
+**nicht** zugrunde — die Ursache sind **geänderte Projektdaten**:
+
+Der Anwender hat am 15.08.2026 um 11:58 in **Projekt 1024** das **zweite Wärmepumpenmodul**
+(`CS7800iLW 12`) entfernt. Damit fehlt im `aggregate.csv` der komplette Block
+`WaermepumpeModul[1]`, und die davon abhängigen Ganglinien (BHKW, Kessel, WP, Heizstab,
+Restwärme, Reststrom) verschieben sich. Der Vergleich der alten gegen die neue Basis zeigt
+das sauber abgegrenzt:
+
+```
+2026-08-14_B1-Fixes vs 2026-08-15_B2 : 193 byte-/MD5-gleich, 15 abweichend
+                                       (alle 15 in Projekt_1024)
+Toleranzvergleich                    : 8 x PASS, Projekt_1024 FAIL (75.575 Abweichungen)
+```
+
+Der Nachweis, dass das **nicht** vom Code kommt, steht in
+`../WindowsFormsApplication1/Allgemein/Simulation/Paket9_Lokalisierung_Protokoll.md`,
+Abschnitt 12.2: Ein Baselinelauf aus einem eigenen git-Arbeitsbaum auf `d49075e` — also
+**ohne** die Änderungen der Etappe 2 — zeigt gegen `B1-Fixes` **dieselben 15 Dateien**;
+gegen den Etappe-2-Lauf auf demselben Datenstand sind alle 208 Dateien byte-gleich.
+
+Solange `B1-Fixes` die Basis bliebe, schleppte jede Folgeprüfung diese eine
+erklärungsbedürftige Abweichung mit und Projekt 1024 wäre dauerhaft FAIL — der Regressionstest
+verlöre für dieses Projekt seine Aussagekraft. Deshalb der Basiswechsel.
+
+**Selbstvergleich der neuen Basis:** Ein zweiter Lauf desselben Codes auf derselben Quelle
+ergibt **9 von 9 PASS (2.295.987 Werte)** und **208 von 208 Dateien byte-/MD5-gleich** — die
+Basis ist reproduzierbar.
+
+Die Anwendung des Anwenders lief während des Laufs, hatte die Datenbank aber **nicht**
+geöffnet (keine `Kenndaten.laccdb`). Die produktive Datei wurde ausschließlich gelesen.
+
+## Frühere Stände
+
+`2026-08-14_B1-Fixes/` bleibt als **vorheriger Stand** liegen (Datenstand vom 14.08.2026,
+neun Projekte). Gegenüber `2026-08-14_Paket4` weichen dort **drei Projekte** ab, vollständig
+zugeordnet in
 `2026-08-14_B1-Fixes/vergleich_protokoll.md`: **1008** und **1011** durch die
 Bestandsfehler-Fixes **B1-F1/B1-F2** (Stromganglinien fließen erstmals in den Strombedarf
 ein; Prozesswärme war still 0 — B0-Protokoll, Nachtrag B1-F1/B1-F2), **1024** durch
@@ -30,9 +69,7 @@ ein; Prozesswärme war still 0 — B0-Protokoll, Nachtrag B1-F1/B1-F2), **1024**
 aufgenommen; Alt- vs. Neu-Code auf identischer DB ist für 1024 vollständig PASS —
 kein Code-Effekt). Die übrigen sechs Projekte: PASS.
 
-## Frühere Stände
-
-`2026-08-14_Paket4/` bleibt als **vorheriger Stand** liegen. Gegenüber
+`2026-08-14_Paket4/` bleibt als **vorvorheriger Stand** liegen. Gegenüber
 `2026-08-14_Paket7` waren dort genau **drei** Werte neu, alle in Projekt 1021 und alle
 begründet in `2026-08-14_Paket4/lauf_protokoll.md`: die ID-Semantik des Quellspeichers
 (`Pufferspeicher[0].ID_Pufferspeicher` 8 → 1018014) und die beiden laufzeitbasierten
@@ -185,12 +222,13 @@ ist zwingend, wenn parallel gearbeitet wird oder die Kopie außerhalb des Repos 
    Stand, gegen den verglichen werden soll.
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
-3. **Neu rechnen und vergleichen** — Referenz ist die aktuelle Basis, seit der
-   Paket-4-Abnahme also `2026-08-14_Paket4`:
+3. **Neu rechnen und vergleichen** — Referenz ist die aktuelle Basis, seit dem
+   15.08.2026 also `2026-08-15_B2`:
    ```powershell
-   & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket5
-   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_Paket4 `
-                    C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket5
+   & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket10 `
+               --projekte 1007,1008,1010,1011,1017,1018,1021,1023,1024
+   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-15_B2 `
+                    C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket10
    ```
    `lauf` kopiert **und migriert** die Arbeitskopie selbst.
 
@@ -209,7 +247,7 @@ foreach ($id in 1007,1008,1010,1011,1017,1018,1021,1023,1024) {
 }
 
 # 4. Gegen die aktuelle Basis vergleichen und plausibilisieren
-& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_Paket4 C:\Waermeplan\MeinTest\Lauf
+& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-15_B2 C:\Waermeplan\MeinTest\Lauf
 & $exe pruefen   C:\Waermeplan\MeinTest\Lauf
 ```
 
