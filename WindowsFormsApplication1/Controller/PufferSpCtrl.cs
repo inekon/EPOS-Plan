@@ -190,7 +190,13 @@ namespace WindowsFormsApplication1
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
-                    System.Windows.Forms.MessageBox.Show("Der Pufferspeicher-Stammdatensatz wurde nicht gefunden (ID " + stammId + ").");
+                    // PAKET 8 (Konzept 13.4): Sicherheitsnetz. Heute wird CopyFromStamm
+                    // nur aus der Oberfläche gerufen (Projektbaum, Puffer-Verwaltung,
+                    // Z_ProjektPufferSpCtrl.Insert) - dort erscheint der Dialog
+                    // unverändert. Sollte der Pfad je in den Rechenlauf geraten, meldet
+                    // er still ins Protokoll statt den Lauf anzuhalten.
+                    DataRepository.FehlerMelden(
+                        "Der Pufferspeicher-Stammdatensatz wurde nicht gefunden (ID " + stammId + ").");
                     return -1;
                 }
 

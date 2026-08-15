@@ -47,12 +47,24 @@ namespace WindowsFormsApplication1.Referenzlauf
         /// Uebernimmt eine Ausgabezeile eines Kindprozesses und zaehlt darin gemeldete
         /// Warnungen und Fehler mit - sonst wuerde das Protokoll des Elternprozesses
         /// faelschlich "0 Warnungen" ausweisen.
+        ///
+        /// WORTWAHL (Nacharbeit Paket 8, Befund N13b): Der Protokollkanal der Engine
+        /// (SimulationProtokoll) schreibt "Simulation Warnung: ...", "Simulation Hinweis:
+        /// ..." und "Simulation FEHLER: ...". Die Fehlerzeile traf der bisherige,
+        /// gross geschriebene Vergleich noch, die WARNUNG nicht - ein Lauf mit
+        /// Ersatzannahme wies dadurch weiter "0 Warnungen" aus. Deshalb beide
+        /// Schreibweisen. Hinweise werden bewusst NICHT gezaehlt: Sie melden einen
+        /// vollwertig gerechneten Grenzfall (z. B. die extrapolierte WP-Kennlinie), und
+        /// den gab es in jedem bisherigen Referenzlauf.
+        ///
+        /// Eingefrorene Referenzbasen bleiben davon unberuehrt - gezaehlt wird beim
+        /// Lesen der Kindprozessausgabe, nicht beim Vergleich.
         /// </summary>
         public void AusKindprozess(string text)
         {
             if (text != null)
             {
-                if (text.Contains("WARNUNG:")) Warnungen++;
+                if (text.Contains("WARNUNG:") || text.Contains("Simulation Warnung:")) Warnungen++;
                 else if (text.Contains("FEHLER:") || text.StartsWith("stderr: ")) Fehler++;
             }
             Roh("      | " + text);

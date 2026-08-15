@@ -201,7 +201,10 @@ namespace WindowsFormsApplication1
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
-                    System.Windows.Forms.MessageBox.Show("Der Stromspeicher-Stammdatensatz wurde nicht gefunden (ID " + stammId + ").");
+                    // NACHARBEIT PAKET 8, BEFUND N10: gemeinsame Entscheidungsstelle
+                    // (Dialog in der Bedienung, Protokolleintrag im Rechenlauf) - wie in
+                    // den vier baugleichen Geschwistern.
+                    DataRepository.FehlerMelden("Der Stromspeicher-Stammdatensatz wurde nicht gefunden (ID " + stammId + ").");
                     return -1;
                 }
 

@@ -83,6 +83,33 @@ namespace WindowsFormsApplication1
                     row[SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG] != DBNull.Value &&
                     Convert.ToBoolean(row[SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG]);
 
+                // --- Einstellung Extrapolation_erlaubt (Paket 8, Konzept 13.4) --------
+                //
+                // Dasselbe namensbasierte Muster wie beim Feature-Flag darüber, aber mit
+                // UMGEKEHRTER Vorbelegung: Fehlt die Spalte (Datenbank noch nicht auf
+                // Schemastand 7) oder steht dort NULL, gilt ERLAUBT. Das ist genau das
+                // bisherige Verhalten - die Engine fragte nach, und die Antwort war in
+                // jedem dokumentierten Lauf "Ja". Ein "verboten" darf deshalb nur aus
+                // einem ausdrücklich gesetzten FALSE kommen, nie aus einer Datenlücke.
+                //
+                // NACHARBEIT PAKET 8, BEFUND N8 — der nie vorbelegte Zustand.
+                // Es reicht nicht, fehlende Spalte und NULL abzufangen: Die Spalte steht
+                // seit Paket 1 in SchemaKatalog.Schritt2_Speicher und wird deshalb auch
+                // von der stillen Rückfallebene (WaermequelleClass.SchemaSicherstellen)
+                // angelegt - mit dem Access-Default FALSE, denn ein Ja/Nein-Feld kennt
+                // kein NULL. Auf einer Datenbank, die diese Spalte hat, aber
+                // Migrationsschritt 7 noch nicht gelaufen ist, stünde damit überall
+                // "verboten", und jeder extrapolierende Wärmepumpenlauf bräche ab. Genau
+                // das trifft die Referenzlauf-Suite in Weg B: Der Modus "projekt"
+                // migriert nicht. Solange der Schemastand unter 7 liegt, ist das FALSE
+                // deshalb kein Anwenderwille, sondern eine Datenlücke - und die bedeutet
+                // ERLAUBT, wie überall sonst bei dieser Einstellung.
+                model.Extrapolation_erlaubt =
+                    !dt.Columns.Contains(SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT) ||
+                    row[SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT] == DBNull.Value ||
+                    Convert.ToBoolean(row[SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT]) ||
+                    ExtrapolationVorbelegungFehlt();
+
                 rows = 1;
             }
         }
@@ -127,6 +154,94 @@ namespace WindowsFormsApplication1
 
             int betroffen = StilleDb.NonQuery(
                 "UPDATE Tab_Einstellungen SET [" + SchemaKatalog.SPALTE_KASKADE_ZWEIKANALIG + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", OleDbType.Boolean, wert),
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        /// <summary>
+        /// Liest die Einstellung <c>Extrapolation_erlaubt</c> eines Projekts DIALOGFREI
+        /// (Paket 8, Konzept 13.4) — für die Oberfläche, die den Schalter anzeigt, ohne
+        /// den ganzen Einstellungssatz zu laden.
+        ///
+        /// Fehlende Spalte, fehlende Zeile und NULL liefern gleichermaßen <c>true</c>;
+        /// das ist die Vorbelegung der Einstellung und das bisherige Verhalten.
+        /// </summary>
+        public static bool ExtrapolationErlaubtLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return true;
+
+            object v = StilleDb.Scalar(
+                "SELECT [" + SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+
+            if (v == null) return true;
+            try { if (Convert.ToBoolean(v)) return true; }
+            catch { return true; }
+
+            // Befund N8: ein FALSE aus einer Datenbank ohne Migrationsschritt 7 ist die
+            // Vorbelegung von Access, nicht der Wille des Anwenders (Begründung in
+            // ReadSingle).
+            return ExtrapolationVorbelegungFehlt();
+        }
+
+        /// <summary>
+        /// true, solange die Datenbank den Migrationsschritt 7 (Vorbelegung
+        /// <c>Extrapolation_erlaubt = WAHR</c>) noch nicht hinter sich hat — dann ist ein
+        /// gespeichertes FALSE die Access-Vorbelegung einer angehängten YESNO-Spalte und
+        /// nicht die Entscheidung des Anwenders (Nacharbeit Paket 8, Befund N8).
+        ///
+        /// Bewusst LESEND: Die Alternative wäre gewesen, die stille Rückfallebene
+        /// <c>WaermequelleClass.SchemaSicherstellen</c> die Spalte nachvorbelegen zu
+        /// lassen. Das trägt nicht — sie läuft erst in <c>Do_Simulation</c>, also NACH
+        /// dem Lesen der Konfiguration im <c>SimulationRunner</c>, und hätte den
+        /// laufenden Lauf nicht mehr erreicht. Ein Leser, der die Datenlücke erkennt,
+        /// wirkt sofort und schreibt nichts in eine fremde Datenbank.
+        ///
+        /// Der erreichte Zielstand wird gemerkt: Auf einer gepflegten Datenbank fällt
+        /// genau ein Marker-Lesevorgang je Programmlauf an, danach nichts mehr.
+        /// </summary>
+        private static bool _schemastand7Erreicht = false;
+
+        private static bool ExtrapolationVorbelegungFehlt()
+        {
+            if (_schemastand7Erreicht) return false;
+
+            try
+            {
+                if (ApplikationCtrl.GetSchemaVersion() >= SchemaMigration.SCHRITT_7_EXTRAPOLATION)
+                {
+                    _schemastand7Erreicht = true;
+                    return false;
+                }
+            }
+            catch { /* Marker nicht lesbar - dann gilt die Datenlücke */ }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Schreibt die Einstellung <c>Extrapolation_erlaubt</c> eines Projekts.
+        ///
+        /// Bewusst ein EIGENES, zielgenaues UPDATE statt einer Erweiterung von
+        /// <see cref="Update"/> — dieselbe Begründung wie bei
+        /// <see cref="KaskadeZweikanaligSchreiben"/>: Die Spaltenlisten von
+        /// <see cref="Insert"/>/<see cref="Update"/> hängen an der Ordinalkette in
+        /// <see cref="ReadSingle"/>, und auf einer Datenbank ohne die Spalte würde ein
+        /// erweitertes UPDATE das Speichern der GESAMTEN Konfiguration scheitern lassen.
+        ///
+        /// Dialogfrei (Konzept 13.4). Rückgabe false, wenn keine Zeile getroffen wurde
+        /// oder die Spalte fehlt.
+        /// </summary>
+        public static bool ExtrapolationErlaubtSchreiben(int idProjekt, bool wert)
+        {
+            if (idProjekt <= 0) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT + "] = ? " +
                 "WHERE ID_Projekt = ?",
                 StilleDb.Par("@wert", OleDbType.Boolean, wert),
                 StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
@@ -180,6 +295,16 @@ namespace WindowsFormsApplication1
 
                 // Übergabe an das DataRepository
                 DataRepository.ExecuteNonQuery(sql, parameters);
+
+                // PAKET 8 (Konzept 13.4): Die Spaltenliste oben bleibt unangetastet -
+                // sie gehört zur Ordinalkette von ReadSingle, und auf einer Datenbank
+                // ohne Schemastand 7 würde ein erweitertes INSERT das Anlegen der
+                // GESAMTEN Konfiguration scheitern lassen. Die Vorbelegung kommt
+                // deshalb als eigenes, stilles UPDATE hinterher: Access belegt eine
+                // angehängte YESNO-Spalte in einer neuen Zeile mit False - ohne diese
+                // Zeile stünde jedes NEUE Projekt auf "Extrapolation verboten" und
+                // damit auf anderem Verhalten als der migrierte Bestand.
+                ExtrapolationErlaubtSchreiben(ID_Projekt, true);
                 return true;
             }
             catch (Exception ex)

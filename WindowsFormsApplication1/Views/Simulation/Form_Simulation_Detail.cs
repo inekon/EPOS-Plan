@@ -35,6 +35,28 @@ namespace WindowsFormsApplication1
         // Kompakte Textzeile mit den Warnungen der VDI-4640-Auslegungsprüfung
         // (Konzept 4.5/13.1, Ergebnisanbindung aus Paket 3).
         private System.Windows.Forms.Label label_Erdreich;
+
+        // Nicht-modale Meldungszeile des Protokollkanals (Paket 8, Konzept 13.4).
+        // Programmatisch angelegt und an btn_Simulation ausgerichtet - Designer und
+        // .resx bleiben unangetastet.
+        private System.Windows.Forms.Label label_Laufmeldungen;
+        private string _laufmeldungenText = "";
+
+        /// <summary>
+        /// Zustand der Schaltfläche „Ergebnis speichern" (Nacharbeit Paket 8, Befund N1).
+        ///
+        /// true erst, wenn ein Lauf VOLLSTÄNDIG durchgelaufen ist und die Ergebnisfelder
+        /// gefüllt wurden. Vorher stünde in den Simulationsobjekten entweder gar nichts
+        /// (Formular gerade geöffnet) oder das Bruchstück eines abgebrochenen Laufs — und
+        /// <c>ErgebnisCtrl.Save</c> löscht das bisherige Ergebnis des Projekts, BEVOR es
+        /// das neue schreibt. Ein Klick auf „Speichern" nach einem Abbruch hätte also ein
+        /// gültiges Bestandsergebnis durch einen Nullsatz ersetzt.
+        ///
+        /// Das Feld trägt den Zustand zusätzlich zur <c>Enabled</c>-Eigenschaft, weil die
+        /// Schaltfläche im Designer aktiviert ist und der Anwender sie vor dem ersten Lauf
+        /// erreichen kann.
+        /// </summary>
+        private bool _ergebnisGueltig = false;
         public double m_Waermebedarf_Gesamt;
         public double m_Strombedarf_Gesamt;
 
@@ -1080,7 +1102,9 @@ namespace WindowsFormsApplication1
             if (!SchemaMigration.SimulationGesperrt(out sperrgrund)) return false;
 
             // Kein Ergebnis darf entstehen - also auch keines gespeichert werden.
-            btn_ErgebnisSpeichern.Enabled = false;
+            // (Nacharbeit Paket 8, Befund N1: über dieselbe Zustandsmaschine wie alle
+            // übrigen Sperrstellen, damit der Knopf und das Merkmal nie auseinanderlaufen.)
+            ErgebnisUngueltig();
 
             MessageBox.Show(sperrgrund, "Simulation nicht verfügbar",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -1089,9 +1113,25 @@ namespace WindowsFormsApplication1
 
         private void btn_Simulation_Click(object sender, EventArgs e)
         {
+            // NACHARBEIT PAKET 8, BEFUND N1 — Zustandsmaschine „Ergebnis speichern".
+            //
+            // ZUERST, vor jeder anderen Prüfung: Ab hier ist das angezeigte Ergebnis
+            // nicht mehr gültig. Jeder Frühausstieg dieser Methode (Migrationssperre,
+            // fehlende Konfiguration, Abbruch der Bedarfsrechnung, Abbruch der Kaskade)
+            // lässt den Knopf damit gesperrt zurück — vorher blieb er bei zwei dieser
+            // Wege aktiv, und ein Klick hätte das gültige Bestandsergebnis des Projekts
+            // durch einen Nullsatz ersetzt.
+            ErgebnisUngueltig();
+
             // Blockade zuerst: weder rechnen noch Ergebnisfelder füllen, solange die
             // Datenbank nicht auf dem benötigten Stand ist.
             if (SimulationBlockiert()) return;
+
+            // PAKET 8 (Konzept 13.4): EIN Protokollkanal je Lauf, angelegt VOR der
+            // Bedarfsrechnung - auch SimulationWaermebedarf und SimulationStrombedarf
+            // melden dorthin, und beide laufen vor der Kaskade.
+            SimulationProtokoll.NeuStarten();
+            LaufmeldungenLeeren();
 
             // TextBoxe leeren
             for (int i = 0; i < tabControl_Simulation.TabCount; i++)
@@ -1120,7 +1160,14 @@ namespace WindowsFormsApplication1
             tool[4] = ctrl.model.m_Tool_5;
             tool[5] = ctrl.model.m_Tool_6;
 
-            if (!Energiebedarf(ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit)) return;
+            // Nacharbeit Paket 8, Befund N6: Auch dieser Frühausstieg zeigt die Warnungen
+            // des bisher Gerechneten in der Fußzeile - der Knopf „Ergebnis speichern"
+            // bleibt dabei gesperrt (Befund N1, gesetzt am Kopf dieser Methode).
+            if (!Energiebedarf(ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit))
+            {
+                LaufmeldungenAnzeigen();
+                return;
+            }
 
             // Wärmebedarf und Strombedarf Simulation durchführen
             sim.tool = tool;
@@ -1142,10 +1189,33 @@ namespace WindowsFormsApplication1
 
             // Tool Simulation WP, SPK usw. durchführen
             sim.Do_Simulation(m_ID_Projekt);
+
+            // PAKET 8 (Konzept 13.4) — Auswertung der beiden Kanäle NACH dem Lauf.
+            //
+            // Bis hierher wertete das Formular weder Sperrgrund noch Fehlertext aus: Die
+            // Engine hatte ihre Meldung selbst als MessageBox gezeigt, und der Umbau auf
+            // den Fehlerkanal (Paket 5/6) hatte diesen Dialog stillschweigend entfallen
+            // lassen - ein abgebrochener Lauf sah aus wie ein Ergebnis aus Nullwerten
+            // und ließ sich speichern. Das ist der dokumentierte offene Punkt aus
+            // Paket 5 (N10) und wird hier geschlossen.
+            if (LaufAbgebrochen()) return;
+
             Endergebniss_Simulation();
 
             // Inhalt des Übersicht-Tabs aktualisieren (wie zuvor in Form_Simulation_Kurz.btn_Simulation_Click)
             FuelleUebersicht();
+
+            // NACHARBEIT PAKET 8, BEFUND N1: Erst JETZT ist ein Ergebnis da, das
+            // gespeichert werden darf - und erst jetzt wird der Knopf wieder frei. Ohne
+            // diese Zeile bliebe er nach dem ersten abgebrochenen Lauf für immer gesperrt
+            // (LaufAbgebrochen() setzte ihn aus, und niemand setzte ihn je zurück): Ein
+            // korrigierter Erfolgslauf im selben Fenster ließ sich nicht speichern.
+            ErgebnisGueltig();
+
+            // Warnungen und Hinweise nicht-modal in der Fußzeile - sie halten den
+            // Anwender nicht auf, sind aber sichtbar (bisher standen sie nur auf einer
+            // Konsole, die im Programm niemand sieht).
+            LaufmeldungenAnzeigen();
 
             tabControl_Simulation.SelectedTab = tabPage_Simulation;
             if (tabControl_Simulation.SelectedTab.Name == "tabPage_Simulation")
@@ -1153,6 +1223,133 @@ namespace WindowsFormsApplication1
                 listViewQuellen.SelectedIndices.Add(0);
             }
 
+        }
+
+        /// <summary>
+        /// Wertet die ABBRUCH-Gründe des Laufs aus (Paket 8, Konzept 13.4) und meldet sie
+        /// als Dialog — hier in der Oberfläche ist ein Dialog richtig, mitten in der
+        /// Kaskade war er es nie.
+        ///
+        /// Zwei Quellen, in dieser Reihenfolge:
+        ///   <c>sim.Sperrgrund</c>  — der Lauf ist gar nicht erst angelaufen (Migration).
+        ///   <c>sim.Fehlertext</c>  — ein Erzeugermodul hat abgebrochen (fehlende
+        ///                            WP-Kennlinie, verbotene Extrapolation, Kessel nicht
+        ///                            hinterlegt, mehr als MAX_BHKW, Pendelspeicher ohne
+        ///                            Puffer-Zeile).
+        ///
+        /// In beiden Fällen bleiben Ergebnisfelder und Diagramme unangetastet und
+        /// „Ergebnis speichern" ist gesperrt: Ein unvollständiger Lauf darf kein
+        /// Ergebnis hinterlassen — dieselbe Regel, nach der <c>SimulationRunner</c>
+        /// headless verfährt.
+        /// </summary>
+        /// <returns>true, wenn der Lauf abgebrochen ist.</returns>
+        private bool LaufAbgebrochen()
+        {
+            string grund = !string.IsNullOrEmpty(sim.Sperrgrund) ? sim.Sperrgrund : sim.Fehlertext;
+            if (string.IsNullOrEmpty(grund)) return false;
+
+            ErgebnisUngueltig();
+
+            // NACHARBEIT PAKET 8, BEFUNDE N6 und N12b — was im Dialog steht und was nicht.
+            //
+            // In den Dialog gehören der Abbruchgrund und die FEHLER des Kanals. Die
+            // Module legen in ihren Fehlertext einen kurzen, allgemeinen Satz; die
+            // sprechende Diagnose (Ausnahmetext, betroffenes Stromprofil, betroffene
+            // Anlage) steht nur im Fehlerkanal und erreichte die Oberfläche bisher nie.
+            //
+            // Die WARNUNGEN gehören NICHT in denselben Dialog: Sie standen bis zur
+            // Nacharbeit doppelt da - einmal hier und einmal in der Fußzeile. Sie bleiben
+            // in der Fußzeile, wo sie den Anwender nicht aufhalten.
+            string fehlerZusatz = SimulationProtokoll.Aktuell.FehlertextFuerAnzeige(grund);
+            string text = string.IsNullOrEmpty(fehlerZusatz)
+                ? grund
+                : grund + Environment.NewLine + Environment.NewLine + "Weitere Fehlermeldungen des Laufs:" +
+                  Environment.NewLine + fehlerZusatz;
+
+            MessageBox.Show(text, "Simulation abgebrochen", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            LaufmeldungenAnzeigen();
+            return true;
+        }
+
+        /// <summary>
+        /// Sperrt „Ergebnis speichern" (Nacharbeit Paket 8, Befund N1). Aufzurufen, sobald
+        /// feststeht, dass die angezeigten Werte kein vollständiges Laufergebnis sind.
+        /// </summary>
+        private void ErgebnisUngueltig()
+        {
+            _ergebnisGueltig = false;
+            btn_ErgebnisSpeichern.Enabled = false;
+        }
+
+        /// <summary>
+        /// Gibt „Ergebnis speichern" frei (Nacharbeit Paket 8, Befund N1). Aufzurufen
+        /// ausschließlich nach einem vollständig durchgelaufenen Lauf.
+        /// </summary>
+        private void ErgebnisGueltig()
+        {
+            _ergebnisGueltig = true;
+            btn_ErgebnisSpeichern.Enabled = true;
+        }
+
+        /// <summary>
+        /// Zeigt Warnungen und Hinweise des Laufs NICHT-MODAL an (Paket 8, Konzept 13.4):
+        /// eine Zeile in der Fußzeile neben dem Simulationsknopf, der vollständige Text
+        /// im Mouseover und per Klick in einem sammelnden Dialog.
+        ///
+        /// Bewusst kein Layout-Umbau: Das Label entsteht programmatisch und richtet sich
+        /// an <c>btn_Simulation</c> aus — dasselbe Muster wie die Fußzeile aus Paket 2 in
+        /// <c>Form_Simulation_Config</c>. Designer und .resx bleiben unangetastet.
+        ///
+        /// SAMMELND statt n Einzelmeldungen: Genau das nennt Konzept 13.4 als spürbare
+        /// Verbesserung — die Engine konnte bisher dutzende Dialoge nacheinander zeigen.
+        /// </summary>
+        private void LaufmeldungenAnzeigen()
+        {
+            SimulationProtokoll p = SimulationProtokoll.Aktuell;
+            int anzahl = p.AnzahlWarnungenUndHinweise;
+            if (anzahl == 0) { LaufmeldungenLeeren(); return; }
+
+            LaufmeldungenLabelSicherstellen();
+
+            _laufmeldungenText = p.HinweistextFuerAnzeige();
+            label_Laufmeldungen.Visible = true;
+            label_Laufmeldungen.Text = anzahl == 1
+                ? "1 Hinweis zum Lauf (anklicken)"
+                : anzahl + " Hinweise zum Lauf (anklicken)";
+            tooltip.SetToolTip(label_Laufmeldungen, _laufmeldungenText);
+        }
+
+        /// <summary>Blendet die Meldungszeile aus (Beginn eines neuen Laufs).</summary>
+        private void LaufmeldungenLeeren()
+        {
+            _laufmeldungenText = "";
+            if (label_Laufmeldungen != null) label_Laufmeldungen.Visible = false;
+        }
+
+        private void LaufmeldungenLabelSicherstellen()
+        {
+            if (label_Laufmeldungen != null) return;
+
+            label_Laufmeldungen = new Label();
+            label_Laufmeldungen.Name = "label_Laufmeldungen";
+            label_Laufmeldungen.AutoSize = false;
+            label_Laufmeldungen.TextAlign = ContentAlignment.MiddleLeft;
+            label_Laufmeldungen.ForeColor = Color.FromArgb(0x8A, 0x53, 0x00);   // gedecktes Bernstein
+            label_Laufmeldungen.Cursor = Cursors.Hand;
+            label_Laufmeldungen.Location = new Point(btn_Simulation.Right + 16, btn_Simulation.Top + 8);
+            label_Laufmeldungen.Size = new Size(440, 24);
+            label_Laufmeldungen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            label_Laufmeldungen.Click += label_Laufmeldungen_Click;
+            this.Controls.Add(label_Laufmeldungen);
+            label_Laufmeldungen.BringToFront();
+        }
+
+        private void label_Laufmeldungen_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(_laufmeldungenText)) return;
+            MessageBox.Show(_laufmeldungenText, "Meldungen des Simulationslaufs",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         // Button-Handler: speichert das aktuelle Gesamtergebnis der Simulation.
@@ -1168,6 +1365,26 @@ namespace WindowsFormsApplication1
             if (m_ID_Projekt <= 0)
             {
                 MessageBox.Show("Kein Projekt geladen.", "Hinweis");
+                return;
+            }
+
+            // NACHARBEIT PAKET 8, BEFUND N1 — der eigentliche Schutz.
+            //
+            // ErgebnisCtrl.Save LÖSCHT das bisherige Ergebnis des Projekts, bevor es das
+            // neue schreibt (Strategie „letztes Ergebnis je Projekt"). Ohne diesen
+            // Frühausstieg würde ein Klick nach einem abgebrochenen Lauf - oder direkt
+            // nach dem Öffnen des Formulars, wo die Simulationsobjekte leer sind - ein
+            // gültiges Bestandsergebnis durch einen Nullsatz ersetzen. Der gesperrte
+            // Knopf allein reicht als Schutz nicht: Er ist im Designer aktiviert.
+            if (!_ergebnisGueltig)
+            {
+                MessageBox.Show(
+                    "Es liegt kein vollständiges Simulationsergebnis vor." + Environment.NewLine +
+                    Environment.NewLine +
+                    "Bitte zuerst die Simulation ausführen. Ein abgebrochener oder noch nicht " +
+                    "gerechneter Lauf wird nicht gespeichert - das bisher gespeicherte Ergebnis " +
+                    "des Projekts bleibt dadurch erhalten.",
+                    "Ergebnis speichern", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -1239,6 +1456,29 @@ namespace WindowsFormsApplication1
 
             // Strombedarf Simulation
             simulation_Strombedarf.Berechnung(m_ID_Projekt);
+
+            // PAKET 8 (Konzept 13.4): Der Abbruch der Strombedarfsrechnung kam bisher als
+            // MessageBox aus der Engine; das Formular rechnete danach mit einem leeren
+            // Stromprofil weiter. Jetzt meldet die Engine über den Fehlerkanal, und der
+            // Dialog steht hier - in der Oberfläche, wo er hingehört.
+            if (!string.IsNullOrEmpty(simulation_Strombedarf.Fehlertext))
+            {
+                // NACHARBEIT PAKET 8, BEFUND N6: mit den FEHLERN des Kanals. Der
+                // Fehlertext des Moduls ist bewusst allgemein ("Die Stromprofile des
+                // Projekts konnten nicht berechnet werden"); die eigentliche Diagnose -
+                // Ausnahmetext und betroffenes Stromprofil - steht im Fehlerkanal und
+                // erreichte die Oberfläche vorher nicht. Ohne sie hat der Anwender keinen
+                // Ansatzpunkt.
+                string grund = simulation_Strombedarf.Fehlertext;
+                string fehlerZusatz = SimulationProtokoll.Aktuell.FehlertextFuerAnzeige(grund);
+                MessageBox.Show(
+                    string.IsNullOrEmpty(fehlerZusatz)
+                        ? grund
+                        : grund + Environment.NewLine + Environment.NewLine +
+                          "Weitere Fehlermeldungen des Laufs:" + Environment.NewLine + fehlerZusatz,
+                    "Simulation abgebrochen", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
 
             // chart Wärmebedarf füllen   
             textBox_MaxWaermelast.Text = simulation_Waermebedarf.Waermebedarf_Max.ToString("F2");
