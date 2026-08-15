@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
     /// ihr Speicherpfad. Sie bleibt in der Hauptdatei, weil sie mit Etappe B (Konzept 4.4)
     /// im Ganzen entfällt.
     /// </summary>
-    public partial class Form_Simulation_Config : Form
+    public partial class Form_Simulation_Config : BaseForm
     {
         // --- Spaltenindizes der Übersicht --------------------------------------------
 

@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Form_Simulation_Config : Form
+    public partial class Form_Simulation_Config : BaseForm
     {
         public KonfigurationModel Konfiguration = new KonfigurationModel();
         public int m_ID_Projekt;
@@ -46,6 +46,16 @@ namespace WindowsFormsApplication1
 
         public Form_Simulation_Config()
         {
+            // BaseForm setzt AutoScaleMode schon im Konstruktor auf Font. Bei diesem
+            // lokalisierten Formular wendet ApplyResources($this) die
+            // AutoScaleDimensions (7;17, resx) dann mit bereits aktivem Font-Modus an
+            // und skaliert das Formular sofort um den Faktor 15/17 (gemessen:
+            // ClientSize-Hoehe 502 statt 552, Schriften auf ~8 pt verkleinert).
+            // Der Designer-Code setzt den Font-Modus selbst erst NACH
+            // ApplyResources - diese Reihenfolge wird hier wiederhergestellt,
+            // damit das Formular unskaliert bleibt wie vor der BaseForm-Ableitung.
+            AutoScaleMode = AutoScaleMode.Inherit;
+
             InitializeComponent();
 
             listView1.FullRowSelect = true;
@@ -153,6 +163,34 @@ namespace WindowsFormsApplication1
             // keine Projekt- oder Kundendaten)
             this.Activated += (s, e) =>
                 HilfeKontext.SetzeBereich("Simulation Konfiguration (Erzeuger definieren, Pufferspeicher zuordnen)");
+        }
+
+        /// <summary>
+        /// Blendet die Status-Anzeige erstmalig aus - und zwar erst NACH dem Laden.
+        ///
+        /// Hintergrund (Muster aus Wizard_WPItem, Commit d49075e): BaseForm staucht das
+        /// Formular in ihrem OnLoad auf die Bildschirm-Arbeitsfläche; überzähliger
+        /// Inhalt wandert in den AutoScroll-Bereich. Den Scroll-Versatz gibt WinForms
+        /// nur an Controls weiter, die ein Fensterhandle besitzen - und ein Handle
+        /// bekommt beim Aufbau des Formulars nur, wer SICHTBAR ist. Ein per resx
+        /// unsichtbares lblStatus bekäme kein Handle, verpasste jeden Versatz und
+        /// erschiene beim Speichern (ShowStatus) an der ungescrollten Position statt
+        /// neben den Schaltflächen. Deshalb startet lblStatus sichtbar (der
+        /// Visible=False-Eintrag in der .resx ist entfernt) und wird hier - noch vor
+        /// dem ersten Zeichnen, also ohne Aufblitzen - ausgeblendet.
+        ///
+        /// Die dauerhaft ausgeblendeten Controls (checkBox_PufferSp und
+        /// groupBox_PufferSp samt Rubrik, siehe InitPufferspeicherRubrik) brauchen
+        /// diese Behandlung nicht: sie werden zur Laufzeit nie wieder eingeblendet.
+        /// Die Bearbeitungs-Dropdowns (comboBox, _wqCombo) sind ebenfalls unkritisch,
+        /// weil ihre Bounds bei jedem Einblenden frisch aus Bildschirmkoordinaten
+        /// berechnet werden.
+        /// </summary>
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            lblStatus.Visible = false;
         }
 
         /// <summary>
