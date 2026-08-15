@@ -116,28 +116,102 @@ namespace WindowsFormsApplication1
             return !Double.IsNaN(value) && !Double.IsInfinity(value);
         }
 
+        // ------------------------------------------------------------------
+        // Sperre gegen die Endlosschleife aus Prüfmeldung und Undo()
+        //
+        // Fast alle Aufrufer von checkInt/checkDouble nehmen eine ungültige
+        // Eingabe nach 'false' mit TextBox.Undo() zurück. Undo() löst TextChanged
+        // erneut aus, und weil die Win32-Edit-Box mit EM_UNDO zwischen Rückgängig
+        // und Wiederherstellen umschaltet, pendelt der Text zwischen der
+        // Fehleingabe und dem vorherigen Stand. War der vorherige Stand leer
+        // (also ebenfalls keine Zahl), meldete die Prüfung endlos weiter: Die
+        // Meldung kam nach jedem OK sofort zurück, der Dialog war gefangen
+        // (Befund „Brauchwasser Verwaltung / Ändern des Jahresverbrauchs").
+        //
+        // Nach einer gezeigten Meldung wird deshalb für dasselbe Eingabefeld bis
+        // zum Ende der laufenden Nachrichtenverarbeitung nicht erneut gemeldet;
+        // der verschachtelte Aufruf liefert 'true' und lässt den vom Aufrufer
+        // zurückgesetzten Text stehen. Andere Felder bleiben unberührt - eine
+        // Reihenprüfung mehrerer Felder in einem Klick meldet weiterhin jedes
+        // fehlerhafte Feld.
+        // ------------------------------------------------------------------
+        private static bool m_bPruefmeldungGesperrt = false;
+        private static Control m_ctrlPruefmeldung = null;
+        private static EventHandler m_hPruefmeldungFrei = null;
+
+        private static bool PruefmeldungGesperrt(Control ctrl)
+        {
+            return m_bPruefmeldungGesperrt && ctrl != null && ReferenceEquals(ctrl, m_ctrlPruefmeldung);
+        }
+
+        private static void PruefmeldungSperren(Control ctrl)
+        {
+            m_bPruefmeldungGesperrt = true;
+            m_ctrlPruefmeldung = ctrl;
+
+            // Die Sperre gilt nur für den laufenden Ereignisdurchlauf: Das
+            // Freigeben wird in die Nachrichtenschlange gestellt und damit erst
+            // ausgeführt, wenn der komplette TextChanged-Stapel abgearbeitet ist.
+            if (ctrl != null && ctrl.IsHandleCreated && !ctrl.InvokeRequired)
+            {
+                try { ctrl.BeginInvoke(new MethodInvoker(PruefmeldungFreigeben)); }
+                catch (Exception) { /* Handle schon weg - Leerlauf gibt frei */ }
+            }
+
+            // Sicherheitsnetz: Wird der Dialog geschlossen, bevor die Nachricht
+            // abgearbeitet ist, gibt der Leerlauf der Nachrichtenschleife frei.
+            if (m_hPruefmeldungFrei == null)
+            {
+                m_hPruefmeldungFrei = delegate { PruefmeldungFreigeben(); };
+                Application.Idle += m_hPruefmeldungFrei;
+            }
+        }
+
+        private static void PruefmeldungFreigeben()
+        {
+            m_bPruefmeldungGesperrt = false;
+            m_ctrlPruefmeldung = null;
+        }
+
         public static bool checkInt(Control ctrl, string text)
         {
             int number;
-            if (!int.TryParse(text, out number))
-            {
-                ctrl.Focus();
-                MessageBox.Show("Eingaben überprüfen!");
-                return false;
-            }
-            return true;
+            if (int.TryParse(text, out number)) return true;
+            if (PruefmeldungGesperrt(ctrl)) return true;
+
+            if (ctrl != null) ctrl.Focus();
+            MessageBox.Show("Eingaben überprüfen: \"" + text + "\"" + Environment.NewLine +
+                            "Bitte eine ganze Zahl eingeben.");
+            PruefmeldungSperren(ctrl);
+            return false;
         }
 
         public static bool checkDouble(Control ctrl, string text)
         {
             double number;
-            if (!double.TryParse(text, out number))
-            {
-                ctrl.Focus();
-                MessageBox.Show("Eingaben überprüfen: " + text);
-                return false;
-            }
-            return true;
+            if (double.TryParse(text, out number)) return true;
+            if (PruefmeldungGesperrt(ctrl)) return true;
+
+            if (ctrl != null) ctrl.Focus();
+            MessageBox.Show("Eingaben überprüfen: \"" + text + "\"" + Environment.NewLine +
+                            "Bitte eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).");
+            PruefmeldungSperren(ctrl);
+            return false;
+        }
+
+        /// <summary>
+        /// Parst eine Zahl mit Dezimal-Komma ODER -Punkt. Gleiche Regel wie
+        /// WaermequelleClass.ZahlParsen, nur in double-Genauigkeit - gedacht für
+        /// Eingabefelder, deren Wert als double weiterverarbeitet wird.
+        /// Kein Tausendertrennzeichen: "1.234,5" wird bewusst abgelehnt, statt
+        /// wie double.Parse(CurrentCulture) still zu 12345 zu werden.
+        /// </summary>
+        public static bool ZahlParsen(string text, out double wert)
+        {
+            wert = 0.0;
+            if (string.IsNullOrEmpty(text)) return false;
+            text = text.Trim().Replace(',', '.');
+            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out wert);
         }
 
         public static double convertTxt2Double(string txt)

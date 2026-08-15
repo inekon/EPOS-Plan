@@ -221,12 +221,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void SummeFuerSimulationSichern()
         {
-            if (!m_bWizard || textBox_Verbrauch.Text == "") return;
+            if (!m_bWizard || textBox_Verbrauch.Text.Trim() == "") return;
+
+            // ZahlParsen statt double.Parse: Seit die Pruefung nicht mehr im TextChanged
+            // sitzt, kann im Feld auch ein ungueltiger Text stehen - double.Parse haette
+            // hier eine FormatException geworfen. Ungueltig heisst jetzt schlicht: nicht
+            // sichern, die Vorschau rechnet mit dem zuletzt gespeicherten Wert.
+            double dSumme;
+            if (!Program.ZahlParsen(textBox_Verbrauch.Text, out dSumme)) return;
 
             if (ProjektIstGespeichert())
             {
                 Z_ProjektStromverbraucherCtrl ctrl = new Z_ProjektStromverbraucherCtrl();
-                ctrl.UpdateSumme(double.Parse(textBox_Verbrauch.Text), textBox_Stromname.Text, m_ID_Projekt);
+                ctrl.UpdateSumme(dSumme, textBox_Stromname.Text, m_ID_Projekt);
                 return;
             }
 
@@ -362,13 +369,29 @@ namespace WindowsFormsApplication1
         private void btn_neuerWert_Click(object sender, EventArgs e)
         {
             ListView.SelectedIndexCollection indexes = listView_Strom_Auswahl.SelectedIndices;
-            if (indexes.Count == 0 || textBox_Verbrauch.Text == "")
+            if (indexes.Count == 0 || textBox_Verbrauch.Text.Trim() == "")
             {
                 MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!");
                 return;
             }
-            list_sbmodel[indexes[0]].m_Summe = double.Parse(textBox_Verbrauch.Text);
-            textBox_Jahres_Verbrauch.Text = textBox_Verbrauch.Text;
+
+            // Pruefung beim Aktionsknopf statt im TextChanged (Muster
+            // ProjektPuffer.TemperaturenPruefen): TryParse, sprechende Meldung, Feld
+            // markieren, Dialog bleibt offen. double.Parse() stand hier ungesichert und
+            // haette nach dem Wegfall des Undo() eine FormatException geworfen.
+            double dVerbrauch;
+            if (!Program.ZahlParsen(textBox_Verbrauch.Text, out dVerbrauch) || dVerbrauch < 0)
+            {
+                MessageBox.Show("Eingaben überprüfen: \"" + textBox_Verbrauch.Text + "\"" + Environment.NewLine +
+                                "Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. 12,5.",
+                                "Ungültige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBox_Verbrauch.Focus();
+                textBox_Verbrauch.SelectAll();
+                return;
+            }
+
+            list_sbmodel[indexes[0]].m_Summe = dVerbrauch;
+            textBox_Jahres_Verbrauch.Text = dVerbrauch.ToString("F2");
             textBox_StromSumme.Text = ProzesssummeGesamt().ToString("F2");
             pictureBox1.Visible = true;
             pictureBox1.Refresh();
@@ -376,10 +399,25 @@ namespace WindowsFormsApplication1
             pictureBox1.Visible = false;
         }
 
+        /// <summary>
+        /// Stiller Hinweis statt fokushaltender Pruefung.
+        ///
+        /// Die alte Fassung meldete jede Zwischeneingabe modal und nahm sie mit
+        /// tb.Undo() zurueck. Undo() loest TextChanged erneut aus und schaltet dabei
+        /// zwischen Rueckgaengig und Wiederherstellen um: War das Feld vorher leer
+        /// (also ebenfalls keine Zahl), pendelte der Text zwischen Fehleingabe und
+        /// Leerstand, die Meldung kam nach jedem OK sofort zurueck und der Dialog war
+        /// gefangen. Geprueft wird jetzt erst beim Uebernehmen (btn_neuerWert_Click);
+        /// hier bleibt nur die Feldfarbe als Hinweis.
+        /// </summary>
         private void textBox_Verbrauch_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            if (tb == null) return;
+
+            double wert;
+            bool bOk = tb.Text.Trim().Length == 0 || Program.ZahlParsen(tb.Text, out wert);
+            tb.BackColor = bOk ? SystemColors.Window : Color.FromArgb(255, 235, 235);
         }
     }
 }
