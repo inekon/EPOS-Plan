@@ -792,3 +792,75 @@ deutscher Text bereits unter einem anderen Schlüssel geführt wird:
 | `PSP_SENKE_ZWEITSENKE` | `SIM_ROLLE_ZWEITSENKE` |
 | `PSP_SENKE_HAUPTSENKE` | `SIM_ROLLE_HAUPTSENKE` |
 | `PSP_TITEL_PUFFERSPEICHER` | `SIMQ_TYP_PUFFERSPEICHER` |
+
+## Nachtrag Etappen D2/D3 (Kartenansicht der Simulationskonfiguration)
+
+**Konzept_KonfigUI_Hydraulik, Abschnitte 3 / 3a / 6.** Die Erzeugerübersicht und die
+Pufferzeile der Fußzeile sind durch zwei Kartenspalten ersetzt
+(`ErzeugerKarte`, `SpeicherKarte`). Dabei kamen **39 Schlüssel** dazu, einer wurde
+umformuliert, einer entfiel. Alle sind in beiden `.resx` und in `Resource.Designer.cs`
+nachgezogen; Bestand jetzt **590 Schlüssel**.
+
+### Neu
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIM_KARTEN_KOPF_ERZEUGER` | Komponenten der Simulation (+ aufnehmen, × entfernen, ▲▼ Reihenfolge, ✎ oder Doppelklick öffnet den Dialog) | Simulation components (+ include, × remove, ▲▼ order, ✎ or double-click opens the dialog) | Form_Simulation_Config.Karten.cs (Spaltenkopf links) |
+| `SIM_KARTE_TITEL` | {0} · {1} | {0} · {1} | Karten.cs (Kopfzeile „Erzeuger · Anlage") |
+| `SIM_KARTE_QUELLE` | Quelle: {0} | Source: {0} | Karten.cs (Chip, blau) |
+| `SIM_KARTE_QUELLE_KASKADE` | Quelle: {0} · Kaskade | Source: {0} · cascade | Karten.cs (Chip, blau gestrichelt) |
+| `SIM_KARTE_SENKE` | Senke: {0} | Sink: {0} | Karten.cs (Chip, koralle) |
+| `SIM_KARTE_ZWEITSENKE` | Zweitsenke: {0} | Secondary sink: {0} | Karten.cs (Chip) |
+| `SIM_KARTE_WPPRIO` | WP-Prio {0} | HP prio {0} | Karten.cs (Chip, nur Wärmepumpe) |
+| `SIM_KARTE_TEMPERATURPAAR` | {0} / {1} °C | {0} / {1} °C | Karten.cs (Erzeuger- und Speicherkarte) |
+| `SIM_KARTE_OHNE_ANLAGE` | keine Anlage im Projekt | no unit in the project | Karten.cs |
+| `SIM_KARTE_VERFUEGBAR` | nicht in der Simulation | not in the simulation | Karten.cs (verfügbare Karte) |
+| `SIM_KARTE_AUFNEHMEN` | + aufnehmen | + include | ErzeugerKarte.cs (Schalter) |
+| `SIM_KARTE_KEINE_ERZEUGER` | Kein Wärmeerzeuger ausgewählt. | No heat generator selected. | Karten.cs |
+| `SIM_KARTE_ANLAGE_HINZU` | + Anlage hinzufügen: Anlagen werden über die Projektseite angelegt. | + Add unit: units are created on the project page. | Karten.cs (Fußzeile der Spalte) |
+| `SIM_KARTE_TIP_HOCH` | In der Kaskade einen Rang nach vorn | Move one rank forward in the cascade | ErzeugerKarte.cs (▲) |
+| `SIM_KARTE_TIP_RUNTER` | In der Kaskade einen Rang nach hinten | Move one rank back in the cascade | ErzeugerKarte.cs (▼) |
+| `SIM_KARTE_TIP_BEARBEITEN` | Wärmesenke bearbeiten (auch per Doppelklick auf die Karte) | Edit heat sink (double-click on the card works as well) | ErzeugerKarte.cs (✎) |
+| `SIM_KARTE_TIP_AUFNEHMEN` | In die Simulation aufnehmen — …\n… letzter Rang der Kaskade (mit ▲ nach vorn). | Include in the simulation — …\n… last cascade rank (move it forward with ▲). | ErzeugerKarte.cs (+) |
+| `SIM_KARTE_TIP_ENTFERNEN` | Aus der Simulation nehmen — die Komponente bleibt im Projekt,\nwird aber nicht mehr gerechnet. | Remove from the simulation — the component stays in the project\nbut is no longer computed. | ErzeugerKarte.cs (×) |
+| `SIM_KARTE_TIP_KASKADE` | Kaskade: Dieser Erzeuger bezieht seine Eintrittstemperatur aus dem Pufferspeicher\nund hebt sie weiter an. … | Cascade: this generator draws its inlet temperature from the buffer storage\nand raises it further. … | Karten.cs (Hinweis am Kaskaden-Quellchip) |
+| `SIM_KARTE_TIP_TEMPERATUR_WARNUNG` | Der Vorlauf des Erzeugers ({0} °C) liegt unter dem Vorlauf des Speichers „{1}" ({2} °C).\n… | The generator flow temperature ({0} °C) is below the flow temperature of storage "{1}" ({2} °C).\n… | Karten.cs (Warnregel Konzept Abschnitt 5) |
+| `PSP_KARTEN_KOPF_SPEICHER` | Speicher im Projekt | Storage in the project | Karten.cs (Spaltenkopf rechts) |
+| `PSP_KARTE_BILANZ` | {0} Lader · {1} Abnehmer | {0} chargers · {1} consumers | SpeicherKarte.cs (Kurzbilanz) |
+| `PSP_KARTE_VOLUMEN` | {0} l | {0} l | Karten.cs |
+| `PSP_KARTE_LADER` | Lader: {0} | Chargers: {0} | Karten.cs (Detailzeile) |
+| `PSP_KARTE_LADER_KEINE` | Lader: keiner | Chargers: none | Karten.cs |
+| `PSP_KARTE_VERSORGT` | Versorgt: {0} | Supplies: {0} | Karten.cs |
+| `PSP_KARTE_QUELLE_FUER` | Quelle für: {0} | Source for: {0} | Karten.cs (Invariante S-1: nur Erzeuger) |
+| `PSP_KARTE_KASKADE` | (Kaskade) | (cascade) | Karten.cs |
+| `PSP_KARTE_PV_RANG` | PV-Rang {0} | PV rank {0} | Karten.cs (Ladereihenfolge, Konzept 3.5) |
+| `PSP_KARTE_ENTLADEPRIO` | Entladeprio: {0} | Discharge prio: {0} | Karten.cs |
+| `PSP_KARTE_SCHWELLEN` | Schwellen {0} / {1} / {2} % | Thresholds {0} / {1} / {2} % | Karten.cs (unter dem Schwellenband) |
+| `PSP_KARTE_TEMP_HERKUNFT` | Temperaturen: {0} | Temperatures: {0} | Karten.cs |
+| `PSP_KARTE_TEMP_EIGEN` | eigene Werte am Speicher | own values at the storage | Karten.cs (Vorrangkette Stufe 1) |
+| `PSP_KARTE_TEMP_ZUORDNUNG` | aus der Zuordnungszeile | from the assignment row | Karten.cs (Stufe 2) |
+| `PSP_KARTE_TEMP_SYSTEM` | Systemvorgabe des Projekts | project system default | Karten.cs (Stufe 3) |
+| `PSP_KARTE_TEMP_KEINE` | nicht gepflegt | not maintained | Karten.cs |
+| `PSP_KARTE_KEIN_SPEICHER` | Für dieses Projekt ist noch kein Pufferspeicher angelegt. | No buffer storage has been created for this project yet. | Karten.cs |
+| `PSP_KARTE_TIP_BEARBEITEN` | Pufferspeicher bearbeiten (Verwaltung öffnen) | Edit buffer storage (open management) | SpeicherKarte.cs (✎) |
+
+### Entfallen
+
+| Schlüssel | Grund |
+|---|---|
+| `SIM_KARTEN_KOPF_STROM` | Die Gruppenüberschriften „Wärmeerzeuger", „Stromerzeuger", „Energiespeicher" kommen aus den vorhandenen Designer-Beschriftungen `label1`/`label2`/`label3` von `Form_Simulation_Config` (dort schon in beiden Sprachen gepflegt). Ein eigener Katalogschlüssel wäre eine zweite Wahrheit über denselben Text. |
+
+### Ohne Fundstelle seit D2/D3
+
+Diese Schlüssel gehörten zur abgelösten ListView-Übersicht bzw. zur Pufferzeile der
+Fußzeile. Sie bleiben im Katalog stehen — der Wortbestand ist unverändert richtig, und
+Etappe D4 („Schema"-Ansicht) braucht mehrere davon voraussichtlich wieder:
+
+`SIM_UEBERSICHT_TITEL`, `SIM_SPALTE_PRIO`, `SIM_SPALTE_WPPRIO`, `SIM_SPALTE_MODUS`,
+`SIMQ_SPALTE_QUELLE`, `SIM_TIP_UEBERSICHT_STANDARD`, `SIM_TIP_WPPRIO_NICHT_WP`,
+`SIMQ_TIP_QUELLE_NICHT_WP`, `SIM_TIP_BETRIEBSMODUS_NICHT_WP`, `PSP_FUSSZEILE_LISTE`,
+`PSP_FUSSZEILE_KEINER`.
+
+`SIM_SPALTE_ANLAGE`, `SIM_SPALTE_SENKE`, `SIM_SPALTE_ZWEITSENKE` und
+`PSP_FUSSZEILE_OHNE_PROJEKT` haben weiterhin Fundstellen (Senkendialog,
+Puffer-Verwaltung, Speicherspalte ohne Projekt).

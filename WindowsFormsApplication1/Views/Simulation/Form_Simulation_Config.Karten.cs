@@ -1,0 +1,1417 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// ETAPPEN D2 und D3 (Konzept_KonfigUI_Hydraulik, Abschnitt 3, 3a und 6) —
+    /// Kartenlayout der Simulationskonfiguration.
+    ///
+    /// <b>Was hier steht.</b> Der Aufbau der beiden Kartenspalten, das Befüllen der
+    /// Karten aus den Projektdaten und die Kaskaden-Umsortierung über ▲▼. Die Karten
+    /// selbst sind <see cref="ErzeugerKarte"/> und <see cref="SpeicherKarte"/> — reine
+    /// Anzeigeflächen ohne Datenbankzugriff.
+    ///
+    /// <b>Was NICHT hier steht.</b> Die Editoren. Sie bleiben unverändert in
+    /// <c>Form_Simulation_Config.Uebersicht.cs</c> (Senken-, Quellen-, Modus- und
+    /// Prioritätsdialog) und werden von hier nur AUFGERUFEN. Konzept Abschnitt 3:
+    /// „Die neue Seite ist Lesefläche, keine Parallel-Editierwelt."
+    ///
+    /// <b>Was ersetzt wurde.</b>
+    /// <list type="bullet">
+    ///   <item><description><c>listView_Uebersicht</c> — acht Spalten mit fest
+    ///     verdrahteten Breiten (<c>SPALTEN_BREITEN</c>), deren Summe das Formular auf
+    ///     1113 px aufblies, und ein Doppelklick-Dispatcher über Spaltenindizes
+    ///     (<c>SPALTEN_MIT_DIALOG</c>). Beides ist mit den Karten gegenstandslos: Ein
+    ///     Chip trägt sein Editorziel selbst (<see cref="ErzeugerKarte.ChipZiel"/>), und
+    ///     die Breite regelt das <see cref="TableLayoutPanel"/>.</description></item>
+    ///   <item><description>Die Rubrik „Erzeuger &amp;&amp; Speicher" mit vier
+    ///     ComboBoxen und vier Checkboxen. Die Steuerelemente bleiben als
+    ///     PERSISTENZMODELL bestehen (siehe <see cref="KaskadeLesen"/>) — sichtbar ist
+    ///     nur noch die Kartenreihenfolge.</description></item>
+    ///   <item><description><c>label_PufferListe</c>, die einzeilige Aufzählung der
+    ///     Projekt-Puffer in der Fußzeile. Die Speicherkarten sagen dasselbe und
+    ///     mehr (Konzept 3a).</description></item>
+    /// </list>
+    /// </summary>
+    public partial class Form_Simulation_Config : BaseForm
+    {
+        // --- Maße des Kartenlayouts ---------------------------------------------------
+        //
+        // Nur noch DREI Zahlen statt der Pixel-Arithmetik aus Paket 2/8: Rand, Oberkante
+        // und Höhe der Fußzeile. Alles Übrige rechnet das TableLayoutPanel bzw. die
+        // Verankerung aus (Konzeptvorgabe D2/D3: „beendet die Pixel-Arithmetik für diese
+        // Bereiche").
+
+        /// <summary>Seitenrand des Kartenbereichs [px] — wie label11 und groupBox_Tools.</summary>
+        private const int KARTEN_RAND = 19;
+
+        /// <summary>Oberkante des Kartenbereichs [px] — unter der Überschrift label11.</summary>
+        private const int KARTEN_OBEN = 44;
+
+        /// <summary>Höhe der Fußzeile [px]: Schalterzeile, Knopfzeile und Ränder.</summary>
+        private const int FUSS_HOEHE = 82;
+
+        /// <summary>Wunschgröße des Dialogs [px], gedeckelt an der Arbeitsfläche.</summary>
+        private const int WUNSCH_BREITE = 1120;
+        private const int WUNSCH_HOEHE = 620;
+
+        // --- Steuerelemente -----------------------------------------------------------
+
+        private TableLayoutPanel tableLayout_Karten;
+        private Label label_KopfErzeuger;
+        private Label label_KopfSpeicher;
+        private FlowLayoutPanel flow_Erzeuger;
+        private FlowLayoutPanel flow_Speicher;
+
+        /// <summary>Einstieg in die Puffer-Verwaltung; steht seit D3 IN der Speicherspalte.</summary>
+        private Button btn_PufferVerwalten;
+
+        /// <summary>
+        /// Sperre gegen Rückkopplung beim programmatischen Umsortieren der Kaskade:
+        /// <see cref="KaskadeSchreiben"/> setzt <c>SelectedValue</c> und <c>Checked</c>
+        /// der vier Auswahlfelder, und deren Ereignisse riefen sonst mitten im Umbau
+        /// <c>AddErzeuger</c> und damit den Kartenaufbau auf.
+        /// </summary>
+        private bool _kaskadeSetzen;
+
+        /// <summary>
+        /// Aufgeklappte Speicherkarte (<c>Tab_Pufferspeicher.ID</c>); 0 = keine.
+        /// Konzept 3a: „es ist immer höchstens eine Karte aufgeklappt". Die Karte selbst
+        /// kennt ihre Nachbarn nicht — die Regel gilt hier.
+        /// </summary>
+        private int _offenerSpeicher;
+
+        /// <summary>
+        /// Quellpuffer-ID → Anlagen, die ihn als Wärmequelle nutzen („Quelle für",
+        /// Konzept 3a). Wird je Auffrischung EINMAL gefüllt (<see cref="QuellnutzerSammeln"/>).
+        /// </summary>
+        private Dictionary<int, List<string>> _quellnutzer = new Dictionary<int, List<string>>();
+
+        /// <summary>
+        /// Puffer-IDs, die überhaupt von einer Anlage geladen werden — der Filter vor
+        /// <see cref="Ladeordnung.Ladereihenfolge"/> (siehe <see cref="GeladenePufferSammeln"/>).
+        /// </summary>
+        private HashSet<int> _geladenePuffer = new HashSet<int>();
+
+        /// <summary>
+        /// Systemvorgabe des Projekts (kleinster Vorlauf, größter Rücklauf über die
+        /// Wärmeerzeuger) — die dritte Stufe der Temperatur-Vorrangkette. Sie hängt nur
+        /// am Projekt, wird aber je Speicherkarte gebraucht; deshalb einmal je
+        /// Auffrischung geholt statt 79-mal (siehe <see cref="TemperaturHerkunft"/>).
+        /// </summary>
+        private int? _systemVorlauf;
+        private int? _systemRuecklauf;
+
+        // --- Aufbau -------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE D2/D3 — Nachfolger von <c>AltRubrikStilllegen</c>,
+        /// <c>InitErzeugerUebersicht</c>, <c>UebersichtBreiteAnpassen</c> und
+        /// <c>InitPufferFusszeile</c>.
+        ///
+        /// <b>Was entfallen ist.</b> Die vier Höhen- und Breitenkorrekturen, mit denen
+        /// sich der Dialog seit Paket 2 selbst zurechtgeschoben hat: +105 px für die
+        /// Alt-Rubrik, +322 px für die Spaltensumme der Übersicht, +16 px für den
+        /// Extrapolationsschalter und das Nachziehen der drei unverankerten
+        /// Fußzeilenelemente bei jedem dieser Schritte. Jede Zahl war für sich richtig
+        /// und in Summe nicht mehr nachvollziehbar.
+        ///
+        /// <b>Was an ihre Stelle tritt.</b> Eine Wunschgröße, ein
+        /// <see cref="TableLayoutPanel"/> mit zwei Spalten und eine ordentliche
+        /// Verankerung der Fußzeile. Damit ist der Dialog erstmals sauber
+        /// größenveränderbar: Bisher standen <c>btn_Speichern</c> und <c>btn_OK</c> ohne
+        /// Anker (also oben-links verankert) und blieben beim Vergrößern in der Mitte des
+        /// Fensters stehen, während die untenverankerte Statuszeile mitwanderte.
+        ///
+        /// <b>Alt-Steuerelemente.</b> <c>groupBox_Tools</c> (vier Erzeuger-ComboBoxen,
+        /// Stromerzeuger, Energiespeicher) wird UNSICHTBAR, nicht entfernt: Sie ist das
+        /// Persistenzmodell von <c>Tab_Einstellungen.Tool_1..6</c>, aus dem
+        /// <c>btn_Speichern_Click</c> unverändert liest (siehe
+        /// <see cref="KaskadeLesen"/>). <c>groupBox_PufferSp</c> und
+        /// <c>checkBox_PufferSp</c> sind seit D1 unsichtbar und bleiben es; ihre Rolle
+        /// als Höhenanker der Übersicht ist mit dieser Methode weggefallen.
+        /// </summary>
+        private void KartenLayoutAufbauen()
+        {
+            AltSteuerelementeStilllegen();
+            FenstergroesseSetzen();
+            KartenbereichAufbauen();
+
+            // Die beiden Schalter der Fußzeile entstehen wie bisher programmatisch
+            // (Paket 4 und 8); platziert werden sie jetzt zusammen mit der übrigen
+            // Fußzeile und nicht mehr aus sich selbst heraus.
+            InitKaskadeSchalter();
+            InitExtrapolationSchalter();
+            FusszeilePlatzieren();
+        }
+
+        private void AltSteuerelementeStilllegen()
+        {
+            // D2: Die linke Auswahlmechanik verschwindet aus der Oberfläche. Die
+            // Steuerelemente selbst bleiben - sie tragen Tool_1..6 (siehe Klassenkopf).
+            groupBox_Tools.Visible = false;
+
+            // Beschriftungen, die nur die entfallene Mechanik erklären.
+            label12.Visible = false;   // "Erzeuger in der Reihenfolge auswählen ..."
+            label21.Visible = false;   // "Priorität absteigend"
+
+            // D1-Bestand: Alt-Rubrik und ihr Einblendeschalter.
+            checkBox_PufferSp.Visible = false;
+            checkBox_PufferSp.Checked = true;   // hält evtl. abfragende Logik konsistent
+            groupBox_PufferSp.Visible = false;
+        }
+
+        /// <summary>
+        /// Setzt die Wunschgröße des Dialogs, gedeckelt auf die Arbeitsfläche.
+        ///
+        /// Zwei Kartenspalten nebeneinander brauchen mehr als die 791 px des Entwurfs;
+        /// die Übersicht hatte sich denselben Platz vorher über die Spaltensumme geholt
+        /// (1113 px). Es wird nur VERGRÖSSERT — auf einem kleinen Bildschirm bleibt der
+        /// Dialog bei dem, was hineinpasst, und <see cref="BaseForm"/> deckelt in ihrem
+        /// <c>OnLoad</c> noch einmal auf die echte Arbeitsfläche.
+        /// </summary>
+        private void FenstergroesseSetzen()
+        {
+            int breite = WUNSCH_BREITE;
+            int hoehe = WUNSCH_HOEHE;
+
+            Screen schirm = Screen.PrimaryScreen;
+            if (schirm != null)
+            {
+                // DpiUnaware (Program.cs): Pixel sind Pixel, kein Skalierungsfaktor.
+                int rahmenBreite = Width - ClientSize.Width;
+                int rahmenHoehe = Height - ClientSize.Height;
+                breite = Math.Min(breite, schirm.WorkingArea.Width - 40 - rahmenBreite);
+                hoehe = Math.Min(hoehe, schirm.WorkingArea.Height - 40 - rahmenHoehe);
+            }
+
+            ClientSize = new Size(Math.Max(ClientSize.Width, breite),
+                                  Math.Max(ClientSize.Height, hoehe));
+        }
+
+        private void KartenbereichAufbauen()
+        {
+            tableLayout_Karten = new TableLayoutPanel();
+            tableLayout_Karten.Name = "tableLayout_Karten";
+            tableLayout_Karten.ColumnCount = 2;
+            tableLayout_Karten.RowCount = 2;
+            tableLayout_Karten.BackColor = Color.Transparent;
+
+            // Verhältnis wie im Mockup (1,55fr : 1fr): Die Erzeugerkarten tragen mehr
+            // Chips, die Speicherkarten sind zugeklappt einzeilig.
+            tableLayout_Karten.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 61.5f));
+            tableLayout_Karten.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38.5f));
+            tableLayout_Karten.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            tableLayout_Karten.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+
+            tableLayout_Karten.Location = new Point(KARTEN_RAND, KARTEN_OBEN);
+            tableLayout_Karten.Size = new Size(ClientSize.Width - 2 * KARTEN_RAND,
+                                               ClientSize.Height - FUSS_HOEHE - KARTEN_OBEN);
+            tableLayout_Karten.Anchor = AnchorStyles.Top | AnchorStyles.Left |
+                                        AnchorStyles.Right | AnchorStyles.Bottom;
+
+            label_KopfErzeuger = SpaltenKopf(MyResource.Resource.SIM_KARTEN_KOPF_ERZEUGER);
+            label_KopfSpeicher = SpaltenKopf(MyResource.Resource.PSP_KARTEN_KOPF_SPEICHER);
+
+            flow_Erzeuger = Kartenspalte("flow_Erzeuger");
+            flow_Speicher = Kartenspalte("flow_Speicher");
+
+            tableLayout_Karten.Controls.Add(label_KopfErzeuger, 0, 0);
+            tableLayout_Karten.Controls.Add(label_KopfSpeicher, 1, 0);
+            tableLayout_Karten.Controls.Add(flow_Erzeuger, 0, 1);
+            tableLayout_Karten.Controls.Add(flow_Speicher, 1, 1);
+
+            Controls.Add(tableLayout_Karten);
+            tableLayout_Karten.BringToFront();
+
+            // Einstieg in die Puffer-Verwaltung: KEIN Fußzeilenknopf mehr, sondern die
+            // letzte Zeile der Speicherspalte (Konzept 3a / Mockup Abschnitt 4).
+            btn_PufferVerwalten = new Button();
+            btn_PufferVerwalten.Name = "btn_PufferVerwalten";
+            btn_PufferVerwalten.Text = MyResource.Resource.PSP_BTN_PUFFER_VERWALTEN;
+            btn_PufferVerwalten.Height = 28;
+            btn_PufferVerwalten.Margin = new Padding(0, 4, 0, 4);
+            btn_PufferVerwalten.Click += btn_PufferVerwalten_Click;
+        }
+
+        private Label SpaltenKopf(string text)
+        {
+            Label l = new Label();
+            l.Text = text;
+            l.AutoSize = false;
+            l.Height = 34;
+            l.Dock = DockStyle.Fill;
+            l.TextAlign = ContentAlignment.MiddleLeft;
+            l.ForeColor = KartenStil.TEXT_LEISE;
+            l.Margin = new Padding(0, 0, 8, 2);
+            return l;
+        }
+
+        private FlowLayoutPanel Kartenspalte(string name)
+        {
+            FlowLayoutPanel f = new FlowLayoutPanel();
+            f.Name = name;
+            f.Dock = DockStyle.Fill;
+            f.FlowDirection = FlowDirection.TopDown;
+            f.WrapContents = false;
+            f.AutoScroll = true;
+            f.BackColor = KartenStil.FLAECHE;
+            f.Padding = new Padding(8);
+            f.Margin = new Padding(0, 0, 8, 0);
+            f.ClientSizeChanged += delegate { KartenBreiteAnpassen(f); };
+            return f;
+        }
+
+        /// <summary>
+        /// Zieht die Karten auf die Breite ihrer Spalte.
+        ///
+        /// Ein <see cref="FlowLayoutPanel"/> streckt seine Kinder nicht — die Breite muss
+        /// von Hand nachgeführt werden. Der Platz der senkrechten Bildlaufleiste wird
+        /// IMMER abgezogen, auch wenn sie gerade nicht sichtbar ist: Sonst pendelt das
+        /// Layout (Karte breiter → Leiste verschwindet → Karte noch breiter → Leiste
+        /// wieder da), weil die Kartenhöhe über den Chip-Umbruch an der Breite hängt.
+        /// </summary>
+        private static void KartenBreiteAnpassen(FlowLayoutPanel flow)
+        {
+            if (flow == null) return;
+
+            int breite = flow.Width - flow.Padding.Horizontal -
+                         SystemInformation.VerticalScrollBarWidth - 2;
+            if (breite < 140) breite = 140;
+
+            foreach (Control c in flow.Controls)
+            {
+                int w = breite - c.Margin.Horizontal;
+                if (c.Width != w) c.Width = w;
+            }
+        }
+
+        /// <summary>
+        /// Setzt die Fußzeile: Schalterzeile links oben, Knopfzeile unten rechts,
+        /// Statuszeile unten links — und verankert alles, was mitwandern muss.
+        ///
+        /// Die Fußzeilenhöhe ist mit <see cref="FUSS_HOEHE"/> festgeschrieben statt aus
+        /// den Elementen hochgerechnet: Die alte Rechnung ergab je nach Schriftgröße
+        /// Kollisionen, die dann mit einem nachträglichen „Formular um die fehlenden
+        /// Pixel höher" repariert wurden (Befund N13a, Paket 8). Sichergestellt wird die
+        /// Kollisionsfreiheit jetzt durch die Aufteilung: Schalter über den Knöpfen,
+        /// Statuszeile neben ihnen.
+        /// </summary>
+        private void FusszeilePlatzieren()
+        {
+            int fussOben = ClientSize.Height - FUSS_HOEHE;
+
+            checkBox_KaskadeZweikanalig.Location = new Point(KARTEN_RAND, fussOben + 6);
+            checkBox_KaskadeZweikanalig.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+
+            checkBox_Extrapolation.Location =
+                new Point(checkBox_KaskadeZweikanalig.Right + 28, fussOben + 6);
+            checkBox_Extrapolation.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+
+            int knopfUnten = ClientSize.Height - 12;
+            btn_OK.Location = new Point(ClientSize.Width - KARTEN_RAND - btn_OK.Width,
+                                        knopfUnten - btn_OK.Height);
+            btn_Speichern.Location = new Point(btn_OK.Left - 10 - btn_Speichern.Width,
+                                               knopfUnten - btn_Speichern.Height);
+            btn_OK.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btn_Speichern.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+
+            lblStatus.Location = new Point(KARTEN_RAND, lblStatus.Top);
+            lblStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+        }
+
+        // --- Kaskadenreihenfolge (Persistenz unverändert) -----------------------------
+
+        /// <summary>
+        /// Liest die Kaskade so, wie <c>btn_Speichern_Click</c> sie schreibt: vier
+        /// Plätze, je Platz der DB-Wert des angehakten Auswahlfelds, sonst leer.
+        ///
+        /// <b>Warum über die unsichtbaren Steuerelemente und nicht über eine eigene
+        /// Liste.</b> Die Zuordnung „Platz → <c>Tab_Einstellungen.Tool_n</c>" existiert
+        /// genau einmal, nämlich in <c>btn_Speichern_Click</c>. Eine zweite Liste
+        /// daneben wäre eine zweite Wahrheit über die Kaskadenposition — und die liest
+        /// <see cref="Ladeordnung.Kaskadenpositionen"/> als Sortierkriterium der
+        /// Ladereihenfolge (Konzept 3.4). Die Karten sind deshalb eine ANSICHT auf die
+        /// vier Auswahlfelder, kein Ersatz für sie.
+        /// </summary>
+        private List<string> KaskadeLesen()
+        {
+            ComboBox[] felder = { comboBox1, comboBox2, comboBox3, comboBox4 };
+            CheckBox[] haken = { checkBox1, checkBox2, checkBox3, checkBox4 };
+
+            List<string> plaetze = new List<string>();
+            for (int i = 0; i < felder.Length; i++)
+                plaetze.Add(haken[i].Checked ? GetDbValue(felder[i]) : "");
+
+            return plaetze;
+        }
+
+        /// <summary>Schreibt die vier Plätze zurück und baut die Anzeige neu auf.</summary>
+        private void KaskadeSchreiben(List<string> plaetze)
+        {
+            ComboBox[] felder = { comboBox1, comboBox2, comboBox3, comboBox4 };
+            CheckBox[] haken = { checkBox1, checkBox2, checkBox3, checkBox4 };
+
+            _kaskadeSetzen = true;
+            try
+            {
+                for (int i = 0; i < felder.Length; i++)
+                {
+                    if (string.IsNullOrEmpty(plaetze[i]))
+                    {
+                        felder[i].SelectedIndex = -1;
+                        haken[i].Checked = false;
+                    }
+                    else
+                    {
+                        felder[i].SelectedValue = plaetze[i];
+                        haken[i].Checked = true;
+                    }
+                }
+            }
+            finally { _kaskadeSetzen = false; }
+
+            // Einmal am Ende statt bei jedem Zwischenschritt.
+            AddErzeuger();
+        }
+
+        /// <summary>
+        /// Verschiebt einen Erzeuger in der Kaskade um einen Rang
+        /// (<paramref name="richtung"/> −1 = nach vorn, +1 = nach hinten).
+        ///
+        /// <b>Getauscht werden PLATZINHALTE, verdichtet wird nicht.</b>
+        /// <see cref="Ladeordnung.Kaskadenpositionen"/> liest die SPALTENNUMMER
+        /// <c>Tool_1..4</c> als Kaskadenposition und benutzt sie als zweites
+        /// Sortierkriterium der Ladereihenfolge (Konzept 3.4). Würde beim Verschieben
+        /// eine Lücke geschlossen — etwa Tool_1 leer, Tool_2 belegt —, änderten sich
+        /// Positionen, die niemand angefasst hat. Der Tausch lässt jeden unbeteiligten
+        /// Platz stehen und erzeugt damit genau die Belegung, die auch die alte
+        /// ComboBox-Bedienung erzeugt hätte.
+        /// </summary>
+        private void KaskadeVerschieben(string dbWert, int richtung)
+        {
+            if (string.IsNullOrEmpty(dbWert)) return;
+
+            List<string> plaetze = KaskadeLesen();
+
+            List<int> belegt = new List<int>();
+            for (int i = 0; i < plaetze.Count; i++)
+                if (!string.IsNullOrEmpty(plaetze[i])) belegt.Add(i);
+
+            int rang = -1;
+            for (int i = 0; i < belegt.Count; i++)
+                if (string.Equals(plaetze[belegt[i]], dbWert, StringComparison.Ordinal))
+                {
+                    rang = i;
+                    break;
+                }
+
+            int ziel = rang + richtung;
+            if (rang < 0 || ziel < 0 || ziel >= belegt.Count) return;
+
+            string merker = plaetze[belegt[rang]];
+            plaetze[belegt[rang]] = plaetze[belegt[ziel]];
+            plaetze[belegt[ziel]] = merker;
+
+            KaskadeSchreiben(plaetze);
+        }
+
+        /// <summary>Die belegten Kaskadenplätze in ihrer Reihenfolge (DB-Werte).</summary>
+        private List<string> KaskadeBelegt()
+        {
+            List<string> belegt = new List<string>();
+            foreach (string wert in KaskadeLesen())
+                if (!string.IsNullOrEmpty(wert) && !belegt.Contains(wert)) belegt.Add(wert);
+            return belegt;
+        }
+
+        /// <summary>
+        /// Nimmt einen Wärmeerzeuger in die Simulation auf — das „+ aufnehmen" der
+        /// verfügbaren Karte.
+        ///
+        /// Entspricht im Bestand: einen freien Auswahlplatz auf diesen Erzeuger stellen
+        /// und seine Checkbox anhaken. Genommen wird der erste freie Platz HINTER dem
+        /// letzten belegten; damit erscheint die Karte am Ende der Kaskade, so wie es die
+        /// Bedienung erwarten lässt. Erst wenn dort keiner frei ist, wird eine Lücke
+        /// weiter vorn gefüllt — vier Plätze für vier Erzeugertypen, es bleibt also immer
+        /// einer übrig.
+        /// </summary>
+        private void KaskadeAufnehmen(string dbWert)
+        {
+            if (string.IsNullOrEmpty(dbWert)) return;
+
+            List<string> plaetze = KaskadeLesen();
+            if (plaetze.Contains(dbWert)) return;   // schon aufgenommen
+
+            int letzterBelegt = -1;
+            for (int i = 0; i < plaetze.Count; i++)
+                if (!string.IsNullOrEmpty(plaetze[i])) letzterBelegt = i;
+
+            int ziel = -1;
+            for (int i = letzterBelegt + 1; i < plaetze.Count; i++)
+                if (string.IsNullOrEmpty(plaetze[i])) { ziel = i; break; }
+
+            if (ziel < 0)
+                for (int i = 0; i < plaetze.Count; i++)
+                    if (string.IsNullOrEmpty(plaetze[i])) { ziel = i; break; }
+
+            if (ziel < 0) return;   // alle vier Plätze belegt
+
+            plaetze[ziel] = dbWert;
+            KaskadeSchreiben(plaetze);
+        }
+
+        /// <summary>
+        /// Nimmt einen Wärmeerzeuger aus der Simulation — das „×" der aufgenommenen
+        /// Karte. Entspricht im Bestand dem Abhaken der Checkbox: der Platz wird leer,
+        /// alle übrigen bleiben, wo sie sind (keine Verdichtung, Begründung in
+        /// <see cref="KaskadeVerschieben"/>).
+        /// </summary>
+        private void KaskadeEntfernen(string dbWert)
+        {
+            if (string.IsNullOrEmpty(dbWert)) return;
+
+            List<string> plaetze = KaskadeLesen();
+            bool getroffen = false;
+            for (int i = 0; i < plaetze.Count; i++)
+                if (string.Equals(plaetze[i], dbWert, StringComparison.Ordinal))
+                {
+                    plaetze[i] = "";
+                    getroffen = true;
+                }
+
+            if (getroffen) KaskadeSchreiben(plaetze);
+        }
+
+        /// <summary>
+        /// Setzt den Auswahlplatz der Strom- bzw. Speicherseite (<c>Tool_5</c>,
+        /// <c>Tool_6</c>). Leerer <paramref name="dbWert"/> = nicht aufnehmen.
+        ///
+        /// Bedient dieselben zwei Steuerelemente wie der Bestand und in derselben
+        /// Reihenfolge (erst das Auswahlfeld, dann der Haken), damit
+        /// <c>btn_Speichern_Click</c> unverändert dasselbe liest.
+        /// </summary>
+        private void StromAuswahlSetzen(ComboBox feld, CheckBox haken, string dbWert)
+        {
+            _kaskadeSetzen = true;
+            try
+            {
+                if (string.IsNullOrEmpty(dbWert))
+                {
+                    feld.SelectedIndex = -1;
+                    feld.Text = "";
+                    haken.Checked = false;
+                }
+                else
+                {
+                    feld.SelectedValue = dbWert;
+                    haken.Checked = true;
+                }
+            }
+            finally { _kaskadeSetzen = false; }
+
+            AktualisiereErzeugerUebersicht();
+        }
+
+        // --- Aufbau der Erzeugerspalte ------------------------------------------------
+
+        /// <summary>
+        /// Baut beide Kartenspalten neu auf.
+        ///
+        /// Der Name ist der der abgelösten ListView-Methode geblieben: Er steht an acht
+        /// Aufrufstellen in <c>Form_Simulation_Config.cs</c> und
+        /// <c>…Uebersicht.cs</c>, und jede davon meint dasselbe — „die Anzeige stimmt
+        /// nicht mehr, bau sie neu". Die Speicherkarten hängen an denselben Daten
+        /// (Ladereihenfolge, Senken) und müssen deshalb mitlaufen.
+        /// </summary>
+        private void AktualisiereErzeugerUebersicht()
+        {
+            AktualisiereErzeugerKarten();
+            AktualisiereSpeicherKarten();
+        }
+
+        /// <summary>
+        /// Baut die Erzeugerspalte neu auf: drei Gruppen wie in der abgelösten Rubrik
+        /// „Erzeuger &amp;&amp; Speicher" — Wärmeerzeuger, Stromerzeuger, Energiespeicher.
+        ///
+        /// <b>Die Karten sind hier NICHT nur Anzeige.</b> Die vier Wärmeerzeuger-Combos
+        /// mit ihren Checkboxen und die beiden Strom-Auswahlfelder trafen zwei
+        /// Entscheidungen zugleich: WELCHE der im Projekt vorhandenen Technologien
+        /// mitgerechnet wird (<c>Tab_Einstellungen.Tool_1..6</c>) und in welcher
+        /// REIHENFOLGE (Platz 1…4). Beides bildet die Kartenansicht ab:
+        ///
+        /// <list type="bullet">
+        ///   <item><description><b>Aufgenommen</b> — die Komponente steht in Tool_1..6.
+        ///     Bei den Wärmeerzeugern trägt sie ihren Kaskadenrang und ▲▼; × nimmt sie
+        ///     wieder heraus.</description></item>
+        ///   <item><description><b>Verfügbar</b> — die Komponente steht im Katalog der
+        ///     Auswahlfelder, ist aber nicht aufgenommen (der leere Auswahlplatz des
+        ///     Bestands). Sie erscheint gestrichelt und ausgegraut mit „+ aufnehmen".
+        ///     </description></item>
+        /// </list>
+        ///
+        /// Angeboten werden GENAU die Einträge, die die Auswahlfelder boten
+        /// (<see cref="ErzeugerKatalog.WAERMEERZEUGER"/>, <c>STROMERZEUGER</c>,
+        /// <c>ENERGIESPEICHER</c>) — auch dann, wenn im Projekt keine passende Anlage
+        /// liegt. Das war im Bestand ebenso möglich; die Karte sagt es dann im Chip
+        /// „keine Anlage im Projekt", statt die Wahl stillschweigend zu verstecken.
+        /// </summary>
+        private void AktualisiereErzeugerKarten()
+        {
+            if (flow_Erzeuger == null) return;
+
+            flow_Erzeuger.SuspendLayout();
+            try
+            {
+                SpalteLeeren(flow_Erzeuger, null);
+
+                WaermeerzeugerGruppe();
+                StromGruppe(label2.Text, comboBox5, checkBox5,
+                            ErzeugerKatalog.STROMERZEUGER, WizardItemClass.PV_TYP);
+                StromGruppe(label3.Text, comboBox6, checkBox6,
+                            ErzeugerKatalog.ENERGIESPEICHER, WizardItemClass.SP_TYP);
+
+                // „+ Anlage hinzufügen …": Ein Einstieg ohne Wizard-Kontext gibt es
+                // nicht — Anlagen entstehen im Assistenten bzw. über die Projektseite
+                // (WizardParent). Statt eines Knopfes, der nichts Sinnvolles öffnen
+                // kann, steht hier der Weg als Text. Das AUFNEHMEN in die Simulation
+                // passiert dagegen auf dieser Seite (siehe Klassenkopf).
+                flow_Erzeuger.Controls.Add(Hinweiszeile(MyResource.Resource.SIM_KARTE_ANLAGE_HINZU));
+            }
+            finally
+            {
+                flow_Erzeuger.ResumeLayout();
+                KartenBreiteAnpassen(flow_Erzeuger);
+            }
+        }
+
+        /// <summary>
+        /// Gruppe „Wärmeerzeuger": erst die aufgenommenen in Kaskadenreihenfolge, dann
+        /// die verfügbaren.
+        ///
+        /// Je AUFGENOMMENEM Erzeuger entsteht eine Karte pro Anlage im Projekt (zwei
+        /// Wärmepumpen = zwei Karten mit demselben Rang). ▲▼ und × stehen nur auf der
+        /// ERSTEN Karte des Erzeugers: Reihenfolge und Teilnahme gelten dem Erzeugertyp,
+        /// nicht der einzelnen Anlage — genau so, wie ein Auswahlfeld des Bestands für
+        /// alle Anlagen seines Typs zugleich entschied.
+        /// </summary>
+        private void WaermeerzeugerGruppe()
+        {
+            flow_Erzeuger.Controls.Add(Gruppenkopf(label1.Text));
+
+            List<string> kaskade = KaskadeBelegt();
+
+            for (int i = 0; i < kaskade.Count; i++)
+            {
+                string dbWert = kaskade[i];
+                string erzeuger = ErzeugerKatalog.Anzeige(dbWert);
+                List<AnlagenInfo> anlagen = AnlagenImProjekt(dbWert);
+                string rang = (i + 1).ToString();
+
+                if (anlagen.Count == 0)
+                {
+                    // Aufgenommen, aber im Projekt gibt es keine Anlage dazu. Die alte
+                    // Übersicht zeigte dafür eine Zeile mit "-" in der Anlagenspalte;
+                    // die Karte sagt es im Klartext.
+                    ErzeugerKarte leer = ErzeugerKarteAnlegen(dbWert, null);
+                    leer.Setzen(new ErzeugerKarte.Aufbau
+                    {
+                        Rang = rang,
+                        Titel = erzeuger,
+                        Chips = new List<ErzeugerKarte.ChipDaten>
+                        {
+                            new ErzeugerKarte.ChipDaten
+                            {
+                                Text = MyResource.Resource.SIM_KARTE_OHNE_ANLAGE,
+                                Stil = ErzeugerKarte.ChipStil.Flaeche
+                            }
+                        },
+                        Reihenfolge = true,
+                        AufMoeglich = i > 0,
+                        AbMoeglich = i < kaskade.Count - 1,
+                        Umschaltbar = true
+                    });
+                    continue;
+                }
+
+                for (int a = 0; a < anlagen.Count; a++)
+                {
+                    AnlagenInfo info = anlagen[a];
+                    ErzeugerKarte karte = ErzeugerKarteAnlegen(dbWert, info);
+                    karte.Setzen(new ErzeugerKarte.Aufbau
+                    {
+                        Rang = rang,
+                        Titel = string.Format(MyResource.Resource.SIM_KARTE_TITEL,
+                                              erzeuger, info.Bezeichner),
+                        Chips = ErzeugerChips(info),
+                        Reihenfolge = a == 0,
+                        AufMoeglich = i > 0,
+                        AbMoeglich = i < kaskade.Count - 1,
+                        Umschaltbar = a == 0,
+                        Editierbar = true
+                    });
+                }
+            }
+
+            foreach (string dbWert in ErzeugerKatalog.WAERMEERZEUGER)
+            {
+                if (kaskade.Contains(dbWert)) continue;
+                VerfuegbarKarte(dbWert, TypZuAnlagentyp(dbWert),
+                                delegate { KaskadeAufnehmen(dbWert); });
+            }
+        }
+
+        /// <summary>
+        /// Gruppe „Stromerzeuger" bzw. „Energiespeicher" — je ein Auswahlplatz
+        /// (<c>Tool_5</c> / <c>Tool_6</c>) mit genau einem Katalogeintrag.
+        ///
+        /// Anders als die Wärmeseite haben sie keine Kaskadenposition (die Kaskade ist
+        /// die Wärmeseite) und keinen Senkendialog; ▲▼ und ✎ entfallen deshalb. Die
+        /// AUSWAHL gibt es hier genauso — sie war im Bestand die Checkbox neben dem
+        /// jeweiligen Auswahlfeld.
+        /// </summary>
+        private void StromGruppe(string ueberschrift, ComboBox feld, CheckBox haken,
+                                 string[] katalog, int idType)
+        {
+            flow_Erzeuger.Controls.Add(Gruppenkopf(ueberschrift));
+
+            string gewaehlt = haken.Checked ? GetDbValue(feld) : "";
+
+            foreach (string dbWert in katalog)
+            {
+                if (string.Equals(dbWert, gewaehlt, StringComparison.Ordinal))
+                {
+                    List<string> namen = AnlagenNamen(idType);
+                    List<ErzeugerKarte.ChipDaten> chips = new List<ErzeugerKarte.ChipDaten>();
+                    if (namen.Count == 0)
+                        chips.Add(new ErzeugerKarte.ChipDaten
+                        {
+                            Text = MyResource.Resource.SIM_KARTE_OHNE_ANLAGE,
+                            Stil = ErzeugerKarte.ChipStil.Flaeche
+                        });
+
+                    ErzeugerKarte karte = new ErzeugerKarte();
+                    flow_Erzeuger.Controls.Add(karte);
+
+                    ComboBox f = feld;
+                    CheckBox h = haken;
+                    karte.Entfernen += delegate { StromAuswahlSetzen(f, h, ""); };
+
+                    karte.Setzen(new ErzeugerKarte.Aufbau
+                    {
+                        Titel = namen.Count > 0
+                            ? string.Format(MyResource.Resource.SIM_KARTE_TITEL,
+                                            ErzeugerKatalog.Anzeige(dbWert),
+                                            string.Join(" · ", namen.ToArray()))
+                            : ErzeugerKatalog.Anzeige(dbWert),
+                        Chips = chips,
+                        Umschaltbar = true
+                    });
+                    continue;
+                }
+
+                ComboBox f2 = feld;
+                CheckBox h2 = haken;
+                string wert = dbWert;
+                VerfuegbarKarte(dbWert, idType, delegate { StromAuswahlSetzen(f2, h2, wert); });
+            }
+        }
+
+        /// <summary>Eine gestrichelte Karte „im Katalog wählbar, nicht aufgenommen".</summary>
+        private void VerfuegbarKarte(string dbWert, int idType, EventHandler aufnehmen)
+        {
+            List<string> namen = idType > 0 ? AnlagenNamen(idType) : new List<string>();
+
+            List<ErzeugerKarte.ChipDaten> chips = new List<ErzeugerKarte.ChipDaten>();
+            chips.Add(new ErzeugerKarte.ChipDaten
+            {
+                Text = MyResource.Resource.SIM_KARTE_VERFUEGBAR,
+                Stil = ErzeugerKarte.ChipStil.Flaeche
+            });
+            if (namen.Count == 0)
+                chips.Add(new ErzeugerKarte.ChipDaten
+                {
+                    Text = MyResource.Resource.SIM_KARTE_OHNE_ANLAGE,
+                    Stil = ErzeugerKarte.ChipStil.Flaeche
+                });
+
+            ErzeugerKarte karte = new ErzeugerKarte();
+            flow_Erzeuger.Controls.Add(karte);
+            karte.Aufnehmen += aufnehmen;
+
+            karte.Setzen(new ErzeugerKarte.Aufbau
+            {
+                Titel = namen.Count > 0
+                    ? string.Format(MyResource.Resource.SIM_KARTE_TITEL,
+                                    ErzeugerKatalog.Anzeige(dbWert),
+                                    string.Join(" · ", namen.ToArray()))
+                    : ErzeugerKatalog.Anzeige(dbWert),
+                Chips = chips,
+                Zustand = ErzeugerKarte.Kartenzustand.Verfuegbar,
+                Umschaltbar = true
+            });
+        }
+
+        /// <summary>Fette Gruppenüberschrift wie in der abgelösten Rubrik.</summary>
+        private Label Gruppenkopf(string text)
+        {
+            Label l = Hinweiszeile((text ?? "").TrimEnd(' ', ':'));
+            KartenStil.Schnitt(l, FontStyle.Bold);
+            l.ForeColor = KartenStil.TEXT;
+            l.Margin = new Padding(0, flow_Erzeuger.Controls.Count == 0 ? 0 : 10, 0, 4);
+            return l;
+        }
+
+        /// <summary><c>Tab_Energieanlagen.ID_Type</c> zu einem Wärmeerzeuger-DB-Wert; 0 = unbekannt.</summary>
+        private static int TypZuAnlagentyp(string dbWert)
+        {
+            switch (dbWert)
+            {
+                case DbWerte.ERZEUGER_WAERMEPUMPE: return WizardItemClass.WP_TYP;
+                case DbWerte.ERZEUGER_HEIZKESSEL: return WizardItemClass.KESSEL_TYP;
+                case DbWerte.ERZEUGER_BHKW: return WizardItemClass.BHKW_TYP;
+                case DbWerte.ERZEUGER_SOLARTHERMIE: return WizardItemClass.SOLAR_TYP;
+                default: return 0;
+            }
+        }
+
+        /// <summary>
+        /// Bezeichner aller Projektanlagen eines Typs, OHNE Wiederholungen.
+        ///
+        /// Entdoppelt wird bewusst: Im Bestand stehen regelmäßig mehrere Zeilen
+        /// desselben Moduls (Projekt 1011: vier Batteriezeilen, davon drei namensgleich).
+        /// Eine Kopfzeile „Stromspeicher · BYD B-Box HVM 11.0 · BYD B-Box HVM 11.0 ·
+        /// BYD B-Box HVM 11.0 · Vaillant 10030745" sagt nichts, was die entdoppelte
+        /// Fassung nicht auch sagt.
+        /// </summary>
+        private List<string> AnlagenNamen(int idType)
+        {
+            List<string> namen = new List<string>();
+            if (m_ID_Projekt <= 0 || idType <= 0) return namen;
+
+            System.Data.DataTable dt = DataRepository.GetDataTable(
+                "SELECT Bezeichner FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt=" + m_ID_Projekt + " AND ID_Type=" + idType +
+                " ORDER BY Prioritaet, ID");
+            if (dt == null) return namen;
+
+            foreach (System.Data.DataRow r in dt.Rows)
+            {
+                if (r["Bezeichner"] == DBNull.Value) continue;
+                string name = r["Bezeichner"].ToString();
+                if (name.Length > 0 && !namen.Contains(name)) namen.Add(name);
+            }
+            return namen;
+        }
+
+        private ErzeugerKarte ErzeugerKarteAnlegen(string dbWert, AnlagenInfo info)
+        {
+            ErzeugerKarte karte = new ErzeugerKarte();
+            karte.Tag = info;
+
+            string wert = dbWert;
+            karte.NachOben += delegate { KaskadeVerschieben(wert, -1); };
+            karte.NachUnten += delegate { KaskadeVerschieben(wert, +1); };
+            karte.Entfernen += delegate { KaskadeEntfernen(wert); };
+
+            if (info != null)
+            {
+                AnlagenInfo anlage = info;
+
+                // Standard-Editor der Karte: der Senkendialog. Er ist der einzige, der
+                // für JEDEN Erzeugertyp etwas zu sagen hat (Konzept 4.2) - Quelle, Modus
+                // und WP-Priorität sind wärmepumpenspezifisch und hängen an ihren Chips.
+                karte.Bearbeiten += delegate { WaermesenkeBearbeiten(anlage); };
+                karte.ChipBearbeiten += delegate (ErzeugerKarte.ChipDaten chip)
+                {
+                    ChipEditorOeffnen(anlage, karte, chip);
+                };
+            }
+
+            flow_Erzeuger.Controls.Add(karte);
+            return karte;
+        }
+
+        /// <summary>
+        /// Ersatz für den Doppelklick-Dispatcher der alten Übersicht
+        /// (<c>listView_Uebersicht_MouseDoubleClick</c>): Statt über Spaltenindizes
+        /// entscheidet das Ziel, das der Chip mitbringt. Die aufgerufenen Dialoge und
+        /// ihre Vorbedingungen sind unverändert.
+        /// </summary>
+        private void ChipEditorOeffnen(AnlagenInfo info, ErzeugerKarte karte,
+                                       ErzeugerKarte.ChipDaten chip)
+        {
+            switch (chip.Ziel)
+            {
+                case ErzeugerKarte.ChipZiel.Senke:
+                case ErzeugerKarte.ChipZiel.Zweitsenke:
+                    // Beide führen in denselben Dialog - Haupt- und Zweitsenke gehören
+                    // fachlich zusammen (Konzept 4.2).
+                    WaermesenkeBearbeiten(info);
+                    break;
+
+                case ErzeugerKarte.ChipZiel.Modus:
+                    BetriebsmodusBearbeiten(info);
+                    break;
+
+                case ErzeugerKarte.ChipZiel.Prioritaet:
+                    WpPrioritaetBearbeiten(info);
+                    break;
+
+                case ErzeugerKarte.ChipZiel.Quelle:
+                    // Der Quellen-Inlineeditor braucht ein Rechteck in Bildschirmnähe,
+                    // an dem er aufklappt. Früher war das die Zelle der ListView, jetzt
+                    // die Karte selbst.
+                    WaermequelleBearbeiten(info, KarteAlsZelle(karte));
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Rechteck der Karte in Koordinaten, die
+        /// <c>WaermequelleAuswahlAnzeigen</c> erwartet: Der Bestandscode rechnet mit
+        /// <c>listView_Uebersicht.PointToScreen</c> auf Bildschirmkoordinaten um. Damit
+        /// dieselbe Rechnung für eine Karte stimmt, wird hier der Versatz zwischen Karte
+        /// und Liste vorweggenommen — die Liste gibt es nicht mehr, also wird direkt in
+        /// Formularkoordinaten geliefert und der Umweg in
+        /// <see cref="WaermequelleAuswahlAnzeigen"/> auf den neuen Bezug gestellt.
+        /// </summary>
+        private Rectangle KarteAlsZelle(ErzeugerKarte karte)
+        {
+            Point aufDemSchirm = karte.PointToScreen(new Point(0, karte.Height - 4));
+            Point imFormular = PointToClient(aufDemSchirm);
+            return new Rectangle(imFormular, new Size(Math.Min(karte.Width, 260), 24));
+        }
+
+        /// <summary>Die Chips einer Erzeugerkarte (Konzept Abschnitt 3, Mockup 4).</summary>
+        private List<ErzeugerKarte.ChipDaten> ErzeugerChips(AnlagenInfo info)
+        {
+            List<ErzeugerKarte.ChipDaten> chips = new List<ErzeugerKarte.ChipDaten>();
+
+            QuellenChip(info, chips);
+            SenkenChips(info, chips);
+            TemperaturChip(info, chips);
+
+            if (info.IstWaermepumpe)
+            {
+                chips.Add(new ErzeugerKarte.ChipDaten
+                {
+                    Text = string.Format(MyResource.Resource.SIM_KARTE_WPPRIO,
+                                         info.Prioritaet > 0 ? info.Prioritaet.ToString() : "–"),
+                    Hinweis = MyResource.Resource.SIM_TIP_WPPRIO,
+                    Ziel = ErzeugerKarte.ChipZiel.Prioritaet
+                });
+
+                chips.Add(new ErzeugerKarte.ChipDaten
+                {
+                    Text = BetriebsmodusAnzeige(info),
+                    Hinweis = MyResource.Resource.SIM_TIP_BETRIEBSMODUS,
+                    Ziel = ErzeugerKarte.ChipZiel.Modus
+                });
+            }
+
+            return chips;
+        }
+
+        private void QuellenChip(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
+        {
+            // E0: WQ_ID_Puffer ist die führende Identität des Quellpuffers;
+            // QuellPufferDerAnlage löst sie mit demselben Vorrang auf wie die Engine
+            // (FK vor Bezeichner) und liefert 0, wenn die Quelle kein Puffer ist.
+            int idQuellPuffer = WaermesenkeClass.QuellPufferDerAnlage(m_ID_Projekt, info.ID);
+
+            if (idQuellPuffer > 0)
+            {
+                string name = WaermesenkeClass.PufferName(idQuellPuffer);
+                if (name.Length == 0) name = MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER;
+
+                chips.Add(new ErzeugerKarte.ChipDaten
+                {
+                    Text = string.Format(MyResource.Resource.SIM_KARTE_QUELLE_KASKADE, name),
+                    Stil = ErzeugerKarte.ChipStil.QuelleKaskade,
+                    Hinweis = MyResource.Resource.SIM_KARTE_TIP_KASKADE,
+                    Ziel = info.IstWaermepumpe
+                        ? ErzeugerKarte.ChipZiel.Quelle
+                        : ErzeugerKarte.ChipZiel.Keines
+                });
+                return;
+            }
+
+            // Ohne Quellpuffer trägt nur die Wärmepumpe eine Wärmequelle; für Kessel,
+            // BHKW und Solarthermie gibt es bis Etappe D5 keine (Konzept 4, Zeile
+            // „Quelle Pufferspeicher auch für Heizkessel").
+            if (!info.IstWaermepumpe) return;
+
+            chips.Add(new ErzeugerKarte.ChipDaten
+            {
+                Text = string.Format(MyResource.Resource.SIM_KARTE_QUELLE, WaermequelleAnzeige(info)),
+                Stil = ErzeugerKarte.ChipStil.Quelle,
+                Hinweis = MyResource.Resource.SIMQ_TIP_QUELLE,
+                Ziel = ErzeugerKarte.ChipZiel.Quelle
+            });
+        }
+
+        private void SenkenChips(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
+        {
+            bool pufferSenke = WaermesenkeClass.IstPufferZiel(info.Senke.Ziel) &&
+                               info.Senke.ID_Puffer > 0;
+
+            string text = WaermesenkeAnzeige(info);
+            string hinweis = MyResource.Resource.SIM_TIP_SENKE;
+
+            if (pufferSenke)
+            {
+                List<Ladeordnung.LadeEintrag> ordnung =
+                    Ladeordnung.Ladereihenfolge(m_ID_Projekt, info.Senke.ID_Puffer);
+                int position = Ladeordnung.Position(ordnung, info.ID, false);
+                if (position > 0)
+                {
+                    text += " " + KartenStil.Kreisziffer(position);
+                    hinweis = string.Format(MyResource.Resource.SIM_POSITION_LAEDT_ALS,
+                                            position, ordnung.Count) +
+                              Environment.NewLine + hinweis;
+                }
+            }
+
+            chips.Add(new ErzeugerKarte.ChipDaten
+            {
+                Text = string.Format(MyResource.Resource.SIM_KARTE_SENKE, text),
+                Stil = pufferSenke ? ErzeugerKarte.ChipStil.Senke : ErzeugerKarte.ChipStil.Neutral,
+                Hinweis = hinweis,
+                Ziel = ErzeugerKarte.ChipZiel.Senke
+            });
+
+            string zweit = ZweitsenkeAnzeige(info);
+            bool zweitPuffer = info.Senke.HatZweitsenke &&
+                               WaermesenkeClass.IstPufferZiel(info.Senke.Ziel2) &&
+                               info.Senke.ID_Puffer2 > 0;
+
+            if (zweitPuffer)
+            {
+                List<Ladeordnung.LadeEintrag> ordnung2 =
+                    Ladeordnung.Ladereihenfolge(m_ID_Projekt, info.Senke.ID_Puffer2);
+                int position2 = Ladeordnung.Position(ordnung2, info.ID, true);
+                if (position2 > 0) zweit += " " + KartenStil.Kreisziffer(position2);
+            }
+
+            chips.Add(new ErzeugerKarte.ChipDaten
+            {
+                Text = string.Format(MyResource.Resource.SIM_KARTE_ZWEITSENKE, zweit),
+                Stil = zweitPuffer ? ErzeugerKarte.ChipStil.Senke : ErzeugerKarte.ChipStil.Neutral,
+                Hinweis = MyResource.Resource.SIM_TIP_ZWEITSENKE,
+                Ziel = ErzeugerKarte.ChipZiel.Zweitsenke
+            });
+        }
+
+        /// <summary>
+        /// Temperaturchip mit der WARNREGEL aus Konzept Abschnitt 5:
+        /// „Erzeuger-Vorlauf ≥ Puffer-Vorlauf, sonst Warnung (Anzeige amber; keine harte
+        /// Sperre — die Engine kappt ohnehin physikalisch)."
+        ///
+        /// Gezeigt wird das Paar des ZUGEORDNETEN PUFFERS, sobald der Erzeuger einen
+        /// lädt — das ist die Temperatur, auf die er arbeiten muss. Ohne Pufferziel (oder
+        /// bei einem Puffer ohne gepflegtes Paar) steht das Paar der Anlage selbst da.
+        /// </summary>
+        private void TemperaturChip(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
+        {
+            WaermesenkeClass.PufferInfo puffer = null;
+            if (WaermesenkeClass.IstPufferZiel(info.Senke.Ziel) && info.Senke.ID_Puffer > 0)
+                puffer = WaermesenkeClass.PufferLesen(info.Senke.ID_Puffer);
+
+            bool pufferPaar = puffer != null && puffer.Vorlauf > 0 && puffer.Ruecklauf > 0;
+
+            string text;
+            if (pufferPaar)
+                text = string.Format(MyResource.Resource.SIM_KARTE_TEMPERATURPAAR,
+                                     puffer.Vorlauf, puffer.Ruecklauf);
+            else if (info.Vorlauf > 0 && info.Ruecklauf > 0)
+                text = string.Format(MyResource.Resource.SIM_KARTE_TEMPERATURPAAR,
+                                     info.Vorlauf, info.Ruecklauf);
+            else
+                return;   // nichts Gepflegtes - lieber kein Chip als eine erfundene Zahl
+
+            bool warnung = pufferPaar && info.Vorlauf > 0 && info.Vorlauf < puffer.Vorlauf;
+
+            chips.Add(new ErzeugerKarte.ChipDaten
+            {
+                Text = text,
+                Stil = warnung ? ErzeugerKarte.ChipStil.Warnung : ErzeugerKarte.ChipStil.Flaeche,
+                Hinweis = warnung
+                    ? string.Format(MyResource.Resource.SIM_KARTE_TIP_TEMPERATUR_WARNUNG,
+                                    info.Vorlauf, puffer.Bezeichner, puffer.Vorlauf)
+                    : null
+            });
+        }
+
+        // --- Aufbau der Speicherspalte ------------------------------------------------
+
+        private void AktualisiereSpeicherKarten()
+        {
+            if (flow_Speicher == null) return;
+
+            flow_Speicher.SuspendLayout();
+            try
+            {
+                SpalteLeeren(flow_Speicher, btn_PufferVerwalten);
+
+                List<WaermesenkeClass.PufferInfo> puffer = m_ID_Projekt > 0
+                    ? WaermesenkeClass.ProjektPufferListe(m_ID_Projekt, null)
+                    : new List<WaermesenkeClass.PufferInfo>();
+
+                // EINMAL je Auffrischung, nicht je Karte (siehe QuellnutzerSammeln
+                // bzw. GeladenePufferSammeln).
+                _quellnutzer = QuellnutzerSammeln();
+                _geladenePuffer = GeladenePufferSammeln();
+                _systemVorlauf = PufferSpCtrl.SystemVorlauf(m_ID_Projekt);
+                _systemRuecklauf = PufferSpCtrl.SystemRuecklauf(m_ID_Projekt);
+
+                foreach (WaermesenkeClass.PufferInfo p in puffer)
+                {
+                    SpeicherKarte karte = new SpeicherKarte();
+                    flow_Speicher.Controls.Add(karte);
+                    karte.Setzen(SpeicherKarteDaten(p));
+                    karte.Aufgeklappt = p.ID == _offenerSpeicher;
+                    karte.Umschalten += SpeicherKarte_Umschalten;
+                    karte.Bearbeiten += SpeicherKarte_Bearbeiten;
+                }
+
+                if (puffer.Count == 0)
+                    flow_Speicher.Controls.Add(Hinweiszeile(
+                        m_ID_Projekt > 0
+                            ? MyResource.Resource.PSP_KARTE_KEIN_SPEICHER
+                            : MyResource.Resource.PSP_FUSSZEILE_OHNE_PROJEKT));
+
+                // Der Einstieg in die Verwaltung bleibt (Konzept 4.3) - ohne ihn wäre
+                // kein Pufferspeicher mehr anzulegen.
+                flow_Speicher.Controls.Add(btn_PufferVerwalten);
+                btn_PufferVerwalten.Enabled = m_ID_Projekt > 0;
+            }
+            finally
+            {
+                flow_Speicher.ResumeLayout();
+                KartenBreiteAnpassen(flow_Speicher);
+            }
+        }
+
+        private void SpeicherKarte_Umschalten(object sender, EventArgs e)
+        {
+            SpeicherKarte karte = sender as SpeicherKarte;
+            if (karte == null) return;
+
+            _offenerSpeicher = karte.Aufgeklappt ? 0 : karte.ID_Puffer;
+
+            // Konzept 3a: höchstens EINE Karte offen.
+            flow_Speicher.SuspendLayout();
+            try
+            {
+                foreach (Control c in flow_Speicher.Controls)
+                {
+                    SpeicherKarte k = c as SpeicherKarte;
+                    if (k != null) k.Aufgeklappt = k.ID_Puffer == _offenerSpeicher;
+                }
+            }
+            finally
+            {
+                flow_Speicher.ResumeLayout();
+                KartenBreiteAnpassen(flow_Speicher);
+            }
+        }
+
+        private void SpeicherKarte_Bearbeiten(object sender, EventArgs e)
+        {
+            SpeicherKarte karte = sender as SpeicherKarte;
+            if (karte == null || m_ID_Projekt <= 0) return;
+
+            PufferVerwaltungOeffnen(karte.ID_Puffer);
+        }
+
+        /// <summary>Alles aus einer Spalte entfernen; <paramref name="behalten"/> überlebt.</summary>
+        private static void SpalteLeeren(FlowLayoutPanel flow, Control behalten)
+        {
+            List<Control> alt = new List<Control>();
+            foreach (Control c in flow.Controls) alt.Add(c);
+
+            flow.Controls.Clear();
+
+            foreach (Control c in alt)
+                if (!ReferenceEquals(c, behalten)) c.Dispose();
+        }
+
+        /// <summary>Eine leise Textzeile zwischen den Karten (Hinweise, Gruppenköpfe).</summary>
+        private Label Hinweiszeile(string text)
+        {
+            Label l = new Label();
+            l.Text = text;
+            l.AutoSize = false;
+            l.Height = 22;
+            l.TextAlign = ContentAlignment.MiddleLeft;
+            l.ForeColor = KartenStil.TEXT_LEISE;
+            l.BackColor = Color.Transparent;
+            l.Margin = new Padding(0, 2, 0, 6);
+            return l;
+        }
+
+        /// <summary>Füllt eine Speicherkarte aus den Projektdaten (Konzept 3a).</summary>
+        private SpeicherKarte.Daten SpeicherKarteDaten(WaermesenkeClass.PufferInfo p)
+        {
+            SpeicherKarte.Daten d = new SpeicherKarte.Daten();
+            d.ID_Puffer = p.ID;
+            d.Bezeichner = p.Bezeichner.Length > 0
+                ? p.Bezeichner : MyResource.Resource.PSP_BEZEICHNER_ERSATZ;
+
+            string kanal = WaermesenkeClass.WirksameVerwendung(p);
+            d.Verwendung = WaermesenkeClass.VerwendungAnzeige(kanal);
+
+            if (p.Gesamtvolumen > 0)
+                d.Volumen = string.Format(MyResource.Resource.PSP_KARTE_VOLUMEN, p.Gesamtvolumen);
+
+            int vorlauf, ruecklauf;
+            string herkunft = TemperaturHerkunft(p, out vorlauf, out ruecklauf);
+            if (vorlauf > 0 && ruecklauf > 0)
+                d.Temperaturpaar = string.Format(MyResource.Resource.SIM_KARTE_TEMPERATURPAAR,
+                                                 vorlauf, ruecklauf);
+
+            // --- Lader in wirksamer Reihenfolge (Ladeordnung 3.4) --------------------
+            //
+            // VORFILTER: Ladereihenfolge fragt je Aufruf die Anlagen des Projekts und die
+            // Kaskadenplätze neu ab. Für einen Speicher, den niemand lädt, ist das
+            // Ergebnis garantiert leer — die Abfrage also verschenkt. Projekt 1023 der
+            // Arbeitskopie führt 79 Puffer-Zeilen, von denen genau EINE geladen wird;
+            // ohne den Vorfilter kostete der Seitenaufbau dort über 150 Abfragen. Der
+            // Filter benutzt dieselbe Bedingung wie Ladeordnung (ID auf einem der beiden
+            // Senkenfelder UND ein Puffer-Ziel), das Ergebnis ist damit unverändert.
+            List<Ladeordnung.LadeEintrag> lader = _geladenePuffer.Contains(p.ID)
+                ? Ladeordnung.Ladereihenfolge(m_ID_Projekt, p.ID)
+                : new List<Ladeordnung.LadeEintrag>();
+            d.LaderAnzahl = lader.Count;
+
+            if (lader.Count > 0)
+            {
+                List<string> teile = new List<string>();
+                for (int i = 0; i < lader.Count; i++)
+                {
+                    Ladeordnung.LadeEintrag e = lader[i];
+                    string name = e.Bezeichner.Length > 0 ? e.Bezeichner : e.Erzeuger;
+
+                    string zeile = (i + 1) + ". " + name + " (" +
+                                   string.Format(MyResource.Resource.SIM_POSITION_BIS,
+                                                 e.Obergrenze.ToString("0.#")) + ")";
+
+                    if (e.Zweitsenke)
+                        zeile += " " + MyResource.Resource.SIM_ROLLE_ZWEITSENKE;
+                    if (e.LadeprioPV > 0)
+                        zeile += " " + string.Format(MyResource.Resource.PSP_KARTE_PV_RANG,
+                                                     e.LadeprioPV);
+
+                    teile.Add(zeile);
+                }
+                d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_LADER,
+                                                 string.Join(" · ", teile.ToArray())));
+            }
+            else
+            {
+                d.Detailzeilen.Add(MyResource.Resource.PSP_KARTE_LADER_KEINE);
+            }
+
+            // --- Versorgt: der Kanal, aus dem entladen wird --------------------------
+            d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_VERSORGT, d.Verwendung));
+
+            // --- Quelle für: NUR Erzeuger (Invariante S-1) ---------------------------
+            List<string> quelleFuer = QuelleFuerAnlagen(p);
+            if (quelleFuer.Count > 0)
+                d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_QUELLE_FUER,
+                                                 string.Join(" · ", quelleFuer.ToArray())));
+
+            // Ein Abnehmer ist der eigene Kanal; jede Kaskadenentnahme kommt hinzu.
+            d.AbnehmerAnzahl = 1 + quelleFuer.Count;
+
+            // --- Entladeprioritaet ---------------------------------------------------
+            bool manuell = p.Entladeprio >= Ladeordnung.PRIO_MIN &&
+                           p.Entladeprio <= Ladeordnung.PRIO_MAX;
+
+            // Der Automatikwert ist die BESTE Ladepriorität am Speicher (Konzept 3.6) —
+            // also der erste Eintrag der bereits geholten Ladereihenfolge. Der Aufruf
+            // von Ladeordnung.EntladeprioAutomatik täte dasselbe, würde die Reihenfolge
+            // dafür aber ein ZWEITES Mal aus der Datenbank holen; bei 79 Speicherkarten
+            // ist das messbar.
+            int automatik = lader.Count > 0 ? lader[0].Ladeprio : Ladeordnung.PRIO_SONSTIGE;
+
+            string prio = manuell
+                ? string.Format(MyResource.Resource.PSP_LADEPRIO_MANUELL, p.Entladeprio)
+                : string.Format(MyResource.Resource.PSP_PRIO_AUTOMATISCH_WERT, automatik);
+            d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_ENTLADEPRIO, prio));
+
+            // --- Temperaturherkunft --------------------------------------------------
+            d.Detailzeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_TEMP_HERKUNFT, herkunft));
+
+            // --- Schwellenband -------------------------------------------------------
+            d.SchwelleEin = p.SchwelleEin;
+            d.SchwelleAusNachrang = p.SchwelleAusNachrang;
+            d.SchwelleAus = p.SchwelleAus;
+            d.Schwellentext = string.Format(MyResource.Resource.PSP_KARTE_SCHWELLEN,
+                                            p.SchwelleEin.ToString("0.#"),
+                                            p.SchwelleAusNachrang.ToString("0.#"),
+                                            p.SchwelleAus.ToString("0.#"));
+            return d;
+        }
+
+        /// <summary>
+        /// Abbildung Quellpuffer → Anlagen, die ihn als WÄRMEQUELLE nutzen — die Kaskade
+        /// aus Anforderung 6 des Konzepts, für ALLE Speicher auf einmal.
+        ///
+        /// <b>Invariante S-1.</b> Gefragt wird ausschließlich
+        /// <c>Tab_Energieanlagen</c>; Quell- und Senkenbezüge existieren nur dort, nie an
+        /// <c>Tab_Pufferspeicher</c>. Ein Speicher kann in dieser Abbildung damit
+        /// strukturell nicht als NUTZER auftauchen — genau das verlangt die Invariante
+        /// („ein direkter Pfeil Speicher → Speicher darf nie gezeichnet werden").
+        ///
+        /// Aufgelöst wird je Anlage über
+        /// <see cref="WaermesenkeClass.QuellPufferDerAnlage"/> und nicht über einen
+        /// eigenen Vergleich: Das ist dieselbe Rangfolge (FK <c>WQ_ID_Puffer</c> vor
+        /// Bezeichner <c>WQ_Puffer</c>), die Engine und Erzeugerkarte benutzen. Ein
+        /// zweiter Vergleich hier könnte bei Altbestand eine andere Antwort geben.
+        ///
+        /// <b>Einmal je Auffrischung, nicht je Karte.</b> Die erste Fassung fragte die
+        /// Anlagen für JEDEN Speicher neu und löste die Quellidentität Puffer×Anlage-mal
+        /// auf. Bei Projekt 1023 der Arbeitskopie — 79 Puffer-Zeilen, drei Erzeuger —
+        /// waren das über 300 zusätzliche Abfragen je Aufbau; der Dialog stand im
+        /// Harness minutenlang. Die Abbildung hängt nur am Projekt, also wird sie einmal
+        /// gebaut.
+        /// </summary>
+        private Dictionary<int, List<string>> QuellnutzerSammeln()
+        {
+            Dictionary<int, List<string>> map = new Dictionary<int, List<string>>();
+            if (m_ID_Projekt <= 0) return map;
+
+            System.Data.DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Bezeichner FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt=" + m_ID_Projekt +
+                " AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ")" +
+                " ORDER BY Prioritaet, ID");
+            if (dt == null) return map;
+
+            foreach (System.Data.DataRow r in dt.Rows)
+            {
+                if (r["ID"] == DBNull.Value) continue;
+                int idAnlage = Convert.ToInt32(r["ID"]);
+
+                int idPuffer = WaermesenkeClass.QuellPufferDerAnlage(m_ID_Projekt, idAnlage);
+                if (idPuffer <= 0) continue;
+
+                string name = r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString();
+                if (name.Length == 0) continue;
+
+                if (!map.ContainsKey(idPuffer)) map[idPuffer] = new List<string>();
+                map[idPuffer].Add(name + " " + MyResource.Resource.PSP_KARTE_KASKADE);
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Alle Puffer des Projekts, die überhaupt von einer Anlage GELADEN werden.
+        ///
+        /// Dieselbe Bedingung wie in <see cref="Ladeordnung.Ladereihenfolge"/>: Die
+        /// Puffer-ID muss auf einem der beiden Senkenfelder stehen UND das zugehörige
+        /// Ziel muss ein Puffer-Ziel sein. Altdaten tragen eine <c>WS_ID_Puffer</c> auch
+        /// dann noch, wenn die Senke längst wieder auf den Heizkreis zeigt (die
+        /// Oberfläche schreibt erst seit Paket 2 NULL) — würde die ID allein zählen,
+        /// bekäme so ein Speicher hier fälschlich eine Ladereihenfolge-Abfrage.
+        ///
+        /// Einmal je Auffrischung; Zweck ist der Vorfilter in
+        /// <see cref="SpeicherKarteDaten"/> (Begründung dort).
+        /// </summary>
+        private HashSet<int> GeladenePufferSammeln()
+        {
+            HashSet<int> geladen = new HashSet<int>();
+            if (m_ID_Projekt <= 0) return geladen;
+
+            System.Data.DataTable dt = DataRepository.GetDataTable(
+                "SELECT WS_Ziel, WS_ID_Puffer, WS_Ziel2, WS_ID_Puffer2 FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt=" + m_ID_Projekt +
+                " AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ")");
+            if (dt == null) return geladen;
+
+            foreach (System.Data.DataRow r in dt.Rows)
+            {
+                if (r["WS_ID_Puffer"] != DBNull.Value &&
+                    WaermesenkeClass.IstPufferZiel(r["WS_Ziel"] as string))
+                    geladen.Add(Convert.ToInt32(r["WS_ID_Puffer"]));
+
+                if (r["WS_ID_Puffer2"] != DBNull.Value &&
+                    WaermesenkeClass.IstPufferZiel(r["WS_Ziel2"] as string))
+                    geladen.Add(Convert.ToInt32(r["WS_ID_Puffer2"]));
+            }
+
+            return geladen;
+        }
+
+        /// <summary>Die Anlagen, für die dieser Puffer die Quelle ist; nie <c>null</c>.</summary>
+        private List<string> QuelleFuerAnlagen(WaermesenkeClass.PufferInfo p)
+        {
+            List<string> namen;
+            if (p != null && _quellnutzer != null && _quellnutzer.TryGetValue(p.ID, out namen))
+                return namen;
+
+            return new List<string>();
+        }
+
+        /// <summary>
+        /// Herkunft der Betriebstemperaturen eines Puffers — die Vorrangkette aus
+        /// Paket 1/4 (Konzept 5.1), die die Engine beim Lesen durchläuft:
+        ///
+        /// <list type="number">
+        ///   <item><description>eigene Werte an <c>Tab_Pufferspeicher</c> — seit Etappe 4
+        ///     die FÜHRENDE Ablage;</description></item>
+        ///   <item><description>die Zuordnungszeile <c>Z_ProjektPufferSp</c> (hier aus
+        ///     <c>_zuordnungen</c>, also ohne zusätzliche Abfrage);</description></item>
+        ///   <item><description>die Systemvorgabe des Projekts
+        ///     (<c>PufferSpCtrl.SystemVorlauf/-Ruecklauf</c>: kleinster Vorlauf, größter
+        ///     Rücklauf über die Wärmeerzeuger).</description></item>
+        /// </list>
+        ///
+        /// Greift nichts davon, bleibt es bei „nicht gepflegt" — die Engine fällt dann
+        /// auf ihre Vorgabespreizung zurück, und genau das soll die Karte sagen statt
+        /// eine Zahl zu zeigen, die nirgends steht.
+        /// </summary>
+        private string TemperaturHerkunft(WaermesenkeClass.PufferInfo p,
+                                          out int vorlauf, out int ruecklauf)
+        {
+            vorlauf = 0;
+            ruecklauf = 0;
+            if (p == null) return MyResource.Resource.PSP_KARTE_TEMP_KEINE;
+
+            if (p.Vorlauf > 0 && p.Ruecklauf > 0)
+            {
+                vorlauf = p.Vorlauf;
+                ruecklauf = p.Ruecklauf;
+                return MyResource.Resource.PSP_KARTE_TEMP_EIGEN;
+            }
+
+            foreach (string[] z in _zuordnungen)
+            {
+                if (!string.Equals(z[1], p.Bezeichner, StringComparison.OrdinalIgnoreCase)) continue;
+
+                int v, r;
+                if (!Int32.TryParse(z[2], out v) || !Int32.TryParse(z[3], out r)) continue;
+                if (!ProjektPuffer.IstTemperaturpaar(v, r)) continue;
+
+                vorlauf = v;
+                ruecklauf = r;
+                return MyResource.Resource.PSP_KARTE_TEMP_ZUORDNUNG;
+            }
+
+            if (ProjektPuffer.IstTemperaturpaar(_systemVorlauf, _systemRuecklauf))
+            {
+                vorlauf = _systemVorlauf.Value;
+                ruecklauf = _systemRuecklauf.Value;
+                return MyResource.Resource.PSP_KARTE_TEMP_SYSTEM;
+            }
+
+            return MyResource.Resource.PSP_KARTE_TEMP_KEINE;
+        }
+    }
+}

@@ -1033,6 +1033,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Lader · {1} Abnehmer ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_BILANZ {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladeprio: {0} ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_ENTLADEPRIO {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_ENTLADEPRIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Kaskade) ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_KASKADE {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Projekt ist noch kein Pufferspeicher angelegt. ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_KEIN_SPEICHER {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_KEIN_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lader: {0} ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_LADER {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_LADER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lader: keiner ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_LADER_KEINE {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_LADER_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Rang {0} ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_PV_RANG {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_PV_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle für: {0} ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_QUELLE_FUER {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_QUELLE_FUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwellen {0} / {1} / {2} % ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_SCHWELLEN {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_SCHWELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigene Werte am Speicher ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_TEMP_EIGEN {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_TEMP_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturen: {0} ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_TEMP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_TEMP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht gepflegt ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_TEMP_KEINE {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_TEMP_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Systemvorgabe des Projekts ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_TEMP_SYSTEM {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_TEMP_SYSTEM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Zuordnungszeile ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_TEMP_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_TEMP_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher bearbeiten (Verwaltung öffnen) ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_TIP_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_TIP_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Versorgt: {0} ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_VERSORGT {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_VERSORGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} l ähnelt.
+        /// </summary>
+        public static string PSP_KARTE_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PSP_KARTE_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher im Projekt ähnelt.
+        /// </summary>
+        public static string PSP_KARTEN_KOPF_SPEICHER {
+            get {
+                return ResourceManager.GetString("PSP_KARTEN_KOPF_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (freie Eingabe) ähnelt.
         /// </summary>
         public static string PSP_KATALOG_FREIE_EINGABE {
@@ -2298,6 +2460,191 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_KACHEL_SIMULATIONSERGEBNISSE {
             get {
                 return ResourceManager.GetString("SIM_KACHEL_SIMULATIONSERGEBNISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Anlage hinzufügen: Anlagen werden über die Projektseite angelegt. ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_ANLAGE_HINZU {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_ANLAGE_HINZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + aufnehmen ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_AUFNEHMEN {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_AUFNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wärmeerzeuger ausgewählt. ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_KEINE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_KEINE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Anlage im Projekt ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_OHNE_ANLAGE {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_OHNE_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle: {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_QUELLE {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle: {0} · Kaskade ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_QUELLE_KASKADE {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_QUELLE_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Senke: {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SENKE {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} / {1} °C ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TEMPERATURPAAR {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TEMPERATURPAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In die Simulation aufnehmen — die Komponente wird gerechnet
+        ///und bekommt den letzten Rang der Kaskade (mit ▲ nach vorn). ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TIP_AUFNEHMEN {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TIP_AUFNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenke bearbeiten (auch per Doppelklick auf die Karte) ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TIP_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TIP_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus der Simulation nehmen — die Komponente bleibt im Projekt,
+        ///wird aber nicht mehr gerechnet. ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TIP_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TIP_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Kaskade einen Rang nach vorn ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TIP_HOCH {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TIP_HOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaskade: Dieser Erzeuger bezieht seine Eintrittstemperatur aus dem Pufferspeicher
+        ///und hebt sie weiter an. Die Entnahme ist zugleich eine Entladung des Speichers. ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TIP_KASKADE {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TIP_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Kaskade einen Rang nach hinten ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TIP_RUNTER {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TIP_RUNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vorlauf des Erzeugers ({0} °C) liegt unter dem Vorlauf des Speichers „{1}&quot; ({2} °C).
+        ///Er kann den Speicher nicht auf dessen Niveau laden; die Simulation kappt die Ladung
+        ///physikalisch. Das ist ein Hinweis, keine Sperre. ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TIP_TEMPERATUR_WARNUNG {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TIP_TEMPERATUR_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TITEL {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht in der Simulation ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_VERFUEGBAR {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_VERFUEGBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WP-Prio {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_WPPRIO {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_WPPRIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zweitsenke: {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_ZWEITSENKE {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_ZWEITSENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten der Simulation (+ aufnehmen, × entfernen, ▲▼ Reihenfolge, ✎ oder Doppelklick öffnet den Dialog) ähnelt.
+        /// </summary>
+        public static string SIM_KARTEN_KOPF_ERZEUGER {
+            get {
+                return ResourceManager.GetString("SIM_KARTEN_KOPF_ERZEUGER", resourceCulture);
             }
         }
         
