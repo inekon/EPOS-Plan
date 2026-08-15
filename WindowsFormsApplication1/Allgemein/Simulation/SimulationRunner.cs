@@ -23,12 +23,80 @@ namespace WindowsFormsApplication1
         public SimulationControl sim = new SimulationControl();
 
         /// <summary>
+        /// Protokoll- und Fehlerkanal dieses Laufs (Paket 8, Konzept 13.4).
+        ///
+        /// <see cref="Simuliere"/> erzeugt ihn als ERSTES und legt ihn hier ab; er
+        /// überlebt den Aufruf, damit der Aufrufer die HINWEISE abholen kann, ohne dass
+        /// dafür eine Signatur wachsen musste. Bestehende Aufrufer bleiben deshalb
+        /// unverändert übersetzbar:
+        ///
+        /// <code>
+        /// var runner = new SimulationRunner();
+        /// int id = runner.SimuliereUndSpeichere(idProjekt, out string fehler);
+        /// //  … fehler    = Fehler und Warnungen (nur bei Abbruch belegt)
+        /// //  … runner.Protokoll.Hinweise = die nicht abbrechenden Meldungen
+        /// </code>
+        /// </summary>
+        public SimulationProtokoll Protokoll = SimulationProtokoll.Aktuell;
+
+        /// <summary>
+        /// true, wenn der letzte <see cref="Simuliere"/>-Aufruf die RECHNUNG vollständig
+        /// durchgebracht hat — unabhängig davon, ob das anschließende Speichern gelang
+        /// (Nacharbeit Paket 8, Befund N2).
+        ///
+        /// <see cref="SimuliereUndSpeichere"/> liefert -1 für beide Fälle. Der
+        /// Berichtssammler braucht die Unterscheidung: Aus einem gerechneten, aber nicht
+        /// gespeicherten Lauf lassen sich die Stundenreihen für die Ganglinien trotzdem
+        /// abholen (<c>ZeitreihenExtraktor.AusLauf</c>).
+        /// </summary>
+        public bool LaufOk { get; private set; }
+
+        /// <summary>
         /// Führt die komplette Simulation für ein Projekt aus (ohne UI).
         /// Rückgabe false + Fehlertext, wenn Konfiguration oder Klimaregion fehlen.
+        ///
+        /// PAKET 8 (Konzept 13.4): Der ganze Lauf steht im dialogfreien Modus von
+        /// <see cref="DataRepository"/>, und alle Meldungen der Engine laufen über
+        /// <see cref="Protokoll"/> zusammen. <paramref name="fehler"/> trägt am Ende
+        /// den Text des Abbruchgrunds, ergänzt um die Warnungen des Laufs
+        /// (<c>Protokoll.AlsText(nurFehlerUndWarnungen: true)</c>).
         /// </summary>
         public bool Simuliere(int idProjekt, out string fehler)
         {
+            using (DataRepository.EngineModus())
+            {
+                LaufOk = false;
+                bool ok = Simuliere_Intern(idProjekt, out fehler);
+                LaufOk = ok;
+
+                // Datenbankfehler, die im dialogfreien Modus aufgelaufen sind, gehören in
+                // den Kanal - sonst wären sie zwar nicht mehr im Weg, aber auch nicht
+                // mehr sichtbar.
+                foreach (string meldung in DataRepository.StilleFehlerAbholen())
+                    Protokoll.Warnung("Datenbankzugriff während des Laufs: " + meldung);
+
+                if (!ok)
+                {
+                    // Der Abbruchgrund zuerst, dann die Warnungen desselben Laufs. Fehlt
+                    // ein ausdrücklicher Grund (Modul hat nur abgebrochen), liefert der
+                    // Kanal ihn.
+                    string ausKanal = Protokoll.AlsText(true);
+                    if (string.IsNullOrEmpty(fehler)) fehler = ausKanal;
+                    else if (!string.IsNullOrEmpty(ausKanal) && ausKanal.IndexOf(fehler, StringComparison.Ordinal) < 0)
+                        fehler = fehler + Environment.NewLine + ausKanal;
+                }
+
+                return ok;
+            }
+        }
+
+        private bool Simuliere_Intern(int idProjekt, out string fehler)
+        {
             fehler = null;
+
+            // Paket 8: EIN Kanal je Lauf, angelegt VOR der Bedarfsrechnung - auch
+            // SimulationWaermebedarf und SimulationStrombedarf melden dorthin.
+            Protokoll = SimulationProtokoll.NeuStarten();
 
             // Engine-Einstieg: Blockade bei nicht abgeschlossener Schema-Migration
             // (ADR-001, Aufgabe 6). Auf einem halb migrierten Schema zu rechnen liefert
@@ -83,6 +151,15 @@ namespace WindowsFormsApplication1
 
             simulation_Strombedarf.m_ID_Projekt = idProjekt;
             simulation_Strombedarf.Berechnung(idProjekt);
+
+            // PAKET 8 (Konzept 13.4): Bricht die Strombedarfsrechnung ab, war das bisher
+            // eine MessageBox und der Lauf rechnete mit leerem Stromprofil weiter - ein
+            // Ergebnis, das vollständig aussah und keines war. Jetzt bricht der Lauf ab.
+            if (!string.IsNullOrEmpty(simulation_Strombedarf.Fehlertext))
+            {
+                fehler = simulation_Strombedarf.Fehlertext;
+                return false;
+            }
 
             // SimulationControl konfigurieren (BHKW-Parameter kommen aus der Konfiguration
             // statt aus den UI-Steuerelementen: Leistungsgrenze/Betriebsart). Das Volumen
@@ -629,15 +706,39 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Führt die Simulation aus und schreibt das Ergebnis neu.
         /// Rückgabe: neue Ergebnis-Kopf-ID (&gt; 0) oder -1 bei Fehler (Fehlertext in 'fehler').
+        ///
+        /// PAKET 8 (Konzept 13.4): Auch das SPEICHERN steht im dialogfreien Modus.
+        /// <c>ErgebnisCtrl.Save</c> und die von ihm gerufene Löschung des Vorgängerlaufs
+        /// zeigten im Fehlerfall selbst eine MessageBox — an dieser Stelle wäre ein
+        /// unbeaufsichtigter Lauf noch NACH der vollständigen Rechnung hängen geblieben.
+        ///
+        /// NACHARBEIT PAKET 8, BEFUND N4: Der dialogfreie Modus umschließt auch
+        /// <see cref="BaueErgebnis"/>. Der beginnt mit <c>ProjektCtrl.ReadSingle</c> und
+        /// liest anschließend Anlagen- und Speicherzeilen — jeder Datenbankfehler darin
+        /// hätte im headless-Lauf eine MessageBox geöffnet, weil der Block bis dahin
+        /// erst hinter dem Ergebnisaufbau begann.
         /// </summary>
         public int SimuliereUndSpeichere(int idProjekt, out string fehler)
         {
             if (!Simuliere(idProjekt, out fehler))
                 return -1;
 
-            ErgebnisModel m = BaueErgebnis(idProjekt, simulation_Waermebedarf, simulation_Strombedarf, sim);
-            int id = new ErgebnisCtrl().Save(m);
-            if (id <= 0) fehler = "Das Simulationsergebnis konnte nicht gespeichert werden.";
+            int id;
+            using (DataRepository.EngineModus())
+            {
+                ErgebnisModel m = BaueErgebnis(idProjekt, simulation_Waermebedarf, simulation_Strombedarf, sim);
+                id = new ErgebnisCtrl().Save(m);
+
+                foreach (string meldung in DataRepository.StilleFehlerAbholen())
+                    Protokoll.Warnung("Speichern des Ergebnisses: " + meldung);
+            }
+
+            if (id <= 0)
+            {
+                fehler = "Das Simulationsergebnis konnte nicht gespeichert werden.";
+                string ausKanal = Protokoll.AlsText(true);
+                if (!string.IsNullOrEmpty(ausKanal)) fehler = fehler + Environment.NewLine + ausKanal;
+            }
             return id;
         }
     }

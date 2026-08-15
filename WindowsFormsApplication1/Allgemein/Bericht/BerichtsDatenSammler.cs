@@ -117,6 +117,7 @@ namespace WindowsFormsApplication1
         {
             _mitZeitreihen = mitZeitreihen;
             var daten = new BerichtsDaten { IdStamm = idStamm, Stammprojektname = stammName ?? "" };
+            _warnungen = daten.Warnungen;
 
             // Reihenfolge: Stamm zuerst, dann die gewählten Varianten in Gruppenreihenfolge.
             var gruppe = new VariantenCtrl().LadeGruppe(idStamm, stammName);
@@ -172,6 +173,14 @@ namespace WindowsFormsApplication1
 
         private bool _mitZeitreihen;
 
+        /// <summary>
+        /// Warnungssammlung des laufenden <see cref="Sammle"/>-Aufrufs (Nacharbeit
+        /// Paket 8, Befund N5). Sie liegt als Feld vor, damit <see cref="SammleProjekt"/>
+        /// die Meldungen des headless-Laufs dorthin schreiben kann, ohne dass die
+        /// Signatur wächst — dasselbe Muster wie <see cref="_mitZeitreihen"/>.
+        /// </summary>
+        private List<string> _warnungen;
+
         private void SammleProjekt(VariantenDaten v, bool neuRechnen,
                                    IProgress<Fortschritt> fortschritt, int aktuell, int gesamt,
                                    CancellationToken abbruch)
@@ -194,13 +203,24 @@ namespace WindowsFormsApplication1
                 // Frische Instanz je Projekt (Muster btnSimulieren_Click) — die Instanz
                 // bleibt hier zugreifbar, damit der ZeitreihenExtraktor die Stundenreihen
                 // einsammeln kann, bevor sie verworfen wird.
+                //
+                // NACHARBEIT PAKET 8, BEFUND N2: über SimuliereUndSpeichere statt über
+                // Simuliere + eigenem Save. Dieser Pfad läuft in Task.Run auf einem
+                // ThreadPool-Thread (Form_Bericht, Form_Wirtschaftlichkeit,
+                // Form_WirtschaftlichkeitVerlauf); ein hier selbst gerufenes
+                // ErgebnisCtrl.Save stand AUSSERHALB des dialogfreien Engine-Modus und
+                // hätte bei einem Datenbankfehler eine MessageBox auf dem Worker-Thread
+                // geöffnet — der Fortschrittsbalken wäre eingefroren. SimuliereUndSpeichere
+                // klammert Ergebnisaufbau und Speichern korrekt (Befund N4) und liefert
+                // die Meldungen des Laufs gleich mit.
                 var runner = new SimulationRunner();
                 string fehler;
-                if (runner.Simuliere(v.IdProjekt, out fehler))
+                int erg = runner.SimuliereUndSpeichere(v.IdProjekt, out fehler);
+
+                if (runner.LaufOk)
                 {
-                    ErgebnisModel frisch = SimulationRunner.BaueErgebnis(
-                        v.IdProjekt, runner.simulation_Waermebedarf, runner.simulation_Strombedarf, runner.sim);
-                    int erg = ergCtrl.Save(frisch);
+                    // erg <= 0 heißt hier: gerechnet, aber nicht gespeichert. Die
+                    // Stundenreihen sind trotzdem gültig — Verhalten wie bisher.
                     if (erg > 0) v.FrischSimuliert = true;
                     if (_mitZeitreihen)
                         try { v.Zeitreihen = ZeitreihenExtraktor.AusLauf(runner); }
@@ -210,6 +230,14 @@ namespace WindowsFormsApplication1
                     throw new InvalidOperationException("Simulation fehlgeschlagen: " + (fehler ?? "unbekannter Fehler"));
                 // War ein (älteres) Ergebnis vorhanden, läuft der Bericht damit weiter —
                 // der Zeitstempel weist den Stand aus; Ganglinien entfallen dann mit Hinweis.
+
+                // NACHARBEIT PAKET 8, BEFUND N5: Die Warnungen und Hinweise des Laufs
+                // gehen sonst verloren. „out fehler" ist nur im Misserfolgsfall belegt,
+                // und ein ERFOLGREICHER Lauf kann sehr wohl gemeldet haben, dass er mit
+                // einer Ersatzannahme gerechnet hat (fehlender Tagesverteilungstyp,
+                // abgeschnittene Prozesswärme, extrapolierte WP-Kennlinie). Vor Paket 8
+                // sah der Anwender an dieser Stelle eine MessageBox.
+                LaufmeldungenUebernehmen(v, runner, erg, fehler);
             }
 
             // 3. Ergebnisbaum + Projektstammdaten laden.
@@ -250,6 +278,35 @@ namespace WindowsFormsApplication1
             catch { v.Details = null; }
 
             // 7. Zeitreihen für Ganglinien: Phase 3 (In-Memory-Lauf liefert die Reihen).
+        }
+
+        /// <summary>
+        /// Übernimmt Warnungen und Hinweise eines headless-Laufs in die Warnungsliste des
+        /// Berichts (Nacharbeit Paket 8, Befund N5).
+        ///
+        /// Jede Meldung wird dem Projekt zugeordnet — bei einem Variantenbericht laufen
+        /// bis zu einem Dutzend Simulationen hintereinander, und eine Warnung ohne
+        /// Projektbezug wäre nicht zuzuordnen. Fehler des Kanals stehen bereits in
+        /// <paramref name="fehler"/> und werden vom Aufrufer behandelt; hier kommt der
+        /// nicht abbrechende Teil dazu.
+        /// </summary>
+        private void LaufmeldungenUebernehmen(VariantenDaten v, SimulationRunner runner,
+                                              int erg, string fehler)
+        {
+            if (_warnungen == null || runner == null || runner.Protokoll == null) return;
+
+            string wer = (v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige + "'";
+
+            foreach (string w in runner.Protokoll.Warnungen)
+                _warnungen.Add(wer + ": " + w);
+            foreach (string h in runner.Protokoll.Hinweise)
+                _warnungen.Add(wer + ": " + h);
+
+            // Gerechnet, aber nicht gespeichert: Der Bericht läuft mit dem älteren
+            // Ergebnisstand weiter - das gehört sichtbar gemacht.
+            if (runner.LaufOk && erg <= 0)
+                _warnungen.Add(wer + ": Das frisch gerechnete Ergebnis konnte nicht gespeichert " +
+                               "werden" + (string.IsNullOrEmpty(fehler) ? "." : " (" + fehler + ")."));
         }
 
         private static void Melde(IProgress<Fortschritt> p, int aktuell, int gesamt, string text)

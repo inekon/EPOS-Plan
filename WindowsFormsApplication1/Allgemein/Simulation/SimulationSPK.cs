@@ -121,11 +121,16 @@ namespace WindowsFormsApplication1
             // B0-12: Alle Kessel-Arrays sind fest auf MAX_SPK dimensioniert — mehr Einträge
             // in spk_list liefen ungeprüft in die Einlese-Schleife und ab dem 11. Kessel
             // in einen Überlauf sämtlicher Kessel-Arrays.
+            //
+            // PAKET 8 (Konzept 13.4): Die Meldung geht als WARNUNG in den Protokollkanal
+            // statt in eine MessageBox - der Lauf rechnet unverändert weiter, nur eben
+            // ohne den Rechner anzuhalten. Die Kappung selbst ist unberührt.
             if (Anzahl > MAX_SPK)
             {
-                System.Windows.Forms.MessageBox.Show(
-                    "Im Projekt sind " + Anzahl + " Heizkessel hinterlegt, die Simulation unterstützt maximal " + MAX_SPK + ".\n" +
-                    "Es werden nur die ersten " + MAX_SPK + " Kessel berücksichtigt.");
+                SimulationProtokoll.Aktuell.Warnung(
+                    "Heizkessel: Im Projekt sind " + Anzahl + " Kessel hinterlegt, die Simulation " +
+                    "unterstützt maximal " + MAX_SPK + ". Es werden nur die ersten " + MAX_SPK +
+                    " Kessel berücksichtigt.");
                 Anzahl = MAX_SPK;
             }
 
@@ -138,7 +143,7 @@ namespace WindowsFormsApplication1
             // Die AUSGEFÜHRTEN Anweisungen und ihre Reihenfolge sind unverändert; der
             // bereits erzeugte HeizkesselCtrl wird hineingereicht, damit auch seine
             // Erzeugungsstelle bleibt, wo sie war.
-            if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl, true)) return false;
+            if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl)) return false;
 
             // 3. Die stündliche Simulation durchführen (Ermittelt Nutzwärme UND stündlichen Verbrauch)
             Heizkessel_Simulation(Waermebedarf, ref Gasspitze_Spk, s_waerme_Gas_Spk, s_waerme_Oel_Spk,
@@ -164,13 +169,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="heizkesselctrl">bereits erzeugter Controller des Aufrufers</param>
         /// <param name="Anzahl">Zahl der zu lesenden Kessel (bereits auf MAX_SPK begrenzt)</param>
-        /// <param name="mitDialog">
-        /// true = Altpfad: fehlender Kessel wird als MessageBox gemeldet (unverändertes
-        /// Verhalten). false = zweikanaliger Weg: die Meldung geht dialogfrei über
-        /// <see cref="Fehlertext"/> (Konzept 13.4, Nacharbeit N10).
-        /// </param>
         /// <returns>false = Abbruch (Kessel im Projekt nicht hinterlegt, B0-3).</returns>
-        private bool Kesseldaten_Einlesen(HeizkesselCtrl heizkesselctrl, int Anzahl, bool mitDialog)
+        /// <remarks>
+        /// PAKET 8 (Konzept 13.4): Der Parameter <c>mitDialog</c> ist entfallen. Er
+        /// unterschied bis dahin den Altpfad (MessageBox) vom zweikanaligen Weg
+        /// (<see cref="Fehlertext"/>, Nacharbeit N10) — Paket 8 verallgemeinert den
+        /// Fehlerkanal, also melden BEIDE Wege dialogfrei. Die Oberfläche zeigt den Text
+        /// nach dem Lauf; dort ist ein Dialog richtig aufgehoben, mitten in der
+        /// Kaskade war er es nie.
+        /// </remarks>
+        private bool Kesseldaten_Einlesen(HeizkesselCtrl heizkesselctrl, int Anzahl)
         {
             for (int i = 0; i < Anzahl; i++)
             {
@@ -184,10 +192,10 @@ namespace WindowsFormsApplication1
                 // statt items[0]-Zugriff mit ArgumentOutOfRangeException.
                 if (heizkesselctrl.rows == 0)
                 {
-                    string text = "Der Heizkessel '" + spk_list[i] + "' ist im Projekt nicht hinterlegt.\n" +
-                                  "Die Kessel-Simulation wird abgebrochen.";
-                    if (mitDialog) System.Windows.Forms.MessageBox.Show(text);
-                    else { Fehlertext = text; Console.WriteLine("Heizkessel: " + text.Replace("\n", " ")); }
+                    string text = "Der Heizkessel '" + spk_list[i] + "' ist im Projekt nicht hinterlegt. " +
+                                  "Die Kessel-Simulation wurde abgebrochen.";
+                    Fehlertext = text;
+                    SimulationProtokoll.Aktuell.Fehlermeldung("Heizkessel: " + text);
                     return false;
                 }
 
@@ -482,20 +490,20 @@ namespace WindowsFormsApplication1
             HeizkesselCtrl heizkesselctrl = new HeizkesselCtrl();
             int Anzahl = spk_list.Count;
 
-            // B0-12, dialogfrei (Nacharbeit N10): Der Altpfad zeigt hier eine MessageBox
-            // und rechnet mit den ersten MAX_SPK Kesseln weiter. Der zweikanalige Weg
-            // rechnet ebenso weiter, meldet aber auf die Konsole statt in einen Dialog —
-            // die Engine bleibt dialogfrei (Konzept 13.4), und das VERHALTEN ist dasselbe.
+            // B0-12, dialogfrei (Nacharbeit N10, seit Paket 8 auf BEIDEN Wegen): Der Lauf
+            // rechnet mit den ersten MAX_SPK Kesseln weiter und meldet das als Warnung im
+            // Protokollkanal (Konzept 13.4). Das VERHALTEN ist dasselbe wie vorher.
             if (Anzahl > MAX_SPK)
             {
-                Console.WriteLine("Heizkessel: Im Projekt sind " + Anzahl + " Kessel hinterlegt, " +
-                                  "die Simulation unterstützt maximal " + MAX_SPK +
-                                  ". Es werden nur die ersten " + MAX_SPK + " Kessel berücksichtigt.");
+                SimulationProtokoll.Aktuell.Warnung(
+                    "Heizkessel: Im Projekt sind " + Anzahl + " Kessel hinterlegt, die Simulation " +
+                    "unterstützt maximal " + MAX_SPK + ". Es werden nur die ersten " + MAX_SPK +
+                    " Kessel berücksichtigt.");
                 Anzahl = MAX_SPK;
             }
 
             // Schritt 2 aus Berechnung() — EINE Fassung für beide Wege (Nacharbeit N6).
-            if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl, false)) return false;
+            if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl)) return false;
 
             // Senkenzuordnung je Kessel: keine Physik, sondern die Konfiguration des
             // zweikanaligen Wegs — deshalb hier und nicht im gemeinsamen Einlesen.

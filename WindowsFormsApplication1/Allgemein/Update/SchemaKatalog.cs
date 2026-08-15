@@ -130,7 +130,7 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_PUFFERSPEICHER, "Entladeprio",           "LONG"),      // Entladereihenfolge, 0 = automatisch
 
             new SchemaSpalte(TAB_KLIMAREGION,    "Klimazone_DIN4710",     "LONG DEFAULT 0"), // 1…15, 0 = unbestimmt
-            new SchemaSpalte(TAB_EINSTELLUNGEN,  "Extrapolation_erlaubt", "YESNO"),     // nur anhängen!
+            new SchemaSpalte(TAB_EINSTELLUNGEN,  SPALTE_EXTRAPOLATION_ERLAUBT, "YESNO"), // nur anhängen!
         };
 
         /// <summary>
@@ -163,6 +163,40 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// Name der Projekteinstellung „Extrapolation der Wärmepumpen-Kennlinie erlaubt"
+        /// (Paket 8, Konzept 13.4). EINE Wahrheit für Migration, Leseseite
+        /// (<c>KonfigurationCtrl.ReadSingle</c>), Schreibseite und Oberfläche —
+        /// dasselbe Muster wie <see cref="SPALTE_KASKADE_ZWEIKANALIG"/>.
+        /// </summary>
+        public const string SPALTE_EXTRAPOLATION_ERLAUBT = "Extrapolation_erlaubt";
+
+        /// <summary>
+        /// Schritt 7 der Migration — die Vorbelegung von
+        /// <see cref="SPALTE_EXTRAPOLATION_ERLAUBT"/> (Paket 8).
+        ///
+        /// <b>Die Spalte selbst entsteht schon in Schritt 2</b> (sie steht seit Paket 1
+        /// in <see cref="Schritt2_Speicher"/>); der Eintrag hier ist die idempotente
+        /// Absicherung für Datenbanken, die auf einem Zwischenstand stehen. Der
+        /// eigentliche Inhalt von Schritt 7 ist das <b>DML</b>: Access belegt eine per
+        /// <c>ADD COLUMN … YESNO</c> angehängte Spalte in allen bestehenden Zeilen mit
+        /// <c>False</c> — also „Extrapolation verboten". Genau das wäre eine
+        /// Verhaltensänderung: Bis Paket 8 fragte die Engine bei jeder
+        /// Kennlinien-Unterschreitung nach, und in jedem dokumentierten Lauf lautete die
+        /// Antwort „Ja". Schritt 7 setzt die Vorbelegung deshalb einmalig auf
+        /// <c>True</c> (siehe <c>SchemaMigration.Schritt_7_ExtrapolationVorbelegung</c>).
+        ///
+        /// ACHTUNG <c>Tab_Einstellungen</c> — dieselbe Regel wie bei
+        /// <c>Kaskade_Zweikanalig</c>: Die Tabelle wird in
+        /// <c>KonfigurationCtrl.ReadSingle</c> positionsbasiert über row[0]…row[22]
+        /// gelesen. Die Spalte ist ANGEHÄNGT, und die Leseseite greift NAMENSBASIERT
+        /// darauf zu, statt die Ordinalkette zu verlängern.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt7_Extrapolation =
+        {
+            new SchemaSpalte(TAB_EINSTELLUNGEN,  SPALTE_EXTRAPOLATION_ERLAUBT, "YESNO"), // nur anhängen!
+        };
+
+        /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
         /// und ist deshalb nicht Teil von <see cref="Alle"/>.
@@ -174,6 +208,12 @@ namespace WindowsFormsApplication1
         /// Alle additiven Spalten in Anlegereihenfolge - der Umfang, den die
         /// Rückfallebene sicherstellt. Überschneidungsfrei: die Erdreich-Spalten aus
         /// Paket 3 stehen ausschließlich in <see cref="Schritt1_Energieanlagen"/>.
+        ///
+        /// <see cref="Schritt7_Extrapolation"/> ist hier bewusst NICHT aufgeführt: Die
+        /// eine Spalte dieses Schritts steht bereits in
+        /// <see cref="Schritt2_Speicher"/>, ein zweiter Eintrag wäre die Überschneidung,
+        /// die dieser Kommentar ausschließt. Schritt 7 ist ein DML-Schritt (Vorbelegung),
+        /// sein DDL-Anteil nur die idempotente Absicherung.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

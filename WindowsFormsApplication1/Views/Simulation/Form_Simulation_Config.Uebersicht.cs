@@ -130,6 +130,10 @@ namespace WindowsFormsApplication1
         private CheckBox checkBox_KaskadeZweikanalig;
         private bool _kaskadeUiUpdate = false;   // verhindert Schreiben beim Vorbelegen
 
+        // Fußzeile, rechts: Einstellung Extrapolation_erlaubt (Paket 8, Konzept 13.4)
+        private CheckBox checkBox_Extrapolation;
+        private bool _extrapolationUiUpdate = false;
+
         // Inline-Editor für die Wärmequelle in der Übersicht
         private ComboBox _wqCombo;
         private AnlagenInfo _wqInfo;
@@ -320,6 +324,7 @@ namespace WindowsFormsApplication1
             btn_PufferVerwalten.BringToFront();
 
             InitKaskadeSchalter();
+            InitExtrapolationSchalter();
 
             AktualisierePufferFusszeile();
         }
@@ -418,6 +423,156 @@ namespace WindowsFormsApplication1
             _kaskadeUiUpdate = true;
             try { checkBox_KaskadeZweikanalig.Checked = !wert; }
             finally { _kaskadeUiUpdate = false; }
+
+            ShowStatus("Die Einstellung konnte nicht gespeichert werden.", Color.DarkRed);
+        }
+
+        /// <summary>
+        /// Schalter „Extrapolation der WP-Kennlinie erlauben" in der Fußzeile
+        /// (Paket 8; Konzept 13.4).
+        ///
+        /// Er löst die einzige echte Rückfrage der Engine ab: Bis Paket 8 fragte
+        /// <c>SimulationWaermepumpe</c> mitten in der Stundenschleife per MessageBox, ob
+        /// unterhalb der niedrigsten Stützstelle der Kennlinie extrapoliert werden darf.
+        /// Jeder unbeaufsichtigte Lauf blieb daran hängen.
+        ///
+        /// <b>Vorbelegung an.</b> Das ist die Antwort, die in jedem dokumentierten Lauf
+        /// gegeben wurde — nur damit bleiben die Ergebnisse unverändert. Wer die
+        /// Extrapolation ausschließen will, nimmt den Haken heraus; die Simulation bricht
+        /// dann mit einer sprechenden Meldung ab, statt still zu rechnen.
+        ///
+        /// Aufbau exakt wie <see cref="InitKaskadeSchalter"/>: programmatisch, kein
+        /// Designer, keine .resx, deutscher Text (die durchgängige Lokalisierung des
+        /// Simulationsbereichs ist Paket 9).
+        /// </summary>
+        private void InitExtrapolationSchalter()
+        {
+            checkBox_Extrapolation = new CheckBox();
+            checkBox_Extrapolation.Name = "checkBox_Extrapolation";
+            checkBox_Extrapolation.Text = "Extrapolation der WP-Kennlinie erlauben";
+            checkBox_Extrapolation.AutoSize = true;
+            checkBox_Extrapolation.Checked = true;         // Vorbelegung wie im Datenmodell
+            checkBox_Extrapolation.Enabled = false;        // erst mit bekanntem Projekt
+            checkBox_Extrapolation.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+            _uebersichtTip.SetToolTip(checkBox_Extrapolation,
+                "Unterschreitet die Quelltemperatur die niedrigste Stützstelle der" +
+                Environment.NewLine +
+                "Wärmepumpen-Kennlinie, wird die Kennlinie linear verlängert." +
+                Environment.NewLine + Environment.NewLine +
+                "Mit Haken (Vorbelegung): Es wird extrapoliert, und der Lauf vermerkt das" +
+                Environment.NewLine +
+                "als Hinweis. Das entspricht genau dem bisherigen Verhalten - die Engine" +
+                Environment.NewLine +
+                "hat bis Paket 8 an dieser Stelle nachgefragt." +
+                Environment.NewLine + Environment.NewLine +
+                "Ohne Haken: Die Simulation bricht ab und nennt die betroffene Anlage." +
+                Environment.NewLine +
+                "Sinnvoll, wenn extrapolierte Kennwerte nicht in ein Ergebnis einfließen" +
+                Environment.NewLine +
+                "sollen; die Kennlinie ist dann um tiefere Stützstellen zu ergänzen.");
+
+            checkBox_Extrapolation.CheckedChanged += checkBox_Extrapolation_CheckedChanged;
+            this.Controls.Add(checkBox_Extrapolation);
+            checkBox_Extrapolation.BringToFront();
+
+            // Erst nach dem Hinzufügen platzieren: Ein AutoSize-Steuerelement kennt seine
+            // Höhe erst, wenn es zum Formular gehört - und die Höhe wird gebraucht.
+            ExtrapolationSchalterPlatzieren();
+        }
+
+        /// <summary>
+        /// Setzt den Extrapolationsschalter in die Fußzeile — eine Zeile unter den
+        /// Kaskadenschalter und KOLLISIONSFREI zur Knopfzeile (Nacharbeit Paket 8,
+        /// Befund N13a).
+        ///
+        /// Zwei Dinge, die die erste Fassung nicht getan hat:
+        ///
+        ///   1. <b>Null-Schutz.</b> Die Position wurde ungeprüft aus
+        ///      <c>checkBox_KaskadeZweikanalig</c> abgeleitet. Fällt der Kaskadenschalter
+        ///      künftig weg oder wandert sein Aufbau, wäre das eine
+        ///      <c>NullReferenceException</c> im Konstruktor des Formulars — der Dialog
+        ///      ließe sich gar nicht mehr öffnen. Ohne ihn gilt dieselbe Rechnung wie in
+        ///      <see cref="InitKaskadeSchalter"/>.
+        ///
+        ///   2. <b>Kollisionsfreiheit.</b> Die Fußzeile ist knapp: Übersicht bis y≈418,
+        ///      Pufferzeile, Verwalten-Knopf bis y≈476, Speichern/OK ab y≈490. Eine
+        ///      zweite Schalterzeile passt dort nur mit wenigen Pixeln Luft und lag in
+        ///      der ersten Fassung auf der Oberkante von <c>btn_Speichern</c>. Statt die
+        ///      Zahl fest zu setzen, wird der Bedarf gerechnet und das Formular bei
+        ///      Bedarf um genau die fehlenden Pixel höher — dasselbe Vorgehen wie in
+        ///      <c>InitPufferspeicherRubrik</c>, die die Knopfzeile ebenfalls nachzieht
+        ///      (die drei Elemente sind ohne Verankerung, Bestand).
+        /// </summary>
+        private void ExtrapolationSchalterPlatzieren()
+        {
+            int x, y;
+            if (checkBox_KaskadeZweikanalig != null)
+            {
+                x = checkBox_KaskadeZweikanalig.Left;
+                y = checkBox_KaskadeZweikanalig.Bottom + 4;
+            }
+            else
+            {
+                // Rückfall: dieselbe Rechnung wie beim Kaskadenschalter, nur eine Zeile
+                // tiefer angesetzt (unterhalb des Verwalten-Knopfes).
+                x = groupBox_Uebersicht.Right - 230;
+                if (x < btn_PufferVerwalten.Right + 12) x = btn_PufferVerwalten.Right + 12;
+                y = btn_PufferVerwalten.Bottom + 4;
+            }
+            checkBox_Extrapolation.Location = new Point(x, y);
+
+            // Abstand zur Knopfzeile herstellen. Ohne diesen Schritt überlappt der
+            // Schalter die Oberkante von btn_Speichern.
+            const int LUFT = 6;
+            int fehlt = (y + checkBox_Extrapolation.Height + LUFT) - btn_Speichern.Top;
+            if (fehlt <= 0) return;
+
+            this.ClientSize = new Size(this.ClientSize.Width, this.ClientSize.Height + fehlt);
+            btn_Speichern.Location = new Point(btn_Speichern.Left, btn_Speichern.Top + fehlt);
+            btn_OK.Location = new Point(btn_OK.Left, btn_OK.Top + fehlt);
+            lblStatus.Location = new Point(lblStatus.Left, lblStatus.Top + fehlt);
+        }
+
+        /// <summary>Belegt den Schalter aus der Datenbank vor (Gegenstück zu <see cref="AktualisiereKaskadeSchalter"/>).</summary>
+        private void AktualisiereExtrapolationSchalter()
+        {
+            if (checkBox_Extrapolation == null) return;
+
+            _extrapolationUiUpdate = true;
+            try
+            {
+                checkBox_Extrapolation.Enabled = m_ID_Projekt > 0;
+                // Ohne Projekt bleibt die Vorbelegung stehen - nicht "aus", denn das wäre
+                // die Aussage "Extrapolation verboten", und die trifft nicht zu.
+                checkBox_Extrapolation.Checked =
+                    m_ID_Projekt <= 0 || KonfigurationCtrl.ExtrapolationErlaubtLesen(m_ID_Projekt);
+            }
+            finally { _extrapolationUiUpdate = false; }
+        }
+
+        private void checkBox_Extrapolation_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_extrapolationUiUpdate || m_ID_Projekt <= 0) return;
+
+            bool wert = checkBox_Extrapolation.Checked;
+
+            // Sofort schreiben, aus demselben Grund wie beim Kaskadenschalter: Die
+            // Einstellung gehört nicht zu dem Satz, den btn_Speichern_Click über
+            // KonfigurationCtrl.Update wegschreibt.
+            if (KonfigurationCtrl.ExtrapolationErlaubtSchreiben(m_ID_Projekt, wert))
+            {
+                ShowStatus(wert
+                    ? "Extrapolation der WP-Kennlinie erlaubt - der Lauf vermerkt sie als Hinweis."
+                    : "Extrapolation der WP-Kennlinie abgewählt - der Lauf bricht ab, wenn die " +
+                      "Quelltemperatur die Kennlinie unterschreitet.",
+                    Color.DarkGreen);
+                return;
+            }
+
+            _extrapolationUiUpdate = true;
+            try { checkBox_Extrapolation.Checked = !wert; }
+            finally { _extrapolationUiUpdate = false; }
 
             ShowStatus("Die Einstellung konnte nicht gespeichert werden.", Color.DarkRed);
         }

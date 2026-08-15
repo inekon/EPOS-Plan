@@ -34,12 +34,14 @@ namespace WindowsFormsApplication1
     ///
     /// ETAPPE 1 deckt die Schritte 1-4 ab (Schema), ETAPPE 2 den Schritt 5 - die
     /// einmalige Projektdatenmigration nach Konzept 5.5. Schritt 6 kommt mit Paket 4
-    /// (Etappe 4a) hinzu und legt das Feature-Flag der zweikanaligen Kaskade an.
+    /// (Etappe 4a) hinzu und legt das Feature-Flag der zweikanaligen Kaskade an,
+    /// Schritt 7 mit Paket 8 und belegt die Einstellung Extrapolation_erlaubt vor
+    /// (Konzept 13.4).
     /// </summary>
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 6;
+        public const int ZIEL_VERSION = 7;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -56,6 +58,13 @@ namespace WindowsFormsApplication1
         /// Datenmigration zu wiederholen.
         /// </summary>
         public const int SCHRITT_6_FEATUREFLAG = 6;
+
+        /// <summary>
+        /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
+        /// Konzept 13.4). Die SPALTE entsteht bereits in Schritt 2; dieser Schritt setzt
+        /// ihren WERT einmalig auf WAHR und ist damit das zweite DML des Vorhabens.
+        /// </summary>
+        public const int SCHRITT_7_EXTRAPOLATION = 7;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -110,6 +119,12 @@ namespace WindowsFormsApplication1
         public static int DatenPendelspeicherTemperaturen { get; private set; }
         /// <summary>Summe aller Protokollhinweise aus Schritt 5.</summary>
         public static int DatenHinweise { get; private set; }
+
+        /// <summary>
+        /// Schritt 7 (Paket 8): Einstellungssätze, die die Vorbelegung
+        /// <c>Extrapolation_erlaubt = WAHR</c> erhalten haben.
+        /// </summary>
+        public static int DatenExtrapolationVorbelegt { get; private set; }
 
         static SchemaMigration()
         {
@@ -166,6 +181,12 @@ namespace WindowsFormsApplication1
                         "Feature-Flag Kaskade_Zweikanalig in Tab_Einstellungen (Konzept Kapitel 9)",
                         "Die Projekteinstellung für die zweikanalige Kaskade konnte nicht angelegt werden.",
                         Schritt_6_FeatureFlag),
+
+            // PAKET 8 - Vorbelegung der Einstellung Extrapolation_erlaubt (Konzept 13.4).
+            new Schritt(SCHRITT_7_EXTRAPOLATION,
+                        "Vorbelegung Extrapolation_erlaubt in Tab_Einstellungen (Konzept 13.4)",
+                        "Die Projekteinstellung für die Kennlinien-Extrapolation konnte nicht vorbelegt werden.",
+                        Schritt_7_ExtrapolationVorbelegung),
         };
 
         // =================================================================================
@@ -194,6 +215,7 @@ namespace WindowsFormsApplication1
             DatenPendelspeicherNeu = 0;
             DatenPendelspeicherTemperaturen = 0;
             DatenHinweise = 0;
+            DatenExtrapolationVorbelegt = 0;
 
             var l = new Lauf();
             string dbPfad;
@@ -344,6 +366,10 @@ namespace WindowsFormsApplication1
                         DatenPendelspeicherNeu + " Pendelspeicher angelegt, " +
                         DatenHinweise + " Hinweise.");
 
+            if (DatenExtrapolationVorbelegt > 0)
+                l.Zeile("Vorbelegung 13.4: " + DatenExtrapolationVorbelegt +
+                        " Einstellungssätze mit Extrapolation_erlaubt = WAHR.");
+
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
 
@@ -461,6 +487,53 @@ namespace WindowsFormsApplication1
         private static bool Schritt_6_FeatureFlag(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt6_FeatureFlag);
+        }
+
+        /// <summary>
+        /// Schritt 7 (Paket 8, Konzept 13.4): Vorbelegung der Projekteinstellung
+        /// <c>Extrapolation_erlaubt</c> auf WAHR.
+        ///
+        /// ZWEI TEILE, in dieser Reihenfolge:
+        ///
+        ///   1. <b>DDL, idempotent</b> — dieselbe Spaltenanlage wie in Schritt 2 aus dem
+        ///      gemeinsamen Katalog. Auf jeder gepflegten Datenbank ein No-op
+        ///      („bereits vorhanden"); sie steht hier nur, damit ein Zwischenstand nicht
+        ///      am UPDATE scheitert.
+        ///   2. <b>DML, einmalig</b> — <c>UPDATE … SET Extrapolation_erlaubt = TRUE</c>
+        ///      über ALLE Zeilen.
+        ///
+        /// WARUM DAS UPDATE. <c>ALTER TABLE … ADD COLUMN … YESNO</c> belegt bestehende
+        /// Zeilen in Access mit <c>False</c>; ein Ja/Nein-Feld kennt kein NULL. Ohne
+        /// diesen Schritt stünde jedes Altprojekt auf „Extrapolation verboten" — und
+        /// damit auf einem ANDEREN Verhalten als bisher: Bis Paket 8 fragte die Engine
+        /// bei Unterschreitung der Kennlinien-Untergrenze nach, und in jedem
+        /// dokumentierten Lauf (Referenzlauf-Suite, fünf von neun Projekten) lautete die
+        /// Antwort „Ja". WAHR ist damit die einzige ergebnisneutrale Vorbelegung.
+        ///
+        /// EINMALIGKEIT. Der Schritt läuft genau einmal je Datenbank (Marker 6 → 7); ein
+        /// später vom Anwender gesetztes „nein" wird dadurch nicht wieder überschrieben.
+        /// Neu angelegte Einstellungssätze belegt <c>KonfigurationCtrl</c> selbst vor
+        /// (dort <c>ExtrapolationVorbelegen</c>) — der Weg über die Migration steht
+        /// ausschließlich für den Bestand.
+        /// </summary>
+        private static bool Schritt_7_ExtrapolationVorbelegung(Lauf l)
+        {
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt7_Extrapolation)) return false;
+
+            int betroffen = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_EINSTELLUNGEN + "] SET [" +
+                SchemaKatalog.SPALTE_EXTRAPOLATION_ERLAUBT + "] = TRUE");
+
+            if (betroffen < 0)
+            {
+                l.Notiz("Vorbelegung Extrapolation_erlaubt: UPDATE fehlgeschlagen");
+                return false;
+            }
+
+            DatenExtrapolationVorbelegt = betroffen;
+            l.Notiz("Extrapolation_erlaubt: " + betroffen + " Einstellungssätze auf WAHR vorbelegt " +
+                    "(entspricht der bisherigen Antwort auf die Extrapolationsrückfrage)");
+            return true;
         }
 
         /// <summary>

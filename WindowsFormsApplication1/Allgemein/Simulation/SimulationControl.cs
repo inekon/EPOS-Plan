@@ -174,23 +174,92 @@ namespace WindowsFormsApplication1
         /// gerechnet hat). Konzept 13.4 verlangt eine dialogfreie Engine; der
         /// zweikanalige Weg meldet deshalb hierüber statt über eine MessageBox, und
         /// <c>SimulationRunner</c> reicht den Text an den Aufrufer weiter
-        /// (Paket-5-Nacharbeit, Befund N10). Der einkanalige Altpfad ist unberührt — er
-        /// zeigt seine Meldungen unverändert als Dialog.
+        /// (Paket-5-Nacharbeit, Befund N10). Seit Paket 8 meldet auch der einkanalige
+        /// Altpfad hierüber statt per MessageBox (Konzept 13.4).
         /// </summary>
         public string Fehlertext = "";
 
+        /// <summary>
+        /// Nimmt den Abbruchgrund eines Moduls auf — SAMMELND statt überschreibend
+        /// (Nacharbeit Paket 8, Befund N11).
+        ///
+        /// Ein Lauf kann an mehreren Stellen scheitern: Wärmepumpe und Heizkessel melden
+        /// aus verschiedenen Zweigen der Kaskade in dasselbe Feld. Bis zur Nacharbeit
+        /// überschrieb der spätere Melder den früheren an zwei von drei Stellen — der
+        /// Anwender sah dann den zweiten Grund und nicht den ersten. Doppelungen werden
+        /// weggelassen: Dasselbe Modul meldet in beiden Rechenwegen denselben Text.
+        ///
+        /// ERGEBNISNEUTRAL: <see cref="Fehlertext"/> ist reiner Meldetext. Ob er belegt
+        /// ist, entscheidet über den Abbruch des Speicherns — und belegt ist er in genau
+        /// denselben Fällen wie zuvor.
+        /// </summary>
+        private void FehlertextAufnehmen(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            if (string.IsNullOrEmpty(Fehlertext)) { Fehlertext = text; return; }
+            if (Fehlertext.IndexOf(text, StringComparison.Ordinal) >= 0) return;
+            Fehlertext = Fehlertext + Environment.NewLine + text;
+        }
+
+        /// <summary>
+        /// Protokoll- und Fehlerkanal dieses Laufs (Paket 8, Konzept 13.4).
+        ///
+        /// <see cref="Do_Simulation"/> zeigt hier auf den prozessweiten Kanal
+        /// <see cref="SimulationProtokoll.Aktuell"/>. Der wird von den Einstiegspunkten
+        /// eines Laufs erzeugt (<c>SimulationRunner.Simuliere</c>,
+        /// <c>Form_Simulation_Detail.btn_Simulation_Click</c>) — und zwar VOR der
+        /// Bedarfsrechnung, denn auch <see cref="SimulationWaermebedarf"/> und
+        /// <see cref="SimulationStrombedarf"/> melden dorthin, und beide laufen vor der
+        /// Kaskade. Wird <c>Do_Simulation</c> ohne einen solchen Einstieg gerufen, ist
+        /// hier trotzdem ein gültiger (dann eben vorbelegter) Kanal.
+        /// </summary>
+        public SimulationProtokoll Protokoll = SimulationProtokoll.Aktuell;
+
+        /// <summary>
+        /// Führt einen kompletten Simulationslauf aus.
+        ///
+        /// PAKET 8 (Konzept 13.4): Der ganze Lauf steht im dialogfreien Modus von
+        /// <see cref="DataRepository"/> — ein Datenbankfehler im Rechenpfad öffnet damit
+        /// keine MessageBox mehr, sondern landet als Warnung im
+        /// <see cref="Protokoll"/>. Für jede andere Nutzung von
+        /// <c>DataRepository</c> ändert sich nichts (der Modus zählt und wird hier
+        /// zuverlässig wieder freigegeben).
+        /// </summary>
         public void Do_Simulation(int ID_Projekt)
+        {
+            using (DataRepository.EngineModus())
+            {
+                Do_Simulation_Intern(ID_Projekt);
+                DbFehlerUebernehmen();
+            }
+        }
+
+        /// <summary>Holt die im dialogfreien Modus aufgelaufenen DB-Meldungen ins Protokoll.</summary>
+        private void DbFehlerUebernehmen()
+        {
+            foreach (string meldung in DataRepository.StilleFehlerAbholen())
+                Protokoll.Warnung("Datenbankzugriff während des Laufs: " + meldung);
+        }
+
+        private void Do_Simulation_Intern(int ID_Projekt)
         {
             // Engine-Einstieg: Blockade bei nicht abgeschlossener Schema-Migration
             // (ADR-001, Aufgabe 6). Bewusst ohne MessageBox - die Engine bleibt
             // dialogfrei (Konzept 13.4); der Grund steht in Sperrgrund.
             Sperrgrund = "";
             Fehlertext = "";
+
+            // Paket 8: an den Kanal dieses Laufs andocken. Ein eigener Kanal wird hier
+            // BEWUSST nicht erzeugt - Wärme- und Strombedarf sind zu diesem Zeitpunkt
+            // längst gerechnet und hätten ihre Meldungen sonst in ein verworfenes
+            // Protokoll geschrieben.
+            Protokoll = SimulationProtokoll.Aktuell;
+
             string sperrgrund;
             if (SchemaMigration.SimulationGesperrt(out sperrgrund))
             {
                 Sperrgrund = sperrgrund;
-                Console.WriteLine("Simulation abgebrochen: " + sperrgrund);
+                Protokoll.Fehlermeldung("Simulation abgebrochen: " + sperrgrund);
                 return;
             }
 
@@ -219,7 +288,7 @@ namespace WindowsFormsApplication1
             // gleichwertig - es hält den Bestand konsistent (siehe VorbelegungNachziehen).
             int nachgezogen = WaermesenkeClass.VorbelegungNachziehen(ID_Projekt);
             if (nachgezogen > 0)
-                Console.WriteLine("Ladeprioritäten: " + nachgezogen + " Feld(er) ohne Vorgabe auf 0 " +
+                Protokoll.Hinweis("Ladeprioritäten: " + nachgezogen + " Feld(er) ohne Vorgabe auf 0 " +
                                   "gesetzt (Konzept 3.4, Vorbelegung wie Migrationsregel R5).");
 
             // ***********************************************************************
@@ -231,6 +300,14 @@ namespace WindowsFormsApplication1
             // ***********************************************************************
             SpeicherRegistryAufbauen();
             simulation_wp.Pufferspeicher = puffer_wp;
+
+            // PAKET 8 (Konzept 13.4): Die Extrapolationsrückfrage der WP-Kennlinie ist
+            // zur Projekteinstellung geworden. Sie wird HIER an das Modul gegeben - vor
+            // jedem der beiden Rechenwege, damit beide dieselbe Vorgabe sehen. Ohne
+            // Konfigurationssatz gilt die Vorbelegung "erlaubt", also das bisherige
+            // Verhalten (die Rückfrage wurde in jedem dokumentierten Lauf bejaht).
+            simulation_wp.Extrapolation_Erlaubt =
+                (ctrl_konfig == null || ctrl_konfig.model == null) || ctrl_konfig.model.Extrapolation_erlaubt;
 
             // Senkenzuordnungen des Projekts (Konzept 6.1) - ausgewertet nur im
             // zweikanaligen Weg.
@@ -800,7 +877,13 @@ namespace WindowsFormsApplication1
                 // nicht ein vorab zugewiesener Summenvektor.
 
                 m_bError = !simulation_wp.Vorbereiten_Zweikanalig();
-                if (m_bError) return;
+                if (m_bError)
+                {
+                    // Paket 8: wie bei Kessel (N10) und BHKW (N8) dialogfrei melden.
+                    // Nacharbeit N11: sammelnd, nicht überschreibend.
+                    FehlertextAufnehmen(simulation_wp.Fehlertext);
+                    return;
+                }
 
                 QuellspeicherUebernehmen();
                 schleife.WP = simulation_wp;
@@ -871,7 +954,11 @@ namespace WindowsFormsApplication1
             // Senken ein Ladeauftrag entstanden ist.
             BhkwErsatzspeicherAufnehmen(kontext);
 
-            foreach (string hinweis in kontext.Hinweise) Console.WriteLine(hinweis);
+            // PAKET 8 (Konzept 13.4): Die Abgrenzungen des Kontextaufbaus gingen bisher
+            // nur auf die Konsole - im Programm sah sie niemand. Sie setzen jetzt auf dem
+            // HINWEIS-Kanal auf (der Console.WriteLine steckt in SimulationProtokoll und
+            // bleibt damit erhalten) und erscheinen nach dem Lauf in der Detailansicht.
+            foreach (string hinweis in kontext.Hinweise) Protokoll.Hinweis(hinweis);
 
             // Paket-5-Nacharbeit, Befund N5: Eine Puffer-Hauptsenke, aus der kein
             // Ladeauftrag entstanden ist, darf den Erzeuger nicht stillegen.
@@ -882,6 +969,12 @@ namespace WindowsFormsApplication1
 
             // --- 5. Stundenschleife A–G ------------------------------------------------
             m_bError = !schleife.Rechnen(kanaele);
+
+            // Paket 8: Die Stundenschleife kann an der Kennlinie der Wärmepumpe
+            // abbrechen (verbotene Extrapolation). Auch dieser Abbruch bekommt seinen
+            // Text, statt nur als m_bError zu erscheinen.
+            // Nacharbeit N11: sammelnd - derselbe Weg wie an den übrigen drei Stellen.
+            if (m_bError) FehlertextAufnehmen(simulation_wp.Fehlertext);
         }
 
         /// <summary>
@@ -1165,7 +1258,9 @@ namespace WindowsFormsApplication1
                              "Puffer-Zeile „" + ProjektPuffer.BEZ_PENDELSPEICHER + "\". Der Lauf " +
                              "wurde abgebrochen, damit das BHKW nicht stillschweigend ohne " +
                              "Speicher rechnet.";
-                Console.WriteLine(Fehlertext);
+                // NACHARBEIT PAKET 8, BEFUND N9: über den Fehlerkanal (Konsolenzeile
+                // bleibt, zusätzlich Lauf-Protokoll und Sammelanzeige).
+                Protokoll.Fehlermeldung(Fehlertext);
                 m_bError = true;
                 return;
             }
@@ -1177,7 +1272,9 @@ namespace WindowsFormsApplication1
                              m_ID_Projekt + " ließ sich nicht lesen oder gehört zu einem anderen " +
                              "Projekt. Der Lauf wurde abgebrochen, damit das BHKW nicht " +
                              "stillschweigend ohne Speicher rechnet.";
-                Console.WriteLine(Fehlertext);
+                // NACHARBEIT PAKET 8, BEFUND N9: siehe oben - Fehlerkanal statt blanker
+                // Konsolenzeile.
+                Protokoll.Fehlermeldung(Fehlertext);
                 m_bError = true;
                 return;
             }
@@ -2186,6 +2283,14 @@ namespace WindowsFormsApplication1
             // Simulation starten
             m_bError = !simulation_wp.Berechnung();
 
+            // PAKET 8 (Konzept 13.4): Der Grund eines Abbruchs geht dialogfrei über den
+            // Fehlerkanal - fehlende Kennlinie zum gewählten Vorlauf oder verbotene
+            // Extrapolation. Bis dahin zeigte das Modul dafür eine MessageBox und der
+            // Aufrufer sah nur ein stilles m_bError.
+            // Nacharbeit N11: sammelnd statt überschreibend - im Altpfad läuft nach der
+            // Wärmepumpe noch der Kessel, und dessen Meldung hat die der WP verdrängt.
+            if (m_bError) FehlertextAufnehmen(simulation_wp.Fehlertext);
+
             // Quellspeicher der Module in die Registry übernehmen (Konzept 6.2).
             // Erst JETZT, weil sie beim Modulaufbau entstehen - und mit denselben
             // Instanzen, nicht mit Kopien: Genau das ist die geforderte Ablösung der
@@ -2324,7 +2429,17 @@ namespace WindowsFormsApplication1
             simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
             
             // Simulation starten
-            simulation_spk.Berechnung(m_ID_Projekt);
+            //
+            // PAKET 8 (Konzept 13.4): Bricht das Modul ab (Kessel im Projekt nicht
+            // hinterlegt, B0-3), meldete es das bisher als MessageBox - und der Altpfad
+            // rechnete danach mit der GENULLTEN Restwärme weiter, weil Init() sie
+            // geleert hat. Der Anwender sah einen vollständig aussehenden Lauf, in dem
+            // der Wärmebedarf verschwunden war. Jetzt wird der Grund weitergereicht;
+            // SimulationRunner speichert einen solchen Lauf nicht mehr, und die
+            // Detailansicht zeigt den Text.
+            // Nacharbeit N11: sammelnd statt überschreibend.
+            if (!simulation_spk.Berechnung(m_ID_Projekt))
+                FehlertextAufnehmen(simulation_spk.Fehlertext);
 
             return simulation_spk.Restwaerme;
         }

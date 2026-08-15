@@ -153,7 +153,11 @@ namespace WindowsFormsApplication1
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
-                    MessageBox.Show("Der Heizkessel-Stammdatensatz wurde nicht gefunden (ID " + stammId + ").");
+                    // NACHARBEIT PAKET 8, BEFUND N10: über dieselbe Entscheidungsstelle
+                    // wie PufferSpCtrl.CopyFromStamm - im Engine-Modus Protokolleintrag,
+                    // sonst der Dialog mit unverändertem Wortlaut. HeizkesselCtrl wird
+                    // aus SimulationSPK heraus benutzt, der Pfad ist also erreichbar.
+                    DataRepository.FehlerMelden("Der Heizkessel-Stammdatensatz wurde nicht gefunden (ID " + stammId + ").");
                     return -1;
                 }
 

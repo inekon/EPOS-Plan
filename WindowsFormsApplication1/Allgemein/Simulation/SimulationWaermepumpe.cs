@@ -119,7 +119,28 @@ namespace WindowsFormsApplication1
         // Zuordnung Z_ProjektPufferSp gesetzt; null = ohne Pufferspeicher rechnen.
         public SimulationPufferspeicher Pufferspeicher = null;
         private bool extrapolation = false;
-        public string[] WP_Modul = new string[MAX_WP];  
+
+        /// <summary>
+        /// Projekteinstellung <c>Tab_Einstellungen.Extrapolation_erlaubt</c> (Paket 8,
+        /// Konzept 13.4). <b>Vorbelegung true</b> — sie ersetzt die Rückfrage, die die
+        /// Engine bis Paket 8 mitten in der Stundenschleife als MessageBox stellte
+        /// („Temperatur unterschreitet Kennlinien Untergrenze, soll extrapoliert
+        /// werden?"). Gesetzt wird sie von <c>SimulationControl</c> aus der
+        /// Projektkonfiguration; der Vorbelegungswert gilt, solange niemand sie setzt,
+        /// und ist deshalb bewusst der bisherige Antwortwert.
+        /// </summary>
+        public bool Extrapolation_Erlaubt = true;
+
+        /// <summary>
+        /// Fehlertext eines dialogfrei abgebrochenen Laufs (Paket 8, Konzept 13.4). Leer,
+        /// wenn nichts anlag. <c>SimulationControl</c> holt ihn ab und reicht ihn über
+        /// <see cref="SimulationControl.Fehlertext"/> an den Aufrufer weiter —
+        /// dasselbe Muster, das <see cref="SimulationSPK"/> (N10) und
+        /// <see cref="SimulationBHKW"/> (N8) bereits verwenden.
+        /// </summary>
+        public string Fehlertext = "";
+
+        public string[] WP_Modul = new string[MAX_WP];
 
         public class _Kenndaten
         {
@@ -174,13 +195,31 @@ namespace WindowsFormsApplication1
         /// und zweikanalig) brauchen ihn Zeile für Zeile gleich, und zwei Kopien wären die
         /// sichere Quelle künftiger Abweichungen.
         /// </summary>
-        /// <returns>false = Abbruch (fehlende Kenndaten); die Meldung ist bereits gezeigt.</returns>
+        /// <returns>
+        /// false = Abbruch (fehlende Kenndaten). Der Grund steht seit Paket 8 in
+        /// <see cref="Fehlertext"/> und im <see cref="SimulationProtokoll"/> statt in
+        /// einer MessageBox (Konzept 13.4).
+        /// </returns>
         private bool ModuleAufbauen()
         {
             RecordSet rs = new RecordSet();
             WErzeugerCtrl wp = new WErzeugerCtrl();
 
             Volumen_Pufferspeicher = 0;
+            Fehlertext = "";
+
+            // NACHARBEIT PAKET 8, BEFUND N3: Auch das Extrapolationsmerkmal gehört in den
+            // Rücksetzblock. Es wird beim ersten Unterschreiten der Kennlinie gesetzt und
+            // blieb bisher über die Lebensdauer der Instanz stehen - im MDI-Fenster lebt
+            // dieselbe SimulationControl (und damit dasselbe WP-Modul) über beliebig
+            // viele Läufe. Ab dem zweiten Lauf wäre Extrapolation_Erlaubt sonst
+            // wirkungslos: kein Abbruch bei Verbot, kein Hinweis bei Erlaubnis.
+            //
+            // ERGEBNISNEUTRAL: Das Merkmal steuert AUSSCHLIESSLICH die Meldung und die
+            // Verbotsprüfung - die lineare Verlängerung der Kennlinie darunter läuft in
+            // jedem Fall (siehe berechne_wptherm, der Zweig hinter "if (!extrapolation)"
+            // endet vor der Rechnung).
+            extrapolation = false;
 
             Init();
 
@@ -250,13 +289,19 @@ namespace WindowsFormsApplication1
                 // Absicherung (wichtig bei mehreren WPs im Projekt): Ohne Kenndaten
                 // für den gewählten Vorlauf würde berechne_wptherm mit einem
                 // Index-Fehler abstürzen. Stattdessen verständliche Meldung.
+                //
+                // PAKET 8 (Konzept 13.4): Die Meldung geht dialogfrei über den
+                // Fehlerkanal statt über eine MessageBox. Der ABBRUCH ist unverändert
+                // (return false an derselben Stelle) — nur der Meldeweg ist neu. Die
+                // Oberfläche zeigt den Text nach dem Lauf als Dialog; im headless-Lauf
+                // steht er in "out fehler".
                 if (anz == 0)
                 {
                     Cursor.Current = Cursors.Default;
-                    MessageBox.Show("Für die Wärmepumpe '" + model.Bezeichner + "' sind keine Kenndaten" +
-                        " (Kennlinie) für Vorlauf " + model.Vorlauf + " °C vorhanden!\n" +
-                        "Die Simulation wird abgebrochen.", "Wärmepumpen Simulation",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    Fehlertext = "Für die Wärmepumpe '" + model.Bezeichner + "' sind keine Kenndaten " +
+                                 "(Kennlinie) für Vorlauf " + model.Vorlauf + " °C vorhanden. " +
+                                 "Die Simulation wurde abgebrochen.";
+                    SimulationProtokoll.Aktuell.Fehlermeldung("Wärmepumpe: " + Fehlertext);
                     return false;
                 }
 
@@ -1455,17 +1500,51 @@ namespace WindowsFormsApplication1
             {
                 if (temperatur < kenndaten.dat[kenndaten.anz - 1].Temperatur)
                 {
+                    // PAKET 8 (Konzept 13.4) — die EINZIGE echte Interaktion der Engine
+                    // ist zur Vorab-Einstellung geworden.
+                    //
+                    // BISHER: MessageBox mitten in der Stundenschleife, „soll
+                    // extrapoliert werden? Bei nein wird Simulation abgebrochen!". Jeder
+                    // unbeaufsichtigte Lauf blieb daran hängen; die Referenzlauf-Suite
+                    // musste einen Dialogwächter mitlaufen lassen, der "Ja" drückte.
+                    //
+                    // JETZT: Tab_Einstellungen.Extrapolation_erlaubt entscheidet vorab.
+                    //   erlaubt (Vorbelegung, entspricht dem bisherigen "Ja"):
+                    //       es wird extrapoliert wie bisher - Zeile für Zeile derselbe
+                    //       Rechenweg - und der Lauf vermerkt es EINMAL im Protokoll.
+                    //       Damit ist der Grenzfall erstmals sichtbar statt stumm.
+                    //   verboten:
+                    //       Abbruch über den Fehlerkanal, mit demselben Ausgang wie das
+                    //       bisherige "Nein" (result[STATUS] = 0), aber mit sprechendem
+                    //       Text statt einer Dialogantwort.
+                    //
+                    // Die Meldung steht in beiden Zweigen hinter dem extrapolation-Flag
+                    // bzw. hinter HinweisEinmal: Der Fall tritt je Modul in bis zu 8760
+                    // Stunden auf.
                     if (!extrapolation)
                     {
-                        
-                        if (MessageBox.Show("Wärmepumpen Simulation:\nTemperatur unterschreitet Kennlinien Untergrenze," +
-                                            " soll extrapoliert werden?\nBei nein wird Simulation abgebrochen!", "Temperatur unter Minimum Kennlinie",
-                                            MessageBoxButtons.YesNo) == DialogResult.No)
+                        string bezeichner = (model != null && model.Bezeichner != null) ? model.Bezeichner : "";
+                        string untergrenze = kenndaten.dat[kenndaten.anz - 1].Temperatur.ToString("F1");
+
+                        if (!Extrapolation_Erlaubt)
                         {
+                            Fehlertext =
+                                "Die Quelltemperatur unterschreitet die untere Stützstelle der Kennlinie " +
+                                "der Wärmepumpe '" + bezeichner + "' (" + untergrenze + " °C). Die " +
+                                "Projekteinstellung „Extrapolation der Kennlinie erlauben“ ist " +
+                                "abgewählt, deshalb wurde die Simulation abgebrochen. Entweder die Kennlinie " +
+                                "um tiefere Stützstellen ergänzen oder die Einstellung setzen.";
+                            SimulationProtokoll.Aktuell.Fehlermeldung("Wärmepumpe: " + Fehlertext);
                             result[0] = 0;
                             return result;
                         }
+
                         extrapolation = true;
+                        SimulationProtokoll.Aktuell.HinweisEinmal(
+                            "WP_Extrapolation_" + bezeichner + "_" + kenndaten.Vorlauf,
+                            "Wärmepumpe '" + bezeichner + "': Die Quelltemperatur unterschreitet die untere " +
+                            "Stützstelle der Kennlinie (" + untergrenze + " °C). Es wird extrapoliert " +
+                            "(Projekteinstellung „Extrapolation der Kennlinie erlauben“).");
                     }
                     double[] x = new double[2];
                     double[] y = new double[2];

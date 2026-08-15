@@ -905,6 +905,9 @@ namespace WindowsFormsApplication1
             // Feature-Flag der zweikanaligen Kaskade aus der Datenbank vorbelegen
             // (Paket 4, Etappe 4a - Konzept Kapitel 9)
             AktualisiereKaskadeSchalter();
+
+            // Einstellung Extrapolation_erlaubt vorbelegen (Paket 8 - Konzept 13.4)
+            AktualisiereExtrapolationSchalter();
         }
 
         /// <summary>

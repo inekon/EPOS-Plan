@@ -62,7 +62,16 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 try { trans.Rollback(); } catch { }
-                MessageBox.Show("Fehler beim Löschen des Simulationsergebnisses: " + ex.Message);
+                // PAKET 8 (Konzept 13.4): Dieselbe Entscheidungsstelle wie in
+                // DataRepository - im Engine-Modus ein Protokolleintrag, sonst der Dialog
+                // wie bisher.
+                //
+                // BERICHTIGT (Nacharbeit, Befund N14a): Diese Methode wird NICHT aus
+                // Save() gerufen - Save() löscht in seiner eigenen Transaktion inline.
+                // Delete(int) hat im Anwendungsprojekt derzeit überhaupt keinen Aufrufer
+                // und ist ein Sicherheitsnetz; die Umstellung steht hier, damit ein
+                // künftiger Aufruf aus dem Rechenpfad nicht wieder einen Dialog öffnet.
+                DataRepository.FehlerMelden("Fehler beim Löschen des Simulationsergebnisses: " + ex.Message);
                 return -1;
             }
             finally { try { conn.Close(); } catch { } }
@@ -484,7 +493,11 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 try { trans.Rollback(); } catch { }
-                MessageBox.Show("Fehler beim Speichern des Simulationsergebnisses: " + ex.Message);
+                // PAKET 8 (Konzept 13.4): Save() ist die letzte Station des headless-Laufs
+                // (SimulationRunner.SimuliereUndSpeichere) und damit die Stelle, an der
+                // eine MessageBox einen unbeaufsichtigten Lauf noch NACH der Rechnung
+                // hätte blockieren können.
+                DataRepository.FehlerMelden("Fehler beim Speichern des Simulationsergebnisses: " + ex.Message);
                 return -1;
             }
             finally { try { conn.Close(); } catch { } }

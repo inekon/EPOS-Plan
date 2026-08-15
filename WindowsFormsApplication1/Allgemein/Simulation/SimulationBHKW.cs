@@ -1189,7 +1189,11 @@ namespace WindowsFormsApplication1
                 Fehlertext = "BHKW: Im Projekt sind " + anzahl + " BHKW hinterlegt, die Simulation " +
                              "unterstützt maximal " + MAX_BHKW + ". Der Lauf wurde abgebrochen, " +
                              "damit kein Ergebnis ohne die übrigen Module entsteht.";
-                Console.WriteLine(Fehlertext);
+                // NACHARBEIT PAKET 8, BEFUND N9: über den Fehlerkanal statt über eine
+                // blanke Konsolenzeile. Der Kanal schreibt weiterhin auf die Konsole
+                // (mit Präfix "Simulation FEHLER:"), trägt die Meldung aber zusätzlich
+                // ins Lauf-Protokoll und in die Sammelanzeige der Oberfläche.
+                SimulationProtokoll.Aktuell.Fehlermeldung(Fehlertext);
                 return false;
             }
 

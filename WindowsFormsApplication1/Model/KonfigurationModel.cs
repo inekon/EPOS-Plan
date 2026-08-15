@@ -53,6 +53,34 @@
         /// </summary>
         public bool Kaskade_Zweikanalig;
 
+        /// <summary>
+        /// Projekteinstellung „Extrapolation der Wärmepumpen-Kennlinie erlaubt"
+        /// (Paket 8, Konzept 13.4), Spalte <c>Tab_Einstellungen.Extrapolation_erlaubt</c>.
+        /// <b>Vorbelegung an (WAHR)</b>.
+        ///
+        /// Sie löst die Rückfrage „Temperatur unterschreitet Kennlinien Untergrenze, soll
+        /// extrapoliert werden?" ab, die die Engine bisher mitten im Rechenlauf als
+        /// MessageBox stellte und die jeden unbeaufsichtigten Lauf blockierte.
+        ///
+        ///   WAHR   — es wird wie bisher extrapoliert; der Lauf vermerkt das als Hinweis
+        ///            im <see cref="SimulationProtokoll"/> (sichtbar statt stumm).
+        ///   FALSCH — der Lauf bricht über den Fehlerkanal ab, mit sprechendem Text
+        ///            statt einer MessageBox mit Abbruch.
+        ///
+        /// WARUM WAHR und nicht — wie Konzept 13.4 vorschlägt — „nein": WAHR ist die
+        /// Antwort, die in jedem dokumentierten Lauf gegeben wurde (Referenzlauf-Suite:
+        /// fünf von neun Projekten mit Rückfrage, jedes Mal „Ja"). Nur damit bleibt
+        /// Paket 8 ergebnisneutral. Die Kappung auf die unterste Stützstelle, die 13.4
+        /// für „nein" vorsieht, wäre eine RECHENÄNDERUNG und gehört nicht in ein
+        /// Infrastrukturpaket (siehe Paket-8-Protokoll, offene Punkte).
+        ///
+        /// Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ReadSingle</c>), nicht über
+        /// die Ordinalkette row[0..22]; geschrieben ausschließlich über
+        /// <see cref="KonfigurationCtrl.ExtrapolationErlaubtSchreiben"/> — dieselbe
+        /// Begründung wie bei <see cref="Kaskade_Zweikanalig"/>.
+        /// </summary>
+        public bool Extrapolation_erlaubt;
+
         public KonfigurationModel()
         {
             m_ID = 0;
@@ -79,6 +107,7 @@
             Leistungsgrenze = 0;
             Pendelspeicher = 0;
             Kaskade_Zweikanalig = false;
+            Extrapolation_erlaubt = true;   // Vorbelegung: erlaubt (Konzept 13.4, Paket 8)
         }
     }
 }

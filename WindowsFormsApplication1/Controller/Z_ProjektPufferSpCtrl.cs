@@ -68,12 +68,16 @@ namespace WindowsFormsApplication1
                 if (idPuffer <= 0) idPuffer = psp.CopyFromStamm(PufferSp, ID_Projekt);
                 if (idPuffer <= 0)
                 {
-                    System.Windows.Forms.MessageBox.Show(
-                        "Der Pufferspeicher '" + PufferSp + "' wurde weder im Projekt noch in den Stammdaten gefunden!\n" +
-                        "Die Zuordnung kann nicht gespeichert werden.",
-                        "Pufferspeicher Zuordnung",
-                        System.Windows.Forms.MessageBoxButtons.OK,
-                        System.Windows.Forms.MessageBoxIcon.Warning);
+                    // PAKET 8 (Konzept 13.4): Das Konzept führt diese Stelle als eine der
+                    // acht Engine-MessageBoxen. AM HEUTIGEN STAND ist sie das nicht mehr:
+                    // Die Simulation liest Z_ProjektPufferSp nur noch (ReadAll in
+                    // SimulationControl), INSERT kommt ausschließlich aus
+                    // Form_Simulation_Config.btn_Speichern_Click. Der Dialog bleibt dort
+                    // also richtig - und geht trotzdem über die gemeinsame
+                    // Entscheidungsstelle, damit er im Engine-Modus stumm bliebe.
+                    DataRepository.FehlerMelden(
+                        "Der Pufferspeicher '" + PufferSp + "' wurde weder im Projekt noch in den " +
+                        "Stammdaten gefunden!\nDie Zuordnung kann nicht gespeichert werden.");
                     return false;
                 }
                 ID_Pufferspeicher = idPuffer;

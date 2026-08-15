@@ -317,10 +317,23 @@ namespace WindowsFormsApplication1
                 {
                     // Headless-Lauf: neue Instanz je Projekt (frische Simulationsobjekte).
                     string fehler;
-                    int erg = new SimulationRunner().SimuliereUndSpeichere(lauf.Item1, out fehler);
+                    SimulationRunner runner = new SimulationRunner();
+                    int erg = runner.SimuliereUndSpeichere(lauf.Item1, out fehler);
                     meldungen.Add(erg > 0
                         ? lauf.Item2 + ": ok (Ergebnis-ID " + erg + ")"
                         : lauf.Item2 + ": FEHLER – " + fehler);
+
+                    // NACHARBEIT PAKET 8, BEFUND N5: Auch ein ERFOLGREICHER Lauf kann
+                    // gemeldet haben, dass er mit einer Ersatzannahme gerechnet hat -
+                    // etwa "Tagesverteilungstyp nicht hinterlegt, Bedarfsrechnung
+                    // abgebrochen". „out fehler" ist nur im Misserfolgsfall belegt (das
+                    // bleibt so), und vor Paket 8 zeigte die Engine hier eine MessageBox.
+                    // Ohne diese Zeilen stünde in der Sammelmeldung ein blankes "ok".
+                    string hinweise = runner.Protokoll != null
+                        ? runner.Protokoll.HinweistextFuerAnzeige() : "";
+                    if (!string.IsNullOrEmpty(hinweise))
+                        meldungen.Add("    " + hinweise.Replace("\r\n", "\r\n    ")
+                                                       .Replace("\n", "\n    "));
                 }
 
                 Melde("Simulation abgeschlossen (" + laeufe.Count + " Projekt(e)).");

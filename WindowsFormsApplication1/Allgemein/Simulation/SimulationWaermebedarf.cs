@@ -164,7 +164,19 @@ namespace WindowsFormsApplication1
 
                 bool tagv_found = false;
                 TagesVerteilung = DBTagesVeteilung(ctrl.items[i].Typ, ctrl.items[i].ID_Gebaeude, ref tagv_found);
-                if (!tagv_found) { MessageBox.Show("Daten zu Tagverteilungtyp nicht gefunden: " + ctrl.items[i].Typ); return; }
+                // PAKET 8 (Konzept 13.4): Warnung im Protokollkanal statt MessageBox. Der
+                // ABBRUCH der Bedarfsrechnung bleibt unverändert (return an derselben
+                // Stelle) — die im Konzept genannte Ersatzlösung „Standardprofil
+                // verwenden“ wäre eine Rechenänderung und gehört nicht in ein
+                // Infrastrukturpaket (siehe Paket-8-Protokoll, offene Punkte).
+                if (!tagv_found)
+                {
+                    SimulationProtokoll.Aktuell.Warnung(
+                        "Wärmebedarf: Zum Tagesverteilungstyp „" + ctrl.items[i].Typ +
+                        "“ sind keine Daten hinterlegt. Die Bedarfsrechnung wurde an dieser " +
+                        "Stelle abgebrochen; das Ergebnis ist unvollständig.");
+                    return;
+                }
 
                 // Stundenwerte Wärmebedarf je nach Gebäudetyp und Tagtyp aus Klimaregion
                 if (ctrl.items[i].Typ == "Wohngebaeude  VDI 2067")
@@ -718,7 +730,13 @@ namespace WindowsFormsApplication1
                         Object objTyp = rs.Read("Typ");
                         if (DBNull.Value.Equals(objTyp))
                         {
-                            MessageBox.Show("DerTyp von Prozess " + pw_list[k] + " ist nicht definiert");
+                            // PAKET 8 (Konzept 13.4): Warnung im Protokollkanal statt MessageBox;
+                            // der Abbruch der Prozesswärme-Rechnung bleibt unverändert.
+                            // Der Tippfehler "DerTyp" des Bestands ist dabei mit behoben.
+                            SimulationProtokoll.Aktuell.Warnung(
+                                "Prozesswärme: Der Typ des Prozesses '" + pw_list[k] + "' ist nicht " +
+                                "definiert. Die Prozesswärme-Rechnung wurde abgebrochen; ihr Anteil " +
+                                "bleibt 0.");
                             rs.Close();
                             return;
                         }
@@ -825,7 +843,11 @@ namespace WindowsFormsApplication1
                         Object objTyp = rs.Read("Typ");
                         if (DBNull.Value.Equals(objTyp))
                         {
-                            MessageBox.Show("DerTyp von Prozess " + pw_list[k] + " ist nicht definiert");
+                            // PAKET 8 (Konzept 13.4): siehe oben - dieselbe Stelle im
+                            // Brauchwasser-Zweig.
+                            SimulationProtokoll.Aktuell.Warnung(
+                                "Brauchwasser: Der Typ des Eintrags '" + pw_list[k] + "' ist nicht " +
+                                "definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0.");
                             rs.Close();
                             return;
                         }

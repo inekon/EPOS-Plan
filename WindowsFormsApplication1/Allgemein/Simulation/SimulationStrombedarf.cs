@@ -37,6 +37,18 @@ namespace WindowsFormsApplication1
             init.Monatswerte_berechnen(mo_anfang, mo_ende);
         }
 
+        /// <summary>
+        /// Fehlertext eines dialogfrei abgebrochenen Strombedarfslaufs (Paket 8,
+        /// Konzept 13.4). Leer, wenn nichts anlag.
+        ///
+        /// Die Klasse läuft VOR der Kaskade und kennt <see cref="SimulationControl"/>
+        /// nicht; ihren Abbruch holt deshalb der jeweilige Einstiegspunkt ab
+        /// (<c>SimulationRunner.Simuliere</c>, <c>Form_Simulation_Detail.Energiebedarf</c>).
+        /// Bis Paket 8 zeigte sie stattdessen eine MessageBox und kehrte still zurück —
+        /// der Lauf rechnete danach mit einem leeren Stromprofil weiter.
+        /// </summary>
+        public string Fehlertext = "";
+
         public void Berechnung(int ID_Projekt)
         {
             RecordSet rs = new RecordSet();
@@ -45,6 +57,7 @@ namespace WindowsFormsApplication1
             int Interval = 0;
 
             m_ID_Projekt = ID_Projekt;
+            Fehlertext = "";
 
             Strombedarf_Gebaeude_gesamt = 0;
             Stromganglinie_gesamt = 0;
@@ -65,7 +78,12 @@ namespace WindowsFormsApplication1
             prozesswerte = Stromprofil_Strombedarf_berechnen();
             if(prozesswerte == null)
             {
-                MessageBox.Show("Fehler bei der Berechnung der Stromprofile!");
+                // PAKET 8 (Konzept 13.4): Fehlerkanal statt MessageBox. Der Abbruch
+                // dieser Methode ist unverändert; neu ist, dass der Aufrufer davon
+                // erfährt und keinen Lauf mit leerem Stromprofil speichert.
+                Fehlertext = "Die Stromprofile des Projekts konnten nicht berechnet werden. " +
+                             "Die Simulation wurde abgebrochen.";
+                SimulationProtokoll.Aktuell.Fehlermeldung("Strombedarf: " + Fehlertext);
                 return;
             }
 
@@ -129,6 +147,13 @@ namespace WindowsFormsApplication1
             List<string> stromprofil_list = new List<string>();
             float[] temp = new float[8760];
 
+            // NACHARBEIT PAKET 8, BEFUND N6: Das gerade bearbeitete Stromprofil, damit der
+            // Sammel-catch unten sagen kann, WORAN es lag. Die häufigste Ursache ist eine
+            // InvalidCastException aus "(double)rs.Read(...)" - ein leeres Monats- oder
+            // Wochenfeld liefert DBNull, und der Cast fliegt. Ohne den Profilnamen muss
+            // der Anwender alle Stromprofile des Projekts durchsehen.
+            string aktuellesProfil = "";
+
             try
             {
                 if (list == null)
@@ -150,6 +175,7 @@ namespace WindowsFormsApplication1
 
                 for (int k = 0; k < stromprofil_list.Count; k++)
                 {
+                    aktuellesProfil = stromprofil_list[k];
                     rs.Open("select * from Tab_Stromverbraucher where Bezeichner='" + stromprofil_list[k] + "'");
                     if (rs.Next())
                     {
@@ -203,8 +229,18 @@ namespace WindowsFormsApplication1
             catch (SystemException ex)
             {
                 rs.Close();
-                Console.WriteLine("Fehler in Simulation: " + ex.Message);
-                MessageBox.Show("Fehler in Simulation!");
+                // PAKET 8 (Konzept 13.4): Der Sammel-catch meldet dialogfrei. Die
+                // Rückgabe null ist unverändert - der Aufrufer oben macht daraus den
+                // Fehlertext des Laufs.
+                //
+                // NACHARBEIT BEFUND N6: mit dem betroffenen Stromprofil. Der Text ist die
+                // einzige Diagnose, die der Anwender bekommt - die Rückgabe null wird
+                // oben zu einem allgemeinen Abbruchtext, und der nennt kein Profil.
+                SimulationProtokoll.Aktuell.Fehlermeldung(
+                    "Strombedarf: Die Stromprofile konnten nicht berechnet werden" +
+                    (string.IsNullOrEmpty(aktuellesProfil) ? "" : " (zuletzt bearbeitet: Stromprofil '" +
+                                                                  aktuellesProfil + "')") +
+                    " - " + ex.Message);
                 return null;
             }
         }

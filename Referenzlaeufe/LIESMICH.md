@@ -216,6 +216,22 @@ foreach ($id in 1007,1008,1010,1011,1017,1018,1021,1023,1024) {
 Der Modus `projekt` migriert **nicht** — er erwartet eine fertige Kopie aus Schritt 1.
 Ohne Schritt 1 rechnet er auf einem unvollständigen Schema.
 
+> **Schritt 1 ist keine Bequemlichkeit.** Er ist der Grund, warum die Anwendung auf der Kopie
+> dieselben Werte rechnet wie auf der gepflegten Datenbank. Eine Datenlücke, die dabei besonders
+> leicht zuschlägt, ist die Projekteinstellung `Extrapolation_erlaubt` (Paket 8): Die **Spalte**
+> entsteht schon in Migrationsschritt 2 und wird von der stillen Rückfallebene
+> `WaermequelleClass.SchemaSicherstellen` ebenfalls angelegt — Access belegt sie dabei in allen
+> bestehenden Zeilen mit `False`, also „Extrapolation verboten". Ihre **Vorbelegung auf WAHR** setzt
+> erst Schritt 7. Auf einer Kopie ohne Schritt 1 stünde die Einstellung damit überall auf „verboten",
+> und jeder Lauf mit einer unterschrittenen Wärmepumpen-Kennlinie bräche ab.
+>
+> Seit der Paket-8-Nacharbeit (Befund N8) fängt der Leser das ab: Solange
+> `Tab_Applikation.SchemaVersion` **unter 7** steht, gilt ein `False` in dieser Spalte als
+> Datenlücke und nicht als Anwenderentscheidung — es wird als „erlaubt" gelesen. Ab Schemastand 7
+> zählt der gespeicherte Wert. Ein Lauf im Modus `projekt` auf einer nicht migrierten Kopie bricht
+> also nicht mehr fälschlich ab; wer die Einstellung wirklich prüfen will, braucht eine migrierte
+> Kopie (Schritt 1).
+
 ### Danach
 
 **Abweichungen bewerten.** Jede gemeldete Abweichung ist entweder gewollt — dann im
@@ -249,19 +265,31 @@ gibt die Projekte fest vor:
 
 ## Dialoge der Engine
 
-Engine und `DataRepository` zeigen im Fehler- und Grenzfall MessageBoxen (Konzept
-Kapitel 13.4). Ein headless-Lauf würde daran hängen bleiben, deshalb läuft ein
-Dialogwächter mit: er findet die Dialogfenster des eigenen Prozesses und drückt den
-bejahenden Knopf (Ja vor OK vor Ignorieren).
+**Seit Paket 8 zeigt die Engine keine MessageBoxen mehr** (Konzept Kapitel 13.4). Grenz- und
+Fehlerfälle laufen über den Protokollkanal `SimulationProtokoll`; jeder Eintrag geht zusätzlich auf
+die Konsole und steht damit im `lauf_protokoll.md`:
 
-Das ist bewusst kein blindes Wegklicken. Die häufigste Rückfrage lautet „Temperatur
-unterschreitet Kennlinien-Untergrenze, soll extrapoliert werden? Bei nein wird Simulation
-abgebrochen!" — mit „Nein" würde die Wärmepumpe für diese Stunden schlicht null liefern.
-Der Referenzlauf muss denselben Weg gehen wie ein Anwender, und der antwortet „Ja".
+```
+Simulation Hinweis:  vollwertig gerechnet, Randbedingung erwähnenswert
+Simulation Warnung:  gerechnet, aber mit einer Ersatzannahme
+Simulation FEHLER:   Lauf abgebrochen, es wird kein Ergebnis gespeichert
+```
 
-Jede beantwortete Rückfrage steht mit Titel, Text und gedrücktem Knopf im
-`lauf_protokoll.md`. Taucht dort eine neue Meldung auf, lohnt der Blick: sie zeigt einen
-Grenzfall in den Projektdaten.
+Die frühere Rückfrage „Temperatur unterschreitet Kennlinien-Untergrenze, soll extrapoliert werden?"
+ist zur **Projekteinstellung** `Extrapolation_erlaubt` geworden — Vorbelegung WAHR, also genau die
+Antwort, die in jedem dokumentierten Lauf gegeben wurde. Statt eines weggeklickten Dialogs steht
+jetzt eine `Simulation Hinweis:`-Zeile im Protokoll: derselbe Rechenweg, nur sichtbar.
+
+Der **Dialogwächter läuft trotzdem weiter mit**: Er findet Dialogfenster des eigenen Prozesses und
+drückt den bejahenden Knopf (Ja vor OK vor Ignorieren). Er hat nach Paket 8 nichts mehr zu drücken —
+und ist genau deshalb wertvoll: Er ist die Messsonde, mit der sich jede künftig neu eingeschleppte
+MessageBox im Rechenpfad sofort im Lauf-Protokoll zeigt. Taucht dort ein Eintrag auf, ist das ein
+Befund.
+
+Der Zähler des Protokolls wertet die Konsolenausgabe der Kindprozesse aus und kennt beide
+Schreibweisen — `WARNUNG:` (Suite) und `Simulation Warnung:` (Engine, seit der Paket-8-Nacharbeit,
+Befund N13b). Hinweise werden bewusst nicht mitgezählt: Sie melden einen vollwertig gerechneten
+Grenzfall, und den gab es in jedem bisherigen Referenzlauf.
 
 Bleibt ein Projekt trotzdem hängen — etwa an einem Dialog, den der Wächter nicht bedienen
 kann — greift das Zeitlimit. Jedes Projekt läuft in einem eigenen Kindprozess, der nach
