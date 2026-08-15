@@ -49,6 +49,11 @@ in [`BETRIEB_Mehrbenutzer_Datenbank.md`](BETRIEB_Mehrbenutzer_Datenbank.md).
 `.accdb` ist in `.gitignore` ausgeschlossen: Änderungen an der Datenbank landen nie in einem Commit
 und müssen separat gesichert werden (`DB-Backup/`).
 
+Bekannte Altdaten-Beschädigung: In `Tab_Heizkessel.Bezeichner` und `Tab_Energieanlagen.Bezeichner`
+stehen Namen mit U+FFFD aus früheren Importen mit falscher Kodierung — Ursache, Fundstellen und
+Entscheidung (kein Skript-Fix, Neuimport heilt) in
+[`KONTEXT_Importkodierung_ANSI.md`](KONTEXT_Importkodierung_ANSI.md).
+
 ## Brauchwasser / TWW-Profile
 
 Der Brauchwasserkatalog wurde am 02.08.2026 um 11 Wochen-Stundenprofile und 13 Monatswertsätze nach
