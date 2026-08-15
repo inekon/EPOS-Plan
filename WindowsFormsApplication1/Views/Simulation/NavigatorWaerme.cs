@@ -37,6 +37,28 @@ namespace WindowsFormsApplication1
         // Auswahlliste der Speicher (13.3) - nur sichtbar, wenn es mehr als einen gibt.
         private ComboBox comboBox_Puffer;
 
+        // Umschalter Jahresganglinie <-> Jahresdauerlinie (programmatisch, kein Designer).
+        private CheckBox checkBox_Sortiert;
+
+        /// <summary>
+        /// Welche Erzeuger gehören zu diesem Ergebnis? Vorbelegt mit „alles sichtbar",
+        /// damit vor dem ersten <see cref="SetControl"/> nichts fehlt.
+        /// </summary>
+        private ErgebnisPraesenz _praesenz = ErgebnisPraesenz.Alles();
+
+        /// <summary>Dauerlinien-Darstellung: jede Serie für sich absteigend sortiert.</summary>
+        private bool _sortiert = false;
+
+        /// <summary>
+        /// Sperrt die Checkbox-Ereignisse, solange die Serien neu aufgebaut werden.
+        /// Ohne sie würde jedes <c>Checked</c>-Setzen während des Umbaus auf Serien
+        /// zugreifen, die es in diesem Moment noch nicht gibt.
+        /// </summary>
+        private bool _imAufbau = false;
+
+        /// <summary>Abstand zwischen zwei Checkboxen beim Nachrücken.</summary>
+        private const int CHK_ABSTAND = 20;
+
         /// <summary>Farbfolge der Speicherserien (wiederholt sich bei vielen Speichern).</summary>
         private static readonly Color[] SPEICHER_FARBEN =
         {
@@ -69,6 +91,7 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             BeschriftungenSetzen();
             InitPufferCheckBox();
+            InitSortiertCheckBox();
             SetControl(sim = simctrl);
             InitCsvExportButton();
         }
@@ -84,10 +107,9 @@ namespace WindowsFormsApplication1
         /// Steuerelemente. Die Texte werden deshalb programmatisch gesetzt, die
         /// Designer-Fassung bleibt als deutsche Entwurfszeit-Vorbelegung stehen.
         ///
-        /// <b>Reihenfolge beachten:</b> Der Aufruf steht VOR <see cref="InitPufferCheckBox"/>,
-        /// weil dort <c>checkBox_BHKW.Right</c> und <c>checkBox_Waermebedarf.Right</c> die
-        /// Position der programmatischen Steuerelemente bestimmen — die Breite hängt am
-        /// Text.
+        /// <b>Reihenfolge beachten:</b> Der Aufruf steht VOR den programmatischen
+        /// Steuerelementen, weil deren Platzierung an den Breiten der Checkboxen hängt —
+        /// und die Breite hängt am Text (<c>AutoSize</c>).
         /// </summary>
         private void BeschriftungenSetzen()
         {
@@ -106,10 +128,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Legt die Checkbox "Speicherfüllstand" und die Speicher-Auswahlliste neben den
-        /// übrigen Serien-Checkboxen an (programmatisch, kein Designer nötig).
-        /// Die Checkbox schaltet die Speicherserien gemeinsam ein und aus, die
-        /// Auswahlliste schränkt bei mehreren Speichern auf einen einzelnen ein.
+        /// Legt die Checkbox "Speicherfüllstand" und die Speicher-Auswahlliste an
+        /// (programmatisch, kein Designer nötig). Die Checkbox schaltet die
+        /// Speicherserien gemeinsam ein und aus, die Auswahlliste schränkt bei mehreren
+        /// Speichern auf einen einzelnen ein.
+        ///
+        /// Die endgültige POSITION vergibt <see cref="CheckboxenAnordnen"/> — sie hängt
+        /// davon ab, welche Erzeuger-Checkboxen davor überhaupt sichtbar bleiben.
         /// </summary>
         private void InitPufferCheckBox()
         {
@@ -140,6 +165,34 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Legt die Checkbox „sortiert" an — den Umschalter zwischen Jahresganglinie
+        /// (chronologisch, Monatsachse) und Jahresdauerlinie (jede Serie für sich
+        /// absteigend sortiert, numerische Jahresstundenachse).
+        ///
+        /// Dasselbe Bedienmuster wie auf der Wärmepumpen-Seite der Detailansicht
+        /// (<c>Form_Simulation_Detail.checkBox_WP_sortiert</c>, Diagramm „Wärmelast
+        /// Jahresganglinie"): dort schaltet die Checkbox <c>XAxisAsNumber</c> um, setzt
+        /// den ChartManager per <c>HardReset()/Init()</c> zurück und legt die Serien mit
+        /// sortierten Kopien neu an. Genau dieser Ablauf steht in
+        /// <see cref="SerienAufbauen"/>.
+        /// </summary>
+        private void InitSortiertCheckBox()
+        {
+            checkBox_Sortiert = new CheckBox();
+            checkBox_Sortiert.Name = "checkBox_Sortiert";
+            checkBox_Sortiert.Text = MyResource.Resource.SIM_CHK_SORTIERT;
+            checkBox_Sortiert.AutoSize = true;
+            checkBox_Sortiert.BackColor = Color.Transparent;
+            checkBox_Sortiert.Font = checkBox_Waermebedarf.Font;
+            checkBox_Sortiert.ForeColor = Color.Black;
+            checkBox_Sortiert.Location = new Point(checkBox_Waermebedarf.Right + CHK_ABSTAND,
+                                                   checkBox_Waermebedarf.Top);
+            checkBox_Sortiert.CheckedChanged += checkBox_Sortiert_CheckedChanged;
+            this.Controls.Add(checkBox_Sortiert);
+            checkBox_Sortiert.BringToFront();
+        }
+
+        /// <summary>
         /// Legt den CSV-Export-Button rechts neben den Checkboxen an (programmatisch, kein Designer nötig).
         /// </summary>
         private void InitCsvExportButton()
@@ -160,6 +213,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Exportiert die aktuell per Checkbox selektierten Serien des Wärme-Charts als CSV
         /// (Zeitstempel, Außentemperatur, Werte — Stundenwerte).
+        ///
+        /// Der Export bleibt IMMER chronologisch: „sortiert" ist eine Darstellungsform,
+        /// keine andere Datenlage — eine sortierte Datei hätte zu den Zeitstempeln in
+        /// Spalte 1 nicht mehr gepasst.
         /// </summary>
         private void btn_CsvExport_Click(object sender, EventArgs e)
         {
@@ -203,7 +260,7 @@ namespace WindowsFormsApplication1
 
         public void SetControl(SimulationControl sim)
         {
-            if (sim.simulation_Waermebedarf == null) return; // Sicherheitshalber prüfen 
+            if (sim == null || sim.simulation_Waermebedarf == null) return; // Sicherheitshalber prüfen
 
             // Chart Strombedarf und Stromverbrauch Übersicht
             temp_profil = sim.simulation_Waermebedarf.Waermebedarf;
@@ -230,14 +287,51 @@ namespace WindowsFormsApplication1
 
             for (int i = 0; i < 8760; i++) temp_ges[i] = temp_wp[i] + temp_hs[i] + temp_hk[i] + temp_st[i] + temp_bhkw[i];
 
+            // Welche Erzeuger gehören zu diesem Ergebnis? Alles Weitere - welche
+            // Checkboxen erscheinen und welche Serien überhaupt entstehen - hängt daran.
+            _praesenz = ErgebnisPraesenz.Ermitteln(sim);
+
             _chartManager = new ChartManager(chart_Waerme);
+            SerienAufbauen();
+            CheckboxenAnordnen();
+
+            _imAufbau = true;
+            checkBox_Gesamt.Checked = true;
+            _imAufbau = false;
+            ApplyCheckboxStates();
+            // Auch die Bedarfsserie samt zweiter Y-Achse nachziehen: bei RefreshContent
+            // kann der Haken von vorher noch gesetzt sein, die Serie aber frisch angelegt
+            // und damit abgeschaltet.
+            WaermebedarfAchseAktualisieren();
+
+            AktualisiereSpeicherAuswahl();
+        }
+
+        /// <summary>
+        /// Baut Diagrammkonfiguration und Serien auf — in der Darstellungsform, die
+        /// <see cref="_sortiert"/> vorgibt, und nur für die Erzeuger, die zum Ergebnis
+        /// gehören (<see cref="_praesenz"/>).
+        ///
+        /// Serien fehlender Erzeuger entstehen GAR NICHT: Ein bloßes <c>Enabled = false</c>
+        /// ließe die Legende weiter mitwachsen und die Y-Skalierung mitrechnen.
+        ///
+        /// Der Umbau folgt dem Ablauf der Wärmepumpen-Seite
+        /// (<c>Form_Simulation_Detail.checkBox_WP_sortiert_CheckedChanged</c>):
+        /// <c>XAxisAsNumber</c> setzen, <c>HardReset()</c>, <c>Init()</c>, Serien neu.
+        /// </summary>
+        private void SerienAufbauen()
+        {
+            if (_chartManager == null) return;
+
             _chartManager.BackColor = Color.White;
             _chartManager._chart.BackColor = Color.LightGray;
             // Skalierung so wählen, dass auch die Speicherfüllstände vollständig sichtbar sind
             _chartManager.YMaxValue = Math.Max(temp_ges.Max(), SpeicherMax()) + 1;
             _chartManager.YMinValue = 0;
-            _chartManager.XAxisAsNumber = false;
-            _chartManager.XAxisTitle = MyResource.Resource.CHART_ACHSE_MONATE;
+            _chartManager.XAxisAsNumber = _sortiert;
+            _chartManager.XAxisTitle = _sortiert
+                ? MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN
+                : MyResource.Resource.CHART_ACHSE_MONATE;
             _chartManager.YAxisTitle = MyResource.Resource.CHART_ACHSE_LEISTUNG_SPEICHERINHALT;
             _chartManager.toolTipUnit = "kW";
             _chartManager.ChartTitle = MyResource.Resource.CHART_TITEL_WAERMEPRODUKTION_JAHRESGANGLINIE;
@@ -245,51 +339,194 @@ namespace WindowsFormsApplication1
             _chartManager.MaxXVALUE = 8760;
             _chartManager.MitViertelStunde = false;
             _chartManager.LegendMarkerBreite = 5;
-            
+
+            _chartManager.HardReset();
             _chartManager.Init();
+
+            // -----------------------------------------------------------------------
+            // 1. DER STAPEL: die Erzeuger.
+            //
+            // Wärmepumpe, Heizstab, Heizkessel, Solarthermie und BHKW addieren sich
+            // physikalisch zur Gesamtproduktion — genau das zeigt ein Stapel und keine
+            // Schar übereinandergelegter Linien. Die Reihenfolge folgt der Kaskadenlogik
+            // (WP unten), damit der Stapel bei jedem Projekt gleich zu lesen ist.
+            //
+            // Fehlende Erzeuger entstehen gar nicht erst (Präsenzregel) und können den
+            // Stapel deshalb auch nicht verschieben. Abgewählte Serien nimmt MS-Chart
+            // über Enabled = false aus dem Stapel heraus — der Stapel zeigt dann genau
+            // die angehakten Anteile.
+            //
+            // Im SORTIERTEN Modus wird NICHT gestapelt: dort ist jede Serie für sich
+            // absteigend sortiert, die Stunde i der einen Serie hat mit der Stunde i der
+            // anderen nichts mehr zu tun, und eine Summe daraus wäre frei erfunden.
+            SeriesChartType erzeugerTyp = _sortiert ? SeriesChartType.FastLine : SeriesChartType.StackedArea;
+
+            if (_praesenz.Waermepumpe)
+                SerieAnlegen(S_WAERMEPUMPE, MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, Color.Orange, temp_wp, erzeugerTyp);
+            if (_praesenz.Heizstab)
+                SerieAnlegen(S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, temp_hs, erzeugerTyp);
+            if (_praesenz.Heizkessel)
+                SerieAnlegen(S_HEIZKESSEL, MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, Color.Blue, temp_hk, erzeugerTyp);
+            if (_praesenz.Solarthermie)
+                SerieAnlegen(S_SOLARTHERMIE, MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE, Color.Brown, temp_st, erzeugerTyp);
+            if (_praesenz.BHKW)
+                SerieAnlegen(S_BHKW, MyResource.Resource.SIM_ERZEUGERNAME_BHKW, Color.Red, temp_bhkw, erzeugerTyp);
+
+            // -----------------------------------------------------------------------
+            // 2. DIE LINIEN darüber — zuletzt angelegt und damit oben gezeichnet.
+            //
+            // Der Speicherfüllstand bleibt eine eigenständige Linie: er ist ein
+            // Energieinhalt, keine Erzeugung, und gehört nicht in die Summe.
+            // Series.Name ist der technische Schlüssel, der Anzeigetext geht in
+            // LegendText (Konzept 13.3).
+            if (_praesenz.Speicher)
+                for (int i = 0; i < speicherListe.Count; i++)
+                {
+                    _chartManager.AddSeries(speicherSchluessel[i],
+                        SPEICHER_FARBEN[i % SPEICHER_FARBEN.Length],
+                        Anzeigewerte(speicherListe[i].SOC_stuendlich));
+                    Series s = _chartManager._chart.Series[speicherSchluessel[i]];
+                    s.LegendText = SpeicherAnzeige(speicherListe[i]);
+                    s.Enabled = false;
+                }
+
+            // Der Bedarf beschreibt das Projekt, nicht einen Erzeuger - er bleibt immer
+            // und liegt als Linie über dem Stapel (zweite Y-Achse, siehe
+            // WaermebedarfAchseAktualisieren).
             SerieAnlegen(S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, Color.DarkCyan, temp_profil);
+
+            // ---------------------------------------------------------------------
+            // "Gesamt" ZULETZT — und damit ganz oben.
+            //
+            // Warum die Serie trotz Stapel BLEIBT: Die Stapeloberkante ist rechnerisch
+            // dasselbe, aber die Linie kommt aus einem EIGENEN Vektor (temp_ges). Weichen
+            // beide voneinander ab, ist etwas faul — ein fehlender Erzeuger, eine
+            // abgewählte Serie, ein Vorzeichenfehler. Als Kontrolllinie kostet sie nichts
+            // und ist im sortierten Modus ohnehin die einzige Summendarstellung.
+            //
+            // Die Position am Ende ist der eigentliche Fix eines Bestandsfehlers:
+            // MS-Chart zeichnet in der Reihenfolge der Series-Collection; bisher stand
+            // Gesamt an zweiter Stelle und wurde von jeder danach angelegten Erzeugerserie
+            // ÜBERMALT. Das fiel nicht auf, solange sich mehrere Erzeuger die Stunden
+            // teilen — steht die Wärmepumpe aber auf Betriebsart ALTERNATIV, läuft je
+            // Stunde entweder sie oder der Kessel, und die Summe ist punktweise
+            // deckungsgleich mit genau einer Einzelserie. Sie verschwand dann vollständig
+            // unter ihr, und der Kessel sah aus, als decke er alles.
+            //
+            // KEINE Strichelung als Ausweg: BorderDashStyle ist bei FastLine wirkungslos
+            // (die frühere Zeile für die Bedarfsserie war es ebenso).
             SerieAnlegen(S_GESAMT, MyResource.Resource.CHART_LEGENDE_GESAMT, Color.Green, temp_ges);
-            SerieAnlegen(S_WAERMEPUMPE, MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, Color.Orange, temp_wp);
-            SerieAnlegen(S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, temp_hs);
-            SerieAnlegen(S_HEIZKESSEL, MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, Color.Blue, temp_hk);
-            SerieAnlegen(S_SOLARTHERMIE, MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE, Color.Brown, temp_st);
-            SerieAnlegen(S_BHKW, MyResource.Resource.SIM_ERZEUGERNAME_BHKW, Color.Red, temp_bhkw);
+            // Über dem Stapel genügt eine schlanke Kontrolllinie; ohne Stapel muss sie
+            // sich gegen deckungsgleiche Einzelserien behaupten.
+            _chartManager._chart.Series[S_GESAMT].BorderWidth = _sortiert ? 3 : 2;
 
-            // Eine Serie je Speicher. Series.Name ist der technische Schlüssel,
-            // der Anzeigetext geht in LegendText (Konzept 13.3).
-            for (int i = 0; i < speicherListe.Count; i++)
-            {
-                _chartManager.AddSeries(speicherSchluessel[i],
-                    SPEICHER_FARBEN[i % SPEICHER_FARBEN.Length],
-                    speicherListe[i].SOC_stuendlich);
-                Series s = _chartManager._chart.Series[speicherSchluessel[i]];
-                s.LegendText = SpeicherAnzeige(speicherListe[i]);
-                s.Enabled = false;
-            }
+            // Ausgangszustand: nur "Gesamt" an. ApplyCheckboxStates stellt danach den
+            // tatsächlichen Stand der Checkboxen wieder her.
+            foreach (Series s in _chartManager._chart.Series)
+                if (s.Name != S_GESAMT) s.Enabled = false;
+        }
 
-            _chartManager._chart.Series[S_WAERMEBEDARF].BorderDashStyle = ChartDashStyle.Solid;
-            _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = false;
-            _chartManager._chart.Series[S_HEIZSTAB].Enabled = false;
-            _chartManager._chart.Series[S_HEIZKESSEL].Enabled = false;
-            _chartManager._chart.Series[S_SOLARTHERMIE].Enabled = false;
-            _chartManager._chart.Series[S_BHKW].Enabled = false;
-            _chartManager._chart.Series[S_WAERMEBEDARF].Enabled = false;
-            checkBox_Gesamt.Checked = true;
+        /// <summary>
+        /// Werte in der aktuellen Darstellungsform: chronologisch oder — für die
+        /// Dauerlinie — absteigend sortiert. Sortiert wird JEDE SERIE FÜR SICH, genau wie
+        /// auf der Wärmepumpen-Seite; die Kopie schützt die Originalvektoren, mit denen
+        /// CSV-Export und Skalierung weiterrechnen.
+        /// </summary>
+        private float[] Anzeigewerte(float[] werte)
+        {
+            if (!_sortiert || werte == null) return werte;
 
-            // Checkbox nur anbieten, wenn der Lauf überhaupt einen Speicher hatte.
-            if (checkBox_Puffer != null) checkBox_Puffer.Enabled = (speicherListe.Count > 0);
-            AktualisiereSpeicherAuswahl();
+            float[] kopie = (float[])werte.Clone();
+            Array.Sort(kopie);
+            Array.Reverse(kopie);
+            return kopie;
         }
 
         /// <summary>
         /// Legt eine Chart-Serie an: <b>Name</b> = technischer Schlüssel (sprachneutral),
         /// <b>LegendText</b> = übersetzter Anzeigetext. Dieselbe Trennung, die die
         /// Speicherserien seit Paket 7 haben (Konzept 13.3).
+        ///
+        /// <paramref name="typ"/> überschreibt den Serientyp, den
+        /// <see cref="ChartManager.AddSeries(string, Color, float[])"/> vergibt
+        /// (<c>FastLine</c>). Das ist nötig, weil <c>FastLine</c> nicht stapeln kann.
         /// </summary>
-        private void SerieAnlegen(string schluessel, string legende, Color farbe, float[] werte)
+        private void SerieAnlegen(string schluessel, string legende, Color farbe, float[] werte,
+                                  SeriesChartType typ = SeriesChartType.FastLine)
         {
-            _chartManager.AddSeries(schluessel, farbe, werte);
-            _chartManager._chart.Series[schluessel].LegendText = legende;
+            _chartManager.AddSeries(schluessel, farbe, Anzeigewerte(werte));
+            Series s = _chartManager._chart.Series[schluessel];
+            s.LegendText = legende;
+            s.ChartType = typ;
+        }
+
+        // ====================================================================
+        //  Checkbox-Zeile: nur vorhandene Komponenten
+        // ====================================================================
+        //
+        // Unter dem Diagramm standen bisher IMMER alle Schalter — auch „Solarthermie" und
+        // „BHKW" in einem Projekt aus Wärmepumpe, Kessel und Puffer. Sie waren dort ohne
+        // Wirkung, weil die zugehörige Serie durchweg null ist.
+        //
+        // Die Schalter fehlender Komponenten werden deshalb AUSGEBLENDET (nicht gesperrt),
+        // und die verbleibenden rücken in der Zeile nach links nach. Die Positionen
+        // entstehen dabei aus den tatsächlichen Breiten (AutoSize) — dieselbe
+        // programmatische Platzierung, mit der schon „Speicherfüllstand" und die
+        // Speicherauswahl angelegt werden; Designer und .resx bleiben unangetastet.
+
+        /// <summary>
+        /// Blendet die Schalter fehlender Komponenten aus und ordnet die Zeile neu.
+        /// </summary>
+        private void CheckboxenAnordnen()
+        {
+            this.SuspendLayout();
+            _imAufbau = true;
+
+            // Erste Zeile: "Gesamt" ist der feste Anfang, alles Übrige rückt dahinter auf.
+            // Die Präsenz wird HIER mitgeführt und nicht aus Control.Visible zurückgelesen:
+            // dessen Getter liefert false, solange das Elternelement noch nicht angezeigt
+            // wird - beim Aufbau im Hintergrund wäre die ganze Zeile "unsichtbar" und
+            // niemand rückte nach.
+            var zeile = new[]
+            {
+                new { Schalter = checkBox_Gesamt,   Da = true },                  // Summe, immer
+                new { Schalter = checkBox_WP,       Da = _praesenz.Waermepumpe },
+                new { Schalter = checkBox_Heizstab, Da = _praesenz.Heizstab },
+                new { Schalter = checkBox_SPK,      Da = _praesenz.Heizkessel },
+                new { Schalter = checkBox_ST,       Da = _praesenz.Solarthermie },
+                new { Schalter = checkBox_BHKW,     Da = _praesenz.BHKW },
+                new { Schalter = checkBox_Puffer,   Da = _praesenz.Speicher }
+            };
+
+            int links = checkBox_Gesamt.Left;
+            int oben = checkBox_Gesamt.Top;
+            foreach (var e in zeile)
+            {
+                if (e.Schalter == null) continue;
+
+                // Ein ausgeblendeter Schalter wird zugleich abgewählt - sonst bliebe ein
+                // unsichtbares Checked stehen und der CSV-Export nähme eine Spalte mit,
+                // die niemand sieht.
+                if (!e.Da) e.Schalter.Checked = false;
+                e.Schalter.Visible = e.Da;
+                if (!e.Da) continue;
+
+                e.Schalter.Location = new Point(links, oben);
+                links = e.Schalter.Right + CHK_ABSTAND;
+            }
+
+            // Zweite Zeile: "Wärmebedarf einblenden", "sortiert", Speicherauswahl.
+            if (checkBox_Sortiert != null)
+                checkBox_Sortiert.Location = new Point(checkBox_Waermebedarf.Right + CHK_ABSTAND,
+                                                       checkBox_Waermebedarf.Top);
+            if (comboBox_Puffer != null)
+            {
+                Control davor = (checkBox_Sortiert != null) ? (Control)checkBox_Sortiert : checkBox_Waermebedarf;
+                comboBox_Puffer.Location = new Point(davor.Right + CHK_ABSTAND, checkBox_Waermebedarf.Top - 2);
+            }
+
+            _imAufbau = false;
+            this.ResumeLayout();
         }
 
         /// <summary>
@@ -320,7 +557,7 @@ namespace WindowsFormsApplication1
         /// <summary>Wird die Auswahlliste überhaupt benutzt? (Kriterium wie beim Anlegen)</summary>
         private bool AuswahlAktiv()
         {
-            return speicherListe.Count > 1;
+            return _praesenz.Speicher && speicherListe.Count > 1;
         }
 
         /// <summary>
@@ -376,95 +613,97 @@ namespace WindowsFormsApplication1
             // Hier erzwingst du, dass das Chart genau das anzeigt, was die Checkbox sagt
             if (_chartManager != null && _chartManager._chart.Series.Count > 0)
             {
-                _chartManager._chart.Series[S_GESAMT].Enabled = checkBox_Gesamt.Checked;
-                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = checkBox_WP.Checked;
-                _chartManager._chart.Series[S_HEIZSTAB].Enabled = checkBox_Heizstab.Checked;
-                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = checkBox_SPK.Checked;
-                _chartManager._chart.Series[S_SOLARTHERMIE].Enabled = checkBox_ST.Checked;
-                _chartManager._chart.Series[S_BHKW].Enabled = checkBox_BHKW.Checked;
+                SerieSchalten(S_GESAMT, checkBox_Gesamt.Checked);
+                SerieSchalten(S_WAERMEPUMPE, checkBox_WP.Checked);
+                SerieSchalten(S_HEIZSTAB, checkBox_Heizstab.Checked);
+                SerieSchalten(S_HEIZKESSEL, checkBox_SPK.Checked);
+                SerieSchalten(S_SOLARTHERMIE, checkBox_ST.Checked);
+                SerieSchalten(S_BHKW, checkBox_BHKW.Checked);
                 SpeicherSerienAktualisieren();
             }
         }
 
+        /// <summary>
+        /// Schaltet eine Serie, sofern es sie gibt. Seit der Präsenzfilterung entstehen
+        /// die Serien fehlender Erzeuger nicht mehr — ein ungeprüfter Zugriff über
+        /// <c>Series["…"]</c> liefe dann ins Leere.
+        /// </summary>
+        private void SerieSchalten(string schluessel, bool an)
+        {
+            if (_imAufbau) return;
+            if (_chartManager == null || _chartManager._chart == null) return;
+            if (_chartManager._chart.Series.IndexOf(schluessel) < 0) return;
+            _chartManager._chart.Series[schluessel].Enabled = an;
+        }
+
         private void checkBox_Puffer_CheckedChanged(object sender, EventArgs e)
         {
+            if (_imAufbau) return;
             SpeicherSerienAktualisieren();
         }
 
         private void checkBox_Gesamt_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_Gesamt.Checked)
-            {
-                _chartManager._chart.Series[S_GESAMT].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_GESAMT].Enabled = false;
-            }
+            SerieSchalten(S_GESAMT, checkBox_Gesamt.Checked);
         }
 
         private void checkBox_WP_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_WP.Checked)
-            {
-                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = false;
-            }
+            SerieSchalten(S_WAERMEPUMPE, checkBox_WP.Checked);
         }
 
         private void checkBox_Heizstab_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_Heizstab.Checked)
-            {
-                _chartManager._chart.Series[S_HEIZSTAB].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_HEIZSTAB].Enabled = false;
-            }
+            SerieSchalten(S_HEIZSTAB, checkBox_Heizstab.Checked);
         }
 
         private void checkBox_SPK_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_SPK.Checked)
-            {
-                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = false;
-            }
+            SerieSchalten(S_HEIZKESSEL, checkBox_SPK.Checked);
         }
 
         private void checkBox_ST_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_ST.Checked)
-            {
-                _chartManager._chart.Series[S_SOLARTHERMIE].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_SOLARTHERMIE].Enabled = false;
-            }
+            SerieSchalten(S_SOLARTHERMIE, checkBox_ST.Checked);
         }
 
         private void checkBox_BHKW_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_BHKW.Checked)
-            {
-                _chartManager._chart.Series[S_BHKW].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_BHKW].Enabled = false;
-            }
+            SerieSchalten(S_BHKW, checkBox_BHKW.Checked);
+        }
+
+        /// <summary>
+        /// Umschalter Jahresganglinie &lt;-&gt; Jahresdauerlinie. Baut die Serien in der
+        /// neuen Darstellungsform auf und stellt danach den Stand der Checkboxen wieder
+        /// her — die Auswahl des Anwenders überlebt das Umschalten.
+        /// </summary>
+        private void checkBox_Sortiert_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_imAufbau || _chartManager == null || temp_ges == null) return;
+
+            _sortiert = checkBox_Sortiert.Checked;
+            SerienAufbauen();
+            ApplyCheckboxStates();
+            WaermebedarfAchseAktualisieren();
+            _chartManager._chart.Invalidate();
         }
 
         private void checkBox_Waermebedarf_CheckedChanged(object sender, EventArgs e)
         {
+            WaermebedarfAchseAktualisieren();
+        }
+
+        /// <summary>
+        /// Schaltet die Bedarfsserie samt zweiter Y-Achse. Ausgelagert, weil die
+        /// Einstellungen nach jedem <c>HardReset()/Init()</c> neu gesetzt werden müssen —
+        /// also auch nach dem Umschalten auf die Dauerlinie.
+        /// </summary>
+        private void WaermebedarfAchseAktualisieren()
+        {
+            if (_imAufbau || _chartManager == null || _chartManager._chart == null) return;
+            if (_chartManager._chart.ChartAreas.Count == 0) return;
+            if (_chartManager._chart.Series.IndexOf(S_WAERMEBEDARF) < 0) return;
+
             double neueMax = 0;
 
             _chartManager._chart.Series[S_WAERMEBEDARF].Enabled = checkBox_Waermebedarf.Checked;
@@ -488,49 +727,44 @@ namespace WindowsFormsApplication1
             ca.AxisY.Maximum = neueMax; // Den oben berechneten Wert direkt setzen
             ca.AxisY.Interval = 0;      // Auf Auto stellen
 
-            // 2. Prüfen, ob die Serie existiert
-            if (_chartManager._chart.Series.IndexOf(S_WAERMEBEDARF) != -1)
+            var s = _chartManager._chart.Series[S_WAERMEBEDARF];
+            bool anzeigen = checkBox_Waermebedarf.Checked;
+
+            s.Enabled = anzeigen;
+
+            if (anzeigen)
             {
-                var s = _chartManager._chart.Series[S_WAERMEBEDARF];
-                bool anzeigen = checkBox_Waermebedarf.Checked;
+                // --- SPEZIALFALL: Y2-ACHSE AKTIVIEREN ---
+                s.YAxisType = AxisType.Secondary; // Serie nach rechts binden
+                ca.AxisY2.Enabled = AxisEnabled.True;
 
-                s.Enabled = anzeigen;
+                // Optik der rechten Achse
+                ca.AxisY2.Title = MyResource.Resource.CHART_ACHSE_WAERMEBEDARF_KWH;
+                ca.AxisY2.TitleForeColor = Color.Black;
+                ca.AxisY2.LabelStyle.ForeColor = Color.Black;
+                ca.AxisY2.MajorGrid.Enabled = false; // Gitter nur links lassen
 
-                if (anzeigen)
+                // Skalierung berechnen (falls nicht automatisch gewünscht)
+                if (s.Points.Count > 0)
                 {
-                    // --- SPEZIALFALL: Y2-ACHSE AKTIVIEREN ---
-                    s.YAxisType = AxisType.Secondary; // Serie nach rechts binden
-                    ca.AxisY2.Enabled = AxisEnabled.True;
-
-                    // Optik der rechten Achse
-                    ca.AxisY2.Title = MyResource.Resource.CHART_ACHSE_WAERMEBEDARF_KWH;
-                    ca.AxisY2.TitleForeColor = Color.Black;
-                    ca.AxisY2.LabelStyle.ForeColor = Color.Black;
-                    ca.AxisY2.MajorGrid.Enabled = false; // Gitter nur links lassen
-
-                    // Skalierung berechnen (falls nicht automatisch gewünscht)
-                    if (s.Points.Count > 0)
-                    {
-                        double maxVal = s.Points.Max(p => p.YValues[0]);
-                        ca.AxisY2.Maximum = maxVal > 0 ? maxVal * 1.1 : 10;
-                    }
-
-                    // Den inneren Bereich schrumpfen, damit rechts Platz für die 2. Achse ist
-                    ca.InnerPlotPosition.Auto = false;
-                    ca.InnerPlotPosition.X = 10;      // Start links
-                    ca.InnerPlotPosition.Width = 75;  // Vorher ca. 85, jetzt weniger für Y2-Platz
-                    ca.InnerPlotPosition.Y = 8;
-                    ca.InnerPlotPosition.Height = 75;
-
-                    // Sicherstellen, dass die Achse nicht abgeschnitten wird
-                    ca.AxisY2.LabelStyle.Enabled = true;
-
+                    double maxVal = s.Points.Max(p => p.YValues[0]);
+                    ca.AxisY2.Maximum = maxVal > 0 ? maxVal * 1.1 : 10;
                 }
-                else
-                {
-                    // Y2-Achse wieder verstecken, wenn Speicher aus
-                    ca.AxisY2.Enabled = AxisEnabled.False;
-                }
+
+                // Den inneren Bereich schrumpfen, damit rechts Platz für die 2. Achse ist
+                ca.InnerPlotPosition.Auto = false;
+                ca.InnerPlotPosition.X = 10;      // Start links
+                ca.InnerPlotPosition.Width = 75;  // Vorher ca. 85, jetzt weniger für Y2-Platz
+                ca.InnerPlotPosition.Y = 8;
+                ca.InnerPlotPosition.Height = 75;
+
+                // Sicherstellen, dass die Achse nicht abgeschnitten wird
+                ca.AxisY2.LabelStyle.Enabled = true;
+            }
+            else
+            {
+                // Y2-Achse wieder verstecken, wenn Speicher aus
+                ca.AxisY2.Enabled = AxisEnabled.False;
             }
         }
     }

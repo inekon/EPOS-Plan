@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WindowsFormsApplication1
 {
@@ -38,6 +39,15 @@ namespace WindowsFormsApplication1
         // „reine Einheiten und Symbole"). Schlüssel und Anzeigetext fallen hier zusammen;
         // ein eigener LegendText wäre eine Ressource mit zweimal demselben Wert.
         private const string S_PV = "PV";
+
+        /// <summary>
+        /// Welche Erzeuger gehören zu diesem Ergebnis? Vorbelegt mit „alles sichtbar",
+        /// damit vor dem ersten <see cref="SetControl"/> nichts fehlt.
+        /// </summary>
+        private ErgebnisPraesenz _praesenz = ErgebnisPraesenz.Alles();
+
+        /// <summary>Abstand zwischen zwei Checkboxen beim Nachrücken.</summary>
+        private const int CHK_ABSTAND = 20;
 
         public NavigatorStrom(SimulationControl simctrl)
         {
@@ -161,35 +171,128 @@ namespace WindowsFormsApplication1
             _chartManager.MitViertelStunde = true;
             _chartManager.LegendMarkerBreite = 5;
 
-            _chartManager.Init();
-            SerieAnlegen(S_GESAMT, MyResource.Resource.CHART_LEGENDE_GESAMT, Color.Green, temp_ges);
-            SerieAnlegen(S_WAERMEPUMPE, MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, Color.Orange, temp_wp);
-            SerieAnlegen(S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, temp_hs);
-            SerieAnlegen(S_HEIZKESSEL, MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, Color.Blue, temp_hk);
-            SerieAnlegen(S_PROFIL_LASTGANG, MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG, Color.Brown, temp_profil);
-            SerieAnlegen(S_BHKW, MyResource.Resource.SIM_ERZEUGERNAME_BHKW, Color.Brown, temp_bhkw);
+            // Welche Erzeuger gehören zu diesem Ergebnis? Serien und Checkboxen der
+            // übrigen entstehen gar nicht erst (siehe ErgebnisPraesenz und
+            // CheckboxenAnordnen).
+            _praesenz = ErgebnisPraesenz.Ermitteln(sim);
 
+            _chartManager.Init();
+
+            // -----------------------------------------------------------------------
+            // DER STAPEL: die VERBRAUCHSSEITE.
+            //
+            // "Gesamt" ist hier die Summe aus Lastgangprofil, Wärmepumpe, Heizstab und
+            // Kessel (siehe temp_ges oben) - genau diese vier addieren sich und werden
+            // deshalb gestapelt. PV und BHKW gehören NICHT hinein: sie erzeugen Strom und
+            // sind in der Summe nicht enthalten; sie bleiben Linien über dem Stapel.
+            SeriesChartType verbrauchTyp = SeriesChartType.StackedArea;
+
+            SerieAnlegen(S_PROFIL_LASTGANG, MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG, Color.Brown, temp_profil, verbrauchTyp);
+            if (_praesenz.Waermepumpe)
+                SerieAnlegen(S_WAERMEPUMPE, MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, Color.Orange, temp_wp, verbrauchTyp);
+            if (_praesenz.Heizstab)
+                SerieAnlegen(S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, temp_hs, verbrauchTyp);
+            if (_praesenz.Heizkessel)
+                SerieAnlegen(S_HEIZKESSEL, MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, Color.Blue, temp_hk, verbrauchTyp);
+
+            // --- Erzeugung: Linien über dem Stapel ---------------------------------
+            if (_praesenz.BHKW)
+                SerieAnlegen(S_BHKW, MyResource.Resource.SIM_ERZEUGERNAME_BHKW, Color.Brown, temp_bhkw);
 
             // _chartManager[7].AddSeries("Rest", Color.Black, sim.Rest_Strombedarf_viertelstuendlich);
-            _chartManager.AddSeries(S_PV, Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
+            if (_praesenz.Photovoltaik)
+                _chartManager.AddSeries(S_PV, Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
             // _chartManager[7].AddSeries("Überschuss", Color.Magenta, sim.simulation_pv.Ueberschuss_viertelstunde);
-            _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = false;
-            _chartManager._chart.Series[S_HEIZSTAB].Enabled = false;
-            _chartManager._chart.Series[S_HEIZKESSEL].Enabled = false;
-            _chartManager._chart.Series[S_PROFIL_LASTGANG].Enabled = false;
-            _chartManager._chart.Series[S_PV].Enabled = false;
-            _chartManager._chart.Series[S_BHKW].Enabled = false;
+
+            // "Gesamt" ZULETZT und damit ganz oben - dieselbe Begründung wie in
+            // NavigatorWaerme: MS-Chart zeichnet in Collection-Reihenfolge, und eine Summe
+            // an zweiter Stelle verschwindet unter jeder danach angelegten Serie, sobald
+            // sie punktweise mit ihr zusammenfällt. Über dem Stapel bleibt sie als
+            // Kontrolllinie aus einem eigenen Vektor stehen.
+            SerieAnlegen(S_GESAMT, MyResource.Resource.CHART_LEGENDE_GESAMT, Color.Green, temp_ges);
+            _chartManager._chart.Series[S_GESAMT].BorderWidth = 2;
+
+            // Ausgangszustand: nur "Gesamt" an.
+            foreach (var s in _chartManager._chart.Series)
+                if (s.Name != S_GESAMT) s.Enabled = false;
+
+            CheckboxenAnordnen();
             checkBox_Gesamt.Checked = true;
+        }
+
+        // ====================================================================
+        //  Checkbox-Zeile: nur vorhandene Komponenten
+        // ====================================================================
+        //
+        // Wie in NavigatorWaerme: die Schalter fehlender Komponenten werden AUSGEBLENDET
+        // (nicht gesperrt) und die verbleibenden rücken nach links nach. „Gesamt" und
+        // „Profil/Lastgang" bleiben immer — sie beschreiben das Projekt, nicht einen
+        // Erzeuger. Positionen entstehen aus den tatsächlichen Breiten (AutoSize);
+        // Designer und .resx bleiben unangetastet.
+        private void CheckboxenAnordnen()
+        {
+            this.SuspendLayout();
+
+            // Die Präsenz wird hier mitgeführt und nicht aus Control.Visible zurückgelesen:
+            // dessen Getter liefert false, solange das Elternelement noch nicht angezeigt
+            // wird - beim Aufbau im Hintergrund rückte sonst nichts nach.
+            var zeile = new[]
+            {
+                new { Schalter = checkBox_Gesamt,         Da = true },
+                new { Schalter = checkBox_WP,             Da = _praesenz.Waermepumpe },
+                new { Schalter = checkBox_Heizstab,       Da = _praesenz.Heizstab },
+                new { Schalter = checkBox_SPK,            Da = _praesenz.Heizkessel },
+                new { Schalter = checkBox_PV,             Da = _praesenz.Photovoltaik },
+                new { Schalter = checkBox_Profil_Lastgang, Da = true },
+                new { Schalter = checkBox_BHKW,           Da = _praesenz.BHKW }
+            };
+
+            int links = checkBox_Gesamt.Left;
+            int oben = checkBox_Gesamt.Top;
+            foreach (var e in zeile)
+            {
+                if (e.Schalter == null) continue;
+
+                // Ausgeblendet heißt auch abgewählt - sonst bliebe ein unsichtbares
+                // Checked stehen und der CSV-Export nähme eine Spalte mit, die niemand sieht.
+                if (!e.Da) e.Schalter.Checked = false;
+                e.Schalter.Visible = e.Da;
+                if (!e.Da) continue;
+
+                e.Schalter.Location = new Point(links, oben);
+                links = e.Schalter.Right + CHK_ABSTAND;
+            }
+
+            this.ResumeLayout();
+        }
+
+        /// <summary>
+        /// Schaltet eine Serie, sofern es sie gibt. Seit der Präsenzfilterung entstehen
+        /// die Serien fehlender Erzeuger nicht mehr — ein ungeprüfter Zugriff über
+        /// <c>Series["…"]</c> liefe dann ins Leere.
+        /// </summary>
+        private void SerieSchalten(string schluessel, bool an)
+        {
+            if (_chartManager == null || _chartManager._chart == null) return;
+            if (_chartManager._chart.Series.IndexOf(schluessel) < 0) return;
+            _chartManager._chart.Series[schluessel].Enabled = an;
         }
 
         /// <summary>
         /// Legt eine Serie unter ihrem technischen Schlüssel an und hängt den
         /// Anzeigetext an <c>LegendText</c> (Muster aus NavigatorWaerme, Paket 9 / L6).
+        ///
+        /// <paramref name="typ"/> überschreibt den Serientyp aus
+        /// <c>ChartManager.AddSeries</c> (<c>FastLine</c>) — nötig, weil <c>FastLine</c>
+        /// nicht stapeln kann.
         /// </summary>
-        private void SerieAnlegen(string schluessel, string legende, Color farbe, float[] werte)
+        private void SerieAnlegen(string schluessel, string legende, Color farbe, float[] werte,
+                                  SeriesChartType typ = SeriesChartType.FastLine)
         {
             _chartManager.AddSeries(schluessel, farbe, werte);
-            _chartManager._chart.Series[schluessel].LegendText = legende;
+            var s = _chartManager._chart.Series[schluessel];
+            s.LegendText = legende;
+            s.ChartType = typ;
         }
 
         private void ApplyCheckboxStates()
@@ -197,92 +300,50 @@ namespace WindowsFormsApplication1
             // Hier erzwingst du, dass das Chart genau das anzeigt, was die Checkbox sagt
             if (_chartManager != null && _chartManager._chart.Series.Count > 0)
             {
-                _chartManager._chart.Series[S_GESAMT].Enabled = checkBox_Gesamt.Checked;
-                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = checkBox_WP.Checked;
-                _chartManager._chart.Series[S_HEIZSTAB].Enabled = checkBox_Heizstab.Checked;
-                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = checkBox_SPK.Checked;
-                _chartManager._chart.Series[S_PROFIL_LASTGANG].Enabled = checkBox_Profil_Lastgang.Checked;
-                _chartManager._chart.Series[S_PV].Enabled = checkBox_PV.Checked;
-                _chartManager._chart.Series[S_BHKW].Enabled = checkBox_BHKW.Checked;
+                SerieSchalten(S_GESAMT, checkBox_Gesamt.Checked);
+                SerieSchalten(S_WAERMEPUMPE, checkBox_WP.Checked);
+                SerieSchalten(S_HEIZSTAB, checkBox_Heizstab.Checked);
+                SerieSchalten(S_HEIZKESSEL, checkBox_SPK.Checked);
+                SerieSchalten(S_PROFIL_LASTGANG, checkBox_Profil_Lastgang.Checked);
+                SerieSchalten(S_PV, checkBox_PV.Checked);
+                SerieSchalten(S_BHKW, checkBox_BHKW.Checked);
             }
         }
 
         private void checkBox_Gesamt_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_Gesamt.Checked)
-            {
-                _chartManager._chart.Series[S_GESAMT].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_GESAMT].Enabled = false;
-            }
+            SerieSchalten(S_GESAMT, checkBox_Gesamt.Checked);
             OptimizeYAxisScale();
         }
 
         private void checkBox_WP_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_WP.Checked)
-            {
-                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = false;
-            }
+            SerieSchalten(S_WAERMEPUMPE, checkBox_WP.Checked);
             OptimizeYAxisScale();
         }
 
         private void checkBox_Heizstab_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_Heizstab.Checked)
-            {
-                _chartManager._chart.Series[S_HEIZSTAB].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_HEIZSTAB].Enabled = false;
-            }
+            SerieSchalten(S_HEIZSTAB, checkBox_Heizstab.Checked);
             OptimizeYAxisScale();
         }
 
         private void checkBox_SPK_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_SPK.Checked)
-            {
-                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = false;
-            }
+            SerieSchalten(S_HEIZKESSEL, checkBox_SPK.Checked);
             OptimizeYAxisScale();
         }
 
         private void checkBox_Profil_Lastgang_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_Profil_Lastgang.Checked)
-            {
-                _chartManager._chart.Series[S_PROFIL_LASTGANG].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_PROFIL_LASTGANG].Enabled = false;
-            }
+            SerieSchalten(S_PROFIL_LASTGANG, checkBox_Profil_Lastgang.Checked);
             OptimizeYAxisScale();
         }
 
 
         private void checkBox_PV_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_PV.Checked)
-            {
-                _chartManager._chart.Series[S_PV].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_PV].Enabled = false;
-            }
+            SerieSchalten(S_PV, checkBox_PV.Checked);
             OptimizeYAxisScale();
         }
 
@@ -341,14 +402,7 @@ namespace WindowsFormsApplication1
 
         private void checkBox_BHKW_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_BHKW.Checked)
-            {
-                _chartManager._chart.Series[S_BHKW].Enabled = true;
-            }
-            else
-            {
-                _chartManager._chart.Series[S_BHKW].Enabled = false;
-            }
+            SerieSchalten(S_BHKW, checkBox_BHKW.Checked);
             OptimizeYAxisScale();
         }
     }
