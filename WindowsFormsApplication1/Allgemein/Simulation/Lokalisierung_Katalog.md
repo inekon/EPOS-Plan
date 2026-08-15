@@ -26,7 +26,22 @@ stark typisiert erreichbar. Übersetzungsgrundlage ist
   (kommen in L3 über `CultureInfo`), reine Einheiten und Symbole, Chart-Serien**namen**, die als
   Zugriffsschlüssel dienen, sowie `Console.WriteLine`- und `Exception`-Texte.
 
-## CHART — 52 Schlüssel
+## Nachträge aus Etappe 2 (L3–L6)
+
+Beim Umbau kamen zwei Schlüssel dazu und zwei Einträge wurden berichtigt. Beides ist in
+beiden `.resx` und in `Resource.Designer.cs` nachgezogen; Bestand jetzt **530 Schlüssel**.
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `CHART_LEGENDE_GESAMT` | Gesamt | Total | NavigatorWaerme.cs (Serie `GESAMT`) | **neu.** Der Legendentext hing bis L6 am Seriennamen; mit der Umstellung auf technische Schlüssel braucht er einen eigenen Eintrag. |
+| `CHART_LEGENDE_WAERMEBEDARF` | Wärmebedarf | Heat demand | NavigatorWaerme.cs (Serie `WAERMEBEDARF`) | **neu.** Wie oben. Nicht zu verwechseln mit `CHART_CSV_WAERMEBEDARF` („Wärmebedarf [kW]", CSV-Kopf). |
+
+| Schlüssel | Berichtigung |
+|---|---|
+| `SIMENG_STROMPROFILE_DIAGNOSE` | Der Text trägt jetzt **zwei** Platzhalter: `…nicht berechnet werden{0} - {1}`. `{0}` nimmt den optionalen Zusatz `SIMENG_STROMPROFIL_ZULETZT_BEARBEITET` auf, `{1}` die Ausnahmemeldung. Mit nur einem Platzhalter wäre der Zusatz beim Umbau verlorengegangen; die deutsche Ausgabe ist unverändert. |
+| `SIM_BHKW_MODUL_STANDARD` | Die Fundstelle **`SimulationRunner.cs:499` ist keine Anzeige**, sondern ein Persistenzwert: `ErgebnisBHKWModulModel.Modul` wird nach `Tab_ErgebnisBHKWModul.Modul` geschrieben und von der Referenzlauf-Suite als Skalar exportiert. Sie bleibt hartkodiert deutsch (Kommentar an der Stelle). Der Schlüssel gilt nur noch für `Form_Simulation_Detail.cs:2010`. |
+
+## CHART — 54 Schlüssel
 
 | Schlüssel | DE | EN | Fundstellen |
 |---|---|---|---|
@@ -68,6 +83,8 @@ stark typisiert erreichbar. Übersetzungsgrundlage ist
 | `CHART_LEGENDE_AUTARKIELUECKE` | Autarkie-Lücke (Netz) | Self-sufficiency gap (grid) | DashboardForm.cs:74 |
 | `CHART_LEGENDE_EIGENVERBRAUCH_DIREKT` | Eigenverbrauch (Direkt) | Self-consumption (direct) | DashboardForm.cs:56 |
 | `CHART_LEGENDE_EIGENVERBRAUCH_SPEICHER` | Eigenverbrauch (Speicher) | Self-consumption (storage) | DashboardForm.cs:66 |
+| `CHART_LEGENDE_GESAMT` | Gesamt | Total | NavigatorWaerme.cs:198 |
+| `CHART_LEGENDE_WAERMEBEDARF` | Wärmebedarf | Heat demand | NavigatorWaerme.cs:196 |
 | `CHART_LEGENDE_WAERMEBEDARFSDECKUNG` | Wärmebedarfsdeckung | Heat demand coverage | Form_Simulation_Detail.cs:116 |
 | `CHART_SEGMENT_HEIZSTAB` | Heizstab | Immersion heater | Form_Simulation_Detail.cs:1423, NavigatorUebersicht.cs:212, NavigatorUebersicht.cs:67 |
 | `CHART_SEGMENT_REST` | Rest | Residual | Form_Simulation_Detail.cs:1429 |
@@ -412,7 +429,7 @@ stark typisiert erreichbar. Übersetzungsgrundlage ist
 | `SIMENG_SIMULATION_ABGEBROCHEN` | Simulation abgebrochen: {0} | Simulation aborted: {0} | SimulationControl.cs:262 |
 | `SIMENG_SPEICHERN_DES_ERGEBNISSES` | Speichern des Ergebnisses: {0} | Saving the result: {0} | SimulationRunner.cs:733 |
 | `SIMENG_STROMPROFIL_ZULETZT_BEARBEITET` |  (zuletzt bearbeitet: Stromprofil '{0}') |  (last processed: electricity profile '{0}') | SimulationStrombedarf.cs:241 |
-| `SIMENG_STROMPROFILE_DIAGNOSE` | Strombedarf: Die Stromprofile konnten nicht berechnet werden - {0} | Electricity demand: the electricity profiles could not be calculated - {0} | SimulationStrombedarf.cs:240, SimulationStrombedarf.cs:243 |
+| `SIMENG_STROMPROFILE_DIAGNOSE` | Strombedarf: Die Stromprofile konnten nicht berechnet werden{0} - {1} | Electricity demand: the electricity profiles could not be calculated{0} - {1} | SimulationStrombedarf.cs:240, SimulationStrombedarf.cs:243 |
 | `SIMENG_STROMPROFILE_NICHT_BERECHENBAR` | Die Stromprofile des Projekts konnten nicht berechnet werden. Die Simulation wurde abgebrochen. | The electricity profiles of the project could not be calculated. The simulation was aborted. | SimulationStrombedarf.cs:84 |
 | `SIMENG_TAGESVERTEILUNG_FEHLT` | Wärmebedarf: Zum Tagesverteilungstyp „{0}“ sind keine Daten hinterlegt. Die Bedarfsrechnung wurde an dieser Stelle abgebrochen; das Ergebnis ist unvollständig. | Heat demand: no data is stored for the daily distribution type "{0}". The demand calculation was aborted at this point; the result is incomplete. | SimulationWaermebedarf.cs:175 |
 | `SIMENG_WP_EXTRAPOLATION_HINWEIS` | Wärmepumpe '{0}': Die Quelltemperatur unterschreitet die untere Stützstelle der Kennlinie ({1} °C). Es wird extrapoliert (Projekteinstellung „Extrapolation der Kennlinie erlauben“). | Heat pump '{0}': the source temperature falls below the lowest data point of the performance curve ({1} °C). Extrapolation is applied (project setting "Allow extrapolation of the performance curve"). | SimulationWaermepumpe.cs:1545 |

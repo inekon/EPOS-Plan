@@ -1186,9 +1186,8 @@ namespace WindowsFormsApplication1
                 // (Bestandsbefund B-3). Es gibt also kein Verhalten zu erhalten, und ein
                 // stillschweigend um Module gekürztes Ergebnis sähe plausibel aus, wäre
                 // aber falsch - sichtbar falsch ist besser als still falsch.
-                Fehlertext = "BHKW: Im Projekt sind " + anzahl + " BHKW hinterlegt, die Simulation " +
-                             "unterstützt maximal " + MAX_BHKW + ". Der Lauf wurde abgebrochen, " +
-                             "damit kein Ergebnis ohne die übrigen Module entsteht.";
+                Fehlertext = string.Format(MyResource.Resource.SIMENG_BHKW_MAX_UEBERSCHRITTEN,
+                                           anzahl, MAX_BHKW);
                 // NACHARBEIT PAKET 8, BEFUND N9: über den Fehlerkanal statt über eine
                 // blanke Konsolenzeile. Der Kanal schreibt weiterhin auf die Konsole
                 // (mit Präfix "Simulation FEHLER:"), trägt die Meldung aber zusätzlich

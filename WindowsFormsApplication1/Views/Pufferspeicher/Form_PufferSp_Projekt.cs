@@ -85,6 +85,28 @@ namespace WindowsFormsApplication1
             public override string ToString() { return Text; }
         }
 
+        /// <summary>
+        /// Eintrag des Verwendungs-Dropdowns (Behebung Befund L0-2).
+        ///
+        /// <para>
+        /// Vorher standen die DB-Werte <c>„Heizung"</c> und <c>„Brauchwasser"</c>
+        /// UNMITTELBAR als ComboBox-Einträge in der Liste, und
+        /// <c>SelectedItem.ToString()</c> las sie als Steuerwert zurück. Der angezeigte
+        /// Text war damit nicht lokalisierbar, ohne zugleich den Persistenzwert zu
+        /// verändern — genau die Verwechslung, die die Drei-Schichten-Regel verbietet.
+        /// </para>
+        ///
+        /// Jetzt trägt der Eintrag beides getrennt: <see cref="DbWert"/> geht in die
+        /// Datenbank und in jeden Vergleich, <see cref="ToString"/> liefert den
+        /// übersetzten Anzeigetext.
+        /// </summary>
+        private class VerwendungItem
+        {
+            public string DbWert = "";
+            public string Anzeige = "";
+            public override string ToString() { return Anzeige; }
+        }
+
         public Form_PufferSp_Projekt()
         {
             BaueOberflaeche();
@@ -92,7 +114,7 @@ namespace WindowsFormsApplication1
 
         private void BaueOberflaeche()
         {
-            this.Text = "Pufferspeicher im Projekt";
+            this.Text = MyResource.Resource.PSP_PROJEKT_FENSTERTITEL;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
@@ -102,7 +124,7 @@ namespace WindowsFormsApplication1
             // --- Bestand --------------------------------------------------------------
             GroupBox gbListe = new GroupBox
             {
-                Text = "Pufferspeicher im Projekt",
+                Text = MyResource.Resource.PSP_PROJEKT_FENSTERTITEL,
                 Location = new Point(12, 8),
                 Size = new Size(676, 122)
             };
@@ -112,28 +134,28 @@ namespace WindowsFormsApplication1
             _lbProjekt.SelectedIndexChanged += lbProjekt_SelectedIndexChanged;
             gbListe.Controls.Add(_lbProjekt);
 
-            _btnNeu = new Button { Text = "Neuer Pufferspeicher", Location = new Point(446, 22), Size = new Size(214, 26) };
+            _btnNeu = new Button { Text = MyResource.Resource.PSP_BTN_NEUER_PUFFERSPEICHER, Location = new Point(446, 22), Size = new Size(214, 26) };
             _btnNeu.Click += btnNeu_Click;
             gbListe.Controls.Add(_btnNeu);
 
-            _btnEntfernen = new Button { Text = "Entfernen", Location = new Point(446, 54), Size = new Size(214, 26) };
+            _btnEntfernen = new Button { Text = MyResource.Resource.PSP_BTN_ENTFERNEN, Location = new Point(446, 54), Size = new Size(214, 26) };
             _btnEntfernen.Click += btnEntfernen_Click;
             gbListe.Controls.Add(_btnEntfernen);
 
-            _btnKatalog = new Button { Text = "Katalog ansehen…", Location = new Point(446, 86), Size = new Size(214, 26) };
+            _btnKatalog = new Button { Text = MyResource.Resource.PSP_BTN_KATALOG_ANSEHEN, Location = new Point(446, 86), Size = new Size(214, 26) };
             _btnKatalog.Click += btnKatalog_Click;
             gbListe.Controls.Add(_btnKatalog);
 
             // --- Eigenschaften --------------------------------------------------------
             GroupBox gbDaten = new GroupBox
             {
-                Text = "Eigenschaften",
+                Text = MyResource.Resource.PSP_GRUPPE_EIGENSCHAFTEN,
                 Location = new Point(12, 136),
                 Size = new Size(676, 200)
             };
             this.Controls.Add(gbDaten);
 
-            gbDaten.Controls.Add(Beschriftung("Aus Katalog:", 16, 26));
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_AUS_KATALOG, 16, 26));
             _cbKatalog = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -143,39 +165,49 @@ namespace WindowsFormsApplication1
             _cbKatalog.SelectedIndexChanged += cbKatalog_SelectedIndexChanged;
             gbDaten.Controls.Add(_cbKatalog);
 
-            gbDaten.Controls.Add(Beschriftung("Bezeichner:", 16, 58));
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_BEZEICHNER, 16, 58));
             _tbBezeichner = new TextBox { Location = new Point(180, 55), Width = 300 };
             gbDaten.Controls.Add(_tbBezeichner);
 
-            gbDaten.Controls.Add(Beschriftung("Verwendung:", 16, 90));
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_VERWENDUNG, 16, 90));
             _cbVerwendung = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Location = new Point(180, 86),
                 Width = 180
             };
+            // Befund L0-2: DB-Wert und Anzeigetext getrennt (VerwendungItem).
             _cbVerwendung.Items.AddRange(new object[]
             {
-                WaermesenkeClass.VERWENDUNG_HEIZUNG, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER
+                new VerwendungItem
+                {
+                    DbWert = WaermesenkeClass.VERWENDUNG_HEIZUNG,
+                    Anzeige = MyResource.Resource.PSP_VERWENDUNG_HEIZUNG_ANZEIGE
+                },
+                new VerwendungItem
+                {
+                    DbWert = WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
+                    Anzeige = MyResource.Resource.PSP_VERWENDUNG_BRAUCHWASSER_ANZEIGE
+                }
             });
             _cbVerwendung.SelectedIndexChanged += Daten_Geaendert;
             gbDaten.Controls.Add(_cbVerwendung);
 
-            gbDaten.Controls.Add(Beschriftung("Gesamtvolumen [l]:", 380, 58));
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_GESAMTVOLUMEN, 380, 58));
             _tbVolumen = new TextBox { Location = new Point(540, 55), Width = 110 };
             _tbVolumen.TextChanged += Kapazitaet_Geaendert;
             gbDaten.Controls.Add(_tbVolumen);
 
-            gbDaten.Controls.Add(Beschriftung("Bereitschaftsverl. [kWh/24h]:", 380, 90));
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_BEREITSCHAFTSVERLUSTE, 380, 90));
             _tbVerluste = new TextBox { Location = new Point(540, 87), Width = 110 };
             gbDaten.Controls.Add(_tbVerluste);
 
-            gbDaten.Controls.Add(Beschriftung("Vorlauf [°C]:", 16, 124));
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_VORLAUF, 16, 124));
             _tbVorlauf = new TextBox { Location = new Point(180, 121), Width = 60 };
             _tbVorlauf.TextChanged += Kapazitaet_Geaendert;
             gbDaten.Controls.Add(_tbVorlauf);
 
-            gbDaten.Controls.Add(Beschriftung("Rücklauf [°C]:", 260, 124));
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_RUECKLAUF, 260, 124));
             _tbRuecklauf = new TextBox { Location = new Point(360, 121), Width = 60 };
             _tbRuecklauf.TextChanged += Kapazitaet_Geaendert;
             gbDaten.Controls.Add(_tbRuecklauf);
@@ -189,22 +221,22 @@ namespace WindowsFormsApplication1
             };
             gbDaten.Controls.Add(_lblQmax);
 
-            gbDaten.Controls.Add(Beschriftung("Einschaltschwelle [%]:", 16, 160));
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_EINSCHALTSCHWELLE, 16, 160));
             _tbSchwelleEin = new TextBox { Location = new Point(180, 157), Width = 60 };
             gbDaten.Controls.Add(_tbSchwelleEin);
 
-            gbDaten.Controls.Add(Beschriftung("Abschaltschwelle [%]:", 260, 160));
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_ABSCHALTSCHWELLE, 260, 160));
             _tbSchwelleAus = new TextBox { Location = new Point(400, 157), Width = 60 };
             gbDaten.Controls.Add(_tbSchwelleAus);
 
-            gbDaten.Controls.Add(Beschriftung("… nachrangig [%]:", 480, 160));
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_SCHWELLE_NACHRANGIG, 480, 160));
             _tbSchwelleNachrang = new TextBox { Location = new Point(600, 157), Width = 56 };
             gbDaten.Controls.Add(_tbSchwelleNachrang);
 
             // --- Ladereihenfolge ------------------------------------------------------
             GroupBox gbLaden = new GroupBox
             {
-                Text = "Ladereihenfolge dieses Speichers (aus den Erzeugerzuordnungen)",
+                Text = MyResource.Resource.PSP_GRUPPE_LADEREIHENFOLGE,
                 Location = new Point(12, 342),
                 Size = new Size(676, 152)
             };
@@ -221,17 +253,17 @@ namespace WindowsFormsApplication1
                 HeaderStyle = ColumnHeaderStyle.Nonclickable
             };
             _lvLaden.Columns.Add("#", 30, HorizontalAlignment.Left);
-            _lvLaden.Columns.Add("Anlage", 220, HorizontalAlignment.Left);
-            _lvLaden.Columns.Add("Erzeuger", 120, HorizontalAlignment.Left);
-            _lvLaden.Columns.Add("Senke", 90, HorizontalAlignment.Left);
-            _lvLaden.Columns.Add("Ladeprio", 80, HorizontalAlignment.Left);
-            _lvLaden.Columns.Add("lädt bis", 90, HorizontalAlignment.Left);
+            _lvLaden.Columns.Add(MyResource.Resource.SIM_SPALTE_ANLAGE, 220, HorizontalAlignment.Left);
+            _lvLaden.Columns.Add(MyResource.Resource.SIM_ERZEUGERNAME_ALLGEMEIN, 120, HorizontalAlignment.Left);
+            _lvLaden.Columns.Add(MyResource.Resource.SIM_SPALTE_SENKE, 90, HorizontalAlignment.Left);
+            _lvLaden.Columns.Add(MyResource.Resource.PSP_SPALTE_LADEPRIO, 80, HorizontalAlignment.Left);
+            _lvLaden.Columns.Add(MyResource.Resource.PSP_SPALTE_LAEDT_BIS, 90, HorizontalAlignment.Left);
             gbLaden.Controls.Add(_lvLaden);
 
             // --- Entladepriorität -----------------------------------------------------
             Label lblEntlade = new Label
             {
-                Text = "Entladepriorität:",
+                Text = MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET,
                 AutoSize = true,
                 Location = new Point(16, 506)
             };
@@ -265,7 +297,7 @@ namespace WindowsFormsApplication1
 
             _btnUebernehmen = new Button
             {
-                Text = "Übernehmen",
+                Text = MyResource.Resource.PSP_BTN_UEBERNEHMEN,
                 Location = new Point(this.ClientSize.Width - 300, 578),
                 Width = 130,
                 Height = 28
@@ -275,7 +307,7 @@ namespace WindowsFormsApplication1
 
             Button btnSchliessen = new Button
             {
-                Text = "Schließen",
+                Text = MyResource.Resource.PSP_BTN_SCHLIESSEN,
                 DialogResult = DialogResult.OK,
                 Location = new Point(this.ClientSize.Width - 150, 578),
                 Width = 130,
@@ -355,7 +387,7 @@ namespace WindowsFormsApplication1
                 "Investitionskosten FROM [" + PufferSpStammCtrl.TABLE + "] ORDER BY Bezeichner");
 
             _cbKatalog.Items.Clear();
-            _cbKatalog.Items.Add("(freie Eingabe)");
+            _cbKatalog.Items.Add(MyResource.Resource.PSP_KATALOG_FREIE_EINGABE);
             if (_katalog != null)
                 foreach (DataRow r in _katalog.Rows)
                     _cbKatalog.Items.Add(StilleDb.Text(StilleDb.Feld(r, "Bezeichner")));
@@ -369,16 +401,20 @@ namespace WindowsFormsApplication1
             _lbProjekt.Items.Clear();
             foreach (WaermesenkeClass.PufferInfo p in _projektPuffer)
             {
-                _lbProjekt.Items.Add(p.Bezeichner + "  -  " + WaermesenkeClass.WirksameVerwendung(p) +
-                                     ", " + p.Gesamtvolumen + " l" +
-                                     (p.VerwendungFehlt ? "  (Verwendung nicht gepflegt)" : ""));
+                // Befund L0-2: Der DB-Wert der Verwendung wird für die Anzeige übersetzt.
+                _lbProjekt.Items.Add(
+                    string.Format(MyResource.Resource.PSP_LISTE_EINTRAG,
+                                  p.Bezeichner,
+                                  WaermesenkeClass.VerwendungAnzeige(WaermesenkeClass.WirksameVerwendung(p)),
+                                  p.Gesamtvolumen) +
+                    (p.VerwendungFehlt ? MyResource.Resource.PSP_LISTE_VERWENDUNG_FEHLT : ""));
             }
         }
 
         private void EntladeprioListeFuellen()
         {
             _cbEntladeprio.Items.Clear();
-            _cbEntladeprio.Items.Add(new PrioItem { Wert = 0, Text = "automatisch" });
+            _cbEntladeprio.Items.Add(new PrioItem { Wert = 0, Text = MyResource.Resource.PSP_PRIO_AUTOMATISCH });
             for (int p = Ladeordnung.PRIO_MIN; p <= Ladeordnung.PRIO_MAX; p++)
                 _cbEntladeprio.Items.Add(new PrioItem { Wert = p, Text = p.ToString() });
             _cbEntladeprio.SelectedIndex = 0;
@@ -398,11 +434,11 @@ namespace WindowsFormsApplication1
                 _tbVolumen.Text = "";
                 _tbVerluste.Text = "0";
 
-                _cbVerwendung.SelectedItem =
+                VerwendungWaehlen(
                     string.Equals(Verwendung, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
                                   StringComparison.OrdinalIgnoreCase)
                         ? WaermesenkeClass.VERWENDUNG_BRAUCHWASSER
-                        : WaermesenkeClass.VERWENDUNG_HEIZUNG;
+                        : WaermesenkeClass.VERWENDUNG_HEIZUNG);
 
                 // Vorbelegung aus den SYSTEMVORGABEN des Projekts (Konzept 4.3, Punkt 3):
                 // kleinster Vorlauf und größter Rücklauf über die Erzeuger. Fehlen sie,
@@ -418,7 +454,7 @@ namespace WindowsFormsApplication1
                 _tbSchwelleNachrang.Text = ProjektPuffer.SCHWELLE_AUS_DEFAULT.ToString("0.#");
                 _cbEntladeprio.SelectedIndex = 0;
 
-                _btnUebernehmen.Text = "Anlegen";
+                _btnUebernehmen.Text = MyResource.Resource.PSP_BTN_ANLEGEN;
                 _btnEntfernen.Enabled = false;
                 _cbKatalog.Enabled = true;
             }
@@ -447,7 +483,7 @@ namespace WindowsFormsApplication1
                 _tbBezeichner.Text = p.Bezeichner;
                 _tbVolumen.Text = p.Gesamtvolumen.ToString(CultureInfo.InvariantCulture);
                 _tbVerluste.Text = p.Bereitschaftsverluste.ToString("0.###");
-                _cbVerwendung.SelectedItem = WaermesenkeClass.WirksameVerwendung(p);
+                VerwendungWaehlen(WaermesenkeClass.WirksameVerwendung(p));
 
                 _tbVorlauf.Text = p.Vorlauf > 0 ? p.Vorlauf.ToString(CultureInfo.InvariantCulture) : "";
                 _tbRuecklauf.Text = p.Ruecklauf > 0 ? p.Ruecklauf.ToString(CultureInfo.InvariantCulture) : "";
@@ -458,7 +494,7 @@ namespace WindowsFormsApplication1
 
                 PrioWaehlen(_cbEntladeprio, p.Entladeprio);
 
-                _btnUebernehmen.Text = "Übernehmen";
+                _btnUebernehmen.Text = MyResource.Resource.PSP_BTN_UEBERNEHMEN;
                 _btnEntfernen.Enabled = true;
             }
             finally
@@ -467,6 +503,35 @@ namespace WindowsFormsApplication1
             }
 
             AnzeigenAktualisieren();
+        }
+
+        /// <summary>
+        /// Wählt den Verwendungseintrag zu einem DB-Wert (Befund L0-2). Ohne Treffer
+        /// bleibt es beim ersten Eintrag („Heizung") — dieselbe Wirkung wie bisher,
+        /// wenn <c>SelectedItem</c> auf einen unbekannten Wert gesetzt wurde.
+        /// </summary>
+        private void VerwendungWaehlen(string dbWert)
+        {
+            foreach (object o in _cbVerwendung.Items)
+            {
+                VerwendungItem it = o as VerwendungItem;
+                if (it != null && string.Equals(it.DbWert, dbWert, StringComparison.OrdinalIgnoreCase))
+                {
+                    _cbVerwendung.SelectedItem = o;
+                    return;
+                }
+            }
+            if (_cbVerwendung.Items.Count > 0) _cbVerwendung.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// Der DB-Wert der gewählten Verwendung — der Steuerwert, der in die Datenbank
+        /// geht und gegen den geprüft wird (Befund L0-2). Leer, solange nichts gewählt ist.
+        /// </summary>
+        private string GewaehlteVerwendung()
+        {
+            VerwendungItem it = _cbVerwendung.SelectedItem as VerwendungItem;
+            return it != null ? it.DbWert : "";
         }
 
         private static void PrioWaehlen(ComboBox cb, int wert)
@@ -525,7 +590,7 @@ namespace WindowsFormsApplication1
             }
 
             double qmax = volumen * 1.16 * (vorlauf - ruecklauf) / 1000.0;
-            _lblQmax.Text = "→  Q_max " + qmax.ToString("0.0") + " kWh";
+            _lblQmax.Text = string.Format(MyResource.Resource.PSP_ANZEIGE_QMAX, qmax.ToString("0.0"));
         }
 
         private void LadereihenfolgeAnzeigen()
@@ -534,7 +599,7 @@ namespace WindowsFormsApplication1
             if (_bearbeiteteId <= 0)
             {
                 _lvLaden.Items.Add(new ListViewItem(new[]
-                    { "", "(der Speicher ist noch nicht angelegt)", "", "", "", "" }));
+                    { "", MyResource.Resource.PSP_LADEN_NOCH_NICHT_ANGELEGT, "", "", "", "" }));
                 return;
             }
 
@@ -542,21 +607,33 @@ namespace WindowsFormsApplication1
             if (liste.Count == 0)
             {
                 _lvLaden.Items.Add(new ListViewItem(new[]
-                    { "", "(keine Anlage lädt diesen Speicher)", "", "", "", "" }));
+                    { "", MyResource.Resource.PSP_LADEN_KEINE_ANLAGE, "", "", "", "" }));
                 return;
             }
 
             for (int i = 0; i < liste.Count; i++)
             {
                 Ladeordnung.LadeEintrag e = liste[i];
+
+                // e.Erzeuger kommt aus Ladeordnung.ErzeugerName und ist bereits der
+                // lokalisierte ANZEIGEname (nicht der Persistenzwert - der steht in
+                // Ladeordnung.KaskadenLiteral).
+                string ladeprio = e.PrioManuell
+                    ? string.Format(MyResource.Resource.PSP_LADEPRIO_MANUELL, e.Ladeprio)
+                    : e.Ladeprio.ToString();
+                string obergrenze = e.ObergrenzeEigen
+                    ? string.Format(MyResource.Resource.PSP_OBERGRENZE_EIGEN, e.Obergrenze.ToString("0.#"))
+                    : e.Obergrenze.ToString("0.#") + " %";
+
                 _lvLaden.Items.Add(new ListViewItem(new[]
                 {
                     (i + 1) + ".",
                     e.Bezeichner,
                     e.Erzeuger,
-                    e.Zweitsenke ? "Zweitsenke" : "Hauptsenke",
-                    e.Ladeprio + (e.PrioManuell ? " (manuell)" : ""),
-                    e.Obergrenze.ToString("0.#") + " %" + (e.ObergrenzeEigen ? " (eigene)" : "")
+                    e.Zweitsenke ? MyResource.Resource.SIM_ROLLE_ZWEITSENKE
+                                 : MyResource.Resource.SIM_ROLLE_HAUPTSENKE,
+                    ladeprio,
+                    obergrenze
                 }));
             }
         }
@@ -573,16 +650,15 @@ namespace WindowsFormsApplication1
             int automatik = Ladeordnung.EntladeprioAutomatik(ID_Projekt, _bearbeiteteId);
             AutomatikTextSetzen(automatik);
 
-            string verwendung = _cbVerwendung.SelectedItem != null
-                ? _cbVerwendung.SelectedItem.ToString()
-                : WaermesenkeClass.VERWENDUNG_HEIZUNG;
+            string verwendung = GewaehlteVerwendung();
+            if (verwendung.Length == 0) verwendung = WaermesenkeClass.VERWENDUNG_HEIZUNG;
 
             List<Ladeordnung.EntladeEintrag> reihe = Ladeordnung.Entladereihenfolge(ID_Projekt, verwendung);
             int pos = Ladeordnung.Position(reihe, _bearbeiteteId);
 
             _lblEntladeInfo.Text = pos > 0
-                ? "Wird als " + pos + ". von " + reihe.Count + " " +
-                  KanalSpeicherWort(verwendung, reihe.Count) + " entladen."
+                ? string.Format(MyResource.Resource.PSP_ENTLADE_POSITION,
+                                pos, reihe.Count, KanalSpeicherWort(verwendung, reihe.Count))
                 : "";
         }
 
@@ -595,12 +671,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string KanalSpeicherWort(string verwendung, int anzahl)
         {
-            string basis = string.Equals(verwendung, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
-                                         StringComparison.OrdinalIgnoreCase)
-                ? "Brauchwasserspeicher"
-                : "Heizungsspeicher";
+            bool brauchwasser = string.Equals(verwendung, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
+                                              StringComparison.OrdinalIgnoreCase);
 
-            return anzahl == 1 ? basis : basis + "n";
+            // Singular und Plural sind je EIGENE Ressourcen. Das frühere „basis + \"n\""
+            // war eine deutsche Beugungsregel im Quelltext und im Englischen falsch
+            // (dort trägt der Plural ein „s" an anderer Stelle).
+            if (brauchwasser)
+                return anzahl == 1
+                    ? MyResource.Resource.PSP_KANALWORT_BRAUCHWASSERSPEICHER
+                    : MyResource.Resource.PSP_KANALWORT_BRAUCHWASSERSPEICHER_PLURAL;
+
+            return anzahl == 1
+                ? MyResource.Resource.PSP_KANALWORT_HEIZUNGSSPEICHER
+                : MyResource.Resource.PSP_KANALWORT_HEIZUNGSSPEICHER_PLURAL;
         }
 
         /// <summary>Beschriftet den Automatik-Eintrag mit dem errechneten Wert.</summary>
@@ -611,7 +695,7 @@ namespace WindowsFormsApplication1
             PrioItem it = _cbEntladeprio.Items[0] as PrioItem;
             if (it == null) return;
 
-            it.Text = "automatisch (" + automatik + ")";
+            it.Text = string.Format(MyResource.Resource.PSP_PRIO_AUTOMATISCH_WERT, automatik);
 
             // ComboBox neu zeichnen lassen, ohne die Auswahl zu verlieren
             int auswahl = _cbEntladeprio.SelectedIndex;
@@ -693,7 +777,8 @@ namespace WindowsFormsApplication1
                                out vorlauf, out ruecklauf, out schwelleEin, out schwelleAus,
                                out schwelleNachrang, out entladeprio, out fehler))
             {
-                MessageBox.Show(fehler, "Pufferspeicher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(fehler, MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -712,15 +797,16 @@ namespace WindowsFormsApplication1
 
                 if (neueId <= 0)
                 {
-                    MessageBox.Show("Der Pufferspeicher konnte nicht angelegt werden.",
-                                    "Pufferspeicher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(MyResource.Resource.PSP_MELDUNG_ANLEGEN_FEHLGESCHLAGEN,
+                                    MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 ID_Puffer = neueId;
                 _bearbeiteteId = neueId;
                 Verwendung = verwendung;
-                Status("Pufferspeicher angelegt.");
+                Status(MyResource.Resource.PSP_STATUS_ANGELEGT);
             }
             else
             {
@@ -733,14 +819,15 @@ namespace WindowsFormsApplication1
                         verluste, investition, verwendung, vorlauf, ruecklauf,
                         schwelleEin, schwelleAus, schwelleNachrang, entladeprio))
                 {
-                    MessageBox.Show("Der Pufferspeicher konnte nicht geändert werden.",
-                                    "Pufferspeicher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(MyResource.Resource.PSP_MELDUNG_AENDERN_FEHLGESCHLAGEN,
+                                    MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 ID_Puffer = _bearbeiteteId;
                 Verwendung = verwendung;
-                Status("Änderungen übernommen.");
+                Status(MyResource.Resource.PSP_STATUS_AENDERUNGEN_UEBERNOMMEN);
             }
 
             BestandNeuLaden(ID_Puffer);
@@ -778,17 +865,19 @@ namespace WindowsFormsApplication1
             List<string> referenzen = PufferSpCtrl.ReferenzenAufPuffer(_bearbeiteteId);
             if (referenzen.Count == 0) return true;
 
+            // Die beiden Verwendungen sind DB-Werte und werden für die Meldung übersetzt
+            // (Befund L0-2) - sonst mischte die englische Meldung die Sprachen.
             return MessageBox.Show(
-                "Die Verwendung des Pufferspeichers „" + alt.Bezeichner + "\" wird von „" +
-                verwendungAlt + "\" auf „" + verwendungNeu + "\" umgestellt." +
-                Environment.NewLine + Environment.NewLine +
-                "Der Speicher ist zugeordnet:" + Environment.NewLine +
-                "  • " + string.Join(Environment.NewLine + "  • ", referenzen) +
-                Environment.NewLine + Environment.NewLine +
-                "Diese Zuordnungen passen danach nicht mehr zur Verwendung und müssen im " +
-                "Wärmesenken-Dialog neu gesetzt werden." + Environment.NewLine +
-                "Verwendung trotzdem ändern?",
-                "Verwendung ändern", MessageBoxButtons.YesNo,
+                string.Format(
+                    // Umbrüche der Ressource (LF) auf die Plattformform bringen - und
+                    // zwar VOR dem Einsetzen, sonst würden die bereits mit
+                    // Environment.NewLine verketteten Referenzen doppelt umgebrochen.
+                    MyResource.Resource.PSP_MELDUNG_VERWENDUNGSWECHSEL.Replace("\n", Environment.NewLine),
+                    alt.Bezeichner,
+                    WaermesenkeClass.VerwendungAnzeige(verwendungAlt),
+                    WaermesenkeClass.VerwendungAnzeige(verwendungNeu),
+                    string.Join(Environment.NewLine + "  • ", referenzen)),
+                MyResource.Resource.PSP_TITEL_VERWENDUNG_AENDERN, MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning) == DialogResult.Yes;
         }
 
@@ -801,31 +890,32 @@ namespace WindowsFormsApplication1
             if (referenzen.Count > 0)
             {
                 MessageBox.Show(
-                    "Der Pufferspeicher „" + _tbBezeichner.Text + "\" kann nicht entfernt werden - " +
-                    "er ist noch zugeordnet:" + Environment.NewLine + Environment.NewLine +
-                    "  • " + string.Join(Environment.NewLine + "  • ", referenzen) +
-                    Environment.NewLine + Environment.NewLine +
-                    "Bitte zuerst die Wärmequelle bzw. Wärmesenke dieser Anlagen ändern.",
-                    "Pufferspeicher entfernen", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    string.Format(
+                        MyResource.Resource.PSP_MELDUNG_ENTFERNEN_BLOCKIERT.Replace("\n", Environment.NewLine),
+                        _tbBezeichner.Text,
+                        string.Join(Environment.NewLine + "  • ", referenzen)),
+                    MyResource.Resource.PSP_TITEL_PUFFER_ENTFERNEN,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (MessageBox.Show(
-                    "Den Pufferspeicher „" + _tbBezeichner.Text + "\" aus dem Projekt entfernen?" +
-                    Environment.NewLine +
-                    "Die Anlagenzeile im Projektbaum wird mit entfernt.",
-                    "Pufferspeicher entfernen", MessageBoxButtons.YesNo,
+                    string.Format(
+                        MyResource.Resource.PSP_MELDUNG_ENTFERNEN_BESTAETIGEN.Replace("\n", Environment.NewLine),
+                        _tbBezeichner.Text),
+                    MyResource.Resource.PSP_TITEL_PUFFER_ENTFERNEN, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) != DialogResult.Yes) return;
 
             if (!PufferSpCtrl.ProjektPufferEntfernen(_bearbeiteteId, ID_Projekt))
             {
-                MessageBox.Show("Der Pufferspeicher konnte nicht entfernt werden.",
-                                "Pufferspeicher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(MyResource.Resource.PSP_MELDUNG_ENTFERNEN_FEHLGESCHLAGEN,
+                                MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (ID_Puffer == _bearbeiteteId) ID_Puffer = 0;
-            Status("Pufferspeicher entfernt.");
+            Status(MyResource.Resource.PSP_STATUS_ENTFERNT);
             BestandNeuLaden(0);
         }
 
@@ -893,7 +983,7 @@ namespace WindowsFormsApplication1
                                    out string fehler)
         {
             bezeichner = (_tbBezeichner.Text ?? "").Trim();
-            verwendung = _cbVerwendung.SelectedItem != null ? _cbVerwendung.SelectedItem.ToString() : "";
+            verwendung = GewaehlteVerwendung();   // DB-Wert, nicht der Anzeigetext (L0-2)
             volumen = 0;
             verluste = 0;
             vorlauf = null;
@@ -906,20 +996,20 @@ namespace WindowsFormsApplication1
 
             if (bezeichner.Length == 0)
             {
-                fehler = "Bitte einen Bezeichner eintragen oder einen Katalogeintrag wählen.";
+                fehler = MyResource.Resource.PSP_FEHLER_BEZEICHNER_FEHLT;
                 return false;
             }
 
             if (verwendung.Length == 0)
             {
-                fehler = "Die Verwendung ist ein Pflichtfeld: Heizung oder Brauchwasser (Konzept 5.1).";
+                fehler = MyResource.Resource.PSP_FEHLER_VERWENDUNG_PFLICHT;
                 return false;
             }
 
             if (!int.TryParse(_tbVolumen.Text.Trim(), NumberStyles.Integer,
                               CultureInfo.InvariantCulture, out volumen) || volumen <= 0)
             {
-                fehler = "Bitte ein Gesamtvolumen in Litern eintragen (ganze Zahl größer 0).";
+                fehler = MyResource.Resource.PSP_FEHLER_VOLUMEN;
                 return false;
             }
 
@@ -928,7 +1018,7 @@ namespace WindowsFormsApplication1
             {
                 if (!WaermequelleClass.ZahlParsen(_tbVerluste.Text, out f) || f < 0)
                 {
-                    fehler = "Die Bereitschaftsverluste müssen eine Zahl ≥ 0 sein [kWh/24h].";
+                    fehler = MyResource.Resource.PSP_FEHLER_VERLUSTE;
                     return false;
                 }
                 verluste = f;
@@ -947,28 +1037,28 @@ namespace WindowsFormsApplication1
                 ruecklauf = r;
             }
 
-            if (!SchwelleLesen(_tbSchwelleEin, "Einschaltschwelle", out schwelleEin, out fehler)) return false;
-            if (!SchwelleLesen(_tbSchwelleAus, "Abschaltschwelle", out schwelleAus, out fehler)) return false;
-            if (!SchwelleLesen(_tbSchwelleNachrang, "Abschaltschwelle für nachrangige Erzeuger",
+            if (!SchwelleLesen(_tbSchwelleEin, MyResource.Resource.PSP_NAME_EINSCHALTSCHWELLE,
+                               out schwelleEin, out fehler)) return false;
+            if (!SchwelleLesen(_tbSchwelleAus, MyResource.Resource.PSP_NAME_ABSCHALTSCHWELLE,
+                               out schwelleAus, out fehler)) return false;
+            if (!SchwelleLesen(_tbSchwelleNachrang, MyResource.Resource.PSP_NAME_ABSCHALTSCHWELLE_NACHRANG,
                                out schwelleNachrang, out fehler)) return false;
 
             if (schwelleEin >= schwelleAus)
             {
-                fehler = "Die Einschaltschwelle muss kleiner als die Abschaltschwelle sein.";
+                fehler = MyResource.Resource.PSP_FEHLER_EIN_KLEINER_AUS;
                 return false;
             }
 
             if (schwelleNachrang > schwelleAus)
             {
-                fehler = "Die Abschaltschwelle für nachrangige Erzeuger darf die Abschaltschwelle " +
-                         "nicht überschreiten - sie ist die Reservezone für den Vorrang (Konzept 3.4).";
+                fehler = MyResource.Resource.PSP_FEHLER_NACHRANG_UEBER_AUS;
                 return false;
             }
 
             if (schwelleNachrang <= schwelleEin)
             {
-                fehler = "Die Abschaltschwelle für nachrangige Erzeuger muss über der " +
-                         "Einschaltschwelle liegen.";
+                fehler = MyResource.Resource.PSP_FEHLER_NACHRANG_UNTER_EIN;
                 return false;
             }
 
@@ -983,13 +1073,13 @@ namespace WindowsFormsApplication1
             float f;
             if (!WaermequelleClass.ZahlParsen(tb.Text, out f))
             {
-                fehler = "Die " + name + " muss eine Zahl sein [%].";
+                fehler = string.Format(MyResource.Resource.PSP_FEHLER_SCHWELLE_ZAHL, name);
                 return false;
             }
 
             if (f <= 0 || f > 100)
             {
-                fehler = "Die " + name + " muss zwischen 0 und 100 % liegen.";
+                fehler = string.Format(MyResource.Resource.PSP_FEHLER_SCHWELLE_BEREICH, name);
                 return false;
             }
 

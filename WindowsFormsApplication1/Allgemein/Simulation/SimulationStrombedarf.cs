@@ -81,9 +81,9 @@ namespace WindowsFormsApplication1
                 // PAKET 8 (Konzept 13.4): Fehlerkanal statt MessageBox. Der Abbruch
                 // dieser Methode ist unverändert; neu ist, dass der Aufrufer davon
                 // erfährt und keinen Lauf mit leerem Stromprofil speichert.
-                Fehlertext = "Die Stromprofile des Projekts konnten nicht berechnet werden. " +
-                             "Die Simulation wurde abgebrochen.";
-                SimulationProtokoll.Aktuell.Fehlermeldung("Strombedarf: " + Fehlertext);
+                Fehlertext = MyResource.Resource.SIMENG_STROMPROFILE_NICHT_BERECHENBAR;
+                SimulationProtokoll.Aktuell.Fehlermeldung(
+                    MyResource.Resource.SIMENG_PRAEFIX_STROMBEDARF + Fehlertext);
                 return;
             }
 
@@ -236,11 +236,13 @@ namespace WindowsFormsApplication1
                 // NACHARBEIT BEFUND N6: mit dem betroffenen Stromprofil. Der Text ist die
                 // einzige Diagnose, die der Anwender bekommt - die Rückgabe null wird
                 // oben zu einem allgemeinen Abbruchtext, und der nennt kein Profil.
-                SimulationProtokoll.Aktuell.Fehlermeldung(
-                    "Strombedarf: Die Stromprofile konnten nicht berechnet werden" +
-                    (string.IsNullOrEmpty(aktuellesProfil) ? "" : " (zuletzt bearbeitet: Stromprofil '" +
-                                                                  aktuellesProfil + "')") +
-                    " - " + ex.Message);
+                SimulationProtokoll.Aktuell.Fehlermeldung(string.Format(
+                    MyResource.Resource.SIMENG_STROMPROFILE_DIAGNOSE,
+                    string.IsNullOrEmpty(aktuellesProfil)
+                        ? ""
+                        : string.Format(MyResource.Resource.SIMENG_STROMPROFIL_ZULETZT_BEARBEITET,
+                                        aktuellesProfil),
+                    ex.Message));
                 return null;
             }
         }

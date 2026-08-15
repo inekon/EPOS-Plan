@@ -42,6 +42,8 @@ namespace WindowsFormsApplication1.Referenzlauf
             // Ersatzzeichen im Protokoll an.
             try { Console.OutputEncoding = new UTF8Encoding(false); } catch { }
 
+            OberflaechenspracheSetzen();
+
             if (args.Length == 0) { Hilfe(); return 2; }
 
             try
@@ -66,6 +68,49 @@ namespace WindowsFormsApplication1.Referenzlauf
                 Console.WriteLine("ABBRUCH: " + ex.Message);
                 Console.WriteLine(ex.StackTrace);
                 return 2;
+            }
+        }
+
+        /// <summary>
+        /// Setzt die ANZEIGESPRACHE des Laufs aus der Umgebungsvariablen
+        /// <c>EPOS_REFLAUF_UICULTURE</c> (Paket 9, Sprachgleichheitsprobe / L7-Vorstufe).
+        ///
+        /// <para>
+        /// Ohne die Variable aendert sich nichts — dann gilt die Systemkultur, genau wie
+        /// bisher. Mit <c>EPOS_REFLAUF_UICULTURE=en-US</c> rechnet dieselbe Suite mit
+        /// englischer Oberflaechensprache; die Ergebnisdateien muessen byte-identisch
+        /// bleiben. Genau das weist nach, dass kein lokalisierter Text als Steuerwert
+        /// dient (Drei-Schichten-Regel).
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Nur CurrentUICulture.</b> <c>CurrentCulture</c> (Zahlen- und Datumsformat)
+        /// bleibt unangetastet — sie zu aendern waere eine Rechenaenderung und ist laut
+        /// Konzept 13.6 ausdruecklich nicht Teil des Lokalisierungspakets.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Warum eine Umgebungsvariable und kein Argument.</b> Jedes Projekt rechnet in
+        /// einem eigenen Kindprozess (siehe <c>ProjektImKindprozess</c>). Die Umgebung
+        /// wird vererbt, ein Argument muesste durchgereicht werden — eine Stelle statt
+        /// zweier, und die Registry des Anwenders wird nicht angefasst.
+        /// </para>
+        /// </summary>
+        private static void OberflaechenspracheSetzen()
+        {
+            string sprache = Environment.GetEnvironmentVariable("EPOS_REFLAUF_UICULTURE");
+            if (string.IsNullOrWhiteSpace(sprache)) return;
+
+            try
+            {
+                CultureInfo kultur = CultureInfo.GetCultureInfo(sprache.Trim());
+                System.Threading.Thread.CurrentThread.CurrentUICulture = kultur;
+                CultureInfo.DefaultThreadCurrentUICulture = kultur;
+                Console.WriteLine("Oberflaechensprache (nur Anzeige): " + kultur.Name);
+            }
+            catch (CultureNotFoundException)
+            {
+                Console.WriteLine("Unbekannte Oberflaechensprache '" + sprache + "' - Systemkultur bleibt.");
             }
         }
 

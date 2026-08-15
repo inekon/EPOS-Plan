@@ -98,16 +98,24 @@ namespace WindowsFormsApplication1
             return WirksameLadeprio(idType, ladeprio);
         }
 
-        /// <summary>Anzeigename eines Erzeugertyps (deutsch, wie in der Übersicht).</summary>
+        /// <summary>
+        /// ANZEIGEname eines Erzeugertyps — lokalisiert (Paket 9 / L6).
+        ///
+        /// Nicht zu verwechseln mit <see cref="KaskadenLiteral"/> direkt darunter: Das
+        /// liefert für dieselben Typen die deutschen PERSISTENZWERTE, die in
+        /// <c>Tab_Einstellungen.Tool_1..4</c> stehen. Bis Paket 9 waren beide
+        /// Zeichenketten identisch, was die Verwechslung leicht machte; seitdem ist der
+        /// Unterschied auch am Rückgabewert sichtbar.
+        /// </summary>
         public static string ErzeugerName(int idType)
         {
             switch (idType)
             {
-                case ProjektPuffer.TYP_WP: return "Wärmepumpe";
-                case ProjektPuffer.TYP_SOLARTHERMIE: return "Solarthermie";
-                case ProjektPuffer.TYP_KESSEL: return "Heizkessel";
-                case ProjektPuffer.TYP_BHKW: return "BHKW";
-                default: return "Erzeuger";
+                case ProjektPuffer.TYP_WP: return MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE;
+                case ProjektPuffer.TYP_SOLARTHERMIE: return MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE;
+                case ProjektPuffer.TYP_KESSEL: return MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL;
+                case ProjektPuffer.TYP_BHKW: return MyResource.Resource.SIM_ERZEUGERNAME_BHKW;
+                default: return MyResource.Resource.SIM_ERZEUGERNAME_ALLGEMEIN;
             }
         }
 
@@ -177,7 +185,8 @@ namespace WindowsFormsApplication1
 
             public override string ToString()
             {
-                return Bezeichner + " (" + Erzeuger + ", Prio " + Ladeprio + ")";
+                return string.Format(MyResource.Resource.SIM_LADEEINTRAG_ANZEIGE,
+                                     Bezeichner, Erzeuger, Ladeprio);
             }
         }
 
@@ -494,7 +503,10 @@ namespace WindowsFormsApplication1
 
             public override string ToString()
             {
-                return Bezeichner + " (Prio " + Prio + (Manuell ? ", manuell" : ", automatisch") + ")";
+                return string.Format(Manuell
+                                         ? MyResource.Resource.SIM_ENTLADEEINTRAG_MANUELL
+                                         : MyResource.Resource.SIM_ENTLADEEINTRAG_AUTOMATISCH,
+                                     Bezeichner, Prio);
             }
         }
 

@@ -89,7 +89,7 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(textBox_Name.Text))
             {
-                MessageBox.Show("Bitte einen Pufferspeicher selektieren!");
+                MessageBox.Show(MyResource.Resource.PSP_MELDUNG_PUFFER_SELEKTIEREN);
                 return;
             }
 
@@ -98,26 +98,26 @@ namespace WindowsFormsApplication1
                 PufferSpStammCtrl ctrl = new PufferSpStammCtrl();
                 if (ctrl.Exists(textBox_Name.Text))
                 {
-                    MessageBox.Show("Daten bereits eingelesen!");
+                    MessageBox.Show(MyResource.Resource.PSP_MELDUNG_DATEN_BEREITS_EINGELESEN);
                     return;
                 }
 
                 if (ctrl.InsertFrom(InitDatensatzUpdate()))
                 {
                     this.DialogResult = DialogResult.OK;
-                    MessageBox.Show("Datensatz gespeichert");
+                    MessageBox.Show(MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT);
                 }
                 else
                 {
                     this.DialogResult = DialogResult.Cancel;
-                    MessageBox.Show("Fehler beim Speichern des Datensatzes!");
+                    MessageBox.Show(MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER);
                 }
                 Close();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Fehler bei der Übernahme des Pufferspeichers: " + ex.Message);
-                MessageBox.Show("Ein Fehler ist aufgetreten: " + ex.Message);
+                MessageBox.Show(string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message));
                 this.DialogResult = DialogResult.Cancel;
             }
         }

@@ -289,6 +289,12 @@
   <data name="CHART_LEGENDE_EIGENVERBRAUCH_SPEICHER" xml:space="preserve">
     <value>Eigenverbrauch (Speicher)</value>
   </data>
+  <data name="CHART_LEGENDE_GESAMT" xml:space="preserve">
+    <value>Gesamt</value>
+  </data>
+  <data name="CHART_LEGENDE_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
   <data name="CHART_LEGENDE_WAERMEBEDARFSDECKUNG" xml:space="preserve">
     <value>Wärmebedarfsdeckung</value>
   </data>
@@ -1382,7 +1388,7 @@ Beide zeigen auf {0} „{1}".</value>
     <value> (zuletzt bearbeitet: Stromprofil '{0}')</value>
   </data>
   <data name="SIMENG_STROMPROFILE_DIAGNOSE" xml:space="preserve">
-    <value>Strombedarf: Die Stromprofile konnten nicht berechnet werden - {0}</value>
+    <value>Strombedarf: Die Stromprofile konnten nicht berechnet werden{0} - {1}</value>
   </data>
   <data name="SIMENG_STROMPROFILE_NICHT_BERECHENBAR" xml:space="preserve">
     <value>Die Stromprofile des Projekts konnten nicht berechnet werden. Die Simulation wurde abgebrochen.</value>
