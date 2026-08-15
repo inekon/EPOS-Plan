@@ -359,7 +359,17 @@ namespace WindowsFormsApplication1
             // Im SORTIERTEN Modus wird NICHT gestapelt: dort ist jede Serie für sich
             // absteigend sortiert, die Stunde i der einen Serie hat mit der Stunde i der
             // anderen nichts mehr zu tun, und eine Summe daraus wäre frei erfunden.
-            SeriesChartType erzeugerTyp = _sortiert ? SeriesChartType.FastLine : SeriesChartType.StackedArea;
+            //
+            // SÄULEN statt Flächen (Sichttest-Befund): Läuft die Anlage im
+            // ALTERNATIVbetrieb — je Stunde entweder Wärmepumpe oder Kessel —, steht der
+            // Kessel in den WP-Stunden auf 0. Eine Fläche verbindet ihre Stützstellen mit
+            // einer Geraden und spannt sich dann zwischen der kumulierten WP-Oberkante und
+            // den Nullstunden auf: blaue Dreiecke über dem orangen WP-Anteil, obwohl der
+            // Kessel dort nichts produziert hat. Die Säule zeichnet je Stunde einen
+            // eigenen Balken und interpoliert nicht. Regel und Begründung stehen in
+            // GanglinienDarstellung.Stapeltyp — dieselbe Regel gilt für NavigatorStrom
+            // und die Diagramme der Detailansicht.
+            SeriesChartType erzeugerTyp = GanglinienDarstellung.Stapeltyp(_sortiert);
 
             if (_praesenz.Waermepumpe)
                 SerieAnlegen(S_WAERMEPUMPE, MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, Color.Orange, temp_wp, erzeugerTyp);
@@ -428,18 +438,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Werte in der aktuellen Darstellungsform: chronologisch oder — für die
-        /// Dauerlinie — absteigend sortiert. Sortiert wird JEDE SERIE FÜR SICH, genau wie
-        /// auf der Wärmepumpen-Seite; die Kopie schützt die Originalvektoren, mit denen
-        /// CSV-Export und Skalierung weiterrechnen.
+        /// Dauerlinie — absteigend sortiert. Die Regel selbst steht in
+        /// <see cref="GanglinienDarstellung.Anzeigewerte"/>, damit Navigatoren und
+        /// Detailansicht dieselbe verwenden.
         /// </summary>
         private float[] Anzeigewerte(float[] werte)
         {
-            if (!_sortiert || werte == null) return werte;
-
-            float[] kopie = (float[])werte.Clone();
-            Array.Sort(kopie);
-            Array.Reverse(kopie);
-            return kopie;
+            return GanglinienDarstellung.Anzeigewerte(werte, _sortiert);
         }
 
         /// <summary>
@@ -457,7 +462,7 @@ namespace WindowsFormsApplication1
             _chartManager.AddSeries(schluessel, farbe, Anzeigewerte(werte));
             Series s = _chartManager._chart.Series[schluessel];
             s.LegendText = legende;
-            s.ChartType = typ;
+            GanglinienDarstellung.StapelEinstellen(s, typ, null);
         }
 
         // ====================================================================

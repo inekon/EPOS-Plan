@@ -223,6 +223,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwärme [kW] ähnelt.
+        /// </summary>
+        public static string CHART_CSV_RESTWAERME {
+            get {
+                return ResourceManager.GetString("CHART_CSV_RESTWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie [kW] ähnelt.
         /// </summary>
         public static string CHART_CSV_SOLARTHERMIE {
@@ -327,6 +336,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_DATEI_ENERGIEBEDARF {
             get {
                 return ResourceManager.GetString("CHART_DATEI_ENERGIEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel_Projekt_{0}.csv ähnelt.
+        /// </summary>
+        public static string CHART_DATEI_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("CHART_DATEI_HEIZKESSEL", resourceCulture);
             }
         }
         
@@ -2623,6 +2641,16 @@ namespace WindowsFormsApplication1.MyResource {
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Simulationsdaten vorhanden!
+        ///Bitte zuerst die Simulation mit Heizkessel durchführen. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KEINE_DATEN_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KEINE_DATEN_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Simulationsdaten vorhanden!
         ///Bitte zuerst die Simulation durchführen. ähnelt.
         /// </summary>
         public static string SIM_MSG_KEINE_DATEN_SIMULATION {
@@ -3416,6 +3444,16 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_TOOLTIP_CSV_BEDARF {
             get {
                 return ResourceManager.GetString("SIM_TOOLTIP_CSV_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel-Simulation als CSV exportieren
+        ///(Zeitstempel, Außentemperatur, Wärmebedarf, Heizkessel, Restwärme) ähnelt.
+        /// </summary>
+        public static string SIM_TOOLTIP_CSV_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("SIM_TOOLTIP_CSV_HEIZKESSEL", resourceCulture);
             }
         }
         
@@ -4454,11 +4492,32 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung: {0}
+        ///Gesamtvolumen: {1} l
+        ///Bereitschaftsverluste: {2} kWh/24h
+        ///Vorlauf/Rücklauf: {3} ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_DATEN_PROJEKT {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_DATEN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Parameter der Wärmequelle ähnelt.
         /// </summary>
         public static string SIMQ_PUFFER_GB_PARAMETER {
             get {
                 return ResourceManager.GetString("SIMQ_PUFFER_GB_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt enthält noch keinen Pufferspeicher. Über „Pufferspeicher anlegen…&quot; einen anlegen. ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER", resourceCulture);
             }
         }
         
@@ -4489,6 +4548,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_PUFFER_KOPF {
             get {
                 return ResourceManager.GetString("SIMQ_PUFFER_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1}, {2} l, {3}/{4} °C ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_LISTE_EINTRAG {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_LISTE_EINTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1}, {2} l ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_LISTE_OHNE_TEMP {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_LISTE_OHNE_TEMP", resourceCulture);
             }
         }
         

@@ -185,7 +185,15 @@ namespace WindowsFormsApplication1
             // Kessel (siehe temp_ges oben) - genau diese vier addieren sich und werden
             // deshalb gestapelt. PV und BHKW gehören NICHT hinein: sie erzeugen Strom und
             // sind in der Summe nicht enthalten; sie bleiben Linien über dem Stapel.
-            SeriesChartType verbrauchTyp = SeriesChartType.StackedArea;
+            //
+            // SÄULEN statt Flächen, aus demselben Grund wie in NavigatorWaerme: Auch hier
+            // schalten die Verbraucher stundenweise ein und aus (Wärmepumpe und Kessel im
+            // Alternativbetrieb, Heizstab ohnehin nur in Spitzen). Eine Fläche verbindet
+            // ihre Stützstellen mit einer Geraden und legt sich damit über Viertelstunden,
+            // in denen der Verbraucher stillstand. Regel und Begründung in
+            // GanglinienDarstellung.Stapeltyp; hier gibt es keinen sortierten Modus,
+            // deshalb der feste Aufruf mit false.
+            SeriesChartType verbrauchTyp = GanglinienDarstellung.Stapeltyp(false);
 
             SerieAnlegen(S_PROFIL_LASTGANG, MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG, Color.Brown, temp_profil, verbrauchTyp);
             if (_praesenz.Waermepumpe)
@@ -292,7 +300,7 @@ namespace WindowsFormsApplication1
             _chartManager.AddSeries(schluessel, farbe, werte);
             var s = _chartManager._chart.Series[schluessel];
             s.LegendText = legende;
-            s.ChartType = typ;
+            GanglinienDarstellung.StapelEinstellen(s, typ, null);
         }
 
         private void ApplyCheckboxStates()

@@ -1648,8 +1648,17 @@ operating limits are in the respective input forms.</value>
 Total volume: {1} l
 Standby losses: {2} kWh/24h</value>
   </data>
+  <data name="SIMQ_PUFFER_DATEN_PROJEKT" xml:space="preserve">
+    <value>Use: {0}
+Total volume: {1} l
+Standby losses: {2} kWh/24h
+Flow/return: {3}</value>
+  </data>
   <data name="SIMQ_PUFFER_GB_PARAMETER" xml:space="preserve">
     <value>Heat source parameters</value>
+  </data>
+  <data name="SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER" xml:space="preserve">
+    <value>The project does not contain a buffer storage yet. Use "Create buffer storage…" to add one.</value>
   </data>
   <data name="SIMQ_PUFFER_HINWEIS_QUELLWAERME" xml:space="preserve">
     <value>The heat pump extracts the evaporator heat (heat generated − electricity input) from the storage every hour.
@@ -1662,6 +1671,12 @@ If the storage is empty, the output of the heat pump is limited; the regeneratio
   </data>
   <data name="SIMQ_PUFFER_KOPF" xml:space="preserve">
     <value>Select buffer storage as heat source:</value>
+  </data>
+  <data name="SIMQ_PUFFER_LISTE_EINTRAG" xml:space="preserve">
+    <value>{0} — {1}, {2} l, {3}/{4} °C</value>
+  </data>
+  <data name="SIMQ_PUFFER_LISTE_OHNE_TEMP" xml:space="preserve">
+    <value>{0} — {1}, {2} l</value>
   </data>
   <data name="SIMQ_PUFFER_MSG_AUSWAHL" xml:space="preserve">
     <value>Please select a buffer storage!</value>
@@ -1892,5 +1907,19 @@ Boilers, CHP units and solar thermal generate the heat themselves.</value>
   </data>
   <data name="SIM_SPALTE_ZWEITSENKE" xml:space="preserve">
     <value>Secondary sink</value>
+  </data>
+  <data name="CHART_CSV_RESTWAERME" xml:space="preserve">
+    <value>Residual heat [kW]</value>
+  </data>
+  <data name="CHART_DATEI_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler_project_{0}.csv</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_HEIZKESSEL" xml:space="preserve">
+    <value>No simulation data available!
+Please run the simulation with the boiler first.</value>
+  </data>
+  <data name="SIM_TOOLTIP_CSV_HEIZKESSEL" xml:space="preserve">
+    <value>Export boiler simulation as CSV
+(time stamp, outdoor temperature, heat demand, boiler, residual heat)</value>
   </data>
 </root>
