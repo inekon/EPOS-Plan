@@ -454,17 +454,30 @@ namespace WindowsFormsApplication1
                 // Puffer nicht - hat Normalisieren gerade auf den Heizkreis zurückgesetzt.
                 // Das ist die Rettung des Erzeugers vor dem stillen Totalausfall, aber es
                 // ist auch eine stille Datenkorrektur: Sie gehört ins Lauf-Protokoll.
+                //
+                // PROTOKOLLKANAL-NACHZUG (Folgepaket zu Paket 9, Befund N9b): Genau das
+                // war bis hierher NICHT umgesetzt - die Meldung ging nur auf die Konsole
+                // und erreichte weder die Detailansicht noch die Zählung der
+                // Referenzlauf-Suite. Sie läuft jetzt über den WARNUNGS-Kanal aus Paket 8
+                // (Ersatzannahme statt hinterlegter Konfiguration); die Konsolenzeile
+                // bleibt erhalten, sie steckt in SimulationProtokoll.Eintragen.
+                // Je Anlage nur einmal: SenkenLaden läuft je Lauf einmal, der Schlüssel
+                // schützt gegen einen zweiten Aufruf im selben Lauf.
                 string rohZiel = StilleDb.Text(StilleDb.Feld(r, "WS_Ziel"));
                 if (IstPufferZiel(rohZiel) && !IstPufferZiel(d.Ziel))
-                    Console.WriteLine("Wärmesenke: Die Anlage " + z.AnlagenID + " ist auf " + rohZiel +
-                                      " gesetzt, hat aber KEINEN Pufferspeicher zugeordnet " +
-                                      "(WS_ID_Puffer leer). Sie rechnet deshalb auf den HEIZKREIS.");
+                    SimulationProtokoll.Aktuell.WarnungEinmal(
+                        "senke-haupt-ohne-puffer-" + z.AnlagenID,
+                        "Wärmesenke: Die Anlage " + z.AnlagenID + " ist auf " + rohZiel +
+                        " gesetzt, hat aber KEINEN Pufferspeicher zugeordnet " +
+                        "(WS_ID_Puffer leer). Sie rechnet deshalb auf den HEIZKREIS.");
 
                 string rohZiel2 = StilleDb.Text(StilleDb.Feld(r, "WS_Ziel2"));
                 if (IstPufferZiel(rohZiel2) && !d.HatZweitsenke)
-                    Console.WriteLine("Wärmesenke: Die Anlage " + z.AnlagenID + " hat eine Zweitsenke " +
-                                      rohZiel2 + " ohne zugeordneten Pufferspeicher (WS_ID_Puffer2 " +
-                                      "leer). Die Zweitsenke bleibt unberücksichtigt.");
+                    SimulationProtokoll.Aktuell.WarnungEinmal(
+                        "senke-zweit-ohne-puffer-" + z.AnlagenID,
+                        "Wärmesenke: Die Anlage " + z.AnlagenID + " hat eine Zweitsenke " +
+                        rohZiel2 + " ohne zugeordneten Pufferspeicher (WS_ID_Puffer2 " +
+                        "leer). Die Zweitsenke bleibt unberücksichtigt.");
                 z.Haupt = Senkenzuordnung.SenkeAusZiel(d.Ziel);
                 z.IDPufferHaupt = d.ID_Puffer;
                 z.WSTyp = d.Bedarfsart;

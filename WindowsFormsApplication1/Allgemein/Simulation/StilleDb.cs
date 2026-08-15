@@ -19,6 +19,13 @@ namespace WindowsFormsApplication1
     /// Helfer bleiben bewusst unangetastet, damit Paket 2 keinen Rechenpfad anfasst.
     ///
     /// Alle Methoden schlucken Fehler und melden sie nur auf die Konsole.
+    ///
+    /// PROTOKOLLKANAL-NACHZUG, KATEGORIE (c): Das bleibt so. Die drei Meldungen sind
+    /// generische Zugriffsdiagnosen ohne Anwenderaussage („StilleDb.Tabelle
+    /// fehlgeschlagen: …"); die fachliche Folge meldet jeweils der AUFRUFER über
+    /// <see cref="SimulationProtokoll"/> (z. B. „die Stufe rechnet ohne Module").
+    /// Hinzu kommt, dass dieselben Methoden auch aus der Konfigurations-Oberfläche
+    /// heraus laufen, also außerhalb jedes Simulationslaufs.
     /// </summary>
     internal static class StilleDb
     {

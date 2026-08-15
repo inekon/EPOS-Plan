@@ -761,7 +761,10 @@ namespace WindowsFormsApplication1
 
                 }
             }
-            catch (SystemException ex) { Console.WriteLine("Fehler bei der Prozesswärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
+            // Protokollkanal-Nachzug: WARNUNG statt bloßer Konsolenzeile - der Bedarf ist
+            // unvollständig und damit jedes Ergebnis darauf. Derselbe Kanal, den der
+            // Typ-Zweig oben schon benutzt.
+            catch (SystemException ex) { SimulationProtokoll.Aktuell.Warnung("Fehler bei der Prozesswärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
             finally
             {
                 try { rs.Close(); } catch { }
@@ -870,7 +873,8 @@ namespace WindowsFormsApplication1
 
                 }
             }
-            catch (SystemException ex) { Console.WriteLine("Fehler bei der Brauchwasserwärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
+            // Protokollkanal-Nachzug: WARNUNG, siehe Prozesswärme-Zweig.
+            catch (SystemException ex) { SimulationProtokoll.Aktuell.Warnung("Fehler bei der Brauchwasserwärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
             finally
             {
                 try { rs.Close(); } catch { }

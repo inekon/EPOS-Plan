@@ -191,7 +191,8 @@ namespace WindowsFormsApplication1
         /// Altzugriff <c>RecordSet</c> (Befund N9): Der schluckt SQL-Fehler still — bei
         /// einem Fehlschlag bliebe <c>nID_Klimaregion</c> auf dem Wert des VORLAUFS
         /// stehen und die Solarthermie rechnete mit dem Wetter eines anderen Projekts.
-        /// Jetzt steht der Fehlschlag wenigstens auf der Konsole. Die Abfrage ist
+        /// Jetzt steht der Fehlschlag im Protokollkanal (und damit weiterhin auch auf
+        /// der Konsole — <c>SimulationProtokoll.Eintragen</c> schreibt beides). Die Abfrage ist
         /// parametrisiert und liefert denselben Wert wie zuvor — der byte-identische
         /// Regressionslauf mit Flag AUS belegt das.
         /// </summary>
@@ -200,7 +201,11 @@ namespace WindowsFormsApplication1
             object v = StilleDb.Scalar("SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?",
                                        StilleDb.Par("@id", OleDbType.Integer, m_ID_Projekt));
             if (v != null) nID_Klimaregion = StilleDb.Zahl(v);
-            else Console.WriteLine("Solarthermie: Zu Projekt " + m_ID_Projekt + " ließ sich keine " +
+            // Protokollkanal-Nachzug: WARNUNG - die Solarthermie rechnet mit dem Wetter
+            // eines anderen Projekts weiter, das ist eine Ersatzannahme mit
+            // Ergebniswirkung. Einmal je Lauf (die Methode läuft in beiden Rechenwegen).
+            else SimulationProtokoll.Aktuell.WarnungEinmal("solar-klimaregion-fehlt",
+                                   "Solarthermie: Zu Projekt " + m_ID_Projekt + " ließ sich keine " +
                                    "Klimaregion lesen - es gilt der zuletzt gelesene Wert (" +
                                    nID_Klimaregion + ").");
 

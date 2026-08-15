@@ -129,6 +129,15 @@ namespace WindowsFormsApplication1
         /// DataRepository-Methoden zeigen bei Fehlern MessageBoxen an und liefern
         /// leere Ergebnisse statt null, damit ließe sich das Fehlen einer Spalte
         /// nicht sauber erkennen.
+        ///
+        /// PROTOKOLLKANAL-NACHZUG, KATEGORIE (c): Diese Methode und ihre Helfer
+        /// (<see cref="TabellenSchemaLesen"/>, die beiden <c>SpalteSicherstellen</c>,
+        /// <see cref="TabelleStill"/>, die beiden <c>WertSchreiben</c>) melden
+        /// ausdrücklich WEITER NUR auf die Konsole. Zwei Gründe: Es sind
+        /// Schema-/Infrastrukturdiagnosen ohne Anwenderaussage, UND sie laufen auch
+        /// AUSSERHALB eines Simulationslaufs (Form_Simulation_Config,
+        /// KonfigurationCtrl, die Senkendialoge). Ein Kanaleintrag von dort landete im
+        /// Protokoll des zuletzt gelaufenen Laufs — sichtbar falsch statt still richtig.
         /// </summary>
         public static void SchemaSicherstellen()
         {
@@ -532,7 +541,12 @@ namespace WindowsFormsApplication1
                                                           StringComparison.OrdinalIgnoreCase);
                             if (!alsSonde && tiefe > MAX_KOLLEKTORTIEFE_M)
                             {
-                                Console.WriteLine("Quelltemperatur: WQ_Quellsystem = '" + (quellsystem ?? "") +
+                                // Protokollkanal-Nachzug: WARNUNG - die Anlage wird
+                                // ANDERS gerechnet, als sie konfiguriert ist. Je Anlage
+                                // einmal (Quelltemperatur läuft je Modul einmal).
+                                SimulationProtokoll.Aktuell.WarnungEinmal(
+                                                  "quelle-tiefe-unstimmig-" + idEnergieanlage,
+                                                  "Quelltemperatur: WQ_Quellsystem = '" + (quellsystem ?? "") +
                                                   "' mit WQ_Tiefe = " + tiefe + " m ist unstimmig - " +
                                                   "die Anlage wird als Erdsonde gerechnet.");
                                 alsSonde = true;
@@ -553,7 +567,12 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Quelltemperatur (" + typ + ") konnte nicht ermittelt werden: " + ex.Message);
+                // Protokollkanal-Nachzug: WARNUNG - Rückfall auf die Außentemperatur,
+                // also eine Ersatzannahme mit voller Ergebniswirkung auf die JAZ.
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "quelltemperatur-fehlgeschlagen-" + idEnergieanlage,
+                    "Quelltemperatur (" + typ + ") konnte nicht ermittelt werden: " + ex.Message +
+                    " - es gilt die Außentemperatur.");
             }
 
             return aussentemp;
@@ -648,7 +667,12 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Quellspeicher konnte nicht aufgebaut werden: " + ex.Message);
+                // Protokollkanal-Nachzug: WARNUNG - die Wärmepumpe rechnet danach OHNE
+                // Quellspeicher, die Quelle gilt als unbegrenzt.
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                    "quellspeicher-aufbau-fehlgeschlagen-" + idEnergieanlage,
+                    "Quellspeicher konnte nicht aufgebaut werden: " + ex.Message +
+                    " - die Anlage " + idEnergieanlage + " rechnet ohne Quellspeicher.");
                 return null;
             }
         }
@@ -675,7 +699,11 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@id", OleDbType.Integer) { Value = idPuffer });
                 if (dt != null && dt.Rows.Count > 0) return dt.Rows[0];
 
-                Console.WriteLine("Quellspeicher: WQ_ID_Puffer = " + idPuffer + " der Anlage " +
+                // Protokollkanal-Nachzug: HINWEIS - die Auflösungskette greift eine Stufe
+                // tiefer, gerechnet wird vollwertig.
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                                  "quellspeicher-id-ohne-zeile-" + idEnergieanlage,
+                                  "Quellspeicher: WQ_ID_Puffer = " + idPuffer + " der Anlage " +
                                   idEnergieanlage + " zeigt auf keine Speicherzeile - " +
                                   "es gilt der Bezeichner.");
             }
@@ -706,7 +734,10 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@bez", bezeichner));
             if (stamm != null && stamm.Rows.Count > 0)
             {
-                Console.WriteLine("Quellspeicher: Anlage " + idEnergieanlage + " hat keine " +
+                // Protokollkanal-Nachzug: HINWEIS - Stufe 3 der Auflösungskette.
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                                  "quellspeicher-aus-katalog-" + idEnergieanlage,
+                                  "Quellspeicher: Anlage " + idEnergieanlage + " hat keine " +
                                   "Projektkopie von \"" + bezeichner + "\" - es gilt der Katalog.");
                 return stamm.Rows[0];
             }
