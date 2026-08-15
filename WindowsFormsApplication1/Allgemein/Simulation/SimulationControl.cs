@@ -257,6 +257,7 @@ namespace WindowsFormsApplication1
             bSimulationBHKW = false;
             bSimulationSolarthermie = false;
             bSimulationPV = false;  
+            bSimulationSSP = false;
 
             // Startpunkt der Simulation ist der Wärmebedarf
             Eingang = simulation_Waermebedarf.Waermebedarf;
