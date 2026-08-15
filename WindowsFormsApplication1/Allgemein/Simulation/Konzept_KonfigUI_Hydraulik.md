@@ -58,6 +58,21 @@ Paket 4–6 rechnet. Gefordert ist:
   Quellen-Dialoge, `Form_PufferSp_Projekt`) — die neue Seite ist Lesefläche, keine
   Parallel-Editierwelt.
 
+### 3a. Kompakte Speicherkarten (Ergänzung 15.08.2026)
+
+Bei mehreren Speichern passen die Vollkarten nicht in die Spalte. Deshalb:
+
+- **Zugeklappt = eine Zeile** je Speicher: Name, Verwendungs-Badge, Volumen,
+  Temperaturpaar, rechts die Kurzbilanz „n Lader · m Abnehmer".
+- **Klick klappt auf und pinnt** die Detailkarte (Lader-Reihenfolge, Versorgt,
+  Quelle für, Schwellen, Entladeprio, Temperaturherkunft); es ist immer höchstens
+  eine Karte aufgeklappt.
+- **Mouse-over zeigt dieselben Details als Tooltip** — beides, wie vom Nutzer
+  gefordert.
+- Die Spalte scrollt bei Bedarf; die Auswahl ist mit der Schema-Ansicht
+  synchronisiert (Klick auf die Karte hebt den Speicher im Schema hervor und
+  umgekehrt).
+
 ## 4. Datenmodell
 
 | Änderung | Umfang |
@@ -92,6 +107,20 @@ sich aus dem Quellbezug: der nachgeschaltete Erzeuger rechnet nach „seinem" Pu
 das ist die Auflösung der offenen Konzeptfrage 5-2 (Verzahnung Phase B/C nach
 Kaskadenposition) für den Anwendungsfall, der sie braucht. Entnahme des
 Quell-Erzeugers = Entladung des Puffers (Bilanzraum-Mechanik aus 4b-1 unverändert).
+
+**Beispiel Booster-Wärmepumpe (Ergänzung 15.08.2026):** Die Kaskade trägt auch die
+Booster-Konstellation, ohne Sonderfall: WP 1 → Puffer 1 (Heizung, 55/45) →
+{Heizkreis, **Quelle von WP 2**}; WP 2 (Booster) hebt von 55 °C auf
+Warmwasser-Niveau und lädt exklusiv Puffer 2 (Warmwasser, 60/45) → Warmwasser.
+Für die WP existiert der Puffer-Quellbezug bereits (Quellspeicher-Pfad,
+`WQ_ID_Puffer` nach E0); der Booster ist schlicht eine WP, deren Quellpuffer ein
+geladener Heizungspuffer ist — hohe Quelltemperatur, hoher COP. Rechenreihenfolge
+automatisch: WP 1 → Puffer 1 → WP 2 → Puffer 2; die Entnahme der WP 2 ist
+Entladung von Puffer 1 (Bilanzraum-Mechanik). Anzeige: Kaskadenkette
+„Erdsonde → WP 1 → Puffer 1 → WP 2 Booster → Puffer 2 → Warmwasser" mit Abzweig
+„Puffer 1 → Heizkreis"; auf der Puffer-1-Karte steht „Quelle für: WP 2 (Booster)".
+Mehrstufige Ketten sind zulässig; die Zyklusprüfung (Abschnitt 7) verhindert
+Ringe.
 
 **Temperatur-Kompatibilität (Anforderung 3):** Prüfregel je Ladebeziehung
 „Erzeuger-Vorlauf ≥ Puffer-Vorlauf, sonst Warnung" (Anzeige amber; keine harte
