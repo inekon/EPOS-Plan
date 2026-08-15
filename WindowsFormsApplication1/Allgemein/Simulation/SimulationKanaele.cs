@@ -97,6 +97,22 @@ namespace WindowsFormsApplication1
         ///    Regel verteilt. Ein negativer Rest ist ein Bilanzfehler des Aufrufers
         ///    (Konzept 6.4 beschreibt genau so einen bei der Solarthermie); ihn hier
         ///    stillschweigend auf 0 zu klemmen würde ihn verstecken.
+        ///
+        /// <b>SEIT PAKET 6 OHNE PRODUKTIVEN AUFRUFER</b> (Nacharbeit, Befund N10): Das
+        /// BHKW war die letzte Erzeugerart am Kompatibilitätsanker; im zweikanaligen Weg
+        /// rechnen alle vier Arten auf den beiden Kanälen. Die Methode BLEIBT trotzdem —
+        /// bewusst und begründet:
+        ///
+        ///   1. Sie ist die in Konzept 6.1 SPEZIFIZIERTE Kanalarithmetik, nicht ein
+        ///      zufällig entstandener Helfer. Jede künftige einkanalige Stufe (ein
+        ///      Importmodul, ein Fremdverfahren) braucht genau diese Regel — und sie
+        ///      zweimal zu erfinden ist teurer, als sie einmal zu behalten.
+        ///   2. Ihre Zusage ist die einzige, die im Selbsttest FESTGENAGELT ist: exakte
+        ///      Erhaltung im Normalbereich, höchstens ein ULP im Extremfall (Punkte 2a
+        ///      und 2b). Mit der Methode fielen sechs der acht Testfälle weg.
+        ///
+        /// Der Unterschied zu den beiden entfernten Methoden in <c>SimulationControl</c>
+        /// ist genau das: Die waren private Hilfsmittel ohne Zusage und ohne Test.
         /// </summary>
         /// <param name="restSumme">einkanalig ermittelter Rest je Stunde [kWh]</param>
         /// <param name="vorherHeiz">Heizkanal VOR dem einkanaligen Schritt [kWh]</param>
@@ -170,6 +186,12 @@ namespace WindowsFormsApplication1
         ///   6. negative Restsumme wird verteilt statt geklemmt
         ///   7. <see cref="Clone"/> kopiert Werte und trennt die Vektoren
         ///   8. <see cref="Senkenzuordnung"/>: Vorbelegung und Ziel-Abbildung hin und zurück
+        ///
+        /// SEIT PAKET 6 hat <see cref="Uebernehmen"/> keinen produktiven Aufrufer mehr
+        /// (Nacharbeit, Befund N10) — die Punkte 2 bis 6 sichern damit eine
+        /// SPEZIFIZIERTE, aber derzeit ungenutzte Zusage. Sie bleiben bewusst stehen:
+        /// Die Begründung steht am Methodenkopf; ohne sie wäre die Kanalarithmetik aus
+        /// Konzept 6.1 nirgends mehr geprüft.
         /// </summary>
         public static string Selbsttest()
         {

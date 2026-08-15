@@ -84,6 +84,18 @@ namespace WindowsFormsApplication1
             new List<SimulationPufferspeicher>();
 
         /// <summary>
+        /// Die Zuordnungszeilen <c>Z_ProjektPufferSp</c> des Laufs, gelesen von
+        /// <see cref="SpeicherRegistryAufbauen"/> und dort aufbewahrt.
+        ///
+        /// NACHARBEIT PAKET 6, BEFUND N2: Der Ersatz-Pendelspeicher entsteht erst nach
+        /// dem Kontextaufbau und braucht dieselbe TEMPERATUR-VORRANGKETTE wie jeder
+        /// andere Registry-Speicher (Projektkopie → Zuordnungszeile → Rückfall). Ohne
+        /// diese Zwischenablage müsste er die Zeilen ein zweites Mal aus der Datenbank
+        /// lesen — dieselbe Abfrage, doppelt, im Engine-Pfad.
+        /// </summary>
+        private Z_ProjektPufferSpCtrl _pspZuordnungen = null;
+
+        /// <summary>
         /// Senkenzuordnungen aller Wärmeerzeuger des Projekts (Konzept 6.1), je Lauf
         /// neu geladen. Ausgewertet werden sie im zweikanaligen Weg
         /// (<c>Kaskadenkontext.SenkeJeModul</c>); der einkanalige Altpfad liest sie nicht.
@@ -380,22 +392,23 @@ namespace WindowsFormsApplication1
         ///               Anlagen einen Puffer als Senke führt. Nur so kann ein Speicher
         ///               von zwei Erzeugern bedient werden, und nur so läuft
         ///               <c>StundeAbschliessen</c> genau einmal je Stunde und Speicher.
-        ///   VEKTORSTUFEN — Solarthermie und Heizkessel OHNE Puffer-Senke rechnen
-        ///               zweikanalig, aber weiterhin als eigene Jahresschleife an ihrer
-        ///               Kaskadenposition. Sie berühren keinen Speicher; ihr Ergebnis
-        ///               hängt allein vom Kanalzustand an dieser Position ab.
-        ///   BHKW        rechnet EINKANALIG über sein bestehendes Modul auf
-        ///               <c>Waermekanaele.Summe()</c>; sein Rest wird über
-        ///               <c>Uebernehmen()</c> proportional auf die Kanäle zurückverteilt
-        ///               (Kompatibilitätsanker Konzept 6.1). Zweikanaligkeit und
-        ///               Senkenauswertung des BHKW kommen mit Paket 6.
+        ///   VEKTORSTUFEN — Solarthermie, Heizkessel und (seit Paket 6) BHKW OHNE
+        ///               Speicherbeteiligung rechnen zweikanalig, aber weiterhin als
+        ///               eigene Jahresschleife an ihrer Kaskadenposition. Sie berühren
+        ///               keinen Speicher; ihr Ergebnis hängt allein vom Kanalzustand an
+        ///               dieser Position ab.
+        ///
+        /// SEIT PAKET 6 ist der Kompatibilitätsanker <c>Waermekanaele.Uebernehmen</c> in
+        /// diesem Rechenweg vollständig aufgelöst: Auch das BHKW rechnet zweikanalig,
+        /// wertet seine Senken aus (Vorgaberang 30) und wird Mitglied der Speicherstufe,
+        /// sobald es einen Speicher hat — Puffer-Senke oder Pendelspeicher.
         ///
         /// ABGRENZUNG: Die Speicherstufe läuft an der Kaskadenposition ihres ERSTEN
         /// Mitglieds; weitere Mitglieder werden dort mitgerechnet, in ihrer
-        /// Kaskadenreihenfolge (Phase B). Steht eine Stufe OHNE Speicherbeteiligung
-        /// zwischen zwei Mitgliedern, rechnet sie erst nach der Speicherstufe. Das
-        /// betrifft ausschließlich das BHKW — und dort nur Projekte, in denen es zwischen
-        /// zwei speicherführenden Erzeugern steht. Der Fall wird protokolliert.
+        /// Kaskadenreihenfolge (Phase B). Eine Stufe OHNE Speicherbeteiligung, die
+        /// ZWISCHEN zwei Mitgliedern stünde, wird selbst Mitglied
+        /// (<see cref="ZwischenstufenAufnehmen"/>) — damit gibt es keinen stillen
+        /// Positionswechsel mehr, für keine der vier Erzeugerarten.
         /// </summary>
         private void Kaskade_Zweikanalig()
         {
@@ -422,6 +435,17 @@ namespace WindowsFormsApplication1
                                ErzeugerMitPufferSenke(ProjektPuffer.TYP_SOLARTHERMIE);
             _kesselInSchleife = KaskadeEnthaelt("Heizkessel") &&
                                 ErzeugerMitPufferSenke(ProjektPuffer.TYP_KESSEL);
+
+            // PAKET 6: Das BHKW ist Kaskadenteilnehmer, sobald es einen Speicher hat -
+            // entweder über eine Puffer-Senke (WS_ID_Puffer/WS_ID_Puffer2, derselbe Test
+            // wie bei Solarthermie und Kessel) oder über seinen PENDELSPEICHER, der im
+            // neuen Weg durch eine SimulationPufferspeicher-Instanz abgelöst wird
+            // (Konzept 6.5, zweiter Punkt). Ohne beides hat es keine Speicherbeteiligung
+            // und bleibt Vektorstufe an seiner Kaskadenposition - zweikanalig, aber ohne
+            // die Phasen A, C, D, E und G.
+            _bhkwInSchleife = KaskadeEnthaelt("BHKW") &&
+                              (ErzeugerMitPufferSenke(ProjektPuffer.TYP_BHKW) ||
+                               VolumenPendelspeicherBHKW > 0);
 
             // Paket-5-Nacharbeit, Befund N4: Stufen, die ZWISCHEN zwei Mitgliedern
             // stünden, werden ebenfalls Mitglied - sonst rechneten sie stillschweigend
@@ -491,6 +515,18 @@ namespace WindowsFormsApplication1
                     }
 
                     if (_solarInSchleife) bSimulationSolarthermie = true;
+
+                    if (_bhkwInSchleife)
+                    {
+                        // Die Stromerzeugung des BHKW senkt den Strombedarf - dieselbe
+                        // Vektorkette wie im Altpfad, nur an der Position der Stufe.
+                        float[] bhkwStromVs =
+                            Stundenwerte_zu_viertelstunden(simulation_bhkw.stromproduktion);
+                        Rest_Strombedarf_viertelstuendlich =
+                            SubVectors(Rest_Strombedarf_viertelstuendlich, bhkwStromVs, false);
+                        bSimulationBHKW = true;
+                    }
+
                     continue;
                 }
 
@@ -515,19 +551,13 @@ namespace WindowsFormsApplication1
                 }
                 else if (tool[i] == "BHKW")
                 {
-                    // Steht das BHKW VOR oder NACH der Speicherstufe, ist die
-                    // Kaskadenreihenfolge unverändert richtig. ZWISCHEN zwei Mitgliedern
-                    // kann es dagegen nicht stehen bleiben: Sein Modul rechnet das ganze
-                    // Jahr am Stück und ist nicht stundenweise aufrufbar (Paket 6). Es
-                    // rechnet dann nach der gesamten Speicherstufe - protokolliert.
-                    if (schleifeGelaufen && SchleifenstufeNach(i))
-                        Console.WriteLine("Kaskade: Das BHKW steht in der Kaskade zwischen zwei " +
-                                          "Erzeugern der Speicherstufe. Es rechnet bis Paket 6 " +
-                                          "einkanalig als Vektormodul und deshalb NACH der " +
-                                          "gesamten Speicherstufe.");
-                    float[] rest = Simulation_BHKW_Ctrl(kanaele.Summe(),
+                    // PAKET 6: Vektorstufe - zweikanalig, aber ohne Speicherbeteiligung.
+                    // Der Kompatibilitätsanker Waermekanaele.Uebernehmen ist damit auch
+                    // für das BHKW aufgelöst; der Warnzweig „BHKW zwischen zwei Mitgliedern
+                    // rechnet danach" ist entfallen, weil das BHKW in genau diesem Fall
+                    // jetzt selbst Mitglied wird (ZwischenstufenAufnehmen).
+                    Simulation_BHKW_Ctrl_Zweikanalig(kanaele,
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich));
-                    RestAufKanaeleZurueck(kanaele, rest);
 
                     float[] bhkwStromViertelstuendlich =
                         Stundenwerte_zu_viertelstunden(simulation_bhkw.stromproduktion);
@@ -547,21 +577,10 @@ namespace WindowsFormsApplication1
             for (int n = 0; n < 8760; n++) Restwaerme += Rest_Waermebedarf_stuendlich[n];
         }
 
-        /// <summary>
-        /// Verteilt den Rest eines EINKANALIG rechnenden Erzeugers proportional auf die
-        /// beiden Kanäle zurück (Konzept 6.1, Kompatibilitätsanker).
-        ///
-        /// Die Vorher-Stände gehen als KOPIEN in <c>Uebernehmen</c>: Die Methode schreibt
-        /// in dieselben Kanalvektoren, aus denen sie die Anteile liest.
-        /// </summary>
-        private void RestAufKanaeleZurueck(Waermekanaele kanaele, float[] rest)
-        {
-            if (kanaele == null || rest == null) return;
-
-            float[] vorherHeiz = (float[])kanaele.Heiz.Clone();
-            float[] vorherWW = (float[])kanaele.WW.Clone();
-            kanaele.Uebernehmen(rest, vorherHeiz, vorherWW);
-        }
+        // NACHARBEIT PAKET 6, BEFUND N10: Hier stand „RestAufKanaeleZurueck" — die
+        // proportionale Rückverteilung des Rests eines EINKANALIG rechnenden Erzeugers
+        // über Waermekanaele.Uebernehmen. Seit das BHKW zweikanalig rechnet, hat der
+        // Kompatibilitätsanker keinen Aufrufer mehr; die Methode ist entfallen.
 
         /// <summary>
         /// true, wenn der Heizkessel in der Kaskade HINTER der Wärmepumpe steht — die
@@ -591,14 +610,10 @@ namespace WindowsFormsApplication1
             return false;
         }
 
-        /// <summary>true, wenn an einer Kaskadenposition NACH <paramref name="position"/> eine Stufe der Speicherstufe steht.</summary>
-        private bool SchleifenstufeNach(int position)
-        {
-            if (tool == null) return false;
-            for (int i = position + 1; i < 4 && i < tool.Length; i++)
-                if (IstSchleifenstufe(i)) return true;
-            return false;
-        }
+        // NACHARBEIT PAKET 6, BEFUND N10: Hier stand „SchleifenstufeNach(position)" — die
+        // Prüfung für den entfallenen Warnzweig „BHKW zwischen zwei Mitgliedern rechnet
+        // DANACH". Seit ZwischenstufenAufnehmen auch das BHKW aufnimmt, hat sie keinen
+        // Aufrufer mehr und ist entfallen.
 
         /// <summary>true, wenn die Stufe an dieser Kaskadenposition in der Speicherstufe rechnet.</summary>
         private bool IstSchleifenstufe(int position)
@@ -607,7 +622,8 @@ namespace WindowsFormsApplication1
 
             return (tool[position] == "Wärmepumpe" && _wpInSchleife) ||
                    (tool[position] == "Solarthermie" && _solarInSchleife) ||
-                   (tool[position] == "Heizkessel" && _kesselInSchleife);
+                   (tool[position] == "Heizkessel" && _kesselInSchleife) ||
+                   (tool[position] == "BHKW" && _bhkwInSchleife);
         }
 
         /// <summary>
@@ -667,15 +683,28 @@ namespace WindowsFormsApplication1
                                       "Stundenschleife an seiner Kaskadenposition mit (Phase B) - " +
                                       "ohne Puffer-Senke als reine Heizkreis-Stufe.");
                 }
+                else if (tool[i] == "BHKW" && !_bhkwInSchleife)
+                {
+                    // PAKET 6: Seit das BHKW stundenweise rechnen kann, gilt für es
+                    // dieselbe Regel wie für Solarthermie und Kessel. Der frühere
+                    // Sonderfall - "BHKW zwischen zwei Mitgliedern rechnet DANACH" - ist
+                    // damit entfallen, und mit ihm sein Warnzweig.
+                    _bhkwInSchleife = true;
+                    Console.WriteLine("Kaskade: Das BHKW steht zwischen zwei Erzeugern der " +
+                                      "Speicherstufe. Es rechnet deshalb als Mitglied der " +
+                                      "Stundenschleife an seiner Kaskadenposition mit (Phase B) - " +
+                                      "ohne Speicher als reine Heizkreis-Stufe.");
+                }
             }
         }
 
         // Mitglieder der gemeinsamen Speicherstufe des laufenden Simulationslaufs
-        // (Paket 5). Sie werden in Kaskade_Zweikanalig bestimmt und von
-        // LadeordnungAufbauen gelesen.
+        // (Paket 5, um das BHKW erweitert in Paket 6). Sie werden in
+        // Kaskade_Zweikanalig bestimmt und von LadeordnungAufbauen gelesen.
         private bool _wpInSchleife = false;
         private bool _solarInSchleife = false;
         private bool _kesselInSchleife = false;
+        private bool _bhkwInSchleife = false;
 
         /// <summary>Hat die Wärmepumpe in diesem Lauf in der gemeinsamen Speicherstufe gerechnet?</summary>
         public bool WPInSpeicherstufe { get { return _wpInSchleife; } }
@@ -685,6 +714,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Hat der Heizkessel in diesem Lauf in der gemeinsamen Speicherstufe gerechnet?</summary>
         public bool KesselInSpeicherstufe { get { return _kesselInSchleife; } }
+
+        /// <summary>Hat das BHKW in diesem Lauf in der gemeinsamen Speicherstufe gerechnet? (Paket 6)</summary>
+        public bool BHKWInSpeicherstufe { get { return _bhkwInSchleife; } }
 
         /// <summary>
         /// true, wenn mindestens eine Anlage dieser Erzeugerart im Projekt einen
@@ -802,11 +834,41 @@ namespace WindowsFormsApplication1
                 schleife.Kessel = simulation_spk;
             }
 
+            if (_bhkwInSchleife)
+            {
+                BHKW_Liste_Laden();
+
+                // Wie beim Kessel (N3): EIGENER Vektor aus der Kopie des Stufeneingangs.
+                simulation_bhkw.strombedarf = (float[])stromStufeneingang.Clone();
+                simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
+                simulation_bhkw.modeBHKW = modeBHKW;
+                // Der skalare Pendelspeicher ist im zweikanaligen Weg abgelöst - die
+                // Kapazität kommt aus dem zugeordneten SimulationPufferspeicher
+                // (Konzept 6.5, zweiter Punkt). Der Wert bleibt auf 0, damit ein
+                // versehentlicher Rückgriff sofort auffiele.
+                simulation_bhkw.kapazitaetPendelspeicher = 0f;
+
+                if (!simulation_bhkw.Vorbereiten_Zweikanalig(m_ID_Projekt, senkenzuordnungen))
+                {
+                    if (!string.IsNullOrEmpty(simulation_bhkw.Fehlertext))
+                        Fehlertext = simulation_bhkw.Fehlertext;
+                    m_bError = true;
+                    return;
+                }
+                schleife.BHKW = simulation_bhkw;
+            }
+
             // --- 2./3. Registry öffnen ------------------------------------------------
             RegistryFuerZweikanaligOeffnen();
 
             // --- 4. Kontext (Entlade- und Ladeordnung) --------------------------------
             Kaskadenkontext kontext = KontextAufbauen();
+
+            // PAKET 6: Ein BHKW ohne Puffer-Senke, aber mit Pendelspeichervolumen bekommt
+            // seinen Ersatzspeicher - danach, weil erst jetzt feststeht, ob aus seinen
+            // Senken ein Ladeauftrag entstanden ist.
+            BhkwErsatzspeicherAufnehmen(kontext);
+
             foreach (string hinweis in kontext.Hinweise) Console.WriteLine(hinweis);
 
             // Paket-5-Nacharbeit, Befund N5: Eine Puffer-Hauptsenke, aus der kein
@@ -861,6 +923,11 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < simulation_spk.spk_anlagen_ids.Count; i++)
                     SenkeAufHeizkreisZurueck(kontext, simulation_spk.spk_anlagen_ids[i],
                                              simulation_spk.KesselSenke(i), "Heizkessel");
+
+            if (_bhkwInSchleife)
+                for (int i = 0; i < simulation_bhkw.bhkw_anlagen_ids.Count; i++)
+                    SenkeAufHeizkreisZurueck(kontext, simulation_bhkw.bhkw_anlagen_ids[i],
+                                             simulation_bhkw.BhkwSenke(i), "BHKW");
         }
 
         /// <summary>Eine Anlage ohne Ladeauftrag auf die Hauptsenke Heizkreis zurücksetzen.</summary>
@@ -897,6 +964,7 @@ namespace WindowsFormsApplication1
                 if (tool[i] == "Wärmepumpe" && _wpInSchleife) reihenfolge.Add(ProjektPuffer.TYP_WP);
                 else if (tool[i] == "Solarthermie" && _solarInSchleife) reihenfolge.Add(ProjektPuffer.TYP_SOLARTHERMIE);
                 else if (tool[i] == "Heizkessel" && _kesselInSchleife) reihenfolge.Add(ProjektPuffer.TYP_KESSEL);
+                else if (tool[i] == "BHKW" && _bhkwInSchleife) reihenfolge.Add(ProjektPuffer.TYP_BHKW);
             }
 
             return reihenfolge;
@@ -980,6 +1048,311 @@ namespace WindowsFormsApplication1
 
             foreach (DataRow r in dt.Rows)
                 simulation_solarthermie.solarthermie_list.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID_SOLAR")));
+        }
+
+        /// <summary>
+        /// BHKW-Liste und Anlagen-IDs des zweikanaligen Wegs (Paket 6) — dieselbe Abfrage
+        /// wie <see cref="Simulation_BHKW_Ctrl"/>, nur dialogfrei und parametrisiert über
+        /// <see cref="StilleDb"/> (Befund N9 der Paket-5-Nacharbeit). Ohne <c>ORDER BY</c>,
+        /// damit die Modulreihenfolge dieselbe ist wie im Altpfad.
+        ///
+        /// <c>bhkwGrenzL</c> wird hier wie im Altpfad aus der ANLAGE vorbelegt;
+        /// <c>SimulationBHKW.Moduldaten_Einlesen</c> überschreibt den Wert anschließend
+        /// aus dem Katalog, sofern dort eine Grenzleistung hinterlegt ist. Dieses
+        /// Bestandsverhalten bleibt unangetastet.
+        /// </summary>
+        private void BHKW_Liste_Laden()
+        {
+            simulation_bhkw.bhkw_list.Clear();
+            simulation_bhkw.bhkw_list_Namen.Clear();
+            simulation_bhkw.bhkw_anlagen_ids.Clear();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID_BHKW, ID, Bezeichner, Grenzleistung FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", OleDbType.Integer, WizardItemClass.BHKW_TYP));
+
+            if (dt == null)
+            {
+                Console.WriteLine("Speicherstufe: Die BHKW des Projekts " + m_ID_Projekt +
+                                  " ließen sich nicht lesen - die Stufe rechnet ohne Module.");
+                return;
+            }
+
+            int i = 0;
+            foreach (DataRow r in dt.Rows)
+            {
+                simulation_bhkw.bhkw_list.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID_BHKW")));
+                simulation_bhkw.bhkw_anlagen_ids.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
+                simulation_bhkw.bhkw_list_Namen.Add(StilleDb.Text(StilleDb.Feld(r, "Bezeichner")));
+
+                if (i < SimulationBHKW.MAX_BHKW)
+                    simulation_bhkw.bhkwGrenzL[i] =
+                        (float)(StilleDb.Kommazahl(StilleDb.Feld(r, "Grenzleistung")) / 100.0);
+                i++;
+            }
+        }
+
+        /// <summary>
+        /// BHKW als zweikanalige VEKTORSTUFE (Paket 6): eigene Jahresschleife an der
+        /// Kaskadenposition, ohne Speicherbeteiligung.
+        ///
+        /// Sie ersetzt den bisherigen Kompatibilitätsanker (einkanalig auf
+        /// <c>Waermekanaele.Summe()</c> mit proportionaler Rückverteilung über
+        /// <c>Uebernehmen()</c>). Zwei Dinge ändern sich damit auch ohne Speicher: Das
+        /// BHKW deckt seinen Kanal nach <c>WS_Typ</c>, und der Restbedarf ist der
+        /// tatsächliche Rest statt der Vektordifferenz <c>Bedarf − Produktion</c>
+        /// (Bilanzfehler aus Konzept 6.5 / 2.2, Punkt 8).
+        /// </summary>
+        private void Simulation_BHKW_Ctrl_Zweikanalig(Waermekanaele kanaele, float[] Strombedarf)
+        {
+            BHKW_Liste_Laden();
+
+            simulation_bhkw.strombedarf = Strombedarf;
+            simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
+            simulation_bhkw.modeBHKW = modeBHKW;
+            simulation_bhkw.kapazitaetPendelspeicher = 0f;
+
+            if (!simulation_bhkw.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, senkenzuordnungen) &&
+                !string.IsNullOrEmpty(simulation_bhkw.Fehlertext))
+                Fehlertext = simulation_bhkw.Fehlertext;
+        }
+
+        /// <summary>
+        /// ERSATZ-PENDELSPEICHER des BHKW (Paket 6, Konzept 6.5 zweiter Punkt).
+        ///
+        /// AUFLÖSUNGSKETTE des BHKW-Speichers im neuen Weg:
+        ///
+        ///   1. Puffer-Senke der BHKW-Anlage (<c>WS_Ziel</c>/<c>WS_ID_Puffer</c> bzw.
+        ///      <c>WS_Ziel2</c>/<c>WS_ID_Puffer2</c>) → Registry-Speicher, Ladeauftrag über
+        ///      die Ladeordnung (Vorgaberang 30). Das ist derselbe Weg wie bei Wärmepumpe,
+        ///      Solarthermie und Heizkessel und der Regelfall auf migrierten Datenbanken:
+        ///      Migrationsregel R6 legt zum Pendelspeicher IMMER auch die Senke an.
+        ///   2. KEINE Puffer-Senke, aber ein Pendelspeichervolumen (die Puffer-Zeile
+        ///      „BHKW-Pendelspeicher") → dieser Speicher wird HIER aufgenommen und bekommt
+        ///      einen Ladeauftrag als ZWEITsenke. Damit arbeitet das BHKW wie bisher mit
+        ///      seinem Pendelspeicher, aber über dieselbe Speicherphysik wie alle anderen
+        ///      Erzeuger: Hysterese, Bereitschaftsverluste, Kapazität aus der
+        ///      ΔT-Spreizung, Phase A/E-Entladung, Phase G und Herkunftsrechnung.
+        ///   3. Weder noch → kein Speicher; das BHKW deckt nur den Momentanbedarf.
+        ///
+        /// Die Zweitsenken-Rolle ist die fachlich richtige: Der Pendelspeicher nimmt auf,
+        /// was über den Momentanbedarf hinaus entsteht — genau die Definition der
+        /// Zweitsenke aus Konzept E2.
+        /// </summary>
+        private void BhkwErsatzspeicherAufnehmen(Kaskadenkontext k)
+        {
+            if (!_bhkwInSchleife || k == null) return;
+            if (VolumenPendelspeicherBHKW <= 0) return;
+
+            foreach (Ladeauftrag vorhanden in k.LadenOhnePV)
+                if (vorhanden != null && vorhanden.Erzeugerart == ProjektPuffer.TYP_BHKW) return;
+
+            int idPuffer = PufferSpCtrl.PendelspeicherId(m_ID_Projekt);
+            if (idPuffer <= 0)
+            {
+                // NACHARBEIT PAKET 6, BEFUND N8: Über den FEHLERKANAL statt als bloße
+                // Konsolenzeile. Das Volumen stammt aus genau dieser Puffer-Zeile
+                // (PufferSpCtrl.PendelspeicherVolumenLiter) — fehlt sie trotzdem, ist die
+                // Datenlage in sich widersprüchlich, und das BHKW verlöre stillschweigend
+                // seinen Speicher. Der Lauf bricht deshalb ab, statt ein plausibel
+                // aussehendes, aber falsches Ergebnis zu speichern.
+                Fehlertext = "BHKW-Pendelspeicher: Für Projekt " + m_ID_Projekt + " ist ein Volumen " +
+                             "von " + VolumenPendelspeicherBHKW + " l bekannt, aber es gibt keine " +
+                             "Puffer-Zeile „" + ProjektPuffer.BEZ_PENDELSPEICHER + "\". Der Lauf " +
+                             "wurde abgebrochen, damit das BHKW nicht stillschweigend ohne " +
+                             "Speicher rechnet.";
+                Console.WriteLine(Fehlertext);
+                m_bError = true;
+                return;
+            }
+
+            WaermesenkeClass.PufferInfo p = WaermesenkeClass.PufferLesen(idPuffer);
+            if (p == null || p.ID_Projekt != m_ID_Projekt)
+            {
+                Fehlertext = "BHKW-Pendelspeicher: Die Puffer-Zeile " + idPuffer + " des Projekts " +
+                             m_ID_Projekt + " ließ sich nicht lesen oder gehört zu einem anderen " +
+                             "Projekt. Der Lauf wurde abgebrochen, damit das BHKW nicht " +
+                             "stillschweigend ohne Speicher rechnet.";
+                Console.WriteLine(Fehlertext);
+                m_bError = true;
+                return;
+            }
+
+            // TEMPERATUR-VORRANGKETTE wie für jeden anderen Registry-Speicher
+            // (Nacharbeit Paket 6, Befund N2): Projektkopie zuerst, dann die
+            // Zuordnungszeile Z_ProjektPufferSp, erst danach der Rückfall. Bis dahin
+            // wertete dieser Weg NUR die Projektkopie aus — derselbe Puffer bekam über
+            // die Registry ein anderes Q_max als hier (gemessen an 1018: 70/55 °C über
+            // die Z-Zeile gegen den 10-K-Notnagel).
+            int vorlauf = p.Vorlauf;
+            int ruecklauf = p.Ruecklauf;
+            if (vorlauf - ruecklauf <= 0)
+            {
+                int vZuordnung, rZuordnung;
+                if (ZuordnungsTemperaturen(_pspZuordnungen, p.ID, p.Bezeichner,
+                                           out vZuordnung, out rZuordnung))
+                {
+                    vorlauf = vZuordnung;
+                    ruecklauf = rZuordnung;
+                    Console.WriteLine("BHKW-Pendelspeicher: Puffer " + p.ID + " (" + p.Bezeichner +
+                                      ") hat kein Temperaturpaar in der Projektkopie - es gilt " +
+                                      "die Zuordnungszeile (" + vorlauf + "/" + ruecklauf + " °C).");
+                }
+            }
+
+            SimulationPufferspeicher sp;
+            if (!speicherRegistry.TryGetValue(idPuffer, out sp) || sp == null)
+            {
+                sp = new SimulationPufferspeicher();
+                sp.Bezeichner = p.Bezeichner;
+                sp.Erzeuger = "BHKW";
+                sp.ID_Pufferspeicher = p.ID;
+                sp.ID_Projekt = p.ID_Projekt;
+                sp.Verwendung = WaermesenkeClass.WirksameVerwendung(p);
+
+                // RÜCKFALL 20 K statt 10 K (Befund N2): Die Altformel
+                // „Liter · 20 / 860" hatte für den Pendelspeicher eine Spreizung von
+                // 20 K fest verdrahtet. Bleibt sie ungepflegt, ist 20 K deshalb der
+                // wertgleiche Ersatz (1,16 gegen 1,16279 Wh/(l·K), −0,24 %); der
+                // generische 10-K-Notnagel würde die Kapazität ohne fachlichen Grund
+                // halbieren. Für alle anderen Puffer bleibt es bei 10 K.
+                sp.Init(p.Gesamtvolumen, vorlauf, ruecklauf, p.Bereitschaftsverluste, 20);
+                RueckfallMelden(sp, p.ID, p.Bezeichner);
+
+                sp.SchwelleEin = p.SchwelleEin / 100.0;
+                sp.SchwelleAus = p.SchwelleAus / 100.0;
+                sp.SchwelleAusNachrang = p.SchwelleAusNachrang / 100.0;
+                sp.Entladeprio = p.Entladeprio;
+                SpeicherAufnehmen(sp, true);
+            }
+
+            sp.ImRechenpfad = true;
+            if (!k.AlleSpeicher.Contains(sp)) k.AlleSpeicher.Add(sp);
+
+            // ENTLADEREIHENFOLGE (Befund N7): einsortieren statt anhängen. Ein Puffer mit
+            // gepflegter Entladeprio gehört an seine Stelle in der Ordnung des Kanals
+            // (Konzept 3.6) — dieselbe Reihenfolge, die die Pufferverwaltung anzeigt.
+            EntladeordnungEinsortieren(k.Entladeordnung(sp.IstBrauchwasserkanal), sp);
+
+            Ladeauftrag a = new Ladeauftrag();
+            a.Modulindex = 0;
+            a.Erzeugerart = ProjektPuffer.TYP_BHKW;
+            a.AnlagenID = simulation_bhkw.FuehrendeAnlage;
+            a.Zweitsenke = true;
+            a.Speicher = sp;
+            a.Ladeprio = Ladeordnung.PRIO_BHKW;
+            a.BMTyp = "";
+
+            // OBERGRENZEN (Befund N7): über die Auflösungsregel 3.4 statt fest auf
+            // Schwelle_Aus. Am Pendelspeicher lädt zwar nur das BHKW — dann ist es die
+            // vorrangige Anlage und bekommt ohnehin Schwelle_Aus —, aber eine EIGENE
+            // Ladegrenze (WS_Ladegrenze) galt bisher nicht, und in PV-Stunden wäre die
+            // zweite Auflösung ausgefallen. Engine und Anzeige benutzen jetzt dieselbe
+            // Quelle wie bei allen anderen Speichern.
+            ObergrenzenFuerErsatzspeicher(a, sp);
+
+            LadeauftragEinsortieren(k.LadenOhnePV, a);
+            LadeauftragEinsortieren(k.LadenMitPV, a);
+
+            Console.WriteLine("BHKW-Pendelspeicher: Keine Puffer-Senke am BHKW - der Speicher „" +
+                              sp.BezeichnerAnzeige() + "\" (" + p.Gesamtvolumen + " l, " +
+                              vorlauf + "/" + ruecklauf + " °C, Q_max " +
+                              sp.Q_max.ToString("0.###") + " kWh, Entladeprio " + sp.Entladeprio +
+                              ", Obergrenze " + (a.Obergrenze * 100).ToString("0.#") + " % / mit PV " +
+                              (a.ObergrenzePV * 100).ToString("0.#") + " %) rechnet als ZWEITSENKE " +
+                              "mit. Der skalare Pendelspeicher des Altpfads ist damit abgelöst.");
+        }
+
+        /// <summary>
+        /// Setzt einen Speicher an SEINE Stelle in der Entladereihenfolge des Kanals
+        /// (Konzept 3.6, Nacharbeit Paket 6 Befund N7).
+        ///
+        /// Grundlage ist dieselbe Liste, aus der <see cref="EntladeordnungAufbauen"/> die
+        /// Ordnung bildet — <c>Ladeordnung.Entladereihenfolge</c>. Steht der Speicher
+        /// dort nicht (Projektzuordnung inkonsistent), kommt er ans Ende; das ist das
+        /// Verhalten des Sicherheitsnetzes im Kontextaufbau.
+        /// </summary>
+        private void EntladeordnungEinsortieren(List<SimulationPufferspeicher> ordnung,
+                                                SimulationPufferspeicher sp)
+        {
+            if (ordnung == null || sp == null || ordnung.Contains(sp)) return;
+
+            string verwendung = sp.IstBrauchwasserkanal
+                ? WaermesenkeClass.VERWENDUNG_BRAUCHWASSER : WaermesenkeClass.VERWENDUNG_HEIZUNG;
+
+            List<Ladeordnung.EntladeEintrag> soll =
+                Ladeordnung.Entladereihenfolge(m_ID_Projekt, verwendung);
+
+            int platz = Ladeordnung.Position(soll, sp.ID_Pufferspeicher);
+            if (platz <= 0)
+            {
+                Console.WriteLine("BHKW-Pendelspeicher: Der Speicher " + sp.ID_Pufferspeicher +
+                                  " steht nicht in der Entladereihenfolge des Kanals " + verwendung +
+                                  " - er wird ans Ende gestellt.");
+                ordnung.Add(sp);
+                return;
+            }
+
+            // Vor den ersten Speicher stellen, der in der SOLL-Ordnung hinter ihm steht.
+            for (int i = 0; i < ordnung.Count; i++)
+            {
+                int p = Ladeordnung.Position(soll, ordnung[i].ID_Pufferspeicher);
+                if (p > platz) { ordnung.Insert(i, sp); return; }
+            }
+
+            ordnung.Add(sp);
+        }
+
+        /// <summary>
+        /// Löst die Ladeobergrenzen des Ersatz-Pendelspeichers nach Konzept 3.4/3.5 auf
+        /// (Nacharbeit Paket 6, Befund N7) — mit derselben Funktion, die die
+        /// Pufferverwaltung anzeigt und die <see cref="LadeordnungAufbauen"/> benutzt.
+        ///
+        /// Der Pendelspeicher hat oft gar keinen Ladeeintrag (er entsteht ja gerade,
+        /// WEIL keine Senke auf ihn zeigt). Dann bleibt es bei <c>Schwelle_Aus</c> des
+        /// Speichers — das ist derselbe Wert, den <c>ObergrenzenAufloesen</c> der
+        /// vorrangigen Anlage zuweisen würde.
+        /// </summary>
+        private void ObergrenzenFuerErsatzspeicher(Ladeauftrag a, SimulationPufferspeicher sp)
+        {
+            a.Obergrenze = sp.SchwelleAus;
+            a.ObergrenzePV = sp.SchwelleAus;
+
+            List<Ladeordnung.LadeEintrag> eintraege =
+                Ladeordnung.Ladereihenfolge(m_ID_Projekt, sp.ID_Pufferspeicher);
+            if (eintraege == null || eintraege.Count == 0) return;
+
+            Ladeordnung.LadeEintrag eigen = null;
+            foreach (Ladeordnung.LadeEintrag e in eintraege)
+                if (e.ID_Anlage == a.AnlagenID && e.Zweitsenke == a.Zweitsenke) { eigen = e; break; }
+            if (eigen == null) return;
+
+            // Ladereihenfolge hat die Obergrenzen ohne PV bereits aufgelöst.
+            a.Obergrenze = eigen.Obergrenze / 100.0;
+            a.Ladeprio = eigen.Ladeprio;
+
+            // Zweite Auflösung für Stunden MIT PV-Überschuss (Konzept 3.5).
+            Ladeordnung.ObergrenzenAufloesen(eintraege, sp.ID_Pufferspeicher,
+                delegate (Ladeordnung.LadeEintrag e)
+                {
+                    return Ladeordnung.WirksameLadeprioPV(
+                        e.ID_Type, e.Ladeprio, e.LadeprioPV,
+                        BetriebsmodusDerAnlage(e.ID_Anlage), true);
+                });
+            a.ObergrenzePV = eigen.Obergrenze / 100.0;
+        }
+
+        /// <summary>Fügt einen Ladeauftrag an der Stelle seiner Ladepriorität ein (Konzept 3.4).</summary>
+        private static void LadeauftragEinsortieren(List<Ladeauftrag> liste, Ladeauftrag a)
+        {
+            if (liste == null || a == null) return;
+
+            for (int i = 0; i < liste.Count; i++)
+                if (liste[i] != null && liste[i].Ladeprio > a.Ladeprio) { liste.Insert(i, a); return; }
+
+            liste.Add(a);
         }
 
         /// <summary>
@@ -1203,12 +1576,12 @@ namespace WindowsFormsApplication1
         /// Kaskadenübergreifende Ladeordnung (Konzept 6.3 C/D) in ihren beiden
         /// Ausprägungen: für Stunden ohne und mit PV-Überschuss (3.5).
         ///
-        /// ABGRENZUNG SEIT PAKET 5: Aufgenommen werden Anlagen, die in diesem Lauf als
-        /// WÄRMEPUMPEN-, SOLARTHERMIE- oder HEIZKESSEL-Modul in der gemeinsamen
-        /// Speicherstufe rechnen. Eine migrierte Puffer-Senke am BHKW wird protokolliert
-        /// und ruht — es rechnet bis Paket 6 einkanalig auf der Kanalsumme und deckt
-        /// damit weiter Bedarf, statt zu laden. Das ist die konservative Richtung: Es
-        /// entsteht keine Wärme, die niemand anfordert, und keine Doppelzählung.
+        /// SEIT PAKET 6 sind ALLE VIER Erzeugerarten aufnahmefähig — Wärmepumpe,
+        /// Solarthermie, Heizkessel und BHKW. Ein Ladeauftrag entsteht, sobald die Anlage
+        /// als Modul in der gemeinsamen Speicherstufe rechnet; steht ihre Art in diesem
+        /// Lauf außerhalb der Stufe (Vektorstufe ohne Speicherbeteiligung), ruht die
+        /// Senke und wird protokolliert. Das ist die konservative Richtung: Es entsteht
+        /// keine Wärme, die niemand anfordert, und keine Doppelzählung.
         /// </summary>
         private void LadeordnungAufbauen(Kaskadenkontext k)
         {
@@ -1232,8 +1605,8 @@ namespace WindowsFormsApplication1
                         k.Hinweise.Add("Ladeordnung: Anlage " + e.ID_Anlage + " (" + e.Erzeuger +
                                        ") lädt laut Konfiguration den Speicher " + sp.ID_Pufferspeicher +
                                        " (" + sp.BezeichnerAnzeige() + "). Diese Erzeugerart rechnet " +
-                                       "in diesem Lauf nicht in der Speicherstufe (BHKW: Paket 6); " +
-                                       "die Anlage rechnet einkanalig wie eine Heizkreis-Anlage.");
+                                       "in diesem Lauf nicht in der Speicherstufe; die Anlage rechnet " +
+                                       "als Vektorstufe wie eine Heizkreis-Anlage.");
                         continue;
                     }
 
@@ -1317,7 +1690,10 @@ namespace WindowsFormsApplication1
             if (idType == ProjektPuffer.TYP_KESSEL)
                 return _kesselInSchleife ? simulation_spk.spk_anlagen_ids.IndexOf(idAnlage) : -1;
 
-            return -1;   // BHKW: Paket 6
+            if (idType == ProjektPuffer.TYP_BHKW)
+                return _bhkwInSchleife ? simulation_bhkw.bhkw_anlagen_ids.IndexOf(idAnlage) : -1;
+
+            return -1;
         }
 
         /// <summary>Betriebsmodus (BM_Typ) eines WP-Moduls; leer, wenn unbekannt.</summary>
@@ -1477,6 +1853,7 @@ namespace WindowsFormsApplication1
             // Q_max und die Schwellen exakt dieselben Zahlen ergeben wie bisher.
             Z_ProjektPufferSpCtrl pspZuordnung = new Z_ProjektPufferSpCtrl();
             pspZuordnung.ReadAll("ID_Projekt=" + m_ID_Projekt);
+            _pspZuordnungen = pspZuordnung;          // N2: für den Ersatz-Pendelspeicher
             for (int n = 0; n < pspZuordnung.rows; n++)
             {
                 if (pspZuordnung.items[n].Erzeuger != "Wärmepumpe") continue;
@@ -1523,6 +1900,7 @@ namespace WindowsFormsApplication1
                                   vorlauf,
                                   ruecklauf,
                                   psp.items[0].Betriebsbereitschaftverlust);
+                    RueckfallMelden(pufferWp, psp.items[0].ID, psp.items[0].Name);
 
                     // Konfigurierbare Schwellen der Speicherregelung [%]
                     object sEin = WaermequelleClass.WertLesenStill("Z_ProjektPufferSp", "Schwelle_Ein", pspZuordnung.items[n].ID);
@@ -1592,6 +1970,7 @@ namespace WindowsFormsApplication1
                 }
 
                 sp.Init(p.Gesamtvolumen, vorlauf, ruecklauf, p.Bereitschaftsverluste);
+                RueckfallMelden(sp, p.ID, p.Bezeichner);
 
                 // PufferInfo führt die Schwellen in PROZENT (Ladeordnung-Vorgaben),
                 // SimulationPufferspeicher als Anteil 0..1.
@@ -1604,6 +1983,33 @@ namespace WindowsFormsApplication1
                 // eine Anlage ihn als Senke führt (siehe ImRechenpfad).
                 SpeicherAufnehmen(sp, false);
             }
+        }
+
+        /// <summary>
+        /// Meldet einen ΔT-RÜCKFALL eines Speichers auf die Konsole (Nacharbeit Paket 6,
+        /// Befund N2).
+        ///
+        /// Ohne gepflegtes Temperaturpaar rechnet <c>SimulationPufferspeicher.Init</c>
+        /// mit einem Ersatzwert — 10 K für gewöhnliche Puffer, 20 K für den
+        /// BHKW-Pendelspeicher. Beides verändert die nutzbare Kapazität erheblich (bei
+        /// einem 1000-l-Puffer 11,6 gegen 23,2 kWh), und beides geschah bis zur
+        /// Nacharbeit stillschweigend. Projektgrundsatz: sichtbar falsch ist besser als
+        /// still falsch.
+        ///
+        /// Die Meldung läuft in BEIDEN Rechenwegen — der Registry-Aufbau gehört zu
+        /// keinem von beiden. Sie ist reine Konsolenausgabe und geht in kein Ergebnis
+        /// und in keine CSV ein; der Altpfad rechnet unverändert.
+        /// </summary>
+        private static void RueckfallMelden(SimulationPufferspeicher sp, int idPuffer, string bezeichner)
+        {
+            if (sp == null || sp.RueckfallDeltaT <= 0) return;
+
+            Console.WriteLine("Speicher-Registry: Puffer " + idPuffer + " (" +
+                              (string.IsNullOrEmpty(bezeichner) ? "ohne Bezeichner" : bezeichner) +
+                              ") hat KEIN Temperaturpaar - es gilt der Rückfall ΔT = " +
+                              sp.RueckfallDeltaT.ToString("0.#") + " K, nutzbare Kapazität Q_max " +
+                              sp.Q_max.ToString("0.###") + " kWh. Ein gepflegtes Vorlauf-/" +
+                              "Rücklaufpaar am Puffer ergäbe eine andere Kapazität.");
         }
 
         /// <summary>

@@ -449,11 +449,22 @@ namespace WindowsFormsApplication1
             return new Senkenzuordnung { AnlagenID = idAnlage };
         }
 
-        /// <summary>Stundenbeginn: das Potenzial der Stunde steht jedem Feld voll zur Verfügung.</summary>
-        public void Stunde_Start(int stunde)
+        /// <summary>
+        /// Stundenbeginn: das Potenzial der Stunde steht jedem Feld voll zur Verfügung,
+        /// und der STUFENEINGANG wird festgehalten.
+        ///
+        /// NACHARBEIT PAKET 6, BEFUND N1: Der Stufeneingang ist der Kanalstand VOR der
+        /// Vorabentladung (Phase A) — dieselbe Bezugsgröße wie im Altpfad und bei der
+        /// Wärmepumpe. Vorher stand er in <see cref="Stunde_Bedarf"/>, also nach Phase A.
+        /// </summary>
+        public void Stunde_Start(int stunde, double rest_heiz, double rest_ww)
         {
             for (int f = 0; f < _restPotenzial.Length; f++)
                 _restPotenzial[f] = (stunde >= 0 && stunde < 8760) ? _potenzialFeld[f][stunde] : 0;
+
+            double eingang = rest_heiz + rest_ww;
+            if (eingang < 0) eingang = 0;
+            if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = eingang;
         }
 
         /// <summary>
@@ -466,8 +477,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void Stunde_Bedarf(int stunde, ref double rest_heiz, ref double rest_ww)
         {
-            if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = rest_heiz + rest_ww;
-
+            // Der Stufeneingang steht seit der Nacharbeit N1 in Stunde_Start - VOR der
+            // Vorabentladung (Phase A).
             for (int f = 0; f < _restPotenzial.Length; f++)
             {
                 if (_restPotenzial[f] <= 0) continue;
@@ -615,7 +626,9 @@ namespace WindowsFormsApplication1
                 double rest_heiz = kanaele.Heiz[stunde];
                 double rest_ww = kanaele.WW[stunde];
 
-                Stunde_Start(stunde);
+                // Ohne Speicher gibt es keine Vorabentladung: Der Stufeneingang ist der
+                // Kanalstand an dieser Kaskadenposition.
+                Stunde_Start(stunde, rest_heiz, rest_ww);
                 Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
                 Stunde_Ende(stunde);
 
