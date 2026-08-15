@@ -14,6 +14,12 @@ namespace WindowsFormsApplication1
         private WPStammCtrl ctrl = null;
         private bool neu = false;
 
+        /// <summary>
+        /// false, solange <see cref="OnLoad"/> noch nicht gelaufen ist. Solange darf
+        /// KEIN Control ausgeblendet werden - Begründung siehe <see cref="OnLoad"/>.
+        /// </summary>
+        private bool m_bGeladen = false;
+
         public Form_WP()
         {
             InitializeComponent();
@@ -49,6 +55,51 @@ namespace WindowsFormsApplication1
                 listBox_WP.Items.Add(ctrl.items[i].WPName);
             }
             listBox_WP.SetSelected(0,true);
+        }
+
+        /// <summary>
+        /// Holt das Ausblenden der Betriebsart-Radiobuttons nach, das der
+        /// Konstruktor-Durchlauf bewusst übersprungen hat - und zwar erst NACH dem
+        /// Laden.
+        ///
+        /// Hintergrund (Muster aus Wizard_WPItem, Commit d49075e): Beide Konstruktoren
+        /// rufen FillWPList() auf; das SetSelected(0, true) darin löst
+        /// listBox_WP_SelectedIndexChanged bereits VOR ShowDialog aus. Hat die erste
+        /// Wärmepumpe keine Kühl-Kenndaten, würden radioButton_Kuehlung/-_Waerme dort
+        /// ausgeblendet, bekämen beim Formularaufbau kein Fensterhandle und verpassten
+        /// den AutoScroll-Versatz der BaseForm (sie staucht das Formular auf die
+        /// Bildschirm-Arbeitsfläche und scrollt den Inhalt). Beim späteren Einblenden -
+        /// Auswahl einer Wärmepumpe MIT Kühl-Kenndaten im gescrollten Zustand - stünden
+        /// die Radiobuttons auf der ungescrollten Entwurfsposition (Default-Anker
+        /// Top|Left, kein Anker-Layout, das die Position korrigieren würde). Deshalb
+        /// bleiben sie bis hierher sichtbar (Handle!) und werden erst jetzt - noch vor
+        /// dem ersten Zeichnen, also ohne Aufblitzen - passend zur vorselektierten
+        /// Wärmepumpe ausgeblendet.
+        /// </summary>
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            m_bGeladen = true;
+
+            if (!HatKuehlKenndaten())
+            {
+                radioButton_Kuehlung.Visible = false;
+                radioButton_Waerme.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Liefert true, wenn zur aktuell gewählten Wärmepumpe Kühl-Kenndaten
+        /// vorliegen (dieselbe Abfrage wie in listBox_WP_SelectedIndexChanged).
+        /// </summary>
+        private bool HatKuehlKenndaten()
+        {
+            RecordSet rs = new RecordSet();
+            rs.Open("SELECT * FROM Tab_Kenndaten_Kuehlung_STAMM where ID_WP = " + item.ID);
+            bool gefunden = rs.Next();
+            rs.Close();
+            return gefunden;
         }
 
         // Schreibgeschützte (ReadOnly) Wärmepumpen in der Liste grau darstellen.
@@ -223,8 +274,14 @@ namespace WindowsFormsApplication1
                 rs.Open("SELECT * FROM Tab_Kenndaten_Kuehlung_STAMM where ID_WP = " + item.ID);
                 if (!rs.Next())
                 {
-                    radioButton_Kuehlung.Visible = false;
-                    radioButton_Waerme.Visible = false;
+                    // Vor OnLoad nichts ausblenden - sonst fehlt den Radiobuttons das
+                    // Handle und damit der AutoScroll-Versatz der BaseForm (siehe
+                    // OnLoad). Den richtigen Startzustand stellt OnLoad her.
+                    if (m_bGeladen)
+                    {
+                        radioButton_Kuehlung.Visible = false;
+                        radioButton_Waerme.Visible = false;
+                    }
                 }
                 else
                 {
