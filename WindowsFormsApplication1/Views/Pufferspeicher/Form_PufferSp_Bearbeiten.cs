@@ -197,6 +197,11 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
+            // Vor dem Namensdialog pruefen, damit der Anwender nicht erst einen Namen
+            // vergibt und danach die Meldung zum Volumen bekommt.
+            int volumen;
+            if (!VolumenPruefen(out volumen)) return;
+
             Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
             frmLabel.m_szName = "";
             frmLabel.SetControl();
@@ -217,7 +222,7 @@ namespace WindowsFormsApplication1
                     textBox_Name.Text = frmLabel.m_szName;
                     m_szPufferSp = frmLabel.m_szName;
 
-                    PufferSpModel m = InitDatensatzUpdate();
+                    PufferSpModel m = InitDatensatzUpdate(volumen);
                     m.Name = frmLabel.m_szName;
 
                     if (ctrl.InsertFrom(m))
@@ -240,7 +245,22 @@ namespace WindowsFormsApplication1
             }
         }
 
-        PufferSpModel InitDatensatzUpdate()
+        /// <summary>
+        /// Knopf-Pruefung des Volumenfeldes (Folgepaket zu ab5bf32). Leer gilt wie
+        /// bisher als 0; bei ungueltiger Eingabe meldet der Helfer, setzt den Fokus
+        /// und der Aufrufer kehrt zurueck - der Dialog bleibt offen.
+        /// </summary>
+        private bool VolumenPruefen(out int volumen)
+        {
+            return Program.GanzzahlPruefen(textBox_Volumen, "Gesamtvolumen", out volumen, leerErlaubt: true);
+        }
+
+        /// <summary>
+        /// Baut den Datensatz aus den Feldern. Das Gesamtvolumen kommt als bereits
+        /// gepruefter Wert von aussen (Folgepaket zu ab5bf32) - geprueft wird am
+        /// jeweiligen Aktionsknopf, siehe VolumenPruefen.
+        /// </summary>
+        PufferSpModel InitDatensatzUpdate(int volumen)
         {
             PufferSpModel model = new PufferSpModel();
             model.Name = textBox_Name.Text;
@@ -248,8 +268,7 @@ namespace WindowsFormsApplication1
             // Befund L0-1: NICHT der angezeigte Text, sondern der DB-Wert der Auswahl.
             model.Speichertyp = SpeichertypDbWert();
 
-            int volumen;
-            model.Gesamtvolumen = Int32.TryParse(textBox_Volumen.Text, out volumen) ? volumen : 0;
+            model.Gesamtvolumen = volumen;
 
             double verluste;
             model.Betriebsbereitschaftverlust = double.TryParse(textBox_Verluste.Text, out verluste) ? verluste : 0.0;
@@ -262,9 +281,12 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
+            int volumen;
+            if (!VolumenPruefen(out volumen)) return;
+
             try
             {
-                PufferSpModel m = InitDatensatzUpdate();
+                PufferSpModel m = InitDatensatzUpdate(volumen);
                 PufferSpStammCtrl ctrl = new PufferSpStammCtrl();
                 if (ctrl.Exists(m.Name)) { MessageBox.Show(MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT); return; }
 
@@ -287,17 +309,24 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Nur noch Faerbung (Folgepaket zu ab5bf32): das frueher hier eingesetzte
+        /// Undo() nahm die Eingabe zurueck, loeste TextChanged erneut aus und liess
+        /// die Meldung wiederkehren. Geprueft wird jetzt an den Speicherknoepfen.
+        /// </summary>
         private void textBox_Volumen_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void btn_Ueberschreiben_Click(object sender, EventArgs e)
         {
+            int volumen;
+            if (!VolumenPruefen(out volumen)) return;
+
             try
             {
-                PufferSpModel m = InitDatensatzUpdate();
+                PufferSpModel m = InitDatensatzUpdate(volumen);
                 PufferSpStammCtrl ctrl = new PufferSpStammCtrl();
                 if (ctrl.UpdateFrom(m))
                 {

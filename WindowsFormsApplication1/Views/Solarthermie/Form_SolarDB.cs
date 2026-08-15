@@ -58,71 +58,69 @@ namespace WindowsFormsApplication1
             Close();
         }
 
+        // TextChanged faerbt nur noch das Feld (Program.ZahlFaerben/GanzzahlFaerben),
+        // gemeldet wird erst beim Speichern-Knopf. Das alte checkDouble()+Undo()
+        // konnte den Dialog in einer Endlosmeldung festhalten - ausfuehrliche
+        // Begruendung in Program.cs (Folgepaket zu ab5bf32).
         private void textBox_Modul_A_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Absorber_A_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_h0_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_k1_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_k2_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_C_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Kdir_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Kdiff_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Ertrag_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Kosten_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void btn_Überschreiben_Click(object sender, EventArgs e)
         {
+            // Zahlenfelder pruefen, bevor irgendetwas geschrieben wird; null heisst:
+            // Meldung ist raus, Dialog bleibt offen.
+            SolarkollektorenModel m = InitDatensatzUpdate();
+            if (m == null) return;
+
             try
             {
-                SolarkollektorenModel m = InitDatensatzUpdate();
                 SolarkollektorenStammCtrl ctrl = new SolarkollektorenStammCtrl();
                 if (ctrl.UpdateFrom(m))
                 {
@@ -143,23 +141,46 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Prueft alle Zahlenfelder und baut daraus den Datensatz. Bei ungueltiger
+        /// Eingabe meldet Program.ZahlPruefen/GanzzahlPruefen sprechend, setzt den
+        /// Fokus und liefert null - der Aufrufer kehrt dann zurueck, ohne zu
+        /// speichern, und der Dialog bleibt offen.
+        /// Leer ist nur bei Vorlauf/Ruecklauf erlaubt (dort galt "" schon bisher als
+        /// 0); die Dezimalfelder wurden ungeprueft mit double.Parse gelesen und
+        /// haetten bei leer oder Buchstaben eine FormatException geworfen.
+        /// </summary>
         SolarkollektorenModel InitDatensatzUpdate()
         {
+            double modulflaeche, aperturflaeche, h0, k1, k2, kdir, kdiff, kosten;
+            int vorlauf, ruecklauf;
+
+            if (!Program.ZahlPruefen(textBox_Modul_A, "Modulfläche", out modulflaeche)) return null;
+            if (!Program.ZahlPruefen(textBox_Absorber_A, "Aperturfläche", out aperturflaeche)) return null;
+            if (!Program.ZahlPruefen(textBox_h0, "h0", out h0)) return null;
+            if (!Program.ZahlPruefen(textBox_k1, "k1", out k1)) return null;
+            if (!Program.ZahlPruefen(textBox_k2, "k2", out k2)) return null;
+            if (!Program.ZahlPruefen(textBox_Kdir, "Kdir", out kdir)) return null;
+            if (!Program.ZahlPruefen(textBox_Kdiff, "Kdiff", out kdiff)) return null;
+            if (!Program.ZahlPruefen(textBox_Kosten, "Investitionskosten", out kosten)) return null;
+            if (!Program.GanzzahlPruefen(textBox_Vorlauf, "Vorlauf", out vorlauf, true)) return null;
+            if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "Rücklauf", out ruecklauf, true)) return null;
+
             SolarkollektorenModel model = new SolarkollektorenModel();
             model.m_szKollektorname = textBox_Name.Text;
             model.m_szFirma = textBox_Firma.Text;
             model.m_szBeschreibung = textBox_Beschreibung.Text;
             model.m_szKollektortyp = textBox_Typ.Text;
-            model.m_Modulfläche = double.Parse(textBox_Modul_A.Text);
-            model.m_Aperturfläche = double.Parse(textBox_Absorber_A.Text);
-            model.m_h0 = double.Parse(textBox_h0.Text);
-            model.m_k1 = double.Parse(textBox_k1.Text);
-            model.m_k2 = double.Parse(textBox_k2.Text);
-            model.m_Kdir = double.Parse(textBox_Kdir.Text);
-            model.m_Kdfu = double.Parse(textBox_Kdiff.Text);
-            model.m_Kosten = double.Parse(textBox_Kosten.Text);
-            model.m_Vorlauf = textBox_Vorlauf.Text == "" ? 0 : Int32.Parse(textBox_Vorlauf.Text);
-            model.m_Ruecklauf = textBox_Ruecklauf.Text == "" ? 0 : Int32.Parse(textBox_Ruecklauf.Text);    
+            model.m_Modulfläche = modulflaeche;
+            model.m_Aperturfläche = aperturflaeche;
+            model.m_h0 = h0;
+            model.m_k1 = k1;
+            model.m_k2 = k2;
+            model.m_Kdir = kdir;
+            model.m_Kdfu = kdiff;
+            model.m_Kosten = kosten;
+            model.m_Vorlauf = vorlauf;
+            model.m_Ruecklauf = ruecklauf;
 
             return model;
         }
@@ -172,12 +193,16 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            // Zahlenfelder vor dem Schreiben pruefen (siehe InitDatensatzUpdate).
+            SolarkollektorenModel m = InitDatensatzUpdate();
+            if (m == null) return;
+
             try
             {
                 SolarkollektorenStammCtrl ctrl = new SolarkollektorenStammCtrl();
                 if (ctrl.Exists(textBox_Name.Text)) { MessageBox.Show("Name existiert bereits!"); return; }
 
-                if (ctrl.InsertFrom(InitDatensatzUpdate()))
+                if (ctrl.InsertFrom(m))
                 {
                     this.DialogResult = DialogResult.OK;
                     MessageBox.Show("Datensatz gespeichert");
@@ -220,9 +245,15 @@ namespace WindowsFormsApplication1
                     SolarkollektorenStammCtrl ctrl = new SolarkollektorenStammCtrl();
                     if (ctrl.Exists(frmLabel.m_szName)) { MessageBox.Show("Name existiert bereits!"); return; }
 
-                    textBox_Name.Text = frmLabel.m_szName;
+                    // Erst pruefen, dann den neuen Namen uebernehmen - so bleibt bei
+                    // einer Fehleingabe auch das Namensfeld unveraendert.
+                    SolarkollektorenModel m = InitDatensatzUpdate();
+                    if (m == null) return;
 
-                    if (ctrl.InsertFrom(InitDatensatzUpdate()))
+                    textBox_Name.Text = frmLabel.m_szName;
+                    m.m_szKollektorname = frmLabel.m_szName;
+
+                    if (ctrl.InsertFrom(m))
                     {
                         this.DialogResult = DialogResult.OK;
                         MessageBox.Show("Datensatz gespeichert");
@@ -243,18 +274,17 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // Ganzzahlfelder (Speicherweg parst mit Int32). Das automatische Auffuellen
+        // eines leeren Feldes mit "0" entfaellt - leer wird beim Speichern als 0
+        // uebernommen (GanzzahlPruefen mit leerErlaubt).
         private void textBox_Vorlauf_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void textBox_Ruecklauf_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
     }
 }

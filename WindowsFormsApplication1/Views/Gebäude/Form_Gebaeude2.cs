@@ -73,7 +73,7 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrWhiteSpace(szMonat) || string.IsNullOrWhiteSpace(szTag)) return 0;
 
             // Ungueltige oder nicht numerische Eingaben abfangen (verhindert Laufzeitfehler)
-            if (!int.TryParse(szMonat, out int monat) || !int.TryParse(szTag, out int tag)) return 0;
+            if (!Program.GanzzahlParsen(szMonat, out int monat) || !Program.GanzzahlParsen(szTag, out int tag)) return 0;
             if (monat < 1 || monat > 12 || tag < 1 || tag > 31) return 0;
 
             try
@@ -90,10 +90,14 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // Stiller Parser statt double.Parse: liest Komma und Punkt gleichermassen
+        // ("12.5" wird 12,5 statt still 125) und wirft bei ungueltigem Text nicht.
+        // Gemeldet wird bereits in btn_Speichern_Click, leer bleibt wie bisher 0.
         private double Text2Wert(string szText)
         {
-            if (szText == "") return 0;
-            else return double.Parse(szText);
+            double dWert;
+            if (!Program.ZahlParsen(szText, out dWert)) return 0;
+            return dWert;
         }
 
         private string Wert2Text(double dValue)
@@ -104,7 +108,9 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
-            // alle TextBoxen auf gültiges double Format überprüfen
+            // Alle TextBoxen der Gruppen auf gültiges Zahlenformat überprüfen.
+            // Gemeldet wird erst hier statt bei jedem Tastendruck; leere Felder
+            // gelten wie bisher als 0 und werden übersprungen.
             for (int i = 0; i < Controls.Count; i++)
             {
                 var allControls = Controls[i].Controls;
@@ -112,8 +118,14 @@ namespace WindowsFormsApplication1
                 {
                     if (tb.GetType().Equals(typeof(TextBox)) && tb.Text != "")
                     {
-                        if (!Program.checkDouble(tb, tb.Text))
+                        double dPruefwert;
+                        if (!Program.ZahlParsen(tb.Text, out dPruefwert))
                         {
+                            MessageBox.Show("Eingaben überprüfen: \"" + tb.Text + "\"" + Environment.NewLine +
+                                            "Bitte eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).",
+                                            "Ungültige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            tb.Focus();
+                            ((TextBox)tb).SelectAll();
                             return;
                         }
                     }
@@ -229,200 +241,147 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // TextChanged färbt ab hier nur noch (rosa = gerade keine Zahl). Gemeldet
+        // wird erst in btn_Speichern_Click; das frühere Melden mit tb.Undo() konnte
+        // sich aufschaukeln. Begründung ausführlich in Program.cs.
         private void textBox_SollTag_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_NachtAbsenkung_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_MaxTemperatur_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_WEAbsenkung_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_SollFerien_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_WBVK_Fenster_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_WBVK_Keller_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_WBVK_Dach_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_AnschussFenster_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_AnschussKeller_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_AnschussDach_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void Winter_Tag_A_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Winter_Monat_A_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Ostern_Tag_A_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Ostern_Monat_A_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Sommer_Tag_A_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Sommer_Monat_A_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Herbst_Tag_A_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Herbst_Monat_A_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Winter_Tag_E_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Winter_Monat_E_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void textBox_Luftwechsel_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void Ostern_Tag_E_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Ostern_Monat_E_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Sommer_Tag_E_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Sommer_Monat_E_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Herbst_Tag_E_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void Herbst_Monat_E_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
     }
 }
