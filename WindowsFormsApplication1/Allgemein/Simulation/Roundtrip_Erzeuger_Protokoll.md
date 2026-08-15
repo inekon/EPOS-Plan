@@ -372,11 +372,9 @@ Laden und Speichern; nach dem Leeren von `energy_price`/`energy_Project_settings
 wie oben. Kodierung (UTF-8 mit BOM) und Zeilenenden (CRLF) von `WizardParent.cs`
 unverändert.
 
-Damit sind **alle fünf** gemessenen Speicherwege verlustfrei.
-
-> Noch offen (außerhalb der Schreibmenge dieser Arbeit): `Konzept_Simulation_QuellenSenken.md:1134`
-> führt „`WizardParent.LoadWEFromDB` liest `ID_PUFFER` nicht" weiterhin als Restbefund —
-> die Zeile ist mit Fix 5 überholt und beim nächsten Anfassen der Konzeptdatei zu streichen.
+Damit sind **alle fünf** gemessenen Speicherwege verlustfrei. Der zugehörige Restbefund in
+`Konzept_Simulation_QuellenSenken.md` („`WizardParent.LoadWEFromDB` liest `ID_PUFFER` nicht")
+ist im selben Zug als behoben markiert worden.
 
 ## 5. Restrisiken
 
