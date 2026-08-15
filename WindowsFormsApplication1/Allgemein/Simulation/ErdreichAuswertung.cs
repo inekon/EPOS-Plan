@@ -242,7 +242,12 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Erdreich-Auswertung fehlgeschlagen: " + ex.Message);
+                // Protokollkanal-Nachzug: WARNUNG - die Erdreich-Kennwerte des Laufs
+                // (Frostbilanz, VDI-4640-Prüfgrößen) bleiben leer, und der Anwender sähe
+                // sonst nur leere Anzeigen ohne Grund. Der Kanal des Laufs steht hier
+                // noch: AusLauf ist der letzte Schritt von Do_Simulation_Intern.
+                SimulationProtokoll.Aktuell.Warnung("Erdreich-Auswertung fehlgeschlagen: " + ex.Message +
+                                                    " - die Erdreich-Kennwerte dieses Laufs bleiben leer.");
                 ergebnisse = new List<AnlageErgebnis>();
             }
 

@@ -840,7 +840,11 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                Console.WriteLine("Quellspeicher " + q.ID_Pufferspeicher +
+                // Protokollkanal-Nachzug: WARNUNG - die Quellparameter der übrigen
+                // Anlagen an diesem Speicher bleiben UNWIRKSAM. Je Speicher einmal.
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                                  "quellspeicher-mehrfach-" + q.ID_Pufferspeicher,
+                                  "Quellspeicher " + q.ID_Pufferspeicher +
                                   " wird von mehreren Modulen benutzt — ab Etappe 4b rechnen sie " +
                                   "gegen EINEN Füllstand (Konzept 6.3). Maßgeblich bleiben die " +
                                   "Quellparameter der Anlage " + vorhanden.ID_Anlage + ".");

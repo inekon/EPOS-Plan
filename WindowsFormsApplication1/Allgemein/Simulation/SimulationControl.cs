@@ -319,7 +319,7 @@ namespace WindowsFormsApplication1
             KaskadeZweikanalig = ctrl_konfig != null && ctrl_konfig.model != null &&
                                  ctrl_konfig.model.Kaskade_Zweikanalig;
             if (KaskadeZweikanalig)
-                Console.WriteLine("Projekteinstellung Kaskade_Zweikanalig ist gesetzt - " +
+                Protokoll.Hinweis("Projekteinstellung Kaskade_Zweikanalig ist gesetzt - " +
                                   "dieser Lauf rechnet ZWEIKANALIG mit herausgelöster " +
                                   "Ladephase (Konzept 6.3).");
 
@@ -495,8 +495,11 @@ namespace WindowsFormsApplication1
             // Netzverlust-Aufschlag, BRAUCHWASSER = brauchwasserwerte.
             Waermekanaele kanaele = simulation_Waermebedarf.Kanaele();
 
+            // Datenkorrektur am Bedarf: gehört als WARNUNG in das Lauf-Protokoll
+            // (Protokollkanal-Nachzug). Der Zähler ist bereits über das ganze Jahr
+            // aggregiert - eine Meldung je Lauf, kein Meldungssturm.
             if (simulation_Waermebedarf.Kanal_Kappungen > 0)
-                Console.WriteLine("Kanalbildung: in " + simulation_Waermebedarf.Kanal_Kappungen +
+                Protokoll.Warnung("Kanalbildung: in " + simulation_Waermebedarf.Kanal_Kappungen +
                                   " Stunden lag der Brauchwasserwert über dem Gesamtbedarf (" +
                                   simulation_Waermebedarf.Kanal_Kappung_kWh.ToString("0.###") +
                                   " kWh gekappt) - der Heizkanal wurde auf 0 gesetzt.");
@@ -749,7 +752,7 @@ namespace WindowsFormsApplication1
                 if (tool[i] == DbWerte.ERZEUGER_SOLARTHERMIE && !_solarInSchleife)
                 {
                     _solarInSchleife = true;
-                    Console.WriteLine("Kaskade: Die Solarthermie steht zwischen zwei Erzeugern der " +
+                    Protokoll.Hinweis("Kaskade: Die Solarthermie steht zwischen zwei Erzeugern der " +
                                       "Speicherstufe. Sie rechnet deshalb als Mitglied der " +
                                       "Stundenschleife an ihrer Kaskadenposition mit (Phase B) - " +
                                       "ohne Puffer-Senke als reine Heizkreis-Stufe.");
@@ -757,7 +760,7 @@ namespace WindowsFormsApplication1
                 else if (tool[i] == DbWerte.ERZEUGER_HEIZKESSEL && !_kesselInSchleife)
                 {
                     _kesselInSchleife = true;
-                    Console.WriteLine("Kaskade: Der Heizkessel steht zwischen zwei Erzeugern der " +
+                    Protokoll.Hinweis("Kaskade: Der Heizkessel steht zwischen zwei Erzeugern der " +
                                       "Speicherstufe. Er rechnet deshalb als Mitglied der " +
                                       "Stundenschleife an seiner Kaskadenposition mit (Phase B) - " +
                                       "ohne Puffer-Senke als reine Heizkreis-Stufe.");
@@ -769,7 +772,7 @@ namespace WindowsFormsApplication1
                     // Sonderfall - "BHKW zwischen zwei Mitgliedern rechnet DANACH" - ist
                     // damit entfallen, und mit ihm sein Warnzweig.
                     _bhkwInSchleife = true;
-                    Console.WriteLine("Kaskade: Das BHKW steht zwischen zwei Erzeugern der " +
+                    Protokoll.Hinweis("Kaskade: Das BHKW steht zwischen zwei Erzeugern der " +
                                       "Speicherstufe. Es rechnet deshalb als Mitglied der " +
                                       "Stundenschleife an seiner Kaskadenposition mit (Phase B) - " +
                                       "ohne Speicher als reine Heizkreis-Stufe.");
@@ -1034,13 +1037,19 @@ namespace WindowsFormsApplication1
             foreach (Ladeauftrag a in kontext.LadenOhnePV)
                 if (a != null && !a.Zweitsenke && a.AnlagenID == idAnlage) return;
 
-            Console.WriteLine("Wärmesenke: Die Anlage " + idAnlage + " (" + art + ") ist als " +
-                              "Hauptsenke auf " + Senkenzuordnung.ZielAusSenke(z.Haupt) +
-                              " (Puffer " + z.IDPufferHaupt + ") konfiguriert, bekommt in diesem " +
-                              "Lauf aber KEINEN Ladeauftrag - der Puffer gehört zu einem anderen " +
-                              "Projekt oder rechnet nicht mit. Die Anlage deckt deshalb den " +
-                              "HEIZKREIS; ohne diesen Rückfall würde sie das ganze Jahr nichts " +
-                              "produzieren.");
+            // Protokollkanal-Nachzug: WARNUNG statt bloßer Konsolenzeile - der Rückfall
+            // ist eine Ersatzannahme mit Ergebniswirkung (gemessen an einem präparierten
+            // 1018: Kesselproduktion 34,27 -> 0 MWh ohne ihn). Der Schlüssel je Anlage
+            // hält die Meldung eindeutig, auch wenn Haupt- und Zweitsenke beide fallen.
+            SimulationProtokoll.Aktuell.WarnungEinmal(
+                "senke-ohne-ladeauftrag-" + idAnlage,
+                "Wärmesenke: Die Anlage " + idAnlage + " (" + art + ") ist als " +
+                "Hauptsenke auf " + Senkenzuordnung.ZielAusSenke(z.Haupt) +
+                " (Puffer " + z.IDPufferHaupt + ") konfiguriert, bekommt in diesem " +
+                "Lauf aber KEINEN Ladeauftrag - der Puffer gehört zu einem anderen " +
+                "Projekt oder rechnet nicht mit. Die Anlage deckt deshalb den " +
+                "HEIZKREIS; ohne diesen Rückfall würde sie das ganze Jahr nichts " +
+                "produzieren.");
 
             z.Haupt = Senke.Heizkreis;
         }
@@ -1090,7 +1099,7 @@ namespace WindowsFormsApplication1
 
             if (dt == null)
             {
-                Console.WriteLine("Speicherstufe: Die Wärmepumpen des Projekts " + m_ID_Projekt +
+                Protokoll.Warnung("Speicherstufe: Die Wärmepumpen des Projekts " + m_ID_Projekt +
                                   " ließen sich nicht lesen - die Stufe rechnet ohne Module.");
                 return;
             }
@@ -1112,7 +1121,7 @@ namespace WindowsFormsApplication1
 
             if (dt == null)
             {
-                Console.WriteLine("Speicherstufe: Die Heizkessel des Projekts " + m_ID_Projekt +
+                Protokoll.Warnung("Speicherstufe: Die Heizkessel des Projekts " + m_ID_Projekt +
                                   " ließen sich nicht lesen - die Stufe rechnet ohne Module.");
                 return;
             }
@@ -1136,7 +1145,7 @@ namespace WindowsFormsApplication1
 
             if (dt == null)
             {
-                Console.WriteLine("Speicherstufe: Die Kollektorfelder des Projekts " + m_ID_Projekt +
+                Protokoll.Warnung("Speicherstufe: Die Kollektorfelder des Projekts " + m_ID_Projekt +
                                   " ließen sich nicht lesen - die Stufe rechnet ohne Module.");
                 return;
             }
@@ -1170,7 +1179,7 @@ namespace WindowsFormsApplication1
 
             if (dt == null)
             {
-                Console.WriteLine("Speicherstufe: Die BHKW des Projekts " + m_ID_Projekt +
+                Protokoll.Warnung("Speicherstufe: Die BHKW des Projekts " + m_ID_Projekt +
                                   " ließen sich nicht lesen - die Stufe rechnet ohne Module.");
                 return;
             }
@@ -1293,7 +1302,8 @@ namespace WindowsFormsApplication1
                 {
                     vorlauf = vZuordnung;
                     ruecklauf = rZuordnung;
-                    Console.WriteLine("BHKW-Pendelspeicher: Puffer " + p.ID + " (" + p.Bezeichner +
+                    Protokoll.HinweisEinmal("pendelspeicher-temp-zuordnung-" + p.ID,
+                                      "BHKW-Pendelspeicher: Puffer " + p.ID + " (" + p.Bezeichner +
                                       ") hat kein Temperaturpaar in der Projektkopie - es gilt " +
                                       "die Zuordnungszeile (" + vorlauf + "/" + ruecklauf + " °C).");
                 }
@@ -1353,7 +1363,7 @@ namespace WindowsFormsApplication1
             LadeauftragEinsortieren(k.LadenOhnePV, a);
             LadeauftragEinsortieren(k.LadenMitPV, a);
 
-            Console.WriteLine("BHKW-Pendelspeicher: Keine Puffer-Senke am BHKW - der Speicher „" +
+            Protokoll.Hinweis("BHKW-Pendelspeicher: Keine Puffer-Senke am BHKW - der Speicher „" +
                               sp.BezeichnerAnzeige() + "\" (" + p.Gesamtvolumen + " l, " +
                               vorlauf + "/" + ruecklauf + " °C, Q_max " +
                               sp.Q_max.ToString("0.###") + " kWh, Entladeprio " + sp.Entladeprio +
@@ -1385,7 +1395,9 @@ namespace WindowsFormsApplication1
             int platz = Ladeordnung.Position(soll, sp.ID_Pufferspeicher);
             if (platz <= 0)
             {
-                Console.WriteLine("BHKW-Pendelspeicher: Der Speicher " + sp.ID_Pufferspeicher +
+                Protokoll.HinweisEinmal("pendelspeicher-entladeordnung-" + verwendung + "-" +
+                                  sp.ID_Pufferspeicher,
+                                  "BHKW-Pendelspeicher: Der Speicher " + sp.ID_Pufferspeicher +
                                   " steht nicht in der Entladereihenfolge des Kanals " + verwendung +
                                   " - er wird ans Ende gestellt.");
                 ordnung.Add(sp);
@@ -1530,7 +1542,8 @@ namespace WindowsFormsApplication1
                 // Rechenpfad — ihn lädt hier niemand.
                 bool referenziert = senken.Contains(id);
                 if (sp.ImRechenpfad && !referenziert)
-                    Console.WriteLine("Speicher-Registry: Puffer " + id + " (" + sp.BezeichnerAnzeige() +
+                    Protokoll.WarnungEinmal("registry-ohne-senkenreferenz-" + id,
+                                      "Speicher-Registry: Puffer " + id + " (" + sp.BezeichnerAnzeige() +
                                       ") hat keine Senkenreferenz einer Anlage (WS_ID_Puffer/" +
                                       "WS_ID_Puffer2) - er rechnet im zweikanaligen Weg nicht mit.");
                 sp.ImRechenpfad = referenziert;
@@ -1660,7 +1673,9 @@ namespace WindowsFormsApplication1
                 if (sp.IstBrauchwasserkanal != brauchwasser) continue;
                 if (liste.Contains(sp)) continue;
 
-                Console.WriteLine("Speicher " + sp.ID_Pufferspeicher + " (" + sp.BezeichnerAnzeige() +
+                Protokoll.HinweisEinmal("entladeordnung-nachtrag-" + verwendung + "-" +
+                                  sp.ID_Pufferspeicher,
+                                  "Speicher " + sp.ID_Pufferspeicher + " (" + sp.BezeichnerAnzeige() +
                                   ") steht nicht in der Entladereihenfolge des Kanals " + verwendung +
                                   " - er wird ans Ende gestellt.");
                 liste.Add(sp);
@@ -2023,13 +2038,15 @@ namespace WindowsFormsApplication1
                 WaermesenkeClass.PufferInfo p = WaermesenkeClass.PufferLesen(id);
                 if (p == null)
                 {
-                    Console.WriteLine("Speicher-Registry: Puffer " + id +
+                    Protokoll.WarnungEinmal("registry-puffer-fehlt-" + id,
+                                      "Speicher-Registry: Puffer " + id +
                                       " ist referenziert, existiert aber nicht mehr.");
                     continue;
                 }
                 if (p.ID_Projekt != m_ID_Projekt)
                 {
-                    Console.WriteLine("Speicher-Registry: Puffer " + id + " gehört zu Projekt " +
+                    Protokoll.WarnungEinmal("registry-puffer-fremdprojekt-" + id,
+                                      "Speicher-Registry: Puffer " + id + " gehört zu Projekt " +
                                       p.ID_Projekt + ", nicht zu " + m_ID_Projekt +
                                       " - wird nicht aufgenommen.");
                     continue;
@@ -2058,7 +2075,8 @@ namespace WindowsFormsApplication1
                     {
                         vorlauf = vZuordnung;
                         ruecklauf = rZuordnung;
-                        Console.WriteLine("Speicher-Registry: Puffer " + p.ID + " (" + p.Bezeichner +
+                        Protokoll.HinweisEinmal("registry-temp-zuordnung-" + p.ID,
+                                          "Speicher-Registry: Puffer " + p.ID + " (" + p.Bezeichner +
                                           ") hat kein Temperaturpaar in der Projektkopie - es gilt " +
                                           "die Zuordnungszeile (" + vorlauf + "/" + ruecklauf + " °C).");
                     }
@@ -2081,8 +2099,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Meldet einen ΔT-RÜCKFALL eines Speichers auf die Konsole (Nacharbeit Paket 6,
-        /// Befund N2).
+        /// Meldet einen ΔT-RÜCKFALL eines Speichers (Nacharbeit Paket 6, Befund N2).
         ///
         /// Ohne gepflegtes Temperaturpaar rechnet <c>SimulationPufferspeicher.Init</c>
         /// mit einem Ersatzwert — 10 K für gewöhnliche Puffer, 20 K für den
@@ -2092,14 +2109,23 @@ namespace WindowsFormsApplication1
         /// still falsch.
         ///
         /// Die Meldung läuft in BEIDEN Rechenwegen — der Registry-Aufbau gehört zu
-        /// keinem von beiden. Sie ist reine Konsolenausgabe und geht in kein Ergebnis
-        /// und in keine CSV ein; der Altpfad rechnet unverändert.
+        /// keinem von beiden. Sie geht in kein Ergebnis und in keine CSV ein; der
+        /// Altpfad rechnet unverändert.
+        ///
+        /// PROTOKOLLKANAL-NACHZUG: seit dem Folgepaket zu Paket 9 über den
+        /// WARNUNGS-Kanal statt nur auf die Konsole. Der Ersatzwert bestimmt die
+        /// nutzbare Kapazität und ist damit genau das, was Paket 8 unter „gerechnet,
+        /// aber mit einer Ersatzannahme" führt. (Die Beispielliste im Klassenkopf von
+        /// <see cref="SimulationProtokoll"/> nennt den ΔT-Rückfall unter den Hinweisen;
+        /// maßgeblich ist die STUFENDEFINITION darüber — siehe Nachzug-Protokoll.)
+        /// Die Konsolenzeile bleibt, sie steckt in <c>SimulationProtokoll.Eintragen</c>.
         /// </summary>
         private static void RueckfallMelden(SimulationPufferspeicher sp, int idPuffer, string bezeichner)
         {
             if (sp == null || sp.RueckfallDeltaT <= 0) return;
 
-            Console.WriteLine("Speicher-Registry: Puffer " + idPuffer + " (" +
+            SimulationProtokoll.Aktuell.WarnungEinmal("deltaT-rueckfall-" + idPuffer,
+                              "Speicher-Registry: Puffer " + idPuffer + " (" +
                               (string.IsNullOrEmpty(bezeichner) ? "ohne Bezeichner" : bezeichner) +
                               ") hat KEIN Temperaturpaar - es gilt der Rückfall ΔT = " +
                               sp.RueckfallDeltaT.ToString("0.#") + " K, nutzbare Kapazität Q_max " +
@@ -2185,7 +2211,8 @@ namespace WindowsFormsApplication1
                 SimulationPufferspeicher belegt = null;
                 if (q.ID_Pufferspeicher > 0) speicherRegistry.TryGetValue(q.ID_Pufferspeicher, out belegt);
 
-                Console.WriteLine("Speicher-Registry: Puffer " + q.ID_Pufferspeicher + " ist QUELLE der " +
+                Protokoll.WarnungEinmal("registry-quelle-senke-kurzschluss-" + q.ID_Pufferspeicher,
+                                  "Speicher-Registry: Puffer " + q.ID_Pufferspeicher + " ist QUELLE der " +
                                   "Anlage " + q.ID_Anlage + " und steht zugleich als " +
                                   ((belegt != null && !belegt.IstQuelle) ? "SENKE" : "weiterer Eintrag") +
                                   " in der Registry (Kurzschluss, Konzept 4.6). Die Quell-Instanz rechnet " +
@@ -2342,7 +2369,10 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("PV-Überschuss konnte nicht vorab bestimmt werden: " + ex.Message);
+                // Protokollkanal-Nachzug: WARNUNG - die Wärmepumpe im Modus
+                // „PV-optimiert" rechnet ohne den vorab bestimmten Überschuss weiter.
+                Protokoll.Warnung("PV-Überschuss konnte nicht vorab bestimmt werden: " + ex.Message +
+                                  " - die Wärmepumpe rechnet ohne PV-Vorrang.");
                 simulation_pv.Init();
                 return null;
             }
@@ -2548,6 +2578,18 @@ namespace WindowsFormsApplication1
             return temp;
         }
 
+        /// <summary>
+        /// ENTWICKLER-SELBSTTEST der PV-Formel (Kategorie c des Protokollkanal-Nachzugs):
+        /// feste Prüfparameter, kein Projektbezug, keine Anwenderaussage. Bleibt deshalb
+        /// bewusst reine <c>Console.WriteLine</c>-Ausgabe und geht NICHT über
+        /// <see cref="SimulationProtokoll"/>.
+        ///
+        /// ACHTUNG bei Änderungen an den Texten: <c>Referenzlauf/Protokoll.cs</c> zählt
+        /// jede Kindprozesszeile mit dem Token „WARNUNG:" als Warnung. Der Zweig unten
+        /// trägt es und schlägt im Fehlerfall im Laufprotokoll als Warnung durch — er
+        /// greift nur, wenn die Formel wirklich falsch rechnet (in allen dokumentierten
+        /// Referenzläufen bisher nie).
+        /// </summary>
         public void TestePVAnlage()
         {
             // Test-Parameter für eine 10 kWp Anlage

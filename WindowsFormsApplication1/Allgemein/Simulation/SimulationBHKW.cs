@@ -1227,7 +1227,12 @@ namespace WindowsFormsApplication1
                     _bhkwSenke[i].IDPufferHaupt == _stufensenke.IDPufferHaupt &&
                     _bhkwSenke[i].IDPufferZweit == _stufensenke.IDPufferZweit) continue;
 
-                Console.WriteLine("BHKW: Die Anlage " + _bhkwSenke[i].AnlagenID + " hat eine andere " +
+                // Protokollkanal-Nachzug: WARNUNG - die gepflegte Senke dieser Anlage
+                // bleibt in diesem Lauf UNWIRKSAM (Ersatzannahme: Senke der führenden
+                // Anlage). Je Anlage einmal.
+                SimulationProtokoll.Aktuell.WarnungEinmal(
+                                  "bhkw-abweichende-senke-" + _bhkwSenke[i].AnlagenID,
+                                  "BHKW: Die Anlage " + _bhkwSenke[i].AnlagenID + " hat eine andere " +
                                   "Wärmesenke als die führende Anlage " + _fuehrendeAnlage +
                                   ". Die Fahrweisen schalten alle Module gemeinsam zu; für die " +
                                   "gesamte BHKW-Stufe gilt deshalb die Senke der führenden Anlage.");
@@ -1614,6 +1619,10 @@ namespace WindowsFormsApplication1
         /// Probe „Produktion = Direktdeckung + Speicherladung + Überschuss" über die
         /// Jahressumme und über jede Stunde (Befund N8). Die Toleranz trägt die
         /// <c>float</c>-Ganglinien: 1 kWh im Jahr, 0,01 kWh je Stunde.
+        ///
+        /// ENTWICKLER-SELBSTTEST (Kategorie c des Protokollkanal-Nachzugs): Die Probe
+        /// prüft die Bilanz des Moduls gegen sich selbst und sagt dem Anwender nichts
+        /// über seine Konfiguration. Sie bleibt deshalb reine Konsolenausgabe.
         /// </summary>
         private void Energieprobe()
         {
