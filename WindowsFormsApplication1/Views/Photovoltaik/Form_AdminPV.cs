@@ -60,6 +60,7 @@ namespace WindowsFormsApplication1
             {
                 model.m_szName = textBox_Bezeichner.Text;
                 model.m_szBeschreibung = textBox_Beschreibung.Text;
+                model.m_szFirma = textBox_Firma.Text;
                 model.m_Wirkungsgrad = textBox_Wirkungsgrad.Text == "" ? 0.0 : double.Parse(textBox_Wirkungsgrad.Text);
                 model.m_Leistung = textBox_Leistung.Text == "" ? 0.0 : double.Parse(textBox_Leistung.Text);
                 model.m_U_Leerlauf = textBox_ULeerlauf.Text == "" ? 0.0 : double.Parse(textBox_ULeerlauf.Text);
@@ -186,7 +187,6 @@ namespace WindowsFormsApplication1
             textBox_ULeerlauf.Text = "";
             textBox_Wirkungsgrad.Text = "";
             textBox_Leistung.Text = "";
-            textBox_Firma.Text = "";
             textBox_IMpp.Text = "";
             textBox_IKurzschluss.Text = "";
             textBox_TempKoeff.Text = "";
