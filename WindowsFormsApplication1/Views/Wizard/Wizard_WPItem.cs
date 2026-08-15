@@ -17,6 +17,12 @@ namespace WindowsFormsApplication1
         private int m_nID_WP = 0;
 
         /// <summary>
+        /// false, solange <see cref="OnLoad"/> noch nicht gelaufen ist. Solange darf
+        /// KEIN Control ausgeblendet werden - Begruendung siehe <see cref="OnLoad"/>.
+        /// </summary>
+        private bool m_bGeladen = false;
+
+        /// <summary>
         /// Vorschlagswerte der Rücklauf-Auswahl [°C].
         ///
         /// Etappe 4: Die frühere Liste begann bei 25 °C und sprang in 5-K-Schritten
@@ -44,11 +50,10 @@ namespace WindowsFormsApplication1
             comboBox_Betriebsart.Items.Add("Parallelbetrieb");
             comboBox_Betriebsart.Items.Add("Teilparallelbetrieb");
 
-            comboBox_Betriebsart.Visible = false;
-            textBox_Abschalttemp.Visible = false;
-            label_AbschalttemperaturEinheit.Visible = false;
-            label_Abschalttemperatur.Visible = false;
-            label_Betriebsart.Visible = false;
+            // Die Betriebsart- und Abschalttemperatur-Controls werden hier bewusst
+            // NICHT ausgeblendet - das erledigt OnLoad (siehe dort). Sie muessen
+            // waehrend der Handle-Erzeugung sichtbar sein, sonst nehmen sie den
+            // AutoScroll-Versatz der BaseForm nicht mit.
 
             // Pufferspeicher-Bereich (Volumen, Kapazität, Anteil Solaranlage, rende MIX)
             // entfernt - der Pufferspeicher wird jetzt über die Zuordnung in der
@@ -72,6 +77,37 @@ namespace WindowsFormsApplication1
 
             // Pufferspeicher-Bereich entfernt (siehe Kommentar im anderen Konstruktor)
             groupBox1.Visible = false;
+        }
+
+        /// <summary>
+        /// Setzt die Sichtbarkeit der Betriebsart-/Abschalttemperatur-Controls erstmalig -
+        /// und zwar erst NACH dem Laden.
+        ///
+        /// Hintergrund: <see cref="BaseForm"/> staucht in ihrem OnLoad das 791 px hohe
+        /// Formular auf die Bildschirm-Arbeitsflaeche; der Rest wandert in den
+        /// AutoScroll-Bereich (gemessen: AutoScrollPosition -1/-46). Den Versatz gibt
+        /// WinForms aber nur an Controls weiter, die zu diesem Zeitpunkt bereits ein
+        /// Fensterhandle besitzen - und ein Handle bekommt beim Aufbau des Formulars
+        /// nur, wer SICHTBAR ist. Wer vorher ausgeblendet wurde, blieb auf seiner
+        /// Entwurfsposition stehen und lag nach dem Einblenden hinter dem gruenen Panel
+        /// label21 (Z-Index 11 vor 17-21) - die Betriebsart-Auswahl war unerreichbar.
+        ///
+        /// Deshalb starten alle betroffenen Controls sichtbar (kein Visible=False mehr
+        /// im Konstruktor und in der .resx), und die beiden Sichtbarkeits-Handler
+        /// halten sich ueber <c>m_bGeladen</c> zurueck, bis hier der richtige Zustand
+        /// gesetzt wird. Das Formular ist dabei noch nicht auf dem Bildschirm - ein
+        /// Aufblitzen gibt es also nicht, weshalb OnLoad und nicht OnShown die
+        /// richtige Stelle ist.
+        /// </summary>
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            m_bGeladen = true;
+
+            // Deckt beide Faelle ab: bivalent an/aus sowie - ueber die Abfrage auf
+            // "Teilparallelbetrieb" - die Abschalttemperatur-Controls.
+            checkBox_Bivalent_CheckedChanged(this, EventArgs.Empty);
         }
 
         public void SetWPCombox(string wpname) { listBox_WP.Text = wpname; }
@@ -112,14 +148,11 @@ namespace WindowsFormsApplication1
                 textBox_Abschalttemp.Text = item.Abschaltpunkt.ToString();
                 comboBox_Betriebsart.Text = item.Betriebsart;
                 checkBox_Bivalent.Checked = item.Bivalenter_Betrieb;
-                if (!item.Bivalenter_Betrieb)
-                {
-                    comboBox_Betriebsart.Visible = false;
-                    textBox_Abschalttemp.Visible = false;
-                    label_AbschalttemperaturEinheit.Visible = false;
-                    label_Abschalttemperatur.Visible = false;
-                    label_Betriebsart.Visible = false;
-                }
+                // Kein Ausblenden mehr an dieser Stelle: SetControls wird VOR ShowDialog
+                // aufgerufen, ein hier unsichtbares Control bekaeme kein Handle und damit
+                // nicht den AutoScroll-Versatz (siehe OnLoad). Die Sichtbarkeit setzt
+                // OnLoad anhand von checkBox_Bivalent.Checked und comboBox_Betriebsart.Text;
+                // die von den Zuweisungen oben ausgeloesten Handler laufen bis dahin leer.
                 comboBox_Ruecklauf.Text = item.Ruecklauf.ToString();
                 checkBox_Sperrzeit.Checked = item.Sperrung;
                 textBox_bis.Text = item.Sperrzeit_bis.ToString();
@@ -291,6 +324,12 @@ namespace WindowsFormsApplication1
         }
         private void checkBox_Bivalent_CheckedChanged(object sender, EventArgs e)
         {
+            // Vor OnLoad nichts ausblenden - sonst fehlt dem Control das Handle und
+            // damit der AutoScroll-Versatz (siehe OnLoad). SetControls() laeuft vor
+            // ShowDialog() und loest diesen Handler bereits aus; den richtigen
+            // Zustand setzt danach OnLoad.
+            if (!m_bGeladen) return;
+
              if(checkBox_Bivalent.Checked)
              {
                 comboBox_Betriebsart.Visible = true;
@@ -320,6 +359,10 @@ namespace WindowsFormsApplication1
         }
         private void comboBox_Betriebsart_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Wie oben: vor OnLoad nicht ausblenden (SetControls setzt den Text und
+            // loest diesen Handler damit schon vor ShowDialog aus).
+            if (!m_bGeladen) return;
+
             if (comboBox_Betriebsart.Text == "Teilparallelbetrieb" && checkBox_Bivalent.Checked == true)
             {
                 textBox_Abschalttemp.Visible = true;
