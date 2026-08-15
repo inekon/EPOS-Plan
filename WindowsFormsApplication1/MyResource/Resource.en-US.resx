@@ -237,7 +237,7 @@ This is a hint, not a block.</value>
     <value>Secondary sink: {0}</value>
   </data>
   <data name="Text_Select" xml:space="preserve">
-    <value>please select!</value>
+    <value>Please select!</value>
   </data>
   <data name="Text_Name" xml:space="preserve">
     <value>Name</value>
@@ -253,6 +253,24 @@ This is a hint, not a block.</value>
   </data>
   <data name="Text_Form_Start_MessageBox2" xml:space="preserve">
     <value>Open project or last opened project</value>
+  </data>
+  <data name="Text_Form_Start_ProjektGeloescht" xml:space="preserve">
+    <value>The last opened project has been deleted!</value>
+  </data>
+  <data name="Text_Form_Start_KlimaregionNichtGesetzt" xml:space="preserve">
+    <value>The climate region is not set! Please set the climate region in the project!</value>
+  </data>
+  <data name="Text_Form_Start_KlimaregionAuswaehlen" xml:space="preserve">
+    <value>Please select a climate region.</value>
+  </data>
+  <data name="Text_Form_Start_KlimaregionNichtGefunden" xml:space="preserve">
+    <value>The selected climate region was not found.</value>
+  </data>
+  <data name="Text_Form_Start_KlimaregionNichtUebernommen" xml:space="preserve">
+    <value>The climate region could not be applied to the project.</value>
+  </data>
+  <data name="Text_Form_Start_KlimaregionGespeichert" xml:space="preserve">
+    <value>Climate region saved.</value>
   </data>
   <data name="Text_Projekt" xml:space="preserve">
     <value>Project</value>

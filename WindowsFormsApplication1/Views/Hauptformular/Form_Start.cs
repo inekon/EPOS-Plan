@@ -785,7 +785,7 @@ namespace WindowsFormsApplication1
             // zum Namen und meldet zugleich, wenn das gemerkte Projekt geloescht wurde.
             if (ctrl.m_szProjektname == "" || !ProjektKontextUebernehmen(ctrl.m_szProjektname))
             {
-                MessageBox.Show("Das zuletzt geöffnete Projekt ist gelöscht!"); return;
+                MessageBox.Show(MyResource.Resource.Text_Form_Start_ProjektGeloescht); return;
             }
 
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
@@ -1058,7 +1058,7 @@ namespace WindowsFormsApplication1
             if (ctrl.m_ID_Klimaregion == 0)
             {
                 tabControl_Wizard.SelectedIndex = 0;
-                MessageBox.Show("Die Klimaregion ist nicht gesetzt! Bitte setzen Sie die Klimaregion im Projekt!");
+                MessageBox.Show(MyResource.Resource.Text_Form_Start_KlimaregionNichtGesetzt);
                 return;
             }
 
@@ -1073,11 +1073,12 @@ namespace WindowsFormsApplication1
             label_WBedarf.Left = label_Name.Left + label_Name.Width - label_WBedarf.Width;
             label_Strom.Left = label_Name.Left + label_Name.Width - label_Strom.Width;
 
+            // Reine Anzeige (Drei-Schichten-Regel): die gleichlautenden DB-Werte in DbWerte.cs bleiben deutsch.
             label_Komponenten.Text = "";
-            if ((status & 1) == 1) label_Komponenten.Text += "Heizkessel";
-            if ((status & 2) == 2) label_Komponenten.Text += ", Wärmepumpe";
-            if ((status & 4) == 4) label_Komponenten.Text += ", Stromspeicher";
-            if ((status & 256) == 256) label_Komponenten.Text += ", BHKW";
+            if ((status & 1) == 1) label_Komponenten.Text += MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL;
+            if ((status & 2) == 2) label_Komponenten.Text += ", " + MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE;
+            if ((status & 4) == 4) label_Komponenten.Text += ", " + MyResource.Resource.SIM_STROMSPEICHER;
+            if ((status & 256) == 256) label_Komponenten.Text += ", " + MyResource.Resource.SIM_ERZEUGERNAME_BHKW;
 
             if (label_Komponenten.Text.StartsWith(", ")) label_Komponenten.Text = label_Komponenten.Text.Substring(2);
             label_Komponenten.Left = label_Name.Left + label_Name.Width - label_Komponenten.Width;
@@ -1848,12 +1849,12 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(m_szProjektname))
             {
-                MessageBox.Show("Bitte zuerst ein Projekt auswählen.", "Hinweis");
+                MessageBox.Show(MyResource.Resource.Text_Form_Start_MessageBox1, MyResource.Resource.Text_Hinweis);
                 return;
             }
             if (string.IsNullOrEmpty(comboBox_Klima.Text))
             {
-                MessageBox.Show("Bitte eine Klimaregion auswählen.", "Hinweis");
+                MessageBox.Show(MyResource.Resource.Text_Form_Start_KlimaregionAuswaehlen, MyResource.Resource.Text_Hinweis);
                 return;
             }
 
@@ -1865,7 +1866,7 @@ namespace WindowsFormsApplication1
             int stammRegionId = GetKlimaregion(comboBox_Klima.Text);
             if (stammRegionId <= 0)
             {
-                MessageBox.Show("Die gewählte Klimaregion wurde nicht gefunden.", "Hinweis");
+                MessageBox.Show(MyResource.Resource.Text_Form_Start_KlimaregionNichtGefunden, MyResource.Resource.Text_Hinweis);
                 return;
             }
 
@@ -1874,7 +1875,7 @@ namespace WindowsFormsApplication1
             int projektRegionId = KlimaregionStammCtrl.CopyRegionToProjekt(stammRegionId, idProjekt);
             if (projektRegionId <= 0)
             {
-                MessageBox.Show("Die Klimaregion konnte nicht in das Projekt übernommen werden.", "Fehler");
+                MessageBox.Show(MyResource.Resource.Text_Form_Start_KlimaregionNichtUebernommen, MyResource.Resource.SIM_TITEL_FEHLER);
                 return;
             }
 
@@ -1883,7 +1884,7 @@ namespace WindowsFormsApplication1
             ctrl_projekt.m_Aenderungsdatum = DateTime.Now;
             ctrl_projekt.Update();
 
-            MessageBox.Show("Klimaregion gespeichert.", "Hinweis");
+            MessageBox.Show(MyResource.Resource.Text_Form_Start_KlimaregionGespeichert, MyResource.Resource.Text_Hinweis);
         }
 
         private void btn_Kosten_Click(object sender, EventArgs e)

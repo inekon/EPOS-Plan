@@ -5462,6 +5462,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Klimaregion auswählen. ähnelt.
+        /// </summary>
+        public static string Text_Form_Start_KlimaregionAuswaehlen {
+            get {
+                return ResourceManager.GetString("Text_Form_Start_KlimaregionAuswaehlen", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion gespeichert. ähnelt.
+        /// </summary>
+        public static string Text_Form_Start_KlimaregionGespeichert {
+            get {
+                return ResourceManager.GetString("Text_Form_Start_KlimaregionGespeichert", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Klimaregion wurde nicht gefunden. ähnelt.
+        /// </summary>
+        public static string Text_Form_Start_KlimaregionNichtGefunden {
+            get {
+                return ResourceManager.GetString("Text_Form_Start_KlimaregionNichtGefunden", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion ist nicht gesetzt! Bitte setzen Sie die Klimaregion im Projekt! ähnelt.
+        /// </summary>
+        public static string Text_Form_Start_KlimaregionNichtGesetzt {
+            get {
+                return ResourceManager.GetString("Text_Form_Start_KlimaregionNichtGesetzt", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion konnte nicht in das Projekt übernommen werden. ähnelt.
+        /// </summary>
+        public static string Text_Form_Start_KlimaregionNichtUebernommen {
+            get {
+                return ResourceManager.GetString("Text_Form_Start_KlimaregionNichtUebernommen", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst ein Projekt auswählen! ähnelt.
         /// </summary>
         public static string Text_Form_Start_MessageBox1 {
@@ -5478,7 +5523,16 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("Text_Form_Start_MessageBox2", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das zuletzt geöffnete Projekt ist gelöscht! ähnelt.
+        /// </summary>
+        public static string Text_Form_Start_ProjektGeloescht {
+            get {
+                return ResourceManager.GetString("Text_Form_Start_ProjektGeloescht", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die geöffnet ähnelt.
         /// </summary>
