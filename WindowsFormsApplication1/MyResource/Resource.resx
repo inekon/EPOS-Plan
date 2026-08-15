@@ -138,14 +138,8 @@
   <data name="Text_Projekt" xml:space="preserve">
     <value>Projekt</value>
   </data>
-  <data name="Text_Ausgewaehlt" xml:space="preserve">
-    <value>ausgewählt</value>
-  </data>
   <data name="Text_Geoeffnet" xml:space="preserve">
     <value>geöffnet</value>
-  </data>
-  <data name="Text_nicht_geoffnet" xml:space="preserve">
-    <value>nicht geöffnet</value>
   </data>
   <data name="KONFIG_BHKW" xml:space="preserve">
     <value>BHKW</value>
@@ -1890,5 +1884,17 @@ Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.</value>
   </data>
   <data name="SIM_DASH_SPEICHER_INFO" xml:space="preserve">
     <value>Theoretischer Speicher (PV) (kWh):</value>
+  </data>
+  <data name="CHART_TOOLTIP_EINHEIT" xml:space="preserve">
+    <value>Einheit: {0}</value>
+  </data>
+  <data name="CHART_TOOLTIP_WERT" xml:space="preserve">
+    <value>Wert: {0} {1}</value>
+  </data>
+  <data name="SIM_GRUPPE_HAUPTSENKE" xml:space="preserve">
+    <value>Hauptsenke</value>
+  </data>
+  <data name="SIM_SPALTE_ZWEITSENKE" xml:space="preserve">
+    <value>Zweitsenke</value>
   </data>
 </root>

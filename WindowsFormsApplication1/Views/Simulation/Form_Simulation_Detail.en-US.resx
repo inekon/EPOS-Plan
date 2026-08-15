@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -903,5 +903,15 @@
     
   <data name="tabPage_Uebersicht.Text" xml:space="preserve">
     <value>Overview</value>
+  </data>
+  <data name="richTextBox_Info.Text" xml:space="preserve">
+    <value>Heat-led (standard)
+The CHP unit follows the space heating and DHW demand. The electricity generated covers the own demand; surplus is fed into the public grid.
+
+Electricity-led (economic)
+The CHP unit follows the electricity demand. Surplus heat is buffered in the storage as long as storage capacity is available; beyond that, surplus heat is dumped.
+
+Without feed-in (zero export)
+The CHP unit never generates more electricity than the current own demand. The unit throttles back immediately as soon as the electricity demand is covered or the heat storage is full. No grid feed-in.</value>
   </data>
 </root>

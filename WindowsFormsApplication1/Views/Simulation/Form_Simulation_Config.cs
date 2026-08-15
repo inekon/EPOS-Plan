@@ -1276,6 +1276,31 @@ namespace WindowsFormsApplication1
             // untenverankerte Zeile über die Übersichtsgruppe.
             lblStatus.BringToFront();
 
+            // MindestgroesseFestlegen() läuft NICHT hier, sondern in OnShown -
+            // Begründung dort.
+        }
+
+        /// <summary>
+        /// Setzt die Mindestgröße, sobald das Fenster steht.
+        ///
+        /// <b>Warum nicht im Konstruktor (Paket-9-Nacharbeit).</b>
+        /// <see cref="MindestgroesseFestlegen"/> deckelt die Mindestgröße auf die
+        /// Arbeitsfläche des Bildschirms und ruft dafür <c>Screen.FromControl(this)</c>
+        /// auf. Im Konstruktor hat das zwei Nachteile: Der Aufruf erzwingt die
+        /// Fensterhandle, bevor der Aufbau fertig ist, und er misst den falschen
+        /// Bildschirm — das Formular steht dort noch an seiner Entwurfsposition,
+        /// <c>StartPosition</c> (CenterParent/CenterScreen) wirkt erst beim Anzeigen.
+        /// Auf einem Mehrschirmplatz kam so die Arbeitsfläche des Primärbildschirms
+        /// heraus, auch wenn der Dialog auf dem zweiten Bildschirm aufging.
+        ///
+        /// In <c>OnShown</c> ist das Fenster positioniert; <c>Screen.FromControl</c>
+        /// liefert den Bildschirm, auf dem der Dialog tatsächlich liegt. Die Ausrichtung
+        /// der Statuszeile bleibt im Konstruktor — sie muss vor dem ersten Zeichnen
+        /// stimmen und braucht keinen Bildschirmbezug.
+        /// </summary>
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
             MindestgroesseFestlegen();
         }
 

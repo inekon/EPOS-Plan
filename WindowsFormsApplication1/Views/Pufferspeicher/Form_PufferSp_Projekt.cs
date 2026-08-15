@@ -630,8 +630,10 @@ namespace WindowsFormsApplication1
                     (i + 1) + ".",
                     e.Bezeichner,
                     e.Erzeuger,
-                    e.Zweitsenke ? MyResource.Resource.SIM_ROLLE_ZWEITSENKE
-                                 : MyResource.Resource.SIM_ROLLE_HAUPTSENKE,
+                    // Zelleninhalt einer Tabelle = Beschriftung, deshalb die gross
+                    // geschriebenen Schluessel (SIM_ROLLE_* ist die Satzform).
+                    e.Zweitsenke ? MyResource.Resource.SIM_SPALTE_ZWEITSENKE
+                                 : MyResource.Resource.SIM_GRUPPE_HAUPTSENKE,
                     ladeprio,
                     obergrenze
                 }));

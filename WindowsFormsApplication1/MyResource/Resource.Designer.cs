@@ -601,6 +601,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit: {0} ähnelt.
+        /// </summary>
+        public static string CHART_TOOLTIP_EINHEIT {
+            get {
+                return ResourceManager.GetString("CHART_TOOLTIP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert: {0} {1} ähnelt.
+        /// </summary>
+        public static string CHART_TOOLTIP_WERT {
+            get {
+                return ResourceManager.GetString("CHART_TOOLTIP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string KONFIG_BHKW {
@@ -2185,6 +2203,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hauptsenke ähnelt.
+        /// </summary>
+        public static string SIM_GRUPPE_HAUPTSENKE {
+            get {
+                return ResourceManager.GetString("SIM_GRUPPE_HAUPTSENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkreis ähnelt.
         /// </summary>
         public static string SIM_HEIZKREIS {
@@ -3101,6 +3128,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_WPPRIO {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_WPPRIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zweitsenke ähnelt.
+        /// </summary>
+        public static string SIM_SPALTE_ZWEITSENKE {
+            get {
+                return ResourceManager.GetString("SIM_SPALTE_ZWEITSENKE", resourceCulture);
             }
         }
         
@@ -4984,15 +5020,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ausgewählt ähnelt.
-        /// </summary>
-        public static string Text_Ausgewaehlt {
-            get {
-                return ResourceManager.GetString("Text_Ausgewaehlt", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
         /// </summary>
         public static string Text_Beschreibung {
@@ -5043,15 +5070,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string Text_Name {
             get {
                 return ResourceManager.GetString("Text_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die nicht geöffnet ähnelt.
-        /// </summary>
-        public static string Text_nicht_geoffnet {
-            get {
-                return ResourceManager.GetString("Text_nicht_geoffnet", resourceCulture);
             }
         }
         

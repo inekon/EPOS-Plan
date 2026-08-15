@@ -30,11 +30,21 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// SQL-Prädikat je Filterstufe, in der Reihenfolge der Einträge, die
         /// <see cref="VolumenfilterFuellen"/> anlegt. Index 0 = „Alle".
-        /// Wortlaut unverändert gegenüber dem Bestand.
+        ///
+        /// <para>
+        /// <b>NULL-Absicherung in Stufe 0 (Paket-9-Nacharbeit).</b> Der Bestandsausdruck
+        /// <c>Gesamtvolumen Like '%'</c> wandelt die Zahl in Text und vergleicht; für
+        /// <c>NULL</c> ergibt das in Jet/ACE wieder <c>NULL</c> — der Satz fällt also aus
+        /// „Alle" heraus. Ein Katalogsatz ohne gepflegtes Gesamtvolumen (etwa aus einem
+        /// VDI-3805-Import) wäre damit im Dialog unsichtbar, ohne dass irgendwo eine
+        /// Meldung erscheint. Die Klammer ist nötig, weil die Aufrufer das Prädikat mit
+        /// <c>and</c> an den Herstellerfilter hängen.
+        /// Die übrigen fünf Stufen bleiben wortgleich zum Bestand.
+        /// </para>
         /// </summary>
         private static readonly string[] VOLUMEN_SQL =
         {
-            "Gesamtvolumen Like '%'",
+            "(Gesamtvolumen IS NULL OR Gesamtvolumen Like '%')",
             "Gesamtvolumen <100",
             "Gesamtvolumen >=100 and Gesamtvolumen <200",
             "Gesamtvolumen >=200 and Gesamtvolumen <500",
@@ -60,6 +70,22 @@ namespace WindowsFormsApplication1
         /// Füllt den Volumenfilter und stellt ihn auf „Alle". Bewusst über
         /// <c>SelectedIndex</c> statt über <c>Text</c>: Damit stimmen Anzeige und
         /// Auswahlindex von Anfang an überein — der Index ist der Steuerwert.
+        ///
+        /// <para>
+        /// <b>Das Auslösen von <c>SelectedIndexChanged</c> ist gewollt</b> und wurde in
+        /// der Paket-9-Nacharbeit ausdrücklich NICHT unterdrückt. Zwei Messungen dazu:
+        /// </para>
+        /// <list type="bullet">
+        /// <item>Die Bestandsvorbelegung <c>comboBox_Volumen.Text = "Alle"</c> löste das
+        /// Ereignis <b>ebenfalls genau einmal</b> aus (der <c>Text</c>-Setzer der ComboBox
+        /// sucht den Eintrag und setzt <c>SelectedIndex</c>). Der Aufruf von
+        /// <c>SetFilter()</c> beim Öffnen ist also kein Zugewinn aus Paket 9 —
+        /// Sortierung und Trefferliste sind unverändert.</item>
+        /// <item><c>Form_PufferSp_Load</c> füllt die rechte Liste zunächst aus
+        /// <c>Tab_Pufferspeicher</c> (Projekttabelle!); erst <c>SetFilter()</c> ersetzt
+        /// sie durch den KATALOG <c>Tab_Pufferspeicher_STAMM</c>. Würde man das Ereignis
+        /// beim Füllen abklemmen, stünde beim Öffnen die falsche Tabelle im Dialog.</item>
+        /// </list>
         /// </summary>
         public static void VolumenfilterFuellen(ComboBox cb)
         {

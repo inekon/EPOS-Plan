@@ -83,8 +83,14 @@ namespace WindowsFormsApplication1
         /// Soleaustrittstemperatur von −5 °C. Eine rechnerisch unter 0 °C liegende
         /// Soletemperatur ist damit kein Widerspruch zu „Grenzwert eingehalten" -
         /// genau das musste der Meldungstext sagen.
+        ///
+        /// Reiner Anzeigetext, deshalb aus dem Ressourcenkatalog und nicht mehr
+        /// als <c>const</c> (Paket 9: eine Konstante könnte nicht übersetzen).
         /// </summary>
-        public const string FROST_NORMBASIS = "VDI 4640 Bl. 2 bemisst gegen −5 °C Soleaustritt";
+        public static string FROST_NORMBASIS
+        {
+            get { return MyResource.Resource.SIMQ_FROST_NORMBASIS; }
+        }
 
         /// <summary>Vorgabespreizung der Quelle [K], wenn WQ_Spreizung nicht gepflegt ist
         /// (gleicher Wert wie in <c>WaermequelleClass.Quellspeicher</c>).</summary>
@@ -149,30 +155,34 @@ namespace WindowsFormsApplication1
 
             /// <summary>
             /// Kompakte Textzeile für den Ergebnisbereich der Detailansicht.
-            /// Deutsch hartkodiert - die Lokalisierung des Simulationsbereichs
-            /// gehört zu Paket 9.
+            /// Reine Anzeige - der Text wird nirgends verglichen oder gespeichert.
+            /// Die Zahlenformate ("N0") kommen aus dem Quelltext, der Katalog führt
+            /// die Platzhalter normalisiert (Lesehinweis des Ressourcenkatalogs).
             /// </summary>
             public string Kurztext()
             {
                 CultureInfo ci = CultureInfo.CurrentCulture;
-                string kopf = "Erdreich " + Modul + ": ";
+                string kopf = string.Format(ci, MyResource.Resource.SIMQ_ERDREICH_KURZTEXT_KOPF, Modul);
 
                 if (Unwirksam)
                     return kopf + Grenze;
 
                 if (!MaxEntzugBelastbar)
-                    return kopf + "Auslegungsprüfung nach VDI 4640 nicht möglich — " + Grenze;
+                    return kopf + string.Format(ci,
+                        MyResource.Resource.SIMQ_VDI4640_PRUEFUNG_NICHT_MOEGLICH, Grenze);
 
                 string text = kopf + string.Format(ci,
-                    "Entzug {0:N0} kWh/a{1}, Spitze {2:N0} W, {3:N0} h/a. ",
-                    JahresentzugKWh, InklSpeicherladung ? " (inkl. Speicherladung)" : "",
-                    MaxEntzugW, VolllastStunden);
+                    MyResource.Resource.SIMQ_ERDREICH_ENTZUG_KURZTEXT,
+                    JahresentzugKWh.ToString("N0", ci),
+                    InklSpeicherladung ? MyResource.Resource.SIMQ_INKL_SPEICHERLADUNG : "",
+                    MaxEntzugW.ToString("N0", ci),
+                    VolllastStunden.ToString("N0", ci));
 
                 if (!Pruefung.Moeglich) text += Pruefung.Hinweis;
-                else if (Pruefung.Warnung) text += "VDI 4640: Grenzwert überschritten — Quelle zu klein bemessen!";
-                else text += "VDI 4640: eingehalten.";
+                else if (Pruefung.Warnung) text += MyResource.Resource.SIMQ_VDI4640_GRENZWERT_UEBERSCHRITTEN;
+                else text += MyResource.Resource.SIMQ_VDI4640_EINGEHALTEN;
 
-                if (MaxEntzugGeschaetzt) text += " (Spitze anteilig aus der Summenganglinie)";
+                if (MaxEntzugGeschaetzt) text += MyResource.Resource.SIMQ_SPITZE_AUS_SUMMENGANGLINIE;
                 if (FrostWarnung) text += " " + Frosttext();
 
                 return text;
@@ -187,10 +197,10 @@ namespace WindowsFormsApplication1
             /// </summary>
             public string Frosttext()
             {
-                return string.Format(CultureInfo.CurrentCulture,
-                    "Hinweis: Quelltemperatur − Spreizung liegt in {0:N0} von {1:N0} Betriebsstunden " +
-                    "unter 0 °C ({2}; die Auslegungsprüfung bleibt davon unberührt).",
-                    FrostStunden, BetriebsStunden, FROST_NORMBASIS);
+                CultureInfo ci = CultureInfo.CurrentCulture;
+                return string.Format(ci, MyResource.Resource.SIMQ_FROSTTEXT,
+                    FrostStunden.ToString("N0", ci), BetriebsStunden.ToString("N0", ci),
+                    FROST_NORMBASIS);
             }
         }
 
@@ -318,7 +328,9 @@ namespace WindowsFormsApplication1
                 AnlageErgebnis a = new AnlageErgebnis();
                 a.ID_Anlage = wp.wp_list[i];
                 a.Modul = (i < wp.WP_Modul.Length && !string.IsNullOrEmpty(wp.WP_Modul[i]))
-                    ? wp.WP_Modul[i] : ("Anlage " + a.ID_Anlage);
+                    ? wp.WP_Modul[i]
+                    : string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMQ_ANLAGE_ERSATZNAME, a.ID_Anlage);
 
                 // Luft-Wasser: die Konfiguration wird nicht gerechnet - nichts prüfen,
                 // sondern sagen, warum hier keine Zahlen stehen.
@@ -326,9 +338,7 @@ namespace WindowsFormsApplication1
                 {
                     a.Unwirksam = true;
                     a.MaxEntzugBelastbar = false;
-                    a.Grenze = "Die Wärmepumpe ist eine Luft-Wasser-Anlage — die Erdreich-Konfiguration " +
-                               "bleibt in der Simulation unwirksam (gerechnet wird mit der Außenluft). " +
-                               "Für eine Erdreich-Quelle eine Sole-Wasser- oder Wasser-Wasser-Wärmepumpe wählen.";
+                    a.Grenze = MyResource.Resource.SIMQ_ERDREICH_UNWIRKSAM_LUFT_WASSER;
                     a.Pruefung = new VDI4640Pruefung.Ergebnis { Moeglich = false, Hinweis = a.Grenze };
                     liste.Add(a);
                     continue;
@@ -340,9 +350,7 @@ namespace WindowsFormsApplication1
                 if (!eindeutig)
                 {
                     a.MaxEntzugBelastbar = false;
-                    a.Grenze = "maximale Entzugsleistung nicht je Modul trennbar " +
-                               "(mehrere Wärmepumpen mit unterschiedlichen Quellen, " +
-                               "Stundenganglinie liegt nur global vor).";
+                    a.Grenze = MyResource.Resource.SIMQ_ENTZUG_NICHT_JE_MODUL_TRENNBAR;
                 }
                 else
                 {
@@ -363,8 +371,7 @@ namespace WindowsFormsApplication1
                     a.MaxEntzugBelastbar = true;
                     a.MaxEntzugGeschaetzt = geschaetzt;
                     if (geschaetzt)
-                        a.Grenze = "maximale Entzugsleistung anteilig aus der Summenganglinie " +
-                                   "aller Wärmepumpen-Module geschätzt.";
+                        a.Grenze = MyResource.Resource.SIMQ_ENTZUG_ANTEILIG_GESCHAETZT;
                 }
 
                 a.Pruefung = Pruefen(a, klimazone);

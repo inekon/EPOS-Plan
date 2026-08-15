@@ -67,6 +67,15 @@ Diese Konventionen beim Erweitern beibehalten.
   Strings über die Satelliten-`.resx` lokalisieren.
 - Vom Build ausgeschlossen (`.csproj`): `ChartManagerNeu.cs`, `WPTestCtrl.cs`, `Form_Simulation_Kurz.*`
   und die „- Kopie"-Dateien unter `Views/Simulation/`.
+- **Drei-Schichten-Regel für Texte** (Konzept 13.6, umgesetzt mit Paket 9): **Persistenz** —
+  alles, was in `Kenndaten.accdb` steht oder in SQL damit verglichen wird, bleibt **deutsch und
+  eingefroren**; die Werte stehen zentral in `Allgemein/DbWerte.cs`, nie als Literal im Code.
+  **Schlüssel** — Chart-Serien, ComboBox-Steuerwerte, Filter-Tokens: sprachneutral und ASCII
+  (`PUFFER_12`, `WAERMEBEDARF`). **Anzeige** — ausschließlich über `MyResource.Resource.*`
+  (Katalog in beiden Sprachen, Fundstellen in
+  [`Allgemein/Simulation/Lokalisierung_Katalog.md`](Allgemein/Simulation/Lokalisierung_Katalog.md)).
+  Kein Anzeigetext darf Steuerwert sein — Prüfrezeptur:
+  [`Allgemein/Simulation/Lokalisierung_Pruefung.md`](Allgemein/Simulation/Lokalisierung_Pruefung.md).
 
 ## Wichtige Pakete
 

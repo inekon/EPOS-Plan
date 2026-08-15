@@ -118,8 +118,29 @@ namespace WindowsFormsApplication1
             /// <summary>Katalogschlüssel, wird in WQ_Bodentyp gespeichert.</summary>
             public string Schluessel;
 
-            /// <summary>Anzeigename (Spalte "Untergrund" der Normtabelle).</summary>
-            public string Untergrund;
+            /// <summary>
+            /// Ressourcenschlüssel des Anzeigenamens (Schicht 2 der Drei-Schichten-Regel:
+            /// sprachneutral, ASCII). Der sichtbare Text kommt daraus erst zur Laufzeit.
+            /// </summary>
+            public string AnzeigeSchluessel;
+
+            /// <summary>
+            /// Anzeigename (Spalte "Untergrund" der Normtabelle), lokalisiert.
+            /// Wird bei JEDEM Zugriff aufgelöst, nicht bei der Katalog-Initialisierung -
+            /// sonst fröre die Sprache auf den Stand des ersten Zugriffs auf
+            /// <see cref="Katalog"/> ein. Ist der Schlüssel unbekannt, steht er selbst
+            /// da: sichtbar falsch ist besser als leer.
+            /// </summary>
+            public string Untergrund
+            {
+                get
+                {
+                    if (string.IsNullOrEmpty(AnzeigeSchluessel)) return "";
+                    string s = MyResource.Resource.ResourceManager.GetString(
+                        AnzeigeSchluessel, MyResource.Resource.Culture);
+                    return string.IsNullOrEmpty(s) ? AnzeigeSchluessel : s;
+                }
+            }
 
             /// <summary>Wärmeleitfähigkeit λ [W/(m·K)] - empfohlener Rechenwert.</summary>
             public double Lambda;
@@ -157,29 +178,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static readonly Bodenkennwerte[] Katalog =
         {
-            // Spalte 1 = Katalogschlüssel (Persistenzwert, DbWerte), Spalte 2 = deutscher
-            // Anzeigetext (wandert mit Paket 9 / L2 in den Ressourcenkatalog).
-            //   Schlüssel                        Untergrund                            λ      ρ·c_p     -> a [mm²/s]   d [m]
-            Neu(DbWerte.BODENTYP_TON_TROCKEN,  "Ton/Schluff, trocken",              0.5,   1.55),  //   0,32        1,80
-            Neu(DbWerte.BODENTYP_TON_NASS,     "Ton/Schluff, wassergesättigt",      1.8,   2.40),  //   0,75        2,74
-            Neu(DbWerte.BODENTYP_SAND_TROCKEN, "Sand, trocken",                     0.4,   1.45),  //   0,28        1,66
-            Neu(DbWerte.BODENTYP_SAND_FEUCHT,  "Sand, feucht",                      1.4,   1.90),  //   0,74        2,72  (Default)
-            Neu(DbWerte.BODENTYP_SAND_NASS,    "Sand, wassergesättigt",             2.4,   2.50),  //   0,96        3,10
-            Neu(DbWerte.BODENTYP_KIES_TROCKEN, "Kies/Steine, trocken",              0.4,   1.45),  //   0,28        1,66
-            Neu(DbWerte.BODENTYP_KIES_NASS,    "Kies/Steine, wassergesättigt",      1.8,   2.40),  //   0,75        2,74
-            Neu(DbWerte.BODENTYP_MERGEL_LEHM,  "Geschiebemergel/-lehm",             2.4,   2.00),  //   1,20        3,47
-            Neu(DbWerte.BODENTYP_TONSTEIN,     "Ton-/Schluffstein",                 2.2,   2.25),  //   0,98        3,13
-            Neu(DbWerte.BODENTYP_SANDSTEIN,    "Sandstein",                         2.8,   2.20),  //   1,27        3,57
-            Neu(DbWerte.BODENTYP_KALKSTEIN,    "Kalkstein",                         2.7,   2.25),  //   1,20        3,47
-            Neu(DbWerte.BODENTYP_GRANIT,       "Granit",                            3.2,   2.55),  //   1,25        3,55
-            Neu(DbWerte.BODENTYP_GNEIS,        "Gneis",                             2.9,   2.10)   //   1,38        3,72
+            // Spalte 1 = Katalogschlüssel (Persistenzwert, DbWerte), Spalte 2 = Ressourcen-
+            // schlüssel des Anzeigetexts (Paket 9 / L2; deutscher und englischer Wortlaut
+            // stehen in MyResource/Resource[.en-US].resx).
+            //   Schlüssel                        Anzeigeschlüssel                       λ      ρ·c_p     -> a [mm²/s]   d [m]
+            Neu(DbWerte.BODENTYP_TON_TROCKEN,  "SIMQ_BODENTYP_TON_TROCKEN",         0.5,   1.55),  //   0,32        1,80
+            Neu(DbWerte.BODENTYP_TON_NASS,     "SIMQ_BODENTYP_TON_NASS",            1.8,   2.40),  //   0,75        2,74
+            Neu(DbWerte.BODENTYP_SAND_TROCKEN, "SIMQ_BODENTYP_SAND_TROCKEN",        0.4,   1.45),  //   0,28        1,66
+            Neu(DbWerte.BODENTYP_SAND_FEUCHT,  "SIMQ_BODENTYP_SAND_FEUCHT",         1.4,   1.90),  //   0,74        2,72  (Default)
+            Neu(DbWerte.BODENTYP_SAND_NASS,    "SIMQ_BODENTYP_SAND_NASS",           2.4,   2.50),  //   0,96        3,10
+            Neu(DbWerte.BODENTYP_KIES_TROCKEN, "SIMQ_BODENTYP_KIES_TROCKEN",        0.4,   1.45),  //   0,28        1,66
+            Neu(DbWerte.BODENTYP_KIES_NASS,    "SIMQ_BODENTYP_KIES_NASS",           1.8,   2.40),  //   0,75        2,74
+            Neu(DbWerte.BODENTYP_MERGEL_LEHM,  "SIMQ_BODENTYP_MERGEL_LEHM",         2.4,   2.00),  //   1,20        3,47
+            Neu(DbWerte.BODENTYP_TONSTEIN,     "SIMQ_BODENTYP_TONSTEIN",            2.2,   2.25),  //   0,98        3,13
+            Neu(DbWerte.BODENTYP_SANDSTEIN,    "SIMQ_BODENTYP_SANDSTEIN",           2.8,   2.20),  //   1,27        3,57
+            Neu(DbWerte.BODENTYP_KALKSTEIN,    "SIMQ_BODENTYP_KALKSTEIN",           2.7,   2.25),  //   1,20        3,47
+            Neu(DbWerte.BODENTYP_GRANIT,       "SIMQ_BODENTYP_GRANIT",              3.2,   2.55),  //   1,25        3,55
+            Neu(DbWerte.BODENTYP_GNEIS,        "SIMQ_BODENTYP_GNEIS",               2.9,   2.10)   //   1,38        3,72
         };
 
-        private static Bodenkennwerte Neu(string schluessel, string untergrund, double lambda, double rhoCp)
+        private static Bodenkennwerte Neu(string schluessel, string anzeigeSchluessel, double lambda, double rhoCp)
         {
             Bodenkennwerte b = new Bodenkennwerte();
             b.Schluessel = schluessel;
-            b.Untergrund = untergrund;
+            b.AnzeigeSchluessel = anzeigeSchluessel;
             b.Lambda = lambda;
             b.RhoCp = rhoCp;
             return b;
@@ -208,7 +230,13 @@ namespace WindowsFormsApplication1
             return Katalog[0];
         }
 
-        /// <summary>Anzeigenamen des Katalogs in Katalogreihenfolge (für Dropdowns).</summary>
+        /// <summary>
+        /// Anzeigenamen des Katalogs in Katalogreihenfolge (für Dropdowns).
+        /// Bei jedem Aufruf neu aufgelöst, also in der zum Aufrufzeitpunkt gültigen
+        /// Sprache. Die Reihenfolge ist die des Katalogs und damit der Index, über den
+        /// <c>Form_QuelleErdreich</c> liest und schreibt - der Anzeigetext ist NIE
+        /// Steuerwert.
+        /// </summary>
         public static string[] KatalogAnzeige()
         {
             string[] a = new string[Katalog.Length];
@@ -451,12 +479,21 @@ namespace WindowsFormsApplication1
             public int MonatMin;   // 0…11
             public int MonatMax;   // 0…11
 
-            /// <summary>Anzeigezeile im Stil des Konzept-Mockups 4.5.</summary>
+            /// <summary>
+            /// Anzeigezeile im Stil des Konzept-Mockups 4.5.
+            /// Die Formatangabe "F1" kommt aus dem Quelltext (Lesehinweis des
+            /// Ressourcenkatalogs); der Katalogeintrag führt die Platzhalter
+            /// normalisiert als {0}…{4}. Deshalb werden die Zahlen VOR dem Einsetzen
+            /// formatiert. Die Monatskürzel bleiben deutsch - für sie gibt es keinen
+            /// Katalogeintrag (Monatsnamen sind im Katalog ausdrücklich ausgenommen).
+            /// </summary>
             public string Zeile()
             {
-                return "min " + Min.ToString("F1", CultureInfo.CurrentCulture) + " °C (" + MONATSKUERZEL[MonatMin] + ")" +
-                       "  ·  max " + Max.ToString("F1", CultureInfo.CurrentCulture) + " °C (" + MONATSKUERZEL[MonatMax] + ")" +
-                       "  ·  Mittel " + Mittel.ToString("F1", CultureInfo.CurrentCulture) + " °C";
+                return string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMQ_PROFIL_KENNWERTE_ZEILE,
+                    Min.ToString("F1", CultureInfo.CurrentCulture), MONATSKUERZEL[MonatMin],
+                    Max.ToString("F1", CultureInfo.CurrentCulture), MONATSKUERZEL[MonatMax],
+                    Mittel.ToString("F1", CultureInfo.CurrentCulture));
             }
         }
 

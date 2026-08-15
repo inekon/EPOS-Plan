@@ -222,7 +222,9 @@ namespace WindowsFormsApplication1
             listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_WPPRIO, SPALTEN_BREITEN[COL_WPPRIO], HorizontalAlignment.Left);
             listView_Uebersicht.Columns.Add(MyResource.Resource.SIMQ_SPALTE_QUELLE, SPALTEN_BREITEN[COL_QUELLE], HorizontalAlignment.Left);
             listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_SENKE, SPALTEN_BREITEN[COL_SENKE], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_ROLLE_ZWEITSENKE, SPALTEN_BREITEN[COL_ZWEITSENKE], HorizontalAlignment.Left);
+            // Spaltenkopf = Beschriftung: SIM_SPALTE_ZWEITSENKE (gross), nicht die klein
+            // geschriebene Satzform SIM_ROLLE_ZWEITSENKE.
+            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_ZWEITSENKE, SPALTEN_BREITEN[COL_ZWEITSENKE], HorizontalAlignment.Left);
             listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_MODUS, SPALTEN_BREITEN[COL_BETRIEBSMODUS], HorizontalAlignment.Left);
             listView_Uebersicht.Columns.Add(MyResource.Resource.PSP_SPALTE_ZUORDNUNG_ALT, SPALTEN_BREITEN[COL_PUFFER], HorizontalAlignment.Left);
 
