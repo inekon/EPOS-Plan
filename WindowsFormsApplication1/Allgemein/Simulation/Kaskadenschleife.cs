@@ -85,6 +85,60 @@ namespace WindowsFormsApplication1
         public bool MitKessel { get { return Kessel != null; } }
         public bool MitBHKW { get { return BHKW != null; } }
 
+        /// <summary>
+        /// Fehlertext eines Abbruchs (Konzept 13.4: die Engine bleibt dialogfrei).
+        /// Gesetzt wird er heute allein vom ZYKLUS-GUARD der Rechenebenen (Etappe D5a);
+        /// der Aufrufer reicht ihn an <c>SimulationRunner</c> weiter.
+        /// </summary>
+        public string Fehlertext = "";
+
+        // ==================================================================
+        // RECHENEBENEN (Etappe D5a) — „der Erzeuger mit Puffer-Quelle rechnet
+        // NACH seinem Puffer"
+        //
+        // Konzept_KonfigUI_Hydraulik, Abschnitt 5: Ein Erzeuger mit WQ_Typ =
+        // Pufferspeicher bezieht seine Eintrittstemperatur aus einem Puffer, den ein
+        // ANDERER Erzeuger lädt. Damit er in der Stunde etwas vorfindet, muss er nach
+        // dessen Ladephase rechnen — die Rechenreihenfolge ergibt sich also aus dem
+        // Quellbezug, nicht aus der Kaskadenposition.
+        //
+        // UMSETZUNG: Die Phasen B/C/D laufen je EBENE aufsteigend; zwischen zwei Ebenen
+        // gibt der Speicher seinen DURCHSATZ an den Kanal ab (siehe Rechnen()). Ebene 0
+        // sind alle Anlagen ohne Quellpuffer oder mit einem Quellpuffer, den in diesem
+        // Lauf niemand lädt; Ebene n+1 sind die Anlagen, deren Quellpuffer von einer
+        // Anlage der Ebene n geladen wird. Mehrstufige Ketten (WP 1 → Puffer 1 → WP 2
+        // → Puffer 2, die Booster-Konstellation des Konzepts) fallen ohne Sonderfall
+        // heraus.
+        //
+        // MIT NUR EINER EBENE — jedes Bestandsprojekt und jeder Lauf ohne Quellbezug auf
+        // einen geladenen Puffer — läuft der Rumpf GENAU EINMAL und ist Anweisung für
+        // Anweisung die bisherige Schleife. Das ist die Regressionszusage dieser Etappe.
+        // ==================================================================
+
+        /// <summary>Höchste vorkommende Rechenebene; 0 = keine Kaskade über Quellbezüge.</summary>
+        private int _maxEbene = 0;
+
+        /// <summary>Rechenebene je <c>Tab_Energieanlagen.ID</c>.</summary>
+        private readonly Dictionary<int, int> _ebeneJeAnlage = new Dictionary<int, int>();
+
+        /// <summary>Erzeugerarten der Phase B je Ebene, in Kaskadenreihenfolge.</summary>
+        private List<int>[] _bedarfJeEbene;
+
+        /// <summary>true, wenn ein KOMBISPEICHER mitrechnet (Etappe D5a, K-1).</summary>
+        private bool _hatKombi;
+
+        /// <summary>
+        /// Hysterese-Entscheidung der laufenden Phase A je Speicher (Etappe D5a).
+        ///
+        /// Ein Kombispeicher steht in BEIDEN Entladereihenfolgen und wird in Phase A
+        /// deshalb zweimal besucht. <see cref="SimulationPufferspeicher.HystereseFortschreiben"/>
+        /// ist aber ein ZUSTANDSÜBERGANG: Der zweite Aufruf sähe den bereits abgesenkten
+        /// Füllstand und könnte den Speicher mitten in der Stunde in den Nachladebetrieb
+        /// kippen. Die Entscheidung fällt deshalb je Speicher und Stunde genau einmal.
+        /// </summary>
+        private readonly Dictionary<SimulationPufferspeicher, bool> _hysteresePhaseA =
+            new Dictionary<SimulationPufferspeicher, bool>();
+
         // ------------------------------------------------------------------
         // ZURECHNUNG DER SPEICHERENTLADUNG (Paket-5-Nacharbeit, Befund N2)
         //
@@ -202,6 +256,142 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// UMBUCHUNG der Herkunftsanteile von einem Speicher in einen anderen
+        /// (Etappe D5a, Kessel-Kaskade).
+        ///
+        /// Entnimmt ein nachgelagerter Erzeuger Wärme aus seinem Quellpuffer und lädt sie
+        /// — angehoben — in seinen Senkenpuffer, wechselt sie nur den Speicher. Ihre
+        /// HERKUNFT wechselt dabei nicht: Erzeugt hat sie der Lader des Quellpuffers.
+        /// Genau das leistet diese Buchung; ohne sie bekäme der anhebende Erzeuger die
+        /// Menge ein zweites Mal gutgeschrieben, und die Summe der ausgewiesenen
+        /// Deckungen liefe über die tatsächliche hinaus (der Fehler, den Befund N2
+        /// beseitigt hat).
+        ///
+        /// Aufgeteilt wird — wie überall in dieser Zurechnung — nach den ANTEILEN AM
+        /// AKTUELLEN INHALT des Quellpuffers.
+        /// </summary>
+        private void Anteil_Umbuchen(SimulationPufferspeicher quelle,
+                                     SimulationPufferspeicher ziel, double menge)
+        {
+            if (quelle == null || ziel == null || menge <= 0) return;
+
+            double[] a = Anteile(quelle);
+            double summe = 0;
+            for (int i = 0; i < ART_ANZAHL; i++) if (a[i] > 0) summe += a[i];
+            if (summe <= 0) return;         // Inhalt ohne bekannte Herkunft
+
+            double[] b = Anteile(ziel);
+            for (int i = 0; i < ART_ANZAHL; i++)
+            {
+                if (a[i] <= 0) { a[i] = 0; continue; }
+
+                double teil = menge * (a[i] / summe);
+                if (teil > a[i]) teil = a[i];
+                a[i] -= teil;
+                b[i] += teil;
+            }
+        }
+
+        /// <summary>
+        /// Verbucht die von einem Erzeugermodul gemeldeten Quellentnahmen in der
+        /// Herkunftsrechnung und leert die Meldeliste (Etappe D5a).
+        ///
+        /// Die PHYSIK der Entnahme hat das Modul schon gebucht (es hat
+        /// <c>Entladen</c> gerufen); hier geht es allein um die Frage, WEM die Wärme
+        /// zugerechnet bleibt. Siehe <see cref="Quellentnahme"/>.
+        /// </summary>
+        /// <returns>
+        /// Summe der Mengen, die in einen ZIELSPEICHER umgebucht wurden [kWh] — genau der
+        /// Betrag, den der ladende Erzeuger sich NICHT gutschreiben darf.
+        /// </returns>
+        private double QuellentnahmenVerbuchen(List<Quellentnahme> meldungen)
+        {
+            if (meldungen == null || meldungen.Count == 0) return 0;
+
+            double umgebucht = 0;
+            for (int i = 0; i < meldungen.Count; i++)
+            {
+                Quellentnahme q = meldungen[i];
+                if (q == null || q.Quelle == null || q.Menge <= 0) continue;
+
+                if (q.Ziel == null)
+                {
+                    Anteil_Entladen(q.Quelle, q.Menge);
+                }
+                else
+                {
+                    Anteil_Umbuchen(q.Quelle, q.Ziel, q.Menge);
+                    umgebucht += q.Menge;
+                }
+            }
+
+            meldungen.Clear();
+            return umgebucht;
+        }
+
+        // ------------------------------------------------------------------
+        // DURCHSATZBUDGET DER STUNDE — eine Fassung für alle vier Erzeugerarten
+        //
+        // Bis Etappe D5a rechnete jedes Modul die beiden Zeilen selbst und griff dabei
+        // über „IstBrauchwasserkanal ? 1 : 0" auf GENAU EINEN Kanal zu. Der
+        // KOMBISPEICHER bedient beide, also ist auch sein Durchsatz die Summe beider
+        // Kanäle — und die Abbuchung muss auf beide gehen. Vier Kopien dieser Regel
+        // wären vier Gelegenheiten, sie unterschiedlich zu treffen.
+        //
+        // OHNE Kombispeicher liefern beide Methoden Anweisung für Anweisung das, was
+        // vorher in den Modulen stand.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Absehbare Entnahme, die dieser Speicher in der laufenden Stunde zusätzlich
+        /// durchreichen kann [kWh] (Nutzerentscheidung zu Befund 4b-1).
+        /// </summary>
+        public static double DurchlassBudget(SimulationPufferspeicher sp, double[] absehbar)
+        {
+            if (sp == null || absehbar == null) return 0;
+
+            double offen;
+            if (sp.IstKombi)
+            {
+                // D5a: EIN Vorrat für beide Kanäle - also auch ein gemeinsames Budget.
+                offen = (absehbar[0] > 0 ? absehbar[0] : 0) + (absehbar[1] > 0 ? absehbar[1] : 0);
+            }
+            else
+            {
+                int kanal = sp.IstBrauchwasserkanal ? 1 : 0;
+                offen = absehbar[kanal] > 0 ? absehbar[kanal] : 0;
+            }
+
+            return Math.Min(offen, sp.Entnahmefaehigkeit());
+        }
+
+        /// <summary>
+        /// Bucht den tatsächlich genutzten Durchlass vom Budget ab. Beim Kombispeicher
+        /// zuerst vom WARMWASSERkanal — dieselbe Vorrangregel, mit der die Entladung
+        /// arbeitet (K-1).
+        /// </summary>
+        public static void DurchlassBuchen(SimulationPufferspeicher sp, double[] absehbar,
+                                           double genutzt)
+        {
+            if (sp == null || absehbar == null || genutzt <= 0) return;
+
+            if (!sp.IstKombi)
+            {
+                int kanal = sp.IstBrauchwasserkanal ? 1 : 0;
+                absehbar[kanal] -= genutzt;
+                if (absehbar[kanal] < 0) absehbar[kanal] = 0;
+                return;
+            }
+
+            double ww = Math.Min(genutzt, absehbar[1] > 0 ? absehbar[1] : 0);
+            absehbar[1] -= ww;
+            if (absehbar[1] < 0) absehbar[1] = 0;
+
+            absehbar[0] -= (genutzt - ww);
+            if (absehbar[0] < 0) absehbar[0] = 0;
+        }
+
+        /// <summary>
         /// Anteile nach Phase G an den Füllstand angleichen: Die Bereitschaftsverluste
         /// des Speichers tragen alle Erzeuger proportional zu ihrem Anteil.
         /// </summary>
@@ -230,6 +420,17 @@ namespace WindowsFormsApplication1
         public bool Rechnen(Waermekanaele kanaele)
         {
             if (kanaele == null || Kontext == null) return false;
+
+            Fehlertext = "";
+
+            // ETAPPE D5a: Rechenebenen aus den Quellbezügen. Schlägt die Auflösung fehl,
+            // liegt ein RING vor (A lädt B, B ist Quelle von A) - dann gibt es keine
+            // Reihenfolge, in der beide „nach ihrem Puffer" rechnen. Der Lauf bricht ab,
+            // statt eine willkürliche Reihenfolge zu wählen und ein plausibel aussehendes
+            // Ergebnis zu speichern.
+            if (!EbenenAufloesen()) return false;
+
+            _hatKombi = Kontext.HatKombispeicher();
 
             List<double> biv = new List<double>();
 
@@ -311,42 +512,63 @@ namespace WindowsFormsApplication1
                 // --- A) Vorabentladung ------------------------------------------------
                 Entladephase(stunde, true, ref rest_heiz, ref rest_ww);
 
-                // --- B) Bedarfsdeckung in Kaskadenreihenfolge --------------------------
-                for (int s = 0; s < Bedarfsreihenfolge.Count; s++)
+                // --- B/C/D je RECHENEBENE (Etappe D5a) ---------------------------------
+                // Mit genau einer Ebene - jedes Bestandsprojekt - läuft der Rumpf einmal
+                // und ist die bisherige Folge B, Budget, C, D.
+                for (int ebene = 0; ebene <= _maxEbene; ebene++)
                 {
-                    int art = Bedarfsreihenfolge[s];
+                    // --- B) Bedarfsdeckung in Kaskadenreihenfolge ----------------------
+                    List<int> arten = BedarfsreihenfolgeDerEbene(ebene);
+                    ModulEbeneSetzen(ebene);
 
-                    if (art == ProjektPuffer.TYP_WP && MitWP)
+                    for (int s = 0; s < arten.Count; s++)
                     {
-                        if (!WP.Zweikanalig_Bedarfsphase(stunde, Kontext, pvUeberschuss, pvRest,
-                                                         ref rest_heiz, ref rest_ww))
-                            return false;
+                        int art = arten[s];
+
+                        if (art == ProjektPuffer.TYP_WP && MitWP)
+                        {
+                            if (!WP.Zweikanalig_Bedarfsphase(stunde, Kontext, pvUeberschuss, pvRest,
+                                                             ref rest_heiz, ref rest_ww))
+                                return false;
+                            QuellentnahmenVerbuchen(WP.Quellentnahmen);
+                        }
+                        else if (art == ProjektPuffer.TYP_SOLARTHERMIE && MitSolar)
+                        {
+                            Solar.Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
+                        }
+                        else if (art == ProjektPuffer.TYP_KESSEL && MitKessel)
+                        {
+                            Kessel.Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
+                            QuellentnahmenVerbuchen(Kessel.Quellentnahmen);
+                        }
+                        else if (art == ProjektPuffer.TYP_BHKW && MitBHKW)
+                        {
+                            BHKW.Stunde_Bedarf(stunde, pvUeberschuss, ref rest_heiz, ref rest_ww);
+                        }
                     }
-                    else if (art == ProjektPuffer.TYP_SOLARTHERMIE && MitSolar)
-                    {
-                        Solar.Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
-                    }
-                    else if (art == ProjektPuffer.TYP_KESSEL && MitKessel)
-                    {
-                        Kessel.Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
-                    }
-                    else if (art == ProjektPuffer.TYP_BHKW && MitBHKW)
-                    {
-                        BHKW.Stunde_Bedarf(stunde, pvUeberschuss, ref rest_heiz, ref rest_ww);
-                    }
+
+                    // Durchsatzbudget der Stunde festhalten — Stand NACH der
+                    // Bedarfsdeckung. Genau diesen Rest kann Phase E aus den Speichern
+                    // ziehen; zwischen C und E verändert ihn nichts.
+                    absehbar[0] = rest_heiz > 0 ? rest_heiz : 0;
+                    absehbar[1] = rest_ww > 0 ? rest_ww : 0;
+
+                    // --- C) Speicherladung (Hauptsenken) ---------------------------------
+                    Ladephase(stunde, false, pvUeberschuss, ref pvRest, absehbar, ebene);
+
+                    // --- D) Zweitsenken --------------------------------------------------
+                    Ladephase(stunde, true, pvUeberschuss, ref pvRest, absehbar, ebene);
+
+                    // ZWISCHENSCHRITT DER KASKADE (Etappe D5a): Was die Speicher dieser
+                    // Ebene gerade DURCHGEREICHT haben, gehört dem Verbraucher — nicht dem
+                    // Erzeuger der nächsten Ebene. Ohne diese Rückgabe sähe die nächste
+                    // Ebene einen Bedarf, den die vorige Ebene bereits über ihre
+                    // hydraulische Weiche bedient hat, und deckte ihn ein zweites Mal.
+                    // Der gespeicherte INHALT bleibt liegen — ihn holt Phase E am Ende der
+                    // Stunde, nachdem alle Ebenen ihre Quellentnahme hatten.
+                    if (ebene < _maxEbene)
+                        DurchsatzPhase(stunde, ref rest_heiz, ref rest_ww);
                 }
-
-                // Durchsatzbudget der Stunde festhalten — Stand NACH der Bedarfsdeckung.
-                // Genau diesen Rest kann Phase E aus den Speichern ziehen; zwischen C und
-                // E verändert ihn nichts.
-                absehbar[0] = rest_heiz > 0 ? rest_heiz : 0;
-                absehbar[1] = rest_ww > 0 ? rest_ww : 0;
-
-                // --- C) Speicherladung (Hauptsenken) ------------------------------------
-                Ladephase(stunde, false, pvUeberschuss, ref pvRest, absehbar);
-
-                // --- D) Zweitsenken ------------------------------------------------------
-                Ladephase(stunde, true, pvUeberschuss, ref pvRest, absehbar);
 
                 // --- E) Nachentladung -----------------------------------------------------
                 Entladephase(stunde, false, ref rest_heiz, ref rest_ww);
@@ -459,8 +681,13 @@ namespace WindowsFormsApplication1
         /// seinen Strom- bzw. Brennstoffbedarf und seine Wärmequelle. Gemeinsam sind
         /// allein die Ordnung, der Bilanzraum und das Durchsatzbudget.
         /// </summary>
+        /// <param name="ebene">
+        /// Rechenebene dieses Durchlaufs (Etappe D5a). Es laden ausschließlich die
+        /// Anlagen dieser Ebene; ohne Quellbezug auf einen geladenen Puffer tragen alle
+        /// Aufträge Ebene 0 und die Methode arbeitet die ganze Ordnung ab wie bisher.
+        /// </param>
         private void Ladephase(int stunde, bool zweitsenken, bool pvUeberschuss,
-                               ref double pvRest, double[] absehbar)
+                               ref double pvRest, double[] absehbar, int ebene)
         {
             List<Ladeauftrag> ordnung = Kontext.Ladeordnung_Stunde(pvUeberschuss);
             if (ordnung == null) return;
@@ -469,15 +696,25 @@ namespace WindowsFormsApplication1
             {
                 Ladeauftrag a = ordnung[n];
                 if (a == null || a.Zweitsenke != zweitsenken) continue;
+                if (a.Ebene != ebene) continue;
 
                 // Die geladene Menge geht zusätzlich in die Herkunftsrechnung des
                 // Speichers (N2) — sie entscheidet später, wem seine Entladung als
                 // Bedarfsdeckung gutgeschrieben wird.
+                //
+                // ETAPPE D5a: Hat der Erzeuger einen Teil der Ladung aus SEINEM
+                // Quellpuffer geholt, ist dieser Teil nicht seine Wärme. Er wird über
+                // Anteil_Umbuchen mit seiner Herkunft in den Zielspeicher übertragen; dem
+                // Erzeuger bleibt nur, was er selbst beigesteuert hat. Ohne Quellpuffer
+                // ist der Abzug exakt 0 und die Buchung die bisherige.
                 if (a.Erzeugerart == ProjektPuffer.TYP_WP)
                 {
                     if (MitWP)
+                    {
+                        double geladen = WP.Zweikanalig_Laden(a, stunde, pvUeberschuss, absehbar, ref pvRest);
                         Anteil_Laden(a.Speicher, a.Erzeugerart,
-                                     WP.Zweikanalig_Laden(a, stunde, pvUeberschuss, absehbar, ref pvRest));
+                                     geladen - QuellentnahmenVerbuchen(WP.Quellentnahmen));
+                    }
                 }
                 else if (a.Erzeugerart == ProjektPuffer.TYP_SOLARTHERMIE)
                 {
@@ -488,8 +725,11 @@ namespace WindowsFormsApplication1
                 else if (a.Erzeugerart == ProjektPuffer.TYP_KESSEL)
                 {
                     if (MitKessel)
+                    {
+                        double geladen = Kessel.Zweikanalig_Laden(a, stunde, pvUeberschuss, absehbar);
                         Anteil_Laden(a.Speicher, a.Erzeugerart,
-                                     Kessel.Zweikanalig_Laden(a, stunde, pvUeberschuss, absehbar));
+                                     geladen - QuellentnahmenVerbuchen(Kessel.Quellentnahmen));
+                    }
                 }
                 else if (a.Erzeugerart == ProjektPuffer.TYP_BHKW)
                 {
@@ -498,6 +738,247 @@ namespace WindowsFormsApplication1
                                      BHKW.Zweikanalig_Laden(a, stunde, pvUeberschuss, absehbar));
                 }
             }
+        }
+
+        // ==================================================================
+        // AUFLÖSUNG DER RECHENEBENEN (Etappe D5a)
+        // ==================================================================
+
+        /// <summary>
+        /// Bestimmt je Anlage ihre Rechenebene aus den Quellbezügen und schreibt sie in
+        /// die Ladeaufträge und die Modulmasken.
+        ///
+        /// REGEL: Ebene(A) = 0, wenn A keinen Quellpuffer hat oder ihren Quellpuffer in
+        /// diesem Lauf niemand lädt; sonst Ebene(A) = 1 + max{ Ebene(L) : L lädt den
+        /// Quellpuffer von A }. Aufgelöst wird iterativ; ein Ring lässt die Ebenen
+        /// unbegrenzt wachsen und wird nach so vielen Durchläufen erkannt, wie es
+        /// Anlagen gibt — mehr kann eine zyklenfreie Kette nicht brauchen.
+        /// </summary>
+        /// <returns>false = Ring erkannt, <see cref="Fehlertext"/> ist gesetzt.</returns>
+        private bool EbenenAufloesen()
+        {
+            _ebeneJeAnlage.Clear();
+            _maxEbene = 0;
+            _bedarfJeEbene = null;
+
+            List<int> alleAnlagen = AlleAnlagen();
+            foreach (int id in alleAnlagen) _ebeneJeAnlage[id] = 0;
+
+            // Lader je Speicher aus den Ladeaufträgen — die eine Quelle der Wahrheit,
+            // aus der auch die Ladeordnung selbst gebildet ist (Konzept 3.4).
+            Dictionary<SimulationPufferspeicher, List<int>> laderJeSpeicher =
+                new Dictionary<SimulationPufferspeicher, List<int>>();
+
+            if (Kontext.LadenOhnePV != null)
+            {
+                foreach (Ladeauftrag a in Kontext.LadenOhnePV)
+                {
+                    if (a == null || a.Speicher == null || a.AnlagenID <= 0) continue;
+
+                    List<int> lader;
+                    if (!laderJeSpeicher.TryGetValue(a.Speicher, out lader))
+                    {
+                        lader = new List<int>();
+                        laderJeSpeicher[a.Speicher] = lader;
+                    }
+                    if (!lader.Contains(a.AnlagenID)) lader.Add(a.AnlagenID);
+                }
+            }
+
+            // Ohne einen einzigen Quellbezug auf einen GELADENEN Speicher gibt es keine
+            // Kaskade: Alles bleibt Ebene 0, und die Stundenschleife läuft wie bisher.
+            bool relevant = false;
+            foreach (KeyValuePair<int, SimulationPufferspeicher> q in Kontext.QuellpufferJeAnlage)
+                if (q.Value != null && laderJeSpeicher.ContainsKey(q.Value) &&
+                    _ebeneJeAnlage.ContainsKey(q.Key)) { relevant = true; break; }
+
+            if (relevant && !EbenenRelaxieren(laderJeSpeicher, alleAnlagen.Count)) return false;
+
+            // Ebene in die Ladeaufträge schreiben (beide Ordnungen zeigen auf DIESELBEN
+            // Auftragsobjekte — die Zuweisung wirkt in beiden).
+            SchreibeAuftragsebenen(Kontext.LadenOhnePV);
+            SchreibeAuftragsebenen(Kontext.LadenMitPV);
+
+            BedarfsordnungJeEbeneBilden();
+            ModulmaskenSchreiben();
+            return true;
+        }
+
+        /// <summary>Iterative Auflösung der Ebenen; false = Ring (siehe <see cref="EbenenAufloesen"/>).</summary>
+        private bool EbenenRelaxieren(Dictionary<SimulationPufferspeicher, List<int>> laderJeSpeicher,
+                                      int anzahlAnlagen)
+        {
+            for (int runde = 0; runde <= anzahlAnlagen; runde++)
+            {
+                bool geaendert = false;
+
+                foreach (KeyValuePair<int, SimulationPufferspeicher> bezug in Kontext.QuellpufferJeAnlage)
+                {
+                    int idAnlage = bezug.Key;
+                    if (!_ebeneJeAnlage.ContainsKey(idAnlage)) continue;   // rechnet nicht mit
+
+                    List<int> lader;
+                    if (bezug.Value == null || !laderJeSpeicher.TryGetValue(bezug.Value, out lader))
+                        continue;                                          // Quelle lädt niemand
+
+                    int soll = 0;
+                    foreach (int idLader in lader)
+                    {
+                        if (idLader == idAnlage) continue;                 // sich selbst laden ist
+                                                                           // der Kurzschluss aus 4.6
+                        int e;
+                        if (!_ebeneJeAnlage.TryGetValue(idLader, out e)) continue;
+                        if (e + 1 > soll) soll = e + 1;
+                    }
+
+                    if (soll > _ebeneJeAnlage[idAnlage])
+                    {
+                        _ebeneJeAnlage[idAnlage] = soll;
+                        geaendert = true;
+                    }
+                }
+
+                if (!geaendert)
+                {
+                    foreach (KeyValuePair<int, int> e in _ebeneJeAnlage)
+                        if (e.Value > _maxEbene) _maxEbene = e.Value;
+                    return true;
+                }
+            }
+
+            // Nach so vielen Runden, wie es Anlagen gibt, wächst nur noch ein Ring.
+            Fehlertext = ZyklusMeldung(laderJeSpeicher);
+            SimulationProtokoll.Aktuell.Fehlermeldung(Fehlertext);
+            return false;
+        }
+
+        /// <summary>Sprechende Meldung des Zyklus-Guards mit den beteiligten Anlagen.</summary>
+        private string ZyklusMeldung(Dictionary<SimulationPufferspeicher, List<int>> laderJeSpeicher)
+        {
+            // Die Anlagen mit der höchsten erreichten Ebene stecken im Ring - sie sind es,
+            // die den Anwender interessieren.
+            int hoechste = 0;
+            foreach (KeyValuePair<int, int> e in _ebeneJeAnlage)
+                if (e.Value > hoechste) hoechste = e.Value;
+
+            List<string> beteiligt = new List<string>();
+            foreach (KeyValuePair<int, SimulationPufferspeicher> bezug in Kontext.QuellpufferJeAnlage)
+            {
+                int ebene;
+                if (!_ebeneJeAnlage.TryGetValue(bezug.Key, out ebene) || ebene < hoechste) continue;
+                if (bezug.Value == null || !laderJeSpeicher.ContainsKey(bezug.Value)) continue;
+
+                beteiligt.Add("Anlage " + bezug.Key + " (Quelle: Puffer " +
+                              bezug.Value.ID_Pufferspeicher + " „" +
+                              bezug.Value.BezeichnerAnzeige() + "\")");
+            }
+
+            return "Kaskade: Die Quellbezüge der Pufferspeicher bilden einen RING — " +
+                   "eine Anlage lädt einen Speicher, aus dem sie über weitere Erzeuger " +
+                   "wieder ihre eigene Quellwärme bezieht. Damit gibt es keine " +
+                   "Rechenreihenfolge, in der jeder Erzeuger nach seinem Puffer rechnet; " +
+                   "der Lauf bricht ab. Beteiligt: " +
+                   (beteiligt.Count > 0 ? string.Join(", ", beteiligt.ToArray()) : "—") +
+                   ". Bitte die Wärmequelle einer dieser Anlagen ändern.";
+        }
+
+        private void SchreibeAuftragsebenen(List<Ladeauftrag> ordnung)
+        {
+            if (ordnung == null) return;
+
+            foreach (Ladeauftrag a in ordnung)
+            {
+                if (a == null) continue;
+
+                int ebene;
+                a.Ebene = _ebeneJeAnlage.TryGetValue(a.AnlagenID, out ebene) ? ebene : 0;
+            }
+        }
+
+        /// <summary>Alle Anlagen-IDs, die in dieser Schleife als Modul rechnen.</summary>
+        private List<int> AlleAnlagen()
+        {
+            List<int> ids = new List<int>();
+            if (MitWP) ids.AddRange(WP.wp_list);
+            if (MitSolar) ids.AddRange(Solar.solar_anlagen_ids);
+            if (MitKessel) ids.AddRange(Kessel.spk_anlagen_ids);
+            if (MitBHKW) ids.AddRange(BHKW.bhkw_anlagen_ids);
+            return ids;
+        }
+
+        /// <summary>
+        /// Bedarfsreihenfolge je Ebene: dieselbe Kaskadenreihenfolge, aber nur die Arten,
+        /// die auf dieser Ebene überhaupt ein Modul haben.
+        /// </summary>
+        private void BedarfsordnungJeEbeneBilden()
+        {
+            _bedarfJeEbene = new List<int>[_maxEbene + 1];
+
+            for (int ebene = 0; ebene <= _maxEbene; ebene++)
+            {
+                List<int> arten = new List<int>();
+                foreach (int art in Bedarfsreihenfolge)
+                    if (ArtHatModulAufEbene(art, ebene)) arten.Add(art);
+                _bedarfJeEbene[ebene] = arten;
+            }
+        }
+
+        private bool ArtHatModulAufEbene(int art, int ebene)
+        {
+            List<int> anlagen = AnlagenDerArt(art);
+            if (anlagen == null) return false;
+
+            foreach (int id in anlagen)
+            {
+                int e;
+                if (!_ebeneJeAnlage.TryGetValue(id, out e)) e = 0;
+                if (e == ebene) return true;
+            }
+            return false;
+        }
+
+        private List<int> AnlagenDerArt(int art)
+        {
+            if (art == ProjektPuffer.TYP_WP && MitWP) return WP.wp_list;
+            if (art == ProjektPuffer.TYP_SOLARTHERMIE && MitSolar) return Solar.solar_anlagen_ids;
+            if (art == ProjektPuffer.TYP_KESSEL && MitKessel) return Kessel.spk_anlagen_ids;
+            if (art == ProjektPuffer.TYP_BHKW && MitBHKW) return BHKW.bhkw_anlagen_ids;
+            return null;
+        }
+
+        private List<int> BedarfsreihenfolgeDerEbene(int ebene)
+        {
+            if (_bedarfJeEbene == null || ebene < 0 || ebene >= _bedarfJeEbene.Length)
+                return Bedarfsreihenfolge;
+            return _bedarfJeEbene[ebene];
+        }
+
+        /// <summary>
+        /// Schreibt die Ebene je Modul in die Module, die Anlagen mit Quellbezug tragen
+        /// können (Wärmepumpe und Heizkessel — Konzept Anforderung 6). Solarthermie und
+        /// BHKW kennen keine Wärmequelle und bleiben auf Ebene 0.
+        /// </summary>
+        private void ModulmaskenSchreiben()
+        {
+            if (MitWP) WP.ModulEbenen = EbenenVektor(WP.wp_list);
+            if (MitKessel) Kessel.ModulEbenen = EbenenVektor(Kessel.spk_anlagen_ids);
+        }
+
+        private int[] EbenenVektor(List<int> anlagen)
+        {
+            int[] v = new int[anlagen.Count];
+            for (int i = 0; i < anlagen.Count; i++)
+            {
+                int e;
+                v[i] = _ebeneJeAnlage.TryGetValue(anlagen[i], out e) ? e : 0;
+            }
+            return v;
+        }
+
+        private void ModulEbeneSetzen(int ebene)
+        {
+            if (MitWP) WP.AktiveEbene = ebene;
+            if (MitKessel) Kessel.AktiveEbene = ebene;
         }
 
         /// <summary>
@@ -527,12 +1008,61 @@ namespace WindowsFormsApplication1
                 // Kanals hängen bleibt, der in der Entladeordnung vor ihm steht. Bei nur
                 // einem Speicher je Kanal — dem heute geprüften Fall — ändert die
                 // Vorziehung nichts: dieselbe Menge, derselbe Speicher.
+                DurchsatzPhase(stunde, ref rest_heiz, ref rest_ww);
+            }
+            else
+            {
+                // D5a: Die Hysterese-Entscheidung dieser Stunde beginnt neu (siehe
+                // _hysteresePhaseA).
+                if (_hatKombi) _hysteresePhaseA.Clear();
+            }
+
+            // KANALREIHENFOLGE (Etappe D5a, Entwurfsentscheidung K-1):
+            //
+            // OHNE Kombispeicher sind die beiden Listen disjunkt und rühren getrennte
+            // Größen an — die Reihenfolge ist dann gleichgültig, und sie bleibt bewusst
+            // die bisherige (Heizung zuerst). Das ist keine Kosmetik: Die
+            // Zurechnungssummen der Herkunftsrechnung sind double-Akkumulatoren, und eine
+            // vertauschte Additionsreihenfolge kann ihr letztes Bit verändern. Die
+            // Regressionszusage „Flag an, unverändertes Projekt = byte-gleich" hängt
+            // daran.
+            //
+            // MIT Kombispeicher steht derselbe Speicher in BEIDEN Listen und bedient
+            // beide Kanäle aus EINEM Vorrat. Reicht er nicht für beide, gilt WARMWASSER
+            // ZUERST — die App-Konvention „Beides (Warmwasser zuerst)", umgesetzt als
+            // vollständiger Warmwasserdurchlauf VOR dem Heizungsdurchlauf. Die
+            // kanalweise Entladereihenfolge (3.6) bleibt innerhalb jedes Durchlaufs
+            // unangetastet.
+            if (_hatKombi)
+            {
+                EntladeKanal(Kontext.EntladenBrauchwasser, true, vorab, stunde, ref rest_heiz, ref rest_ww);
+                EntladeKanal(Kontext.EntladenHeizung, false, vorab, stunde, ref rest_heiz, ref rest_ww);
+            }
+            else
+            {
+                EntladeKanal(Kontext.EntladenHeizung, false, vorab, stunde, ref rest_heiz, ref rest_ww);
+                EntladeKanal(Kontext.EntladenBrauchwasser, true, vorab, stunde, ref rest_heiz, ref rest_ww);
+            }
+        }
+
+        /// <summary>
+        /// Rückgabe des DURCHSATZES beider Kanäle — als eigene Methode, weil sie seit
+        /// Etappe D5a an zwei Stellen steht: vor der Nachentladung (Phase E) und zwischen
+        /// zwei Rechenebenen der Kaskade. Kanalreihenfolge wie in
+        /// <see cref="Entladephase"/> (K-1).
+        /// </summary>
+        private void DurchsatzPhase(int stunde, ref double rest_heiz, ref double rest_ww)
+        {
+            if (_hatKombi)
+            {
+                DurchsatzEntladen(Kontext.EntladenBrauchwasser, true, stunde, ref rest_heiz, ref rest_ww);
+                DurchsatzEntladen(Kontext.EntladenHeizung, false, stunde, ref rest_heiz, ref rest_ww);
+            }
+            else
+            {
                 DurchsatzEntladen(Kontext.EntladenHeizung, false, stunde, ref rest_heiz, ref rest_ww);
                 DurchsatzEntladen(Kontext.EntladenBrauchwasser, true, stunde, ref rest_heiz, ref rest_ww);
             }
-
-            EntladeKanal(Kontext.EntladenHeizung, false, vorab, stunde, ref rest_heiz, ref rest_ww);
-            EntladeKanal(Kontext.EntladenBrauchwasser, true, vorab, stunde, ref rest_heiz, ref rest_ww);
         }
 
         /// <summary>
@@ -564,6 +1094,11 @@ namespace WindowsFormsApplication1
                               gedeckt, ref rest_ww, ref rest_heiz);
 
                 Anteil_Entladen(sp, gedeckt);   // N2: Eigenanteil der Lader
+
+#if DEBUG
+                if (Entladeprobe != null)
+                    Entladeprobe(stunde, false, brauchwasser, sp.ID_Pufferspeicher, gedeckt, sp.SOC);
+#endif
             }
         }
 
@@ -580,7 +1115,11 @@ namespace WindowsFormsApplication1
                 // Die Hysterese wird in Phase A für JEDEN Speicher fortgeschrieben, auch
                 // wenn sein Kanal gerade keinen Bedarf hat — sonst bliebe ein Speicher
                 // ohne Bedarf für immer im zuletzt gesetzten Zustand.
-                bool darfEntladen = vorab ? sp.HystereseFortschreiben() : true;
+                //
+                // D5a: Ein Kombispeicher wird in dieser Phase zweimal besucht (er steht in
+                // beiden Kanallisten). Fortgeschrieben wird trotzdem nur einmal je Stunde
+                // — HystereseFortschreiben ist ein Zustandsübergang, kein Test.
+                bool darfEntladen = vorab ? HystereseDerStunde(sp) : true;
                 if (!darfEntladen) continue;
 
                 double bedarf = brauchwasser ? rest_ww : rest_heiz;
@@ -597,9 +1136,54 @@ namespace WindowsFormsApplication1
 
                 Anteil_Entladen(sp, gedeckt);   // N2: Eigenanteil der Lader
 
+#if DEBUG
+                if (Entladeprobe != null)
+                    Entladeprobe(stunde, vorab, brauchwasser, sp.ID_Pufferspeicher, gedeckt, sp.SOC);
+#endif
+
                 // Reicht der Speicher nicht, muss wieder nachgeladen werden.
                 if (vorab && (brauchwasser ? rest_ww : rest_heiz) > 0.0001) sp.LaedtGerade = true;
             }
+        }
+
+#if DEBUG
+
+        /// <summary>
+        /// PRÜFHAKEN der Entladung — ausschließlich im Debug-Build, nach dem Muster von
+        /// <see cref="Waermekanaele.Selbsttest"/> (kein Prüfcode im Release-Assembly).
+        ///
+        /// Die Knappheitsregel K-1 des Kombispeichers („reicht der Inhalt nicht für
+        /// beide Bedarfe, gilt Warmwasser zuerst") ist eine Aussage über die REIHENFOLGE
+        /// innerhalb einer Stunde. Aus den Jahres- und Stundenganglinien der
+        /// Ergebnispersistenz lässt sie sich nicht ablesen: Dort steht die Entladung als
+        /// EINE Zahl je Speicher und Stunde, ohne Kanal. Der Haken macht sie messbar,
+        /// ohne dem Rechenkern eine Ausgabe zu geben.
+        ///
+        /// Parameter: Stunde, Phase A (<c>true</c>) oder E, Warmwasserkanal, Puffer-ID,
+        /// gedeckte Menge [kWh], Füllstand danach [kWh].
+        /// </summary>
+        public static Action<int, bool, bool, int, double, double> Entladeprobe;
+
+#endif
+
+        /// <summary>
+        /// Hysterese-Entscheidung der Phase A, je Speicher und Stunde GENAU EINMAL
+        /// gebildet (Etappe D5a — siehe <see cref="_hysteresePhaseA"/>).
+        ///
+        /// Ohne Kombispeicher wird jeder Speicher ohnehin nur einmal besucht; dann geht
+        /// der Aufruf ohne Umweg über das Wörterbuch, und das Verhalten ist Anweisung für
+        /// Anweisung das bisherige.
+        /// </summary>
+        private bool HystereseDerStunde(SimulationPufferspeicher sp)
+        {
+            if (!_hatKombi || !sp.IstKombi) return sp.HystereseFortschreiben();
+
+            bool entscheidung;
+            if (_hysteresePhaseA.TryGetValue(sp, out entscheidung)) return entscheidung;
+
+            entscheidung = sp.HystereseFortschreiben();
+            _hysteresePhaseA[sp] = entscheidung;
+            return entscheidung;
         }
 
         /// <summary>

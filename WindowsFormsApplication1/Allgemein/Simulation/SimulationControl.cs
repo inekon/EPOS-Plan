@@ -291,6 +291,19 @@ namespace WindowsFormsApplication1
                 Protokoll.Hinweis(string.Format(
                     MyResource.Resource.SIMENG_LADEPRIO_VORBELEGUNG_NACHGEZOGEN, nachgezogen));
 
+            // Feature-Flag der zweikanaligen Kaskade (Konzept Kapitel 9). Ab Etappe 4b
+            // verzweigt es den Rechenweg: gesetzt -> Kaskade_Zweikanalig() nach der
+            // Reihenfolge-Invariante 6.3, nicht gesetzt -> der unveränderte Altpfad.
+            //
+            // NACHARBEIT E-K1-2: Die Auswertung steht seit dieser Nacharbeit VOR dem
+            // Registry-Aufbau. Sie muss dort schon feststehen, weil der Registry-Aufbau
+            // die Verwendung des WP-Puffers festlegt und ein KOMBISPEICHER im Altpfad
+            // ausdrücklich als Heizungspuffer zu führen ist (siehe
+            // SpeicherRegistryAufbauen, Block 1). Der Protokollhinweis bleibt an seiner
+            // bisherigen Stelle, damit die Reihenfolge im Protokollkanal unverändert ist.
+            KaskadeZweikanalig = ctrl_konfig != null && ctrl_konfig.model != null &&
+                                 ctrl_konfig.model.Kaskade_Zweikanalig;
+
             // ***********************************************************************
             // Speicher-Registry aufbauen (Paket 4 - Konzept 6.2) und den Senkenspeicher
             // der Wärmepumpe daraus an das WP-Modul geben. Der zweikanalige Weg öffnet
@@ -313,11 +326,8 @@ namespace WindowsFormsApplication1
             // zweikanaligen Weg.
             senkenzuordnungen = WaermesenkeClass.SenkenLaden(m_ID_Projekt);
 
-            // Feature-Flag der zweikanaligen Kaskade (Konzept Kapitel 9). Ab Etappe 4b
-            // verzweigt es den Rechenweg: gesetzt -> Kaskade_Zweikanalig() nach der
-            // Reihenfolge-Invariante 6.3, nicht gesetzt -> der unveränderte Altpfad.
-            KaskadeZweikanalig = ctrl_konfig != null && ctrl_konfig.model != null &&
-                                 ctrl_konfig.model.Kaskade_Zweikanalig;
+            // Hinweis zum Feature-Flag (das Flag selbst steht weiter oben, vor dem
+            // Registry-Aufbau — siehe die Begründung dort).
             if (KaskadeZweikanalig)
                 Protokoll.Hinweis("Projekteinstellung Kaskade_Zweikanalig ist gesetzt - " +
                                   "dieser Lauf rechnet ZWEIKANALIG mit herausgelöster " +
@@ -353,6 +363,12 @@ namespace WindowsFormsApplication1
             }
             else
             {
+                // ETAPPE D5a: Kombispeicher und Kessel-Quellbezug sind zweikanalige
+                // Erweiterungen. Der Altpfad kennt weder zwei Kanäle noch eine
+                // Speicherstufe mit mehreren Erzeugern - er rechnet unverändert weiter
+                // und sagt, was das für diese Konfiguration bedeutet.
+                AltpfadHinweiseD5a();
+
                 for (int i = 0; i < 4; i++)
                 {
                     if (tool[i] == DbWerte.ERZEUGER_WAERMEPUMPE)
@@ -515,8 +531,21 @@ namespace WindowsFormsApplication1
             _wpInSchleife = KaskadeEnthaelt(DbWerte.ERZEUGER_WAERMEPUMPE);
             _solarInSchleife = KaskadeEnthaelt(DbWerte.ERZEUGER_SOLARTHERMIE) &&
                                ErzeugerMitPufferSenke(ProjektPuffer.TYP_SOLARTHERMIE);
+            // ETAPPE D5a: Auch eine Puffer-QUELLE macht den Kessel zum Schleifenmitglied.
+            // Er entnimmt dann Wärme aus einem Speicher der Stufe (Kessel-Kaskade,
+            // Konzept Anforderung 6) - als Vektorstufe außerhalb der Stundenschleife
+            // hätte er darauf keinen Zugriff, und die Reihenfolge „nach seinem Puffer"
+            // gäbe es dort nicht. Ohne Kessel mit WQ_Typ = Pufferspeicher - der gesamte
+            // Bestand - ist die Bedingung unverändert.
+            bool kesselPufferSenke = ErzeugerMitPufferSenke(ProjektPuffer.TYP_KESSEL);
+            bool kesselPufferQuelle = ErzeugerMitPufferQuelle(ProjektPuffer.TYP_KESSEL);
             _kesselInSchleife = KaskadeEnthaelt(DbWerte.ERZEUGER_HEIZKESSEL) &&
-                                ErzeugerMitPufferSenke(ProjektPuffer.TYP_KESSEL);
+                                (kesselPufferSenke || kesselPufferQuelle);
+
+            // E-K2-4: Steht der Kessel ALLEIN wegen seiner Puffer-Quelle in der Schleife,
+            // ist nach dem Aufbau der Quellbezüge zu melden, wenn gar keiner zustande
+            // gekommen ist - sonst rechnet er still anders als vorher.
+            _kesselNurWegenQuelle = _kesselInSchleife && !kesselPufferSenke && kesselPufferQuelle;
 
             // PAKET 6: Das BHKW ist Kaskadenteilnehmer, sobald es einen Speicher hat -
             // entweder über eine Puffer-Senke (WS_ID_Puffer/WS_ID_Puffer2, derselbe Test
@@ -788,6 +817,14 @@ namespace WindowsFormsApplication1
         private bool _kesselInSchleife = false;
         private bool _bhkwInSchleife = false;
 
+        /// <summary>
+        /// true, wenn der Heizkessel ALLEIN wegen einer Puffer-QUELLE in der
+        /// Stundenschleife rechnet (Nacharbeit E-K2-4). Dann muss ein Quellbezug auch
+        /// wirklich entstehen — sonst rechnet der Kessel anders als bisher, ohne dass
+        /// die Kaskade greift, und genau das ist zu melden.
+        /// </summary>
+        private bool _kesselNurWegenQuelle = false;
+
         /// <summary>Hat die Wärmepumpe in diesem Lauf in der gemeinsamen Speicherstufe gerechnet?</summary>
         public bool WPInSpeicherstufe { get { return _wpInSchleife; } }
 
@@ -831,6 +868,47 @@ namespace WindowsFormsApplication1
                 if (StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer2")) > 0 &&
                     WaermesenkeClass.IstPufferZiel(StilleDb.Text(StilleDb.Feld(r, "WS_Ziel2"))))
                     return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// true, wenn mindestens eine Anlage dieser Art einen Pufferspeicher als
+        /// WÄRMEQUELLE führt (<c>WQ_Typ = Pufferspeicher</c>) und dieser Puffer im
+        /// Projekt auch WIRKLICH EXISTIERT — Etappe D5a, siehe
+        /// <see cref="_kesselInSchleife"/>.
+        ///
+        /// <para>NACHARBEIT E-K2-4: Das ursprüngliche Prädikat prüfte
+        /// <c>WQ_ID_Puffer IS NOT NULL</c>. Das ist breiter als der tatsächliche
+        /// Quellbezug — eine 0 ist „not null", und ein Altdatenrest kann auf einen längst
+        /// gelöschten Puffer zeigen. Beides zog den Kessel in die Stundenschleife (statt
+        /// ihn als Vektorstufe zu rechnen) und änderte damit bei gesetztem Flag das
+        /// Ergebnis, ohne dass ein Quellbezug entstand. Jetzt gilt: gesetzte ID
+        /// <b>und</b> ein Puffer dieses Projekts. Die Fälle, die erst später auffallen
+        /// (Puffer rechnet nicht mit, kein Temperaturpaar), meldet
+        /// <see cref="KesselQuelleOhneWirkungMelden"/> nach dem Aufbau der Quellbezüge.</para>
+        ///
+        /// Dialogfrei über <see cref="StilleDb"/> (Konzept 13.4).
+        /// </summary>
+        private bool ErzeugerMitPufferQuelle(int idType)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT WQ_ID_Puffer FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
+                "AND WQ_Typ = ? AND WQ_ID_Puffer > 0",
+                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", OleDbType.Integer, idType),
+                StilleDb.Par("@wq", OleDbType.VarWChar, WaermequelleClass.TYP_PUFFER));
+
+            if (dt == null) return false;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int idPuffer = StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
+                if (idPuffer <= 0) continue;
+
+                WaermesenkeClass.PufferInfo p = WaermesenkeClass.PufferLesen(idPuffer);
+                if (p != null && p.ID_Projekt == m_ID_Projekt) return true;
             }
 
             return false;
@@ -888,7 +966,7 @@ namespace WindowsFormsApplication1
                     return;
                 }
 
-                QuellspeicherUebernehmen();
+                QuellspeicherUebernehmen(true);
                 schleife.WP = simulation_wp;
             }
 
@@ -967,11 +1045,20 @@ namespace WindowsFormsApplication1
             // Ladeauftrag entstanden ist, darf den Erzeuger nicht stillegen.
             PufferSenkenOhneAuftragZurueckfallen(kontext);
 
+            // ETAPPE D5a: Quellbezüge auf Pufferspeicher — sie bestimmen die
+            // Rechenreihenfolge (Rechenebenen der Kaskadenschleife) und beim Heizkessel
+            // zusätzlich die Eintrittstemperatur.
+            QuellbezuegeAufbauen(kontext);
+
             schleife.Kontext = kontext;
             schleife.Bedarfsreihenfolge = BedarfsreihenfolgeAufbauen();
 
             // --- 5. Stundenschleife A–G ------------------------------------------------
             m_bError = !schleife.Rechnen(kanaele);
+
+            // D5a: Der Zyklus-Guard der Rechenebenen bricht dialogfrei ab; sein Text
+            // gehört in denselben Fehlerkanal wie die übrigen Abbrüche.
+            if (m_bError) FehlertextAufnehmen(schleife.Fehlertext);
 
             // Paket 8: Die Stundenschleife kann an der Kennlinie der Wärmepumpe
             // abbrechen (verbotene Extrapolation). Auch dieser Abbruch bekommt seinen
@@ -1341,7 +1428,14 @@ namespace WindowsFormsApplication1
             // ENTLADEREIHENFOLGE (Befund N7): einsortieren statt anhängen. Ein Puffer mit
             // gepflegter Entladeprio gehört an seine Stelle in der Ordnung des Kanals
             // (Konzept 3.6) — dieselbe Reihenfolge, die die Pufferverwaltung anzeigt.
-            EntladeordnungEinsortieren(k.Entladeordnung(sp.IstBrauchwasserkanal), sp);
+            //
+            // NACHARBEIT I-K2-1: über BedientKanal, nicht über IstBrauchwasserkanal. Ein
+            // KOMBISPEICHER als Ersatz-Pendelspeicher gehört in BEIDE Kanallisten; über
+            // IstBrauchwasserkanal (für ihn false) landete er nur im Heizkanal, und die
+            // Warmwasserhälfte fiel still aus. Für jeden anderen Speicher ist genau eine
+            // der beiden Bedingungen wahr - dieselbe Einsortierung wie zuvor.
+            if (sp.BedientKanal(false)) EntladeordnungEinsortieren(k.Entladeordnung(false), sp, false);
+            if (sp.BedientKanal(true)) EntladeordnungEinsortieren(k.Entladeordnung(true), sp, true);
 
             Ladeauftrag a = new Ladeauftrag();
             a.Modulindex = 0;
@@ -1381,12 +1475,17 @@ namespace WindowsFormsApplication1
         /// dort nicht (Projektzuordnung inkonsistent), kommt er ans Ende; das ist das
         /// Verhalten des Sicherheitsnetzes im Kontextaufbau.
         /// </summary>
+        /// <param name="brauchwasser">
+        /// Kanal, in den einsortiert wird (Nacharbeit I-K2-1). Er bestimmt zugleich, gegen
+        /// welche SOLL-Ordnung die Position gesucht wird; beim Kombispeicher wird die
+        /// Methode je Kanal einmal gerufen.
+        /// </param>
         private void EntladeordnungEinsortieren(List<SimulationPufferspeicher> ordnung,
-                                                SimulationPufferspeicher sp)
+                                                SimulationPufferspeicher sp, bool brauchwasser)
         {
             if (ordnung == null || sp == null || ordnung.Contains(sp)) return;
 
-            string verwendung = sp.IstBrauchwasserkanal
+            string verwendung = brauchwasser
                 ? WaermesenkeClass.VERWENDUNG_BRAUCHWASSER : WaermesenkeClass.VERWENDUNG_HEIZUNG;
 
             List<Ladeordnung.EntladeEintrag> soll =
@@ -1660,7 +1759,11 @@ namespace WindowsFormsApplication1
                 SimulationPufferspeicher sp;
                 if (!speicherRegistry.TryGetValue(e.ID_Puffer, out sp) || sp == null) continue;
                 if (!sp.ImRechenpfad || sp.IstQuelle) continue;
-                if (sp.IstBrauchwasserkanal != brauchwasser) continue;
+                // D5a: BedientKanal statt IstBrauchwasserkanal - ein KOMBISPEICHER steht
+                // in BEIDEN Entladereihenfolgen, je Kanal an der Stelle seiner
+                // Entladepriorität. Für jeden anderen Speicher ist die Frage dieselbe wie
+                // zuvor.
+                if (!sp.BedientKanal(brauchwasser)) continue;
                 if (!liste.Contains(sp)) liste.Add(sp);
             }
 
@@ -1670,7 +1773,7 @@ namespace WindowsFormsApplication1
             foreach (SimulationPufferspeicher sp in k.AlleSpeicher)
             {
                 if (sp == null || sp.IstQuelle) continue;
-                if (sp.IstBrauchwasserkanal != brauchwasser) continue;
+                if (!sp.BedientKanal(brauchwasser)) continue;      // D5a: Kombi in beiden
                 if (liste.Contains(sp)) continue;
 
                 Protokoll.HinweisEinmal("entladeordnung-nachtrag-" + verwendung + "-" +
@@ -2005,7 +2108,31 @@ namespace WindowsFormsApplication1
                     // und bilden den technischen Serienschlüssel der Anzeigen (13.3).
                     pufferWp.ID_Pufferspeicher = psp.items[0].ID;
                     pufferWp.ID_Projekt = m_ID_Projekt;
-                    pufferWp.Verwendung = SimulationPufferspeicher.VERWENDUNG_HEIZUNG;
+
+                    // ETAPPE D5a: Ein KOMBISPEICHER behält seine Verwendung — käme er über
+                    // die Alt-Zuordnung als „Heizung" in die Registry, verlöre er seine
+                    // zweite Kanalzugehörigkeit und der Warmwasserkanal bliebe ungedeckt.
+                    // Jede ANDERE Verwendung bleibt ausdrücklich bei HEIZUNG: Diese Zeile
+                    // ist die Rolle, mit der der Altpfad seinen Wärmepumpen-Puffer rechnet,
+                    // und daran ändert D5a nichts (Regressionszusage).
+                    //
+                    // NACHARBEIT E-K1-2 — NUR IM ZWEIKANALIGEN WEG. Der Altpfad kennt den
+                    // Kanalbegriff nicht; dort ist ein Kombispeicher ausdrücklich WIE EIN
+                    // HEIZUNGSPUFFER zu führen (AltpfadHinweiseD5a sagt das dem Anwender).
+                    // Stünde hier auch im Altpfad „Kombi", fände ErsterHeizpuffer() den
+                    // Speicher nicht mehr — der Alias puffer_wp wäre null, die Wärmepumpe
+                    // rechnete OHNE Speicher, und der Puffer fehlte in
+                    // Tab_ErgebnisPufferspeicher, in der Erdreich-Auswertung und in den
+                    // Zeitreihen des Berichts. Genau die Zusage „wie Heizung, mit Hinweis"
+                    // hält diese Bedingung ein, und zwar für ALLE Altpfad-Leser: In der
+                    // Registry steht dann durchgehend „Heizung".
+                    pufferWp.Verwendung =
+                        (KaskadeZweikanalig &&
+                         WaermesenkeClass.IstKombiVerwendung(
+                            WaermesenkeClass.WirksameVerwendung(
+                                WaermesenkeClass.PufferLesen(psp.items[0].ID))))
+                        ? SimulationPufferspeicher.VERWENDUNG_KOMBI
+                        : SimulationPufferspeicher.VERWENDUNG_HEIZUNG;
                     pufferWp.Init(psp.items[0].Gesamtvolumen,
                                   vorlauf,
                                   ruecklauf,
@@ -2193,11 +2320,21 @@ namespace WindowsFormsApplication1
         /// Konfiguration ein Fehler — Konzept 4.6 blockiert sie beim Speichern —, Altdaten
         /// können sie aber tragen. Sichtbar falsch ist besser als still falsch.
         /// </summary>
-        private void QuellspeicherUebernehmen()
+        /// <param name="zweikanalig">
+        /// true = Aufruf aus der gemeinsamen Speicherstufe. Nur dort greift die
+        /// KASKADEN-Auflösung aus Etappe D5a (siehe unten); der Altpfad behält seine
+        /// getrennten Instanzen und rechnet unverändert.
+        /// </param>
+        private void QuellspeicherUebernehmen(bool zweikanalig)
         {
             if (simulation_wp == null || simulation_wp.Quellspeicher == null) return;
 
-            foreach (SimulationPufferspeicher q in simulation_wp.Quellspeicher)
+            // Über eine Kopie laufen: Die Kaskaden-Auflösung tauscht Einträge der Liste
+            // aus, über die hier iteriert wird.
+            List<SimulationPufferspeicher> quellen =
+                new List<SimulationPufferspeicher>(simulation_wp.Quellspeicher);
+
+            foreach (SimulationPufferspeicher q in quellen)
             {
                 if (q == null) continue;
                 if (q.ID_Projekt <= 0) q.ID_Projekt = m_ID_Projekt;
@@ -2211,6 +2348,33 @@ namespace WindowsFormsApplication1
                 SimulationPufferspeicher belegt = null;
                 if (q.ID_Pufferspeicher > 0) speicherRegistry.TryGetValue(q.ID_Pufferspeicher, out belegt);
 
+                // ---------------------------------------------------------------
+                // KASKADE (Etappe D5a): Der Schlüssel ist von einem SENKENspeicher
+                // belegt, der NICHT die eigene Senke dieser Anlage ist — das ist kein
+                // Kurzschluss, sondern die Booster-Konstellation des Konzepts: WP 1 lädt
+                // Puffer 1, WP 2 bezieht daraus ihre Quellwärme.
+                //
+                // Beide Module müssen dann DIESELBE Instanz benutzen. Die eigens
+                // aufgebaute Quell-Instanz startet voll (SOC = Q_max) und führte eine
+                // zweite, getrennte Bilanz desselben Speichers — genau das, was Konzept
+                // 6.2 ausschließt. Sie wird deshalb durch die Registry-Instanz ersetzt;
+                // die Rechenreihenfolge (WP 2 nach Puffer 1) stellt die Kaskadenschleife
+                // über die Rechenebenen her.
+                // ---------------------------------------------------------------
+                if (zweikanalig && belegt != null && !belegt.IstQuelle &&
+                    !IstEigenerSenkenPuffer(q.ID_Anlage, q.ID_Pufferspeicher))
+                {
+                    int ersetzt = simulation_wp.QuellspeicherErsetzen(q, belegt);
+                    Protokoll.HinweisEinmal("quelle-kaskade-" + q.ID_Pufferspeicher,
+                                      "Kaskade: Puffer " + q.ID_Pufferspeicher + " (" +
+                                      belegt.BezeichnerAnzeige() + ") ist WÄRMEQUELLE der Anlage " +
+                                      q.ID_Anlage + " und zugleich Senke eines anderen Erzeugers. " +
+                                      "Beide rechnen auf DERSELBEN Speicherinstanz (" + ersetzt +
+                                      " Modulbezug umgestellt); die Anlage rechnet nach dem " +
+                                      "Erzeuger, der den Puffer lädt.");
+                    continue;
+                }
+
                 Protokoll.WarnungEinmal("registry-quelle-senke-kurzschluss-" + q.ID_Pufferspeicher,
                                   "Speicher-Registry: Puffer " + q.ID_Pufferspeicher + " ist QUELLE der " +
                                   "Anlage " + q.ID_Anlage + " und steht zugleich als " +
@@ -2221,6 +2385,351 @@ namespace WindowsFormsApplication1
                 q.ImRechenpfad = true;
                 if (!_zusatzSpeicher.Contains(q)) _zusatzSpeicher.Add(q);
             }
+        }
+
+        // ==================================================================
+        // QUELLBEZÜGE AUF PUFFERSPEICHER (Etappe D5a)
+        // ==================================================================
+
+        /// <summary>
+        /// Sammelt die Quellbezüge auf Pufferspeicher und richtet die Kessel-Kaskade ein
+        /// (Etappe D5a, Konzept_KonfigUI_Hydraulik Anforderung 6).
+        ///
+        /// Zwei Wirkungen:
+        ///
+        ///   1. <c>Kaskadenkontext.QuellpufferJeAnlage</c> — Grundlage der RECHENEBENEN
+        ///      der Kaskadenschleife: Ein Erzeuger mit Quellpuffer rechnet nach dem
+        ///      Erzeuger, der diesen Puffer lädt.
+        ///   2. Beim HEIZKESSEL zusätzlich die Eintrittstemperatur: Der Puffer liefert
+        ///      einen Teil des Temperaturhubs, und genau um diesen Anteil sinkt der
+        ///      Brennstoffbedarf (Formel siehe <c>SimulationSPK</c>).
+        ///
+        /// Für die WÄRMEPUMPE ändert sich hier nichts an der Physik — ihr Quellbezug
+        /// existiert seit Paket 2 (Verdampferwärme aus dem Quellspeicher). Neu ist allein
+        /// die Reihenfolge: Bis D5a rechnete eine WP mit Quellpuffer VOR dessen Lader und
+        /// sah deshalb den Füllstand der Vorstunde.
+        ///
+        /// <para><b>NUR WÄRMEPUMPE UND HEIZKESSEL</b> (Nacharbeit E-K2-2). Eine
+        /// Rechenebene &gt; 0 darf nur bekommen, wessen Modul eine EBENENMASKE auswertet —
+        /// und das sind allein diese beiden (<c>ModulEbenen</c>/<c>EbeneAktiv</c> in
+        /// <c>SimulationWaermepumpe</c> und <c>SimulationSPK</c>). Stünde eine
+        /// Solarthermie- oder BHKW-Anlage auf einer höheren Ebene, nähme
+        /// <c>BedarfsordnungJeEbeneBilden</c> ihre ART auf beiden Ebenen auf, und
+        /// <c>Stunde_Bedarf</c> liefe ZWEIMAL in derselben Stunde: beim BHKW eine echte
+        /// Doppelproduktion (Fahrweise, Direktdeckung, Reservierung je zweimal). Das
+        /// Konzept schränkt die Puffer-Quelle ohnehin auf Wärmepumpe und Heizkessel ein
+        /// (Abschnitt 4, Anforderungen 5/6).</para>
+        ///
+        /// <para><b>KURZSCHLUSS QUELLE = EIGENE SENKE</b> (Nacharbeit E-K2-1). Konzept 4.6
+        /// verbietet die Konstellation; Altdaten können sie tragen, und für den Kessel
+        /// kann der Dialog sie heute nicht verhindern (die Quellen-Spalte kommt mit D5b).
+        /// Der Zyklus-Guard der Ebenen greift hier ausdrücklich nicht
+        /// (<c>EbenenRelaxieren</c> überspringt den Selbstbezug). Der Quellbezug wird
+        /// deshalb gar nicht erst eingerichtet — dieselbe Wirkung wie bei der Wärmepumpe,
+        /// die ihre eigene, getrennte Quellinstanz behält (siehe
+        /// <see cref="QuellspeicherUebernehmen"/>).</para>
+        ///
+        /// Dialogfrei (Konzept 13.4).
+        /// </summary>
+        private void QuellbezuegeAufbauen(Kaskadenkontext kontext)
+        {
+            if (kontext == null) return;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, ID_Type, Bezeichner, WQ_Typ, WQ_ID_Puffer " +
+                "FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
+                "ORDER BY Prioritaet, ID",
+                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt));
+            if (dt == null) return;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                if (!string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+                                   WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
+                    continue;
+
+                int idAnlage = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                int idType = StilleDb.Zahl(StilleDb.Feld(r, "ID_Type"));
+                int idPuffer = StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
+                if (idAnlage <= 0 || idPuffer <= 0) continue;
+
+                // E-K2-2: Rechenebenen nur für Arten mit Modulmaske.
+                if (idType != ProjektPuffer.TYP_WP && idType != ProjektPuffer.TYP_KESSEL)
+                {
+                    Protokoll.WarnungEinmal("quellpuffer-art-ohne-ebene-" + idAnlage,
+                        "Wärmequelle Pufferspeicher: Die Anlage " + idAnlage + " ist weder " +
+                        "Wärmepumpe noch Heizkessel, führt aber einen Pufferspeicher als " +
+                        "Wärmequelle. Für diese Erzeugerart gibt es keinen Quellbezug " +
+                        "(Konzept Abschnitt 4) - der Eintrag bleibt WIRKUNGSLOS und die " +
+                        "Anlage rechnet unverändert an ihrer Kaskadenposition.");
+                    continue;
+                }
+
+                // E-K2-1: Quelle = eigene Senke ist der Kurzschluss aus Konzept 4.6.
+                if (IstEigenerSenkenPuffer(idAnlage, idPuffer))
+                {
+                    Protokoll.WarnungEinmal("quelle-gleich-eigene-senke-" + idAnlage,
+                        "Wärmequelle Pufferspeicher: Die Anlage " + idAnlage + " bezieht ihre " +
+                        "Wärme aus Puffer " + idPuffer + ", den sie selbst als Senke lädt " +
+                        "(Kurzschluss, Konzept 4.6). Sie würde Wärme im Kreis pumpen; der " +
+                        "Quellbezug bleibt deshalb WIRKUNGSLOS. Bitte die Wärmequelle oder " +
+                        "die Wärmesenke dieser Anlage ändern.");
+                    continue;
+                }
+
+                SimulationPufferspeicher sp = QuellspeicherInstanz(idPuffer, idAnlage);
+                if (sp == null) continue;
+
+                kontext.QuellpufferJeAnlage[idAnlage] = sp;
+
+                if (idType == ProjektPuffer.TYP_KESSEL) KesselQuellbezugSetzen(idAnlage, sp);
+            }
+
+            KesselQuelleOhneWirkungMelden();
+        }
+
+        /// <summary>
+        /// Meldet, wenn der Heizkessel ALLEIN wegen einer Puffer-Quelle in der
+        /// Stundenschleife rechnet, aber kein einziger Quellbezug zustande gekommen ist
+        /// (Nacharbeit E-K2-4).
+        ///
+        /// Die Gründe stehen einzeln schon im Protokoll (Puffer rechnet nicht mit, kein
+        /// Temperaturpaar, Quelle zu kalt, Kurzschluss). Was ohne diese Zeile fehlte, ist
+        /// die FOLGE: Der Kessel rechnet trotzdem in der Stundenschleife statt als
+        /// Vektorstufe — ein Unterschied, den sonst nur ein Zahlenvergleich zeigt.
+        /// </summary>
+        private void KesselQuelleOhneWirkungMelden()
+        {
+            if (!_kesselNurWegenQuelle || simulation_spk == null) return;
+
+            for (int i = 0; i < simulation_spk.KesselAnzahl; i++)
+                if (simulation_spk.QuellAnteil(i) > 0) return;      // mindestens einer wirkt
+
+            Protokoll.WarnungEinmal("kessel-quelle-ohne-wirkung",
+                "Kessel-Kaskade: Die Heizkessel dieses Projekts führen einen Pufferspeicher " +
+                "als Wärmequelle, aber KEIN Quellbezug ist zustande gekommen (Gründe siehe " +
+                "die Meldungen darüber). Die Kessel rechnen deshalb ohne Kaskade - aber, " +
+                "weil die Quelle konfiguriert ist, innerhalb der gemeinsamen " +
+                "Speicherstufe statt als eigene Vektorstufe. Das kann die Zahlen gegenüber " +
+                "einem Lauf ohne Quellenangabe verändern; die Wärmequelle ist zu " +
+                "bereinigen oder zu vervollständigen.");
+        }
+
+        /// <summary>
+        /// Die Speicherinstanz zu einer Quell-Puffer-ID, so wie sie in DIESEM Lauf
+        /// rechnet: erst die Registry, dann die Zusatzspeicher (Kurzschluss-Fall), dann
+        /// die eigens aufgebauten Quellinstanzen der WP-Module. <c>null</c>, wenn der
+        /// Puffer im Lauf nicht mitrechnet.
+        /// </summary>
+        private SimulationPufferspeicher QuellspeicherInstanz(int idPuffer, int idAnlage)
+        {
+            SimulationPufferspeicher sp;
+            if (speicherRegistry.TryGetValue(idPuffer, out sp) && sp != null && sp.ImRechenpfad)
+                return sp;
+
+            foreach (SimulationPufferspeicher z in _zusatzSpeicher)
+                if (z != null && z.ID_Pufferspeicher == idPuffer && z.ID_Anlage == idAnlage) return z;
+
+            if (simulation_wp != null && simulation_wp.Quellspeicher != null)
+                foreach (SimulationPufferspeicher q in simulation_wp.Quellspeicher)
+                    if (q != null && q.ID_Pufferspeicher == idPuffer) return q;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Richtet den Quellbezug EINES Heizkessels ein: Anteil der Nutzwärme, den der
+        /// Puffer über seinen Temperaturhub beisteuert (Etappe D5a).
+        ///
+        /// <code>
+        ///   Anteil = (T_Quelle − T_Rücklauf) / (T_Vorlauf − T_Rücklauf)
+        /// </code>
+        ///
+        /// <b>T_Quelle</b> ist die VORLAUFtemperatur des Quellpuffers — die Temperatur,
+        /// mit der er liefert. Wie viel Wärme dahinter steht, begrenzt ohnehin sein
+        /// <c>Q_max</c>, das aus derselben Spreizung gebildet ist; eine zweite Absenkung
+        /// über die Mitteltemperatur wäre eine doppelte Vorsicht.
+        ///
+        /// <b>T_Vorlauf/T_Rücklauf</b> — das Temperaturpaar, über das der Kessel anheben
+        /// muss — in einer VORRANGKETTE nach demselben Muster wie bei den Puffern
+        /// (Konzept 5.1):
+        ///
+        ///   1. das Paar des Kessels selbst (<c>Tab_Heizkessel</c>),
+        ///   2. das Paar seines SENKENpuffers (was er lädt, muss er auf dessen
+        ///      Vorlauf bringen),
+        ///   3. kein Paar → kein Quellbezug, mit Protokollhinweis. „Sichtbar falsch ist
+        ///      besser als still falsch": Ohne Temperaturen ist der Hub nicht bestimmbar,
+        ///      und ein geratener Anteil wäre eine Ergebnisänderung ohne Datengrundlage.
+        /// </summary>
+        private void KesselQuellbezugSetzen(int idAnlage, SimulationPufferspeicher quelle)
+        {
+            if (!_kesselInSchleife || simulation_spk == null) return;
+
+            int index = simulation_spk.spk_anlagen_ids.IndexOf(idAnlage);
+            if (index < 0 || index >= simulation_spk.KesselAnzahl) return;
+
+            WaermesenkeClass.PufferInfo qp = WaermesenkeClass.PufferLesen(quelle.ID_Pufferspeicher);
+            double tQuelle = (qp != null) ? qp.Vorlauf : 0;
+
+            int vorlauf, ruecklauf;
+            if (tQuelle <= 0 || !KesselTemperaturpaar(idAnlage, index, out vorlauf, out ruecklauf))
+            {
+                Protokoll.WarnungEinmal("kessel-quelle-ohne-temperaturen-" + idAnlage,
+                    "Kessel-Kaskade: Die Anlage " + idAnlage + " bezieht ihre Wärme aus " +
+                    "Puffer " + quelle.ID_Pufferspeicher + " (" + quelle.BezeichnerAnzeige() +
+                    "), aber das Temperaturpaar für den Hub ist nicht bestimmbar " +
+                    "(Puffer-Vorlauf " + tQuelle.ToString("0.#") + " °C, kein Vor-/Rücklauf " +
+                    "am Kessel und an seiner Senke). Der Quellbezug bleibt WIRKUNGSLOS - " +
+                    "der Kessel rechnet mit vollem Brennstoffbedarf.");
+                return;
+            }
+
+            double anteil = (tQuelle - ruecklauf) / (double)(vorlauf - ruecklauf);
+            if (anteil <= 0)
+            {
+                Protokoll.HinweisEinmal("kessel-quelle-zu-kalt-" + idAnlage,
+                    "Kessel-Kaskade: Puffer " + quelle.ID_Pufferspeicher + " liefert " +
+                    tQuelle.ToString("0.#") + " °C und damit nicht mehr als der " +
+                    "Systemrücklauf (" + ruecklauf + " °C) des Kessels " + idAnlage +
+                    ". Der Quellbezug bleibt wirkungslos.");
+                return;
+            }
+
+            if (anteil > 1) anteil = 1;
+            simulation_spk.QuellbezugSetzen(index, quelle, anteil);
+
+            Protokoll.Hinweis("Kessel-Kaskade: Anlage " + idAnlage + " bezieht ihre " +
+                              "Eintrittstemperatur aus Puffer " + quelle.ID_Pufferspeicher +
+                              " (" + quelle.BezeichnerAnzeige() + ", " + tQuelle.ToString("0.#") +
+                              " °C). Hub des Kessels " + ruecklauf + "/" + vorlauf + " °C; der " +
+                              "Puffer trägt " + (anteil * 100).ToString("0.#") + " % der " +
+                              "Nutzwärme, um genau diesen Anteil sinkt der Brennstoffbedarf. " +
+                              "Der Kessel rechnet NACH dem Erzeuger, der den Puffer lädt.");
+        }
+
+        /// <summary>
+        /// Temperaturpaar eines Kessels nach der Vorrangkette aus
+        /// <see cref="KesselQuellbezugSetzen"/>.
+        ///
+        /// <para>NACHARBEIT I-K3: Stufe 1 verknüpft über die ID, nicht über den
+        /// Bezeichner. <c>Tab_Energieanlagen.ID_Kessel</c> zeigt auf
+        /// <c>Tab_Heizkessel.ID</c> — das ist die vorhandene Beziehung, und
+        /// <c>CLAUDE.md</c> verlangt für neue Verknüpfungen ausdrücklich IDs. Über den
+        /// Bezeichner hätten zwei gleichnamige Kessel desselben Projekts das
+        /// Temperaturpaar des falschen geliefert und damit einen falschen Quellanteil.</para>
+        /// </summary>
+        private bool KesselTemperaturpaar(int idAnlage, int index, out int vorlauf, out int ruecklauf)
+        {
+            vorlauf = 0;
+            ruecklauf = 0;
+
+            // 1. Der Kessel selbst, über Tab_Energieanlagen.ID_Kessel. Still gelesen: Auf
+            //    einem alten Schema kann die Spalte fehlen - dann greift Stufe 2, statt
+            //    dass ein Dialog den Lauf anhält.
+            int idKessel = StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT ID_Kessel FROM Tab_Energieanlagen WHERE ID = ?",
+                StilleDb.Par("@id", OleDbType.Integer, idAnlage)));
+
+            DataTable dt = (idKessel > 0)
+                ? StilleDb.Tabelle("SELECT Vorlauf, Ruecklauf FROM Tab_Heizkessel WHERE ID = ?",
+                                   StilleDb.Par("@id", OleDbType.Integer, idKessel))
+                : null;
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                int v = StilleDb.Zahl(StilleDb.Feld(dt.Rows[0], "Vorlauf"));
+                int r = StilleDb.Zahl(StilleDb.Feld(dt.Rows[0], "Ruecklauf"));
+                if (ProjektPuffer.IstTemperaturpaar(v, r)) { vorlauf = v; ruecklauf = r; return true; }
+            }
+
+            // 2. Der SENKENpuffer des Kessels.
+            Senkenzuordnung z = simulation_spk.KesselSenke(index);
+            if (z != null)
+            {
+                foreach (int idPuffer in new[] { z.IDPufferHaupt, z.IDPufferZweit })
+                {
+                    if (idPuffer <= 0) continue;
+
+                    WaermesenkeClass.PufferInfo p = WaermesenkeClass.PufferLesen(idPuffer);
+                    if (p == null || !ProjektPuffer.IstTemperaturpaar(p.Vorlauf, p.Ruecklauf)) continue;
+
+                    vorlauf = p.Vorlauf;
+                    ruecklauf = p.Ruecklauf;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Was Kombispeicher und Kessel-Quellbezug im EINKANALIGEN Altpfad bedeuten
+        /// (Etappe D5a) — beide sind zweikanalige Erweiterungen, und der Altpfad bleibt
+        /// als Rückfallebene unverändert.
+        ///
+        /// <para><b>Kombispeicher:</b> Der Altpfad kennt nur EINEN Bedarfsvektor und
+        /// damit keine zwei Kanäle, zwischen denen ein Vorrat aufzuteilen wäre. Ein
+        /// Puffer mit Verwendung „Kombi" rechnet dort wie ein HEIZUNGS-Puffer — dieselbe
+        /// Behandlung, die er über <c>IstBrauchwasserkanal = false</c> ohnehin schon
+        /// bekäme. Das ist eine dokumentierte Vereinfachung, kein Rechenfehler: Auf einer
+        /// Bedarfssumme ist „Heizung + Warmwasser aus einem Vorrat" genau das, was
+        /// passiert.</para>
+        ///
+        /// <para><b>Kessel-Quellbezug:</b> unwirksam. Die Eintrittstemperatur aus einem
+        /// Puffer verlangt eine gemeinsame Speicherstufe mit Rechenreihenfolge — beides
+        /// gibt es nur im zweikanaligen Weg. Der Kessel rechnet mit vollem
+        /// Brennstoffbedarf wie bisher.</para>
+        /// </summary>
+        private void AltpfadHinweiseD5a()
+        {
+            int kombi = StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Verwendung = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
+                StilleDb.Par("@verw", OleDbType.VarWChar, WaermesenkeClass.VERWENDUNG_KOMBI)));
+
+            if (kombi > 0)
+                Protokoll.HinweisEinmal("altpfad-kombispeicher",
+                    "Kombispeicher: Das Projekt führt " + kombi + " Speicher mit Verwendung „" +
+                    WaermesenkeClass.VERWENDUNG_KOMBI + "\". Dieser Lauf rechnet EINKANALIG " +
+                    "(Kaskade_Zweikanalig ist nicht gesetzt) und kennt keine getrennten " +
+                    "Kanäle - der Kombispeicher wird deshalb wie ein HEIZUNGSPUFFER " +
+                    "behandelt. Für die gemeinsame Deckung von Heizung und Warmwasser aus " +
+                    "einem Vorrat den zweikanaligen Rechenweg einschalten.");
+
+            int kesselQuelle = StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
+                "AND WQ_Typ = ? AND WQ_ID_Puffer IS NOT NULL",
+                StilleDb.Par("@proj", OleDbType.Integer, m_ID_Projekt),
+                StilleDb.Par("@typ", OleDbType.Integer, ProjektPuffer.TYP_KESSEL),
+                StilleDb.Par("@wq", OleDbType.VarWChar, WaermequelleClass.TYP_PUFFER)));
+
+            if (kesselQuelle > 0)
+                Protokoll.HinweisEinmal("altpfad-kessel-quellpuffer",
+                    "Kessel-Kaskade: " + kesselQuelle + " Heizkessel dieses Projekts haben " +
+                    "einen Pufferspeicher als Wärmequelle. Dieser Lauf rechnet EINKANALIG " +
+                    "(Kaskade_Zweikanalig ist nicht gesetzt); der Quellbezug bleibt dort " +
+                    "WIRKUNGSLOS - die Kessel rechnen mit vollem Brennstoffbedarf. Für die " +
+                    "Kaskade den zweikanaligen Rechenweg einschalten.");
+        }
+
+        /// <summary>
+        /// true, wenn <paramref name="idPuffer"/> die eigene Senke der Anlage ist — der
+        /// KURZSCHLUSS aus Konzept 4.6 (Quelle = Senke derselben Anlage), den der Dialog
+        /// blockiert, Altdaten aber tragen können. Er bleibt vom Kaskadenweg der
+        /// Etappe D5a ausgenommen.
+        /// </summary>
+        private bool IstEigenerSenkenPuffer(int idAnlage, int idPuffer)
+        {
+            if (idAnlage <= 0 || idPuffer <= 0) return false;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT WS_ID_Puffer, WS_ID_Puffer2 FROM Tab_Energieanlagen WHERE ID = ?",
+                StilleDb.Par("@id", OleDbType.Integer, idAnlage));
+            if (dt == null || dt.Rows.Count == 0) return false;
+
+            return StilleDb.Zahl(StilleDb.Feld(dt.Rows[0], "WS_ID_Puffer")) == idPuffer ||
+                   StilleDb.Zahl(StilleDb.Feld(dt.Rows[0], "WS_ID_Puffer2")) == idPuffer;
         }
 
         /// <summary>
@@ -2318,7 +2827,7 @@ namespace WindowsFormsApplication1
             // Erst JETZT, weil sie beim Modulaufbau entstehen - und mit denselben
             // Instanzen, nicht mit Kopien: Genau das ist die geforderte Ablösung der
             // parallelen Liste wp_quellspeicher.
-            QuellspeicherUebernehmen();
+            QuellspeicherUebernehmen(false);
 
             return  m_bError ? Waermebedarf : simulation_wp.waermerestbedarf_stuendlich;
         }

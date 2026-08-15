@@ -862,6 +862,9 @@ from: volume × 1,16 Wh/(l·K) × (flow − return).</value>
   <data name="PSP_VERWENDUNG_HEIZUNG_ANZEIGE" xml:space="preserve">
     <value>Heating</value>
   </data>
+  <data name="PSP_VERWENDUNG_KOMBI_ANZEIGE" xml:space="preserve">
+    <value>Combined (heating + DHW)</value>
+  </data>
   <data name="SIM_ANZEIGE_CO2_ERSPARNIS" xml:space="preserve">
     <value>{0} kg CO2 / year saved</value>
   </data>
@@ -1071,6 +1074,9 @@ The project must contain a buffer storage with the use "{2}".</value>
   <data name="SIM_LBL_BEDARFSART" xml:space="preserve">
     <value>Demand type:</value>
   </data>
+  <data name="SIM_LBL_HINWEIS_KOMBI" xml:space="preserve">
+    <value>A combined storage covers heating and DHW from one common heat reservoir. If it is not sufficient for both within an hour, DHW is served first.</value>
+  </data>
   <data name="SIM_LBL_HINWEIS_PUFFER" xml:space="preserve">
     <value>For buffer sinks the storage must be created in the project (with matching use heating or DHW).</value>
   </data>
@@ -1219,6 +1225,9 @@ Please create a project buffer storage with the use "{1}".</value>
   <data name="SIM_PUFFER_HEIZUNG_KURZ" xml:space="preserve">
     <value>Buffer heating</value>
   </data>
+  <data name="SIM_PUFFER_KOMBI_KURZ" xml:space="preserve">
+    <value>Buffer combined</value>
+  </data>
   <data name="SIM_PUFFER_MIT_VOLUMEN" xml:space="preserve">
     <value>{0} ({1} l)</value>
   </data>
@@ -1233,6 +1242,9 @@ Please select a suitable storage or change the use in the buffer storage managem
   </data>
   <data name="SIM_RB_HEIZKREIS" xml:space="preserve">
     <value>Heating circuit (direct coverage of the demand)</value>
+  </data>
+  <data name="SIM_RB_PUFFER_KOMBI" xml:space="preserve">
+    <value>Buffer combined (heating + DHW)</value>
   </data>
   <data name="SIM_ROLLE_HAUPTSENKE" xml:space="preserve">
     <value>main sink</value>
@@ -1437,6 +1449,9 @@ remaining charging potential - never mandatory demand.
   </data>
   <data name="SIM_ZIEL_PUFFERSPEICHER_HEIZUNG" xml:space="preserve">
     <value>Buffer storage heating</value>
+  </data>
+  <data name="SIM_ZIEL_PUFFERSPEICHER_KOMBI" xml:space="preserve">
+    <value>Buffer storage combined (heating + DHW)</value>
   </data>
   <data name="SIM_ZWEITSENKE_GLEICH_HAUPTSENKE" xml:space="preserve">
     <value>The secondary sink must differ from the main sink.

@@ -897,3 +897,35 @@ Etappe D4 („Schema"-Ansicht) braucht mehrere davon voraussichtlich wieder:
 `SIM_SPALTE_ANLAGE`, `SIM_SPALTE_SENKE`, `SIM_SPALTE_ZWEITSENKE` und
 `PSP_FUSSZEILE_OHNE_PROJEKT` haben weiterhin Fundstellen (Senkendialog,
 Puffer-Verwaltung, Speicherspalte ohne Projekt).
+
+## Nachtrag Etappe D5a (Kombispeicher — Nacharbeit nach den Reviews)
+
+**Konzept_KonfigUI_Hydraulik, Anforderungen 4/7, Entscheidung K-1.** Die vierte
+Senkenoption „Pufferspeicher Kombi" und die Verwendung `Kombi` in der Puffer-Verwaltung
+standen bis zur Nacharbeit als deutsche **Festtexte** im Code — die Ressourcendateien waren
+während D5a vom parallel laufenden D2/D3-Paket belegt (Befund I-K1-2 des Integrations-
+Reviews: sichtbarer Sprachbruch auf englischer Oberfläche). Alle fünf sind jetzt im Katalog,
+in beiden `.resx` und in `Resource.Designer.cs`; Bestand jetzt **595 Schlüssel**.
+
+### Neu (5)
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIM_ZIEL_PUFFERSPEICHER_KOMBI` | Pufferspeicher Kombi (Heizung + Warmwasser) | Buffer storage combined (heating + DHW) | `WaermesenkeClass.ZielAnzeige`; dritter Eintrag von `_cbZiel2` in `Form_Waermesenke.cs` |
+| `SIM_PUFFER_KOMBI_KURZ` | Puffer Kombi | Buffer combined | `WaermesenkeClass.KurzformZuZiel` (Haupt-/Zweitsenkenanzeige) |
+| `PSP_VERWENDUNG_KOMBI_ANZEIGE` | Kombi (Heizung + Warmwasser) | Combined (heating + DHW) | `WaermesenkeClass.VerwendungAnzeige`; dritte Option des Verwendungs-Dropdowns in `Form_PufferSp_Projekt.cs` |
+| `SIM_RB_PUFFER_KOMBI` | Puffer Kombi (Heizung + Warmwasser) | Buffer combined (heating + DHW) | vierter Radiobutton der Hauptsenke, `Form_Waermesenke.cs` |
+| `SIM_LBL_HINWEIS_KOMBI` | Ein Kombispeicher deckt Heizung und Warmwasser aus einem gemeinsamen Wärmevorrat. Reicht er in einer Stunde nicht für beides, wird zuerst Warmwasser bedient. | A combined storage covers heating and DHW from one common heat reservoir. If it is not sufficient for both within an hour, DHW is served first. | Hinweislabel des Senkendialogs, hinter `SIM_LBL_HINWEIS_PUFFER` |
+
+**Wortwahl nach dem Glossar:** „Pufferspeicher" → *buffer storage*, „Brauchwasser/Warmwasser"
+→ *DHW* (Kürzel zulässig, Kapitel 11), „Heizung" → *heating*. „Kombi" ist im Englischen
+*combined* — nicht *combi*, das im britischen Sprachgebrauch die Kombitherme meint und damit
+ein Gerät statt einer hydraulischen Verwendung bezeichnet.
+
+### Nicht lokalisiert — und warum
+
+| Wert | Grund |
+|---|---|
+| `"Kombi"` (`DbWerte.PSP_VERWENDUNG_KOMBI`) | **Persistenzwert** in `Tab_Pufferspeicher.Verwendung`, deutsch und eingefroren (Drei-Schichten-Regel). Er wird in SQL verglichen und steht in `Tab_ErgebnisPufferspeicher`. |
+| `"PufferKombi"` (`DbWerte.WS_ZIEL_PUFFER_KOMBI`) | **Persistenzwert** in `Tab_Energieanlagen.WS_Ziel`/`WS_Ziel2`, ebenso eingefroren. |
+| Meldungen der Kessel-Kaskade, des Zyklus-Guards, des Kurzschluss-Guards und der Altpfad-Hinweise | **Protokollkanal der Engine.** Sie laufen wie in Paket 8 vorgesehen als deutsche Klartexte über `SimulationProtokoll`; die Umstellung des gesamten Kanals ist als eigener Schritt vorgemerkt (`SIMENG_*`-Familie). Bis dahin bleiben sie Festtexte — ausdrücklich als offener Punkt geführt, nicht übersehen. |

@@ -536,9 +536,11 @@ namespace WindowsFormsApplication1
 
             SimulationPufferspeicher sp = a.Speicher;
 
-            int kanal = sp.IstBrauchwasserkanal ? 1 : 0;
+            // D5a: Beim KOMBISPEICHER ist das Durchsatzbudget die Summe beider Kanäle —
+            // die gemeinsame Fassung steht in der Kaskadenschleife und liefert ohne
+            // Kombispeicher Anweisung für Anweisung das Bisherige.
             double ladefaehig = sp.Ladefaehigkeit(a.ObergrenzeStunde(pvUeberschuss));
-            double durchlass = Math.Min(absehbar[kanal] > 0 ? absehbar[kanal] : 0, sp.Entnahmefaehigkeit());
+            double durchlass = Kaskadenschleife.DurchlassBudget(sp, absehbar);
             if (ladefaehig + durchlass <= 0) return 0;
 
             double menge = Math.Min(_restPotenzial[f], ladefaehig + durchlass);
@@ -549,10 +551,7 @@ namespace WindowsFormsApplication1
 
             double genutzterDurchlass = ladung - ladefaehig;
             if (genutzterDurchlass > 0)
-            {
-                absehbar[kanal] -= genutzterDurchlass;
-                if (absehbar[kanal] < 0) absehbar[kanal] = 0;
-            }
+                Kaskadenschleife.DurchlassBuchen(sp, absehbar, genutzterDurchlass);
 
             _restPotenzial[f] -= ladung;
             _prodFeld[f] += ladung;

@@ -92,6 +92,14 @@ namespace WindowsFormsApplication1
         /// <summary>Die Anlage lädt einen Projekt-Puffer mit Verwendung „Brauchwasser".</summary>
         public const string WS_ZIEL_PUFFER_BRAUCHWASSER = "PufferBrauchwasser";
 
+        /// <summary>
+        /// Die Anlage lädt einen KOMBISPEICHER — einen Puffer mit Verwendung
+        /// <see cref="PSP_VERWENDUNG_KOMBI"/>, der Heizung und Warmwasser aus EINEM
+        /// Wärmevorrat bedient (Konzept_KonfigUI_Hydraulik, Anforderungen 4 und 7).
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string WS_ZIEL_PUFFER_KOMBI = "PufferKombi";
+
         // =====================================================================
         // Wärmesenke — abgedeckter Bedarfsanteil
         //   Tab_Energieanlagen.WS_Typ
@@ -156,6 +164,20 @@ namespace WindowsFormsApplication1
 
         public const string PSP_VERWENDUNG_HEIZUNG = "Heizung";
         public const string PSP_VERWENDUNG_BRAUCHWASSER = "Brauchwasser";
+
+        /// <summary>
+        /// KOMBISPEICHER: EIN Wärmevorrat für BEIDE Kanäle (Heizung und Warmwasser).
+        ///
+        /// Er steht in beiden Entladereihenfolgen und wird kanalneutral geladen; reicht
+        /// sein Inhalt in einer Stunde nicht für beide Bedarfe, gilt Warmwasser zuerst
+        /// (Entwurfsentscheidung K-1 des Konzepts). Persistenzwert, immer deutsch,
+        /// eingefroren (Drei-Schichten-Regel).
+        ///
+        /// NICHT zu verwechseln mit <see cref="PSP_SPEICHERTYP_KOMBI"/>: Das ist die
+        /// Bauform in <c>Tab_Pufferspeicher.Speichertyp</c>, dies hier die hydraulische
+        /// VERWENDUNG in <c>Tab_Pufferspeicher.Verwendung</c>.
+        /// </summary>
+        public const string PSP_VERWENDUNG_KOMBI = "Kombi";
 
         /// <summary>
         /// Rolle „Quellspeicher" — steht nur in <c>Tab_ErgebnisPufferspeicher</c>, nie in

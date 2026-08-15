@@ -869,6 +869,9 @@ sich aus: Volumen × 1,16 Wh/(l·K) × (Vorlauf − Rücklauf).</value>
   <data name="PSP_VERWENDUNG_HEIZUNG_ANZEIGE" xml:space="preserve">
     <value>Heizung</value>
   </data>
+  <data name="PSP_VERWENDUNG_KOMBI_ANZEIGE" xml:space="preserve">
+    <value>Kombi (Heizung + Warmwasser)</value>
+  </data>
   <data name="SIM_ANZEIGE_CO2_ERSPARNIS" xml:space="preserve">
     <value>{0} kg CO2 / Jahr gespart</value>
   </data>
@@ -1078,6 +1081,9 @@ Im Projekt muss ein Pufferspeicher mit der Verwendung „{2}" angelegt sein.</va
   <data name="SIM_LBL_BEDARFSART" xml:space="preserve">
     <value>Bedarfsart:</value>
   </data>
+  <data name="SIM_LBL_HINWEIS_KOMBI" xml:space="preserve">
+    <value>Ein Kombispeicher deckt Heizung und Warmwasser aus einem gemeinsamen Wärmevorrat. Reicht er in einer Stunde nicht für beides, wird zuerst Warmwasser bedient.</value>
+  </data>
   <data name="SIM_LBL_HINWEIS_PUFFER" xml:space="preserve">
     <value>Für Puffer-Senken muss der Speicher im Projekt angelegt sein (mit passender Verwendung Heizung bzw. Brauchwasser).</value>
   </data>
@@ -1226,6 +1232,9 @@ Bitte einen Projekt-Pufferspeicher mit der Verwendung „{1}" anlegen.</value>
   <data name="SIM_PUFFER_HEIZUNG_KURZ" xml:space="preserve">
     <value>Puffer Heizung</value>
   </data>
+  <data name="SIM_PUFFER_KOMBI_KURZ" xml:space="preserve">
+    <value>Puffer Kombi</value>
+  </data>
   <data name="SIM_PUFFER_MIT_VOLUMEN" xml:space="preserve">
     <value>{0} ({1} l)</value>
   </data>
@@ -1240,6 +1249,9 @@ Bitte einen passenden Speicher wählen oder die Verwendung in der Pufferspeicher
   </data>
   <data name="SIM_RB_HEIZKREIS" xml:space="preserve">
     <value>Heizkreis (direkte Deckung des Bedarfs)</value>
+  </data>
+  <data name="SIM_RB_PUFFER_KOMBI" xml:space="preserve">
+    <value>Puffer Kombi (Heizung + Warmwasser)</value>
   </data>
   <data name="SIM_ROLLE_HAUPTSENKE" xml:space="preserve">
     <value>Hauptsenke</value>
@@ -1444,6 +1456,9 @@ verbleibendes Ladepotenzial aufnimmt - nie Pflichtbedarf.
   </data>
   <data name="SIM_ZIEL_PUFFERSPEICHER_HEIZUNG" xml:space="preserve">
     <value>Pufferspeicher Heizung</value>
+  </data>
+  <data name="SIM_ZIEL_PUFFERSPEICHER_KOMBI" xml:space="preserve">
+    <value>Pufferspeicher Kombi (Heizung + Warmwasser)</value>
   </data>
   <data name="SIM_ZWEITSENKE_GLEICH_HAUPTSENKE" xml:space="preserve">
     <value>Die Zweitsenke muss sich von der Hauptsenke unterscheiden.
