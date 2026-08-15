@@ -279,10 +279,15 @@ namespace WindowsFormsApplication1
                 return;
             }
     
-            if (m_bWizard && textBox_Verbrauch.Text != "") // nur im Wizard Wert sofort speichern, wegen Simulation
+            // ZahlParsen statt double.Parse: Seit die Pruefung nicht mehr im TextChanged
+            // sitzt, kann im Feld auch ein ungueltiger Text stehen - double.Parse haette
+            // hier eine FormatException geworfen. Ungueltig heisst jetzt schlicht: nicht
+            // sichern, die Vorschau rechnet mit dem zuletzt gespeicherten Wert.
+            double dSumme;
+            if (m_bWizard && Program.ZahlParsen(textBox_Verbrauch.Text, out dSumme)) // nur im Wizard Wert sofort speichern, wegen Simulation
             {
                 Z_ProjektBrauchwasserCtrl ctrl = new Z_ProjektBrauchwasserCtrl();
-                ctrl.UpdateSumme(double.Parse(textBox_Verbrauch.Text), textBox_Name.Text, m_ID_Projekt);
+                ctrl.UpdateSumme(dSumme, textBox_Name.Text, m_ID_Projekt);
             }
 
             List<string> list = new List<string>();
@@ -375,13 +380,29 @@ namespace WindowsFormsApplication1
         private void btn_neuerWert_Click(object sender, EventArgs e)
         {
             ListView.SelectedIndexCollection indexes = listView_Auswahl.SelectedIndices;
-            if (indexes.Count == 0 || textBox_Verbrauch.Text == "")
+            if (indexes.Count == 0 || textBox_Verbrauch.Text.Trim() == "")
             {
                 MessageBox.Show("Bitte einen Eintrag aus der Liste auswählen und einen Wert eingeben!");
                 return;
             }
-            list_pwmodel[indexes[0]].Summe = double.Parse(textBox_Verbrauch.Text);
-            textBox_Jahres_Verbrauch.Text = textBox_Verbrauch.Text;
+
+            // Pruefung beim Aktionsknopf statt im TextChanged (Muster
+            // ProjektPuffer.TemperaturenPruefen): TryParse, sprechende Meldung, Feld
+            // markieren, Dialog bleibt offen. double.Parse() stand hier ungesichert und
+            // haette nach dem Wegfall des Undo() eine FormatException geworfen.
+            double dVerbrauch;
+            if (!Program.ZahlParsen(textBox_Verbrauch.Text, out dVerbrauch) || dVerbrauch < 0)
+            {
+                MessageBox.Show("Eingaben überprüfen: \"" + textBox_Verbrauch.Text + "\"" + Environment.NewLine +
+                                "Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.",
+                                "Ungültige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBox_Verbrauch.Focus();
+                textBox_Verbrauch.SelectAll();
+                return;
+            }
+
+            list_pwmodel[indexes[0]].Summe = dVerbrauch;
+            textBox_Jahres_Verbrauch.Text = dVerbrauch.ToString("F2");
             textBox_Summe.Text = BrauchwasserGesamt().ToString("F2") ;
             pictureBox1.Visible = true;
             pictureBox1.Refresh();
@@ -402,10 +423,25 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Stiller Hinweis statt fokushaltender Pruefung.
+        ///
+        /// Die alte Fassung meldete jede Zwischeneingabe modal und nahm sie mit
+        /// tb.Undo() zurueck. Undo() loest TextChanged erneut aus und schaltet dabei
+        /// zwischen Rueckgaengig und Wiederherstellen um: War das Feld vorher leer
+        /// (also ebenfalls keine Zahl), pendelte der Text zwischen Fehleingabe und
+        /// Leerstand, die Meldung kam nach jedem OK sofort zurueck und der Dialog war
+        /// gefangen. Geprueft wird jetzt erst beim Uebernehmen (btn_neuerWert_Click);
+        /// hier bleibt nur die Feldfarbe als Hinweis.
+        /// </summary>
         private void textBox_Verbrauch_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            if (tb == null) return;
+
+            double wert;
+            bool bOk = tb.Text.Trim().Length == 0 || Program.ZahlParsen(tb.Text, out wert);
+            tb.BackColor = bOk ? SystemColors.Window : Color.FromArgb(255, 235, 235);
         }
     }
 }
