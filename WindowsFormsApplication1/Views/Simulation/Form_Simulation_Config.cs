@@ -16,13 +16,10 @@ namespace WindowsFormsApplication1
         private List<string> listErzeuger = new List<string>();
         private List<string> listPufferSp = new List<string>();
 
-        // Pufferspeicher-Dropdowns der Rubrik "Pufferspeicher" (Felder 5 und 6),
-        // werden in InitPufferspeicherRubrik programmatisch angelegt
-        private ComboBox comboBox_Puffer1;
-        private ComboBox comboBox_Puffer2;
-        private CheckBox checkBox_Puffer1;
-        private CheckBox checkBox_Puffer2;
-        private bool _pufferUiUpdate = false; // verhindert Event-Rückkopplung
+        // D1: Die vier programmatischen Steuerelemente der Alt-Rubrik "Pufferspeicher"
+        // (zwei Dropdowns, zwei Checkboxen) samt Rückkopplungssperre sind entfallen -
+        // siehe AltRubrikStilllegen(). Sie waren seit Paket 2 unsichtbar und wurden nur
+        // noch befüllt.
 
         // Vollständiger Datenbestand der Pufferspeicher-Zuordnungen
         // (Erzeuger als DB-WERT, Pufferspeicher, Vorlauf, Rücklauf). listView1 zeigt
@@ -139,8 +136,9 @@ namespace WindowsFormsApplication1
                 statusTimer.Stop();
             };
 
-            // Dialog-Umbau: Rubrik "Pufferspeicher" statt Einblenden-Checkbox
-            InitPufferspeicherRubrik();
+            // D1: Die Alt-Rubrik "Pufferspeicher" wird nicht mehr aufgebaut - nur noch
+            // die Geometrie hergestellt, die der Rest des Dialogs davon geerbt hat.
+            AltRubrikStilllegen();
 
             // Live-Übersicht der ausgewählten Erzeuger rechts oben
             InitErzeugerUebersicht();
@@ -173,7 +171,7 @@ namespace WindowsFormsApplication1
         /// dem ersten Zeichnen, also ohne Aufblitzen - ausgeblendet.
         ///
         /// Die dauerhaft ausgeblendeten Controls (checkBox_PufferSp und
-        /// groupBox_PufferSp samt Rubrik, siehe InitPufferspeicherRubrik) brauchen
+        /// groupBox_PufferSp, siehe AltRubrikStilllegen) brauchen
         /// diese Behandlung nicht: sie werden zur Laufzeit nie wieder eingeblendet.
         /// Die Bearbeitungs-Dropdowns (comboBox, _wqCombo) sind ebenfalls unkritisch,
         /// weil ihre Bounds bei jedem Einblenden frisch aus Bildschirmkoordinaten
@@ -243,6 +241,14 @@ namespace WindowsFormsApplication1
         /// Einstellung der Speicherregelung (Hysterese) für den Pufferspeicher
         /// der Wärmepumpe: Ein- und Abschaltschwelle in Prozent der nutzbaren
         /// Kapazität. Gespeichert je Zuordnung in Z_ProjektPufferSp.
+        ///
+        /// <b>D1: derzeit ohne Aufrufer.</b> Der Einstieg war der Doppelklick auf die
+        /// entfallene Spalte „Zuordnung (alt)". Der Dialog bleibt bewusst stehen
+        /// (Konzeptvorgabe): Er ist der einzige Weg zu den Schwellen der ALT-Zuordnung,
+        /// und die Brücke, die diese Zeilen schreibt, ist bis zur Abnahme unangetastet.
+        /// Für den Anwender sind die Schwellen längst am Puffer selbst pflegbar
+        /// (<c>Form_PufferSp_Projekt</c>) — dort gehören sie hin, und nur dort liest die
+        /// Engine sie seit Paket 4.
         /// </summary>
         private void SpeicherregelungBearbeiten()
         {
@@ -355,11 +361,16 @@ namespace WindowsFormsApplication1
         /// Der Parameter ist seit Paket 9 / L4 der <b>DB-Wert</b> des Erzeugers
         /// (<see cref="DbWerte"/>) und nicht mehr sein Anzeigename — die Auswahl läuft
         /// damit sprachfrei.
+        ///
+        /// <b>D1: derzeit ohne Aufrufer</b> — die Spalte „Zuordnung (alt)" der Übersicht
+        /// war die einzige Anzeige dieser Auskunft. Die Methode bleibt stehen, solange
+        /// <c>_zuordnungen</c> und die Spiegel-Brücke bestehen; sie ist die
+        /// Leseschnittstelle darauf, wenn für die Abnahme noch einmal jemand
+        /// hineinschauen muss.
         /// </summary>
         private string ZugeordnetePufferSp(string erzeugerDbWert)
         {
-            // Aus dem kompletten Datenbestand lesen, nicht aus der (ggf. per
-            // Pufferspeicher-Checkbox gefilterten) Tabellen-Anzeige.
+            // Aus dem kompletten Datenbestand lesen.
             List<string> speicher = new List<string>();
             foreach (string[] z in _zuordnungen)
             {
@@ -370,250 +381,92 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Baut den Dialog um (programmatisch, kein Designer/.resx nötig):
-        /// - Die Checkbox "Pufferspeicher Zuordnung einblenden" entfällt.
-        /// - Links unter "Wärmeerzeuger:" gibt es die neue Rubrik "Pufferspeicher:"
-        ///   mit zwei Dropdown-Feldern (analog zu den vier Wärmeerzeuger-Feldern);
-        ///   "Stromerzeuger:" und "Energiespeicher:" rücken dafür nach unten.
-        /// - Die Gruppe "Pufferspeicher Zuordnung" erscheint - wie früher über die
-        ///   Checkbox - erst, sobald in einem der Dropdowns ein Pufferspeicher
-        ///   ausgewählt ist.
+        /// ETAPPE D1 (Konzept_KonfigUI_Hydraulik, Abschnitt 6) — Nachfolger von
+        /// <c>InitPufferspeicherRubrik</c>.
         ///
-        /// PAKET 2, ETAPPE A (Konzept 4.4): Die Rubrik ist NICHT MEHR SICHTBAR
-        /// (<see cref="RUBRIK_SICHTBAR"/>). Der Code bleibt vollständig stehen und
-        /// <c>_zuordnungen</c> wird beim Speichern unverändert mitgeschrieben - die
-        /// Engine liest den Wärmepumpen-Pufferspeicher bis Paket 4 aus
-        /// <c>Z_ProjektPufferSp</c>. Gepflegt wird die Zuordnung jetzt über den
-        /// Senkendialog (4.2) und die Puffer-Verwaltung (4.3); der freiwerdende Bereich
-        /// geht an die Übersicht (4.1). Etappe B entfernt den Code, sobald die Migration
-        /// in Realprojekten bestätigt ist.
+        /// <b>Was entfallen ist.</b> Die programmatische Rubrik „Pufferspeicher:" (Label,
+        /// zwei Dropdowns, zwei Checkboxen) wird nicht mehr angelegt. Sie war seit
+        /// Paket 2 / Etappe A dauerhaft unsichtbar (Schalter <c>RUBRIK_SICHTBAR</c>, mit
+        /// D1 ebenfalls entfallen), wurde aber weiter befüllt und vorbelegt — Ladewege
+        /// für Steuerelemente, die niemand sehen kann. Gepflegt wird die Zuordnung über
+        /// den Senkendialog (Konzept 4.2) und die Puffer-Verwaltung (4.3).
+        ///
+        /// <b>Was geblieben ist, und warum.</b> Diese Methode stellt die GEOMETRIE her,
+        /// die der übrige Dialog von der Rubrik geerbt hat:
+        ///
+        /// <list type="number">
+        ///   <item><description>Das Formular ist 105 px höher als der Entwurf. Der Platz
+        ///     ging nie an die Rubrik selbst (die saß in <c>groupBox_Tools</c>), sondern
+        ///     an die Höhe der Erzeuger-Übersicht rechts — sie bemisst sich an
+        ///     <c>groupBox_PufferSp.Top</c>, und das wiederum an <c>btn_Speichern.Top</c>.
+        ///     Ohne die 105 px verlöre die Übersicht eine Zeilenhöhe von rund vier
+        ///     Erzeugern.</description></item>
+        ///   <item><description><c>groupBox_PufferSp</c> ist damit weiterhin der
+        ///     Höhenanker der Übersicht. Der Designer wird in D1 bewusst NICHT umgebaut
+        ///     (Konzeptvorgabe „minimal-invasiv"); die Gruppe bleibt unsichtbar am
+        ///     unteren Rand stehen. Der Umbau auf <c>TableLayoutPanel</c> kommt mit
+        ///     D2/D3, dann fällt dieser Anker weg.</description></item>
+        /// </list>
+        ///
+        /// <b>Sichtbares Ergebnis: unverändert.</b> Alle hier angefassten Maße sind
+        /// dieselben wie bisher — der Dialog sieht nach D1 aus wie vorher, nur ohne die
+        /// Spalte „Zuordnung (alt)". Die 105 px im linken Gruppenrahmen bleiben als
+        /// Lücke stehen; sie stand dort auch vorher (die Rubrik war ja unsichtbar).
         /// </summary>
-        private void InitPufferspeicherRubrik()
+        private void AltRubrikStilllegen()
         {
-            const int VERSCHIEBUNG = 105; // Platzbedarf der neuen Rubrik (Label + 2 Dropdowns)
+            // Höhenzuschlag aus dem Bestand. Der Name der Konstanten hieß früher
+            // VERSCHIEBUNG und meinte den Platzbedarf der Rubrik; er bezeichnet jetzt
+            // das, was der Zuschlag tatsächlich bewirkt.
+            const int HOEHENZUSCHLAG = 105;
 
-            // Checkbox entfernen; Sichtbarkeit steuern künftig die Dropdowns
+            // Die Designer-Controls der Alt-Zuordnung bleiben bestehen, aber unsichtbar.
             checkBox_PufferSp.Visible = false;
             checkBox_PufferSp.Checked = true; // hält evtl. abfragende Logik konsistent
             groupBox_PufferSp.Visible = false;
 
             // Formular unten erweitern und die unteren Bedienelemente nachziehen
-            this.ClientSize = new Size(this.ClientSize.Width, this.ClientSize.Height + VERSCHIEBUNG);
+            // (die drei sind ohne Verankerung, Bestand).
+            this.ClientSize = new Size(this.ClientSize.Width, this.ClientSize.Height + HOEHENZUSCHLAG);
             btn_Speichern.Location = new Point(btn_Speichern.Left, this.ClientSize.Height - 42);
             btn_OK.Location = new Point(btn_OK.Left, this.ClientSize.Height - 42);
             lblStatus.Location = new Point(lblStatus.Left, this.ClientSize.Height - 37);
 
-            // Linke Gruppe vergrößern und die Rubriken unterhalb der Wärmeerzeuger verschieben
-            groupBox_Tools.Height += VERSCHIEBUNG;
-            label2.Top += VERSCHIEBUNG;      // "Stromerzeuger:"
-            comboBox5.Top += VERSCHIEBUNG;
-            checkBox5.Top += VERSCHIEBUNG;
-            label3.Top += VERSCHIEBUNG;      // "Energiespeicher:"
-            comboBox6.Top += VERSCHIEBUNG;
-            checkBox6.Top += VERSCHIEBUNG;
+            // Linke Gruppe und die Rubriken darunter genau wie bisher: Ein Verschieben
+            // nach oben wäre eine Layoutänderung, die D1 ausdrücklich nicht vornimmt.
+            groupBox_Tools.Height += HOEHENZUSCHLAG;
+            label2.Top += HOEHENZUSCHLAG;      // "Stromerzeuger:"
+            comboBox5.Top += HOEHENZUSCHLAG;
+            checkBox5.Top += HOEHENZUSCHLAG;
+            label3.Top += HOEHENZUSCHLAG;      // "Energiespeicher:"
+            comboBox6.Top += HOEHENZUSCHLAG;
+            checkBox6.Top += HOEHENZUSCHLAG;
 
-            // Neue Rubrik "Pufferspeicher:" unter den Wärmeerzeuger-Auswahlfeldern
-            Label lblPufferSp = new Label();
-            lblPufferSp.Name = "label_PufferSpRubrik";
-            lblPufferSp.Text = MyResource.Resource.PSP_RUBRIK_LABEL;
-            lblPufferSp.AutoSize = true;
-            lblPufferSp.Font = label2.Font; // gleiche Optik wie "Stromerzeuger:"
-            lblPufferSp.Location = new Point(label2.Left, comboBox4.Bottom + 14);
-            groupBox_Tools.Controls.Add(lblPufferSp);
-            lblPufferSp.BringToFront();
-
-            // Zwei Pufferspeicher-Dropdowns (Felder 5 und 6, analog comboBox1-4).
-            // Befüllt werden sie in SetControls aus den Stammdaten; künftig stehen
-            // hier mehrere Pufferspeicher-Typen zur Auswahl.
-            comboBox_Puffer1 = new ComboBox();
-            comboBox_Puffer1.Name = "comboBox_Puffer1";
-            comboBox_Puffer1.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox_Puffer1.Size = comboBox4.Size;
-            comboBox_Puffer1.Font = comboBox4.Font;
-            comboBox_Puffer1.Location = new Point(comboBox4.Left, lblPufferSp.Bottom + 4);
-            comboBox_Puffer1.SelectedIndexChanged += comboBox_Puffer_SelectedIndexChanged;
-            groupBox_Tools.Controls.Add(comboBox_Puffer1);
-            comboBox_Puffer1.BringToFront();
-
-            comboBox_Puffer2 = new ComboBox();
-            comboBox_Puffer2.Name = "comboBox_Puffer2";
-            comboBox_Puffer2.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox_Puffer2.Size = comboBox4.Size;
-            comboBox_Puffer2.Font = comboBox4.Font;
-            comboBox_Puffer2.Location = new Point(comboBox4.Left, comboBox_Puffer1.Bottom + 3);
-            comboBox_Puffer2.SelectedIndexChanged += comboBox_Puffer_SelectedIndexChanged;
-            groupBox_Tools.Controls.Add(comboBox_Puffer2);
-            comboBox_Puffer2.BringToFront();
-
-            // Checkboxen rechts neben den Dropdowns (analog checkBox1-4):
-            // angehakt => Zuordnung dieses Pufferspeichers wird eingeblendet
-            checkBox_Puffer1 = new CheckBox();
-            checkBox_Puffer1.Name = "checkBox_Puffer1";
-            checkBox_Puffer1.AutoSize = false;
-            checkBox_Puffer1.Size = checkBox4.Size;
-            checkBox_Puffer1.Location = new Point(checkBox4.Left, comboBox_Puffer1.Top + 6);
-            checkBox_Puffer1.CheckedChanged += checkBox_Puffer_CheckedChanged;
-            groupBox_Tools.Controls.Add(checkBox_Puffer1);
-            checkBox_Puffer1.BringToFront();
-
-            checkBox_Puffer2 = new CheckBox();
-            checkBox_Puffer2.Name = "checkBox_Puffer2";
-            checkBox_Puffer2.AutoSize = false;
-            checkBox_Puffer2.Size = checkBox4.Size;
-            checkBox_Puffer2.Location = new Point(checkBox4.Left, comboBox_Puffer2.Top + 6);
-            checkBox_Puffer2.CheckedChanged += checkBox_Puffer_CheckedChanged;
-            groupBox_Tools.Controls.Add(checkBox_Puffer2);
-            checkBox_Puffer2.BringToFront();
-
-            // Zuordnungs-Gruppe auf Höhe der neuen Rubrik ausrichten
+            // Die Übersicht bemisst ihre Höhe an groupBox_PufferSp.Top (Konzept 4.1).
+            // Die unsichtbare Gruppe steht deshalb am unteren Rand, damit der Bereich
+            // darüber vollständig an die Übersicht geht.
             groupBox_PufferSp.Location = new Point(groupBox_PufferSp.Left,
-                groupBox_Tools.Top + lblPufferSp.Top - 8);
-
-            // --- Etappe A (Konzept 4.4): Rubrik ausblenden -------------------------
-            // Nur Visible = false, wie es checkBox_PufferSp oben bereits vormacht.
-            // Die Steuerelemente bleiben angelegt und ereignisfähig; alles, was
-            // _zuordnungen füllt und speichert, arbeitet unverändert weiter.
-            if (!RUBRIK_SICHTBAR)
-            {
-                lblPufferSp.Visible = false;
-                comboBox_Puffer1.Visible = false;
-                comboBox_Puffer2.Visible = false;
-                checkBox_Puffer1.Visible = false;
-                checkBox_Puffer2.Visible = false;
-                groupBox_PufferSp.Visible = false;
-
-                // Die Übersicht bemisst ihre Höhe an groupBox_PufferSp.Top (4.1). Die
-                // unsichtbare Gruppe wird deshalb an den unteren Rand geschoben, damit
-                // der freiwerdende Bereich tatsächlich an die Übersicht geht.
-                groupBox_PufferSp.Location = new Point(groupBox_PufferSp.Left,
-                    btn_Speichern.Top - PLATZ_FUSSZEILE);
-            }
+                btn_Speichern.Top - PLATZ_FUSSZEILE);
         }
 
         /// <summary>
-        /// Füllt die beiden Pufferspeicher-Dropdowns aus den Stammdaten
-        /// (erster Eintrag leer = kein Pufferspeicher ausgewählt).
-        /// </summary>
-        private void FuellePufferSpAuswahl()
-        {
-            ComboBox[] boxen = { comboBox_Puffer1, comboBox_Puffer2 };
-            foreach (ComboBox cb in boxen)
-            {
-                if (cb == null) continue;
-                cb.Items.Clear();
-                cb.Items.Add(""); // Abwahl möglich
-                cb.Items.AddRange(listPufferSp.ToArray());
-            }
-        }
-
-        /// <summary>
-        /// Blendet die Gruppe "Pufferspeicher Zuordnung" ein, sobald mindestens
-        /// eine der Pufferspeicher-Checkboxen angehakt ist.
+        /// Frischt die Anzeige nach einer Änderung am Zuordnungsbestand auf.
         ///
-        /// Etappe A (Konzept 4.4): Bei ausgeblendeter Rubrik passiert hier nichts mehr -
-        /// sonst brächte die Vorbelegung aus SetControls die Zuordnungstabelle zurück
-        /// auf den Schirm. Die übrige Logik der Methode bleibt für Etappe B erhalten.
-        /// </summary>
-        private void AktualisierePufferSpSichtbarkeit()
-        {
-            if (!RUBRIK_SICHTBAR) return;
-
-            bool auswahl =
-                (checkBox_Puffer1 != null && checkBox_Puffer1.Checked) ||
-                (checkBox_Puffer2 != null && checkBox_Puffer2.Checked);
-            groupBox_PufferSp.Visible = auswahl;
-        }
-
-        /// <summary>
-        /// Liefert die aktuell aktiven (Checkbox angehakt + Dropdown belegt)
-        /// Pufferspeicher - sie bestimmen den Filter der Zuordnungsanzeige.
-        /// </summary>
-        private List<string> AktivePufferSp()
-        {
-            List<string> aktive = new List<string>();
-            if (checkBox_Puffer1 != null && checkBox_Puffer1.Checked &&
-                comboBox_Puffer1.SelectedIndex > 0 && !aktive.Contains(comboBox_Puffer1.Text))
-                aktive.Add(comboBox_Puffer1.Text);
-            if (checkBox_Puffer2 != null && checkBox_Puffer2.Checked &&
-                comboBox_Puffer2.SelectedIndex > 0 && !aktive.Contains(comboBox_Puffer2.Text))
-                aktive.Add(comboBox_Puffer2.Text);
-            return aktive;
-        }
-
-        /// <summary>
-        /// Baut die Zuordnungstabelle aus dem Datenbestand neu auf - angezeigt
-        /// werden nur die Zuordnungen der aktiven Pufferspeicher (separate Ansicht
-        /// je Pufferspeicher). Über Tag bleibt jede Zeile mit ihrem Eintrag im
-        /// Datenbestand verknüpft; gespeichert wird immer der komplette Bestand.
+        /// <b>D1:</b> Die unsichtbare Alt-Tabelle <c>listView1</c> wird nicht mehr
+        /// befüllt — sie war die Anzeige der stillgelegten Rubrik. <c>_zuordnungen</c>
+        /// selbst bleibt vollständig erhalten: geladen wird über
+        /// <see cref="ZuordnungenLaden"/>, geschrieben über
+        /// <c>btn_Speichern_Click</c>, und die Spiegel-Brücke
+        /// <c>WaermesenkeClass.WpSenkeSpiegeln</c> arbeitet unverändert weiter
+        /// (Konzeptvorgabe: bis zur Abnahme unangetastet).
+        ///
+        /// Was bleibt, ist der eine Zweck, den die Methode für den sichtbaren Dialog
+        /// hat: die Erzeuger-Übersicht neu aufbauen. Der Methodenname bleibt, weil ihn
+        /// mehrere Aufrufstellen führen; D2 löst ihn mit der Alt-Tabelle zusammen ab.
         /// </summary>
         private void RefreshZuordnungAnzeige()
         {
-            AktualisierePufferSpSichtbarkeit();
-            if (listView1 == null) return;
-
-            List<string> filter = AktivePufferSp();
-
-            listView1.Items.Clear();
-            for (int i = 0; i < _zuordnungen.Count; i++)
-            {
-                string[] z = _zuordnungen[i];
-                if (filter.Count > 0 && !filter.Contains(z[1])) continue;
-
-                // Feld 0 trägt den DB-Wert; angezeigt wird der lokalisierte Name.
-                ListViewItem lvitem = new ListViewItem(new[]
-                    { ErzeugerKatalog.Anzeige(z[0]), z[1], z[2], z[3], "📂" });
-                lvitem.Tag = i; // Index im Datenbestand
-                listView1.Items.Add(lvitem);
-            }
-            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
-            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-
             AktualisiereErzeugerUebersicht();
-        }
-
-        private void comboBox_Puffer_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (_pufferUiUpdate) return;
-
-            // Auswahl im Dropdown hakt die zugehörige Checkbox automatisch an
-            // (analog comboBox1-4), Abwahl entfernt den Haken.
-            _pufferUiUpdate = true;
-            if (sender == comboBox_Puffer1 && checkBox_Puffer1 != null)
-                checkBox_Puffer1.Checked = comboBox_Puffer1.SelectedIndex > 0;
-            if (sender == comboBox_Puffer2 && checkBox_Puffer2 != null)
-                checkBox_Puffer2.Checked = comboBox_Puffer2.SelectedIndex > 0;
-            _pufferUiUpdate = false;
-
-            RefreshZuordnungAnzeige();
-        }
-
-        private void checkBox_Puffer_CheckedChanged(object sender, EventArgs e)
-        {
-            if (_pufferUiUpdate) return;
-
-            // Haken entfernt => zugehöriges Dropdown leeren (analog checkBox1-4)
-            _pufferUiUpdate = true;
-            if (sender == checkBox_Puffer1 && !checkBox_Puffer1.Checked &&
-                comboBox_Puffer1 != null && comboBox_Puffer1.Items.Count > 0)
-                comboBox_Puffer1.SelectedIndex = 0;
-            if (sender == checkBox_Puffer2 && !checkBox_Puffer2.Checked &&
-                comboBox_Puffer2 != null && comboBox_Puffer2.Items.Count > 0)
-                comboBox_Puffer2.SelectedIndex = 0;
-            _pufferUiUpdate = false;
-
-            RefreshZuordnungAnzeige();
-        }
-
-        /// <summary>
-        /// Wählt den übergebenen Pufferspeicher im Dropdown aus; steht er nicht in
-        /// der Stammdaten-Liste (z. B. projektspezifischer Altbestand), wird er
-        /// ergänzt, damit die vorhandene Zuordnung sichtbar bleibt.
-        /// </summary>
-        private void PufferSpVorbelegen(ComboBox cb, string name)
-        {
-            if (cb == null || string.IsNullOrEmpty(name)) return;
-            if (!cb.Items.Contains(name)) cb.Items.Add(name);
-            cb.SelectedItem = name;
         }
 
         private void ComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -902,7 +755,9 @@ namespace WindowsFormsApplication1
             comboBox5.SelectedValue = Konfiguration.m_Tool_5;
             comboBox6.SelectedValue = Konfiguration.m_Tool_6;
             
-            Z_ProjektPufferSpCtrl ctrlpsp = ZuordnungenLaden();
+            // Rückgabewert wird seit D1 nicht mehr gebraucht (er belieferte die
+            // Vorbelegung der entfallenen Alt-Rubrik); _zuordnungen wird weiter gefüllt.
+            ZuordnungenLaden();
 
             // Auswahl aus den STAMM-Daten füllen (eindeutige Bezeichner) - die
             // Projekt-Tabelle enthält Kopien aller Projekte und erzeugte Duplikate
@@ -914,21 +769,10 @@ namespace WindowsFormsApplication1
             rsPsp.Close();
             comboBox.Items.AddRange(listPufferSp.ToArray());
 
-            // Pufferspeicher-Dropdowns der Rubrik füllen und aus der vorhandenen
-            // Zuordnung vorbelegen - dadurch erscheint die Zuordnungs-Gruppe
-            // automatisch, wenn das Projekt bereits Zuordnungen hat.
-            FuellePufferSpAuswahl();
-            List<string> vorhandenePuffer = new List<string>();
-            for (int i = 0; i < ctrlpsp.rows; i++)
-            {
-                string name = ctrlpsp.items[i].PufferSp;
-                if (!string.IsNullOrEmpty(name) && !vorhandenePuffer.Contains(name))
-                    vorhandenePuffer.Add(name);
-            }
-            if (vorhandenePuffer.Count > 0) PufferSpVorbelegen(comboBox_Puffer1, vorhandenePuffer[0]);
-            if (vorhandenePuffer.Count > 1) PufferSpVorbelegen(comboBox_Puffer2, vorhandenePuffer[1]);
+            // D1: Das Befüllen und Vorbelegen der Alt-Rubrik-Dropdowns ist entfallen -
+            // die Steuerelemente gibt es nicht mehr (AltRubrikStilllegen).
 
-            // Zuordnungstabelle und Übersicht mit den geladenen Daten aufbauen
+            // Übersicht mit den geladenen Daten aufbauen
             RefreshZuordnungAnzeige();
 
             // Fußzeile kennt das Projekt erst jetzt (Konzept 4.1)
@@ -1189,10 +1033,10 @@ namespace WindowsFormsApplication1
 
             frm.listErzeuger = displayListe;
 
-            // Nur die in der Rubrik aktivierten Pufferspeicher anbieten;
-            // ohne aktive Auswahl steht die komplette Stammdaten-Liste bereit.
-            List<string> aktivePuffer = AktivePufferSp();
-            frm.listPufferSp = aktivePuffer.Count > 0 ? aktivePuffer : listPufferSp;
+            // D1: Der Filter „nur die in der Rubrik aktivierten Pufferspeicher" ist mit
+            // der Rubrik entfallen - angeboten wird die komplette Stammdaten-Liste, also
+            // genau das, was der Bestand ohne aktive Auswahl schon tat.
+            frm.listPufferSp = listPufferSp;
             frm.m_ID_Projekt = m_ID_Projekt;
             frm.SetControls();
 
@@ -1279,7 +1123,8 @@ namespace WindowsFormsApplication1
         /// <list type="number">
         ///   <item><description><b>Unterkante abgeschnitten.</b> Die Entwurfsposition
         ///     (y = 390 bei 427 px Nutzhöhe) wandert über <c>Anchor = Bottom</c> mit,
-        ///     während <c>InitPufferspeicherRubrik</c> (+105 px) und
+        ///     während <c>AltRubrikStilllegen</c> (+105 px; hieß bis D1
+        ///     <c>InitPufferspeicherRubrik</c>) und
         ///     <c>ExtrapolationSchalterPlatzieren</c> (+fehlt) die Nutzhöhe erhöhen und
         ///     die Zeile zusätzlich absolut verschieben. Gemessen lag die Unterkante bei
         ///     555 px, die Nutzfläche endete bei 552 - die letzten drei Pixel der
@@ -1305,7 +1150,7 @@ namespace WindowsFormsApplication1
             if (lblStatus == null || btn_Speichern == null) return;
 
             // Senkrecht auf die Knopfzeile zentrieren: Die Knöpfe werden von
-            // InitPufferspeicherRubrik und ExtrapolationSchalterPlatzieren ohnehin
+            // AltRubrikStilllegen und ExtrapolationSchalterPlatzieren ohnehin
             // nachgezogen und liegen damit garantiert in der Nutzfläche.
             int y = btn_Speichern.Top + (btn_Speichern.Height - lblStatus.Height) / 2;
             lblStatus.Location = new Point(lblStatus.Left, y);

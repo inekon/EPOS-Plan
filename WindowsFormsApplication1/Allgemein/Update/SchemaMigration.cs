@@ -37,12 +37,15 @@ namespace WindowsFormsApplication1
     /// (Etappe 4a) hinzu und legt das Feature-Flag der zweikanaligen Kaskade an,
     /// Schritt 7 mit Paket 8 und belegt die Einstellung Extrapolation_erlaubt vor
     /// (Konzept 13.4). Schritt 8 trägt den Energieträger-Verweis
-    /// Tab_Energieanlagen.ID_Carrier nach.
+    /// Tab_Energieanlagen.ID_Carrier nach. Schritt 9 kommt mit Etappe E0 des Konzepts
+    /// Konfigurations-UI/Hydraulik hinzu und löst die Quellpuffer-Bezeichner auf den
+    /// Fremdschlüssel WQ_ID_Puffer auf (Datenregel R7) - der dritte und letzte
+    /// DML-Schritt neben 5 und 7.
     /// </summary>
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 8;
+        public const int ZIEL_VERSION = 9;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -75,6 +78,17 @@ namespace WindowsFormsApplication1
         /// ausgelieferten Datenbank fehlte sie bisher.
         /// </summary>
         public const int SCHRITT_8_ENERGIETRAEGER = 8;
+
+        /// <summary>
+        /// Nummer der Datenregel R7 (Etappe E0 des Konzepts
+        /// <c>Konzept_KonfigUI_Hydraulik</c>, Abschnitt 4): Der Quellpuffer bekommt
+        /// seine EINE Identität, den Fremdschlüssel <c>WQ_ID_Puffer</c>.
+        ///
+        /// Reines DML — die Spalte selbst entsteht seit jeher in Schritt 1
+        /// (<c>SchemaKatalog.Schritt1_Energieanlagen</c>). Eigener Schritt, weil eine
+        /// bereits auf Stand 8 stehende Datenbank die Schritte 1-8 nicht wiederholen darf.
+        /// </summary>
+        public const int SCHRITT_9_QUELLPUFFER_FK = 9;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -135,6 +149,19 @@ namespace WindowsFormsApplication1
         /// <c>Extrapolation_erlaubt = WAHR</c> erhalten haben.
         /// </summary>
         public static int DatenExtrapolationVorbelegt { get; private set; }
+
+        // --- Zählwerk der Datenregel R7 aus Schritt 9 (Etappe E0) ---------------------
+
+        /// <summary>R7: Anlagen, deren <c>WQ_Puffer</c> eindeutig zum Projekt-Puffer aufgelöst wurde.</summary>
+        public static int DatenQuellPufferFk { get; private set; }
+
+        /// <summary>
+        /// R7: Anlagen, bei denen der Bezeichner NICHT eindeutig auflösbar war (kein
+        /// Treffer oder mehrere gleichnamige Projektkopien). Der Fremdschlüssel bleibt
+        /// dort NULL; die dreistufige Rückfallkette in
+        /// <c>WaermequelleClass.QuellspeicherZeile</c> trägt diese Fälle weiter.
+        /// </summary>
+        public static int DatenQuellPufferOffen { get; private set; }
 
         static SchemaMigration()
         {
@@ -203,6 +230,12 @@ namespace WindowsFormsApplication1
                         "Energieträger-Verweis ID_Carrier in Tab_Energieanlagen",
                         "Die Spalte für den Energieträger der Anlage konnte nicht angelegt werden.",
                         Schritt_8_Energietraeger),
+
+            // ETAPPE E0 - Datenregel R7: Quellpuffer-Bezeichner -> WQ_ID_Puffer.
+            new Schritt(SCHRITT_9_QUELLPUFFER_FK,
+                        "Quellpuffer-Fremdschlüssel WQ_ID_Puffer (Etappe E0, Regel R7)",
+                        "Die Quell-Pufferreferenzen konnten nicht auf den Fremdschlüssel umgestellt werden.",
+                        Schritt_9_QuellPufferFremdschluessel),
         };
 
         // =================================================================================
@@ -232,6 +265,8 @@ namespace WindowsFormsApplication1
             DatenPendelspeicherTemperaturen = 0;
             DatenHinweise = 0;
             DatenExtrapolationVorbelegt = 0;
+            DatenQuellPufferFk = 0;
+            DatenQuellPufferOffen = 0;
 
             var l = new Lauf();
             string dbPfad;
@@ -385,6 +420,11 @@ namespace WindowsFormsApplication1
             if (DatenExtrapolationVorbelegt > 0)
                 l.Zeile("Vorbelegung 13.4: " + DatenExtrapolationVorbelegt +
                         " Einstellungssätze mit Extrapolation_erlaubt = WAHR.");
+
+            if (DatenQuellPufferFk > 0 || DatenQuellPufferOffen > 0)
+                l.Zeile("Datenregel R7 (E0): " + DatenQuellPufferFk +
+                        " Quellpuffer auf WQ_ID_Puffer aufgelöst, " + DatenQuellPufferOffen +
+                        " offen (Bezeichner bleibt Rückfallweg).");
 
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
@@ -569,6 +609,138 @@ namespace WindowsFormsApplication1
         private static bool Schritt_8_Energietraeger(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt8_Energietraeger);
+        }
+
+        // =================================================================================
+        // Schritt 9 - Datenregel R7 (Etappe E0): Quellpuffer-Bezeichner -> Fremdschlüssel
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Datenregel R7</b> (Etappe E0, Konzept <c>Konzept_KonfigUI_Hydraulik</c>
+        /// Abschnitt 4): Für jede Anlage mit <c>WQ_Typ = 'Pufferspeicher'</c>, gesetztem
+        /// Bezeichner <c>WQ_Puffer</c> und LEEREM <c>WQ_ID_Puffer</c> wird der Bezeichner
+        /// gegen die PROJEKT-Puffer desselben Projekts aufgelöst und der Fremdschlüssel
+        /// gesetzt.
+        ///
+        /// <b>Warum es die Regel nach R3 noch braucht.</b> R3 (Schritt 5) hat denselben
+        /// Weg schon einmal genommen — aber genau einmal, und danach schrieb der
+        /// Quellendialog weiterhin ausschließlich den Bezeichner
+        /// (<c>Form_Simulation_Config.Uebersicht</c>, Wärmequelle „Pufferspeicher").
+        /// Jede seither über die Oberfläche gesetzte Quelle steht deshalb wieder ohne
+        /// Fremdschlüssel da. R7 holt diesen Rest nach; ab E0 schreibt der Dialog die ID
+        /// selbst, die Regel läuft also ein letztes Mal für den Bestand.
+        ///
+        /// <b>Nur EINDEUTIGE Treffer.</b> Anders als R3 (dort <c>MIN(ID)</c>) wird der
+        /// Fremdschlüssel nur gesetzt, wenn genau ein Projekt-Puffer diesen Bezeichner
+        /// trägt. Projekte können denselben Speichertyp durch wiederholtes Duplizieren
+        /// mehrfach enthalten (Dedup-Aufhebung 5.2); bei mehreren Kandidaten wäre die
+        /// kleinste ID eine Behauptung, die die Migration nicht belegen kann. Kein oder
+        /// mehrdeutiger Treffer heißt deshalb: Feld bleibt NULL, Protokollzeile, fertig.
+        /// Die dreistufige Rückfallkette in <c>WaermequelleClass.QuellspeicherZeile</c>
+        /// (FK → Bezeichner im Projekt → Bezeichner im Katalog) trägt diese Fälle
+        /// unverändert weiter — es geht kein Verhalten verloren.
+        ///
+        /// <b>Ergebnisneutral.</b> Gesetzt wird genau der Speicher, den die Rückfallkette
+        /// über Stufe 2 ohnehin gefunden hätte (gleicher Bezeichner, gleiches Projekt) —
+        /// bei Eindeutigkeit ist das dieselbe Zeile. Kein Backfill von Bezeichnern,
+        /// keine Änderung an <c>WQ_Puffer</c>.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Die Auswahl greift nur Zeilen mit
+        /// leerem Fremdschlüssel; ein zweiter Lauf findet die aufgelösten nicht mehr.
+        /// </summary>
+        private static bool Schritt_9_QuellPufferFremdschluessel(Lauf l)
+        {
+            DataTable projekte = Abfrage(l, "SELECT ID FROM Tab_Projekt ORDER BY ID");
+            if (projekte == null)
+            {
+                l.Notiz("Tab_Projekt ist nicht lesbar - Regel R7 wurde nicht ausgeführt.");
+                return false;
+            }
+
+            bool ok = true;
+            foreach (DataRow p in projekte.Rows)
+            {
+                int idProjekt = Zahl(p["ID"]);
+                if (idProjekt <= 0) continue;
+
+                if (!Regel7_QuellPufferFk(l, idProjekt)) ok = false;
+            }
+
+            l.Notiz("R7: " + DatenQuellPufferFk + " Quellpuffer auf WQ_ID_Puffer aufgelöst, " +
+                    DatenQuellPufferOffen + " nicht eindeutig auflösbar");
+            return ok;
+        }
+
+        // --- R7 ----------------------------------------------------------------------
+
+        private static bool Regel7_QuellPufferFk(Lauf l, int idProjekt)
+        {
+            DataTable q = Abfrage(l,
+                "SELECT ID, Bezeichner, WQ_Puffer FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND WQ_Typ = ? AND WQ_Puffer IS NOT NULL " +
+                "  AND (WQ_ID_Puffer IS NULL OR WQ_ID_Puffer = 0) ORDER BY ID",
+                new OleDbParameter("@proj", idProjekt),
+                new OleDbParameter("@typ", WaermequelleClass.TYP_PUFFER));
+
+            if (q == null) return false;
+
+            bool ok = true;
+            foreach (DataRow r in q.Rows)
+            {
+                int idAnlage = Zahl(r["ID"]);
+                string bezPuffer = Txt(r["WQ_Puffer"]);
+                if (bezPuffer.Length == 0) continue;
+
+                // Zwei Abfragen statt einer: Access kennt kein zuverlässiges
+                // "COUNT und MIN in einem Rutsch" über eine parametrisierte Abfrage,
+                // und die Anzahl entscheidet hier über das Verhalten.
+                int treffer = Zahl(Scalar(l,
+                    "SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
+                    new OleDbParameter("@proj", idProjekt),
+                    new OleDbParameter("@bez", bezPuffer)));
+
+                if (treffer == 0)
+                {
+                    DatenQuellPufferOffen++;
+                    Hinweis(l, "Projekt " + idProjekt + " R7: Anlage " + idAnlage + " (" +
+                               Txt(r["Bezeichner"]) + ") bezieht Wärme aus dem Puffer '" +
+                               bezPuffer + "', den das Projekt nicht enthält - " +
+                               "WQ_ID_Puffer bleibt leer, es gilt weiter der Bezeichner. " +
+                               "Quell-Puffer im Projekt anlegen und die Wärmequelle neu wählen.");
+                    continue;
+                }
+
+                if (treffer > 1)
+                {
+                    DatenQuellPufferOffen++;
+                    Hinweis(l, "Projekt " + idProjekt + " R7: Anlage " + idAnlage + " (" +
+                               Txt(r["Bezeichner"]) + ") verweist auf '" + bezPuffer +
+                               "', den das Projekt " + treffer + "-mal enthält - " +
+                               "WQ_ID_Puffer bleibt leer (nicht entscheidbar). " +
+                               "Wärmequelle im Konfigurationsdialog einmal neu wählen.");
+                    continue;
+                }
+
+                int idPuffer = Zahl(Scalar(l,
+                    "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
+                    new OleDbParameter("@proj", idProjekt),
+                    new OleDbParameter("@bez", bezPuffer)));
+                if (idPuffer <= 0) { DatenQuellPufferOffen++; continue; }
+
+                if (NonQuery(l, "UPDATE Tab_Energieanlagen SET WQ_ID_Puffer = ? WHERE ID = ?",
+                             new OleDbParameter("@puf", idPuffer),
+                             new OleDbParameter("@id", idAnlage)) < 0)
+                {
+                    ok = false;
+                    continue;
+                }
+
+                DatenQuellPufferFk++;
+                l.Notiz("Projekt " + idProjekt + " R7: Anlage " + idAnlage +
+                        " -> WQ_ID_Puffer = " + idPuffer + " ('" + bezPuffer + "')");
+            }
+
+            return ok;
         }
 
         /// <summary>
