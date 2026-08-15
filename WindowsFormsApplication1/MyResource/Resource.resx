@@ -1542,6 +1542,9 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_TAGESVERTEILUNG_FEHLT" xml:space="preserve">
     <value>Wärmebedarf: Zum Tagesverteilungstyp „{0}“ sind keine Daten hinterlegt. Die Bedarfsrechnung wurde an dieser Stelle abgebrochen; das Ergebnis ist unvollständig.</value>
   </data>
+  <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
+    <value>Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen.</value>
+  </data>
   <data name="SIMENG_WP_EXTRAPOLATION_HINWEIS" xml:space="preserve">
     <value>Wärmepumpe '{0}': Die Quelltemperatur unterschreitet die untere Stützstelle der Kennlinie ({1} °C). Es wird extrapoliert (Projekteinstellung „Extrapolation der Kennlinie erlauben“).</value>
   </data>

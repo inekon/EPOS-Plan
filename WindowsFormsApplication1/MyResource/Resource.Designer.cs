@@ -4151,6 +4151,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage &apos;{0}&apos; rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe &apos;{0}&apos;: Die Quelltemperatur unterschreitet die untere Stützstelle der Kennlinie ({1} °C). Es wird extrapoliert (Projekteinstellung „Extrapolation der Kennlinie erlauben“). ähnelt.
         /// </summary>
         public static string SIMENG_WP_EXTRAPOLATION_HINWEIS {
