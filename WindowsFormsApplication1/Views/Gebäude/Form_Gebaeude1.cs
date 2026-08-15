@@ -141,46 +141,70 @@ namespace WindowsFormsApplication1
         // Nicht editierte Felder (Raumsolltemperaturen, Waermebruecken, Ferien, ...) bleiben aus dem geladenen model erhalten.
         private bool InitModelFromControls()
         {
+            // Zahlenfelder zuerst prüfen: Program.ZahlPruefen meldet sprechend, setzt den
+            // Fokus und liefert false - der Dialog bleibt dann offen. Leer gilt weiterhin
+            // als Fehler, denn double.Parse lief bisher genauso in die Sammelmeldung.
+            double wfl, dWfNutzer, dWaermegewinne, dFensterdurchlassgrad, dRaumhoehe;
+            double dFFSued, dFFOstWest, dFFNord;
+            double dFlaecheAussenwand, dDachflaeche, dGrundflaeche, dSonstigeFlaechen;
+            double dUAussenwand, dUFenster, dUDachflaeche, dUGrundflaeche, dUSonstiges;
+
+            if (!Program.ZahlPruefen(textBox_WohnflaecheGesamt, "Wohn-/Nutzfläche", out wfl)) return false;
+            if (!Program.ZahlPruefen(textBox_FlaecheNutzer, "Fläche / Nutzer", out dWfNutzer)) return false;
+            if (!Program.ZahlPruefen(textBox_Waermegewinne, "Interne Wärmegewinne", out dWaermegewinne)) return false;
+            if (!Program.ZahlPruefen(textBox_Fensterdurchlassgrad, "Fensterdurchlaßgrad", out dFensterdurchlassgrad)) return false;
+            if (!Program.ZahlPruefen(textBox_Raumhoehe, "Raumhöhe", out dRaumhoehe)) return false;
+
+            if (!Program.ZahlPruefen(textBox_FFSued, "Fensterfläche Süd", out dFFSued)) return false;
+            if (!Program.ZahlPruefen(textBox_FFOstWest, "Fensterfläche Ost + West", out dFFOstWest)) return false;
+            if (!Program.ZahlPruefen(textBox_FFNord, "Fensterfläche Nord", out dFFNord)) return false;
+            if (!Program.ZahlPruefen(textBox_Flaeche_Aussenwand, "Fläche Außenwand", out dFlaecheAussenwand)) return false;
+            if (!Program.ZahlPruefen(textBox_Gebaeude_Dachflaeche, "Gebäude Dachfläche", out dDachflaeche)) return false;
+            if (!Program.ZahlPruefen(textBox_Gebaeude_Grundflaeche, "Gebäude Grundfläche", out dGrundflaeche)) return false;
+            if (!Program.ZahlPruefen(textBox_Sonstige_Flaechen, "sonstige Flächen", out dSonstigeFlaechen)) return false;
+
+            if (!Program.ZahlPruefen(textBox_UWert_Aussenwand, "U-Wert Außenwand", out dUAussenwand)) return false;
+            if (!Program.ZahlPruefen(textBox_UWert_Fenster, "U-Wert Fenster", out dUFenster)) return false;
+            if (!Program.ZahlPruefen(textBox_UWert_Dachflaeche, "U-Wert Dachfläche", out dUDachflaeche)) return false;
+            if (!Program.ZahlPruefen(textBox_UWert_Grundflaeche, "U-Wert Grundfläche", out dUGrundflaeche)) return false;
+            if (!Program.ZahlPruefen(textBox_UWert_Sonstige, "U-Wert Sonstiges", out dUSonstiges)) return false;
+
             try
             {
                 model.Gebaeudename = comboBox_Name.Text;
                 model.Typ = comboBox_Gebaeudetyp.Text;
                 model.Beschreibung = textBox_Beschreibung.Text;
 
-                double wfl = double.Parse(textBox_WohnflaecheGesamt.Text);
                 model.Wohnflaeche_gesamt = wfl;
 
-                double dWfNutzer = double.Parse(textBox_FlaecheNutzer.Text);
                 model.Flaeche_Nutzer = dWfNutzer;
                 if (dWfNutzer == 0) { model.Flaeche_Nutzer = 35; dWfNutzer = 35; }
                 model.Bewohner = wfl / dWfNutzer; // Wohnfläche pro Nutzer
 
-                model.Interne_Waermegewinne = double.Parse(textBox_Waermegewinne.Text);
+                model.Interne_Waermegewinne = dWaermegewinne;
 
                 if (comboBox_Gebaeudeart.SelectedIndex == 0) model.Bauweise = wfl * 20;
                 else if (comboBox_Gebaeudeart.SelectedIndex == 1) model.Bauweise = wfl * 50;
                 else if (comboBox_Gebaeudeart.SelectedIndex == 2) model.Bauweise = wfl * 100;
                 else model.Bauweise = 50;
 
-                model.Fensterflaeche_Sued = double.Parse(textBox_FFSued.Text);
-                model.Fensterflaeche_Ost = double.Parse(textBox_FFOstWest.Text);
-                model.Fensterflaeche_Nord = double.Parse(textBox_FFNord.Text);
-                model.Fensterdurchlassgrad = double.Parse(textBox_Fensterdurchlassgrad.Text);
+                model.Fensterflaeche_Sued = dFFSued;
+                model.Fensterflaeche_Ost = dFFOstWest;
+                model.Fensterflaeche_Nord = dFFNord;
+                model.Fensterdurchlassgrad = dFensterdurchlassgrad;
 
-                model.k_Wert_Außenwand = double.Parse(textBox_UWert_Aussenwand.Text);
-                model.k_Wert_Fenster = double.Parse(textBox_UWert_Fenster.Text);
-                model.k_Wert_Dachflaeche = double.Parse(textBox_UWert_Dachflaeche.Text);
-                model.k_Wert_Grundflaeche = double.Parse(textBox_UWert_Grundflaeche.Text);
-                model.k_Wert_Sonstiges = double.Parse(textBox_UWert_Sonstige.Text);
-                model.Flaeche_Außenwand = double.Parse(textBox_Flaeche_Aussenwand.Text);
-                model.gesamte_Fensterflaeche = double.Parse(textBox_FFSued.Text) +
-                         double.Parse(textBox_FFOstWest.Text) +
-                         double.Parse(textBox_FFNord.Text); // gesamte Fensterfläche
-                model.Dachflaeche = double.Parse(textBox_Gebaeude_Dachflaeche.Text);
-                model.Grundflaeche = double.Parse(textBox_Gebaeude_Grundflaeche.Text);
-                model.Sonstige_Flaechen = double.Parse(textBox_Sonstige_Flaechen.Text);
+                model.k_Wert_Außenwand = dUAussenwand;
+                model.k_Wert_Fenster = dUFenster;
+                model.k_Wert_Dachflaeche = dUDachflaeche;
+                model.k_Wert_Grundflaeche = dUGrundflaeche;
+                model.k_Wert_Sonstiges = dUSonstiges;
+                model.Flaeche_Außenwand = dFlaecheAussenwand;
+                model.gesamte_Fensterflaeche = dFFSued + dFFOstWest + dFFNord; // gesamte Fensterfläche
+                model.Dachflaeche = dDachflaeche;
+                model.Grundflaeche = dGrundflaeche;
+                model.Sonstige_Flaechen = dSonstigeFlaechen;
                 model.Wohnflaeche = wfl;
-                model.Raumhoehe = double.Parse(textBox_Raumhoehe.Text);
+                model.Raumhoehe = dRaumhoehe;
 
                 int index = comboBox_Baujahr.SelectedIndex;
                 model.Baualtersklasse = ((char)('A' + index)).ToString();
@@ -221,123 +245,92 @@ namespace WindowsFormsApplication1
             frm.ShowDialog();
         }
 
+        // TextChanged färbt ab hier nur noch (rosa = gerade keine Zahl). Gemeldet
+        // wird erst beim Speichern in InitModelFromControls; das frühere Melden mit
+        // tb.Undo() konnte sich aufschaukeln. Begründung ausführlich in Program.cs.
         private void textBox_WohnflaecheGesamt_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_FlaecheNutzer_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Fensterdurchlassgrad_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Raumhoehe_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Waermegewinne_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_FFNord_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_FFOstWest_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_FFSued_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Gebaeude_Grundflaeche_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Gebaeude_Dachflaeche_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Flaeche_Aussenwand_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Sonstige_Flaechen_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_UWert_Aussenwand_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_UWert_Dachflaeche_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_UWert_Fenster_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_UWert_Grundflaeche_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_UWert_Sonstige_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
     }
 }
