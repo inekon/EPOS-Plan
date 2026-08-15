@@ -122,6 +122,16 @@ Entladung von Puffer 1 (Bilanzraum-Mechanik). Anzeige: Kaskadenkette
 Mehrstufige Ketten sind zulässig; die Zyklusprüfung (Abschnitt 7) verhindert
 Ringe.
 
+> **Invariante S-1 (Nutzervorgabe 15.08.2026): Keine direkte Verbindung
+> Puffer → Puffer.** Ein Speicher kann weder Senke noch Quelle eines anderen
+> Speichers sein; Wärme wechselt den Speicher ausschließlich über einen
+> dazwischengeschalteten Erzeuger (Booster-Prinzip: Puffer 1 → WP 2 → Puffer 2).
+> Strukturell ist das bereits garantiert — Quelle-/Senke-Bezüge existieren nur an
+> `Tab_Energieanlagen`, nie an `Tab_Pufferspeicher` —, gilt aber als bindende
+> Entwurfsregel für alle künftigen Erweiterungen. Darstellung: In Schema und
+> Kaskadenkette steht zwischen zwei Speicher-Knoten immer ein Erzeuger-Knoten;
+> ein direkter Pfeil Speicher → Speicher darf nie gezeichnet werden.
+
 **Temperatur-Kompatibilität (Anforderung 3):** Prüfregel je Ladebeziehung
 „Erzeuger-Vorlauf ≥ Puffer-Vorlauf, sonst Warnung" (Anzeige amber; keine harte
 Sperre — die Engine kappt ohnehin physikalisch). Herkunft der Puffertemperaturen wird
@@ -153,6 +163,9 @@ Paket 10.
   Engine-Guard aus Paket 4 existiert, Dialog verhindert die Wahl).
 - Kaskadenzyklen (A lädt B, B ist Quelle von A) → Dialogprüfung über die
   Kaskadenketten-Ableitung, Meldung statt Speichern.
+- **Invariante S-1:** keine direkte Speicher-zu-Speicher-Verbindung (Abschnitt 5) —
+  Dialoge bieten Puffer nur an Erzeuger-Bezügen an; Schema/Kaskadenkette zeichnen
+  zwischen zwei Speichern immer den vermittelnden Erzeuger.
 - Temperatur-Warnregel wie Abschnitt 5; keine Untergrenzen (35/28 bleibt gültig).
 
 ## 8. Offene Entscheidungen
