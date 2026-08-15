@@ -33,13 +33,19 @@ namespace WindowsFormsApplication1
     /// Wärmepumpe (in der Referenzmenge 1017 und 1018), deren Kessel trotzdem einen Puffer
     /// laden können soll.
     ///
-    /// WAS NICHT IN DIESER SCHLEIFE LÄUFT: Erzeugerstufen OHNE Puffer-Senke. Sie berühren
-    /// keinen Speicher, ihr Ergebnis hängt nur vom Kanalzustand an ihrer Kaskadenposition
-    /// ab, und sie bleiben deshalb Vektorstufen an genau dieser Position
+    /// WAS NICHT IN DIESER SCHLEIFE LÄUFT: Erzeugerstufen OHNE Speicherbeteiligung. Sie
+    /// berühren keinen Speicher, ihr Ergebnis hängt nur vom Kanalzustand an ihrer
+    /// Kaskadenposition ab, und sie bleiben deshalb Vektorstufen an genau dieser Position
     /// (<c>SimulationSolarthermie.Berechnung_Zweikanalig</c>,
-    /// <c>SimulationSPK.Berechnung_Zweikanalig</c>). Das BHKW bleibt bis Paket 6
-    /// vollständig draußen und rechnet weiter auf der Kanalsumme
-    /// (<c>Waermekanaele.Uebernehmen</c> als Kompatibilitätsanker, Konzept 6.1).
+    /// <c>SimulationSPK.Berechnung_Zweikanalig</c>,
+    /// <c>SimulationBHKW.Berechnung_Zweikanalig</c>).
+    ///
+    /// SEIT PAKET 6 ist auch das BHKW Schleifenmitglied, sobald es einen Speicher hat.
+    /// Der Kompatibilitätsanker <c>Waermekanaele.Uebernehmen</c> ist damit im
+    /// zweikanaligen Weg vollständig abgelöst — keine Erzeugerart rechnet dort mehr auf
+    /// der Kanalsumme. Die drei Fahrweisen des BHKW bleiben fachlich unangetastet: Sie
+    /// bestimmen, WANN die Maschine läuft; die Speicherinteraktion läuft einheitlich über
+    /// die Phasen A/C/D/E/G.
     /// </summary>
     public class Kaskadenschleife
     {
@@ -51,6 +57,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>Heizkessel-Modul; nur gesetzt, wenn die Stufe in der Schleife läuft.</summary>
         public SimulationSPK Kessel;
+
+        /// <summary>
+        /// BHKW-Modul; nur gesetzt, wenn die Stufe in der Schleife läuft (Paket 6).
+        ///
+        /// Bis Paket 5 rechnete das BHKW als letztes Modul einkanalig auf
+        /// <c>Waermekanaele.Summe()</c> und verteilte seinen Rest über
+        /// <c>Uebernehmen()</c> zurück. Mit Paket 6 ist dieser Kompatibilitätsanker
+        /// aufgelöst: Das BHKW deckt seinen Kanal nach <c>WS_Typ</c>, lädt Puffer über
+        /// die Ladeordnung (Vorgaberang 30) und trägt seinen Eigenanteil zur
+        /// Herkunftsrechnung bei.
+        /// </summary>
+        public SimulationBHKW BHKW;
 
         /// <summary>Speicher-, Entlade- und Ladeordnung des Laufs (Konzept 6.1).</summary>
         public Kaskadenkontext Kontext;
@@ -65,6 +83,7 @@ namespace WindowsFormsApplication1
         public bool MitWP { get { return WP != null; } }
         public bool MitSolar { get { return Solar != null; } }
         public bool MitKessel { get { return Kessel != null; } }
+        public bool MitBHKW { get { return BHKW != null; } }
 
         // ------------------------------------------------------------------
         // ZURECHNUNG DER SPEICHERENTLADUNG (Paket-5-Nacharbeit, Befund N2)
@@ -99,7 +118,8 @@ namespace WindowsFormsApplication1
         private const int ART_WP = 0;
         private const int ART_SOLAR = 1;
         private const int ART_KESSEL = 2;
-        private const int ART_ANZAHL = 3;
+        private const int ART_BHKW = 3;          // Paket 6
+        private const int ART_ANZAHL = 4;
 
         /// <summary>Inhaltsanteile je Speicher und Erzeugerart [kWh].</summary>
         private readonly Dictionary<SimulationPufferspeicher, double[]> _inhaltsanteile =
@@ -108,12 +128,25 @@ namespace WindowsFormsApplication1
         /// <summary>Bedarfsdeckende Speicherentladung je Erzeugerart [kWh].</summary>
         private readonly double[] _entladungJeArt = new double[ART_ANZAHL];
 
+        /// <summary>
+        /// Dieselbe Zurechnung, aber nur für die LAUFENDE Stunde [kWh] (Nacharbeit
+        /// Paket 6, Befund N4).
+        ///
+        /// Der Restwärmebedarf eines Erzeugers ist „Stufeneingang − Direktdeckung −
+        /// zugerechnete Entladung". Als Jahressumme steht er in
+        /// <c>Tab_ErgebnisBHKW.Restwaermebedarf</c>; damit die GANGLINIE dieselbe Größe
+        /// zeigt, braucht sie den Stundenwert der Zurechnung — die Jahressumme allein
+        /// lässt sich nicht auf Stunden verteilen.
+        /// </summary>
+        private readonly double[] _entladungJeArtStunde = new double[ART_ANZAHL];
+
         /// <summary>Erzeugerart (<c>ProjektPuffer.TYP_*</c>) als Index; −1 = nicht geführt.</summary>
         private static int ArtIndex(int typ)
         {
             if (typ == ProjektPuffer.TYP_WP) return ART_WP;
             if (typ == ProjektPuffer.TYP_SOLARTHERMIE) return ART_SOLAR;
             if (typ == ProjektPuffer.TYP_KESSEL) return ART_KESSEL;
+            if (typ == ProjektPuffer.TYP_BHKW) return ART_BHKW;
             return -1;
         }
 
@@ -161,6 +194,7 @@ namespace WindowsFormsApplication1
                 if (teil > a[i]) teil = a[i];
                 a[i] -= teil;
                 _entladungJeArt[i] += teil;
+                _entladungJeArtStunde[i] += teil;      // N4: Stundenwert für die Ganglinie
             }
         }
 
@@ -215,6 +249,19 @@ namespace WindowsFormsApplication1
 
             float[] pvUeberschussVektor = MitWP ? WP.PV_Ueberschuss_stuendlich : null;
 
+            // Paket 6: Das BHKW braucht seine Ladeaufträge schon in Phase B — die
+            // Ladefähigkeit seiner (Ersatz-)Zweitsenke ist der Speicherraum, mit dem die
+            // Fahrweise ihre Motoren zuschaltet (im Altpfad der Pendelspeicher).
+            if (MitBHKW) BhkwAuftraegeZuordnen();
+
+            // BEFUND N5: Der Durchsatzterm des Bilanzraums gilt nur, wenn das BHKW die
+            // LETZTE Stufe der Bedarfsreihenfolge ist — nur dann ist der Kanalstand, den
+            // es in Phase B sieht, das Durchsatzbudget der Ladephase (siehe
+            // SimulationBHKW.ZweitsenkenRaum).
+            if (MitBHKW)
+                BHKW.LetzteBedarfsstufe = Bedarfsreihenfolge.Count == 0 ||
+                    Bedarfsreihenfolge[Bedarfsreihenfolge.Count - 1] == ProjektPuffer.TYP_BHKW;
+
             // Absehbare Entnahme je Kanal in der laufenden Stunde [kWh] — der Durchsatz
             // der hydraulischen Weiche (Nutzerentscheidung zu 4b-1). Index 0 = Heizkanal,
             // 1 = Warmwasserkanal. Das Budget wird über die Phasen C und D hinweg NUR
@@ -228,9 +275,21 @@ namespace WindowsFormsApplication1
                 double rest_heiz = kanaele.Heiz[stunde];
                 double rest_ww = kanaele.WW[stunde];
 
+                // N4: Zurechnung der Entladung auf den Anfang DIESER Stunde.
+                Array.Clear(_entladungJeArtStunde, 0, _entladungJeArtStunde.Length);
+
+                // N3: Reservierungen der Vorstunde verfallen. Sie gelten nur innerhalb
+                // einer Stunde - zwischen Phase B (Motorzuschaltung) und Phase C/D
+                // (Einlagerung). Eine nicht eingelöste Reservierung darf sich nicht in
+                // die nächste Stunde schleppen und dort Ladefähigkeit sperren.
+                foreach (SimulationPufferspeicher sp in Kontext.AlleSpeicher)
+                    if (sp != null) sp.Reserviert = 0;
+
+                // STUFENEINGANG je Erzeugerstufe (N1): der Kanalstand VOR Phase A.
                 if (MitWP) WP.Zweikanalig_StundeStart(stunde);
-                if (MitSolar) Solar.Stunde_Start(stunde);
-                if (MitKessel) Kessel.Stunde_Start(stunde);
+                if (MitSolar) Solar.Stunde_Start(stunde, rest_heiz, rest_ww);
+                if (MitKessel) Kessel.Stunde_Start(stunde, rest_heiz, rest_ww);
+                if (MitBHKW) BHKW.Stunde_Start(stunde, rest_heiz, rest_ww);
 
                 double pvRest = (pvUeberschussVektor != null && stunde < pvUeberschussVektor.Length)
                     ? pvUeberschussVektor[stunde] : 0;
@@ -267,6 +326,10 @@ namespace WindowsFormsApplication1
                     else if (art == ProjektPuffer.TYP_KESSEL && MitKessel)
                     {
                         Kessel.Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
+                    }
+                    else if (art == ProjektPuffer.TYP_BHKW && MitBHKW)
+                    {
+                        BHKW.Stunde_Bedarf(stunde, pvUeberschuss, ref rest_heiz, ref rest_ww);
                     }
                 }
 
@@ -328,11 +391,19 @@ namespace WindowsFormsApplication1
                 // Solarthermie: Was weder gedeckt noch gespeichert wurde, ist verworfen.
                 if (MitSolar) Solar.Stunde_Ende(stunde);
 
+                // BHKW: Was weder gedeckt noch gespeichert wurde, ist Wärmeüberschuss
+                // (Paket 6 — im Altpfad kannte nur die stromgeführte Fahrweise diese
+                // Größe, als Überlauf des Pendelspeichers). Dazu die Ganglinie seines
+                // Restwärmebedarfs, gebildet an der BHKW-Position aus Stufeneingang,
+                // Direktdeckung und der ihm in dieser Stunde zugerechneten Entladung (N4).
+                if (MitBHKW) BHKW.Stunde_Ende(stunde, _entladungJeArtStunde[ART_BHKW]);
+
             } // end alle Stunden
 
             if (MitWP) WP.Zweikanalig_Ende(biv);
             if (MitSolar) Solar.Abschluss_Zweikanalig();
             if (MitKessel) Kessel.Abschluss_Zweikanalig();
+            if (MitBHKW) BHKW.Abschluss_Zweikanalig();
 
             // N2: Zugerechnete Speicherentladung an die Erzeugermodule geben. Sie ist der
             // zweite Summand ihres EIGENANTEILS an der Bedarfsdeckung; den ersten
@@ -340,8 +411,36 @@ namespace WindowsFormsApplication1
             if (MitWP) WP.Speicherentladung_Anteil = _entladungJeArt[ART_WP];
             if (MitSolar) Solar.Speicherentladung_Anteil = _entladungJeArt[ART_SOLAR];
             if (MitKessel) Kessel.Speicherentladung_Anteil = _entladungJeArt[ART_KESSEL];
+            if (MitBHKW) BHKW.Speicherentladung_Anteil = _entladungJeArt[ART_BHKW];
 
             return true;
+        }
+
+        /// <summary>
+        /// Ordnet dem BHKW seine Ladeaufträge zu (Paket 6).
+        ///
+        /// Anders als Wärmepumpe, Solarthermie und Heizkessel braucht das BHKW seine
+        /// Aufträge nicht erst in der Ladephase: Die Fahrweisen entscheiden die
+        /// Motorzuschaltung gegen <c>Bedarf + Speicherraum</c>, und der Speicherraum ist
+        /// die Ladefähigkeit seiner Senke. Bei Hauptsenke HEIZKREIS fällt diese
+        /// Entscheidung in Phase B, also vor der Ladephase — deshalb wird der Auftrag hier
+        /// einmal je Lauf herausgesucht statt je Stunde.
+        /// </summary>
+        private void BhkwAuftraegeZuordnen()
+        {
+            BHKW.Auftrag_Haupt = null;
+            BHKW.Auftrag_Zweit = null;
+
+            if (Kontext == null || Kontext.LadenOhnePV == null) return;
+
+            foreach (Ladeauftrag a in Kontext.LadenOhnePV)
+            {
+                if (a == null || a.Erzeugerart != ProjektPuffer.TYP_BHKW) continue;
+                if (a.AnlagenID != BHKW.FuehrendeAnlage) continue;
+
+                if (a.Zweitsenke) { if (BHKW.Auftrag_Zweit == null) BHKW.Auftrag_Zweit = a; }
+                else { if (BHKW.Auftrag_Haupt == null) BHKW.Auftrag_Haupt = a; }
+            }
         }
 
         /// <summary>
@@ -388,6 +487,12 @@ namespace WindowsFormsApplication1
                     if (MitKessel)
                         Anteil_Laden(a.Speicher, a.Erzeugerart,
                                      Kessel.Zweikanalig_Laden(a, stunde, pvUeberschuss, absehbar));
+                }
+                else if (a.Erzeugerart == ProjektPuffer.TYP_BHKW)
+                {
+                    if (MitBHKW)
+                        Anteil_Laden(a.Speicher, a.Erzeugerart,
+                                     BHKW.Zweikanalig_Laden(a, stunde, pvUeberschuss, absehbar));
                 }
             }
         }

@@ -241,7 +241,15 @@ namespace WindowsFormsApplication1
                 SimulationBHKW bh = sim.simulation_bhkw;
                 ErgebnisBHKWModel b = new ErgebnisBHKWModel();
 
-                double waermebedarfMWh = bh.waermebedarf.Sum() / 1000.0;
+                // NACHARBEIT PAKET 6, BEFUND N8: Der Stufeneingang kommt jetzt aus der
+                // double-Jahressumme des Moduls statt aus der Summe der float-Ganglinie.
+                // Das ist dieselbe Größe, nur ohne die Summationsfehler von 8760
+                // float-Additionen — und es bindet Waermebedarf_gesamt an, das bis dahin
+                // nur geschrieben wurde. Im Altpfad führt das Modul die Summe nicht; dort
+                // gilt weiter die Ganglinie.
+                double waermebedarfMWh = sim.KaskadeZweikanalig
+                    ? bh.Waermebedarf_gesamt / 1000.0
+                    : bh.waermebedarf.Sum() / 1000.0;
                 double strombedarfMWh = bh.strombedarf.Sum() / 1000.0;
                 float[] restwaermeBhkw = sim.SubVectors(bh.waermebedarf, bh.waermeproduktion);
 
@@ -258,6 +266,56 @@ namespace WindowsFormsApplication1
                     ? bh.Waermeproduktion_BHKW_MWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt : 0;
                 b.Strombedarfsdeckung = (simulation_Strombedarf.Strombedarf_gesamt > 0)
                     ? bh.Stromproduktion_BHKW_MWh * 100.0 / simulation_Strombedarf.Strombedarf_gesamt : 0;
+
+                // PAKET 6 — Restbedarf und Deckungsgrad des BHKW, NUR im zweikanaligen Weg.
+                //
+                // (1) RESTBEDARF: Die Formel oben ist die Vektordifferenz
+                //     „Bedarf − Produktion" — genau der Bilanzfehler aus Konzept 6.5, den
+                //     auch SimulationControl bis Paket 5 gemacht hat. Sobald das BHKW einen
+                //     Speicher lädt, gilt sie nicht mehr: Die geladene Wärme deckt noch
+                //     keinen Bedarf.
+                //
+                //     NACHARBEIT PAKET 6, BEFUND N1 — ORCHESTRATOR-ENTSCHEIDUNG zur
+                //     offenen Nutzerentscheidung 6-4, einheitlich für Solarthermie,
+                //     Heizkessel und BHKW:
+                //
+                //         Restwaermebedarf = Stufeneingang − EIGENANTEIL   (>= 0)
+                //         Eigenanteil      = Direktdeckung + zugerechnete Entladung
+                //
+                //     Die vorherige Fassung zog nur die DIREKTDECKUNG ab. Bei einer
+                //     Puffer-HAUPTsenke ist die aber konstruktiv 0 (Doppelzählungs-
+                //     Freibeweis, Konzept 6.3) — und genau das ist der Regelfall, den
+                //     Migrationsregel R6 und ProjektPuffer.SQL_BHKW_AUF_PUFFER schreiben.
+                //     Das BHKW meldete dort 100 % seines Stufeneingangs als Restbedarf und
+                //     GLEICHZEITIG 84 % Deckung (gemessen an 1018: 141,45 statt 29 MWh).
+                //     Mit dem Eigenanteil als Abzug sind Restbedarf und Deckung wieder
+                //     zwei Seiten derselben Rechnung.
+                //
+                // (2) DECKUNGSGRAD: Bisher meldete das BHKW seine PRODUKTION als Deckung —
+                //     der offene Punkt 4 aus der Paket-5-Nacharbeit (13.12). Jetzt ist es
+                //     sein EIGENANTEIL: Direktdeckung plus der ihm zugerechnete Anteil an
+                //     der bedarfsdeckenden Speicherentladung (Interimsregel „Vermischung im
+                //     Speicher", siehe Kaskadenschleife). Damit geht die Summe der
+                //     Erzeugerdeckungen auch mit dem BHKW als viertem Lader auf.
+                //
+                // IM ALTPFAD unverändert: Direktdeckung_gesamt und
+                // Speicherentladung_Anteil sind dort exakt 0, der Zweig wird nicht betreten.
+                if (sim.KaskadeZweikanalig)
+                {
+                    double bhkwDirekt = bh.Direktdeckung_gesamt / 1000.0;
+                    double bhkwEigen = bhkwDirekt + bh.Speicherentladung_Anteil / 1000.0;
+
+                    b.Restwaermebedarf = waermebedarfMWh - bhkwEigen;
+                    if (b.Restwaermebedarf < 0) b.Restwaermebedarf = 0;   // Rundungsschutz
+
+                    if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
+                    {
+                        double deckungB = bhkwEigen * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt;
+                        if (deckungB > 100) deckungB = 100;
+                        if (deckungB < 0) deckungB = 0;
+                        b.Waermebedarfsdeckung = deckungB;
+                    }
+                }
                 //b.Gasverbrauch_Hu = bh.Gasverbrauch_BHKW;
 
                 if (bh.Gasverbrauch_BHKW > 0)
@@ -333,19 +391,23 @@ namespace WindowsFormsApplication1
                 // nicht: Restwaermebedarf wurde negativ (gemessen an einem präparierten
                 // 1018: −12,99 MWh) und die Summe der Deckungen überschritt 100 %.
                 //
-                // Bezugsgröße für Restbedarf und Deckung ist deshalb die DIREKTDECKUNG
-                // (Variante A der offenen Nutzerentscheidung 5-1, jetzt einheitlich für
-                // Solarthermie UND Heizkessel), für die Deckung erweitert um den
-                // zugerechneten Anteil an der Speicherentladung (Befund N2). Im Altpfad
-                // und ohne Puffer-Senke sind beide Zusatzgrößen exakt 0 — der Ausdruck
-                // ist dann bitgleich der bisherige.
+                // Bezugsgröße für Restbedarf und Deckung ist deshalb der EIGENANTEIL:
+                // Direktdeckung plus zugerechneter Anteil an der Speicherentladung
+                // (Befund N2). Im Altpfad und ohne Puffer-Senke sind beide Zusatzgrößen
+                // exakt 0 — der Ausdruck ist dann bitgleich der bisherige.
+                //
+                // NACHARBEIT PAKET 6, BEFUND N1: Der Restbedarf zog bis dahin nur die
+                // DIREKTDECKUNG ab. Bei Puffer-Hauptsenke ist die konstruktiv 0, und der
+                // Kessel meldete seinen vollen Stufeneingang als Rest — bei gleichzeitig
+                // ausgewiesener Deckung. Restbedarf und Deckung folgen jetzt derselben
+                // Größe. Einheitlich mit Solarthermie und BHKW (Nutzerentscheidung 6-4).
                 double kesselDirekt = spk.S_Waerme_spk - spk.Speicherladung_gesamt / 1000.0;
                 if (kesselDirekt < 0) kesselDirekt = 0;                      // Rundungsschutz
                 double kesselEigen = kesselDirekt + spk.Speicherentladung_Anteil / 1000.0;
 
                 h.Waermebedarf = spk.Waermebedarf_gesamt;
                 h.Waermeproduktion = spk.S_Waerme_spk;
-                h.Restwaermebedarf = spk.Waermebedarf_gesamt - kesselDirekt;
+                h.Restwaermebedarf = spk.Waermebedarf_gesamt - kesselEigen;
                 if (h.Restwaermebedarf < 0) h.Restwaermebedarf = 0;
                 h.Strombedarf = spk.Strombedarf_gesamt / 1000.0;
                 h.Reststrombedarf = spk.Strombedarf_gesamt / 1000.0 + spk.Stromverbrauch_Spk;
@@ -422,15 +484,21 @@ namespace WindowsFormsApplication1
                 // Speicher", siehe Kaskadenschleife). Damit taucht keine kWh in zwei
                 // Erzeuger-Deckungen auf, und ein Kollektorfeld, das ausschließlich einen
                 // Puffer lädt, meldet nicht länger 0 % (offene Nutzerentscheidung 5-1).
-                // Der RESTBEDARF bleibt die Größe der Kaskadenposition: Er zeigt, was
-                // nach dieser Stufe offen ist, und die Speicherentladung an anderer
-                // Stelle verringert ihn nicht — so bleibt "Restbedarf >= 0" konstruktiv
-                // erfüllt. Im Altpfad sind beide Zusatzgrößen exakt 0.
+                // NACHARBEIT PAKET 6, BEFUND N1: Auch der RESTBEDARF folgt jetzt dem
+                // Eigenanteil, nicht mehr nur der Direktdeckung. Ein Kollektorfeld mit
+                // Puffer-HAUPTsenke hat konstruktiv keine Direktdeckung (Doppelzählungs-
+                // Freibeweis) und meldete deshalb seinen vollen Stufeneingang als Rest,
+                // während es zugleich Deckung auswies. Beide Größen bilden jetzt dieselbe
+                // Rechnung ab; "Restbedarf >= 0" bleibt erfüllt, weil Direktdeckung und
+                // zugerechnete Entladung zusammen aus demselben Stufeneingang stammen
+                // (Klemmung nur als Rundungsschutz). Im Altpfad sind beide Zusatzgrößen
+                // exakt 0, der Ausdruck also bitgleich der bisherige.
                 double solarEigen = solarDirekt + st.Speicherentladung_Anteil;
 
                 stm.Waermebedarf = st.Waermebedarf_gesamt / 1000.0;
                 stm.Waermeproduktion = st.Waermeproduktion_gesamt / 1000.0;
-                stm.Restwaermebedarf = (st.Waermebedarf_gesamt - solarDirekt) / 1000.0;
+                stm.Restwaermebedarf = (st.Waermebedarf_gesamt - solarEigen) / 1000.0;
+                if (stm.Restwaermebedarf < 0) stm.Restwaermebedarf = 0;   // Rundungsschutz
                 stm.Waermebedarfsdeckung = 0;
                 if (st.Waermebedarf_gesamt > 0)
                 {

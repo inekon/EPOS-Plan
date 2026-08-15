@@ -522,14 +522,30 @@ namespace WindowsFormsApplication1
             return new Senkenzuordnung { AnlagenID = idAnlage };
         }
 
-        /// <summary>Stundenbeginn: jeder Kessel hat seine volle Nennleistung zur Verfügung.</summary>
-        public void Stunde_Start(int stunde)
+        /// <summary>
+        /// Stundenbeginn: jeder Kessel hat seine volle Nennleistung zur Verfügung, und
+        /// der STUFENEINGANG wird festgehalten.
+        ///
+        /// NACHARBEIT PAKET 6, BEFUND N1: Der Stufeneingang ist der Kanalstand VOR der
+        /// Vorabentladung (Phase A) — dieselbe Bezugsgröße, die der Altpfad an der
+        /// Kaskadenposition sieht und die die Wärmepumpe seit Etappe 4b führt. Bis dahin
+        /// stand er in <see cref="Stunde_Bedarf"/> und damit NACH Phase A; die Größe
+        /// <c>Tab_ErgebnisHeizkessel.Waermebedarf</c> fiel dadurch still ab, sobald ein
+        /// Speicher vorab entlud. Ohne Speicher in der Stufe ändert sich nichts — dann
+        /// gibt Phase A nichts ab.
+        /// </summary>
+        public void Stunde_Start(int stunde, double rest_heiz, double rest_ww)
         {
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
                 _kesselStunde[i] = 0;
                 _restLeistung[i] = Kessel_Leistung_Spk[i];
             }
+
+            double eingang = rest_heiz + rest_ww;
+            if (eingang < 0) eingang = 0;
+            if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = (float)eingang;
+            if (Max_Waermebedarf < eingang) Max_Waermebedarf = eingang;
         }
 
         /// <summary>
@@ -552,10 +568,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void Stunde_Bedarf(int stunde, ref double rest_heiz, ref double rest_ww)
         {
-            double eingang = rest_heiz + rest_ww;
-            if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = (float)eingang;
-            if (Max_Waermebedarf < eingang) Max_Waermebedarf = eingang;
-
+            // Der Stufeneingang steht seit der Nacharbeit N1 in Stunde_Start - VOR der
+            // Vorabentladung (Phase A).
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
                 if (_restLeistung[i] <= 0) continue;
@@ -733,7 +747,9 @@ namespace WindowsFormsApplication1
                 double rest_heiz = kanaele.Heiz[stunde];
                 double rest_ww = kanaele.WW[stunde];
 
-                Stunde_Start(stunde);
+                // Ohne Speicher gibt es keine Vorabentladung: Der Stufeneingang ist der
+                // Kanalstand an dieser Kaskadenposition.
+                Stunde_Start(stunde, rest_heiz, rest_ww);
                 Stunde_Bedarf(stunde, ref rest_heiz, ref rest_ww);
                 Stunde_Abschluss(stunde);
 

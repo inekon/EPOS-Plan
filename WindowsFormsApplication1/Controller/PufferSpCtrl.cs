@@ -785,8 +785,14 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        /// <summary>ID des Pendelspeichers eines Projekts (kleinste), 0 wenn keiner.</summary>
-        private static int PendelspeicherId(int idProjekt)
+        /// <summary>
+        /// ID des Pendelspeichers eines Projekts (kleinste), 0 wenn keiner.
+        ///
+        /// Seit Paket 6 auch von der Engine gelesen: Hat ein BHKW keine Puffer-Senke,
+        /// aber ein Pendelspeichervolumen, baut <c>SimulationControl</c> daraus den
+        /// Ersatzspeicher (Konzept 6.5, zweiter Punkt).
+        /// </summary>
+        public static int PendelspeicherId(int idProjekt)
         {
             object v = StillScalar(
                 "SELECT TOP 1 ID FROM Tab_Pufferspeicher " +

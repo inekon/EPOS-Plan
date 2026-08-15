@@ -184,6 +184,91 @@ namespace WindowsFormsApplication1
         public double Verluste_gesamt = 0;
 
         // ------------------------------------------------------------------
+        // DURCHSATZ getrennt vom UMSATZ (Nacharbeit Paket 6, Befund N6)
+        //
+        // Der Speicher ist eine hydraulische Weiche: Was er in derselben Stunde
+        // wieder abgibt, ist DURCHGEFLOSSEN und war nie Speicherinhalt (Laden mit
+        // Durchlass, Nutzerentscheidung zu 4b-1). Bis Paket 6 zählte diese Menge in
+        // Ladung_gesamt/Entladung_gesamt mit — und damit auch in Vollzyklen. Bei einer
+        // Puffer-HAUPTsenke läuft die GESAMTE Produktion durch den Speicher; die
+        // Kennzahl meldete dann Werte wie 6.719 Vollzyklen an einem 23-kWh-Puffer und
+        // maß in Wahrheit den Durchsatz, nicht die Speicherbeanspruchung.
+        //
+        // ZERLEGUNG des Füllstands: A = min(SOC, Q_max) ist der SPEICHERINHALT,
+        // B = max(0, SOC − Q_max) der Anteil, der in dieser Stunde nur durchfließt.
+        //   Laden   füllt zuerst A, dann B.
+        //   Entladen entnimmt zuerst B, dann A (der Durchfluss verlässt den Speicher
+        //            zuerst — Phase E holt ihn ausdrücklich vorab, DurchsatzEntladen).
+        //   Bereitschaftsverluste treffen ebenfalls zuerst B.
+        // Damit gilt jede der beiden Bilanzen für sich exakt:
+        //   Ladung_gesamt − Entladung_gesamt − Verluste_gesamt                   = A
+        //   Durchsatz_Ladung_gesamt − Durchsatz_Entladung_gesamt
+        //                            − Durchsatz_Verluste_gesamt                 = B
+        // und ihre Summe ist der bisherige Gesamtausdruck (= SOC).
+        //
+        // OHNE Durchlass — jeder Aufruf des Altpfads — ist B durchgehend 0: Die
+        // Durchsatzgrößen bleiben exakt 0,0 und die drei Altgrößen sind bitgleich die
+        // bisherigen.
+        //
+        // NICHT PERSISTIERT: Tab_ErgebnisPufferspeicher hat keine Spalte dafür. Eine
+        // Schemaänderung gehört nicht in diese Nacharbeit; der Durchsatz steht am
+        // Objekt und in der Protokollmeldung. Vorgemerkte Erweiterung.
+        // ------------------------------------------------------------------
+
+        /// <summary>Durchgeflossene Wärme je Stunde [kWh] (Aufnahme über Q_max hinaus).</summary>
+        public float[] Durchsatz_Ladung_stuendlich = new float[8760];
+
+        /// <summary>Wieder abgegebener Durchfluss je Stunde [kWh].</summary>
+        public float[] Durchsatz_Entladung_stuendlich = new float[8760];
+
+        /// <summary>Jahressumme der durchgeflossenen Aufnahme [kWh]; ohne Durchlass exakt 0.</summary>
+        public double Durchsatz_Ladung_gesamt = 0;
+
+        /// <summary>Jahressumme der wieder abgegebenen Durchflussmenge [kWh]; ohne Durchlass exakt 0.</summary>
+        public double Durchsatz_Entladung_gesamt = 0;
+
+        /// <summary>Bereitschaftsverluste, die auf den Durchflussanteil entfielen [kWh]; praktisch 0.</summary>
+        public double Durchsatz_Verluste_gesamt = 0;
+
+        /// <summary>Aufnahme der Stunde einschließlich Durchfluss [kWh] — die physikalische Menge.</summary>
+        public double Ladung_gesamt_Brutto { get { return Ladung_gesamt + Durchsatz_Ladung_gesamt; } }
+
+        /// <summary>Abgabe der Stunde einschließlich Durchfluss [kWh] — die physikalische Menge.</summary>
+        public double Entladung_gesamt_Brutto { get { return Entladung_gesamt + Durchsatz_Entladung_gesamt; } }
+
+        /// <summary>
+        /// In dieser Stunde bereits VERGEBENE Ladefähigkeit [kWh] (Nacharbeit Paket 6,
+        /// Befund N3).
+        ///
+        /// Das BHKW entscheidet seine Motorzuschaltung in Phase B — also VOR den
+        /// Ladephasen C und D — gegen den Wärmeraum seiner Senke. Ohne Reservierung
+        /// könnte ein Erzeuger mit besserer Ladepriorität (Solarthermie 10, Wärmepumpe
+        /// 20 gegen BHKW 30) diesen Raum in Phase C aufbrauchen; das BHKW hätte dann
+        /// bereits produziert, und die Wärme würde verworfen (gemessen an einem
+        /// präparierten 1024: 12,06 MWh Verwurf).
+        ///
+        /// <see cref="Ladefaehigkeit"/> zieht den reservierten Betrag ab; der
+        /// reservierende Erzeuger gibt ihn unmittelbar vor seinem eigenen Ladevorgang
+        /// wieder frei (<see cref="ReservierungFreigeben"/>). Die Kaskadenschleife setzt
+        /// das Feld zu Beginn jeder Stunde zurück — eine nicht eingelöste Reservierung
+        /// kann sich deshalb nicht in die nächste Stunde schleppen.
+        ///
+        /// ALTPFAD: 0 und ungelesen (dort gibt es weder Ladeaufträge noch Ladephasen).
+        /// </summary>
+        public double Reserviert = 0;
+
+        /// <summary>
+        /// ΔT [K], mit dem <see cref="Init"/> gerechnet hat, WEIL kein Temperaturpaar
+        /// gepflegt war; 0 = es galt das gepflegte Paar.
+        ///
+        /// Projektgrundsatz „sichtbar falsch ist besser als still falsch" (Nacharbeit
+        /// Paket 6, Befund N2): Ein Rückfall halbiert (10 K) oder verändert (20 K) die
+        /// nutzbare Kapazität gegenüber einem gepflegten Paar. Der Aufrufer protokolliert
+        /// ihn deshalb; das Modell selbst bleibt dialog- und ausgabefrei.
+        /// </summary>
+        public double RueckfallDeltaT = 0;
+
+        // ------------------------------------------------------------------
         // Kennzahlen des Laufs (Konzept 6.6) - erst nach KennzahlenBerechnen()
         // gültig, davor 0. Sie werden in Tab_ErgebnisPufferspeicher abgelegt
         // und speisen die Ergebnistabelle der Detailansicht.
@@ -197,8 +282,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Vollzyklen des Jahres (Konzept 6.6), 0 bei Q_max &lt;= 0
-        /// (Division-durch-Null-Absicherung). Bezugsgröße ist der NUTZUMSATZ und der
-        /// hängt an der Rolle:
+        /// (Division-durch-Null-Absicherung).
+        ///
+        /// NACHARBEIT PAKET 6, BEFUND N6: Bezugsgröße ist der SPEICHERUMSATZ ohne den
+        /// Durchfluss (siehe <see cref="Durchsatz_Ladung_gesamt"/>). Vorher zählte die
+        /// hydraulische Weiche mit, und bei einer Puffer-Hauptsenke meldete die Kennzahl
+        /// Werte, die nichts mehr über die Beanspruchung des Speichers aussagten.
+        ///
+        /// Der NUTZUMSATZ hängt an der Rolle:
         ///
         ///   Senkenspeicher (Heizung): Ladung_gesamt / Q_max — er startet leer und wird
         ///                             vom Erzeuger beladen, die Ladung ist der Umsatz.
@@ -218,10 +309,26 @@ namespace WindowsFormsApplication1
         /// <param name="vorlauf">Vorlauftemperatur [°C] (Z_ProjektPufferSp)</param>
         /// <param name="ruecklauf">Rücklauftemperatur [°C] (Z_ProjektPufferSp)</param>
         /// <param name="bereitschaftsverlusteProTag">Bereitschaftsverluste [kWh/24h] (Tab_Pufferspeicher)</param>
-        public void Init(double volumenLiter, int vorlauf, int ruecklauf, double bereitschaftsverlusteProTag)
+        /// <param name="rueckfallDeltaT">
+        /// ΔT [K], das gilt, wenn kein vollständiges Temperaturpaar vorliegt. Vorgabe
+        /// 10 K — der generische Notnagel. Der BHKW-PENDELSPEICHER übergibt hier 20 K:
+        /// Die Altformel <c>Liter · 20 / 860</c> hatte diese Spreizung fest verdrahtet,
+        /// und ein Rückfall auf 10 K würde seine Kapazität ohne fachlichen Grund
+        /// halbieren (Nacharbeit Paket 6, Befund N2).
+        /// </param>
+        public void Init(double volumenLiter, int vorlauf, int ruecklauf,
+                         double bereitschaftsverlusteProTag, double rueckfallDeltaT = 10)
         {
             double deltaT = vorlauf - ruecklauf;
-            if (deltaT <= 0) deltaT = 10; // Fallback, falls keine Temperaturen gepflegt sind
+
+            RueckfallDeltaT = 0;
+            if (deltaT <= 0)
+            {
+                // Fallback, falls keine Temperaturen gepflegt sind. Er wird am Objekt
+                // vermerkt, damit der Aufrufer ihn protokollieren kann (N2).
+                deltaT = rueckfallDeltaT > 0 ? rueckfallDeltaT : 10;
+                RueckfallDeltaT = deltaT;
+            }
 
             // 1,16 Wh/(l*K) -> kWh
             Q_max = volumenLiter * 1.16 * deltaT / 1000.0;
@@ -246,6 +353,30 @@ namespace WindowsFormsApplication1
             Array.Clear(SOC_stuendlich, 0, SOC_stuendlich.Length);
             Array.Clear(Ladung_stuendlich, 0, Ladung_stuendlich.Length);
             Array.Clear(Entladung_stuendlich, 0, Entladung_stuendlich.Length);
+
+            // N6: Durchsatzzähler und Reservierung gehören zum Laufzustand.
+            Reserviert = 0;
+            Durchsatz_Ladung_gesamt = 0;
+            Durchsatz_Entladung_gesamt = 0;
+            Durchsatz_Verluste_gesamt = 0;
+            Array.Clear(Durchsatz_Ladung_stuendlich, 0, Durchsatz_Ladung_stuendlich.Length);
+            Array.Clear(Durchsatz_Entladung_stuendlich, 0, Durchsatz_Entladung_stuendlich.Length);
+        }
+
+        /// <summary>
+        /// Reserviert Ladefähigkeit für einen Erzeuger, der seine Produktion bereits in
+        /// Phase B festgelegt hat (Befund N3). Mehrfachaufrufe summieren sich.
+        /// </summary>
+        public void Reservieren(double energieKWh)
+        {
+            if (energieKWh <= 0) return;
+            Reserviert += energieKWh;
+        }
+
+        /// <summary>Gibt die Reservierung wieder frei — unmittelbar vor dem eigenen Ladevorgang.</summary>
+        public void ReservierungFreigeben()
+        {
+            Reserviert = 0;
         }
 
         /// <summary>
@@ -285,9 +416,22 @@ namespace WindowsFormsApplication1
             double ladung = Math.Min(energieKWh, frei);
             if (ladung <= 0) return 0;
 
+            // N6: Aufnahme in SPEICHERUMSATZ und DURCHFLUSS zerlegen. Der Teil bis Q_max
+            // ist Umsatz, alles darüber fließt in derselben Stunde weiter. Ohne Durchlass
+            // ist der zweite Summand konstruktiv 0 — der Altpfad rechnet bitgleich.
+            double raumBisQmax = Q_max - SOC;
+            if (raumBisQmax < 0) raumBisQmax = 0;
+            double umsatz = Math.Min(ladung, raumBisQmax);
+            double durchfluss = ladung - umsatz;
+
             SOC += ladung;
-            Ladung_gesamt += ladung;
-            if (stunde >= 0 && stunde < 8760) Ladung_stuendlich[stunde] += (float)ladung;
+            Ladung_gesamt += umsatz;
+            Durchsatz_Ladung_gesamt += durchfluss;
+            if (stunde >= 0 && stunde < 8760)
+            {
+                Ladung_stuendlich[stunde] += (float)umsatz;
+                if (durchfluss > 0) Durchsatz_Ladung_stuendlich[stunde] += (float)durchfluss;
+            }
             return ladung;
         }
 
@@ -302,9 +446,22 @@ namespace WindowsFormsApplication1
             double entnahme = Math.Min(energieKWh, SOC);
             if (entnahme <= 0) return 0;
 
+            // N6: Gegenstück zur Zerlegung in Laden — der Durchfluss verlässt den
+            // Speicher zuerst. Ohne Durchlass ist SOC <= Q_max, der erste Summand 0 und
+            // die Buchung bitgleich die bisherige.
+            double ueber = SOC - Q_max;
+            if (ueber < 0) ueber = 0;
+            double durchfluss = Math.Min(entnahme, ueber);
+            double umsatz = entnahme - durchfluss;
+
             SOC -= entnahme;
-            Entladung_gesamt += entnahme;
-            if (stunde >= 0 && stunde < 8760) Entladung_stuendlich[stunde] += (float)entnahme;
+            Entladung_gesamt += umsatz;
+            Durchsatz_Entladung_gesamt += durchfluss;
+            if (stunde >= 0 && stunde < 8760)
+            {
+                Entladung_stuendlich[stunde] += (float)umsatz;
+                if (durchfluss > 0) Durchsatz_Entladung_stuendlich[stunde] += (float)durchfluss;
+            }
             return entnahme;
         }
 
@@ -329,8 +486,18 @@ namespace WindowsFormsApplication1
 
                 double verlust = VerlustProStunde * anteil;
                 if (verlust > SOC) verlust = SOC;
+
+                // N6: Steht ausnahmsweise noch Durchfluss im Speicher (Phase E konnte
+                // ihn nicht vollständig abgeben), trägt er den Verlust zuerst - sonst
+                // ginge die getrennte Bilanz um genau diesen Betrag nicht mehr auf.
+                // Im Regelfall ist SOC <= Q_max und der Ausdruck exakt 0.
+                double ueber = SOC - Q_max;
+                if (ueber < 0) ueber = 0;
+                double verlustDurchfluss = Math.Min(verlust, ueber);
+
                 SOC -= verlust;
-                Verluste_gesamt += verlust;
+                Verluste_gesamt += verlust - verlustDurchfluss;
+                Durchsatz_Verluste_gesamt += verlustDurchfluss;
             }
 
             if (stunde >= 0 && stunde < 8760) SOC_stuendlich[stunde] = (float)SOC;
@@ -390,7 +557,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Ladefähigkeit [kWh] gegen eine Obergrenze nach Konzept 3.4:
-        /// <c>Q_max · Obergrenze − SOC</c>, nie negativ.
+        /// <c>Q_max · Obergrenze − SOC − <see cref="Reserviert"/></c>, nie negativ.
+        ///
+        /// Der reservierte Betrag (Befund N3) ist bereits vergeben: Ein Erzeuger, der
+        /// seine Produktion in Phase B gegen diesen Raum entschieden hat, muss ihn in
+        /// den Ladephasen noch vorfinden. Ohne Reservierung — jeder Aufruf des Altpfads
+        /// und jede Stunde ohne BHKW in Phase B — ist das Feld 0 und der Ausdruck
+        /// bitgleich der bisherige.
         /// </summary>
         /// <param name="obergrenzeAnteil">
         /// Obergrenze als ANTEIL der nutzbaren Kapazität (0…1), bereits aufgelöst
@@ -402,7 +575,7 @@ namespace WindowsFormsApplication1
             if (Q_max <= 0) return 0;
 
             double grenze = obergrenzeAnteil > 0 ? obergrenzeAnteil : SchwelleAus;
-            double frei = Q_max * grenze - SOC;
+            double frei = Q_max * grenze - SOC - Reserviert;
             return frei > 0 ? frei : 0;
         }
 
