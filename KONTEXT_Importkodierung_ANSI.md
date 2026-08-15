@@ -24,6 +24,18 @@ verfügbar ist). Neue Importe, die ANSI-Dateien lesen, müssen `AnsiEncoding.Get
 | `Allgemein/Import/VDI 3805/WaermepumpenImport.cs` | `File.OpenText` (= UTF-8) |
 | `Views/Photovoltaik/Form_CECImport.cs` (PAN-Import) | `Encoding.Default` |
 
+## Verifikation (15.08.2026)
+
+Laufzeittest mit synthetischen ANSI-Dateien (rohe Windows-1252-Bytes, u. a. `0xE4`) gegen die
+unveränderten Importklassen aus der gebauten x86-DLL: Alle fünf Pfade (Kessel, Puffer, Kollektor,
+Wärmepumpe, PAN) liefern die Umlaute korrekt — einschließlich des historischen Falls
+„Vitocrossal 200 CM2 raumluftabhängig". `AnsiEncoding.Get()` liefert zur Laufzeit den Rückfall
+ISO-8859-1 (28591), da die App keinen `CodePagesEncodingProvider` registriert; für deutsche
+Umlaute ist das identisch mit 1252. Negativkontrolle: dieselben Bytes UTF-8-dekodiert ergeben
+U+FFFD — das bestätigt den Schadensmechanismus vor dem Fix. Es gab keine echten
+`.vdi`/`.pan`-Herstellerdateien auf dem Entwicklungsrechner; ein Gegentest mit einer
+Originaldatei steht aus.
+
 ## Geprüft, nicht betroffen
 
 - `Allgemein/Import/CEC/CECDataService.cs` — Quelle sind UTF-8-CSVs (GitHub/NREL), der lokale
