@@ -46,9 +46,9 @@ namespace WindowsFormsApplication1
 
             comboBox_Ruecklauf.Items.AddRange(RUECKLAUF_VORSCHLAEGE);
 
-            comboBox_Betriebsart.Items.Add("Alternativbetrieb");
-            comboBox_Betriebsart.Items.Add("Parallelbetrieb");
-            comboBox_Betriebsart.Items.Add("Teilparallelbetrieb");
+            comboBox_Betriebsart.Items.Add(DbWerte.WP_BETRIEBSART_ALTERNATIV);
+            comboBox_Betriebsart.Items.Add(DbWerte.WP_BETRIEBSART_PARALLEL);
+            comboBox_Betriebsart.Items.Add(DbWerte.WP_BETRIEBSART_TEILPARALLEL);
 
             // Die Betriebsart- und Abschalttemperatur-Controls werden hier bewusst
             // NICHT ausgeblendet - das erledigt OnLoad (siehe dort). Sie muessen
@@ -71,9 +71,9 @@ namespace WindowsFormsApplication1
 
             comboBox_Ruecklauf.Items.AddRange(RUECKLAUF_VORSCHLAEGE);
 
-            comboBox_Betriebsart.Items.Add("Alternativbetrieb");
-            comboBox_Betriebsart.Items.Add("Parallelbetrieb");
-            comboBox_Betriebsart.Items.Add("Teilparallelbetrieb");
+            comboBox_Betriebsart.Items.Add(DbWerte.WP_BETRIEBSART_ALTERNATIV);
+            comboBox_Betriebsart.Items.Add(DbWerte.WP_BETRIEBSART_PARALLEL);
+            comboBox_Betriebsart.Items.Add(DbWerte.WP_BETRIEBSART_TEILPARALLEL);
 
             // Pufferspeicher-Bereich entfernt (siehe Kommentar im anderen Konstruktor)
             groupBox1.Visible = false;
@@ -105,8 +105,8 @@ namespace WindowsFormsApplication1
 
             m_bGeladen = true;
 
-            // Deckt beide Faelle ab: bivalent an/aus sowie - ueber die Abfrage auf
-            // "Teilparallelbetrieb" - die Abschalttemperatur-Controls.
+            // Deckt beide Faelle ab: bivalent an/aus sowie - ueber die
+            // Betriebsart-Abfrage - die Bivalenztemperatur-Controls.
             checkBox_Bivalent_CheckedChanged(this, EventArgs.Empty);
         }
 
@@ -217,10 +217,10 @@ namespace WindowsFormsApplication1
             if (!Program.GanzzahlPruefen(textBox_Nutzungszeit, "Nutzungsdauer", out nNutzungszeit, leerErlaubt: false)) return;
             if (!Program.GanzzahlPruefen(textBox_PHeizstab, "Leistung Heizstab", out nHeizstab, leerErlaubt: false)) return;
 
-            // Die Abschalttemperatur ist je nach Betriebsart ausgeblendet - ein leeres
+            // Die Bivalenztemperatur ist je nach Betriebsart ausgeblendet - ein leeres
             // Feld ist deshalb erlaubt und lässt den bisherigen Wert stehen.
             double dAbschalt;
-            if (!Program.ZahlPruefen(textBox_Abschalttemp, "Abschalttemperatur", out dAbschalt, leerErlaubt: true)) return;
+            if (!Program.ZahlPruefen(textBox_Abschalttemp, "Bivalenztemperatur", out dAbschalt, leerErlaubt: true)) return;
             bool bAbschaltGesetzt = textBox_Abschalttemp.Text.Trim().Length != 0;
 
             item.Bezeichner = listBox_WP.Text;
@@ -345,32 +345,9 @@ namespace WindowsFormsApplication1
             // Zustand setzt danach OnLoad.
             if (!m_bGeladen) return;
 
-             if(checkBox_Bivalent.Checked)
-             {
-                comboBox_Betriebsart.Visible = true;
-                label_Betriebsart.Visible = true;
-                if (comboBox_Betriebsart.Text == "Teilparallelbetrieb")
-                {
-                    textBox_Abschalttemp.Visible = true;
-                    label_AbschalttemperaturEinheit.Visible = true;
-                    label_Abschalttemperatur.Visible = true;
-                    
-                }
-                else
-                {
-                    textBox_Abschalttemp.Visible = false;
-                    label_AbschalttemperaturEinheit.Visible = false;
-                    label_Abschalttemperatur.Visible = false;
-                }
-            }
-            else
-            {
-                comboBox_Betriebsart.Visible = false;
-                textBox_Abschalttemp.Visible = false;
-                label_AbschalttemperaturEinheit.Visible = false;
-                label_Abschalttemperatur.Visible = false;
-                label_Betriebsart.Visible = false;
-            }
+            comboBox_Betriebsart.Visible = checkBox_Bivalent.Checked;
+            label_Betriebsart.Visible = checkBox_Bivalent.Checked;
+            BivalenztemperaturSichtbarkeitSetzen();
         }
         private void comboBox_Betriebsart_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -378,19 +355,25 @@ namespace WindowsFormsApplication1
             // loest diesen Handler damit schon vor ShowDialog aus).
             if (!m_bGeladen) return;
 
-            if (comboBox_Betriebsart.Text == "Teilparallelbetrieb" && checkBox_Bivalent.Checked == true)
-            {
-                textBox_Abschalttemp.Visible = true;
-                label_AbschalttemperaturEinheit.Visible = true;
-                label_Abschalttemperatur.Visible = true;
-            }
-            else
-            {
-                textBox_Abschalttemp.Visible = false;
-                label_AbschalttemperaturEinheit.Visible = false;
-                label_Abschalttemperatur.Visible = false;
-
-            }
+            BivalenztemperaturSichtbarkeitSetzen();
+        }
+        /// <summary>
+        /// Blendet das Bivalenztemperatur-Feld samt Beschriftung genau dann ein, wenn
+        /// der Wert rechenwirksam ist: bivalenter Betrieb UND eine Betriebsart, die
+        /// <c>Tab_Energieanlagen.Abschaltpunkt</c> auswertet - Teilparallelbetrieb
+        /// (seit jeher) und Alternativbetrieb (seit K-3, siehe
+        /// SimulationWaermepumpe.AlternativAus: unterhalb dieser Aussentemperatur ist
+        /// die WP aus). Im Parallelbetrieb bleibt der Wert wirkungslos und das Feld
+        /// verborgen.
+        /// </summary>
+        private void BivalenztemperaturSichtbarkeitSetzen()
+        {
+            bool sichtbar = checkBox_Bivalent.Checked
+                && (comboBox_Betriebsart.Text == DbWerte.WP_BETRIEBSART_TEILPARALLEL
+                    || comboBox_Betriebsart.Text == DbWerte.WP_BETRIEBSART_ALTERNATIV);
+            textBox_Abschalttemp.Visible = sichtbar;
+            label_AbschalttemperaturEinheit.Visible = sichtbar;
+            label_Abschalttemperatur.Visible = sichtbar;
         }
         // Die folgenden TextChanged-Handler färben nur noch (Begründung siehe
         // Program.ZahlFaerben); gemeldet wird erst in btn_Beenden_Click. Die alte
