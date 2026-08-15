@@ -214,6 +214,27 @@ zusammen mit der übrigen Altlast in D2.
 und `PSP_TIP_ZUORDNUNG_ALTMODELL` (ihr Mouseover-Hinweis) — die Spalte ist entfallen. Auch
 diese beiden bleiben bis zur Abnahme stehen, weil die Alt-Zuordnung selbst noch besteht.
 
+## Nachtrag aus dem K-3-Folgeschritt — Bivalenztemperatur-Hinweis (15.08.2026)
+
+Die K-3-Protokollmeldung „Bivalenztemperatur 0 °C" aus
+`SimulationWaermepumpe.AlternativHinweisPruefen` — bisher als `KATALOG-KANDIDAT
+(Lokalisierung)` markierter deutscher Festtext — ist in `MyResource` aufgenommen und
+verdrahtet (beide `.resx` und `Resource.Designer.cs`). Im selben Zug nennt der
+Meldungsschluss das Eingabefeld bei seinem neuen Namen: Die Beschriftung in
+`Wizard_WPItem` heißt seit dem K-3-Folgeschritt „Bivalenztemperatur" (de-DE und neutral;
+en-US „Bivalent temperature", Begriff aus EN 14825), nicht mehr „Abschalttemperatur".
+
+### Neu (1)
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG` | Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen. | The unit '{0}' calculates in bivalent-alternative mode with a bivalent temperature of 0 °C — the default value of the input field. Below 0 °C the heat pump remains off and the second heat generator takes over alone. If this is not intended, maintain the unit's bivalent temperature. | SimulationWaermepumpe.cs (`AlternativHinweisPruefen`) | **neu.** K-3-Hinweis (Protokoll `K3_BivalenzTemperatur_Protokoll.md`, Abschnitt 3); der Modul-Präfix kommt weiterhin aus `SIMENG_PRAEFIX_WAERMEPUMPE`, `{0}` = Anlagen-Bezeichner. |
+
+**Weiterhin offener Kandidat desselben Moduls:** die `WarnungEinmal`-Meldung
+„Quellspeicher … wird von mehreren Modulen benutzt" in
+`SimulationWaermepumpe.QuellspeicherZusammenfuehren` steht unverändert als deutscher
+Festtext im Code (wie die Quellspeicher-Hinweise in `WaermequelleClass.PufferZeile`).
+
 ## CHART — 54 Schlüssel
 
 | Schlüssel | DE | EN | Fundstellen |

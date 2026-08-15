@@ -1,0 +1,20 @@
+﻿K-3-Folgeschritt (Sichtbarkeit/Beschriftung Bivalenztemperatur) - Ergebnisneutralitaetsbeleg, 15.08.2026
+Lauf: 8 Projekte, 43 s, 8/8 OK. Vergleich gegen 2026-08-15_B3:
+
+Referenz : C:\Waermeplan\WP_Plan\.claude\worktrees\wonderful-hellman-b5e25f\Referenzlaeufe\2026-08-15_B3
+Vergleich: C:\Waermeplan\WP_Plan\.claude\worktrees\wonderful-hellman-b5e25f\Referenzlaeufe\2026-08-15_K3-Folgeschritt
+Toleranz : relativ 0.0001 ab Betrag 1, sonst absolut 0.01
+
+Projekt_1007: PASS (29 Dateien, 324210 Werte)
+Projekt_1008: PASS (21 Dateien, 227847 Werte)
+Projekt_1011: PASS (29 Dateien, 324232 Werte)
+Projekt_1017: PASS (20 Dateien, 245378 Werte)
+Projekt_1018: PASS (19 Dateien, 210343 Werte)
+Projekt_1021: PASS (21 Dateien, 227840 Werte)
+Projekt_1023: PASS (25 Dateien, 262917 Werte)
+Projekt_1024: PASS (26 Dateien, 271680 Werte)
+
+GESAMT: PASS (2094447 Werte innerhalb der Toleranz)
+
+Byte-/MD5-Gegenprobe: 190 von 190 CSV identisch, 0 abweichend, 0 fehlend.
+Die Ganglinien-CSVs dieses Laufs wurden nach dem Beleg entfernt - sie waren byte-gleich zur Basis B3; je Projekt blieb aggregate.csv stehen.
