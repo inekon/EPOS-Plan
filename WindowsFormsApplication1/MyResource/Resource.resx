@@ -117,6 +117,125 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="PSP_KARTEN_KOPF_SPEICHER" xml:space="preserve">
+    <value>Speicher im Projekt</value>
+  </data>
+  <data name="PSP_KARTE_BILANZ" xml:space="preserve">
+    <value>{0} Lader · {1} Abnehmer</value>
+  </data>
+  <data name="PSP_KARTE_ENTLADEPRIO" xml:space="preserve">
+    <value>Entladeprio: {0}</value>
+  </data>
+  <data name="PSP_KARTE_KASKADE" xml:space="preserve">
+    <value>(Kaskade)</value>
+  </data>
+  <data name="PSP_KARTE_KEIN_SPEICHER" xml:space="preserve">
+    <value>Für dieses Projekt ist noch kein Pufferspeicher angelegt.</value>
+  </data>
+  <data name="PSP_KARTE_LADER" xml:space="preserve">
+    <value>Lader: {0}</value>
+  </data>
+  <data name="PSP_KARTE_LADER_KEINE" xml:space="preserve">
+    <value>Lader: keiner</value>
+  </data>
+  <data name="PSP_KARTE_PV_RANG" xml:space="preserve">
+    <value>PV-Rang {0}</value>
+  </data>
+  <data name="PSP_KARTE_QUELLE_FUER" xml:space="preserve">
+    <value>Quelle für: {0}</value>
+  </data>
+  <data name="PSP_KARTE_SCHWELLEN" xml:space="preserve">
+    <value>Schwellen {0} / {1} / {2} %</value>
+  </data>
+  <data name="PSP_KARTE_TEMP_EIGEN" xml:space="preserve">
+    <value>eigene Werte am Speicher</value>
+  </data>
+  <data name="PSP_KARTE_TEMP_HERKUNFT" xml:space="preserve">
+    <value>Temperaturen: {0}</value>
+  </data>
+  <data name="PSP_KARTE_TEMP_KEINE" xml:space="preserve">
+    <value>nicht gepflegt</value>
+  </data>
+  <data name="PSP_KARTE_TEMP_SYSTEM" xml:space="preserve">
+    <value>Systemvorgabe des Projekts</value>
+  </data>
+  <data name="PSP_KARTE_TEMP_ZUORDNUNG" xml:space="preserve">
+    <value>aus der Zuordnungszeile</value>
+  </data>
+  <data name="PSP_KARTE_TIP_BEARBEITEN" xml:space="preserve">
+    <value>Pufferspeicher bearbeiten (Verwaltung öffnen)</value>
+  </data>
+  <data name="PSP_KARTE_VERSORGT" xml:space="preserve">
+    <value>Versorgt: {0}</value>
+  </data>
+  <data name="PSP_KARTE_VOLUMEN" xml:space="preserve">
+    <value>{0} l</value>
+  </data>
+  <data name="SIM_KARTEN_KOPF_ERZEUGER" xml:space="preserve">
+    <value>Komponenten der Simulation (+ aufnehmen, × entfernen, ▲▼ Reihenfolge, ✎ oder Doppelklick öffnet den Dialog)</value>
+  </data>
+  <data name="SIM_KARTE_ANLAGE_HINZU" xml:space="preserve">
+    <value>+ Anlage hinzufügen: Anlagen werden über die Projektseite angelegt.</value>
+  </data>
+  <data name="SIM_KARTE_AUFNEHMEN" xml:space="preserve">
+    <value>+ aufnehmen</value>
+  </data>
+  <data name="SIM_KARTE_KEINE_ERZEUGER" xml:space="preserve">
+    <value>Kein Wärmeerzeuger ausgewählt.</value>
+  </data>
+  <data name="SIM_KARTE_OHNE_ANLAGE" xml:space="preserve">
+    <value>keine Anlage im Projekt</value>
+  </data>
+  <data name="SIM_KARTE_QUELLE" xml:space="preserve">
+    <value>Quelle: {0}</value>
+  </data>
+  <data name="SIM_KARTE_QUELLE_KASKADE" xml:space="preserve">
+    <value>Quelle: {0} · Kaskade</value>
+  </data>
+  <data name="SIM_KARTE_SENKE" xml:space="preserve">
+    <value>Senke: {0}</value>
+  </data>
+  <data name="SIM_KARTE_TEMPERATURPAAR" xml:space="preserve">
+    <value>{0} / {1} °C</value>
+  </data>
+  <data name="SIM_KARTE_TIP_AUFNEHMEN" xml:space="preserve">
+    <value>In die Simulation aufnehmen — die Komponente wird gerechnet
+und bekommt den letzten Rang der Kaskade (mit ▲ nach vorn).</value>
+  </data>
+  <data name="SIM_KARTE_TIP_BEARBEITEN" xml:space="preserve">
+    <value>Wärmesenke bearbeiten (auch per Doppelklick auf die Karte)</value>
+  </data>
+  <data name="SIM_KARTE_TIP_ENTFERNEN" xml:space="preserve">
+    <value>Aus der Simulation nehmen — die Komponente bleibt im Projekt,
+wird aber nicht mehr gerechnet.</value>
+  </data>
+  <data name="SIM_KARTE_TIP_HOCH" xml:space="preserve">
+    <value>In der Kaskade einen Rang nach vorn</value>
+  </data>
+  <data name="SIM_KARTE_TIP_KASKADE" xml:space="preserve">
+    <value>Kaskade: Dieser Erzeuger bezieht seine Eintrittstemperatur aus dem Pufferspeicher
+und hebt sie weiter an. Die Entnahme ist zugleich eine Entladung des Speichers.</value>
+  </data>
+  <data name="SIM_KARTE_TIP_RUNTER" xml:space="preserve">
+    <value>In der Kaskade einen Rang nach hinten</value>
+  </data>
+  <data name="SIM_KARTE_TIP_TEMPERATUR_WARNUNG" xml:space="preserve">
+    <value>Der Vorlauf des Erzeugers ({0} °C) liegt unter dem Vorlauf des Speichers „{1}" ({2} °C).
+Er kann den Speicher nicht auf dessen Niveau laden; die Simulation kappt die Ladung
+physikalisch. Das ist ein Hinweis, keine Sperre.</value>
+  </data>
+  <data name="SIM_KARTE_TITEL" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="SIM_KARTE_VERFUEGBAR" xml:space="preserve">
+    <value>nicht in der Simulation</value>
+  </data>
+  <data name="SIM_KARTE_WPPRIO" xml:space="preserve">
+    <value>WP-Prio {0}</value>
+  </data>
+  <data name="SIM_KARTE_ZWEITSENKE" xml:space="preserve">
+    <value>Zweitsenke: {0}</value>
+  </data>
   <data name="Text_Select" xml:space="preserve">
     <value>bitte auswählen!</value>
   </data>

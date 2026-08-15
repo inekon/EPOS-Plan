@@ -7,12 +7,19 @@ using System.Windows.Forms;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Erzeuger-Übersicht der Simulationskonfiguration (Konzept 4.1) — Layout, Anzeige
-    /// und die Dialoge, die per Doppelklick daraus geöffnet werden.
+    /// Erzeuger-Übersicht der Simulationskonfiguration (Konzept 4.1) — die EDITOREN, die
+    /// aus der Anzeige heraus geöffnet werden, und die Abfragen, die sie füttern.
     ///
     /// Aus <c>Form_Simulation_Config.cs</c> herausgelöst (Paket 2): die Hauptdatei hatte
-    /// über 2000 Zeilen und mischte Auswahl, Alt-Zuordnung und Übersicht. Hier steht
-    /// ausschließlich die Übersicht samt Fußzeile.
+    /// über 2000 Zeilen und mischte Auswahl, Alt-Zuordnung und Übersicht.
+    ///
+    /// <b>ETAPPE D2/D3.</b> Die ANZEIGE ist aus dieser Datei ausgezogen: Die
+    /// neunspaltige <c>listView_Uebersicht</c>, ihre Breitenarithmetik und die Fußzeile
+    /// mit der Pufferaufzählung sind durch die Kartenspalten in
+    /// <c>Form_Simulation_Config.Karten.cs</c> ersetzt. Hier bleibt, was die Karten
+    /// AUFRUFEN: Senken-, Quellen-, Modus- und Prioritätsdialog samt der Abfrage
+    /// <see cref="AnlagenImProjekt"/> und den Anzeigetexten. Konzept Abschnitt 3:
+    /// „Doppelklick/✎ öffnet überall die bestehenden Dialoge — unveränderte Editoren."
     ///
     /// Was NICHT hier steht: die Alt-Zuordnung <c>listView1</c>/<c>_zuordnungen</c> und
     /// ihr Speicherpfad. Sie bleibt in der Hauptdatei, weil sie mit Etappe B (Konzept 4.4)
@@ -20,124 +27,21 @@ namespace WindowsFormsApplication1
     /// </summary>
     public partial class Form_Simulation_Config : BaseForm
     {
-        // --- Spaltenindizes der Übersicht --------------------------------------------
-
-        // ZWINGENDE VORARBEIT aus Konzept 4.1: Die Indizes standen an drei Stellen
-        // doppelt (Columns.Add, Tooltip-switch, Doppelklick-Dispatcher). Mit zwei neuen
-        // Spalten hätte das stille Fehlbedienungen ergeben - ein Doppelklick auf
-        // "Wärmesenke" hätte den Betriebsmodus geöffnet. Ab jetzt gibt es die Wahrheit
-        // genau einmal, hier.
-        private const int COL_PRIO = 0;
-        private const int COL_ERZEUGER = 1;
-        private const int COL_ANLAGE = 2;
-        private const int COL_WPPRIO = 3;
-        private const int COL_QUELLE = 4;
-        private const int COL_SENKE = 5;
-        private const int COL_ZWEITSENKE = 6;   // neu (Konzept 4.1/4.2)
-        private const int COL_BETRIEBSMODUS = 7;
-
-        // ETAPPE D1 (Konzept_KonfigUI_Hydraulik, Abschnitt 6): Die neunte Spalte
-        // „Zuordnung (alt)" ist ENTFALLEN. Sie zeigte den Pufferspeicher aus dem
-        // Altmodell Z_ProjektPufferSp - eine zweite, seit Paket 4 nicht mehr gelesene
-        // Wahrheit neben der Senkenspalte - und führte per Doppelklick in den
-        // Hysterese-Dialog. Der Dialog selbst bleibt (SpeicherregelungBearbeiten); die
-        // Schwellen sind längst am Puffer pflegbar (Form_PufferSp_Projekt), und genau
-        // dorthin gehören sie. Ebenso entfällt die Zeile „Gesamtsystem", die es nur
-        // gab, um eine Zuordnung dieser Spalte anzuzeigen.
-        //
-        // NICHT betroffen: die Spiegel-Brücke WpSenkeSpiegeln und alle
-        // Z_ProjektPufferSp-Schreibwege - sie bleiben bis zur Abnahme unangetastet
-        // (Konzeptvorgabe).
-
-        /// <summary>
-        /// Spalten, die per Doppelklick einen Dialog öffnen (Konzept 4.1, „Whitelist").
-        ///
-        /// Der frühere Dispatcher hatte ein <c>else</c>-Fallback <c>int spalte = 4</c>:
-        /// jeder Doppelklick, der keine der bekannten Spalten traf, öffnete die
-        /// Wärmequelle. Solange nur Wärmepumpen-Zeilen ein <c>Tag</c> trugen, fiel das
-        /// nicht auf. Seit ALLE Zeilen ein <c>Tag</c> haben (4.1), öffnete ein
-        /// Doppelklick auf die Bezeichnerspalte eines Heizkessels den
-        /// Wärmequellen-Dialog. Jetzt gilt: was nicht in dieser Liste steht, tut nichts.
-        /// </summary>
-        private static readonly int[] SPALTEN_MIT_DIALOG =
-        {
-            COL_WPPRIO, COL_QUELLE, COL_SENKE, COL_ZWEITSENKE, COL_BETRIEBSMODUS
-        };
-
         // --- Zuordnungs-Rubrik (Konzept 4.4) ------------------------------------------
         //
         // Der Rückwegschalter RUBRIK_SICHTBAR ist mit ETAPPE D1 entfallen. Er hielt seit
         // Paket 2 / Etappe A die Möglichkeit offen, die alte Bedienung wieder
         // einzuschalten; die Rubrik selbst wird jetzt gar nicht mehr angelegt
-        // (Form_Simulation_Config.AltRubrikStilllegen), damit hätte der Schalter nichts
-        // mehr zu schalten. Der Rückweg ist ab hier die Versionsverwaltung.
+        // (Form_Simulation_Config.Karten.AltSteuerelementeStilllegen), damit hätte der
+        // Schalter nichts mehr zu schalten. Der Rückweg ist ab hier die
+        // Versionsverwaltung.
         //
         // UNVERÄNDERT bleibt der Datenpfad: _zuordnungen wird weiter aus
         // Z_ProjektPufferSp geladen und beim Speichern zurückgeschrieben, und die
         // Spiegel-Brücke WaermesenkeClass.WpSenkeSpiegeln arbeitet weiter
         // (Konzeptvorgabe: bis zur Abnahme unangetastet).
 
-        /// <summary>Höhe, die unter der Übersicht für die Fußzeile frei bleibt [px].</summary>
-        private const int PLATZ_FUSSZEILE = 62;
-
-        /// <summary>
-        /// Feste Spaltenbreiten der Übersicht [px], in der Reihenfolge der
-        /// <c>COL_*</c>-Konstanten (Konzept 4.1, zweiter Layoutzwang).
-        ///
-        /// Vorher liefen zwei <c>AutoResizeColumns</c> hintereinander:
-        /// <c>ColumnContent</c> und danach <c>HeaderSize</c>. Die zweite überschreibt die
-        /// erste vollständig — die Breiten hingen also allein an der LÄNGE DER KOPFTEXTE.
-        /// Mit „Wärmeerzeuger", „Anlage(n) im Projekt" … „Zuordnung (Altmodell)" ergab das
-        /// rund 910 px in einer 491 px breiten Liste: waagerechter Rollbalken bei jedem
-        /// Öffnen, und die inhaltlich wichtigen Spalten waren die schmalsten.
-        ///
-        /// Jetzt: kompakte Kopftexte, feste Breiten, und das Formular wird einmalig so
-        /// weit verbreitert, dass die Summe hineinpasst (<see cref="UebersichtBreiteAnpassen"/>).
-        /// Zu lange Zellinhalte (lange Anlagennamen) kürzt die ListView mit „…" — das ist
-        /// gewollt; der volle Text steht im Mouseover-Hinweis der Zeile.
-        ///
-        /// ETAPPE D1: Mit der Spalte „Zuordnung (alt)" fallen 112 px weg. 50 davon gehen
-        /// an die beiden SENKEN-Spalten — dort standen die abgeschnittenen Texte
-        /// („Puffer Heizung: a…"), weil der Puffername hinter dem Rollenkürzel steht.
-        /// Der Rest verschmälert das Fenster: <see cref="UebersichtBreiteAnpassen"/>
-        /// rechnet die Spaltensumme und verbreitert nur noch um das, was gebraucht wird.
-        /// Bleibt danach trotzdem Platz übrig, bekommt ihn wie bisher die Anlagenspalte
-        /// (siehe <see cref="InitErzeugerUebersicht"/>, „rest").
-        /// </summary>
-        private static readonly int[] SPALTEN_BREITEN =
-        {
-            40,   // COL_PRIO           "Prio"        1…4
-            84,   // COL_ERZEUGER       "Erzeuger"    längster Wert "Solarthermie"
-            140,  // COL_ANLAGE         "Anlage"      Herstellerbezeichner, kürzt bei Bedarf
-            62,   // COL_WPPRIO         "WP-Prio"     1…9 bzw. "-"
-            100,  // COL_QUELLE         "Quelle"      "Erdreich Kollektor 1,5 m" kürzt
-            150,  // COL_SENKE          "Senke"       "Puffer Heizung: <Name>"  (D1: +30)
-            120,  // COL_ZWEITSENKE     "Zweitsenke"                            (D1: +20)
-            92    // COL_BETRIEBSMODUS  "Modus"       "laufzeitoptimiert"
-        };
-
-        /// <summary>
-        /// Zuschlag der ListView auf die Spaltensumme: 3D-Rahmen, die senkrechte
-        /// Bildlaufleiste (erscheint ab der fünften Erzeugerzeile) und eine kleine
-        /// Reserve. Die Breite der Bildlaufleiste kommt aus dem System, nicht aus einer
-        /// hier festgeschriebenen 17 — sonst rutscht bei abweichenden Systemmaßen genau
-        /// die letzte Spalte wieder hinaus.
-        /// </summary>
-        private static int ListeZuschlag()
-        {
-            return 2 + SystemInformation.VerticalScrollBarWidth + 6;
-        }
-
         // --- Steuerelemente -----------------------------------------------------------
-
-        // Live-Übersicht der ausgewählten Wärmeerzeuger (rechts oben),
-        // wird in InitErzeugerUebersicht programmatisch angelegt
-        private GroupBox groupBox_Uebersicht;
-        private ListView listView_Uebersicht;
-
-        // Fußzeile: Projekt-Pufferspeicher und Einstieg in die Verwaltung (Konzept 4.1)
-        private Label label_PufferListe;
-        private Button btn_PufferVerwalten;
 
         // Fußzeile, rechts: Feature-Flag der zweikanaligen Kaskade (Konzept Kapitel 9)
         private CheckBox checkBox_KaskadeZweikanalig;
@@ -158,12 +62,10 @@ namespace WindowsFormsApplication1
         private float[] _aussentempCache = null;
         private bool _aussentempGeladen = false;
 
-        // Mouseover-Hinweise in der Übersicht
+        // Mouseover-Hinweise der Fußzeilenschalter (die Karten bringen ihre eigenen mit)
         private ToolTip _uebersichtTip = new ToolTip();
-        private ListViewItem _tipItem = null;
-        private int _tipSpalte = -1;
 
-        /// <summary>Eine im Projekt angelegte Anlage (Zeile der Übersicht).</summary>
+        /// <summary>Eine im Projekt angelegte Anlage (eine Erzeugerkarte).</summary>
         private class AnlagenInfo
         {
             public int ID;              // Tab_Energieanlagen.ID
@@ -176,6 +78,14 @@ namespace WindowsFormsApplication1
             public string WS_Typ = "";  // Bedarfsart der Heizkreis-Senke (WaermequelleClass.SENKE_*)
             public string BM_Typ = "";  // Betriebsmodus (WaermequelleClass.MODUS_*)
 
+            // D2: Auslegungstemperaturen der ANLAGE (Tab_Energieanlagen.Vorlauf /
+            // [Rücklauf] - die Spalte trägt dort den Umlaut, siehe
+            // ProjektPuffer.SQL_SYSTEM_RUECKLAUF). Sie tragen den Temperaturchip, wenn
+            // der Erzeuger keinen Puffer lädt, und die Warnregel aus Konzept 5, wenn er
+            // einen lädt. 0 = nicht gepflegt (Access-Spaltenvorgabe, nie NULL).
+            public int Vorlauf;
+            public int Ruecklauf;
+
             /// <summary>Haupt- und Zweitsenke (Konzept 5.3), aus derselben Abfrage gelesen.</summary>
             public WaermesenkeClass.SenkeDaten Senke = new WaermesenkeClass.SenkeDaten();
 
@@ -185,166 +95,10 @@ namespace WindowsFormsApplication1
             }
         }
 
-        // --- Aufbau -------------------------------------------------------------------
+        // --- Fußzeilenschalter --------------------------------------------------------
 
         /// <summary>
-        /// Legt rechts oben die Übersicht an, die ALLE ausgewählten Wärmeerzeuger mit
-        /// Wärmequelle, Wärmesenke und Zweitsenke zeigt (Konzept 4.1). Sie aktualisiert
-        /// sich bei jeder Änderung der Auswahl und der Zuordnungen.
-        ///
-        /// Die Höhe folgt weiterhin <c>groupBox_PufferSp.Top</c>. Mit der ausgeblendeten
-        /// Rubrik (Etappe A) steht diese Gruppe am unteren Rand — der freiwerdende
-        /// Bereich geht damit an die Übersicht, ohne dass die Formel eine zweite Wahrheit
-        /// bekommt (Konzept 4.1, Layoutzwang in Fassung 12).
-        /// </summary>
-        private void InitErzeugerUebersicht()
-        {
-            // Erst die Breite (die Gruppe unten misst sich an groupBox_PufferSp), dann bauen
-            UebersichtBreiteAnpassen();
-
-            groupBox_Uebersicht = new GroupBox();
-            groupBox_Uebersicht.Name = "groupBox_Uebersicht";
-            groupBox_Uebersicht.Text = MyResource.Resource.SIM_UEBERSICHT_TITEL;
-            groupBox_Uebersicht.Location = new Point(groupBox_PufferSp.Left, 109);
-            groupBox_Uebersicht.Size = new Size(groupBox_PufferSp.Width,
-                groupBox_PufferSp.Top - 109 - 10);
-            this.Controls.Add(groupBox_Uebersicht);
-            groupBox_Uebersicht.BringToFront();
-
-            listView_Uebersicht = new ListView();
-            listView_Uebersicht.Name = "listView_Uebersicht";
-            listView_Uebersicht.View = View.Details;
-            listView_Uebersicht.FullRowSelect = true;
-            listView_Uebersicht.GridLines = true;
-            listView_Uebersicht.MultiSelect = false;
-            listView_Uebersicht.HeaderStyle = ColumnHeaderStyle.Nonclickable;
-            listView_Uebersicht.Font = listView1.Font;
-            listView_Uebersicht.Location = new Point(7, 20);
-            listView_Uebersicht.Size = new Size(groupBox_Uebersicht.Width - 14,
-                groupBox_Uebersicht.Height - 27);
-            listView_Uebersicht.Anchor = AnchorStyles.Top | AnchorStyles.Left |
-                AnchorStyles.Right | AnchorStyles.Bottom;
-
-            // ACHTUNG: Reihenfolge und Anzahl müssen zu den COL_*-Konstanten und zu
-            // SPALTEN_BREITEN passen. Kopftexte bewusst kurz (Konzept 4.1, Layoutzwang);
-            // was die Spalte bedeutet und dass sie per Doppelklick bearbeitbar ist, steht
-            // im Mouseover-Hinweis - das trägt der Kopf nicht mehr mit.
-            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_PRIO, SPALTEN_BREITEN[COL_PRIO], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_ERZEUGERNAME_ALLGEMEIN, SPALTEN_BREITEN[COL_ERZEUGER], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_ANLAGE, SPALTEN_BREITEN[COL_ANLAGE], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_WPPRIO, SPALTEN_BREITEN[COL_WPPRIO], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add(MyResource.Resource.SIMQ_SPALTE_QUELLE, SPALTEN_BREITEN[COL_QUELLE], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_SENKE, SPALTEN_BREITEN[COL_SENKE], HorizontalAlignment.Left);
-            // Spaltenkopf = Beschriftung: SIM_SPALTE_ZWEITSENKE (gross), nicht die klein
-            // geschriebene Satzform SIM_ROLLE_ZWEITSENKE.
-            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_ZWEITSENKE, SPALTEN_BREITEN[COL_ZWEITSENKE], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_MODUS, SPALTEN_BREITEN[COL_BETRIEBSMODUS], HorizontalAlignment.Left);
-
-            listView_Uebersicht.MouseDoubleClick += listView_Uebersicht_MouseDoubleClick;
-
-            // Mouseover-Hinweise zu den bearbeitbaren Spalten
-            _uebersichtTip.AutoPopDelay = 15000;
-            _uebersichtTip.InitialDelay = 400;
-            _uebersichtTip.ReshowDelay = 100;
-            listView_Uebersicht.MouseMove += listView_Uebersicht_MouseMove;
-            listView_Uebersicht.MouseLeave += (s, e) => { _tipItem = null; _tipSpalte = -1; _uebersichtTip.Hide(listView_Uebersicht); };
-
-            groupBox_Uebersicht.Controls.Add(listView_Uebersicht);
-
-            // Bleibt nach der Verbreiterung Platz übrig (der Schirm gab mehr her, als
-            // gebraucht wurde), bekommt ihn die Anlagenspalte - dort sind die Texte am
-            // längsten. Einmalig; ein Resize-Ereignis wird bewusst nicht abonniert.
-            int summe = 0;
-            foreach (int b in SPALTEN_BREITEN) summe += b;
-            int rest = listView_Uebersicht.Width - ListeZuschlag() - summe;
-            if (rest > 0) listView_Uebersicht.Columns[COL_ANLAGE].Width += rest;
-
-            AktualisiereErzeugerUebersicht();
-        }
-
-        /// <summary>
-        /// Verbreitert Formular und Übersicht so weit, dass die neun Spalten
-        /// (<see cref="SPALTEN_BREITEN"/>) ohne waagerechten Rollbalken hineinpassen —
-        /// der zweite Layoutzwang aus Konzept 4.1.
-        ///
-        /// Die Übersicht erbt ihre Breite von <c>groupBox_PufferSp</c> (505 px aus dem
-        /// Designer); darin blieben der Liste 491 px für rund 850 px Spalten. Statt die
-        /// Spalten unlesbar zu quetschen wächst das Formular: 791 → bis zu 1169 px
-        /// Clientbreite.
-        ///
-        /// GEKAPPT AM SCHIRM: Passt das nicht mehr in den Arbeitsbereich, wird nur so
-        /// weit verbreitert wie möglich — dann kommt der Rollbalken für die letzten
-        /// Spalten zurück. Das ist der ehrliche Rückfall; das Formular ist in der Größe
-        /// veränderbar, der Anwender kann selbst nachhelfen.
-        ///
-        /// Kein Designer, keine .resx: die Werte dort bleiben unangetastet, verschoben
-        /// wird ausschließlich im Code-Behind — wie es <c>AltRubrikStilllegen</c>
-        /// mit der Höhe bereits tut.
-        /// </summary>
-        private void UebersichtBreiteAnpassen()
-        {
-            int summe = 0;
-            foreach (int b in SPALTEN_BREITEN) summe += b;
-
-            // groupBox_Uebersicht = groupBox_PufferSp.Width, ListView = Gruppe - 14
-            int gewuenscht = summe + ListeZuschlag() + 14;
-            int zusatz = gewuenscht - groupBox_PufferSp.Width;
-            if (zusatz <= 0) return;
-
-            // Nicht über den Arbeitsbereich hinaus (DpiUnaware: Pixel sind Pixel).
-            Screen schirm = Screen.PrimaryScreen;
-            if (schirm != null)
-            {
-                int rahmen = this.Width - this.ClientSize.Width;
-                int moeglich = schirm.WorkingArea.Width - 40 - rahmen - this.ClientSize.Width;
-                if (zusatz > moeglich) zusatz = moeglich;
-            }
-            if (zusatz <= 0) return;
-
-            this.ClientSize = new Size(this.ClientSize.Width + zusatz, this.ClientSize.Height);
-            groupBox_PufferSp.Width += zusatz;
-
-            // Die Fußzeile unten rechts mitziehen; sie hat keine Verankerung (Bestand).
-            btn_Speichern.Location = new Point(btn_Speichern.Left + zusatz, btn_Speichern.Top);
-            btn_OK.Location = new Point(btn_OK.Left + zusatz, btn_OK.Top);
-            lblStatus.Location = new Point(lblStatus.Left + zusatz, lblStatus.Top);
-        }
-
-        /// <summary>
-        /// Fußzeile unter der Übersicht (Mockup 4.1): Aufzählung der Projekt-Puffer und
-        /// der Einstieg in die Verwaltung (4.3). Ohne diesen Weg wäre nach dem Entfall
-        /// der Rubrik (4.4) kein Pufferspeicher mehr anzulegen.
-        /// </summary>
-        private void InitPufferFusszeile()
-        {
-            label_PufferListe = new Label();
-            label_PufferListe.Name = "label_PufferListe";
-            label_PufferListe.AutoSize = false;
-            label_PufferListe.Location = new Point(groupBox_Uebersicht.Left,
-                                                   groupBox_Uebersicht.Bottom + 6);
-            label_PufferListe.Size = new Size(groupBox_Uebersicht.Width, 20);
-            label_PufferListe.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            this.Controls.Add(label_PufferListe);
-            label_PufferListe.BringToFront();
-
-            btn_PufferVerwalten = new Button();
-            btn_PufferVerwalten.Name = "btn_PufferVerwalten";
-            btn_PufferVerwalten.Text = MyResource.Resource.PSP_BTN_PUFFER_VERWALTEN;
-            btn_PufferVerwalten.Location = new Point(groupBox_Uebersicht.Left,
-                                                    label_PufferListe.Bottom + 4);
-            btn_PufferVerwalten.Size = new Size(240, 28);
-            btn_PufferVerwalten.Click += btn_PufferVerwalten_Click;
-            this.Controls.Add(btn_PufferVerwalten);
-            btn_PufferVerwalten.BringToFront();
-
-            InitKaskadeSchalter();
-            InitExtrapolationSchalter();
-
-            AktualisierePufferFusszeile();
-        }
-
-        /// <summary>
-        /// Schalter „Zweikanalige Kaskade (Vorschau)" am rechten Ende der Fußzeile
+        /// Schalter „Zweikanalige Kaskade (Vorschau)" in der Fußzeile
         /// (Paket 4; Konzept Kapitel 9 „Feature-Flag empfohlen").
         ///
         /// Er schreibt die Projekteinstellung <c>Tab_Einstellungen.Kaskade_Zweikanalig</c>,
@@ -367,11 +121,11 @@ namespace WindowsFormsApplication1
             checkBox_KaskadeZweikanalig.AutoSize = true;
             checkBox_KaskadeZweikanalig.Enabled = false;   // erst mit bekanntem Projekt
 
-            // Rechtsbündig in der Fußzeile, aber nie über dem Verwalten-Knopf.
-            int x = groupBox_Uebersicht.Right - 230;
-            if (x < btn_PufferVerwalten.Right + 12) x = btn_PufferVerwalten.Right + 12;
-            checkBox_KaskadeZweikanalig.Location = new Point(x, btn_PufferVerwalten.Top + 6);
-            checkBox_KaskadeZweikanalig.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            // D2/D3: PLATZIERT wird der Schalter nicht mehr hier, sondern zusammen mit
+            // der übrigen Fußzeile in FusszeilePlatzieren. Vorher rechnete er seine
+            // Position aus groupBox_Uebersicht und btn_PufferVerwalten — beide gibt es in
+            // dieser Form nicht mehr (die Übersicht ist eine Kartenspalte, der
+            // Verwalten-Knopf steht in der Speicherspalte).
 
             // Zeilenumbrüche der Ressource auf die Plattformform bringen: Die .resx legt
             // sie als LF ab (XML-Normierung), der Bestand hat hier Environment.NewLine
@@ -458,7 +212,6 @@ namespace WindowsFormsApplication1
             checkBox_Extrapolation.AutoSize = true;
             checkBox_Extrapolation.Checked = true;         // Vorbelegung wie im Datenmodell
             checkBox_Extrapolation.Enabled = false;        // erst mit bekanntem Projekt
-            checkBox_Extrapolation.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
             _uebersichtTip.SetToolTip(checkBox_Extrapolation,
                 MyResource.Resource.SIM_EXTRAPOLATION_TOOLTIP.Replace("\n", Environment.NewLine));
@@ -467,62 +220,13 @@ namespace WindowsFormsApplication1
             this.Controls.Add(checkBox_Extrapolation);
             checkBox_Extrapolation.BringToFront();
 
-            // Erst nach dem Hinzufügen platzieren: Ein AutoSize-Steuerelement kennt seine
-            // Höhe erst, wenn es zum Formular gehört - und die Höhe wird gebraucht.
-            ExtrapolationSchalterPlatzieren();
-        }
-
-        /// <summary>
-        /// Setzt den Extrapolationsschalter in die Fußzeile — eine Zeile unter den
-        /// Kaskadenschalter und KOLLISIONSFREI zur Knopfzeile (Nacharbeit Paket 8,
-        /// Befund N13a).
-        ///
-        /// Zwei Dinge, die die erste Fassung nicht getan hat:
-        ///
-        ///   1. <b>Null-Schutz.</b> Die Position wurde ungeprüft aus
-        ///      <c>checkBox_KaskadeZweikanalig</c> abgeleitet. Fällt der Kaskadenschalter
-        ///      künftig weg oder wandert sein Aufbau, wäre das eine
-        ///      <c>NullReferenceException</c> im Konstruktor des Formulars — der Dialog
-        ///      ließe sich gar nicht mehr öffnen. Ohne ihn gilt dieselbe Rechnung wie in
-        ///      <see cref="InitKaskadeSchalter"/>.
-        ///
-        ///   2. <b>Kollisionsfreiheit.</b> Die Fußzeile ist knapp: Übersicht bis y≈418,
-        ///      Pufferzeile, Verwalten-Knopf bis y≈476, Speichern/OK ab y≈490. Eine
-        ///      zweite Schalterzeile passt dort nur mit wenigen Pixeln Luft und lag in
-        ///      der ersten Fassung auf der Oberkante von <c>btn_Speichern</c>. Statt die
-        ///      Zahl fest zu setzen, wird der Bedarf gerechnet und das Formular bei
-        ///      Bedarf um genau die fehlenden Pixel höher — dasselbe Vorgehen wie in
-        ///      <c>AltRubrikStilllegen</c>, die die Knopfzeile ebenfalls nachzieht
-        ///      (die drei Elemente sind ohne Verankerung, Bestand).
-        /// </summary>
-        private void ExtrapolationSchalterPlatzieren()
-        {
-            int x, y;
-            if (checkBox_KaskadeZweikanalig != null)
-            {
-                x = checkBox_KaskadeZweikanalig.Left;
-                y = checkBox_KaskadeZweikanalig.Bottom + 4;
-            }
-            else
-            {
-                // Rückfall: dieselbe Rechnung wie beim Kaskadenschalter, nur eine Zeile
-                // tiefer angesetzt (unterhalb des Verwalten-Knopfes).
-                x = groupBox_Uebersicht.Right - 230;
-                if (x < btn_PufferVerwalten.Right + 12) x = btn_PufferVerwalten.Right + 12;
-                y = btn_PufferVerwalten.Bottom + 4;
-            }
-            checkBox_Extrapolation.Location = new Point(x, y);
-
-            // Abstand zur Knopfzeile herstellen. Ohne diesen Schritt überlappt der
-            // Schalter die Oberkante von btn_Speichern.
-            const int LUFT = 6;
-            int fehlt = (y + checkBox_Extrapolation.Height + LUFT) - btn_Speichern.Top;
-            if (fehlt <= 0) return;
-
-            this.ClientSize = new Size(this.ClientSize.Width, this.ClientSize.Height + fehlt);
-            btn_Speichern.Location = new Point(btn_Speichern.Left, btn_Speichern.Top + fehlt);
-            btn_OK.Location = new Point(btn_OK.Left, btn_OK.Top + fehlt);
-            lblStatus.Location = new Point(lblStatus.Left, lblStatus.Top + fehlt);
+            // D2/D3: ExtrapolationSchalterPlatzieren ist ENTFALLEN. Die Methode setzte
+            // den Schalter eine Zeile unter den Kaskadenschalter und vergrößerte das
+            // Formular anschließend um die Pixel, die zur Knopfzeile fehlten (Befund
+            // N13a) — die letzte der vier Selbstkorrekturen des alten Layouts. Beide
+            // Schalter stehen jetzt nebeneinander in einer Fußzeile mit fester Höhe
+            // (FusszeilePlatzieren); eine Kollision mit der Knopfzeile kann dort nicht
+            // mehr entstehen, weil Schalter und Knöpfe getrennte Zeilen haben.
         }
 
         /// <summary>Belegt den Schalter aus der Datenbank vor (Gegenstück zu <see cref="AktualisiereKaskadeSchalter"/>).</summary>
@@ -567,43 +271,36 @@ namespace WindowsFormsApplication1
             ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
         }
 
-        /// <summary>Schreibt die Projekt-Puffer in die Fußzeile.</summary>
-        private void AktualisierePufferFusszeile()
-        {
-            if (label_PufferListe == null) return;
-
-            if (m_ID_Projekt <= 0)
-            {
-                label_PufferListe.Text = MyResource.Resource.PSP_FUSSZEILE_OHNE_PROJEKT;
-                return;
-            }
-
-            List<WaermesenkeClass.PufferInfo> puffer = WaermesenkeClass.ProjektPufferListe(m_ID_Projekt, null);
-            if (puffer.Count == 0)
-            {
-                label_PufferListe.Text = MyResource.Resource.PSP_FUSSZEILE_KEINER;
-                return;
-            }
-
-            List<string> teile = new List<string>();
-            foreach (WaermesenkeClass.PufferInfo p in puffer)
-                // VerwendungAnzeige statt WirksameVerwendung: Der DB-Wert bleibt deutsch,
-                // angezeigt wird der übersetzte Text (Paket 9, Befund L0-2).
-                teile.Add(p.Bezeichner + " (" +
-                          WaermesenkeClass.VerwendungAnzeige(WaermesenkeClass.WirksameVerwendung(p)) + ", " +
-                          p.Gesamtvolumen + " l)");
-
-            label_PufferListe.Text = string.Format(MyResource.Resource.PSP_FUSSZEILE_LISTE,
-                                                   string.Join(" · ", teile));
-        }
+        // D3: AktualisierePufferFusszeile ist ENTFALLEN. Die einzeilige Aufzählung
+        // „Pufferspeicher im Projekt: Name (Heizung, 800 l) · …" (label_PufferListe) hat
+        // die Speicherspalte abgelöst — dieselbe Auskunft steht jetzt je Speicher auf
+        // einer Karte, zusammen mit Ladern, Versorgung, Quellnutzung, Schwellen und
+        // Temperaturherkunft (Konzept 3a). Die Aufrufstellen rufen stattdessen
+        // AktualisiereSpeicherKarten.
 
         private void btn_PufferVerwalten_Click(object sender, EventArgs e)
+        {
+            PufferVerwaltungOeffnen(0);
+        }
+
+        /// <summary>
+        /// Öffnet die Puffer-Verwaltung <see cref="Form_PufferSp_Projekt"/> und frischt
+        /// danach die Anzeige auf.
+        ///
+        /// <paramref name="idPuffer"/> ist der Speicher, den der Dialog vorwählen soll —
+        /// das ✎ einer Speicherkarte gibt ihn mit (D3), der Einstieg über die
+        /// Spaltenfußzeile lässt ihn auf 0. Aus <c>btn_PufferVerwalten_Click</c>
+        /// herausgelöst, damit beide Wege denselben Nachlauf haben; der Nachlauf ist
+        /// Wort für Wort der bisherige.
+        /// </summary>
+        private void PufferVerwaltungOeffnen(int idPuffer)
         {
             if (m_ID_Projekt <= 0) return;
 
             Form_PufferSp_Projekt frm = new Form_PufferSp_Projekt();
             frm.ID_Projekt = m_ID_Projekt;
-            // Einstieg über die Fußzeile: KEINE Verwendungsvorgabe - hier will der
+            frm.ID_Puffer = idPuffer;
+            // Einstieg über die Spalte: KEINE Verwendungsvorgabe - hier will der
             // Anwender den Bestand sehen, nicht einen bestimmten Kanal. Der Absprung aus
             // dem Senkendialog setzt die Vorgabe dagegen (Konzept 4.2).
             frm.Verwendung = null;
@@ -625,76 +322,7 @@ namespace WindowsFormsApplication1
             ZuordnungBrueckeAnwenden();
             ZuordnungenLaden();
             RefreshZuordnungAnzeige();
-            AktualisierePufferFusszeile();
-        }
-
-        // --- Inhalt der Übersicht -----------------------------------------------------
-
-        /// <summary>
-        /// Baut die Erzeuger-Übersicht neu auf: ausgewählte Wärmeerzeuger in
-        /// Prioritätsreihenfolge, je Anlage eine Zeile mit Wärmequelle, Wärmesenke,
-        /// Zweitsenke und Betriebsmodus.
-        ///
-        /// Konzept 4.1: Der frühere <c>istWP</c>-Filter entfällt — Senke und Zweitsenke
-        /// gibt es für JEDEN Erzeuger, und <c>zeile.Tag</c> trägt deshalb jede Zeile.
-        /// WP-spezifisch bleiben nur WP-Priorität, Wärmequelle und Betriebsmodus.
-        /// </summary>
-        private void AktualisiereErzeugerUebersicht()
-        {
-            if (listView_Uebersicht == null) return;
-
-            listView_Uebersicht.Items.Clear();
-
-            int prio = 1;
-            foreach (string dbWert in listErzeuger)
-            {
-                if (dbWert == DbWerte.ERZEUGER_GESAMTSYSTEM) continue; // eigener Eintrag weiter unten
-
-                string anzeige = ErzeugerKatalog.Anzeige(dbWert);
-                List<AnlagenInfo> anlagen = AnlagenImProjekt(dbWert);
-
-                if (anlagen.Count == 0)
-                {
-                    listView_Uebersicht.Items.Add(new ListViewItem(new[]
-                        { prio.ToString(), anzeige, "-", "", "", "", "", "" }));
-                }
-                else
-                {
-                    // Jede im Projekt angelegte Anlage bekommt eine eigene Zeile
-                    // (z. B. beide Wärmepumpen); Prio und Erzeuger nur in der ersten
-                    // Zeile, damit die Gruppierung erkennbar bleibt.
-                    for (int a = 0; a < anlagen.Count; a++)
-                    {
-                        AnlagenInfo info = anlagen[a];
-                        bool istWP = info.IstWaermepumpe;
-
-                        ListViewItem zeile = new ListViewItem(new[]
-                        {
-                            a == 0 ? prio.ToString() : "",
-                            a == 0 ? anzeige : "",
-                            info.Bezeichner,
-                            istWP ? (info.Prioritaet > 0 ? info.Prioritaet.ToString() : "-") : "",
-                            istWP ? WaermequelleAnzeige(info) : "–",
-                            WaermesenkeAnzeige(info),
-                            ZweitsenkeAnzeige(info),
-                            istWP ? BetriebsmodusAnzeige(info) : ""
-                        });
-
-                        // Konzept 4.1: Tag für ALLE Erzeugerzeilen, nicht nur für Wärmepumpen.
-                        zeile.Tag = info;
-                        listView_Uebersicht.Items.Add(zeile);
-                    }
-                }
-                prio++;
-            }
-
-            // D1: Die Zeile „Gesamtsystem" ist entfallen. Sie trug ausschließlich die
-            // Alt-Zuordnung der weggefallenen Spalte; ohne diese wäre sie eine Zeile
-            // ohne jede Aussage gewesen.
-
-            // KEIN AutoResizeColumns mehr: die Breiten stehen fest in SPALTEN_BREITEN
-            // (siehe dort). Ein erneutes Autosize würde sie bei jedem Neuaufbau wieder
-            // auf die Kopftextlänge zurücksetzen.
+            AktualisiereSpeicherKarten();
         }
 
         /// <summary>
@@ -718,10 +346,18 @@ namespace WindowsFormsApplication1
 
             // Konzept 4.1: Die Abfrage führt die neuen WS_*-Spalten mit, damit die
             // Übersicht Senke und Zweitsenke ohne zusätzliche Abfrage je Zeile anzeigt.
+            //
+            // D2: dazu Vorlauf und Rücklauf der ANLAGE für den Temperaturchip und die
+            // Warnregel aus Konzept Abschnitt 5. ACHTUNG: Die Rücklaufspalte heißt in
+            // Tab_Energieanlagen MIT Umlaut (an der Datenbank verifiziert, Befund B0-4,
+            // siehe ProjektPuffer.SQL_SYSTEM_RUECKLAUF) - anders als in
+            // Tab_Pufferspeicher. Alias auf den umlautfreien Namen, damit der Lesecode
+            // unten nicht von der Schreibweise abhängt.
             System.Data.DataTable dt = DataRepository.GetDataTable(
                 "SELECT a.ID, a.Bezeichner, a.Prioritaet, a.WQ_Typ, a.WQ_Temp, a.WS_Typ, a.BM_Typ, " +
                 "       a.WS_Ziel, a.WS_ID_Puffer, a.WS_Ladeprio, a.WS_Ladegrenze, a.WS_Ladeprio_PV, " +
                 "       a.WS_Ziel2, a.WS_ID_Puffer2, a.WS_Ladeprio2, a.WS_Ladegrenze2, " +
+                "       a.Vorlauf, a.[Rücklauf] AS Ruecklauf, " +
                 "       w.Typ AS WPTyp " +
                 "FROM Tab_Energieanlagen AS a LEFT JOIN Tab_WP AS w ON a.ID_WP = w.ID " +
                 "WHERE a.ID_Projekt=" + m_ID_Projekt + " AND a.ID_Type=" + typ +
@@ -735,6 +371,8 @@ namespace WindowsFormsApplication1
                 if (r["ID"] != DBNull.Value) info.ID = Convert.ToInt32(r["ID"]);
                 if (r["Bezeichner"] != DBNull.Value) info.Bezeichner = r["Bezeichner"].ToString();
                 if (r["Prioritaet"] != DBNull.Value) info.Prioritaet = Convert.ToInt32(r["Prioritaet"]);
+                if (r["Vorlauf"] != DBNull.Value) info.Vorlauf = Convert.ToInt32(r["Vorlauf"]);
+                if (r["Ruecklauf"] != DBNull.Value) info.Ruecklauf = Convert.ToInt32(r["Ruecklauf"]);
                 if (r["WPTyp"] != DBNull.Value) info.WpTyp = r["WPTyp"].ToString();
                 if (r["WQ_Typ"] != DBNull.Value) info.WQ_Typ = r["WQ_Typ"].ToString();
                 if (r["WQ_Temp"] != DBNull.Value) info.WQ_Temp = Convert.ToDouble(r["WQ_Temp"]);
@@ -1025,103 +663,24 @@ namespace WindowsFormsApplication1
             AktualisiereErzeugerUebersicht();
         }
 
-        // --- Mouseover und Doppelklick ------------------------------------------------
+        // --- Editoren (aus den Karten aufgerufen) --------------------------------------
 
-        /// <summary>
-        /// Mouseover-Hinweise: erklärt die per Doppelklick bearbeitbaren Spalten
-        /// der Übersicht (WP-Priorität, Wärmequelle, Wärmesenke, Zweitsenke,
-        /// Betriebsmodus).
-        /// </summary>
-        private void listView_Uebersicht_MouseMove(object sender, MouseEventArgs e)
-        {
-            ListViewHitTestInfo hit = listView_Uebersicht.HitTest(e.Location);
-            if (hit.Item == null || !(hit.Item.Tag is AnlagenInfo info))
-            {
-                if (_tipItem != null) { _tipItem = null; _tipSpalte = -1; _uebersichtTip.Hide(listView_Uebersicht); }
-                return;
-            }
-
-            int spalte = hit.SubItem != null ? hit.Item.SubItems.IndexOf(hit.SubItem) : -1;
-
-            // Nur bei Wechsel neu anzeigen (sonst flackert der Hinweis)
-            if (_tipItem == hit.Item && _tipSpalte == spalte) return;
-            _tipItem = hit.Item;
-            _tipSpalte = spalte;
-
-            string text;
-            switch (spalte)
-            {
-                case COL_WPPRIO:
-                    text = info.IstWaermepumpe
-                        ? MyResource.Resource.SIM_TIP_WPPRIO
-                        : MyResource.Resource.SIM_TIP_WPPRIO_NICHT_WP;
-                    break;
-
-                case COL_QUELLE:
-                    text = info.IstWaermepumpe
-                        ? MyResource.Resource.SIMQ_TIP_QUELLE
-                        : MyResource.Resource.SIMQ_TIP_QUELLE_NICHT_WP;
-                    break;
-
-                case COL_SENKE:
-                    text = MyResource.Resource.SIM_TIP_SENKE;
-                    break;
-
-                case COL_ZWEITSENKE:
-                    text = MyResource.Resource.SIM_TIP_ZWEITSENKE;
-                    break;
-
-                case COL_BETRIEBSMODUS:
-                    text = info.IstWaermepumpe
-                        ? MyResource.Resource.SIM_TIP_BETRIEBSMODUS
-                        : MyResource.Resource.SIM_TIP_BETRIEBSMODUS_NICHT_WP;
-                    break;
-
-                default:
-                    text = string.Format(MyResource.Resource.SIM_TIP_UEBERSICHT_STANDARD, info.Bezeichner);
-                    break;
-            }
-
-            _uebersichtTip.Show(text, listView_Uebersicht, e.X + 16, e.Y + 18, 15000);
-        }
-
-        /// <summary>
-        /// Doppelklick in der Übersicht. Geöffnet wird ausschließlich, was in
-        /// <see cref="SPALTEN_MIT_DIALOG"/> steht — jede andere Spalte tut nichts
-        /// (Konzept 4.1, Ersatz für das frühere <c>else</c>-Fallback auf Spalte 4).
-        /// </summary>
-        private void listView_Uebersicht_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            ListViewHitTestInfo hit = listView_Uebersicht.HitTest(e.Location);
-            if (hit.Item == null) return;
-            if (!(hit.Item.Tag is AnlagenInfo info)) return; // Zeilen ohne Anlage (z. B. Gesamtsystem)
-
-            if (hit.SubItem == null) return;
-            int spalte = hit.Item.SubItems.IndexOf(hit.SubItem);
-            if (Array.IndexOf(SPALTEN_MIT_DIALOG, spalte) < 0) return;
-
-            switch (spalte)
-            {
-                case COL_WPPRIO:
-                    WpPrioritaetBearbeiten(info);
-                    break;
-
-                case COL_SENKE:
-                case COL_ZWEITSENKE:
-                    // Beide Spalten führen in denselben Dialog - Haupt- und Zweitsenke
-                    // gehören fachlich zusammen (Konzept 4.2).
-                    WaermesenkeBearbeiten(info);
-                    break;
-
-                case COL_BETRIEBSMODUS:
-                    BetriebsmodusBearbeiten(info);
-                    break;
-
-                case COL_QUELLE:
-                    WaermequelleBearbeiten(info, hit.SubItem.Bounds);
-                    break;
-            }
-        }
+        // D2: listView_Uebersicht_MouseMove und listView_Uebersicht_MouseDoubleClick sind
+        // ENTFALLEN. Beide arbeiteten über SPALTENINDIZES: der eine wählte den
+        // Mouseover-Hinweis, der andere den zu öffnenden Dialog (Whitelist
+        // SPALTEN_MIT_DIALOG). Eine Karte hat keine Spalten - Hinweis und Editorziel
+        // hängen jetzt am einzelnen Chip (ErzeugerKarte.ChipDaten.Hinweis bzw. .Ziel),
+        // verteilt in Form_Simulation_Config.Karten.ErzeugerChips und aufgelöst in
+        // ChipEditorOeffnen. Die Zuordnung Chip -> Dialog ist dieselbe wie vorher
+        // Spalte -> Dialog; die Dialoge selbst sind unverändert.
+        //
+        // Die WP-Sonderfälle der alten Hinweistexte (SIM_TIP_WPPRIO_NICHT_WP,
+        // SIMQ_TIP_QUELLE_NICHT_WP, SIM_TIP_BETRIEBSMODUS_NICHT_WP) werden nicht mehr
+        // gebraucht: Die betroffenen Chips entstehen bei Nicht-Wärmepumpen gar nicht
+        // erst, statt sie anzuzeigen und den Klick darauf mit einer Meldung
+        // abzuweisen. Die Meldungen in WpPrioritaetBearbeiten, WaermequelleBearbeiten
+        // und BetriebsmodusBearbeiten bleiben trotzdem stehen - sie sind der Schutz der
+        // Methode, nicht der Anzeige.
 
         /// <summary>Einsatz-Reihenfolge einer Wärmepumpe (nur dort sinnvoll).</summary>
         private void WpPrioritaetBearbeiten(AnlagenInfo info)
@@ -1218,7 +777,6 @@ namespace WindowsFormsApplication1
             // "Pufferspeicher anlegen..." einen neuen Projekt-Puffer erzeugt haben.
             ZuordnungenLaden();
             RefreshZuordnungAnzeige();
-            AktualisierePufferFusszeile();
         }
 
         /// <summary>
@@ -1244,8 +802,16 @@ namespace WindowsFormsApplication1
         // --- Wärmequellen-Auswahl (Bestand) -------------------------------------------
 
         /// <summary>
-        /// Zeigt das Wärmequellen-Dropdown (Sole-/Wasser-Wasser-WP) direkt in der
-        /// Übersicht an - analog zur Zellbearbeitung in der Zuordnungstabelle.
+        /// Zeigt das Wärmequellen-Dropdown (Sole-/Wasser-Wasser-WP) unmittelbar an der
+        /// Karte an - wie es vorher in der Zelle der Übersicht aufklappte.
+        ///
+        /// <b>D2:</b> <paramref name="zellBounds"/> kommt jetzt bereits in
+        /// FORMULARKOORDINATEN (die aufrufende Karte rechnet sie in
+        /// <c>KarteAlsZelle</c> um). Vorher lag hier eine Umrechnung
+        /// <c>listView_Uebersicht.PointToScreen</c> → <c>PointToClient</c>; die Liste
+        /// gibt es nicht mehr, und die Karten liegen im scrollenden
+        /// <c>FlowLayoutPanel</c> — die Umrechnung muss deshalb dort stattfinden, wo das
+        /// Steuerelement bekannt ist.
         /// </summary>
         private void WaermequelleAuswahlAnzeigen(AnlagenInfo info, Rectangle zellBounds)
         {
@@ -1267,9 +833,8 @@ namespace WindowsFormsApplication1
             _wqCombo.SelectedIndex = aktuell >= 0 ? aktuell : 0;
             _wqUpdating = false;
 
-            Point screenPoint = listView_Uebersicht.PointToScreen(zellBounds.Location);
-            Point formPoint = this.PointToClient(screenPoint);
-            _wqCombo.Bounds = new Rectangle(formPoint, new Size(Math.Max(zellBounds.Width, 190), zellBounds.Height));
+            _wqCombo.Bounds = new Rectangle(zellBounds.Location,
+                                            new Size(Math.Max(zellBounds.Width, 190), zellBounds.Height));
             _wqCombo.Visible = true;
             _wqCombo.BringToFront();
             _wqCombo.Focus();

@@ -136,18 +136,18 @@ namespace WindowsFormsApplication1
                 statusTimer.Stop();
             };
 
-            // D1: Die Alt-Rubrik "Pufferspeicher" wird nicht mehr aufgebaut - nur noch
-            // die Geometrie hergestellt, die der Rest des Dialogs davon geerbt hat.
-            AltRubrikStilllegen();
+            // D2/D3: Der gesamte Anzeigebereich - zwei Kartenspalten, Fußzeile,
+            // Fenstergröße - entsteht in EINEM Schritt. Er löst AltRubrikStilllegen,
+            // InitErzeugerUebersicht und InitPufferFusszeile ab; die vier
+            // Selbstkorrekturen der Fenstergeometrie sind damit weg (siehe dort).
+            KartenLayoutAufbauen();
 
-            // Live-Übersicht der ausgewählten Erzeuger rechts oben
-            InitErzeugerUebersicht();
+            // Karten mit dem füllen, was ohne Projekt schon bekannt ist. Den echten
+            // Inhalt bringt SetControls.
+            AktualisiereErzeugerUebersicht();
 
-            // Fußzeile der Übersicht: Projekt-Pufferspeicher und ihr Einstieg (Konzept 4.1)
-            InitPufferFusszeile();
-
-            // Statuszeile MUSS nach InitPufferFusszeile ausgerichtet werden - dort
-            // verschiebt ExtrapolationSchalterPlatzieren sie zuletzt (Paket 8).
+            // Statuszeile MUSS nach KartenLayoutAufbauen ausgerichtet werden - dort
+            // bekommt die Knopfzeile ihre endgültige Lage.
             StatuszeileAusrichten();
 
             // Bereich für den KI-Hilfe-Assistenten melden (nur Bedien-Kontext,
@@ -380,74 +380,16 @@ namespace WindowsFormsApplication1
             return speicher.Count > 0 ? string.Join(", ", speicher) : "-";
         }
 
-        /// <summary>
-        /// ETAPPE D1 (Konzept_KonfigUI_Hydraulik, Abschnitt 6) — Nachfolger von
-        /// <c>InitPufferspeicherRubrik</c>.
-        ///
-        /// <b>Was entfallen ist.</b> Die programmatische Rubrik „Pufferspeicher:" (Label,
-        /// zwei Dropdowns, zwei Checkboxen) wird nicht mehr angelegt. Sie war seit
-        /// Paket 2 / Etappe A dauerhaft unsichtbar (Schalter <c>RUBRIK_SICHTBAR</c>, mit
-        /// D1 ebenfalls entfallen), wurde aber weiter befüllt und vorbelegt — Ladewege
-        /// für Steuerelemente, die niemand sehen kann. Gepflegt wird die Zuordnung über
-        /// den Senkendialog (Konzept 4.2) und die Puffer-Verwaltung (4.3).
-        ///
-        /// <b>Was geblieben ist, und warum.</b> Diese Methode stellt die GEOMETRIE her,
-        /// die der übrige Dialog von der Rubrik geerbt hat:
-        ///
-        /// <list type="number">
-        ///   <item><description>Das Formular ist 105 px höher als der Entwurf. Der Platz
-        ///     ging nie an die Rubrik selbst (die saß in <c>groupBox_Tools</c>), sondern
-        ///     an die Höhe der Erzeuger-Übersicht rechts — sie bemisst sich an
-        ///     <c>groupBox_PufferSp.Top</c>, und das wiederum an <c>btn_Speichern.Top</c>.
-        ///     Ohne die 105 px verlöre die Übersicht eine Zeilenhöhe von rund vier
-        ///     Erzeugern.</description></item>
-        ///   <item><description><c>groupBox_PufferSp</c> ist damit weiterhin der
-        ///     Höhenanker der Übersicht. Der Designer wird in D1 bewusst NICHT umgebaut
-        ///     (Konzeptvorgabe „minimal-invasiv"); die Gruppe bleibt unsichtbar am
-        ///     unteren Rand stehen. Der Umbau auf <c>TableLayoutPanel</c> kommt mit
-        ///     D2/D3, dann fällt dieser Anker weg.</description></item>
-        /// </list>
-        ///
-        /// <b>Sichtbares Ergebnis: unverändert.</b> Alle hier angefassten Maße sind
-        /// dieselben wie bisher — der Dialog sieht nach D1 aus wie vorher, nur ohne die
-        /// Spalte „Zuordnung (alt)". Die 105 px im linken Gruppenrahmen bleiben als
-        /// Lücke stehen; sie stand dort auch vorher (die Rubrik war ja unsichtbar).
-        /// </summary>
-        private void AltRubrikStilllegen()
-        {
-            // Höhenzuschlag aus dem Bestand. Der Name der Konstanten hieß früher
-            // VERSCHIEBUNG und meinte den Platzbedarf der Rubrik; er bezeichnet jetzt
-            // das, was der Zuschlag tatsächlich bewirkt.
-            const int HOEHENZUSCHLAG = 105;
-
-            // Die Designer-Controls der Alt-Zuordnung bleiben bestehen, aber unsichtbar.
-            checkBox_PufferSp.Visible = false;
-            checkBox_PufferSp.Checked = true; // hält evtl. abfragende Logik konsistent
-            groupBox_PufferSp.Visible = false;
-
-            // Formular unten erweitern und die unteren Bedienelemente nachziehen
-            // (die drei sind ohne Verankerung, Bestand).
-            this.ClientSize = new Size(this.ClientSize.Width, this.ClientSize.Height + HOEHENZUSCHLAG);
-            btn_Speichern.Location = new Point(btn_Speichern.Left, this.ClientSize.Height - 42);
-            btn_OK.Location = new Point(btn_OK.Left, this.ClientSize.Height - 42);
-            lblStatus.Location = new Point(lblStatus.Left, this.ClientSize.Height - 37);
-
-            // Linke Gruppe und die Rubriken darunter genau wie bisher: Ein Verschieben
-            // nach oben wäre eine Layoutänderung, die D1 ausdrücklich nicht vornimmt.
-            groupBox_Tools.Height += HOEHENZUSCHLAG;
-            label2.Top += HOEHENZUSCHLAG;      // "Stromerzeuger:"
-            comboBox5.Top += HOEHENZUSCHLAG;
-            checkBox5.Top += HOEHENZUSCHLAG;
-            label3.Top += HOEHENZUSCHLAG;      // "Energiespeicher:"
-            comboBox6.Top += HOEHENZUSCHLAG;
-            checkBox6.Top += HOEHENZUSCHLAG;
-
-            // Die Übersicht bemisst ihre Höhe an groupBox_PufferSp.Top (Konzept 4.1).
-            // Die unsichtbare Gruppe steht deshalb am unteren Rand, damit der Bereich
-            // darüber vollständig an die Übersicht geht.
-            groupBox_PufferSp.Location = new Point(groupBox_PufferSp.Left,
-                btn_Speichern.Top - PLATZ_FUSSZEILE);
-        }
+        // ETAPPE D2/D3: AltRubrikStilllegen ist ENTFALLEN.
+        //
+        // Die Methode legte die Alt-Rubrik still (das bleibt, jetzt in
+        // Form_Simulation_Config.Karten.AltSteuerelementeStilllegen) und stellte
+        // daneben die GEOMETRIE her, die der Dialog von ihr geerbt hatte: 105 px
+        // Zusatzhöhe, ein Nachziehen der drei unverankerten Fußzeilenelemente und die
+        // unsichtbare groupBox_PufferSp als Höhenanker der Übersicht. Alle drei Zwecke
+        // sind mit dem Kartenlayout weggefallen - die Höhe kommt aus der Wunschgröße,
+        // die Fußzeile ist verankert, und einen Höhenanker braucht ein
+        // TableLayoutPanel nicht.
 
         /// <summary>
         /// Frischt die Anzeige nach einer Änderung am Zuordnungsbestand auf.
@@ -635,8 +577,17 @@ namespace WindowsFormsApplication1
             Close();
         }
 
+        // D2: Die sechs Auswahlfelder und ihre Haken sind seit dem Kartenlayout
+        // unsichtbar (Form_Simulation_Config.Karten.AltSteuerelementeStilllegen), aber
+        // weiterhin das PERSISTENZMODELL von Tab_Einstellungen.Tool_1..6. Bedient werden
+        // sie nur noch programmatisch aus KaskadeSchreiben - und genau dagegen schuetzt
+        // die Sperre _kaskadeSetzen: Ohne sie riefe jedes einzelne Setzen mitten im
+        // Umsortieren AddErzeuger und damit einen halbfertigen Kartenaufbau auf.
+        // AddErzeuger laeuft stattdessen einmal am Ende von KaskadeSchreiben.
+
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (_kaskadeSetzen) return;
             if (comboBox1.SelectedIndex != -1)
             {
                 checkBox1.Checked = true;
@@ -647,6 +598,7 @@ namespace WindowsFormsApplication1
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (_kaskadeSetzen) return;
             if (comboBox2.SelectedIndex != -1)
             {
                 checkBox2.Checked = true;
@@ -657,6 +609,7 @@ namespace WindowsFormsApplication1
 
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (_kaskadeSetzen) return;
             if (comboBox3.SelectedIndex != -1)
             {
                 checkBox3.Checked = true;
@@ -667,6 +620,7 @@ namespace WindowsFormsApplication1
 
         private void comboBox4_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (_kaskadeSetzen) return;
             if (comboBox4.SelectedIndex != -1)
             {
                 checkBox4.Checked = true;
@@ -687,24 +641,28 @@ namespace WindowsFormsApplication1
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
+            if (_kaskadeSetzen) return;
             if (!checkBox1.Checked) { comboBox1.Text = ""; }
             AddErzeuger();
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
+            if (_kaskadeSetzen) return;
             if (!checkBox2.Checked) { comboBox2.Text = ""; }
             AddErzeuger();
         }
 
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         {
+            if (_kaskadeSetzen) return;
             if (!checkBox3.Checked) { comboBox3.Text = ""; }
             AddErzeuger();
         }
 
         private void checkBox4_CheckedChanged(object sender, EventArgs e)
         {
+            if (_kaskadeSetzen) return;
             if (!checkBox4.Checked) { comboBox4.Text = ""; }
             AddErzeuger();
         }
@@ -770,13 +728,12 @@ namespace WindowsFormsApplication1
             comboBox.Items.AddRange(listPufferSp.ToArray());
 
             // D1: Das Befüllen und Vorbelegen der Alt-Rubrik-Dropdowns ist entfallen -
-            // die Steuerelemente gibt es nicht mehr (AltRubrikStilllegen).
+            // die Steuerelemente gibt es nicht mehr.
 
-            // Übersicht mit den geladenen Daten aufbauen
+            // Beide Kartenspalten mit den geladenen Daten aufbauen. D3: Der frühere
+            // Zusatzaufruf AktualisierePufferFusszeile entfällt - die Speicherspalte
+            // hängt an derselben Auffrischung.
             RefreshZuordnungAnzeige();
-
-            // Fußzeile kennt das Projekt erst jetzt (Konzept 4.1)
-            AktualisierePufferFusszeile();
 
             // Feature-Flag der zweikanaligen Kaskade aus der Datenbank vorbelegen
             // (Paket 4, Etappe 4a - Konzept Kapitel 9)

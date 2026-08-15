@@ -117,6 +117,125 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="PSP_KARTEN_KOPF_SPEICHER" xml:space="preserve">
+    <value>Storage in the project</value>
+  </data>
+  <data name="PSP_KARTE_BILANZ" xml:space="preserve">
+    <value>{0} chargers · {1} consumers</value>
+  </data>
+  <data name="PSP_KARTE_ENTLADEPRIO" xml:space="preserve">
+    <value>Discharge prio: {0}</value>
+  </data>
+  <data name="PSP_KARTE_KASKADE" xml:space="preserve">
+    <value>(cascade)</value>
+  </data>
+  <data name="PSP_KARTE_KEIN_SPEICHER" xml:space="preserve">
+    <value>No buffer storage has been created for this project yet.</value>
+  </data>
+  <data name="PSP_KARTE_LADER" xml:space="preserve">
+    <value>Chargers: {0}</value>
+  </data>
+  <data name="PSP_KARTE_LADER_KEINE" xml:space="preserve">
+    <value>Chargers: none</value>
+  </data>
+  <data name="PSP_KARTE_PV_RANG" xml:space="preserve">
+    <value>PV rank {0}</value>
+  </data>
+  <data name="PSP_KARTE_QUELLE_FUER" xml:space="preserve">
+    <value>Source for: {0}</value>
+  </data>
+  <data name="PSP_KARTE_SCHWELLEN" xml:space="preserve">
+    <value>Thresholds {0} / {1} / {2} %</value>
+  </data>
+  <data name="PSP_KARTE_TEMP_EIGEN" xml:space="preserve">
+    <value>own values at the storage</value>
+  </data>
+  <data name="PSP_KARTE_TEMP_HERKUNFT" xml:space="preserve">
+    <value>Temperatures: {0}</value>
+  </data>
+  <data name="PSP_KARTE_TEMP_KEINE" xml:space="preserve">
+    <value>not maintained</value>
+  </data>
+  <data name="PSP_KARTE_TEMP_SYSTEM" xml:space="preserve">
+    <value>project system default</value>
+  </data>
+  <data name="PSP_KARTE_TEMP_ZUORDNUNG" xml:space="preserve">
+    <value>from the assignment row</value>
+  </data>
+  <data name="PSP_KARTE_TIP_BEARBEITEN" xml:space="preserve">
+    <value>Edit buffer storage (open management)</value>
+  </data>
+  <data name="PSP_KARTE_VERSORGT" xml:space="preserve">
+    <value>Supplies: {0}</value>
+  </data>
+  <data name="PSP_KARTE_VOLUMEN" xml:space="preserve">
+    <value>{0} l</value>
+  </data>
+  <data name="SIM_KARTEN_KOPF_ERZEUGER" xml:space="preserve">
+    <value>Simulation components (+ include, × remove, ▲▼ order, ✎ or double-click opens the dialog)</value>
+  </data>
+  <data name="SIM_KARTE_ANLAGE_HINZU" xml:space="preserve">
+    <value>+ Add unit: units are created on the project page.</value>
+  </data>
+  <data name="SIM_KARTE_AUFNEHMEN" xml:space="preserve">
+    <value>+ include</value>
+  </data>
+  <data name="SIM_KARTE_KEINE_ERZEUGER" xml:space="preserve">
+    <value>No heat generator selected.</value>
+  </data>
+  <data name="SIM_KARTE_OHNE_ANLAGE" xml:space="preserve">
+    <value>no unit in the project</value>
+  </data>
+  <data name="SIM_KARTE_QUELLE" xml:space="preserve">
+    <value>Source: {0}</value>
+  </data>
+  <data name="SIM_KARTE_QUELLE_KASKADE" xml:space="preserve">
+    <value>Source: {0} · cascade</value>
+  </data>
+  <data name="SIM_KARTE_SENKE" xml:space="preserve">
+    <value>Sink: {0}</value>
+  </data>
+  <data name="SIM_KARTE_TEMPERATURPAAR" xml:space="preserve">
+    <value>{0} / {1} °C</value>
+  </data>
+  <data name="SIM_KARTE_TIP_AUFNEHMEN" xml:space="preserve">
+    <value>Include in the simulation — the component is computed
+and takes the last cascade rank (move it forward with ▲).</value>
+  </data>
+  <data name="SIM_KARTE_TIP_BEARBEITEN" xml:space="preserve">
+    <value>Edit heat sink (double-click on the card works as well)</value>
+  </data>
+  <data name="SIM_KARTE_TIP_ENTFERNEN" xml:space="preserve">
+    <value>Remove from the simulation — the component stays in the project
+but is no longer computed.</value>
+  </data>
+  <data name="SIM_KARTE_TIP_HOCH" xml:space="preserve">
+    <value>Move one rank forward in the cascade</value>
+  </data>
+  <data name="SIM_KARTE_TIP_KASKADE" xml:space="preserve">
+    <value>Cascade: this generator draws its inlet temperature from the buffer storage
+and raises it further. The withdrawal is at the same time a discharge of the storage.</value>
+  </data>
+  <data name="SIM_KARTE_TIP_RUNTER" xml:space="preserve">
+    <value>Move one rank back in the cascade</value>
+  </data>
+  <data name="SIM_KARTE_TIP_TEMPERATUR_WARNUNG" xml:space="preserve">
+    <value>The generator flow temperature ({0} °C) is below the flow temperature of storage "{1}" ({2} °C).
+It cannot charge the storage to that level; the simulation caps the charge physically.
+This is a hint, not a block.</value>
+  </data>
+  <data name="SIM_KARTE_TITEL" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="SIM_KARTE_VERFUEGBAR" xml:space="preserve">
+    <value>not in the simulation</value>
+  </data>
+  <data name="SIM_KARTE_WPPRIO" xml:space="preserve">
+    <value>HP prio {0}</value>
+  </data>
+  <data name="SIM_KARTE_ZWEITSENKE" xml:space="preserve">
+    <value>Secondary sink: {0}</value>
+  </data>
   <data name="Text_Select" xml:space="preserve">
     <value>please select!</value>
   </data>

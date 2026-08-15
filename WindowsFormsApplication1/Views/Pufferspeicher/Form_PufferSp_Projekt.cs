@@ -356,8 +356,28 @@ namespace WindowsFormsApplication1
                 ? (_projektPuffer.Count > 0 ? 0 : -1)
                 : ErsterMitVerwendung(Verwendung);
 
+            // ETAPPE D3 (Konzept_KonfigUI_Hydraulik 3a): Das ✎ einer Speicherkarte meint
+            // GENAU DIESEN Speicher und gibt seine ID mit. Ohne die Vorwahl landete der
+            // Anwender im ersten Speicher der Liste - bei zwei Heizungsspeichern also
+            // regelmäßig im falschen. Die ID hat Vorrang vor der Verwendungsregel
+            // darüber; ist sie unbekannt (0, oder der Speicher gehört nicht zum
+            // Projekt), bleibt es bei der bisherigen Wahl.
+            int nachId = IndexVonPuffer(ID_Puffer);
+            if (nachId >= 0) auswahl = nachId;
+
             if (auswahl >= 0) _lbProjekt.SelectedIndex = auswahl;
             else NeuVorbereiten();
+        }
+
+        /// <summary>Listenplatz eines Projekt-Puffers; -1, wenn er nicht dabei ist.</summary>
+        private int IndexVonPuffer(int idPuffer)
+        {
+            if (idPuffer <= 0) return -1;
+
+            for (int i = 0; i < _projektPuffer.Count; i++)
+                if (_projektPuffer[i].ID == idPuffer) return i;
+
+            return -1;
         }
 
         /// <summary>
