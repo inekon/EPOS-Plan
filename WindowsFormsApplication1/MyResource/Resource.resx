@@ -1873,6 +1873,9 @@ Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.</value>
   <data name="SIM_BTN_WAERMEBEDARF_UEBERSICHT" xml:space="preserve">
     <value>Wärmebedarf Übersicht...</value>
   </data>
+  <data name="SIM_CHK_SORTIERT" xml:space="preserve">
+    <value>sortiert</value>
+  </data>
   <data name="SIM_CHK_WAERMEBEDARF_EINBLENDEN" xml:space="preserve">
     <value>Wärmebedarf einblenden</value>
   </data>

@@ -1866,6 +1866,9 @@ Boilers, CHP units and solar thermal generate the heat themselves.</value>
   <data name="SIM_BTN_WAERMEBEDARF_UEBERSICHT" xml:space="preserve">
     <value>Heat demand overview...</value>
   </data>
+  <data name="SIM_CHK_SORTIERT" xml:space="preserve">
+    <value>sorted</value>
+  </data>
   <data name="SIM_CHK_WAERMEBEDARF_EINBLENDEN" xml:space="preserve">
     <value>Show heat demand</value>
   </data>

@@ -131,6 +131,24 @@ namespace WindowsFormsApplication1
             cm.AddSeries(schluessel, farbe, werte);
             cm._chart.Series[schluessel].LegendText = legende;
         }
+        /// <summary>
+        /// Wie oben, aber mit ausdrücklichem Serientyp und optionaler Stapelgruppe.
+        ///
+        /// <c>ChartManager.AddSeries</c> vergibt <c>FastLine</c>, und <c>FastLine</c> kann
+        /// nicht stapeln. <paramref name="stapelgruppe"/> trennt mehrere Stapel in
+        /// EINEM Diagramm — ohne sie würde MS-Chart alle gestapelten Serien in einen
+        /// gemeinsamen Stapel werfen.
+        /// </summary>
+        private static void SerieAnlegen(ChartManager cm, string schluessel, string legende,
+                                         Color farbe, float[] werte, SeriesChartType typ,
+                                         string stapelgruppe = null)
+        {
+            cm.AddSeries(schluessel, farbe, werte);
+            Series s = cm._chart.Series[schluessel];
+            s.LegendText = legende;
+            s.ChartType = typ;
+            if (!string.IsNullOrEmpty(stapelgruppe)) s["StackedGroupName"] = stapelgruppe;
+        }
         /// <summary>Wie oben, für die XY-Variante mit <see cref="PointF"/>-Punkten.</summary>
         private static void SerieAnlegen(ChartManager cm, string schluessel, string legende,
                                          Color farbe, PointF[] punkte, int borderWidth)
@@ -1451,6 +1469,17 @@ namespace WindowsFormsApplication1
             ueb_textBox_BHKWWaermeproduktion.Text = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh.ToString("F2");
             ueb_textBox_BHKWStromproduktion.Text = sim.simulation_bhkw.Stromproduktion_BHKW_MWh.ToString("F2");
 
+            // Diese beiden Felder blieben bisher LEER: sie standen im Designer, wurden aber
+            // nie beschrieben. In einem Projekt mit Solarthermie bzw. PV zeigte die
+            // Übersicht deshalb eine leere Zeile statt des Ergebnisses. Umrechnung wie in
+            // NavigatorUebersicht.SetControl (kWh -> MWh/a).
+            ueb_textBox_SWWaermeproduktion.Text = (sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000).ToString("F2");
+            ueb_textBox_PVStromproduktion.Text = (sim.simulation_pv.Stromproduktion_gesamt / 1000).ToString("F2");
+
+            // Zeilen nicht vorhandener Komponenten ausblenden und die übrigen nachrücken
+            // lassen (siehe UebersichtZeilenAnpassen).
+            UebersichtZeilenAnpassen(ErgebnisPraesenz.Ermitteln(sim));
+
             ueb_chart.Series[0].Points.Clear();
             if (sim.simulation_wp.WP_Waermeproduktion_gesamt > 0)
                 ueb_chart.Series[0].Points.AddXY(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000);
@@ -1462,6 +1491,119 @@ namespace WindowsFormsApplication1
                 ueb_chart.Series[0].Points.AddXY(MyResource.Resource.SIM_ERZEUGERNAME_BHKW, sim.simulation_bhkw.Waermeproduktion_BHKW_MWh);
             if (sim.Restwaerme > 0)
                 ueb_chart.Series[0].Points.AddXY(MyResource.Resource.CHART_SEGMENT_REST, sim.Restwaerme);
+        }
+
+        // ====================================================================
+        //  Übersicht-Reiter: nur vorhandene Komponenten zeigen
+        // ====================================================================
+        //
+        // Der Ergebnisblock des Reiters bestand aus fest platzierten Zeilen für ALLE
+        // Komponenten. In einem Projekt aus Wärmepumpe und Kessel standen dort trotzdem
+        // „Wärmeproduktion BHKW: 0,00", eine leere „Solare Wärme" und eine leere
+        // „Stromproduktion PV" — Zeilen ohne Aussage, die den Blick auf die drei
+        // relevanten Zahlen verstellten.
+        //
+        // Die Zeilen werden deshalb nach der Präsenzregel (siehe ErgebnisPraesenz)
+        // AUSGEBLENDET — nicht nur gesperrt — und die verbleibenden rücken auf die
+        // vorderen Entwurfsplätze ihrer Spalte nach. Dass die Zielhöhen die ORIGINALEN
+        // Ankerhöhen sind (und keine gerechnete Schrittweite), erhält die Abstände des
+        // Entwurfs exakt; Designer und .resx bleiben unangetastet.
+        //
+        // Immer sichtbar bleiben der Energiebedarf-Block oben und die beiden gelben
+        // Zeilen „Restwärmebedarf"/„Reststrombedarf" unten: sie beschreiben das Projekt,
+        // nicht eine Komponente.
+
+        /// <summary>Eine Ergebniszeile der Übersicht: Beschriftung, Wertfeld, Einheit.</summary>
+        private sealed class UebersichtZeile
+        {
+            /// <summary>Die Steuerelemente der Zeile.</summary>
+            public Control[] Felder;
+
+            /// <summary>Entscheidet, ob die Zeile zu diesem Ergebnis gehört.</summary>
+            public Func<ErgebnisPraesenz, bool> Sichtbar;
+
+            /// <summary>Ankerhöhe aus dem Entwurf (kleinstes <c>Top</c> der Zeile).</summary>
+            public int Anker;
+
+            /// <summary>Abstand jedes Feldes zum Anker — hält die Zeile in sich stabil.</summary>
+            public int[] Versatz;
+        }
+
+        private List<UebersichtZeile> _uebSpalteWaerme;
+        private List<UebersichtZeile> _uebSpalteStrom;
+
+        /// <summary>
+        /// Baut die Zeilenbeschreibung einmalig auf. Die Entwurfspositionen kommen aus der
+        /// .resx (<c>resources.ApplyResources</c>) und werden hier gesichert, damit ein
+        /// zweiter Lauf mit anderer Zusammenstellung wieder von den ORIGINALWERTEN ausgeht
+        /// und nicht von den bereits verschobenen.
+        /// </summary>
+        private void UebersichtZeilenVorbereiten()
+        {
+            if (_uebSpalteWaerme != null) return;
+
+            _uebSpalteWaerme = new List<UebersichtZeile>
+            {
+                Zeile(p => p.Waermepumpe,  ueb_label20, ueb_textBox_WPWaermeproduktion,   ueb_label23),
+                Zeile(p => p.BHKW,         ueb_label18, ueb_textBox_BHKWWaermeproduktion, ueb_label64),
+                Zeile(p => p.Solarthermie, ueb_label21, ueb_textBox_SWWaermeproduktion,   ueb_label19),
+                Zeile(p => p.Heizkessel,   ueb_label59, ueb_textBox_SPKWaermeproduktion,  ueb_label22)
+            };
+
+            _uebSpalteStrom = new List<UebersichtZeile>
+            {
+                Zeile(p => p.Waermepumpe,  ueb_label32, ueb_textBox_WPStromverbrauch,       ueb_label31),
+                Zeile(p => p.Heizstab,     ueb_label34, ueb_textBox_HeizstabStromverbrauch, ueb_label33),
+                Zeile(p => p.BHKW,         ueb_label25, ueb_textBox_BHKWStromproduktion,    ueb_label24),
+                Zeile(p => p.Photovoltaik, ueb_label27, ueb_textBox_PVStromproduktion,      ueb_label26),
+                Zeile(p => p.Heizkessel,   ueb_label3,  ueb_textBox_SPKStromverbrauch,      ueb_label2)
+            };
+        }
+
+        /// <summary>Hilfskonstruktor einer Zeile: Anker und Versätze aus dem Entwurf.</summary>
+        private static UebersichtZeile Zeile(Func<ErgebnisPraesenz, bool> sichtbar, params Control[] felder)
+        {
+            int anker = int.MaxValue;
+            foreach (Control c in felder) if (c.Top < anker) anker = c.Top;
+
+            int[] versatz = new int[felder.Length];
+            for (int i = 0; i < felder.Length; i++) versatz[i] = felder[i].Top - anker;
+
+            return new UebersichtZeile { Felder = felder, Sichtbar = sichtbar, Anker = anker, Versatz = versatz };
+        }
+
+        /// <summary>
+        /// Blendet die Zeilen nicht vorhandener Komponenten aus und lässt die übrigen
+        /// nachrücken. Reine Anzeige — an den Werten und an der Persistenz ändert sich nichts.
+        /// </summary>
+        private void UebersichtZeilenAnpassen(ErgebnisPraesenz p)
+        {
+            UebersichtZeilenVorbereiten();
+
+            tabPage_Uebersicht.SuspendLayout();
+            SpalteAnordnen(_uebSpalteWaerme, p);
+            SpalteAnordnen(_uebSpalteStrom, p);
+            tabPage_Uebersicht.ResumeLayout();
+        }
+
+        /// <summary>
+        /// Ordnet eine Spalte: sichtbare Zeilen der Reihe nach auf die vorderen
+        /// Entwurfsanker, unsichtbare raus.
+        /// </summary>
+        private static void SpalteAnordnen(List<UebersichtZeile> spalte, ErgebnisPraesenz p)
+        {
+            int platz = 0;
+            foreach (UebersichtZeile z in spalte)
+            {
+                bool an = z.Sichtbar(p);
+                foreach (Control c in z.Felder) c.Visible = an;
+                if (!an) continue;
+
+                int anker = spalte[platz].Anker;
+                for (int i = 0; i < z.Felder.Length; i++)
+                    z.Felder[i].Top = anker + z.Versatz[i];
+                platz++;
+            }
         }
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
@@ -1680,10 +1822,20 @@ namespace WindowsFormsApplication1
                 for (int n = 0; n < 8760; n++)
                     bedarfHeizung[n] = sim.simulation_wp.Waermebedarf_stuendlich[n] - bedarfWW[n];
 
-                SerieAnlegen(_chartManager[3], S_HEIZWAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF, Color.Red, bedarfHeizung);
-                SerieAnlegen(_chartManager[3], S_WARMWASSERBEDARF, MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF, Color.DeepSkyBlue, bedarfWW);
-                SerieAnlegen(_chartManager[3], S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, sim.simulation_wp.Heizstab_stuendlich);
-                SerieAnlegen(_chartManager[3], S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich);
+                // Gestapelt, in zwei getrennten Gruppen — Begründung siehe
+                // checkBox_WP_sortiert_CheckedChanged (chronologischer Zweig). Der Aufbau
+                // steht hier gleich, damit beide Wege dasselbe Bild ergeben; unmittelbar
+                // danach baut der Umschalter das Diagramm ohnehin einmal neu auf.
+                SerieAnlegen(_chartManager[3], S_HEIZWAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF,
+                             Color.Red, bedarfHeizung, SeriesChartType.StackedArea, "Bedarf");
+                SerieAnlegen(_chartManager[3], S_WARMWASSERBEDARF, MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF,
+                             Color.DeepSkyBlue, bedarfWW, SeriesChartType.StackedArea, "Bedarf");
+                SerieAnlegen(_chartManager[3], S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
+                             Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich,
+                             SeriesChartType.StackedArea, "Produktion");
+                SerieAnlegen(_chartManager[3], S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
+                             Color.Yellow, sim.simulation_wp.Heizstab_stuendlich,
+                             SeriesChartType.StackedArea, "Produktion");
 
                 // Chart Wärmepumpe Strombedarf und Produktion
                 float[] temp = simulation_Strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich, sim.simulation_wp.Heizstab_stuendlich);
@@ -2232,15 +2384,35 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                // --- CHRONOLOGISCHER MODUS (Datum X-Achse) ---
+                // --- CHRONOLOGISCHER MODUS (Datum X-Achse), GESTAPELT ---
+                //
+                // Zwei Größen, die sich jeweils zu einer Summe addieren, und deshalb ZWEI
+                // getrennte Stapel (StackedGroupName):
+                //   Bedarf     = Heizwärme + Warmwasser
+                //   Produktion = Wärmepumpe + Heizstab
+                //
+                // Der Heizstab geht dabei mit seinem EIGENEN Anteil in den Stapel, nicht
+                // mit der kumulierten Kurve "WP-Produktion + Heizstab" (tempHeizstab), die
+                // der sortierte Zweig zeichnet: gestapelt wäre die WP-Produktion sonst
+                // doppelt enthalten. Die Oberkante des Stapels ist derselbe Wert wie die
+                // bisherige kumulierte Linie — nur richtig zusammengesetzt.
+                float[] heizstabAnteil = new float[8760];
+                for (int i = 0; i < 8760; i++)
+                    heizstabAnteil[i] = ctrl.model.m_WP_Heizstab ? sim.simulation_wp.Heizstab_stuendlich[i] : 0;
+
                 manager.XAxisAsNumber = false;
                 manager.HardReset();
                 manager.Init(); // Hier wird FormatXAxisWithDate() aufgerufen
 
-                SerieAnlegen(manager, S_HEIZWAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF, Color.Red, bedarfHeizung);
-                SerieAnlegen(manager, S_WARMWASSERBEDARF, MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF, Color.DeepSkyBlue, bedarfWW);
-                SerieAnlegen(manager, S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, tempHeizstab);
-                SerieAnlegen(manager, S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich);
+                SerieAnlegen(manager, S_HEIZWAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF,
+                             Color.Red, bedarfHeizung, SeriesChartType.StackedArea, "Bedarf");
+                SerieAnlegen(manager, S_WARMWASSERBEDARF, MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF,
+                             Color.DeepSkyBlue, bedarfWW, SeriesChartType.StackedArea, "Bedarf");
+                SerieAnlegen(manager, S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
+                             Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich,
+                             SeriesChartType.StackedArea, "Produktion");
+                SerieAnlegen(manager, S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
+                             Color.Yellow, heizstabAnteil, SeriesChartType.StackedArea, "Produktion");
             }
 
             // Skalierung erzwingen

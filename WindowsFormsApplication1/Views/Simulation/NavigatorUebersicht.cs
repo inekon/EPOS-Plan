@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -11,6 +12,12 @@ namespace WindowsFormsApplication1
         double waerme_solar = 0, gesamt_waerme = 0, restwaermebedarf = 0;
         double waerme_spk = 0, waerme_wp = 0, waerme_heizstab = 0, waerme_bhkw = 0;
         SimulationControl sim;
+
+        /// <summary>
+        /// Welche Erzeuger gehören zu diesem Ergebnis? Vorbelegt mit „alles sichtbar",
+        /// damit vor dem ersten <see cref="SetControl"/> nichts fehlt.
+        /// </summary>
+        private ErgebnisPraesenz _praesenz = ErgebnisPraesenz.Alles();
 
         // Donut Farben (WP, Solar, Heizstab, Kessel, Rest)
         Color[] palette = new Color[] {
@@ -76,14 +83,27 @@ namespace WindowsFormsApplication1
             bt_WaermebedarfUebersicht.Text = MyResource.Resource.SIM_BTN_WAERMEBEDARF_UEBERSICHT;
         }
 
+        /// <summary>
+        /// Ergebnistabelle — nur die Erzeuger, die zum Ergebnis gehören.
+        ///
+        /// Bis hierher standen alle fünf Zeilen fest in der Tabelle; ein Projekt aus
+        /// Wärmepumpe und Kessel zeigte „Solarthermieanlage 0,00" und „BHKW 0,00" mit.
+        /// Die Zeilen fehlender Erzeuger entfallen jetzt (Regel siehe ErgebnisPraesenz);
+        /// die Tabelle rückt dabei von selbst nach, weil sie zeilenweise aufgebaut wird.
+        /// </summary>
         private void FillTableWithData(DataGridView dgvErgebnisse)
         {
             dgvErgebnisse.Rows.Clear();
-            dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, waerme_wp.ToString("F2"));
-            dgvErgebnisse.Rows.Add(MyResource.Resource.CHART_SEGMENT_HEIZSTAB, waerme_heizstab.ToString("F2"));
-            dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_SOLARTHERMIE_ANLAGE, waerme_solar.ToString("F2"));
-            dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_TABELLE_HEIZKESSEL, waerme_spk.ToString("F2"));
-            dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_ERZEUGERNAME_BHKW, waerme_bhkw.ToString("F2"));
+            if (_praesenz.Waermepumpe)
+                dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, waerme_wp.ToString("F2"));
+            if (_praesenz.Heizstab)
+                dgvErgebnisse.Rows.Add(MyResource.Resource.CHART_SEGMENT_HEIZSTAB, waerme_heizstab.ToString("F2"));
+            if (_praesenz.Solarthermie)
+                dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_SOLARTHERMIE_ANLAGE, waerme_solar.ToString("F2"));
+            if (_praesenz.Heizkessel)
+                dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_TABELLE_HEIZKESSEL, waerme_spk.ToString("F2"));
+            if (_praesenz.BHKW)
+                dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_ERZEUGERNAME_BHKW, waerme_bhkw.ToString("F2"));
         }
 
         private void bt_WaermebedarfUebersicht_Click(object sender, EventArgs e)
@@ -180,6 +200,10 @@ namespace WindowsFormsApplication1
         {
             if (sim == null || sim.simulation_Waermebedarf == null) return;
 
+            // Welche Erzeuger gehören zu diesem Ergebnis? Tabelle und Donut-Segmente
+            // richten sich danach (siehe ErgebnisPraesenz).
+            _praesenz = ErgebnisPraesenz.Ermitteln(sim);
+
             // Berechnung Wärme
             waerme_spk = sim.simulation_spk.S_Waerme_spk;
             waerme_wp = sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000;
@@ -216,25 +240,36 @@ namespace WindowsFormsApplication1
             Rectangle rectWaermeChart = new Rectangle(margin, margin, kachelBreiteLinks, kachelHoeheDonut);
             Kacheln.DrawKPICard(e.Graphics, rectWaermeChart, MyResource.Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG, "", "", Color.SeaGreen);
 
+            // Segmente nur für vorhandene Erzeuger. Werte, Namen und Farben werden GEMEINSAM
+            // gefiltert - die Farbzuordnung des Donuts läuft über die Position im Array,
+            // ein Filtern allein der Werte hätte die Legende umgefärbt.
             double wb_gesamt = sim.simulation_Waermebedarf.Waermebedarf_Gesamt;
-            double[] werteWaerme = {
-                waerme_wp * 100 / wb_gesamt,
-                waerme_solar * 100 / wb_gesamt,
-                waerme_heizstab * 100 / wb_gesamt,
-                waerme_spk * 100 / wb_gesamt,
-                waerme_bhkw * 100 / wb_gesamt,
-                Math.Max(0, restwaermebedarf * 100 / wb_gesamt)
-            };
-            string[] namenWaerme = {
-                MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
-                MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE,
-                MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
-                MyResource.Resource.CHART_SEGMENT_SPITZENKESSEL,
-                MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
-                MyResource.Resource.CHART_SEGMENT_RESTWAERME };
+            var segWaerme = new List<Tuple<double, string, Color>>();
+            if (_praesenz.Waermepumpe)
+                segWaerme.Add(Tuple.Create(waerme_wp * 100 / wb_gesamt,
+                    MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, palette[0]));
+            if (_praesenz.Solarthermie)
+                segWaerme.Add(Tuple.Create(waerme_solar * 100 / wb_gesamt,
+                    MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE, palette[1]));
+            if (_praesenz.Heizstab)
+                segWaerme.Add(Tuple.Create(waerme_heizstab * 100 / wb_gesamt,
+                    MyResource.Resource.CHART_SEGMENT_HEIZSTAB, palette[2]));
+            if (_praesenz.Heizkessel)
+                segWaerme.Add(Tuple.Create(waerme_spk * 100 / wb_gesamt,
+                    MyResource.Resource.CHART_SEGMENT_SPITZENKESSEL, palette[3]));
+            if (_praesenz.BHKW)
+                segWaerme.Add(Tuple.Create(waerme_bhkw * 100 / wb_gesamt,
+                    MyResource.Resource.SIM_ERZEUGERNAME_BHKW, palette[4]));
+            // Der Rest beschreibt das Projekt, nicht einen Erzeuger - er bleibt immer.
+            segWaerme.Add(Tuple.Create(Math.Max(0, restwaermebedarf * 100 / wb_gesamt),
+                MyResource.Resource.CHART_SEGMENT_RESTWAERME, palette[5]));
+
+            double[] werteWaerme = segWaerme.Select(s => s.Item1).ToArray();
+            string[] namenWaerme = segWaerme.Select(s => s.Item2).ToArray();
+            Color[] farbenWaerme = segWaerme.Select(s => s.Item3).ToArray();
 
             Rectangle innerWaerme = new Rectangle(rectWaermeChart.X + 10, rectWaermeChart.Y + 20, rectWaermeChart.Width - 20, rectWaermeChart.Height - 30);
-            DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerWaerme, werteWaerme, (gesamt_waerme * 100 / wb_gesamt), namenWaerme, palette);
+            DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerWaerme, werteWaerme, (gesamt_waerme * 100 / wb_gesamt), namenWaerme, farbenWaerme);
 
             // 2. Strom-Deckung (Direkt darunter)
             Rectangle rectStromChart = new Rectangle(margin, rectWaermeChart.Bottom + margin, kachelBreiteLinks, kachelHoeheDonut);
@@ -251,31 +286,29 @@ namespace WindowsFormsApplication1
                         + sim.simulation_spk.Stromverbrauch_Spk
                         );
 
-            double[] werteStrom = new double[4];
-            if (sb_gesamt > 0)
-            {
-                werteStrom[0] = se_pv * 100 / sb_gesamt;
-                werteStrom[1] = se_bhkw * 100 / sb_gesamt;
-                werteStrom[2] = Math.Max(0, (sb_gesamt - se_pv - se_bhkw) * 100 / sb_gesamt);
-            }
-            else
-            {
-                werteStrom[0] = 0;
-                werteStrom[1] = 0;
-                werteStrom[2] = 0;
-            }
+            // Segmente wie beim Wärme-Donut: nur vorhandene Erzeuger, Werte/Namen/Farben
+            // gemeinsam gefiltert. Der Reststrom bleibt immer.
+            var segStrom = new List<Tuple<double, string, Color>>();
+            if (_praesenz.Photovoltaik)
+                segStrom.Add(Tuple.Create(sb_gesamt > 0 ? se_pv * 100 / sb_gesamt : 0,
+                    MyResource.Resource.SIM_PHOTOVOLTAIK, palette[0]));
+            if (_praesenz.BHKW)
+                segStrom.Add(Tuple.Create(sb_gesamt > 0 ? se_bhkw * 100 / sb_gesamt : 0,
+                    MyResource.Resource.SIM_ERZEUGERNAME_BHKW, palette[1]));
+            segStrom.Add(Tuple.Create(
+                sb_gesamt > 0 ? Math.Max(0, (sb_gesamt - se_pv - se_bhkw) * 100 / sb_gesamt) : 0,
+                MyResource.Resource.CHART_SEGMENT_RESTSTROM, palette[2]));
 
-            string[] namenStrom = {
-                MyResource.Resource.SIM_PHOTOVOLTAIK,
-                MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
-                MyResource.Resource.CHART_SEGMENT_RESTSTROM };
+            double[] werteStrom = segStrom.Select(s => s.Item1).ToArray();
+            string[] namenStrom = segStrom.Select(s => s.Item2).ToArray();
+            Color[] farbenStrom = segStrom.Select(s => s.Item3).ToArray();
 
             Rectangle innerStrom = new Rectangle(rectStromChart.X + 10, rectStromChart.Y + 20, rectStromChart.Width - 20, rectStromChart.Height - 30);
-            
+
             if(sb_gesamt > 0)
-                DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, ((se_pv + se_spk + se_bhkw) * 100 / sb_gesamt), namenStrom, palette);
+                DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, ((se_pv + se_spk + se_bhkw) * 100 / sb_gesamt), namenStrom, farbenStrom);
             else
-                DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, 100, namenStrom, palette);
+                DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, 100, namenStrom, farbenStrom);
 
 
             // --- RECHTE SPALTE: KPIs & TABELLE ---

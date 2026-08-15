@@ -58,6 +58,7 @@ Bestand jetzt **541 Schlüssel**.
 | `CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE` | Stromverlauf Jahresganglinie␠ | Electricity profile, annual load profile␠ | NavigatorStrom.cs (`chart7.Titles[0]`) | **neu.** Entwurfszeit-Titel; **abschließendes Leerzeichen** wie im Bestand, über `xml:space="preserve"` erhalten. |
 | `SIM_BTN_WAERMEBEDARF_UEBERSICHT` | Wärmebedarf Übersicht... | Heat demand overview... | NavigatorUebersicht.cs (`bt_WaermebedarfUebersicht`) | **neu.** Designer-Knopf. |
 | `SIM_CHK_WAERMEBEDARF_EINBLENDEN` | Wärmebedarf einblenden | Show heat demand | NavigatorWaerme.cs (`checkBox_Waermebedarf`) | **neu.** Designer-Checkbox. |
+| `SIM_CHK_SORTIERT` | sortiert | sorted | NavigatorWaerme.cs (`checkBox_Sortiert`, programmatisch) | **neu (Sichttest „nur vorhandene Komponenten").** Umschalter Jahresganglinie ↔ Jahresdauerlinie. Wortgleich mit der Designer-Checkbox `checkBox_WP_sortiert` in `Form_Simulation_Detail` (dort über die Satelliten-.resx der Form übersetzt: „sortiert"/„sorted"); die Checkbox in NavigatorWaerme entsteht programmatisch und braucht deshalb einen Katalogschlüssel. |
 | `SIM_DASH_GRUPPE_PV` | Photovoltaik Autarkie | Photovoltaic self-sufficiency | DashboardForm.cs (`groupPV`) | **neu.** Designer-Gruppe. |
 | `SIM_DASH_GRUPPE_ST` | Solarthermie Deckung | Solar thermal coverage | DashboardForm.cs (`groupST`) | **neu.** Designer-Gruppe. |
 | `SIM_DASH_SPEICHER_INFO` | Theoretischer Speicher (PV) (kWh): | Theoretical storage (PV) (kWh): | DashboardForm.cs (`lblSpeicherInfo`) | **neu.** Designer-Label. |

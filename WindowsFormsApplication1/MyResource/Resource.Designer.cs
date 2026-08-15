@@ -2050,6 +2050,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sortiert ähnelt.
+        /// </summary>
+        public static string SIM_CHK_SORTIERT {
+            get {
+                return ResourceManager.GetString("SIM_CHK_SORTIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf einblenden ähnelt.
         /// </summary>
         public static string SIM_CHK_WAERMEBEDARF_EINBLENDEN {

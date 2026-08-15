@@ -13,7 +13,19 @@ namespace WindowsFormsApplication1
         public float[] stromBedarf;
         public float[] waermeBedarf;
         public double speicherKWh = 0;
-        
+
+        // --- Präsenz der Komponenten -------------------------------------------------
+        //
+        // Das Formular ist kein UserControl mit SimulationControl, sondern wird von
+        // TabNavigationManager mit fertigen Vektoren versorgt. Die Präsenz kommt deshalb
+        // von dort — als zwei einfache Schalter statt als ErgebnisPraesenz-Objekt: die
+        // Klasse ist internal, ein öffentliches Feld dieses Typs in einer öffentlichen
+        // Klasse wäre nicht übersetzbar.
+        //
+        // Vorbelegt mit true, damit ein Aufrufer, der sie nicht setzt, alles sieht.
+        public bool HatPV = true;
+        public bool HatSolarthermie = true;
+
         private bool isUpdatingUI = false; // Event Sperre
 
         // --- Technische Serienschlüssel (Paket 9 / L7) --------------------------------
@@ -29,6 +41,9 @@ namespace WindowsFormsApplication1
         public DashboardForm()
         {
             InitializeComponent();
+
+            // Entwurfsposition merken, BEVOR PraesenzAnwenden sie verschieben kann.
+            _stLinksOriginal = groupST.Left;
 
             BeschriftungenSetzen();
             SetupChart(); // Ruft die neue Setup-Methode auf
@@ -117,8 +132,51 @@ namespace WindowsFormsApplication1
             chartSolar.ChartAreas[0].AxisX.Title = MyResource.Resource.CHART_ACHSE_MONAT;
         }
 
+        /// <summary>
+        /// Blendet die Kacheln nicht vorhandener Komponenten aus und lässt die verbleibende
+        /// nachrücken.
+        ///
+        /// „Photovoltaik Autarkie" samt Speicherfeld und „Solarthermie Deckung" samt
+        /// Nutzungsgrad standen bisher immer da — in einem Projekt ohne PV bzw. ohne
+        /// Kollektoren mit „0,0 %" bzw. „nicht benötigt". Die CO2-Zeile und das
+        /// Monatsdiagramm bleiben: sie beschreiben das Projekt, nicht eine Komponente.
+        ///
+        /// Nachrücken heißt hier: fehlt die PV-Kachel, wandert die Solarthermie-Kachel auf
+        /// deren Platz. Die Verschiebung erfolgt relativ, damit sie bei mehrfachem Aufruf
+        /// nicht kumuliert.
+        /// </summary>
+        private void PraesenzAnwenden()
+        {
+            this.SuspendLayout();
+
+            groupPV.Visible = HatPV;
+            lblSpeicherInfo.Visible = HatPV;
+            numSpeicherKWh.Visible = HatPV;
+            lblTest.Visible = HatPV;
+
+            groupST.Visible = HatSolarthermie;
+            lblNutzungsgradST.Visible = HatSolarthermie;
+
+            // Zielspalte der Solarthermie-Kachel: eigener Platz, oder der der PV-Kachel,
+            // wenn es die nicht gibt.
+            int zielLinks = HatPV ? _stLinksOriginal : groupPV.Left;
+            int versatz = zielLinks - groupST.Left;
+            if (versatz != 0)
+            {
+                groupST.Left += versatz;
+                lblNutzungsgradST.Left += versatz;
+            }
+
+            this.ResumeLayout();
+        }
+
+        /// <summary>Entwurfsposition der Solarthermie-Kachel (Bezugspunkt fürs Nachrücken).</summary>
+        private int _stLinksOriginal;
+
         public void UpdateSimulationData()
         {
+            PraesenzAnwenden();
+
             isUpdatingUI = true; // Event SPERRE AKTIVIEREN
 
             // Speicher-Parameter
