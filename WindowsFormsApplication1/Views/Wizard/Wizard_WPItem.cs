@@ -208,23 +208,38 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            // Folgepaket zu ab5bf32: Zahlprüfung beim OK-Knopf statt im TextChanged -
+            // sprechende Meldung, Fokus aufs Feld, Dialog bleibt offen. Bisher riss
+            // Int32.Parse/double.Parse weiter unten bei leerem oder ungültigem Feld ab.
+            int nSperrzeitVon, nSperrzeitBis, nNutzungszeit, nHeizstab;
+            if (!Program.GanzzahlPruefen(textBox_von, "Sperrzeit von", out nSperrzeitVon, leerErlaubt: false)) return;
+            if (!Program.GanzzahlPruefen(textBox_bis, "Sperrzeit bis", out nSperrzeitBis, leerErlaubt: false)) return;
+            if (!Program.GanzzahlPruefen(textBox_Nutzungszeit, "Nutzungsdauer", out nNutzungszeit, leerErlaubt: false)) return;
+            if (!Program.GanzzahlPruefen(textBox_PHeizstab, "Leistung Heizstab", out nHeizstab, leerErlaubt: false)) return;
+
+            // Die Abschalttemperatur ist je nach Betriebsart ausgeblendet - ein leeres
+            // Feld ist deshalb erlaubt und lässt den bisherigen Wert stehen.
+            double dAbschalt;
+            if (!Program.ZahlPruefen(textBox_Abschalttemp, "Abschalttemperatur", out dAbschalt, leerErlaubt: true)) return;
+            bool bAbschaltGesetzt = textBox_Abschalttemp.Text.Trim().Length != 0;
+
             item.Bezeichner = listBox_WP.Text;
          //   item.ID_Type = WizardItemClass.WP_TYP;
             item.Betriebsart = comboBox_Betriebsart.Text;
             item.Sperrung = checkBox_Sperrzeit.Checked;
-            item.Sperrzeit_bis = Int32.Parse(textBox_bis.Text);
-            item.Sperrzeit_von = Int32.Parse(textBox_von.Text);
+            item.Sperrzeit_bis = nSperrzeitBis;
+            item.Sperrzeit_von = nSperrzeitVon;
             item.Ruecklauf = nRuecklauf;
             item.Vorlauf = nVorlauf;
             item.Bivalenter_Betrieb = checkBox_Bivalent.Checked;
-            item.Abschaltpunkt = double.Parse(textBox_Abschalttemp.Text);
+            if (bAbschaltGesetzt) item.Abschaltpunkt = dAbschalt;
             item.Nutzungszeit = 0;
             item.ID_WP = m_nID_WP;
             item.ID_SP = 0;
             item.ID_PV = 0;
             item.ID_Solar = 0;
             item.Heizstab = checkBox_Heizstab.Checked;
-            item.Heizung = Int32.Parse(textBox_PHeizstab.Text);
+            item.Heizung = nHeizstab;
             // Pufferspeicher-Felder sind ausgeblendet - vorhandene Werte unverändert
             // übernehmen (die Felder werden in SetControls aus dem Datensatz gefüllt),
             // bei leeren Feldern den bisherigen Wert des Datensatzes behalten.
@@ -233,7 +248,7 @@ namespace WindowsFormsApplication1
             item.rendeMix = checkBox_rendeMIX.Checked;
             int nAnteil;
             if (Int32.TryParse(textBox_Anteil.Text, out nAnteil)) item.Solaranteil = nAnteil;
-            item.Nutzungszeit = Int32.Parse(textBox_Nutzungszeit.Text);
+            item.Nutzungszeit = nNutzungszeit;
             
             CloseWithOK = true;
             Close();
@@ -377,31 +392,31 @@ namespace WindowsFormsApplication1
 
             }
         }
+        // Die folgenden TextChanged-Handler färben nur noch (Begründung siehe
+        // Program.ZahlFaerben); gemeldet wird erst in btn_Beenden_Click. Die alte
+        // Fassung meldete jede Zwischeneingabe modal und nahm sie mit tb.Undo()
+        // zurück - das konnte zwischen Fehleingabe und Leerstand pendeln.
+        // Ganzzahl/Zahl richtet sich nach dem Speicherweg des Feldes.
         private void textBox_Nutzungszeit_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender); // wird als Int32 gespeichert
         }
         private void textBox_Volumen_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
         private void textBox_von_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void textBox_bis_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
         private void textBox_Anteil_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
         private void btn_Katalog_Click(object sender, EventArgs e)
         {

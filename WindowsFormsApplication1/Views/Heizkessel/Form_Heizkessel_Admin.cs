@@ -185,16 +185,17 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // Folgepaket zu ab5bf32: Beide Felder zeigen nur den ausgewählten Kessel an und
+        // werden nirgends gespeichert. Statt modal zu melden und mit Undo() zu pendeln,
+        // wird ungültiger Text jetzt nur noch eingefärbt.
         private void textBox_Kesselleistung_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Investitionskosten_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void LoadDBHeizkessel()
