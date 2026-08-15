@@ -10,6 +10,13 @@ namespace WindowsFormsApplication1
         public string m_szKessel = "";
         private int m_mode = MODE_EDIT;
 
+        // Beim Knopfdruck geprüft (EingabenPruefen) und von InitDatensatzUpdate
+        // unverändert ins Modell übernommen - so kommt "12.5" wie "12,5" als 12,5 an.
+        private double m_dPtherm, m_dWirkungsgradGas, m_dWirkungsgradOel, m_dBBVerlust;
+        private double m_dInvestitionskosten, m_dNutzungsdauer, m_dRaumbedarf;
+        private double m_dNOx, m_dCO2, m_dCO, m_dSO2, m_dStaub;
+        private int m_nVorlauf, m_nRuecklauf;
+
         public Form_Heizkessel_Bearbeiten(int mode)
         {
             InitializeComponent();
@@ -91,6 +98,9 @@ namespace WindowsFormsApplication1
 
         private void btn_Ueberschreiben_Click(object sender, EventArgs e)
         {
+            // Erst prüfen, dann schreiben: bei ungültiger Eingabe bleibt der Dialog offen
+            if (!EingabenPruefen()) return;
+
             HeizkesselModel model = new HeizkesselModel();
             HeizkesselStammCtrl ctrl = new HeizkesselStammCtrl();
 
@@ -144,88 +154,69 @@ namespace WindowsFormsApplication1
             return ctrl.Insert();
         }
 
+        // Folgepaket zu ab5bf32: Die TextChanged-Handler färben nur noch. Gemeldet wird
+        // erst beim Speichern (EingabenPruefen), damit keine Zwischeneingabe modal stört
+        // und das früher hier stehende Undo() nicht mehr zwischen Fehleingabe und
+        // Leerstand pendeln kann. Das Auffüllen leerer Felder mit "0" entfällt; leer
+        // gilt beim Speichern weiterhin als 0.
         private void tb_th_Leistung_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_Wirkungsgrad_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_Wirkungsgrad_Öl_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_B_Verlust_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_Investitionskosten_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_Raumbedarf_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_Nutzungsdauer_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_CO2_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_SO2_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_NOx_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_CO_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void tb_Staub_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void btn_CO2_Click(object sender, EventArgs e)
@@ -249,6 +240,31 @@ namespace WindowsFormsApplication1
             else tb_CO2.Text = "0";
         }
 
+        /// <summary>
+        /// Prüft alle Zahlenfelder beim Knopfdruck (Folgepaket zu ab5bf32): sprechende
+        /// Meldung, Fokus ins Feld, Dialog bleibt offen. Leer gilt wie bisher als 0 -
+        /// früher füllte der TextChanged leere Felder sofort mit "0" auf.
+        /// </summary>
+        private bool EingabenPruefen()
+        {
+            if (!Program.ZahlPruefen(tb_th_Leistung, "Thermische Leistung", out m_dPtherm, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_Wirkungsgrad, "Wirkungsgrad Gas, Biogas, Holz und Sonstiges", out m_dWirkungsgradGas, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_Wirkungsgrad_Öl, "Wirkungsgrad Öl", out m_dWirkungsgradOel, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_B_Verlust, "Betriebsbereitschaftsverluste", out m_dBBVerlust, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_Investitionskosten, "Investitionskosten", out m_dInvestitionskosten, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_Raumbedarf, "Raumbedarf", out m_dRaumbedarf, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_Nutzungsdauer, "Nutzungsdauer", out m_dNutzungsdauer, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_CO2, "CO2", out m_dCO2, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_SO2, "SO2", out m_dSO2, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_NOx, "NOx", out m_dNOx, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_CO, "CO", out m_dCO, leerErlaubt: true)) return false;
+            if (!Program.ZahlPruefen(tb_Staub, "Staub", out m_dStaub, leerErlaubt: true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_Vorlauf, "Vorlauf", out m_nVorlauf, leerErlaubt: true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "Rücklauf", out m_nRuecklauf, leerErlaubt: true)) return false;
+
+            return true;
+        }
+
         HeizkesselModel InitDatensatzUpdate(HeizkesselStammCtrl model = null)
         {
             if (model == null) model = new HeizkesselStammCtrl();
@@ -258,8 +274,8 @@ namespace WindowsFormsApplication1
             model.Firma = textBox_Hersteller.Text.Trim();
             model.Beschreibung = textBox_Beschreibung.Text.Trim();
 
-            // Zahlen sicher konvertieren
-            model.Ptherm = SafeParse(tb_th_Leistung.Text);
+            // Zahlen kommen fertig geparst aus EingabenPruefen
+            model.Ptherm = m_dPtherm;
 
             // Brennstoff: Sicherstellen, dass ein gültiger Index gewählt wurde
             // Falls nichts gewählt ist (-1), wird hier die ID 1 gesetzt
@@ -267,46 +283,30 @@ namespace WindowsFormsApplication1
                                ? comboBox_Brennstoff.SelectedIndex + 1
                                : 1;
 
-            model.Wirkungsgrad_Gas = SafeParse(tb_Wirkungsgrad.Text);
-            model.Wirkungsgrad_Oel = SafeParse(tb_Wirkungsgrad_Öl.Text);
-            model.Betriebsbereitschaftverlust = SafeParse(tb_B_Verlust.Text);
-            model.Investitionskosten = SafeParse(tb_Investitionskosten.Text);
-            model.Nutzungsdauer = SafeParse(tb_Nutzungsdauer.Text);
-            model.Raumbedarf = SafeParse(tb_Raumbedarf.Text);
-            model.NOx = SafeParse(tb_NOx.Text);
-            model.CO2 = SafeParse(tb_CO2.Text);
-            model.CO = SafeParse(tb_CO.Text);
-            model.SO2 = SafeParse(tb_SO2.Text);
-            model.Staub = SafeParse(tb_Staub.Text);
+            model.Wirkungsgrad_Gas = m_dWirkungsgradGas;
+            model.Wirkungsgrad_Oel = m_dWirkungsgradOel;
+            model.Betriebsbereitschaftverlust = m_dBBVerlust;
+            model.Investitionskosten = m_dInvestitionskosten;
+            model.Nutzungsdauer = m_dNutzungsdauer;
+            model.Raumbedarf = m_dRaumbedarf;
+            model.NOx = m_dNOx;
+            model.CO2 = m_dCO2;
+            model.CO = m_dCO;
+            model.SO2 = m_dSO2;
+            model.Staub = m_dStaub;
             model.Brennwert = checkBox_Brennwert.Checked;
-            model.Vorlauf = SafeParseInt(textBox_Vorlauf.Text);
-            model.Ruecklauf = SafeParseInt(textBox_Ruecklauf.Text);
+            model.Vorlauf = m_nVorlauf;
+            model.Ruecklauf = m_nRuecklauf;
 
             return model;
         }
 
-        private double SafeParse(string text)
-        {
-            // Entfernt Leerzeichen und ersetzt Punkt durch Komma (je nach Ländereinstellung)
-            if (double.TryParse(text.Replace('.', ','), out double result))
-            {
-                return result;
-            }
-            return 0.0; // Standardwert, falls die Eingabe ungültig ist
-        }
-
-        private int SafeParseInt(string text)
-        {
-            // Entfernt Leerzeichen und ersetzt Punkt durch Komma (je nach Ländereinstellung)
-            if (Int32.TryParse(text.Replace('.', ','), out int result))
-            {
-                return result;
-            }
-            return 0; // Standardwert, falls die Eingabe ungültig ist
-        }
-
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
+            // Prüfung vor der Namensabfrage, damit kein Name für einen Datensatz
+            // vergeben wird, der anschließend an der Zahlenprüfung scheitert
+            if (!EingabenPruefen()) return;
+
             Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
             frmLabel.m_szName = "";
             frmLabel.SetControl();
@@ -340,6 +340,9 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
+            // Erst prüfen, dann anlegen: bei ungültiger Eingabe bleibt der Dialog offen
+            if (!EingabenPruefen()) return;
+
             try
             {
                 HeizkesselModel model = new HeizkesselModel();
@@ -364,18 +367,16 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // Vorlauf/Rücklauf werden als ganze Grad gespeichert (Modellfelder int),
+        // deshalb hier die Ganzzahl-Färbung.
         private void textBox_Vorlauf_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void textBox_Ruecklauf_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
     }
 }

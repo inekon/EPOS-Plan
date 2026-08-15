@@ -12,6 +12,13 @@ namespace WindowsFormsApplication1
         public string m_szStromtyp;
         public string mode;
 
+        // Beschriftung der Felder Wert1..Wert12 (Monat_1..Monat_12) fuer die Pruefmeldung.
+        private static readonly string[] m_szMonate =
+        {
+            "Januar", "Februar", "März", "April", "Mai", "Juni",
+            "Juli", "August", "September", "Oktober", "November", "Dezember"
+        };
+
         public Form_EingDBStromverbraucher()
         {
             InitializeComponent();
@@ -62,15 +69,27 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void btn_Ueberschreiben_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Prueft die zwoelf Monatswerte am Aktionsknopf (Folgepaket zu ab5bf32).
+        /// Das erste ungueltige oder leere Feld meldet sprechend, bekommt den Fokus
+        /// und liefert false - der Aufrufer kehrt zurueck und laesst den Dialog offen.
+        /// Leer meldet wie zuvor, weil die Speicherwege einen Wert je Monat brauchen.
+        /// </summary>
+        private bool MonatswertePruefen(out double[] monat)
         {
-            double[] monat = new double[12];
+            monat = new double[12];
             for (int i = 1; i <= 12; i++)
             {
-                string val = this.Controls["Wert" + i.ToString()].Text;
-                if (!Program.checkDouble(this.Controls["Wert" + i.ToString()], val)) return;
-                monat[i - 1] = double.Parse(val);
+                TextBox tb = this.Controls["Wert" + i.ToString()] as TextBox;
+                if (!Program.ZahlPruefen(tb, "Monatswert " + m_szMonate[i - 1], out monat[i - 1])) return false;
             }
+            return true;
+        }
+
+        private void btn_Ueberschreiben_Click(object sender, EventArgs e)
+        {
+            double[] monat;
+            if (!MonatswertePruefen(out monat)) return;
 
             StromverbraucherStammCtrl ctrl = new StromverbraucherStammCtrl();
             // SaveHead prueft selbst auf ReadOnly und meldet ggf.
@@ -85,6 +104,10 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
+            // Zahlen zuerst pruefen - noch bevor der Namensdialog aufgeht.
+            double[] monat;
+            if (!MonatswertePruefen(out monat)) return;
+
             Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
 
             frm.m_szName = textBox_Stromname.Text;
@@ -96,10 +119,6 @@ namespace WindowsFormsApplication1
                 if (ctrl.Exists(frm.m_szName)) { MessageBox.Show("Name existiert bereits!"); return; }
 
                 textBox_Stromname.Text = frm.m_szName;
-
-                double[] monat = new double[12];
-                for (int i = 1; i <= 12; i++)
-                    monat[i - 1] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
 
                 if (ctrl.SaveHead(textBox_Stromname.Text, comboBox_Stromtyp.Text, textBox_Beschreibung.Text, monat, true))
                     MessageBox.Show("Daten gespeichert!");
@@ -113,18 +132,11 @@ namespace WindowsFormsApplication1
                 MessageBox.Show("Verbrauchertyp auswählen!");
                 return;
             }
-            for (int i = 1; i <= 12; i++)
-            {
-                if (this.Controls["Wert" + i.ToString()].Text == "")
-                {
-                    MessageBox.Show("Eingaben überprüfen!");
-                    return;
-                }
-            }
 
-            double[] monat = new double[12];
-            for (int i = 1; i <= 12; i++)
-                monat[i - 1] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
+            // Ersetzt die frueher hier stehende Leerpruefung: MonatswertePruefen meldet
+            // leere UND ungueltige Felder sprechend und setzt den Fokus.
+            double[] monat;
+            if (!MonatswertePruefen(out monat)) return;
 
             StromverbraucherStammCtrl ctrl = new StromverbraucherStammCtrl();
             if (ctrl.SaveHead(textBox_Stromname.Text, comboBox_Stromtyp.Text, textBox_Beschreibung.Text, monat, true))

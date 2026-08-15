@@ -107,11 +107,16 @@ namespace WindowsFormsApplication1
 
         private void btn_Überschreiben_Click(object sender, EventArgs e)
         {
+            // Zahlen erst hier pruefen: bei ungueltiger Eingabe bleibt der Dialog offen
+            // und es wird nichts geschrieben.
+            Eingabewerte werte;
+            if (!EingabenPruefen(out werte)) return;
+
             BHKWStammCtrl ctrl = new BHKWStammCtrl();
 
             try
             {
-                ctrl.model = InitDatensatzUpdate();
+                ctrl.model = InitDatensatzUpdate(werte);
 
                 // ctrl.Update() prueft selbst erneut auf ReadOnly (Standalone-Aufruf).
                 if (ctrl.Update())
@@ -132,33 +137,85 @@ namespace WindowsFormsApplication1
             }
         }
 
-        BHKWStammModel InitDatensatzUpdate()
+        /// <summary>
+        /// Die geprueften Zahlenwerte der Eingabefelder. Gefuellt von EingabenPruefen,
+        /// verbraucht von InitDatensatzUpdate.
+        /// </summary>
+        private struct Eingabewerte
+        {
+            public double Pel, Ptherm, Wirkungsgrad, Grenzleistung;
+            public double Investition, Raumbedarf, Wartungskosten;
+            public double Modul, Montage, Lieferung, Schallschutzhaube, Abgasreinigung;
+            public int Nutzungsdauer, NOx, CO2, CO, SO2, Staub, Vorlauf, Ruecklauf;
+        }
+
+        /// <summary>
+        /// Prueft saemtliche Zahlenfelder beim Aktionsknopf (Folgepaket zu ab5bf32).
+        /// Das erste ungueltige Feld meldet sprechend, bekommt den Fokus und liefert
+        /// false - der Aufrufer kehrt dann zurueck und laesst den Dialog offen.
+        /// Leere Felder gelten als 0, wie zuvor das Auffuellen im TextChanged.
+        /// Bewusst keine Bereichspruefungen: der Katalogbestand muss speicherbar bleiben.
+        /// </summary>
+        private bool EingabenPruefen(out Eingabewerte werte)
+        {
+            werte = new Eingabewerte();
+
+            if (!Program.ZahlPruefen(textBox_th_Leistung, "thermische Leistung", out werte.Ptherm, true)) return false;
+            if (!Program.ZahlPruefen(textBox_el_Leistung, "elektrische Leistung", out werte.Pel, true)) return false;
+            if (!Program.ZahlPruefen(textBox_Wirkungsgrad, "Gesamtwirkungsgrad", out werte.Wirkungsgrad, true)) return false;
+            if (!Program.ZahlPruefen(textBox_Grenzleistung, "untere Grenzleistung", out werte.Grenzleistung, true)) return false;
+
+            if (!Program.ZahlPruefen(textBox_Investitionskosten, "Investitionskosten", out werte.Investition, true)) return false;
+            if (!Program.ZahlPruefen(textBox_Raumbedarf, "Raumbedarf", out werte.Raumbedarf, true)) return false;
+            if (!Program.ZahlPruefen(textBox_Wartungskosten, "Wartungskosten", out werte.Wartungskosten, true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_Nutzungsdauer, "Nutzungsdauer", out werte.Nutzungsdauer, true)) return false;
+
+            if (!Program.ZahlPruefen(textBox_Modul, "Kosten Modul", out werte.Modul, true)) return false;
+            if (!Program.ZahlPruefen(textBox_Montage, "Kosten Montage und Inbetriebnahme", out werte.Montage, true)) return false;
+            if (!Program.ZahlPruefen(textBox_Lieferung, "Kosten Lieferung", out werte.Lieferung, true)) return false;
+            if (!Program.ZahlPruefen(textBox_Schallschutzhaube, "Kosten Schallschutzhaube", out werte.Schallschutzhaube, true)) return false;
+            if (!Program.ZahlPruefen(textBox_Abgasreinigung, "Kosten Abgasreinigung", out werte.Abgasreinigung, true)) return false;
+
+            if (!Program.GanzzahlPruefen(textBox_NOx, "NOx-Emission", out werte.NOx, true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_CO2, "CO2-Emission", out werte.CO2, true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_CO, "CO-Emission", out werte.CO, true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_SO2, "SO2-Emission", out werte.SO2, true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_Staub, "Staub-Emission", out werte.Staub, true)) return false;
+
+            if (!Program.GanzzahlPruefen(textBox_Vorlauf, "Vorlauftemperatur", out werte.Vorlauf, true)) return false;
+            if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "Rücklauftemperatur", out werte.Ruecklauf, true)) return false;
+
+            return true;
+        }
+
+        // Nimmt die bereits geprueften Werte entgegen; kein Parse mehr auf Benutzertext.
+        BHKWStammModel InitDatensatzUpdate(Eingabewerte werte)
         {
             BHKWStammModel model = new BHKWStammModel();
             model.m_szBezeichner = comboBox_Name.Text;
             model.m_szFirma = textBox_Hersteller.Text;
             model.m_szBeschreibung = textBox_Beschreibung.Text;
-            model.m_Pel = double.Parse(textBox_el_Leistung.Text);
-            model.m_Ptherm = double.Parse(textBox_th_Leistung.Text);
-            model.m_Wirkungsgrad = double.Parse(textBox_Wirkungsgrad.Text);
-            model.m_Investition_KWel = double.Parse(textBox_Investitionskosten.Text);
-            model.m_Nutzungsdauer = Int32.Parse(textBox_Nutzungsdauer.Text);
-            model.m_Raumbedarf = double.Parse(textBox_Raumbedarf.Text);
-            model.m_NOx = Int32.Parse(textBox_NOx.Text);
-            model.m_CO2 = Int32.Parse(textBox_CO2.Text);
-            model.m_CO = Int32.Parse(textBox_CO.Text);
-            model.m_SO2 = Int32.Parse(textBox_SO2.Text);
-            model.m_Staub = Int32.Parse(textBox_Staub.Text);
-            model.m_Grenzleistung = double.Parse(textBox_Grenzleistung.Text);
-            model.m_Wartungskosten_kWhel = double.Parse(textBox_Wartungskosten.Text);
+            model.m_Pel = werte.Pel;
+            model.m_Ptherm = werte.Ptherm;
+            model.m_Wirkungsgrad = werte.Wirkungsgrad;
+            model.m_Investition_KWel = werte.Investition;
+            model.m_Nutzungsdauer = werte.Nutzungsdauer;
+            model.m_Raumbedarf = werte.Raumbedarf;
+            model.m_NOx = werte.NOx;
+            model.m_CO2 = werte.CO2;
+            model.m_CO = werte.CO;
+            model.m_SO2 = werte.SO2;
+            model.m_Staub = werte.Staub;
+            model.m_Grenzleistung = werte.Grenzleistung;
+            model.m_Wartungskosten_kWhel = werte.Wartungskosten;
             model.m_szMotortyp = textBox_Motortyp.Text;
-            model.m_Kosten_Modul = double.Parse(textBox_Modul.Text);
-            model.m_Kosten_Montage = double.Parse(textBox_Montage.Text);
-            model.m_Kosten_Lieferung = double.Parse(textBox_Lieferung.Text);
-            model.m_Kosten_Schallschutzhaube = double.Parse(textBox_Schallschutzhaube.Text);
-            model.m_Kosten_Abgasreinigung = double.Parse(textBox_Abgasreinigung.Text);
-            model.m_Vorlauf = Int32.Parse(textBox_Vorlauf.Text);
-            model.m_Ruecklauf = Int32.Parse(textBox_Ruecklauf.Text);
+            model.m_Kosten_Modul = werte.Modul;
+            model.m_Kosten_Montage = werte.Montage;
+            model.m_Kosten_Lieferung = werte.Lieferung;
+            model.m_Kosten_Schallschutzhaube = werte.Schallschutzhaube;
+            model.m_Kosten_Abgasreinigung = werte.Abgasreinigung;
+            model.m_Vorlauf = werte.Vorlauf;
+            model.m_Ruecklauf = werte.Ruecklauf;
 
             // Brennstoff: Sicherstellen, dass ein gültiger Index gewählt wurde
             // Falls nichts gewählt ist (-1), wird hier die ID 1 gesetzt
@@ -171,6 +228,10 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
+            // Zahlen zuerst pruefen - noch bevor der Namensdialog aufgeht.
+            Eingabewerte werte;
+            if (!EingabenPruefen(out werte)) return;
+
             Form_Sp_ItemNeu frmLabel = new Form_Sp_ItemNeu();
             RecordSet rs = new RecordSet();
             OleDbTransaction transaction = null;
@@ -223,7 +284,7 @@ namespace WindowsFormsApplication1
 
                         // 4. Controller verarbeiten (Stammdaten)
                         BHKWStammCtrl ctrl = new BHKWStammCtrl();
-                        ctrl.model = InitDatensatzUpdate();
+                        ctrl.model = InitDatensatzUpdate(werte);
 
                         // Dem Controller die aktive Verbindung und Transaktion übergeben
                         ctrl.DBCommand.Connection = conn;
@@ -259,6 +320,10 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
+            // Zahlen zuerst pruefen, danach erst Name und Datenbank.
+            Eingabewerte werte;
+            if (!EingabenPruefen(out werte)) return;
+
             OleDbTransaction transaction = null;
 
             if (string.IsNullOrEmpty(comboBox_Name.Text))
@@ -304,7 +369,7 @@ namespace WindowsFormsApplication1
 
                     // 3. Controller verarbeiten (Stammdaten)
                     BHKWStammCtrl ctrl = new BHKWStammCtrl();
-                    ctrl.model = InitDatensatzUpdate();
+                    ctrl.model = InitDatensatzUpdate(werte);
                     ctrl.DBCommand.Connection = conn;
                     ctrl.DBCommand.Transaction = transaction;
 
@@ -333,130 +398,98 @@ namespace WindowsFormsApplication1
                 }
             }
         }
+        // TextChanged faerbt nur noch (Folgepaket zu ab5bf32): kein modales Melden,
+        // kein Undo() und kein Auffuellen mit "0" mehr - gemeldet wird erst beim
+        // Aktionsknopf ueber EingabenPruefen. Faerbung nach dem Speichertyp in
+        // InitDatensatzUpdate: ZahlFaerben fuer double, GanzzahlFaerben fuer Int32.
         private void textBox_Investitionskosten_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_th_Leistung_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_el_Leistung_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Wirkungsgrad_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Grenzleistung_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Raumbedarf_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Wartungskosten_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Nutzungsdauer_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void textBox_Modul_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Montage_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Lieferung_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Schallschutzhaube_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Abgasreinigung_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_CO2_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void textBox_SO2_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void textBox_NOx_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void textBox_CO_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void textBox_Staub_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void btn_Eintragen_Click(object sender, EventArgs e)
@@ -488,8 +521,12 @@ namespace WindowsFormsApplication1
             {
                 textBox_SO2.Text = "0";
                 textBox_CO2.Text = "200000";
+                // Stiller Parser statt double.Parse: das Feld kann ungueltigen oder
+                // leeren Text enthalten, beides zaehlt hier wie 0 - keine Meldung.
+                double dPtherm;
+                Program.ZahlParsen(textBox_th_Leistung.Text, out dPtherm);
                 //Wenn die thermische Leistung größer als 1.000 kW ist
-                if (double.Parse(textBox_th_Leistung.Text) > 1000)
+                if (dPtherm > 1000)
                 {
                     textBox_NOx.Text = "250";
                     textBox_CO.Text = "250";
@@ -515,18 +552,16 @@ namespace WindowsFormsApplication1
             if (comboBox_Brennstoff.Text.ToUpper().Contains("FLÜSSIGGAS")) textBox_CO2.Text = "238680";
         }
 
+        // Vorlauf/Ruecklauf: hier bewusst Ganzzahl-Faerbung, obwohl die alte Pruefung
+        // checkDouble war - gespeichert werden die Temperaturen als Int32.
         private void textBox_Vorlauf_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void textBox_Ruecklauf_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (tb.Text == "") { tb.Text = "0"; return; }
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
     }
 }

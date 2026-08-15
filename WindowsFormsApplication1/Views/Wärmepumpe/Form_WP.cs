@@ -304,14 +304,25 @@ namespace WindowsFormsApplication1
             }
 
             ctrl.ReadSingle("select * from Tab_WP_STAMM where Bezeichner='" + item.WPName + "'");
-            ctrl.Modulkosten = Int32.Parse(textBox_Modulkosten.Text);
-            ctrl.Nennleistung = Int32.Parse(textBox_Nennleistung.Text);
+
+            // Folgepaket zu ab5bf32: Modulkosten erst hier prüfen (im TextChanged wird
+            // nur noch gefärbt) - sprechende Meldung, Fokus aufs Feld, Dialog bleibt
+            // offen. Die Schaltflächen setzen kein DialogResult, ein return genügt.
+            int nModulkosten;
+            if (!Program.GanzzahlPruefen(textBox_Modulkosten, "Modulkosten", out nModulkosten, leerErlaubt: false)) return;
+
+            ctrl.Modulkosten = nModulkosten;
+            // Die übrigen Zahlenfelder wie bisher still übernehmen: ungültiger Text
+            // lässt den gerade gelesenen Datensatzwert stehen, statt wie Int32.Parse
+            // mit einer FormatException abzubrechen.
+            int nWert;
+            if (Program.GanzzahlParsen(textBox_Nennleistung.Text, out nWert)) ctrl.Nennleistung = nWert;
             ctrl.Beschreibung = textBox_Beschreibung.Text;
-            ctrl.Baujahr = Int32.Parse(comboBox_Baujahr.Text);
+            if (Program.GanzzahlParsen(comboBox_Baujahr.Text, out nWert)) ctrl.Baujahr = nWert;
             ctrl.Regelung = comboBox_Leistungsstufen.Text;
             ctrl.Typ = comboBox_Waermepumpentyp.Text;
             ctrl.Firma = textBox_Hersteller.Text;
-            ctrl.Heizung = Int32.Parse(textBox_Heizstab.Text);
+            if (Program.GanzzahlParsen(textBox_Heizstab.Text, out nWert)) ctrl.Heizung = nWert;
             ctrl.Aufstellung = comboBox_Aufstellung.Text;
             ctrl.WPName = textBox_Name.Text;
             
@@ -475,10 +486,13 @@ namespace WindowsFormsApplication1
             InitChart("KÜHLUNG");
         }
 
+        /// <summary>
+        /// Färbt nur noch (Begründung siehe Program.GanzzahlFaerben); gemeldet wird
+        /// erst beim Speichern. Ganzzahl, weil Modulkosten als Int32 abgelegt werden.
+        /// </summary>
         private void textBox_Modulkosten_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            Program.GanzzahlFaerben(sender);
         }
 
         private void btn_Katalog_Click(object sender, EventArgs e)

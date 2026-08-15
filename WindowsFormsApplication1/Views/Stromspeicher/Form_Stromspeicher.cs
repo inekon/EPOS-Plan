@@ -238,29 +238,46 @@ namespace WindowsFormsApplication1
 
         }
 
+        // Reine Anzeigefelder (Designer: Enabled = False) - der Text kommt aus dem
+        // Katalog, gespeichert wird in Form_AdminStromspeicher. Folgepaket zu ab5bf32:
+        // statt modal zu melden und mit Undo() zurueckzunehmen, wird nur noch gefaerbt,
+        // und das erst, wenn das Feld ueberhaupt Eingaben annimmt. Durchgaengig
+        // ZahlFaerben, weil der Katalog alle fuenf Werte als double fuehrt
+        // (StromspeicherStammCtrl) - die alte checkInt-Pruefung passte nicht zum
+        // Speichertyp.
         private void textBox_Leistung_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Leistung, textBox_Leistung.Text)) { textBox_Leistung.Undo(); }
+            TextBox tb = sender as TextBox;
+            if (tb == null || !tb.Enabled) return;
+            Program.ZahlFaerben(tb);
         }
 
         private void textBox_Energie_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Energie, textBox_Energie.Text)) { textBox_Energie.Undo(); }
+            TextBox tb = sender as TextBox;
+            if (tb == null || !tb.Enabled) return;
+            Program.ZahlFaerben(tb);
         }
 
         private void textBox_Degradation_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_Degradation, textBox_Degradation.Text)) { textBox_Degradation.Undo(); }
+            TextBox tb = sender as TextBox;
+            if (tb == null || !tb.Enabled) return;
+            Program.ZahlFaerben(tb);
         }
 
         private void textBox_Ladezustand_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Ladezustand, textBox_Ladezustand.Text)) { textBox_Ladezustand.Undo(); }
+            TextBox tb = sender as TextBox;
+            if (tb == null || !tb.Enabled) return;
+            Program.ZahlFaerben(tb);
         }
 
         private void textBox_Modulkosten_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Modulkosten, textBox_Modulkosten.Text)) { textBox_Modulkosten.Undo(); }
+            TextBox tb = sender as TextBox;
+            if (tb == null || !tb.Enabled) return;
+            Program.ZahlFaerben(tb);
         }
 
         private void btn_OK_Click(object sender, EventArgs e)

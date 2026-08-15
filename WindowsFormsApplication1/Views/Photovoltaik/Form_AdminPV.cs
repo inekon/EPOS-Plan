@@ -56,21 +56,46 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
+            // Folgepaket zu ab5bf32: Zahlen erst hier pruefen, nicht mehr beim Verlassen
+            // des Feldes. Bewusst VOR dem try: der Catch unten wuerde einen Parse-Fehler
+            // sonst als "Fehler beim Speichern" melden und mit InitControls saemtliche
+            // Eingaben leeren. Bei ungueltiger Eingabe bleibt der Dialog offen und es
+            // wird nichts geschrieben.
+            // Alle Felder sind im PhotovoltaikModel double (Tab_PV_STAMM ebenso), daher
+            // durchgaengig ZahlPruefen - auch Laenge und Breite, deren alte Pruefung
+            // checkInt war, obwohl sie in Metern mit Nachkommastellen gespeichert werden.
+            double wirkungsgrad, leistung, uLeerlauf, uMpp, iMpp, iKurzschluss;
+            double tempKoeff, laenge, breite, modulkosten;
+
+            if (!Program.ZahlPruefen(textBox_Wirkungsgrad, "Wirkungsgrad", out wirkungsgrad, true)) return;
+            // Leistung: ein leeres Feld meldete bisher schon beim Verlassen
+            // ("Leistungseingabe überprüfen!") - die Meldung kommt jetzt hier,
+            // leer bleibt also unzulaessig.
+            if (!Program.ZahlPruefen(textBox_Leistung, "Nennleistung (Pmax)", out leistung)) return;
+            if (!Program.ZahlPruefen(textBox_ULeerlauf, "Leerlaufspannung (Uoc)", out uLeerlauf, true)) return;
+            if (!Program.ZahlPruefen(textBox_UMpp, "Spannung im MPP (Umpp)", out uMpp, true)) return;
+            if (!Program.ZahlPruefen(textBox_IMpp, "Strom im MPP (Impp)", out iMpp, true)) return;
+            if (!Program.ZahlPruefen(textBox_IKurzschluss, "Kurzschlussstrom (Isc)", out iKurzschluss, true)) return;
+            if (!Program.ZahlPruefen(textBox_TempKoeff, "Temp.-Koeffizient Pmax", out tempKoeff, true)) return;
+            if (!Program.ZahlPruefen(textBox_Laenge, "Länge", out laenge, true)) return;
+            if (!Program.ZahlPruefen(textBox_Breite, "Breite", out breite, true)) return;
+            if (!Program.ZahlPruefen(textBox_Modulkosten, "Modulkosten", out modulkosten, true)) return;
+
             try
             {
                 model.m_szName = textBox_Bezeichner.Text;
                 model.m_szBeschreibung = textBox_Beschreibung.Text;
                 model.m_szFirma = textBox_Firma.Text;
-                model.m_Wirkungsgrad = textBox_Wirkungsgrad.Text == "" ? 0.0 : double.Parse(textBox_Wirkungsgrad.Text);
-                model.m_Leistung = textBox_Leistung.Text == "" ? 0.0 : double.Parse(textBox_Leistung.Text);
-                model.m_U_Leerlauf = textBox_ULeerlauf.Text == "" ? 0.0 : double.Parse(textBox_ULeerlauf.Text);
-                model.m_U_Mpp = textBox_UMpp.Text == "" ? 0.0 : double.Parse(textBox_UMpp.Text);
-                model.m_I_Mpp = textBox_IMpp.Text == "" ? 0.0 : double.Parse(textBox_IMpp.Text);
-                model.m_I_Kurzschluss = textBox_IKurzschluss.Text == "" ? 0.0 : double.Parse(textBox_IKurzschluss.Text);    
-                model.m_Temp_Coeff_Pmax = textBox_TempKoeff.Text == "" ? 0.0 : double.Parse(textBox_TempKoeff.Text);
-                model.m_Laenge = textBox_Laenge.Text == "" ? 0.0 : double.Parse(textBox_Laenge.Text);   
-                model.m_Breite = textBox_Breite.Text == "" ? 0.0 : double.Parse(textBox_Breite.Text);
-                model.m_Modulkosten = textBox_Modulkosten.Text == "" ? 0.0 : double.Parse(textBox_Modulkosten.Text);
+                model.m_Wirkungsgrad = wirkungsgrad;
+                model.m_Leistung = leistung;
+                model.m_U_Leerlauf = uLeerlauf;
+                model.m_U_Mpp = uMpp;
+                model.m_I_Mpp = iMpp;
+                model.m_I_Kurzschluss = iKurzschluss;
+                model.m_Temp_Coeff_Pmax = tempKoeff;
+                model.m_Laenge = laenge;
+                model.m_Breite = breite;
+                model.m_Modulkosten = modulkosten;
 
                 if (m_Neu)
                 {
@@ -224,56 +249,57 @@ namespace WindowsFormsApplication1
 
         }
 
+        // Die Eingabefelder faerben nur noch (Folgepaket zu ab5bf32): kein modales
+        // Melden und kein Undo() mehr beim Verlassen des Feldes - so bleibt auch das
+        // Durchklicken des Katalogs und der Weg zu Abbrechen/Beenden meldungsfrei.
+        // Geprueft wird in btn_Speichern_Click. Gefaerbt wird nach dem Speichertyp:
+        // alle Felder sind double, daher durchgaengig ZahlFaerben.
         private void textBox_Leistung_Validating(object sender, CancelEventArgs e)
         {
-            if (textBox_Leistung.Text == "") 
-            { 
-                MessageBox.Show("Leistungseingabe überprüfen!");
-                return;
-            }
-            if (!Program.checkDouble(textBox_Leistung, textBox_Leistung.Text)) { textBox_Leistung.Undo(); }
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Wirkungsgrad_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_Wirkungsgrad, textBox_Wirkungsgrad.Text)) { textBox_Wirkungsgrad.Undo(); }
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_UMpp_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_UMpp, textBox_UMpp.Text)) { textBox_UMpp.Undo(); }
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_ULeerlauf_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_ULeerlauf, textBox_ULeerlauf.Text)) { textBox_ULeerlauf.Undo(); }
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_IMpp_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_IMpp, textBox_IMpp.Text)) { textBox_IMpp.Undo(); }
-
+            Program.ZahlFaerben(sender);
         }
         private void textBox_IKurzschluss_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_IKurzschluss, textBox_IKurzschluss.Text)) { textBox_IKurzschluss.Undo(); }
+            Program.ZahlFaerben(sender);
         }
         private void textBox_TempKoeff_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_TempKoeff, textBox_TempKoeff.Text)) { textBox_TempKoeff.Undo(); }
+            Program.ZahlFaerben(sender);
         }
+        // Laenge und Breite: bewusst Zahl-Faerbung, obwohl die alte Pruefung checkInt
+        // war - gespeichert werden beide als double (Meterangabe mit Nachkommastellen).
         private void textBox_Laenge_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Laenge, textBox_Laenge.Text)) { textBox_Laenge.Undo(); }
+            Program.ZahlFaerben(sender);
         }
         private void textBox_Breite_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Breite, textBox_Breite.Text)) { textBox_Breite.Undo(); }
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Modulkosten_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_Modulkosten, textBox_Modulkosten.Text)) { textBox_Modulkosten.Undo(); }
+            Program.ZahlFaerben(sender);
         }
     }
 }

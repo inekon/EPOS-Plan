@@ -548,20 +548,32 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // Folgepaket zu ab5bf32: Validating faerbt nur noch (Ganzzahl, weil Vorlauf
+        // und Ruecklauf im Modell als Int32 liegen). Einen Knopf-Speicherweg gibt es
+        // nicht - btn_OK schliesst nur, geschrieben wird hier direkt ins Modell.
+        // Deshalb still absichern: das frueher direkt nach dem Undo() folgende
+        // Int32.Parse lief ungeschuetzt und konnte eine FormatException werfen;
+        // jetzt bleibt bei unlesbarem Text der bisherige Wert stehen, ohne Meldung.
         private void textBox_Ruecklauf_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Ruecklauf, textBox_Ruecklauf.Text)) { textBox_Ruecklauf.Undo(); }
+            Program.GanzzahlFaerben(sender);
+
+            int ruecklauf;
             WErzeugerModel m = GetSelectedKessel();
-            if (m != null && m.ID_Type == WizardItemClass.KESSEL_TYP)
-                m.Ruecklauf = Int32.Parse(textBox_Ruecklauf.Text);
+            if (m != null && m.ID_Type == WizardItemClass.KESSEL_TYP &&
+                Program.GanzzahlParsen(textBox_Ruecklauf.Text, out ruecklauf))
+                m.Ruecklauf = ruecklauf;
         }
 
         private void textBox_Vorlauf_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Vorlauf, textBox_Vorlauf.Text)) { textBox_Vorlauf.Undo(); }
+            Program.GanzzahlFaerben(sender);
+
+            int vorlauf;
             WErzeugerModel m = GetSelectedKessel();
-            if (m != null && m.ID_Type == WizardItemClass.KESSEL_TYP)
-                m.Vorlauf = Int32.Parse(textBox_Vorlauf.Text);
+            if (m != null && m.ID_Type == WizardItemClass.KESSEL_TYP &&
+                Program.GanzzahlParsen(textBox_Vorlauf.Text, out vorlauf))
+                m.Vorlauf = vorlauf;
         }
 
         // ListView loest SelectedIndexChanged nicht aus, wenn sich der Index nicht aendert

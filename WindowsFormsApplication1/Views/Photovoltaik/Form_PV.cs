@@ -117,15 +117,30 @@ namespace WindowsFormsApplication1
             if (m_bWizard) wizardparent.list_werzmodel = list_pvmodel;
         }
 
+        /// <summary>
+        /// Uebernimmt die Panel-Eingaben ins Modell (Aufrufer: panel1_Leave).
+        /// Folgepaket zu ab5bf32: stille Parser statt Int32.Parse/double.Parse - ein
+        /// ungueltiger Feldtext laesst den bisherigen Wert stehen, statt beim Verlassen
+        /// des Panels eine FormatException zu werfen. Leer zaehlt weiter als 0.
+        /// </summary>
         private void UpdateProerties()
         {
             for (int i = 0; i < list_pvmodel.Count; i++)
             {
                 if (list_pvmodel[i].Bezeichner == listBox_Auswahl.Text && list_pvmodel[i].ID_Type == WizardItemClass.PV_TYP)
                 {
-                    list_pvmodel[i].m_Neigung = textBox_Neigung.Text == "" ? 0 : Int32.Parse(textBox_Neigung.Text);
-                    list_pvmodel[i].m_Azimut = textBox_Azimut.Text == "" ? 0 : Int32.Parse(textBox_Azimut.Text);
-                    list_pvmodel[i].PV_Leistung = textBox_AnlagenLeistung.Text == "" ? 0 : double.Parse(textBox_AnlagenLeistung.Text);
+                    int neigung;
+                    if (Program.GanzzahlParsen(textBox_Neigung.Text, out neigung) || textBox_Neigung.Text.Trim().Length == 0)
+                        list_pvmodel[i].m_Neigung = neigung;
+
+                    int azimut;
+                    if (Program.GanzzahlParsen(textBox_Azimut.Text, out azimut) || textBox_Azimut.Text.Trim().Length == 0)
+                        list_pvmodel[i].m_Azimut = azimut;
+
+                    double anzahlModule;
+                    if (Program.ZahlParsen(textBox_AnlagenLeistung.Text, out anzahlModule) || textBox_AnlagenLeistung.Text.Trim().Length == 0)
+                        list_pvmodel[i].PV_Leistung = anzahlModule;
+
                     break;
                 }
             }
@@ -246,49 +261,51 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
+            // Folgepaket zu ab5bf32: Zahlenpruefung am Aktionsknopf statt im TextChanged.
+            // Leer bleibt erlaubt und zaehlt als 0 - so verhielten sich die frueheren
+            // Ternaer-Parses. Bei ungueltiger Eingabe meldet der Helfer und der Dialog
+            // bleibt offen.
+            int neigung, azimut;
+            double anzahlModule;
+            if (!Program.GanzzahlPruefen(textBox_Neigung, "Neigung", out neigung, leerErlaubt: true)) return;
+            if (!Program.GanzzahlPruefen(textBox_Azimut, "Azimut", out azimut, leerErlaubt: true)) return;
+            if (!Program.ZahlPruefen(textBox_AnlagenLeistung, "Anzahl Module", out anzahlModule, leerErlaubt: true)) return;
+
             for (int i = 0; i < list_pvmodel.Count; i++)
             {
                 if (list_pvmodel[i].Bezeichner == listBox_Auswahl.Text && list_pvmodel[i].ID_Type == WizardItemClass.PV_TYP)
                 {
-                    list_pvmodel[i].m_Neigung = textBox_Neigung.Text == "" ? 0 : Int32.Parse(textBox_Neigung.Text);
-                    list_pvmodel[i].m_Azimut = textBox_Azimut.Text == "" ? 0 : Int32.Parse(textBox_Azimut.Text);
-                    list_pvmodel[i].PV_Leistung = textBox_AnlagenLeistung.Text == "" ? 0 : double.Parse(textBox_AnlagenLeistung.Text);
+                    list_pvmodel[i].m_Neigung = neigung;
+                    list_pvmodel[i].m_Azimut = azimut;
+                    list_pvmodel[i].PV_Leistung = anzahlModule;
                     break;
                 }
             }
         }
 
+        /// <summary>
+        /// Nur noch Faerbung (Folgepaket zu ab5bf32). Das frueher hier eingesetzte
+        /// Undo()/ClearUndo() loeste TextChanged erneut aus und liess Meldung und Text
+        /// zwischen zwei Zustaenden pendeln; gemeldet wird jetzt erst beim Speichern.
+        /// </summary>
         private void textBox_Neigung_TextChanged(object sender, EventArgs e)
         {
-            if (textBox_Neigung.Text == "") { textBox_Neigung.Text = "0"; return; }
-            if (!Program.checkInt(textBox_Neigung, textBox_Neigung.Text))
-            {
-                textBox_Neigung.Undo();
-                textBox_Neigung.ClearUndo();
-                return;
-            }
+            Program.GanzzahlFaerben(sender);
         }
 
+        /// <summary>Wie textBox_Neigung_TextChanged: nur Faerbung, keine Meldung.</summary>
         private void textBox_Azimut_TextChanged(object sender, EventArgs e)
         {
-            if (textBox_Azimut.Text == "") { textBox_Azimut.Text = "0"; return; }
-            if (!Program.checkInt(textBox_Azimut, textBox_Azimut.Text))
-            {
-                textBox_Azimut.Undo();
-                textBox_Azimut.ClearUndo();
-                return;
-            }
+            Program.GanzzahlFaerben(sender);
         }
 
+        /// <summary>
+        /// Nur Faerbung; geprueft wird beim Speichern. Gefaerbt wird nach den
+        /// Zahlregeln, weil der Speicherweg das Feld als double uebernimmt.
+        /// </summary>
         private void textBox_AnlagenLeistung_TextChanged(object sender, EventArgs e)
         {
-            if (textBox_AnlagenLeistung.Text == "") { textBox_AnlagenLeistung.Text = "0"; return; }
-            if (!Program.checkInt(textBox_AnlagenLeistung, textBox_AnlagenLeistung.Text))
-            {
-                textBox_AnlagenLeistung.Undo();
-                textBox_AnlagenLeistung.ClearUndo();
-                return;
-            }
+            Program.ZahlFaerben(sender);
             textBox_Gesamtleistung.Text = UpdateGesamtleistung().ToString();
         }
 
