@@ -404,10 +404,19 @@ namespace WindowsFormsApplication1
                 try
                 {
                     Cursor = Cursors.WaitCursor;
-                    new ProjektvergleichBericht().Erzeuge(sfd.FileName, gruppe);
+                    // Der Bericht simuliert die Gruppe selbst neu (Nutzeranforderung
+                    // 15.08.2026) und liefert die Meldungen der Läufe zurück.
+                    ProjektvergleichBericht bericht = new ProjektvergleichBericht();
+                    bericht.Erzeuge(sfd.FileName, gruppe);
                     Melde("Bericht erstellt: " + sfd.FileName);
 
-                    if (MessageBox.Show("Bericht wurde erstellt. Jetzt öffnen?", "Projektvergleich",
+                    string frage = "Bericht wurde erstellt (alle Projekte neu simuliert).";
+                    if (bericht.Laufmeldungen.Count > 0)
+                        frage += "\r\n\r\nHinweise:\r\n• " +
+                                 string.Join("\r\n• ", bericht.Laufmeldungen);
+                    frage += "\r\n\r\nJetzt öffnen?";
+
+                    if (MessageBox.Show(frage, "Projektvergleich",
                         MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(sfd.FileName) { UseShellExecute = true });
                 }

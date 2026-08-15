@@ -87,6 +87,9 @@ namespace WindowsFormsApplication1
             k.Fuege(t);
 
             k.Ueberschrift2("Datengrundlage und Methodik");
+            k.Text("Für diesen Bericht wurde jedes aufgeführte Projekt neu simuliert " +
+                   "(stündliche Jahresrechnung) und anschließend wirtschaftlich bewertet; " +
+                   "die Zahlen aller Kapitel stammen damit aus demselben Rechenlauf.");
             k.Text("Grundlage sind die je Projekt gespeicherten Simulationsergebnisse der " +
                    "EPOS-Plan-Simulation (stündliche Jahresrechnung; Tabellenfamilie Tab_Ergebnis, " +
                    "verknüpft über die Projekt-ID). Varianten sind eigenständige Projektkopien, " +

@@ -53,7 +53,12 @@ namespace WindowsFormsApplication1
         /// <summary>Schlüssel der aktiven Bausteine.</summary>
         public List<string> AktiveBausteine { get; set; } = new List<string>();
 
-        /// <summary>Vor Ausgabe neu rechnen (für Ganglinien ohnehin erforderlich, Kap. 6.2).</summary>
+        /// <summary>
+        /// Ohne Wirkung seit 15.08.2026: jeder Berichtslauf simuliert alle gewählten
+        /// Projekte neu und rechnet danach die Wirtschaftlichkeit
+        /// (BerichtsDatenSammler.SammleFuerBericht). Das Feld bleibt nur erhalten,
+        /// damit bereits gespeicherte Konfigurations-JSONs weiter lesbar sind.
+        /// </summary>
         public bool NeuRechnen { get; set; } = true;
 
         /// <summary>"Word" | "Excel" | "Beide".</summary>
