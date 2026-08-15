@@ -1131,9 +1131,10 @@ Weitere Befunde ohne unmittelbare Ergebniswirkung, die bei Berührung mitzunehme
 *(erweitert in Fassung 12)*:
 
 - `PufferSpCtrl.Delete()`/`Update()` sind funktionsunfähig (keine `Connection`, `:27`).
-- `WizardParent.LoadWEFromDB` liest `ID_PUFFER` nicht (`:511-560`) — nur dadurch geht
-  die Puffer-Referenz beim Wizard-Speichern verloren; der Kontextmenü-Pfad
-  (`PufferSpKontextMenuCtrl.cs:117`) übernimmt sie.
+- ~~`WizardParent.LoadWEFromDB` liest `ID_PUFFER` nicht~~ — **behoben 15.08.2026**
+  (Roundtrip-Fix-Familie, `Roundtrip_Erzeuger_Protokoll.md`): `LoadWEFromDB` reicht
+  die vollständig gelesenen Modelle durch, alle fünf gemessenen Speicherwege sind
+  verlustfrei.
 - `WizardItemClass.PUFFER_ITEM = 13` ist out-of-range gegenüber `MenueCtrl` (`:29-41`),
   der Wizard-Zweig in `Form_PufferSp` ist unerreichbar.
 - Das stille ID-Reparaturmuster aus 2.3 (`if (idX > 0)`) verschluckt
