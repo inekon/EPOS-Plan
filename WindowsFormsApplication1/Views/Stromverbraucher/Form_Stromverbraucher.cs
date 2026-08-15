@@ -20,6 +20,8 @@ namespace WindowsFormsApplication1
         private string m_szProjekt;
         private int m_ListIndex = -1;   
         private bool m_bWizard = false;
+        // Hinweis "Projekt noch nicht gespeichert" nur einmal je Wizard-Sitzung zeigen.
+        private bool m_bHinweisNeuesProjekt = false;
 
 
         public Form_Stromverbraucher()
@@ -200,6 +202,60 @@ namespace WindowsFormsApplication1
             Close();
         }
 
+        /// <summary>
+        /// Legt den im Feld "neuer Wert" eingegebenen Jahresverbrauch vor dem Simulationslauf
+        /// in Z_Projekt_Stromverbraucher.Summe ab. Die Simulation liest ihn NICHT aus dem
+        /// Formular, sondern aus dieser Zeile -
+        /// SimulationStrombedarf.Stromprofil_Strombedarf_berechnen skaliert damit das
+        /// Katalogprofil. Daher der Schreibzugriff mitten in der Bedienung.
+        ///
+        /// Das setzt ein bereits gespeichertes Projekt voraus. Im Neuanlage-Zweig des Wizards
+        /// ist m_ID_Projekt nur die in WizardParent.Next geratene ProjektCtrl.GetMaxID()+1;
+        /// weder Tab_Projekt noch Z_Projekt_Stromverbraucher haben dazu eine Zeile. Das UPDATE
+        /// traf dort 0 Zeilen und meldete trotzdem Erfolg - ein stiller No-op, der zugleich
+        /// vortaeuschte, die Vorschau rechne mit dem eingegebenen Wert.
+        ///
+        /// Verloren geht dabei nichts: Gespeichert wird der Jahresverbrauch ohnehin aus
+        /// list_sbmodel (Schaltflaeche "neuer Wert") ueber WizardParent.Speichern und
+        /// WizardCtrl.Add_Projekt_Stromverbraucher.
+        /// </summary>
+        private void SummeFuerSimulationSichern()
+        {
+            if (!m_bWizard || textBox_Verbrauch.Text == "") return;
+
+            if (ProjektIstGespeichert())
+            {
+                Z_ProjektStromverbraucherCtrl ctrl = new Z_ProjektStromverbraucherCtrl();
+                ctrl.UpdateSumme(double.Parse(textBox_Verbrauch.Text), textBox_Stromname.Text, m_ID_Projekt);
+                return;
+            }
+
+            // Neues Projekt: der Wert kann noch nicht in die Projektzeile. Das muss der
+            // Anwender wissen, sonst haelt er die Vorschau faelschlich fuer skaliert.
+            if (m_bHinweisNeuesProjekt) return;
+            m_bHinweisNeuesProjekt = true;
+            MessageBox.Show(
+                "Das Projekt ist noch nicht gespeichert. Die Vorschau rechnet deshalb mit den " +
+                "Katalogwerten; der eingegebene Jahresverbrauch wirkt sich erst nach dem " +
+                "Speichern des Projekts auf die Simulation aus.",
+                "Vorschau ohne Projektwerte", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// true, wenn m_ID_Projekt auf eine wirklich vorhandene Tab_Projekt-Zeile zeigt.
+        /// Im Neuanlage-Zweig des Wizards ist m_ID_Projekt lediglich eine geratene MAX(ID)+1.
+        /// </summary>
+        private bool ProjektIstGespeichert()
+        {
+            if (m_ID_Projekt <= 0) return false;
+
+            object anzahl = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_Projekt WHERE ID = ?",
+                new OleDbParameter("@id", m_ID_Projekt));
+
+            return anzahl != null && Convert.ToInt32(anzahl) > 0;
+        }
+
         private void btn_Simulation_Click(object sender, EventArgs e)
         {
             float[] result = new float[8760];
@@ -211,11 +267,7 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            if (m_bWizard && textBox_Verbrauch.Text != "") // nur im Wizard Wert sofort speichern, wegen Simulation
-            {
-                Z_ProjektStromverbraucherCtrl ctrl = new Z_ProjektStromverbraucherCtrl();
-                ctrl.UpdateSumme(double.Parse(textBox_Verbrauch.Text), textBox_Stromname.Text, m_ID_Projekt);
-            }
+            SummeFuerSimulationSichern();
  
             simulation.m_ID_Projekt = m_ID_Projekt;
             
