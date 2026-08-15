@@ -161,6 +161,9 @@ namespace WindowsFormsApplication1
                 // die alte Formel ignorierte Speichereffekte und zog zudem den Heizstab
                 // (Stromgröße) von einer Wärmemenge ab. Quelle ist dieselbe Größe,
                 // die auch die Detailansicht anzeigt (waermerestbedarf_gesamt).
+                // Seit Nutzerentscheidung 6-5 gilt das nur noch für den ALTPFAD — der
+                // zweikanalige Weg überschreibt den Wert weiter unten (Stufeneingang
+                // minus Eigenanteil).
                 w.Restwaermebedarf = wp.waermerestbedarf_gesamt / 1000.0;
                 // Paket 7 / Konzept 6.6: Kapazität kommt aus dem zugeordneten Speicher
                 // (SimulationPufferspeicher.Q_max in kWh), nicht mehr aus dem Legacy-
@@ -178,6 +181,56 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < wp.waermerestbedarf_stuendlich.Length; i++)
                     if (wp.waermerestbedarf_stuendlich[i] > maxSpk) maxSpk = wp.waermerestbedarf_stuendlich[i];
                 w.Min_Spitzenkesselleistung = maxSpk;
+
+                // EIGENANTEIL der Wärmepumpe [MWh] — Direktdeckung (Phase B) plus der ihr
+                // zugerechnete Anteil an der bedarfsdeckenden Speicherentladung plus
+                // Heizstab (er gehört zur WP, Tab_WP.Heizung je Modul). NUR im
+                // zweikanaligen Weg gefüllt; im Altpfad sind Direktdeckung_gesamt und
+                // Speicherentladung_Anteil exakt 0.
+                double wpEigen = (wp.Direktdeckung_gesamt + wp.Speicherentladung_Anteil +
+                                  wp.Heizstab_gesamt) / 1000.0;
+
+                // NUTZERENTSCHEIDUNG 6-5, entschieden am 15.08.2026 (Variante B):
+                // Der RESTWÄRMEBEDARF der Wärmepumpe folgt jetzt derselben Regel wie
+                // Solarthermie, Heizkessel und BHKW (Nutzerentscheidung 6-4):
+                //
+                //     Restwaermebedarf = Stufeneingang − EIGENANTEIL   (>= 0)
+                //
+                // Bisher meldete allein die Wärmepumpe den Rest NACH DER GANZEN
+                // Speicherstufe (waermerestbedarf_gesamt, Kanalstand nach Phase F) —
+                // Variante C aus 6-5. Mit genau EINEM Mitglied in der Stufe ist das
+                // dieselbe Zahl; ab zwei Mitgliedern enthielt der Wert auch die Lieferung
+                // von Heizkessel und BHKW, die beide ihre Deckung zusätzlich selbst
+                // melden. Die Wärmepumpe wies dann einen KLEINEREN Rest aus als die
+                // nachgelagerten Erzeuger (gemessen an 1024: 46,14 MWh gegen 348,84 des
+                // Kessels und 229,85 des BHKW, bei identischem Stufeneingang 389,73).
+                // Restbedarf und Deckung sind jetzt auch bei der WP zwei Seiten derselben
+                // Rechnung; der Wert bleibt konstruktiv >= 0, weil Direktdeckung,
+                // zugerechnete Entladung und Heizstab alle aus demselben Stufeneingang
+                // stammen (die Klemmung ist Rundungsschutz).
+                //
+                // NUR IM NEUEN PFAD: Im Altpfad ist Heizstab_gesamt NICHT null, während
+                // die beiden anderen Summanden fehlen — der Ausdruck wäre dort keine
+                // Bilanz. Der Altpfad behält unverändert die Jahressumme der Ganglinie.
+                //
+                // BEWUSST UNVERÄNDERT bleibt die GANGLINIE waermerestbedarf_stuendlich
+                // (Export wp_restwaerme.csv) und mit ihr Min_Spitzenkesselleistung: Sie
+                // führt den PROJEKTrest der Stunde, und genau der ist die Bezugsgröße für
+                // die Auslegung eines Spitzenkessels — der muss decken, was nach ALLEN
+                // Erzeugern offen bleibt, nicht den rechnerischen Anteil der Wärmepumpe.
+                // Skalar und Ganglinie beantworten damit zwei verschiedene Fragen und
+                // weichen ab zwei Stufenmitgliedern voneinander ab (1024: 246,91 MWh
+                // Skalar gegen 46,14 MWh Gangliniensumme). Das ist der bewusst
+                // dokumentierte Unterschied der Variante B; die Ganglinie mitzuziehen
+                // (Variante C) wäre eine Änderung an Min_Spitzenkesselleistung und
+                // gehört in ein eigenes Paket. Anders als beim BHKW (Befund N4) ist das
+                // kein Widerspruch: Dort meldeten Skalar und Ganglinie DIESELBE Größe in
+                // zwei Fassungen, hier sind es zwei verschiedene Größen.
+                if (sim.KaskadeZweikanalig)
+                {
+                    w.Restwaermebedarf = w.Waermebedarf - wpEigen;
+                    if (w.Restwaermebedarf < 0) w.Restwaermebedarf = 0;   // Rundungsschutz
+                }
 
                 // B0-7b: Waermebedarfsdeckung (%) restbedarfsbasiert als EIGENANTEIL der
                 // WP-Stufe: (Stufeneingang - Rest) / Gesamtbedarf. Bericht und
@@ -209,8 +262,7 @@ namespace WindowsFormsApplication1
                 {
                     double deckung;
                     if (sim.KaskadeZweikanalig)
-                        deckung = (wp.Direktdeckung_gesamt + wp.Speicherentladung_Anteil +
-                                   wp.Heizstab_gesamt) / 1000.0 / basis * 100.0;
+                        deckung = wpEigen / basis * 100.0;   // dieselbe Größe wie im Restbedarf (6-5)
                     else
                         deckung = (w.Waermebedarf - w.Restwaermebedarf) / basis * 100.0;
 

@@ -6,6 +6,12 @@
 > bis 12 beschreiben den Entwurf; wo die Nacharbeit eine Aussage berichtigt hat, steht
 > das an Ort und Stelle. Die geänderten Dateien sind von fünf auf **neun** gewachsen
 > (Teil 13.1).
+>
+> **Nutzerentscheidungen vom 15.08.2026.** Die drei offenen Punkte dieses Pakets sind
+> entschieden: **6-1** (Altpfad-Fix des Bilanzfehlers) ist **zurückgestellt**, **6-2**
+> (Sommerbetrieb/Notschaltungen) wird **nicht reaktiviert**, **6-5** (Restwärmebedarf der
+> Wärmepumpe) ist **umgesetzt** — Variante B, nur der Skalar. Umsetzung und Messung in
+> **Kapitel 14**; damit ist Kapitel 10 vollständig abgearbeitet.
 
 Stand: 15.08.2026 · Grundlage: [`Konzept_Simulation_QuellenSenken.md`](Konzept_Simulation_QuellenSenken.md),
 Kapitel 3.4 (Ladepriorität und Ladeobergrenzen), 3.5 (PV-Sonderpriorität), 3.6
@@ -39,7 +45,7 @@ Basis-Einfrieren ist deshalb **nicht** nötig.
 | `Allgemein/Simulation/SimulationBHKW.cs` | **Extraktion** der gemeinsamen Physik (`Kennzahlen_Zuruecksetzen`, `Moduldaten_Einlesen`, `Auswertung`, `Motorlauf_Waermegefuehrt`, `Motorlauf_Stromgefuehrt`, `Motorlauf_OhneEinspeisung`, `Speicherabrechnung`) und der **zweikanalige Weg**: `Init`, `Vorbereiten_Zweikanalig`, `Stunde_Start`, `Stunde_Bedarf`, `Zweikanalig_Laden`, `Stunde_Ende`, `Fahrweise_Stunde`, `Abschluss_Zweikanalig`, `Berechnung_Zweikanalig`; neue Größen `Direktdeckung_gesamt`, `Speicherladung_stuendlich/_gesamt`, `Speicherentladung_Anteil`, `Ueberschuss_stuendlich`, `Waermebedarf_gesamt`, `Fehlertext`, `Auftrag_Haupt/_Zweit`. **`Berechnung()` und die drei Fahrweisen-Methoden rechnen im Altpfad anweisungsgleich weiter** (Nachweis 7.1) |
 | `Allgemein/Simulation/Kaskadenschleife.cs` | BHKW als viertes Schleifenmitglied: Feld `BHKW`, `MitBHKW`, Phase-B-Zweig, Ladephasen-Zweig, `Stunde_Start`/`Stunde_Ende`, `Abschluss_Zweikanalig`; Herkunftsrechnung um `ART_BHKW` erweitert (`ART_ANZAHL` 3 → 4); neue `BhkwAuftraegeZuordnen()` |
 | `Allgemein/Simulation/SimulationControl.cs` | `_bhkwInSchleife` samt `BHKWInSpeicherstufe`; Aufnahmekriterium (Puffer-Senke **oder** Pendelspeicher); BHKW in `IstSchleifenstufe`, `BedarfsreihenfolgeAufbauen`, `ZwischenstufenAufnehmen`, `ModulindexDerAnlage`, `PufferSenkenOhneAuftragZurueckfallen`; Modulaufbau in `Speicherstufe_Rechnen`; neue `BHKW_Liste_Laden()`, `Simulation_BHKW_Ctrl_Zweikanalig()`, `BhkwErsatzspeicherAufnehmen()`, `LadeauftragEinsortieren()`; **Entfall des `Uebernehmen`-Ankers und des Warnzweigs „BHKW zwischen zwei Mitgliedern"** |
-| `Allgemein/Simulation/SimulationRunner.cs` | `Tab_ErgebnisBHKW.Restwaermebedarf` und `.Waermebedarfsdeckung` aus dem **Eigenanteil** — nur im zweikanaligen Weg (Teil 4, seit der Nacharbeit N1 auch der Restbedarf) |
+| `Allgemein/Simulation/SimulationRunner.cs` | `Tab_ErgebnisBHKW.Restwaermebedarf` und `.Waermebedarfsdeckung` aus dem **Eigenanteil** — nur im zweikanaligen Weg (Teil 4, seit der Nacharbeit N1 auch der Restbedarf). Seit der Nutzerentscheidung 6-5 gilt dieselbe Regel auch für `Tab_ErgebnisWaermepumpe.Restwaermebedarf` (Kapitel 14) |
 | `Controller/PufferSpCtrl.cs` | `PendelspeicherId` von `private` auf `public` (die Engine braucht die Puffer-ID für den Ersatzspeicher) |
 
 **In der Nacharbeit dazugekommen** (Kapitel 13):
@@ -245,7 +251,8 @@ Uhrzeit.
 >   Zweige sind seit der Änderung `if (stunde < 3600 || stunde > 5760)` → `if (stunde < 8760)`
 >   unerreichbar, ihre Schwellen haben also nie ein Ergebnis beeinflusst.
 > * **Wertgleich ist die Semantik NICHT.** Wer die alten Fenster zurückhaben will, braucht
->   eigene Parameter — siehe Nutzerentscheidung 6-2, Variante B.
+>   eigene Parameter — Variante B der Nutzerentscheidung 6-2. Sie ist am 15.08.2026
+>   **verworfen**: Die Fenster kehren nicht zurück.
 
 Die Spalten existieren seit Paket 1/B0-1 an `Tab_Pufferspeicher`
 (`Schwelle_Ein`, `Schwelle_Aus`, `Schwelle_Aus_Nachrang`, `Entladeprio` — an der
@@ -362,9 +369,10 @@ Eigenanteil = Direktdeckung (Phase B) + zugerechnete Speicherentladung (Phasen A
 Restwärmebedarf = Stufeneingang − Direktdeckung        (geklemmt auf ≥ 0)
 ```
 
-Die Zurechnung der Entladung folgt der Interimsregel „Vermischung im Speicher" aus der
-Paket-5-Nacharbeit (N2); dafür ist die Herkunftsrechnung der `Kaskadenschleife` um die
-vierte Erzeugerart erweitert worden.
+Die Zurechnung der Entladung folgt der Regel „Vermischung im Speicher" aus der
+Paket-5-Nacharbeit (N2) — seit dem 15.08.2026 mit Nutzerentscheidung 5-1 bestätigt und
+damit keine Interimsregel mehr; dafür ist die Herkunftsrechnung der `Kaskadenschleife` um
+die vierte Erzeugerart erweitert worden.
 
 **Gemessene Wirkung** (Summe aller ausgewiesenen Erzeugerdeckungen gegen die tatsächliche
 Projektdeckung):
@@ -714,6 +722,7 @@ Warnungen: **dieselben sechs Bestandswarnungen** (`WErzeugerModel.cs` CS0108,
 | 15 | **Der Bilanzraum der BHKW-Zweitsenke enthält den Durchsatzterm**, wenn das BHKW letzte Bedarfsstufe ist und die Kanäle getrennt sind | präpariertes 1024: BHKW-Wärme 157,50 → 169,06 MWh, Heizstab 37,12 → 25,83 MWh, Netzstrom −16,57 MWh | Nacharbeit N5 (13.6) |
 | 8 | Ein BHKW **zwischen zwei Mitgliedern** wird selbst Mitglied statt nach der Stufe zu rechnen | tritt in der Referenzmenge nicht auf; in 1024 wird dadurch der Heizkessel zum Zwischenmitglied (Änderung 9) | Nacharbeit N4, jetzt für alle vier Arten |
 | 9 | **Projekt 1024**: BHKW und (dadurch) Heizkessel werden Stufenmitglieder | siehe Tabelle unten | 13.9, N4 |
+| 16 | **`Tab_ErgebnisWaermepumpe.Restwaermebedarf` folgt dem Eigenanteil** statt dem Rest nach der ganzen Speicherstufe | 1024: 46,14 → **246,91 MWh**; die acht übrigen Projekte unverändert (nur ein Stufenmitglied). Die Ganglinie `wp_restwaerme` und `Min_Spitzenkesselleistung` bleiben bewusst der Projektrest | Nutzerentscheidung **6-5**, Variante B (Kapitel 14) |
 
 ### Projekt 1024 im Einzelnen (Flag AN, Paket 5 → Paket 6)
 
@@ -726,7 +735,8 @@ Warnungen: **dieselben sechs Bestandswarnungen** (`WErzeugerModel.cs` CS0108,
 | Heizstab | 62,81 MWh | **26,00 MWh** | Der Kessel deckt jetzt in Phase B, also **vor** dem Heizstab (13.9) |
 | Kessel-Nutzwärme | 35,54 MWh | 40,89 MWh | dito |
 | WP-Wärmeproduktion | 137,28 MWh | 116,82 MWh | Der Brauchwasserpuffer entlädt in **Phase A**, vor der Bedarfsphase der WP — sie hat weniger zu tun |
-| `Waermepumpe.Restwaermebedarf` | 189,64 MWh | 46,14 MWh | `waermerestbedarf_stuendlich` ist der Rest nach der **gesamten** Stufe, die jetzt drei Mitglieder hat (Paket-5-Abgrenzung 4) |
+| `Waermepumpe.Restwaermebedarf` | 189,64 MWh | **246,91 MWh** | Seit der Nutzerentscheidung 6-5 `Stufeneingang − Eigenanteil` = 389,730 − 142,819 MWh, wie bei Kessel und BHKW. Bis dahin meldete die Zeile 46,14 MWh — den Rest nach der **gesamten** Stufe, die jetzt drei Mitglieder hat (Kapitel 14) |
+| `Vektor.wp_restwaerme.Summe` | 189.641,54 kWh | 46.135,57 kWh | die GANGLINIE bleibt der Projektrest — bewusster Unterschied zum Skalar (Kapitel 14) |
 | **Restwärme des Projekts** | 47,184 MWh | **46,136 MWh** | −1,05 MWh: der Speicher verwertet BHKW-Wärme, die vorher fehlte |
 | **Reststrom** | 468,02 MWh | **405,96 MWh** | −62,06 MWh: mehr BHKW-Strom, weniger Heizstab |
 | Deckungssumme / tatsächlich | — | 88,162164 % / 88,162172 % | keine Doppelzählung |
@@ -741,14 +751,14 @@ Paket 5 ausdrücklich als „ruht bis Paket 6" ausgewiesen hatte.
 
 | # | Punkt | Bewertung |
 |---|---|---|
-| 1 | **Der Bilanzfehler besteht im Altpfad weiter** | Entscheidung des Orchestrators; Wirkung quantifiziert in 3.5. Ein Altpfad-Fix wäre ein eigenes B0-artiges Paket |
+| 1 | **Der Bilanzfehler besteht im Altpfad weiter** | **Nutzerentscheidung 6-1, entschieden am 15.08.2026: zurückgestellt** (Variante A). Wirkung in der Referenzmenge 0 — kein Projekt trägt einen Pendelspeicher —, und der Altpfad läuft aus. Wirkung quantifiziert in 3.5; ein Altpfad-Fix wäre ein eigenes B0-artiges Paket |
 | 2 | **Eine Senke je BHKW-Stufe**, nicht je Anlage | Die Fahrweisen schalten alle Module gemeinsam zu (2.3). Maßgeblich ist die Senke der ersten Anlage mit Puffer-Hauptsenke, sonst die der ersten Anlage; Abweichungen werden protokolliert. Eine Senke je Modul verlangte einen Umbau der Zuschaltlogik — neue Physik |
 | 3 | **`Form_Simulation_Detail` zeigt weiter die Altformeln** für BHKW-Restbedarf (`:1749`) und -Deckung (`:1756`) | ANZEIGE-Aufgabe, gehört zu Paket 7 — dieselbe Abgrenzung wie beim Fehlerkanal (Paket-5-Nacharbeit 13.12, Punkt 8). Die gespeicherten Ergebnisse (`Tab_ErgebnisBHKW`) sind korrigiert |
 | 4 | **Ein stromgeführtes BHKW hinter einer Wärmepumpe** in derselben Speicherstufe sieht den Strombedarf des STUFENEINGANGS, nicht den nach WP-Verbrauch und Heizstab | Innerhalb einer Stundenschleife gibt es die Vektorreihenfolge des Altpfads nicht mehr; der Heizstab derselben Stunde steht erst in Phase F fest. In der Referenzmenge ohne Wirkung (alle BHKW-Projekte fahren wärmegeführt; 1017/1018 haben keine WP in der Kaskade). Verwandt mit Befund N3 der Paket-5-Nacharbeit, dort für den ausgewiesenen Kessel-Strombedarf gelöst |
 | 5 | **`bhkw_list` bleibt die Katalogliste** (`ID_BHKW`), `bhkw_anlagen_ids` die Anlagenliste | wie bei Kessel und Solarthermie; die Ergebnis-Modulnamen kommen weiterhin aus `bhkw_list_Namen` |
 | 6 | **Kein neuer Speicherparameter** (Lade-/Entladeleistung je Speicher in kW) | unverändert offen aus Paket 4/5; `EntladeleistungMax` hält die Stelle |
 | 7 | **Offene Konzeptfrage 5-2** (nachgelagerter Erzeuger nimmt dem vorgelagerten Speicher den Durchsatz) | unverändert offen. Mit dem BHKW als viertem Mitglied kann sie jetzt auch dort auftreten |
-| 8 | **Zurechnungsregel der Speicherentladung** („Vermischung im Speicher", Momentanmischung, Zurechnung je Erzeuger*art*) | unverändert die Interimsregel aus der Paket-5-Nacharbeit; sie trägt jetzt vier statt drei Arten. Bestätigung offen — Nutzerentscheidung 5-1 |
+| 8 | **Zurechnungsregel der Speicherentladung** („Vermischung im Speicher", Momentanmischung, Zurechnung je Erzeuger*art*) | **Nutzerentscheidung 5-1, bestätigt am 15.08.2026** — keine Interimsregel mehr, sondern die gültige Zurechnungsregel. Sie trägt jetzt vier statt drei Erzeugerarten |
 
 ### Bestandsbefunde, die dabei aufgefallen sind (nicht behoben)
 
@@ -757,14 +767,25 @@ Paket 5 ausdrücklich als „ruht bis Paket 6" ausgewiesen hatte.
 | B-1 | **`SimulationBHKW` hat keine `Init()` im Altpfad.** `SimulationStromgefuehrt` nullt `s_waerme_MWh`/`s_strom_MWh` **nicht** (die beiden anderen Fahrweisen tun es) | Ein zweiter Lauf auf derselben Instanz — im Programm über `Form_Simulation_Detail` möglich — addiert in der stromgeführten Fahrweise auf die Vorwerte auf. Im Referenzlauf unsichtbar (je Projekt ein eigener Prozess). Der zweikanalige Weg setzt über `Init()` alles zurück |
 | B-2 | **`bhkwGrenzleistungAllgemein /= 100` mutiert ein öffentliches Feld** | Zwei `Berechnung()`-Aufrufe auf derselben Instanz teilen zweimal. `SimulationControl` setzt den Wert vor jedem Lauf neu, deshalb heute ohne Wirkung |
 | B-3 | **Keine Obergrenze für die Modulzahl im Altpfad.** Die Felder sind fest `[10]`; ab dem 11. BHKW läuft `Simulation_BHKW_Ctrl` in eine `IndexOutOfRangeException` | Wie B0-12 beim Kessel. Der zweikanalige Weg begrenzt auf `MAX_BHKW = 10` und meldet das dialogfrei auf die Konsole |
-| B-4 | **Sommerbetrieb und beide Notschaltungen der wärmegeführten Fahrweise sind unerreichbar** (2.1) | Kein Ergebnis betroffen — aber die Absicht des Vorgängercodes (Sommer-/Winterfenster) ist damit seit Langem außer Kraft. Ob sie zurückkehren soll, ist eine fachliche Frage; siehe Nutzerentscheidung 6-2 |
+| B-4 | **Sommerbetrieb und beide Notschaltungen der wärmegeführten Fahrweise sind unerreichbar** (2.1) | Kein Ergebnis betroffen — aber die Absicht des Vorgängercodes (Sommer-/Winterfenster) ist damit seit Langem außer Kraft. **Nutzerentscheidung 6-2 vom 15.08.2026: Sie kehrt nicht zurück** — der tote Code bleibt unverändert stehen, die Regelung läuft über die Speicherschwellen |
 | B-5 | **`SimulationSSP.Berechnung` ist ein Rumpf** (in der Nacharbeit aufgefallen, 13.10 c): Die Schleife über alle 35.040 Viertelstunden setzt `Stromgespeichert[i] = 0` und tut sonst nichts; die aus `Tab_Stromspeicher` gelesene Kapazität wird nicht benutzt | Ein Batteriespeicher rechnet in KEINEM Projekt und in KEINEM der beiden Rechenwege. Die Wechselwirkung mit einem stromgeführten BHKW ist deshalb strukturell null. Kein Paket-6-Effekt; gehört in ein eigenes Paket |
 
 ---
 
-## 10. Offene Nutzerentscheidungen
+## 10. Nutzerentscheidungen — alle entschieden
 
-### 6-1 — Soll der Bilanzfehler auch im Altpfad behoben werden?
+> **Stand 15.08.2026: Dieses Kapitel enthält keine offenen Punkte mehr.** 6-3 und 6-4
+> waren mit der Nacharbeit entschieden, 6-1, 6-2 und 6-5 sind es mit der
+> Nutzerentscheidung vom 15.08.2026. Die Texte bleiben als Begründung stehen; der
+> Entscheidungsstand steht jeweils oben.
+
+### 6-1 — Soll der Bilanzfehler auch im Altpfad behoben werden? · **ENTSCHIEDEN 15.08.2026: ZURÜCKGESTELLT**
+
+**Entscheidung: Variante A bleibt** — der Altpfad-Fix ist **zurückgestellt**, nicht
+verworfen. Begründung des Nutzers: Die Wirkung in der Referenzmenge ist **0** (kein
+Projekt der Datenbank trägt einen Pendelspeicher), und der Altpfad läuft aus — er wird
+mit der Umstellung aller Projekte auf `Kaskade_Zweikanalig` gegenstandslos. Ein
+Altpfad-Fix erzwänge dagegen ein neues Basis-Einfrieren. **Keine Codeänderung.**
 
 **Der Befund.** `SimulationControl.Simulation_BHKW_Ctrl` verwirft den speicherbewussten
 `waermerestbedarf` des BHKW und bildet den Rest als geklemmte Vektordifferenz. Gemessen
@@ -774,13 +795,21 @@ Paket 5 ausdrücklich als „ruht bis Paket 6" ausgewiesen hatte.
 
 | Variante | Wirkung | Preis |
 |---|---|---|
-| **A (umgesetzt)** | Altpfad unverändert, Flag-Disziplin als Rückfallebene | Der Fehler wirkt weiter, sobald ein Projekt einen Pendelspeicher bekommt |
-| B | Altpfad mitkorrigieren | Neues Basis-Einfrieren nötig; sämtliche BHKW-Ergebnisse mit Pendelspeicher ändern sich. Eigenes B0-artiges Paket |
+| **A (umgesetzt, bestätigt)** | Altpfad unverändert, Flag-Disziplin als Rückfallebene | Der Fehler wirkt weiter, sobald ein Projekt einen Pendelspeicher bekommt |
+| B (verworfen) | Altpfad mitkorrigieren | Neues Basis-Einfrieren nötig; sämtliche BHKW-Ergebnisse mit Pendelspeicher ändern sich. Eigenes B0-artiges Paket |
 
 Solange **kein** Projekt der Datenbank einen Pendelspeicher trägt (heute: keines), ist der
-Fehler latent und Variante A ohne praktische Folge.
+Fehler latent und Variante A ohne praktische Folge. **Sollte ein Projekt einen
+Pendelspeicher bekommen, bevor der Altpfad entfällt, ist die Entscheidung neu zu
+stellen** — dann wirkt der Fehler.
 
-### 6-2 — Sollen Sommerbetrieb und Notschaltungen zurückkehren?
+### 6-2 — Sollen Sommerbetrieb und Notschaltungen zurückkehren? · **ENTSCHIEDEN 15.08.2026: NEIN**
+
+**Entscheidung: Variante A** — Sommerbetrieb und Notschaltungen werden **nicht
+reaktiviert**. Der Speicher regelt über `Schwelle_Ein`/`Schwelle_Aus`; ein
+jahreszeitabhängiges Sonderverhalten allein für das BHKW ist fachlich nicht begründet und
+wäre eine Ergebnisänderung in **beiden** Pfaden. **Keine Codeänderung** — der tote Code
+des Altpfads bleibt unverändert stehen, damit der Altpfad byte-identisch bleibt.
 
 **Der Befund.** Die wärmegeführte Fahrweise hat drei Betriebszweige, von denen zwei seit
 der Änderung `if (stunde < 3600 || stunde > 5760)` → `if (stunde < 8760)` unerreichbar
@@ -791,8 +820,8 @@ und der neue Weg bildet die Mindestfüllstände über die Hysterese des Speicher
 
 | Variante | Bewertung |
 |---|---|
-| **A (umgesetzt)** | Der Speicher regelt über `Schwelle_Ein`/`Schwelle_Aus` — jahreszeitunabhängig, projektweise einstellbar, konsistent mit allen anderen Erzeugern |
-| B | Sommer-/Winterfenster wiederbeleben (Stunden 3600…5760) und die drei Schwellen als eigene Parameter einführen | verlangt drei neue Spalten und eine fachliche Klärung, warum ein BHKW im Sommer anders regeln soll als ein Kessel. **Wäre eine echte Ergebnisänderung in beiden Pfaden** |
+| **A (umgesetzt, bestätigt)** | Der Speicher regelt über `Schwelle_Ein`/`Schwelle_Aus` — jahreszeitunabhängig, projektweise einstellbar, konsistent mit allen anderen Erzeugern |
+| B (verworfen) | Sommer-/Winterfenster wiederbeleben (Stunden 3600…5760) und die drei Schwellen als eigene Parameter einführen | verlangt drei neue Spalten und eine fachliche Klärung, warum ein BHKW im Sommer anders regeln soll als ein Kessel. **Wäre eine echte Ergebnisänderung in beiden Pfaden** |
 
 ### 6-3 — Verwendung des BHKW-Pendelspeichers
 
@@ -829,10 +858,17 @@ Stufeneingang. Gemessen am R6-Regelfall: **29,281 MWh statt 141,45 MWh.**
 | C | Rest NACH der ganzen Speicherstufe (das tut die Wärmepumpe) | Mit mehreren Mitgliedern melden alle denselben Wert; der Bezug zum einzelnen Erzeuger geht verloren |
 
 Damit ist auch der offene Punkt der Paket-5-Nacharbeit („Bezugsgröße bei
-Puffer-Hauptsenke") erledigt. **Offen bleibt die Wärmepumpe** — sie meldet weiterhin
-Variante C; siehe Nutzerentscheidung 6-5.
+Puffer-Hauptsenke") erledigt. Die Wärmepumpe ist mit der Nutzerentscheidung 6-5
+nachgezogen (Kapitel 14); **alle vier Erzeugerarten folgen jetzt derselben Regel.**
 
-### 6-5 — Der Restwärmebedarf der WÄRMEPUMPE (in der Nacharbeit neu aufgetaucht)
+### 6-5 — Der Restwärmebedarf der WÄRMEPUMPE · **ENTSCHIEDEN 15.08.2026: VARIANTE B, UMGESETZT**
+
+**Entscheidung: Variante B** — die Wärmepumpe meldet `Restwaermebedarf` nach derselben
+Regel wie Solarthermie, Heizkessel und BHKW (`Stufeneingang − Eigenanteil`, geklemmt
+≥ 0), **nur der Skalar und nur im zweikanaligen Weg**. Die Ganglinie
+`waermerestbedarf_stuendlich` und damit `Min_Spitzenkesselleistung` bleiben unberührt.
+Umsetzung, Begründung des Ganglinien-Unterschieds und Messung stehen in **Kapitel 14**.
+Gemessen an 1024: **46,14 → 246,91 MWh**, wie hier vorgerechnet.
 
 **Der Befund.** Nach der Umstellung aus 6-4 melden in Projekt 1024 alle drei Mitglieder
 denselben `Waermebedarf` (389,73 MWh = Stufeneingang vor Phase A), aber:
@@ -848,16 +884,16 @@ nach Phase F. Mit **einem** Mitglied — dem Fall aller acht übrigen Referenzpr
 das dieselbe Zahl wie `Stufeneingang − Eigenanteil`; erst ab zwei Mitgliedern laufen die
 Größen auseinander. Nach der Regel aus 6-4 müsste sie **246,91 MWh** melden.
 
-**Nicht umgesetzt** — der Auftrag der Nacharbeit nannte ausdrücklich Solarthermie,
+**Zur Nacharbeit nicht umgesetzt** — deren Auftrag nannte ausdrücklich Solarthermie,
 Heizkessel und BHKW. Eine Änderung an der Wärmepumpe hätte zusätzlich
-`waermerestbedarf_stuendlich` betroffen und damit `Min_Spitzenkesselleistung`, die
+`waermerestbedarf_stuendlich` betreffen können und damit `Min_Spitzenkesselleistung`, die
 Ganglinie `wp_restwaerme.csv` und die Altpfad-Formel der Deckung.
 
 | Variante | Wirkung | Preis |
 |---|---|---|
-| **A (Stand heute)** | WP behält Variante C | Bei mehr als einem Stufenmitglied meldet die WP eine andere Größe als Kessel und BHKW — in der Referenzmenge betrifft das nur 1024 |
-| B | WP auf `Stufeneingang − Eigenanteil` umstellen (nur der Skalar in `SimulationRunner`) | 1024: 46,14 → 246,91 MWh. Ganglinie und `Min_Spitzenkesselleistung` blieben unberührt — dann weichen Skalar und Ganglinie voneinander ab (das war Befund N4 beim BHKW) |
-| C | WP vollständig umstellen (Skalar **und** Ganglinie) | zusätzlich `wp_restwaerme.csv` und `Min_Spitzenkesselleistung`; eigenes Paket wert |
+| A (verworfen) | WP behält Variante C | Bei mehr als einem Stufenmitglied meldet die WP eine andere Größe als Kessel und BHKW — in der Referenzmenge betrifft das nur 1024 |
+| **B (ENTSCHIEDEN und umgesetzt)** | WP auf `Stufeneingang − Eigenanteil` umstellen (nur der Skalar in `SimulationRunner`) | 1024: 46,14 → 246,91 MWh. Ganglinie und `Min_Spitzenkesselleistung` bleiben unberührt — Skalar und Ganglinie weichen damit voneinander ab. Anders als beim BHKW (Befund N4) ist das **kein Widerspruch**, sondern der bewusst dokumentierte Unterschied zweier Größen (Kapitel 14) |
+| C (zurückgestellt) | WP vollständig umstellen (Skalar **und** Ganglinie) | zusätzlich `wp_restwaerme.csv` und `Min_Spitzenkesselleistung`; eigenes Paket wert |
 
 ---
 
@@ -924,6 +960,9 @@ geprüft, dass keine `Kenndaten.laccdb` daneben liegt; alle Läufe liefen unter
 Die Nacharbeit zu den Review-Befunden N1–N13 steht in Kapitel 13. Sie hat **vier weitere
 Dateien** berührt, **acht weitere** Ergebnisänderungen mit Flag AN erzeugt (Kapitel 8,
 Zeilen 10–15) und vier Aussagen dieses Protokolls berichtigt (3.1, 3.3, Kapitel 4, 7.7).
+
+**Kapitel 14** steht daneben: die Umsetzung der Nutzerentscheidung 6-5 vom 15.08.2026 —
+eine einzige Datei, eine einzige Ergebnisänderung (Kapitel 8, Zeile 16).
 
 ---
 
@@ -1007,7 +1046,8 @@ Speicherstufe ist EINE Stufe mit EINEM Eingang, und jeder Erzeuger weist seinen 
 daran aus. **Energetisch ändert sich nichts:** Produktion, Speicherumsatz, Restwärme und
 Reststrom des Projekts sind unverändert (13.9).
 
-**Offen geblieben:** die Wärmepumpe — siehe Nutzerentscheidung 6-5.
+**Damals offen geblieben:** die Wärmepumpe. Sie ist mit der Nutzerentscheidung 6-5 vom
+15.08.2026 nachgezogen — Kapitel 14.
 
 ### 13.3 N2 — Temperaturkette und ΔT-Rückfall des Ersatzspeichers
 
@@ -1602,14 +1642,14 @@ denselben Speicher bedienen, verschiebt sich die zugerechnete Entladung zwischen
 
 | # | Punkt | Stand |
 |---|---|---|
-| 1 | **Bilanzfehler im Altpfad** | unverändert offen — Nutzerentscheidung 6-1 |
+| 1 | **Bilanzfehler im Altpfad** | **erledigt** — Nutzerentscheidung 6-1 vom 15.08.2026: zurückgestellt, keine Codeänderung (Kapitel 10) |
 | 2 | **Eine Senke je BHKW-Stufe** | unverändert; jetzt gemessen statt nur protokolliert (13.10 b) |
 | 3 | **`Form_Simulation_Detail` zeigt die Altformeln** | unverändert — Anzeige-Aufgabe, Paket 7. Mit N1/N4 weichen Anzeige und gespeichertes Ergebnis jetzt deutlicher voneinander ab |
 | 4 | **Stromgeführtes BHKW sieht den Strombedarf des Stufeneingangs** | unverändert offen |
 | 5 | **Kein Lade-/Entladeleistungs-Parameter je Speicher** | unverändert offen |
 | 6 | **Konzeptfrage 5-2** (nachgelagerter Erzeuger nimmt den Durchsatz) | unverändert offen; N3 sichert die Ladefähigkeit, **nicht** das Durchsatzbudget (13.4) |
-| 7 | **Zurechnungsregel der Speicherentladung** | unverändert Interimsregel — Nutzerentscheidung 5-1 |
-| 8 | **Restwärmebedarf der WÄRMEPUMPE** | **NEU** — Nutzerentscheidung 6-5 |
+| 7 | **Zurechnungsregel der Speicherentladung** | **erledigt** — Nutzerentscheidung 5-1 am 15.08.2026 **bestätigt**; keine Interimsregel mehr |
+| 8 | **Restwärmebedarf der WÄRMEPUMPE** | **erledigt** — Nutzerentscheidung 6-5 vom 15.08.2026, Variante B umgesetzt (Kapitel 14) |
 | 9 | **Durchsatz nicht persistiert** | **NEU** — `Tab_ErgebnisPufferspeicher` braucht dafür eine Spalte; vorgemerkte Erweiterung (13.7) |
 | 10 | **`SimulationSSP` ist ein Rumpf** | **NEU** — Bestandsbefund B-5 (13.10 c) |
 
@@ -1661,3 +1701,180 @@ abschließenden `-t:Rebuild` und die Wiederholung der Flag-AUS-Regression (208/2
 **Die produktive `Kenndaten.accdb` wurde ausschließlich gelesen.** Vor dem Kopieren wurde
 geprüft, dass keine `Kenndaten.laccdb` daneben liegt; alle Läufe liefen unter
 `C:\Waermeplan\Paket6_Test\` außerhalb des Repos.
+
+---
+
+## 14. Umsetzung der Nutzerentscheidung 6-5 — Restwärmebedarf der Wärmepumpe
+
+Stand: 15.08.2026. Die drei offenen Punkte dieses Pakets sind entschieden; **6-1** und
+**6-2** ohne Codeänderung (Kapitel 10), **6-5** mit der hier beschriebenen. Zusätzlich
+ist die Zurechnungsregel der Speicherentladung mit **5-1** bestätigt worden — auch das
+ohne Codeänderung, dokumentiert in `Paket5_SolarKessel_Protokoll.md`, Kapitel 10.
+
+### 14.1 Die Regel
+
+Die Wärmepumpe war der letzte Erzeuger, der `Restwaermebedarf` nach einer eigenen Regel
+bildete — Variante C, der Rest **nach der gesamten Speicherstufe**. Seit 6-4 melden
+Solarthermie, Heizkessel und BHKW einheitlich:
+
+```
+Waermebedarf         = Stufeneingang VOR Phase A
+Restwaermebedarf     = Stufeneingang − EIGENANTEIL            (geklemmt >= 0)
+Waermebedarfsdeckung = Eigenanteil / Projektbedarf
+```
+
+Für die Wärmepumpe ist der Eigenanteil derselbe, den `SimulationRunner` seit der
+Paket-5-Nacharbeit (N2) für ihre Deckung bildet:
+
+```
+Eigenanteil_WP = Direktdeckung (Phase B) + zugerechnete Speicherentladung + Heizstab
+```
+
+Der Heizstab gehört zur Wärmepumpe (`Tab_WP.Heizung` je Modul), die Zurechnung der
+Entladung folgt der mit 5-1 bestätigten Regel „Vermischung im Speicher". Restbedarf und
+Deckung stammen damit auch bei der Wärmepumpe aus **einer** Größe; sie ist im Code als
+lokale Variable `wpEigen` nur noch einmal ausgerechnet und wird von beiden gelesen.
+
+**Konstruktiv ≥ 0:** Direktdeckung, zugerechnete Entladung und Heizstab stammen alle aus
+demselben Stufeneingang und können ihn zusammen nicht überschreiten. Die Klemmung ist
+Rundungsschutz — sie hat in keinem der neun Läufe gegriffen.
+
+### 14.2 Die Änderung
+
+Eine Datei, `Allgemein/Simulation/SimulationRunner.cs`, im WP-Block von `BaueErgebnis`:
+
+| Stelle | Änderung |
+|---|---|
+| `:164-166` | Kommentar zu B0-7a: Die Jahressumme der Ganglinie ist jetzt der **Altpfad**-Wert |
+| `:185-191` | neue lokale Größe `wpEigen` = (`Direktdeckung_gesamt` + `Speicherentladung_Anteil` + `Heizstab_gesamt`) / 1000 |
+| `:193-233` | Begründungsblock und der eigentliche Fix: `if (sim.KaskadeZweikanalig) { w.Restwaermebedarf = w.Waermebedarf − wpEigen; if (< 0) 0; }` |
+| `:265` | die Deckung liest `wpEigen`, statt denselben Ausdruck ein zweites Mal zu bilden — **bitgleich**, die Operationsfolge `(a+b+c)/1000/basis*100` ist unverändert |
+
+**Der Altpfad ist ausgeschlossen** und das ist kein Vorsichtsflag, sondern zwingend: Im
+Altpfad sind `Direktdeckung_gesamt` und `Speicherentladung_Anteil` exakt 0,
+`Heizstab_gesamt` aber **nicht** — der Ausdruck `Waermebedarf − wpEigen` wäre dort keine
+Bilanz, sondern „Bedarf minus Heizstab". Der Altpfad behält deshalb unverändert
+`waermerestbedarf_gesamt / 1000`.
+
+**Am Rechenweg ist nichts geändert.** `SimulationWaermepumpe.cs` ist unberührt, die drei
+Summanden führte die Engine bereits. In `Kaskadenschleife.cs:103-116` ist allein der
+Kopfkommentar der Zurechnungsregel nachgeführt (sie heißt seit der Bestätigung von 5-1
+nicht mehr „Interimsregel") — eine reine Kommentaränderung ohne Wirkung auf ein Ergebnis,
+nachgewiesen durch die Flag-AUS-Regression nach dem abschließenden Build.
+
+### 14.3 Skalar und Ganglinie — der bewusst dokumentierte Unterschied
+
+Die Ganglinie `waermerestbedarf_stuendlich` (Export `wp_restwaerme.csv`) und die daraus
+gebildete `Min_Spitzenkesselleistung` bleiben unverändert. Das ist die Variante B der
+Entscheidung und **kein zweiter Fall von Befund N4**:
+
+* Beim BHKW (N4) meldeten Skalar und Ganglinie **dieselbe** Größe in zwei verschiedenen
+  Fassungen — der Skalar an der BHKW-Position, die Ganglinie als Projektrest. Das war ein
+  Widerspruch und ist behoben.
+* Bei der Wärmepumpe sind es seit 6-5 **zwei verschiedene Größen mit je eigener Frage:**
+
+| Größe | Frage | 1024 |
+|---|---|---|
+| `Tab_ErgebnisWaermepumpe.Restwaermebedarf` (Skalar) | Wieviel des Stufeneingangs hat **diese Anlage** nicht gedeckt? | 246,91 MWh |
+| `wp_restwaerme.csv` / `Min_Spitzenkesselleistung` (Ganglinie) | Wieviel bleibt nach **allen** Erzeugern offen — was muss ein Spitzenkessel können? | 46,14 MWh, Spitze 121,96 kW |
+
+Für die Auslegung eines Spitzenkessels ist der **Projektrest** die richtige Bezugsgröße:
+Er muss decken, was nach Wärmepumpe, Kessel und BHKW offen bleibt, nicht den
+rechnerischen Anteil der Wärmepumpe. Die Ganglinie an die WP-Position zu ziehen
+(Variante C) würde `Min_Spitzenkesselleistung` verändern und wäre eine Ergebnisänderung
+ohne fachlichen Gewinn. Der Unterschied ist im Code an der Fundstelle vermerkt
+(`SimulationRunner.cs:216-228`) und tritt nur bei **mehr als einem** Stufenmitglied auf —
+in der Referenzmenge also nur in 1024.
+
+Kein weiterer Verbraucher ist betroffen: `Restwaermebedarf` der Wärmepumpe wird
+ausschließlich von `ErgebnisCtrl` gespeichert und gelesen (`:181`, `:541`);
+`Form_Simulation_Detail` zeigt weiterhin ihre eigene Altformel (offener Punkt 3 aus
+13.13, Anzeige-Aufgabe von Paket 7).
+
+### 14.4 Verifikation
+
+**Flag AUS — Pflichtregression, 9/9 PASS.** Alle 208 CSV-Dateien der neun
+Referenzprojekte sind gegen `Referenzlaeufe/2026-08-14_B1-Fixes` **MD5-identisch**
+(0 abweichend, 0 fehlend); `vergleich` meldet PASS über 2.295.993 Werte, `pruefen` meldet
+„plausibel". Der Altpfad ist unberührt.
+
+**Flag AN — genau eine geänderte Größe in genau einem Projekt.** Verglichen wurde Datei
+für Datei (MD5) gegen einen frisch gerechneten Lauf des HEAD-Stands auf derselben
+Datenbank `DB_Flag`:
+
+| Projekt | Stufenmitglieder | `Waermepumpe.Restwaermebedarf` vorher | nachher |
+|---|---|---|---|
+| 1007 | WP | 6,05 MWh | 6,05 MWh (unverändert) |
+| 1008 | WP | 19,63 MWh | 19,63 MWh (unverändert) |
+| 1010 | WP | 0 MWh | 0 MWh (unverändert) |
+| 1011 | WP | 4.829,36 MWh | 4.829,36 MWh (unverändert) |
+| 1017 | BHKW (keine WP) | — | — |
+| 1018 | BHKW (keine WP) | — | — |
+| 1021 | WP | 0 MWh | 0 MWh (unverändert) |
+| 1023 | WP | 192,17 MWh | 192,17 MWh (unverändert) |
+| **1024** | **WP + Kessel + BHKW** | **46,14 MWh** | **246,91 MWh** |
+
+Von 208 verglichenen Dateien weicht **eine** ab — `Projekt_1024\aggregate.csv` — und dort
+**eine einzige Zeile**:
+
+```
+<= Waermepumpe.Restwaermebedarf;46.14
+=> Waermepumpe.Restwaermebedarf;246.91
+```
+
+Die Erwartung aus 6-5 („246,91 MWh") ist damit exakt getroffen. Dass die acht übrigen
+Projekte **bis auf die letzte ausgewiesene Stelle** unverändert bleiben, ist der
+rechnerische Beleg der Aussage aus 6-5: Mit genau einem Stufenmitglied ist
+„Stufeneingang − Eigenanteil" dieselbe Zahl wie der Rest nach der Stufe.
+
+**Was sich nicht geändert hat** (`Probe6` über alle neun Projekte, Flag AN):
+
+| Nachweis | Ergebnis |
+|---|---|
+| Energiegrößen (Produktion, Strom, Brennstoff, Restwärme/Reststrom des Projekts) | unverändert — 1024 weiter 46,135532 MWh Restwärme / 405,958923 MWh Reststrom |
+| `Waermebedarfsdeckung` aller Erzeuger | unverändert; 1024 WP 36,645548 %, Kessel 10,492563 %, BHKW 41,024054 % |
+| Deckungssumme gegen tatsächliche Projektdeckung | 1024: 88,162164 % gegen 88,162172 % — Differenz −8,1·10⁻⁶; größte Abweichung aller neun Projekte 3,7·10⁻⁴ (1011). Keine Doppelzählung |
+| `StundeAbschliessen` | **8760/8760** an jedem Speicher (1008, 1021, 1023, 1024) |
+| Speicherbilanzen | 1024 Puffer 1054164: Bilanzfehler −6,5·10⁻¹⁰; 1023: −5,1·10⁻⁹; 1008: −3,3·10⁻¹⁰ |
+| Stundenbilanz des Projekts | max 1,5·10⁻⁵ kWh (1024, Stunde 1290) |
+| `Min_Spitzenkesselleistung` und `wp_restwaerme.csv` | unverändert — bewusst, siehe 14.3 |
+
+**Konsistenz im WP-Block.** `Waermebedarf` (389,730 MWh Stufeneingang vor Phase A),
+`Restwaermebedarf` (246,911) und `Waermebedarfsdeckung` (36,6455 % von 389,730 =
+142,819 MWh Eigenanteil) gehen in 1024 exakt auf: 389,730 − 142,819 = 246,911. Vor der
+Änderung standen 46,14 MWh Rest neben 36,65 % Deckung — dieselbe Art von Widerspruch, die
+6-4 für Kessel und BHKW beseitigt hat.
+
+### 14.5 Reproduktion
+
+```powershell
+$msb = "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe"
+& $msb C:\Waermeplan\WP_Plan\WP-Plan.sln                      -p:Configuration=Debug -p:Platform=x86
+& $msb C:\Waermeplan\WP_Plan\Referenzlauf\Referenzlauf.csproj -p:Configuration=Debug -p:Platform=x86
+# 0 Fehler, 6 Bestandswarnungen
+
+$exe   = "C:\Waermeplan\WP_Plan\Referenzlauf\bin\x86\Debug\net8.0-windows\Referenzlauf.exe"
+$probe = "<Scratchpad>\Probe6\bin\x86\Debug\net8.0-windows\Probe6.exe"
+$ids   = 1007,1008,1010,1011,1017,1018,1021,1023,1024
+
+# 1. HEAD-Basis mit Flag AN - VOR der Aenderung rechnen
+foreach ($id in $ids) { & $exe projekt $id "C:\Waermeplan\Paket65_Test\HEAD_An\Projekt_$id" C:\Waermeplan\Paket6_Test\DB_Flag }
+
+# 2. Nach der Aenderung: Flag AUS gegen die eingefrorene Basis
+foreach ($id in $ids) { & $exe projekt $id "C:\Waermeplan\Paket65_Test\Neu_Aus\Projekt_$id" C:\Waermeplan\Paket6_Test\DB_Basis }
+& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-14_B1-Fixes C:\Waermeplan\Paket65_Test\Neu_Aus
+& $exe pruefen   C:\Waermeplan\Paket65_Test\Neu_Aus
+# zusaetzlich MD5 ueber alle 208 CSV -> 0 abweichend
+
+# 3. Nach der Aenderung: Flag AN gegen die HEAD-Basis (MD5 je Datei)
+foreach ($id in $ids) { & $exe projekt $id "C:\Waermeplan\Paket65_Test\Neu_An\Projekt_$id" C:\Waermeplan\Paket6_Test\DB_Flag }
+# -> genau eine abweichende Datei: Projekt_1024\aggregate.csv, genau eine Zeile
+
+# 4. Bilanzen, Abschluesse, Eigenanteile, Deckungssumme (rechnet, speichert NICHT)
+& $probe C:\Waermeplan\Paket6_Test\DB_Flag 1007,1008,1010,1011,1017,1018,1021,1023,1024
+```
+
+`DB_Basis` und `DB_Flag` sind die Datenbankkopien der Paket-6-Nacharbeit unter
+`C:\Waermeplan\Paket6_Test\` — außerhalb des Repos. **Die produktive `Kenndaten.accdb`
+wurde in dieser Etappe nicht einmal geöffnet**; es sind ausschließlich die vorhandenen
+Kopien benutzt worden. **Nicht committet.**
