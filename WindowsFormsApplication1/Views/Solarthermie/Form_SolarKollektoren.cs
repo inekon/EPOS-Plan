@@ -365,25 +365,27 @@ namespace WindowsFormsApplication1
             Close();
         }
 
+        // TextChanged faerbt nur noch (Program.GanzzahlFaerben), gemeldet wird erst
+        // beim Speichern-Knopf. Das alte checkDouble()+Undo()+ClearUndo() war die
+        // Notloesung gegen die Endlosmeldung - Begruendung in Program.cs.
         private void textBox_Anzahl_TextChanged(object sender, EventArgs e)
         {
-            if (!Program.checkDouble(textBox_Anzahl, textBox_Anzahl.Text))
+            Program.GanzzahlFaerben(sender);
+
+            // Aperturflaeche nur nachfuehren, wenn beide Werte lesbar sind; sonst
+            // bleibt die bisherige Anzeige stehen.
+            int anzahl;
+            double modulApertur;
+            if (Program.GanzzahlParsen(textBox_Anzahl.Text, out anzahl) &&
+                Program.ZahlParsen(textBox_Modul_Apertur.Text, out modulApertur))
             {
-                textBox_Anzahl.Undo();
-                textBox_Anzahl.ClearUndo();
-                return;
+                textBox_Aperturflaeche.Text = (modulApertur * anzahl).ToString();
             }
-            textBox_Aperturflaeche.Text = (double.Parse(textBox_Modul_Apertur.Text) * Int32.Parse(textBox_Anzahl.Text)).ToString();
         }
 
         private void textBox_Kollektorneigung_TextChanged(object sender, EventArgs e)
         {
-            if (!Program.checkDouble(textBox_Kollektorneigung, textBox_Kollektorneigung.Text))
-            {
-                textBox_Kollektorneigung.Undo();
-                textBox_Kollektorneigung.ClearUndo();
-                return;
-            }
+            Program.GanzzahlFaerben(sender);
         }
 
         private void btn_Speichern_Click(object sender, EventArgs e)
@@ -391,11 +393,20 @@ namespace WindowsFormsApplication1
             WErzeugerModel m = GetSelectedSolar();
             if (m != null && m.ID_Type == WizardItemClass.SOLAR_TYP)
             {
-                m.Kollektormodulanzahl = textBox_Anzahl.Text == "" ? 0 : Int32.Parse(textBox_Anzahl.Text);
-                m.m_Neigung = textBox_Kollektorneigung.Text == "" ? 0 : Int32.Parse(textBox_Kollektorneigung.Text);
-                m.m_Azimut = textBox_Azimut.Text == "" ? 0 : Int32.Parse(textBox_Azimut.Text);
-                m.Vorlauf = textBox_Vorlauf.Text == "" ? 0 : Int32.Parse(textBox_Vorlauf.Text);
-                m.Ruecklauf = textBox_Ruecklauf.Text == "" ? 0 : Int32.Parse(textBox_Ruecklauf.Text);
+                // Pruefung erst hier: leer gilt wie bisher als 0, bei ungueltigem
+                // Text meldet GanzzahlPruefen und die Seite bleibt unveraendert.
+                int anzahl, neigung, azimut, vorlauf, ruecklauf;
+                if (!Program.GanzzahlPruefen(textBox_Anzahl, "Modulanzahl", out anzahl, true)) return;
+                if (!Program.GanzzahlPruefen(textBox_Kollektorneigung, "Neigung [°]", out neigung, true)) return;
+                if (!Program.GanzzahlPruefen(textBox_Azimut, "Azimut [°]", out azimut, true)) return;
+                if (!Program.GanzzahlPruefen(textBox_Vorlauf, "Vorlauf", out vorlauf, true)) return;
+                if (!Program.GanzzahlPruefen(textBox_Ruecklauf, "Rücklauf", out ruecklauf, true)) return;
+
+                m.Kollektormodulanzahl = anzahl;
+                m.m_Neigung = neigung;
+                m.m_Azimut = azimut;
+                m.Vorlauf = vorlauf;
+                m.Ruecklauf = ruecklauf;
                 pictureBox1.Visible = true;
                 pictureBox1.Refresh();
                 Thread.Sleep(500);
@@ -471,20 +482,29 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // Validating faerbt nur noch; das Modell wird wie bisher nur unter der
+        // vorhandenen ID_Type-Bedingung nachgefuehrt, jetzt aber nur bei lesbarer
+        // Ganzzahl (frueher Int32.Parse ungeschuetzt). Geprueft wird beim Speichern.
         private void textBox_Ruecklauf_Validating(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Ruecklauf, textBox_Ruecklauf.Text)) { textBox_Ruecklauf.Undo(); }
+            Program.GanzzahlFaerben(sender);
+
+            int ruecklauf;
             WErzeugerModel m = GetSelectedSolar();
-            if (m != null && m.ID_Type == WizardItemClass.BHKW_TYP)
-                m.Ruecklauf = Int32.Parse(textBox_Ruecklauf.Text);
+            if (m != null && m.ID_Type == WizardItemClass.BHKW_TYP &&
+                Program.GanzzahlParsen(textBox_Ruecklauf.Text, out ruecklauf))
+                m.Ruecklauf = ruecklauf;
         }
 
         private void textBox_Vorlauf_Validating(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Vorlauf, textBox_Vorlauf.Text)) { textBox_Vorlauf.Undo(); }
+            Program.GanzzahlFaerben(sender);
+
+            int vorlauf;
             WErzeugerModel m = GetSelectedSolar();
-            if (m != null && m.ID_Type == WizardItemClass.BHKW_TYP)
-                m.Vorlauf = Int32.Parse(textBox_Vorlauf.Text);
+            if (m != null && m.ID_Type == WizardItemClass.BHKW_TYP &&
+                Program.GanzzahlParsen(textBox_Vorlauf.Text, out vorlauf))
+                m.Vorlauf = vorlauf;
         }
 
         private void dataGridView1_Leave(object sender, EventArgs e)

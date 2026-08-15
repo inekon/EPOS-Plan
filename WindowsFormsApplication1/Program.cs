@@ -214,6 +214,100 @@ namespace WindowsFormsApplication1
             return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out wert);
         }
 
+        /// <summary>
+        /// Ganzzahl-Gegenstück zu <see cref="ZahlParsen"/>: invariant geparst.
+        /// Komma und Punkt sind hier bewusst KEINE gültigen Zeichen - es geht um
+        /// Stückzahlen, Tage, Nutzungsdauern und ganze Grad.
+        /// </summary>
+        public static bool GanzzahlParsen(string text, out int wert)
+        {
+            wert = 0;
+            if (string.IsNullOrEmpty(text)) return false;
+            return int.TryParse(text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out wert);
+        }
+
+        // ------------------------------------------------------------------
+        // Folgepaket zu ab5bf32: Eingabeprüfung weg vom TextChanged.
+        //
+        // TextChanged färbt nur noch (ZahlFaerben/GanzzahlFaerben), gemeldet
+        // wird erst beim OK-/Übernehmen-Knopf (ZahlPruefen/GanzzahlPruefen nach
+        // dem Muster ProjektPuffer.TemperaturenPruefen: TryParse, sprechende
+        // Meldung, Fokus+SelectAll, der Aufrufer lässt den Dialog offen).
+        // Abbrechen bleibt dadurch immer frei.
+        // ------------------------------------------------------------------
+
+        /// <summary>Hinweisfarbe für Felder, deren Text gerade keine Zahl ist.</summary>
+        private static readonly Color FarbeFehleingabe = Color.FromArgb(255, 235, 235);
+
+        /// <summary>
+        /// TextChanged-Begleiter: färbt das Feld, statt modal zu melden. Ein
+        /// leeres Feld gilt als neutral - ob leer erlaubt ist, entscheidet die
+        /// Knopf-Prüfung des jeweiligen Dialogs.
+        /// </summary>
+        public static void ZahlFaerben(object sender)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb == null) return;
+
+            double wert;
+            bool bOk = tb.Text.Trim().Length == 0 || ZahlParsen(tb.Text, out wert);
+            tb.BackColor = bOk ? SystemColors.Window : FarbeFehleingabe;
+        }
+
+        /// <summary>Wie <see cref="ZahlFaerben"/>, nur für Ganzzahlfelder.</summary>
+        public static void GanzzahlFaerben(object sender)
+        {
+            TextBox tb = sender as TextBox;
+            if (tb == null) return;
+
+            int wert;
+            bool bOk = tb.Text.Trim().Length == 0 || GanzzahlParsen(tb.Text, out wert);
+            tb.BackColor = bOk ? SystemColors.Window : FarbeFehleingabe;
+        }
+
+        /// <summary>
+        /// Knopf-Prüfung für ein Dezimalzahlfeld: TryParse (Komma oder Punkt),
+        /// bei Fehler sprechende Meldung + Fokus + SelectAll und 'false' - der
+        /// Aufrufer kehrt dann zurück und lässt den Dialog offen.
+        /// </summary>
+        /// <param name="leerErlaubt">true: ein leeres Feld gilt als 0 (bisheriges
+        /// Verhalten der Speicherwege mit convertTxt2Double bzw. '"" ? 0').</param>
+        public static bool ZahlPruefen(TextBox feld, string bezeichnung, out double wert, bool leerErlaubt = false)
+        {
+            wert = 0.0;
+            if (feld == null) return true;
+
+            string text = feld.Text.Trim();
+            if (text.Length == 0 && leerErlaubt) return true;
+            if (text.Length != 0 && ZahlParsen(text, out wert)) return true;
+
+            MessageBox.Show("Eingaben überprüfen: \"" + feld.Text + "\"" + Environment.NewLine +
+                            "Bitte für \"" + bezeichnung + "\" eine Zahl eingeben " +
+                            "(Dezimaltrennzeichen Komma oder Punkt).",
+                            "Ungültige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            feld.Focus();
+            feld.SelectAll();
+            return false;
+        }
+
+        /// <summary>Wie <see cref="ZahlPruefen"/>, nur für Ganzzahlfelder.</summary>
+        public static bool GanzzahlPruefen(TextBox feld, string bezeichnung, out int wert, bool leerErlaubt = false)
+        {
+            wert = 0;
+            if (feld == null) return true;
+
+            string text = feld.Text.Trim();
+            if (text.Length == 0 && leerErlaubt) return true;
+            if (text.Length != 0 && GanzzahlParsen(text, out wert)) return true;
+
+            MessageBox.Show("Eingaben überprüfen: \"" + feld.Text + "\"" + Environment.NewLine +
+                            "Bitte für \"" + bezeichnung + "\" eine ganze Zahl eingeben.",
+                            "Ungültige Eingabe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            feld.Focus();
+            feld.SelectAll();
+            return false;
+        }
+
         public static double convertTxt2Double(string txt)
         {
             if (txt != "")
