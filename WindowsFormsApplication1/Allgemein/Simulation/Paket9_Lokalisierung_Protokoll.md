@@ -405,14 +405,24 @@ B0-11). Beim Umbau in L4 muss die Reihenfolge der beiden Vergleiche erhalten ble
 
 ### 4.6 Zusätzlicher Befund: 43 verwaiste Einträge in `Form_Simulation_Config.en-US.resx`
 
-Der en-US-Satellit enthält 43 Einträge für **16 Steuerelemente, die es nicht mehr gibt**
-(`groupBox1`–`groupBox6`, `label5`, `label10`, `label13`, `label15`, `label17`, `label18`,
-`label20`, `label57`, `checkBox_Heizstab`, `btn_Strom_Simu_Start`). Für jedes wurde geprüft:
-**null Treffer** in `Form_Simulation_Config.cs`, `.Designer.cs` und `.Uebersicht.cs`.
+Der en-US-Satellit enthält 43 Einträge für **28 Steuerelemente, die es nicht mehr gibt**
+(`groupBox1`–`groupBox6`, `label5`, `label6`, `label10`, `label13`, `label14`, `label15`,
+`label17`, `label18`, `label20`, `label57`, `checkBox_Heizstab`, `btn_Strom_Simu_Start`,
+`comboBox_Bereitschaft`, `comboBox_Stromspeicher_LadeenergieMax_auswahl`,
+`comboBox7_Stromspeicher_LadeleistungMax_auswahl`,
+`comboBox8_Stromspeicher_LadeenergieMin_auswahl`, `textBox_Netzverluste`,
+`textBox_Speicher_Ladeschwelle`, `textBox_untere_PGrenze`,
+`textBox_Stromspeicher_Ladeenergie_max`, `textBox_Stromspeicher_Ladeenergie_min`,
+`textBox_Stromspeicher_Ladeleistung_max`). Für jedes wurde geprüft: **null Treffer** in
+`Form_Simulation_Config.cs`, `.Designer.cs` und `.Uebersicht.cs`.
+
+> **Berichtigt in der Nacharbeit (Abschnitt 25.4).** Hier stand „16 Steuerelemente" — gezählt
+> waren nur die Namen mit einem `.Text`-Eintrag. Die 43 Einträge verteilen sich tatsächlich auf
+> **28** Steuerelemente; die übrigen 12 tauchen nur mit `.Location` oder `.Size` auf.
 
 Sie sind wirkungslos, weil `ApplyResources` für diese Namen nie aufgerufen wird. Entfernt
 wurden sie **nicht** — der Auftrag für L1 war ausdrücklich additiv. **Aufräumkandidat für
-Etappe 2.**
+Etappe 2.** *(In der Nacharbeit erledigt, Abschnitt 25.4.)*
 
 ---
 
@@ -1797,7 +1807,14 @@ Form_Simulation_Detail  UTF8-BOM  CRLF      leere Plus-Zeilen im Diff: 0
    `VDI4640Pruefung.cs`, `ErdreichTemperatur.cs` sowie die zwei Reststellen in
    `WaermesenkeClass.cs`. Das ist eine eigene Katalogerhebung (L2-Nachtrag) plus Umbau
    — nicht Teil dieses Auftrags.
+
+   > **Berichtigt und neu gefasst in Abschnitt 25.11 (a).** `ErdreichAuswertung.cs`,
+   > `VDI4640Pruefung.cs` und `ErdreichTemperatur.cs` gehören **nicht** in diese Liste — dort
+   > waren die 41 Schlüssel längst vorhanden, es fehlte nur die Anbindung (in der Nacharbeit
+   > erledigt). Und der verbleibende Block ist kein Übersetzungsproblem, sondern ein
+   > Kanalproblem: rund 50 `Console.WriteLine` laufen am Protokollkanal aus Paket 8 vorbei.
 2. **`richTextBox_Info.Text` in `Form_Simulation_Detail` ist nicht übersetzt.**
+   *(Erledigt in der Nacharbeit, Abschnitt 25.5 — der neutrale Eintrag ist Klartext, kein RTF.)*
    Der Erklärtext zu den drei BHKW-Betriebsarten steht in der **neutralen** `.resx` des
    Formulars; `Form_Simulation_Detail.en-US.resx` (240 Einträge) kennt ihn nicht. Die
    drei Suchbegriffe für den Fettdruck kommen jetzt aus dem Katalog
@@ -1817,10 +1834,15 @@ Form_Simulation_Detail  UTF8-BOM  CRLF      leere Plus-Zeilen im Diff: 0
 5. **Bestandsübersetzungen** von `Form_Simulation_Config.en-US.resx` und
    `Form_KonfigPufferspeicher.en-US.resx` widersprechen weiter dem Glossar
    („buffer memory", „producer") — Punkt 4 aus Abschnitt 13, unverändert.
+   *(Für `Form_Simulation_Config.en-US.resx` erledigt, Abschnitt 25.3;
+   `Form_KonfigPufferspeicher.en-US.resx` und `Form_Simulation_Detail.en-US.resx`
+   stehen weiter aus — siehe Abschnitt 26.)*
 6. **43 verwaiste Einträge** in `Form_Simulation_Config.en-US.resx` — Punkt 5 aus
-   Abschnitt 13, unverändert.
+   Abschnitt 13, unverändert. *(Erledigt in der Nacharbeit, Abschnitt 25.4; es sind
+   43 Einträge auf 28 Steuerelementen, nicht auf 16.)*
 7. **Zeilenenden** (jetzt 3 der geänderten Dateien mit LF) und **Encoding-Baustellen
    außerhalb des Simulationsbereichs** — unverändert.
+   *(Geschlossen bzw. erledigt, Abschnitt 25.11 g und 25.10.)*
 8. **`Form_Simulation_Config` erbt nicht von `BaseForm`.** Das ist der Grund, warum das
    Muster aus `d49075e` hier nicht greift (Abschnitt 19.1) — und zugleich der Grund,
    warum der Dialog ohne `MinimumSize` beliebig klein gezogen werden konnte. Die neue
@@ -1845,3 +1867,530 @@ Form_Simulation_Detail  UTF8-BOM  CRLF      leere Plus-Zeilen im Diff: 0
   Monatsnamen-Umstellung in `DashboardForm` liest `CurrentUICulture`, sie setzt nichts.
 - **Registry nicht angefasst.** Der Sprachtest lief über `EPOS_REFLAUF_UICULTURE`.
 - **Produktive Datenbank nur lesend** benutzt (über die Arbeitskopie der Suite).
+
+---
+
+# Nachtrag L8 — Regelverankerung und Prüfrezeptur
+
+**Stand: 15.08.2026, nachgetragen im Review zu `97183a2`.** L8 verlangt zwei Dinge, die bis
+dahin offen waren: die Drei-Schichten-Regel in der `CLAUDE.md` und eine „Build-Prüfung gegen
+neue Hardcodings".
+
+## 23. Drei-Schichten-Regel in der `CLAUDE.md`
+
+Konzept 13.6 sagt ausdrücklich: „Diese Regel gehört in `CLAUDE.md`, damit sie in künftigen
+Arbeitssitzungen erhalten bleibt." Sie stand dort bis zu diesem Nachtrag **nicht** — weder in
+der Wurzel-`CLAUDE.md` noch in der des Anwendungsprojekts.
+
+Ergänzt im Abschnitt **Konventionen** von
+[`WindowsFormsApplication1/CLAUDE.md`](../../CLAUDE.md): Persistenz deutsch und eingefroren
+über `Allgemein/DbWerte.cs`, Schlüssel sprachneutral und ASCII, Anzeige ausschließlich über
+`MyResource.Resource.*`, Verweis auf `Lokalisierung_Katalog.md` und auf die Prüfrezeptur.
+Kein Anzeigetext darf Steuerwert sein.
+
+## 24. Statt eines Analyzers: eine Prüfrezeptur
+
+Ein Roslyn-Analyzer ist für diesen Bestand **überzogen**: Er müsste je Zeichenkette
+entscheiden, ob sie Anzeige, Schlüssel, SQL-Fragment, Spaltenname oder Diagnoseausgabe ist —
+eine Unterscheidung, die die Abschnitte 2, 5.3, 9.5, 12.6 und 20.5 dieses Protokolls von Hand
+und mit Begründung treffen. Mechanisiert ergäbe das entweder Dutzende Fehlalarme pro Build
+oder eine Unterdrückungsliste, die den Analyzer wirkungslos macht.
+
+Stattdessen liegt neben dem Katalog
+[`Lokalisierung_Pruefung.md`](Lokalisierung_Pruefung.md) mit **sechs wiederholbaren
+Prüfungen** samt fertigen Befehlen: P1 neue hartkodierte Anzeigetexte, P2 Anzeigetext als
+Steuerwert (Muster B0-9/B0-10/B0-11), P3 Persistenzwerte als Literal, P4 Katalog-Gleichstand
+`.resx` ↔ `.resx` ↔ `Designer`, P5 Kodierung/BOM/Mojibake, P6 Sprachgleichheitslauf als
+harte Laufzeitprobe.
+
+**Einmal ausgeführt auf `97183a2`**; der Ist-Stand steht im letzten Abschnitt jener Datei.
+Zusammengefasst: P2, P3, P4 und P6 ohne Befund (P4 541/541/541, P6 208/208 byte-identisch in
+beiden Sprachen). P1 findet in den Views **keinen** benutzersichtbaren deutschen Text mehr;
+die 28 verbleibenden Fundstellen liegen sämtlich in `Allgemein/Simulation/` und sind der
+bereits benannte offene Punkt (Abschnitt 21, Punkt 1). P5 meldet **einen neuen, kleinen
+Befund**: vier `Views/*/…en-US.resx` und `WindowsFormsApplication1.csproj` tragen keine BOM
+und verletzen damit die mit L0 eingeführte `.editorconfig` — fachlich unkritisch (die
+XML-Deklaration trägt `encoding="utf-8"`), aber Visual Studio zieht sie beim nächsten
+Speichern unprotokolliert nach. Nachzuholen, wenn diese Dateien ohnehin angefasst werden
+(offene Punkte 5 und 6 aus Abschnitt 21 betreffen genau zwei davon).
+
+---
+
+# Nacharbeit — konsolidierte Behebung der beiden Paket-9-Reviews
+
+**Stand: 15.08.2026, unkommittiert auf `97183a2`.** Die beiden Reviews zu Paket 9 haben neun
+Befunde geliefert (drei ERNST, fünf GERING, einer rein dokumentarisch). Dieser Abschnitt hält
+fest, was daraus geworden ist — einschließlich der zwei Stellen, an denen die Messung dem
+Befund widerspricht.
+
+## 25. Nacharbeit
+
+### 25.1 N1 — 41 fertig übersetzte, nicht verdrahtete Katalogschlüssel angeschlossen
+
+Der größte der drei ERNST-Befunde und zugleich der billigste: Die Schlüssel lagen seit L2 mit
+deutschem **und** englischem Wert im Katalog, im Quelltext stand aber weiter das Literal. Es
+fehlte nur die Anbindung.
+
+| Datei | Stellen | Wie |
+|---|---:|---|
+| `ErdreichTemperatur.cs:158-198` | 13 | Der Bodentyp-Katalog trägt in Spalte 2 jetzt den **Ressourcenschlüssel** statt des deutschen Texts (neues Feld `Bodenkennwerte.AnzeigeSchluessel`). `Untergrund` ist vom Feld zur **Eigenschaft** geworden und löst bei jedem Zugriff über `Resource.ResourceManager.GetString` auf — nicht bei der Initialisierung des `static readonly`-Arrays, sonst fröre die Sprache auf den ersten Zugriff ein. |
+| `ErdreichTemperatur.cs:471-486` | 1 | `Kennwerte.Zeile()` auf `SIMQ_PROFIL_KENNWERTE_ZEILE`; die Formatangabe `F1` bleibt im Quelltext und wird **vor** dem Einsetzen angewandt (Lesehinweis des Katalogs). |
+| `VDI4640Pruefung.cs:267-500` | 14 | `Pruefzeile.Text()` und die Zweige von `PruefeKollektor`/`PruefeSonde`. Die Ausrichtung `{0,-18}` des alten Musters ist als `PadRight(18)`, die Grenzwertdarstellung `{2:0.#}` als `ToString("0.#")` in den Quelltext gewandert. |
+| `ErdreichAuswertung.cs:87-200, 320-370` | 13 | `Kurztext()`, `Frosttext()`, die drei `Grenze`-Texte und der Ersatzname `Anlage {0}`. `FROST_NORMBASIS` war eine `public const string` — eine Konstante kann nicht übersetzen; sie ist jetzt eine statische Eigenschaft auf `SIMQ_FROST_NORMBASIS`. |
+
+**Drei-Schichten-Prüfung je Stelle, mit zwei Ausnahmen als Ergebnis:**
+
+- **Bodentyp-ComboBox — risikofrei bestätigt.** Lese- und Schreibweg laufen über den
+  **Index** (`Form_QuelleErdreich.cs:427` setzt `SelectedIndex` aus `KatalogIndex(Bodentyp)`,
+  `:560` liest `Katalog[SelectedIndex].Schluessel`). Der Anzeigetext ist an keiner Stelle
+  Steuerwert. Der Harness prüft den Rundlauf in beiden Sprachen: 13 von 13 Indizes gleich,
+  Katalogschlüssel sprachunabhängig.
+- **`VDI4640Pruefung.Bodenarten` bleibt deutsch.** „Sand", „Sandiger Ton", „Lehm", „Schluff"
+  sind **Steuerwerte** — `BodenartIndex()` sucht darüber die Spalte der Tabelle A2. Sie
+  erscheinen als Platzhalter in `SIMQ_VDI4640_GRUNDLAGE_KOLLEKTOR` und
+  `SIMQ_ERDREICH_BODENKENNWERTE`; die englische Meldung mischt dort die Sprachen. Umgestellt
+  wurde deshalb **nur der Rahmensatz**.
+- **`MONATSKUERZEL` bleibt deutsch.** Für Monatsnamen gibt es bewusst keinen Katalogeintrag,
+  und `CultureInfo` liefert im Deutschen „Mrz" statt „Mär" — die Umstellung hätte die deutsche
+  Anzeige verändert. Siehe 25.7.
+
+**Ein Nebenbefund, der dabei aufgefallen ist:** Der `#if DEBUG`-Selbsttest in
+`VDI4640Pruefung.cs:722` prüfte den Klemmungs-Hinweis mit
+`Hinweis.IndexOf("außerhalb des kodierten Tabellenbereichs …")` — also gegen ein **deutsches
+Literal**. Mit der Übersetzung wäre der Selbsttest auf englischer Oberfläche stillschweigend
+fehlgeschlagen. Er vergleicht jetzt gegen den Katalogeintrag.
+
+### 25.2 N2 — `ChartManager.cs` in den Lokalisierungsumfang
+
+`Allgemein/GrafikTools/ChartManager.cs` lag außerhalb des in L2 gezogenen Bereichs, liefert
+aber die Achsentitel **aller** Diagramme des Simulationsbereichs.
+
+**(a) Der Achsentitel der Aufrufer wurde überschrieben.** `FormatXAxisWithDate()` setzte hart
+`ca.AxisX.Title = "Zeitverlauf (Monate)"`. Von den acht lokalisierten `XAxisTitle`-Zuweisungen
+liefen **sechs** über genau diesen Zweig und zeigten deshalb weiter den deutschen Text:
+
+| Aufrufer | Achse | vorher | jetzt |
+|---|---|---|---|
+| `Form_Simulation_Detail.cs:1670, 1694, 1909` | Datum | „Zeitverlauf (Monate)" | `CHART_ACHSE_JAHRESSTUNDEN` |
+| `Form_Simulation_Detail.cs:1953` | Datum | „Zeitverlauf (Monate)" | `CHART_ACHSE_MONATE` |
+| `NavigatorStrom.cs:155`, `NavigatorWaerme.cs:240` | Datum | „Zeitverlauf (Monate)" | `CHART_ACHSE_MONATE` |
+| `Form_Simulation_Detail.cs:2000` | Zahl | schon richtig | unverändert |
+| `Form_Simulation_Detail.cs:1818` | XY | schon richtig | unverändert |
+
+Der Titel wird jetzt nur noch gesetzt, wenn `XAxisTitle` **leer** ist; dann greift
+`CHART_ACHSE_MONATE`. Damit die Vorgabe kein deutsches Literal mehr ist, steht das Feld
+`XAxisTitle` jetzt auf `""` statt auf „Zeitverlauf (Jahresstunden)" — alle 15 Instanzen im
+Projekt setzen den Titel ohnehin selbst.
+
+> **Bewusste Nebenwirkung außerhalb des Simulationsbereichs.** Drei Diagramme mit Datumsachse
+> setzen ebenfalls einen Titel, der bisher verschluckt wurde: `Form_ErgBrauchwasserwaerme.cs:181`
+> („Jahresstunde") und `Form_Klimadaten.cs:103, 119` („Jahresstunden"). Sie zeigen künftig **ihren
+> eigenen** Titel statt „Zeitverlauf (Monate)". Das ist die Absicht der Aufrufer; die drei Texte
+> sind hartkodiert deutsch und gehören zu keinem lokalisierten Bereich. Für den UI-Sichttest
+> vorgemerkt (Abschnitt 26).
+
+**(b) Tooltip-Literale.** `ChartMouseWheel2.HandleMouseMove` baute den Mouseover-Text mit
+`$"Einheit: …"` und `$"Wert: … "`. Beide sind jetzt Katalogeinträge (`CHART_TOOLTIP_EINHEIT`,
+`CHART_TOOLTIP_WERT`, in beiden `.resx` und im Designer); die Zahlenformate `0` und `N2`
+bleiben im Quelltext.
+
+**(c) Sweep über die restliche Datei.** Weitere benutzersichtbare Literale: **keine**. Was der
+Scanner findet, ist begründet: `"0°C"` an der Nulllinie (Einheit, sprachneutral), `"Segoe UI"`
+(Schriftart), `"MainLegend"`/`"#LEGENDTEXT"`/`"X"`/`"Y"` (technische Schlüssel), Zahl- und
+Datumsformate, ein `Console.WriteLine` (Diagnose, in L2 ausgenommen) und
+`$"{values[i]:0.0}%"` im Ringdiagramm.
+
+### 25.3 N3(a) — en-US-Bestandsübersetzungen glossarkonform
+
+`Views/Simulation/Form_Simulation_Config.en-US.resx`, reine `<value>`-Änderungen, keine
+Layout- oder Metadaten-Einträge angefasst:
+
+| Eintrag | EN alt | EN neu | Glossar |
+|---|---|---|---|
+| `label11.Text` | Define generator, assign buffer **memory**: | … assign buffer **storage**: | Pufferspeicher = buffer storage |
+| `label7.Text` | Change the buffer **memory**, **forward, backward** | Change the buffer **storage**, **flow, return** | Vorlauf = flow, Rücklauf = return |
+| `label12.Text` | Select **producers** in order | Select **generators** in order | Erzeuger = generator |
+| `label2.Text` | **Power** generator: | **Electricity** generator: | Strom = electricity, nicht power (= Leistung) |
+| `groupBox_PufferSp.Text` | Buffer **memory allocation** | Buffer **storage assignment** | wie `PSP_TITEL_ZUORDNUNG` im Hauptkatalog |
+| `checkBox_PufferSp.Text` | Show buffer **memory allocation** | Show buffer **storage assignment** | dito |
+
+Der anschließende Sweep über die restlichen zehn Text-Einträge der Datei ergab **keine
+weitere Abweichung** ($this, `btn_Hinzu`, `btn_Loeschen`, `btn_OK`, `btn_Speichern`,
+`groupBox_Tools`, `label1`, `label3`, `label21`, `lblStatus` decken sich mit Glossar und
+Hauptkatalog). Die längeren englischen Texte können nicht abgeschnitten werden: alle
+betroffenen Beschriftungen tragen in der **neutralen** `.resx` `AutoSize = True`, die
+`…​.Size`-Einträge des Satelliten werden zur Laufzeit neu berechnet.
+
+### 25.4 N3(b) — 43 verwaiste Einträge entfernt
+
+Alle 43 Einträge aus `Form_Simulation_Config.en-US.resx` entfernt; die Datei geht von 68 auf
+**25 echte Einträge** zurück (plus die vier Beispielzeilen des ResX-Schemakopfs).
+
+Vor dem Entfernen wurde **je Steuerelement** geprüft, nicht je Eintrag: die 43 Einträge
+verteilen sich auf **28** Namen, und für jeden dieser 28 gilt **0 Treffer** in
+`Form_Simulation_Config.cs`, `.Designer.cs` und `.Uebersicht.cs` **und 0 Einträge in der
+neutralen `Form_Simulation_Config.resx`**. Der Designer legt genau 28 Steuerelemente an —
+keiner der 28 toten Namen ist darunter. Die Zahl „16 Steuerelemente" aus Abschnitt 4.6 ist
+damit berichtigt (dort gezählt waren nur die Namen mit `.Text`-Eintrag).
+
+Nach dem Entfernen ist die Datei als XML validiert.
+
+### 25.5 N3(c) — `richTextBox_Info` übersetzt
+
+Der Erklärtext zu den drei BHKW-Betriebsarten liegt in der **neutralen** `.resx` als
+**Klartext, nicht als RTF** — die Prüfung des Eintragsformats war die eigentliche Frage des
+Befunds. Damit ist der Nachtrag in `Form_Simulation_Detail.en-US.resx` unkritisch: ein
+`<data name="richTextBox_Info.Text" xml:space="preserve">` mit demselben Aufbau (drei
+Überschriften, drei Absätze, Leerzeile dazwischen).
+
+Die drei Überschriften sind **wortgleich mit den Katalogwerten** `SIM_BETRIEBSART_*`
+(„Heat-led (standard)", „Electricity-led (economic)", „Without feed-in (zero export)") —
+damit findet `MacheTextAbschnittFett` sie auch auf englischer Oberfläche und der Fettdruck
+funktioniert dort erstmals. Offener Punkt 2 aus Abschnitt 21 ist erledigt.
+
+### 25.6 N4 — Beschriftung und Satzform getrennt
+
+`SIM_ROLLE_HAUPTSENKE`/`_ZWEITSENKE` tragen im Englischen die klein geschriebene Satzform
+(„main sink"), weil sie als Platzhalter `{0}` in `SIM_KEIN_PUFFER_GEWAEHLT` &Co. eingesetzt
+werden (`WaermesenkeClass.cs:547, 560`). Als **Beschriftung** ist das falsch. Neu:
+`SIM_GRUPPE_HAUPTSENKE` („Hauptsenke"/„Main sink") und `SIM_SPALTE_ZWEITSENKE`
+(„Zweitsenke"/„Secondary sink"), eingesetzt in `Form_Waermesenke.cs:113` (GroupBox),
+`Form_Simulation_Config.Uebersicht.cs:225` (Spaltenkopf) und
+`Form_PufferSp_Projekt.cs:633-634` (Tabellenzelle). Die beiden Satz-Einsätze bleiben
+unverändert.
+
+Damit sind zwei in Etappe 1 zusammengeführte Schlüssel wieder aufgenommen — die
+Zusammenführung war eine Gleichheit im **Deutschen**, die im Englischen nicht gilt. Die
+Tabelle „Zusammengeführte Schlüssel" im Katalog ist entsprechend berichtigt.
+
+### 25.7 N5 — Volumenfilter: gemessen, teilweise behoben, teilweise widerlegt
+
+Der Befund lautete: `SelectedIndex = 0` in `PufferSpFilter.VolumenfilterFuellen` löse
+`SelectedIndexChanged` aus und ändere damit den Öffnungszustand des Dialogs (Sortierung,
+NULL-Sätze). **Zwei Messungen widersprechen dem erwarteten Fix:**
+
+1. **Die Bestandsvorbelegung löste dasselbe Ereignis aus.** Vor Paket 9 stand dort
+   `comboBox_Volumen.Text = "Alle"`. Der `Text`-Setzer der `ComboBox` sucht den Eintrag in der
+   Liste und setzt `SelectedIndex` — gemessen in einem eigenen WinForms-Harness:
+
+   ```
+   HandleCreated=True
+   A  cb.Text="Alle"     -> SelectedIndexChanged 1x, SelectedIndex=0   (Bestand vor Paket 9)
+   B  cb.SelectedIndex=0 -> SelectedIndexChanged 1x, SelectedIndex=0   (Stand Paket 9)
+   C  Handler abgeklemmt -> SelectedIndexChanged 0x, SelectedIndex=0
+   C' Anwenderwechsel    -> SelectedIndexChanged 1x, SelectedIndex=3
+   ```
+
+   `SetFilter()` lief beim Öffnen also **schon vorher**. Sortierung (`order by Bezeichner`) und
+   Trefferliste sind gegenüber dem Stand vor Paket 9 unverändert — es gibt hier keine
+   Regression aus Paket 9.
+
+2. **Das Ereignis ist an dieser Stelle tragend.** `Form_PufferSp_Load` füllt die rechte Liste
+   zuerst aus `Tab_Pufferspeicher` — der **Projekttabelle**. Erst `SetFilter()` ersetzt sie
+   durch den **Katalog** `Tab_Pufferspeicher_STAMM`. Ein Abklemmen des Ereignisses beim Füllen
+   ließe beim Öffnen die falsche Tabelle im Dialog stehen.
+
+**Deshalb wurde das Ereignis bewusst NICHT unterdrückt** (Begründung als Klassenkommentar an
+`VolumenfilterFuellen` hinterlegt). Behoben wurde der zweite Teil des Befunds, und der ist
+echt:
+
+> `Gesamtvolumen Like '%'` wandelt die Zahl in Text und vergleicht; für `NULL` ergibt das in
+> Jet/ACE wieder `NULL` — ein Katalogsatz ohne gepflegtes Gesamtvolumen fällt aus dem Zweig
+> „Alle" heraus, ohne dass irgendwo eine Meldung erscheint. Stufe 0 lautet jetzt
+> `(Gesamtvolumen IS NULL OR Gesamtvolumen Like '%')`. Die Klammer ist nötig, weil die
+> Aufrufer das Prädikat mit `and` an den Herstellerfilter hängen.
+
+Im Auslieferungskatalog der Arbeitsplatz-Datenbank tritt der Fall derzeit nicht auf (gelesene
+Gegenprobe: `Tab_Pufferspeicher_STAMM` hat 2 Sätze, davon 0 mit `Gesamtvolumen IS NULL`) — die
+Absicherung wirkt gegen Importe, nicht gegen den Bestand.
+
+### 25.8 N6 — `MindestgroesseFestlegen()` nach `OnShown`
+
+`StatuszeileAusrichten()` läuft im Konstruktor (das muss es auch — die Zeile muss vor dem
+ersten Zeichnen sitzen) und rief von dort `MindestgroesseFestlegen()` auf. Deren
+`Screen.FromControl(this)` hat zwei Nachteile im Konstruktor: es **erzwingt die Fensterhandle**,
+bevor der Aufbau fertig ist, und es misst den **falschen Bildschirm** — `StartPosition` wirkt
+erst beim Anzeigen, das Formular steht bis dahin an seiner Entwurfsposition.
+
+Der Aufruf steht jetzt in einem `OnShown`-Override. Harness-Nachweis in beiden Sprachen:
+
+```
+nach Konstruktor : MinimumSize={Width=0, Height=0}  IsHandleCreated=False
+nach Show()      : MinimumSize={Width=1191, Height=591}  Size={Width=1191, Height=591}
+   ok: MinimumSize auf die Arbeitsflaeche des Bildschirms gedeckelt {Width=1280, Height=752}
+lblStatus        : Bounds={X=585,Y=515,Width=263,Height=20}  ZIndex=0
+   ok: lblStatus vollstaendig in der Nutzflaeche {X=0,Y=0,Width=1175,Height=552}
+   ok: lblStatus auf die Knopfzeile zentriert
+nach Verkleinern auf 380x300 : Size={Width=1191, Height=591}
+   ok: lblStatus auch nach dem Verkleinern vollstaendig sichtbar
+```
+
+`lblStatus` liegt auf **exakt denselben Koordinaten** wie im Nachweis aus Abschnitt 19.4, und
+die vier Fußzeilen-Steuerelemente aus Paket 8 sind unverändert (19.5). Kein Rückschritt.
+
+### 25.9 N7 — Katalog-Kleinigkeiten
+
+- **`Text_Hinweis` EN „Hint" → „Note".** Vorher geprüft, wo der Schlüssel verwendet wird:
+  drei Stellen, alle in `Form_Start.cs` (820, 1176, 1475), alle als **Titel** eines
+  `Form_Hinweis`. Genau der im Glossar Kapitel 8 geführte Fall („Hinweis → Note,
+  MessageBox-Titel"). Keine Verwendung außerhalb, kein Risiko.
+- **`Text_Ausgewaehlt` und `Text_nicht_geoffnet` entfernt.** Repo-weite Suche über alle
+  Dateitypen: **0 Referenzen** außer in den beiden `.resx` und im Designer (Treffer in
+  `bin/` und `obj/` sind die eingebetteten Ressourcen der letzten Übersetzung).
+- **`SIM_SPALTE_PRIO` EN „Prio" → „prio"**, damit Katalog und die in Abschnitt 5.5
+  festgehaltene Entscheidung („Prio / WP-Prio → prio / HP prio") übereinstimmen;
+  `SIM_SPALTE_WPPRIO` steht bereits auf „HP prio".
+- **Monatsnamen-Split — bewusste Konsequenz, hier dokumentiert.** Der Simulationsbereich
+  zeigt Monatsnamen aus **drei** Quellen, und das bleibt so:
+
+  | Quelle | Kultur | Wirkung von `EPOS_REFLAUF_UICULTURE` bzw. der UI-Sprache |
+  |---|---|---|
+  | `DashboardForm` (Monatsspalte) | `CurrentUICulture` | folgt der Oberfläche |
+  | Chart-Achsen über `LabelStyle.Format = "MMM"` | `CurrentCulture` | folgt **nicht** der Oberfläche — bleibt deutsch |
+  | `ErdreichTemperatur.MONATSKUERZEL` | fest | bleibt deutsch |
+
+  Paket 9 setzt ausdrücklich **nur** `CurrentUICulture` (Konzept 13.6, „Nicht Teil dieses
+  Pakets"). Auf englischer Oberfläche stehen die Chart-Achsen deshalb weiter auf „Jan, Feb,
+  Mrz …", und die Kennwertzeile des Erdreichdialogs auf „(Feb)". Das ist kein Fehler, sondern
+  die Kehrseite der Entscheidung, die Zahlen- und Datumsformatierung unangetastet zu lassen.
+  Wer das ändern will, ändert `CurrentCulture` — und damit auch Dezimaltrennzeichen und
+  Tausenderpunkt in **allen** Ausgaben, einschließlich der Referenzlauf-CSV.
+
+### 25.10 N8 — BOM nachgepflegt
+
+Fünf Dateien auf UTF-8 **mit** BOM gebracht, jeweils durch reines Voranstellen der drei Bytes
+`EF BB BF`; der Rest ist byte-gleich (im selben Lauf zurückgelesen und verglichen):
+
+```
+Form_Simulation_Config.en-US.resx      Rest byte-gleich=True
+Form_KonfigPufferspeicher.en-US.resx   Rest byte-gleich=True   7049 -> 7052 Bytes
+Form_PufferSp.en-US.resx               Rest byte-gleich=True  10257 -> 10260 Bytes
+Form_Simulation_Detail.en-US.resx      Rest byte-gleich=True
+WindowsFormsApplication1.csproj        Rest byte-gleich=True   8714 -> 8717 Bytes
+```
+
+*(Die beiden erstgenannten `.resx` wurden in derselben Nacharbeit ohnehin inhaltlich geändert;
+die BOM ist dort Teil des Neuschreibens.)*
+
+Es bleiben zwei `.resx` **ohne** BOM: `Form_PufferSp_Bearbeiten.en-US.resx` und
+`Form_PufferSp_einlesen.en-US.resx`. Beide sind **rein asciisch** — es gibt kein Zeichen, das
+eine falsch geratene Kodierung zerstören könnte. Sie lagen außerhalb der Schreibmenge dieser
+Nacharbeit und sind der letzte Rest von P5.
+
+### 25.11 N9 — Berichtigungen an diesem Protokoll
+
+**(a) Abschnitt 21, Punkt 1 war in der Ursachenzuschreibung falsch.** Dort stand, der größte
+verbliebene Block seien „Engine-Protokollmeldungen ohne Katalogschlüssel", und
+`ErdreichAuswertung.cs`, `VDI4640Pruefung.cs` und `ErdreichTemperatur.cs` wurden dazugezählt.
+Für diese drei Dateien stimmte das **nicht**: die 41 Schlüssel waren vorhanden und übersetzt,
+es fehlte allein die Anbindung (25.1).
+
+**Der echte Folgeblock ist ein anderer — und er ist kein Übersetzungsproblem.** Die
+P1-Messung nach der Nacharbeit findet noch **28 Fundstellen** in `SimulationControl.cs` (15),
+`SimulationBHKW.cs` (6), `SimulationWaermebedarf.cs` (3) sowie `SimulationWaermepumpe.cs`,
+`SimulationSPK.cs`, `SimulationKanaele.cs` und `WaermequelleClass.cs` (je 1). Sieht man sie
+sich einzeln an, sind sie fast durchweg **Fortsetzungszeilen mehrzeiliger
+`Console.WriteLine`-Verkettungen** (die erste Zeile mit dem Aufruf filtert die Rezeptur
+heraus, die zweite und dritte nicht). Der Rest sind ein `ArgumentException`-Text
+(`SimulationSPK.cs:772`), zwei dokumentierte In-Memory-Etiketten und drei Vergleiche gegen
+den DB-Wert `Tab_…​.Einheit`.
+
+Damit verschiebt sich der Befund:
+
+| gezählt | Zahl | Bewertung |
+|---|---:|---|
+| `SimulationProtokoll.Aktuell.*`-Aufrufe im Bereich | 14 | **alle bereits lokalisiert** (`SIMENG_*`) |
+| `Console.WriteLine("…")` in `Allgemein/Simulation/*.cs` | 50 | nach der L2-Regel (Konzept 13.4) **außerhalb** des Katalogs — und genau das ist das Problem |
+
+Der eigentliche Rückstand ist also **nicht**, dass 28 Zeichenketten unübersetzt sind, sondern
+dass rund 50 Diagnoseausgaben der Engine **am Protokollkanal aus Paket 8 vorbeilaufen**:
+`SimulationControl` (24), `WaermequelleClass` (12), `SimulationBHKW` (3),
+`SimulationWaermebedarf` (2), `WaermesenkeClass` (2), `SimulationWaermepumpe` und
+`SimulationSolarthermie` (je 1) und weitere. Sie erscheinen nur auf der Konsole, werden von
+`Referenzlauf/Protokoll.cs` nicht als Hinweis oder Warnung gezählt und tauchen im
+Lauf-Protokoll des Anwenders nicht auf. Erst wenn eine Meldung diesen Weg nimmt, stellt sich
+die Frage nach ihrer Übersetzung.
+
+**Das Folgepaket lautet deshalb: erst kanalisieren, dann katalogisieren** — je Meldung
+entscheiden, ob sie in den Protokollkanal gehört (dann `SimulationProtokoll.*` plus
+`SIMENG_*`-Schlüssel) oder reine Entwicklerdiagnose bleibt (dann `Console.WriteLine`, ohne
+Katalog). Nicht Teil von Paket 9.
+
+**(b) „Genau eine echte Reststelle" (Abschnitt 20.5) war zu streng gezählt.** Die beiden
+Stellen `WaermesenkeClass.cs:459` und `:465` sind `Console.WriteLine` und damit nach der
+L2-Regel (Konzept 13.4) ausdrücklich **außerhalb** des Katalogs. Der echte Rest der zwölf
+umgebauten Dateien ist damit **0**.
+
+> **Dafür ein anderer, bisher unbenannter Rückstand aus Paket 8:** Genau diese beiden Meldungen
+> berichten **stille Datenkorrekturen** — eine halbe Puffer-Konfiguration wird auf den Heizkreis
+> zurückgesetzt, eine Zweitsenke ohne Puffer fällt weg. Sie gehen über `Console.WriteLine` und
+> damit **am Protokollkanal aus Paket 8 vorbei**: kein `SimulationProtokoll.Warnung`, keine
+> Zählung in `Referenzlauf/Protokoll.cs`, keine Anzeige im Lauf-Protokoll. Der Kommentar an der
+> Stelle sagt selbst „Sie gehört ins Lauf-Protokoll" — umgesetzt ist das nicht. Diese beiden
+> sind der Musterfall des in (a) beschriebenen Folgepakets: **erst kanalisieren, dann
+> katalogisieren.**
+
+**(c) „20/20 zeichengleich" (Abschnitt 1) ist präziser zu fassen.** Von den 20 Dateien der
+L0.1-Umkodierung sind **16 mechanisch nachweisbar** zeichengleich (Byte-Vergleich nach
+Rückkonvertierung). Für die vier übrigen gilt der Nachweis nur **zusammen mit L0.2 im selben
+Commit**, weil dort im selben Zug Literale durch `DbWerte`-Konstanten ersetzt wurden — ein
+reiner Zeichenvergleich schlägt dort naturgemäß an. Die Formulierung „20 von 20" verschweigt
+diese Einschränkung.
+
+**(d) Abschnitt 4.6 und Abschnitt 21, Punkt 6:** 43 verwaiste Einträge verteilen sich auf
+**28** Steuerelemente, nicht auf 16 (berichtigt in 4.6, Herleitung in 25.4).
+
+**(e) Dateibuchhaltung Etappe 2.** Abschnitt 10 nennt die geänderten Dateien; die vollständige
+Zählung für Etappe 2 lautet **24 `.cs` + 2 `.resx` + 1 `.csproj` = 27 Dateien**. Diese
+Nacharbeit ändert **17** Dateien (9 `.cs`, 6 `.resx`, 1 `.csproj`, 1 `.Designer.cs`) plus drei
+Dokumentationsdateien.
+
+**(f) Der Metrikwechsel 72.501 → 34.545 → 1.629 ist ein Wechsel der Bezugsmenge, kein Einbruch.**
+
+| Abschnitt | Zahl | gezählt wurde |
+|---|---:|---|
+| 7.2 (Etappe 1) | 72.501 | **jeder** Eintrag **aller 94** Ressourcenblöcke der Assembly (auch `Size`, `Location`, `Point`, `Boolean`) × 3 Kulturen |
+| 20.4 (Etappe 2b) | 34.545 | nur die **Zeichenketten**-Einträge derselben 94 Blöcke × 3 Kulturen |
+| 25.12 (Nacharbeit) | 1.629 | nur der **Katalog** `MyResource.Resource` — 543 Schlüssel × 3 Kulturen |
+
+Die drei Zahlen messen unterschiedlich weite Kreise um dieselbe Sache. Für den Katalog, um den
+es in Paket 9 geht, ist die dritte die aussagekräftige; die Formularsatelliten sind in P4/P5
+und im Regressionslauf abgedeckt.
+
+**(g) Offener Punkt 7 (Zeilenenden) ist geschlossen.** `.gitattributes` beginnt mit
+`* text=auto`: git normalisiert Zeilenenden beim Einchecken und checkt sie nach
+`core.autocrlf` wieder aus. Ob eine Datei im Arbeitsbaum LF oder CRLF trägt, ist damit ohne
+Wirkung auf das Repository — die drei LF-Dateien (`WaermesenkeClass.cs`,
+`Form_QuelleErdreich.cs`, `Form_Waermesenke.cs`) sind kein Befund. Die `.editorconfig`-Regel
+`end_of_line = crlf` greift beim nächsten Speichern in Visual Studio und ist damit
+selbstheilend. **Der BOM-Teil (F1) ist mit 25.10 erledigt**, bis auf die zwei rein asciischen
+Satelliten.
+
+**(h) Ergebnis der Anbindung in Zahlen.**
+
+| Größe | vorher | nachher |
+|---|---:|---:|
+| Katalogschlüssel (`MyResource.Resource`) | 541 | **543** (+4 neu, −2 tot) |
+| davon im Quelltext verdrahtet — vorher offen | 41 offen | **0 offen** |
+| Literale in `ErdreichTemperatur`/`VDI4640Pruefung`/`ErdreichAuswertung` | 41 | **0** (bis auf `MONATSKUERZEL` und die vier Bodenart-Steuerwerte) |
+| lokalisierte `XAxisTitle`-Zuweisungen, die tatsächlich wirken | 2 von 8 | **8 von 8** |
+| Einträge in `Form_Simulation_Config.en-US.resx` | 68 | **25** |
+| `.resx`/`.csproj` ohne BOM im Prüfbereich | 7 | **2** (beide rein asciisch) |
+
+### 25.12 Verifikation der Nacharbeit
+
+**Build** (VS-MSBuild, x86, mit umgelenktem `OutDir` — `bin\` des Anwenders unberührt, die
+Anwendung durfte laufen):
+
+```
+MSBuild.exe WindowsFormsApplication1\WindowsFormsApplication1.csproj ^
+            -p:Configuration=Debug -p:Platform=x86 -p:OutDir=<Arbeitsordner>
+```
+
+**0 Fehler, exakt 6 Bestandswarnungen** — dieselben wie in allen Etappen davor
+(2 × CS0108, 2 × CS0109, 1 × CS4014, 1 × CS1998). `Referenzlauf.csproj` im Arbeitsbaum
+ebenfalls 0 Fehler.
+
+**Ressourcen-Ladeprüfung** (Testtreiber außerhalb des Repos, `Assembly.LoadFrom` + Reflexion):
+
+```
+resx neutral / en-US       : 543 / 543
+Resource.Designer.cs       : 543
+Eigenschaften zur Laufzeit : 543
+Ressourcenbloecke geprueft : 3        (Invariant, de-DE, en-US)
+Einzelabrufe geprueft      : 1.629    (543 Schluessel x 3 Kulturen)
+Leere Werte de-DE / en-US  : 0 / 0
+Eintraege mit Platzhaltern : 105
+Probeformatierungen        : 210      (je Eintrag neutral UND en-US)
+```
+
+Vier Mengen deckungsgleich, kein Schlüssel liefert `null`, und für jeden Eintrag mit `{n}`
+stimmen die Platzhalter**nummern** zwischen neutral und en-US überein.
+
+Fokusprobe der vier neuen und der berichtigten Schlüssel:
+
+```
+CHART_TOOLTIP_EINHEIT      DE=[Einheit: {0}]   EN=[Unit: {0}]
+CHART_TOOLTIP_WERT         DE=[Wert: {0} {1}]  EN=[Value: {0} {1}]
+SIM_GRUPPE_HAUPTSENKE      DE=[Hauptsenke]     EN=[Main sink]
+SIM_SPALTE_ZWEITSENKE      DE=[Zweitsenke]     EN=[Secondary sink]
+Text_Hinweis               EN=[Note]     SIM_SPALTE_PRIO  EN=[prio]
+Text_Ausgewaehlt entfernt = ja            Text_nicht_geoffnet entfernt = ja
+```
+
+**Regression und Sprachgleichheit** (eigener git-Arbeitsbaum auf `97183a2` plus ausschließlich
+den 17 Dateien dieser Nacharbeit — die parallele Arbeit anderer Sitzungen im Arbeitsverzeichnis
+ist damit aus dem Vergleich heraus):
+
+```
+DE gegen Referenzbasis 2026-08-15_B2 : 9 von 9 PASS, 2.295.987 Werte
+                                       208 von 208 byte-/MD5-gleich, 0 abweichend, 0 fehlend
+EN (EPOS_REFLAUF_UICULTURE=en-US)    : 9 von 9 PASS gegen dieselbe Basis
+SPRACHGLEICHHEIT DE vs EN            : 208 von 208 byte-/MD5-gleich, 0 abweichend
+```
+
+Das ist der harte Nachweis, dass auch die **engine-nahen** Dateien dieser Nacharbeit
+(`ErdreichTemperatur`, `VDI4640Pruefung`, `ErdreichAuswertung`) ausschließlich Anzeigewege
+umgestellt haben: Keiner der 41 Texte geht in eine Rechnung.
+
+**Harness-Proben** (Reflexion gegen die gebaute Assembly, jeweils de-DE **und** en-US):
+
+```
+Bodentyp-ComboBox   de-DE: 13 Eintraege -> Ton/Schluff, trocken | Sand, feucht | Gneis
+                    en-US: 13 Eintraege -> Clay/silt, dry       | Sand, moist  | Gneiss
+                    Auswahl-Rundlauf ueber den Index 13/13 gleich, Schluessel sprachunabhaengig
+
+Kennwerte.Zeile()   de-DE: min 4,2 °C (Feb)  ·  max 15,8 °C (Aug)  ·  Mittel 9,5 °C
+                    en-US: min 4,2 °C (Feb)  ·  max 15,8 °C (Aug)  ·  mean   9,5 °C
+
+Anzeigetext()       de-DE: Entzugsleistung   6.480 W / 250 m² = 25,9 W/m²   Grenze 16 W/m²  !
+                    en-US: Extraction rate   6.480 W / 250 m² = 25,9 W/m²   Limit  16 W/m²  !
+
+Kurztext()          de-DE: Erdreich WP-01: Entzug 12.345 kWh/a (inkl. Speicherladung), Spitze …
+                    en-US: Ground   WP-01: Extraction 12.345 kWh/a (incl. storage charging), …
+
+ChartManager        Datumsachse + CHART_ACHSE_JAHRESSTUNDEN -> "Jahresstunden" / "Hours of the year"
+                    Datumsachse + CHART_ACHSE_MONATE        -> "Monate"        / "Months"
+                    Datumsachse, Titel leer  (Vorgabe)      -> "Monate"        / "Months"
+                    Zahlenachse, Titel gesetzt (unveraendert)-> "Jahresstunden" / "Hours of the year"
+                    XY-Achse,    Titel gesetzt (unveraendert)-> "Temperatur…"   / "Temperature…"
+
+Volumenfilter       SelectedIndex nach dem Fuellen = 0, SelectedIndexChanged 1x (wie im Bestand)
+                    Stufe 0 -> (Gesamtvolumen IS NULL OR Gesamtvolumen Like '%')
+                    Freitext -> dasselbe Praedikat;  SQL je Stufe DE == EN: True
+
+Form_Simulation_Config  MinimumSize im Konstruktor leer, in OnShown gesetzt und auf die
+                        Arbeitsflaeche gedeckelt; lblStatus und die vier Paket-8-Steuerelemente
+                        auf denselben Koordinaten wie in 19.4/19.5
+```
+
+Alle Proben **BESTANDEN, kein Fehler**.
+
+**Prüfrezeptur P1–P6** einmal vollständig gelaufen; der Ist-Stand steht in
+[`Lokalisierung_Pruefung.md`](Lokalisierung_Pruefung.md). Kurzfassung: P2, P3, P4, P6 ohne
+Befund (P4 543/543/543/543, P6 208/208 in beiden Richtungen); P1 findet in den Views keinen
+benutzersichtbaren deutschen Text und in den drei Erdreich-Dateien **gar keinen** mehr; P5
+meldet nur noch die zwei rein asciischen Satelliten.
+
+## 26. Was diese Nacharbeit NICHT getan hat
+
+- **Kein Commit.** Der Arbeitsstand liegt unkommittiert im Arbeitsverzeichnis.
+- **Die Dateien der parallel laufenden Sitzungen nicht angefasst:**
+  `Views/Prozesswärme/Form_Prozesswaerme.cs`, `Views/Stromverbraucher/Form_Stromverbraucher.cs`,
+  `Controller/WizardCtrl.cs`, `Views/Wizard/WizardParent.cs` und die sechs
+  `Controller/*KontextMenuCtrl.cs`. Sie sind auch aus der Verifikation herausgehalten (eigener
+  Arbeitsbaum).
+- **`Referenzlaeufe/*` und `DB-Backup/` unberührt**; der Regressionslauf hat seine Ergebnisse in
+  einem eigenen Arbeitsbaum außerhalb des Repos abgelegt. Produktive Datenbank **nur lesend**
+  (zwei `SELECT COUNT(*)` auf `Tab_Pufferspeicher_STAMM` für die NULL-Gegenprobe in 25.7).
+- **`CurrentCulture` weiterhin nicht gesetzt** — siehe den Monatsnamen-Split in 25.9.
+- **Die Engine-Protokollmeldungen nicht umgestellt** (25.11 a) — eigenes Folgepaket.
+- **`Form_Simulation_Detail.en-US.resx` nur um einen Eintrag ergänzt**, nicht durchgesehen.
+  Beim Nachtragen fielen dort Bestandsübersetzungen auf, die dem Glossar widersprechen
+  („Power consumption SPK:", „Power requirements:", „Heat requirement" für Wärmebedarf) — 244
+  Einträge, ein eigener Durchgang. Nicht Teil dieses Auftrags.
+- **Kein UI-Sichttest.** L7 bleibt offen und braucht den Anwender; die Liste dazu steht in
+  Abschnitt 21, Punkt 3, ergänzt um die drei Diagrammtitel aus 25.2 und um einen Messwert aus
+  dem Harness: `checkBox_Extrapolation` ist auf englischer Oberfläche 361 px breit und reicht
+  damit rund 8 px über die Nutzfläche hinaus (deutsch: 264 px). Das ist ein Layout-, kein
+  Übersetzungsbefund.

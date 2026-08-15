@@ -17,7 +17,11 @@ namespace WindowsFormsApplication1
         public bool IsXYChart = false; // Für XY-Charts (z.B. Temperatur)
         public bool WheelZoomed = true;
         public string toolTipUnit = "";
-        public string XAxisTitle = "Zeitverlauf (Jahresstunden)";
+        // Leer als Vorgabe: alle 15 Aufrufer setzen den Achsentitel selbst. Bis Paket 9
+        // stand hier ein deutsches Literal, das nie sichtbar wurde (die Datumsachse hat es
+        // ohnehin ueberschrieben) - der Vorgabetext kommt jetzt bei Bedarf aus dem
+        // Ressourcenkatalog (FormatXAxisWithDate).
+        public string XAxisTitle = "";
         public string YAxisTitle = "";
         public string ChartTitle = "";
         public bool MitChartBorder = false;
@@ -369,7 +373,14 @@ namespace WindowsFormsApplication1
             int currentYear = DateTime.Now.Year;
             ca.AxisX.Minimum = new DateTime(currentYear, 1, 1).ToOADate();
             ca.AxisX.Maximum = new DateTime(currentYear, 12, 31, 23, 59, 59).ToOADate();
-            ca.AxisX.Title = "Zeitverlauf (Monate)";
+            // Der Achsentitel des Aufrufers hat Vorrang. Bis Paket 9 stand hier ein festes
+            // Literal, das JEDE von aussen gesetzte (und seit L4/L6 lokalisierte)
+            // XAxisTitle-Zuweisung ueberschrieben hat - sechs der acht Simulationsdiagramme
+            // zeigten deshalb weiter den deutschen Text. Nur wenn kein Titel gesetzt ist,
+            // greift der Vorgabetext aus dem Ressourcenkatalog.
+            ca.AxisX.Title = string.IsNullOrEmpty(XAxisTitle)
+                ? MyResource.Resource.CHART_ACHSE_MONATE
+                : XAxisTitle;
             ca.AxisX.LabelStyle.Format = "MMM";   // Monatsnamen (Jan, Feb, ...) – konsistent mit der Zoom-Ansicht (UpdateVisuals)
             ca.AxisX.IntervalType = DateTimeIntervalType.Months;
             ca.AxisX.IntervalOffsetType = DateTimeIntervalType.Months;
@@ -454,8 +465,16 @@ namespace WindowsFormsApplication1
                 if (point == _lastPoint) return;
                 _lastPoint = point;
 
-                string xVal = IsXYMode ? $"X: {point.XValue:N1}" : (IsNumericAxis ? $"Einheit: {point.XValue:0}" : DateTime.FromOADate(point.XValue).ToString("dd.MM. HH:mm"));
-                _toolTip.SetToolTip(_chart, $"{xVal}\nWert: {point.YValues[0]:N2} {szToolTipUnit}");
+                // Die Zahlenformate (N1 / "0" / N2) bleiben im Quelltext, der Katalog fuehrt
+                // nur die normalisierten Platzhalter (Lesehinweis des Ressourcenkatalogs).
+                string xVal = IsXYMode
+                    ? $"X: {point.XValue:N1}"
+                    : (IsNumericAxis
+                        ? string.Format(MyResource.Resource.CHART_TOOLTIP_EINHEIT, point.XValue.ToString("0"))
+                        : DateTime.FromOADate(point.XValue).ToString("dd.MM. HH:mm"));
+                _toolTip.SetToolTip(_chart, xVal + "\n" + string.Format(
+                    MyResource.Resource.CHART_TOOLTIP_WERT,
+                    point.YValues[0].ToString("N2"), szToolTipUnit));
             }
             else { _toolTip.Hide(_chart); _lastPoint = null; }
         }

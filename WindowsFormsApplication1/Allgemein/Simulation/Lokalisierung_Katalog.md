@@ -82,6 +82,66 @@ Fundstellen bekommen:
 | `SIM_KEIN_PUFFER_GEWAEHLT`, `SIM_PUFFER_FREMDES_PROJEKT`, `SIM_PUFFER_VERWENDUNG_PASST_NICHT` | Die Verwendungs-Platzhalter werden **vor dem Einsetzen** über `WaermesenkeClass.VerwendungAnzeige(...)` übersetzt. Damit ist der in Etappe 1, Abschnitt 5.5 angemeldete Vorbehalt („die englische Meldung mischt die Sprachen") erledigt. |
 | `SIM_BETRIEBSART_WAERMEGEFUEHRT/_STROMGEFUEHRT/_OHNE_EINSPEISUNG` | Diese drei dienen in `Form_Simulation_Detail` als **Suchbegriff** für den Fettdruck im Erklärtext `richTextBox_Info`. Dieser Text liegt in der neutralen Formular-`.resx` und ist **nicht** übersetzt — auf englischer Oberfläche findet die Suche ihn nicht und der Fettdruck entfällt (kein Fehler). Siehe Protokoll, Abschnitt 21, Punkt 2. |
 
+## Nachträge aus der Nacharbeit zu den Paket-9-Reviews (15.08.2026)
+
+Die Nacharbeit hat **41 bereits übersetzte, aber nicht verdrahtete Schlüssel angeschlossen**
+(Befund N1), den `ChartManager` in den Lokalisierungsumfang genommen (N2) und den Katalog
+bereinigt. Bestand jetzt **545 Schlüssel** (541 + 4 neu − 2 tot + 2 wieder aufgenommen).
+
+### Neu (4)
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `CHART_TOOLTIP_EINHEIT` | Einheit: {0} | Unit: {0} | ChartManager.cs (`ChartMouseWheel2.HandleMouseMove`) | **neu.** Mouseover-Text der Zahlenachse; stand als Literal im Quelltext. Formatangabe `{0:0}` bleibt im Quelltext. |
+| `CHART_TOOLTIP_WERT` | Wert: {0} {1} | Value: {0} {1} | ChartManager.cs (`ChartMouseWheel2.HandleMouseMove`) | **neu.** Wie oben; `{0}` = Zahlwert (Format `N2` im Quelltext), `{1}` = Einheit (sprachneutral, aus `szToolTipUnit`). |
+| `SIM_GRUPPE_HAUPTSENKE` | Hauptsenke | Main sink | Form_Waermesenke.cs:113, Form_PufferSp_Projekt.cs:634 | **neu.** Beschriftung in Sentence case. `SIM_ROLLE_HAUPTSENKE` („main sink") bleibt die klein geschriebene **Satzform** für den Einsatz als Platzhalter in Meldungen. |
+| `SIM_SPALTE_ZWEITSENKE` | Zweitsenke | Secondary sink | Form_Simulation_Config.Uebersicht.cs:225, Form_PufferSp_Projekt.cs:633 | **neu.** Wie oben, für Spaltenkopf und Tabellenzelle; `SIM_ROLLE_ZWEITSENKE` bleibt die Satzform. |
+
+> Damit sind zwei in Etappe 1 zusammengeführte Schlüssel **wieder aufgenommen** (Tabelle
+> „Zusammengeführte Schlüssel" am Ende dieser Datei). Die Zusammenführung war eine reine
+> Wortlaut-Gleichheit im Deutschen — im Englischen trennt sich Beschriftung („Main sink")
+> von der Satzform („… assign a buffer storage to the main sink"), und genau dafür braucht es
+> zwei Schlüssel.
+
+### Entfernt (2, repo-weit ohne Referenz)
+
+| Schlüssel | DE | EN |
+|---|---|---|
+| `Text_Ausgewaehlt` | ausgewählt | selected |
+| `Text_nicht_geoffnet` | nicht geöffnet | not opened |
+
+Vor dem Entfernen repo-weit gesucht (alle Dateitypen, ohne `bin/`, `obj/`, Vollkopien):
+**0 Fundstellen** außerhalb von `Resource.resx`, `Resource.en-US.resx` und
+`Resource.Designer.cs`.
+
+### Englische Werte berichtigt (2)
+
+| Schlüssel | EN alt | EN neu | Grund |
+|---|---|---|---|
+| `Text_Hinweis` | Hint | Note | Glossar Kapitel 8: „Hinweis → Note (MessageBox-Titel)". Alle drei Fundstellen (`Form_Start.cs:820, 1176, 1475`) verwenden den Schlüssel als **Titel** eines `Form_Hinweis` — genau der Glossarfall. |
+| `SIM_SPALTE_PRIO` | Prio | prio | Angleichung an die in Protokoll 5.5 festgehaltene Entscheidung „Prio / WP-Prio → prio / HP prio" und an das bereits so ausgelieferte `SIM_SPALTE_WPPRIO` („HP prio"). |
+
+### Fundstellen jetzt verdrahtet (41 Schlüssel, Befund N1)
+
+Diese Schlüssel lagen seit L2 mit deutschem und englischem Wert im Katalog, im Quelltext stand
+aber weiter das Literal. Sie sind jetzt angeschlossen; die Zeilennummern der Tabellen unten
+sind dadurch verschoben, die Zuordnung Schlüssel → Datei bleibt.
+
+| Datei | Schlüssel | Anzahl |
+|---|---|---:|
+| `ErdreichTemperatur.cs` | `SIMQ_BODENTYP_*` (13) — über das neue Feld `Bodenkennwerte.AnzeigeSchluessel`, aufgelöst in der Eigenschaft `Untergrund` | 13 |
+| `ErdreichTemperatur.cs` | `SIMQ_PROFIL_KENNWERTE_ZEILE` in `Kennwerte.Zeile()` | 1 |
+| `VDI4640Pruefung.cs` | `SIMQ_PRUEFZEILE_FORMAT`, `SIMQ_PRUEFZEILE_ENTZUGSLEISTUNG` (2 Fundstellen), `SIMQ_PRUEFZEILE_ENTZUGSENERGIE`, `SIMQ_VDI4640_KLIMAZONE_FEHLT`, `_KEINE_KOLLEKTORFLAECHE`, `_KEINE_SONDENLAENGE`, `_KEINE_VOLLLASTSTUNDEN`, `_GRUNDLAGE_KOLLEKTOR`, `_GRUNDLAGE_SONDE`, `_KOLLEKTOR_OK`, `_KOLLEKTOR_ZU_KLEIN`, `_SONDE_OK`, `_SONDENFELD_ZU_KLEIN`, `_AUSSERHALB_TABELLE` | 14 |
+| `ErdreichAuswertung.cs` | `SIMQ_ERDREICH_KURZTEXT_KOPF`, `SIMQ_ERDREICH_ENTZUG_KURZTEXT`, `SIMQ_INKL_SPEICHERLADUNG`, `SIMQ_SPITZE_AUS_SUMMENGANGLINIE`, `SIMQ_VDI4640_EINGEHALTEN`, `SIMQ_VDI4640_GRENZWERT_UEBERSCHRITTEN`, `SIMQ_VDI4640_PRUEFUNG_NICHT_MOEGLICH`, `SIMQ_FROSTTEXT`, `SIMQ_FROST_NORMBASIS`, `SIMQ_ANLAGE_ERSATZNAME`, `SIMQ_ERDREICH_UNWIRKSAM_LUFT_WASSER`, `SIMQ_ENTZUG_NICHT_JE_MODUL_TRENNBAR`, `SIMQ_ENTZUG_ANTEILIG_GESCHAETZT` | 13 |
+
+**Zwei Zeichenketten bleiben an diesen Stellen bewusst deutsch** — beide sind nach der
+Drei-Schichten-Regel keine reine Anzeige:
+
+| Stelle | Text | Grund |
+|---|---|---|
+| `VDI4640Pruefung.Bodenarten` (`BODENART_SAND`, `_SANDIGER_TON`, `_LEHM`, `_SCHLUFF`) | „Sand", „Sandiger Ton", „Lehm", „Schluff" | **Steuerwert.** `BodenartIndex()` sucht darüber die Spalte der Tabelle A2. Der Wert erscheint als Platzhalter `{1}` in `SIMQ_VDI4640_GRUNDLAGE_KOLLEKTOR` und als `{4}` in `SIMQ_ERDREICH_BODENKENNWERTE`; die englische Meldung mischt dort die Sprachen. Auflösung wäre eine eigene Anzeigefunktion — Folgepaket. |
+| `ErdreichTemperatur.MONATSKUERZEL` | „Jan"…„Dez" | **Monatsname.** Der Katalog nimmt Monats- und Wochentagsnamen ausdrücklich aus (Lesehinweis oben); `CultureInfo` liefert im Deutschen „Mrz" statt „Mär" und würde die deutsche Anzeige verändern. Siehe Protokoll, Abschnitt 25.7. |
+
 ## CHART — 54 Schlüssel
 
 | Schlüssel | DE | EN | Fundstellen |
@@ -643,9 +703,9 @@ deutscher Text bereits unter einem anderen Schlüssel geführt wird:
 | `PSP_SPALTE_PUFFERSPEICHER` | `SIMQ_TYP_PUFFERSPEICHER` |
 | `SIM_TITEL_NICHT_VERFUEGBAR` | `SIM_TITEL_SIMULATION_NICHT_VERFUEGBAR` |
 | `SIM_SPALTE_ERZEUGER` | `SIM_ERZEUGERNAME_ALLGEMEIN` |
-| `SIM_SPALTE_ZWEITSENKE` | `SIM_ROLLE_ZWEITSENKE` |
+| `SIM_SPALTE_ZWEITSENKE` | ~~`SIM_ROLLE_ZWEITSENKE`~~ — **Zusammenführung zurückgenommen**, siehe Nacharbeit oben |
 | `SIMQ_QUELLE_PUFFERSPEICHER` | `SIMQ_TYP_PUFFERSPEICHER` |
-| `SIM_GB_HAUPTSENKE` | `SIM_ROLLE_HAUPTSENKE` |
+| `SIM_GB_HAUPTSENKE` | ~~`SIM_ROLLE_HAUPTSENKE`~~ — die Beschriftung heißt jetzt `SIM_GRUPPE_HAUPTSENKE`, siehe Nacharbeit oben |
 | `SIM_ZIEL_PUFFER_HEIZUNG` | `SIM_ZIEL_PUFFERSPEICHER_HEIZUNG` |
 | `SIM_ZIEL_PUFFER_BRAUCHWASSER` | `SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER` |
 | `SIM_LBL_PUFFER2` | `PSP_RUBRIK_LABEL` |

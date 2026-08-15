@@ -264,11 +264,19 @@ namespace WindowsFormsApplication1
             public string Einheit;
             public bool Ueberschritten;
 
+            /// <summary>
+            /// Anzeigezeile. Die Formatangaben des früheren Musters bleiben im
+            /// Quelltext (Lesehinweis des Ressourcenkatalogs): die Spaltenbreite 18
+            /// als <c>PadRight</c>, die Grenzwertdarstellung als "0.#". Der
+            /// Katalogeintrag führt nur die normalisierten Platzhalter.
+            /// </summary>
             public string Text()
             {
                 return string.Format(CultureInfo.CurrentCulture,
-                    "{0,-18} {1}   Grenze {2:0.#} {3}{4}",
-                    Bezeichnung, IstText, Grenzwert, Einheit, Ueberschritten ? "  !" : "");
+                    MyResource.Resource.SIMQ_PRUEFZEILE_FORMAT,
+                    (Bezeichnung ?? "").PadRight(18), IstText,
+                    Grenzwert.ToString("0.#", CultureInfo.CurrentCulture),
+                    Einheit, Ueberschritten ? "  !" : "");
             }
         }
 
@@ -352,13 +360,13 @@ namespace WindowsFormsApplication1
             if (klimazone < 1 || klimazone > KLIMAZONEN)
             {
                 e.Moeglich = false;
-                e.Hinweis = "Klimazone nicht zugeordnet, Prüfung nicht möglich.";
+                e.Hinweis = MyResource.Resource.SIMQ_VDI4640_KLIMAZONE_FEHLT;
                 return e;
             }
             if (flaecheM2 <= 0)
             {
                 e.Moeglich = false;
-                e.Hinweis = "Keine Kollektorfläche angegeben, Prüfung nicht möglich.";
+                e.Hinweis = MyResource.Resource.SIMQ_VDI4640_KEINE_KOLLEKTORFLAECHE;
                 return e;
             }
 
@@ -374,7 +382,7 @@ namespace WindowsFormsApplication1
             CultureInfo ci = CultureInfo.CurrentCulture;
 
             Pruefzeile p1 = new Pruefzeile();
-            p1.Bezeichnung = "Entzugsleistung";
+            p1.Bezeichnung = MyResource.Resource.SIMQ_PRUEFZEILE_ENTZUGSLEISTUNG;
             p1.Istwert = istLeistung;
             p1.Grenzwert = grenzLeistung;
             p1.Einheit = "W/m²";
@@ -383,7 +391,7 @@ namespace WindowsFormsApplication1
             e.Zeilen.Add(p1);
 
             Pruefzeile p2 = new Pruefzeile();
-            p2.Bezeichnung = "Entzugsenergie";
+            p2.Bezeichnung = MyResource.Resource.SIMQ_PRUEFZEILE_ENTZUGSENERGIE;
             p2.Istwert = istEnergie;
             p2.Grenzwert = grenzEnergie;
             p2.Einheit = "kWh/(m²·a)";
@@ -393,12 +401,16 @@ namespace WindowsFormsApplication1
 
             e.Moeglich = true;
             e.Warnung = p1.Ueberschritten || p2.Ueberschritten;
-            e.Grundlage = "Klimazone " + klimazone + ", Bodenart " + Bodenarten[bi];
+            // Die Bodenart ist ein STEUERWERT (BodenartIndex sucht darüber in Tabelle A2)
+            // und bleibt deshalb nach der Drei-Schichten-Regel deutsch - auch in der
+            // englischen Anzeige. Übersetzt wird nur der Rahmensatz.
+            e.Grundlage = string.Format(ci, MyResource.Resource.SIMQ_VDI4640_GRUNDLAGE_KOLLEKTOR,
+                klimazone, Bodenarten[bi]);
             e.Hinweis = e.Warnung
-                ? "Kollektor ist zu klein bemessen. Erforderlich sind mindestens "
-                  + ErforderlicheFlaeche(maxEntzugW, jahresentzugKWh, grenzLeistung, grenzEnergie).ToString("N0", ci)
-                  + " m² (Zonen-Volllaststunden " + A2_VOLLLASTSTUNDEN[zi].ToString("N0", ci) + " h/a)."
-                : "Auslegung liegt innerhalb der Grenzwerte der Tabelle A2.";
+                ? string.Format(ci, MyResource.Resource.SIMQ_VDI4640_KOLLEKTOR_ZU_KLEIN,
+                    ErforderlicheFlaeche(maxEntzugW, jahresentzugKWh, grenzLeistung, grenzEnergie).ToString("N0", ci),
+                    A2_VOLLLASTSTUNDEN[zi].ToString("N0", ci))
+                : MyResource.Resource.SIMQ_VDI4640_KOLLEKTOR_OK;
 
             return e;
         }
@@ -446,13 +458,13 @@ namespace WindowsFormsApplication1
             if (sondenmeterGesamt <= 0)
             {
                 e.Moeglich = false;
-                e.Hinweis = "Keine Sondenlänge angegeben, Prüfung nicht möglich.";
+                e.Hinweis = MyResource.Resource.SIMQ_VDI4640_KEINE_SONDENLAENGE;
                 return e;
             }
             if (volllastStunden <= 0)
             {
                 e.Moeglich = false;
-                e.Hinweis = "Keine Jahresvolllaststunden bekannt, Prüfung nicht möglich.";
+                e.Hinweis = MyResource.Resource.SIMQ_VDI4640_KEINE_VOLLLASTSTUNDEN;
                 return e;
             }
 
@@ -463,7 +475,7 @@ namespace WindowsFormsApplication1
             CultureInfo ci = CultureInfo.CurrentCulture;
 
             Pruefzeile p = new Pruefzeile();
-            p.Bezeichnung = "Entzugsleistung";
+            p.Bezeichnung = MyResource.Resource.SIMQ_PRUEFZEILE_ENTZUGSLEISTUNG;
             p.Istwert = istSpezifisch;
             p.Grenzwert = grenzSpezifisch;
             p.Einheit = "W/m";
@@ -473,18 +485,17 @@ namespace WindowsFormsApplication1
 
             e.Moeglich = true;
             e.Warnung = p.Ueberschritten;
-            e.Grundlage = string.Format(ci, "λ = {0:0.0} W/(m·K), {1} Sonde(n), {2:N0} h/a",
-                lambda, sondenzahl, volllastStunden);
+            e.Grundlage = string.Format(ci, MyResource.Resource.SIMQ_VDI4640_GRUNDLAGE_SONDE,
+                lambda.ToString("0.0", ci), sondenzahl, volllastStunden.ToString("N0", ci));
             e.Hinweis = e.Warnung
-                ? "Sondenfeld ist zu klein bemessen. Erforderlich sind mindestens "
-                  + (maxEntzugW / grenzSpezifisch).ToString("N0", ci) + " Sondenmeter."
-                : "Auslegung liegt innerhalb der Grenzwerte der Tabelle B2 (Auszug).";
+                ? string.Format(ci, MyResource.Resource.SIMQ_VDI4640_SONDENFELD_ZU_KLEIN,
+                    (maxEntzugW / grenzSpezifisch).ToString("N0", ci))
+                : MyResource.Resource.SIMQ_VDI4640_SONDE_OK;
 
+            // Der Katalogeintrag beginnt mit einem Leerzeichen (xml:space="preserve"),
+            // wie die frühere Verkettung.
             if (e.AusserhalbTabelle)
-                e.Hinweis += " Achtung: Sondenzahl bzw. λ liegen außerhalb des kodierten Tabellenbereichs "
-                           + "(B2-Auszug); der Grenzwert wurde auf die Randstützstelle geklemmt. Auf der "
-                           + "Sondenzahl-Achse ist das nicht konservativ - größere Sondenfelder brauchen "
-                           + "kleinere spezifische Entzugsleistungen, als der Randwert zulässt.";
+                e.Hinweis += MyResource.Resource.SIMQ_VDI4640_AUSSERHALB_TABELLE;
 
             return e;
         }
@@ -708,7 +719,11 @@ namespace WindowsFormsApplication1
 
             Ergebnis gross = PruefeSonde(2.0, 20, 1800, 2000, 40000);
             if (!gross.AusserhalbTabelle ||
-                gross.Hinweis.IndexOf("außerhalb des kodierten Tabellenbereichs (B2-Auszug)", StringComparison.Ordinal) < 0)
+                // Gegen den Katalogeintrag prüfen, nicht gegen ein deutsches Literal:
+                // seit Paket 9 ist der Hinweistext übersetzbar, ein festes Literal
+                // hätte den Selbsttest auf englischer Oberfläche scheitern lassen.
+                gross.Hinweis.IndexOf(MyResource.Resource.SIMQ_VDI4640_AUSSERHALB_TABELLE,
+                                      StringComparison.Ordinal) < 0)
             { sb.AppendLine("   FEHLER: Hinweistext zur Klemmung fehlt im Ergebnis"); ok = false; }
             sb.AppendLine("   20 Sonden, 1800 h/a: " + gross.Hinweis);
 

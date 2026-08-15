@@ -108,9 +108,11 @@ namespace WindowsFormsApplication1
             this.ClientSize = new Size(620, 592);
 
             // --- Hauptsenke ----------------------------------------------------------
+            // Beschriftung, deshalb der gross geschriebene Schluessel: SIM_ROLLE_* liefert
+            // die klein geschriebene Satzform ("main sink") fuer den Einsatz in Meldungen.
             GroupBox gbHaupt = new GroupBox
             {
-                Text = MyResource.Resource.SIM_ROLLE_HAUPTSENKE,
+                Text = MyResource.Resource.SIM_GRUPPE_HAUPTSENKE,
                 Location = new Point(12, 10),
                 Size = new Size(596, 132)
             };

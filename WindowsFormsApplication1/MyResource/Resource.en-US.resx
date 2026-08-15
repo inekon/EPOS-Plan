@@ -127,7 +127,7 @@
     <value>Description</value>
   </data>
   <data name="Text_Hinweis" xml:space="preserve">
-    <value>Hint</value>
+    <value>Note</value>
   </data>
   <data name="Text_Form_Start_MessageBox1" xml:space="preserve">
     <value>Please select a project first!</value>
@@ -138,14 +138,8 @@
   <data name="Text_Projekt" xml:space="preserve">
     <value>Project</value>
   </data>
-  <data name="Text_Ausgewaehlt" xml:space="preserve">
-    <value>selected</value>
-  </data>
   <data name="Text_Geoeffnet" xml:space="preserve">
     <value>opened</value>
-  </data>
-  <data name="Text_nicht_geoffnet" xml:space="preserve">
-    <value>not opened</value>
   </data>
   <data name="KONFIG_BHKW" xml:space="preserve">
     <value>CHP</value>
@@ -1161,7 +1155,7 @@ Please select a suitable storage or change the use in the buffer storage managem
     <value>Oil [MWh/a]</value>
   </data>
   <data name="SIM_SPALTE_PRIO" xml:space="preserve">
-    <value>Prio</value>
+    <value>prio</value>
   </data>
   <data name="SIM_SPALTE_SENKE" xml:space="preserve">
     <value>Sink</value>
@@ -1883,5 +1877,17 @@ Boilers, CHP units and solar thermal generate the heat themselves.</value>
   </data>
   <data name="SIM_DASH_SPEICHER_INFO" xml:space="preserve">
     <value>Theoretical storage (PV) (kWh):</value>
+  </data>
+  <data name="CHART_TOOLTIP_EINHEIT" xml:space="preserve">
+    <value>Unit: {0}</value>
+  </data>
+  <data name="CHART_TOOLTIP_WERT" xml:space="preserve">
+    <value>Value: {0} {1}</value>
+  </data>
+  <data name="SIM_GRUPPE_HAUPTSENKE" xml:space="preserve">
+    <value>Main sink</value>
+  </data>
+  <data name="SIM_SPALTE_ZWEITSENKE" xml:space="preserve">
+    <value>Secondary sink</value>
   </data>
 </root>
