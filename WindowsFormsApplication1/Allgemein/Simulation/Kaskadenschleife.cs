@@ -100,7 +100,7 @@ namespace WindowsFormsApplication1
         //   + sein Anteil an der bedarfsdeckenden Speicherentladung (Phasen A/E)
         //   + Heizstab (nur Wärmepumpe — er gehört zu ihr)
         //
-        // INTERIMSREGEL für den mittleren Summanden — „VERMISCHUNG IM SPEICHER":
+        // ZURECHNUNGSREGEL für den mittleren Summanden — „VERMISCHUNG IM SPEICHER":
         // Der Speicherinhalt wird als Mischung geführt; jede Ladung schreibt ihre Menge
         // dem ladenden Erzeuger gut, jede bedarfsdeckende Entladung wird nach den
         // ANTEILEN AM AKTUELLEN INHALT aufgeteilt, und die Bereitschaftsverluste tragen
@@ -111,8 +111,11 @@ namespace WindowsFormsApplication1
         // der Stufe, nie mehr —, (b) ohne neue Konfigurationsgröße auskommt und (c) bei
         // GENAU EINEM Lader je Speicher — dem Fall aller neun Referenzprojekte — die
         // gesamte Entladung wie bisher der Wärmepumpe zurechnet. Sie ist die
-        // Umsetzung der Variante C aus der offenen Nutzerentscheidung 5-1; die
-        // Jahres-statt-Momentanbetrachtung bleibt dort zur Entscheidung offen.
+        // Umsetzung der Variante C aus der Nutzerentscheidung 5-1 — am 15.08.2026
+        // BESTÄTIGT (samt Momentanmischung statt Jahres-Ladeanteil, proportionaler
+        // Verlusttragung und Zurechnung je Erzeugerart) und damit keine Interimsregel
+        // mehr, sondern die gültige Regel. Siehe Paket5_SolarKessel_Protokoll.md,
+        // Kapitel 10.
         // ------------------------------------------------------------------
 
         private const int ART_WP = 0;

@@ -21,6 +21,12 @@ unberührt, ebenso `Referenzlaeufe/2026-08-14_B0/lauf_protokoll.md`.
 > ein Verweis auf 13. Drei Befunde waren kritisch (falsches Kessel-Ergebnis, Doppelzählung
 > der Deckungsgrade, genullter Kessel-Strombedarf), zwei ernst (stiller Positionswechsel,
 > stiller Totalausfall bei defekter Puffer-Senke).
+>
+> **Nutzerentscheidung 5-1 ist am 15.08.2026 BESTÄTIGT.** Die Zurechnungsregel
+> „Vermischung im Speicher" (Momentanmischung, proportionale Verlusttragung, Zurechnung je
+> Erzeuger*art*) ist damit **keine Interimsregel mehr**, sondern die gültige Regel — ohne
+> Codeänderung, der Stand der Nacharbeit bleibt unverändert. Einzelheiten in Kapitel 10.
+> Offen bleibt in diesem Protokoll nur noch **5-2**.
 
 **Das Feature-Flag ist der einzige Schalter.** Mit `Kaskade_Zweikanalig = aus` rechnet der
 Altpfad — und zwar nachweislich **byte-identisch**: Alle CSV-Dateien der neun
@@ -588,9 +594,21 @@ additiv (374 Zeilen hinzu, **0** entfernte Zeilen). Keine Designer- und keine
 
 ---
 
-## 10. Offene Nutzerentscheidungen
+## 10. Nutzerentscheidungen
 
-### 5-1 — Der Deckungsgrad der Solarthermie zeigt die gespeicherte Wärme nicht
+> **Stand 15.08.2026:** 5-1 ist **bestätigt** (siehe unten), **5-2 bleibt offen**.
+
+### 5-1 — Der Deckungsgrad der Solarthermie zeigt die gespeicherte Wärme nicht · **BESTÄTIGT 15.08.2026**
+
+> **Entscheidung des Nutzers vom 15.08.2026: die Zurechnungsregel „Vermischung im
+> Speicher" ist bestätigt** — mit allen sechs Teilantworten 5-1a bis 5-1f, wie sie die
+> Nacharbeit umgesetzt hat. Sie ist damit **keine Interimsregel mehr**, sondern die
+> gültige Regel des Rechenkerns; sie trägt seit Paket 6 vier Erzeugerarten (WP,
+> Solarthermie, Heizkessel, BHKW). **Keine Codeänderung** — der Stand der Nacharbeit ist
+> der bestätigte Stand. Die beiden nicht umgesetzten Teile bleiben Vormerkungen, keine
+> offenen Entscheidungen: die eigene Ergebnisspalte `Speicherladung` (5-1d,
+> Schemaänderung) und die Addierbarkeit der Prozentwerte bei nachgelagerter Solarthermie
+> (5-1f, Anzeige-Aufgabe von Paket 7).
 
 **Der Befund.** `Tab_ErgebnisSolarthermie.Waermebedarfsdeckung` folgt seit dieser
 Änderung der **Direktdeckung**. Lädt ein Kollektorfeld ausschließlich einen Puffer
@@ -657,6 +675,10 @@ umgestellt werden (Konzept 13.3).
 > | 5-1d | Soll `Speicherladung` als **eigene Spalte** ausgewiesen werden (Variante D)? | **nicht umgesetzt** — sie verlangt eine Schemaänderung an `Tab_ErgebnisSolarthermie`/`…Heizkessel`. Die Größe steht im Rechenkern bereit (`Speicherladung_gesamt` in beiden Modulen) |
 > | 5-1e | Soll `Waermeproduktion` des Kessels die Speicherladung enthalten? | **ja, unverändert** — sie ist die Bezugsgröße von Brennstoffverbrauch und Jahresnutzungsgrad. Würde sie um die Ladung gekürzt, widerspräche sie `Gasverbrauch` und `Kessel_Jahresnutzungsgrad_Spk` |
 > | 5-1f | Bezugsbedarf der Solar-Deckung ist ihr **Stufeneingang**, bei WP und Kessel der **Projektbedarf** | unverändert übernommen. Steht die Solarthermie nicht an erster Kaskadenposition, sind die Prozentwerte damit nicht direkt addierbar — Kandidat für Paket 7 |
+>
+> **Alle sechs Interimsantworten sind am 15.08.2026 bestätigt worden** und damit die
+> gültigen Regeln. 5-1d und 5-1f bleiben als Vormerkungen für Paket 7 bestehen
+> (Ergebnisspalte bzw. Anzeige), nicht als offene Entscheidungen.
 
 ### 5-2 — Ein nachgelagerter Erzeuger nimmt dem vorgelagerten Speicher den Durchsatz
 
@@ -853,7 +875,8 @@ Eigenanteil = Direktdeckung (Phase B)
 Die ersten beiden Summanden kennt die Kaskadenschleife: Sie sieht jede Lieferung je
 Anlage und Phase.
 
-**Die Interimsregel für die Entladung — „Vermischung im Speicher".** Der Speicherinhalt
+**Die Zurechnungsregel für die Entladung — „Vermischung im Speicher"** (bei der Nacharbeit
+als Interimsregel eingeführt, am 15.08.2026 mit 5-1 bestätigt)**.** Der Speicherinhalt
 wird als Mischung geführt: Jede Ladung schreibt ihre Menge dem ladenden Erzeuger gut,
 jede bedarfsdeckende Entladung wird nach den Anteilen am **aktuellen** Inhalt
 aufgeteilt, und die Bereitschaftsverluste tragen alle Anteile proportional (Angleichung
@@ -871,8 +894,9 @@ Warum diese und keine andere:
   sie die gesamte Entladung wie bisher der Wärmepumpe zu. Deshalb ändert sich in der
   Referenzmenge **kein einziger Wert** (13.10).
 
-Sie ist die minimale Umsetzung der Variante **C** aus der offenen Nutzerentscheidung 5-1;
-was daran offen bleibt, steht dort und in 13.12.
+Sie ist die minimale Umsetzung der Variante **C** aus der Nutzerentscheidung 5-1 — am
+15.08.2026 **bestätigt** und damit keine Interimsregel mehr (Kapitel 10). Was als
+Vormerkung für Paket 7 bleibt, steht dort und in 13.12.
 
 **Der Fix:**
 
@@ -1241,7 +1265,7 @@ bei 8760/8760.
 
 **Neu sichtbar durch N2:** In S1b, S3 und S3b lädt die Solarthermie ausschließlich
 Puffer, ihre Direktdeckung ist 0. Vor der Nacharbeit meldete sie deshalb **0 % Deckung**
-(genau der Punkt, den die offene Nutzerentscheidung 5-1 beklagte); jetzt weist sie ihren
+(genau der Punkt, den die Nutzerentscheidung 5-1 beklagte); jetzt weist sie ihren
 Eigenanteil aus:
 
 | Szenario | Deckung vorher | Deckung nachher | zugerechnete Entladung |
@@ -1272,12 +1296,12 @@ die sechs gesperrten Dateien sind unverändert. **Nichts committet.**
 
 | # | Punkt | Status |
 |---|---|---|
-| 1 | **Zurechnungsregel der Speicherentladung** (Momentanmischung, Verlusttragung, je Erzeugerart) | als Interimsregel umgesetzt und begründet (13.2), zur Bestätigung offen — Nutzerentscheidung 5-1 |
-| 2 | **`Restwaermebedarf` bei Puffer-Hauptsenke** ist der Stufeneingang, weil die Direktdeckung 0 ist (1023/`DB_K_HAUPT`: `Waermebedarf` 382,13 = `Restwaermebedarf` 382,13 bei 72,68 MWh Produktion). Die Größe ist eine **Kaskadenpositions**-Größe und mit dem Deckungsgrad bewusst nicht deckungsgleich | erfüllt die Zusage `≥ 0`, ist aber erklärungsbedürftig. Alternative: `Waermebedarf − Eigenanteil` (mit Klemmung) — Nutzerentscheidung |
+| 1 | **Zurechnungsregel der Speicherentladung** (Momentanmischung, Verlusttragung, je Erzeugerart) | **erledigt** — als Interimsregel umgesetzt und begründet (13.2), am **15.08.2026 mit Nutzerentscheidung 5-1 bestätigt** und damit die gültige Regel (Kapitel 10) |
+| 2 | **`Restwaermebedarf` bei Puffer-Hauptsenke** ist der Stufeneingang, weil die Direktdeckung 0 ist (1023/`DB_K_HAUPT`: `Waermebedarf` 382,13 = `Restwaermebedarf` 382,13 bei 72,68 MWh Produktion). Die Größe ist eine **Kaskadenpositions**-Größe und mit dem Deckungsgrad bewusst nicht deckungsgleich | **erledigt** — die vorgeschlagene Alternative `Waermebedarf − Eigenanteil` (mit Klemmung) ist mit **Nutzerentscheidung 6-4** für Solarthermie, Kessel und BHKW umgesetzt (Paket-6-Protokoll 13.2) und mit **6-5** am 15.08.2026 auch für die Wärmepumpe (Paket-6-Protokoll, Kapitel 14). Alle vier Erzeugerarten folgen derselben Regel |
 | 3 | **Bezugsbedarf der Solar-Deckung** ist der Stufeneingang, bei WP und Kessel der Projektbedarf | unverändert übernommen; die Prozentwerte sind damit nur addierbar, wenn die Solarthermie an erster Kaskadenposition steht — Kandidat für Paket 7 |
 | 4 | **BHKW** meldet weiter seine Produktion als Deckung | Es rechnet einkanalig über `Uebernehmen` und kennt seinen Eigenanteil nicht. Am präparierten 1018 liegt die Deckungssumme dadurch um **+0,0014 Prozentpunkte** über der tatsächlichen Deckung. Paket 6 |
 | 5 | **5-2** (nachgelagerter Erzeuger nimmt dem vorgelagerten Speicher den Durchsatz) | unverändert offene Konzeptfrage, jetzt präzisiert und quantifiziert (Kapitel 10) |
-| 6 | **Eigene Ergebnisspalte `Speicherladung`** (Variante D aus 5-1) | nicht umgesetzt — Schemaänderung. Die Größe steht im Rechenkern in beiden Modulen bereit |
+| 6 | **Eigene Ergebnisspalte `Speicherladung`** (Variante D aus 5-1) | nicht umgesetzt — Schemaänderung. Die Größe steht im Rechenkern in beiden Modulen bereit. Mit der Bestätigung von 5-1 (5-1d) ist das eine **Vormerkung für Paket 7**, keine offene Entscheidung mehr |
 | 7 | **Stufeneingang je Erzeugerstufe** (Abgrenzung 3) | unverändert offen; die Folge für den Deckungsgrad ist mit N2 beseitigt, die Anzeigegröße `Waermebedarf` bleibt der Stufeneingang |
 | 8 | **Der Fehlerkanal aus N10 erreicht die Oberfläche noch nicht.** `Form_Simulation_Detail` ruft `SimulationControl.Do_Simulation` direkt und wertet weder `Sperrgrund` (seit ADR-001) noch das neue `Fehlertext` aus. Im zweikanaligen Weg sieht ein Anwender die Meldung „Der Heizkessel … ist im Projekt nicht hinterlegt" deshalb nicht mehr als Dialog, sondern nur auf der Konsole; der headless-Weg über `SimulationRunner` bekommt sie vollständig | bewusst nicht in dieser Nacharbeit geändert — es ist eine ANZEIGE-Aufgabe (dieselbe, die `Sperrgrund` schon offen hat) und gehört zu Paket 8. Der Altpfad zeigt seinen Dialog unverändert |
 
