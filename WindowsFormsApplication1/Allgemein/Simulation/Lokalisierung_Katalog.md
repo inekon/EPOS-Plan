@@ -214,6 +214,39 @@ zusammen mit der übrigen Altlast in D2.
 und `PSP_TIP_ZUORDNUNG_ALTMODELL` (ihr Mouseover-Hinweis) — die Spalte ist entfallen. Auch
 diese beiden bleiben bis zur Abnahme stehen, weil die Alt-Zuordnung selbst noch besteht.
 
+## Nachtrag Startseite — zurückgestellte Form_Start-Texte (15.08.2026)
+
+Die elf beim EN-Sichttest zurückgestellten hartkodierten Texte in
+`Views/Hauptformular/Form_Start.cs` (MessageBoxen und die Technologieliste auf dem Blatt
+Simulation) sind auf den Katalog umgestellt. Sechs Schlüssel sind neu, der Rest ist
+Mehrfachnutzung; alle sechs sind in beiden `.resx` und in `Resource.Designer.cs` nachgezogen.
+Sie gehören zur `Text_Form_Start_*`-Altfamilie außerhalb der Etappe-1-Inventarliste.
+
+### Neu (6)
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `Text_Form_Start_ProjektGeloescht` | Das zuletzt geöffnete Projekt ist gelöscht! | The last opened project has been deleted! | Form_Start.cs (`pBox_ProjektZuletzt_Click`) | **neu.** |
+| `Text_Form_Start_KlimaregionNichtGesetzt` | Die Klimaregion ist nicht gesetzt! Bitte setzen Sie die Klimaregion im Projekt! | The climate region is not set! Please set the climate region in the project! | Form_Start.cs (`tabPage5_Enter`) | **neu.** |
+| `Text_Form_Start_KlimaregionAuswaehlen` | Bitte eine Klimaregion auswählen. | Please select a climate region. | Form_Start.cs (`btn_Speichern_Click`) | **neu.** Nicht dasselbe wie `SIM_MSG_KLIMAREGION_WAEHLEN` („Klimaregion auswählen!"). |
+| `Text_Form_Start_KlimaregionNichtGefunden` | Die gewählte Klimaregion wurde nicht gefunden. | The selected climate region was not found. | Form_Start.cs (`btn_Speichern_Click`) | **neu.** |
+| `Text_Form_Start_KlimaregionNichtUebernommen` | Die Klimaregion konnte nicht in das Projekt übernommen werden. | The climate region could not be applied to the project. | Form_Start.cs (`btn_Speichern_Click`) | **neu.** |
+| `Text_Form_Start_KlimaregionGespeichert` | Klimaregion gespeichert. | Climate region saved. | Form_Start.cs (`btn_Speichern_Click`) | **neu.** |
+
+**Mehrfachnutzung bestehender Schlüssel:**
+
+| Schlüssel | zusätzliche Verwendung |
+|---|---|
+| `SIM_ERZEUGERNAME_HEIZKESSEL` / `SIM_ERZEUGERNAME_WAERMEPUMPE` / `SIM_STROMSPEICHER` / `SIM_ERZEUGERNAME_BHKW` | Technologieliste `label_Komponenten` auf dem Blatt Simulation (`tabPage5_Enter`). Reine Anzeige — die gleichlautenden DB-Werte in `DbWerte.cs` bleiben deutsch. |
+| `Text_Hinweis` | Titel der vier Hinweis-MessageBoxen in `btn_Speichern_Click` |
+| `SIM_TITEL_FEHLER` | Titel der Fehler-MessageBox in `btn_Speichern_Click` |
+| `Text_Form_Start_MessageBox1` | „Projekt fehlt"-Meldung in `btn_Speichern_Click` (bisher „Bitte zuerst ein Projekt auswählen." hartkodiert — durch die Wiederverwendung endet der Satz jetzt auf „!") |
+
+**Berichtigt:** `Text_Select` folgt jetzt Kapitel 8/11 des Glossars (Sentence case):
+DE „bitte auswählen!" → „Bitte auswählen!", EN „please select!" → „Please select!".
+Alle drei Fundstellen in `Form_Start.cs` setzen bzw. vergleichen über die Ressource,
+der Wertwechsel ist deshalb gefahrlos.
+
 ## CHART — 54 Schlüssel
 
 | Schlüssel | DE | EN | Fundstellen |

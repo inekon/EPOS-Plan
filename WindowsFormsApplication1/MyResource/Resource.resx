@@ -237,7 +237,7 @@ physikalisch. Das ist ein Hinweis, keine Sperre.</value>
     <value>Zweitsenke: {0}</value>
   </data>
   <data name="Text_Select" xml:space="preserve">
-    <value>bitte auswählen!</value>
+    <value>Bitte auswählen!</value>
   </data>
   <data name="Text_Name" xml:space="preserve">
     <value>Name</value>
@@ -253,6 +253,24 @@ physikalisch. Das ist ein Hinweis, keine Sperre.</value>
   </data>
   <data name="Text_Form_Start_MessageBox2" xml:space="preserve">
     <value>Projekt öffnen oder zuletzt geöffnet</value>
+  </data>
+  <data name="Text_Form_Start_ProjektGeloescht" xml:space="preserve">
+    <value>Das zuletzt geöffnete Projekt ist gelöscht!</value>
+  </data>
+  <data name="Text_Form_Start_KlimaregionNichtGesetzt" xml:space="preserve">
+    <value>Die Klimaregion ist nicht gesetzt! Bitte setzen Sie die Klimaregion im Projekt!</value>
+  </data>
+  <data name="Text_Form_Start_KlimaregionAuswaehlen" xml:space="preserve">
+    <value>Bitte eine Klimaregion auswählen.</value>
+  </data>
+  <data name="Text_Form_Start_KlimaregionNichtGefunden" xml:space="preserve">
+    <value>Die gewählte Klimaregion wurde nicht gefunden.</value>
+  </data>
+  <data name="Text_Form_Start_KlimaregionNichtUebernommen" xml:space="preserve">
+    <value>Die Klimaregion konnte nicht in das Projekt übernommen werden.</value>
+  </data>
+  <data name="Text_Form_Start_KlimaregionGespeichert" xml:space="preserve">
+    <value>Klimaregion gespeichert.</value>
   </data>
   <data name="Text_Projekt" xml:space="preserve">
     <value>Projekt</value>
