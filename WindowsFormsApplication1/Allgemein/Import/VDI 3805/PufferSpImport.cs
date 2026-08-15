@@ -36,7 +36,9 @@ namespace WindowsFormsApplication1
         {
             DateTime a = DateTime.Now;
 
-            TextReader sr = new StringReader(File.ReadAllText(filename, Encoding.Default));
+            // ANSI (Windows-1252) explizit: Encoding.Default waere unter .NET 8 UTF-8
+            // und macht aus jedem Umlaut-Byte U+FFFD (siehe AnsiEncoding).
+            TextReader sr = new StringReader(File.ReadAllText(filename, AnsiEncoding.Get()));
             var csvReader = new CsvReader(sr, ";");
 
             csvReader.BufferSize = 32768;
