@@ -110,18 +110,16 @@ namespace WindowsFormsApplication1
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SOLAR_TYP);
             id_type = WizardItemClass.SOLAR_TYP;
 
+            // Vollstaendig gelesene Modelle durchreichen - wie im Karten-Weg
+            // (Form_Start.pBox_Solarthermie_Click, Zweig Kollektorprofil). Die Teilkopie hat
+            // beim Speichern alle nicht kopierten Anlagenfelder verloren, weil WizardCtrl
+            // unten die Anlagen des Typs loescht und ueber Add_WP_Waermeerzeuger komplett neu
+            // schreibt - genullt wurden dabei ID_Carrier, Vorlauf/Ruecklauf, Grenzleistung,
+            // Betriebsart, Sperrung/Sperrzeiten, Bivalenter_Betrieb, Abschaltpunkt und
+            // Nutzungszeit.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                WErzeugerModel item = new WErzeugerModel();
-                item.ID = werzctrl.items[i].ID;
-                item.ID_Solar = werzctrl.items[i].ID_Solar;
-                item.ID_Type = werzctrl.items[i].ID_Type;
-                item.Bezeichner = werzctrl.items[i].Bezeichner;
-                item.Kollektormodulanzahl = werzctrl.items[i].Kollektormodulanzahl;
-                item.m_Neigung = (int)werzctrl.items[i].m_Neigung;
-                item.m_Azimut = werzctrl.items[i].m_Azimut; 
-
-                frm.list_werzmodel.Add(item);
+                frm.list_werzmodel.Add(werzctrl.items[i]);
             }
 
             frm.SetControls(m_ID_Projekt);

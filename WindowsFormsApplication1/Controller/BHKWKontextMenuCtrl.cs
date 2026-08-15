@@ -110,15 +110,16 @@ namespace WindowsFormsApplication1
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.BHKW_TYP);
             id_type = WizardItemClass.BHKW_TYP;
 
+            // Vollstaendig gelesene Modelle durchreichen - wie im Karten-Weg
+            // (Form_Start.pBox_BHKW_Click). Eine Teilkopie aus ID/ID_BHKW/ID_Type/Bezeichner
+            // hat beim Speichern alle uebrigen Anlagenfelder verloren: WizardCtrl loescht
+            // unten die Anlagen des Typs und schreibt sie ueber Add_WP_Waermeerzeuger komplett
+            // neu - genullt wurden dabei ID_Carrier, Vorlauf/Ruecklauf, Grenzleistung,
+            // Betriebsart, Sperrung/Sperrzeiten, Bivalenter_Betrieb, Abschaltpunkt und
+            // Nutzungszeit.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                WErzeugerModel item = new WErzeugerModel();
-                item.ID = werzctrl.items[i].ID;
-                item.ID_BHKW = werzctrl.items[i].ID_BHKW;
-                item.ID_Type = werzctrl.items[i].ID_Type;
-                item.Bezeichner = werzctrl.items[i].Bezeichner;
-
-                frm.list_werzmodel.Add(item);
+                frm.list_werzmodel.Add(werzctrl.items[i]);
             }
 
             frm.SetControls(m_szProjektname);
