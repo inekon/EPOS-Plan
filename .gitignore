@@ -366,3 +366,15 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+
+# EPOS-Plan Arbeitsartefakte (nie committen; eingefrorene Referenzbasen werden gezielt per git add -f aufgenommen)
+*.accdb
+*.laccdb
+DB-Backup/
+Referenzlaeufe/Arbeitskopie/
+Referenzlaeufe/2026-08-14_Paket1_Migration/
+Referenzlaeufe/2026-08-14_Paket3_Review/
+Referenzlaeufe/2026-08-15_Paket8_FlagAus_v2/
+Referenzlaeufe/2026-08-15_Paket8_Nacharbeit_FlagAus/
+Referenzlaeufe/2026-08-15_Paket9_Bericht/
+dev/
