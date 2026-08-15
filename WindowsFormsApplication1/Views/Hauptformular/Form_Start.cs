@@ -112,6 +112,49 @@ namespace WindowsFormsApplication1
             pBox_ProjektDetails.Enabled = true;
         }
 
+        /// <summary>
+        /// Uebernimmt das Projekt <paramref name="szProjektname"/> als aktuellen Kontext der
+        /// Startseite: Name/ID, Kopfband, Klimaregion, Statuszeichen, Freischaltung der
+        /// Wizard-Reiter und ein frisches Nachziehen der Wizard-Symbole.
+        ///
+        /// Befund 3: Die Einstiegswege (Menue "Neu"/"Projekt bearbeiten", Kacheln "Projekt
+        /// neu", "Projekt oeffnen", "Zuletzt geoeffnet") haben den Kontext bisher jeder
+        /// anders - ueber die Menuepunkte sogar ueberhaupt nicht - nachgezogen. Blieb dabei
+        /// <see cref="m_ID_Projekt"/> auf dem zuvor geoeffneten Projekt stehen, schrieben die
+        /// Wizard-Kacheln anschliessend in das FALSCHE Projekt. Die Uebernahme liegt deshalb
+        /// jetzt an genau einer Stelle.
+        /// </summary>
+        /// <returns>
+        /// false, wenn zu dem Namen kein Projekt existiert; der bisherige Kontext bleibt
+        /// dann unveraendert.
+        /// </returns>
+        public bool ProjektKontextUebernehmen(string szProjektname)
+        {
+            if (string.IsNullOrEmpty(szProjektname)) return false;
+
+            ProjektCtrl ctrl_projekt = new ProjektCtrl();
+            ctrl_projekt.ReadSingle(szProjektname);
+            if (ctrl_projekt.m_ID <= 0) return false;
+
+            m_szProjektname = ctrl_projekt.m_szProjektname;
+            m_ID_Projekt = ctrl_projekt.m_ID;
+
+            SetTextProjekt(m_szProjektname);
+            comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
+
+            label_ProjektStatus.Text = "✔";
+            label_ProjektStatus.ForeColor = Color.Green;
+
+            for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
+
+            // Die Einweg-Sperre zuruecksetzen: die Symbole gehoeren ab jetzt zum neuen
+            // Projekt, ein spaeterer Reiterwechsel muss sie erneut nachziehen duerfen.
+            bUpdateWizardSymbole = false;
+            UpdateWizardSymbole();
+
+            return true;
+        }
+
         private void pBox_Prozess_Click(object sender, EventArgs e)
         {
             Form_Prozesswaerme frm = new Form_Prozesswaerme();
@@ -274,16 +317,16 @@ namespace WindowsFormsApplication1
             if (Program.wizardctrl.Projektname == "") return;
             ctrl_projekt.ReadSingle(Program.wizardctrl.Projektname);
 
+            // Zuletzt geoeffnetes Projekt merken - Schreiblogik unveraendert.
             ctrl_app.m_ID_Projekt = ctrl_projekt.m_ID;
             ctrl_app.m_szProjektname = ctrl_projekt.m_szProjektname;
             ctrl_app.Update();
 
-            m_szProjektname = ctrl_projekt.m_szProjektname;
-            m_ID_Projekt = ctrl_projekt.m_ID;
-            SetTextProjekt(Program.wizardctrl.Projektname);
-
-            // Klimaregion des neu angelegten Projekts in der ComboBox anzeigen.
-            comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
+            // Befund 3: Bisher wurden hier nur Name/ID/Kopfband/Klimaregion gesetzt - die
+            // Wizard-Reiter blieben gesperrt (Form_Start_Load sperrt sie), das Statuszeichen
+            // stand weiter auf "kein Projekt" und die Wizard-Symbole zeigten den Stand des
+            // vorher geoeffneten Projekts.
+            ProjektKontextUebernehmen(Program.wizardctrl.Projektname);
         }
 
         public void SetKlima(string szKlima)
@@ -298,25 +341,17 @@ namespace WindowsFormsApplication1
 
             // Nach dem Schliessen des Wizards Form_Start auf das bearbeitete Projekt aktualisieren
             // und die evtl. geaenderte Klimaregion in der ComboBox anzeigen.
-            if (Program.wizardctrl.Projektname != "")
+            // Befund 3: Der Block hat bis auf das Nachziehen der Wizard-Symbole schon alles
+            // gemacht, was noetig ist - er wird deshalb komplett von
+            // ProjektKontextUebernehmen abgeloest (gleiche Bedingung: nur bei gefundenem
+            // Projekt wird Tab_Applikation geschrieben).
+            if (Program.wizardctrl.Projektname != ""
+                && ProjektKontextUebernehmen(Program.wizardctrl.Projektname))
             {
-                ProjektCtrl pc = new ProjektCtrl();
-                pc.ReadSingle(Program.wizardctrl.Projektname);
-                if (pc.m_ID > 0)
-                {
-                    m_szProjektname = pc.m_szProjektname;
-                    m_ID_Projekt = pc.m_ID;
-                    SetTextProjekt(pc.m_szProjektname);
-                    comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
-                    label_ProjektStatus.Text = "✔";
-                    label_ProjektStatus.ForeColor = Color.Green;
-                    for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
-
-                    ApplikationCtrl ctrl_app = new ApplikationCtrl();
-                    ; ctrl_app.m_ID_Projekt = m_ID_Projekt;
-                    ctrl_app.m_szProjektname = m_szProjektname;
-                    ctrl_app.Update();
-                }
+                ApplikationCtrl ctrl_app = new ApplikationCtrl();
+                ctrl_app.m_ID_Projekt = m_ID_Projekt;
+                ctrl_app.m_szProjektname = m_szProjektname;
+                ctrl_app.Update();
             }
         }
 
@@ -746,18 +781,14 @@ namespace WindowsFormsApplication1
 
             ctrl.ReadSingle();
             // falls zuletzt geöffnetes Projekt nicht gelöscht wurde
-            if (ctrl.m_szProjektname != "")
+            // Befund 3: Der Block setzte den Kontext bis auf die Einweg-Sperre
+            // bUpdateWizardSymbole bereits vollstaendig; die ID stammte allerdings aus
+            // Tab_Applikation statt aus Tab_Projekt. ProjektKontextUebernehmen liest die ID
+            // zum Namen und meldet zugleich, wenn das gemerkte Projekt geloescht wurde.
+            if (ctrl.m_szProjektname == "" || !ProjektKontextUebernehmen(ctrl.m_szProjektname))
             {
-                m_szProjektname = ctrl.m_szProjektname;
-                m_ID_Projekt = ctrl.m_ID_Projekt;
-                SetTextProjekt(m_szProjektname);
-                for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++) tabControl_Wizard.TabPages[i].Enabled = true;
-                label_ProjektStatus.Text = "✔";
-                label_ProjektStatus.ForeColor = Color.Green;
-                comboBox_Klima.Text = GetProjektKlimaregion(m_ID_Projekt);
-                UpdateWizardSymbole();
+                MessageBox.Show("Das zuletzt geöffnete Projekt ist gelöscht!"); return;
             }
-            else { MessageBox.Show("Das zuletzt geöffnete Projekt ist gelöscht!"); return; }
 
             using (Brush brush = new SolidBrush(Color.FromArgb(90, 0, 255, 0)))
             {
