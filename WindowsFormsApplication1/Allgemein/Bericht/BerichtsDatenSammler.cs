@@ -12,6 +12,13 @@ namespace WindowsFormsApplication1
     /// Optional wird je Projekt vorab headless simuliert (SimulationRunner, frische
     /// Instanz je Projekt — Muster aus Form_Variantentest.btnSimulieren_Click).
     /// Fehler eines einzelnen Projekts brechen den Lauf nicht ab (VariantenDaten.Fehler).
+    ///
+    /// Für einen BERICHTSLAUF (Word und/oder Excel) ist ausschließlich
+    /// <see cref="SammleFuerBericht"/> der Einstieg: dort ist die Kette
+    /// „frische Simulation → Wirtschaftlichkeitsrechnung → Bausteine" verbindlich
+    /// (Nutzeranforderung 15.08.2026). <see cref="Sammle"/> bleibt der Einstieg für
+    /// den Wirtschaftlichkeits-Reiter und den Verlaufsdialog, die anschließend selbst
+    /// rechnen.
     /// </summary>
     public class BerichtsDatenSammler
     {
@@ -101,10 +108,153 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        // ------------------------------------------------------------- Berichtslauf
+
+        /// <summary>
+        /// EINZIGER Einstieg der Berichtserzeugung — Word UND Excel arbeiten danach auf
+        /// demselben <see cref="BerichtsDaten"/>-Baum (Nutzeranforderung 15.08.2026).
+        ///
+        /// Verbindliche Kette je Berichtslauf:
+        ///  (a) jede gewählte Variante (und der Stamm) wird FRISCH simuliert und
+        ///      gespeichert — <see cref="Sammle"/> mit neuRechnen = true, also über
+        ///      SimulationRunner.SimuliereUndSpeichere samt Paket-8-Fehlerkanal;
+        ///  (b) direkt anschließend läuft die Wirtschaftlichkeitsrechnung derselben
+        ///      Vergleichsgruppe auf genau diesen frischen Ergebnissen
+        ///      (<see cref="WirtschaftlichkeitCtrl.Berechne"/> — derselbe Rechenweg,
+        ///      den der Reiter „Wirtschaftlichkeit" nimmt, inkl. Persistieren);
+        ///  (c) erst danach sammeln die Bausteine.
+        ///
+        /// Der frühere Schnellpfad „Vor Ausgabe neu rechnen = aus" entfällt bewusst:
+        /// ein Bericht darf nie auf veralteten Ergebnissen oder einer übersprungenen
+        /// Wirtschaftlichkeitsrechnung stehen. Aufwand: n Projekte × (Simulation +
+        /// Zahlungsreihen), die Wirtschaftlichkeit einmal für die ganze Gruppe.
+        ///
+        /// Die Wirtschaftlichkeit wird gruppenweise gerechnet, nicht je Variante:
+        /// die Kennzahlen einer Variante sind Differenzen gegen den Stamm, der
+        /// Rechner braucht deshalb alle Projekte in EINEM Aufruf (bestehende
+        /// Rechenkette, hier nur aufgerufen).
+        /// </summary>
+        public BerichtsDaten SammleFuerBericht(int idStamm, string stammName, List<int> variantenIds,
+                                               bool mitZeitreihen,
+                                               IProgress<Fortschritt> fortschritt, CancellationToken abbruch)
+        {
+            // Der Wirtschaftlichkeitsschritt ist ein zusätzlicher Fortschrittsschritt
+            // hinter den Projekten — sonst stünde der Balken schon auf 100 %, während
+            // noch gerechnet wird.
+            IProgress<Fortschritt> melder = fortschritt == null
+                ? null : new FortschrittMitZusatz(fortschritt, 1);
+
+            BerichtsDaten daten = Sammle(idStamm, stammName, variantenIds,
+                                         true /* immer frisch simulieren */, mitZeitreihen,
+                                         melder, abbruch);
+
+            RechneWirtschaftlichkeit(daten, fortschritt, abbruch);
+            return daten;
+        }
+
+        /// <summary>
+        /// Schritt (b) der Berichtskette: Wirtschaftlichkeit der gesammelten
+        /// Vergleichsgruppe über den bestehenden Rechenweg
+        /// (<see cref="WirtschaftlichkeitCtrl.Berechne"/>: alle Szenarien, Sensitivität,
+        /// Strommatrix, Persistenz in Tab_ErgebnisWirtschaftlichkeit). Hier wird nichts
+        /// nachgerechnet — nur aufgerufen und das Ergebnis am Berichtsbaum hinterlegt.
+        ///
+        /// Fehlerverhalten wie bei einem Simulationsfehler im Sammler: der Berichtslauf
+        /// bricht NICHT ab, die betroffene Variante wird mit Namen in
+        /// <see cref="BerichtsDaten.Warnungen"/> gemeldet (Abschlussmeldung des Dialogs
+        /// und Anhang-Kapitel „Hinweise dieses Berichtslaufs").
+        /// </summary>
+        private void RechneWirtschaftlichkeit(BerichtsDaten daten,
+                                              IProgress<Fortschritt> fortschritt,
+                                              CancellationToken abbruch)
+        {
+            if (daten == null || daten.Varianten.Count == 0) return;
+            abbruch.ThrowIfCancellationRequested();
+
+            int schritte = daten.Varianten.Count + 1;
+            Melde(fortschritt, schritte, schritte, "Wirtschaftlichkeit: " + daten.Stammprojektname);
+
+            try
+            {
+                var ctrl = new WirtschaftlichkeitCtrl();
+                WirtschaftlichkeitParameter p = ctrl.LadeParameter(daten.IdStamm);
+                daten.Wirtschaftlichkeit = ctrl.Berechne(daten, p) ?? new List<WirtschaftlichkeitErgebnis>();
+
+                if (daten.Wirtschaftlichkeit.Count == 0)
+                    daten.Warnungen.Add("Wirtschaftlichkeit: die Rechnung lieferte kein Ergebnis — " +
+                                        "Kostenpositionen und Parameter der Vergleichsgruppe prüfen.");
+
+                // Unvollständige Rechnungen je Projekt sichtbar machen (Szenario
+                // „Erwartet" genügt — Fehlgrund/Hinweis sind szenarioübergreifend gleich).
+                foreach (VariantenDaten v in daten.Varianten)
+                {
+                    WirtschaftlichkeitErgebnis e = null;
+                    foreach (WirtschaftlichkeitErgebnis kandidat in daten.Wirtschaftlichkeit)
+                        if (kandidat.IdProjekt == v.IdProjekt &&
+                            kandidat.Szenario == WirtschaftlichkeitSzenario.ERWARTET)
+                        { e = kandidat; break; }
+
+                    string wer = (v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige + "'";
+                    if (e == null)
+                    {
+                        if (daten.Wirtschaftlichkeit.Count > 0)
+                            daten.Warnungen.Add(wer + ": Wirtschaftlichkeit konnte nicht gerechnet werden.");
+                        continue;
+                    }
+                    if (e.Fehlgrund != null)
+                        daten.Warnungen.Add(wer + ": Wirtschaftlichkeit unvollständig — " + e.Fehlgrund);
+                    else if (e.Hinweis != null)
+                        daten.Warnungen.Add(wer + ": Wirtschaftlichkeit — " + e.Hinweis);
+                }
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex)
+            {
+                // Gleiches Muster wie ein gescheitertes Projekt im Sammler: melden,
+                // weiterlaufen. Die Bausteine fallen dann auf den persistierten Stand
+                // zurück und weisen ihn als solchen aus.
+                daten.WirtschaftlichkeitFehler = ex.Message;
+                daten.Warnungen.Add("Wirtschaftlichkeit konnte für diesen Berichtslauf nicht " +
+                                    "berechnet werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Reicht Fortschrittsmeldungen weiter und erhöht die Gesamtzahl um die
+        /// Schritte, die nach dem Sammeln noch folgen (Wirtschaftlichkeit).
+        /// Bewusst KEIN <see cref="Progress{T}"/>: der läuft im Berichtslauf ohne
+        /// SynchronizationContext und stellt dann über den ThreadPool zu — die
+        /// Statuszeile könnte Meldungen verdreht anzeigen.
+        /// </summary>
+        private sealed class FortschrittMitZusatz : IProgress<Fortschritt>
+        {
+            private readonly IProgress<Fortschritt> _ziel;
+            private readonly int _zusatz;
+
+            public FortschrittMitZusatz(IProgress<Fortschritt> ziel, int zusatz)
+            { _ziel = ziel; _zusatz = zusatz; }
+
+            public void Report(Fortschritt f)
+            {
+                if (_ziel == null || f == null) return;
+                _ziel.Report(new Fortschritt
+                {
+                    Text = f.Text,
+                    Aktuell = f.Aktuell,
+                    Gesamt = f.Gesamt + _zusatz
+                });
+            }
+        }
+
         // ------------------------------------------------------------- Sammeln
 
         /// <summary>
         /// Sammelt alle Berichtsdaten. variantenIds = gewählte Varianten (ohne Stamm).
+        /// Für einen Berichtslauf NICHT direkt aufrufen — dort ist
+        /// <see cref="SammleFuerBericht"/> der Einstieg (Simulation + Wirtschaftlichkeit
+        /// verbindlich). Direkte Aufrufer sind der Wirtschaftlichkeits-Reiter und der
+        /// Verlaufsdialog, die anschließend selbst rechnen.
+        ///
         /// neuRechnen: alle Projekte vorab simulieren; fehlende Ergebnisse werden
         /// unabhängig davon immer gerechnet (Konzept Kap. 3.1/8.2).
         /// mitZeitreihen: für die Ganglinien wird je Projekt IMMER frisch in-memory

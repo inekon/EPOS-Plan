@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
         private Button btnAlle, btnKeine;
         private Label lblBausteine;
         private CheckedListBox clbBausteine;
-        private CheckBox chkNeuRechnen;
+        private Label lblRechnen;
         private Label lblAusgabe;
         private RadioButton rbWord, rbExcel, rbBeide;
         private Label lblZiel;
@@ -72,7 +72,7 @@ namespace WindowsFormsApplication1
             this.btnKeine = new Button();
             this.lblBausteine = new Label();
             this.clbBausteine = new CheckedListBox();
-            this.chkNeuRechnen = new CheckBox();
+            this.lblRechnen = new Label();
             this.lblAusgabe = new Label();
             this.rbWord = new RadioButton();
             this.rbExcel = new RadioButton();
@@ -131,11 +131,15 @@ namespace WindowsFormsApplication1
             this.clbBausteine.Size = new Size(220, 190);
             this.clbBausteine.ItemCheck += new ItemCheckEventHandler(this.clbBausteine_ItemCheck);
 
-            // Optionen
-            this.chkNeuRechnen.AutoSize = true;
-            this.chkNeuRechnen.Location = new Point(498, 232);
-            this.chkNeuRechnen.Text = "Vor Ausgabe neu rechnen";
-            this.chkNeuRechnen.Checked = true;
+            // Rechenhinweis statt Option: Simulation und Wirtschaftlichkeit laufen
+            // vor JEDER Ausgabe neu (Nutzeranforderung 15.08.2026) — der frühere
+            // Schalter „Vor Ausgabe neu rechnen" entfällt bewusst.
+            this.lblRechnen.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            this.lblRechnen.ForeColor = Color.DimGray;
+            this.lblRechnen.Location = new Point(498, 228);
+            this.lblRechnen.Size = new Size(220, 30);
+            this.lblRechnen.Text = "Jeder Bericht rechnet neu: alle gewählten Varianten " +
+                                   "werden simuliert und wirtschaftlich bewertet.";
 
             this.lblAusgabe.AutoSize = true;
             this.lblAusgabe.Location = new Point(498, 260);
@@ -208,7 +212,7 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.btnKeine);
             this.Controls.Add(this.lblBausteine);
             this.Controls.Add(this.clbBausteine);
-            this.Controls.Add(this.chkNeuRechnen);
+            this.Controls.Add(this.lblRechnen);
             this.Controls.Add(this.lblAusgabe);
             this.Controls.Add(this.rbWord);
             this.Controls.Add(this.rbExcel);
@@ -255,8 +259,8 @@ namespace WindowsFormsApplication1
                     lvVarianten.Items.Add(it);
                 }
 
-                // Bausteine. Wirtschaftlichkeit (Phase 6) ist wählbar; der Baustein
-                // liest die im Reiter Wirtschaftlichkeit persistierten Ergebnisse.
+                // Bausteine. Wirtschaftlichkeit (Phase 6) ist wählbar; die Zahlen dafür
+                // rechnet der Berichtslauf selbst (SammleFuerBericht, Schritt b).
                 clbBausteine.Items.Clear();
                 foreach (BerichtsKonfiguration.BausteinDef b in BerichtsKonfiguration.AlleBausteine)
                 {
@@ -266,7 +270,6 @@ namespace WindowsFormsApplication1
                     clbBausteine.Items.Add(b.Titel, aktiv);
                 }
 
-                chkNeuRechnen.Checked = konfig.NeuRechnen;
                 rbWord.Checked = konfig.Ausgabe == "Word";
                 rbExcel.Checked = konfig.Ausgabe == "Excel";
                 rbBeide.Checked = konfig.Ausgabe == "Beide";
@@ -295,14 +298,15 @@ namespace WindowsFormsApplication1
             }
         }
 
-        // Hinweis beim Aktivieren der Wirtschaftlichkeit: Datenquelle ist der Reiter.
+        // Hinweis beim Aktivieren der Wirtschaftlichkeit: der Berichtslauf rechnet sie
+        // selbst mit — ein vorheriger Besuch des Reiters ist nicht nötig.
         private void clbBausteine_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (_initialisiere) return;
             int idx = IndexVon(BerichtsKonfiguration.B_WIRTSCHAFT);
             if (e.Index == idx && e.NewValue == CheckState.Checked)
-                Melde("Wirtschaftlichkeit: der Baustein übernimmt die im Reiter " +
-                      "„Wirtschaftlichkeit“ berechneten (gespeicherten) Ergebnisse.");
+                Melde("Wirtschaftlichkeit: wird für diesen Bericht neu berechnet " +
+                      "(Kapitalwertmethode, alle Szenarien) — verlängert den Lauf.");
         }
 
         private static int IndexVon(string schluessel)
@@ -356,7 +360,9 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < BerichtsKonfiguration.AlleBausteine.Length; i++)
                 if (clbBausteine.GetItemChecked(i))
                     k.AktiveBausteine.Add(BerichtsKonfiguration.AlleBausteine[i].Schluessel);
-            k.NeuRechnen = chkNeuRechnen.Checked;
+            // NeuRechnen bleibt nur noch für den JSON-Bestand in der DB stehen — der
+            // Berichtslauf rechnet grundsätzlich neu (siehe SammleFuerBericht).
+            k.NeuRechnen = true;
             k.Ausgabe = rbBeide.Checked ? "Beide" : (rbExcel.Checked ? "Excel" : "Word");
             k.ZielOrdner = txtZiel.Text ?? "";
             return k;
@@ -369,21 +375,18 @@ namespace WindowsFormsApplication1
             BerichtsKonfiguration konfig = LeseKonfigurationAusUi();
             _bericht.Speichere(_idStamm, konfig);   // Auswahl merken (Konzept Kap. 8.4)
 
-            // Hinweis auf fehlende Ergebnisse, wenn nicht neu gerechnet werden soll.
-            if (!konfig.NeuRechnen)
-            {
-                var fehlend = new List<string>();
-                foreach (ListViewItem it in lvVarianten.Items)
-                {
-                    var st = it.Tag as BerichtsDatenSammler.VariantenStatus;
-                    if (st != null && it.Checked && !st.SimStand.HasValue) fehlend.Add(st.Projektname);
-                }
-                if (fehlend.Count > 0 && MessageBox.Show(
-                        "Für folgende Projekte liegt kein Simulationsergebnis vor — sie werden vor dem " +
-                        "Bericht simuliert:\r\n\r\n" + string.Join("\r\n", fehlend) + "\r\n\r\nFortfahren?",
-                        "Bericht erstellen", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-                    return;
-            }
+            // Kein Schnellpfad mehr: jeder Berichtslauf simuliert alle gewählten
+            // Projekte neu und rechnet danach die Wirtschaftlichkeit. Das kostet Zeit,
+            // deshalb wird der Aufwand vor dem Start beziffert statt hinterher erklärt.
+            int anzahl = 0;
+            foreach (ListViewItem it in lvVarianten.Items) if (it.Checked) anzahl++;
+            if (MessageBox.Show(
+                    "Für diesen Bericht werden " + anzahl + " Projekt(e) neu simuliert und " +
+                    "anschließend wirtschaftlich bewertet.\r\n\r\n" +
+                    "Je nach Projektgröße dauert das einige Minuten. Fortfahren?",
+                    "Bericht erstellen", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                != DialogResult.Yes)
+                return;
 
             _cts = new CancellationTokenSource();
             SetBusy(true);
@@ -401,12 +404,16 @@ namespace WindowsFormsApplication1
             {
                 CancellationToken ct = _cts.Token;
                 // Ganglinien (Word) und Monatswerte (Excel-Detailblätter) brauchen
-                // Stundenreihen — dafür wird je Projekt frisch in-memory simuliert
-                // (Konzept Kap. 6.2/9), sobald „Ergebnisse je Variante" aktiv ist.
+                // Stundenreihen; die sammelt der Lauf zusätzlich ein, sobald
+                // „Ergebnisse je Variante" aktiv ist (Konzept Kap. 6.2/9).
                 bool mitZeitreihen = konfig.IstAktiv(BerichtsKonfiguration.B_ERGEBNISSE);
+
+                // Ein Sammel-Einstieg für Word UND Excel: frische Simulation je Projekt,
+                // danach die Wirtschaftlichkeitsrechnung derselben Gruppe.
                 BerichtsDaten daten = await Task.Run(() =>
-                    new BerichtsDatenSammler().Sammle(_idStamm, _stammName, konfig.VariantenIds,
-                                                      konfig.NeuRechnen, mitZeitreihen, progressMelder, ct), ct);
+                    new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,
+                                                                 konfig.VariantenIds,
+                                                                 mitZeitreihen, progressMelder, ct), ct);
 
                 // Word- und/oder Excel-Erzeugung (Konzept Kap. 4/9).
                 string wordPfad = null, excelPfad = null;
@@ -493,7 +500,6 @@ namespace WindowsFormsApplication1
             clbBausteine.Enabled = !busy;
             btnAlle.Enabled = !busy;
             btnKeine.Enabled = !busy;
-            chkNeuRechnen.Enabled = !busy;
             rbWord.Enabled = !busy; rbExcel.Enabled = !busy; rbBeide.Enabled = !busy;
             txtZiel.Enabled = !busy;
             btnDurchsuchen.Enabled = !busy;

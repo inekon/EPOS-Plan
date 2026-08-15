@@ -146,8 +146,19 @@ namespace WindowsFormsApplication1
             { "Getrennt (Referenz)", "Separate (reference)" },
             { "Vermeidung", "Avoided" },
             { "CO₂-Vermeidung vs. getrennt [t/a]", "CO₂ avoided vs. separate [t/a]" },
-            { "Noch keine Wirtschaftlichkeitsberechnung gespeichert — im Bereich Berichte & Kosten → Wirtschaftlichkeit berechnen.",
-              "No economic calculation stored yet — run it under Reports & Costs → Economic viability." },
+
+            // Verbindliche Rechenkette je Berichtslauf (15.08.2026)
+            { "Wirtschaftlichkeit konnte für diesen Bericht nicht berechnet werden — " +
+              "Kostenpositionen und Parameter prüfen.",
+              "Economic viability could not be calculated for this report — check cost items and parameters." },
+            { "⚠ Die Wirtschaftlichkeitsrechnung dieses Berichtslaufs ist fehlgeschlagen — " +
+              "gezeigt wird der zuletzt gespeicherte Stand.",
+              "⚠ The economic calculation of this report run failed — the last stored result is shown." },
+            { "Für diesen Bericht wurde jedes aufgeführte Projekt neu simuliert " +
+              "(stündliche Jahresrechnung) und anschließend wirtschaftlich bewertet; " +
+              "die Zahlen aller Kapitel stammen damit aus demselben Rechenlauf.",
+              "Every project listed here was simulated anew for this report (hourly annual calculation) " +
+              "and then evaluated economically; all chapters therefore share one calculation run." },
         };
     }
 }

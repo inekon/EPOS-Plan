@@ -16,12 +16,22 @@ namespace WindowsFormsApplication1
     /// Erzeugt den Projektvergleich als echte Word-Datei (.docx) über das OpenXML SDK
     /// (NuGet: DocumentFormat.OpenXml – kein installiertes Word nötig).
     ///
-    /// Datengrundlage: ErgebnisCtrl.Load(idProjekt) je Projekt (jeweils letztes Tab_Ergebnis).
+    /// Datengrundlage: jedes Projekt der Gruppe wird zu Beginn FRISCH simuliert
+    /// (SimulationRunner.SimuliereUndSpeichere, Muster Form_Variantentest), danach
+    /// liest ErgebnisCtrl.Load(idProjekt) den eben geschriebenen Lauf. Damit steht auch
+    /// dieser Weg nie auf veralteten Ergebnissen (Nutzeranforderung 15.08.2026) — er
+    /// wird mit Phase 2 des Berichtsmoduls ohnehin durch Form_Bericht abgelöst.
     /// Verglichen werden Stamm + Variante spaltenweise. Zusätzlich Kuchendiagramme
     /// (Wärme-/Stromdeckung) je Projekt, gerendert als PNG (System.Drawing) und eingebettet.
     /// </summary>
     public class ProjektvergleichBericht
     {
+        /// <summary>
+        /// Meldungen der Simulationsläufe dieses Berichts (Warnungen/Hinweise der Engine
+        /// je Projekt, Paket-8-Fehlerkanal). Der Aufrufer zeigt sie mit der
+        /// Abschlussmeldung an — stille Ersatzannahmen bleiben so sichtbar.
+        /// </summary>
+        public readonly List<string> Laufmeldungen = new List<string>();
         public class Projekt
         {
             public int Id;
@@ -64,9 +74,59 @@ namespace WindowsFormsApplication1
             public Segment(string l, double w, System.Drawing.Color f) { Label = l; Wert = w; Farbe = f; }
         }
 
+        /// <summary>
+        /// Simuliert jedes Projekt der Vergleichsgruppe frisch und speichert das Ergebnis
+        /// (frische SimulationRunner-Instanz je Projekt — Muster
+        /// Form_Variantentest.btnSimulieren_Click). Ein gescheitertes Projekt bricht den
+        /// Bericht nicht ab: es wird mit Namen gemeldet und der Bericht läuft mit dem
+        /// zuletzt gespeicherten Stand weiter — dasselbe Verhalten wie im
+        /// BerichtsDatenSammler.
+        /// </summary>
+        private void SimuliereGruppe(List<Projekt> gruppe)
+        {
+            var erledigt = new HashSet<int>();
+            foreach (Projekt pr in gruppe)
+            {
+                if (!erledigt.Add(pr.Id)) continue;
+                string wer = (pr.IstStamm ? "Stamm" : "Variante") + " '" +
+                             (string.IsNullOrEmpty(pr.Bezeichner) ? pr.Name : pr.Bezeichner) + "'";
+                try
+                {
+                    var runner = new SimulationRunner();
+                    string fehler;
+                    int erg = runner.SimuliereUndSpeichere(pr.Id, out fehler);
+
+                    if (!runner.LaufOk)
+                        Laufmeldungen.Add(wer + ": Simulation fehlgeschlagen — " +
+                                          (fehler ?? "unbekannter Fehler") +
+                                          ". Der Bericht zeigt den zuletzt gespeicherten Stand.");
+                    else if (erg <= 0)
+                        Laufmeldungen.Add(wer + ": Das frisch gerechnete Ergebnis konnte nicht " +
+                                          "gespeichert werden" +
+                                          (string.IsNullOrEmpty(fehler) ? "." : " (" + fehler + ")."));
+
+                    // Paket-8-Fehlerkanal: auch ein erfolgreicher Lauf kann mit einer
+                    // Ersatzannahme gerechnet haben — das gehört in die Abschlussmeldung.
+                    if (runner.Protokoll != null)
+                    {
+                        foreach (string w in runner.Protokoll.Warnungen) Laufmeldungen.Add(wer + ": " + w);
+                        foreach (string h in runner.Protokoll.Hinweise) Laufmeldungen.Add(wer + ": " + h);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Laufmeldungen.Add(wer + ": Simulation fehlgeschlagen — " + ex.Message +
+                                      ". Der Bericht zeigt den zuletzt gespeicherten Stand.");
+                }
+            }
+        }
+
         public void Erzeuge(string pfad, List<Projekt> gruppe)
         {
             if (gruppe == null || gruppe.Count == 0) throw new ArgumentException("Vergleichsgruppe ist leer.");
+
+            Laufmeldungen.Clear();
+            SimuliereGruppe(gruppe);
 
             var ergs = new Dictionary<int, ErgebnisModel>();
             foreach (Projekt pr in gruppe)

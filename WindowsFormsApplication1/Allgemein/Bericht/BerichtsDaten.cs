@@ -23,6 +23,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>Hinweise, die im Bericht bzw. der Abschlussmeldung erscheinen.</summary>
         public List<string> Warnungen = new List<string>();
+
+        /// <summary>
+        /// Wirtschaftlichkeits-Ergebnisse DIESES Berichtslaufs, frisch gerechnet über
+        /// <c>BerichtsDatenSammler.SammleFuerBericht</c> (Nutzeranforderung 15.08.2026:
+        /// ein Bericht steht nie auf einer übersprungenen Rechnung). Leer = die
+        /// Rechnung ist nicht gelaufen (z. B. Sammellauf des Wirtschaftlichkeits-
+        /// Reiters, der selbst rechnet); die Bausteine fallen dann auf den
+        /// persistierten Stand zurück.
+        ///
+        /// Die Werte sind identisch mit dem, was <c>WirtschaftlichkeitCtrl.Berechne</c>
+        /// nach Tab_ErgebnisWirtschaftlichkeit geschrieben hat — sie werden hier
+        /// mitgeführt, damit Word und Excel auch dann die gerechneten Zahlen zeigen,
+        /// wenn das Persistieren scheitert (dort wird der Fehler nur protokolliert).
+        /// </summary>
+        public List<WirtschaftlichkeitErgebnis> Wirtschaftlichkeit =
+            new List<WirtschaftlichkeitErgebnis>();
+
+        /// <summary>Fehlertext, falls die Wirtschaftlichkeitsrechnung des Laufs scheiterte.</summary>
+        public string WirtschaftlichkeitFehler;
     }
 
     /// <summary>Alle Daten eines einzelnen Projekts (Stamm oder Variante).</summary>

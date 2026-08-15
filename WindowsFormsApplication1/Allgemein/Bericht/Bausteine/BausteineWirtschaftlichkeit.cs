@@ -9,11 +9,13 @@ namespace WindowsFormsApplication1
     /// Baustein 7: Wirtschaftlichkeit (Konzept_Wirtschaftlichkeit.md Kap. 5/6;
     /// Phase 6 = Ausbaustufe W1, Kapitalwertmethode nach DIN EN 17463).
     ///
-    /// Der Baustein RECHNET NICHT selbst: er liest die im Reiter
-    /// „Wirtschaftlichkeit" persistierten Ergebnisse (Tab_ErgebnisWirtschaftlichkeit,
-    /// IWirtschaftlichkeitProvider) — Reiter, Word und Excel zeigen damit garantiert
-    /// identische Zahlen. Liegen keine (oder veraltete) Ergebnisse vor, erscheint
-    /// ein Hinweis mit dem Weg zum Reiter.
+    /// Der Baustein RECHNET NICHT selbst: er zeigt die Ergebnisse, die der
+    /// Berichtslauf zuvor gerechnet hat (BerichtsDatenSammler.SammleFuerBericht,
+    /// Schritt b — frische Simulation, dann WirtschaftlichkeitCtrl.Berechne). Sie
+    /// liegen am Berichtsbaum (BerichtsDaten.Wirtschaftlichkeit) und sind zugleich
+    /// nach Tab_ErgebnisWirtschaftlichkeit persistiert; Reiter, Word und Excel zeigen
+    /// damit dieselben Zahlen. Nur wenn die Rechnung dieses Laufs ausblieb (Fehler),
+    /// wird auf den persistierten Stand zurückgefallen und das ausgewiesen.
     /// </summary>
     public class WirtschaftlichkeitBaustein : IBerichtsBaustein
     {
@@ -35,15 +37,30 @@ namespace WindowsFormsApplication1
 
             var provider = new WirtschaftlichkeitCtrl();
             List<int> ids = daten.Varianten.Select(v => v.IdProjekt).ToList();
-            List<WirtschaftlichkeitErgebnis> alle = provider.LadeErgebnisse(ids);
+
+            // Quelle sind die Zahlen DIESES Berichtslaufs; der persistierte Stand ist
+            // nur das Rückfallnetz, falls die Rechnung des Laufs scheiterte.
+            bool ausDiesemLauf = daten.Wirtschaftlichkeit.Count > 0;
+            List<WirtschaftlichkeitErgebnis> alle = ausDiesemLauf
+                ? daten.Wirtschaftlichkeit
+                : provider.LadeErgebnisse(ids);
 
             if (alle.Count == 0)
             {
-                k.Hinweis("Für diese Vergleichsgruppe wurde noch keine Wirtschaftlichkeit berechnet. " +
-                          "Berechnung im Bereich Berichte & Kosten → Wirtschaftlichkeit ausführen, " +
-                          "anschließend den Bericht erneut erstellen.");
+                k.Hinweis("Für diese Vergleichsgruppe konnte keine Wirtschaftlichkeit berechnet " +
+                          "werden" +
+                          (daten.WirtschaftlichkeitFehler != null
+                           ? " (" + daten.WirtschaftlichkeitFehler + ")" : "") +
+                          ". Kostenpositionen (Tab_ProjektWerte) und die Parameter im Bereich " +
+                          "Berichte & Kosten → Wirtschaftlichkeit prüfen.");
                 return;
             }
+            if (!ausDiesemLauf)
+                k.Hinweis("⚠ Die Wirtschaftlichkeitsrechnung dieses Berichtslaufs ist " +
+                          "fehlgeschlagen" +
+                          (daten.WirtschaftlichkeitFehler != null
+                           ? " (" + daten.WirtschaftlichkeitFehler + ")" : "") +
+                          " — gezeigt wird der zuletzt gespeicherte Stand.");
 
             // ---------------- Methodik + Parameternachweis (Normanforderung) ----------------
             WirtschaftlichkeitParameter p = provider.LadeParameter(daten.IdStamm);
@@ -61,7 +78,9 @@ namespace WindowsFormsApplication1
                       "Investitions- und Betriebskosten aus den Kostenpositionen (Tab_ProjektWerte). " +
                       "Rechenstand: " + alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", k.Kultur) + ".");
 
-            // Aktualität gegen den Simulationsstand prüfen.
+            // Aktualität gegen den Simulationsstand prüfen. Nach der verbindlichen
+            // Kette (Simulation → Wirtschaftlichkeit) darf hier nichts mehr auflaufen;
+            // die Prüfung bleibt als Netz, falls doch etwas dazwischenkam.
             var veraltet = new List<string>();
             foreach (VariantenDaten v in daten.Varianten)
             {
@@ -71,9 +90,9 @@ namespace WindowsFormsApplication1
                     veraltet.Add(v.IstStamm ? "Stamm" : v.Anzeige);
             }
             if (veraltet.Count > 0)
-                k.Hinweis("⚠ Für " + string.Join(", ", veraltet) + " passt das gespeicherte " +
-                          "Wirtschaftlichkeits-Ergebnis nicht (mehr) zum aktuellen Simulationslauf — " +
-                          "im Reiter Wirtschaftlichkeit neu berechnen.");
+                k.Hinweis("⚠ Für " + string.Join(", ", veraltet) + " passt das " +
+                          "Wirtschaftlichkeits-Ergebnis nicht zum Simulationslauf dieses " +
+                          "Berichts — Bericht erneut erstellen.");
 
             // ---------------- Vergleichstabelle (Szenario Erwartet) ----------------
             k.Ueberschrift2("Kennzahlen im Szenario „Erwartet“");
@@ -323,8 +342,8 @@ namespace WindowsFormsApplication1
                 if (erw == null || !provider.ErgebnisAktuell(erw))
                 {
                     k.Hinweis("⚠ " + (v.IstStamm ? "Stamm" : v.Anzeige) +
-                              ": Emissionsbilanz entfällt — gespeichertes Ergebnis passt nicht " +
-                              "zum aktuellen Simulationslauf (im Reiter neu berechnen).");
+                              ": Emissionsbilanz entfällt — das Wirtschaftlichkeits-Ergebnis " +
+                              "passt nicht zum Simulationslauf dieses Berichts.");
                     continue;
                 }
                 EmissionsBilanz b = EmissionsBilanzRechner.Berechne(v.IdProjekt, p);

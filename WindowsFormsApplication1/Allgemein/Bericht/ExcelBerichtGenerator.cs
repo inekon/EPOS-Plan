@@ -36,8 +36,9 @@ namespace WindowsFormsApplication1
                 BlattUebersicht(wb, daten);
                 BlattVergleich(wb, daten);
 
-                // Phase 6: persistierte Kapitalwert-Ergebnisse (gleiche Quelle wie
-                // Reiter und Word-Baustein — Tab_ErgebnisWirtschaftlichkeit).
+                // Phase 6: Kapitalwert-Ergebnisse dieses Berichtslaufs (gleiche Quelle
+                // wie der Word-Baustein — BerichtsDaten.Wirtschaftlichkeit, ersatzweise
+                // der persistierte Stand aus Tab_ErgebnisWirtschaftlichkeit).
                 if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
                     BlattWirtschaftlichkeit(wb, daten);
 
@@ -202,14 +203,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Blatt „Wirtschaftlichkeit": Kennzahlen der Kapitalwertmethode je Szenario
-        /// (Zeilenblöcke Worst/Erwartet/Best; Spalten = Stamm + Varianten) aus den
-        /// persistierten Ergebnissen. Echte Zahlenwerte, fehlende Werte bleiben leer.
+        /// (Zeilenblöcke Worst/Erwartet/Best; Spalten = Stamm + Varianten) aus der
+        /// Rechnung dieses Berichtslaufs — identische Quelle wie der Word-Baustein.
+        /// Echte Zahlenwerte, fehlende Werte bleiben leer.
         /// </summary>
         private static void BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten)
         {
             var provider = new WirtschaftlichkeitCtrl();
             List<int> ids = daten.Varianten.Select(v => v.IdProjekt).ToList();
-            List<WirtschaftlichkeitErgebnis> alle = provider.LadeErgebnisse(ids);
+            bool ausDiesemLauf = daten.Wirtschaftlichkeit.Count > 0;
+            List<WirtschaftlichkeitErgebnis> alle = ausDiesemLauf
+                ? daten.Wirtschaftlichkeit
+                : provider.LadeErgebnisse(ids);
 
             IXLWorksheet ws = wb.Worksheets.Add(BerichtTexte.T("Wirtschaftlichkeit"));
             int r = 1;
@@ -222,8 +227,10 @@ namespace WindowsFormsApplication1
             if (alle.Count == 0)
             {
                 ws.Cell(r + 1, 1).Value = BerichtTexte.T(
-                    "Noch keine Wirtschaftlichkeitsberechnung gespeichert — im Bereich " +
-                    "Berichte & Kosten → Wirtschaftlichkeit berechnen.");
+                    "Wirtschaftlichkeit konnte für diesen Bericht nicht berechnet werden — " +
+                    "Kostenpositionen und Parameter prüfen.") +
+                    (daten.WirtschaftlichkeitFehler != null
+                     ? " (" + daten.WirtschaftlichkeitFehler + ")" : "");
                 ws.Columns().AdjustToContents();
                 return;
             }
@@ -234,7 +241,16 @@ namespace WindowsFormsApplication1
                 " · " + BerichtTexte.T("Rechenstand") + ": " +
                 alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", BerichtTexte.Kultur);
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
-            r += 2;
+            r++;
+            if (!ausDiesemLauf)
+            {
+                ws.Cell(r, 1).Value = BerichtTexte.T(
+                    "⚠ Die Wirtschaftlichkeitsrechnung dieses Berichtslaufs ist fehlgeschlagen — " +
+                    "gezeigt wird der zuletzt gespeicherte Stand.");
+                ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#C00000");
+                r++;
+            }
+            r++;
 
             // Kennzahl-Zeilen: Label, Format, Wertzugriff (null = leer).
             // BEHG-/KWKG-/IRR-Zeilen nur, wenn sie im Datenbestand vorkommen.
