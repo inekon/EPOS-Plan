@@ -214,6 +214,18 @@ namespace WindowsFormsApplication1
             return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out wert);
         }
 
+        /// <summary>
+        /// Ganzzahl-Gegenstück zu <see cref="ZahlParsen"/>: invariant geparst.
+        /// Komma und Punkt sind hier bewusst KEINE gültigen Zeichen - es geht um
+        /// Stückzahlen, Tage, Nutzungsdauern und ganze Grad.
+        /// </summary>
+        public static bool GanzzahlParsen(string text, out int wert)
+        {
+            wert = 0;
+            if (string.IsNullOrEmpty(text)) return false;
+            return int.TryParse(text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out wert);
+        }
+
         public static double convertTxt2Double(string txt)
         {
             if (txt != "")
