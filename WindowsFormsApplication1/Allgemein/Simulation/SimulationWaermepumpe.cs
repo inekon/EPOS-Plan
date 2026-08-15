@@ -252,6 +252,12 @@ namespace WindowsFormsApplication1
                 rs.Close();
 
                 wp_model.Add(model);
+
+                // K-3: einmaliger Hinweis, wenn eine bivalent-alternative Anlage mit der
+                // Vorbelegung 0 °C als Bivalenztemperatur rechnet. Steht hier, weil der
+                // Modulaufbau beide Rechenwege bedient und je Anlage genau einmal läuft.
+                AlternativHinweisPruefen(model);
+
                 // Bauart merken - sie entscheidet, ob die WQ_*-Konfiguration überhaupt
                 // wirkt (siehe WPTypen); Auswertungen brauchen dieselbe Regel.
                 wp_typ.Add(wpTyp ?? "");
@@ -488,8 +494,9 @@ namespace WindowsFormsApplication1
                     {
                         // Bei der bivalent-alternativen Betriebsweise wird der Wärmebedarf bis zum Erreichen des
                         // Bivalenzpunktes allein von der Wärmepumpe getragen. Der zweite Wärmeerzeuger springt bei
-                        // der Unterschreitung des Bivalenzpunktes von ca. + 3 °C ein und übernimmt den alleinigen Heizbetrieb.
-                        if (result[PTHERM] < Rest_waerme)
+                        // der Unterschreitung des Bivalenzpunktes ein und übernimmt den alleinigen Heizbetrieb.
+                        // K-3: Umschaltkriterium ist die AUSSENTEMPERATUR — siehe AlternativAus.
+                        if (AlternativAus(model, stunde))
                         {
                             result[PTHERM] = 0;
                             result[PEL] = 0;
@@ -1015,10 +1022,10 @@ namespace WindowsFormsApplication1
                     }
                     else if (model.Bivalenter_Betrieb && model.Betriebsart == DbWerte.WP_BETRIEBSART_ALTERNATIV)
                     {
-                        // Bezugsgröße ist der offene KANALBEDARF, nicht der Bilanzraum
-                        // des Speichers (Paket-4-Review, Punkt 1) — siehe AlternativBezug.
-                        if (result[PTHERM] < AlternativBezug(zuordnung, hauptauftrag[index],
-                                                             rest_heiz, rest_ww))
+                        // K-3: identische Semantik wie im Altpfad — die Umschaltung hängt an
+                        // der Außentemperatur, nicht mehr an einer Bezugsgröße der Stunde.
+                        // Damit entfällt die Kanalfrage hier vollständig (siehe AlternativAus).
+                        if (AlternativAus(model, stunde))
                         {
                             result[PTHERM] = 0;
                             result[PEL] = 0;
@@ -1197,29 +1204,91 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Bezugsgröße des ALTERNATIVBETRIEBS (Konzept 6.3, in der Paket-4-Review
-        /// nachgeschärft): der offene BEDARF, den das Modul bedient — auch dann, wenn es
-        /// über einen Puffer arbeitet.
+        /// UMSCHALTKRITERIUM DES BIVALENT-ALTERNATIVEN BETRIEBS (K-3, Nutzerentscheidung
+        /// vom 15.08.2026 zu <c>Konzept_KonfigUI_Hydraulik.md</c> Abschnitt 8).
+        /// true = die Wärmepumpe ist in dieser Stunde abgeschaltet, der zweite Erzeuger
+        /// übernimmt den Heizbetrieb allein.
         ///
-        /// Die Betriebsart heißt „die Wärmepumpe trägt die Last allein, bis der zweite
-        /// Erzeuger sie ablöst". Verglichen wird also Leistung gegen LAST. Stünde hier
-        /// wie in <see cref="Verfuegbar"/> die Ladefähigkeit oder der Bilanzraum, hinge
-        /// die Abschaltung am Füllstand des Speichers: Ein fast voller Puffer hätte die
-        /// Wärmepumpe im Alternativbetrieb schon bei milden Temperaturen stillgelegt,
-        /// ein leerer sie bei Frost weiterlaufen lassen. Beides hat mit dem
-        /// Bivalenzgedanken nichts zu tun.
+        /// <para>
+        /// Maßgeblich ist die AUSSENTEMPERATUR gegen die Bivalenztemperatur
+        /// <c>Tab_Energieanlagen.Abschaltpunkt</c> — dieselbe Größe und dieselbe Spalte,
+        /// die der teilparallele Zweig auswertet. Unterhalb der Bivalenztemperatur ist die
+        /// Wärmepumpe aus; ab ihr läuft sie mit ihrer Leistung, und was sie in einer
+        /// einzelnen Stunde nicht deckt, geht regulär an die nächste Kaskadenstufe.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Was das ablöst.</b> Bis zu dieser Änderung stand hier
+        /// <c>if (result[PTHERM] &lt; Rest_waerme)</c> — die Wärmepumpe fiel in JEDER Stunde
+        /// aus, die sie nicht vollständig deckte. Das ist keine Bivalenzregelung, sondern
+        /// eine Leistungsprüfung: Sie traf einzelne Sommer-Warmwasserspitzen genauso wie
+        /// Frosttage, erzeugte stündliches Pendeln zwischen Wärmepumpe und Kessel und
+        /// hing an der Bedarfsganglinie statt am Außenklima. Der gepflegte
+        /// <c>Abschaltpunkt</c> blieb dabei wirkungslos.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Bezugsgröße entfällt.</b> Im zweikanaligen Weg beantwortete
+        /// <c>AlternativBezug</c> bis hierher die Frage, GEGEN WELCHEN Bedarf verglichen
+        /// wird (Kanalbedarf statt Bilanzraum des Speichers, Paket-4-Review Punkt 1).
+        /// Mit dem Temperaturkriterium stellt sich die Frage nicht mehr — verglichen wird
+        /// Temperatur gegen Temperatur —, deshalb ist die Methode entfallen. Der Vorteil
+        /// ist zugleich der Kern der Entscheidung: Die Abschaltung hängt weder am
+        /// Momentanbedarf noch am Füllstand eines Puffers.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Vergleichsgrenze.</b> Abgeschaltet wird bei ECHTER Unterschreitung
+        /// (<c>&lt;</c>); bei genau der Bivalenztemperatur läuft die Wärmepumpe noch. Der
+        /// teilparallele Zweig schaltet dagegen schon bei <c>&lt;=</c> ab. Der Unterschied
+        /// betrifft ausschließlich die Stunden mit exakter Gleichheit; der Teilparallel-Zweig
+        /// bleibt bewusst unverändert, weil er nicht Gegenstand von K-3 ist.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Der Spaltenwert gilt immer wörtlich, auch 0 °C.</b> <c>Abschaltpunkt</c> ist
+        /// im Bestand in keiner Zeile NULL, und der Wizard schreibt über
+        /// <c>double.Parse</c> stets einen Wert (Vorbelegung des Eingabefelds: 0). Ein
+        /// „nicht gepflegt" ist im Datenmodell daher nicht von einer bewusst gewählten
+        /// Bivalenztemperatur von 0 °C zu unterscheiden — und 0 °C ist ein plausibler,
+        /// gebräuchlicher Wert. Eine Ersatzregel für 0 würde also genau die Anlagen
+        /// falsch rechnen, die den Wert gewollt so führen. Stattdessen weist
+        /// <see cref="AlternativHinweisPruefen"/> beim Modulaufbau einmalig darauf hin,
+        /// dass der Vorbelegungswert wirksam ist.
+        /// </para>
         /// </summary>
-        private double AlternativBezug(Senkenzuordnung zuordnung, Ladeauftrag haupt,
-                                       double rest_heiz, double rest_ww)
+        private bool AlternativAus(WErzeugerModel model, int stunde)
         {
-            if (zuordnung == null) return rest_ww + rest_heiz;
+            return Temperatur[stunde] < model.Abschaltpunkt;
+        }
 
-            if (zuordnung.Haupt != Senke.Heizkreis)
-                return (haupt != null) ? Kanalbedarf(haupt.Speicher, rest_heiz, rest_ww) : 0;
+        /// <summary>
+        /// Einmaliger Hinweis beim Modulaufbau, wenn eine bivalent-alternative Anlage die
+        /// Bivalenztemperatur auf dem Vorbelegungswert 0 °C führt (K-3).
+        ///
+        /// Rein informativ — die Rechnung ist davon unberührt, der Wert gilt wörtlich
+        /// (siehe <see cref="AlternativAus"/>). Der Hinweis existiert, weil 0 °C zugleich
+        /// der Wert ist, den eine nie geöffnete Eingabemaske hinterlässt: Wer die Anlage
+        /// nur auf „Alternativbetrieb" gestellt hat, soll sehen, mit welcher
+        /// Bivalenztemperatur gerechnet wurde.
+        /// </summary>
+        private void AlternativHinweisPruefen(WErzeugerModel model)
+        {
+            if (model == null) return;
+            if (!model.Bivalenter_Betrieb) return;
+            if (model.Betriebsart != DbWerte.WP_BETRIEBSART_ALTERNATIV) return;
+            if (model.Abschaltpunkt != 0) return;
 
-            if (zuordnung.WSTyp == WaermequelleClass.SENKE_WARMWASSER) return rest_ww;
-            if (zuordnung.WSTyp == WaermequelleClass.SENKE_HEIZUNG) return rest_heiz;
-            return rest_ww + rest_heiz;
+            // KATALOG-KANDIDAT (Lokalisierung): deutscher Festtext wie bei den übrigen
+            // Protokollmeldungen dieses Moduls; Aufnahme in MyResource steht aus.
+            SimulationProtokoll.Aktuell.HinweisEinmal(
+                "wp-alternativ-bivalenztemperatur-0-" + model.ID,
+                MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE +
+                "Die Anlage '" + model.Bezeichner + "' rechnet bivalent-alternativ mit einer " +
+                "Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. " +
+                "Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger " +
+                "übernimmt allein. Ist das nicht beabsichtigt, die Abschalttemperatur der " +
+                "Anlage pflegen.");
         }
 
         /// <summary>
