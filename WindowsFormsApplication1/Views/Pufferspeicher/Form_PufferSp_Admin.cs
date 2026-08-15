@@ -32,14 +32,8 @@ namespace WindowsFormsApplication1
                 if (comboBox_Hersteller.FindStringExact(ctrl.items[i].Firma) == -1) comboBox_Hersteller.Items.Add(ctrl.items[i].Firma);
             }
 
-            comboBox_Volumen.Items.Add("Alle");
-            comboBox_Volumen.Items.Add("bis 100 l");
-            comboBox_Volumen.Items.Add(">100 bis 200 l");
-            comboBox_Volumen.Items.Add(">200 bis 500 l");
-            comboBox_Volumen.Items.Add(">500 bis 1.000 l");
-            comboBox_Volumen.Items.Add("über 1.000 l");
-            comboBox_Volumen.Text = "Alle";
-            comboBox_Hersteller.Text = "Alle";   
+            PufferSpFilter.VolumenfilterFuellen(comboBox_Volumen);
+            PufferSpFilter.HerstellerfilterVorbelegen(comboBox_Hersteller);
 
             if(m_bReadOnly)
             {
@@ -52,24 +46,13 @@ namespace WindowsFormsApplication1
         private void SetFilter()
         {
             RecordSet rs = new RecordSet();
-            string szFilter = "";
-            string szFilterVolumen = "";
             string sql = "";
 
-            // B0-10: Vorbelegung "alle Volumina" — ohne Treffer in der Literalkette blieb
-            // der Volumenteil sonst leer und das SQL endete in "... and  order by ...".
-            // Auslöser ist Freitext in der editierbaren ComboBox; das Symptom war eine
-            // stumme Leerliste (RecordSet fängt den Syntaxfehler ab).
-            szFilterVolumen = "Gesamtvolumen Like '%'";
-            if (comboBox_Volumen.Text == "Alle" || comboBox_Volumen.Text == "") szFilterVolumen = "Gesamtvolumen Like '%'";
-            else if (comboBox_Volumen.Text == "bis 100 l") szFilterVolumen = "Gesamtvolumen <100";
-            else if (comboBox_Volumen.Text == ">100 bis 200 l") szFilterVolumen = "Gesamtvolumen >=100 and Gesamtvolumen <200";
-            else if (comboBox_Volumen.Text == ">200 bis 500 l") szFilterVolumen = "Gesamtvolumen >=200 and Gesamtvolumen <500";
-            else if (comboBox_Volumen.Text == ">500 bis 1.000 l") szFilterVolumen = "Gesamtvolumen >=500 and Gesamtvolumen <1000";
-            else if (comboBox_Volumen.Text == "über 1.000 l") szFilterVolumen = "Gesamtvolumen >=1000";
-
-            if (comboBox_Hersteller.Text == "Alle" || comboBox_Hersteller.Text == "") szFilter = "Hersteller Like '%'";
-            else szFilter = "Hersteller='" + comboBox_Hersteller.Text + "'";
+            // B0-10 (Paket 9 / L5): Filterstufe über den AUSWAHLINDEX statt über den
+            // angezeigten Text - siehe PufferSpFilter. Wortlaut der Prädikate und die
+            // Vorbelegung "alle Volumina" sind unverändert.
+            string szFilterVolumen = PufferSpFilter.VolumenSql(comboBox_Volumen);
+            string szFilter = PufferSpFilter.HerstellerSql(comboBox_Hersteller);
 
             listBox_PufferSp_DB.Items.Clear();
             if (szFilter == "")
@@ -95,7 +78,9 @@ namespace WindowsFormsApplication1
         {
             PufferSpStammCtrl ctrl = new PufferSpStammCtrl();
             if(listBox_PufferSp_DB.Text == "") return;    
-            DialogResult dialogResult = MessageBox.Show("Soll " + listBox_PufferSp_DB.Text + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show(
+                string.Format(MyResource.Resource.PSP_MELDUNG_WIRKLICH_LOESCHEN, listBox_PufferSp_DB.Text),
+                MyResource.Resource.PSP_TITEL_LOESCHEN, MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
 
             if (!ctrl.Delete(listBox_PufferSp_DB.Text)) return;
@@ -191,7 +176,7 @@ namespace WindowsFormsApplication1
 
                 if (bExist)
                 {
-                    MessageBox.Show("Name existiert bereits!");
+                    MessageBox.Show(MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT);
                 }
                 else
                 {

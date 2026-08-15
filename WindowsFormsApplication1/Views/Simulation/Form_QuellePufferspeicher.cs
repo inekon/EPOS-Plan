@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
@@ -52,9 +53,24 @@ namespace WindowsFormsApplication1
             BaueOberflaeche();
         }
 
+        /// <summary>
+        /// Vorbelegung der Eingabefelder als Text. Paket 9 / L3: Statt der früher
+        /// hartkodierten Dezimalkomma-Zeichenketten („10,0") wird der ZAHLENWERT
+        /// formatiert — mit derselben Kultur, die <see cref="SetControls"/> unmittelbar
+        /// danach benutzt (<c>ToString("F1")</c>). Damit steht in der Maske auf jedem
+        /// System dieselbe Schreibweise wie in den nachgeladenen Werten; gelesen wird
+        /// ohnehin kulturinvariant über <see cref="WaermequelleClass.ZahlParsen"/>
+        /// (Komma ODER Punkt). <c>CurrentCulture</c> selbst wird nicht gesetzt
+        /// (Konzept 13.6, „Nicht Teil dieses Pakets").
+        /// </summary>
+        private static string Vorgabe(double wert)
+        {
+            return wert.ToString("F1", CultureInfo.CurrentCulture);
+        }
+
         private void BaueOberflaeche()
         {
-            this.Text = "Wärmequelle Pufferspeicher";
+            this.Text = MyResource.Resource.SIMQ_PUFFER_TITEL;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
@@ -63,7 +79,7 @@ namespace WindowsFormsApplication1
 
             Label kopf = new Label
             {
-                Text = "Pufferspeicher als Wärmequelle auswählen:",
+                Text = MyResource.Resource.SIMQ_PUFFER_KOPF,
                 AutoSize = true,
                 Font = new Font(this.Font, FontStyle.Bold),
                 Location = new Point(14, 12)
@@ -90,22 +106,33 @@ namespace WindowsFormsApplication1
             // Parameter der Wärmequelle
             GroupBox gb = new GroupBox
             {
-                Text = "Parameter der Wärmequelle",
+                Text = MyResource.Resource.SIMQ_PUFFER_GB_PARAMETER,
                 Location = new Point(14, 250),
                 Size = new Size(590, 130)
             };
             this.Controls.Add(gb);
 
-            Label l1 = new Label { Text = "Quelltemperatur [°C]:", AutoSize = true, Location = new Point(16, 30) };
-            _tbTemperatur = new TextBox { Location = new Point(180, 27), Width = 80, Text = "10,0" };
+            Label l1 = new Label { Text = MyResource.Resource.SIMQ_PUFFER_QUELLTEMPERATUR, AutoSize = true, Location = new Point(16, 30) };
+            Label l2 = new Label { Text = MyResource.Resource.SIMQ_PUFFER_SPREIZUNG, AutoSize = true, Location = new Point(16, 62) };
+            Label l3 = new Label { Text = MyResource.Resource.SIMQ_PUFFER_REGENERATION, AutoSize = true, Location = new Point(16, 94) };
+
+            // Feste Pixel-Geometrie (Konzept 13.6, Hauptrisiko der programmatischen
+            // Dialoge): Die englischen Beschriftungen sind länger als die deutschen.
+            // Die Eingabespalte beginnt deshalb erst hinter der breitesten Beschriftung -
+            // auf Deutsch bleibt es bei den bisherigen 180 px, weil dort keine
+            // Beschriftung so weit reicht. Nach oben gekappt, damit die Felder nicht in
+            // die Kapazitätsanzeige (x = 285) laufen.
+            int xEingabe = Math.Max(l1.Right, Math.Max(l2.Right, l3.Right)) + 12;
+            if (xEingabe < 180) xEingabe = 180;
+            if (xEingabe > 200) xEingabe = 200;
+
+            _tbTemperatur = new TextBox { Location = new Point(xEingabe, 27), Width = 80, Text = Vorgabe(Quelltemperatur) };
             _tbTemperatur.TextChanged += (s, e) => BerechneKapazitaet();
 
-            Label l2 = new Label { Text = "nutzbare Spreizung [K]:", AutoSize = true, Location = new Point(16, 62) };
-            _tbSpreizung = new TextBox { Location = new Point(180, 59), Width = 80, Text = "5,0" };
+            _tbSpreizung = new TextBox { Location = new Point(xEingabe, 59), Width = 80, Text = Vorgabe(Spreizung) };
             _tbSpreizung.TextChanged += (s, e) => BerechneKapazitaet();
 
-            Label l3 = new Label { Text = "Regeneration [kW]:", AutoSize = true, Location = new Point(16, 94) };
-            _tbRegeneration = new TextBox { Location = new Point(180, 91), Width = 80, Text = "0,0" };
+            _tbRegeneration = new TextBox { Location = new Point(xEingabe, 91), Width = 80, Text = Vorgabe(Regeneration) };
 
             _lblKapazitaet = new Label
             {
@@ -117,7 +144,7 @@ namespace WindowsFormsApplication1
 
             _cbUnbegrenzt = new CheckBox
             {
-                Text = "Quelle unbegrenzt verfügbar (nur Temperatur maßgeblich)",
+                Text = MyResource.Resource.SIMQ_PUFFER_CB_UNBEGRENZT,
                 AutoSize = true,
                 Location = new Point(285, 92)
             };
@@ -136,23 +163,20 @@ namespace WindowsFormsApplication1
                 AutoSize = false,
                 Location = new Point(330, 132),
                 Size = new Size(275, 105),
-                Text = "Die Wärmepumpe entzieht dem Speicher je Stunde die " +
-                       "Verdampferwärme (Wärmeproduktion − Stromaufnahme).\n\n" +
-                       "Ist der Speicher leer, wird die Leistung der Wärmepumpe " +
-                       "begrenzt; die Regeneration lädt den Speicher laufend nach."
+                Text = MyResource.Resource.SIMQ_PUFFER_HINWEIS_QUELLWAERME
             };
             this.Controls.Add(hinweis);
 
             Button btnOk = new Button
             {
-                Text = "OK",
+                Text = MyResource.Resource.SIM_BTN_OK,
                 DialogResult = DialogResult.OK,
                 Location = new Point(this.ClientSize.Width - 190, 392),
                 Width = 85
             };
             Button btnAbbruch = new Button
             {
-                Text = "Abbrechen",
+                Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 DialogResult = DialogResult.Cancel,
                 Location = new Point(this.ClientSize.Width - 97, 392),
                 Width = 85
@@ -171,7 +195,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void SetControls()
         {
-            if (!string.IsNullOrEmpty(WPName)) this.Text = "Wärmequelle Pufferspeicher - " + WPName;
+            if (!string.IsNullOrEmpty(WPName))
+                this.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_TITEL_MIT_WP, WPName);
 
             _speicherTabelle = DataRepository.GetDataTable(
                 "SELECT Bezeichner, Speichertyp, Gesamtvolumen, Bereitschaftsverluste FROM [" +
@@ -186,8 +211,8 @@ namespace WindowsFormsApplication1
 
             if (_lbSpeicher.Items.Count == 0)
             {
-                MessageBox.Show("Es sind keine Pufferspeicher in den Stammdaten vorhanden!",
-                    "Wärmequelle Pufferspeicher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(MyResource.Resource.SIMQ_PUFFER_MSG_KEINE_SPEICHER,
+                    MyResource.Resource.SIMQ_PUFFER_TITEL, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
             _tbTemperatur.Text = Quelltemperatur.ToString("F1");
@@ -210,10 +235,8 @@ namespace WindowsFormsApplication1
             DataRow r = AktuelleZeile();
             if (r == null) { _lblDaten.Text = ""; return; }
 
-            _lblDaten.Text =
-                "Speichertyp: " + Feld(r, "Speichertyp") + "\n" +
-                "Gesamtvolumen: " + Feld(r, "Gesamtvolumen") + " l\n" +
-                "Bereitschaftsverluste: " + Feld(r, "Bereitschaftsverluste") + " kWh/24h";
+            _lblDaten.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_DATEN,
+                Feld(r, "Speichertyp"), Feld(r, "Gesamtvolumen"), Feld(r, "Bereitschaftsverluste"));
         }
 
         private string Feld(DataRow r, string spalte)
@@ -245,14 +268,16 @@ namespace WindowsFormsApplication1
                 volumen = Convert.ToDouble(r["Gesamtvolumen"]);
 
             double kapazitaet = volumen * 1.16 * spreizung / 1000.0;
-            _lblKapazitaet.Text = "nutzbare Kapazität:\n" + kapazitaet.ToString("F1") + " kWh";
+            _lblKapazitaet.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_KAPAZITAET,
+                kapazitaet.ToString("F1"));
         }
 
         private void btnOk_Click(object sender, EventArgs e)
         {
             if (_lbSpeicher.SelectedIndex < 0)
             {
-                MessageBox.Show("Bitte einen Pufferspeicher auswählen!", "Wärmequelle Pufferspeicher",
+                MessageBox.Show(MyResource.Resource.SIMQ_PUFFER_MSG_AUSWAHL,
+                    MyResource.Resource.SIMQ_PUFFER_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 this.DialogResult = DialogResult.None;
                 return;
@@ -263,7 +288,8 @@ namespace WindowsFormsApplication1
                 !WaermequelleClass.ZahlParsen(_tbSpreizung.Text, out spreizung) ||
                 !WaermequelleClass.ZahlParsen(_tbRegeneration.Text, out regeneration))
             {
-                MessageBox.Show("Bitte gültige Zahlenwerte eintragen!", "Wärmequelle Pufferspeicher",
+                MessageBox.Show(MyResource.Resource.PSP_MSG_ZAHLENWERTE,
+                    MyResource.Resource.SIMQ_PUFFER_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 this.DialogResult = DialogResult.None;
                 return;
@@ -271,8 +297,8 @@ namespace WindowsFormsApplication1
 
             if (spreizung <= 0)
             {
-                MessageBox.Show("Die nutzbare Spreizung muss größer als 0 K sein!",
-                    "Wärmequelle Pufferspeicher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(MyResource.Resource.SIMQ_PUFFER_MSG_SPREIZUNG,
+                    MyResource.Resource.SIMQ_PUFFER_TITEL, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 this.DialogResult = DialogResult.None;
                 return;
             }

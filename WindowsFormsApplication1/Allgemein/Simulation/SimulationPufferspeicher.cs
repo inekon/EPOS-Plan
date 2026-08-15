@@ -651,10 +651,12 @@ namespace WindowsFormsApplication1
             return !LaedtGerade;
         }
 
-        /// <summary>Anzeigetext der Rolle (deutsch; Lokalisierung folgt mit Paket 9).</summary>
+        /// <summary>Anzeigetext der Rolle (lokalisiert seit Paket 9 / L6).</summary>
         public string RolleAnzeige()
         {
-            return (Verwendung == VERWENDUNG_QUELLE) ? "Quellspeicher" : "Senkenspeicher";
+            return (Verwendung == VERWENDUNG_QUELLE)
+                ? MyResource.Resource.PSP_ROLLE_QUELLSPEICHER
+                : MyResource.Resource.PSP_ROLLE_SENKENSPEICHER;
         }
 
         /// <summary>
@@ -665,7 +667,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string BezeichnerAnzeige()
         {
-            return string.IsNullOrEmpty(Bezeichner) ? "Speicher" : Bezeichner;
+            return string.IsNullOrEmpty(Bezeichner)
+                ? MyResource.Resource.PSP_BEZEICHNER_ERSATZ
+                : Bezeichner;
         }
 
         /// <summary>Anzeigetext "Bezeichner (Rolle)" für Legende, Auswahlliste und CSV-Kopf.</summary>

@@ -44,6 +44,26 @@ namespace WindowsFormsApplication1
             Color.SaddleBrown, Color.DarkSlateGray, Color.Crimson
         };
 
+        // --- Technische Serienschlüssel (Paket 9 / L6) --------------------------------
+        //
+        // Schicht 2 der Drei-Schichten-Regel: sprachneutral, ASCII, unveränderlich.
+        // Sie sind der ZUGRIFFSSCHLÜSSEL auf die Chart-Serien; der angezeigte Text steht
+        // ausschließlich in Series.LegendText und kommt aus dem Ressourcenkatalog.
+        //
+        // Vorher trugen die Serien ihre deutschen Anzeigenamen als Namen - und zwar
+        // uneinheitlich: "Wärmebedarf" mit Umlaut, "Waermepumpe" ohne. Genau diese
+        // Vermischung macht die Lokalisierung unmöglich, weil ein übersetzter Name
+        // sämtliche ~30 Nachschlagestellen (Series["…"]) ins Leere laufen ließe.
+        // Die Speicherserien tragen ihre technischen Schlüssel (PUFFER_<ID> /
+        // QUELLE_<AnlagenID>) bereits seit Paket 7; hier wird das zu Ende geführt.
+        private const string S_WAERMEBEDARF = "WAERMEBEDARF";
+        private const string S_GESAMT = "GESAMT";
+        private const string S_WAERMEPUMPE = "WAERMEPUMPE";
+        private const string S_HEIZSTAB = "HEIZSTAB";
+        private const string S_HEIZKESSEL = "HEIZKESSEL";
+        private const string S_SOLARTHERMIE = "SOLARTHERMIE";
+        private const string S_BHKW = "BHKW_WAERME";
+
         public NavigatorWaerme(SimulationControl simctrl)
         {
             InitializeComponent();
@@ -62,7 +82,7 @@ namespace WindowsFormsApplication1
         {
             checkBox_Puffer = new CheckBox();
             checkBox_Puffer.Name = "checkBox_Puffer";
-            checkBox_Puffer.Text = "Speicherfüllstand";
+            checkBox_Puffer.Text = MyResource.Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND;
             checkBox_Puffer.AutoSize = true;
             checkBox_Puffer.Location = new Point(checkBox_BHKW.Right + 15, checkBox_BHKW.Top);
             checkBox_Puffer.CheckedChanged += checkBox_Puffer_CheckedChanged;
@@ -93,7 +113,7 @@ namespace WindowsFormsApplication1
         {
             Button btnExport = new Button();
             btnExport.Name = "btn_CsvExport";
-            btnExport.Text = "CSV Export";
+            btnExport.Text = MyResource.Resource.SIM_BTN_CSV_EXPORT;
             btnExport.Size = new Size(110, 28);
             // Oberhalb des Diagramms rechtsbündig (rechte Kante = Diagrammkante),
             // damit die Checkbox-Zeile darunter frei bleibt.
@@ -112,32 +132,33 @@ namespace WindowsFormsApplication1
         {
             if (sim == null || sim.simulation_Waermebedarf == null || temp_ges == null)
             {
-                MessageBox.Show("Keine Simulationsdaten vorhanden!\nBitte zuerst die Simulation durchführen.",
-                    "CSV Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(MyResource.Resource.SIM_MSG_KEINE_DATEN_SIMULATION,
+                    MyResource.Resource.SIM_BTN_CSV_EXPORT,
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             // nur die aktuell selektierten (angezeigten) Serien exportieren
             List<CsvSpalte> spalten = new List<CsvSpalte>();
-            if (checkBox_Gesamt.Checked) spalten.Add(new CsvSpalte("Gesamt [kW]", temp_ges));
-            if (checkBox_WP.Checked) spalten.Add(new CsvSpalte("Wärmepumpe [kW]", temp_wp));
-            if (checkBox_Heizstab.Checked) spalten.Add(new CsvSpalte("Heizstab [kW]", temp_hs));
-            if (checkBox_SPK.Checked) spalten.Add(new CsvSpalte("Heizkessel [kW]", temp_hk));
-            if (checkBox_ST.Checked) spalten.Add(new CsvSpalte("Solarthermie [kW]", temp_st));
-            if (checkBox_BHKW.Checked) spalten.Add(new CsvSpalte("BHKW [kW]", temp_bhkw));
+            if (checkBox_Gesamt.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_GESAMT, temp_ges));
+            if (checkBox_WP.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEPUMPE, temp_wp));
+            if (checkBox_Heizstab.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZSTAB, temp_hs));
+            if (checkBox_SPK.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZKESSEL, temp_hk));
+            if (checkBox_ST.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_SOLARTHERMIE, temp_st));
+            if (checkBox_BHKW.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_BHKW, temp_bhkw));
 
             // Je angezeigtem Speicher eine eigene Spalte, Bezeichner im Kopf (13.3).
-            // Die Kopfzeile bleibt deutsch - sie ist Exportformat, nicht Oberfläche.
             if (checkBox_Puffer != null && checkBox_Puffer.Checked)
                 for (int i = 0; i < speicherListe.Count; i++)
                 {
                     if (!SpeicherSichtbar(i)) continue;
                     spalten.Add(new CsvSpalte(
-                        "Speicherfüllstand " + SpeicherAnzeige(speicherListe[i]) + " [kWh]",
+                        string.Format(MyResource.Resource.CHART_CSV_SPEICHERFUELLSTAND,
+                                      SpeicherAnzeige(speicherListe[i])),
                         speicherListe[i].SOC_stuendlich));
                 }
 
-            CsvExportClass.Export("Waermeproduktion.csv",
+            CsvExportClass.Export(MyResource.Resource.CHART_DATEI_WAERMEPRODUKTION,
                 sim.simulation_Waermebedarf.Stundentemperatur, spalten, false);
         }
 
@@ -183,23 +204,23 @@ namespace WindowsFormsApplication1
             _chartManager.YMaxValue = Math.Max(temp_ges.Max(), SpeicherMax()) + 1;
             _chartManager.YMinValue = 0;
             _chartManager.XAxisAsNumber = false;
-            _chartManager.XAxisTitle = "Monate";
-            _chartManager.YAxisTitle = "Leistung [kW] / Speicherinhalt [kWh]";
+            _chartManager.XAxisTitle = MyResource.Resource.CHART_ACHSE_MONATE;
+            _chartManager.YAxisTitle = MyResource.Resource.CHART_ACHSE_LEISTUNG_SPEICHERINHALT;
             _chartManager.toolTipUnit = "kW";
-            _chartManager.ChartTitle = "Wärmeproduktion Jahresganglinie";
+            _chartManager.ChartTitle = MyResource.Resource.CHART_TITEL_WAERMEPRODUKTION_JAHRESGANGLINIE;
             _chartManager.MitLegende = true;
             _chartManager.MaxXVALUE = 8760;
             _chartManager.MitViertelStunde = false;
             _chartManager.LegendMarkerBreite = 5;
             
             _chartManager.Init();
-            _chartManager.AddSeries("Wärmebedarf", Color.DarkCyan, temp_profil);
-            _chartManager.AddSeries("Gesamt", Color.Green, temp_ges);
-            _chartManager.AddSeries("Waermepumpe", Color.Orange, temp_wp);
-            _chartManager.AddSeries("Heizstab", Color.Yellow, temp_hs);
-            _chartManager.AddSeries("Heizkessel", Color.Blue, temp_hk);
-            _chartManager.AddSeries("Solarthermie", Color.Brown, temp_st);
-            _chartManager.AddSeries("BHKW", Color.Red, temp_bhkw);
+            SerieAnlegen(S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, Color.DarkCyan, temp_profil);
+            SerieAnlegen(S_GESAMT, MyResource.Resource.CHART_LEGENDE_GESAMT, Color.Green, temp_ges);
+            SerieAnlegen(S_WAERMEPUMPE, MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, Color.Orange, temp_wp);
+            SerieAnlegen(S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, temp_hs);
+            SerieAnlegen(S_HEIZKESSEL, MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, Color.Blue, temp_hk);
+            SerieAnlegen(S_SOLARTHERMIE, MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE, Color.Brown, temp_st);
+            SerieAnlegen(S_BHKW, MyResource.Resource.SIM_ERZEUGERNAME_BHKW, Color.Red, temp_bhkw);
 
             // Eine Serie je Speicher. Series.Name ist der technische Schlüssel,
             // der Anzeigetext geht in LegendText (Konzept 13.3).
@@ -213,13 +234,13 @@ namespace WindowsFormsApplication1
                 s.Enabled = false;
             }
 
-            _chartManager._chart.Series["Wärmebedarf"].BorderDashStyle = ChartDashStyle.Solid;
-            _chartManager._chart.Series["Waermepumpe"].Enabled = false;
-            _chartManager._chart.Series["Heizstab"].Enabled = false;
-            _chartManager._chart.Series["Heizkessel"].Enabled = false;
-            _chartManager._chart.Series["Solarthermie"].Enabled = false;
-            _chartManager._chart.Series["BHKW"].Enabled = false;
-            _chartManager._chart.Series["Wärmebedarf"].Enabled = false;
+            _chartManager._chart.Series[S_WAERMEBEDARF].BorderDashStyle = ChartDashStyle.Solid;
+            _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = false;
+            _chartManager._chart.Series[S_HEIZSTAB].Enabled = false;
+            _chartManager._chart.Series[S_HEIZKESSEL].Enabled = false;
+            _chartManager._chart.Series[S_SOLARTHERMIE].Enabled = false;
+            _chartManager._chart.Series[S_BHKW].Enabled = false;
+            _chartManager._chart.Series[S_WAERMEBEDARF].Enabled = false;
             checkBox_Gesamt.Checked = true;
 
             // Checkbox nur anbieten, wenn der Lauf überhaupt einen Speicher hatte.
@@ -228,9 +249,19 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Legt eine Chart-Serie an: <b>Name</b> = technischer Schlüssel (sprachneutral),
+        /// <b>LegendText</b> = übersetzter Anzeigetext. Dieselbe Trennung, die die
+        /// Speicherserien seit Paket 7 haben (Konzept 13.3).
+        /// </summary>
+        private void SerieAnlegen(string schluessel, string legende, Color farbe, float[] werte)
+        {
+            _chartManager.AddSeries(schluessel, farbe, werte);
+            _chartManager._chart.Series[schluessel].LegendText = legende;
+        }
+
+        /// <summary>
         /// Füllt die Auswahlliste der Speicher. Sie erscheint erst ab zwei Speichern -
         /// bei genau einem bleibt es bei der reinen Checkbox wie bisher.
-        /// Texte deutsch hartkodiert (Lokalisierung des Bereichs = Paket 9).
         /// </summary>
         private void AktualisiereSpeicherAuswahl()
         {
@@ -238,7 +269,7 @@ namespace WindowsFormsApplication1
 
             comboBox_Puffer.SelectedIndexChanged -= comboBox_Puffer_SelectedIndexChanged;
             comboBox_Puffer.Items.Clear();
-            comboBox_Puffer.Items.Add("Alle Speicher");
+            comboBox_Puffer.Items.Add(MyResource.Resource.PSP_AUSWAHL_ALLE_SPEICHER);
             foreach (SimulationPufferspeicher sp in speicherListe)
                 comboBox_Puffer.Items.Add(SpeicherAnzeige(sp));
             comboBox_Puffer.SelectedIndex = 0;
@@ -312,12 +343,12 @@ namespace WindowsFormsApplication1
             // Hier erzwingst du, dass das Chart genau das anzeigt, was die Checkbox sagt
             if (_chartManager != null && _chartManager._chart.Series.Count > 0)
             {
-                _chartManager._chart.Series["Gesamt"].Enabled = checkBox_Gesamt.Checked;
-                _chartManager._chart.Series["Waermepumpe"].Enabled = checkBox_WP.Checked;
-                _chartManager._chart.Series["Heizstab"].Enabled = checkBox_Heizstab.Checked;
-                _chartManager._chart.Series["Heizkessel"].Enabled = checkBox_SPK.Checked;
-                _chartManager._chart.Series["Solarthermie"].Enabled = checkBox_ST.Checked;
-                _chartManager._chart.Series["BHKW"].Enabled = checkBox_BHKW.Checked;
+                _chartManager._chart.Series[S_GESAMT].Enabled = checkBox_Gesamt.Checked;
+                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = checkBox_WP.Checked;
+                _chartManager._chart.Series[S_HEIZSTAB].Enabled = checkBox_Heizstab.Checked;
+                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = checkBox_SPK.Checked;
+                _chartManager._chart.Series[S_SOLARTHERMIE].Enabled = checkBox_ST.Checked;
+                _chartManager._chart.Series[S_BHKW].Enabled = checkBox_BHKW.Checked;
                 SpeicherSerienAktualisieren();
             }
         }
@@ -331,11 +362,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_Gesamt.Checked)
             {
-                _chartManager._chart.Series["Gesamt"].Enabled = true;
+                _chartManager._chart.Series[S_GESAMT].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["Gesamt"].Enabled = false;
+                _chartManager._chart.Series[S_GESAMT].Enabled = false;
             }
         }
 
@@ -343,11 +374,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_WP.Checked)
             {
-                _chartManager._chart.Series["Waermepumpe"].Enabled = true;
+                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["Waermepumpe"].Enabled = false;
+                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = false;
             }
         }
 
@@ -355,11 +386,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_Heizstab.Checked)
             {
-                _chartManager._chart.Series["Heizstab"].Enabled = true;
+                _chartManager._chart.Series[S_HEIZSTAB].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["Heizstab"].Enabled = false;
+                _chartManager._chart.Series[S_HEIZSTAB].Enabled = false;
             }
         }
 
@@ -367,11 +398,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_SPK.Checked)
             {
-                _chartManager._chart.Series["Heizkessel"].Enabled = true;
+                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["Heizkessel"].Enabled = false;
+                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = false;
             }
         }
 
@@ -379,11 +410,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_ST.Checked)
             {
-                _chartManager._chart.Series["Solarthermie"].Enabled = true;
+                _chartManager._chart.Series[S_SOLARTHERMIE].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["Solarthermie"].Enabled = false;
+                _chartManager._chart.Series[S_SOLARTHERMIE].Enabled = false;
             }
         }
 
@@ -391,11 +422,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_BHKW.Checked)
             {
-                _chartManager._chart.Series["BHKW"].Enabled = true;
+                _chartManager._chart.Series[S_BHKW].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["BHKW"].Enabled = false;
+                _chartManager._chart.Series[S_BHKW].Enabled = false;
             }
         }
 
@@ -403,7 +434,7 @@ namespace WindowsFormsApplication1
         {
             double neueMax = 0;
 
-            _chartManager._chart.Series["Wärmebedarf"].Enabled = checkBox_Waermebedarf.Checked;
+            _chartManager._chart.Series[S_WAERMEBEDARF].Enabled = checkBox_Waermebedarf.Checked;
 
             if (checkBox_Waermebedarf.Checked)
             {
@@ -425,9 +456,9 @@ namespace WindowsFormsApplication1
             ca.AxisY.Interval = 0;      // Auf Auto stellen
 
             // 2. Prüfen, ob die Serie existiert
-            if (_chartManager._chart.Series.IndexOf("Wärmebedarf") != -1)
+            if (_chartManager._chart.Series.IndexOf(S_WAERMEBEDARF) != -1)
             {
-                var s = _chartManager._chart.Series["Wärmebedarf"];
+                var s = _chartManager._chart.Series[S_WAERMEBEDARF];
                 bool anzeigen = checkBox_Waermebedarf.Checked;
 
                 s.Enabled = anzeigen;
@@ -439,7 +470,7 @@ namespace WindowsFormsApplication1
                     ca.AxisY2.Enabled = AxisEnabled.True;
 
                     // Optik der rechten Achse
-                    ca.AxisY2.Title = "Wärmebedarf [kWh]";
+                    ca.AxisY2.Title = MyResource.Resource.CHART_ACHSE_WAERMEBEDARF_KWH;
                     ca.AxisY2.TitleForeColor = Color.Black;
                     ca.AxisY2.LabelStyle.ForeColor = Color.Black;
                     ca.AxisY2.MajorGrid.Enabled = false; // Gitter nur links lassen

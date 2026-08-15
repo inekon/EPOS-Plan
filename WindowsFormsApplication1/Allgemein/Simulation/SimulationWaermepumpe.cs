@@ -298,10 +298,10 @@ namespace WindowsFormsApplication1
                 if (anz == 0)
                 {
                     Cursor.Current = Cursors.Default;
-                    Fehlertext = "Für die Wärmepumpe '" + model.Bezeichner + "' sind keine Kenndaten " +
-                                 "(Kennlinie) für Vorlauf " + model.Vorlauf + " °C vorhanden. " +
-                                 "Die Simulation wurde abgebrochen.";
-                    SimulationProtokoll.Aktuell.Fehlermeldung("Wärmepumpe: " + Fehlertext);
+                    Fehlertext = string.Format(MyResource.Resource.SIMENG_WP_KEINE_KENNDATEN,
+                                               model.Bezeichner, model.Vorlauf);
+                    SimulationProtokoll.Aktuell.Fehlermeldung(
+                        MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + Fehlertext);
                     return false;
                 }
 
@@ -1528,23 +1528,23 @@ namespace WindowsFormsApplication1
 
                         if (!Extrapolation_Erlaubt)
                         {
-                            Fehlertext =
-                                "Die Quelltemperatur unterschreitet die untere Stützstelle der Kennlinie " +
-                                "der Wärmepumpe '" + bezeichner + "' (" + untergrenze + " °C). Die " +
-                                "Projekteinstellung „Extrapolation der Kennlinie erlauben“ ist " +
-                                "abgewählt, deshalb wurde die Simulation abgebrochen. Entweder die Kennlinie " +
-                                "um tiefere Stützstellen ergänzen oder die Einstellung setzen.";
-                            SimulationProtokoll.Aktuell.Fehlermeldung("Wärmepumpe: " + Fehlertext);
+                            Fehlertext = string.Format(
+                                MyResource.Resource.SIMENG_WP_EXTRAPOLATION_VERBOTEN,
+                                bezeichner, untergrenze);
+                            SimulationProtokoll.Aktuell.Fehlermeldung(
+                                MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + Fehlertext);
                             result[0] = 0;
                             return result;
                         }
 
                         extrapolation = true;
+                        // Der Einmal-Schlüssel ist sprachneutral (Schicht 2) - er darf sich
+                        // mit der Oberflächensprache NICHT ändern, sonst käme die Meldung
+                        // in einer Sprache mehrfach und in der anderen gar nicht.
                         SimulationProtokoll.Aktuell.HinweisEinmal(
                             "WP_Extrapolation_" + bezeichner + "_" + kenndaten.Vorlauf,
-                            "Wärmepumpe '" + bezeichner + "': Die Quelltemperatur unterschreitet die untere " +
-                            "Stützstelle der Kennlinie (" + untergrenze + " °C). Es wird extrapoliert " +
-                            "(Projekteinstellung „Extrapolation der Kennlinie erlauben“).");
+                            string.Format(MyResource.Resource.SIMENG_WP_EXTRAPOLATION_HINWEIS,
+                                          bezeichner, untergrenze));
                     }
                     double[] x = new double[2];
                     double[] y = new double[2];

@@ -171,10 +171,8 @@ namespace WindowsFormsApplication1
                 // Infrastrukturpaket (siehe Paket-8-Protokoll, offene Punkte).
                 if (!tagv_found)
                 {
-                    SimulationProtokoll.Aktuell.Warnung(
-                        "Wärmebedarf: Zum Tagesverteilungstyp „" + ctrl.items[i].Typ +
-                        "“ sind keine Daten hinterlegt. Die Bedarfsrechnung wurde an dieser " +
-                        "Stelle abgebrochen; das Ergebnis ist unvollständig.");
+                    SimulationProtokoll.Aktuell.Warnung(string.Format(
+                        MyResource.Resource.SIMENG_TAGESVERTEILUNG_FEHLT, ctrl.items[i].Typ));
                     return;
                 }
 
@@ -733,10 +731,8 @@ namespace WindowsFormsApplication1
                             // PAKET 8 (Konzept 13.4): Warnung im Protokollkanal statt MessageBox;
                             // der Abbruch der Prozesswärme-Rechnung bleibt unverändert.
                             // Der Tippfehler "DerTyp" des Bestands ist dabei mit behoben.
-                            SimulationProtokoll.Aktuell.Warnung(
-                                "Prozesswärme: Der Typ des Prozesses '" + pw_list[k] + "' ist nicht " +
-                                "definiert. Die Prozesswärme-Rechnung wurde abgebrochen; ihr Anteil " +
-                                "bleibt 0.");
+                            SimulationProtokoll.Aktuell.Warnung(string.Format(
+                                MyResource.Resource.SIMENG_PROZESSWAERME_TYP_UNDEFINIERT, pw_list[k]));
                             rs.Close();
                             return;
                         }
@@ -845,9 +841,8 @@ namespace WindowsFormsApplication1
                         {
                             // PAKET 8 (Konzept 13.4): siehe oben - dieselbe Stelle im
                             // Brauchwasser-Zweig.
-                            SimulationProtokoll.Aktuell.Warnung(
-                                "Brauchwasser: Der Typ des Eintrags '" + pw_list[k] + "' ist nicht " +
-                                "definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0.");
+                            SimulationProtokoll.Aktuell.Warnung(string.Format(
+                                MyResource.Resource.SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT, pw_list[k]));
                             rs.Close();
                             return;
                         }

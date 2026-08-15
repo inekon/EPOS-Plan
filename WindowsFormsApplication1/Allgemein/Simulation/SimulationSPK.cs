@@ -127,10 +127,8 @@ namespace WindowsFormsApplication1
             // ohne den Rechner anzuhalten. Die Kappung selbst ist unberührt.
             if (Anzahl > MAX_SPK)
             {
-                SimulationProtokoll.Aktuell.Warnung(
-                    "Heizkessel: Im Projekt sind " + Anzahl + " Kessel hinterlegt, die Simulation " +
-                    "unterstützt maximal " + MAX_SPK + ". Es werden nur die ersten " + MAX_SPK +
-                    " Kessel berücksichtigt.");
+                SimulationProtokoll.Aktuell.Warnung(string.Format(
+                    MyResource.Resource.SIMENG_KESSEL_MAX_UEBERSCHRITTEN, Anzahl, MAX_SPK, MAX_SPK));
                 Anzahl = MAX_SPK;
             }
 
@@ -192,10 +190,11 @@ namespace WindowsFormsApplication1
                 // statt items[0]-Zugriff mit ArgumentOutOfRangeException.
                 if (heizkesselctrl.rows == 0)
                 {
-                    string text = "Der Heizkessel '" + spk_list[i] + "' ist im Projekt nicht hinterlegt. " +
-                                  "Die Kessel-Simulation wurde abgebrochen.";
+                    string text = string.Format(MyResource.Resource.SIMENG_KESSEL_NICHT_HINTERLEGT,
+                                                spk_list[i]);
                     Fehlertext = text;
-                    SimulationProtokoll.Aktuell.Fehlermeldung("Heizkessel: " + text);
+                    SimulationProtokoll.Aktuell.Fehlermeldung(
+                        MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + text);
                     return false;
                 }
 
@@ -495,10 +494,8 @@ namespace WindowsFormsApplication1
             // Protokollkanal (Konzept 13.4). Das VERHALTEN ist dasselbe wie vorher.
             if (Anzahl > MAX_SPK)
             {
-                SimulationProtokoll.Aktuell.Warnung(
-                    "Heizkessel: Im Projekt sind " + Anzahl + " Kessel hinterlegt, die Simulation " +
-                    "unterstützt maximal " + MAX_SPK + ". Es werden nur die ersten " + MAX_SPK +
-                    " Kessel berücksichtigt.");
+                SimulationProtokoll.Aktuell.Warnung(string.Format(
+                    MyResource.Resource.SIMENG_KESSEL_MAX_UEBERSCHRITTEN, Anzahl, MAX_SPK, MAX_SPK));
                 Anzahl = MAX_SPK;
             }
 

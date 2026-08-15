@@ -73,7 +73,7 @@ namespace WindowsFormsApplication1
                 // den Kanal - sonst wären sie zwar nicht mehr im Weg, aber auch nicht
                 // mehr sichtbar.
                 foreach (string meldung in DataRepository.StilleFehlerAbholen())
-                    Protokoll.Warnung("Datenbankzugriff während des Laufs: " + meldung);
+                    Protokoll.Warnung(string.Format(MyResource.Resource.SIMENG_DB_ZUGRIFF_WAEHREND_LAUF, meldung));
 
                 if (!ok)
                 {
@@ -113,7 +113,7 @@ namespace WindowsFormsApplication1
             ctrl.ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + idProjekt);
             if (ctrl.rows == 0)
             {
-                fehler = "Für Projekt " + idProjekt + " ist keine Konfiguration (Tab_Einstellungen) hinterlegt.";
+                fehler = string.Format(MyResource.Resource.SIMENG_KEINE_KONFIGURATION, idProjekt);
                 return false;
             }
 
@@ -121,7 +121,7 @@ namespace WindowsFormsApplication1
             int netzverluste = (int)ctrl.m_Netzverluste;
             if (ctrl.m_szNetzverlusteEinheit == "%" && netzverluste > 100)
             {
-                fehler = "Die Netzverluste dürfen nicht größer als 100 % sein.";
+                fehler = MyResource.Resource.SIMENG_NETZVERLUSTE_UEBER_100;
                 return false;
             }
 
@@ -131,7 +131,7 @@ namespace WindowsFormsApplication1
             int nKlimaregion = projektCtrl.m_ID_Klimaregion;
             if (nKlimaregion == 0)
             {
-                fehler = "Für Projekt " + idProjekt + " ist keine Klimaregion gesetzt.";
+                fehler = string.Format(MyResource.Resource.SIMENG_KEINE_KLIMAREGION, idProjekt);
                 return false;
             }
 
@@ -496,6 +496,13 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < bh.bhkw_list.Count; i++)
                 {
                     ErgebnisBHKWModulModel mo = new ErgebnisBHKWModulModel();
+                    // NICHT lokalisieren: mo.Modul wird nach Tab_ErgebnisBHKWModul.Modul
+                    // GESCHRIEBEN und von der Referenzlauf-Suite als Skalar exportiert
+                    // (Ergebnisexport, "…Modul[i]"). Ein übersetzter Ersatzname stünde
+                    // damit in der Datenbank und ließe DE- und EN-Läufe auseinanderlaufen.
+                    // Persistenzwert, immer deutsch (Drei-Schichten-Regel). Der gleichnamige
+                    // Katalogschlüssel SIM_BHKW_MODUL_STANDARD gilt nur für die ANZEIGE in
+                    // Form_Simulation_Detail.
                     mo.Modul = bh.bhkw_list_Namen[i] ?? "Standard BHKW";
                     mo.Waermeproduktion = bh.s_waerme_MWh[i];
                     mo.Stromproduktion = bh.s_strom_MWh[i];
@@ -730,12 +737,12 @@ namespace WindowsFormsApplication1
                 id = new ErgebnisCtrl().Save(m);
 
                 foreach (string meldung in DataRepository.StilleFehlerAbholen())
-                    Protokoll.Warnung("Speichern des Ergebnisses: " + meldung);
+                    Protokoll.Warnung(string.Format(MyResource.Resource.SIMENG_SPEICHERN_DES_ERGEBNISSES, meldung));
             }
 
             if (id <= 0)
             {
-                fehler = "Das Simulationsergebnis konnte nicht gespeichert werden.";
+                fehler = MyResource.Resource.SIMENG_ERGEBNIS_NICHT_GESPEICHERT;
                 string ausKanal = Protokoll.AlsText(true);
                 if (!string.IsNullOrEmpty(ausKanal)) fehler = fehler + Environment.NewLine + ausKanal;
             }

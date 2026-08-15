@@ -60,22 +60,36 @@ namespace WindowsFormsApplication1
         public const double MAX_KOLLEKTORTIEFE_M = 10.0;
 
         /// <summary>
-        /// Anzeigetexte für die Auswahl im Dialog.
+        /// Anzeigetexte für die Auswahl im Dialog — lokalisiert (Paket 9 / L6).
         ///
         /// ACHTUNG: TypAnzeige und TypWerte sind indexgekoppelt
         /// (Form_Simulation_Config: WaermequelleAuswahlAnzeigen / WqCombo_SelectedIndexChanged).
         /// Neue Wärmequellen deshalb immer ANHÄNGEN, nie einfügen oder umsortieren -
         /// sonst zeigen bestehende Projekte auf die falsche Quelle (Konzept 5.3).
+        /// Der STEUERWERT ist der Index bzw. <see cref="TypWerte"/>; der Text hier ist
+        /// reine Anzeige (Drei-Schichten-Regel).
+        ///
+        /// Bewusst eine Eigenschaft statt eines <c>static readonly</c>-Feldes: Ein Feld
+        /// würde beim ersten Typzugriff eingefroren und bliebe bei einem Sprachwechsel
+        /// im Prozess (Sprachgleichheitsprobe der Referenzlauf-Suite) auf der alten
+        /// Sprache stehen. Je Aufruf ein NEUES Array, damit ein Aufrufer die Liste nicht
+        /// versehentlich für alle verändert.
         /// </summary>
-        public static readonly string[] TypAnzeige =
+        public static string[] TypAnzeige
         {
-            "Außenluft (Klimadaten)",
-            "Konstante Temperatur",
-            "Pufferspeicher",
-            "Quellprofil (Monatswerte)",
-            "CSV-Datei (Stundenwerte)",
-            "Erdreich (VDI 4640)"
-        };
+            get
+            {
+                return new[]
+                {
+                    MyResource.Resource.SIMQ_TYP_AUSSENLUFT,
+                    MyResource.Resource.SIMQ_TYP_KONSTANTE_TEMPERATUR,
+                    MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
+                    MyResource.Resource.SIMQ_TYP_QUELLPROFIL,
+                    MyResource.Resource.SIMQ_TYP_CSV_DATEI,
+                    MyResource.Resource.SIMQ_TYP_ERDREICH
+                };
+            }
+        }
 
         public static readonly string[] TypWerte =
         {
@@ -83,15 +97,18 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// Hinweistext zum CSV-Format (wird beim Einlesen angezeigt).
+        /// Hinweistext zum CSV-Format (wird beim Einlesen angezeigt) — lokalisiert
+        /// (Paket 9 / L6).
+        ///
+        /// Aus <c>const</c> wurde eine Eigenschaft: Eine Konstante kann keine Ressource
+        /// referenzieren (Konzept 13.6 nennt genau diesen Fall), und ein
+        /// <c>static readonly</c>-Feld würde die Sprache beim ersten Typzugriff
+        /// einfrieren. Die Aufrufstellen bleiben unverändert.
         /// </summary>
-        public const string CSV_FORMAT_HINWEIS =
-            "Erwartetes CSV-Format für das Quelltemperatur-Profil:\n\n" +
-            "- 8760 Zeilen = Stundenwerte für ein Jahr (01.01. 00:00 bis 31.12. 23:00)\n" +
-            "- je Zeile ein Temperaturwert in °C (Dezimal-Komma oder -Punkt)\n" +
-            "- optional mit Zeitstempel: \"Zeitstempel;Temperatur\" (Semikolon-getrennt,\n" +
-            "  es wird der letzte Zahlenwert der Zeile verwendet)\n" +
-            "- eine Kopfzeile wird automatisch erkannt und übersprungen";
+        public static string CSV_FORMAT_HINWEIS
+        {
+            get { return MyResource.Resource.SIMQ_CSV_FORMAT_HINWEIS; }
+        }
 
         private static bool _schemaGeprueft = false;
 

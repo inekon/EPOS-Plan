@@ -191,7 +191,7 @@ namespace WindowsFormsApplication1
 
             groupBox_Uebersicht = new GroupBox();
             groupBox_Uebersicht.Name = "groupBox_Uebersicht";
-            groupBox_Uebersicht.Text = "Übersicht Wärmeerzeuger";
+            groupBox_Uebersicht.Text = MyResource.Resource.SIM_UEBERSICHT_TITEL;
             groupBox_Uebersicht.Location = new Point(groupBox_PufferSp.Left, 109);
             groupBox_Uebersicht.Size = new Size(groupBox_PufferSp.Width,
                 groupBox_PufferSp.Top - 109 - 10);
@@ -216,15 +216,15 @@ namespace WindowsFormsApplication1
             // SPALTEN_BREITEN passen. Kopftexte bewusst kurz (Konzept 4.1, Layoutzwang);
             // was die Spalte bedeutet und dass sie per Doppelklick bearbeitbar ist, steht
             // im Mouseover-Hinweis - das trägt der Kopf nicht mehr mit.
-            listView_Uebersicht.Columns.Add("Prio", SPALTEN_BREITEN[COL_PRIO], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add("Erzeuger", SPALTEN_BREITEN[COL_ERZEUGER], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add("Anlage", SPALTEN_BREITEN[COL_ANLAGE], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add("WP-Prio", SPALTEN_BREITEN[COL_WPPRIO], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add("Quelle", SPALTEN_BREITEN[COL_QUELLE], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add("Senke", SPALTEN_BREITEN[COL_SENKE], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add("Zweitsenke", SPALTEN_BREITEN[COL_ZWEITSENKE], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add("Modus", SPALTEN_BREITEN[COL_BETRIEBSMODUS], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add("Zuordnung (alt)", SPALTEN_BREITEN[COL_PUFFER], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_PRIO, SPALTEN_BREITEN[COL_PRIO], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_ERZEUGERNAME_ALLGEMEIN, SPALTEN_BREITEN[COL_ERZEUGER], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_ANLAGE, SPALTEN_BREITEN[COL_ANLAGE], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_WPPRIO, SPALTEN_BREITEN[COL_WPPRIO], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add(MyResource.Resource.SIMQ_SPALTE_QUELLE, SPALTEN_BREITEN[COL_QUELLE], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_SENKE, SPALTEN_BREITEN[COL_SENKE], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_ROLLE_ZWEITSENKE, SPALTEN_BREITEN[COL_ZWEITSENKE], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_MODUS, SPALTEN_BREITEN[COL_BETRIEBSMODUS], HorizontalAlignment.Left);
+            listView_Uebersicht.Columns.Add(MyResource.Resource.PSP_SPALTE_ZUORDNUNG_ALT, SPALTEN_BREITEN[COL_PUFFER], HorizontalAlignment.Left);
 
             listView_Uebersicht.MouseDoubleClick += listView_Uebersicht_MouseDoubleClick;
 
@@ -315,7 +315,7 @@ namespace WindowsFormsApplication1
 
             btn_PufferVerwalten = new Button();
             btn_PufferVerwalten.Name = "btn_PufferVerwalten";
-            btn_PufferVerwalten.Text = "Pufferspeicher anlegen / verwalten…";
+            btn_PufferVerwalten.Text = MyResource.Resource.PSP_BTN_PUFFER_VERWALTEN;
             btn_PufferVerwalten.Location = new Point(groupBox_Uebersicht.Left,
                                                     label_PufferListe.Bottom + 4);
             btn_PufferVerwalten.Size = new Size(240, 28);
@@ -349,7 +349,7 @@ namespace WindowsFormsApplication1
         {
             checkBox_KaskadeZweikanalig = new CheckBox();
             checkBox_KaskadeZweikanalig.Name = "checkBox_KaskadeZweikanalig";
-            checkBox_KaskadeZweikanalig.Text = "Zweikanalige Kaskade (Vorschau)";
+            checkBox_KaskadeZweikanalig.Text = MyResource.Resource.SIM_KASKADE_SCHALTER;
             checkBox_KaskadeZweikanalig.AutoSize = true;
             checkBox_KaskadeZweikanalig.Enabled = false;   // erst mit bekanntem Projekt
 
@@ -359,20 +359,12 @@ namespace WindowsFormsApplication1
             checkBox_KaskadeZweikanalig.Location = new Point(x, btn_PufferVerwalten.Top + 6);
             checkBox_KaskadeZweikanalig.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
+            // Zeilenumbrüche der Ressource auf die Plattformform bringen: Die .resx legt
+            // sie als LF ab (XML-Normierung), der Bestand hat hier Environment.NewLine
+            // gesetzt. Ohne die Umsetzung stünde derselbe Text mit anderen Trennzeichen
+            // im Hinweisfenster.
             _uebersichtTip.SetToolTip(checkBox_KaskadeZweikanalig,
-                "Rechnet Heiz- und Warmwasserbedarf als getrennte Kanäle und löst die" +
-                Environment.NewLine +
-                "Speicherladung aus der Erzeugerkaskade heraus (Vorschau)." +
-                Environment.NewLine + Environment.NewLine +
-                "Das ÄNDERT die Ergebnisse: Anlagen mit Pufferspeicher als Senke laden" +
-                Environment.NewLine +
-                "diesen, statt den Bedarf direkt zu decken; gedeckt wird aus dem Speicher." +
-                Environment.NewLine +
-                "Was sich im Einzelnen ändert, steht im Umsetzungsprotokoll zu Paket 4" +
-                Environment.NewLine +
-                "(Teil 7, Dokumentierte Ergebnisaenderungen). Ohne Haken rechnet die" +
-                Environment.NewLine +
-                "bisherige, einkanalige Kaskade unverändert weiter.");
+                MyResource.Resource.SIM_KASKADE_TOOLTIP.Replace("\n", Environment.NewLine));
 
             checkBox_KaskadeZweikanalig.CheckedChanged += checkBox_KaskadeZweikanalig_CheckedChanged;
             this.Controls.Add(checkBox_KaskadeZweikanalig);
@@ -410,9 +402,8 @@ namespace WindowsFormsApplication1
             if (KonfigurationCtrl.KaskadeZweikanaligSchreiben(m_ID_Projekt, wert))
             {
                 ShowStatus(wert
-                    ? "Zweikanalige Kaskade eingeschaltet - der nächste Lauf rechnet damit " +
-                      "und liefert andere Ergebnisse."
-                    : "Zweikanalige Kaskade abgewählt - es rechnet wieder die einkanalige Kaskade.",
+                    ? MyResource.Resource.SIM_STATUS_KASKADE_EIN
+                    : MyResource.Resource.SIM_STATUS_KASKADE_AUS,
                     Color.DarkGreen);
                 return;
             }
@@ -424,7 +415,7 @@ namespace WindowsFormsApplication1
             try { checkBox_KaskadeZweikanalig.Checked = !wert; }
             finally { _kaskadeUiUpdate = false; }
 
-            ShowStatus("Die Einstellung konnte nicht gespeichert werden.", Color.DarkRed);
+            ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
         }
 
         /// <summary>
@@ -449,28 +440,14 @@ namespace WindowsFormsApplication1
         {
             checkBox_Extrapolation = new CheckBox();
             checkBox_Extrapolation.Name = "checkBox_Extrapolation";
-            checkBox_Extrapolation.Text = "Extrapolation der WP-Kennlinie erlauben";
+            checkBox_Extrapolation.Text = MyResource.Resource.SIM_EXTRAPOLATION_SCHALTER;
             checkBox_Extrapolation.AutoSize = true;
             checkBox_Extrapolation.Checked = true;         // Vorbelegung wie im Datenmodell
             checkBox_Extrapolation.Enabled = false;        // erst mit bekanntem Projekt
             checkBox_Extrapolation.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
             _uebersichtTip.SetToolTip(checkBox_Extrapolation,
-                "Unterschreitet die Quelltemperatur die niedrigste Stützstelle der" +
-                Environment.NewLine +
-                "Wärmepumpen-Kennlinie, wird die Kennlinie linear verlängert." +
-                Environment.NewLine + Environment.NewLine +
-                "Mit Haken (Vorbelegung): Es wird extrapoliert, und der Lauf vermerkt das" +
-                Environment.NewLine +
-                "als Hinweis. Das entspricht genau dem bisherigen Verhalten - die Engine" +
-                Environment.NewLine +
-                "hat bis Paket 8 an dieser Stelle nachgefragt." +
-                Environment.NewLine + Environment.NewLine +
-                "Ohne Haken: Die Simulation bricht ab und nennt die betroffene Anlage." +
-                Environment.NewLine +
-                "Sinnvoll, wenn extrapolierte Kennwerte nicht in ein Ergebnis einfließen" +
-                Environment.NewLine +
-                "sollen; die Kennlinie ist dann um tiefere Stützstellen zu ergänzen.");
+                MyResource.Resource.SIM_EXTRAPOLATION_TOOLTIP.Replace("\n", Environment.NewLine));
 
             checkBox_Extrapolation.CheckedChanged += checkBox_Extrapolation_CheckedChanged;
             this.Controls.Add(checkBox_Extrapolation);
@@ -563,9 +540,8 @@ namespace WindowsFormsApplication1
             if (KonfigurationCtrl.ExtrapolationErlaubtSchreiben(m_ID_Projekt, wert))
             {
                 ShowStatus(wert
-                    ? "Extrapolation der WP-Kennlinie erlaubt - der Lauf vermerkt sie als Hinweis."
-                    : "Extrapolation der WP-Kennlinie abgewählt - der Lauf bricht ab, wenn die " +
-                      "Quelltemperatur die Kennlinie unterschreitet.",
+                    ? MyResource.Resource.SIM_STATUS_EXTRAPOLATION_EIN
+                    : MyResource.Resource.SIM_STATUS_EXTRAPOLATION_AUS,
                     Color.DarkGreen);
                 return;
             }
@@ -574,7 +550,7 @@ namespace WindowsFormsApplication1
             try { checkBox_Extrapolation.Checked = !wert; }
             finally { _extrapolationUiUpdate = false; }
 
-            ShowStatus("Die Einstellung konnte nicht gespeichert werden.", Color.DarkRed);
+            ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
         }
 
         /// <summary>Schreibt die Projekt-Puffer in die Fußzeile.</summary>
@@ -584,23 +560,27 @@ namespace WindowsFormsApplication1
 
             if (m_ID_Projekt <= 0)
             {
-                label_PufferListe.Text = "Pufferspeicher im Projekt: -";
+                label_PufferListe.Text = MyResource.Resource.PSP_FUSSZEILE_OHNE_PROJEKT;
                 return;
             }
 
             List<WaermesenkeClass.PufferInfo> puffer = WaermesenkeClass.ProjektPufferListe(m_ID_Projekt, null);
             if (puffer.Count == 0)
             {
-                label_PufferListe.Text = "Pufferspeicher im Projekt: keiner angelegt";
+                label_PufferListe.Text = MyResource.Resource.PSP_FUSSZEILE_KEINER;
                 return;
             }
 
             List<string> teile = new List<string>();
             foreach (WaermesenkeClass.PufferInfo p in puffer)
-                teile.Add(p.Bezeichner + " (" + WaermesenkeClass.WirksameVerwendung(p) + ", " +
+                // VerwendungAnzeige statt WirksameVerwendung: Der DB-Wert bleibt deutsch,
+                // angezeigt wird der übersetzte Text (Paket 9, Befund L0-2).
+                teile.Add(p.Bezeichner + " (" +
+                          WaermesenkeClass.VerwendungAnzeige(WaermesenkeClass.WirksameVerwendung(p)) + ", " +
                           p.Gesamtvolumen + " l)");
 
-            label_PufferListe.Text = "Pufferspeicher im Projekt:  " + string.Join(" · ", teile);
+            label_PufferListe.Text = string.Format(MyResource.Resource.PSP_FUSSZEILE_LISTE,
+                                                   string.Join(" · ", teile));
         }
 
         private void btn_PufferVerwalten_Click(object sender, EventArgs e)
@@ -654,10 +634,10 @@ namespace WindowsFormsApplication1
             int prio = 1;
             foreach (string dbWert in listErzeuger)
             {
-                if (dbWert == "Gesamtsystem") continue; // eigener Eintrag weiter unten
+                if (dbWert == DbWerte.ERZEUGER_GESAMTSYSTEM) continue; // eigener Eintrag weiter unten
 
-                string anzeige = _waermeerzeugerItems.FirstOrDefault(x => x.DbValue == dbWert)?.DisplayName ?? dbWert;
-                string puffer = ZugeordnetePufferSp(anzeige);
+                string anzeige = ErzeugerKatalog.Anzeige(dbWert);
+                string puffer = ZugeordnetePufferSp(dbWert);
                 List<AnlagenInfo> anlagen = AnlagenImProjekt(dbWert);
 
                 if (anlagen.Count == 0)
@@ -696,12 +676,12 @@ namespace WindowsFormsApplication1
                 prio++;
             }
 
-            // Zuordnungen zum Gesamtsystem ebenfalls anzeigen, falls vorhanden
-            string gesamt = MyResource.Resource.KONFIG_GESAMTSYSTEM;
-            string gesamtSp = ZugeordnetePufferSp(gesamt);
+            // Zuordnungen zum Gesamtsystem ebenfalls anzeigen, falls vorhanden.
+            // Gesucht wird über den DB-Wert, angezeigt der übersetzte Name.
+            string gesamtSp = ZugeordnetePufferSp(DbWerte.ERZEUGER_GESAMTSYSTEM);
             if (gesamtSp != "-")
                 listView_Uebersicht.Items.Add(new ListViewItem(new[]
-                    { "", gesamt, "", "", "", "", "", "", gesamtSp }));
+                    { "", MyResource.Resource.KONFIG_GESAMTSYSTEM, "", "", "", "", "", "", gesamtSp }));
 
             // KEIN AutoResizeColumns mehr: die Breiten stehen fest in SPALTEN_BREITEN
             // (siehe dort). Ein erneutes Autosize würde sie bei jedem Neuaufbau wieder
@@ -720,10 +700,10 @@ namespace WindowsFormsApplication1
             int typ = 0;
             switch (dbWert)
             {
-                case "Wärmepumpe": typ = WizardItemClass.WP_TYP; break;
-                case "Heizkessel": typ = WizardItemClass.KESSEL_TYP; break;
-                case "BHKW": typ = WizardItemClass.BHKW_TYP; break;
-                case "Solarthermie": typ = WizardItemClass.SOLAR_TYP; break;
+                case DbWerte.ERZEUGER_WAERMEPUMPE: typ = WizardItemClass.WP_TYP; break;
+                case DbWerte.ERZEUGER_HEIZKESSEL: typ = WizardItemClass.KESSEL_TYP; break;
+                case DbWerte.ERZEUGER_BHKW: typ = WizardItemClass.BHKW_TYP; break;
+                case DbWerte.ERZEUGER_SOLARTHERMIE: typ = WizardItemClass.SOLAR_TYP; break;
             }
             if (typ == 0 || m_ID_Projekt == 0) return anlagen;
 
@@ -762,20 +742,24 @@ namespace WindowsFormsApplication1
         private string WaermequelleAnzeige(AnlagenInfo a)
         {
             // Luft-Wasser-WP: Quelle ist immer die Außenluft (Klimadaten)
-            if (string.IsNullOrEmpty(a.WpTyp) || a.WpTyp == "Luft-Wasser") return "Außenluft";
+            if (string.IsNullOrEmpty(a.WpTyp) || a.WpTyp == DbWerte.WP_BAUART_LUFT_WASSER)
+                return MyResource.Resource.SIMQ_QUELLE_AUSSENLUFT;
 
             switch (a.WQ_Typ)
             {
-                case WaermequelleClass.TYP_KONSTANT: return "Konstant (" + a.WQ_Temp.ToString("0.#") + " °C)";
+                case WaermequelleClass.TYP_KONSTANT:
+                    return string.Format(MyResource.Resource.SIMQ_QUELLE_KONSTANT, a.WQ_Temp.ToString("0.#"));
                 case WaermequelleClass.TYP_PUFFER:
                     {
                         string name = WaermequelleClass.WertLesen(a.ID, "WQ_Puffer") as string;
-                        return string.IsNullOrEmpty(name) ? "Pufferspeicher" : "Puffer: " + name;
+                        return string.IsNullOrEmpty(name)
+                            ? MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER
+                            : string.Format(MyResource.Resource.SIMQ_QUELLE_PUFFER_NAME, name);
                     }
-                case WaermequelleClass.TYP_PROFIL: return "Quellprofil";
-                case WaermequelleClass.TYP_CSV: return "CSV-Profil";
+                case WaermequelleClass.TYP_PROFIL: return MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL;
+                case WaermequelleClass.TYP_CSV: return MyResource.Resource.SIMQ_QUELLE_CSVPROFIL;
                 case WaermequelleClass.TYP_ERDREICH: return ErdreichAnzeige(a.ID);
-                default: return "Außenluft";
+                default: return MyResource.Resource.SIMQ_QUELLE_AUSSENLUFT;
             }
         }
 
@@ -795,11 +779,12 @@ namespace WindowsFormsApplication1
                 object oAnzahl = WaermequelleClass.WertLesen(idAnlage, "WQ_Anzahl");
                 int anzahl = oAnzahl != null ? Convert.ToInt32(oAnzahl) : 0;
                 if (anzahl < 1) anzahl = 1;
-                return "Erdsonde " + anzahl + "×" + tiefe.ToString("0.#") + " m";
+                return string.Format(MyResource.Resource.SIMQ_ERDSONDE_ANZEIGE,
+                                     anzahl, tiefe.ToString("0.#"));
             }
 
             if (tiefe <= 0) tiefe = ErdreichTemperatur.TIEFE_DEFAULT;
-            return "Erdreich Kollektor " + tiefe.ToString("0.#") + " m";
+            return string.Format(MyResource.Resource.SIMQ_ERDKOLLEKTOR_ANZEIGE, tiefe.ToString("0.#"));
         }
 
         /// <summary>
@@ -896,9 +881,9 @@ namespace WindowsFormsApplication1
         {
             switch (a.BM_Typ)
             {
-                case WaermequelleClass.MODUS_LEISTUNG: return "leistungsoptimiert";
-                case WaermequelleClass.MODUS_PV: return "PV-optimiert";
-                default: return "laufzeitoptimiert";
+                case WaermequelleClass.MODUS_LEISTUNG: return MyResource.Resource.SIM_MODUS_LEISTUNG;
+                case WaermequelleClass.MODUS_PV: return MyResource.Resource.SIM_MODUS_PV;
+                default: return MyResource.Resource.SIM_MODUS_LAUFZEIT;
             }
         }
 
@@ -917,16 +902,14 @@ namespace WindowsFormsApplication1
             if (!info.IstWaermepumpe)
             {
                 MessageBox.Show(
-                    "Der Betriebsmodus (Leistungssteuerung) ist heute nur für Wärmepumpen wirksam.\n\n" +
-                    "Anlage: " + info.Bezeichner + "\n" +
-                    "Für Heizkessel, BHKW und Solarthermie ergibt sich das Verhalten aus der\n" +
-                    "Kaskadenstellung und der Wärmesenke.",
-                    "Betriebsmodus", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    string.Format(MyResource.Resource.SIM_MSG_MODUS_NUR_WP, info.Bezeichner),
+                    MyResource.Resource.SIM_TITEL_BETRIEBSMODUS,
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             Form frm = new Form();
-            frm.Text = "Betriebsmodus - " + info.Bezeichner;
+            frm.Text = string.Format(MyResource.Resource.SIM_BETRIEBSMODUS_FENSTERTITEL, info.Bezeichner);
             frm.FormBorderStyle = FormBorderStyle.FixedDialog;
             frm.StartPosition = FormStartPosition.CenterParent;
             frm.MinimizeBox = false;
@@ -935,7 +918,7 @@ namespace WindowsFormsApplication1
 
             Label kopf = new Label
             {
-                Text = "Leistungssteuerung der Wärmepumpe:",
+                Text = MyResource.Resource.SIM_BETRIEBSMODUS_KOPF,
                 AutoSize = true,
                 Font = new Font(this.Font, FontStyle.Bold),
                 Location = new Point(14, 14)
@@ -943,14 +926,13 @@ namespace WindowsFormsApplication1
 
             RadioButton rbLaufzeit = new RadioButton
             {
-                Text = "Laufzeitoptimiert - maximale Leistung",
+                Text = MyResource.Resource.SIM_BM_RB_LAUFZEIT,
                 AutoSize = true,
                 Location = new Point(24, 48)
             };
             Label lLaufzeit = new Label
             {
-                Text = "Die Wärmepumpe fährt volle Leistung; die über den Bedarf hinaus\n" +
-                       "erzeugte Wärme lädt den Pufferspeicher. Lange Laufzeiten, wenig Takten.",
+                Text = MyResource.Resource.SIM_BM_TEXT_LAUFZEIT,
                 AutoSize = false,
                 Size = new Size(460, 34),
                 Location = new Point(46, 70)
@@ -958,14 +940,13 @@ namespace WindowsFormsApplication1
 
             RadioButton rbLeistung = new RadioButton
             {
-                Text = "Leistungsoptimiert - nur den Bedarf decken",
+                Text = MyResource.Resource.SIM_BM_RB_LEISTUNG,
                 AutoSize = true,
                 Location = new Point(24, 112)
             };
             Label lLeistung = new Label
             {
-                Text = "Die Wärmepumpe moduliert exakt auf den Wärmebedarf und erzeugt\n" +
-                       "keinen Überschuss. Der Speicher wird nicht gezielt beladen.",
+                Text = MyResource.Resource.SIM_BM_TEXT_LEISTUNG,
                 AutoSize = false,
                 Size = new Size(460, 34),
                 Location = new Point(46, 134)
@@ -973,15 +954,13 @@ namespace WindowsFormsApplication1
 
             RadioButton rbPV = new RadioButton
             {
-                Text = "PV-optimiert - Überschuss nur mit PV-Strom",
+                Text = MyResource.Resource.SIM_BM_RB_PV,
                 AutoSize = true,
                 Location = new Point(24, 176)
             };
             Label lPV = new Label
             {
-                Text = "Bei verfügbarem PV-Strom fährt die Wärmepumpe erhöhte Leistung\n" +
-                       "(begrenzt auf den PV-Überschuss) und lädt den Speicher; sonst\n" +
-                       "arbeitet sie leistungsoptimiert.",
+                Text = MyResource.Resource.SIM_BM_TEXT_PV,
                 AutoSize = false,
                 Size = new Size(460, 48),
                 Location = new Point(46, 198)
@@ -994,8 +973,8 @@ namespace WindowsFormsApplication1
                 default: rbLaufzeit.Checked = true; break;
             }
 
-            Button ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Location = new Point(332, 258), Width = 85 };
-            Button abbruch = new Button { Text = "Abbrechen", DialogResult = DialogResult.Cancel, Location = new Point(423, 258), Width = 85 };
+            Button ok = new Button { Text = MyResource.Resource.SIM_BTN_OK, DialogResult = DialogResult.OK, Location = new Point(332, 258), Width = 85 };
+            Button abbruch = new Button { Text = MyResource.Resource.SIM_BTN_ABBRECHEN, DialogResult = DialogResult.Cancel, Location = new Point(423, 258), Width = 85 };
 
             frm.Controls.Add(kopf);
             frm.Controls.Add(rbLaufzeit); frm.Controls.Add(lLaufzeit);
@@ -1016,10 +995,9 @@ namespace WindowsFormsApplication1
 
             if (modus == WaermequelleClass.MODUS_PV && (comboBox5.SelectedIndex < 0 || !checkBox5.Checked))
             {
-                MessageBox.Show("Hinweis: Für den PV-optimierten Betrieb muss im Bereich " +
-                    "'Stromerzeuger' die Photovoltaik ausgewählt sein.\n" +
-                    "Ohne PV-Anlage verhält sich die Wärmepumpe leistungsoptimiert.",
-                    "Betriebsmodus PV", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(MyResource.Resource.SIM_MSG_PV_AUSWAHL,
+                    MyResource.Resource.SIM_TITEL_BETRIEBSMODUS_PV,
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
             AktualisiereErzeugerUebersicht();
@@ -1053,61 +1031,36 @@ namespace WindowsFormsApplication1
             {
                 case COL_WPPRIO:
                     text = info.IstWaermepumpe
-                        ? "WP-Priorität (Doppelklick zum Ändern)\n" +
-                          "Einsatz-Reihenfolge der Wärmepumpen: 1 = wird zuerst eingesetzt,\n" +
-                          "die nächste deckt jeweils den verbleibenden Bedarf der Stunde."
-                        : "WP-Priorität gilt nur für Wärmepumpen.";
+                        ? MyResource.Resource.SIM_TIP_WPPRIO
+                        : MyResource.Resource.SIM_TIP_WPPRIO_NICHT_WP;
                     break;
 
                 case COL_QUELLE:
                     text = info.IstWaermepumpe
-                        ? "Wärmequelle (Doppelklick zum Ändern)\n" +
-                          "Luft-Wasser: immer Außenluft aus den Klimadaten.\n" +
-                          "Sole-/Wasser-Wasser: Erdreich, Konstante Temperatur, Pufferspeicher,\n" +
-                          "Quellprofil (Monats- und Wochenwerte) oder CSV-Datei."
-                        : "Eine Wärmequelle hat nur die Wärmepumpe.\n" +
-                          "Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.";
+                        ? MyResource.Resource.SIMQ_TIP_QUELLE
+                        : MyResource.Resource.SIMQ_TIP_QUELLE_NICHT_WP;
                     break;
 
                 case COL_SENKE:
-                    text = "Wärmesenke (Doppelklick zum Ändern)\n" +
-                           "Wohin gibt dieser Erzeuger seine Wärme ab?\n" +
-                           "• Heizkreis - deckt den Bedarf der Stunde unmittelbar\n" +
-                           "  (Bedarfsart Warmwasser / Heizwärme / beides)\n" +
-                           "• Pufferspeicher Heizung bzw. Brauchwasser - lädt einen\n" +
-                           "  Projekt-Pufferspeicher; dort werden auch Ladepriorität und\n" +
-                           "  Ladeobergrenze gepflegt.";
+                    text = MyResource.Resource.SIM_TIP_SENKE;
                     break;
 
                 case COL_ZWEITSENKE:
-                    text = "Zweitsenke (Doppelklick zum Ändern)\n" +
-                           "Optionaler zweiter Pufferspeicher, der NUR Überschuss bzw.\n" +
-                           "verbleibendes Ladepotenzial aufnimmt - nie Pflichtbedarf.\n" +
-                           "„–\" bedeutet: keine Zweitsenke.";
+                    text = MyResource.Resource.SIM_TIP_ZWEITSENKE;
                     break;
 
                 case COL_BETRIEBSMODUS:
                     text = info.IstWaermepumpe
-                        ? "Betriebsmodus (Doppelklick zum Ändern)\n" +
-                          "• laufzeitoptimiert - volle Leistung, Überschuss lädt den Speicher\n" +
-                          "• leistungsoptimiert - moduliert exakt auf den Wärmebedarf\n" +
-                          "• PV-optimiert - erhöhte Leistung nur bei verfügbarem PV-Strom,\n" +
-                          "  sonst leistungsoptimiert"
-                        : "Der Betriebsmodus ist heute nur für Wärmepumpen wirksam.";
+                        ? MyResource.Resource.SIM_TIP_BETRIEBSMODUS
+                        : MyResource.Resource.SIM_TIP_BETRIEBSMODUS_NICHT_WP;
                     break;
 
                 case COL_PUFFER:
-                    text = "Zuordnung im Altmodell (Doppelklick öffnet die Speicherregelung)\n" +
-                           "Diese Spalte zeigt die Zuordnung aus Z_ProjektPufferSp, die die\n" +
-                           "Simulation bis zur Umstellung der Engine noch auswertet. Sie wird\n" +
-                           "aus der Wärmesenke der Wärmepumpe automatisch nachgeführt.\n" +
-                           "Ein- und Abschaltschwelle in % der nutzbaren Kapazität.";
+                    text = MyResource.Resource.PSP_TIP_ZUORDNUNG_ALTMODELL;
                     break;
 
                 default:
-                    text = "Anlage: " + info.Bezeichner + "\n" +
-                           "Doppelklick auf Wärmesenke, Zweitsenke oder - bei Wärmepumpen -\n" +
-                           "WP-Prio, Wärmequelle und Betriebsmodus zum Bearbeiten.";
+                    text = string.Format(MyResource.Resource.SIM_TIP_UEBERSICHT_STANDARD, info.Bezeichner);
                     break;
             }
 
@@ -1162,14 +1115,14 @@ namespace WindowsFormsApplication1
             if (!info.IstWaermepumpe)
             {
                 MessageBox.Show(
-                    "Die WP-Priorität regelt die Reihenfolge der Wärmepumpen untereinander.\n" +
-                    "Für " + info.Bezeichner + " ist sie ohne Bedeutung.",
-                    "WP-Priorität", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    string.Format(MyResource.Resource.SIM_MSG_WPPRIO_NUR_WP, info.Bezeichner),
+                    MyResource.Resource.SIM_TITEL_WPPRIO,
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            string eingabe = EingabeDialog("Wärmepumpen-Priorität",
-                "Einsatz-Reihenfolge der Wärmepumpe\n'" + info.Bezeichner + "'\n(1 = wird zuerst eingesetzt):",
+            string eingabe = EingabeDialog(MyResource.Resource.SIM_WPPRIO_DIALOG_TITEL,
+                string.Format(MyResource.Resource.SIM_WPPRIO_DIALOG_TEXT, info.Bezeichner),
                 info.Prioritaet > 0 ? info.Prioritaet.ToString() : "1");
 
             int prioNeu;
@@ -1186,19 +1139,23 @@ namespace WindowsFormsApplication1
             if (!info.IstWaermepumpe)
             {
                 MessageBox.Show(
-                    "Eine Wärmequelle hat nur die Wärmepumpe.\n\n" +
-                    "Heizkessel, BHKW und Solarthermie erzeugen ihre Wärme selbst; ihre\n" +
-                    "Einsatzgrenzen stehen in den jeweiligen Eingabemasken.",
-                    "Wärmequelle", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MyResource.Resource.SIMQ_MSG_QUELLE_NUR_WP,
+                    MyResource.Resource.SIMQ_TITEL_WAERMEQUELLE,
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            if (string.IsNullOrEmpty(info.WpTyp) || info.WpTyp == "Luft-Wasser")
+            if (string.IsNullOrEmpty(info.WpTyp) || info.WpTyp == DbWerte.WP_BAUART_LUFT_WASSER)
             {
-                MessageBox.Show("Für Luft-Wasser-Wärmepumpen ist die Wärmequelle immer die Außenluft\n" +
-                    "(Außentemperatur der gewählten Klimaregion).\n\n" +
-                    "WP-Typ: " + (string.IsNullOrEmpty(info.WpTyp) ? "(nicht gepflegt)" : info.WpTyp),
-                    "Wärmequelle", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Der WP-Typ ist ein Persistenzwert und bleibt als solcher stehen; nur
+                // der Ersatztext für "nicht gepflegt" ist Anzeige.
+                MessageBox.Show(
+                    string.Format(MyResource.Resource.SIMQ_MSG_LUFT_WASSER,
+                                  string.IsNullOrEmpty(info.WpTyp)
+                                      ? MyResource.Resource.SIMQ_WPTYP_NICHT_GEPFLEGT
+                                      : info.WpTyp),
+                    MyResource.Resource.SIMQ_TITEL_WAERMEQUELLE,
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -1234,11 +1191,11 @@ namespace WindowsFormsApplication1
             if (ergebnis == DialogResult.OK)
             {
                 if (!WaermesenkeClass.Schreiben(info.ID, frm.Daten))
-                    ShowStatus("⚠ Die Wärmesenke konnte nicht vollständig gespeichert werden",
-                               Color.Firebrick);
+                    ShowStatus(MyResource.Resource.SIM_STATUS_SENKE_FEHLER, Color.Firebrick);
                 else
-                    ShowStatus("✔ Wärmesenke gespeichert (" +
-                               WaermesenkeClass.HauptsenkeAnzeige(frm.Daten) + ")", Color.ForestGreen);
+                    ShowStatus(string.Format(MyResource.Resource.SIM_STATUS_SENKE_GESPEICHERT,
+                                             WaermesenkeClass.HauptsenkeAnzeige(frm.Daten)),
+                               Color.ForestGreen);
 
                 ZuordnungBrueckeAnwenden();
             }
@@ -1321,8 +1278,9 @@ namespace WindowsFormsApplication1
 
                 case WaermequelleClass.TYP_KONSTANT:
                     {
-                        string eingabe = EingabeDialog("Konstante Quelltemperatur",
-                            "Quelltemperatur der Wärmepumpe\n'" + info.Bezeichner + "' [°C]:",
+                        string eingabe = EingabeDialog(
+                            MyResource.Resource.SIMQ_KONSTANT_DIALOG_TITEL,
+                            string.Format(MyResource.Resource.SIMQ_KONSTANT_DIALOG_TEXT, info.Bezeichner),
                             info.WQ_Temp != 0 ? info.WQ_Temp.ToString("0.#") : "10");
                         float temp;
                         if (eingabe == null || !WaermequelleClass.ZahlParsen(eingabe, out temp)) return;
@@ -1379,19 +1337,23 @@ namespace WindowsFormsApplication1
 
                 case WaermequelleClass.TYP_CSV:
                     {
-                        if (MessageBox.Show(WaermequelleClass.CSV_FORMAT_HINWEIS + "\n\nJetzt Datei auswählen?",
-                            "Quelltemperatur aus CSV-Datei", MessageBoxButtons.OKCancel,
+                        if (MessageBox.Show(
+                            string.Format(MyResource.Resource.SIMQ_CSV_FRAGE_DATEI,
+                                          WaermequelleClass.CSV_FORMAT_HINWEIS),
+                            MyResource.Resource.SIMQ_CSV_TITEL, MessageBoxButtons.OKCancel,
                             MessageBoxIcon.Information) != DialogResult.OK) return;
 
                         OpenFileDialog dlg = new OpenFileDialog();
-                        dlg.Title = "Quelltemperatur-Profil auswählen";
-                        dlg.Filter = "CSV Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*";
+                        dlg.Title = MyResource.Resource.SIMQ_CSV_DATEIDIALOG_TITEL;
+                        dlg.Filter = MyResource.Resource.SIMQ_CSV_DATEIFILTER;
                         if (dlg.ShowDialog() != DialogResult.OK) return;
 
                         if (WaermequelleClass.ProfilAusCsv(dlg.FileName) == null)
                         {
-                            MessageBox.Show("Die Datei konnte nicht gelesen werden oder enthält keine 8760 Stundenwerte!\n\n" +
-                                WaermequelleClass.CSV_FORMAT_HINWEIS, "CSV-Datei ungültig",
+                            MessageBox.Show(
+                                string.Format(MyResource.Resource.SIMQ_CSV_FEHLER,
+                                              WaermequelleClass.CSV_FORMAT_HINWEIS),
+                                MyResource.Resource.SIMQ_CSV_FEHLER_TITEL,
                                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             return;
                         }
@@ -1444,9 +1406,15 @@ namespace WindowsFormsApplication1
                                 // Luft-Wasser: die Konfiguration wird gar nicht gerechnet.
                                 // Das muss im Dialog stehen, sonst pflegt der Anwender
                                 // Bodentyp und Sondenlänge ins Leere (Konzept 4.5).
-                                frmErde.HinweisErgebnis = "Diese Konfiguration bleibt wirkungslos:\r\n\r\n" + erdErg.Grenze;
+                                // Umbrüche VOR dem Einsetzen umstellen (die Ressource legt
+                                // sie als LF ab, der Bestand nutzte hier \r\n).
+                                frmErde.HinweisErgebnis = string.Format(
+                                    MyResource.Resource.SIMQ_ERDREICH_WIRKUNGSLOS
+                                        .Replace("\n", Environment.NewLine), erdErg.Grenze);
                             else if (!erdErg.MaxEntzugBelastbar)
-                                frmErde.HinweisErgebnis = "Auslegungsprüfung nicht möglich:\r\n\r\n" + erdErg.Grenze;
+                                frmErde.HinweisErgebnis = string.Format(
+                                    MyResource.Resource.SIMQ_ERDREICH_KEINE_PRUEFUNG
+                                        .Replace("\n", Environment.NewLine), erdErg.Grenze);
                             else
                             {
                                 if (erdErg.MaxEntzugGeschaetzt)
@@ -1455,8 +1423,7 @@ namespace WindowsFormsApplication1
                                     frmErde.HinweisVorbehalt = (frmErde.HinweisVorbehalt.Length > 0
                                         ? frmErde.HinweisVorbehalt + " "
                                         : "") +
-                                        "Entzugsarbeit und Spitze enthalten die Wärme, mit der die " +
-                                        "Wärmepumpe den Pufferspeicher lädt.";
+                                        MyResource.Resource.SIMQ_ERDREICH_SPEICHERLADUNG;
                                 if (erdErg.FrostWarnung)
                                     frmErde.HinweisFrost = erdErg.Frosttext();
                             }
@@ -1499,8 +1466,8 @@ namespace WindowsFormsApplication1
 
             Label lbl = new Label { Text = beschriftung, AutoSize = true, Location = new Point(12, 12) };
             TextBox txt = new TextBox { Location = new Point(12, 75), Width = 316, Text = vorgabe ?? "" };
-            Button ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Location = new Point(172, 105), Width = 75 };
-            Button abbruch = new Button { Text = "Abbrechen", DialogResult = DialogResult.Cancel, Location = new Point(253, 105), Width = 75 };
+            Button ok = new Button { Text = MyResource.Resource.SIM_BTN_OK, DialogResult = DialogResult.OK, Location = new Point(172, 105), Width = 75 };
+            Button abbruch = new Button { Text = MyResource.Resource.SIM_BTN_ABBRECHEN, DialogResult = DialogResult.Cancel, Location = new Point(253, 105), Width = 75 };
 
             frm.Controls.Add(lbl);
             frm.Controls.Add(txt);

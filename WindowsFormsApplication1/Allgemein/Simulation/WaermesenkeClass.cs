@@ -486,6 +486,29 @@ namespace WindowsFormsApplication1
             return p.Verwendung.Length > 0 ? p.Verwendung : VERWENDUNG_HEIZUNG;
         }
 
+        /// <summary>
+        /// Anzeigetext zu einem Verwendungs-DB-Wert (Paket 9, Befund L0-2).
+        ///
+        /// <para>
+        /// <c>Tab_Pufferspeicher.Verwendung</c> trägt die deutschen Persistenzwerte
+        /// „Heizung" und „Brauchwasser". Sie standen bisher unübersetzt in Auswahllisten,
+        /// Aufzählungen und Meldungstexten — auf englischer Oberfläche mischten sich damit
+        /// die Sprachen. Diese Funktion ist der EINE erlaubte Übergang von der
+        /// Persistenz- in die Anzeigeschicht; der Wert selbst bleibt unverändert deutsch.
+        /// </para>
+        ///
+        /// Unbekannte Werte laufen unverändert durch — eine Bestandsdatenbank kann eine
+        /// Verwendung führen, die diese Fassung nicht kennt, und die soll sichtbar bleiben.
+        /// </summary>
+        public static string VerwendungAnzeige(string dbWert)
+        {
+            if (string.Equals(dbWert, VERWENDUNG_HEIZUNG, StringComparison.OrdinalIgnoreCase))
+                return MyResource.Resource.PSP_VERWENDUNG_HEIZUNG_ANZEIGE;
+            if (string.Equals(dbWert, VERWENDUNG_BRAUCHWASSER, StringComparison.OrdinalIgnoreCase))
+                return MyResource.Resource.PSP_VERWENDUNG_BRAUCHWASSER_ANZEIGE;
+            return dbWert;
+        }
+
         // --- Validierung nach Konzept 4.6 ---------------------------------------------
 
         /// <summary>Ergebnis der Senkenprüfung.</summary>

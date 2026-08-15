@@ -727,3 +727,537 @@ Mojibake, Zeilenenden unverändert.
   ausschließlich die **Byte-Kodierung**, zeichengleich nachgewiesen.
 - **Gesperrte Dateien, `DB-Backup/`, `Referenzlaeufe/*` unberührt.** Die produktive Datenbank
   wurde nur lesend (über die Arbeitskopie der Suite) benutzt.
+
+---
+
+# Etappe 2 — Teilpakete L3, L4, L5, L6 (+ `SIMENG_*`)
+
+**Stand: 15.08.2026.** Diese Etappe stellt den Code auf den in Etappe 1 angelegten
+Ressourcenkatalog um. Ausgangsstand: `d49075e` (HEAD zum Zeitpunkt der Arbeit; über
+`06b4f37` hinaus ist der UI-Sichttest-Fix an `Wizard_WPItem` hinzugekommen, der diese
+Etappe nicht berührt).
+
+**Kurzbilanz:** 366 Fundstellen im Quelltext greifen jetzt auf **293 Katalogschlüssel**
+zu (vorher 23 Fundstellen auf 7 `KONFIG_*`-Schlüssel). 20 Quelldateien geändert,
+2 neu angelegt. Der Rechenweg ist unverändert: **208 von 208 Ergebnisdateien
+byte-identisch** zum Lauf desselben Datenstands ohne diese Änderungen — und
+**208 von 208 byte-identisch zwischen deutscher und englischer Oberfläche**.
+
+## 9. Stellen-Bilanz je Teilpaket
+
+Gezählt werden Zugriffe auf `MyResource.Resource.*` im Quelltext („Fundstellen") und die
+Zahl der dabei benutzten unterschiedlichen Schlüssel.
+
+| Teilpaket | Datei | Fundstellen | Schlüssel | Rest |
+|---|---|---:|---:|---|
+| **L3** | `Views/Simulation/Form_QuellePufferspeicher.cs` | 21 | 17 | 0 |
+| | `Views/Simulation/Form_Quellprofil.cs` | 30 | 26 | 0 |
+| | *dazu* Monats- und Wochentagsnamen über `CultureInfo` | (19 Texte) | – | 0 |
+| **L4** | `Views/Simulation/Form_Simulation_Config.cs` | 30 | 28 | 1 (begründet) |
+| | `Views/Simulation/Form_Simulation_Config.Uebersicht.cs` | 85 | 80 | 1 (begründet) |
+| | `Views/Simulation/ErzeugerKatalog.cs` **(neu)** | 14 | 7 | 0 |
+| **L5** | `Views/Pufferspeicher/Form_PufferSp_Projekt.cs` | 74 | 68 | 0 |
+| | `Views/Pufferspeicher/Form_PufferSp_Bearbeiten.cs` | 11 | 5 | 0 |
+| | `Views/Pufferspeicher/Form_PufferSp_einlesen.cs` | 5 | 5 | 0 |
+| | `Views/Pufferspeicher/Form_PufferSp.cs` | 3 | 3 | 0 |
+| | `Views/Pufferspeicher/Form_PufferSp_Admin.cs` | 3 | 3 | 0 |
+| | `Views/Pufferspeicher/PufferSpFilter.cs` **(neu)** | 8 | 6 | 0 |
+| **L6** | `Views/Simulation/NavigatorWaerme.cs` | 24 | 23 | 0 |
+| | `Allgemein/Simulation/WaermequelleClass.cs` | 7 | 7 | 1 (kein UI-Text) |
+| | `Allgemein/Simulation/Ladeordnung.cs` | 8 | 8 | 0 |
+| | `Allgemein/Simulation/SimulationPufferspeicher.cs` | 3 | 3 | 0 |
+| | `Allgemein/Simulation/WaermesenkeClass.cs` | 2 | 2 | 0 |
+| **SIMENG** | `SimulationControl.cs` | 6 | 6 | 0 |
+| | `SimulationRunner.cs` | 6 | 6 | 1 (Persistenz) |
+| | `SimulationWaermepumpe.cs` | 5 | 4 | 0 |
+| | `SimulationSPK.cs` | 4 | 3 | 0 |
+| | `SimulationStrombedarf.cs` | 4 | 4 | 0 |
+| | `SimulationProtokoll.cs` | 3 | 3 | 1 (Präfix, gewollt) |
+| | `SimulationWaermebedarf.cs` | 3 | 3 | 0 |
+| | `SimulationBHKW.cs` | 1 | 1 | 0 |
+| | **Summe** | **366** | **293** | |
+
+### 9.1 L3 — programmatische Quellendialoge
+
+**`Form_QuellePufferspeicher`** und **`Form_Quellprofil`** sind vollständig umgestellt:
+Fenstertitel, Gruppen, Beschriftungen, Reiter, Knöpfe, sämtliche MessageBoxen.
+
+**Monats- und Wochentagsnamen kommen jetzt aus `CultureInfo.CurrentUICulture.DateTimeFormat`**
+(`MonthNames`, `DayNames`) statt aus zwei eigenen Arrays. Sie liegen bewusst als
+**Eigenschaften** vor und nicht als `static readonly`-Felder: ein Feld würde beim ersten
+Typzugriff eingefroren und bliebe bei der Sprachumschaltung im Prozess (siehe
+Abschnitt 12.3) auf der alten Sprache stehen. `DayNames` beginnt mit Sonntag, das
+Datenmodell mit Montag — der Versatz `(t + 1) % 7` steht kommentiert in
+`Wochentagsnamen`. Unter de-DE liefert das zeichengleich „Januar"…„Dezember" und
+„Montag"…„Sonntag".
+
+**Die fünf Dezimalkomma-Vorgaben** (`"10,0"`, `"5,0"`, `"0,0"` in
+`Form_QuellePufferspeicher`, `"10,0"`, `"0,0"` in `Form_Quellprofil`) stehen nicht mehr als
+Zeichenkette im Quelltext. Formatiert wird der **Zahlenwert** über eine neue
+Hilfsfunktion `Vorgabe(double)`.
+
+> **Abweichung mit Begründung.** Der Auftrag nennt „kulturinvariant formatieren".
+> `Vorgabe` formatiert mit `CultureInfo.CurrentCulture` — aus zwei Gründen:
+> (1) Genau diese Kultur benutzen `SetControls` und `TagAnzeigen`, die die Felder
+> unmittelbar danach überschreiben (`ToString("F1")`); jede andere Wahl brächte in der
+> Maske zwei Schreibweisen nebeneinander. (2) `InvariantCulture` zeigte einem deutschen
+> Anwender „10.0" statt „10,0" und verletzte damit die harte Vorgabe „deutsche
+> Oberfläche bleibt zeichengleich". Kulturneutral ist die Stelle trotzdem: im Quelltext
+> steht kein Komma mehr, und **gelesen** wird ohnehin kulturinvariant über
+> `WaermequelleClass.ZahlParsen` (nimmt Komma UND Punkt). `CurrentCulture` selbst wird
+> nach wie vor nicht gesetzt (Konzept 13.6, „Nicht Teil dieses Pakets").
+> Die Vorgabewerte liegen jetzt als Konstanten `VORGABE_MONATSWERT` /
+> `VORGABE_WOCHENWERT` vor und werden vom Setter `Monatswerte` mitbenutzt — die
+> frühere doppelte 10 ist damit weg.
+
+**Feste Pixel-Geometrie.** In `Form_QuellePufferspeicher` beginnt die Eingabespalte der
+Parametergruppe nicht mehr fest bei x = 180, sondern hinter der breitesten der drei
+Beschriftungen (`Math.Max(l1.Right, l2.Right, l3.Right) + 12`), nach oben auf 200 px
+gekappt, damit die Felder nicht in die Kapazitätsanzeige bei x = 285 laufen. Auf Deutsch
+greift die Untergrenze — das Layout ist unverändert. Auf Englisch („Usable temperature
+spread [K]:") rückt die Spalte um wenige Pixel nach rechts. Dieselbe Rechnung steht im
+Speicherregelungs-Dialog (`Form_Simulation_Config`, Untergrenze 280, Obergrenze 340).
+
+Die Serie des Vorschau-Diagramms heißt jetzt `QUELLTEMPERATUR` (technischer Schlüssel),
+der Anzeigetext steht in `LegendText`.
+
+### 9.2 L4 — `Form_Simulation_Config` (+ `.Uebersicht`)
+
+Neben der Textumstellung zwei strukturelle Änderungen.
+
+**(a) Die duplizierten `LanguageItem`-Listen sind zusammengeführt.** Dieselbe Zuordnung
+„DB-Wert ↔ Anzeigename" stand **viermal** im Quelltext, mit unterschiedlichem Inhalt:
+
+| Fundstelle | Inhalt |
+|---|---|
+| `Form_Simulation_Config`, Konstruktor | 4 Einträge, ohne Gesamtsystem |
+| `Form_Simulation_Config.ZuordnungenLaden` | 5 Einträge, Reihenfolge …, Wärmepumpe, Gesamtsystem |
+| `Form_Simulation_Config.btn_Speichern_Click` | 5 Einträge, Reihenfolge …, Gesamtsystem, Wärmepumpe |
+| `Form_KonfigPufferspeicher.ErzeugerDbWert` | dieselbe Zuordnung als `if`-Kette (Behebung B0-9) |
+
+Neu: **`Views/Simulation/ErzeugerKatalog.cs`** mit dem (aus dem Formular herausgelösten)
+Typ `LanguageItem` und den Funktionen `Anzeige(dbWert)`, `DbWert(anzeige)` und
+`Liste(params string[])`. Die DB-Werte kommen aus `DbWerte.ERZEUGER_*`; die
+Reihenfolgen `WAERMEERZEUGER`, `STROMERZEUGER`, `ENERGIESPEICHER`, `ZUORDENBAR` stehen
+einmal. `Liste()` erzeugt bewusst je Aufruf eine neue Liste — die vier
+Wärmeerzeuger-ComboBoxen sollen unabhängig voneinander selektieren, und die Anzeigenamen
+werden erst beim Aufruf aufgelöst.
+
+`DbWert()` behält die B0-11-Reihenfolge (erst Anzeigename, dann DB-Wert) und lässt
+Unbekanntes unverändert durch; `Anzeige()` ebenso. `Form_KonfigPufferspeicher.ErzeugerDbWert`
+ist **nicht** angefasst worden (Datei außerhalb des L4-Auftrags), steht aber als vierte
+Kopie weiter im Bestand — **offener Punkt für L8**, siehe Abschnitt 13.
+
+**(b) `_zuordnungen` führt intern den DB-Wert statt des Anzeigenamens.** Das ist B0-11 zu
+Ende gedacht: Vorher übersetzte `ZuordnungenLaden` beim Lesen in den Anzeigenamen, und
+`btn_Speichern_Click` übersetzte beim Schreiben zurück. Der Umweg funktionierte nur,
+solange die Sprache zwischen Anlegen und Speichern gleich blieb. Jetzt gilt:
+
+- `ZuordnungenLaden` übernimmt `ctrlpsp.items[i].Erzeuger` **unverändert**;
+- `RefreshZuordnungAnzeige` übersetzt erst beim Füllen der ListView (`ErzeugerKatalog.Anzeige`);
+- `btn_Hinzu_Click` bildet den vom Zuordnungsdialog gelieferten Anzeigenamen sofort auf
+  den DB-Wert ab;
+- `ZugeordnetePufferSp` und `AktualisiereErzeugerUebersicht` vergleichen DB-Werte;
+- `btn_Speichern_Click` schreibt `ErzeugerKatalog.DbWert(z[0])` — bei einem DB-Wert
+  wirkungslos, aber die tolerante Absicherung gegen Alt- und Fremdwerte bleibt stehen.
+
+Damit enthält die Steuerlogik dieses Formulars **keinen lokalisierten Text mehr**.
+Zusätzlich sind die DB-Wert-Literale beider Dateien auf `DbWerte.*` umgestellt
+(`"Gesamtsystem"`, die vier Erzeugerarten im `switch` von `AnlagenImProjekt`,
+`"Luft-Wasser"` an zwei Stellen, `Erzeuger='Wärmepumpe'` in der Speicherregelung).
+
+**Paket-2/8-Bestandteile mitgenommen:** Kaskaden- und Extrapolationsschalter samt ihren
+Mouseover-Hinweisen und den vier Statusmeldungen, die neun Spaltenköpfe der Übersicht,
+die sechs Mouseover-Texte der Übersicht und die fünf der Alt-Zuordnung.
+
+**Zeilenumbrüche.** Die `.resx` legt Umbrüche als LF ab (XML-Normierung), der Bestand
+setzte an mehreren Stellen `Environment.NewLine`. Wo das der Fall war, steht jetzt
+`.Replace("\n", Environment.NewLine)` — und zwar **auf der Formatzeichenkette, vor dem
+Einsetzen**. Andersherum wären die bereits mit `Environment.NewLine` verketteten
+Referenzlisten doppelt umgebrochen worden.
+
+### 9.3 L5 — Pufferspeicher-Dialoge
+
+Alle 17 MessageBoxen der fünf Dialoge sind umgestellt; dazu die Beschriftungen,
+Spaltenköpfe, Knopftexte und Statusmeldungen von `Form_PufferSp_Projekt` (74 Fundstellen).
+
+**Pflicht-Fix Befund L0-1 — `Speichertyp` wurde lokalisiert in die Datenbank geschrieben.**
+`Form_PufferSp_Bearbeiten.cs:139` setzte `model.Speichertyp = comboBox_Speichertyp.Text`.
+Auf englischer Oberfläche landeten damit „Solar storage", „Buffer storage",
+„Combination storage" in `Tab_Pufferspeicher_STAMM.Speichertyp`.
+
+Behoben über den **Auswahlindex**, der sprachfrei ist:
+
+| Weg | vorher | jetzt |
+|---|---|---|
+| Schreiben | `comboBox.Text` | `SpeichertypDbWert()` → `SPEICHERTYP_DB_WERTE[SelectedIndex]` (`DbWerte.PSP_SPEICHERTYP_*`) |
+| Lesen | `SetzeText(comboBox, row, "Speichertyp")` | `SpeichertypAnzeigen(row)` → `SpeichertypIndex(wert)` → `SelectedIndex` |
+
+`SpeichertypIndex` prüft in dieser Reihenfolge: deutscher Persistenzwert → angezeigter
+Text der aktuellen Sprache → **englischer Altwert**. Die drei Altwerte stehen als
+`SPEICHERTYP_ALTWERTE_EN` eingefroren im Quelltext, ausdrücklich **nicht** als Ressource:
+Sie beschreiben Altdaten und dürfen sich mit einer Übersetzungskorrektur nicht
+mitändern. Ein Datensatz, der vor der Behebung auf englischer Oberfläche gespeichert
+wurde, geht damit im Dialog wieder auf und trägt nach dem nächsten Speichern wieder den
+deutschen Wert. Freitext (die ComboBox lässt ihn zu) läuft unverändert durch, damit eine
+bewusste Eingabe nicht stillschweigend umgeschrieben wird.
+
+Die Probe dazu steht in Abschnitt 12.5.
+
+**Befund L0-2 gleich mitbehoben.** `Form_PufferSp_Projekt` setzte die DB-Werte „Heizung"
+und „Brauchwasser" unmittelbar als ComboBox-Einträge und las sie über
+`SelectedItem.ToString()` als Steuerwert zurück. Neu: die Klasse `VerwendungItem`
+(`DbWert` + `Anzeige`) und die beiden Zugriffe `VerwendungWaehlen(dbWert)` /
+`GewaehlteVerwendung()`. Für die Anzeige eines Verwendungs-DB-Werts an anderer Stelle gibt
+es jetzt **`WaermesenkeClass.VerwendungAnzeige(dbWert)`** — der eine erlaubte Übergang von
+der Persistenz- in die Anzeigeschicht. Er wird von der Projektliste des Dialogs, der
+Fußzeile der Konfigurationsübersicht und der Verwendungswechsel-Rückfrage benutzt; damit
+ist auch der in Etappe 1 (Abschnitt 5.5) angemeldete Vorbehalt „die englische Meldung
+mischt die Sprachen" erledigt.
+
+**B0-9/B0-10/B0-11 verifiziert — und B0-10 gehärtet.** B0-9 und B0-11 sind behoben
+(B0-11 jetzt strukturell, siehe 9.2). B0-10 war behoben, wäre durch die Lokalisierung
+aber **zurückgekommen**: Der Volumenfilter verglich den angezeigten ComboBox-Text gegen
+deutsche Literale; mit übersetzten Einträgen hätte kein Vergleich mehr getroffen, und es
+hätte wieder nur der Vorbelegungszweig gegriffen. Neu:
+**`Views/Pufferspeicher/PufferSpFilter.cs`** — Filterstufen über den **Auswahlindex**,
+die sechs SQL-Prädikate stehen dort einmal statt zweimal (`Form_PufferSp` und
+`Form_PufferSp_Admin` hatten sie doppelt). Der Herstellerfilter kennt keinen festen
+Eintrag „Alle"; er vergleicht weiterhin einen Text, aber gegen denselben Ressourcenwert,
+mit dem er vorbelegt wird — Vorbelegung und Vergleich passen damit in jeder Sprache
+zusammen. Nebenbei verdoppelt `HerstellerSql` jetzt einfache Anführungszeichen im
+Herstellernamen; vorher hätte ein Apostroph das Prädikat zerrissen.
+
+### 9.4 L6 — `NavigatorWaerme` und Klassen
+
+**Chart-Serien auf technische Schlüssel.** Die sieben Serien hießen bisher nach ihrem
+deutschen Anzeigetext, und zwar uneinheitlich („Wärmebedarf" mit Umlaut, „Waermepumpe"
+ohne). Jetzt: `WAERMEBEDARF`, `GESAMT`, `WAERMEPUMPE`, `HEIZSTAB`, `HEIZKESSEL`,
+`SOLARTHERMIE`, `BHKW_WAERME` als `private const string`, der Anzeigetext ausschließlich
+in `Series.LegendText`. Alle **30 Nachschlagestellen** (`Series["…"]`,
+`Series.IndexOf(…)`) sind nachgezogen. Eine neue Hilfsfunktion `SerieAnlegen(schluessel,
+legende, farbe, werte)` legt beides in einem Schritt an. Die Speicherserien tragen ihre
+technischen Schlüssel (`PUFFER_<ID>` / `QUELLE_<AnlagenID>`) schon seit Paket 7 — das
+Muster ist damit im ganzen Navigator einheitlich.
+
+> **Eine sichtbare Änderung, bewusst in Kauf genommen.** Die Legende zeigte für die
+> Wärmepumpe bisher **„Waermepumpe"** — der Serienname war umlautfrei, weil er zugleich
+> Zugriffsschlüssel war. Mit der Trennung Schlüssel/Anzeigetext steht dort jetzt
+> **„Wärmepumpe"**. Das ist die einzige Stelle dieser Etappe, an der sich die deutsche
+> Oberfläche ändert; sie behebt einen Schreibfehler, der nur aus der technischen
+> Doppelnutzung stammte.
+
+**`WaermequelleClass.TypAnzeige`** ist von `static readonly string[]` auf eine
+**Eigenschaft** umgestellt, die je Aufruf ein neues Array aus den sechs `SIMQ_TYP_*`
+liefert. Ein Feld hätte die Sprache beim ersten Typzugriff eingefroren. Die
+Indexkopplung zu `TypWerte` bleibt unverändert und ist im Kommentar geschärft: der
+Steuerwert ist der Index, der Text ist Anzeige.
+
+**`WaermequelleClass.CSV_FORMAT_HINWEIS`** ist von `const string` auf eine **Eigenschaft**
+umgestellt (`SIMQ_CSV_FORMAT_HINWEIS`) — eine Konstante kann keine Ressource
+referenzieren, genau der Fall, den Konzept 13.6 nennt. Beide Aufrufstellen bleiben
+unverändert.
+
+Dazu lokalisiert: `SimulationPufferspeicher.RolleAnzeige()`/`BezeichnerAnzeige()`,
+`Ladeordnung.ErzeugerName()` und die beiden `ToString()` der Lade- und Entladeeinträge.
+Bei `ErzeugerName` ist im Kommentar jetzt festgehalten, dass das direkt darunter stehende
+`KaskadenLiteral` für dieselben Typen die **Persistenzwerte** liefert — bis Paket 9 waren
+beide Zeichenketten identisch, was die Verwechslung leicht machte.
+
+**Nicht umgesetzt: „Designer auf `Localizable`" für `NavigatorWaerme`.** Wie vom
+Auftraggeber entschieden — eine `Localizable`-Ressource trägt je Kultur auch Position und
+Größe; ein Handumbau ohne den WinForms-Designer verschöbe Steuerelemente. Die
+programmatisch angelegten Texte (`checkBox_Puffer`, CSV-Knopf, Speicherauswahl) sind
+stattdessen im Quelltext auf den Katalog umgestellt. Die im Designer liegenden Checkboxen
+(`checkBox_Gesamt`, `checkBox_WP`, …) bleiben deutsch — **offener Punkt für L8**.
+
+### 9.5 `SIMENG_*` — Engine- und Protokollmeldungen
+
+Alle 29 Katalogschlüssel sind angeschlossen: Abbruchgründe des Runners, Kessel- und
+BHKW-Obergrenzen, Pendelspeicher, Ladeordnung, Stromprofile, Tagesverteilung,
+Prozesswärme, Brauchwasser, WP-Kenndaten und die beiden Extrapolationsmeldungen.
+
+**Was ausdrücklich NICHT lokalisiert wurde:**
+
+| Stelle | Grund |
+|---|---|
+| `SimulationProtokoll.Eintragen`: `"Simulation " + art + ": "` | Konsolenpräfix. `Referenzlauf/Protokoll.cs:67-68` zählt Warnungen und Fehler über genau diese Token (`"Simulation Warnung:"`, `"FEHLER:"`). Eine Übersetzung setzte die Auswertung der Lauf-Protokolle stillschweigend auf null. Lokalisiert ist der **Meldungsinhalt** und die Anzeigefassung in `AlsText()`. |
+| `SimulationWaermepumpe`, Schlüssel von `HinweisEinmal` | Der Einmal-Schlüssel ist Schicht 2. Änderte er sich mit der Sprache, käme die Meldung in einer Sprache mehrfach und in der anderen gar nicht. |
+| `SimulationRunner.cs:499` `mo.Modul = … ?? "Standard BHKW"` | **Persistenzwert.** Der Wert wird nach `Tab_ErgebnisBHKWModul.Modul` geschrieben und von der Referenzlauf-Suite als Skalar exportiert; übersetzt ließe er DE- und EN-Läufe auseinanderlaufen. Katalogkorrektur dokumentiert. |
+| `Console.WriteLine`-Zeilen der Engine | Wie in L2 festgelegt (Konzept 13.4): sie sind Diagnose, keine Oberfläche, und die Suite liest sie mit. |
+
+## 10. Neue und geänderte Dateien
+
+**Neu (2):**
+
+| Datei | Zweck |
+|---|---|
+| `Views/Simulation/ErzeugerKatalog.cs` | `LanguageItem` + die EINE Zuordnung DB-Wert ↔ Anzeigename (ersetzt vier Kopien) |
+| `Views/Pufferspeicher/PufferSpFilter.cs` | Volumen- und Herstellerfilter der beiden Katalogdialoge, indexbasiert (ersetzt zwei Kopien, härtet B0-10) |
+
+**Geändert (20):** die 16 Dateien der Bilanz in Abschnitt 9 plus
+`MyResource/Resource.resx`, `MyResource/Resource.en-US.resx`,
+`MyResource/Resource.Designer.cs` und `Referenzlauf/Program.cs`.
+
+### 10.1 Ressourcenkatalog: +2 Schlüssel, 2 Berichtigungen
+
+| Schlüssel | DE | EN | Grund |
+|---|---|---|---|
+| `CHART_LEGENDE_GESAMT` | Gesamt | Total | neu — Legendentext der Serie `GESAMT` |
+| `CHART_LEGENDE_WAERMEBEDARF` | Wärmebedarf | Heat demand | neu — Legendentext der Serie `WAERMEBEDARF` |
+
+`SIMENG_STROMPROFILE_DIAGNOSE` trägt jetzt **zwei** Platzhalter
+(`…nicht berechnet werden{0} - {1}`): `{0}` nimmt den optionalen Zusatz
+`SIMENG_STROMPROFIL_ZULETZT_BEARBEITET` auf, `{1}` die Ausnahmemeldung. Mit nur einem
+Platzhalter wäre der Zusatz beim Umbau verlorengegangen; die deutsche Ausgabe ist
+zeichengleich. Zur Katalogkorrektur bei `SIM_BHKW_MODUL_STANDARD` siehe Abschnitt 9.5.
+
+**Bestand jetzt: 530 Schlüssel** in beiden `.resx` und 530 Eigenschaften in
+`Resource.Designer.cs`.
+
+### 10.2 Zwei Änderungen, die nicht von dieser Etappe stammen
+
+- **`Resource.Designer.cs` wurde während der Arbeit von Visual Studio neu erzeugt.** Die
+  laufende IDE bemerkt eine geänderte `.resx` und wirft ihren Generator an — dasselbe
+  Verhalten, das schon in Etappe 1 (Abschnitt 0) beobachtet wurde. Die beiden neuen
+  Eigenschaften standen dadurch doppelt in der Datei (einmal von der IDE, einmal von
+  Hand); die Handfassung wurde entfernt. Der Endstand ist über den Testtreiber geprüft:
+  530 Schlüssel ↔ 530 Eigenschaften, keine Dublette.
+- **`WindowsFormsApplication1.csproj`** hat dabei einen
+  `<Compile Update="MyResource\Resource.Designer.cs">`-Eintrag mit
+  `DesignTime`/`AutoGen`/`DependentUpon` bekommen — ebenfalls von der IDE. Der Eintrag ist
+  reine Darstellungs-Metadaten (Verschachtelung im Projektbaum), verhaltensneutral und
+  sachlich richtig; er wurde stehen gelassen, weil Visual Studio ihn sonst beim nächsten
+  Speichern erneut anlegt.
+
+### 10.3 `Referenzlauf/Program.cs`
+
+Eine additive Ergänzung: `OberflaechenspracheSetzen()` liest die Umgebungsvariable
+**`EPOS_REFLAUF_UICULTURE`** und setzt daraus `Thread.CurrentUICulture` sowie
+`CultureInfo.DefaultThreadCurrentUICulture`. **`CurrentCulture` bleibt unangetastet.**
+Ohne die Variable ändert sich nichts — dann gilt wie bisher die Systemkultur.
+
+Eine Umgebungsvariable statt eines Arguments, weil jedes Projekt in einem eigenen
+Kindprozess rechnet: die Umgebung wird vererbt, ein Argument müsste durchgereicht werden.
+Die **Registry des Anwenders wird nicht angefasst** (`HKCU\Software\wp-plan` bleibt, wie
+sie ist).
+
+## 11. Kodierung
+
+Alle 20 geänderten Quelldateien behalten ihre Kodierung: **UTF-8 mit BOM**, kein
+Mojibake. Die sieben Dateien, die schon vor dieser Etappe reine LF-Zeilenenden trugen
+(`Ladeordnung.cs`, `WaermequelleClass.cs`, `WaermesenkeClass.cs`,
+`Form_PufferSp_Projekt.cs`, `Form_QuellePufferspeicher.cs`, `Form_Quellprofil.cs`,
+`Referenzlauf/Program.cs`), behalten sie — eine Umstellung würde jede Zeile im Diff
+verändern und den Nachweis „nur diese Stellen wurden angefasst" unmöglich machen.
+**Offener Punkt für L8**, unverändert gegenüber Etappe 1.
+
+Die beiden neuen Dateien sind nach der `.editorconfig` angelegt: **UTF-8 mit BOM, CRLF**.
+
+## 12. Verifikation
+
+### 12.1 Build
+
+```
+MSBuild.exe WP-Plan.sln -t:Build -p:Configuration=Debug -p:Platform=x86 -p:BaseOutputPath=<Arbeitsordner>
+MSBuild.exe Referenzlauf\Referenzlauf.csproj -t:Build -p:Configuration=Debug -p:Platform=x86
+```
+
+**0 Fehler, exakt 6 Bestandswarnungen** — dieselben wie in Etappe 1: 2 × CS0108
+(`WErzeugerModel.ID_Projekt`, `StromverbraucherStammCtrl.items`), 2 × CS0109
+(`KlimaregionStammCtrl.rows`, `.items`), 1 × CS4014 und 1 × CS1998 (beide `MDIMainForm.cs`).
+`Referenzlauf.csproj` ebenfalls 0 Fehler.
+
+> Der Ausgabepfad der Solution wurde wie in Etappe 1 in einen Arbeitsordner umgelenkt.
+> Die Anwendung des Anwenders lief während dieser Etappe nicht (keine
+> `Kenndaten.laccdb`); sie wurde zu keinem Zeitpunkt beendet.
+
+### 12.2 Regressionslauf — und ein Befund zur Referenzbasis
+
+Der erste Vergleich gegen `Referenzlaeufe/2026-08-14_B1-Fixes` meldete **8 × PASS und
+Projekt 1024 FAIL** (75.575 Abweichungen). Ursache ist **nicht** diese Etappe:
+
+- In `Projekt_1024/aggregate.csv` fehlt im neuen Lauf der komplette Block
+  `WaermepumpeModul[1]` („CS7800iLW 12"). Eine **zweite Wärmepumpe ist im Projekt nicht
+  mehr vorhanden** — das kann kein Codeumbau bewirken.
+- Die produktive `C:\ProgramData\EPOS_PLAN\Kenndaten.accdb` trägt den Zeitstempel
+  **15.08.2026 11:58** und wurde damit **nach** der Verifikation von Etappe 1 (11:00–11:25)
+  vom Anwender geändert.
+
+Nachweis über einen **Baselinelauf aus einem eigenen git-Arbeitsbaum auf `HEAD`
+(`d49075e`, also ohne die Änderungen dieser Etappe)**, gerechnet auf demselben,
+aktuellen Datenstand:
+
+```
+B1-Fixes            vs HEAD(d49075e) : 193 byte-gleich, 15 abweichend  (alle 15 in Projekt_1024)
+B1-Fixes            vs Paket9-Etappe2: 193 byte-gleich, 15 abweichend  (dieselben 15 Dateien)
+HEAD(d49075e)       vs Paket9-Etappe2: 208 byte-gleich,  0 abweichend
+```
+
+Der Baselinelauf zeigt **exakt dieselbe** Abweichung. Der Unterschied zur eingefrorenen
+Basis stammt also vollständig aus der geänderten Datenbank; gegenüber dem Lauf **ohne**
+diese Etappe auf **demselben** Datenstand sind **208 von 208 Ergebnisdateien
+byte-identisch**. Der Toleranzvergleich der Suite bestätigt das:
+
+```
+Projekt_1007: PASS   Projekt_1011: PASS   Projekt_1021: PASS
+Projekt_1008: PASS   Projekt_1017: PASS   Projekt_1023: PASS
+Projekt_1010: PASS   Projekt_1018: PASS   Projekt_1024: PASS
+GESAMT: PASS (2.295.987 Werte innerhalb der Toleranz)
+```
+
+Der Lauf wurde nach der Endfassung des Codes wiederholt — dasselbe Ergebnis
+(208/208 byte-gleich).
+
+> **Empfehlung an den Auftraggeber:** Die Referenzbasis `2026-08-14_B1-Fixes` bildet den
+> Datenstand von gestern ab. Sobald die Änderungen an Projekt 1024 gewollt sind, sollte
+> eine neue Basis auf dem heutigen Datenstand eingefroren werden — sonst schleppt jede
+> Folgeprüfung diese eine erklärungsbedürftige Abweichung mit. Die eingefrorenen
+> Lauf-Protokolle wurden von dieser Etappe **nicht** angefasst.
+
+### 12.3 Sprachgleichheit (L7-Vorstufe)
+
+Derselbe Lauf, dieselben neun Projekte, einmal mit deutscher und einmal mit englischer
+Oberflächensprache (`EPOS_REFLAUF_UICULTURE=en-US`, siehe 10.3):
+
+```
+SPRACHGLEICHHEIT DE vs EN : 208 byte-gleich, 0 abweichend
+Toleranzvergleich          : 9 von 9 PASS, 2.295.987 Werte
+```
+
+**208 von 208 Ergebnisdateien sind byte-identisch** — über alle neun Projekte, nicht nur
+über die geforderten drei (1007, 1023, 1024). Damit ist nachgewiesen, dass kein
+lokalisierter Text als Steuerwert dient.
+
+Die Konsolenausgabe zeigt zugleich beides, was sie zeigen soll — den übersetzten
+Meldungsinhalt und das **unveränderte deutsche Präfix**:
+
+```
+Simulation Hinweis: Heat pump 'CS7800iLW 12': the source temperature falls below the
+lowest data point of the performance curve (-5,0 °C). Extrapolation is applied
+(project setting "Allow extrapolation of the performance curve").
+```
+
+Die Zahl steht als `-5,0` da — `CurrentCulture` ist unverändert deutsch, wie es das
+Konzept verlangt.
+
+### 12.4 Ressourcen-Ladeprüfung und Platzhalterprobe
+
+Testtreiber außerhalb des Repos, lädt die gebaute Assembly per `Assembly.LoadFrom` und
+arbeitet über Reflexion:
+
+```
+Ressourcenbloecke geprueft : 94
+Einzelabrufe geprueft      : 72.501     (jeder Schluessel unter Invariant, de-DE, en-US)
+MyResource.Resource        : 530 Schluessel / 530 Eigenschaften
+Eintraege mit Platzhaltern : 103
+Probeformatierungen        : 206        (je Eintrag neutral UND en-US)
+Leere Werte de-DE / en-US  : 0 / 0
+resx neutral / en-US       : 530 / 530
+ERGEBNIS: BESTANDEN - kein Fehler.
+```
+
+Geprüft wird damit: kein doppelter Schlüssel, kein Schlüssel, der unter einer Kultur
+`null` liefert, Gleichstand `.resx` ↔ `Resource.Designer.cs`, gleiche Schlüsselmenge in
+beiden `.resx` — und für **jeden** Eintrag mit `{n}` eine Probeformatierung mit
+Ersatzargumenten. Geprüft wird dabei auch, dass die **Platzhalterzahl in neutral und
+en-US übereinstimmt**; eine Übersetzung mit einem vergessenen `{1}` fiele hier auf.
+Keine `FormatException`.
+
+### 12.5 Befund L0-1 — Schreib-/Leseprobe
+
+Eigener Reflexions-Testtreiber gegen die gebaute Assembly, **ohne Datenbankzugriff**:
+geprüft wird genau der Code, der den Wert bildet (`InitDatensatzUpdate` →
+`PufferSpModel.Speichertyp`) bzw. ihn anzeigt (`SpeichertypAnzeigen`).
+
+```
+=== Oberflaechensprache de-DE ===
+  Schreiben [0] Anzeige="Solarspeicher"  -> DB="Solarspeicher"   OK
+  Schreiben [1] Anzeige="Pufferspeicher" -> DB="Pufferspeicher"  OK
+  Schreiben [2] Anzeige="Kombispeicher"  -> DB="Kombispeicher"   OK
+  Lesen  DB="Solarspeicher"  -> Index 0, Anzeige="Solarspeicher"   OK   (alle drei)
+  Altwert DB="Solar storage" -> Index 0, Anzeige="Solarspeicher"   OK
+     Rueckschreiben -> DB="Solarspeicher"  OK                           (alle drei)
+
+=== Oberflaechensprache en-US ===
+  Schreiben [0] Anzeige="Solar storage"       -> DB="Solarspeicher"   OK
+  Schreiben [1] Anzeige="Buffer storage"      -> DB="Pufferspeicher"  OK
+  Schreiben [2] Anzeige="Combination storage" -> DB="Kombispeicher"   OK
+  Lesen  DB="Solarspeicher"  -> Index 0, Anzeige="Solar storage"    OK   (alle drei)
+  Altwert DB="Solar storage" -> Index 0, Anzeige="Solar storage"    OK
+     Rueckschreiben -> DB="Solarspeicher"  OK                            (alle drei)
+
+ERGEBNIS: BESTANDEN
+```
+
+**Der DB-Wert ist unter beiden Sprachen immer deutsch**, der Anzeigetext folgt der
+Sprache, und ein englischer Altwert wird beim Lesen erkannt und beim nächsten Speichern
+auf den deutschen Persistenzwert zurückgeführt.
+
+### 12.6 Hardcoding-Restzählung
+
+Volltextsuche über die 16 Zieldateien: alle Zeichenkettenliterale außerhalb von
+Kommentaren, ohne reine Bezeichner. Von 115 Treffern sind 113 SQL-Fragmente,
+Parameternamen (`@id`, `@proj`), Spaltennamen, Escape-Sequenzen oder
+`Console.WriteLine`-Diagnosen — alle laut L2 ausdrücklich außerhalb des Katalogs.
+
+**Benutzersichtbare deutsche Literale, die bleiben — 2 Stück, beide begründet:**
+
+| Stelle | Text | Begründung |
+|---|---|---|
+| `Form_Simulation_Config.cs:144` | `HilfeKontext.SetzeBereich("Simulation Konfiguration (Erzeuger definieren, Pufferspeicher zuordnen)")` | Bedienkontext für den KI-Hilfe-Assistenten. Erreicht den Anwender nur mittelbar; in L2 ausdrücklich vom Katalog ausgenommen. |
+| `Form_Simulation_Config.Uebersicht.cs:580` | `" l)"` | Interpunktion und Einheit der Fußzeilen-Aufzählung `Bezeichner (Verwendung, n l)`. Sprachneutral zusammengesetzt; Bezeichner und Verwendung kommen bereits übersetzt. |
+
+Dazu drei Stellen, die **absichtlich** deutsch bleiben und keine Oberfläche sind:
+`SPEICHERTYP_ALTWERTE_EN` (Bestandstoleranz, 9.3), `"Simulation "` als Konsolenpräfix
+(9.5) und `WaermequelleClass.cs:634` `sp.Erzeuger = "Wärmequelle"` (reines
+In-Memory-Etikett, nirgends persistiert — schon in Etappe 1, Abschnitt 2 belegt).
+
+## 13. Offene Punkte für L7 und L8
+
+1. **UI-Sichttest steht aus.** Die Layoutrisiken sind gerechnet, nicht gesehen. Zu
+   prüfen sind auf **englischer** Oberfläche: die Parametergruppe von
+   `Form_QuellePufferspeicher` (Beschriftungen ↔ Eingabespalte ↔ Kapazitätsanzeige),
+   die Checkbox „Source available without limit …" (endet rechnerisch knapp vor dem
+   Gruppenrand), die neun Spalten der Erzeugerübersicht mit ihren festen Breiten
+   (`SPALTEN_BREITEN`, u. a. „prio" in 40 px und „HP prio" in 62 px), die drei
+   Radiobuttons des Betriebsmodus-Dialogs, die Knopftexte von `Form_PufferSp_Projekt`
+   (214 px) und die Legende des Wärme-Navigators.
+2. **`Form_KonfigPufferspeicher.ErzeugerDbWert`** ist die vierte, jetzt überflüssige
+   Kopie der Erzeugerzuordnung. Sie sollte auf `ErzeugerKatalog.DbWert` umgestellt
+   werden — die Datei lag außerhalb des L4-Auftrags.
+3. **Designer-Texte des Wärme-Navigators** (`checkBox_Gesamt`, `checkBox_WP`,
+   `checkBox_Heizstab`, `checkBox_SPK`, `checkBox_ST`, `checkBox_BHKW`,
+   `checkBox_Waermebedarf`) sind weiterhin deutsch. Sie gehören in die
+   `NavigatorWaerme.en-US.resx` und damit an den WinForms-Designer, nicht an die Hand.
+4. **Bestandsübersetzungen** von `Form_Simulation_Config.en-US.resx` und
+   `Form_KonfigPufferspeicher.en-US.resx` widersprechen weiter dem Glossar
+   („buffer memory", „producer") — offener Punkt 7 aus Etappe 1, unverändert.
+5. **43 verwaiste Einträge** in `Form_Simulation_Config.en-US.resx` — offener Punkt 6
+   aus Etappe 1, unverändert.
+6. **Zeilenenden** (7 Dateien mit LF) und **Encoding-Baustellen außerhalb des
+   Simulationsbereichs** — offene Punkte 8 und 9 aus Etappe 1, unverändert.
+7. **Neue Referenzbasis** auf dem heutigen Datenstand einfrieren (siehe 12.2).
+8. **`Views/Simulation/NavigatorStrom.cs`, `NavigatorUebersicht.cs`, `DashboardForm.cs`,
+   `Form_Simulation_Detail.cs`, `Form_Waermesenke.cs`, `Form_QuelleErdreich.cs`,
+   `TabNavigationManager.cs`** tragen laut Katalog zusammen noch rund 220 Fundstellen.
+   Sie waren nicht Teil des Etappe-2-Auftrags (L3–L6) und sind der größte verbliebene
+   Block.
+
+## 14. Was diese Etappe NICHT getan hat
+
+- **Kein Commit.** Der Arbeitsstand liegt unkommittiert im Arbeitsverzeichnis.
+- **Gesperrte Dateien unberührt:** `Controller/WizardCtrl.cs`, `Model/WErzeugerModel.cs`,
+  `Views/BHKW/Form_BHKWEing.cs`, `Views/Heizkessel/Form_Heizkessel.cs`,
+  `Views/Wizard/WizardParent.cs`. Ebenso `Views/Wizard/Wizard_WPItem.*` und
+  `Views/Wärmepumpe/Form_WPAuswahl.cs` (parallele Arbeiten), `DB-Backup/` und die
+  untracked `Referenzlaeufe/*`-Ordner.
+- **Keine `.Designer.cs` eines Formulars geändert**, keine `.resx` eines Formulars
+  geändert — auch nicht additiv. Der L0-1-Fix betrifft ausschließlich
+  `Form_PufferSp_Bearbeiten.cs`.
+- **`CurrentCulture` nicht gesetzt** — weder in der Anwendung noch in der
+  Referenzlauf-Suite. Nur `CurrentUICulture`.
+- **Registry nicht angefasst.** `@"Software\\wp-plan"` in `Program.cs` bleibt unverändert.
+- **Produktive Datenbank nur lesend** benutzt (über die Arbeitskopie der Suite). Die
+  Läufe dieser Etappe liegen außerhalb des Repos in einem Arbeitsverzeichnis; unter
+  `Referenzlaeufe/` ist kein neuer Ordner entstanden.

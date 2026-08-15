@@ -403,6 +403,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamt ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_GESAMT {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfsdeckung ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_WAERMEBEDARFSDECKUNG {
@@ -2050,7 +2068,7 @@ namespace WindowsFormsApplication1.MyResource {
         ///
         ///Ohne Haken: Die Simulation bricht ab und nennt die betroffene Anlage.
         ///Sinnvoll, wenn extrapolierte Kennwerte nicht in ein Ergebnis einfließen
-        ///sollen; die Kennlinie ist dann um tiefere Stützste [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
+        ///sollen; die Kennlinie ist dann um tiefere [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
         public static string SIM_EXTRAPOLATION_TOOLTIP {
             get {
@@ -3532,7 +3550,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Die Stromprofile konnten nicht berechnet werden - {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf: Die Stromprofile konnten nicht berechnet werden{0} - {1} ähnelt.
         /// </summary>
         public static string SIMENG_STROMPROFILE_DIAGNOSE {
             get {

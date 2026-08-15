@@ -238,7 +238,7 @@ namespace WindowsFormsApplication1
         private void DbFehlerUebernehmen()
         {
             foreach (string meldung in DataRepository.StilleFehlerAbholen())
-                Protokoll.Warnung("Datenbankzugriff während des Laufs: " + meldung);
+                Protokoll.Warnung(string.Format(MyResource.Resource.SIMENG_DB_ZUGRIFF_WAEHREND_LAUF, meldung));
         }
 
         private void Do_Simulation_Intern(int ID_Projekt)
@@ -259,7 +259,7 @@ namespace WindowsFormsApplication1
             if (SchemaMigration.SimulationGesperrt(out sperrgrund))
             {
                 Sperrgrund = sperrgrund;
-                Protokoll.Fehlermeldung("Simulation abgebrochen: " + sperrgrund);
+                Protokoll.Fehlermeldung(string.Format(MyResource.Resource.SIMENG_SIMULATION_ABGEBROCHEN, sperrgrund));
                 return;
             }
 
@@ -288,8 +288,8 @@ namespace WindowsFormsApplication1
             // gleichwertig - es hält den Bestand konsistent (siehe VorbelegungNachziehen).
             int nachgezogen = WaermesenkeClass.VorbelegungNachziehen(ID_Projekt);
             if (nachgezogen > 0)
-                Protokoll.Hinweis("Ladeprioritäten: " + nachgezogen + " Feld(er) ohne Vorgabe auf 0 " +
-                                  "gesetzt (Konzept 3.4, Vorbelegung wie Migrationsregel R5).");
+                Protokoll.Hinweis(string.Format(
+                    MyResource.Resource.SIMENG_LADEPRIO_VORBELEGUNG_NACHGEZOGEN, nachgezogen));
 
             // ***********************************************************************
             // Speicher-Registry aufbauen (Paket 4 - Konzept 6.2) und den Senkenspeicher
@@ -1253,11 +1253,11 @@ namespace WindowsFormsApplication1
                 // Datenlage in sich widersprüchlich, und das BHKW verlöre stillschweigend
                 // seinen Speicher. Der Lauf bricht deshalb ab, statt ein plausibel
                 // aussehendes, aber falsches Ergebnis zu speichern.
-                Fehlertext = "BHKW-Pendelspeicher: Für Projekt " + m_ID_Projekt + " ist ein Volumen " +
-                             "von " + VolumenPendelspeicherBHKW + " l bekannt, aber es gibt keine " +
-                             "Puffer-Zeile „" + ProjektPuffer.BEZ_PENDELSPEICHER + "\". Der Lauf " +
-                             "wurde abgebrochen, damit das BHKW nicht stillschweigend ohne " +
-                             "Speicher rechnet.";
+                // Der Bezeichner des Pendelspeichers ist ein PERSISTENZWERT und bleibt
+                // als solcher in der Meldung stehen - er benennt die gesuchte Zeile.
+                Fehlertext = string.Format(MyResource.Resource.SIMENG_PENDELSPEICHER_ZEILE_FEHLT,
+                                           m_ID_Projekt, VolumenPendelspeicherBHKW,
+                                           ProjektPuffer.BEZ_PENDELSPEICHER);
                 // NACHARBEIT PAKET 8, BEFUND N9: über den Fehlerkanal (Konsolenzeile
                 // bleibt, zusätzlich Lauf-Protokoll und Sammelanzeige).
                 Protokoll.Fehlermeldung(Fehlertext);
@@ -1268,10 +1268,8 @@ namespace WindowsFormsApplication1
             WaermesenkeClass.PufferInfo p = WaermesenkeClass.PufferLesen(idPuffer);
             if (p == null || p.ID_Projekt != m_ID_Projekt)
             {
-                Fehlertext = "BHKW-Pendelspeicher: Die Puffer-Zeile " + idPuffer + " des Projekts " +
-                             m_ID_Projekt + " ließ sich nicht lesen oder gehört zu einem anderen " +
-                             "Projekt. Der Lauf wurde abgebrochen, damit das BHKW nicht " +
-                             "stillschweigend ohne Speicher rechnet.";
+                Fehlertext = string.Format(MyResource.Resource.SIMENG_PENDELSPEICHER_NICHT_LESBAR,
+                                           idPuffer, m_ID_Projekt);
                 // NACHARBEIT PAKET 8, BEFUND N9: siehe oben - Fehlerkanal statt blanker
                 // Konsolenzeile.
                 Protokoll.Fehlermeldung(Fehlertext);
@@ -1701,11 +1699,9 @@ namespace WindowsFormsApplication1
                     int modulindex = ModulindexDerAnlage(e.ID_Type, e.ID_Anlage);
                     if (modulindex < 0)
                     {
-                        k.Hinweise.Add("Ladeordnung: Anlage " + e.ID_Anlage + " (" + e.Erzeuger +
-                                       ") lädt laut Konfiguration den Speicher " + sp.ID_Pufferspeicher +
-                                       " (" + sp.BezeichnerAnzeige() + "). Diese Erzeugerart rechnet " +
-                                       "in diesem Lauf nicht in der Speicherstufe; die Anlage rechnet " +
-                                       "als Vektorstufe wie eine Heizkreis-Anlage.");
+                        k.Hinweise.Add(string.Format(
+                            MyResource.Resource.SIMENG_LADEORDNUNG_ART_NICHT_IN_SPEICHERSTUFE,
+                            e.ID_Anlage, e.Erzeuger, sp.ID_Pufferspeicher, sp.BezeichnerAnzeige()));
                         continue;
                     }
 

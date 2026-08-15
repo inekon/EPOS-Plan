@@ -200,6 +200,13 @@ namespace WindowsFormsApplication1
 
             // Die Referenzlauf-Suite liest die Konsolenausgabe der Kindprozesse mit;
             // die vorhandenen Console-Meldungen der Engine sollen erhalten bleiben.
+            //
+            // PAKET 9 / L6: Das PRÄFIX bleibt hartkodiert deutsch. Referenzlauf/Protokoll.cs
+            // zählt Warnungen und Fehler über genau diese Token ("Simulation Warnung:",
+            // "FEHLER:"); eine Lokalisierung würde die Auswertung der Lauf-Protokolle
+            // stillschweigend auf null setzen. Lokalisiert ist ausschließlich der
+            // MELDUNGSINHALT (die SIMENG_*-Ressourcen) und die Anzeigefassung in
+            // AlsText()/HinweistextFuerAnzeige().
             try { Console.WriteLine("Simulation " + art + ": " + zeile); }
             catch { /* eine fehlende Konsole darf keinen Rechenlauf abbrechen */ }
         }
@@ -220,11 +227,16 @@ namespace WindowsFormsApplication1
         {
             lock (_sperre)
             {
+                // ANZEIGE-Ausgabe, deshalb lokalisiert (Paket 9). Nicht zu verwechseln
+                // mit den Konsolenpräfixen in Eintragen() - die bleiben sprachstabil.
                 var sb = new StringBuilder();
-                foreach (string z in _fehler) sb.AppendLine("Fehler: " + z);
-                foreach (string z in _warnungen) sb.AppendLine("Warnung: " + z);
+                foreach (string z in _fehler)
+                    sb.AppendLine(string.Format(MyResource.Resource.SIMENG_LISTE_FEHLER, z));
+                foreach (string z in _warnungen)
+                    sb.AppendLine(string.Format(MyResource.Resource.SIMENG_LISTE_WARNUNG, z));
                 if (!nurFehlerUndWarnungen)
-                    foreach (string z in _hinweise) sb.AppendLine("Hinweis: " + z);
+                    foreach (string z in _hinweise)
+                        sb.AppendLine(string.Format(MyResource.Resource.SIMENG_LISTE_HINWEIS, z));
                 return sb.ToString().TrimEnd();
             }
         }

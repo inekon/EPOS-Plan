@@ -25,9 +25,17 @@ namespace WindowsFormsApplication1
         private bool _pufferUiUpdate = false; // verhindert Event-Rückkopplung
 
         // Vollständiger Datenbestand der Pufferspeicher-Zuordnungen
-        // (ErzeugerAnzeige, Pufferspeicher, Vorlauf, Rücklauf). listView1 zeigt
+        // (Erzeuger als DB-WERT, Pufferspeicher, Vorlauf, Rücklauf). listView1 zeigt
         // davon nur die per Checkbox ausgewählten Pufferspeicher an - gespeichert
         // wird immer der komplette Bestand.
+        //
+        // PAKET 9 / L4: Feld 0 trägt jetzt den DB-Wert (DbWerte.ERZEUGER_*) und nicht
+        // mehr den lokalisierten Anzeigenamen. Damit ist die gesamte Steuerlogik
+        // dieses Formulars sprachfrei; übersetzt wird ausschließlich beim Füllen der
+        // ListView (ErzeugerKatalog.Anzeige) und beim Zurücklesen einer Eingabe
+        // (ErzeugerKatalog.DbWert). Das ist B0-11 zu Ende gedacht: Vorher hing der
+        // Umweg Anzeige→DB am Speicherzeitpunkt und griff nur, solange die Sprache
+        // zwischen Anlegen und Speichern gleich blieb.
         private List<string[]> _zuordnungen = new List<string[]>();
 
         // Mouseover-Hinweise in der Pufferspeicher-Zuordnung
@@ -36,12 +44,8 @@ namespace WindowsFormsApplication1
         private int _tipSpalteZuordnung = -1;
         private Timer statusTimer = new Timer();
 
-        public class LanguageItem
-        {
-            public string DisplayName { get; set; } // Das, was der User sieht (übersetzt)
-            public string DbValue { get; set; }    // Das, was in die DB kommt (z.B. "STATUS_OPEN")
-        }
-
+        // LanguageItem liegt seit Paket 9 / L4 in ErzeugerKatalog.cs - dort steht die
+        // EINE Zuordnung DB-Wert ↔ Anzeigename, die vorher viermal im Quelltext stand.
         private readonly List<LanguageItem> _waermeerzeugerItems;
 
         public Form_Simulation_Config()
@@ -51,10 +55,10 @@ namespace WindowsFormsApplication1
             listView1.FullRowSelect = true;
             listView1.GridLines = true;
             listView1.View = View.Details;
-            listView1.Columns.Add("Wärmeerzeuger", -2, HorizontalAlignment.Left);
-            listView1.Columns.Add("Pufferspeicher", -2, HorizontalAlignment.Left);
-            listView1.Columns.Add("Vorlauf [°C]", -2, HorizontalAlignment.Left);
-            listView1.Columns.Add("Rücklauf [°C]", -2, HorizontalAlignment.Left);
+            listView1.Columns.Add(MyResource.Resource.PSP_SPALTE_WAERMEERZEUGER, -2, HorizontalAlignment.Left);
+            listView1.Columns.Add(MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER, -2, HorizontalAlignment.Left);
+            listView1.Columns.Add(MyResource.Resource.PSP_SPALTE_VORLAUF, -2, HorizontalAlignment.Left);
+            listView1.Columns.Add(MyResource.Resource.PSP_SPALTE_RUECKLAUF, -2, HorizontalAlignment.Left);
             listView1.Columns.Add("", -2, HorizontalAlignment.Left);
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
@@ -76,23 +80,8 @@ namespace WindowsFormsApplication1
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
 
-            _waermeerzeugerItems = new List<LanguageItem>
-            {
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_BHKW, DbValue = "BHKW" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_HEIZKESSEL, DbValue = "Heizkessel" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_SOLARTHERMIE, DbValue = "Solarthermie" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_WAERMEPUMPE, DbValue = "Wärmepumpe" },
-            };
-
-            var items_PV = new List<LanguageItem>
-            {
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_PHOTOVOLTAIK, DbValue = "Photovoltaik" },
-            };
-
-            var items_SP = new List<LanguageItem>
-            {
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_STROMSPEICHER, DbValue = "Stromspeicher" },
-            };
+            // EINE Quelle für alle Erzeugerlisten (Paket 9 / L4, ErzeugerKatalog).
+            _waermeerzeugerItems = ErzeugerKatalog.Liste(ErzeugerKatalog.WAERMEERZEUGER);
 
             // Das Array mit deinen 4 ComboBoxen (Namen anpassen)
             ComboBox[] myComboBoxes = { comboBox1, comboBox2, comboBox3, comboBox4 };
@@ -104,9 +93,9 @@ namespace WindowsFormsApplication1
                 cb.DisplayMember = "DisplayName";
                 cb.ValueMember = "DbValue";
 
-                // Eine Kopie der Liste oder ToList() nutzen, falls die Boxen 
-                // unabhängig voneinander selektieren sollen
-                cb.DataSource = _waermeerzeugerItems.ToList();
+                // Je ComboBox eine eigene Liste, damit die Boxen unabhängig
+                // voneinander selektieren.
+                cb.DataSource = ErzeugerKatalog.Liste(ErzeugerKatalog.WAERMEERZEUGER);
 
                 // Auswahl auf leer setzen
                 cb.SelectedIndex = -1;
@@ -120,11 +109,11 @@ namespace WindowsFormsApplication1
 
             comboBox5.DisplayMember = "DisplayName";
             comboBox5.ValueMember = "DbValue";
-            comboBox5.DataSource = items_PV.ToList();
+            comboBox5.DataSource = ErzeugerKatalog.Liste(ErzeugerKatalog.STROMERZEUGER);
             comboBox5.SelectedIndex = -1;
             comboBox6.DisplayMember = "DisplayName";
             comboBox6.ValueMember = "DbValue";
-            comboBox6.DataSource = items_SP.ToList();
+            comboBox6.DataSource = ErzeugerKatalog.Liste(ErzeugerKatalog.ENERGIESPEICHER);
             comboBox6.SelectedIndex = -1;
 
             comboBox5.SelectedIndexChanged += comboBox5_SelectedIndexChanged;
@@ -181,37 +170,27 @@ namespace WindowsFormsApplication1
             switch (spalte)
             {
                 case 0:
-                    text = "Wärmeerzeuger, dem dieser Pufferspeicher zugeordnet ist.\n" +
-                           "Zuordnungen werden über 'Hinzufügen...' angelegt und über\n" +
-                           "'Löschen' entfernt.";
+                    text = MyResource.Resource.PSP_TIP_ZUORDNUNG_ERZEUGER;
                     break;
 
                 case 1:
-                    text = "Pufferspeicher (Doppelklick zum Ändern)\n" +
-                           "Auswahl aus den Stammdaten. Volumen und Bereitschaftsverluste\n" +
-                           "stammen aus dem Speicher-Datensatz und bestimmen zusammen mit\n" +
-                           "Vor- und Rücklauf die nutzbare Kapazität.";
+                    text = MyResource.Resource.PSP_TIP_ZUORDNUNG_SPEICHER;
                     break;
 
                 case 2:
-                    text = "Vorlauftemperatur [°C] (Doppelklick zum Ändern)\n" +
-                           "Obere Temperatur des Speichers. Die nutzbare Kapazität ergibt\n" +
-                           "sich aus: Volumen × 1,16 Wh/(l·K) × (Vorlauf − Rücklauf).";
+                    text = MyResource.Resource.PSP_TIP_ZUORDNUNG_VORLAUF;
                     break;
 
                 case 3:
-                    text = "Rücklauftemperatur [°C] (Doppelklick zum Ändern)\n" +
-                           "Untere Temperatur des Speichers. Je größer die Spreizung zum\n" +
-                           "Vorlauf, desto mehr Energie kann der Speicher aufnehmen.";
+                    text = MyResource.Resource.PSP_TIP_ZUORDNUNG_RUECKLAUF;
                     break;
 
                 case 4:
-                    text = "Doppelklick öffnet die Pufferspeicher-Stammdaten (nur Ansicht).";
+                    text = MyResource.Resource.PSP_TIP_ZUORDNUNG_STAMMDATEN;
                     break;
 
                 default:
-                    text = "Pufferspeicher-Zuordnung: Doppelklick auf Pufferspeicher,\n" +
-                           "Vorlauf oder Rücklauf zum Bearbeiten.";
+                    text = MyResource.Resource.PSP_TIP_ZUORDNUNG_STANDARD;
                     break;
             }
 
@@ -227,12 +206,13 @@ namespace WindowsFormsApplication1
         {
             // Zuordnung der Wärmepumpe suchen (höchste Priorität)
             Z_ProjektPufferSpCtrl ctrlpsp = new Z_ProjektPufferSpCtrl();
-            ctrlpsp.ReadAll("ID_Projekt=" + m_ID_Projekt + " AND Erzeuger='Wärmepumpe'");
+            ctrlpsp.ReadAll("ID_Projekt=" + m_ID_Projekt +
+                            " AND Erzeuger='" + DbWerte.ERZEUGER_WAERMEPUMPE + "'");
             if (ctrlpsp.rows == 0)
             {
-                MessageBox.Show("Der Wärmepumpe ist kein Pufferspeicher zugeordnet.\n" +
-                    "Die Zuordnung erfolgt in der Tabelle 'Pufferspeicher Zuordnung'.",
-                    "Speicherregelung", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(MyResource.Resource.PSP_MSG_WP_OHNE_SPEICHER,
+                    MyResource.Resource.PSP_TITEL_SPEICHERREGELUNG,
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -247,7 +227,7 @@ namespace WindowsFormsApplication1
             if (sAus != null && Convert.ToDouble(sAus) > 0) vorgabeAus = Convert.ToDouble(sAus);
 
             Form frm = new Form();
-            frm.Text = "Speicherregelung - " + speicherName;
+            frm.Text = string.Format(MyResource.Resource.PSP_SPEICHERREGELUNG_FENSTERTITEL, speicherName);
             frm.FormBorderStyle = FormBorderStyle.FixedDialog;
             frm.StartPosition = FormStartPosition.CenterParent;
             frm.MinimizeBox = false;
@@ -256,32 +236,34 @@ namespace WindowsFormsApplication1
 
             Label kopf = new Label
             {
-                Text = "Ein- und Abschaltschwelle des Pufferspeichers",
+                Text = MyResource.Resource.PSP_SPEICHERREGELUNG_KOPF,
                 AutoSize = true,
                 Font = new Font(this.Font, FontStyle.Bold),
                 Location = new Point(14, 14)
             };
 
-            Label l1 = new Label { Text = "Einschaltschwelle [% der Kapazität]:", AutoSize = true, Location = new Point(24, 52) };
-            TextBox tbEin = new TextBox { Location = new Point(280, 49), Width = 70, Text = vorgabeEin.ToString("0.#") };
+            Label l1 = new Label { Text = MyResource.Resource.PSP_SPEICHERREGELUNG_EINSCHALT, AutoSize = true, Location = new Point(24, 52) };
+            Label l2 = new Label { Text = MyResource.Resource.PSP_SPEICHERREGELUNG_ABSCHALT, AutoSize = true, Location = new Point(24, 88) };
 
-            Label l2 = new Label { Text = "Abschaltschwelle [% der Kapazität]:", AutoSize = true, Location = new Point(24, 88) };
-            TextBox tbAus = new TextBox { Location = new Point(280, 85), Width = 70, Text = vorgabeAus.ToString("0.#") };
+            // Feste Pixel-Geometrie (Konzept 13.6): Eingabespalte hinter die breitere
+            // der beiden Beschriftungen. Auf Deutsch bleibt es bei den bisherigen 280 px.
+            int xSchwelle = Math.Max(l1.Right, l2.Right) + 12;
+            if (xSchwelle < 280) xSchwelle = 280;
+            if (xSchwelle > 340) xSchwelle = 340;
+
+            TextBox tbEin = new TextBox { Location = new Point(xSchwelle, 49), Width = 70, Text = vorgabeEin.ToString("0.#") };
+            TextBox tbAus = new TextBox { Location = new Point(xSchwelle, 85), Width = 70, Text = vorgabeAus.ToString("0.#") };
 
             Label hinweis = new Label
             {
                 AutoSize = false,
                 Location = new Point(14, 124),
                 Size = new Size(400, 80),
-                Text = "Unterschreitet der Speicherfüllstand die Einschaltschwelle, läuft die " +
-                       "Wärmepumpe an und lädt bis zur Abschaltschwelle durch. Dazwischen bleibt " +
-                       "sie aus und der Bedarf wird aus dem Speicher gedeckt.\n\n" +
-                       "Die Abschaltschwelle sollte unter 100 % liegen, da die Bereitschaftsverluste " +
-                       "den Füllstand laufend absenken."
+                Text = MyResource.Resource.PSP_SPEICHERREGELUNG_HINWEIS
             };
 
-            Button ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Location = new Point(242, 210), Width = 85 };
-            Button abbruch = new Button { Text = "Abbrechen", DialogResult = DialogResult.Cancel, Location = new Point(333, 210), Width = 85 };
+            Button ok = new Button { Text = MyResource.Resource.SIM_BTN_OK, DialogResult = DialogResult.OK, Location = new Point(242, 210), Width = 85 };
+            Button abbruch = new Button { Text = MyResource.Resource.SIM_BTN_ABBRECHEN, DialogResult = DialogResult.Cancel, Location = new Point(333, 210), Width = 85 };
 
             frm.Controls.Add(kopf);
             frm.Controls.Add(l1);
@@ -300,15 +282,16 @@ namespace WindowsFormsApplication1
                 if (!WaermequelleClass.ZahlParsen(tbEin.Text, out ein) ||
                     !WaermequelleClass.ZahlParsen(tbAus.Text, out aus))
                 {
-                    MessageBox.Show("Bitte gültige Zahlenwerte eintragen!", "Speicherregelung",
+                    MessageBox.Show(MyResource.Resource.PSP_MSG_ZAHLENWERTE,
+                        MyResource.Resource.PSP_TITEL_SPEICHERREGELUNG,
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     continue;
                 }
                 if (ein < 0 || ein > 100 || aus <= 0 || aus > 100 || ein >= aus)
                 {
-                    MessageBox.Show("Die Werte müssen zwischen 0 und 100 % liegen und\n" +
-                        "die Einschaltschwelle muss kleiner als die Abschaltschwelle sein!",
-                        "Speicherregelung", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(MyResource.Resource.PSP_MSG_SCHWELLEN_BEREICH,
+                        MyResource.Resource.PSP_TITEL_SPEICHERREGELUNG,
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     continue;
                 }
 
@@ -317,8 +300,8 @@ namespace WindowsFormsApplication1
                     new System.Data.OleDb.OleDbParameter("@ein", (double)ein),
                     new System.Data.OleDb.OleDbParameter("@aus", (double)aus));
 
-                ShowStatus("✔ Speicherregelung gespeichert (" + ein.ToString("0.#") + " % / " +
-                           aus.ToString("0.#") + " %)", Color.ForestGreen);
+                ShowStatus(string.Format(MyResource.Resource.PSP_STATUS_SPEICHERREGELUNG_GESPEICHERT,
+                                         ein.ToString("0.#"), aus.ToString("0.#")), Color.ForestGreen);
                 return;
             }
         }
@@ -326,15 +309,19 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Liefert die dem Erzeuger zugeordneten Pufferspeicher aus der
         /// Zuordnungstabelle (kommagetrennt) oder "-" ohne Zuordnung.
+        ///
+        /// Der Parameter ist seit Paket 9 / L4 der <b>DB-Wert</b> des Erzeugers
+        /// (<see cref="DbWerte"/>) und nicht mehr sein Anzeigename — die Auswahl läuft
+        /// damit sprachfrei.
         /// </summary>
-        private string ZugeordnetePufferSp(string erzeugerAnzeigeName)
+        private string ZugeordnetePufferSp(string erzeugerDbWert)
         {
             // Aus dem kompletten Datenbestand lesen, nicht aus der (ggf. per
             // Pufferspeicher-Checkbox gefilterten) Tabellen-Anzeige.
             List<string> speicher = new List<string>();
             foreach (string[] z in _zuordnungen)
             {
-                if (z[0] == erzeugerAnzeigeName && !string.IsNullOrEmpty(z[1]) && !speicher.Contains(z[1]))
+                if (z[0] == erzeugerDbWert && !string.IsNullOrEmpty(z[1]) && !speicher.Contains(z[1]))
                     speicher.Add(z[1]);
             }
             return speicher.Count > 0 ? string.Join(", ", speicher) : "-";
@@ -386,7 +373,7 @@ namespace WindowsFormsApplication1
             // Neue Rubrik "Pufferspeicher:" unter den Wärmeerzeuger-Auswahlfeldern
             Label lblPufferSp = new Label();
             lblPufferSp.Name = "label_PufferSpRubrik";
-            lblPufferSp.Text = "Pufferspeicher:";
+            lblPufferSp.Text = MyResource.Resource.PSP_RUBRIK_LABEL;
             lblPufferSp.AutoSize = true;
             lblPufferSp.Font = label2.Font; // gleiche Optik wie "Stromerzeuger:"
             lblPufferSp.Location = new Point(label2.Left, comboBox4.Bottom + 14);
@@ -530,7 +517,9 @@ namespace WindowsFormsApplication1
                 string[] z = _zuordnungen[i];
                 if (filter.Count > 0 && !filter.Contains(z[1])) continue;
 
-                ListViewItem lvitem = new ListViewItem(new[] { z[0], z[1], z[2], z[3], "📂" });
+                // Feld 0 trägt den DB-Wert; angezeigt wird der lokalisierte Name.
+                ListViewItem lvitem = new ListViewItem(new[]
+                    { ErzeugerKatalog.Anzeige(z[0]), z[1], z[2], z[3], "📂" });
                 lvitem.Tag = i; // Index im Datenbestand
                 listView1.Items.Add(lvitem);
             }
@@ -664,7 +653,7 @@ namespace WindowsFormsApplication1
                     string fehler;
                     if (!TemperaturPaarPruefen(vorlaufText, ruecklaufText, out fehler))
                     {
-                        MessageBox.Show(fehler, "Temperatur prüfen",
+                        MessageBox.Show(fehler, MyResource.Resource.PSP_TITEL_TEMPERATUR_PRUEFEN,
                                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         neuerText = alterWert;   // Zelle auf den letzten gültigen Stand zurück
                     }
@@ -852,7 +841,8 @@ namespace WindowsFormsApplication1
             string sperrgrund;
             if (SchemaMigration.SimulationGesperrt(out sperrgrund))
             {
-                MessageBox.Show(sperrgrund, "Simulation nicht verfügbar",
+                MessageBox.Show(sperrgrund,
+                                MyResource.Resource.SIM_TITEL_SIMULATION_NICHT_VERFUEGBAR,
                                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 SimulationsbereichSperren();
                 return;
@@ -925,24 +915,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         private Z_ProjektPufferSpCtrl ZuordnungenLaden()
         {
-            var items = new List<LanguageItem>
-            {
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_BHKW, DbValue = "BHKW" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_HEIZKESSEL, DbValue = "Heizkessel" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_SOLARTHERMIE, DbValue = "Solarthermie" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_WAERMEPUMPE, DbValue = "Wärmepumpe" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_GESAMTSYSTEM, DbValue = "Gesamtsystem" },
-            };
-
             Z_ProjektPufferSpCtrl ctrlpsp = new Z_ProjektPufferSpCtrl();
             ctrlpsp.ReadAll("ID_Projekt= " + m_ID_Projekt);
 
             _zuordnungen.Clear();
             for (int i = 0; i < ctrlpsp.rows; i++)
             {
-                var match = items.FirstOrDefault(x => x.DbValue == ctrlpsp.items[i].Erzeuger);
+                // Paket 9 / L4: Der Erzeuger wird UNVERÄNDERT als DB-Wert übernommen.
+                // Vorher wurde er hier in den Anzeigenamen übersetzt und beim Speichern
+                // wieder zurück — ein Hin und Her, das nur auf deutscher Oberfläche
+                // zuverlässig war (B0-11). Übersetzt wird jetzt erst beim Anzeigen.
                 _zuordnungen.Add(new[] {
-                    match != null ? match.DisplayName : ctrlpsp.items[i].Erzeuger,
+                    ctrlpsp.items[i].Erzeuger,
                     ctrlpsp.items[i].PufferSp,
                     ctrlpsp.items[i].Vorlauf.ToString(),
                     ctrlpsp.items[i].Ruecklauf.ToString() });
@@ -979,7 +963,8 @@ namespace WindowsFormsApplication1
 
             ctrl.model = Konfiguration;
             if (!ctrl.Delete(m_ID_Projekt)) return;
-            if (ctrl.Insert(m_ID_Projekt)) ShowStatus("✔ Konfiguration erfolgreich gespeichert", Color.ForestGreen);
+            if (ctrl.Insert(m_ID_Projekt))
+                ShowStatus(MyResource.Resource.SIM_STATUS_KONFIG_GESPEICHERT, Color.ForestGreen);
 
             int prioritaet = 1;
 
@@ -998,16 +983,6 @@ namespace WindowsFormsApplication1
             }
 
             if (!ctrlpsp.Delete()) return;
-
-            // B0-11: Mapping-Liste einmal statt in jedem Schleifendurchlauf aufbauen.
-            var items = new List<LanguageItem>
-            {
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_BHKW, DbValue = "BHKW" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_HEIZKESSEL, DbValue = "Heizkessel" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_SOLARTHERMIE, DbValue = "Solarthermie" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_GESAMTSYSTEM, DbValue = "Gesamtsystem" },
-                new LanguageItem { DisplayName = MyResource.Resource.KONFIG_WAERMEPUMPE, DbValue = "Wärmepumpe" },
-            };
 
             // WICHTIG: Gespeichert wird der komplette Datenbestand - nicht nur die
             // aktuell (per Pufferspeicher-Checkbox gefiltert) angezeigten Zeilen!
@@ -1037,12 +1012,12 @@ namespace WindowsFormsApplication1
                 string[] z = _zuordnungen[i];
                 ctrlpsp.PufferSp = z[1];
 
-                // B0-11: erst über den Anzeigenamen matchen, nur bei Misserfolg über den
-                // DB-Wert — defensiv gegen Alt-/Fremdwerte in _zuordnungen, damit nie ein
-                // lokalisierter Anzeigename als Erzeuger in der Datenbank landet.
-                var match = items.FirstOrDefault(x => x.DisplayName == z[0])
-                         ?? items.FirstOrDefault(x => x.DbValue == z[0]);
-                ctrlpsp.Erzeuger = match?.DbValue ?? z[0];
+                // B0-11, Paket 9 / L4: _zuordnungen führt den Erzeuger bereits als
+                // DB-Wert. ErzeugerKatalog.DbWert bleibt trotzdem davorgeschaltet — es
+                // ist die tolerante Rückabbildung (erst Anzeigename, dann DB-Wert) und
+                // fängt Alt- oder Fremdwerte ab, ohne je einen lokalisierten Text in die
+                // Datenbank zu lassen. Bei einem DB-Wert ist der Aufruf wirkungslos.
+                ctrlpsp.Erzeuger = ErzeugerKatalog.DbWert(z[0]);
 
                 // B0-1: gesicherte Schwellen der Zuordnung wieder mitgeben
                 double?[] schwellen;
@@ -1110,8 +1085,8 @@ namespace WindowsFormsApplication1
             }
 
             if (fehlgeschlagen > 0)
-                ShowStatus("⚠ " + fehlgeschlagen + " Pufferspeicher-Zuordnung(en) konnten nicht gespeichert werden",
-                    Color.Firebrick);
+                ShowStatus(string.Format(MyResource.Resource.PSP_STATUS_ZUORDNUNG_FEHLGESCHLAGEN,
+                                         fehlgeschlagen), Color.Firebrick);
         }
 
         private void AddErzeuger()
@@ -1150,9 +1125,9 @@ namespace WindowsFormsApplication1
             }
 
             // "Gesamtsystem" immer hinzufügen (außer es ist schon drin)
-            if (!listErzeuger.Contains("Gesamtsystem"))
+            if (!listErzeuger.Contains(DbWerte.ERZEUGER_GESAMTSYSTEM))
             {
-                listErzeuger.Add("Gesamtsystem");
+                listErzeuger.Add(DbWerte.ERZEUGER_GESAMTSYSTEM);
             }
 
             // Übersicht rechts an die geänderte Auswahl anpassen
@@ -1182,7 +1157,10 @@ namespace WindowsFormsApplication1
             DialogResult result = frm.ShowDialog();
             if (result == DialogResult.OK)
             {
-                _zuordnungen.Add(new[] { frm.model.Erzeuger, frm.model.PufferSp,
+                // Der Zuordnungsdialog arbeitet mit Anzeigenamen (er bekommt sie oben
+                // als displayListe). Hier wird zurück auf den DB-Wert abgebildet -
+                // _zuordnungen führt seit Paket 9 / L4 ausschließlich DB-Werte.
+                _zuordnungen.Add(new[] { ErzeugerKatalog.DbWert(frm.model.Erzeuger), frm.model.PufferSp,
                     frm.model.Vorlauf.ToString(), frm.model.Ruecklauf.ToString() });
                 RefreshZuordnungAnzeige();
             }
