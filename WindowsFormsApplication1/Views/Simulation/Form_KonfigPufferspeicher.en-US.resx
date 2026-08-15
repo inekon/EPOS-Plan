@@ -148,4 +148,7 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Select buffer storage</value>
   </data>
+  <data name="btn_OK.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

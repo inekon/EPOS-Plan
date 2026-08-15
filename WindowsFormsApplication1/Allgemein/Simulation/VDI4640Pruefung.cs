@@ -197,28 +197,28 @@ namespace WindowsFormsApplication1
         {
             switch ((bodentypSchluessel ?? "").ToUpperInvariant())
             {
-                case "SAND_TROCKEN":
-                case "SAND_FEUCHT":
-                case "SAND_NASS":
-                case "KIES_TROCKEN":
-                case "KIES_NASS":
+                case DbWerte.BODENTYP_SAND_TROCKEN:
+                case DbWerte.BODENTYP_SAND_FEUCHT:
+                case DbWerte.BODENTYP_SAND_NASS:
+                case DbWerte.BODENTYP_KIES_TROCKEN:
+                case DbWerte.BODENTYP_KIES_NASS:
                     return BODENART_SAND;
 
-                case "TON_TROCKEN":
+                case DbWerte.BODENTYP_TON_TROCKEN:
                     // λ 0,5 < kleinster A1-Rechenwert 1,2 → konservativ "Sand"
                     return BODENART_SAND;
 
-                case "TON_NASS":
+                case DbWerte.BODENTYP_TON_NASS:
                     return BODENART_SANDIGER_TON;
 
-                case "MERGEL_LEHM":
+                case DbWerte.BODENTYP_MERGEL_LEHM:
                     return BODENART_LEHM;
 
-                case "TONSTEIN":
-                case "SANDSTEIN":
-                case "KALKSTEIN":
-                case "GRANIT":
-                case "GNEIS":
+                case DbWerte.BODENTYP_TONSTEIN:
+                case DbWerte.BODENTYP_SANDSTEIN:
+                case DbWerte.BODENTYP_KALKSTEIN:
+                case DbWerte.BODENTYP_GRANIT:
+                case DbWerte.BODENTYP_GNEIS:
                     return BODENART_SANDIGER_TON;
 
                 default:
@@ -232,11 +232,11 @@ namespace WindowsFormsApplication1
         {
             switch ((bodentypSchluessel ?? "").ToUpperInvariant())
             {
-                case "TONSTEIN":
-                case "SANDSTEIN":
-                case "KALKSTEIN":
-                case "GRANIT":
-                case "GNEIS":
+                case DbWerte.BODENTYP_TONSTEIN:
+                case DbWerte.BODENTYP_SANDSTEIN:
+                case DbWerte.BODENTYP_KALKSTEIN:
+                case DbWerte.BODENTYP_GRANIT:
+                case DbWerte.BODENTYP_GNEIS:
                     return true;
                 default:
                     return false;

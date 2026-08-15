@@ -165,11 +165,1684 @@
   <data name="KONFIG_GESAMTSYSTEM" xml:space="preserve">
     <value>Overall system</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="KONFIG_STROMSPEICHER" type="System.Resources.ResXNullRef, System.Windows.Forms">
-    <value />
-  </data>
   <data name="KONFIG_STROMSPEICHER" xml:space="preserve">
     <value>Electricity storage</value>
+  </data>
+  <data name="CHART_ACHSE_ENERGIEBEDARF_DECKUNG" xml:space="preserve">
+    <value>Energy demand &amp; coverage (kWh)</value>
+  </data>
+  <data name="CHART_ACHSE_JAHRESSTUNDEN" xml:space="preserve">
+    <value>Hours of the year</value>
+  </data>
+  <data name="CHART_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="CHART_ACHSE_LEISTUNG_SPEICHERINHALT" xml:space="preserve">
+    <value>Power [kW] / storage content [kWh]</value>
+  </data>
+  <data name="CHART_ACHSE_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="CHART_ACHSE_MONATE" xml:space="preserve">
+    <value>Months</value>
+  </data>
+  <data name="CHART_ACHSE_QUELLTEMPERATUR" xml:space="preserve">
+    <value>Source temperature [°C]</value>
+  </data>
+  <data name="CHART_ACHSE_SPEICHER_KWH" xml:space="preserve">
+    <value>Storage [kWh]</value>
+  </data>
+  <data name="CHART_ACHSE_STROMBEDARF" xml:space="preserve">
+    <value>Electricity demand</value>
+  </data>
+  <data name="CHART_ACHSE_TEMPERATUR" xml:space="preserve">
+    <value>Temperature [°C]</value>
+  </data>
+  <data name="CHART_ACHSE_WAERMEBEDARF_KWH" xml:space="preserve">
+    <value>Heat demand [kWh]</value>
+  </data>
+  <data name="CHART_ACHSE_WAERMELAST" xml:space="preserve">
+    <value>Heat load</value>
+  </data>
+  <data name="CHART_CSV_BHKW" xml:space="preserve">
+    <value>CHP [kW]</value>
+  </data>
+  <data name="CHART_CSV_GESAMT" xml:space="preserve">
+    <value>Total [kW]</value>
+  </data>
+  <data name="CHART_CSV_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler [kW]</value>
+  </data>
+  <data name="CHART_CSV_HEIZSTAB" xml:space="preserve">
+    <value>Immersion heater [kW]</value>
+  </data>
+  <data name="CHART_CSV_PROFIL_LASTGANG" xml:space="preserve">
+    <value>Profile/load curve [kW]</value>
+  </data>
+  <data name="CHART_CSV_PV" xml:space="preserve">
+    <value>PV [kW]</value>
+  </data>
+  <data name="CHART_CSV_SOLARTHERMIE" xml:space="preserve">
+    <value>Solar thermal [kW]</value>
+  </data>
+  <data name="CHART_CSV_SPEICHER_ENTLADUNG" xml:space="preserve">
+    <value>{0} discharging [kWh]</value>
+  </data>
+  <data name="CHART_CSV_SPEICHER_INHALT" xml:space="preserve">
+    <value>{0} storage content [kWh]</value>
+  </data>
+  <data name="CHART_CSV_SPEICHER_LADUNG" xml:space="preserve">
+    <value>{0} charging [kWh]</value>
+  </data>
+  <data name="CHART_CSV_SPEICHERFUELLSTAND" xml:space="preserve">
+    <value>Storage level {0} [kWh]</value>
+  </data>
+  <data name="CHART_CSV_STROMBEDARF" xml:space="preserve">
+    <value>Electricity demand [kW]</value>
+  </data>
+  <data name="CHART_CSV_STROMBEDARF_WP" xml:space="preserve">
+    <value>Electricity demand HP [kW]</value>
+  </data>
+  <data name="CHART_CSV_WAERMEBEDARF" xml:space="preserve">
+    <value>Heat demand [kW]</value>
+  </data>
+  <data name="CHART_CSV_WAERMELAST" xml:space="preserve">
+    <value>Heat load [kW]</value>
+  </data>
+  <data name="CHART_CSV_WAERMEPRODUKTION_WP" xml:space="preserve">
+    <value>Heat generation HP [kW]</value>
+  </data>
+  <data name="CHART_CSV_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump [kW]</value>
+  </data>
+  <data name="CHART_DATEI_ENERGIEBEDARF" xml:space="preserve">
+    <value>Energy_demand_project_{0}.csv</value>
+  </data>
+  <data name="CHART_DATEI_STROMBEDARF" xml:space="preserve">
+    <value>Electricity_demand.csv</value>
+  </data>
+  <data name="CHART_DATEI_WAERMEPRODUKTION" xml:space="preserve">
+    <value>Heat_generation.csv</value>
+  </data>
+  <data name="CHART_DATEI_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat_pump_project_{0}.csv</value>
+  </data>
+  <data name="CHART_KACHEL_STROMBEDARFSDECKUNG" xml:space="preserve">
+    <value>Electricity demand coverage [%]</value>
+  </data>
+  <data name="CHART_KACHEL_WAERMEBEDARFSDECKUNG" xml:space="preserve">
+    <value>Heat demand coverage [%]</value>
+  </data>
+  <data name="CHART_LEGENDE_AUTARKIELUECKE" xml:space="preserve">
+    <value>Self-sufficiency gap (grid)</value>
+  </data>
+  <data name="CHART_LEGENDE_EIGENVERBRAUCH_DIREKT" xml:space="preserve">
+    <value>Self-consumption (direct)</value>
+  </data>
+  <data name="CHART_LEGENDE_EIGENVERBRAUCH_SPEICHER" xml:space="preserve">
+    <value>Self-consumption (storage)</value>
+  </data>
+  <data name="CHART_LEGENDE_WAERMEBEDARFSDECKUNG" xml:space="preserve">
+    <value>Heat demand coverage</value>
+  </data>
+  <data name="CHART_SEGMENT_HEIZSTAB" xml:space="preserve">
+    <value>Immersion heater</value>
+  </data>
+  <data name="CHART_SEGMENT_REST" xml:space="preserve">
+    <value>Residual</value>
+  </data>
+  <data name="CHART_SEGMENT_RESTSTROM" xml:space="preserve">
+    <value>Residual electricity</value>
+  </data>
+  <data name="CHART_SEGMENT_RESTWAERME" xml:space="preserve">
+    <value>Residual heat</value>
+  </data>
+  <data name="CHART_SEGMENT_SPITZENKESSEL" xml:space="preserve">
+    <value>Peak-load boiler</value>
+  </data>
+  <data name="CHART_SERIE_AUSSENTEMPERATUR" xml:space="preserve">
+    <value>Outdoor temperature</value>
+  </data>
+  <data name="CHART_SERIE_QUELLTEMPERATUR" xml:space="preserve">
+    <value>Source temperature</value>
+  </data>
+  <data name="CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR" xml:space="preserve">
+    <value>Power versus outdoor temperature</value>
+  </data>
+  <data name="CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Electricity demand, annual load profile</value>
+  </data>
+  <data name="CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Electricity demand, photovoltaics, annual load profile</value>
+  </data>
+  <data name="CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Electricity demand, electricity consumption, annual load profile</value>
+  </data>
+  <data name="CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Heat load, annual load profile</value>
+  </data>
+  <data name="CHART_TITEL_WAERMEPRODUKTION_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Heat generation, annual load profile</value>
+  </data>
+  <data name="PSP_ANZEIGE_QMAX" xml:space="preserve">
+    <value>→  Q_max {0} kWh</value>
+  </data>
+  <data name="PSP_AUSWAHL_ALLE_SPEICHER" xml:space="preserve">
+    <value>All storage units</value>
+  </data>
+  <data name="PSP_BEZEICHNER_ERSATZ" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="PSP_BTN_ANLEGEN" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="PSP_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="PSP_BTN_KATALOG_ANSEHEN" xml:space="preserve">
+    <value>View catalogue…</value>
+  </data>
+  <data name="PSP_BTN_NEUER_PUFFERSPEICHER" xml:space="preserve">
+    <value>New buffer storage</value>
+  </data>
+  <data name="PSP_BTN_PUFFER_ANLEGEN" xml:space="preserve">
+    <value>Create buffer storage…</value>
+  </data>
+  <data name="PSP_BTN_PUFFER_VERWALTEN" xml:space="preserve">
+    <value>Create / manage buffer storage…</value>
+  </data>
+  <data name="PSP_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="PSP_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="PSP_CHECKBOX_SPEICHERFUELLSTAND" xml:space="preserve">
+    <value>Storage level</value>
+  </data>
+  <data name="PSP_ENTLADE_POSITION" xml:space="preserve">
+    <value>Discharged as no. {0} of {1} {2}.</value>
+  </data>
+  <data name="PSP_FEHLER_BEZEICHNER_FEHLT" xml:space="preserve">
+    <value>Please enter an identifier or select a catalogue entry.</value>
+  </data>
+  <data name="PSP_FEHLER_EIN_KLEINER_AUS" xml:space="preserve">
+    <value>The switch-on threshold must be lower than the switch-off threshold.</value>
+  </data>
+  <data name="PSP_FEHLER_NACHRANG_UEBER_AUS" xml:space="preserve">
+    <value>The switch-off threshold for lower-priority heat generators must not exceed the switch-off threshold - it is the reserve zone for the priority (concept 3.4).</value>
+  </data>
+  <data name="PSP_FEHLER_NACHRANG_UNTER_EIN" xml:space="preserve">
+    <value>The switch-off threshold for lower-priority heat generators must be above the switch-on threshold.</value>
+  </data>
+  <data name="PSP_FEHLER_SCHWELLE_BEREICH" xml:space="preserve">
+    <value>The {0} must be between 0 and 100 %.</value>
+  </data>
+  <data name="PSP_FEHLER_SCHWELLE_ZAHL" xml:space="preserve">
+    <value>The {0} must be a number [%].</value>
+  </data>
+  <data name="PSP_FEHLER_VERLUSTE" xml:space="preserve">
+    <value>The standby losses must be a number ≥ 0 [kWh/24h].</value>
+  </data>
+  <data name="PSP_FEHLER_VERWENDUNG_PFLICHT" xml:space="preserve">
+    <value>The use is a mandatory field: heating or domestic hot water (concept 5.1).</value>
+  </data>
+  <data name="PSP_FEHLER_VOLUMEN" xml:space="preserve">
+    <value>Please enter a total volume in litres (whole number greater than 0).</value>
+  </data>
+  <data name="PSP_FILTER_100_BIS_200L" xml:space="preserve">
+    <value>&gt;100 to 200 l</value>
+  </data>
+  <data name="PSP_FILTER_200_BIS_500L" xml:space="preserve">
+    <value>&gt;200 to 500 l</value>
+  </data>
+  <data name="PSP_FILTER_500_BIS_1000L" xml:space="preserve">
+    <value>&gt;500 to 1.000 l</value>
+  </data>
+  <data name="PSP_FILTER_ALLE" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="PSP_FILTER_BIS_100L" xml:space="preserve">
+    <value>Up to 100 l</value>
+  </data>
+  <data name="PSP_FILTER_UEBER_1000L" xml:space="preserve">
+    <value>Over 1.000 l</value>
+  </data>
+  <data name="PSP_FUSSZEILE_KEINER" xml:space="preserve">
+    <value>Buffer storage in the project: none created</value>
+  </data>
+  <data name="PSP_FUSSZEILE_LISTE" xml:space="preserve">
+    <value>Buffer storage in the project:  {0}</value>
+  </data>
+  <data name="PSP_FUSSZEILE_OHNE_PROJEKT" xml:space="preserve">
+    <value>Buffer storage in the project: -</value>
+  </data>
+  <data name="PSP_GRUPPE_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="PSP_GRUPPE_LADEREIHENFOLGE" xml:space="preserve">
+    <value>Charging order of this storage (from the generator assignments)</value>
+  </data>
+  <data name="PSP_KANALWORT_BRAUCHWASSERSPEICHER" xml:space="preserve">
+    <value>DHW storage unit</value>
+  </data>
+  <data name="PSP_KANALWORT_BRAUCHWASSERSPEICHER_PLURAL" xml:space="preserve">
+    <value>DHW storage units</value>
+  </data>
+  <data name="PSP_KANALWORT_HEIZUNGSSPEICHER" xml:space="preserve">
+    <value>heating storage unit</value>
+  </data>
+  <data name="PSP_KANALWORT_HEIZUNGSSPEICHER_PLURAL" xml:space="preserve">
+    <value>heating storage units</value>
+  </data>
+  <data name="PSP_KATALOG_FREIE_EINGABE" xml:space="preserve">
+    <value>(free entry)</value>
+  </data>
+  <data name="PSP_LABEL_ABSCHALTSCHWELLE" xml:space="preserve">
+    <value>Switch-off threshold [%]:</value>
+  </data>
+  <data name="PSP_LABEL_AUS_KATALOG" xml:space="preserve">
+    <value>From catalogue:</value>
+  </data>
+  <data name="PSP_LABEL_BEREITSCHAFTSVERLUSTE" xml:space="preserve">
+    <value>Standby losses [kWh/24h]:</value>
+  </data>
+  <data name="PSP_LABEL_BEZEICHNER" xml:space="preserve">
+    <value>Identifier:</value>
+  </data>
+  <data name="PSP_LABEL_EINSCHALTSCHWELLE" xml:space="preserve">
+    <value>Switch-on threshold [%]:</value>
+  </data>
+  <data name="PSP_LABEL_ENTLADEPRIORITAET" xml:space="preserve">
+    <value>Discharging priority:</value>
+  </data>
+  <data name="PSP_LABEL_GESAMTVOLUMEN" xml:space="preserve">
+    <value>Total volume [l]:</value>
+  </data>
+  <data name="PSP_LABEL_RUECKLAUF" xml:space="preserve">
+    <value>Return [°C]:</value>
+  </data>
+  <data name="PSP_LABEL_SCHWELLE_NACHRANGIG" xml:space="preserve">
+    <value>… lower priority [%]:</value>
+  </data>
+  <data name="PSP_LABEL_VERWENDUNG" xml:space="preserve">
+    <value>Use:</value>
+  </data>
+  <data name="PSP_LABEL_VOLUMEN_PENDELSPEICHER" xml:space="preserve">
+    <value>Buffer storage volume [l]</value>
+  </data>
+  <data name="PSP_LABEL_VORLAUF" xml:space="preserve">
+    <value>Flow [°C]:</value>
+  </data>
+  <data name="PSP_LADEN_KEINE_ANLAGE" xml:space="preserve">
+    <value>(no unit charges this storage)</value>
+  </data>
+  <data name="PSP_LADEN_NOCH_NICHT_ANGELEGT" xml:space="preserve">
+    <value>(the storage has not been created yet)</value>
+  </data>
+  <data name="PSP_LADEPRIO_MANUELL" xml:space="preserve">
+    <value>{0} (manual)</value>
+  </data>
+  <data name="PSP_LISTE_EINTRAG" xml:space="preserve">
+    <value>{0}  -  {1}, {2} l</value>
+  </data>
+  <data name="PSP_LISTE_VERWENDUNG_FEHLT" xml:space="preserve">
+    <value>  (use not specified)</value>
+  </data>
+  <data name="PSP_MELDUNG_AENDERN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The buffer storage could not be changed.</value>
+  </data>
+  <data name="PSP_MELDUNG_ANLEGEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The buffer storage could not be created.</value>
+  </data>
+  <data name="PSP_MELDUNG_BEZEICHNER_UNGUELTIG" xml:space="preserve">
+    <value>Please enter a valid identifier!</value>
+  </data>
+  <data name="PSP_MELDUNG_DATEN_BEREITS_EINGELESEN" xml:space="preserve">
+    <value>Data already imported!</value>
+  </data>
+  <data name="PSP_MELDUNG_DATENSATZ_GESPEICHERT" xml:space="preserve">
+    <value>Record saved</value>
+  </data>
+  <data name="PSP_MELDUNG_ENTFERNEN_BESTAETIGEN" xml:space="preserve">
+    <value>Remove the buffer storage "{0}" from the project?
+The unit row in the project tree will be removed as well.</value>
+  </data>
+  <data name="PSP_MELDUNG_ENTFERNEN_BLOCKIERT" xml:space="preserve">
+    <value>The buffer storage "{0}" cannot be removed - it is still assigned:
+
+  • {1}
+
+Please change the heat source or heat sink of these units first.</value>
+  </data>
+  <data name="PSP_MELDUNG_ENTFERNEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The buffer storage could not be removed.</value>
+  </data>
+  <data name="PSP_MELDUNG_FEHLER_AUFGETRETEN" xml:space="preserve">
+    <value>An error has occurred: {0}</value>
+  </data>
+  <data name="PSP_MELDUNG_KATALOG_LOESCHEN" xml:space="preserve">
+    <value>The buffer storage '{0}' will be deleted from the catalogue
+(master data) and will then no longer be available for selection in any project.
+
+Really delete it from the master data?</value>
+  </data>
+  <data name="PSP_MELDUNG_MODUL_WAEHLEN" xml:space="preserve">
+    <value>Please select a module!</value>
+  </data>
+  <data name="PSP_MELDUNG_NAME_EXISTIERT" xml:space="preserve">
+    <value>Name already exists!</value>
+  </data>
+  <data name="PSP_MELDUNG_PUFFER_SELEKTIEREN" xml:space="preserve">
+    <value>Please select a buffer storage!</value>
+  </data>
+  <data name="PSP_MELDUNG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Error saving the record!</value>
+  </data>
+  <data name="PSP_MELDUNG_VERWENDUNGSWECHSEL" xml:space="preserve">
+    <value>The use of the buffer storage "{0}" is being changed from "{1}" to "{2}".
+
+The storage is assigned to:
+  • {3}
+
+These assignments will then no longer match the use and must be set again in the heat sink dialogue.
+Change the use anyway?</value>
+  </data>
+  <data name="PSP_MELDUNG_WIRKLICH_LOESCHEN" xml:space="preserve">
+    <value>Really delete {0} ?</value>
+  </data>
+  <data name="PSP_MSG_SCHWELLEN_BEREICH" xml:space="preserve">
+    <value>The values must be between 0 and 100 % and
+the switch-on threshold must be smaller than the switch-off threshold!</value>
+  </data>
+  <data name="PSP_MSG_WP_OHNE_SPEICHER" xml:space="preserve">
+    <value>No buffer storage is assigned to the heat pump.
+The assignment is made in the 'Buffer storage assignment' table.</value>
+  </data>
+  <data name="PSP_MSG_ZAHLENWERTE" xml:space="preserve">
+    <value>Please enter valid numeric values!</value>
+  </data>
+  <data name="PSP_NAME_ABSCHALTSCHWELLE" xml:space="preserve">
+    <value>switch-off threshold</value>
+  </data>
+  <data name="PSP_NAME_ABSCHALTSCHWELLE_NACHRANG" xml:space="preserve">
+    <value>switch-off threshold for lower-priority heat generators</value>
+  </data>
+  <data name="PSP_NAME_EINSCHALTSCHWELLE" xml:space="preserve">
+    <value>switch-on threshold</value>
+  </data>
+  <data name="PSP_OBERGRENZE_EIGEN" xml:space="preserve">
+    <value>{0} % (own)</value>
+  </data>
+  <data name="PSP_PRIO_AUTOMATISCH" xml:space="preserve">
+    <value>automatic</value>
+  </data>
+  <data name="PSP_PRIO_AUTOMATISCH_WERT" xml:space="preserve">
+    <value>automatic ({0})</value>
+  </data>
+  <data name="PSP_PROJEKT_FENSTERTITEL" xml:space="preserve">
+    <value>Buffer storage in the project</value>
+  </data>
+  <data name="PSP_ROLLE_QUELLSPEICHER" xml:space="preserve">
+    <value>Source storage</value>
+  </data>
+  <data name="PSP_ROLLE_SENKENSPEICHER" xml:space="preserve">
+    <value>Sink storage</value>
+  </data>
+  <data name="PSP_RUBRIK_LABEL" xml:space="preserve">
+    <value>Buffer storage:</value>
+  </data>
+  <data name="PSP_SPALTE_ENTLADUNG" xml:space="preserve">
+    <value>Discharging [kWh/a]</value>
+  </data>
+  <data name="PSP_SPALTE_FUELLSTAND_ENDE" xml:space="preserve">
+    <value>Storage level at end [kWh]</value>
+  </data>
+  <data name="PSP_SPALTE_KAPAZITAET" xml:space="preserve">
+    <value>Capacity [kWh]</value>
+  </data>
+  <data name="PSP_SPALTE_LADEPRIO" xml:space="preserve">
+    <value>Charging prio</value>
+  </data>
+  <data name="PSP_SPALTE_LADUNG" xml:space="preserve">
+    <value>Charging [kWh/a]</value>
+  </data>
+  <data name="PSP_SPALTE_LAEDT_BIS" xml:space="preserve">
+    <value>Charges up to</value>
+  </data>
+  <data name="PSP_SPALTE_ROLLE" xml:space="preserve">
+    <value>Role</value>
+  </data>
+  <data name="PSP_SPALTE_RUECKLAUF" xml:space="preserve">
+    <value>Return [°C]</value>
+  </data>
+  <data name="PSP_SPALTE_VERLUSTE" xml:space="preserve">
+    <value>Losses [kWh/a]</value>
+  </data>
+  <data name="PSP_SPALTE_VOLLZYKLEN" xml:space="preserve">
+    <value>Full cycles</value>
+  </data>
+  <data name="PSP_SPALTE_VORLAUF" xml:space="preserve">
+    <value>Flow [°C]</value>
+  </data>
+  <data name="PSP_SPALTE_WAERMEERZEUGER" xml:space="preserve">
+    <value>Heat generator</value>
+  </data>
+  <data name="PSP_SPALTE_ZUORDNUNG_ALT" xml:space="preserve">
+    <value>Assignment (old)</value>
+  </data>
+  <data name="PSP_SPEICHERREGELUNG_ABSCHALT" xml:space="preserve">
+    <value>Switch-off threshold [% of capacity]:</value>
+  </data>
+  <data name="PSP_SPEICHERREGELUNG_EINSCHALT" xml:space="preserve">
+    <value>Switch-on threshold [% of capacity]:</value>
+  </data>
+  <data name="PSP_SPEICHERREGELUNG_FENSTERTITEL" xml:space="preserve">
+    <value>Storage control - {0}</value>
+  </data>
+  <data name="PSP_SPEICHERREGELUNG_HINWEIS" xml:space="preserve">
+    <value>If the storage charge level falls below the switch-on threshold, the heat pump starts up and charges through to the switch-off threshold. In between it stays off and the demand is covered from the storage.
+
+The switch-off threshold should be below 100 %, because the standby losses continuously lower the charge level.</value>
+  </data>
+  <data name="PSP_SPEICHERREGELUNG_KOPF" xml:space="preserve">
+    <value>Switch-on and switch-off threshold of the buffer storage</value>
+  </data>
+  <data name="PSP_STATUS_AENDERUNGEN_UEBERNOMMEN" xml:space="preserve">
+    <value>Changes applied.</value>
+  </data>
+  <data name="PSP_STATUS_ANGELEGT" xml:space="preserve">
+    <value>Buffer storage created.</value>
+  </data>
+  <data name="PSP_STATUS_ENTFERNT" xml:space="preserve">
+    <value>Buffer storage removed.</value>
+  </data>
+  <data name="PSP_STATUS_SPEICHERREGELUNG_GESPEICHERT" xml:space="preserve">
+    <value>✔ Storage control saved ({0} % / {1} %)</value>
+  </data>
+  <data name="PSP_STATUS_ZUORDNUNG_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>⚠ {0} buffer storage assignment(s) could not be saved</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_ALTMODELL" xml:space="preserve">
+    <value>Assignment in the old model (double-click opens the storage control)
+This column shows the assignment from Z_ProjektPufferSp, which the
+simulation still evaluates until the engine is converted. It is
+updated automatically from the heat sink of the heat pump.
+Switch-on and switch-off threshold in % of the usable capacity.</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_ERZEUGER" xml:space="preserve">
+    <value>Heat generator to which this buffer storage is assigned.
+Assignments are created via 'Add...' and removed via
+'Delete'.</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_RUECKLAUF" xml:space="preserve">
+    <value>Return temperature [°C] (double-click to change)
+Lower temperature of the storage. The larger the temperature spread to
+the flow, the more energy the storage can take up.</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_SPEICHER" xml:space="preserve">
+    <value>Buffer storage (double-click to change)
+Selection from the master data. Volume and standby losses
+come from the storage record and, together with
+flow and return, determine the usable capacity.</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_STAMMDATEN" xml:space="preserve">
+    <value>Double-click opens the buffer storage master data (view only).</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_STANDARD" xml:space="preserve">
+    <value>Buffer storage assignment: double-click on buffer storage,
+flow or return to edit.</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_VORLAUF" xml:space="preserve">
+    <value>Flow temperature [°C] (double-click to change)
+Upper temperature of the storage. The usable capacity results
+from: volume × 1,16 Wh/(l·K) × (flow − return).</value>
+  </data>
+  <data name="PSP_TITEL_KATALOG_LOESCHUNG" xml:space="preserve">
+    <value>Catalogue deletion</value>
+  </data>
+  <data name="PSP_TITEL_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PSP_TITEL_PUFFER_ENTFERNEN" xml:space="preserve">
+    <value>Remove buffer storage</value>
+  </data>
+  <data name="PSP_TITEL_SPEICHERREGELUNG" xml:space="preserve">
+    <value>Storage control</value>
+  </data>
+  <data name="PSP_TITEL_TEMPERATUR_PRUEFEN" xml:space="preserve">
+    <value>Check temperature</value>
+  </data>
+  <data name="PSP_TITEL_VERWENDUNG_AENDERN" xml:space="preserve">
+    <value>Change use</value>
+  </data>
+  <data name="PSP_TITEL_ZUORDNUNG" xml:space="preserve">
+    <value>Buffer storage assignment</value>
+  </data>
+  <data name="PSP_VERWENDUNG_BRAUCHWASSER_ANZEIGE" xml:space="preserve">
+    <value>Domestic hot water</value>
+  </data>
+  <data name="PSP_VERWENDUNG_HEIZUNG_ANZEIGE" xml:space="preserve">
+    <value>Heating</value>
+  </data>
+  <data name="SIM_ANZEIGE_CO2_ERSPARNIS" xml:space="preserve">
+    <value>{0} kg CO2 / year saved</value>
+  </data>
+  <data name="SIM_ANZEIGE_NICHT_BENOETIGT" xml:space="preserve">
+    <value>not required</value>
+  </data>
+  <data name="SIM_ANZEIGE_SPEICHERNUTZEN" xml:space="preserve">
+    <value>Storage benefit: {0} kWh/year</value>
+  </data>
+  <data name="SIM_ANZEIGE_THERM_NUTZUNGSGRAD" xml:space="preserve">
+    <value>Therm. utilisation ratio: {0} %</value>
+  </data>
+  <data name="SIM_BEDARF_BEIDES" xml:space="preserve">
+    <value>Both (domestic hot water first)</value>
+  </data>
+  <data name="SIM_BEDARF_HEIZWAERME" xml:space="preserve">
+    <value>space heating only</value>
+  </data>
+  <data name="SIM_BEDARF_WARMWASSER" xml:space="preserve">
+    <value>domestic hot water only</value>
+  </data>
+  <data name="SIM_BETRIEBSART_OHNE_EINSPEISUNG" xml:space="preserve">
+    <value>Without feed-in (zero export)</value>
+  </data>
+  <data name="SIM_BETRIEBSART_STROMGEFUEHRT" xml:space="preserve">
+    <value>Electricity-led (economic)</value>
+  </data>
+  <data name="SIM_BETRIEBSART_WAERMEGEFUEHRT" xml:space="preserve">
+    <value>Heat-led (standard)</value>
+  </data>
+  <data name="SIM_BETRIEBSMODUS_FENSTERTITEL" xml:space="preserve">
+    <value>Operating mode - {0}</value>
+  </data>
+  <data name="SIM_BETRIEBSMODUS_KOPF" xml:space="preserve">
+    <value>Output control of the heat pump:</value>
+  </data>
+  <data name="SIM_BHKW_MODUL_STANDARD" xml:space="preserve">
+    <value>Standard CHP unit</value>
+  </data>
+  <data name="SIM_BM_RB_LAUFZEIT" xml:space="preserve">
+    <value>Runtime-optimised - maximum output</value>
+  </data>
+  <data name="SIM_BM_RB_LEISTUNG" xml:space="preserve">
+    <value>Output-optimised - cover the demand only</value>
+  </data>
+  <data name="SIM_BM_RB_PV" xml:space="preserve">
+    <value>PV-optimised - surplus only with PV electricity</value>
+  </data>
+  <data name="SIM_BM_TEXT_LAUFZEIT" xml:space="preserve">
+    <value>The heat pump runs at full output; the heat generated beyond the
+demand charges the buffer storage. Long runtimes, few starts.</value>
+  </data>
+  <data name="SIM_BM_TEXT_LEISTUNG" xml:space="preserve">
+    <value>The heat pump modulates exactly to the heat demand and generates
+no surplus. The storage is not charged deliberately.</value>
+  </data>
+  <data name="SIM_BM_TEXT_PV" xml:space="preserve">
+    <value>With available PV electricity the heat pump runs at increased output
+(limited to the PV surplus) and charges the storage; otherwise
+it works output-optimised.</value>
+  </data>
+  <data name="SIM_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="SIM_BTN_CSV_EXPORT" xml:space="preserve">
+    <value>CSV export</value>
+  </data>
+  <data name="SIM_BTN_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="SIM_CHK_LADEGRENZE" xml:space="preserve">
+    <value>own charging upper limit:</value>
+  </data>
+  <data name="SIM_CHK_LADEGRENZE2" xml:space="preserve">
+    <value>Charging upper limit:</value>
+  </data>
+  <data name="SIM_CHK_ZWEITSENKE" xml:space="preserve">
+    <value>Secondary sink (takes only surplus or remaining charging potential)</value>
+  </data>
+  <data name="SIM_ENTLADEEINTRAG_AUTOMATISCH" xml:space="preserve">
+    <value>{0} (prio {1}, automatic)</value>
+  </data>
+  <data name="SIM_ENTLADEEINTRAG_MANUELL" xml:space="preserve">
+    <value>{0} (prio {1}, manual)</value>
+  </data>
+  <data name="SIM_ERGEBNIS" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="SIM_ERZEUGERNAME_ALLGEMEIN" xml:space="preserve">
+    <value>Heat generator</value>
+  </data>
+  <data name="SIM_ERZEUGERNAME_BHKW" xml:space="preserve">
+    <value>CHP unit</value>
+  </data>
+  <data name="SIM_ERZEUGERNAME_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="SIM_ERZEUGERNAME_SOLARTHERMIE" xml:space="preserve">
+    <value>Solar thermal</value>
+  </data>
+  <data name="SIM_ERZEUGERNAME_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="SIM_EXTRAPOLATION_SCHALTER" xml:space="preserve">
+    <value>Allow extrapolation of the heat pump characteristic curve</value>
+  </data>
+  <data name="SIM_EXTRAPOLATION_TOOLTIP" xml:space="preserve">
+    <value>If the source temperature falls below the lowest data point of the
+heat pump characteristic curve, the curve is extended linearly.
+
+With the tick (default): extrapolation takes place and the run records this
+as a note. This corresponds exactly to the previous behaviour - up to package 8
+the engine asked at this point.
+
+Without the tick: the simulation aborts and names the affected unit.
+Useful if extrapolated characteristic values should not enter a result;
+the curve then has to be supplemented with lower data points.</value>
+  </data>
+  <data name="SIM_GB_LADEVERHALTEN" xml:space="preserve">
+    <value>Charging behaviour at the buffer storage</value>
+  </data>
+  <data name="SIM_HEIZKREIS" xml:space="preserve">
+    <value>Heating circuit</value>
+  </data>
+  <data name="SIM_HEIZKREIS_BEIDES" xml:space="preserve">
+    <value>Heating circuit (both)</value>
+  </data>
+  <data name="SIM_HEIZKREIS_NUR_HEIZWAERME" xml:space="preserve">
+    <value>Heating circuit (space heating only)</value>
+  </data>
+  <data name="SIM_HEIZKREIS_NUR_WARMWASSER" xml:space="preserve">
+    <value>Heating circuit (DHW only)</value>
+  </data>
+  <data name="SIM_KACHEL_RESTSTROMBEDARF" xml:space="preserve">
+    <value>Residual electricity demand</value>
+  </data>
+  <data name="SIM_KACHEL_RESTWAERMEBEDARF" xml:space="preserve">
+    <value>Residual heat demand</value>
+  </data>
+  <data name="SIM_KACHEL_SIMULATIONSERGEBNISSE" xml:space="preserve">
+    <value>Simulation results in detail</value>
+  </data>
+  <data name="SIM_KASKADE_SCHALTER" xml:space="preserve">
+    <value>Two-channel cascade (preview)</value>
+  </data>
+  <data name="SIM_KASKADE_TOOLTIP" xml:space="preserve">
+    <value>Calculates space heating and domestic hot water demand as separate channels and
+separates the storage charging from the generator cascade (preview).
+
+This CHANGES the results: units with a buffer storage as sink charge
+it instead of covering the demand directly; the demand is covered from the storage.
+What changes in detail is described in the implementation log for package 4
+(part 7, Documented result changes). Without the tick, the
+previous single-channel cascade continues to calculate unchanged.</value>
+  </data>
+  <data name="SIM_KEIN_BRAUCHWASSERBEDARF" xml:space="preserve">
+    <value>Note: no domestic hot water demand is assigned to the project.
+A DHW storage is then charged but never discharged.</value>
+  </data>
+  <data name="SIM_KEIN_PUFFER_GEWAEHLT" xml:space="preserve">
+    <value>No buffer storage is selected for the {0} "{1}".
+
+The project must contain a buffer storage with the use "{2}".</value>
+  </data>
+  <data name="SIM_KEINE_SENKENDATEN" xml:space="preserve">
+    <value>No heat sink data supplied.</value>
+  </data>
+  <data name="SIM_LABEL_GASVERBRAUCH" xml:space="preserve">
+    <value>Gas consumption (NCV):</value>
+  </data>
+  <data name="SIM_LABEL_HOLZVERBRAUCH" xml:space="preserve">
+    <value>Wood consumption:</value>
+  </data>
+  <data name="SIM_LABEL_KOHLE" xml:space="preserve">
+    <value>Coal:</value>
+  </data>
+  <data name="SIM_LABEL_KOKS" xml:space="preserve">
+    <value>Coke:</value>
+  </data>
+  <data name="SIM_LABEL_OELVERBRAUCH" xml:space="preserve">
+    <value>Oil consumption:</value>
+  </data>
+  <data name="SIM_LABEL_PELLETS" xml:space="preserve">
+    <value>Pellets:</value>
+  </data>
+  <data name="SIM_LABEL_RAPSOEL" xml:space="preserve">
+    <value>Rapeseed oil:</value>
+  </data>
+  <data name="SIM_LABEL_SONSTIGE" xml:space="preserve">
+    <value>Other:</value>
+  </data>
+  <data name="SIM_LABEL_TIERISCHE_FETTE" xml:space="preserve">
+    <value>Animal fats:</value>
+  </data>
+  <data name="SIM_LADEEINTRAG_ANZEIGE" xml:space="preserve">
+    <value>{0} ({1}, prio {2})</value>
+  </data>
+  <data name="SIM_LAUFMELDUNG_EINER" xml:space="preserve">
+    <value>1 note on the run (click)</value>
+  </data>
+  <data name="SIM_LAUFMELDUNG_MEHRERE" xml:space="preserve">
+    <value>{0} notes on the run (click)</value>
+  </data>
+  <data name="SIM_LBL_BEDARF_HINWEIS" xml:space="preserve">
+    <value>(effective only for the heating circuit)</value>
+  </data>
+  <data name="SIM_LBL_BEDARFSART" xml:space="preserve">
+    <value>Demand type:</value>
+  </data>
+  <data name="SIM_LBL_HINWEIS_PUFFER" xml:space="preserve">
+    <value>For buffer sinks the storage must be created in the project (with matching use heating or DHW).</value>
+  </data>
+  <data name="SIM_LBL_LADEGRENZE_EINHEIT" xml:space="preserve">
+    <value>% of the storage  (otherwise the switch-off threshold of the storage applies)</value>
+  </data>
+  <data name="SIM_LBL_LADEPRIO" xml:space="preserve">
+    <value>Charging priority:</value>
+  </data>
+  <data name="SIM_LBL_PV_UEBERSCHUSS" xml:space="preserve">
+    <value>With PV surplus:</value>
+  </data>
+  <data name="SIM_LBL_ZIEL2" xml:space="preserve">
+    <value>Target:</value>
+  </data>
+  <data name="SIM_MENUE_ENERGIEBEDARF" xml:space="preserve">
+    <value>Energy demand</value>
+  </data>
+  <data name="SIM_MODUS_LAUFZEIT" xml:space="preserve">
+    <value>runtime-optimised</value>
+  </data>
+  <data name="SIM_MODUS_LEISTUNG" xml:space="preserve">
+    <value>output-optimised</value>
+  </data>
+  <data name="SIM_MODUS_PV" xml:space="preserve">
+    <value>PV-optimised</value>
+  </data>
+  <data name="SIM_MSG_BRAUCHWASSER_UEBERGANG" xml:space="preserve">
+    <value>Note: The DHW sink only becomes effective with the engine conversion (package 4).
+It is saved and displayed, but does not yet enter the simulation.</value>
+  </data>
+  <data name="SIM_MSG_BRAUCHWASSER_WP_ZUSATZ" xml:space="preserve">
+    <value>The previous buffer storage assignment of this heat pump is removed in the process; until package 4 the simulation then calculates without storage.</value>
+  </data>
+  <data name="SIM_MSG_ERGEBNIS_GESPEICHERT" xml:space="preserve">
+    <value>Simulation result saved.</value>
+  </data>
+  <data name="SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The result could not be saved.</value>
+  </data>
+  <data name="SIM_MSG_KEIN_BRENNSTOFF" xml:space="preserve">
+    <value>No fuel defined for this CHP unit.</value>
+  </data>
+  <data name="SIM_MSG_KEIN_PROJEKT" xml:space="preserve">
+    <value>No project loaded.</value>
+  </data>
+  <data name="SIM_MSG_KEIN_VOLLSTAENDIGES_ERGEBNIS" xml:space="preserve">
+    <value>There is no complete simulation result.
+
+Please run the simulation first. An aborted run or one that has not yet been calculated is not saved - the result stored so far for the project is thereby retained.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_ENERGIEBEDARF" xml:space="preserve">
+    <value>No simulation data available!
+Please calculate the energy demand first.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_SIMULATION" xml:space="preserve">
+    <value>No simulation data available!
+Please run the simulation first.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_WAERMEPUMPE" xml:space="preserve">
+    <value>No simulation data available!
+Please run the simulation with the heat pump first.</value>
+  </data>
+  <data name="SIM_MSG_KLIMAREGION_WAEHLEN" xml:space="preserve">
+    <value>Select climate region!</value>
+  </data>
+  <data name="SIM_MSG_KONFIGURATION_FEHLT" xml:space="preserve">
+    <value>Please define the configuration first.</value>
+  </data>
+  <data name="SIM_MSG_LADEGRENZE_BEREICH" xml:space="preserve">
+    <value>The charging upper limit of the {0} must be between 0 and 100 %.</value>
+  </data>
+  <data name="SIM_MSG_LADEGRENZE_ZAHL" xml:space="preserve">
+    <value>The charging upper limit of the {0} must be a number.</value>
+  </data>
+  <data name="SIM_MSG_MODUS_NUR_WP" xml:space="preserve">
+    <value>The operating mode (output control) is currently effective only for heat pumps.
+
+Unit: {0}
+For boilers, CHP units and solar thermal the behaviour results from the
+position in the cascade and the heat sink.</value>
+  </data>
+  <data name="SIM_MSG_NETZVERLUSTE_ZU_GROSS" xml:space="preserve">
+    <value>The network losses must not be greater than 100 %!</value>
+  </data>
+  <data name="SIM_MSG_PUFFER_ANLEGEN_FRAGE" xml:space="preserve">
+    <value>{0}
+
+Create a buffer storage in the project now?</value>
+  </data>
+  <data name="SIM_MSG_PV_AUSWAHL" xml:space="preserve">
+    <value>Note: For PV-optimised operation, photovoltaics must be selected in the 'Electricity generator' area.
+Without a PV system the heat pump behaves output-optimised.</value>
+  </data>
+  <data name="SIM_MSG_WEITERE_FEHLERMELDUNGEN" xml:space="preserve">
+    <value>Further error messages from the run:</value>
+  </data>
+  <data name="SIM_MSG_WPPRIO_NUR_WP" xml:space="preserve">
+    <value>The HP priority governs the order of the heat pumps among themselves.
+For {0} it has no meaning.</value>
+  </data>
+  <data name="SIM_NAV_AUTARKIE_ANALYSE" xml:space="preserve">
+    <value>ℹ️ 
+Self-sufficiency
+analysis</value>
+  </data>
+  <data name="SIM_NAV_STROMPRODUKTION_CHART" xml:space="preserve">
+    <value>⚡ 
+Electricity
+generation
+ chart</value>
+  </data>
+  <data name="SIM_NAV_UEBERSICHT" xml:space="preserve">
+    <value>🏠 
+Overview</value>
+  </data>
+  <data name="SIM_NAV_WAERMEPRODUKTION_CHART" xml:space="preserve">
+    <value>🔥 
+Heat
+generation
+chart</value>
+  </data>
+  <data name="SIM_PHOTOVOLTAIK" xml:space="preserve">
+    <value>Photovoltaics</value>
+  </data>
+  <data name="SIM_POSITION_BIS" xml:space="preserve">
+    <value>up to {0} %</value>
+  </data>
+  <data name="SIM_POSITION_LAEDT_ALS" xml:space="preserve">
+    <value>Charges as no. {0} of {1}</value>
+  </data>
+  <data name="SIM_PRIO_UNVERAENDERT" xml:space="preserve">
+    <value>unchanged (regular priority)</value>
+  </data>
+  <data name="SIM_PRIO_VORGABE" xml:space="preserve">
+    <value>as default ({0} - {1})</value>
+  </data>
+  <data name="SIM_PUFFER_BRAUCHWASSER_KURZ" xml:space="preserve">
+    <value>Buffer DHW</value>
+  </data>
+  <data name="SIM_PUFFER_FREMDES_PROJEKT" xml:space="preserve">
+    <value>The buffer storage selected for the {0} does not belong to this project or has been removed.
+
+Please create a project buffer storage with the use "{1}".</value>
+  </data>
+  <data name="SIM_PUFFER_HEIZUNG_KURZ" xml:space="preserve">
+    <value>Buffer heating</value>
+  </data>
+  <data name="SIM_PUFFER_MIT_VOLUMEN" xml:space="preserve">
+    <value>{0} ({1} l)</value>
+  </data>
+  <data name="SIM_PUFFER_QUELLE_UND_SENKE" xml:space="preserve">
+    <value>The buffer storage "{0}" is already the HEAT SOURCE of this unit.
+The same storage cannot be source and sink at the same time (short circuit); please select a different storage.</value>
+  </data>
+  <data name="SIM_PUFFER_VERWENDUNG_PASST_NICHT" xml:space="preserve">
+    <value>The buffer storage "{0}" has the use "{1}", but the {2} requires "{3}".
+
+Please select a suitable storage or change the use in the buffer storage management.</value>
+  </data>
+  <data name="SIM_RB_HEIZKREIS" xml:space="preserve">
+    <value>Heating circuit (direct coverage of the demand)</value>
+  </data>
+  <data name="SIM_ROLLE_HAUPTSENKE" xml:space="preserve">
+    <value>main sink</value>
+  </data>
+  <data name="SIM_ROLLE_ZWEITSENKE" xml:space="preserve">
+    <value>secondary sink</value>
+  </data>
+  <data name="SIM_SENKE_TITEL" xml:space="preserve">
+    <value>Heat sink</value>
+  </data>
+  <data name="SIM_SENKE_TITEL_ANLAGE" xml:space="preserve">
+    <value>Heat sink - {0}</value>
+  </data>
+  <data name="SIM_SOLARTHERMIE_ANLAGE" xml:space="preserve">
+    <value>Solar thermal system</value>
+  </data>
+  <data name="SIM_SPALTE_ANLAGE" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="SIM_SPALTE_ANZAHL" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="SIM_SPALTE_BETRIEBSSTUNDEN" xml:space="preserve">
+    <value>Operating hours [h/a]</value>
+  </data>
+  <data name="SIM_SPALTE_BRENNSTOFFE" xml:space="preserve">
+    <value>Gas/biogas/rapeseed oil/wood... [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_ENERGIE_ERZEUGER" xml:space="preserve">
+    <value>Energy generator</value>
+  </data>
+  <data name="SIM_SPALTE_ERGEBNIS_MWH" xml:space="preserve">
+    <value>Result [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_FLAECHE" xml:space="preserve">
+    <value>Area [m²]</value>
+  </data>
+  <data name="SIM_SPALTE_HEIZSTAB" xml:space="preserve">
+    <value>Immersion heater [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_JAHRESNUTZUNGSGRAD" xml:space="preserve">
+    <value>Annual utilisation ratio [%]</value>
+  </data>
+  <data name="SIM_SPALTE_LEISTUNG" xml:space="preserve">
+    <value>Power [kW]</value>
+  </data>
+  <data name="SIM_SPALTE_MODUL" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="SIM_SPALTE_MODUS" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="SIM_SPALTE_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="SIM_SPALTE_OEL" xml:space="preserve">
+    <value>Oil [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_PRIO" xml:space="preserve">
+    <value>Prio</value>
+  </data>
+  <data name="SIM_SPALTE_SENKE" xml:space="preserve">
+    <value>Sink</value>
+  </data>
+  <data name="SIM_SPALTE_SOLARKOLLEKTOR" xml:space="preserve">
+    <value>Solar collector</value>
+  </data>
+  <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
+    <value>Electricity generation [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_STROMVERBRAUCH" xml:space="preserve">
+    <value>Electricity consumption [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_UEBERSCHUSS" xml:space="preserve">
+    <value>Surplus [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_WAERMEPRODUKTION" xml:space="preserve">
+    <value>Heat generation [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_WPPRIO" xml:space="preserve">
+    <value>HP prio</value>
+  </data>
+  <data name="SIM_STATUS_EINSTELLUNG_FEHLER" xml:space="preserve">
+    <value>The setting could not be saved.</value>
+  </data>
+  <data name="SIM_STATUS_EXTRAPOLATION_AUS" xml:space="preserve">
+    <value>Extrapolation of the heat pump characteristic curve deselected - the run aborts if the source temperature falls below the curve.</value>
+  </data>
+  <data name="SIM_STATUS_EXTRAPOLATION_EIN" xml:space="preserve">
+    <value>Extrapolation of the heat pump characteristic curve allowed - the run records it as a note.</value>
+  </data>
+  <data name="SIM_STATUS_KASKADE_AUS" xml:space="preserve">
+    <value>Two-channel cascade deselected - the single-channel cascade calculates again.</value>
+  </data>
+  <data name="SIM_STATUS_KASKADE_EIN" xml:space="preserve">
+    <value>Two-channel cascade switched on - the next run calculates with it and delivers different results.</value>
+  </data>
+  <data name="SIM_STATUS_KONFIG_GESPEICHERT" xml:space="preserve">
+    <value>✔ Configuration saved successfully</value>
+  </data>
+  <data name="SIM_STATUS_SENKE_FEHLER" xml:space="preserve">
+    <value>⚠ The heat sink could not be saved completely</value>
+  </data>
+  <data name="SIM_STATUS_SENKE_GESPEICHERT" xml:space="preserve">
+    <value>✔ Heat sink saved ({0})</value>
+  </data>
+  <data name="SIM_STROMSPEICHER" xml:space="preserve">
+    <value>Electricity storage</value>
+  </data>
+  <data name="SIM_TABELLE_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="SIM_TIP_BETRIEBSMODUS" xml:space="preserve">
+    <value>Operating mode (double-click to change)
+• runtime-optimised - full output, surplus charges the storage
+• output-optimised - modulates exactly to the heat demand
+• PV-optimised - increased output only with available PV electricity,
+  otherwise output-optimised</value>
+  </data>
+  <data name="SIM_TIP_BETRIEBSMODUS_NICHT_WP" xml:space="preserve">
+    <value>The operating mode is currently effective only for heat pumps.</value>
+  </data>
+  <data name="SIM_TIP_SENKE" xml:space="preserve">
+    <value>Heat sink (double-click to change)
+Where does this generator release its heat?
+• Heating circuit - covers the demand of the hour directly
+  (demand type domestic hot water / space heating / both)
+• Buffer storage heating or DHW - charges a
+  project buffer storage; charging priority and
+  charging upper limit are maintained there as well.</value>
+  </data>
+  <data name="SIM_TIP_UEBERSICHT_STANDARD" xml:space="preserve">
+    <value>Unit: {0}
+Double-click on heat sink, secondary sink or - for heat pumps -
+HP prio, heat source and operating mode to edit.</value>
+  </data>
+  <data name="SIM_TIP_WPPRIO" xml:space="preserve">
+    <value>HP priority (double-click to change)
+Order of use of the heat pumps: 1 = is used first,
+the next one covers the remaining demand of the hour.</value>
+  </data>
+  <data name="SIM_TIP_WPPRIO_NICHT_WP" xml:space="preserve">
+    <value>HP priority applies only to heat pumps.</value>
+  </data>
+  <data name="SIM_TIP_ZWEITSENKE" xml:space="preserve">
+    <value>Secondary sink (double-click to change)
+Optional second buffer storage that takes ONLY surplus or
+remaining charging potential - never mandatory demand.
+'–' means: no secondary sink.</value>
+  </data>
+  <data name="SIM_TITEL_BETRIEBSMODUS" xml:space="preserve">
+    <value>Operating mode</value>
+  </data>
+  <data name="SIM_TITEL_BETRIEBSMODUS_PV" xml:space="preserve">
+    <value>Operating mode PV</value>
+  </data>
+  <data name="SIM_TITEL_ERGEBNIS_SPEICHERN" xml:space="preserve">
+    <value>Save result</value>
+  </data>
+  <data name="SIM_TITEL_FEHLER" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="SIM_TITEL_HINWEIS" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="SIM_TITEL_MELDUNGEN_LAUF" xml:space="preserve">
+    <value>Messages from the simulation run</value>
+  </data>
+  <data name="SIM_TITEL_SENKE_PUFFER_FEHLT" xml:space="preserve">
+    <value>Heat sink - buffer storage missing</value>
+  </data>
+  <data name="SIM_TITEL_SIMULATION_ABGEBROCHEN" xml:space="preserve">
+    <value>Simulation aborted</value>
+  </data>
+  <data name="SIM_TITEL_SIMULATION_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Simulation not available</value>
+  </data>
+  <data name="SIM_TITEL_WPPRIO" xml:space="preserve">
+    <value>HP priority</value>
+  </data>
+  <data name="SIM_TOOLTIP_CSV_BEDARF" xml:space="preserve">
+    <value>Export heat load and electricity demand as CSV
+(time stamp, outdoor temperature, values)</value>
+  </data>
+  <data name="SIM_TOOLTIP_CSV_WAERMEPUMPE" xml:space="preserve">
+    <value>Export heat pump simulation as CSV
+(time stamp, outdoor temperature, heat demand, immersion heater, heat generation, electricity demand)</value>
+  </data>
+  <data name="SIM_UEBERSICHT_TITEL" xml:space="preserve">
+    <value>Heat generator overview</value>
+  </data>
+  <data name="SIM_WPPRIO_DIALOG_TEXT" xml:space="preserve">
+    <value>Order of use of the heat pump
+'{0}'
+(1 = is used first):</value>
+  </data>
+  <data name="SIM_WPPRIO_DIALOG_TITEL" xml:space="preserve">
+    <value>Heat pump priority</value>
+  </data>
+  <data name="SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER" xml:space="preserve">
+    <value>Buffer storage DHW</value>
+  </data>
+  <data name="SIM_ZIEL_PUFFERSPEICHER_HEIZUNG" xml:space="preserve">
+    <value>Buffer storage heating</value>
+  </data>
+  <data name="SIM_ZWEITSENKE_GLEICH_HAUPTSENKE" xml:space="preserve">
+    <value>The secondary sink must differ from the main sink.
+Both point to {0} "{1}".</value>
+  </data>
+  <data name="SIMENG_BHKW_MAX_UEBERSCHRITTEN" xml:space="preserve">
+    <value>CHP unit: {0} CHP units are stored in the project, the simulation supports a maximum of {1}. The run was aborted so that no result is produced without the remaining modules.</value>
+  </data>
+  <data name="SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT" xml:space="preserve">
+    <value>Domestic hot water: the type of the entry '{0}' is not defined. The calculation was aborted; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_DB_ZUGRIFF_WAEHREND_LAUF" xml:space="preserve">
+    <value>Database access during the run: {0}</value>
+  </data>
+  <data name="SIMENG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The simulation result could not be saved.</value>
+  </data>
+  <data name="SIMENG_KEINE_KLIMAREGION" xml:space="preserve">
+    <value>No climate region is set for project {0}.</value>
+  </data>
+  <data name="SIMENG_KEINE_KONFIGURATION" xml:space="preserve">
+    <value>No configuration (Tab_Einstellungen) is stored for project {0}.</value>
+  </data>
+  <data name="SIMENG_KESSEL_MAX_UEBERSCHRITTEN" xml:space="preserve">
+    <value>Boiler: {0} boilers are stored in the project, the simulation supports a maximum of {1}. Only the first {2} boilers are taken into account.</value>
+  </data>
+  <data name="SIMENG_KESSEL_NICHT_HINTERLEGT" xml:space="preserve">
+    <value>The boiler '{0}' is not stored in the project. The boiler simulation was aborted.</value>
+  </data>
+  <data name="SIMENG_LADEORDNUNG_ART_NICHT_IN_SPEICHERSTUFE" xml:space="preserve">
+    <value>Charging order: unit {0} ({1}) is configured to charge the storage {2} ({3}). This generator type is not part of the storage stage in this run; the unit is calculated as a vector stage, like a heating-circuit unit.</value>
+  </data>
+  <data name="SIMENG_LADEPRIO_VORBELEGUNG_NACHGEZOGEN" xml:space="preserve">
+    <value>Charging priorities: {0} field(s) without a default value set to 0 (concept 3.4, default value as in migration rule R5).</value>
+  </data>
+  <data name="SIMENG_LISTE_FEHLER" xml:space="preserve">
+    <value>Error: {0}</value>
+  </data>
+  <data name="SIMENG_LISTE_HINWEIS" xml:space="preserve">
+    <value>Note: {0}</value>
+  </data>
+  <data name="SIMENG_LISTE_WARNUNG" xml:space="preserve">
+    <value>Warning: {0}</value>
+  </data>
+  <data name="SIMENG_NETZVERLUSTE_UEBER_100" xml:space="preserve">
+    <value>The network losses must not exceed 100 %.</value>
+  </data>
+  <data name="SIMENG_PENDELSPEICHER_NICHT_LESBAR" xml:space="preserve">
+    <value>CHP buffer storage: the buffer storage record {0} of project {1} could not be read or belongs to a different project. The run was aborted so that the CHP unit does not silently calculate without storage.</value>
+  </data>
+  <data name="SIMENG_PENDELSPEICHER_ZEILE_FEHLT" xml:space="preserve">
+    <value>CHP buffer storage: for project {0} a volume of {1} l is known, but there is no buffer storage record "{2}". The run was aborted so that the CHP unit does not silently calculate without storage.</value>
+  </data>
+  <data name="SIMENG_PRAEFIX_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler: </value>
+  </data>
+  <data name="SIMENG_PRAEFIX_STROMBEDARF" xml:space="preserve">
+    <value>Electricity demand: </value>
+  </data>
+  <data name="SIMENG_PRAEFIX_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump: </value>
+  </data>
+  <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
+    <value>Process heat: the type of the process '{0}' is not defined. The process heat calculation was aborted; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_SIMULATION_ABGEBROCHEN" xml:space="preserve">
+    <value>Simulation aborted: {0}</value>
+  </data>
+  <data name="SIMENG_SPEICHERN_DES_ERGEBNISSES" xml:space="preserve">
+    <value>Saving the result: {0}</value>
+  </data>
+  <data name="SIMENG_STROMPROFIL_ZULETZT_BEARBEITET" xml:space="preserve">
+    <value> (last processed: electricity profile '{0}')</value>
+  </data>
+  <data name="SIMENG_STROMPROFILE_DIAGNOSE" xml:space="preserve">
+    <value>Electricity demand: the electricity profiles could not be calculated - {0}</value>
+  </data>
+  <data name="SIMENG_STROMPROFILE_NICHT_BERECHENBAR" xml:space="preserve">
+    <value>The electricity profiles of the project could not be calculated. The simulation was aborted.</value>
+  </data>
+  <data name="SIMENG_TAGESVERTEILUNG_FEHLT" xml:space="preserve">
+    <value>Heat demand: no data is stored for the daily distribution type "{0}". The demand calculation was aborted at this point; the result is incomplete.</value>
+  </data>
+  <data name="SIMENG_WP_EXTRAPOLATION_HINWEIS" xml:space="preserve">
+    <value>Heat pump '{0}': the source temperature falls below the lowest data point of the performance curve ({1} °C). Extrapolation is applied (project setting "Allow extrapolation of the performance curve").</value>
+  </data>
+  <data name="SIMENG_WP_EXTRAPOLATION_VERBOTEN" xml:space="preserve">
+    <value>The source temperature falls below the lowest data point of the performance curve of the heat pump '{0}' ({1} °C). The project setting "Allow extrapolation of the performance curve" is deselected, therefore the simulation was aborted. Either add lower data points to the performance curve or set the option.</value>
+  </data>
+  <data name="SIMENG_WP_KEINE_KENNDATEN" xml:space="preserve">
+    <value>For the heat pump '{0}' there is no performance data (performance curve) for a flow temperature of {1} °C. The simulation was aborted.</value>
+  </data>
+  <data name="SIMQ_ANLAGE_ERSATZNAME" xml:space="preserve">
+    <value>Unit {0}</value>
+  </data>
+  <data name="SIMQ_BODENTYP_GNEIS" xml:space="preserve">
+    <value>Gneiss</value>
+  </data>
+  <data name="SIMQ_BODENTYP_GRANIT" xml:space="preserve">
+    <value>Granite</value>
+  </data>
+  <data name="SIMQ_BODENTYP_KALKSTEIN" xml:space="preserve">
+    <value>Limestone</value>
+  </data>
+  <data name="SIMQ_BODENTYP_KIES_NASS" xml:space="preserve">
+    <value>Gravel/stones, water-saturated</value>
+  </data>
+  <data name="SIMQ_BODENTYP_KIES_TROCKEN" xml:space="preserve">
+    <value>Gravel/stones, dry</value>
+  </data>
+  <data name="SIMQ_BODENTYP_MERGEL_LEHM" xml:space="preserve">
+    <value>Glacial till/boulder clay</value>
+  </data>
+  <data name="SIMQ_BODENTYP_SAND_FEUCHT" xml:space="preserve">
+    <value>Sand, moist</value>
+  </data>
+  <data name="SIMQ_BODENTYP_SAND_NASS" xml:space="preserve">
+    <value>Sand, water-saturated</value>
+  </data>
+  <data name="SIMQ_BODENTYP_SAND_TROCKEN" xml:space="preserve">
+    <value>Sand, dry</value>
+  </data>
+  <data name="SIMQ_BODENTYP_SANDSTEIN" xml:space="preserve">
+    <value>Sandstone</value>
+  </data>
+  <data name="SIMQ_BODENTYP_TON_NASS" xml:space="preserve">
+    <value>Clay/silt, water-saturated</value>
+  </data>
+  <data name="SIMQ_BODENTYP_TON_TROCKEN" xml:space="preserve">
+    <value>Clay/silt, dry</value>
+  </data>
+  <data name="SIMQ_BODENTYP_TONSTEIN" xml:space="preserve">
+    <value>Claystone/siltstone</value>
+  </data>
+  <data name="SIMQ_CSV_DATEIDIALOG_TITEL" xml:space="preserve">
+    <value>Select source temperature profile</value>
+  </data>
+  <data name="SIMQ_CSV_DATEIFILTER" xml:space="preserve">
+    <value>CSV files (*.csv)|*.csv|All files (*.*)|*.*</value>
+  </data>
+  <data name="SIMQ_CSV_FEHLER" xml:space="preserve">
+    <value>The file could not be read or does not contain 8760 hourly values!
+
+{0}</value>
+  </data>
+  <data name="SIMQ_CSV_FEHLER_TITEL" xml:space="preserve">
+    <value>CSV file invalid</value>
+  </data>
+  <data name="SIMQ_CSV_FORMAT_HINWEIS" xml:space="preserve">
+    <value>Expected CSV format for the source temperature profile:
+
+- 8760 lines = hourly values for one year (01.01. 00:00 to 31.12. 23:00)
+- one temperature value in °C per line (decimal comma or point)
+- optionally with a time stamp: "Time stamp;Temperature" (semicolon-separated,
+  the last numeric value of the line is used)
+- a header line is detected and skipped automatically</value>
+  </data>
+  <data name="SIMQ_CSV_FRAGE_DATEI" xml:space="preserve">
+    <value>{0}
+
+Select file now?</value>
+  </data>
+  <data name="SIMQ_CSV_TITEL" xml:space="preserve">
+    <value>Source temperature from CSV file</value>
+  </data>
+  <data name="SIMQ_ENTZUG_ANTEILIG_GESCHAETZT" xml:space="preserve">
+    <value>maximum extraction rate estimated proportionally from the aggregated load profile of all heat pump modules.</value>
+  </data>
+  <data name="SIMQ_ENTZUG_NICHT_JE_MODUL_TRENNBAR" xml:space="preserve">
+    <value>maximum extraction rate cannot be separated per module (several heat pumps with different heat sources, the hourly load profile is only available globally).</value>
+  </data>
+  <data name="SIMQ_ERDKOLLEKTOR_ANZEIGE" xml:space="preserve">
+    <value>Ground collector {0} m</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ANZAHL_SONDEN" xml:space="preserve">
+    <value>Number of BHE:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BODENKENNWERTE" xml:space="preserve">
+    <value>λ = {0} W/(m·K)   ρ·c_p = {1} MJ/(m³·K)   a = {2} mm²/s   Damping depth d = {3} m   Soil type according to Table A1: {4}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BODENTYP" xml:space="preserve">
+    <value>Soil type:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BODENTYP_HINWEIS" xml:space="preserve">
+    <value>(Catalogue VDI 4640 Part 1, draft 2021-12)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ENTZUG_KURZTEXT" xml:space="preserve">
+    <value>Extraction {0} kWh/a{1}, peak {2} W, {3} h/a. </value>
+  </data>
+  <data name="SIMQ_ERDREICH_FLAECHE" xml:space="preserve">
+    <value>Area [m²]:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_GB_PRUEFUNG" xml:space="preserve">
+    <value>Design check according to VDI 4640 Part 2 (after the simulation)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_GB_QUELLSYSTEM" xml:space="preserve">
+    <value>Source system</value>
+  </data>
+  <data name="SIMQ_ERDREICH_GB_VORSCHAU" xml:space="preserve">
+    <value>Preview: annual variation of the source temperature</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_FESTGESTEIN" xml:space="preserve">
+    <value>
+  Note: Rock is mapped to the highest soil type of Table A1 — for orientation only.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
+    <value>
+  Note: {0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KEINE_PRUEFUNG" xml:space="preserve">
+    <value>Design check not possible:
+
+{0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KLIMAZONE" xml:space="preserve">
+    <value>Climate zone:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KLIMAZONE_HINWEIS" xml:space="preserve">
+    <value>(DIN 4710, default from the climate region)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KURZTEXT_KOPF" xml:space="preserve">
+    <value>Ground {0}: </value>
+  </data>
+  <data name="SIMQ_ERDREICH_LAENGE_SONDE" xml:space="preserve">
+    <value>Length per BHE [m]:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_ANZAHL_MIN" xml:space="preserve">
+    <value>At least one BHE must be present!</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_FLAECHE" xml:space="preserve">
+    <value>Please enter the collector area — it is an input variable
+for the design check according to VDI 4640 Part 2.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_LAENGE_NULL" xml:space="preserve">
+    <value>The BHE length must be greater than 0 m!</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_SPREIZUNG" xml:space="preserve">
+    <value>Please enter a usable temperature spread greater than 0 K!
+It is an input variable for the frost check of the source.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_TIEFE_MAX" xml:space="preserve">
+    <value>A horizontal ground collector is not installed deeper than 10 m.
+For greater depths select the source system 'borehole heat exchanger'.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_TIEFE_NULL" xml:space="preserve">
+    <value>The installation depth must be greater than 0 m!</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_ZAHL_KOLLEKTOR" xml:space="preserve">
+    <value>Please enter valid numeric values for installation depth and area!</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_ZAHL_SONDE" xml:space="preserve">
+    <value>Please enter valid numeric values for BHE length and number!</value>
+  </data>
+  <data name="SIMQ_ERDREICH_OHNE_KLIMADATEN" xml:space="preserve">
+    <value>   (without climate data — fallback values 9,5 °C / 8,5 K)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF" xml:space="preserve">
+    <value>(no simulation run yet)
+
+The check requires maximum extraction rate, annual extracted energy and
+annual full-load hours from a simulation run.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_RB_KOLLEKTOR" xml:space="preserve">
+    <value>Horizontal ground collector</value>
+  </data>
+  <data name="SIMQ_ERDREICH_RB_SONDE" xml:space="preserve">
+    <value>Borehole heat exchanger</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SPEICHERLADUNG" xml:space="preserve">
+    <value>Extracted energy and peak include the heat with which the heat pump charges the buffer storage.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SPREIZUNG" xml:space="preserve">
+    <value>Usable temperature spread [K]:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SPREIZUNG_HINWEIS" xml:space="preserve">
+    <value>(Source inlet minus source outlet; warning if source temperature − temperature spread is permanently below 0 °C)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_TITEL" xml:space="preserve">
+    <value>Ground heat source</value>
+  </data>
+  <data name="SIMQ_ERDREICH_TITEL_MIT_WP" xml:space="preserve">
+    <value>Ground heat source — {0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_UNWIRKSAM_LUFT_WASSER" xml:space="preserve">
+    <value>The heat pump is an air-to-water unit — the ground configuration has no effect in the simulation (outdoor air is used). For a ground heat source, select a brine-to-water or water-to-water heat pump.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VERLEGETIEFE" xml:space="preserve">
+    <value>Installation depth [m]:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_WIRKUNGSLOS" xml:space="preserve">
+    <value>This configuration remains without effect:
+
+{0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ZONE_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>0 — not assigned</value>
+  </data>
+  <data name="SIMQ_ERDSONDE_ANZEIGE" xml:space="preserve">
+    <value>Borehole heat exchanger {0}×{1} m</value>
+  </data>
+  <data name="SIMQ_FROST_NORMBASIS" xml:space="preserve">
+    <value>VDI 4640 part 2 is dimensioned against a brine outlet of −5 °C</value>
+  </data>
+  <data name="SIMQ_FROSTTEXT" xml:space="preserve">
+    <value>Note: source temperature − temperature spread is below 0 °C in {0} of {1} operating hours ({2}; the design check is not affected by this).</value>
+  </data>
+  <data name="SIMQ_INKL_SPEICHERLADUNG" xml:space="preserve">
+    <value> (incl. storage charging)</value>
+  </data>
+  <data name="SIMQ_KONSTANT_DIALOG_TEXT" xml:space="preserve">
+    <value>Source temperature of the heat pump
+'{0}' [°C]:</value>
+  </data>
+  <data name="SIMQ_KONSTANT_DIALOG_TITEL" xml:space="preserve">
+    <value>Constant source temperature</value>
+  </data>
+  <data name="SIMQ_MSG_LUFT_WASSER" xml:space="preserve">
+    <value>For air-to-water heat pumps the heat source is always the outdoor air
+(outdoor temperature of the selected climate region).
+
+HP type: {0}</value>
+  </data>
+  <data name="SIMQ_MSG_QUELLE_NUR_WP" xml:space="preserve">
+    <value>Only the heat pump has a heat source.
+
+Boilers, CHP units and solar thermal generate their heat themselves; their
+operating limits are in the respective input forms.</value>
+  </data>
+  <data name="SIMQ_PROFIL_KENNWERTE_ZEILE" xml:space="preserve">
+    <value>min {0} °C ({1})  ·  max {2} °C ({3})  ·  mean {4} °C</value>
+  </data>
+  <data name="SIMQ_PRUEFZEILE_ENTZUGSENERGIE" xml:space="preserve">
+    <value>Extraction energy</value>
+  </data>
+  <data name="SIMQ_PRUEFZEILE_ENTZUGSLEISTUNG" xml:space="preserve">
+    <value>Extraction rate</value>
+  </data>
+  <data name="SIMQ_PRUEFZEILE_FORMAT" xml:space="preserve">
+    <value>{0} {1}   Limit {2} {3}{4}</value>
+  </data>
+  <data name="SIMQ_PUFFER_CB_UNBEGRENZT" xml:space="preserve">
+    <value>Source available without limit (only temperature relevant)</value>
+  </data>
+  <data name="SIMQ_PUFFER_DATEN" xml:space="preserve">
+    <value>Storage type: {0}
+Total volume: {1} l
+Standby losses: {2} kWh/24h</value>
+  </data>
+  <data name="SIMQ_PUFFER_GB_PARAMETER" xml:space="preserve">
+    <value>Heat source parameters</value>
+  </data>
+  <data name="SIMQ_PUFFER_HINWEIS_QUELLWAERME" xml:space="preserve">
+    <value>The heat pump extracts the evaporator heat (heat generated − electricity input) from the storage every hour.
+
+If the storage is empty, the output of the heat pump is limited; the regeneration recharges the storage continuously.</value>
+  </data>
+  <data name="SIMQ_PUFFER_KAPAZITAET" xml:space="preserve">
+    <value>Usable capacity:
+{0} kWh</value>
+  </data>
+  <data name="SIMQ_PUFFER_KOPF" xml:space="preserve">
+    <value>Select buffer storage as heat source:</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_AUSWAHL" xml:space="preserve">
+    <value>Please select a buffer storage!</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_KEINE_SPEICHER" xml:space="preserve">
+    <value>There is no buffer storage in the master data!</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_SPREIZUNG" xml:space="preserve">
+    <value>The usable temperature spread must be greater than 0 K!</value>
+  </data>
+  <data name="SIMQ_PUFFER_QUELLTEMPERATUR" xml:space="preserve">
+    <value>Source temperature [°C]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_REGENERATION" xml:space="preserve">
+    <value>Regeneration [kW]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_SPREIZUNG" xml:space="preserve">
+    <value>Usable temperature spread [K]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TITEL" xml:space="preserve">
+    <value>Buffer storage heat source</value>
+  </data>
+  <data name="SIMQ_PUFFER_TITEL_MIT_WP" xml:space="preserve">
+    <value>Buffer storage heat source - {0}</value>
+  </data>
+  <data name="SIMQ_QUELLE_AUSSENLUFT" xml:space="preserve">
+    <value>Outdoor air</value>
+  </data>
+  <data name="SIMQ_QUELLE_CSVPROFIL" xml:space="preserve">
+    <value>CSV profile</value>
+  </data>
+  <data name="SIMQ_QUELLE_KONSTANT" xml:space="preserve">
+    <value>Constant ({0} °C)</value>
+  </data>
+  <data name="SIMQ_QUELLE_PUFFER_NAME" xml:space="preserve">
+    <value>Buffer: {0}</value>
+  </data>
+  <data name="SIMQ_QUELLE_QUELLPROFIL" xml:space="preserve">
+    <value>Source profile</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_ALLE_MONATE" xml:space="preserve">
+    <value>Set all months to the January value</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_ALLE_TAGE" xml:space="preserve">
+    <value>Apply to all days</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Paste day</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Copy day</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply changes</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_HINWEIS_ABWEICHUNG" xml:space="preserve">
+    <value>Note: 0 = no deviation (source temperature equals the monthly value).</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_INFO" xml:space="preserve">
+    <value>Source temperature = monthly value [°C] + weekly value [K].
+The monthly values define the annual variation, the weekly values the daily/weekly variation.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_KOPF_MONAT" xml:space="preserve">
+    <value>Monthly mean temperature of the heat source [°C]</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_KOPF_WOCHE" xml:space="preserve">
+    <value>Deviation from the monthly value per hour [K]</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_LBL_WOCHENTAG" xml:space="preserve">
+    <value>Weekday selection</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_ALLE_TAGE" xml:space="preserve">
+    <value>The daily variation has been applied to all weekdays.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_ERST_KOPIEREN" xml:space="preserve">
+    <value>Please copy a day first!</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_JANUAR" xml:space="preserve">
+    <value>Please enter a valid number in the January field!</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_MONAT_UNGUELTIG" xml:space="preserve">
+    <value>{0}: '{1}' is not a valid number!</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_STUNDE_UNGUELTIG" xml:space="preserve">
+    <value>Hour {0}: '{1}' is not a valid number!</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TAB_GRAFIK" xml:space="preserve">
+    <value>Chart</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TAB_MONATSWERTE" xml:space="preserve">
+    <value>Monthly values</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TAB_WOCHENWERTE" xml:space="preserve">
+    <value>Weekly values</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TITEL" xml:space="preserve">
+    <value>Source profile of the heat source</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TITEL_MIT_WP" xml:space="preserve">
+    <value>Source profile of the heat source - {0}</value>
+  </data>
+  <data name="SIMQ_SPALTE_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="SIMQ_SPITZE_AUS_SUMMENGANGLINIE" xml:space="preserve">
+    <value> (peak apportioned from the aggregated load profile)</value>
+  </data>
+  <data name="SIMQ_TIP_QUELLE" xml:space="preserve">
+    <value>Heat source (double-click to change)
+Air-to-water: always outdoor air from the climate data.
+Brine-/water-to-water: ground, constant temperature, buffer storage,
+source profile (monthly and weekly values) or CSV file.</value>
+  </data>
+  <data name="SIMQ_TIP_QUELLE_NICHT_WP" xml:space="preserve">
+    <value>Only the heat pump has a heat source.
+Boilers, CHP units and solar thermal generate the heat themselves.</value>
+  </data>
+  <data name="SIMQ_TITEL_WAERMEQUELLE" xml:space="preserve">
+    <value>Heat source</value>
+  </data>
+  <data name="SIMQ_TYP_AUSSENLUFT" xml:space="preserve">
+    <value>Outdoor air (climate data)</value>
+  </data>
+  <data name="SIMQ_TYP_CSV_DATEI" xml:space="preserve">
+    <value>CSV file (hourly values)</value>
+  </data>
+  <data name="SIMQ_TYP_ERDREICH" xml:space="preserve">
+    <value>Ground (VDI 4640)</value>
+  </data>
+  <data name="SIMQ_TYP_KONSTANTE_TEMPERATUR" xml:space="preserve">
+    <value>Constant temperature</value>
+  </data>
+  <data name="SIMQ_TYP_PUFFERSPEICHER" xml:space="preserve">
+    <value>Buffer storage</value>
+  </data>
+  <data name="SIMQ_TYP_QUELLPROFIL" xml:space="preserve">
+    <value>Source profile (monthly values)</value>
+  </data>
+  <data name="SIMQ_VDI4640_AUSSERHALB_TABELLE" xml:space="preserve">
+    <value> Caution: the number of boreholes or λ lies outside the coded table range (B2 extract); the limit was clamped to the boundary data point. On the borehole-number axis this is not conservative - larger borehole fields require lower specific extraction rates than the boundary value allows.</value>
+  </data>
+  <data name="SIMQ_VDI4640_EINGEHALTEN" xml:space="preserve">
+    <value>VDI 4640: complied with.</value>
+  </data>
+  <data name="SIMQ_VDI4640_GRENZWERT_UEBERSCHRITTEN" xml:space="preserve">
+    <value>VDI 4640: limit exceeded — heat source is undersized!</value>
+  </data>
+  <data name="SIMQ_VDI4640_GRUNDLAGE_KOLLEKTOR" xml:space="preserve">
+    <value>Climate zone {0}, soil type {1}</value>
+  </data>
+  <data name="SIMQ_VDI4640_GRUNDLAGE_SONDE" xml:space="preserve">
+    <value>λ = {0} W/(m·K), {1} borehole(s), {2} h/a</value>
+  </data>
+  <data name="SIMQ_VDI4640_KEINE_KOLLEKTORFLAECHE" xml:space="preserve">
+    <value>No collector area specified, check not possible.</value>
+  </data>
+  <data name="SIMQ_VDI4640_KEINE_SONDENLAENGE" xml:space="preserve">
+    <value>No borehole length specified, check not possible.</value>
+  </data>
+  <data name="SIMQ_VDI4640_KEINE_VOLLLASTSTUNDEN" xml:space="preserve">
+    <value>Annual full-load hours not known, check not possible.</value>
+  </data>
+  <data name="SIMQ_VDI4640_KLIMAZONE_FEHLT" xml:space="preserve">
+    <value>Climate zone not assigned, check not possible.</value>
+  </data>
+  <data name="SIMQ_VDI4640_KOLLEKTOR_OK" xml:space="preserve">
+    <value>The design is within the limits of table A2.</value>
+  </data>
+  <data name="SIMQ_VDI4640_KOLLEKTOR_ZU_KLEIN" xml:space="preserve">
+    <value>The collector is undersized. At least {0} m² are required (zone full-load hours {1} h/a).</value>
+  </data>
+  <data name="SIMQ_VDI4640_PRUEFUNG_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Design check to VDI 4640 not possible — {0}</value>
+  </data>
+  <data name="SIMQ_VDI4640_SONDE_OK" xml:space="preserve">
+    <value>The design is within the limits of table B2 (extract).</value>
+  </data>
+  <data name="SIMQ_VDI4640_SONDENFELD_ZU_KLEIN" xml:space="preserve">
+    <value>The borehole field is undersized. At least {0} borehole metres are required.</value>
+  </data>
+  <data name="SIMQ_WPTYP_NICHT_GEPFLEGT" xml:space="preserve">
+    <value>(not maintained)</value>
   </data>
 </root>

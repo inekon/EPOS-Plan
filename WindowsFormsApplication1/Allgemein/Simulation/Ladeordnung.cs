@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -116,10 +116,10 @@ namespace WindowsFormsApplication1
         {
             switch (idType)
             {
-                case ProjektPuffer.TYP_WP: return "Wärmepumpe";
-                case ProjektPuffer.TYP_SOLARTHERMIE: return "Solarthermie";
-                case ProjektPuffer.TYP_KESSEL: return "Heizkessel";
-                case ProjektPuffer.TYP_BHKW: return "BHKW";
+                case ProjektPuffer.TYP_WP: return DbWerte.ERZEUGER_WAERMEPUMPE;
+                case ProjektPuffer.TYP_SOLARTHERMIE: return DbWerte.ERZEUGER_SOLARTHERMIE;
+                case ProjektPuffer.TYP_KESSEL: return DbWerte.ERZEUGER_HEIZKESSEL;
+                case ProjektPuffer.TYP_BHKW: return DbWerte.ERZEUGER_BHKW;
                 default: return null;
             }
         }

@@ -1,0 +1,53 @@
+; EditorConfig für WP-Plan / EPOS-Plan
+; Angelegt mit Paket 9 „Lokalisierung", Teilpaket L0 (Encoding vereinheitlichen).
+;
+; Hintergrund: Ein Teil der Quelldateien lag historisch als Windows-1252 ohne BOM vor.
+; Werkzeuge ohne explizite Kodierungsangabe lesen solche Dateien als UTF-8 (oder umgekehrt)
+; und zerstören dabei die Umlaute. Verbindlich ist deshalb UTF-8 MIT BOM: die Signatur
+; macht die Kodierung für Visual Studio, MSBuild, git und Kommandozeilenwerkzeuge eindeutig.
+;
+; Zeilenenden bleiben CRLF (Windows-Projekt, .gitattributes normalisiert zusätzlich).
+
+root = true
+
+; ACHTUNG: Hier bewusst KEIN globales `charset`. Eine Vorgabe unter [*] würde auch auf
+; Datendateien wirken — insbesondere auf die CSV-Dateien unter `Referenzlaeufe/`, die die
+; Regressionsbasis des Simulationskerns bilden. Eine dort beim Speichern ergänzte BOM würde
+; den Byte-Vergleich der Referenzlauf-Suite zerstören. Die Kodierung wird deshalb nur für
+; Quell- und Projektdateien festgelegt.
+
+[*]
+end_of_line = crlf
+insert_final_newline = false
+trim_trailing_whitespace = false
+
+[*.cs]
+charset = utf-8-bom
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+
+[*.{csproj,vbproj,proj,projitems,shproj,sln}]
+charset = utf-8-bom
+end_of_line = crlf
+indent_style = space
+indent_size = 2
+
+; .resx werden von Visual Studio geschrieben; UTF-8 mit BOM entspricht dem VS-Standard.
+[*.resx]
+charset = utf-8-bom
+end_of_line = crlf
+indent_style = space
+indent_size = 2
+
+; Markdown-Dokumentation: UTF-8 ohne BOM, damit die Dateien in Web-Ansichten sauber bleiben.
+; Nachlaufende Leerzeichen sind in Markdown bedeutungstragend (harter Zeilenumbruch).
+[*.md]
+charset = utf-8
+end_of_line = crlf
+trim_trailing_whitespace = false
+
+[*.{json,yml,yaml}]
+charset = utf-8
+indent_style = space
+indent_size = 2

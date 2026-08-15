@@ -128,7 +128,7 @@
     <value>14, 78</value>
   </data>
   <data name="label1.Text" xml:space="preserve">
-    <value>Erzeuger auswählen</value>
+    <value>Erzeuger auswählen:</value>
   </data>
   <data name="comboBox_Erzeuger.Size" type="System.Drawing.Size, System.Drawing">
     <value>140, 25</value>
@@ -196,7 +196,7 @@
     <value>155, 17</value>
   </data>
   <data name="label2.Text" xml:space="preserve">
-    <value>Pufferspeicher auswählen</value>
+    <value>Pufferspeicher auswählen:</value>
   </data>
   <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
     <value>81, 17</value>

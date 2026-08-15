@@ -38,13 +38,13 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------------
 
         /// <summary>Quellsystem Erdkollektor (Flachkollektor, WQ_Quellsystem).</summary>
-        public const string QUELLSYSTEM_KOLLEKTOR = "Kollektor";
+        public const string QUELLSYSTEM_KOLLEKTOR = DbWerte.WQ_QUELLSYSTEM_KOLLEKTOR;
 
         /// <summary>Quellsystem Erdsonde (WQ_Quellsystem).</summary>
-        public const string QUELLSYSTEM_SONDE = "Sonde";
+        public const string QUELLSYSTEM_SONDE = DbWerte.WQ_QUELLSYSTEM_SONDE;
 
         /// <summary>Katalogschlüssel des Vorgabe-Bodentyps.</summary>
-        public const string BODENTYP_DEFAULT = "SAND_FEUCHT";
+        public const string BODENTYP_DEFAULT = DbWerte.BODENTYP_SAND_FEUCHT;
 
         /// <summary>Vorgabe-Verlegetiefe des Kollektors [m] (Konzept 4.5).</summary>
         public const double TIEFE_DEFAULT = 1.5;
@@ -157,20 +157,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static readonly Bodenkennwerte[] Katalog =
         {
-            //                                                          λ      ρ·c_p     -> a [mm²/s]   d [m]
-            Neu("TON_TROCKEN",   "Ton/Schluff, trocken",              0.5,   1.55),  //   0,32        1,80
-            Neu("TON_NASS",      "Ton/Schluff, wassergesättigt",      1.8,   2.40),  //   0,75        2,74
-            Neu("SAND_TROCKEN",  "Sand, trocken",                     0.4,   1.45),  //   0,28        1,66
-            Neu("SAND_FEUCHT",   "Sand, feucht",                      1.4,   1.90),  //   0,74        2,72  (Default)
-            Neu("SAND_NASS",     "Sand, wassergesättigt",             2.4,   2.50),  //   0,96        3,10
-            Neu("KIES_TROCKEN",  "Kies/Steine, trocken",              0.4,   1.45),  //   0,28        1,66
-            Neu("KIES_NASS",     "Kies/Steine, wassergesättigt",      1.8,   2.40),  //   0,75        2,74
-            Neu("MERGEL_LEHM",   "Geschiebemergel/-lehm",             2.4,   2.00),  //   1,20        3,47
-            Neu("TONSTEIN",      "Ton-/Schluffstein",                 2.2,   2.25),  //   0,98        3,13
-            Neu("SANDSTEIN",     "Sandstein",                         2.8,   2.20),  //   1,27        3,57
-            Neu("KALKSTEIN",     "Kalkstein",                         2.7,   2.25),  //   1,20        3,47
-            Neu("GRANIT",        "Granit",                            3.2,   2.55),  //   1,25        3,55
-            Neu("GNEIS",         "Gneis",                             2.9,   2.10)   //   1,38        3,72
+            // Spalte 1 = Katalogschlüssel (Persistenzwert, DbWerte), Spalte 2 = deutscher
+            // Anzeigetext (wandert mit Paket 9 / L2 in den Ressourcenkatalog).
+            //   Schlüssel                        Untergrund                            λ      ρ·c_p     -> a [mm²/s]   d [m]
+            Neu(DbWerte.BODENTYP_TON_TROCKEN,  "Ton/Schluff, trocken",              0.5,   1.55),  //   0,32        1,80
+            Neu(DbWerte.BODENTYP_TON_NASS,     "Ton/Schluff, wassergesättigt",      1.8,   2.40),  //   0,75        2,74
+            Neu(DbWerte.BODENTYP_SAND_TROCKEN, "Sand, trocken",                     0.4,   1.45),  //   0,28        1,66
+            Neu(DbWerte.BODENTYP_SAND_FEUCHT,  "Sand, feucht",                      1.4,   1.90),  //   0,74        2,72  (Default)
+            Neu(DbWerte.BODENTYP_SAND_NASS,    "Sand, wassergesättigt",             2.4,   2.50),  //   0,96        3,10
+            Neu(DbWerte.BODENTYP_KIES_TROCKEN, "Kies/Steine, trocken",              0.4,   1.45),  //   0,28        1,66
+            Neu(DbWerte.BODENTYP_KIES_NASS,    "Kies/Steine, wassergesättigt",      1.8,   2.40),  //   0,75        2,74
+            Neu(DbWerte.BODENTYP_MERGEL_LEHM,  "Geschiebemergel/-lehm",             2.4,   2.00),  //   1,20        3,47
+            Neu(DbWerte.BODENTYP_TONSTEIN,     "Ton-/Schluffstein",                 2.2,   2.25),  //   0,98        3,13
+            Neu(DbWerte.BODENTYP_SANDSTEIN,    "Sandstein",                         2.8,   2.20),  //   1,27        3,57
+            Neu(DbWerte.BODENTYP_KALKSTEIN,    "Kalkstein",                         2.7,   2.25),  //   1,20        3,47
+            Neu(DbWerte.BODENTYP_GRANIT,       "Granit",                            3.2,   2.55),  //   1,25        3,55
+            Neu(DbWerte.BODENTYP_GNEIS,        "Gneis",                             2.9,   2.10)   //   1,38        3,72
         };
 
         private static Bodenkennwerte Neu(string schluessel, string untergrund, double lambda, double rhoCp)

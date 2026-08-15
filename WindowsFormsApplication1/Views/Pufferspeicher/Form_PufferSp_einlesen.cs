@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data.OleDb;
 using System.IO;
 using System.Windows.Forms;
@@ -116,7 +116,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Fehler bei der �bernahme des Pufferspeichers: " + ex.Message);
+                Console.WriteLine("Fehler bei der Übernahme des Pufferspeichers: " + ex.Message);
                 MessageBox.Show("Ein Fehler ist aufgetreten: " + ex.Message);
                 this.DialogResult = DialogResult.Cancel;
             }
