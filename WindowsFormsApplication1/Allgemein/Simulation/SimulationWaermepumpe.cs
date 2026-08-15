@@ -464,7 +464,7 @@ namespace WindowsFormsApplication1
                     }
 
                     // Betriebsarten Steuerung https://www.haustechnikverstehen.de/betriebsweisen-von-waermepumpen/
-                    if (model.Bivalenter_Betrieb && model.Betriebsart == "Teilparallelbetrieb")
+                    if (model.Bivalenter_Betrieb && model.Betriebsart == DbWerte.WP_BETRIEBSART_TEILPARALLEL)
                     {
                         // Teilparallelbetrieb Abschaltpunkt
                         // Der bivalent-teilparallele Betrieb ist eine Mischung aus bivalent-paralleler- und
@@ -478,13 +478,13 @@ namespace WindowsFormsApplication1
                             result[PEL] = 0;
                         }
                     }
-                    else if (model.Bivalenter_Betrieb && model.Betriebsart == "Parallelbetrieb")
+                    else if (model.Bivalenter_Betrieb && model.Betriebsart == DbWerte.WP_BETRIEBSART_PARALLEL)
                     {
                         // Bei der bivalent-parallelen Betriebsweise wird der Wärmebedarf bis zum Erreichen des
                         // Bivalenzpunktes allein von der Wärmepumpe getragen. Bei der Unterschreitung des Bivalenzpunktes
                         // unterstützt der zweite Wärmeerzeuger den Heizbetrieb der Wärmepumpe
                     }
-                    else if (model.Bivalenter_Betrieb && model.Betriebsart == "Alternativbetrieb")
+                    else if (model.Bivalenter_Betrieb && model.Betriebsart == DbWerte.WP_BETRIEBSART_ALTERNATIV)
                     {
                         // Bei der bivalent-alternativen Betriebsweise wird der Wärmebedarf bis zum Erreichen des
                         // Bivalenzpunktes allein von der Wärmepumpe getragen. Der zweite Wärmeerzeuger springt bei
@@ -997,7 +997,7 @@ namespace WindowsFormsApplication1
 
                     // Betriebsarten-Steuerung (unverändert zum Altpfad, nur die
                     // Bezugsgröße des Alternativbetriebs ist jetzt kanalgerecht)
-                    if (model.Bivalenter_Betrieb && model.Betriebsart == "Teilparallelbetrieb")
+                    if (model.Bivalenter_Betrieb && model.Betriebsart == DbWerte.WP_BETRIEBSART_TEILPARALLEL)
                     {
                         if (Temperatur[stunde] <= model.Abschaltpunkt)
                         {
@@ -1005,11 +1005,11 @@ namespace WindowsFormsApplication1
                             result[PEL] = 0;
                         }
                     }
-                    else if (model.Bivalenter_Betrieb && model.Betriebsart == "Parallelbetrieb")
+                    else if (model.Bivalenter_Betrieb && model.Betriebsart == DbWerte.WP_BETRIEBSART_PARALLEL)
                     {
                         // die Wärmepumpe läuft weiter, der zweite Erzeuger unterstützt
                     }
-                    else if (model.Bivalenter_Betrieb && model.Betriebsart == "Alternativbetrieb")
+                    else if (model.Bivalenter_Betrieb && model.Betriebsart == DbWerte.WP_BETRIEBSART_ALTERNATIV)
                     {
                         // Bezugsgröße ist der offene KANALBEDARF, nicht der Bilanzraum
                         // des Speichers (Paket-4-Review, Punkt 1) — siehe AlternativBezug.

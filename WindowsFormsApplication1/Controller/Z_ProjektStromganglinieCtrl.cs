@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -18,10 +18,10 @@ namespace WindowsFormsApplication1
 
         public void ReadAll(string sql)
         {
-            // Abfrage über das zentrale DataRepository laden
+            // Abfrage Ã¼ber das zentrale DataRepository laden
             DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            // Interne Liste vor dem erneuten Befüllen leeren
+            // Interne Liste vor dem erneuten BefÃ¼llen leeren
             _internalList.Clear();
 
             if (dt == null) return;
@@ -30,7 +30,7 @@ namespace WindowsFormsApplication1
             {
                 Z_ProjektStromganglinieModel item = new Z_ProjektStromganglinieModel();
 
-                // Sicheres Auslesen über Spaltennamen statt numerischer Indizes
+                // Sicheres Auslesen Ã¼ber Spaltennamen statt numerischer Indizes
                 if (dt.Columns.Contains("ID_Z") && row["ID_Z"] != DBNull.Value)
                     item.m_ID_Z = Convert.ToInt32(row["ID_Z"]);
 
@@ -43,7 +43,7 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Bezeichner") && row["Bezeichner"] != DBNull.Value)
                     item.m_szStromganglinie = row["Bezeichner"].ToString();
 
-                // Das Element der dynamischen Liste hinzufügen
+                // Das Element der dynamischen Liste hinzufÃ¼gen
                 _internalList.Add(item);
             }
         }

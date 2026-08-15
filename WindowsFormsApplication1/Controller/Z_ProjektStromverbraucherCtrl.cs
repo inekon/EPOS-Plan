@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -44,10 +44,10 @@ namespace WindowsFormsApplication1
 
         public void ReadAll(string sql)
         {
-            // Daten abrufen über DataRepository
+            // Daten abrufen Ã¼ber DataRepository
             DataTable dt = DataRepository.GetDataTable(sql, null);
 
-            // Interne Liste vor dem Befüllen bereinigen
+            // Interne Liste vor dem BefÃ¼llen bereinigen
             _internalList.Clear();
 
             if (dt == null) return;
@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1
             {
                 Z_ProjektStromverbraucherModel item = new Z_ProjektStromverbraucherModel();
 
-                // Spaltenweises, sicheres Auslesen über Spaltennamen statt numerischer Indizes
+                // Spaltenweises, sicheres Auslesen Ã¼ber Spaltennamen statt numerischer Indizes
                 if (dt.Columns.Contains("ID") && row["ID"] != DBNull.Value)
                     item.m_ID_Z = Convert.ToInt32(row["ID"]);
 
@@ -72,7 +72,7 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Summe") && row["Summe"] != DBNull.Value)
                     item.m_Summe = Convert.ToDouble(row["Summe"]);
 
-                // Element der dynamischen Liste hinzufügen
+                // Element der dynamischen Liste hinzufÃ¼gen
                 _internalList.Add(item);
             }
         }

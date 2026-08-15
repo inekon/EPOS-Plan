@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
 {
     class BrauchwasserCtrl : BrauchwasserModel
     {
-        // --- Kompatibilitäts-Layer für bestehenden UI-Code ---
+        // --- KompatibilitÃ¤ts-Layer fÃ¼r bestehenden UI-Code ---
         private List<BrauchwasserModel> _internalList = new List<BrauchwasserModel>();
         private bool _hasSingleData = false;
 
@@ -57,8 +57,8 @@ namespace WindowsFormsApplication1
             if (dt != null && dt.Rows.Count > 0)
             {
                 DataRow row = dt.Rows[0];
-                FillModelFromRow(this, row); // Füllt die Felder des Controllers (this)
-                _internalList.Add(MapRowToModel(row)); // Füllt items[0]
+                FillModelFromRow(this, row); // FÃ¼llt die Felder des Controllers (this)
+                _internalList.Add(MapRowToModel(row)); // FÃ¼llt items[0]
                 _hasSingleData = true;
             }
         }
@@ -67,7 +67,7 @@ namespace WindowsFormsApplication1
 
         public bool Save()
         {
-            // Entscheidungslogik: Neu anlegen oder Vorhandenes ändern
+            // Entscheidungslogik: Neu anlegen oder Vorhandenes Ã¤ndern
             if (this.m_ID <= 0)
                 return Insert();
             else
@@ -83,7 +83,7 @@ namespace WindowsFormsApplication1
 
             if (success)
             {
-                // Die neue Auto-Wert ID aus Access zurückholen
+                // Die neue Auto-Wert ID aus Access zurÃ¼ckholen
                 DataTable dt = DataRepository.GetDataTable("SELECT @@IDENTITY");
                 if (dt.Rows.Count > 0) this.m_ID = Convert.ToInt32(dt.Rows[0][0]);
             }
@@ -100,7 +100,7 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, CreateParameters(true));
         }
 
-        // --- DELETE Methoden (Löschen) ---
+        // --- DELETE Methoden (LÃ¶schen) ---
 
         public bool Delete()
         {
@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, new OleDbParameter("@bez", bezeichner));
         }
 
-        // --- MAPPING & PARAMETER (Die "Maschinenräume") ---
+        // --- MAPPING & PARAMETER (Die "MaschinenrÃ¤ume") ---
 
         private OleDbParameter[] CreateParameters(bool includeId)
         {

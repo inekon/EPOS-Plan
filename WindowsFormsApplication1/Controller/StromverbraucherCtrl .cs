@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -53,7 +53,7 @@ namespace WindowsFormsApplication1
                     }
                     else if (dt.Columns.Count > (i + 4) && row[i + 4] != DBNull.Value)
                     {
-                        // Fallback auf den alten Index-basierten Zugriff, falls die Spalten nicht "MonatX" heißen
+                        // Fallback auf den alten Index-basierten Zugriff, falls die Spalten nicht "MonatX" heiÃŸen
                         item.m_Monat[i] = Convert.ToDouble(row[i + 4]);
                     }
                 }
@@ -72,7 +72,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
-            // Instanzdaten zurücksetzen für den Fall, dass nichts gefunden wird
+            // Instanzdaten zurÃ¼cksetzen fÃ¼r den Fall, dass nichts gefunden wird
             m_ID = 0;
             m_szBezeichner = string.Empty;
             m_szTyp = string.Empty;
@@ -94,7 +94,7 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Beschreibung") && row["Beschreibung"] != DBNull.Value)
                     m_szBeschreibung = row["Beschreibung"].ToString();
 
-                // Die 12 Monate namensbasiert befüllen
+                // Die 12 Monate namensbasiert befÃ¼llen
                 for (int i = 0; i < 12; i++)
                 {
                     string colName = "Monat" + (i + 1);
@@ -108,8 +108,8 @@ namespace WindowsFormsApplication1
                     }
                 }
 
-                // Um die alte Logik (rows = 1) für die UI kompatibel zu halten, 
-                // wird hier temporär die interne Liste manipuliert:
+                // Um die alte Logik (rows = 1) fÃ¼r die UI kompatibel zu halten, 
+                // wird hier temporÃ¤r die interne Liste manipuliert:
                 _internalList.Clear();
                 _internalList.Add(this);
             }
@@ -129,7 +129,7 @@ namespace WindowsFormsApplication1
 
             DataTable dt = DataRepository.GetDataTable(sql, ps);
 
-            // Instanzdaten zurücksetzen
+            // Instanzdaten zurÃ¼cksetzen
             m_ID = 0;
             m_szBezeichner = string.Empty;
             m_szTyp = string.Empty;
@@ -151,7 +151,7 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Beschreibung") && row["Beschreibung"] != DBNull.Value)
                     m_szBeschreibung = row["Beschreibung"].ToString();
 
-                // Die 12 Monate namensbasiert befüllen
+                // Die 12 Monate namensbasiert befÃ¼llen
                 for (int i = 0; i < 12; i++)
                 {
                     string colName = "Monat" + (i + 1);

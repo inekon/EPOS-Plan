@@ -391,7 +391,7 @@ namespace WindowsFormsApplication1
 
             string typ = typen[index];
             return string.IsNullOrEmpty(typ) ||
-                   string.Equals(typ, "Luft-Wasser", StringComparison.OrdinalIgnoreCase);
+                   string.Equals(typ, DbWerte.WP_BAUART_LUFT_WASSER, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>Auslegungsprüfung nach VDI 4640 Bl. 2 mit den Anlagendaten aus WQ_*.</summary>

@@ -313,4 +313,13 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Simulation configuration</value>
   </data>
+  <data name="btn_Hinzu.Text" xml:space="preserve">
+    <value>Add...</value>
+  </data>
+  <data name="groupBox_Tools.Text" xml:space="preserve">
+    <value>Generators &amp;&amp; storage</value>
+  </data>
+  <data name="lblStatus.Text" xml:space="preserve">
+    <value>✔ Configuration saved successfully</value>
+  </data>
 </root>

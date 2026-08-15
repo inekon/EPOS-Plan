@@ -355,7 +355,7 @@ namespace WindowsFormsApplication1
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    if (tool[i] == "Wärmepumpe")
+                    if (tool[i] == DbWerte.ERZEUGER_WAERMEPUMPE)
                     {
                         Ausgang = Simulation_WP_Ctrl(Eingang, Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich), ctrl_konfig.model.m_WP_Heizstab);
      
@@ -374,7 +374,7 @@ namespace WindowsFormsApplication1
                         Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
                         bSimulationWP = true;
                     }
-                    else if (tool[i] == "Heizkessel")
+                    else if (tool[i] == DbWerte.ERZEUGER_HEIZKESSEL)
                     {
                         Ausgang = Simulation_SPK_Ctrl(Eingang, Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich), ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
                         Restwaerme = 0;
@@ -387,7 +387,7 @@ namespace WindowsFormsApplication1
                     
                         bSimulationKessel = true;
                     }
-                    else if (tool[i] == "Solarthermie")
+                    else if (tool[i] == DbWerte.ERZEUGER_SOLARTHERMIE)
                     {
                         Ausgang = Simulation_Solarthermie_Ctrl(Eingang);
 
@@ -398,7 +398,7 @@ namespace WindowsFormsApplication1
 
                         bSimulationSolarthermie = true;
                     }
-                    else if (tool[i] == "BHKW")
+                    else if (tool[i] == DbWerte.ERZEUGER_BHKW)
                     {
                         Ausgang = Simulation_BHKW_Ctrl(Eingang, Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich));
 
@@ -418,7 +418,7 @@ namespace WindowsFormsApplication1
             }
 
             // Photovoltaik abziehen
-            if (tool[4] == "Photovoltaik")
+            if (tool[4] == DbWerte.ERZEUGER_PHOTOVOLTAIK)
             {
                 var x = Rest_Strombedarf_viertelstuendlich.Sum() / 4000;
                 temp = Simulation_Photovoltaik_Ctrl(Rest_Strombedarf_viertelstuendlich);
@@ -427,7 +427,7 @@ namespace WindowsFormsApplication1
             }
 
             // Stromspeicher verrechnen
-            if (tool[5] == "Stromspeicher")
+            if (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER)
             {
                 temp = Simulation_Stromspeicher_Ctrl(Rest_Strombedarf_viertelstuendlich);
                 Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
@@ -509,10 +509,10 @@ namespace WindowsFormsApplication1
             // Ladeaufträge bildet. Die Wärmepumpe ist immer dabei: Sie führt Heizstab,
             // Quellspeicher und Bivalenzpunkt und rechnet seit Etappe 4b ohnehin in
             // dieser Schleife.
-            _wpInSchleife = KaskadeEnthaelt("Wärmepumpe");
-            _solarInSchleife = KaskadeEnthaelt("Solarthermie") &&
+            _wpInSchleife = KaskadeEnthaelt(DbWerte.ERZEUGER_WAERMEPUMPE);
+            _solarInSchleife = KaskadeEnthaelt(DbWerte.ERZEUGER_SOLARTHERMIE) &&
                                ErzeugerMitPufferSenke(ProjektPuffer.TYP_SOLARTHERMIE);
-            _kesselInSchleife = KaskadeEnthaelt("Heizkessel") &&
+            _kesselInSchleife = KaskadeEnthaelt(DbWerte.ERZEUGER_HEIZKESSEL) &&
                                 ErzeugerMitPufferSenke(ProjektPuffer.TYP_KESSEL);
 
             // PAKET 6: Das BHKW ist Kaskadenteilnehmer, sobald es einen Speicher hat -
@@ -522,7 +522,7 @@ namespace WindowsFormsApplication1
             // (Konzept 6.5, zweiter Punkt). Ohne beides hat es keine Speicherbeteiligung
             // und bleibt Vektorstufe an seiner Kaskadenposition - zweikanalig, aber ohne
             // die Phasen A, C, D, E und G.
-            _bhkwInSchleife = KaskadeEnthaelt("BHKW") &&
+            _bhkwInSchleife = KaskadeEnthaelt(DbWerte.ERZEUGER_BHKW) &&
                               (ErzeugerMitPufferSenke(ProjektPuffer.TYP_BHKW) ||
                                VolumenPendelspeicherBHKW > 0);
 
@@ -609,7 +609,7 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                if (tool[i] == "Heizkessel")
+                if (tool[i] == DbWerte.ERZEUGER_HEIZKESSEL)
                 {
                     // Vektorstufe: zweikanalig, aber ohne Speicherbeteiligung.
                     Simulation_SPK_Ctrl_Zweikanalig(kanaele,
@@ -621,14 +621,14 @@ namespace WindowsFormsApplication1
 
                     bSimulationKessel = true;
                 }
-                else if (tool[i] == "Solarthermie")
+                else if (tool[i] == DbWerte.ERZEUGER_SOLARTHERMIE)
                 {
                     // Vektorstufe: zweikanalig, aber ohne Speicherbeteiligung.
                     Simulation_Solarthermie_Ctrl_Zweikanalig(kanaele);
 
                     bSimulationSolarthermie = true;
                 }
-                else if (tool[i] == "BHKW")
+                else if (tool[i] == DbWerte.ERZEUGER_BHKW)
                 {
                     // PAKET 6: Vektorstufe - zweikanalig, aber ohne Speicherbeteiligung.
                     // Der Kompatibilitätsanker Waermekanaele.Uebernehmen ist damit auch
@@ -673,8 +673,8 @@ namespace WindowsFormsApplication1
             int wp = -1, kessel = -1;
             for (int i = 0; i < 4 && i < tool.Length; i++)
             {
-                if (tool[i] == "Wärmepumpe" && wp < 0) wp = i;
-                if (tool[i] == "Heizkessel" && kessel < 0) kessel = i;
+                if (tool[i] == DbWerte.ERZEUGER_WAERMEPUMPE && wp < 0) wp = i;
+                if (tool[i] == DbWerte.ERZEUGER_HEIZKESSEL && kessel < 0) kessel = i;
             }
 
             return wp >= 0 && kessel > wp;
@@ -699,10 +699,10 @@ namespace WindowsFormsApplication1
         {
             if (tool == null || position < 0 || position >= 4 || position >= tool.Length) return false;
 
-            return (tool[position] == "Wärmepumpe" && _wpInSchleife) ||
-                   (tool[position] == "Solarthermie" && _solarInSchleife) ||
-                   (tool[position] == "Heizkessel" && _kesselInSchleife) ||
-                   (tool[position] == "BHKW" && _bhkwInSchleife);
+            return (tool[position] == DbWerte.ERZEUGER_WAERMEPUMPE && _wpInSchleife) ||
+                   (tool[position] == DbWerte.ERZEUGER_SOLARTHERMIE && _solarInSchleife) ||
+                   (tool[position] == DbWerte.ERZEUGER_HEIZKESSEL && _kesselInSchleife) ||
+                   (tool[position] == DbWerte.ERZEUGER_BHKW && _bhkwInSchleife);
         }
 
         /// <summary>
@@ -746,7 +746,7 @@ namespace WindowsFormsApplication1
 
             for (int i = erste + 1; i < letzte; i++)
             {
-                if (tool[i] == "Solarthermie" && !_solarInSchleife)
+                if (tool[i] == DbWerte.ERZEUGER_SOLARTHERMIE && !_solarInSchleife)
                 {
                     _solarInSchleife = true;
                     Console.WriteLine("Kaskade: Die Solarthermie steht zwischen zwei Erzeugern der " +
@@ -754,7 +754,7 @@ namespace WindowsFormsApplication1
                                       "Stundenschleife an ihrer Kaskadenposition mit (Phase B) - " +
                                       "ohne Puffer-Senke als reine Heizkreis-Stufe.");
                 }
-                else if (tool[i] == "Heizkessel" && !_kesselInSchleife)
+                else if (tool[i] == DbWerte.ERZEUGER_HEIZKESSEL && !_kesselInSchleife)
                 {
                     _kesselInSchleife = true;
                     Console.WriteLine("Kaskade: Der Heizkessel steht zwischen zwei Erzeugern der " +
@@ -762,7 +762,7 @@ namespace WindowsFormsApplication1
                                       "Stundenschleife an seiner Kaskadenposition mit (Phase B) - " +
                                       "ohne Puffer-Senke als reine Heizkreis-Stufe.");
                 }
-                else if (tool[i] == "BHKW" && !_bhkwInSchleife)
+                else if (tool[i] == DbWerte.ERZEUGER_BHKW && !_bhkwInSchleife)
                 {
                     // PAKET 6: Seit das BHKW stundenweise rechnen kann, gilt für es
                     // dieselbe Regel wie für Solarthermie und Kessel. Der frühere
@@ -1056,10 +1056,10 @@ namespace WindowsFormsApplication1
 
             for (int i = 0; i < 4 && i < tool.Length; i++)
             {
-                if (tool[i] == "Wärmepumpe" && _wpInSchleife) reihenfolge.Add(ProjektPuffer.TYP_WP);
-                else if (tool[i] == "Solarthermie" && _solarInSchleife) reihenfolge.Add(ProjektPuffer.TYP_SOLARTHERMIE);
-                else if (tool[i] == "Heizkessel" && _kesselInSchleife) reihenfolge.Add(ProjektPuffer.TYP_KESSEL);
-                else if (tool[i] == "BHKW" && _bhkwInSchleife) reihenfolge.Add(ProjektPuffer.TYP_BHKW);
+                if (tool[i] == DbWerte.ERZEUGER_WAERMEPUMPE && _wpInSchleife) reihenfolge.Add(ProjektPuffer.TYP_WP);
+                else if (tool[i] == DbWerte.ERZEUGER_SOLARTHERMIE && _solarInSchleife) reihenfolge.Add(ProjektPuffer.TYP_SOLARTHERMIE);
+                else if (tool[i] == DbWerte.ERZEUGER_HEIZKESSEL && _kesselInSchleife) reihenfolge.Add(ProjektPuffer.TYP_KESSEL);
+                else if (tool[i] == DbWerte.ERZEUGER_BHKW && _bhkwInSchleife) reihenfolge.Add(ProjektPuffer.TYP_BHKW);
             }
 
             return reihenfolge;
@@ -1955,7 +1955,7 @@ namespace WindowsFormsApplication1
             _pspZuordnungen = pspZuordnung;          // N2: für den Ersatz-Pendelspeicher
             for (int n = 0; n < pspZuordnung.rows; n++)
             {
-                if (pspZuordnung.items[n].Erzeuger != "Wärmepumpe") continue;
+                if (pspZuordnung.items[n].Erzeuger != DbWerte.ERZEUGER_WAERMEPUMPE) continue;
 
                 PufferSpCtrl psp = new PufferSpCtrl();
                 psp.ReadAll("ID=" + pspZuordnung.items[n].ID_Pufferspeicher);
@@ -2321,7 +2321,7 @@ namespace WindowsFormsApplication1
             }
             rs.Close();
 
-            if (!pvModus || tool == null || tool.Length < 5 || tool[4] != "Photovoltaik") return null;
+            if (!pvModus || tool == null || tool.Length < 5 || tool[4] != DbWerte.ERZEUGER_PHOTOVOLTAIK) return null;
 
             try
             {

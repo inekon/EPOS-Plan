@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -11,25 +11,25 @@ namespace WindowsFormsApplication1
         public BHKWModel model;
 
         // --- Statische Texte (beibehalten) ---
-        public static string[] BrennstoffartText = { "Öl", "Gas", "Biogas", "Rapsöl", "Holz/Pellet", "Sonstiges", "", "", "Flüssiggas", "", "", "Bioerdgas", "", "", "", "Strom" };
-        public static string[] LeistungText = { "kleiner 20 kW", "20 bis 40 kW", "40 bis 80 kW", "80 bis 200 kW", "200 bis 500 kW", "500 bis 800 kW", "800 bis 1200 kW", "größer 1200 kW" };
+        public static string[] BrennstoffartText = { "Ã–l", "Gas", "Biogas", "RapsÃ¶l", "Holz/Pellet", "Sonstiges", "", "", "FlÃ¼ssiggas", "", "", "Bioerdgas", "", "", "", "Strom" };
+        public static string[] LeistungText = { "kleiner 20 kW", "20 bis 40 kW", "40 bis 80 kW", "80 bis 200 kW", "200 bis 500 kW", "500 bis 800 kW", "800 bis 1200 kW", "grÃ¶ÃŸer 1200 kW" };
         public static string[] LeistungFilterText = { "Ptherm LIKE '%'", "Ptherm<20", "Ptherm>=20 and Ptherm<40", "Ptherm>=40 and Ptherm<80", "Ptherm>=80 and Ptherm<200",
                                                       "Ptherm>=200 and Ptherm<500", "Ptherm>=500 and Ptherm<800", "Ptherm>=800 and Ptherm<1200", "Ptherm>=1200" };
 
-        // --- Kompatibilitäts-Layer nach vereinbarter Schablone ---
+        // --- KompatibilitÃ¤ts-Layer nach vereinbarter Schablone ---
         private List<BHKWModel> _internalList = new List<BHKWModel>();
         private bool _hasSingleData = false;
 
-        // Simuliert die alte 'rows' Variable dynamisch (ohne 'new', da aus Model gelöscht)
+        // Simuliert die alte 'rows' Variable dynamisch (ohne 'new', da aus Model gelÃ¶scht)
         public int rows => _internalList.Count > 0 ? _internalList.Count : (_hasSingleData ? 1 : 0);
 
         // Simuliert das alte 'items' Array als Liste (ohne 'new')
         public List<BHKWModel> items => _internalList;
 
-        // HIER ERGÄNZT: Das OleDbCommand für transaktionale Aufrufe aus dem UI-Code
+        // HIER ERGÃ„NZT: Das OleDbCommand fÃ¼r transaktionale Aufrufe aus dem UI-Code
         public OleDbCommand DBCommand;
 
-        // Stammdaten-Listen (Bleiben erhalten für Dropdowns)
+        // Stammdaten-Listen (Bleiben erhalten fÃ¼r Dropdowns)
         public List<string> Brennstoffart = new List<string>();
         public List<string> Brennstoffart_Gruppe = new List<string>();
 
@@ -132,12 +132,12 @@ namespace WindowsFormsApplication1
                                Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?
                                WHERE Bezeichner=?";
 
-                // Nutzt das instanziierte DBCommand (wichtig für die Transaktion aus der UI)
+                // Nutzt das instanziierte DBCommand (wichtig fÃ¼r die Transaktion aus der UI)
                 DBCommand.CommandText = sql;
                 DBCommand.Parameters.Clear();
 
-                // Beachte: Wenn das Control über InitDatensatzUpdate() befüllt wurde,
-                // müssen wir hier auf das zugewiesene 'model' Objekt zugreifen!
+                // Beachte: Wenn das Control Ã¼ber InitDatensatzUpdate() befÃ¼llt wurde,
+                // mÃ¼ssen wir hier auf das zugewiesene 'model' Objekt zugreifen!
                 DBCommand.Parameters.Add(new OleDbParameter("@besch", model.m_szBeschreibung ?? ""));
                 DBCommand.Parameters.Add(new OleDbParameter("@firma", model.m_szFirma ?? ""));
                 DBCommand.Parameters.Add(new OleDbParameter("@motor", model.m_szMotortyp ?? ""));
@@ -162,7 +162,7 @@ namespace WindowsFormsApplication1
                 DBCommand.Parameters.Add(new OleDbParameter("@abgas", model.m_Kosten_Abgasreinigung));
                 DBCommand.Parameters.Add(new OleDbParameter("@key", model.m_szBezeichner ?? ""));
 
-                // Falls das Command noch keine Connection von außen hat, holen wir eine kurze Standalone-Verbindung
+                // Falls das Command noch keine Connection von auÃŸen hat, holen wir eine kurze Standalone-Verbindung
                 bool connectionOpenedInternally = false;
                 if (DBCommand.Connection == null)
                 {
@@ -173,7 +173,7 @@ namespace WindowsFormsApplication1
 
                 DBCommand.ExecuteNonQuery();
 
-                // Wenn wir die Verbindung intern geöffnet haben, schließen wir sie auch wieder sauber
+                // Wenn wir die Verbindung intern geÃ¶ffnet haben, schlieÃŸen wir sie auch wieder sauber
                 if (connectionOpenedInternally)
                 {
                     DBCommand.Connection.Close();
@@ -223,9 +223,9 @@ namespace WindowsFormsApplication1
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
-                    // NACHARBEIT PAKET 8, BEFUND N10: über dieselbe Entscheidungsstelle
+                    // NACHARBEIT PAKET 8, BEFUND N10: Ã¼ber dieselbe Entscheidungsstelle
                     // wie PufferSpCtrl.CopyFromStamm - im Engine-Modus Protokolleintrag,
-                    // sonst der Dialog mit unverändertem Wortlaut. BHKWCtrl wird aus
+                    // sonst der Dialog mit unverÃ¤ndertem Wortlaut. BHKWCtrl wird aus
                     // SimulationBHKW heraus benutzt, der Pfad ist also erreichbar.
                     DataRepository.FehlerMelden("Der Stammdatensatz wurde nicht gefunden (ID " + stammId + ").");
                     return -1;
@@ -246,7 +246,7 @@ namespace WindowsFormsApplication1
 
                 // 4. Datensatz in die Projekt-Tabelle kopieren, ID_Projekt setzen.
                 //    Spalten, die in beiden Tabellen existieren, werden 1:1 uebernommen
-                //    (inkl. Vorlauf/Rücklauf). ReadOnly wird NICHT uebernommen.
+                //    (inkl. Vorlauf/RÃ¼cklauf). ReadOnly wird NICHT uebernommen.
                 string sql = @"INSERT INTO Tab_BHKW
                     (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Ptherm, Pel, Brennstoff,
                      Wirkungsgrad, Investition_kwel, Raumbedarf, Wartungskosten_kwhel, Nutzungsdauer,

@@ -175,4 +175,1681 @@
     <value>Stromspeicher</value>
     <comment>Stromspeicher</comment>
   </data>
+  <data name="CHART_ACHSE_ENERGIEBEDARF_DECKUNG" xml:space="preserve">
+    <value>Energie-Bedarf &amp; Deckung (kWh)</value>
+  </data>
+  <data name="CHART_ACHSE_JAHRESSTUNDEN" xml:space="preserve">
+    <value>Jahresstunden</value>
+  </data>
+  <data name="CHART_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="CHART_ACHSE_LEISTUNG_SPEICHERINHALT" xml:space="preserve">
+    <value>Leistung [kW] / Speicherinhalt [kWh]</value>
+  </data>
+  <data name="CHART_ACHSE_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="CHART_ACHSE_MONATE" xml:space="preserve">
+    <value>Monate</value>
+  </data>
+  <data name="CHART_ACHSE_QUELLTEMPERATUR" xml:space="preserve">
+    <value>Quelltemperatur [°C]</value>
+  </data>
+  <data name="CHART_ACHSE_SPEICHER_KWH" xml:space="preserve">
+    <value>Speicher [kWh]</value>
+  </data>
+  <data name="CHART_ACHSE_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf</value>
+  </data>
+  <data name="CHART_ACHSE_TEMPERATUR" xml:space="preserve">
+    <value>Temperatur [°C]</value>
+  </data>
+  <data name="CHART_ACHSE_WAERMEBEDARF_KWH" xml:space="preserve">
+    <value>Wärmebedarf [kWh]</value>
+  </data>
+  <data name="CHART_ACHSE_WAERMELAST" xml:space="preserve">
+    <value>Wärmelast</value>
+  </data>
+  <data name="CHART_CSV_BHKW" xml:space="preserve">
+    <value>BHKW [kW]</value>
+  </data>
+  <data name="CHART_CSV_GESAMT" xml:space="preserve">
+    <value>Gesamt [kW]</value>
+  </data>
+  <data name="CHART_CSV_HEIZKESSEL" xml:space="preserve">
+    <value>Heizkessel [kW]</value>
+  </data>
+  <data name="CHART_CSV_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab [kW]</value>
+  </data>
+  <data name="CHART_CSV_PROFIL_LASTGANG" xml:space="preserve">
+    <value>Profil/Lastgang [kW]</value>
+  </data>
+  <data name="CHART_CSV_PV" xml:space="preserve">
+    <value>PV [kW]</value>
+  </data>
+  <data name="CHART_CSV_SOLARTHERMIE" xml:space="preserve">
+    <value>Solarthermie [kW]</value>
+  </data>
+  <data name="CHART_CSV_SPEICHER_ENTLADUNG" xml:space="preserve">
+    <value>{0} Entladung [kWh]</value>
+  </data>
+  <data name="CHART_CSV_SPEICHER_INHALT" xml:space="preserve">
+    <value>{0} Speicherinhalt [kWh]</value>
+  </data>
+  <data name="CHART_CSV_SPEICHER_LADUNG" xml:space="preserve">
+    <value>{0} Ladung [kWh]</value>
+  </data>
+  <data name="CHART_CSV_SPEICHERFUELLSTAND" xml:space="preserve">
+    <value>Speicherfüllstand {0} [kWh]</value>
+  </data>
+  <data name="CHART_CSV_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf [kW]</value>
+  </data>
+  <data name="CHART_CSV_STROMBEDARF_WP" xml:space="preserve">
+    <value>Strombedarf WP [kW]</value>
+  </data>
+  <data name="CHART_CSV_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarf [kW]</value>
+  </data>
+  <data name="CHART_CSV_WAERMELAST" xml:space="preserve">
+    <value>Wärmelast [kW]</value>
+  </data>
+  <data name="CHART_CSV_WAERMEPRODUKTION_WP" xml:space="preserve">
+    <value>Wärmeproduktion WP [kW]</value>
+  </data>
+  <data name="CHART_CSV_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpe [kW]</value>
+  </data>
+  <data name="CHART_DATEI_ENERGIEBEDARF" xml:space="preserve">
+    <value>Energiebedarf_Projekt_{0}.csv</value>
+  </data>
+  <data name="CHART_DATEI_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf.csv</value>
+  </data>
+  <data name="CHART_DATEI_WAERMEPRODUKTION" xml:space="preserve">
+    <value>Waermeproduktion.csv</value>
+  </data>
+  <data name="CHART_DATEI_WAERMEPUMPE" xml:space="preserve">
+    <value>Waermepumpe_Projekt_{0}.csv</value>
+  </data>
+  <data name="CHART_KACHEL_STROMBEDARFSDECKUNG" xml:space="preserve">
+    <value>Strombedarfsdeckung [%]</value>
+  </data>
+  <data name="CHART_KACHEL_WAERMEBEDARFSDECKUNG" xml:space="preserve">
+    <value>Wärmebedarfsdeckung [%]</value>
+  </data>
+  <data name="CHART_LEGENDE_AUTARKIELUECKE" xml:space="preserve">
+    <value>Autarkie-Lücke (Netz)</value>
+  </data>
+  <data name="CHART_LEGENDE_EIGENVERBRAUCH_DIREKT" xml:space="preserve">
+    <value>Eigenverbrauch (Direkt)</value>
+  </data>
+  <data name="CHART_LEGENDE_EIGENVERBRAUCH_SPEICHER" xml:space="preserve">
+    <value>Eigenverbrauch (Speicher)</value>
+  </data>
+  <data name="CHART_LEGENDE_WAERMEBEDARFSDECKUNG" xml:space="preserve">
+    <value>Wärmebedarfsdeckung</value>
+  </data>
+  <data name="CHART_SEGMENT_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab</value>
+  </data>
+  <data name="CHART_SEGMENT_REST" xml:space="preserve">
+    <value>Rest</value>
+  </data>
+  <data name="CHART_SEGMENT_RESTSTROM" xml:space="preserve">
+    <value>Reststrom</value>
+  </data>
+  <data name="CHART_SEGMENT_RESTWAERME" xml:space="preserve">
+    <value>Restwärme</value>
+  </data>
+  <data name="CHART_SEGMENT_SPITZENKESSEL" xml:space="preserve">
+    <value>Spitzenkessel</value>
+  </data>
+  <data name="CHART_SERIE_AUSSENTEMPERATUR" xml:space="preserve">
+    <value>Außentemperatur</value>
+  </data>
+  <data name="CHART_SERIE_QUELLTEMPERATUR" xml:space="preserve">
+    <value>Quelltemperatur</value>
+  </data>
+  <data name="CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR" xml:space="preserve">
+    <value>Leistung über Außentemperatur</value>
+  </data>
+  <data name="CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Strombedarf Jahresganglinie</value>
+  </data>
+  <data name="CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Strombedarf, Photovoltaik Jahresganglinie</value>
+  </data>
+  <data name="CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Strombedarf, Stromverbrauch Jahresganglinie</value>
+  </data>
+  <data name="CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Wärmelast Jahresganglinie</value>
+  </data>
+  <data name="CHART_TITEL_WAERMEPRODUKTION_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Wärmeproduktion Jahresganglinie</value>
+  </data>
+  <data name="PSP_ANZEIGE_QMAX" xml:space="preserve">
+    <value>→  Q_max {0} kWh</value>
+  </data>
+  <data name="PSP_AUSWAHL_ALLE_SPEICHER" xml:space="preserve">
+    <value>Alle Speicher</value>
+  </data>
+  <data name="PSP_BEZEICHNER_ERSATZ" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="PSP_BTN_ANLEGEN" xml:space="preserve">
+    <value>Anlegen</value>
+  </data>
+  <data name="PSP_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="PSP_BTN_KATALOG_ANSEHEN" xml:space="preserve">
+    <value>Katalog ansehen…</value>
+  </data>
+  <data name="PSP_BTN_NEUER_PUFFERSPEICHER" xml:space="preserve">
+    <value>Neuer Pufferspeicher</value>
+  </data>
+  <data name="PSP_BTN_PUFFER_ANLEGEN" xml:space="preserve">
+    <value>Pufferspeicher anlegen…</value>
+  </data>
+  <data name="PSP_BTN_PUFFER_VERWALTEN" xml:space="preserve">
+    <value>Pufferspeicher anlegen / verwalten…</value>
+  </data>
+  <data name="PSP_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="PSP_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="PSP_CHECKBOX_SPEICHERFUELLSTAND" xml:space="preserve">
+    <value>Speicherfüllstand</value>
+  </data>
+  <data name="PSP_ENTLADE_POSITION" xml:space="preserve">
+    <value>Wird als {0}. von {1} {2} entladen.</value>
+  </data>
+  <data name="PSP_FEHLER_BEZEICHNER_FEHLT" xml:space="preserve">
+    <value>Bitte einen Bezeichner eintragen oder einen Katalogeintrag wählen.</value>
+  </data>
+  <data name="PSP_FEHLER_EIN_KLEINER_AUS" xml:space="preserve">
+    <value>Die Einschaltschwelle muss kleiner als die Abschaltschwelle sein.</value>
+  </data>
+  <data name="PSP_FEHLER_NACHRANG_UEBER_AUS" xml:space="preserve">
+    <value>Die Abschaltschwelle für nachrangige Erzeuger darf die Abschaltschwelle nicht überschreiten - sie ist die Reservezone für den Vorrang (Konzept 3.4).</value>
+  </data>
+  <data name="PSP_FEHLER_NACHRANG_UNTER_EIN" xml:space="preserve">
+    <value>Die Abschaltschwelle für nachrangige Erzeuger muss über der Einschaltschwelle liegen.</value>
+  </data>
+  <data name="PSP_FEHLER_SCHWELLE_BEREICH" xml:space="preserve">
+    <value>Die {0} muss zwischen 0 und 100 % liegen.</value>
+  </data>
+  <data name="PSP_FEHLER_SCHWELLE_ZAHL" xml:space="preserve">
+    <value>Die {0} muss eine Zahl sein [%].</value>
+  </data>
+  <data name="PSP_FEHLER_VERLUSTE" xml:space="preserve">
+    <value>Die Bereitschaftsverluste müssen eine Zahl ≥ 0 sein [kWh/24h].</value>
+  </data>
+  <data name="PSP_FEHLER_VERWENDUNG_PFLICHT" xml:space="preserve">
+    <value>Die Verwendung ist ein Pflichtfeld: Heizung oder Brauchwasser (Konzept 5.1).</value>
+  </data>
+  <data name="PSP_FEHLER_VOLUMEN" xml:space="preserve">
+    <value>Bitte ein Gesamtvolumen in Litern eintragen (ganze Zahl größer 0).</value>
+  </data>
+  <data name="PSP_FILTER_100_BIS_200L" xml:space="preserve">
+    <value>&gt;100 bis 200 l</value>
+  </data>
+  <data name="PSP_FILTER_200_BIS_500L" xml:space="preserve">
+    <value>&gt;200 bis 500 l</value>
+  </data>
+  <data name="PSP_FILTER_500_BIS_1000L" xml:space="preserve">
+    <value>&gt;500 bis 1.000 l</value>
+  </data>
+  <data name="PSP_FILTER_ALLE" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="PSP_FILTER_BIS_100L" xml:space="preserve">
+    <value>bis 100 l</value>
+  </data>
+  <data name="PSP_FILTER_UEBER_1000L" xml:space="preserve">
+    <value>über 1.000 l</value>
+  </data>
+  <data name="PSP_FUSSZEILE_KEINER" xml:space="preserve">
+    <value>Pufferspeicher im Projekt: keiner angelegt</value>
+  </data>
+  <data name="PSP_FUSSZEILE_LISTE" xml:space="preserve">
+    <value>Pufferspeicher im Projekt:  {0}</value>
+  </data>
+  <data name="PSP_FUSSZEILE_OHNE_PROJEKT" xml:space="preserve">
+    <value>Pufferspeicher im Projekt: -</value>
+  </data>
+  <data name="PSP_GRUPPE_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Eigenschaften</value>
+  </data>
+  <data name="PSP_GRUPPE_LADEREIHENFOLGE" xml:space="preserve">
+    <value>Ladereihenfolge dieses Speichers (aus den Erzeugerzuordnungen)</value>
+  </data>
+  <data name="PSP_KANALWORT_BRAUCHWASSERSPEICHER" xml:space="preserve">
+    <value>Brauchwasserspeicher</value>
+  </data>
+  <data name="PSP_KANALWORT_BRAUCHWASSERSPEICHER_PLURAL" xml:space="preserve">
+    <value>Brauchwasserspeichern</value>
+  </data>
+  <data name="PSP_KANALWORT_HEIZUNGSSPEICHER" xml:space="preserve">
+    <value>Heizungsspeicher</value>
+  </data>
+  <data name="PSP_KANALWORT_HEIZUNGSSPEICHER_PLURAL" xml:space="preserve">
+    <value>Heizungsspeichern</value>
+  </data>
+  <data name="PSP_KATALOG_FREIE_EINGABE" xml:space="preserve">
+    <value>(freie Eingabe)</value>
+  </data>
+  <data name="PSP_LABEL_ABSCHALTSCHWELLE" xml:space="preserve">
+    <value>Abschaltschwelle [%]:</value>
+  </data>
+  <data name="PSP_LABEL_AUS_KATALOG" xml:space="preserve">
+    <value>Aus Katalog:</value>
+  </data>
+  <data name="PSP_LABEL_BEREITSCHAFTSVERLUSTE" xml:space="preserve">
+    <value>Bereitschaftsverl. [kWh/24h]:</value>
+  </data>
+  <data name="PSP_LABEL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichner:</value>
+  </data>
+  <data name="PSP_LABEL_EINSCHALTSCHWELLE" xml:space="preserve">
+    <value>Einschaltschwelle [%]:</value>
+  </data>
+  <data name="PSP_LABEL_ENTLADEPRIORITAET" xml:space="preserve">
+    <value>Entladepriorität:</value>
+  </data>
+  <data name="PSP_LABEL_GESAMTVOLUMEN" xml:space="preserve">
+    <value>Gesamtvolumen [l]:</value>
+  </data>
+  <data name="PSP_LABEL_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf [°C]:</value>
+  </data>
+  <data name="PSP_LABEL_SCHWELLE_NACHRANGIG" xml:space="preserve">
+    <value>… nachrangig [%]:</value>
+  </data>
+  <data name="PSP_LABEL_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung:</value>
+  </data>
+  <data name="PSP_LABEL_VOLUMEN_PENDELSPEICHER" xml:space="preserve">
+    <value>Volumen Pendelspeicher [l]</value>
+  </data>
+  <data name="PSP_LABEL_VORLAUF" xml:space="preserve">
+    <value>Vorlauf [°C]:</value>
+  </data>
+  <data name="PSP_LADEN_KEINE_ANLAGE" xml:space="preserve">
+    <value>(keine Anlage lädt diesen Speicher)</value>
+  </data>
+  <data name="PSP_LADEN_NOCH_NICHT_ANGELEGT" xml:space="preserve">
+    <value>(der Speicher ist noch nicht angelegt)</value>
+  </data>
+  <data name="PSP_LADEPRIO_MANUELL" xml:space="preserve">
+    <value>{0} (manuell)</value>
+  </data>
+  <data name="PSP_LISTE_EINTRAG" xml:space="preserve">
+    <value>{0}  -  {1}, {2} l</value>
+  </data>
+  <data name="PSP_LISTE_VERWENDUNG_FEHLT" xml:space="preserve">
+    <value>  (Verwendung nicht gepflegt)</value>
+  </data>
+  <data name="PSP_MELDUNG_AENDERN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Der Pufferspeicher konnte nicht geändert werden.</value>
+  </data>
+  <data name="PSP_MELDUNG_ANLEGEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Der Pufferspeicher konnte nicht angelegt werden.</value>
+  </data>
+  <data name="PSP_MELDUNG_BEZEICHNER_UNGUELTIG" xml:space="preserve">
+    <value>Bitte einen gültigen Bezeichner eingeben!</value>
+  </data>
+  <data name="PSP_MELDUNG_DATEN_BEREITS_EINGELESEN" xml:space="preserve">
+    <value>Daten bereits eingelesen!</value>
+  </data>
+  <data name="PSP_MELDUNG_DATENSATZ_GESPEICHERT" xml:space="preserve">
+    <value>Datensatz gespeichert</value>
+  </data>
+  <data name="PSP_MELDUNG_ENTFERNEN_BESTAETIGEN" xml:space="preserve">
+    <value>Den Pufferspeicher „{0}" aus dem Projekt entfernen?
+Die Anlagenzeile im Projektbaum wird mit entfernt.</value>
+  </data>
+  <data name="PSP_MELDUNG_ENTFERNEN_BLOCKIERT" xml:space="preserve">
+    <value>Der Pufferspeicher „{0}" kann nicht entfernt werden - er ist noch zugeordnet:
+
+  • {1}
+
+Bitte zuerst die Wärmequelle bzw. Wärmesenke dieser Anlagen ändern.</value>
+  </data>
+  <data name="PSP_MELDUNG_ENTFERNEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Der Pufferspeicher konnte nicht entfernt werden.</value>
+  </data>
+  <data name="PSP_MELDUNG_FEHLER_AUFGETRETEN" xml:space="preserve">
+    <value>Ein Fehler ist aufgetreten: {0}</value>
+  </data>
+  <data name="PSP_MELDUNG_KATALOG_LOESCHEN" xml:space="preserve">
+    <value>Der Pufferspeicher '{0}' wird aus dem Katalog
+(Stammdaten) gelöscht und steht danach in keinem Projekt mehr zur Auswahl.
+
+Wirklich aus den Stammdaten löschen?</value>
+  </data>
+  <data name="PSP_MELDUNG_MODUL_WAEHLEN" xml:space="preserve">
+    <value>Bitte ein Modul auswählen!</value>
+  </data>
+  <data name="PSP_MELDUNG_NAME_EXISTIERT" xml:space="preserve">
+    <value>Name existiert bereits!</value>
+  </data>
+  <data name="PSP_MELDUNG_PUFFER_SELEKTIEREN" xml:space="preserve">
+    <value>Bitte einen Pufferspeicher selektieren!</value>
+  </data>
+  <data name="PSP_MELDUNG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Fehler beim Speichern des Datensatzes!</value>
+  </data>
+  <data name="PSP_MELDUNG_VERWENDUNGSWECHSEL" xml:space="preserve">
+    <value>Die Verwendung des Pufferspeichers „{0}" wird von „{1}" auf „{2}" umgestellt.
+
+Der Speicher ist zugeordnet:
+  • {3}
+
+Diese Zuordnungen passen danach nicht mehr zur Verwendung und müssen im Wärmesenken-Dialog neu gesetzt werden.
+Verwendung trotzdem ändern?</value>
+  </data>
+  <data name="PSP_MELDUNG_WIRKLICH_LOESCHEN" xml:space="preserve">
+    <value>Soll {0} wirklich gelöscht werden ?</value>
+  </data>
+  <data name="PSP_MSG_SCHWELLEN_BEREICH" xml:space="preserve">
+    <value>Die Werte müssen zwischen 0 und 100 % liegen und
+die Einschaltschwelle muss kleiner als die Abschaltschwelle sein!</value>
+  </data>
+  <data name="PSP_MSG_WP_OHNE_SPEICHER" xml:space="preserve">
+    <value>Der Wärmepumpe ist kein Pufferspeicher zugeordnet.
+Die Zuordnung erfolgt in der Tabelle 'Pufferspeicher Zuordnung'.</value>
+  </data>
+  <data name="PSP_MSG_ZAHLENWERTE" xml:space="preserve">
+    <value>Bitte gültige Zahlenwerte eintragen!</value>
+  </data>
+  <data name="PSP_NAME_ABSCHALTSCHWELLE" xml:space="preserve">
+    <value>Abschaltschwelle</value>
+  </data>
+  <data name="PSP_NAME_ABSCHALTSCHWELLE_NACHRANG" xml:space="preserve">
+    <value>Abschaltschwelle für nachrangige Erzeuger</value>
+  </data>
+  <data name="PSP_NAME_EINSCHALTSCHWELLE" xml:space="preserve">
+    <value>Einschaltschwelle</value>
+  </data>
+  <data name="PSP_OBERGRENZE_EIGEN" xml:space="preserve">
+    <value>{0} % (eigene)</value>
+  </data>
+  <data name="PSP_PRIO_AUTOMATISCH" xml:space="preserve">
+    <value>automatisch</value>
+  </data>
+  <data name="PSP_PRIO_AUTOMATISCH_WERT" xml:space="preserve">
+    <value>automatisch ({0})</value>
+  </data>
+  <data name="PSP_PROJEKT_FENSTERTITEL" xml:space="preserve">
+    <value>Pufferspeicher im Projekt</value>
+  </data>
+  <data name="PSP_ROLLE_QUELLSPEICHER" xml:space="preserve">
+    <value>Quellspeicher</value>
+  </data>
+  <data name="PSP_ROLLE_SENKENSPEICHER" xml:space="preserve">
+    <value>Senkenspeicher</value>
+  </data>
+  <data name="PSP_RUBRIK_LABEL" xml:space="preserve">
+    <value>Pufferspeicher:</value>
+  </data>
+  <data name="PSP_SPALTE_ENTLADUNG" xml:space="preserve">
+    <value>Entladung [kWh/a]</value>
+  </data>
+  <data name="PSP_SPALTE_FUELLSTAND_ENDE" xml:space="preserve">
+    <value>Füllstand Ende [kWh]</value>
+  </data>
+  <data name="PSP_SPALTE_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität [kWh]</value>
+  </data>
+  <data name="PSP_SPALTE_LADEPRIO" xml:space="preserve">
+    <value>Ladeprio</value>
+  </data>
+  <data name="PSP_SPALTE_LADUNG" xml:space="preserve">
+    <value>Ladung [kWh/a]</value>
+  </data>
+  <data name="PSP_SPALTE_LAEDT_BIS" xml:space="preserve">
+    <value>lädt bis</value>
+  </data>
+  <data name="PSP_SPALTE_ROLLE" xml:space="preserve">
+    <value>Rolle</value>
+  </data>
+  <data name="PSP_SPALTE_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf [°C]</value>
+  </data>
+  <data name="PSP_SPALTE_VERLUSTE" xml:space="preserve">
+    <value>Verluste [kWh/a]</value>
+  </data>
+  <data name="PSP_SPALTE_VOLLZYKLEN" xml:space="preserve">
+    <value>Vollzyklen</value>
+  </data>
+  <data name="PSP_SPALTE_VORLAUF" xml:space="preserve">
+    <value>Vorlauf [°C]</value>
+  </data>
+  <data name="PSP_SPALTE_WAERMEERZEUGER" xml:space="preserve">
+    <value>Wärmeerzeuger</value>
+  </data>
+  <data name="PSP_SPALTE_ZUORDNUNG_ALT" xml:space="preserve">
+    <value>Zuordnung (alt)</value>
+  </data>
+  <data name="PSP_SPEICHERREGELUNG_ABSCHALT" xml:space="preserve">
+    <value>Abschaltschwelle [% der Kapazität]:</value>
+  </data>
+  <data name="PSP_SPEICHERREGELUNG_EINSCHALT" xml:space="preserve">
+    <value>Einschaltschwelle [% der Kapazität]:</value>
+  </data>
+  <data name="PSP_SPEICHERREGELUNG_FENSTERTITEL" xml:space="preserve">
+    <value>Speicherregelung - {0}</value>
+  </data>
+  <data name="PSP_SPEICHERREGELUNG_HINWEIS" xml:space="preserve">
+    <value>Unterschreitet der Speicherfüllstand die Einschaltschwelle, läuft die Wärmepumpe an und lädt bis zur Abschaltschwelle durch. Dazwischen bleibt sie aus und der Bedarf wird aus dem Speicher gedeckt.
+
+Die Abschaltschwelle sollte unter 100 % liegen, da die Bereitschaftsverluste den Füllstand laufend absenken.</value>
+  </data>
+  <data name="PSP_SPEICHERREGELUNG_KOPF" xml:space="preserve">
+    <value>Ein- und Abschaltschwelle des Pufferspeichers</value>
+  </data>
+  <data name="PSP_STATUS_AENDERUNGEN_UEBERNOMMEN" xml:space="preserve">
+    <value>Änderungen übernommen.</value>
+  </data>
+  <data name="PSP_STATUS_ANGELEGT" xml:space="preserve">
+    <value>Pufferspeicher angelegt.</value>
+  </data>
+  <data name="PSP_STATUS_ENTFERNT" xml:space="preserve">
+    <value>Pufferspeicher entfernt.</value>
+  </data>
+  <data name="PSP_STATUS_SPEICHERREGELUNG_GESPEICHERT" xml:space="preserve">
+    <value>✔ Speicherregelung gespeichert ({0} % / {1} %)</value>
+  </data>
+  <data name="PSP_STATUS_ZUORDNUNG_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>⚠ {0} Pufferspeicher-Zuordnung(en) konnten nicht gespeichert werden</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_ALTMODELL" xml:space="preserve">
+    <value>Zuordnung im Altmodell (Doppelklick öffnet die Speicherregelung)
+Diese Spalte zeigt die Zuordnung aus Z_ProjektPufferSp, die die
+Simulation bis zur Umstellung der Engine noch auswertet. Sie wird
+aus der Wärmesenke der Wärmepumpe automatisch nachgeführt.
+Ein- und Abschaltschwelle in % der nutzbaren Kapazität.</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_ERZEUGER" xml:space="preserve">
+    <value>Wärmeerzeuger, dem dieser Pufferspeicher zugeordnet ist.
+Zuordnungen werden über 'Hinzufügen...' angelegt und über
+'Löschen' entfernt.</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauftemperatur [°C] (Doppelklick zum Ändern)
+Untere Temperatur des Speichers. Je größer die Spreizung zum
+Vorlauf, desto mehr Energie kann der Speicher aufnehmen.</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_SPEICHER" xml:space="preserve">
+    <value>Pufferspeicher (Doppelklick zum Ändern)
+Auswahl aus den Stammdaten. Volumen und Bereitschaftsverluste
+stammen aus dem Speicher-Datensatz und bestimmen zusammen mit
+Vor- und Rücklauf die nutzbare Kapazität.</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_STAMMDATEN" xml:space="preserve">
+    <value>Doppelklick öffnet die Pufferspeicher-Stammdaten (nur Ansicht).</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_STANDARD" xml:space="preserve">
+    <value>Pufferspeicher-Zuordnung: Doppelklick auf Pufferspeicher,
+Vorlauf oder Rücklauf zum Bearbeiten.</value>
+  </data>
+  <data name="PSP_TIP_ZUORDNUNG_VORLAUF" xml:space="preserve">
+    <value>Vorlauftemperatur [°C] (Doppelklick zum Ändern)
+Obere Temperatur des Speichers. Die nutzbare Kapazität ergibt
+sich aus: Volumen × 1,16 Wh/(l·K) × (Vorlauf − Rücklauf).</value>
+  </data>
+  <data name="PSP_TITEL_KATALOG_LOESCHUNG" xml:space="preserve">
+    <value>Katalog-Löschung</value>
+  </data>
+  <data name="PSP_TITEL_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="PSP_TITEL_PUFFER_ENTFERNEN" xml:space="preserve">
+    <value>Pufferspeicher entfernen</value>
+  </data>
+  <data name="PSP_TITEL_SPEICHERREGELUNG" xml:space="preserve">
+    <value>Speicherregelung</value>
+  </data>
+  <data name="PSP_TITEL_TEMPERATUR_PRUEFEN" xml:space="preserve">
+    <value>Temperatur prüfen</value>
+  </data>
+  <data name="PSP_TITEL_VERWENDUNG_AENDERN" xml:space="preserve">
+    <value>Verwendung ändern</value>
+  </data>
+  <data name="PSP_TITEL_ZUORDNUNG" xml:space="preserve">
+    <value>Pufferspeicher-Zuordnung</value>
+  </data>
+  <data name="PSP_VERWENDUNG_BRAUCHWASSER_ANZEIGE" xml:space="preserve">
+    <value>Brauchwasser</value>
+  </data>
+  <data name="PSP_VERWENDUNG_HEIZUNG_ANZEIGE" xml:space="preserve">
+    <value>Heizung</value>
+  </data>
+  <data name="SIM_ANZEIGE_CO2_ERSPARNIS" xml:space="preserve">
+    <value>{0} kg CO2 / Jahr gespart</value>
+  </data>
+  <data name="SIM_ANZEIGE_NICHT_BENOETIGT" xml:space="preserve">
+    <value>nicht benötigt</value>
+  </data>
+  <data name="SIM_ANZEIGE_SPEICHERNUTZEN" xml:space="preserve">
+    <value>Speichernutzen: {0} kWh/Jahr</value>
+  </data>
+  <data name="SIM_ANZEIGE_THERM_NUTZUNGSGRAD" xml:space="preserve">
+    <value>Therm. Nutzungsgrad: {0} %</value>
+  </data>
+  <data name="SIM_BEDARF_BEIDES" xml:space="preserve">
+    <value>Beides (Warmwasser zuerst)</value>
+  </data>
+  <data name="SIM_BEDARF_HEIZWAERME" xml:space="preserve">
+    <value>nur Heizwärme</value>
+  </data>
+  <data name="SIM_BEDARF_WARMWASSER" xml:space="preserve">
+    <value>nur Warmwasser</value>
+  </data>
+  <data name="SIM_BETRIEBSART_OHNE_EINSPEISUNG" xml:space="preserve">
+    <value>Ohne Einspeisung (Zero-Export)</value>
+  </data>
+  <data name="SIM_BETRIEBSART_STROMGEFUEHRT" xml:space="preserve">
+    <value>Stromgeführt (Wirtschaftlich)</value>
+  </data>
+  <data name="SIM_BETRIEBSART_WAERMEGEFUEHRT" xml:space="preserve">
+    <value>Wärmegeführt (Standard)</value>
+  </data>
+  <data name="SIM_BETRIEBSMODUS_FENSTERTITEL" xml:space="preserve">
+    <value>Betriebsmodus - {0}</value>
+  </data>
+  <data name="SIM_BETRIEBSMODUS_KOPF" xml:space="preserve">
+    <value>Leistungssteuerung der Wärmepumpe:</value>
+  </data>
+  <data name="SIM_BHKW_MODUL_STANDARD" xml:space="preserve">
+    <value>Standard BHKW</value>
+  </data>
+  <data name="SIM_BM_RB_LAUFZEIT" xml:space="preserve">
+    <value>Laufzeitoptimiert - maximale Leistung</value>
+  </data>
+  <data name="SIM_BM_RB_LEISTUNG" xml:space="preserve">
+    <value>Leistungsoptimiert - nur den Bedarf decken</value>
+  </data>
+  <data name="SIM_BM_RB_PV" xml:space="preserve">
+    <value>PV-optimiert - Überschuss nur mit PV-Strom</value>
+  </data>
+  <data name="SIM_BM_TEXT_LAUFZEIT" xml:space="preserve">
+    <value>Die Wärmepumpe fährt volle Leistung; die über den Bedarf hinaus
+erzeugte Wärme lädt den Pufferspeicher. Lange Laufzeiten, wenig Takten.</value>
+  </data>
+  <data name="SIM_BM_TEXT_LEISTUNG" xml:space="preserve">
+    <value>Die Wärmepumpe moduliert exakt auf den Wärmebedarf und erzeugt
+keinen Überschuss. Der Speicher wird nicht gezielt beladen.</value>
+  </data>
+  <data name="SIM_BM_TEXT_PV" xml:space="preserve">
+    <value>Bei verfügbarem PV-Strom fährt die Wärmepumpe erhöhte Leistung
+(begrenzt auf den PV-Überschuss) und lädt den Speicher; sonst
+arbeitet sie leistungsoptimiert.</value>
+  </data>
+  <data name="SIM_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="SIM_BTN_CSV_EXPORT" xml:space="preserve">
+    <value>CSV Export</value>
+  </data>
+  <data name="SIM_BTN_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="SIM_CHK_LADEGRENZE" xml:space="preserve">
+    <value>eigene Ladeobergrenze:</value>
+  </data>
+  <data name="SIM_CHK_LADEGRENZE2" xml:space="preserve">
+    <value>Ladeobergrenze:</value>
+  </data>
+  <data name="SIM_CHK_ZWEITSENKE" xml:space="preserve">
+    <value>Zweitsenke (nimmt nur Überschuss bzw. verbleibendes Ladepotenzial auf)</value>
+  </data>
+  <data name="SIM_ENTLADEEINTRAG_AUTOMATISCH" xml:space="preserve">
+    <value>{0} (Prio {1}, automatisch)</value>
+  </data>
+  <data name="SIM_ENTLADEEINTRAG_MANUELL" xml:space="preserve">
+    <value>{0} (Prio {1}, manuell)</value>
+  </data>
+  <data name="SIM_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="SIM_ERZEUGERNAME_ALLGEMEIN" xml:space="preserve">
+    <value>Erzeuger</value>
+  </data>
+  <data name="SIM_ERZEUGERNAME_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="SIM_ERZEUGERNAME_HEIZKESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="SIM_ERZEUGERNAME_SOLARTHERMIE" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="SIM_ERZEUGERNAME_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="SIM_EXTRAPOLATION_SCHALTER" xml:space="preserve">
+    <value>Extrapolation der WP-Kennlinie erlauben</value>
+  </data>
+  <data name="SIM_EXTRAPOLATION_TOOLTIP" xml:space="preserve">
+    <value>Unterschreitet die Quelltemperatur die niedrigste Stützstelle der
+Wärmepumpen-Kennlinie, wird die Kennlinie linear verlängert.
+
+Mit Haken (Vorbelegung): Es wird extrapoliert, und der Lauf vermerkt das
+als Hinweis. Das entspricht genau dem bisherigen Verhalten - die Engine
+hat bis Paket 8 an dieser Stelle nachgefragt.
+
+Ohne Haken: Die Simulation bricht ab und nennt die betroffene Anlage.
+Sinnvoll, wenn extrapolierte Kennwerte nicht in ein Ergebnis einfließen
+sollen; die Kennlinie ist dann um tiefere Stützstellen zu ergänzen.</value>
+  </data>
+  <data name="SIM_GB_LADEVERHALTEN" xml:space="preserve">
+    <value>Ladeverhalten am Pufferspeicher</value>
+  </data>
+  <data name="SIM_HEIZKREIS" xml:space="preserve">
+    <value>Heizkreis</value>
+  </data>
+  <data name="SIM_HEIZKREIS_BEIDES" xml:space="preserve">
+    <value>Heizkreis (beides)</value>
+  </data>
+  <data name="SIM_HEIZKREIS_NUR_HEIZWAERME" xml:space="preserve">
+    <value>Heizkreis (nur Heizwärme)</value>
+  </data>
+  <data name="SIM_HEIZKREIS_NUR_WARMWASSER" xml:space="preserve">
+    <value>Heizkreis (nur Warmwasser)</value>
+  </data>
+  <data name="SIM_KACHEL_RESTSTROMBEDARF" xml:space="preserve">
+    <value>Reststrombedarf</value>
+  </data>
+  <data name="SIM_KACHEL_RESTWAERMEBEDARF" xml:space="preserve">
+    <value>Restwärmebedarf</value>
+  </data>
+  <data name="SIM_KACHEL_SIMULATIONSERGEBNISSE" xml:space="preserve">
+    <value>Simulationsergebnisse im Detail</value>
+  </data>
+  <data name="SIM_KASKADE_SCHALTER" xml:space="preserve">
+    <value>Zweikanalige Kaskade (Vorschau)</value>
+  </data>
+  <data name="SIM_KASKADE_TOOLTIP" xml:space="preserve">
+    <value>Rechnet Heiz- und Warmwasserbedarf als getrennte Kanäle und löst die
+Speicherladung aus der Erzeugerkaskade heraus (Vorschau).
+
+Das ÄNDERT die Ergebnisse: Anlagen mit Pufferspeicher als Senke laden
+diesen, statt den Bedarf direkt zu decken; gedeckt wird aus dem Speicher.
+Was sich im Einzelnen ändert, steht im Umsetzungsprotokoll zu Paket 4
+(Teil 7, Dokumentierte Ergebnisaenderungen). Ohne Haken rechnet die
+bisherige, einkanalige Kaskade unverändert weiter.</value>
+  </data>
+  <data name="SIM_KEIN_BRAUCHWASSERBEDARF" xml:space="preserve">
+    <value>Hinweis: Dem Projekt ist kein Brauchwasserbedarf zugeordnet.
+Ein Brauchwasserspeicher wird dann zwar geladen, aber nie entladen.</value>
+  </data>
+  <data name="SIM_KEIN_PUFFER_GEWAEHLT" xml:space="preserve">
+    <value>Für die {0} „{1}" ist kein Pufferspeicher gewählt.
+
+Im Projekt muss ein Pufferspeicher mit der Verwendung „{2}" angelegt sein.</value>
+  </data>
+  <data name="SIM_KEINE_SENKENDATEN" xml:space="preserve">
+    <value>Keine Senkendaten übergeben.</value>
+  </data>
+  <data name="SIM_LABEL_GASVERBRAUCH" xml:space="preserve">
+    <value>Gasverbrauch (Hu):</value>
+  </data>
+  <data name="SIM_LABEL_HOLZVERBRAUCH" xml:space="preserve">
+    <value>Holzverbrauch:</value>
+  </data>
+  <data name="SIM_LABEL_KOHLE" xml:space="preserve">
+    <value>Kohle:</value>
+  </data>
+  <data name="SIM_LABEL_KOKS" xml:space="preserve">
+    <value>Koks:</value>
+  </data>
+  <data name="SIM_LABEL_OELVERBRAUCH" xml:space="preserve">
+    <value>Ölverbrauch:</value>
+  </data>
+  <data name="SIM_LABEL_PELLETS" xml:space="preserve">
+    <value>Pellets:</value>
+  </data>
+  <data name="SIM_LABEL_RAPSOEL" xml:space="preserve">
+    <value>Rapsöl:</value>
+  </data>
+  <data name="SIM_LABEL_SONSTIGE" xml:space="preserve">
+    <value>Sonstigel:</value>
+  </data>
+  <data name="SIM_LABEL_TIERISCHE_FETTE" xml:space="preserve">
+    <value>Tierische Fette:</value>
+  </data>
+  <data name="SIM_LADEEINTRAG_ANZEIGE" xml:space="preserve">
+    <value>{0} ({1}, Prio {2})</value>
+  </data>
+  <data name="SIM_LAUFMELDUNG_EINER" xml:space="preserve">
+    <value>1 Hinweis zum Lauf (anklicken)</value>
+  </data>
+  <data name="SIM_LAUFMELDUNG_MEHRERE" xml:space="preserve">
+    <value>{0} Hinweise zum Lauf (anklicken)</value>
+  </data>
+  <data name="SIM_LBL_BEDARF_HINWEIS" xml:space="preserve">
+    <value>(nur beim Heizkreis wirksam)</value>
+  </data>
+  <data name="SIM_LBL_BEDARFSART" xml:space="preserve">
+    <value>Bedarfsart:</value>
+  </data>
+  <data name="SIM_LBL_HINWEIS_PUFFER" xml:space="preserve">
+    <value>Für Puffer-Senken muss der Speicher im Projekt angelegt sein (mit passender Verwendung Heizung bzw. Brauchwasser).</value>
+  </data>
+  <data name="SIM_LBL_LADEGRENZE_EINHEIT" xml:space="preserve">
+    <value>% des Speichers  (sonst gilt die Abschaltschwelle des Speichers)</value>
+  </data>
+  <data name="SIM_LBL_LADEPRIO" xml:space="preserve">
+    <value>Ladepriorität:</value>
+  </data>
+  <data name="SIM_LBL_PV_UEBERSCHUSS" xml:space="preserve">
+    <value>Bei PV-Überschuss:</value>
+  </data>
+  <data name="SIM_LBL_ZIEL2" xml:space="preserve">
+    <value>Ziel:</value>
+  </data>
+  <data name="SIM_MENUE_ENERGIEBEDARF" xml:space="preserve">
+    <value>Energiebedarf</value>
+  </data>
+  <data name="SIM_MODUS_LAUFZEIT" xml:space="preserve">
+    <value>laufzeitoptimiert</value>
+  </data>
+  <data name="SIM_MODUS_LEISTUNG" xml:space="preserve">
+    <value>leistungsoptimiert</value>
+  </data>
+  <data name="SIM_MODUS_PV" xml:space="preserve">
+    <value>PV-optimiert</value>
+  </data>
+  <data name="SIM_MSG_BRAUCHWASSER_UEBERGANG" xml:space="preserve">
+    <value>Hinweis: Die Brauchwasser-Senke wird erst mit dem Engine-Umbau (Paket 4) wirksam.
+Sie wird gespeichert und angezeigt, geht in die Simulation aber noch nicht ein.</value>
+  </data>
+  <data name="SIM_MSG_BRAUCHWASSER_WP_ZUSATZ" xml:space="preserve">
+    <value>Die bisherige Pufferspeicher-Zuordnung dieser Wärmepumpe wird dabei entfernt; bis Paket 4 rechnet die Simulation dann ohne Speicher.</value>
+  </data>
+  <data name="SIM_MSG_ERGEBNIS_GESPEICHERT" xml:space="preserve">
+    <value>Simulationsergebnis gespeichert.</value>
+  </data>
+  <data name="SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Das Ergebnis konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="SIM_MSG_KEIN_BRENNSTOFF" xml:space="preserve">
+    <value>Kein Brennstoff für dieses BHKW definiert.</value>
+  </data>
+  <data name="SIM_MSG_KEIN_PROJEKT" xml:space="preserve">
+    <value>Kein Projekt geladen.</value>
+  </data>
+  <data name="SIM_MSG_KEIN_VOLLSTAENDIGES_ERGEBNIS" xml:space="preserve">
+    <value>Es liegt kein vollständiges Simulationsergebnis vor.
+
+Bitte zuerst die Simulation ausführen. Ein abgebrochener oder noch nicht gerechneter Lauf wird nicht gespeichert - das bisher gespeicherte Ergebnis des Projekts bleibt dadurch erhalten.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_ENERGIEBEDARF" xml:space="preserve">
+    <value>Keine Simulationsdaten vorhanden!
+Bitte zuerst den Energiebedarf berechnen.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_SIMULATION" xml:space="preserve">
+    <value>Keine Simulationsdaten vorhanden!
+Bitte zuerst die Simulation durchführen.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_WAERMEPUMPE" xml:space="preserve">
+    <value>Keine Simulationsdaten vorhanden!
+Bitte zuerst die Simulation mit Wärmepumpe durchführen.</value>
+  </data>
+  <data name="SIM_MSG_KLIMAREGION_WAEHLEN" xml:space="preserve">
+    <value>Klimaregion auswählen!</value>
+  </data>
+  <data name="SIM_MSG_KONFIGURATION_FEHLT" xml:space="preserve">
+    <value>Bitte zuerst die Konfiguration festlegen.</value>
+  </data>
+  <data name="SIM_MSG_LADEGRENZE_BEREICH" xml:space="preserve">
+    <value>Die Ladeobergrenze der {0} muss zwischen 0 und 100 % liegen.</value>
+  </data>
+  <data name="SIM_MSG_LADEGRENZE_ZAHL" xml:space="preserve">
+    <value>Die Ladeobergrenze der {0} muss eine Zahl sein.</value>
+  </data>
+  <data name="SIM_MSG_MODUS_NUR_WP" xml:space="preserve">
+    <value>Der Betriebsmodus (Leistungssteuerung) ist heute nur für Wärmepumpen wirksam.
+
+Anlage: {0}
+Für Heizkessel, BHKW und Solarthermie ergibt sich das Verhalten aus der
+Kaskadenstellung und der Wärmesenke.</value>
+  </data>
+  <data name="SIM_MSG_NETZVERLUSTE_ZU_GROSS" xml:space="preserve">
+    <value>die Netzverluste dürfen nicht größer als 100 % sein!</value>
+  </data>
+  <data name="SIM_MSG_PUFFER_ANLEGEN_FRAGE" xml:space="preserve">
+    <value>{0}
+
+Jetzt einen Pufferspeicher im Projekt anlegen?</value>
+  </data>
+  <data name="SIM_MSG_PV_AUSWAHL" xml:space="preserve">
+    <value>Hinweis: Für den PV-optimierten Betrieb muss im Bereich 'Stromerzeuger' die Photovoltaik ausgewählt sein.
+Ohne PV-Anlage verhält sich die Wärmepumpe leistungsoptimiert.</value>
+  </data>
+  <data name="SIM_MSG_WEITERE_FEHLERMELDUNGEN" xml:space="preserve">
+    <value>Weitere Fehlermeldungen des Laufs:</value>
+  </data>
+  <data name="SIM_MSG_WPPRIO_NUR_WP" xml:space="preserve">
+    <value>Die WP-Priorität regelt die Reihenfolge der Wärmepumpen untereinander.
+Für {0} ist sie ohne Bedeutung.</value>
+  </data>
+  <data name="SIM_NAV_AUTARKIE_ANALYSE" xml:space="preserve">
+    <value>ℹ️ 
+Autarkie
+Analyse</value>
+  </data>
+  <data name="SIM_NAV_STROMPRODUKTION_CHART" xml:space="preserve">
+    <value>⚡ 
+Strom
+Produktion
+ Chart</value>
+  </data>
+  <data name="SIM_NAV_UEBERSICHT" xml:space="preserve">
+    <value>🏠 
+Übersicht</value>
+  </data>
+  <data name="SIM_NAV_WAERMEPRODUKTION_CHART" xml:space="preserve">
+    <value>🔥 
+Wärme
+Produktion
+Chart</value>
+  </data>
+  <data name="SIM_PHOTOVOLTAIK" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="SIM_POSITION_BIS" xml:space="preserve">
+    <value>bis {0} %</value>
+  </data>
+  <data name="SIM_POSITION_LAEDT_ALS" xml:space="preserve">
+    <value>Lädt als {0}. von {1}</value>
+  </data>
+  <data name="SIM_PRIO_UNVERAENDERT" xml:space="preserve">
+    <value>unverändert (reguläre Priorität)</value>
+  </data>
+  <data name="SIM_PRIO_VORGABE" xml:space="preserve">
+    <value>nach Vorgabe ({0} - {1})</value>
+  </data>
+  <data name="SIM_PUFFER_BRAUCHWASSER_KURZ" xml:space="preserve">
+    <value>Puffer Brauchw.</value>
+  </data>
+  <data name="SIM_PUFFER_FREMDES_PROJEKT" xml:space="preserve">
+    <value>Der für die {0} gewählte Pufferspeicher gehört nicht zu diesem Projekt oder wurde entfernt.
+
+Bitte einen Projekt-Pufferspeicher mit der Verwendung „{1}" anlegen.</value>
+  </data>
+  <data name="SIM_PUFFER_HEIZUNG_KURZ" xml:space="preserve">
+    <value>Puffer Heizung</value>
+  </data>
+  <data name="SIM_PUFFER_MIT_VOLUMEN" xml:space="preserve">
+    <value>{0} ({1} l)</value>
+  </data>
+  <data name="SIM_PUFFER_QUELLE_UND_SENKE" xml:space="preserve">
+    <value>Der Pufferspeicher „{0}" ist bereits die WÄRMEQUELLE dieser Anlage.
+Derselbe Speicher kann nicht zugleich Quelle und Senke sein (Kurzschluss); bitte einen anderen Speicher wählen.</value>
+  </data>
+  <data name="SIM_PUFFER_VERWENDUNG_PASST_NICHT" xml:space="preserve">
+    <value>Der Pufferspeicher „{0}" hat die Verwendung „{1}", die {2} verlangt aber „{3}".
+
+Bitte einen passenden Speicher wählen oder die Verwendung in der Pufferspeicher-Verwaltung ändern.</value>
+  </data>
+  <data name="SIM_RB_HEIZKREIS" xml:space="preserve">
+    <value>Heizkreis (direkte Deckung des Bedarfs)</value>
+  </data>
+  <data name="SIM_ROLLE_HAUPTSENKE" xml:space="preserve">
+    <value>Hauptsenke</value>
+  </data>
+  <data name="SIM_ROLLE_ZWEITSENKE" xml:space="preserve">
+    <value>Zweitsenke</value>
+  </data>
+  <data name="SIM_SENKE_TITEL" xml:space="preserve">
+    <value>Wärmesenke</value>
+  </data>
+  <data name="SIM_SENKE_TITEL_ANLAGE" xml:space="preserve">
+    <value>Wärmesenke - {0}</value>
+  </data>
+  <data name="SIM_SOLARTHERMIE_ANLAGE" xml:space="preserve">
+    <value>Solarthermie-Anlage</value>
+  </data>
+  <data name="SIM_SPALTE_ANLAGE" xml:space="preserve">
+    <value>Anlage</value>
+  </data>
+  <data name="SIM_SPALTE_ANZAHL" xml:space="preserve">
+    <value>Anzahl</value>
+  </data>
+  <data name="SIM_SPALTE_BETRIEBSSTUNDEN" xml:space="preserve">
+    <value>Betriebsstunden [h/a]</value>
+  </data>
+  <data name="SIM_SPALTE_BRENNSTOFFE" xml:space="preserve">
+    <value>Gas/Biogas/Rapsöl/Holz... [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_ENERGIE_ERZEUGER" xml:space="preserve">
+    <value>Energie-Erzeuger</value>
+  </data>
+  <data name="SIM_SPALTE_ERGEBNIS_MWH" xml:space="preserve">
+    <value>Ergebnis [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_FLAECHE" xml:space="preserve">
+    <value>Fläche [m²]</value>
+  </data>
+  <data name="SIM_SPALTE_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_JAHRESNUTZUNGSGRAD" xml:space="preserve">
+    <value>Jahresnutzungsgrad [%]</value>
+  </data>
+  <data name="SIM_SPALTE_LEISTUNG" xml:space="preserve">
+    <value>Leistung [kW]</value>
+  </data>
+  <data name="SIM_SPALTE_MODUL" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="SIM_SPALTE_MODUS" xml:space="preserve">
+    <value>Modus</value>
+  </data>
+  <data name="SIM_SPALTE_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="SIM_SPALTE_OEL" xml:space="preserve">
+    <value>Öl [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_PRIO" xml:space="preserve">
+    <value>Prio</value>
+  </data>
+  <data name="SIM_SPALTE_SENKE" xml:space="preserve">
+    <value>Senke</value>
+  </data>
+  <data name="SIM_SPALTE_SOLARKOLLEKTOR" xml:space="preserve">
+    <value>Solarkollektor</value>
+  </data>
+  <data name="SIM_SPALTE_STROMPRODUKTION" xml:space="preserve">
+    <value>Stromprod. [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_STROMVERBRAUCH" xml:space="preserve">
+    <value>Stromverbr. [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_UEBERSCHUSS" xml:space="preserve">
+    <value>Überschuß [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_WAERMEPRODUKTION" xml:space="preserve">
+    <value>Wärmeprod. [MWh/a]</value>
+  </data>
+  <data name="SIM_SPALTE_WPPRIO" xml:space="preserve">
+    <value>WP-Prio</value>
+  </data>
+  <data name="SIM_STATUS_EINSTELLUNG_FEHLER" xml:space="preserve">
+    <value>Die Einstellung konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="SIM_STATUS_EXTRAPOLATION_AUS" xml:space="preserve">
+    <value>Extrapolation der WP-Kennlinie abgewählt - der Lauf bricht ab, wenn die Quelltemperatur die Kennlinie unterschreitet.</value>
+  </data>
+  <data name="SIM_STATUS_EXTRAPOLATION_EIN" xml:space="preserve">
+    <value>Extrapolation der WP-Kennlinie erlaubt - der Lauf vermerkt sie als Hinweis.</value>
+  </data>
+  <data name="SIM_STATUS_KASKADE_AUS" xml:space="preserve">
+    <value>Zweikanalige Kaskade abgewählt - es rechnet wieder die einkanalige Kaskade.</value>
+  </data>
+  <data name="SIM_STATUS_KASKADE_EIN" xml:space="preserve">
+    <value>Zweikanalige Kaskade eingeschaltet - der nächste Lauf rechnet damit und liefert andere Ergebnisse.</value>
+  </data>
+  <data name="SIM_STATUS_KONFIG_GESPEICHERT" xml:space="preserve">
+    <value>✔ Konfiguration erfolgreich gespeichert</value>
+  </data>
+  <data name="SIM_STATUS_SENKE_FEHLER" xml:space="preserve">
+    <value>⚠ Die Wärmesenke konnte nicht vollständig gespeichert werden</value>
+  </data>
+  <data name="SIM_STATUS_SENKE_GESPEICHERT" xml:space="preserve">
+    <value>✔ Wärmesenke gespeichert ({0})</value>
+  </data>
+  <data name="SIM_STROMSPEICHER" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="SIM_TABELLE_HEIZKESSEL" xml:space="preserve">
+    <value>HeizKessel</value>
+  </data>
+  <data name="SIM_TIP_BETRIEBSMODUS" xml:space="preserve">
+    <value>Betriebsmodus (Doppelklick zum Ändern)
+• laufzeitoptimiert - volle Leistung, Überschuss lädt den Speicher
+• leistungsoptimiert - moduliert exakt auf den Wärmebedarf
+• PV-optimiert - erhöhte Leistung nur bei verfügbarem PV-Strom,
+  sonst leistungsoptimiert</value>
+  </data>
+  <data name="SIM_TIP_BETRIEBSMODUS_NICHT_WP" xml:space="preserve">
+    <value>Der Betriebsmodus ist heute nur für Wärmepumpen wirksam.</value>
+  </data>
+  <data name="SIM_TIP_SENKE" xml:space="preserve">
+    <value>Wärmesenke (Doppelklick zum Ändern)
+Wohin gibt dieser Erzeuger seine Wärme ab?
+• Heizkreis - deckt den Bedarf der Stunde unmittelbar
+  (Bedarfsart Warmwasser / Heizwärme / beides)
+• Pufferspeicher Heizung bzw. Brauchwasser - lädt einen
+  Projekt-Pufferspeicher; dort werden auch Ladepriorität und
+  Ladeobergrenze gepflegt.</value>
+  </data>
+  <data name="SIM_TIP_UEBERSICHT_STANDARD" xml:space="preserve">
+    <value>Anlage: {0}
+Doppelklick auf Wärmesenke, Zweitsenke oder - bei Wärmepumpen -
+WP-Prio, Wärmequelle und Betriebsmodus zum Bearbeiten.</value>
+  </data>
+  <data name="SIM_TIP_WPPRIO" xml:space="preserve">
+    <value>WP-Priorität (Doppelklick zum Ändern)
+Einsatz-Reihenfolge der Wärmepumpen: 1 = wird zuerst eingesetzt,
+die nächste deckt jeweils den verbleibenden Bedarf der Stunde.</value>
+  </data>
+  <data name="SIM_TIP_WPPRIO_NICHT_WP" xml:space="preserve">
+    <value>WP-Priorität gilt nur für Wärmepumpen.</value>
+  </data>
+  <data name="SIM_TIP_ZWEITSENKE" xml:space="preserve">
+    <value>Zweitsenke (Doppelklick zum Ändern)
+Optionaler zweiter Pufferspeicher, der NUR Überschuss bzw.
+verbleibendes Ladepotenzial aufnimmt - nie Pflichtbedarf.
+„–" bedeutet: keine Zweitsenke.</value>
+  </data>
+  <data name="SIM_TITEL_BETRIEBSMODUS" xml:space="preserve">
+    <value>Betriebsmodus</value>
+  </data>
+  <data name="SIM_TITEL_BETRIEBSMODUS_PV" xml:space="preserve">
+    <value>Betriebsmodus PV</value>
+  </data>
+  <data name="SIM_TITEL_ERGEBNIS_SPEICHERN" xml:space="preserve">
+    <value>Ergebnis speichern</value>
+  </data>
+  <data name="SIM_TITEL_FEHLER" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="SIM_TITEL_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="SIM_TITEL_MELDUNGEN_LAUF" xml:space="preserve">
+    <value>Meldungen des Simulationslaufs</value>
+  </data>
+  <data name="SIM_TITEL_SENKE_PUFFER_FEHLT" xml:space="preserve">
+    <value>Wärmesenke - Pufferspeicher fehlt</value>
+  </data>
+  <data name="SIM_TITEL_SIMULATION_ABGEBROCHEN" xml:space="preserve">
+    <value>Simulation abgebrochen</value>
+  </data>
+  <data name="SIM_TITEL_SIMULATION_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Simulation nicht verfügbar</value>
+  </data>
+  <data name="SIM_TITEL_WPPRIO" xml:space="preserve">
+    <value>WP-Priorität</value>
+  </data>
+  <data name="SIM_TOOLTIP_CSV_BEDARF" xml:space="preserve">
+    <value>Wärmelast und Strombedarf als CSV exportieren
+(Zeitstempel, Außentemperatur, Werte)</value>
+  </data>
+  <data name="SIM_TOOLTIP_CSV_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpen-Simulation als CSV exportieren
+(Zeitstempel, Außentemperatur, Wärmebedarf, Heizstab, Wärmeproduktion, Strombedarf)</value>
+  </data>
+  <data name="SIM_UEBERSICHT_TITEL" xml:space="preserve">
+    <value>Übersicht Wärmeerzeuger</value>
+  </data>
+  <data name="SIM_WPPRIO_DIALOG_TEXT" xml:space="preserve">
+    <value>Einsatz-Reihenfolge der Wärmepumpe
+'{0}'
+(1 = wird zuerst eingesetzt):</value>
+  </data>
+  <data name="SIM_WPPRIO_DIALOG_TITEL" xml:space="preserve">
+    <value>Wärmepumpen-Priorität</value>
+  </data>
+  <data name="SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER" xml:space="preserve">
+    <value>Pufferspeicher Brauchwasser</value>
+  </data>
+  <data name="SIM_ZIEL_PUFFERSPEICHER_HEIZUNG" xml:space="preserve">
+    <value>Pufferspeicher Heizung</value>
+  </data>
+  <data name="SIM_ZWEITSENKE_GLEICH_HAUPTSENKE" xml:space="preserve">
+    <value>Die Zweitsenke muss sich von der Hauptsenke unterscheiden.
+Beide zeigen auf {0} „{1}".</value>
+  </data>
+  <data name="SIMENG_BHKW_MAX_UEBERSCHRITTEN" xml:space="preserve">
+    <value>BHKW: Im Projekt sind {0} BHKW hinterlegt, die Simulation unterstützt maximal {1}. Der Lauf wurde abgebrochen, damit kein Ergebnis ohne die übrigen Module entsteht.</value>
+  </data>
+  <data name="SIMENG_BRAUCHWASSER_TYP_UNDEFINIERT" xml:space="preserve">
+    <value>Brauchwasser: Der Typ des Eintrags '{0}' ist nicht definiert. Die Rechnung wurde abgebrochen; ihr Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_DB_ZUGRIFF_WAEHREND_LAUF" xml:space="preserve">
+    <value>Datenbankzugriff während des Laufs: {0}</value>
+  </data>
+  <data name="SIMENG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Das Simulationsergebnis konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="SIMENG_KEINE_KLIMAREGION" xml:space="preserve">
+    <value>Für Projekt {0} ist keine Klimaregion gesetzt.</value>
+  </data>
+  <data name="SIMENG_KEINE_KONFIGURATION" xml:space="preserve">
+    <value>Für Projekt {0} ist keine Konfiguration (Tab_Einstellungen) hinterlegt.</value>
+  </data>
+  <data name="SIMENG_KESSEL_MAX_UEBERSCHRITTEN" xml:space="preserve">
+    <value>Heizkessel: Im Projekt sind {0} Kessel hinterlegt, die Simulation unterstützt maximal {1}. Es werden nur die ersten {2} Kessel berücksichtigt.</value>
+  </data>
+  <data name="SIMENG_KESSEL_NICHT_HINTERLEGT" xml:space="preserve">
+    <value>Der Heizkessel '{0}' ist im Projekt nicht hinterlegt. Die Kessel-Simulation wurde abgebrochen.</value>
+  </data>
+  <data name="SIMENG_LADEORDNUNG_ART_NICHT_IN_SPEICHERSTUFE" xml:space="preserve">
+    <value>Ladeordnung: Anlage {0} ({1}) lädt laut Konfiguration den Speicher {2} ({3}). Diese Erzeugerart rechnet in diesem Lauf nicht in der Speicherstufe; die Anlage rechnet als Vektorstufe wie eine Heizkreis-Anlage.</value>
+  </data>
+  <data name="SIMENG_LADEPRIO_VORBELEGUNG_NACHGEZOGEN" xml:space="preserve">
+    <value>Ladeprioritäten: {0} Feld(er) ohne Vorgabe auf 0 gesetzt (Konzept 3.4, Vorbelegung wie Migrationsregel R5).</value>
+  </data>
+  <data name="SIMENG_LISTE_FEHLER" xml:space="preserve">
+    <value>Fehler: {0}</value>
+  </data>
+  <data name="SIMENG_LISTE_HINWEIS" xml:space="preserve">
+    <value>Hinweis: {0}</value>
+  </data>
+  <data name="SIMENG_LISTE_WARNUNG" xml:space="preserve">
+    <value>Warnung: {0}</value>
+  </data>
+  <data name="SIMENG_NETZVERLUSTE_UEBER_100" xml:space="preserve">
+    <value>Die Netzverluste dürfen nicht größer als 100 % sein.</value>
+  </data>
+  <data name="SIMENG_PENDELSPEICHER_NICHT_LESBAR" xml:space="preserve">
+    <value>BHKW-Pendelspeicher: Die Puffer-Zeile {0} des Projekts {1} ließ sich nicht lesen oder gehört zu einem anderen Projekt. Der Lauf wurde abgebrochen, damit das BHKW nicht stillschweigend ohne Speicher rechnet.</value>
+  </data>
+  <data name="SIMENG_PENDELSPEICHER_ZEILE_FEHLT" xml:space="preserve">
+    <value>BHKW-Pendelspeicher: Für Projekt {0} ist ein Volumen von {1} l bekannt, aber es gibt keine Puffer-Zeile „{2}". Der Lauf wurde abgebrochen, damit das BHKW nicht stillschweigend ohne Speicher rechnet.</value>
+  </data>
+  <data name="SIMENG_PRAEFIX_HEIZKESSEL" xml:space="preserve">
+    <value>Heizkessel: </value>
+  </data>
+  <data name="SIMENG_PRAEFIX_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf: </value>
+  </data>
+  <data name="SIMENG_PRAEFIX_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpe: </value>
+  </data>
+  <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
+    <value>Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Die Prozesswärme-Rechnung wurde abgebrochen; ihr Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_SIMULATION_ABGEBROCHEN" xml:space="preserve">
+    <value>Simulation abgebrochen: {0}</value>
+  </data>
+  <data name="SIMENG_SPEICHERN_DES_ERGEBNISSES" xml:space="preserve">
+    <value>Speichern des Ergebnisses: {0}</value>
+  </data>
+  <data name="SIMENG_STROMPROFIL_ZULETZT_BEARBEITET" xml:space="preserve">
+    <value> (zuletzt bearbeitet: Stromprofil '{0}')</value>
+  </data>
+  <data name="SIMENG_STROMPROFILE_DIAGNOSE" xml:space="preserve">
+    <value>Strombedarf: Die Stromprofile konnten nicht berechnet werden - {0}</value>
+  </data>
+  <data name="SIMENG_STROMPROFILE_NICHT_BERECHENBAR" xml:space="preserve">
+    <value>Die Stromprofile des Projekts konnten nicht berechnet werden. Die Simulation wurde abgebrochen.</value>
+  </data>
+  <data name="SIMENG_TAGESVERTEILUNG_FEHLT" xml:space="preserve">
+    <value>Wärmebedarf: Zum Tagesverteilungstyp „{0}“ sind keine Daten hinterlegt. Die Bedarfsrechnung wurde an dieser Stelle abgebrochen; das Ergebnis ist unvollständig.</value>
+  </data>
+  <data name="SIMENG_WP_EXTRAPOLATION_HINWEIS" xml:space="preserve">
+    <value>Wärmepumpe '{0}': Die Quelltemperatur unterschreitet die untere Stützstelle der Kennlinie ({1} °C). Es wird extrapoliert (Projekteinstellung „Extrapolation der Kennlinie erlauben“).</value>
+  </data>
+  <data name="SIMENG_WP_EXTRAPOLATION_VERBOTEN" xml:space="preserve">
+    <value>Die Quelltemperatur unterschreitet die untere Stützstelle der Kennlinie der Wärmepumpe '{0}' ({1} °C). Die Projekteinstellung „Extrapolation der Kennlinie erlauben“ ist abgewählt, deshalb wurde die Simulation abgebrochen. Entweder die Kennlinie um tiefere Stützstellen ergänzen oder die Einstellung setzen.</value>
+  </data>
+  <data name="SIMENG_WP_KEINE_KENNDATEN" xml:space="preserve">
+    <value>Für die Wärmepumpe '{0}' sind keine Kenndaten (Kennlinie) für Vorlauf {1} °C vorhanden. Die Simulation wurde abgebrochen.</value>
+  </data>
+  <data name="SIMQ_ANLAGE_ERSATZNAME" xml:space="preserve">
+    <value>Anlage {0}</value>
+  </data>
+  <data name="SIMQ_BODENTYP_GNEIS" xml:space="preserve">
+    <value>Gneis</value>
+  </data>
+  <data name="SIMQ_BODENTYP_GRANIT" xml:space="preserve">
+    <value>Granit</value>
+  </data>
+  <data name="SIMQ_BODENTYP_KALKSTEIN" xml:space="preserve">
+    <value>Kalkstein</value>
+  </data>
+  <data name="SIMQ_BODENTYP_KIES_NASS" xml:space="preserve">
+    <value>Kies/Steine, wassergesättigt</value>
+  </data>
+  <data name="SIMQ_BODENTYP_KIES_TROCKEN" xml:space="preserve">
+    <value>Kies/Steine, trocken</value>
+  </data>
+  <data name="SIMQ_BODENTYP_MERGEL_LEHM" xml:space="preserve">
+    <value>Geschiebemergel/-lehm</value>
+  </data>
+  <data name="SIMQ_BODENTYP_SAND_FEUCHT" xml:space="preserve">
+    <value>Sand, feucht</value>
+  </data>
+  <data name="SIMQ_BODENTYP_SAND_NASS" xml:space="preserve">
+    <value>Sand, wassergesättigt</value>
+  </data>
+  <data name="SIMQ_BODENTYP_SAND_TROCKEN" xml:space="preserve">
+    <value>Sand, trocken</value>
+  </data>
+  <data name="SIMQ_BODENTYP_SANDSTEIN" xml:space="preserve">
+    <value>Sandstein</value>
+  </data>
+  <data name="SIMQ_BODENTYP_TON_NASS" xml:space="preserve">
+    <value>Ton/Schluff, wassergesättigt</value>
+  </data>
+  <data name="SIMQ_BODENTYP_TON_TROCKEN" xml:space="preserve">
+    <value>Ton/Schluff, trocken</value>
+  </data>
+  <data name="SIMQ_BODENTYP_TONSTEIN" xml:space="preserve">
+    <value>Ton-/Schluffstein</value>
+  </data>
+  <data name="SIMQ_CSV_DATEIDIALOG_TITEL" xml:space="preserve">
+    <value>Quelltemperatur-Profil auswählen</value>
+  </data>
+  <data name="SIMQ_CSV_DATEIFILTER" xml:space="preserve">
+    <value>CSV Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="SIMQ_CSV_FEHLER" xml:space="preserve">
+    <value>Die Datei konnte nicht gelesen werden oder enthält keine 8760 Stundenwerte!
+
+{0}</value>
+  </data>
+  <data name="SIMQ_CSV_FEHLER_TITEL" xml:space="preserve">
+    <value>CSV-Datei ungültig</value>
+  </data>
+  <data name="SIMQ_CSV_FORMAT_HINWEIS" xml:space="preserve">
+    <value>Erwartetes CSV-Format für das Quelltemperatur-Profil:
+
+- 8760 Zeilen = Stundenwerte für ein Jahr (01.01. 00:00 bis 31.12. 23:00)
+- je Zeile ein Temperaturwert in °C (Dezimal-Komma oder -Punkt)
+- optional mit Zeitstempel: "Zeitstempel;Temperatur" (Semikolon-getrennt,
+  es wird der letzte Zahlenwert der Zeile verwendet)
+- eine Kopfzeile wird automatisch erkannt und übersprungen</value>
+  </data>
+  <data name="SIMQ_CSV_FRAGE_DATEI" xml:space="preserve">
+    <value>{0}
+
+Jetzt Datei auswählen?</value>
+  </data>
+  <data name="SIMQ_CSV_TITEL" xml:space="preserve">
+    <value>Quelltemperatur aus CSV-Datei</value>
+  </data>
+  <data name="SIMQ_ENTZUG_ANTEILIG_GESCHAETZT" xml:space="preserve">
+    <value>maximale Entzugsleistung anteilig aus der Summenganglinie aller Wärmepumpen-Module geschätzt.</value>
+  </data>
+  <data name="SIMQ_ENTZUG_NICHT_JE_MODUL_TRENNBAR" xml:space="preserve">
+    <value>maximale Entzugsleistung nicht je Modul trennbar (mehrere Wärmepumpen mit unterschiedlichen Quellen, Stundenganglinie liegt nur global vor).</value>
+  </data>
+  <data name="SIMQ_ERDKOLLEKTOR_ANZEIGE" xml:space="preserve">
+    <value>Erdreich Kollektor {0} m</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ANZAHL_SONDEN" xml:space="preserve">
+    <value>Anzahl Sonden:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BODENKENNWERTE" xml:space="preserve">
+    <value>λ = {0} W/(m·K)   ρ·c_p = {1} MJ/(m³·K)   a = {2} mm²/s   Dämpfungstiefe d = {3} m   Bodenart nach Tabelle A1: {4}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BODENTYP" xml:space="preserve">
+    <value>Bodentyp:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BODENTYP_HINWEIS" xml:space="preserve">
+    <value>(Katalog VDI 4640 Blatt 1, Entwurf 2021-12)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ENTZUG_KURZTEXT" xml:space="preserve">
+    <value>Entzug {0} kWh/a{1}, Spitze {2} W, {3} h/a. </value>
+  </data>
+  <data name="SIMQ_ERDREICH_FLAECHE" xml:space="preserve">
+    <value>Fläche [m²]:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_GB_PRUEFUNG" xml:space="preserve">
+    <value>Auslegungsprüfung nach VDI 4640 Blatt 2 (nach der Simulation)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_GB_QUELLSYSTEM" xml:space="preserve">
+    <value>Quellsystem</value>
+  </data>
+  <data name="SIMQ_ERDREICH_GB_VORSCHAU" xml:space="preserve">
+    <value>Vorschau: Jahresgang der Quelltemperatur</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_FESTGESTEIN" xml:space="preserve">
+    <value>
+  Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 abgebildet — nur Orientierung.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
+    <value>
+  Hinweis: {0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KEINE_PRUEFUNG" xml:space="preserve">
+    <value>Auslegungsprüfung nicht möglich:
+
+{0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KLIMAZONE" xml:space="preserve">
+    <value>Klimazone:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KLIMAZONE_HINWEIS" xml:space="preserve">
+    <value>(DIN 4710, Vorbelegung aus der Klimaregion)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KURZTEXT_KOPF" xml:space="preserve">
+    <value>Erdreich {0}: </value>
+  </data>
+  <data name="SIMQ_ERDREICH_LAENGE_SONDE" xml:space="preserve">
+    <value>Länge je Sonde [m]:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_ANZAHL_MIN" xml:space="preserve">
+    <value>Es muss mindestens eine Sonde vorhanden sein!</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_FLAECHE" xml:space="preserve">
+    <value>Bitte die Kollektorfläche eintragen — sie ist Eingangsgröße
+der Auslegungsprüfung nach VDI 4640 Blatt 2.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_LAENGE_NULL" xml:space="preserve">
+    <value>Die Sondenlänge muss größer als 0 m sein!</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_SPREIZUNG" xml:space="preserve">
+    <value>Bitte eine nutzbare Spreizung größer als 0 K eintragen!
+Sie ist Eingangsgröße der Frostprüfung der Quelle.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_TIEFE_MAX" xml:space="preserve">
+    <value>Ein Erdkollektor wird nicht tiefer als 10 m verlegt.
+Für größere Tiefen das Quellsystem 'Erdsonde' wählen.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_TIEFE_NULL" xml:space="preserve">
+    <value>Die Verlegetiefe muss größer als 0 m sein!</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_ZAHL_KOLLEKTOR" xml:space="preserve">
+    <value>Bitte gültige Zahlenwerte für Verlegetiefe und Fläche eintragen!</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_ZAHL_SONDE" xml:space="preserve">
+    <value>Bitte gültige Zahlenwerte für Sondenlänge und Anzahl eintragen!</value>
+  </data>
+  <data name="SIMQ_ERDREICH_OHNE_KLIMADATEN" xml:space="preserve">
+    <value>   (ohne Klimadaten — Ersatzwerte 9,5 °C / 8,5 K)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF" xml:space="preserve">
+    <value>(noch kein Simulationslauf)
+
+Die Prüfung braucht maximale Entzugsleistung, Jahresentzugsarbeit und
+Jahresvolllaststunden aus einem Simulationslauf.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_RB_KOLLEKTOR" xml:space="preserve">
+    <value>Erdkollektor</value>
+  </data>
+  <data name="SIMQ_ERDREICH_RB_SONDE" xml:space="preserve">
+    <value>Erdsonde</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SPEICHERLADUNG" xml:space="preserve">
+    <value>Entzugsarbeit und Spitze enthalten die Wärme, mit der die Wärmepumpe den Pufferspeicher lädt.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SPREIZUNG" xml:space="preserve">
+    <value>Nutzbare Spreizung [K]:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SPREIZUNG_HINWEIS" xml:space="preserve">
+    <value>(Quelleintritt minus Quellaustritt; Warnung, wenn Quelltemperatur − Spreizung dauerhaft unter 0 °C liegt)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_TITEL" xml:space="preserve">
+    <value>Wärmequelle Erdreich</value>
+  </data>
+  <data name="SIMQ_ERDREICH_TITEL_MIT_WP" xml:space="preserve">
+    <value>Wärmequelle Erdreich — {0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_UNWIRKSAM_LUFT_WASSER" xml:space="preserve">
+    <value>Die Wärmepumpe ist eine Luft-Wasser-Anlage — die Erdreich-Konfiguration bleibt in der Simulation unwirksam (gerechnet wird mit der Außenluft). Für eine Erdreich-Quelle eine Sole-Wasser- oder Wasser-Wasser-Wärmepumpe wählen.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VERLEGETIEFE" xml:space="preserve">
+    <value>Verlegetiefe [m]:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_WIRKUNGSLOS" xml:space="preserve">
+    <value>Diese Konfiguration bleibt wirkungslos:
+
+{0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ZONE_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>0 — nicht zugeordnet</value>
+  </data>
+  <data name="SIMQ_ERDSONDE_ANZEIGE" xml:space="preserve">
+    <value>Erdsonde {0}×{1} m</value>
+  </data>
+  <data name="SIMQ_FROST_NORMBASIS" xml:space="preserve">
+    <value>VDI 4640 Bl. 2 bemisst gegen −5 °C Soleaustritt</value>
+  </data>
+  <data name="SIMQ_FROSTTEXT" xml:space="preserve">
+    <value>Hinweis: Quelltemperatur − Spreizung liegt in {0} von {1} Betriebsstunden unter 0 °C ({2}; die Auslegungsprüfung bleibt davon unberührt).</value>
+  </data>
+  <data name="SIMQ_INKL_SPEICHERLADUNG" xml:space="preserve">
+    <value> (inkl. Speicherladung)</value>
+  </data>
+  <data name="SIMQ_KONSTANT_DIALOG_TEXT" xml:space="preserve">
+    <value>Quelltemperatur der Wärmepumpe
+'{0}' [°C]:</value>
+  </data>
+  <data name="SIMQ_KONSTANT_DIALOG_TITEL" xml:space="preserve">
+    <value>Konstante Quelltemperatur</value>
+  </data>
+  <data name="SIMQ_MSG_LUFT_WASSER" xml:space="preserve">
+    <value>Für Luft-Wasser-Wärmepumpen ist die Wärmequelle immer die Außenluft
+(Außentemperatur der gewählten Klimaregion).
+
+WP-Typ: {0}</value>
+  </data>
+  <data name="SIMQ_MSG_QUELLE_NUR_WP" xml:space="preserve">
+    <value>Eine Wärmequelle hat nur die Wärmepumpe.
+
+Heizkessel, BHKW und Solarthermie erzeugen ihre Wärme selbst; ihre
+Einsatzgrenzen stehen in den jeweiligen Eingabemasken.</value>
+  </data>
+  <data name="SIMQ_PROFIL_KENNWERTE_ZEILE" xml:space="preserve">
+    <value>min {0} °C ({1})  ·  max {2} °C ({3})  ·  Mittel {4} °C</value>
+  </data>
+  <data name="SIMQ_PRUEFZEILE_ENTZUGSENERGIE" xml:space="preserve">
+    <value>Entzugsenergie</value>
+  </data>
+  <data name="SIMQ_PRUEFZEILE_ENTZUGSLEISTUNG" xml:space="preserve">
+    <value>Entzugsleistung</value>
+  </data>
+  <data name="SIMQ_PRUEFZEILE_FORMAT" xml:space="preserve">
+    <value>{0} {1}   Grenze {2} {3}{4}</value>
+  </data>
+  <data name="SIMQ_PUFFER_CB_UNBEGRENZT" xml:space="preserve">
+    <value>Quelle unbegrenzt verfügbar (nur Temperatur maßgeblich)</value>
+  </data>
+  <data name="SIMQ_PUFFER_DATEN" xml:space="preserve">
+    <value>Speichertyp: {0}
+Gesamtvolumen: {1} l
+Bereitschaftsverluste: {2} kWh/24h</value>
+  </data>
+  <data name="SIMQ_PUFFER_GB_PARAMETER" xml:space="preserve">
+    <value>Parameter der Wärmequelle</value>
+  </data>
+  <data name="SIMQ_PUFFER_HINWEIS_QUELLWAERME" xml:space="preserve">
+    <value>Die Wärmepumpe entzieht dem Speicher je Stunde die Verdampferwärme (Wärmeproduktion − Stromaufnahme).
+
+Ist der Speicher leer, wird die Leistung der Wärmepumpe begrenzt; die Regeneration lädt den Speicher laufend nach.</value>
+  </data>
+  <data name="SIMQ_PUFFER_KAPAZITAET" xml:space="preserve">
+    <value>nutzbare Kapazität:
+{0} kWh</value>
+  </data>
+  <data name="SIMQ_PUFFER_KOPF" xml:space="preserve">
+    <value>Pufferspeicher als Wärmequelle auswählen:</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_AUSWAHL" xml:space="preserve">
+    <value>Bitte einen Pufferspeicher auswählen!</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_KEINE_SPEICHER" xml:space="preserve">
+    <value>Es sind keine Pufferspeicher in den Stammdaten vorhanden!</value>
+  </data>
+  <data name="SIMQ_PUFFER_MSG_SPREIZUNG" xml:space="preserve">
+    <value>Die nutzbare Spreizung muss größer als 0 K sein!</value>
+  </data>
+  <data name="SIMQ_PUFFER_QUELLTEMPERATUR" xml:space="preserve">
+    <value>Quelltemperatur [°C]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_REGENERATION" xml:space="preserve">
+    <value>Regeneration [kW]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_SPREIZUNG" xml:space="preserve">
+    <value>nutzbare Spreizung [K]:</value>
+  </data>
+  <data name="SIMQ_PUFFER_TITEL" xml:space="preserve">
+    <value>Wärmequelle Pufferspeicher</value>
+  </data>
+  <data name="SIMQ_PUFFER_TITEL_MIT_WP" xml:space="preserve">
+    <value>Wärmequelle Pufferspeicher - {0}</value>
+  </data>
+  <data name="SIMQ_QUELLE_AUSSENLUFT" xml:space="preserve">
+    <value>Außenluft</value>
+  </data>
+  <data name="SIMQ_QUELLE_CSVPROFIL" xml:space="preserve">
+    <value>CSV-Profil</value>
+  </data>
+  <data name="SIMQ_QUELLE_KONSTANT" xml:space="preserve">
+    <value>Konstant ({0} °C)</value>
+  </data>
+  <data name="SIMQ_QUELLE_PUFFER_NAME" xml:space="preserve">
+    <value>Puffer: {0}</value>
+  </data>
+  <data name="SIMQ_QUELLE_QUELLPROFIL" xml:space="preserve">
+    <value>Quellprofil</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_ALLE_MONATE" xml:space="preserve">
+    <value>Alle Monate auf Januarwert setzen</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_ALLE_TAGE" xml:space="preserve">
+    <value>auf alle Tage übertragen</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Tag einfügen</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Tag kopieren</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Änderungen Übernehmen</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_HINWEIS_ABWEICHUNG" xml:space="preserve">
+    <value>Hinweis: 0 = keine Abweichung (Quelltemperatur entspricht dem Monatswert).</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_INFO" xml:space="preserve">
+    <value>Quelltemperatur = Monatswert [°C] + Wochenwert [K].
+Die Monatswerte geben den Jahresgang vor, die Wochenwerte den Tages-/Wochengang.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_KOPF_MONAT" xml:space="preserve">
+    <value>Monats-Mitteltemperatur der Wärmequelle [°C]</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_KOPF_WOCHE" xml:space="preserve">
+    <value>Abweichung vom Monatswert je Stunde [K]</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_LBL_WOCHENTAG" xml:space="preserve">
+    <value>Auswahl Wochentag</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_ALLE_TAGE" xml:space="preserve">
+    <value>Der Tagesgang wurde auf alle Wochentage übertragen.</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_ERST_KOPIEREN" xml:space="preserve">
+    <value>Bitte zuerst einen Tag kopieren!</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_JANUAR" xml:space="preserve">
+    <value>Bitte im Feld Januar eine gültige Zahl eintragen!</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_MONAT_UNGUELTIG" xml:space="preserve">
+    <value>{0}: '{1}' ist keine gültige Zahl!</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_MSG_STUNDE_UNGUELTIG" xml:space="preserve">
+    <value>Stunde {0}: '{1}' ist keine gültige Zahl!</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TAB_GRAFIK" xml:space="preserve">
+    <value>Grafik</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TAB_MONATSWERTE" xml:space="preserve">
+    <value>Monatswerte</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TAB_WOCHENWERTE" xml:space="preserve">
+    <value>Wochenwerte</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TITEL" xml:space="preserve">
+    <value>Quellprofil Wärmequelle</value>
+  </data>
+  <data name="SIMQ_QUELLPROFIL_TITEL_MIT_WP" xml:space="preserve">
+    <value>Quellprofil Wärmequelle - {0}</value>
+  </data>
+  <data name="SIMQ_SPALTE_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="SIMQ_SPITZE_AUS_SUMMENGANGLINIE" xml:space="preserve">
+    <value> (Spitze anteilig aus der Summenganglinie)</value>
+  </data>
+  <data name="SIMQ_TIP_QUELLE" xml:space="preserve">
+    <value>Wärmequelle (Doppelklick zum Ändern)
+Luft-Wasser: immer Außenluft aus den Klimadaten.
+Sole-/Wasser-Wasser: Erdreich, Konstante Temperatur, Pufferspeicher,
+Quellprofil (Monats- und Wochenwerte) oder CSV-Datei.</value>
+  </data>
+  <data name="SIMQ_TIP_QUELLE_NICHT_WP" xml:space="preserve">
+    <value>Eine Wärmequelle hat nur die Wärmepumpe.
+Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.</value>
+  </data>
+  <data name="SIMQ_TITEL_WAERMEQUELLE" xml:space="preserve">
+    <value>Wärmequelle</value>
+  </data>
+  <data name="SIMQ_TYP_AUSSENLUFT" xml:space="preserve">
+    <value>Außenluft (Klimadaten)</value>
+  </data>
+  <data name="SIMQ_TYP_CSV_DATEI" xml:space="preserve">
+    <value>CSV-Datei (Stundenwerte)</value>
+  </data>
+  <data name="SIMQ_TYP_ERDREICH" xml:space="preserve">
+    <value>Erdreich (VDI 4640)</value>
+  </data>
+  <data name="SIMQ_TYP_KONSTANTE_TEMPERATUR" xml:space="preserve">
+    <value>Konstante Temperatur</value>
+  </data>
+  <data name="SIMQ_TYP_PUFFERSPEICHER" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="SIMQ_TYP_QUELLPROFIL" xml:space="preserve">
+    <value>Quellprofil (Monatswerte)</value>
+  </data>
+  <data name="SIMQ_VDI4640_AUSSERHALB_TABELLE" xml:space="preserve">
+    <value> Achtung: Sondenzahl bzw. λ liegen außerhalb des kodierten Tabellenbereichs (B2-Auszug); der Grenzwert wurde auf die Randstützstelle geklemmt. Auf der Sondenzahl-Achse ist das nicht konservativ - größere Sondenfelder brauchen kleinere spezifische Entzugsleistungen, als der Randwert zulässt.</value>
+  </data>
+  <data name="SIMQ_VDI4640_EINGEHALTEN" xml:space="preserve">
+    <value>VDI 4640: eingehalten.</value>
+  </data>
+  <data name="SIMQ_VDI4640_GRENZWERT_UEBERSCHRITTEN" xml:space="preserve">
+    <value>VDI 4640: Grenzwert überschritten — Quelle zu klein bemessen!</value>
+  </data>
+  <data name="SIMQ_VDI4640_GRUNDLAGE_KOLLEKTOR" xml:space="preserve">
+    <value>Klimazone {0}, Bodenart {1}</value>
+  </data>
+  <data name="SIMQ_VDI4640_GRUNDLAGE_SONDE" xml:space="preserve">
+    <value>λ = {0} W/(m·K), {1} Sonde(n), {2} h/a</value>
+  </data>
+  <data name="SIMQ_VDI4640_KEINE_KOLLEKTORFLAECHE" xml:space="preserve">
+    <value>Keine Kollektorfläche angegeben, Prüfung nicht möglich.</value>
+  </data>
+  <data name="SIMQ_VDI4640_KEINE_SONDENLAENGE" xml:space="preserve">
+    <value>Keine Sondenlänge angegeben, Prüfung nicht möglich.</value>
+  </data>
+  <data name="SIMQ_VDI4640_KEINE_VOLLLASTSTUNDEN" xml:space="preserve">
+    <value>Keine Jahresvolllaststunden bekannt, Prüfung nicht möglich.</value>
+  </data>
+  <data name="SIMQ_VDI4640_KLIMAZONE_FEHLT" xml:space="preserve">
+    <value>Klimazone nicht zugeordnet, Prüfung nicht möglich.</value>
+  </data>
+  <data name="SIMQ_VDI4640_KOLLEKTOR_OK" xml:space="preserve">
+    <value>Auslegung liegt innerhalb der Grenzwerte der Tabelle A2.</value>
+  </data>
+  <data name="SIMQ_VDI4640_KOLLEKTOR_ZU_KLEIN" xml:space="preserve">
+    <value>Kollektor ist zu klein bemessen. Erforderlich sind mindestens {0} m² (Zonen-Volllaststunden {1} h/a).</value>
+  </data>
+  <data name="SIMQ_VDI4640_PRUEFUNG_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Auslegungsprüfung nach VDI 4640 nicht möglich — {0}</value>
+  </data>
+  <data name="SIMQ_VDI4640_SONDE_OK" xml:space="preserve">
+    <value>Auslegung liegt innerhalb der Grenzwerte der Tabelle B2 (Auszug).</value>
+  </data>
+  <data name="SIMQ_VDI4640_SONDENFELD_ZU_KLEIN" xml:space="preserve">
+    <value>Sondenfeld ist zu klein bemessen. Erforderlich sind mindestens {0} Sondenmeter.</value>
+  </data>
+  <data name="SIMQ_WPTYP_NICHT_GEPFLEGT" xml:space="preserve">
+    <value>(nicht gepflegt)</value>
+  </data>
 </root>

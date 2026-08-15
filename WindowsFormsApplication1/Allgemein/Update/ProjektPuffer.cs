@@ -22,14 +22,18 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class ProjektPuffer
     {
+        // Die folgenden Zeichenketten sind Persistenzwerte. Sie werden seit Paket 9 / L0
+        // zentral in DbWerte geführt; hier stehen nur noch Aliasse, damit die eingespielten
+        // Aufrufstellen unverändert bleiben und keine zweite Wahrheit entsteht.
+
         /// <summary>Bezeichner des BHKW-Pendelspeichers (Konzept 5.5, Regel R6).</summary>
-        public const string BEZ_PENDELSPEICHER = "BHKW-Pendelspeicher";
+        public const string BEZ_PENDELSPEICHER = DbWerte.PSP_BEZ_PENDELSPEICHER;
 
         /// <summary>Verwendung eines Heizungspuffers (Konzept 5.1).</summary>
-        public const string VERWENDUNG_HEIZUNG = "Heizung";
+        public const string VERWENDUNG_HEIZUNG = DbWerte.PSP_VERWENDUNG_HEIZUNG;
 
         /// <summary>Verwendung eines Brauchwasserspeichers (Konzept 5.1, Paket 2).</summary>
-        public const string VERWENDUNG_BRAUCHWASSER = "Brauchwasser";
+        public const string VERWENDUNG_BRAUCHWASSER = DbWerte.PSP_VERWENDUNG_BRAUCHWASSER;
 
         /// <summary>Einschaltschwelle der Nachladung [%] bei Neuanlage (Konzept 5.1).</summary>
         public const double SCHWELLE_EIN_DEFAULT = 10.0;
@@ -47,13 +51,13 @@ namespace WindowsFormsApplication1
         /// Konfigurationsdialog dieselbe Zeichenkette meinen - eine Abweichung würde
         /// still die falsche Zuordnung auswählen.
         /// </summary>
-        public const string ERZEUGER_WAERMEPUMPE = "Wärmepumpe";
+        public const string ERZEUGER_WAERMEPUMPE = DbWerte.ERZEUGER_WAERMEPUMPE;
 
         /// <summary>Senke "Pufferspeicher Heizung" an der Erzeugeranlage (Konzept 3.2).</summary>
-        public const string WS_ZIEL_PUFFER_HEIZUNG = "PufferHeizung";
+        public const string WS_ZIEL_PUFFER_HEIZUNG = DbWerte.WS_ZIEL_PUFFER_HEIZUNG;
 
         /// <summary>Speichertyp, den der erzeugte Pendelspeicher bekommt.</summary>
-        public const string SPEICHERTYP_PUFFER = "Pufferspeicher";
+        public const string SPEICHERTYP_PUFFER = DbWerte.PSP_SPEICHERTYP_PUFFER;
 
         // ID_Type aus WizardItemClass - hier bewusst als lokale Konstanten, damit weder
         // Migration noch Controller von der UI-Schicht abhängen.

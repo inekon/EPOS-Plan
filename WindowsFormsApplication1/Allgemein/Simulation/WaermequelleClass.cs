@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Data.OleDb;
 using System.Globalization;
@@ -30,22 +30,26 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class WaermequelleClass
     {
+        // Sämtliche Werte dieses Blocks sind Persistenzwerte. Sie werden seit Paket 9 / L0
+        // zentral in DbWerte geführt; hier stehen nur noch Aliasse, damit die vorhandenen
+        // Aufrufstellen unverändert bleiben und keine zweite Wahrheit entsteht.
+
         // Betriebsmodus der Wärmepumpe (Leistungssteuerung)
-        public const string MODUS_LAUFZEIT = "Laufzeit";   // maximale Leistung, Speicher laden
-        public const string MODUS_LEISTUNG = "Leistung";   // nur den Bedarf decken (moduliert)
-        public const string MODUS_PV = "PV";               // bei PV-Überschuss maximale Leistung
+        public const string MODUS_LAUFZEIT = DbWerte.BM_TYP_LAUFZEIT;   // maximale Leistung, Speicher laden
+        public const string MODUS_LEISTUNG = DbWerte.BM_TYP_LEISTUNG;   // nur den Bedarf decken (moduliert)
+        public const string MODUS_PV = DbWerte.BM_TYP_PV;               // bei PV-Überschuss maximale Leistung
 
         // Wärmesenke: welchen Bedarfsanteil deckt der Erzeuger ab?
-        public const string SENKE_BEIDES = "Beides";
-        public const string SENKE_WARMWASSER = "Warmwasser";
-        public const string SENKE_HEIZUNG = "Heizung";
+        public const string SENKE_BEIDES = DbWerte.WS_TYP_BEIDES;
+        public const string SENKE_WARMWASSER = DbWerte.WS_TYP_WARMWASSER;
+        public const string SENKE_HEIZUNG = DbWerte.WS_TYP_HEIZUNG;
 
-        public const string TYP_AUSSENLUFT = "Aussenluft";
-        public const string TYP_KONSTANT = "Konstant";
-        public const string TYP_PUFFER = "Pufferspeicher";
-        public const string TYP_PROFIL = "Profil";
-        public const string TYP_CSV = "CSV";
-        public const string TYP_ERDREICH = "Erdreich";
+        public const string TYP_AUSSENLUFT = DbWerte.WQ_TYP_AUSSENLUFT;
+        public const string TYP_KONSTANT = DbWerte.WQ_TYP_KONSTANT;
+        public const string TYP_PUFFER = DbWerte.WQ_TYP_PUFFERSPEICHER;
+        public const string TYP_PROFIL = DbWerte.WQ_TYP_PROFIL;
+        public const string TYP_CSV = DbWerte.WQ_TYP_CSV;
+        public const string TYP_ERDREICH = DbWerte.WQ_TYP_ERDREICH;
 
         /// <summary>
         /// Größte plausible Verlegetiefe eines Erdkollektors [m]. Reale Kollektoren
@@ -409,7 +413,7 @@ namespace WindowsFormsApplication1
         public static float[] Quelltemperatur(int idEnergieanlage, int idProjekt, string wpTyp, float[] aussentemp)
         {
             // Luft-Wasser: immer Außenluft
-            if (string.IsNullOrEmpty(wpTyp) || wpTyp == "Luft-Wasser") return aussentemp;
+            if (string.IsNullOrEmpty(wpTyp) || wpTyp == DbWerte.WP_BAUART_LUFT_WASSER) return aussentemp;
 
             // Paket 2 / Konzept 13.4: im Engine-Pfad wird STILL gelesen - ein Fehlerdialog
             // aus DataRepository heraus würde den Rechenlauf anhalten.
@@ -454,17 +458,17 @@ namespace WindowsFormsApplication1
                             int idZuordnungsPuffer = ZahlOderNull(SkalarStill(
                                 "SELECT TOP 1 ID_Pufferspeicher FROM Z_ProjektPufferSp " +
                                 "WHERE ID_Projekt=" + idProjekt +
-                                " AND Erzeuger='Wärmepumpe' ORDER BY Prioritaet"));
+                                " AND Erzeuger='" + DbWerte.ERZEUGER_WAERMEPUMPE + "' ORDER BY Prioritaet"));
                             if (PufferSpCtrl.TemperaturenLesen(idZuordnungsPuffer, out vorlauf, out ruecklauf))
                                 return KonstantesProfil((vorlauf + ruecklauf) / 2f);
 
                             // Altdaten: mittlere Temperatur der Zuordnung (still, Paket 2)
                             object vor = SkalarStill(
                                 "SELECT Vorlauf FROM Z_ProjektPufferSp WHERE ID_Projekt=" + idProjekt +
-                                " AND Erzeuger='Wärmepumpe' ORDER BY Prioritaet");
+                                " AND Erzeuger='" + DbWerte.ERZEUGER_WAERMEPUMPE + "' ORDER BY Prioritaet");
                             object rue = SkalarStill(
                                 "SELECT Ruecklauf FROM Z_ProjektPufferSp WHERE ID_Projekt=" + idProjekt +
-                                " AND Erzeuger='Wärmepumpe' ORDER BY Prioritaet");
+                                " AND Erzeuger='" + DbWerte.ERZEUGER_WAERMEPUMPE + "' ORDER BY Prioritaet");
                             if (vor == null || vor == DBNull.Value || rue == null || rue == DBNull.Value)
                                 return aussentemp;
                             float mittel = (Convert.ToSingle(vor) + Convert.ToSingle(rue)) / 2f;
@@ -574,7 +578,7 @@ namespace WindowsFormsApplication1
         public static SimulationPufferspeicher Quellspeicher(int idEnergieanlage, string wpTyp)
         {
             // Luft-Wasser-WP entnimmt keine Wärme aus einem Speicher
-            if (string.IsNullOrEmpty(wpTyp) || wpTyp == "Luft-Wasser") return null;
+            if (string.IsNullOrEmpty(wpTyp) || wpTyp == DbWerte.WP_BAUART_LUFT_WASSER) return null;
 
             // Paket 2 / Konzept 13.4: Stufe 1 des Quellspeicher-Zugriffs läuft still.
             // Vorher hing hier der komplette Aufbau an DataRepository - eine fehlende

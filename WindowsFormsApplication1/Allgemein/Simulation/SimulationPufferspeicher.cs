@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace WindowsFormsApplication1
 {
@@ -17,10 +17,10 @@ namespace WindowsFormsApplication1
     public class SimulationPufferspeicher
     {
         /// <summary>Verwendung "Heizung": Senkenspeicher eines Wärmeerzeugers (Konzept 6.6).</summary>
-        public const string VERWENDUNG_HEIZUNG = "Heizung";
+        public const string VERWENDUNG_HEIZUNG = DbWerte.PSP_VERWENDUNG_HEIZUNG;
 
         /// <summary>Verwendung "Quelle": Quellspeicher einer Wärmepumpe (Wärmequelle).</summary>
-        public const string VERWENDUNG_QUELLE = "Quelle";
+        public const string VERWENDUNG_QUELLE = DbWerte.PSP_VERWENDUNG_QUELLE;
 
         /// <summary>
         /// Verwendung "Brauchwasser": Senkenspeicher im Warmwasserkanal (Konzept 5.1).
@@ -32,7 +32,7 @@ namespace WindowsFormsApplication1
         /// Vollzyklen-Bezug zählt allein, ob es sich um einen Quellspeicher handelt —
         /// alles andere ist ein Senkenspeicher.
         /// </summary>
-        public const string VERWENDUNG_BRAUCHWASSER = "Brauchwasser";
+        public const string VERWENDUNG_BRAUCHWASSER = DbWerte.PSP_VERWENDUNG_BRAUCHWASSER;
 
         public string Bezeichner = "";
         public string Erzeuger = "";

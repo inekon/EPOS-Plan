@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -20,19 +20,21 @@ namespace WindowsFormsApplication1
     {
         // --- Hauptsenke: Werte der Spalte WS_Ziel (Konzept 5.3) -----------------------
 
+        // Persistenzwerte; seit Paket 9 / L0 zentral in DbWerte geführt, hier nur Aliasse.
+
         /// <summary>Direkte Deckung des Momentanbedarfs — Verhalten wie bisher.</summary>
-        public const string ZIEL_HEIZKREIS = "Heizkreis";
+        public const string ZIEL_HEIZKREIS = DbWerte.WS_ZIEL_HEIZKREIS;
 
         /// <summary>Die Anlage lädt einen Projekt-Puffer mit Verwendung „Heizung".</summary>
-        public const string ZIEL_PUFFER_HEIZUNG = "PufferHeizung";
+        public const string ZIEL_PUFFER_HEIZUNG = DbWerte.WS_ZIEL_PUFFER_HEIZUNG;
 
         /// <summary>Die Anlage lädt einen Projekt-Puffer mit Verwendung „Brauchwasser".</summary>
-        public const string ZIEL_PUFFER_BRAUCHWASSER = "PufferBrauchwasser";
+        public const string ZIEL_PUFFER_BRAUCHWASSER = DbWerte.WS_ZIEL_PUFFER_BRAUCHWASSER;
 
         // --- Verwendung eines Projekt-Puffers (Konzept 5.1) ---------------------------
 
-        public const string VERWENDUNG_HEIZUNG = ProjektPuffer.VERWENDUNG_HEIZUNG;   // "Heizung"
-        public const string VERWENDUNG_BRAUCHWASSER = "Brauchwasser";
+        public const string VERWENDUNG_HEIZUNG = DbWerte.PSP_VERWENDUNG_HEIZUNG;
+        public const string VERWENDUNG_BRAUCHWASSER = DbWerte.PSP_VERWENDUNG_BRAUCHWASSER;
 
         // Eine eigene Liste der Erzeugertypen stand hier ursprünglich als
         // ERZEUGER_TYPEN. Sie wurde von niemandem gelesen: Wer die Typen braucht,
