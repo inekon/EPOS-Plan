@@ -1279,16 +1279,11 @@ namespace WindowsFormsApplication1
             if (model.Betriebsart != DbWerte.WP_BETRIEBSART_ALTERNATIV) return;
             if (model.Abschaltpunkt != 0) return;
 
-            // KATALOG-KANDIDAT (Lokalisierung): deutscher Festtext wie bei den übrigen
-            // Protokollmeldungen dieses Moduls; Aufnahme in MyResource steht aus.
             SimulationProtokoll.Aktuell.HinweisEinmal(
                 "wp-alternativ-bivalenztemperatur-0-" + model.ID,
                 MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE +
-                "Die Anlage '" + model.Bezeichner + "' rechnet bivalent-alternativ mit einer " +
-                "Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. " +
-                "Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger " +
-                "übernimmt allein. Ist das nicht beabsichtigt, die Abschalttemperatur der " +
-                "Anlage pflegen.");
+                string.Format(MyResource.Resource.SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG,
+                              model.Bezeichner));
         }
 
         /// <summary>

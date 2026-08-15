@@ -1383,6 +1383,9 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_TAGESVERTEILUNG_FEHLT" xml:space="preserve">
     <value>Heat demand: no data is stored for the daily distribution type "{0}". The demand calculation was aborted at this point; the result is incomplete.</value>
   </data>
+  <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
+    <value>The unit '{0}' calculates in bivalent-alternative mode with a bivalent temperature of 0 °C — the default value of the input field. Below 0 °C the heat pump remains off and the second heat generator takes over alone. If this is not intended, maintain the unit's bivalent temperature.</value>
+  </data>
   <data name="SIMENG_WP_EXTRAPOLATION_HINWEIS" xml:space="preserve">
     <value>Heat pump '{0}': the source temperature falls below the lowest data point of the performance curve ({1} °C). Extrapolation is applied (project setting "Allow extrapolation of the performance curve").</value>
   </data>

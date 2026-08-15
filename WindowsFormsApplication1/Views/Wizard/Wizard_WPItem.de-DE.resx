@@ -234,7 +234,7 @@
     <value>Baujahr</value>
   </data>
   <data name="label_Abschalttemperatur.Text" xml:space="preserve">
-    <value>Abschalttemperatur</value>
+    <value>Bivalenztemperatur</value>
   </data>
   <data name="label3.Text" xml:space="preserve">
     <value>Anteil Speicher für Solaranlage</value>

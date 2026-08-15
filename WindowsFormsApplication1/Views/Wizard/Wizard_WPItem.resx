@@ -741,7 +741,7 @@
     <value>70</value>
   </data>
   <data name="label_Abschalttemperatur.Text" xml:space="preserve">
-    <value>Abschalttemperatur</value>
+    <value>Bivalenztemperatur</value>
   </data>
   <data name="&gt;&gt;label_Abschalttemperatur.Name" xml:space="preserve">
     <value>label_Abschalttemperatur</value>

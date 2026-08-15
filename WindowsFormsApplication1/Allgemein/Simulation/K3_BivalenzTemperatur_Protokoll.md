@@ -122,16 +122,17 @@ bivalent-alternative Anlage mit `Abschaltpunkt == 0`, meldet
 > Wärmepumpe: Die Anlage '…' rechnet bivalent-alternativ mit einer Bivalenztemperatur von
 > 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus
 > und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die
-> Abschalttemperatur der Anlage pflegen.
+> Bivalenztemperatur der Anlage pflegen.
 
 Die Meldung ist **rein informativ** — sie ändert keine Zahl. Nachgewiesen im Lauf: bei
 `T_biv = 0` erscheint sie, bei `T_biv = -2` nicht.
 
-> **Katalog-Kandidat Lokalisierung.** Der Text steht als deutscher Festtext im Code, wie die
-> übrige Protokollmeldung dieses Moduls (`QuellspeicherZusammenfuehren`). Aufnahme in
-> `MyResource` mit `de-DE`/`en-US`-Satelliten steht aus; im Code ist die Stelle als
-> `KATALOG-KANDIDAT (Lokalisierung)` markiert. Nachzutragen in
-> [`Lokalisierung_Katalog.md`](Lokalisierung_Katalog.md).
+> **Katalog-Kandidat Lokalisierung — erledigt (Folgeschritt, 15.08.2026).** Der Text ist als
+> `SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG` in `MyResource` aufgenommen (neutral/`en-US`)
+> und verdrahtet; Nachtrag in [`Lokalisierung_Katalog.md`](Lokalisierung_Katalog.md).
+> Der Meldungsschluss sagt seither „die Bivalenztemperatur der Anlage pflegen" — passend
+> zur umbenannten Beschriftung des Eingabefelds (Abschnitt 9). Die übrige Protokollmeldung
+> dieses Moduls (`QuellspeicherZusammenfuehren`) bleibt ein offener Kandidat.
 
 ### 3.1 Vergleichsgrenze `<` statt `<=` — bewusst
 
@@ -396,6 +397,27 @@ sinnvollerweise auf „Bivalenztemperatur" abstimmen.
 > Nutzer-Chip-Sitzung; die Datei wurde bewusst nicht angefasst. Der Schritt steht nach
 > Freigabe dieser Sitzung an. Bis dahin fängt der Hinweis aus Abschnitt 3 den häufigsten
 > Fall ab (Vorbelegung 0 °C bleibt unbemerkt wirksam).
+
+> **Erledigt im Folgeschritt (15.08.2026).** Die Bivalenztemperatur-Controls sind jetzt bei
+> `Teilparallelbetrieb` UND `Alternativbetrieb` (jeweils mit gesetztem bivalenten Betrieb)
+> sichtbar — gemeinsame Regel `BivalenztemperaturSichtbarkeitSetzen()` in
+> `Views/Wizard/Wizard_WPItem.cs`, Betriebsarten über die `DbWerte`-Konstanten. Die
+> Beschriftung heißt in allen drei `.resx` „Bivalenztemperatur" (en-US: „Bivalent
+> temperature"); die AutoScroll-Auflage aus dem Formular (kein Ausblenden vor OnLoad)
+> bleibt unverändert bestehen. Ein zweiter Dialog existiert nicht:
+> `WPKontextMenuCtrl` und `Form_WPAuswahl` öffnen beide `Wizard_WPItem` — die eine Regel
+> deckt Wizard, Karten und Kontextmenü ab. Der Hinweistext aus Abschnitt 3 ist zugleich
+> lokalisiert (Katalog-Kandidat erledigt, siehe dort).
+>
+> **Verifikation des Folgeschritts.** Build VS-MSBuild x86: 0 Fehler, die sechs
+> Bestandswarnungen. Headless-Roundtrip (Reflection-Harness, Wegwerf-DB-Kopie,
+> Projekt 1008 / Anlage „CS7800iLW 16"): 19/19 PASS — Sichtbarkeit in allen vier
+> Konstellationen (Alternativ/Teilparallel sichtbar, Parallel/unbivalent verborgen),
+> AutoScroll-Versatz für alle vier Controls identisch (−1/−46), Wert −3,5 °C übersteht
+> Dialog → OK → `Del_Projekt_Waermeerzeuger`+`Add_WP_Waermeerzeuger` → Neulesen über
+> `WErzeugerCtrl.ReadAllFilter` → erneutes Öffnen; 0 MessageBoxen. Ergebnisneutralität:
+> Referenzlauf über die acht B3-Projekte gegen `Referenzlaeufe/2026-08-15_B3` —
+> **8/8 PASS (2 094 447 Werte), Byte-/MD5-Gegenprobe 190/190 CSV identisch**.
 
 ---
 
