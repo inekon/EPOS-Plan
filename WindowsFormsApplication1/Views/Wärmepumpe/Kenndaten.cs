@@ -56,17 +56,25 @@ namespace WindowsFormsApplication1
 
         private void btn_ItemNeu_Click(object sender, EventArgs e)
         {
-            if (listBox1.Text == "") { MessageBox.Show("Vorlauftemperatur selektieren!"); return; }
-            if (!Program.checkInt(textBox_Temperatur, textBox_Temperatur.Text)) return;
-            if (!Program.checkDouble(textBox_COP, textBox_COP.Text)) return;
-            if (!Program.checkDouble(textBox_Ptherm, textBox_Ptherm.Text)) return;
-  
+            // Folgepaket zu ab5bf32: geprueft wird am Knopf, die geprueften Werte
+            // wandern direkt in die neue Zeile - kein zweites Parse auf denselben
+            // Text. Typwahl nach dem Speichertyp in Tab_Kenndaten_STAMM: Vorlauf und
+            // Temperatur sind Ganzzahl-, COP und Ptherm Double-Spalten. Leere Felder
+            // meldeten schon bisher (checkInt/checkDouble), daher leerErlaubt:false.
+            int nVorlauf;
+            if (!Program.GanzzahlParsen(listBox1.Text, out nVorlauf)) { MessageBox.Show("Vorlauftemperatur selektieren!"); return; }
+
+            int nTemperatur; double dCOP, dPtherm;
+            if (!Program.GanzzahlPruefen(textBox_Temperatur, "Temperatur [°C]", out nTemperatur, leerErlaubt: false)) return;
+            if (!Program.ZahlPruefen(textBox_COP, "COP", out dCOP, leerErlaubt: false)) return;
+            if (!Program.ZahlPruefen(textBox_Ptherm, "Ptherm [kW]", out dPtherm, leerErlaubt: false)) return;
+
             DataRow newRow = dt.NewRow();
             newRow["ID_WP"] = m_ID_WP;
-            newRow["Vorlauf"] = Int32.Parse(listBox1.Text);
-            newRow["Temperatur"] = Int32.Parse(textBox_Temperatur.Text);
-            newRow["COP"] = Double.Parse(textBox_COP.Text);
-            newRow["Ptherm"] = Double.Parse(textBox_Ptherm.Text);
+            newRow["Vorlauf"] = nVorlauf;
+            newRow["Temperatur"] = nTemperatur;
+            newRow["COP"] = dCOP;
+            newRow["Ptherm"] = dPtherm;
             dt.Rows.Add(newRow);
             textBox_Temperatur.Text = "";
             textBox_COP.Text = "";
@@ -75,11 +83,14 @@ namespace WindowsFormsApplication1
 
         private void btn_NeuVorlauf_Click(object sender, EventArgs e)
         {
-            if (!Program.checkInt(textBox_NeuVorlauf, textBox_NeuVorlauf.Text)) return;
-   
+            // Ganzzahl, weil Vorlauf als Integer gespeichert wird; leer meldete schon
+            // bisher (checkInt) und meldet weiter.
+            int nVorlauf;
+            if (!Program.GanzzahlPruefen(textBox_NeuVorlauf, "Vorlauftemperatur [°C]", out nVorlauf, leerErlaubt: false)) return;
+
             DataRow newRow = dt.NewRow();
             newRow["ID_WP"] = m_ID_WP;
-            newRow["Vorlauf"] = Int32.Parse(textBox_NeuVorlauf.Text);
+            newRow["Vorlauf"] = nVorlauf;
             newRow["Temperatur"] = 0;
             newRow["COP"] = 0;
             newRow["Ptherm"] = 0;
@@ -113,23 +124,27 @@ namespace WindowsFormsApplication1
             Close();
         }
 
+        /// <summary>
+        /// Zellpruefung des Rasters: still absichern statt melden (Folgepaket zu
+        /// ab5bf32). Bei unlesbarem Text wird die Bearbeitung wie bisher verworfen -
+        /// die Zelle faellt sichtbar auf den alten Wert zurueck. Spalte 3 ist
+        /// Temperatur (Ganzzahl), 4 und 5 sind COP und Ptherm (Double).
+        /// </summary>
         private void checkValue(object sender, DataGridViewCellValidatingEventArgs e)
         {
-            var dgv = (DataGridView)sender;
-            int rowIdx = e.RowIndex;
             int colIdx = e.ColumnIndex;
             if (colIdx == 4 || colIdx == 5)
             {
-                Control c = dgv.Controls[0];
-                if (!Program.checkDouble(c, e.FormattedValue.ToString()))
+                double dWert;
+                if (!Program.ZahlParsen(e.FormattedValue.ToString(), out dWert))
                 {
                     dataGridView1.CancelEdit();
                 }
             }
             if (colIdx == 3)
             {
-                Control c = dgv.Controls[0];
-                if (!Program.checkInt(c, e.FormattedValue.ToString()))
+                int nWert;
+                if (!Program.GanzzahlParsen(e.FormattedValue.ToString(), out nWert))
                 {
                     dataGridView1.CancelEdit();
                 }

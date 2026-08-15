@@ -150,18 +150,25 @@ namespace WindowsFormsApplication1
             int Tag = listBox_Tag.SelectedIndex;
             if (Tag == -1) return;
 
+            // Erst alle 24 Stundenwerte pruefen, dann uebernehmen (Folgepaket zu
+            // ab5bf32): bei ungueltiger oder leerer Eingabe meldet der Helfer
+            // sprechend, der Dialog bleibt offen und der Tag bleibt unveraendert.
+            TextBox[] felder = new TextBox[24];
+            double[] werte = new double[24];
             for (int stunde = 0; stunde < 24; stunde++)
             {
-                string ctrlName = "st" + (stunde + 1).ToString();
-                Control ctrl = tabPage1.Controls[ctrlName];
-                if (ctrl == null) continue;
+                felder[stunde] = tabPage1.Controls["st" + (stunde + 1).ToString()] as TextBox;
+                if (felder[stunde] == null) continue;
 
-                string szval = ctrl.Text;
-                if (!Program.checkDouble(ctrl, szval)) return;
+                if (!Program.ZahlPruefen(felder[stunde], "Stundenwert " + (stunde + 1).ToString(), out werte[stunde])) return;
+            }
 
-                double dval = double.Parse(szval);
-                arr[Tag, stunde] = dval;
-                arr_seriell[Tag * 24 + stunde] = dval;
+            for (int stunde = 0; stunde < 24; stunde++)
+            {
+                if (felder[stunde] == null) continue;
+
+                arr[Tag, stunde] = werte[stunde];
+                arr_seriell[Tag * 24 + stunde] = werte[stunde];
             }
             pictureBox1.Visible = true;
             pictureBox1.Refresh();

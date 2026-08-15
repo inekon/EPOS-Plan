@@ -72,20 +72,31 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Click(object sender, EventArgs e)
         {
-            if (textBox_Degradation.Text == "" || textBox_Energie.Text == "" || textBox_Ladezustand.Text == "" ||
-                textBox_Leistung.Text == "" || textBox_Typ.Text == "")
+            if (textBox_Typ.Text == "")
             {
                 MessageBox.Show("Eingaben überprüfen!");
                 return;
             }
 
+            // Zahlen erst hier pruefen (Folgepaket zu ab5bf32): das erste ungueltige
+            // oder leere Feld meldet sprechend, bekommt den Fokus, und der Dialog
+            // bleibt offen. Alle fuenf Werte sind double (StromspeicherModel), daher
+            // durchgaengig ZahlPruefen. Leer meldet wie zuvor - vier Felder liefen in
+            // die frueher hier stehende Leerpruefung, Modulkosten in eine Exception.
+            double dEnergie, dLeistung, dDegradation, dLadezustand, dModulkosten;
+            if (!Program.ZahlPruefen(textBox_Energie, "Energie", out dEnergie)) return;
+            if (!Program.ZahlPruefen(textBox_Leistung, "Leistung", out dLeistung)) return;
+            if (!Program.ZahlPruefen(textBox_Degradation, "Degradation", out dDegradation)) return;
+            if (!Program.ZahlPruefen(textBox_Ladezustand, "Ladezustand", out dLadezustand)) return;
+            if (!Program.ZahlPruefen(textBox_Modulkosten, "Modulkosten", out dModulkosten)) return;
+
             try
             {
-                model.m_Energie = double.Parse(textBox_Energie.Text);
-                model.m_Leistung = double.Parse(textBox_Leistung.Text);
-                model.m_Degradation = double.Parse(textBox_Degradation.Text);
-                model.m_Ladezustand = double.Parse(textBox_Ladezustand.Text);
-                model.m_Modulkosten = double.Parse(textBox_Modulkosten.Text);
+                model.m_Energie = dEnergie;
+                model.m_Leistung = dLeistung;
+                model.m_Degradation = dDegradation;
+                model.m_Ladezustand = dLadezustand;
+                model.m_Modulkosten = dModulkosten;
 
                 if (m_Neu)
                 {
@@ -152,23 +163,28 @@ namespace WindowsFormsApplication1
             {
                 DataRow row = dt.Rows[0];
 
+                // Durchklicken des Katalogs darf nicht an NULL-Spalten scheitern:
+                // stille Parser statt double.Parse, ein nicht lesbarer Wert zaehlt
+                // wie 0 (so fuellt auch StromspeicherStammCtrl.Fill). Keine Meldung.
+                double dWert;
+
                 textBox_Energie.Text = row["Energie"].ToString();
-                model.m_Energie = double.Parse(textBox_Energie.Text);
+                model.m_Energie = Program.ZahlParsen(textBox_Energie.Text, out dWert) ? dWert : 0.0;
 
                 textBox_Leistung.Text = row["Leistung"].ToString();
-                model.m_Leistung = double.Parse(textBox_Leistung.Text); // Fehler korrigiert: war vorher model.m_Energie
+                model.m_Leistung = Program.ZahlParsen(textBox_Leistung.Text, out dWert) ? dWert : 0.0; // Fehler korrigiert: war vorher model.m_Energie
 
                 textBox_Typ.Text = row["Typ"] != DBNull.Value ? row["Typ"].ToString() : "";
                 model.m_szTyp = textBox_Typ.Text;
 
                 textBox_Degradation.Text = row["Degradation"].ToString();
-                model.m_Degradation = double.Parse(textBox_Degradation.Text);
+                model.m_Degradation = Program.ZahlParsen(textBox_Degradation.Text, out dWert) ? dWert : 0.0;
 
                 textBox_Ladezustand.Text = row["Ladezustand"].ToString();
-                model.m_Ladezustand = double.Parse(textBox_Ladezustand.Text);
+                model.m_Ladezustand = Program.ZahlParsen(textBox_Ladezustand.Text, out dWert) ? dWert : 0.0;
 
                 textBox_Modulkosten.Text = row["Modulkosten"].ToString();
-                model.m_Modulkosten = double.Parse(textBox_Modulkosten.Text);
+                model.m_Modulkosten = Program.ZahlParsen(textBox_Modulkosten.Text, out dWert) ? dWert : 0.0;
 
                 textBox_Bezeichner.Text = row["Bezeichner"].ToString();
                 model.m_szBezeichner = textBox_Bezeichner.Text;
@@ -259,24 +275,28 @@ namespace WindowsFormsApplication1
             if (textBox_Typ.Text == "") { MessageBox.Show("Eingabe überprüfen!"); }
         }
 
+        // Validating faerbt nur noch (Folgepaket zu ab5bf32): kein modales Melden und
+        // kein Undo() mehr beim Verlassen des Feldes - gemeldet wird erst am
+        // Speichern-Knopf. Gefaerbt wird nach den Zahlregeln, weil alle vier Werte
+        // als double gespeichert werden (StromspeicherModel).
         private void textBox_Leistung_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_Leistung, textBox_Leistung.Text)) { textBox_Leistung.Undo(); }
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Energie_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_Energie, textBox_Energie.Text)) { textBox_Energie.Undo(); }
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Ladezustand_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_Ladezustand, textBox_Ladezustand.Text)) { textBox_Ladezustand.Undo(); }
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Degradation_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox_Degradation, textBox_Degradation.Text)) { textBox_Degradation.Undo(); }
+            Program.ZahlFaerben(sender);
         }
     }
 }

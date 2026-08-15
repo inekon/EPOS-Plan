@@ -210,9 +210,17 @@ namespace WindowsFormsApplication1
                     textBox_Bezeichnung.Focus();
                     return;
                 }
+
+                // Folgepaket zu ab5bf32: Koordinaten erst hier pruefen - im TextChanged
+                // wird nur noch gefaerbt. Die Pruefung steht vor Download und
+                // Transaktion, damit der Dialog bei ungueltiger Eingabe unveraendert
+                // offen bleibt. Leere Felder faengt die Abfrage darueber ab, deshalb
+                // leerErlaubt:false. ZahlPruefen liest Komma wie Punkt und ersetzt das
+                // kulturabhaengige Convert.ToDouble(Replace('.', ',')).
+                if (!Program.ZahlPruefen(textBox_Longitude, "Longitude", out Lon, leerErlaubt: false)) return;
+                if (!Program.ZahlPruefen(textBox_Latitude, "Latitude", out Lat, leerErlaubt: false)) return;
+
                 pBar_Import.Visible = true;
-                Lon = Convert.ToDouble(textBox_Longitude.Text.Replace('.', ','));
-                Lat = Convert.ToDouble(textBox_Latitude.Text.Replace('.', ','));
                 DisplayName = "";
                 Listbezeichner = textBox_Bezeichnung.Text;
             }
@@ -375,16 +383,18 @@ namespace WindowsFormsApplication1
             return 0;
         }
           
+        // TextChanged faerbt nur noch (Folgepaket zu ab5bf32): keine Meldung und kein
+        // Clear() mehr bei jedem Tastendruck - gemeldet wird erst am Import-Knopf.
+        // Zahl statt Ganzzahl, weil Longitude und Latitude als double gespeichert und
+        // an PVGIS uebergeben werden.
         private void textBox_Longitude_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Clear();
+            Program.ZahlFaerben(sender);
         }
 
         private void textBox_Latitude_TextChanged(object sender, EventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Clear();
+            Program.ZahlFaerben(sender);
         }
 
         private void panel_KlimaGraph_Paint(object sender, PaintEventArgs e)
