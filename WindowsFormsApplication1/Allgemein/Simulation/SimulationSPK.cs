@@ -405,8 +405,207 @@ namespace WindowsFormsApplication1
         /// <summary>Anzahl der Kessel des zweikanaligen Wegs (nach der MAX_SPK-Grenze).</summary>
         private int _anzahlZweikanalig = 0;
 
-        /// <summary>Nutzwärme, die ein Kessel in der LAUFENDEN Stunde abgegeben hat [kWh].</summary>
+        /// <summary>
+        /// BRENNSTOFFBASIERTE Wärme, die ein Kessel in der LAUFENDEN Stunde erzeugt hat
+        /// [kWh] — die Bezugsgröße von Verbrauch, Emissionen und Jahresnutzungsgrad.
+        ///
+        /// Ohne Quellpuffer ist sie identisch mit der ABGABE (<see cref="_kesselAbgabe"/>).
+        /// Mit Quellpuffer (Etappe D5a) trennen sich beide: Der Kessel gibt weiterhin die
+        /// volle Nutzwärme ab, hebt aber nur noch von der Puffertemperatur aus an — den
+        /// Rest hat der Puffer beigesteuert.
+        /// </summary>
         private readonly double[] _kesselStunde = new double[MAX_SPK];
+
+        /// <summary>
+        /// GESAMTE Wärmeabgabe eines Kessels in der laufenden Stunde [kWh], also
+        /// brennstoffbasierte Wärme PLUS Quellwärme aus dem Puffer (Etappe D5a).
+        ///
+        /// Sie entscheidet allein darüber, ob der Kessel in dieser Stunde LÄUFT — und
+        /// damit, ob ihm der Bereitschaftsverlust anzulasten ist. Ein Kessel, der
+        /// vorgewärmtes Wasser nur noch geringfügig anhebt, steht nicht still.
+        /// Ohne Quellpuffer ist das Feld Wert für Wert <see cref="_kesselStunde"/>.
+        /// </summary>
+        private readonly double[] _kesselAbgabe = new double[MAX_SPK];
+
+        // ------------------------------------------------------------------
+        // WÄRMEQUELLE PUFFERSPEICHER (Etappe D5a, Konzept_KonfigUI_Hydraulik
+        // Anforderung 6 — „Kessel-Kaskade")
+        //
+        // Ein Kessel mit WQ_Typ = Pufferspeicher und gültiger WQ_ID_Puffer bezieht seine
+        // EINTRITTSTEMPERATUR aus diesem Puffer statt aus dem Systemrücklauf. Er muss die
+        // Nutzwärme deshalb nicht mehr über die ganze Spreizung anheben, sondern nur noch
+        // über den Rest:
+        //
+        //     Anteil = (T_Quelle − T_Rücklauf) / (T_Vorlauf − T_Rücklauf)      [0…1]
+        //     Q_Puffer = Anteil · Q_nutz         (Entnahme = ENTLADUNG des Quellpuffers)
+        //     Q_Kessel = Q_nutz − Q_Puffer       (nur DAS kostet Brennstoff)
+        //
+        // Das ist Zeile für Zeile die Konstruktion des Wärmepumpen-Quellbezugs, nur mit
+        // dem Temperaturhub statt der Leistungszahl als Aufteilungsschlüssel: Dort gilt
+        // Q_Quelle = Q · (1 − 1/COP), hier Q_Quelle = Q · Anteil.
+        //
+        // LIEFERT DER PUFFER WENIGER als Anteil · Q_nutz (er ist leer), springt der
+        // Brennstoff für den Fehlbetrag ein — die Abgabe an den Kanal bleibt dieselbe,
+        // die Energiebilanz geht auf. Die MENGE dieser Stunde ist dann aber nicht mehr
+        // frei: Sie ist so zu wählen, dass der Fehlbetrag noch in die Nennleistung passt
+        // (siehe MaxAbgabe, Nacharbeit E-K1-1).
+        //
+        // MODELLENTSCHEIDUNG zur Kesselleistung: Die Nennleistung begrenzt den EIGENEN,
+        // brennstoffbasierten Beitrag — die Wärme aus dem Puffer kommt obendrauf:
+        //
+        //     Q_nutz(max) = min( P_nenn / (1 − Anteil),  P_nenn + Inhalt(Quellpuffer) )
+        //
+        // Das ist die hydraulische Kaskade, wie das Konzept sie beschreibt: Der Brenner
+        // hebt weiter an, was der Puffer schon vorgewärmt hat — aber nur so weit, wie er
+        // wirklich vorgewärmt hat. Die naheliegende Variante „Nennleistung begrenzt die
+        // ganze Abgabe" ist an Szenario (d) gemessen und verworfen; die Begründung steht
+        // in D5a_KombiKaskade_Protokoll.md, Abschnitt „Nacharbeit nach Reviews".
+        // Eine Begrenzung nach Massenstrom und Wärmeübertrager kennt das Modell an keiner
+        // Stelle — auch der Speicher hat keine Lade-/Entladeleistung (vorgemerkter
+        // Parameter, Konzept 3.4).
+        // ------------------------------------------------------------------
+
+        /// <summary>Quellpuffer je Kessel; <c>null</c> = keiner (Regelfall).</summary>
+        private readonly SimulationPufferspeicher[] _quellSpeicher =
+            new SimulationPufferspeicher[MAX_SPK];
+
+        /// <summary>Anteil der Nutzwärme, den der Quellpuffer beisteuert (0…1); 0 = kein Bezug.</summary>
+        private readonly double[] _quellAnteil = new double[MAX_SPK];
+
+        /// <summary>
+        /// Meldungen über Quellentnahmen der laufenden Phase — die Kaskadenschleife führt
+        /// daraus die Herkunftsrechnung fort und leert die Liste (siehe
+        /// <see cref="Quellentnahme"/>). Ohne Quellpuffer bleibt sie durchgehend leer.
+        /// </summary>
+        public readonly List<Quellentnahme> Quellentnahmen = new List<Quellentnahme>();
+
+        /// <summary>Aus Quellpuffern bezogene Wärme je Stunde [kWh]; ohne Quellbezug exakt 0.</summary>
+        public double[] Quellwaerme_stuendlich = new double[8760];
+
+        /// <summary>Jahressumme der Quellwärme [kWh]; ohne Quellbezug exakt 0.</summary>
+        public double Quellwaerme_gesamt = 0;
+
+        /// <summary>
+        /// RECHENEBENE je Kessel (Etappe D5a) — indexgleich zu <see cref="spk_list"/>.
+        /// Gesetzt von der Kaskadenschleife aus den Quellbezügen; <c>null</c> oder ein
+        /// Vektor aus Nullen bedeutet „alle Kessel rechnen auf Ebene 0", also wie bisher.
+        /// </summary>
+        public int[] ModulEbenen;
+
+        /// <summary>Ebene, die die Kaskadenschleife gerade abarbeitet (Etappe D5a).</summary>
+        public int AktiveEbene = 0;
+
+        /// <summary>true, wenn Kessel <paramref name="i"/> auf der aktiven Ebene rechnet.</summary>
+        private bool EbeneAktiv(int i)
+        {
+            if (ModulEbenen == null || i < 0 || i >= ModulEbenen.Length) return AktiveEbene == 0;
+            return ModulEbenen[i] == AktiveEbene;
+        }
+
+        /// <summary>
+        /// Setzt den Quellbezug eines Kessels (Etappe D5a). Aufgerufen von
+        /// <c>SimulationControl</c>, nachdem die Speicher-Registry offen ist.
+        /// </summary>
+        /// <param name="index">Kesselindex, wie in <see cref="spk_list"/></param>
+        /// <param name="speicher">Quellpuffer; <c>null</c> hebt den Bezug auf</param>
+        /// <param name="anteil">Anteil der Nutzwärme aus dem Puffer (0…1)</param>
+        public void QuellbezugSetzen(int index, SimulationPufferspeicher speicher, double anteil)
+        {
+            if (index < 0 || index >= MAX_SPK) return;
+
+            if (anteil < 0) anteil = 0;
+            if (anteil > 1) anteil = 1;
+
+            _quellSpeicher[index] = (anteil > 0) ? speicher : null;
+            _quellAnteil[index] = (speicher != null) ? anteil : 0;
+        }
+
+        /// <summary>Quellpuffer eines Kessels; <c>null</c> = keiner (für Anzeige und Protokoll).</summary>
+        public SimulationPufferspeicher QuellSpeicher(int index)
+        {
+            if (index < 0 || index >= MAX_SPK) return null;
+            return _quellSpeicher[index];
+        }
+
+        /// <summary>Quellanteil eines Kessels (0…1); 0 = kein Bezug.</summary>
+        public double QuellAnteil(int index)
+        {
+            if (index < 0 || index >= MAX_SPK) return 0;
+            return _quellAnteil[index];
+        }
+
+        /// <summary>
+        /// Höchste Wärmeabgabe eines Kessels in der laufenden Stunde [kWh].
+        ///
+        /// Ohne Quellpuffer ist das die verbliebene Nennleistung — Wert für Wert der
+        /// bisherige Ausdruck. Mit Quellpuffer kommt der Puffer-Anteil obendrauf (siehe
+        /// den Blockkommentar zum Quellbezug).
+        ///
+        /// <para><b>ZWEI Schranken, nicht eine</b> (Nacharbeit E-K1-1). Der Puffer ist
+        /// nach der Formel mit <c>Anteil</c> beteiligt — LIEFERN kann er aber nur, was in
+        /// ihm steht. Deshalb sind beide Grenzen zu bilden und die kleinere gilt:
+        /// <code>
+        ///   nachLeistung = P_rest / (1 − Anteil)     // der Puffer liefert wie gerechnet
+        ///   nachQuelle   = P_rest + Inhalt           // der Puffer liefert weniger,
+        ///                                            // der Brennstoff deckt den Rest
+        /// </code>
+        /// In beiden Fällen bleibt der BRENNSTOFFBASIERTE Beitrag
+        /// <c>eigen = menge − geliefert</c> damit ≤ <see cref="_restLeistung"/>, und die
+        /// Nennleistung ist je Stunde eingehalten. Vorher stand hier nur die erste
+        /// Schranke; klemmte <c>Entladen</c> am Füllstand, wurde die Differenz
+        /// brennstoffbasiert und <c>_restLeistung</c> beliebig negativ — der Kessel lief
+        /// über seiner Nennleistung (gemessen: 200,8 MWh bei 19,3 kW · 8760 h = 169,1 MWh).
+        /// </para>
+        ///
+        /// <para>Der Ausdruck ist STETIG in <c>Anteil</c>: Je näher der Anteil an 1 rückt,
+        /// desto größer wird <c>nachLeistung</c>, und die bindende Schranke ist der
+        /// Speicherinhalt. Bei <c>Anteil = 1</c> — der Puffer trägt die ganze Anhebung —
+        /// bleibt <c>nachQuelle</c>: sein Inhalt plus die Nennleistung, mit der der
+        /// Brenner den Fehlbetrag von der Rücklauftemperatur aus deckt.</para>
+        /// </summary>
+        private double MaxAbgabe(int i)
+        {
+            double eigen = _restLeistung[i];
+            if (eigen <= 0) return 0;
+
+            SimulationPufferspeicher q = _quellSpeicher[i];
+            if (q == null || _quellAnteil[i] <= 0) return eigen;
+
+            // Was der Quellpuffer in DIESER Stunde höchstens beisteuern kann. Entladen()
+            // klemmt am Füllstand; die Entnahmefähigkeit ist der vorgemerkte Parameter
+            // aus Konzept 3.4 (heute unbegrenzt).
+            double ausQuelle = Math.Min(q.SOC > 0 ? q.SOC : 0, q.Entnahmefaehigkeit());
+
+            double nachQuelle = eigen + ausQuelle;
+            if (_quellAnteil[i] >= 1) return nachQuelle;
+
+            double nachLeistung = eigen / (1.0 - _quellAnteil[i]);
+            return Math.Min(nachLeistung, nachQuelle);
+        }
+
+        /// <summary>
+        /// Holt den Quellanteil einer gerade abgegebenen Wärmemenge aus dem Quellpuffer
+        /// und meldet die Entnahme an die Herkunftsrechnung.
+        /// </summary>
+        /// <param name="ziel">Zielspeicher der Wärme; <c>null</c> = Direktdeckung</param>
+        /// <returns>tatsächlich aus dem Puffer bezogene Wärme [kWh]</returns>
+        private double QuellwaermeHolen(int i, double menge, int stunde,
+                                        SimulationPufferspeicher ziel)
+        {
+            if (menge <= 0) return 0;
+
+            SimulationPufferspeicher q = _quellSpeicher[i];
+            if (q == null || _quellAnteil[i] <= 0) return 0;
+
+            double geliefert = q.Entladen(menge * _quellAnteil[i], stunde);
+            if (geliefert <= 0) return 0;
+
+            Quellwaerme_gesamt += geliefert;
+            if (stunde >= 0 && stunde < 8760) Quellwaerme_stuendlich[stunde] += geliefert;
+
+            Quellentnahmen.Add(new Quellentnahme { Quelle = q, Menge = geliefert, Ziel = ziel });
+            return geliefert;
+        }
 
         /// <summary>Noch nicht vergebene Leistung eines Kessels in der laufenden Stunde [kW].</summary>
         private readonly double[] _restLeistung = new double[MAX_SPK];
@@ -544,6 +743,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
                 _kesselStunde[i] = 0;
+                _kesselAbgabe[i] = 0;
                 _restLeistung[i] = Kessel_Leistung_Spk[i];
             }
 
@@ -579,6 +779,11 @@ namespace WindowsFormsApplication1
             {
                 if (_restLeistung[i] <= 0) continue;
 
+                // D5a: In dieser Phase rechnen nur die Kessel der aktiven Rechenebene.
+                // Ohne Quellbezug steht jeder Kessel auf Ebene 0 und die Prüfung ist
+                // immer wahr.
+                if (!EbeneAktiv(i)) continue;
+
                 Senkenzuordnung z = _kesselSenke[i];
                 if (z != null && z.Haupt != Senke.Heizkreis) continue;
 
@@ -590,13 +795,24 @@ namespace WindowsFormsApplication1
 
                 if (verfuegbar <= 0) continue;
 
-                double menge = Math.Min(_restLeistung[i], verfuegbar);
+                double menge = Math.Min(MaxAbgabe(i), verfuegbar);
                 if (menge <= 0) continue;
 
                 Kaskadenschleife.SenkeAbziehen(wsTyp, menge, ref rest_ww, ref rest_heiz);
 
-                _restLeistung[i] -= menge;
-                _kesselStunde[i] += menge;
+                _kesselAbgabe[i] += menge;
+
+                // D5a: Der Quellpuffer trägt seinen Temperaturhub bei; nur der Rest kostet
+                // Brennstoff und verbraucht Nennleistung. Ohne Quellbezug ist der Abzug
+                // exakt 0 und beide Zeilen sind die bisherigen.
+                double eigen = menge - QuellwaermeHolen(i, menge, stunde, null);
+                _restLeistung[i] -= eigen;
+                _kesselStunde[i] += eigen;
+
+                // E-K1-1: MaxAbgabe hält „eigen ≤ Restleistung" rechnerisch ein; die
+                // Klemmung fängt allein die Gleitkomma-Reste. Ohne Quellbezug ist
+                // _restLeistung nie negativ und die Zeile wirkungslos.
+                if (_restLeistung[i] < 0) _restLeistung[i] = 0;
             }
 
             if (stunde >= 0 && stunde < 8760) Restwaerme[stunde] = (float)(rest_heiz + rest_ww);
@@ -625,12 +841,14 @@ namespace WindowsFormsApplication1
 
             SimulationPufferspeicher sp = a.Speicher;
 
-            int kanal = sp.IstBrauchwasserkanal ? 1 : 0;
+            // D5a: Beim KOMBISPEICHER ist das Durchsatzbudget die Summe beider Kanäle;
+            // die gemeinsame Fassung steht in der Kaskadenschleife. Ohne Kombispeicher
+            // liefert sie Anweisung für Anweisung das Bisherige.
             double ladefaehig = sp.Ladefaehigkeit(a.ObergrenzeStunde(pvUeberschuss));
-            double durchlass = Math.Min(absehbar[kanal] > 0 ? absehbar[kanal] : 0, sp.Entnahmefaehigkeit());
+            double durchlass = Kaskadenschleife.DurchlassBudget(sp, absehbar);
             if (ladefaehig + durchlass <= 0) return 0;
 
-            double menge = Math.Min(_restLeistung[i], ladefaehig + durchlass);
+            double menge = Math.Min(MaxAbgabe(i), ladefaehig + durchlass);
             if (menge <= 0) return 0;
 
             double ladung = sp.Laden(menge, stunde, durchlass);
@@ -638,20 +856,32 @@ namespace WindowsFormsApplication1
 
             double genutzterDurchlass = ladung - ladefaehig;
             if (genutzterDurchlass > 0)
-            {
-                absehbar[kanal] -= genutzterDurchlass;
-                if (absehbar[kanal] < 0) absehbar[kanal] = 0;
-            }
+                Kaskadenschleife.DurchlassBuchen(sp, absehbar, genutzterDurchlass);
 
-            _restLeistung[i] -= ladung;
-            _kesselStunde[i] += ladung;
+            _kesselAbgabe[i] += ladung;
+
+            // D5a: Auch die Speicherladung kann zum Teil aus dem Quellpuffer stammen.
+            // Gemeldet wird sie mit ZIEL — die Kaskadenschleife bucht die Herkunft in den
+            // Zielspeicher um, statt sie dem Kessel gutzuschreiben.
+            double ausQuelle = QuellwaermeHolen(i, ladung, stunde, sp);
+            _restLeistung[i] -= (ladung - ausQuelle);
+            _kesselStunde[i] += ladung - ausQuelle;
+
+            // E-K1-1: siehe Stunde_Bedarf — nur die Gleitkomma-Klemmung.
+            if (_restLeistung[i] < 0) _restLeistung[i] = 0;
 
             // N1 (Paket-5-Nacharbeit): Die Speicherladung getrennt mitführen. Sie bleibt
             // Teil der Nutzwärme (der Brennstoff dafür ist geflossen), darf aber nicht als
             // BEDARFSDECKUNG gelten — sonst meldet Tab_ErgebnisHeizkessel einen negativen
             // Restwärmebedarf und eine Deckungssumme über 100 % (gemessen an 1018/1023).
-            Speicherladung_gesamt += ladung;
-            if (stunde >= 0 && stunde < 8760) Speicherladung_stuendlich[stunde] += ladung;
+            //
+            // D5a: Geführt wird der EIGENE Anteil. Die Ergebnisbildung zieht diese Größe
+            // von der (ebenfalls brennstoffbasierten) Nutzwärme ab; stünde hier die volle
+            // Ladung, würde die Differenz um die Quellwärme zu klein — bei reiner
+            // Puffer-Hauptsenke sogar negativ.
+            Speicherladung_gesamt += ladung - ausQuelle;
+            if (stunde >= 0 && stunde < 8760)
+                Speicherladung_stuendlich[stunde] += ladung - ausQuelle;
 
             return ladung;
         }
@@ -683,7 +913,10 @@ namespace WindowsFormsApplication1
 
                 double stuendlicherBrennstoffverbrauchKW;
 
-                if (KesselLeistung > 0)
+                // D5a: „Läuft der Kessel?" entscheidet die ABGABE, nicht der
+                // brennstoffbasierte Anteil. Ohne Quellpuffer sind beide gleich, und die
+                // Verzweigung ist Wort für Wort die bisherige.
+                if (_kesselAbgabe[i] > 0)
                 {
                     // Kessel läuft -> Verbrauch über Wirkungsgrad (in dieser Stunde kein Stillstandsverlust)
                     stuendlicherBrennstoffverbrauchKW = KesselLeistung / wirk;
@@ -792,6 +1025,18 @@ namespace WindowsFormsApplication1
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
             Speicherladung_gesamt = 0;
             Speicherentladung_Anteil = 0;
+
+            // D5a: Der Quellbezug gehört zum Laufzustand. ModulEbenen/AktiveEbene setzt
+            // die Kaskadenschleife je Lauf neu; die Quellpuffer setzt SimulationControl,
+            // nachdem die Registry offen ist.
+            Array.Clear(Quellwaerme_stuendlich, 0, Quellwaerme_stuendlich.Length);
+            Quellwaerme_gesamt = 0;
+            Quellentnahmen.Clear();
+            Array.Clear(_quellSpeicher, 0, _quellSpeicher.Length);
+            Array.Clear(_quellAnteil, 0, _quellAnteil.Length);
+            Array.Clear(_kesselAbgabe, 0, _kesselAbgabe.Length);
+            ModulEbenen = null;
+            AktiveEbene = 0;
 
             Maximale_Kesselleistung_Spk = 0;
             Stromverbrauch_Spk = 0;

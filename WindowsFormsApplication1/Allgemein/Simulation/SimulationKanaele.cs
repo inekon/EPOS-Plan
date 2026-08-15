@@ -341,6 +341,27 @@ namespace WindowsFormsApplication1
             szOk &= Senkenzuordnung.ZielAusSenke(Senke.PufferHeizung) == WaermesenkeClass.ZIEL_PUFFER_HEIZUNG;
             szOk &= Senkenzuordnung.ZielAusSenke(Senke.Heizkreis) == WaermesenkeClass.ZIEL_HEIZKREIS;
 
+            // D5a: das dritte Puffer-Ziel muss hin und zurueck abbilden, und der
+            // Kombispeicher muss BEIDE Kanaele bedienen (Anforderungen 4/7).
+            szOk &= Senkenzuordnung.SenkeAusZiel(WaermesenkeClass.ZIEL_PUFFER_KOMBI) == Senke.PufferKombi;
+            szOk &= Senkenzuordnung.ZielAusSenke(Senke.PufferKombi) == WaermesenkeClass.ZIEL_PUFFER_KOMBI;
+            szOk &= WaermesenkeClass.IstPufferZiel(WaermesenkeClass.ZIEL_PUFFER_KOMBI);
+            szOk &= WaermesenkeClass.VerwendungZuZiel(WaermesenkeClass.ZIEL_PUFFER_KOMBI) ==
+                    WaermesenkeClass.VERWENDUNG_KOMBI;
+
+            SimulationPufferspeicher kombi = new SimulationPufferspeicher
+            { Verwendung = SimulationPufferspeicher.VERWENDUNG_KOMBI };
+            szOk &= kombi.IstKombi && kombi.BedientKanal(true) && kombi.BedientKanal(false) &&
+                    !kombi.IstBrauchwasserkanal && !kombi.IstQuelle;
+
+            SimulationPufferspeicher heiz = new SimulationPufferspeicher
+            { Verwendung = SimulationPufferspeicher.VERWENDUNG_HEIZUNG };
+            szOk &= heiz.BedientKanal(false) && !heiz.BedientKanal(true);
+
+            SimulationPufferspeicher quelle = new SimulationPufferspeicher
+            { Verwendung = SimulationPufferspeicher.VERWENDUNG_QUELLE };
+            szOk &= !quelle.BedientKanal(false) && !quelle.BedientKanal(true);
+
             sb.AppendLine("8. Senkenzuordnung Vorbelegung und Ziel-Abbildung: " + (szOk ? "OK" : "FEHLER"));
             if (!szOk) allesOk = false;
 
@@ -372,7 +393,15 @@ namespace WindowsFormsApplication1
         PufferHeizung,
 
         /// <summary>Die Anlage lädt einen Projekt-Puffer mit Verwendung „Brauchwasser".</summary>
-        PufferBrauchwasser
+        PufferBrauchwasser,
+
+        /// <summary>
+        /// Die Anlage lädt einen KOMBISPEICHER (Verwendung „Kombi", Etappe D5a): einen
+        /// Puffer, der Heizung und Warmwasser aus EINEM Vorrat bedient. Für die
+        /// Ladephasen C/D ist das kein Sonderfall — geladen wird kanalneutral; der
+        /// Unterschied steckt allein in der Entladung (Kaskadenschleife, K-1).
+        /// </summary>
+        PufferKombi
     }
 
     /// <summary>
@@ -429,6 +458,8 @@ namespace WindowsFormsApplication1
                 return Senke.PufferHeizung;
             if (string.Equals(ziel, WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
                 return Senke.PufferBrauchwasser;
+            if (string.Equals(ziel, WaermesenkeClass.ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
+                return Senke.PufferKombi;
             return Senke.Heizkreis;
         }
 
@@ -439,6 +470,7 @@ namespace WindowsFormsApplication1
             {
                 case Senke.PufferHeizung: return WaermesenkeClass.ZIEL_PUFFER_HEIZUNG;
                 case Senke.PufferBrauchwasser: return WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER;
+                case Senke.PufferKombi: return WaermesenkeClass.ZIEL_PUFFER_KOMBI;
                 default: return WaermesenkeClass.ZIEL_HEIZKREIS;
             }
         }
@@ -517,6 +549,19 @@ namespace WindowsFormsApplication1
         /// <summary>Betriebsmodus der Anlage (BM_Typ) — Bedingung der PV-Sonderregel.</summary>
         public string BMTyp = "";
 
+        /// <summary>
+        /// RECHENEBENE der ladenden Anlage (Etappe D5a, Konzept Abschnitt 5
+        /// „Kessel-Kaskade"): 0 = die Anlage hat keinen Quellpuffer oder ihr Quellpuffer
+        /// wird in diesem Lauf von niemandem geladen; n = sie bezieht ihre Quellwärme aus
+        /// einem Puffer, den eine Anlage der Ebene n−1 lädt.
+        ///
+        /// Die Kaskadenschleife durchläuft die Phasen B/C/D je Ebene aufsteigend — damit
+        /// rechnet ein Erzeuger mit Puffer-Quelle NACH „seinem" Puffer. Bei genau einer
+        /// Ebene (jedes Bestandsprojekt) ist die Schleife Anweisung für Anweisung die
+        /// bisherige.
+        /// </summary>
+        public int Ebene = 0;
+
         /// <summary>Die in dieser Stunde gültige Obergrenze (Konzept 3.4/3.5).</summary>
         public double ObergrenzeStunde(bool pvUeberschuss)
         {
@@ -531,6 +576,35 @@ namespace WindowsFormsApplication1
                    (Obergrenze * 100).ToString("0.#") + " %, mit PV " +
                    (ObergrenzePV * 100).ToString("0.#") + " %)";
         }
+    }
+
+    /// <summary>
+    /// EINE Entnahme aus einem Quellpuffer durch einen nachgelagerten Erzeuger
+    /// (Etappe D5a, Kessel-Kaskade).
+    ///
+    /// Das Erzeugermodul bucht die Entnahme physikalisch selbst (es ruft
+    /// <see cref="SimulationPufferspeicher.Entladen"/>), kennt aber die
+    /// HERKUNFTSRECHNUNG nicht — die führt allein die Kaskadenschleife (Regel
+    /// „Vermischung im Speicher", Nutzerentscheidung 5-1). Über diese Meldung erfährt sie,
+    /// welche Menge welchem Speicher entnommen wurde und wohin sie gegangen ist:
+    ///
+    ///   <see cref="Ziel"/> = <c>null</c> → die Wärme hat DIREKT Bedarf gedeckt; sie wird
+    ///   wie eine bedarfsdeckende Entladung den Ladern des Quellpuffers gutgeschrieben —
+    ///   also demjenigen, der sie erzeugt hat, nicht dem, der sie nur angehoben hat.
+    ///
+    ///   <see cref="Ziel"/> ≠ <c>null</c> → die Wärme ist in einen anderen Speicher
+    ///   gewandert; ihre Herkunftsanteile werden mit umgebucht.
+    /// </summary>
+    public class Quellentnahme
+    {
+        /// <summary>Speicher, aus dem entnommen wurde.</summary>
+        public SimulationPufferspeicher Quelle;
+
+        /// <summary>Tatsächlich entnommene Wärmemenge [kWh].</summary>
+        public double Menge;
+
+        /// <summary>Zielspeicher der Wärme; <c>null</c> = Direktdeckung.</summary>
+        public SimulationPufferspeicher Ziel;
     }
 
     /// <summary>
@@ -593,6 +667,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public List<string> Hinweise = new List<string>();
 
+        /// <summary>
+        /// QUELLPUFFER je Anlage (Etappe D5a): <c>Tab_Energieanlagen.ID</c> →
+        /// Speicherinstanz, die diese Anlage als WÄRMEQUELLE benutzt
+        /// (<c>WQ_Typ = Pufferspeicher</c>, <c>WQ_ID_Puffer</c>).
+        ///
+        /// Enthalten sind NUR Bezüge auf Speicher, die in diesem Lauf mitrechnen — die
+        /// Menge, aus der die Rechenebenen (<see cref="Ladeauftrag.Ebene"/>) und der
+        /// Zyklus-Guard gebildet werden. Ein Quellbezug auf einen reinen Quellspeicher
+        /// (Erdsonde-Ersatz, nicht von einem Erzeuger geladen) steht hier ebenfalls, führt
+        /// aber zu Ebene 0: Er hat keinen Lader, auf den zu warten wäre.
+        /// </summary>
+        public Dictionary<int, SimulationPufferspeicher> QuellpufferJeAnlage =
+            new Dictionary<int, SimulationPufferspeicher>();
+
         /// <summary>Ladeaufträge in der für diese Stunde gültigen Reihenfolge (3.4/3.5).</summary>
         public List<Ladeauftrag> Ladeordnung_Stunde(bool pvUeberschuss)
         {
@@ -603,6 +691,14 @@ namespace WindowsFormsApplication1
         public List<SimulationPufferspeicher> Entladeordnung(bool brauchwasser)
         {
             return brauchwasser ? EntladenBrauchwasser : EntladenHeizung;
+        }
+
+        /// <summary>true, wenn mindestens ein KOMBISPEICHER im Lauf mitrechnet (D5a).</summary>
+        public bool HatKombispeicher()
+        {
+            foreach (SimulationPufferspeicher sp in AlleSpeicher)
+                if (sp != null && sp.IstKombi) return true;
+            return false;
         }
     }
 }

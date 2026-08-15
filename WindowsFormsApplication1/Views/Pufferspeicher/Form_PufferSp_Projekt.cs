@@ -177,6 +177,15 @@ namespace WindowsFormsApplication1
                 Width = 180
             };
             // Befund L0-2: DB-Wert und Anzeigetext getrennt (VerwendungItem).
+            //
+            // ETAPPE D5b, VORGEZOGEN (Nacharbeit I-K2-4): Der KOMBISPEICHER als dritte,
+            // reguläre Option. Ohne sie zeigte die Bearbeitungsmaske für einen per
+            // Datenbank angelegten Kombi-Puffer „Heizung" (kein Treffer in
+            // VerwendungWaehlen -> Rückfall auf Index 0) und schrieb ihn beim nächsten
+            // „Übernehmen" still auf Verwendung = 'Heizung' zurück - stiller Datenverlust
+            // an genau der Konfiguration, die D5a einführt. Die Rückfrage
+            // VerwendungswechselBestaetigt greift dabei nicht, weil sie nur bei bereits
+            // REFERENZIERTEN Speichern anschlägt.
             _cbVerwendung.Items.AddRange(new object[]
             {
                 new VerwendungItem
@@ -188,6 +197,11 @@ namespace WindowsFormsApplication1
                 {
                     DbWert = WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
                     Anzeige = MyResource.Resource.PSP_VERWENDUNG_BRAUCHWASSER_ANZEIGE
+                },
+                new VerwendungItem
+                {
+                    DbWert = WaermesenkeClass.VERWENDUNG_KOMBI,
+                    Anzeige = MyResource.Resource.PSP_VERWENDUNG_KOMBI_ANZEIGE
                 }
             });
             _cbVerwendung.SelectedIndexChanged += Daten_Geaendert;
@@ -454,11 +468,15 @@ namespace WindowsFormsApplication1
                 _tbVolumen.Text = "";
                 _tbVerluste.Text = "0";
 
+                // D5a/D5b: Die Vorbelegung aus dem Senken-Dialog kann jetzt auch „Kombi"
+                // sein - der Absprung „Pufferspeicher anlegen…" gibt sie vor.
                 VerwendungWaehlen(
-                    string.Equals(Verwendung, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
-                                  StringComparison.OrdinalIgnoreCase)
-                        ? WaermesenkeClass.VERWENDUNG_BRAUCHWASSER
-                        : WaermesenkeClass.VERWENDUNG_HEIZUNG);
+                    WaermesenkeClass.IstKombiVerwendung(Verwendung)
+                        ? WaermesenkeClass.VERWENDUNG_KOMBI
+                        : string.Equals(Verwendung, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
+                                        StringComparison.OrdinalIgnoreCase)
+                            ? WaermesenkeClass.VERWENDUNG_BRAUCHWASSER
+                            : WaermesenkeClass.VERWENDUNG_HEIZUNG);
 
                 // Vorbelegung aus den SYSTEMVORGABEN des Projekts (Konzept 4.3, Punkt 3):
                 // kleinster Vorlauf und größter Rücklauf über die Erzeuger. Fehlen sie,
@@ -674,6 +692,13 @@ namespace WindowsFormsApplication1
 
             string verwendung = GewaehlteVerwendung();
             if (verwendung.Length == 0) verwendung = WaermesenkeClass.VERWENDUNG_HEIZUNG;
+
+            // D5a: Ein KOMBISPEICHER steht in BEIDEN Entladereihenfolgen. „Kombi" selbst
+            // ist kein Kanal - die Position wird deshalb im HEIZKANAL gezeigt, in dem er
+            // ebenfalls steht. Die Warmwasserposition ist damit noch nicht sichtbar; das
+            // ist als Nachtrag für D5b vermerkt (D5a-Protokoll, Restpunkte).
+            if (WaermesenkeClass.IstKombiVerwendung(verwendung))
+                verwendung = WaermesenkeClass.VERWENDUNG_HEIZUNG;
 
             List<Ladeordnung.EntladeEintrag> reihe = Ladeordnung.Entladereihenfolge(ID_Projekt, verwendung);
             int pos = Ladeordnung.Position(reihe, _bearbeiteteId);

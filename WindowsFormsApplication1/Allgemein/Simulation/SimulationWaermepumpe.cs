@@ -56,6 +56,71 @@ namespace WindowsFormsApplication1
         public IReadOnlyList<SimulationPufferspeicher> Quellspeicher { get { return wp_quellspeicher; } }
 
         /// <summary>
+        /// Ersetzt die Quellspeicher-INSTANZ eines Puffers durch eine andere
+        /// (Etappe D5a, Kaskade/Booster).
+        ///
+        /// Zeigt <c>WQ_ID_Puffer</c> auf einen Puffer, der im selben Projekt schon als
+        /// SENKE eines anderen Erzeugers rechnet, wäre eine zweite Instanz genau das,
+        /// was Konzept 6.2 verbietet: zwei Speicherverwaltungen mit getrennter Bilanz.
+        /// Sie startete außerdem VOLL (so baut <c>WaermequelleClass.Quellspeicher</c>
+        /// einen Quellspeicher auf) und liefe damit auf Wärme hinaus, die niemand
+        /// erzeugt hat. Die Booster-Konstellation des Konzepts — WP 1 lädt Puffer 1,
+        /// WP 2 bezieht daraus ihre Quellwärme — braucht deshalb DIESELBE Instanz.
+        ///
+        /// Aufgerufen wird die Methode ausschließlich aus dem ZWEIKANALIGEN Weg
+        /// (<c>SimulationControl.QuellspeicherUebernehmen</c>); der Altpfad behält seine
+        /// getrennten Instanzen und rechnet unverändert.
+        /// </summary>
+        /// <returns>Zahl der ersetzten Moduleinträge.</returns>
+        public int QuellspeicherErsetzen(SimulationPufferspeicher alt, SimulationPufferspeicher neu)
+        {
+            if (alt == null || neu == null || ReferenceEquals(alt, neu)) return 0;
+
+            int n = 0;
+            for (int i = 0; i < wp_quellspeicher.Count; i++)
+                if (ReferenceEquals(wp_quellspeicher[i], alt)) { wp_quellspeicher[i] = neu; n++; }
+
+            return n;
+        }
+
+        /// <summary>
+        /// Meldungen über Quellentnahmen der laufenden Phase (Etappe D5a). Die
+        /// Kaskadenschleife führt daraus die Herkunftsrechnung fort und leert die Liste.
+        ///
+        /// Gefüllt wird sie nur, wenn der Quellspeicher ein SENKENspeicher ist — also in
+        /// der Kaskade. Ein echter Quellspeicher (Erdreich-Ersatz, Grundwasser) trägt
+        /// keine Herkunftsanteile; für ihn bliebe die Buchung wirkungslos.
+        /// </summary>
+        public readonly List<Quellentnahme> Quellentnahmen = new List<Quellentnahme>();
+
+        /// <summary>
+        /// RECHENEBENE je WP-Modul (Etappe D5a) — indexgleich zu <see cref="wp_list"/>.
+        /// <c>null</c> bedeutet „alle Module auf Ebene 0", also wie bisher.
+        /// </summary>
+        public int[] ModulEbenen;
+
+        /// <summary>Ebene, die die Kaskadenschleife gerade abarbeitet (Etappe D5a).</summary>
+        public int AktiveEbene = 0;
+
+        /// <summary>true, wenn Modul <paramref name="i"/> auf der aktiven Ebene rechnet.</summary>
+        private bool EbeneAktiv(int i)
+        {
+            if (ModulEbenen == null || i < 0 || i >= ModulEbenen.Length) return AktiveEbene == 0;
+            return ModulEbenen[i] == AktiveEbene;
+        }
+
+        /// <summary>
+        /// Meldet eine Quellentnahme an die Herkunftsrechnung (Etappe D5a). Für echte
+        /// Quellspeicher entfällt die Meldung — siehe <see cref="Quellentnahmen"/>.
+        /// </summary>
+        private void QuellentnahmeMelden(SimulationPufferspeicher quelle, double menge,
+                                         SimulationPufferspeicher ziel)
+        {
+            if (quelle == null || menge <= 0 || quelle.IstQuelle) return;
+            Quellentnahmen.Add(new Quellentnahme { Quelle = quelle, Menge = menge, Ziel = ziel });
+        }
+
+        /// <summary>
         /// Quelltemperatur-Jahresprofil je WP-Modul in Modulreihenfolge.
         /// Lesezugriff für die zweite Warnbedingung der Erdreich-Prüfung
         /// (Quelltemperatur minus Spreizung dauerhaft &lt; 0 °C, Konzept 13.1).
@@ -986,6 +1051,11 @@ namespace WindowsFormsApplication1
 
                 for (int index = 0; index < module; index++)
                 {
+                    // D5a: In dieser Phase rechnen nur die Module der aktiven Rechenebene.
+                    // Ohne Quellbezug auf einen geladenen Puffer steht jedes Modul auf
+                    // Ebene 0, und die Prüfung ist immer wahr.
+                    if (!EbeneAktiv(index)) continue;
+
                     WErzeugerModel model = wp_model[index];
                     _Kenndaten kenndaten = wp_kenndaten[index];
                     Senkenzuordnung zuordnung = kontext.SenkeJeModul[index];
@@ -1122,7 +1192,37 @@ namespace WindowsFormsApplication1
                     if (quelle != null)
                     {
                         double entnahme = erzeugt - strom;
-                        if (entnahme > 0) quelle.Entladen(entnahme, stunde);
+                        // D5a: In der Kaskade ist der Quellpuffer ein SENKENspeicher mit
+                        // Herkunftsanteilen — die Entnahme wird deshalb gemeldet (Ziel
+                        // null = die Wärme deckt Bedarf).
+                        if (entnahme > 0)
+                        {
+                            double geliefert = quelle.Entladen(entnahme, stunde);
+                            QuellentnahmeMelden(quelle, geliefert, null);
+
+                            // NACHARBEIT E-K1-3 — SYMMETRIE ZUM KESSEL.
+                            //
+                            // In der KASKADE (der Quellpuffer ist ein Senkenspeicher mit
+                            // Herkunftsanteilen) wird die entnommene Wärme über
+                            // Anteil_Entladen dem Erzeuger gutgeschrieben, der den Puffer
+                            // GELADEN hat. Bliebe die volle Erzeugung zugleich als eigene
+                            // Direktdeckung stehen, wäre dieselbe kWh zweimal als Deckung
+                            // ausgewiesen — genau der Fehler, den Befund N2 beseitigt hat.
+                            // Der Wärmepumpe bleibt hier also nur ihr eigener Beitrag, die
+                            // mit Strom erzeugte Anhebung; beim Kessel steht dafür
+                            // _kesselStunde (nur „eigen").
+                            //
+                            // Der klassische QUELLSPEICHER (Erdreich, Grundwasser, eigene
+                            // Puffer-Quellinstanz) ist ausgenommen: Er trägt keine
+                            // Herkunftsanteile, Anteil_Entladen schreibt niemandem etwas
+                            // gut, und ein Abzug wäre schlicht verlorene Deckung. Ohne
+                            // Kaskade — jeder Bestandslauf — ist die Zeile wirkungslos.
+                            if (!quelle.IstQuelle && geliefert > 0)
+                            {
+                                Direktdeckung_gesamt -= geliefert;
+                                if (Direktdeckung_gesamt < 0) Direktdeckung_gesamt = 0;
+                            }
+                        }
                     }
 
                     // Was vom Ladepotenzial nach der Bedarfsdeckung übrig ist, steht den
@@ -1196,10 +1296,22 @@ namespace WindowsFormsApplication1
         /// Offener Bedarf des Kanals, den DIESER Speicher bedient (Konzept 3.2). Ein
         /// Brauchwasserspeicher sieht den WW-Kanal, jeder andere den Heizkanal — dieselbe
         /// Regel wie bei der Entladung (<see cref="EntladeKanal"/>).
+        ///
+        /// <para>NACHARBEIT E-K2-3: Der KOMBISPEICHER bedient beide Kanäle aus einem
+        /// Vorrat, sein Durchsatz ist deshalb die Summe beider — dieselbe Regel, die
+        /// <see cref="Kaskadenschleife.DurchlassBudget"/> in den Ladephasen anwendet.
+        /// Ohne diese Zeile rechnete Phase B mit „nur Heizbedarf" und Phase C mit
+        /// „Heiz + Warmwasser" auf demselben Speicher: In einer Sommerstunde
+        /// (<c>rest_heiz = 0</c>, offener Warmwasserbedarf, Kombispeicher auf
+        /// Abschaltschwelle) war der Bilanzraum 0, das Modul wurde übersprungen und der
+        /// Heizstab sprang ein, obwohl der Kombispeicher den Bedarf hätte durchreichen
+        /// können. Ohne Kombispeicher ist der Ausdruck Zeichen für Zeichen der
+        /// bisherige.</para>
         /// </summary>
         private static double Kanalbedarf(SimulationPufferspeicher sp, double rest_heiz, double rest_ww)
         {
             if (sp == null) return 0;
+            if (sp.IstKombi) return rest_heiz + rest_ww;
             return sp.IstBrauchwasserkanal ? rest_ww : rest_heiz;
         }
 
@@ -1394,10 +1506,12 @@ namespace WindowsFormsApplication1
                 // zusätzlich aufnehmen — er ist eine hydraulische Weiche. Das Budget je
                 // Kanal wird nur einmal vergeben (absehbar), damit zwei Speicher desselben
                 // Kanals nicht dieselbe Entnahme doppelt durchreichen.
-                int kanal = sp.IstBrauchwasserkanal ? 1 : 0;
+                // D5a: Beim KOMBISPEICHER ist das Budget die Summe beider Kanäle; die
+                // gemeinsame Fassung steht in der Kaskadenschleife (DurchlassBudget /
+                // DurchlassBuchen) und liefert ohne Kombispeicher Anweisung für Anweisung
+                // das Bisherige.
                 double ladefaehig = sp.Ladefaehigkeit(a.ObergrenzeStunde(pvUeberschuss));
-                double durchlass = Math.Min(absehbar[kanal] > 0 ? absehbar[kanal] : 0,
-                                            sp.Entnahmefaehigkeit());
+                double durchlass = Kaskadenschleife.DurchlassBudget(sp, absehbar);
                 if (ladefaehig + durchlass <= 0) return 0;
 
                 double menge = Math.Min(ladeRest[index], ladefaehig + durchlass);
@@ -1439,10 +1553,7 @@ namespace WindowsFormsApplication1
                 // Ladefähigkeit hinausging, ist die Menge, die Phase E wieder entnimmt.
                 double genutzterDurchlass = ladung - ladefaehig;
                 if (genutzterDurchlass > 0)
-                {
-                    absehbar[kanal] -= genutzterDurchlass;
-                    if (absehbar[kanal] < 0) absehbar[kanal] = 0;
-                }
+                    Kaskadenschleife.DurchlassBuchen(sp, absehbar, genutzterDurchlass);
 
                 if (pvGebunden[index])
                 {
@@ -1471,7 +1582,9 @@ namespace WindowsFormsApplication1
                 if (quelle != null)
                 {
                     double entnahme = ladung - strom;
-                    if (entnahme > 0) quelle.Entladen(entnahme, stunde);
+                    // D5a: Ziel = der geladene Speicher — die Wärme hat nur den Speicher
+                    // gewechselt, ihre Herkunft wandert mit (Anteil_Umbuchen).
+                    if (entnahme > 0) QuellentnahmeMelden(quelle, quelle.Entladen(entnahme, stunde), sp);
                 }
 
                 return ladung;
@@ -1686,6 +1799,13 @@ namespace WindowsFormsApplication1
             wp_quelltemp.Clear();
             wp_quellspeicher.Clear();
             wp_typ.Clear();
+
+            // D5a: Rechenebenen und Quellentnahme-Meldungen gehören zum Laufzustand. Die
+            // Kaskadenschleife setzt die Ebenen je Lauf neu; ohne Rücksetzen liefen sie
+            // aus einem Vorlauf in einen Lauf mit anderer Modulliste.
+            Quellentnahmen.Clear();
+            ModulEbenen = null;
+            AktiveEbene = 0;
 
             for (int i = 0; i < MAX_WP; i++)
             {

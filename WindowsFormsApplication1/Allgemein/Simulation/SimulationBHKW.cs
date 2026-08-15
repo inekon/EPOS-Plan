@@ -1388,8 +1388,11 @@ namespace WindowsFormsApplication1
             double ladefaehig = sp.Ladefaehigkeit(Auftrag_Zweit.ObergrenzeStunde(pvUeberschuss));
             if (!LetzteBedarfsstufe) return ladefaehig;
 
+            // D5a: Ein KOMBISPEICHER bedient beide Kanäle - er ist damit immer „der
+            // eigene Kanal", ganz gleich, welchen Bedarfsanteil das BHKW deckt.
             bool spWW = sp.IstBrauchwasserkanal;
-            bool eigenerKanal = (wsTyp != WaermequelleClass.SENKE_WARMWASSER &&
+            bool eigenerKanal = sp.IstKombi ||
+                                (wsTyp != WaermequelleClass.SENKE_WARMWASSER &&
                                  wsTyp != WaermequelleClass.SENKE_HEIZUNG) ||
                                 (spWW ? wsTyp == WaermequelleClass.SENKE_WARMWASSER
                                       : wsTyp == WaermequelleClass.SENKE_HEIZUNG);
@@ -1425,7 +1428,6 @@ namespace WindowsFormsApplication1
             if (a.AnlagenID != _fuehrendeAnlage) return 0;
 
             SimulationPufferspeicher sp = a.Speicher;
-            int kanal = sp.IstBrauchwasserkanal ? 1 : 0;
 
             // BEFUND N3: Die in Phase B für DIESES Modul festgehaltene Ladefähigkeit
             // wieder freigeben - sie war nur gegen die Erzeuger vor ihm gesperrt.
@@ -1435,8 +1437,11 @@ namespace WindowsFormsApplication1
                 _reservierterSpeicher = null;
             }
 
+            // D5a: Beim KOMBISPEICHER ist das Durchsatzbudget die Summe beider Kanäle —
+            // die gemeinsame Fassung steht in der Kaskadenschleife und liefert ohne
+            // Kombispeicher Anweisung für Anweisung das Bisherige.
             double ladefaehig = sp.Ladefaehigkeit(a.ObergrenzeStunde(pvUeberschuss));
-            double durchlass = Math.Min(absehbar[kanal] > 0 ? absehbar[kanal] : 0, sp.Entnahmefaehigkeit());
+            double durchlass = Kaskadenschleife.DurchlassBudget(sp, absehbar);
 
             if (!a.Zweitsenke && _stufensenke.Haupt != Senke.Heizkreis)
             {
@@ -1456,10 +1461,7 @@ namespace WindowsFormsApplication1
 
             double genutzterDurchlass = ladung - ladefaehig;
             if (genutzterDurchlass > 0)
-            {
-                absehbar[kanal] -= genutzterDurchlass;
-                if (absehbar[kanal] < 0) absehbar[kanal] = 0;
-            }
+                Kaskadenschleife.DurchlassBuchen(sp, absehbar, genutzterDurchlass);
 
             _ueberschussStunde -= ladung;
             Speicherladung_gesamt += ladung;

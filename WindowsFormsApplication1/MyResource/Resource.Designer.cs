@@ -2001,6 +2001,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kombi (Heizung + Warmwasser) ähnelt.
+        /// </summary>
+        public static string PSP_VERWENDUNG_KOMBI_ANZEIGE {
+            get {
+                return ResourceManager.GetString("PSP_VERWENDUNG_KOMBI_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} kg CO2 / Jahr gespart ähnelt.
         /// </summary>
         public static string SIM_ANZEIGE_CO2_ERSPARNIS {
@@ -2830,6 +2839,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Kombispeicher deckt Heizung und Warmwasser aus einem gemeinsamen Wärmevorrat. Reicht er in einer Stunde nicht für beides, wird zuerst Warmwasser bedient. ähnelt.
+        /// </summary>
+        public static string SIM_LBL_HINWEIS_KOMBI {
+            get {
+                return ResourceManager.GetString("SIM_LBL_HINWEIS_KOMBI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für Puffer-Senken muss der Speicher im Projekt angelegt sein (mit passender Verwendung Heizung bzw. Brauchwasser). ähnelt.
         /// </summary>
         public static string SIM_LBL_HINWEIS_PUFFER {
@@ -3234,6 +3252,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer Kombi ähnelt.
+        /// </summary>
+        public static string SIM_PUFFER_KOMBI_KURZ {
+            get {
+                return ResourceManager.GetString("SIM_PUFFER_KOMBI_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1} l) ähnelt.
         /// </summary>
         public static string SIM_PUFFER_MIT_VOLUMEN {
@@ -3269,6 +3296,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_RB_HEIZKREIS {
             get {
                 return ResourceManager.GetString("SIM_RB_HEIZKREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer Kombi (Heizung + Warmwasser) ähnelt.
+        /// </summary>
+        public static string SIM_RB_PUFFER_KOMBI {
+            get {
+                return ResourceManager.GetString("SIM_RB_PUFFER_KOMBI", resourceCulture);
             }
         }
         
@@ -3858,6 +3894,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_ZIEL_PUFFERSPEICHER_HEIZUNG {
             get {
                 return ResourceManager.GetString("SIM_ZIEL_PUFFERSPEICHER_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher Kombi (Heizung + Warmwasser) ähnelt.
+        /// </summary>
+        public static string SIM_ZIEL_PUFFERSPEICHER_KOMBI {
+            get {
+                return ResourceManager.GetString("SIM_ZIEL_PUFFERSPEICHER_KOMBI", resourceCulture);
             }
         }
         
@@ -5469,7 +5514,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("Text_Form_Start_KlimaregionAuswaehlen", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion gespeichert. ähnelt.
         /// </summary>
@@ -5478,7 +5523,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("Text_Form_Start_KlimaregionGespeichert", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Klimaregion wurde nicht gefunden. ähnelt.
         /// </summary>
@@ -5487,7 +5532,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("Text_Form_Start_KlimaregionNichtGefunden", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion ist nicht gesetzt! Bitte setzen Sie die Klimaregion im Projekt! ähnelt.
         /// </summary>
@@ -5496,7 +5541,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("Text_Form_Start_KlimaregionNichtGesetzt", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion konnte nicht in das Projekt übernommen werden. ähnelt.
         /// </summary>
@@ -5505,7 +5550,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("Text_Form_Start_KlimaregionNichtUebernommen", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst ein Projekt auswählen! ähnelt.
         /// </summary>
@@ -5523,7 +5568,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("Text_Form_Start_MessageBox2", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das zuletzt geöffnete Projekt ist gelöscht! ähnelt.
         /// </summary>
@@ -5532,7 +5577,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("Text_Form_Start_ProjektGeloescht", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die geöffnet ähnelt.
         /// </summary>
@@ -5570,7 +5615,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die bitte auswählen! ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte auswählen! ähnelt.
         /// </summary>
         public static string Text_Select {
             get {

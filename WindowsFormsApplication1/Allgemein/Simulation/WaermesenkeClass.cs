@@ -31,10 +31,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die Anlage lädt einen Projekt-Puffer mit Verwendung „Brauchwasser".</summary>
         public const string ZIEL_PUFFER_BRAUCHWASSER = DbWerte.WS_ZIEL_PUFFER_BRAUCHWASSER;
 
+        /// <summary>
+        /// Die Anlage lädt einen KOMBISPEICHER (Etappe D5a, Konzept_KonfigUI_Hydraulik
+        /// Anforderungen 4/7): ein Wärmevorrat für Heizung UND Warmwasser.
+        /// </summary>
+        public const string ZIEL_PUFFER_KOMBI = DbWerte.WS_ZIEL_PUFFER_KOMBI;
+
         // --- Verwendung eines Projekt-Puffers (Konzept 5.1) ---------------------------
 
         public const string VERWENDUNG_HEIZUNG = DbWerte.PSP_VERWENDUNG_HEIZUNG;
         public const string VERWENDUNG_BRAUCHWASSER = DbWerte.PSP_VERWENDUNG_BRAUCHWASSER;
+
+        /// <summary>Kombispeicher — bedient BEIDE Kanäle aus einem Vorrat (D5a).</summary>
+        public const string VERWENDUNG_KOMBI = DbWerte.PSP_VERWENDUNG_KOMBI;
 
         // Eine eigene Liste der Erzeugertypen stand hier ursprünglich als
         // ERZEUGER_TYPEN. Sie wurde von niemandem gelesen: Wer die Typen braucht,
@@ -46,7 +55,14 @@ namespace WindowsFormsApplication1
         public static bool IstPufferZiel(string ziel)
         {
             return string.Equals(ziel, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal) ||
-                   string.Equals(ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal);
+                   string.Equals(ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal) ||
+                   string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal);
+        }
+
+        /// <summary>true, wenn die Verwendung einen KOMBISPEICHER meint (D5a).</summary>
+        public static bool IstKombiVerwendung(string verwendung)
+        {
+            return string.Equals(verwendung, VERWENDUNG_KOMBI, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>Verwendung, die ein Puffer für dieses Ziel haben muss; null bei Heizkreis.</summary>
@@ -56,6 +72,8 @@ namespace WindowsFormsApplication1
                 return VERWENDUNG_HEIZUNG;
             if (string.Equals(ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
                 return VERWENDUNG_BRAUCHWASSER;
+            if (string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
+                return VERWENDUNG_KOMBI;
             return null;
         }
 
@@ -66,6 +84,8 @@ namespace WindowsFormsApplication1
                 return MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_HEIZUNG;
             if (string.Equals(ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
                 return MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER;
+            if (string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
+                return MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_KOMBI;
             return MyResource.Resource.SIM_HEIZKREIS;
         }
 
@@ -354,6 +374,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static List<PufferInfo> ProjektPufferListe(int idProjekt, string verwendung)
         {
+            return ProjektPufferListe(idProjekt, verwendung, false);
+        }
+
+        /// <summary>
+        /// Dieselbe Liste mit zwei UNTERSCHIEDLICHEN Fragestellungen (Etappe D5a).
+        ///
+        /// <para><b><paramref name="kanalSicht"/> = false — „welcher Puffer passt zu
+        /// diesem SENKENZIEL?"</b> Gefiltert wird auf exakte Gleichheit der Verwendung.
+        /// Das ist die Frage der Dialoge: Ein Kombi-Ziel verlangt einen Kombi-Puffer, ein
+        /// Heizungs-Ziel einen Heizungs-Puffer (Konzept Abschnitt 7), und
+        /// <see cref="PufferPasst"/> prüft genau dasselbe beim Speichern.</para>
+        ///
+        /// <para><b><paramref name="kanalSicht"/> = true — „welche Speicher BEDIENEN
+        /// diesen Kanal?"</b> Ein KOMBISPEICHER bedient beide Kanäle aus einem Vorrat und
+        /// erscheint deshalb in beiden Listen. Das ist die Frage der Entladereihenfolge
+        /// (<see cref="Ladeordnung.Entladereihenfolge"/>, Konzept 3.6) und der
+        /// Kanalanzeigen.</para>
+        ///
+        /// Ohne Kombispeicher im Projekt — jeder Bestandsdatenbestand — liefern beide
+        /// Formen dieselbe Liste.
+        /// </summary>
+        public static List<PufferInfo> ProjektPufferListe(int idProjekt, string verwendung,
+                                                          bool kanalSicht)
+        {
             List<PufferInfo> liste = new List<PufferInfo>();
             if (idProjekt <= 0) return liste;
 
@@ -367,12 +411,26 @@ namespace WindowsFormsApplication1
             foreach (DataRow r in dt.Rows)
             {
                 PufferInfo p = AusZeile(r);
-                if (string.IsNullOrEmpty(verwendung) ||
-                    string.Equals(WirksameVerwendung(p), verwendung, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(verwendung) || PasstZuFilter(p, verwendung, kanalSicht))
                     liste.Add(p);
             }
 
             return liste;
+        }
+
+        /// <summary>Filterregel von <see cref="ProjektPufferListe"/>; siehe dort.</summary>
+        private static bool PasstZuFilter(PufferInfo p, string verwendung, bool kanalSicht)
+        {
+            string wirksam = WirksameVerwendung(p);
+
+            if (string.Equals(wirksam, verwendung, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // D5a: Der Kombispeicher bedient BEIDE Kanäle - aber nur, wenn nach dem Kanal
+            // gefragt ist. Als Senkenziel bleibt er dem Ziel „PufferKombi" vorbehalten.
+            return kanalSicht && IstKombiVerwendung(wirksam) &&
+                   (string.Equals(verwendung, VERWENDUNG_HEIZUNG, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(verwendung, VERWENDUNG_BRAUCHWASSER, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>Ein einzelner Projekt-Puffer; <c>null</c>, wenn es ihn nicht gibt.</summary>
@@ -519,6 +577,7 @@ namespace WindowsFormsApplication1
                 return MyResource.Resource.PSP_VERWENDUNG_HEIZUNG_ANZEIGE;
             if (string.Equals(dbWert, VERWENDUNG_BRAUCHWASSER, StringComparison.OrdinalIgnoreCase))
                 return MyResource.Resource.PSP_VERWENDUNG_BRAUCHWASSER_ANZEIGE;
+            if (IstKombiVerwendung(dbWert)) return MyResource.Resource.PSP_VERWENDUNG_KOMBI_ANZEIGE;
             return dbWert;
         }
 
@@ -691,14 +750,28 @@ namespace WindowsFormsApplication1
         {
             if (d == null || idProjekt <= 0) return null;
 
+            // D5a: Das Kombi-Ziel bedient den Warmwasserkanal mit — ohne
+            // Brauchwasseranteil im Projekt gilt derselbe Hinweis wie beim reinen
+            // Brauchwasserpuffer (er ist ein Hinweis, kein Blocker: die Heizungshälfte
+            // des Kombispeichers arbeitet weiter).
             bool brauchwasser =
-                string.Equals(d.Ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal) ||
-                (d.HatZweitsenke && string.Equals(d.Ziel2, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal));
+                IstBrauchwasserseitig(d.Ziel) ||
+                (d.HatZweitsenke && IstBrauchwasserseitig(d.Ziel2));
 
             if (!brauchwasser) return null;
             if (ProjektHatBrauchwasser(idProjekt)) return null;
 
             return MyResource.Resource.SIM_KEIN_BRAUCHWASSERBEDARF.Replace("\n", Environment.NewLine);
+        }
+
+        /// <summary>
+        /// true, wenn das Ziel den WARMWASSERKANAL bedient — der reine Brauchwasserpuffer
+        /// und der Kombispeicher (D5a).
+        /// </summary>
+        public static bool IstBrauchwasserseitig(string ziel)
+        {
+            return string.Equals(ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal) ||
+                   string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal);
         }
 
         /// <summary>true, wenn dem Projekt mindestens ein Brauchwasser-Anteil zugeordnet ist.</summary>
@@ -724,8 +797,7 @@ namespace WindowsFormsApplication1
             if (IstPufferZiel(d.Ziel))
             {
                 string name = PufferName(d.ID_Puffer);
-                string kurz = string.Equals(d.Ziel, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal)
-                    ? MyResource.Resource.SIM_PUFFER_HEIZUNG_KURZ : MyResource.Resource.SIM_PUFFER_BRAUCHWASSER_KURZ;
+                string kurz = KurzformZuZiel(d.Ziel);
                 return name.Length > 0 ? kurz + ": " + name : kurz;
             }
 
@@ -753,9 +825,22 @@ namespace WindowsFormsApplication1
             if (!IstPufferZiel(d.Ziel2)) return "–";
 
             string name = PufferName(d.ID_Puffer2);
-            string kurz = string.Equals(d.Ziel2, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal)
-                ? MyResource.Resource.SIM_PUFFER_HEIZUNG_KURZ : MyResource.Resource.SIM_PUFFER_BRAUCHWASSER_KURZ;
+            string kurz = KurzformZuZiel(d.Ziel2);
             return name.Length > 0 ? kurz + ": " + name : kurz;
+        }
+
+        /// <summary>
+        /// Kurzform eines Puffer-Ziels für Übersichten („Puffer Heizung", „Puffer
+        /// Brauchwasser", „Puffer Kombi"). Vorher stand die Zuordnung zweimal im Code —
+        /// mit dem dritten Ziel aus D5a wäre daraus die dritte Fehlerquelle geworden.
+        /// </summary>
+        private static string KurzformZuZiel(string ziel)
+        {
+            if (string.Equals(ziel, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal))
+                return MyResource.Resource.SIM_PUFFER_HEIZUNG_KURZ;
+            if (string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
+                return MyResource.Resource.SIM_PUFFER_KOMBI_KURZ;
+            return MyResource.Resource.SIM_PUFFER_BRAUCHWASSER_KURZ;
         }
 
         /// <summary>Bezeichner eines Puffers; "" wenn es ihn nicht gibt.</summary>

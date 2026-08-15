@@ -539,6 +539,13 @@ namespace WindowsFormsApplication1
         ///
         /// Eine leere <paramref name="verwendung"/> wird wie „Heizung" behandelt — der
         /// Kanal ist die Frage, und einen namenlosen Kanal gibt es nicht.
+        ///
+        /// ETAPPE D5a: Gefragt ist hier ausdrücklich „welche Speicher BEDIENEN diesen
+        /// Kanal", nicht „welcher Puffer passt zu diesem Senkenziel". Ein KOMBISPEICHER
+        /// bedient beide Kanäle aus EINEM Vorrat und steht deshalb in BEIDEN
+        /// Entladereihenfolgen — je Kanal an der Stelle seiner Entladepriorität. Die
+        /// Kanalsicht liefert <c>ProjektPufferListe(…, kanalSicht: true)</c>; ohne
+        /// Kombispeicher ist sie dieselbe Liste wie zuvor.
         /// </summary>
         public static List<EntladeEintrag> Entladereihenfolge(int idProjekt, string verwendung)
         {
@@ -549,7 +556,7 @@ namespace WindowsFormsApplication1
                 ? WaermesenkeClass.VERWENDUNG_HEIZUNG : verwendung;
 
             foreach (WaermesenkeClass.PufferInfo p in
-                     WaermesenkeClass.ProjektPufferListe(idProjekt, kanal))
+                     WaermesenkeClass.ProjektPufferListe(idProjekt, kanal, true))
             {
                 EntladeEintrag e = new EntladeEintrag();
                 e.ID_Puffer = p.ID;

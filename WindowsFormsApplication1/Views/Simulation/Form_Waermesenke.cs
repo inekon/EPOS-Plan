@@ -9,7 +9,8 @@ namespace WindowsFormsApplication1
     /// Wärmesenke einer Wärmeerzeuger-Anlage (Konzept 4.2).
     ///
     /// Jede Anlage hat genau EINE Hauptsenke — Heizkreis (direkte Deckung des
-    /// Momentanbedarfs), Pufferspeicher Heizung oder Pufferspeicher Brauchwasser — und
+    /// Momentanbedarfs), Pufferspeicher Heizung, Pufferspeicher Brauchwasser oder, seit
+    /// Etappe D5a, Pufferspeicher Kombi (ein Vorrat für Heizung und Warmwasser) — und
     /// optional eine Zweitsenke, die ausschließlich Überschuss bzw. verbleibendes
     /// Ladepotenzial verwertet.
     ///
@@ -54,9 +55,14 @@ namespace WindowsFormsApplication1
         private RadioButton _rbHeizkreis;
         private RadioButton _rbPufferHeizung;
         private RadioButton _rbPufferBrauchwasser;
+
+        /// <summary>Vierte Option der Hauptsenke: Kombispeicher (Etappe D5a).</summary>
+        private RadioButton _rbPufferKombi;
+
         private ComboBox _cbBedarfsart;
         private ComboBox _cbPufferHeizung;
         private ComboBox _cbPufferBrauchwasser;
+        private ComboBox _cbPufferKombi;
 
         private GroupBox _gbLaden;
         private ComboBox _cbLadeprio;
@@ -83,6 +89,10 @@ namespace WindowsFormsApplication1
         private List<WaermesenkeClass.PufferInfo> _pufferBrauchwasser =
             new List<WaermesenkeClass.PufferInfo>();
 
+        /// <summary>Projekt-Puffer mit Verwendung „Kombi" (Etappe D5a).</summary>
+        private List<WaermesenkeClass.PufferInfo> _pufferKombi =
+            new List<WaermesenkeClass.PufferInfo>();
+
         private bool _aktualisiert;   // verhindert Event-Rückkopplung beim Befüllen
 
         /// <summary>Eintrag der Ladeprioritäts-Dropdowns (0 = nach Vorgabe).</summary>
@@ -105,7 +115,9 @@ namespace WindowsFormsApplication1
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
             this.MaximizeBox = false;
-            this.ClientSize = new Size(620, 592);
+            // D5a: Die vierte Option der Hauptsenke braucht eine Zeile mehr - Gruppe und
+            // alles darunter rücken um genau diese Zeilenhöhe (26 px) nach unten.
+            this.ClientSize = new Size(620, 618);
 
             // --- Hauptsenke ----------------------------------------------------------
             // Beschriftung, deshalb der gross geschriebene Schluessel: SIM_ROLLE_* liefert
@@ -114,7 +126,7 @@ namespace WindowsFormsApplication1
             {
                 Text = MyResource.Resource.SIM_GRUPPE_HAUPTSENKE,
                 Location = new Point(12, 10),
-                Size = new Size(596, 132)
+                Size = new Size(596, 158)
             };
             this.Controls.Add(gbHaupt);
 
@@ -181,6 +193,23 @@ namespace WindowsFormsApplication1
             };
             _cbPufferBrauchwasser.SelectedIndexChanged += Auswahl_Geaendert;
 
+            // D5a: vierte Option — Kombispeicher (Konzept_KonfigUI_Hydraulik,
+            // Anforderungen 4 und 7).
+            _rbPufferKombi = new RadioButton
+            {
+                Text = MyResource.Resource.SIM_RB_PUFFER_KOMBI,
+                AutoSize = true,
+                Location = new Point(16, 128)
+            };
+            _rbPufferKombi.CheckedChanged += Auswahl_Geaendert;
+            _cbPufferKombi = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Location = new Point(240, 125),
+                Width = 340
+            };
+            _cbPufferKombi.SelectedIndexChanged += Auswahl_Geaendert;
+
             gbHaupt.Controls.Add(_rbHeizkreis);
             gbHaupt.Controls.Add(lblBedarf);
             gbHaupt.Controls.Add(_cbBedarfsart);
@@ -189,12 +218,14 @@ namespace WindowsFormsApplication1
             gbHaupt.Controls.Add(_cbPufferHeizung);
             gbHaupt.Controls.Add(_rbPufferBrauchwasser);
             gbHaupt.Controls.Add(_cbPufferBrauchwasser);
+            gbHaupt.Controls.Add(_rbPufferKombi);
+            gbHaupt.Controls.Add(_cbPufferKombi);
 
             // --- Ladeverhalten der Hauptsenke ----------------------------------------
             _gbLaden = new GroupBox
             {
                 Text = MyResource.Resource.SIM_GB_LADEVERHALTEN,
-                Location = new Point(12, 150),
+                Location = new Point(12, 176),
                 Size = new Size(596, 140)
             };
             this.Controls.Add(_gbLaden);
@@ -254,7 +285,7 @@ namespace WindowsFormsApplication1
             {
                 Text = MyResource.Resource.SIM_CHK_ZWEITSENKE,
                 AutoSize = true,
-                Location = new Point(20, 300)
+                Location = new Point(20, 326)
             };
             _chkZweitsenke.CheckedChanged += Auswahl_Geaendert;
             this.Controls.Add(_chkZweitsenke);
@@ -262,7 +293,7 @@ namespace WindowsFormsApplication1
             _gbZweitsenke = new GroupBox
             {
                 Text = "",
-                Location = new Point(12, 320),
+                Location = new Point(12, 346),
                 Size = new Size(596, 132)
             };
             this.Controls.Add(_gbZweitsenke);
@@ -274,7 +305,11 @@ namespace WindowsFormsApplication1
                 Location = new Point(150, 24),
                 Width = 210
             };
-            _cbZiel2.Items.AddRange(new object[] { MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_HEIZUNG, MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER });
+            // D5a: dritter Eintrag — der Kombispeicher ist auch als ZWEITsenke zulässig
+            // (Konzept Anforderung 4: „Alle Wärmeerzeuger haben als Senke die Optionen …").
+            _cbZiel2.Items.AddRange(new object[] { MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_HEIZUNG,
+                                                   MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER,
+                                                   MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_KOMBI });
             _cbZiel2.SelectedIndexChanged += Auswahl_Geaendert;
 
             Label lblPuffer2 = new Label { Text = MyResource.Resource.PSP_RUBRIK_LABEL, AutoSize = true, Location = new Point(16, 60) };
@@ -319,28 +354,63 @@ namespace WindowsFormsApplication1
             _gbZweitsenke.Controls.Add(lblProzent2);
 
             // --- Hinweis und Absprung -------------------------------------------------
+            //
+            // NACHARBEIT I-K1-1 — DIE HÖHE WIRD GERECHNET, NICHT GESCHÄTZT.
+            //
+            // Der Hinweistext ist mit dem Kombi-Satz von rund 116 auf rund 271 Zeichen
+            // gewachsen; die feste Fläche 390 × 56 px trug davon drei Zeilen, der Rest
+            // wurde unten abgeschnitten — ausgerechnet die Knappheitsregel „Warmwasser
+            // zuerst", für die der Satz da ist. Weil der Text zudem übersetzt wird und
+            // die englische Fassung anders umbricht, ist jede feste Höhe die nächste
+            // Fehlerquelle. TextRenderer.MeasureText misst den Umbruch mit DERSELBEN
+            // Schrift und DERSELBEN Breite, mit der das Label ihn später zeichnet;
+            // Trenner, Knöpfe und ClientSize hängen an dem Ergebnis.
+            const int HINWEIS_LINKS = 14;
+            const int HINWEIS_BREITE = 390;
+            const int HINWEIS_OBEN = 488;
+            const int HINWEIS_MIN = 56;     // nie kleiner als der Bestand
+            const int HINWEIS_MAX = 160;    // Notbremse gegen eine entgleiste Übersetzung
+
+            string hinweisText = MyResource.Resource.SIM_LBL_HINWEIS_PUFFER +
+                                 Environment.NewLine + MyResource.Resource.SIM_LBL_HINWEIS_KOMBI;
+
+            int hinweisHoehe = TextRenderer.MeasureText(
+                hinweisText, this.Font, new Size(HINWEIS_BREITE, int.MaxValue),
+                TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl).Height + 4;
+
+            if (hinweisHoehe < HINWEIS_MIN) hinweisHoehe = HINWEIS_MIN;
+            if (hinweisHoehe > HINWEIS_MAX) hinweisHoehe = HINWEIS_MAX;
+
             _lblHinweis = new Label
             {
                 AutoSize = false,
-                Location = new Point(14, 462),
-                Size = new Size(390, 56),
-                Text = MyResource.Resource.SIM_LBL_HINWEIS_PUFFER
+                Location = new Point(HINWEIS_LINKS, HINWEIS_OBEN),
+                Size = new Size(HINWEIS_BREITE, hinweisHoehe),
+                // D5a: Der Bestandshinweis bleibt; der Kombi-Satz kommt dazu, weil die
+                // Knappheitsregel (Warmwasser zuerst) sonst nirgends sichtbar wäre.
+                Text = hinweisText
             };
             this.Controls.Add(_lblHinweis);
 
             _btnPufferAnlegen = new Button
             {
                 Text = MyResource.Resource.PSP_BTN_PUFFER_ANLEGEN,
-                Location = new Point(410, 466),
+                Location = new Point(410, HINWEIS_OBEN + 4),
                 Size = new Size(198, 28)
             };
             _btnPufferAnlegen.Click += btnPufferAnlegen_Click;
             this.Controls.Add(_btnPufferAnlegen);
 
+            // Trenner und Fußzeile hängen am gemessenen Hinweis. Die Abstände sind die
+            // bisherigen (10 px über dem Trenner, 18 px darunter, 23 px Knopfhöhe,
+            // 23 px Rand) — bei einem 56-px-Hinweis kommt exakt das alte Raster heraus.
+            int trennerOben = HINWEIS_OBEN + hinweisHoehe + 10;
+            int knopfOben = trennerOben + 18;
+
             Label trenner = new Label
             {
                 BorderStyle = BorderStyle.Fixed3D,
-                Location = new Point(12, 528),
+                Location = new Point(12, trennerOben),
                 Size = new Size(596, 2)
             };
             this.Controls.Add(trenner);
@@ -349,14 +419,14 @@ namespace WindowsFormsApplication1
             {
                 Text = MyResource.Resource.SIM_BTN_OK,
                 DialogResult = DialogResult.OK,
-                Location = new Point(this.ClientSize.Width - 190, 546),
+                Location = new Point(this.ClientSize.Width - 190, knopfOben),
                 Width = 85
             };
             Button btnAbbruch = new Button
             {
                 Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 DialogResult = DialogResult.Cancel,
-                Location = new Point(this.ClientSize.Width - 97, 546),
+                Location = new Point(this.ClientSize.Width - 97, knopfOben),
                 Width = 85
             };
             btnOk.Click += btnOk_Click;
@@ -365,6 +435,13 @@ namespace WindowsFormsApplication1
             this.Controls.Add(btnAbbruch);
             this.AcceptButton = btnOk;
             this.CancelButton = btnAbbruch;
+
+            // Fensterhöhe zuletzt, aus der gemessenen Fußzeile. Der Absprungknopf reicht
+            // bei einem kurzen Hinweis tiefer als das Label - beide gehen in die Rechnung.
+            int unten = Math.Max(knopfOben + btnOk.Height,
+                                 Math.Max(HINWEIS_OBEN + hinweisHoehe,
+                                          _btnPufferAnlegen.Bottom));
+            this.ClientSize = new Size(this.ClientSize.Width, unten + 23);
         }
 
         // --- Befüllen -----------------------------------------------------------------
@@ -390,6 +467,8 @@ namespace WindowsFormsApplication1
                     _rbPufferHeizung.Checked = true;
                 else if (string.Equals(Daten.Ziel, WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
                     _rbPufferBrauchwasser.Checked = true;
+                else if (string.Equals(Daten.Ziel, WaermesenkeClass.ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
+                    _rbPufferKombi.Checked = true;                 // D5a
                 else
                     _rbHeizkreis.Checked = true;
 
@@ -402,6 +481,7 @@ namespace WindowsFormsApplication1
 
                 PufferWaehlen(_cbPufferHeizung, _pufferHeizung, Daten.ID_Puffer);
                 PufferWaehlen(_cbPufferBrauchwasser, _pufferBrauchwasser, Daten.ID_Puffer);
+                PufferWaehlen(_cbPufferKombi, _pufferKombi, Daten.ID_Puffer);     // D5a
 
                 PrioWaehlen(_cbLadeprio, Daten.Ladeprio);
                 PrioWaehlen(_cbLadeprioPV, Daten.LadeprioPV);
@@ -411,8 +491,12 @@ namespace WindowsFormsApplication1
 
                 // Zweitsenke
                 _chkZweitsenke.Checked = Daten.HatZweitsenke;
-                _cbZiel2.SelectedIndex =
-                    string.Equals(Daten.Ziel2, WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal) ? 1 : 0;
+                if (string.Equals(Daten.Ziel2, WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
+                    _cbZiel2.SelectedIndex = 1;
+                else if (string.Equals(Daten.Ziel2, WaermesenkeClass.ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
+                    _cbZiel2.SelectedIndex = 2;                   // D5a
+                else
+                    _cbZiel2.SelectedIndex = 0;
                 Puffer2ListeFuellen();
                 PufferWaehlen(_cbPuffer2, Zweitsenkenliste(), Daten.ID_Puffer2);
                 PrioWaehlen(_cbLadeprio2, Daten.Ladeprio2);
@@ -429,11 +513,18 @@ namespace WindowsFormsApplication1
 
         private void PufferListenLaden()
         {
+            // SENKENZIEL-Sicht, nicht Kanalsicht (WaermesenkeClass.ProjektPufferListe):
+            // Ein Kombi-Ziel verlangt einen Kombi-Puffer, ein Heizungs-Ziel einen
+            // Heizungs-Puffer (Konzept Abschnitt 7). Genau dasselbe prüft
+            // WaermesenkeClass.Pruefen beim Speichern - Auswahl und Validierung dürfen
+            // nicht auseinanderlaufen.
             _pufferHeizung = WaermesenkeClass.ProjektPufferListe(ID_Projekt, WaermesenkeClass.VERWENDUNG_HEIZUNG);
             _pufferBrauchwasser = WaermesenkeClass.ProjektPufferListe(ID_Projekt, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER);
+            _pufferKombi = WaermesenkeClass.ProjektPufferListe(ID_Projekt, WaermesenkeClass.VERWENDUNG_KOMBI);
 
             FuelleCombo(_cbPufferHeizung, _pufferHeizung);
             FuelleCombo(_cbPufferBrauchwasser, _pufferBrauchwasser);
+            FuelleCombo(_cbPufferKombi, _pufferKombi);
         }
 
         private static void FuelleCombo(ComboBox cb, List<WaermesenkeClass.PufferInfo> liste)
@@ -499,7 +590,17 @@ namespace WindowsFormsApplication1
 
         private List<WaermesenkeClass.PufferInfo> Zweitsenkenliste()
         {
-            return _cbZiel2.SelectedIndex == 1 ? _pufferBrauchwasser : _pufferHeizung;
+            if (_cbZiel2.SelectedIndex == 1) return _pufferBrauchwasser;
+            if (_cbZiel2.SelectedIndex == 2) return _pufferKombi;    // D5a
+            return _pufferHeizung;
+        }
+
+        /// <summary>Ziel-Persistenzwert der aktuell gewählten Zweitsenke (D5a).</summary>
+        private string ZielWertZweitsenke()
+        {
+            if (_cbZiel2.SelectedIndex == 1) return WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER;
+            if (_cbZiel2.SelectedIndex == 2) return WaermesenkeClass.ZIEL_PUFFER_KOMBI;
+            return WaermesenkeClass.ZIEL_PUFFER_HEIZUNG;
         }
 
         private void Puffer2ListeFuellen()
@@ -526,12 +627,14 @@ namespace WindowsFormsApplication1
         /// <summary>Blendet die Bereiche passend zur Auswahl ein und rechnet die Position neu.</summary>
         private void AnzeigeAktualisieren()
         {
-            bool pufferSenke = _rbPufferHeizung.Checked || _rbPufferBrauchwasser.Checked;
+            bool pufferSenke = _rbPufferHeizung.Checked || _rbPufferBrauchwasser.Checked ||
+                               _rbPufferKombi.Checked;
 
             // Bedarfsart ist nur beim Heizkreis die Feinsteuerung (Konzept 3.1)
             _cbBedarfsart.Enabled = _rbHeizkreis.Checked;
             _cbPufferHeizung.Enabled = _rbPufferHeizung.Checked;
             _cbPufferBrauchwasser.Enabled = _rbPufferBrauchwasser.Checked;
+            _cbPufferKombi.Enabled = _rbPufferKombi.Checked;
 
             _gbLaden.Enabled = pufferSenke;
             _tbLadegrenze.Enabled = pufferSenke && _chkLadegrenze.Checked;
@@ -574,6 +677,7 @@ namespace WindowsFormsApplication1
         {
             if (_rbPufferHeizung.Checked) return AktuelleId(_cbPufferHeizung);
             if (_rbPufferBrauchwasser.Checked) return AktuelleId(_cbPufferBrauchwasser);
+            if (_rbPufferKombi.Checked) return AktuelleId(_cbPufferKombi);      // D5a
             return 0;
         }
 
@@ -589,10 +693,16 @@ namespace WindowsFormsApplication1
         {
             Form_PufferSp_Projekt frm = new Form_PufferSp_Projekt();
             frm.ID_Projekt = ID_Projekt;
-            // Vorbelegung der Verwendung passend zur gerade gewählten Senke
-            frm.Verwendung = _rbPufferBrauchwasser.Checked || _cbZiel2.SelectedIndex == 1
-                ? WaermesenkeClass.VERWENDUNG_BRAUCHWASSER
-                : WaermesenkeClass.VERWENDUNG_HEIZUNG;
+            // Vorbelegung der Verwendung passend zur gerade gewählten Senke.
+            // D5a: Die Puffer-VERWALTUNG kennt „Kombi" seit der Nacharbeit I-K2-4 als
+            // reguläre dritte Option — die Vorbelegung kommt dort also an und wird beim
+            // Übernehmen unverändert zurückgeschrieben.
+            if (_rbPufferKombi.Checked || _cbZiel2.SelectedIndex == 2)
+                frm.Verwendung = WaermesenkeClass.VERWENDUNG_KOMBI;
+            else if (_rbPufferBrauchwasser.Checked || _cbZiel2.SelectedIndex == 1)
+                frm.Verwendung = WaermesenkeClass.VERWENDUNG_BRAUCHWASSER;
+            else
+                frm.Verwendung = WaermesenkeClass.VERWENDUNG_HEIZUNG;
             frm.SetControls();
             frm.ShowDialog(this);
 
@@ -608,8 +718,10 @@ namespace WindowsFormsApplication1
 
                 if (frm.ID_Puffer > 0)
                 {
-                    if (string.Equals(frm.Verwendung, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
-                                      StringComparison.OrdinalIgnoreCase))
+                    if (WaermesenkeClass.IstKombiVerwendung(frm.Verwendung))
+                        PufferWaehlen(_cbPufferKombi, _pufferKombi, frm.ID_Puffer);   // D5a
+                    else if (string.Equals(frm.Verwendung, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
+                                           StringComparison.OrdinalIgnoreCase))
                         PufferWaehlen(_cbPufferBrauchwasser, _pufferBrauchwasser, frm.ID_Puffer);
                     else
                         PufferWaehlen(_cbPufferHeizung, _pufferHeizung, frm.ID_Puffer);
@@ -696,11 +808,10 @@ namespace WindowsFormsApplication1
         {
             if (d == null) return null;
 
-            bool haupt = string.Equals(d.Ziel, WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER,
-                                       StringComparison.Ordinal);
-            bool zweit = d.HatZweitsenke &&
-                         string.Equals(d.Ziel2, WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER,
-                                       StringComparison.Ordinal);
+            // D5a: Der Kombispeicher bedient den Warmwasserkanal mit — für ihn gilt
+            // dieselbe Reichweitenaussage.
+            bool haupt = WaermesenkeClass.IstBrauchwasserseitig(d.Ziel);
+            bool zweit = d.HatZweitsenke && WaermesenkeClass.IstBrauchwasserseitig(d.Ziel2);
             if (!haupt && !zweit) return null;
 
             string text = MyResource.Resource.SIM_MSG_BRAUCHWASSER_UEBERGANG
@@ -731,6 +842,11 @@ namespace WindowsFormsApplication1
                 d.Ziel = WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER;
                 d.ID_Puffer = AktuelleId(_cbPufferBrauchwasser);
             }
+            else if (_rbPufferKombi.Checked)
+            {
+                d.Ziel = WaermesenkeClass.ZIEL_PUFFER_KOMBI;        // D5a
+                d.ID_Puffer = AktuelleId(_cbPufferKombi);
+            }
             else
             {
                 d.Ziel = WaermesenkeClass.ZIEL_HEIZKREIS;
@@ -753,9 +869,7 @@ namespace WindowsFormsApplication1
 
             if (_chkZweitsenke.Checked)
             {
-                d.Ziel2 = _cbZiel2.SelectedIndex == 1
-                    ? WaermesenkeClass.ZIEL_PUFFER_BRAUCHWASSER
-                    : WaermesenkeClass.ZIEL_PUFFER_HEIZUNG;
+                d.Ziel2 = ZielWertZweitsenke();                     // D5a: inkl. Kombi
                 d.ID_Puffer2 = AktuelleId(_cbPuffer2);
                 d.Ladeprio2 = GewaehltePrio(_cbLadeprio2);
 

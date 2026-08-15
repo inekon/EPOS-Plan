@@ -34,6 +34,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string VERWENDUNG_BRAUCHWASSER = DbWerte.PSP_VERWENDUNG_BRAUCHWASSER;
 
+        /// <summary>
+        /// Verwendung „Kombi": EIN Wärmevorrat für BEIDE Kanäle (Etappe D5a,
+        /// Konzept_KonfigUI_Hydraulik Anforderungen 4/7).
+        ///
+        /// Für das Speichermodell selbst ändert der Wert NICHTS — Laden, Entladen,
+        /// Bereitschaftsverluste und Kennzahlen arbeiten unverändert auf EINEM
+        /// <see cref="SOC"/>. Genau darin besteht die Kombi-Eigenschaft: Die
+        /// Kaskadenschleife führt denselben Speicher in beiden Entladereihenfolgen und
+        /// bedient je Stunde beide Kanäle aus diesem einen Vorrat.
+        /// </summary>
+        public const string VERWENDUNG_KOMBI = DbWerte.PSP_VERWENDUNG_KOMBI;
+
         public string Bezeichner = "";
         public string Erzeuger = "";
 
@@ -553,6 +565,30 @@ namespace WindowsFormsApplication1
         public bool IstBrauchwasserkanal
         {
             get { return Verwendung == VERWENDUNG_BRAUCHWASSER; }
+        }
+
+        /// <summary>
+        /// true = KOMBISPEICHER (Etappe D5a): bedient Heizung UND Warmwasser aus einem
+        /// Vorrat. <see cref="IstBrauchwasserkanal"/> bleibt für ihn <c>false</c> — er ist
+        /// kein reiner Warmwasserspeicher; die Kanalfrage beantwortet
+        /// <see cref="BedientKanal"/>.
+        /// </summary>
+        public bool IstKombi
+        {
+            get { return Verwendung == VERWENDUNG_KOMBI; }
+        }
+
+        /// <summary>
+        /// Bedient dieser Speicher den angefragten Kanal? Ein Kombispeicher beantwortet
+        /// BEIDE Fragen mit <c>true</c>, jeder andere Senkenspeicher genau seine eigene
+        /// (Etappe D5a). Quellspeicher bedienen keinen Kanal.
+        /// </summary>
+        /// <param name="brauchwasser">true = Warmwasserkanal, false = Heizkanal</param>
+        public bool BedientKanal(bool brauchwasser)
+        {
+            if (IstQuelle) return false;
+            if (IstKombi) return true;
+            return IstBrauchwasserkanal == brauchwasser;
         }
 
         /// <summary>
