@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
@@ -16,6 +16,20 @@ namespace WindowsFormsApplication1
     /// wird die Leistung der Wärmepumpe entsprechend begrenzt - der Wärmebedarf
     /// muss also tatsächlich aus dem Speicher gedeckt werden.
     ///
+    /// ETAPPE E0 (Konzept_KonfigUI_Hydraulik, Abschnitt 4): Der Dialog listet die
+    /// PROJEKT-Pufferspeicher (<see cref="WaermesenkeClass.ProjektPufferListe"/>) —
+    /// dieselbe Quelle, aus der die Senkendialoge wählen — und liefert die
+    /// Puffer-<b>ID</b> zurück (<see cref="ID_Puffer"/>, Spalte <c>WQ_ID_Puffer</c>).
+    /// Der Bezeichner (<see cref="Pufferspeicher"/>, Spalte <c>WQ_Puffer</c>) wird
+    /// weiterhin mitgeführt, ist aber nur noch Anzeige- und Alt-Kompatibilität; führend
+    /// ist der Fremdschlüssel. Vorher standen hier die STAMM-Speicher, und der Bezeichner
+    /// war die einzige Identität — mit den Dubletten der Projektkopien war damit nicht
+    /// entscheidbar, welcher Speicher gemeint ist.
+    ///
+    /// Invariante S-1 (Konzept, Abschnitt 5): Puffer werden ausschließlich an
+    /// ERZEUGER-Bezügen angeboten. Dieser Dialog hängt an der Wärmequelle einer Anlage
+    /// und erfüllt das; eine Speicher-zu-Speicher-Verbindung entsteht hier nicht.
+    ///
     /// Das Formular wird komplett programmatisch aufgebaut (kein Designer/.resx).
     /// </summary>
     public class Form_QuellePufferspeicher : Form
@@ -27,13 +41,61 @@ namespace WindowsFormsApplication1
         private CheckBox _cbUnbegrenzt;
         private Label _lblKapazitaet;
         private Label _lblDaten;
+        private Label _lblLeer;
+        private Button _btnPufferAnlegen;
 
-        private DataTable _speicherTabelle;
+        private List<WaermesenkeClass.PufferInfo> _puffer =
+            new List<WaermesenkeClass.PufferInfo>();
+
+        /// <summary>
+        /// Listeneintrag: trägt den Projekt-Puffer und formatiert ihn für die Anzeige
+        /// („{Bezeichner} — {Verwendung}, {Volumen} l, {Vorlauf}/{Rücklauf} °C").
+        ///
+        /// Eigene Klasse statt <see cref="WaermesenkeClass.PufferInfo.ToString"/>: dort
+        /// steht die KURZform der Senkendialoge („Name (500 l)"), die in einer 300 px
+        /// breiten Liste zu wenig sagt — Verwendung und Temperaturpaar sind hier die
+        /// Entscheidungsgrundlage (kann der Speicher die Quelle sein?).
+        /// </summary>
+        private sealed class SpeicherItem
+        {
+            public readonly WaermesenkeClass.PufferInfo Puffer;
+
+            public SpeicherItem(WaermesenkeClass.PufferInfo p) { Puffer = p; }
+
+            public override string ToString()
+            {
+                string verwendung = WaermesenkeClass.VerwendungAnzeige(
+                    WaermesenkeClass.WirksameVerwendung(Puffer));
+
+                // Ohne gepflegtes Temperaturpaar bleibt die kurze Form - „0/0 °C" wäre
+                // eine Angabe, die es nicht gibt.
+                if (Puffer.Vorlauf <= 0 || Puffer.Ruecklauf <= 0)
+                    return string.Format(MyResource.Resource.SIMQ_PUFFER_LISTE_OHNE_TEMP,
+                                         Puffer.Bezeichner, verwendung, Puffer.Gesamtvolumen);
+
+                return string.Format(MyResource.Resource.SIMQ_PUFFER_LISTE_EINTRAG,
+                                     Puffer.Bezeichner, verwendung, Puffer.Gesamtvolumen,
+                                     Puffer.Vorlauf, Puffer.Ruecklauf);
+            }
+        }
 
         /// <summary>Name der Wärmepumpe (nur für den Fenstertitel).</summary>
         public string WPName = "";
 
-        /// <summary>Bezeichner des gewählten Pufferspeichers.</summary>
+        /// <summary>Projekt der Anlage — bestimmt die Auswahlliste (E0).</summary>
+        public int ID_Projekt;
+
+        /// <summary>
+        /// <c>Tab_Pufferspeicher.ID</c> des gewählten Projekt-Puffers — beim Öffnen
+        /// Vorbelegung, nach OK das Ergebnis. 0 = keiner. Das ist seit E0 die FÜHRENDE
+        /// Identität (Spalte <c>WQ_ID_Puffer</c>).
+        /// </summary>
+        public int ID_Puffer;
+
+        /// <summary>
+        /// Bezeichner des gewählten Pufferspeichers (Spalte <c>WQ_Puffer</c>) — wird
+        /// weiter mitgeschrieben, ist aber seit E0 nur noch Anzeige-/Alt-Kompatibilität.
+        /// </summary>
         public string Pufferspeicher = "";
 
         /// <summary>Quelltemperatur des Speichers [°C].</summary>
@@ -75,7 +137,10 @@ namespace WindowsFormsApplication1
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
             this.MaximizeBox = false;
-            this.ClientSize = new Size(620, 430);
+            // E0: 40 px höher als bisher — darunter liegt jetzt die Zeile mit dem
+            // Leer-Hinweis und dem Absprung „Pufferspeicher anlegen…" (Muster
+            // Form_Waermesenke). Die übrigen Maße bleiben unverändert.
+            this.ClientSize = new Size(620, 470);
 
             Label kopf = new Label
             {
@@ -103,11 +168,34 @@ namespace WindowsFormsApplication1
             };
             this.Controls.Add(_lblDaten);
 
+            // E0: Leer-Hinweis und Absprung in die Puffer-Verwaltung. Ohne diesen Weg
+            // wäre ein Projekt ohne Pufferspeicher eine Sackgasse - vorher stand hier
+            // eine Meldung über die STAMM-Daten, die dem Anwender nicht sagte, was zu
+            // tun ist (Muster Form_Waermesenke, Konzept 4.2/4.3).
+            _lblLeer = new Label
+            {
+                AutoSize = false,
+                Location = new Point(14, 242),
+                Size = new Size(300, 34),
+                ForeColor = SystemColors.GrayText,
+                Text = ""
+            };
+            this.Controls.Add(_lblLeer);
+
+            _btnPufferAnlegen = new Button
+            {
+                Text = MyResource.Resource.PSP_BTN_PUFFER_ANLEGEN,
+                Location = new Point(330, 244),
+                Size = new Size(275, 28)
+            };
+            _btnPufferAnlegen.Click += btnPufferAnlegen_Click;
+            this.Controls.Add(_btnPufferAnlegen);
+
             // Parameter der Wärmequelle
             GroupBox gb = new GroupBox
             {
                 Text = MyResource.Resource.SIMQ_PUFFER_GB_PARAMETER,
-                Location = new Point(14, 250),
+                Location = new Point(14, 288),
                 Size = new Size(590, 130)
             };
             this.Controls.Add(gb);
@@ -171,14 +259,14 @@ namespace WindowsFormsApplication1
             {
                 Text = MyResource.Resource.SIM_BTN_OK,
                 DialogResult = DialogResult.OK,
-                Location = new Point(this.ClientSize.Width - 190, 392),
+                Location = new Point(this.ClientSize.Width - 190, 432),
                 Width = 85
             };
             Button btnAbbruch = new Button
             {
                 Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 DialogResult = DialogResult.Cancel,
-                Location = new Point(this.ClientSize.Width - 97, 392),
+                Location = new Point(this.ClientSize.Width - 97, 432),
                 Width = 85
             };
             btnOk.Click += btnOk_Click;
@@ -190,93 +278,144 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Füllt die Auswahlliste aus den Pufferspeicher-Stammdaten und
-        /// belegt die Felder mit den gespeicherten Werten vor.
+        /// Füllt die Auswahlliste aus den PROJEKT-Pufferspeichern (E0) und belegt die
+        /// Felder mit den gespeicherten Werten vor.
         /// </summary>
         public void SetControls()
         {
             if (!string.IsNullOrEmpty(WPName))
                 this.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_TITEL_MIT_WP, WPName);
 
-            _speicherTabelle = DataRepository.GetDataTable(
-                "SELECT Bezeichner, Speichertyp, Gesamtvolumen, Bereitschaftsverluste FROM [" +
-                PufferSpStammCtrl.TABLE + "] ORDER BY Bezeichner");
-
-            _lbSpeicher.Items.Clear();
-            if (_speicherTabelle != null)
-            {
-                foreach (DataRow r in _speicherTabelle.Rows)
-                    _lbSpeicher.Items.Add(r["Bezeichner"].ToString());
-            }
-
-            if (_lbSpeicher.Items.Count == 0)
-            {
-                MessageBox.Show(MyResource.Resource.SIMQ_PUFFER_MSG_KEINE_SPEICHER,
-                    MyResource.Resource.SIMQ_PUFFER_TITEL, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            PufferListeLaden();
 
             _tbTemperatur.Text = Quelltemperatur.ToString("F1");
             _tbSpreizung.Text = Spreizung.ToString("F1");
             _tbRegeneration.Text = Regeneration.ToString("F1");
             _cbUnbegrenzt.Checked = Unbegrenzt;
 
-            if (!string.IsNullOrEmpty(Pufferspeicher) && _lbSpeicher.Items.Contains(Pufferspeicher))
-                _lbSpeicher.SelectedItem = Pufferspeicher;
-            else if (_lbSpeicher.Items.Count > 0)
-                _lbSpeicher.SelectedIndex = 0;
+            VorauswahlSetzen();
 
             ZeigeSpeicherDaten();
             BerechneKapazitaet();
         }
 
-        /// <summary>Zeigt Stammdaten des markierten Speichers an.</summary>
+        /// <summary>
+        /// Lädt die Projekt-Puffer (ohne Verwendungsfilter: als QUELLE taugt jeder
+        /// Speicher des Projekts, die Verwendung steuert nur die Senkenseite) und
+        /// schaltet den Leer-Hinweis.
+        /// </summary>
+        private void PufferListeLaden()
+        {
+            _puffer = WaermesenkeClass.ProjektPufferListe(ID_Projekt, null);
+
+            _lbSpeicher.Items.Clear();
+            foreach (WaermesenkeClass.PufferInfo p in _puffer)
+                _lbSpeicher.Items.Add(new SpeicherItem(p));
+
+            bool leer = _lbSpeicher.Items.Count == 0;
+            _lblLeer.Text = leer ? MyResource.Resource.SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER : "";
+            _lbSpeicher.Enabled = !leer;
+        }
+
+        /// <summary>
+        /// Vorauswahl in dieser Reihenfolge: Fremdschlüssel (führend), sonst Bezeichner
+        /// (Altweg — dieselbe Rückfallkette wie in <c>WaermequelleClass.Quellspeicher</c>),
+        /// sonst der erste Eintrag.
+        /// </summary>
+        private void VorauswahlSetzen()
+        {
+            if (_lbSpeicher.Items.Count == 0) return;
+
+            if (ID_Puffer > 0)
+            {
+                for (int i = 0; i < _puffer.Count; i++)
+                    if (_puffer[i].ID == ID_Puffer) { _lbSpeicher.SelectedIndex = i; return; }
+            }
+
+            if (!string.IsNullOrEmpty(Pufferspeicher))
+            {
+                for (int i = 0; i < _puffer.Count; i++)
+                    if (string.Equals(_puffer[i].Bezeichner, Pufferspeicher, StringComparison.OrdinalIgnoreCase))
+                    { _lbSpeicher.SelectedIndex = i; return; }
+            }
+
+            _lbSpeicher.SelectedIndex = 0;
+        }
+
+        /// <summary>Zeigt die Daten des markierten Projekt-Puffers an.</summary>
         private void ZeigeSpeicherDaten()
         {
-            DataRow r = AktuelleZeile();
-            if (r == null) { _lblDaten.Text = ""; return; }
+            WaermesenkeClass.PufferInfo p = AktuellerPuffer();
+            if (p == null) { _lblDaten.Text = ""; return; }
 
-            _lblDaten.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_DATEN,
-                Feld(r, "Speichertyp"), Feld(r, "Gesamtvolumen"), Feld(r, "Bereitschaftsverluste"));
+            _lblDaten.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_DATEN_PROJEKT,
+                WaermesenkeClass.VerwendungAnzeige(WaermesenkeClass.WirksameVerwendung(p)),
+                p.Gesamtvolumen,
+                p.Bereitschaftsverluste.ToString("0.#"),
+                // Einheit und "-" sind Symbole, keine Anzeigetexte (Katalogregel) -
+                // "-" wie im Bestand die frühere Feld()-Ersatzausgabe.
+                p.Vorlauf > 0 && p.Ruecklauf > 0
+                    ? p.Vorlauf + "/" + p.Ruecklauf + " °C"
+                    : "-");
         }
 
-        private string Feld(DataRow r, string spalte)
+        private WaermesenkeClass.PufferInfo AktuellerPuffer()
         {
-            if (r == null || !r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return "-";
-            return r[spalte].ToString();
-        }
-
-        private DataRow AktuelleZeile()
-        {
-            if (_speicherTabelle == null || _lbSpeicher.SelectedIndex < 0) return null;
-            if (_lbSpeicher.SelectedIndex >= _speicherTabelle.Rows.Count) return null;
-            return _speicherTabelle.Rows[_lbSpeicher.SelectedIndex];
+            SpeicherItem it = _lbSpeicher.SelectedItem as SpeicherItem;
+            return it != null ? it.Puffer : null;
         }
 
         /// <summary>Zeigt die nutzbare Speicherkapazität aus Volumen und Spreizung.</summary>
         private void BerechneKapazitaet()
         {
-            DataRow r = AktuelleZeile();
+            WaermesenkeClass.PufferInfo p = AktuellerPuffer();
             float spreizung;
-            if (r == null || !WaermequelleClass.ZahlParsen(_tbSpreizung.Text, out spreizung))
+            if (p == null || !WaermequelleClass.ZahlParsen(_tbSpreizung.Text, out spreizung))
             {
                 _lblKapazitaet.Text = "";
                 return;
             }
 
-            double volumen = 0;
-            if (r.Table.Columns.Contains("Gesamtvolumen") && r["Gesamtvolumen"] != DBNull.Value)
-                volumen = Convert.ToDouble(r["Gesamtvolumen"]);
-
-            double kapazitaet = volumen * 1.16 * spreizung / 1000.0;
+            double kapazitaet = p.Gesamtvolumen * 1.16 * spreizung / 1000.0;
             _lblKapazitaet.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_KAPAZITAET,
                 kapazitaet.ToString("F1"));
         }
 
+        /// <summary>
+        /// Absprung in die Puffer-Verwaltung (Konzept 4.3). Wie in
+        /// <c>Form_Waermesenke</c> wird die Liste UNABHÄNGIG vom DialogResult neu
+        /// aufgebaut: Die Verwaltung schreibt sofort in die Datenbank, ein über das
+        /// Fensterkreuz verlassener Neuanlage-Vorgang bliebe sonst unsichtbar.
+        /// </summary>
+        private void btnPufferAnlegen_Click(object sender, EventArgs e)
+        {
+            Form_PufferSp_Projekt frm = new Form_PufferSp_Projekt();
+            frm.ID_Projekt = ID_Projekt;
+            // Keine Verwendungsvorgabe: die Quellseite legt den Kanal nicht fest.
+            frm.Verwendung = null;
+            frm.SetControls();
+            frm.ShowDialog(this);
+
+            int neu = frm.ID_Puffer;
+            PufferListeLaden();
+            if (neu > 0) ID_Puffer = neu;
+            VorauswahlSetzen();
+
+            ZeigeSpeicherDaten();
+            BerechneKapazitaet();
+        }
+
         private void btnOk_Click(object sender, EventArgs e)
         {
-            if (_lbSpeicher.SelectedIndex < 0)
+            WaermesenkeClass.PufferInfo gewaehlt = AktuellerPuffer();
+            if (gewaehlt == null)
             {
-                MessageBox.Show(MyResource.Resource.SIMQ_PUFFER_MSG_AUSWAHL,
+                // Zwei Fälle, zwei Meldungen: gar kein Projekt-Puffer vorhanden (dann
+                // hilft nur der Absprung) oder einfach nichts markiert.
+                MessageBox.Show(
+                    _lbSpeicher.Items.Count == 0
+                        ? MyResource.Resource.SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER
+                        : MyResource.Resource.SIMQ_PUFFER_MSG_AUSWAHL,
                     MyResource.Resource.SIMQ_PUFFER_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 this.DialogResult = DialogResult.None;
@@ -303,7 +442,9 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            Pufferspeicher = _lbSpeicher.SelectedItem.ToString();
+            // E0: Die ID ist das Ergebnis; der Bezeichner geht als Anzeige-/Altwert mit.
+            ID_Puffer = gewaehlt.ID;
+            Pufferspeicher = gewaehlt.Bezeichner;
             Quelltemperatur = temp;
             Spreizung = spreizung;
             Regeneration = regeneration;

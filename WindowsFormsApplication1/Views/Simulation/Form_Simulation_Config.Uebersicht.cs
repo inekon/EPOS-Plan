@@ -35,7 +35,19 @@ namespace WindowsFormsApplication1
         private const int COL_SENKE = 5;
         private const int COL_ZWEITSENKE = 6;   // neu (Konzept 4.1/4.2)
         private const int COL_BETRIEBSMODUS = 7;
-        private const int COL_PUFFER = 8;
+
+        // ETAPPE D1 (Konzept_KonfigUI_Hydraulik, Abschnitt 6): Die neunte Spalte
+        // „Zuordnung (alt)" ist ENTFALLEN. Sie zeigte den Pufferspeicher aus dem
+        // Altmodell Z_ProjektPufferSp - eine zweite, seit Paket 4 nicht mehr gelesene
+        // Wahrheit neben der Senkenspalte - und führte per Doppelklick in den
+        // Hysterese-Dialog. Der Dialog selbst bleibt (SpeicherregelungBearbeiten); die
+        // Schwellen sind längst am Puffer pflegbar (Form_PufferSp_Projekt), und genau
+        // dorthin gehören sie. Ebenso entfällt die Zeile „Gesamtsystem", die es nur
+        // gab, um eine Zuordnung dieser Spalte anzuzeigen.
+        //
+        // NICHT betroffen: die Spiegel-Brücke WpSenkeSpiegeln und alle
+        // Z_ProjektPufferSp-Schreibwege - sie bleiben bis zur Abnahme unangetastet
+        // (Konzeptvorgabe).
 
         /// <summary>
         /// Spalten, die per Doppelklick einen Dialog öffnen (Konzept 4.1, „Whitelist").
@@ -49,27 +61,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static readonly int[] SPALTEN_MIT_DIALOG =
         {
-            COL_WPPRIO, COL_QUELLE, COL_SENKE, COL_ZWEITSENKE, COL_BETRIEBSMODUS, COL_PUFFER
+            COL_WPPRIO, COL_QUELLE, COL_SENKE, COL_ZWEITSENKE, COL_BETRIEBSMODUS
         };
 
-        // --- Etappe A: Zuordnungs-Rubrik (Konzept 4.4) --------------------------------
-
-        /// <summary>
-        /// Etappe A von Konzept 4.4: Die programmatische Rubrik „Pufferspeicher:" samt
-        /// Zuordnungstabelle ist unsichtbar. Der Code bleibt vollständig stehen und
-        /// <c>_zuordnungen</c> wird weiter geladen und gespeichert — die Engine liest den
-        /// WP-Pufferspeicher bis Paket 4 aus <c>Z_ProjektPufferSp</c>.
-        ///
-        /// Auf <c>true</c> gesetzt kommt die alte Bedienung unverändert zurück; das ist
-        /// der Rückweg, falls sich in Realprojekten etwas zeigt.
-        ///
-        /// Bewusst <c>static readonly</c> statt <c>const</c>: Bei einer Konstanten faltet
-        /// der Compiler <c>if (!RUBRIK_SICHTBAR) return;</c> weg und meldet den Rest von
-        /// <c>AktualisierePufferSpSichtbarkeit</c> als unerreichbar (CS0162). Der Code
-        /// SOLL aber stehen bleiben — er ist der Rückweg für Etappe B. Mit
-        /// <c>static readonly</c> bleibt der Schalter genauso wirksam, ohne die Warnung.
-        /// </summary>
-        private static readonly bool RUBRIK_SICHTBAR = false;
+        // --- Zuordnungs-Rubrik (Konzept 4.4) ------------------------------------------
+        //
+        // Der Rückwegschalter RUBRIK_SICHTBAR ist mit ETAPPE D1 entfallen. Er hielt seit
+        // Paket 2 / Etappe A die Möglichkeit offen, die alte Bedienung wieder
+        // einzuschalten; die Rubrik selbst wird jetzt gar nicht mehr angelegt
+        // (Form_Simulation_Config.AltRubrikStilllegen), damit hätte der Schalter nichts
+        // mehr zu schalten. Der Rückweg ist ab hier die Versionsverwaltung.
+        //
+        // UNVERÄNDERT bleibt der Datenpfad: _zuordnungen wird weiter aus
+        // Z_ProjektPufferSp geladen und beim Speichern zurückgeschrieben, und die
+        // Spiegel-Brücke WaermesenkeClass.WpSenkeSpiegeln arbeitet weiter
+        // (Konzeptvorgabe: bis zur Abnahme unangetastet).
 
         /// <summary>Höhe, die unter der Übersicht für die Fußzeile frei bleibt [px].</summary>
         private const int PLATZ_FUSSZEILE = 62;
@@ -89,6 +95,14 @@ namespace WindowsFormsApplication1
         /// weit verbreitert, dass die Summe hineinpasst (<see cref="UebersichtBreiteAnpassen"/>).
         /// Zu lange Zellinhalte (lange Anlagennamen) kürzt die ListView mit „…" — das ist
         /// gewollt; der volle Text steht im Mouseover-Hinweis der Zeile.
+        ///
+        /// ETAPPE D1: Mit der Spalte „Zuordnung (alt)" fallen 112 px weg. 50 davon gehen
+        /// an die beiden SENKEN-Spalten — dort standen die abgeschnittenen Texte
+        /// („Puffer Heizung: a…"), weil der Puffername hinter dem Rollenkürzel steht.
+        /// Der Rest verschmälert das Fenster: <see cref="UebersichtBreiteAnpassen"/>
+        /// rechnet die Spaltensumme und verbreitert nur noch um das, was gebraucht wird.
+        /// Bleibt danach trotzdem Platz übrig, bekommt ihn wie bisher die Anlagenspalte
+        /// (siehe <see cref="InitErzeugerUebersicht"/>, „rest").
         /// </summary>
         private static readonly int[] SPALTEN_BREITEN =
         {
@@ -97,10 +111,9 @@ namespace WindowsFormsApplication1
             140,  // COL_ANLAGE         "Anlage"      Herstellerbezeichner, kürzt bei Bedarf
             62,   // COL_WPPRIO         "WP-Prio"     1…9 bzw. "-"
             100,  // COL_QUELLE         "Quelle"      "Erdreich Kollektor 1,5 m" kürzt
-            120,  // COL_SENKE          "Senke"       "Puffer Heizung: <Name>"
-            100,  // COL_ZWEITSENKE     "Zweitsenke"
-            92,   // COL_BETRIEBSMODUS  "Modus"       "laufzeitoptimiert"
-            112   // COL_PUFFER         "Zuordnung (alt)"
+            150,  // COL_SENKE          "Senke"       "Puffer Heizung: <Name>"  (D1: +30)
+            120,  // COL_ZWEITSENKE     "Zweitsenke"                            (D1: +20)
+            92    // COL_BETRIEBSMODUS  "Modus"       "laufzeitoptimiert"
         };
 
         /// <summary>
@@ -226,7 +239,6 @@ namespace WindowsFormsApplication1
             // geschriebene Satzform SIM_ROLLE_ZWEITSENKE.
             listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_ZWEITSENKE, SPALTEN_BREITEN[COL_ZWEITSENKE], HorizontalAlignment.Left);
             listView_Uebersicht.Columns.Add(MyResource.Resource.SIM_SPALTE_MODUS, SPALTEN_BREITEN[COL_BETRIEBSMODUS], HorizontalAlignment.Left);
-            listView_Uebersicht.Columns.Add(MyResource.Resource.PSP_SPALTE_ZUORDNUNG_ALT, SPALTEN_BREITEN[COL_PUFFER], HorizontalAlignment.Left);
 
             listView_Uebersicht.MouseDoubleClick += listView_Uebersicht_MouseDoubleClick;
 
@@ -266,7 +278,7 @@ namespace WindowsFormsApplication1
         /// veränderbar, der Anwender kann selbst nachhelfen.
         ///
         /// Kein Designer, keine .resx: die Werte dort bleiben unangetastet, verschoben
-        /// wird ausschließlich im Code-Behind — wie es <c>InitPufferspeicherRubrik</c>
+        /// wird ausschließlich im Code-Behind — wie es <c>AltRubrikStilllegen</c>
         /// mit der Höhe bereits tut.
         /// </summary>
         private void UebersichtBreiteAnpassen()
@@ -480,7 +492,7 @@ namespace WindowsFormsApplication1
         ///      der ersten Fassung auf der Oberkante von <c>btn_Speichern</c>. Statt die
         ///      Zahl fest zu setzen, wird der Bedarf gerechnet und das Formular bei
         ///      Bedarf um genau die fehlenden Pixel höher — dasselbe Vorgehen wie in
-        ///      <c>InitPufferspeicherRubrik</c>, die die Knopfzeile ebenfalls nachzieht
+        ///      <c>AltRubrikStilllegen</c>, die die Knopfzeile ebenfalls nachzieht
         ///      (die drei Elemente sind ohne Verankerung, Bestand).
         /// </summary>
         private void ExtrapolationSchalterPlatzieren()
@@ -639,19 +651,18 @@ namespace WindowsFormsApplication1
                 if (dbWert == DbWerte.ERZEUGER_GESAMTSYSTEM) continue; // eigener Eintrag weiter unten
 
                 string anzeige = ErzeugerKatalog.Anzeige(dbWert);
-                string puffer = ZugeordnetePufferSp(dbWert);
                 List<AnlagenInfo> anlagen = AnlagenImProjekt(dbWert);
 
                 if (anlagen.Count == 0)
                 {
                     listView_Uebersicht.Items.Add(new ListViewItem(new[]
-                        { prio.ToString(), anzeige, "-", "", "", "", "", "", puffer }));
+                        { prio.ToString(), anzeige, "-", "", "", "", "", "" }));
                 }
                 else
                 {
                     // Jede im Projekt angelegte Anlage bekommt eine eigene Zeile
-                    // (z. B. beide Wärmepumpen); Prio/Erzeuger/Zuordnung nur in der
-                    // ersten Zeile, damit die Gruppierung erkennbar bleibt.
+                    // (z. B. beide Wärmepumpen); Prio und Erzeuger nur in der ersten
+                    // Zeile, damit die Gruppierung erkennbar bleibt.
                     for (int a = 0; a < anlagen.Count; a++)
                     {
                         AnlagenInfo info = anlagen[a];
@@ -666,8 +677,7 @@ namespace WindowsFormsApplication1
                             istWP ? WaermequelleAnzeige(info) : "–",
                             WaermesenkeAnzeige(info),
                             ZweitsenkeAnzeige(info),
-                            istWP ? BetriebsmodusAnzeige(info) : "",
-                            a == 0 ? puffer : ""
+                            istWP ? BetriebsmodusAnzeige(info) : ""
                         });
 
                         // Konzept 4.1: Tag für ALLE Erzeugerzeilen, nicht nur für Wärmepumpen.
@@ -678,12 +688,9 @@ namespace WindowsFormsApplication1
                 prio++;
             }
 
-            // Zuordnungen zum Gesamtsystem ebenfalls anzeigen, falls vorhanden.
-            // Gesucht wird über den DB-Wert, angezeigt der übersetzte Name.
-            string gesamtSp = ZugeordnetePufferSp(DbWerte.ERZEUGER_GESAMTSYSTEM);
-            if (gesamtSp != "-")
-                listView_Uebersicht.Items.Add(new ListViewItem(new[]
-                    { "", MyResource.Resource.KONFIG_GESAMTSYSTEM, "", "", "", "", "", "", gesamtSp }));
+            // D1: Die Zeile „Gesamtsystem" ist entfallen. Sie trug ausschließlich die
+            // Alt-Zuordnung der weggefallenen Spalte; ohne diese wäre sie eine Zeile
+            // ohne jede Aussage gewesen.
 
             // KEIN AutoResizeColumns mehr: die Breiten stehen fest in SPALTEN_BREITEN
             // (siehe dort). Ein erneutes Autosize würde sie bei jedem Neuaufbau wieder
@@ -753,7 +760,20 @@ namespace WindowsFormsApplication1
                     return string.Format(MyResource.Resource.SIMQ_QUELLE_KONSTANT, a.WQ_Temp.ToString("0.#"));
                 case WaermequelleClass.TYP_PUFFER:
                     {
-                        string name = WaermequelleClass.WertLesen(a.ID, "WQ_Puffer") as string;
+                        // E0: Der Fremdschlüssel ist die führende Identität - erst wenn
+                        // er fehlt oder ins Leere zeigt (Altbestand), gilt der Bezeichner.
+                        // Dieselbe Rangfolge wie in WaermequelleClass.QuellspeicherZeile.
+                        string name = null;
+                        object oId = WaermequelleClass.WertLesen(a.ID, "WQ_ID_Puffer");
+                        if (oId != null)
+                        {
+                            WaermesenkeClass.PufferInfo p =
+                                WaermesenkeClass.PufferLesen(Convert.ToInt32(oId));
+                            if (p != null) name = p.Bezeichner;
+                        }
+                        if (string.IsNullOrEmpty(name))
+                            name = WaermequelleClass.WertLesen(a.ID, "WQ_Puffer") as string;
+
                         return string.IsNullOrEmpty(name)
                             ? MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER
                             : string.Format(MyResource.Resource.SIMQ_QUELLE_PUFFER_NAME, name);
@@ -1057,10 +1077,6 @@ namespace WindowsFormsApplication1
                         : MyResource.Resource.SIM_TIP_BETRIEBSMODUS_NICHT_WP;
                     break;
 
-                case COL_PUFFER:
-                    text = MyResource.Resource.PSP_TIP_ZUORDNUNG_ALTMODELL;
-                    break;
-
                 default:
                     text = string.Format(MyResource.Resource.SIM_TIP_UEBERSICHT_STANDARD, info.Bezeichner);
                     break;
@@ -1099,10 +1115,6 @@ namespace WindowsFormsApplication1
 
                 case COL_BETRIEBSMODUS:
                     BetriebsmodusBearbeiten(info);
-                    break;
-
-                case COL_PUFFER:
-                    SpeicherregelungBearbeiten();
                     break;
 
                 case COL_QUELLE:
@@ -1293,9 +1305,14 @@ namespace WindowsFormsApplication1
 
                 case WaermequelleClass.TYP_PUFFER:
                     {
-                        // Auswahl des Pufferspeichers, der als Wärmequelle dient
+                        // Auswahl des Pufferspeichers, der als Wärmequelle dient.
+                        // E0: Der Dialog arbeitet mit den PROJEKT-Puffern und liefert die
+                        // ID; der Bezeichner wird nur noch mitgeführt.
                         Form_QuellePufferspeicher frmQuelle = new Form_QuellePufferspeicher();
                         frmQuelle.WPName = info.Bezeichner;
+                        frmQuelle.ID_Projekt = m_ID_Projekt;
+                        object oIdPuffer = WaermequelleClass.WertLesen(info.ID, "WQ_ID_Puffer");
+                        if (oIdPuffer != null) frmQuelle.ID_Puffer = Convert.ToInt32(oIdPuffer);
                         frmQuelle.Pufferspeicher = WaermequelleClass.WertLesen(info.ID, "WQ_Puffer") as string;
 
                         object oTemp = WaermequelleClass.WertLesen(info.ID, "WQ_Temp");
@@ -1310,6 +1327,16 @@ namespace WindowsFormsApplication1
                         frmQuelle.SetControls();
                         if (frmQuelle.ShowDialog(this) != DialogResult.OK) return;
 
+                        // E0: FÜHREND ist der Fremdschlüssel. Er geht über die
+                        // Überladung mit ausdrücklichem OleDbType weg — 0 ist keine
+                        // gültige Puffer-ID, und die erzwungene Beziehung aus Schritt 4
+                        // der SchemaMigration würde sie abweisen (dieselbe Regel wie in
+                        // WaermesenkeClass.Schreiben).
+                        WaermequelleClass.WertSchreiben(info.ID, "WQ_ID_Puffer",
+                            System.Data.OleDb.OleDbType.Integer,
+                            frmQuelle.ID_Puffer > 0 ? (object)frmQuelle.ID_Puffer : DBNull.Value);
+                        // Der Bezeichner wird MITGESCHRIEBEN: Anzeigen und die
+                        // Rückfallkette der Engine (Stufe 2/3) lesen ihn weiter.
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Puffer", frmQuelle.Pufferspeicher);
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Temp", frmQuelle.Quelltemperatur);
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Spreizung", frmQuelle.Spreizung);
