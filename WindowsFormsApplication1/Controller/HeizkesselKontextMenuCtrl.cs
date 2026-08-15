@@ -117,15 +117,15 @@ namespace WindowsFormsApplication1
                 id_type = WizardItemClass.KESSEL_TYP;
             }
 
+            // Vollstaendig gelesene Modelle durchreichen (siehe BHKWKontextMenuCtrl). Die
+            // Teilkopie aus ID/ID_Kessel/ID_Type/Bezeichner hat beim Speichern alle uebrigen
+            // Anlagenfelder verloren, weil WizardCtrl unten die Anlagen des Typs loescht und
+            // ueber Add_WP_Waermeerzeuger komplett neu schreibt - genullt wurden dabei
+            // ID_Carrier, Vorlauf/Ruecklauf, Grenzleistung, Betriebsart, Sperrung/Sperrzeiten,
+            // Bivalenter_Betrieb, Abschaltpunkt und Nutzungszeit.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                WErzeugerModel item = new WErzeugerModel();
-                item.ID = werzctrl.items[i].ID;
-                item.ID_Kessel = werzctrl.items[i].ID_Kessel;
-                item.ID_Type = werzctrl.items[i].ID_Type;
-                item.Bezeichner = werzctrl.items[i].Bezeichner;
-
-                frm.list_heizkesselmodel.Add(item);
+                frm.list_heizkesselmodel.Add(werzctrl.items[i]);
             }
 
             frm.SetControls(m_ID_Projekt);

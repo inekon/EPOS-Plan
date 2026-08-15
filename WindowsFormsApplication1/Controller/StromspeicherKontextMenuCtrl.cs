@@ -116,15 +116,16 @@ namespace WindowsFormsApplication1
                 id_type = WizardItemClass.SP_TYP;
             }
             
+            // Vollstaendig gelesene Modelle durchreichen - wie im Karten-Weg
+            // (Form_Start.pBox_Stromspeicher_Click). Die Teilkopie aus
+            // ID/ID_SP/ID_Type/Bezeichner hat beim Speichern alle uebrigen Anlagenfelder
+            // verloren, weil WizardCtrl unten die Anlagen des Typs loescht und ueber
+            // Add_WP_Waermeerzeuger komplett neu schreibt - genullt wurden dabei ID_Carrier,
+            // Vorlauf/Ruecklauf, Grenzleistung, Betriebsart, Sperrung/Sperrzeiten,
+            // Bivalenter_Betrieb, Abschaltpunkt und Nutzungszeit.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                WErzeugerModel item = new WErzeugerModel();
-                item.ID = werzctrl.items[i].ID;
-                item.ID_SP = werzctrl.items[i].ID_SP;
-                item.ID_Type = werzctrl.items[i].ID_Type;
-                item.Bezeichner = werzctrl.items[i].Bezeichner;
-
-                frm.list_werzmodel.Add(item);
+                frm.list_werzmodel.Add(werzctrl.items[i]);
             }
 
             frm.SetControls(m_szProjektname);
@@ -162,12 +163,12 @@ namespace WindowsFormsApplication1
             frm.list_spmodel.Clear();
             ListViewItem item = listView_SP.Items[indexes[0]];
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID=" + Int32.Parse(item.SubItems[6].Text));
+            if (werzctrl.rows <= 0) return;
 
-            WErzeugerModel model = new WErzeugerModel();
-            model.ID = werzctrl.items[0].ID;
-            model.ID_SP = werzctrl.items[0].ID_SP;
-            model.ID_Type = werzctrl.items[0].ID_Type;
-            model.Bezeichner = werzctrl.items[0].Bezeichner;
+            // Vollstaendig gelesenes Modell durchreichen - dieselbe Ursache wie im
+            // Hinzufuegen/Bearbeiten-Zweig oben: Add_WP_Waermeerzeuger schreibt alle Felder
+            // des Modells zurueck, eine Teilkopie nullt deshalb den Rest der Anlagenzeile.
+            WErzeugerModel model = werzctrl.items[0];
             frm.list_spmodel.Add(model);
             frm.m_bItemBearbeiten = true;
             int id_type = model.ID_Type;
