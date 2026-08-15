@@ -259,6 +259,12 @@ namespace WindowsFormsApplication1
         {
             MenueCtrl menu = new MenueCtrl();
             menu.ProjektNeu();
+
+            // Befund 3: Der Menueweg hat die Startseite bisher gar nicht aktualisiert -
+            // Reiter blieben gesperrt und m_ID_Projekt zeigte weiter auf das zuvor
+            // geoeffnete Projekt, die Wizard-Kacheln schrieben also ins falsche Projekt.
+            if (Program.wizardctrl != null && Program.wizardctrl.Projektname != "")
+                Program.startfrm?.ProjektKontextUebernehmen(Program.wizardctrl.Projektname);
         }
 
         private async void MDIMainForm_Load(object sender, EventArgs e)
@@ -317,7 +323,12 @@ namespace WindowsFormsApplication1
         private void MenuItem_ProjektBearbeiten_Click(object sender, EventArgs e)
         {
             MenueCtrl menu = new MenueCtrl();
-            menu.ProjektBearbeiten();    
+            menu.ProjektBearbeiten();
+
+            // Befund 3: wie bei "Neu" - ohne diese Zeile bleibt der Projektkontext der
+            // Startseite auf dem vorher geoeffneten Projekt stehen.
+            if (Program.wizardctrl != null && Program.wizardctrl.Projektname != "")
+                Program.startfrm?.ProjektKontextUebernehmen(Program.wizardctrl.Projektname);
         }
 
         private void MenuItem_ProjektOeffnen_Click(object sender, EventArgs e)

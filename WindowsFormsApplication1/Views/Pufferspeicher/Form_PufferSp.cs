@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -11,6 +13,16 @@ namespace WindowsFormsApplication1
         private WErzeugerCtrl ctrl = new WErzeugerCtrl();
         private PufferSpStammCtrl pufferspctrl = new PufferSpStammCtrl();
         public List<WErzeugerModel> list_pufferspmodel = new List<WErzeugerModel>();
+
+        // Befund 4: Parallelliste zur LINKEN ListBox (Projektauswahl).
+        // list_pufferspmodel enthaelt im Wizard-Modus ALLE Erzeugertypen, die ListBox zeigt
+        // aber nur die PUFFER_TYP-Eintraege - der ListBox-Index passt also nicht auf die
+        // Modell-Liste. Ausserdem sind Projektkopien nicht ueber ihren Namen auffindbar
+        // (sie heissen z.B. "... 600 Liter" statt "... 600 Ltr" und duerfen im selben
+        // Projekt doppelt vorkommen). Diese Liste haelt zu jedem ListBox-Index das
+        // zugehoerige Modell und damit dessen ID_PUFFER.
+        private List<WErzeugerModel> _linkeListe = new List<WErzeugerModel>();
+
         public int m_nType = WizardItemClass.PUFFER_TYP;
         public int m_ID_Projekt = 0;
         int startindex = 100000;
@@ -38,11 +50,13 @@ namespace WindowsFormsApplication1
                 list_pufferspmodel = wizardparent.list_werzmodel;
             }
             listBox_Pufferspeicher.Items.Clear();
+            _linkeListe.Clear();
             for (int i = 0; i < list_pufferspmodel.Count; i++)
             {
                 if (list_pufferspmodel[i].ID_Type == WizardItemClass.PUFFER_TYP)
                 {
                     listBox_Pufferspeicher.Items.Add(list_pufferspmodel[i].Bezeichner);
+                    _linkeListe.Add(list_pufferspmodel[i]);
                 }
             }
             if (listBox_Pufferspeicher.Items.Count > 0) listBox_Pufferspeicher.SelectedIndex = 0;
@@ -98,6 +112,7 @@ namespace WindowsFormsApplication1
 
                 list_pufferspmodel.Add(model);
                 listBox_Pufferspeicher.Items.Add(listBox_Pufferspeicher_DB.Text);
+                _linkeListe.Add(model);
                 if (m_bWizard) wizardparent.list_werzmodel = list_pufferspmodel;
             }
             rs.Close();
@@ -105,9 +120,16 @@ namespace WindowsFormsApplication1
 
         private void btn_PufferSp_Entfernen_Click(object sender, EventArgs e)
         {
-            if (listBox_Pufferspeicher.SelectedIndex == -1) return;
-            list_pufferspmodel.RemoveAt(listBox_Pufferspeicher.SelectedIndex);
-            listBox_Pufferspeicher.Items.Remove(listBox_Pufferspeicher.Text);
+            int index = listBox_Pufferspeicher.SelectedIndex;
+            if (index < 0 || index >= _linkeListe.Count) return;
+
+            // Befund 4 (Zusatz): RemoveAt(SelectedIndex) auf list_pufferspmodel traf im
+            // Wizard-Modus das falsche Element, weil dort auch Kessel/BHKW/... in der Liste
+            // stehen; Items.Remove(Text) traf bei gleichnamigen Eintraegen immer den ersten.
+            // Ueber die Parallelliste wird genau das gewaehlte Modell entfernt.
+            list_pufferspmodel.Remove(_linkeListe[index]);
+            _linkeListe.RemoveAt(index);
+            listBox_Pufferspeicher.Items.RemoveAt(index);
             if (m_bWizard) wizardparent.list_werzmodel = list_pufferspmodel;
         }
 
@@ -125,19 +147,50 @@ namespace WindowsFormsApplication1
 
         private void listBox_PufferSp_SelectedIndexChanged(object sender, EventArgs e)
         {
-            RecordSet rs = new RecordSet();
+            // Befund 4: Der links gewaehlte Eintrag ist eine PROJEKT-Zeile. Die frueher hier
+            // benutzte Namenssuche im KATALOG (Tab_Pufferspeicher_STAMM) fand nichts, sobald
+            // die Projektkopie anders heisst als die Vorlage ("... 600 Liter" gegen
+            // "... 600 Ltr"), und waere bei gleichnamigen Projektzeilen ohnehin mehrdeutig.
+            // Deshalb Zugriff ueber die ID aus der Parallelliste.
+            int index = listBox_Pufferspeicher.SelectedIndex;
+            if (index < 0 || index >= _linkeListe.Count) return;
 
-            rs.Open("select * from Tab_Pufferspeicher_STAMM where Bezeichner='" + listBox_Pufferspeicher.Text + "'");
-            if (!rs.EOF())
-            {
-                textBox_Name.Text = (string)rs.Read("Bezeichner");
-                textBox_Hersteller.Text = rs.GetString("Hersteller");
-                textBox_Typ.Text = (string)rs.Read("Speichertyp");
-                textBox_Versluste.Text = rs.Read("Bereitschaftsverluste").ToString();
-                textBox_Volumen.Text = rs.Read("Gesamtvolumen").ToString();
-                textBox_Investitionskosten.Text = rs.Read("Investitionskosten").ToString();
-            }
-            rs.Close();
+            int idPuffer = _linkeListe[index].ID_PUFFER;
+            if (idPuffer <= 0) return;
+
+            const string felder = "SELECT Bezeichner, Hersteller, Speichertyp, Bereitschaftsverluste, " +
+                                  "Gesamtvolumen, Investitionskosten FROM ";
+
+            DataTable dt = DataRepository.GetDataTable(
+                felder + "Tab_Pufferspeicher WHERE ID=? AND ID_Projekt=?",
+                new OleDbParameter("@id", idPuffer),
+                new OleDbParameter("@proj", m_ID_Projekt));
+
+            // Frisch hinzugefuegte Eintraege haben noch keine Projektkopie - dort steht in
+            // ID_PUFFER die STAMM-ID (siehe btn_PufferSp_Hinzu_Click); die Kopie legt erst
+            // WizardCtrl beim Speichern an.
+            if (dt.Rows.Count == 0)
+                dt = DataRepository.GetDataTable(
+                    felder + "Tab_Pufferspeicher_STAMM WHERE ID=?",
+                    new OleDbParameter("@id", idPuffer));
+
+            if (dt.Rows.Count == 0) return;
+
+            DataRow row = dt.Rows[0];
+            textBox_Name.Text = FeldText(row, "Bezeichner");
+            textBox_Hersteller.Text = FeldText(row, "Hersteller");
+            textBox_Typ.Text = FeldText(row, "Speichertyp");
+            textBox_Versluste.Text = FeldText(row, "Bereitschaftsverluste");
+            textBox_Volumen.Text = FeldText(row, "Gesamtvolumen");
+            textBox_Investitionskosten.Text = FeldText(row, "Investitionskosten");
+        }
+
+        /// <summary>Feldwert als Text; NULL und fehlende Spalte ergeben eine leere Zeichenkette.</summary>
+        private static string FeldText(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return "";
+            object wert = row[spalte];
+            return (wert == null || wert == DBNull.Value) ? "" : wert.ToString();
         }
 
         private void listBox_PufferSp_DB_SelectedIndexChanged(object sender, EventArgs e)
