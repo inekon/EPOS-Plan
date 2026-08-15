@@ -42,6 +42,26 @@ namespace WindowsFormsApplication1
         private System.Windows.Forms.Label label_Laufmeldungen;
         private string _laufmeldungenText = "";
 
+        // Ergebnisdiagramm der Heizkessel-Seite (Sichttest: die Seite zeigte bisher nur
+        // Zahlen). Aufbau wie die Wärmepumpen-Seite - Diagramm, Umschalter "sortiert",
+        // CSV-Ausgabe; alles programmatisch, Designer und .resx bleiben unangetastet.
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart_Kessel;
+        private System.Windows.Forms.CheckBox checkBox_Kessel_sortiert;
+        private System.Windows.Forms.Button btn_CsvExportKessel;
+        private ChartManager _chartKesselManager;
+
+        /// <summary>
+        /// Gehört zum aktuellen Ergebnis ein Kessel-Diagramm? Gesetzt von
+        /// <see cref="KesselErgebnisAnzeigen"/>.
+        ///
+        /// NICHT über <c>chart_Kessel.Visible</c> geprüft: Dessen Getter liefert false,
+        /// solange ein Elternelement nicht angezeigt wird — und die Steuerelemente der
+        /// Registerkarte liegen zeitweise in einer nicht sichtbaren TabPage, während sie
+        /// zwischen Seitenleiste und Panel wandern (siehe listViewQuellen_SelectedIndexChanged).
+        /// Der Umschalter „sortiert" hätte dann wortlos nichts getan.
+        /// </summary>
+        private bool _kesselChartAktiv;
+
         /// <summary>
         /// Zustand der Schaltfläche „Ergebnis speichern" (Nacharbeit Paket 8, Befund N1).
         ///
@@ -121,6 +141,7 @@ namespace WindowsFormsApplication1
         private const string S_SPEICHERFUELLSTAND = "SPEICHERFUELLSTAND";
         private const string S_UEBERSCHUSS = "UEBERSCHUSS";
         private const string S_PHOTOVOLTAIK = "PHOTOVOLTAIK";
+        private const string S_RESTWAERME = "RESTWAERME";
         /// <summary>
         /// Legt eine Serie unter ihrem technischen Schlüssel an und hängt den Anzeigetext
         /// an <c>LegendText</c> (Muster aus NavigatorWaerme, Paket 9 / L6).
@@ -135,9 +156,9 @@ namespace WindowsFormsApplication1
         /// Wie oben, aber mit ausdrücklichem Serientyp und optionaler Stapelgruppe.
         ///
         /// <c>ChartManager.AddSeries</c> vergibt <c>FastLine</c>, und <c>FastLine</c> kann
-        /// nicht stapeln. <paramref name="stapelgruppe"/> trennt mehrere Stapel in
-        /// EINEM Diagramm — ohne sie würde MS-Chart alle gestapelten Serien in einen
-        /// gemeinsamen Stapel werfen.
+        /// nicht stapeln. Serientyp, Stapelgruppe und Balkenbreite setzt
+        /// <see cref="GanglinienDarstellung.StapelEinstellen"/> — dieselbe Regel wie in
+        /// NavigatorWaerme/NavigatorStrom.
         /// </summary>
         private static void SerieAnlegen(ChartManager cm, string schluessel, string legende,
                                          Color farbe, float[] werte, SeriesChartType typ,
@@ -146,8 +167,7 @@ namespace WindowsFormsApplication1
             cm.AddSeries(schluessel, farbe, werte);
             Series s = cm._chart.Series[schluessel];
             s.LegendText = legende;
-            s.ChartType = typ;
-            if (!string.IsNullOrEmpty(stapelgruppe)) s["StackedGroupName"] = stapelgruppe;
+            GanglinienDarstellung.StapelEinstellen(s, typ, stapelgruppe);
         }
         /// <summary>Wie oben, für die XY-Variante mit <see cref="PointF"/>-Punkten.</summary>
         private static void SerieAnlegen(ChartManager cm, string schluessel, string legende,
@@ -277,6 +297,9 @@ namespace WindowsFormsApplication1
             // (programmatisch, Muster listView_SimSolar/listView_SimPV).
             InitPufferspeicherRubrik();
 
+            // Wärmelast-Jahresganglinie im Heizkessel-Tab (programmatisch, Muster wie oben).
+            InitKesselChart();
+
             // HIER DIE KORREKTUR: ReihenfolgeTabPages() komplett weglassen
             // und stattdessen direkt unsere neue Update-Logik starten!
             UpdateTabPages();
@@ -339,6 +362,493 @@ namespace WindowsFormsApplication1
             tooltip.SetToolTip(btnExportWP, MyResource.Resource.SIM_TOOLTIP_CSV_WAERMEPUMPE);
             tabPage_Wärmepumpe.Controls.Add(btnExportWP);
             btnExportWP.BringToFront();
+
+            // Bereich Heizkessel (tabPage_Heizkessel) - in der linken Grafikspalte unter
+            // der Kesseltabelle. Erscheint erst mit dem Diagramm (siehe KesselErgebnisAnzeigen).
+            if (chart_Kessel != null && chart_Kessel.Parent != null)
+            {
+                btn_CsvExportKessel = new Button();
+                btn_CsvExportKessel.Name = "btn_CsvExportKessel";
+                btn_CsvExportKessel.Text = MyResource.Resource.SIM_BTN_CSV_EXPORT;
+                btn_CsvExportKessel.Size = new Size(150, 32);
+                btn_CsvExportKessel.Location = new Point(chart_Kessel.Left, listView_SimSPK.Bottom + 8);
+                btn_CsvExportKessel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+                btn_CsvExportKessel.BackColor = SystemColors.Control;
+                btn_CsvExportKessel.ForeColor = Color.Black;
+                btn_CsvExportKessel.UseVisualStyleBackColor = false;
+                btn_CsvExportKessel.Visible = false;
+                btn_CsvExportKessel.Click += btn_CsvExportKessel_Click;
+                tooltip.SetToolTip(btn_CsvExportKessel, MyResource.Resource.SIM_TOOLTIP_CSV_HEIZKESSEL);
+                chart_Kessel.Parent.Controls.Add(btn_CsvExportKessel);
+                btn_CsvExportKessel.BringToFront();
+            }
+        }
+
+        // ====================================================================
+        //  Heizkessel-Seite: Wärmelast-Jahresganglinie
+        // ====================================================================
+        //
+        // AUSGANGSLAGE (Sichttest). Die Heizkessel-Seite zeigte ausschließlich Zahlen:
+        // Brennstoffverbräuche links, Bedarfs- und Deckungsfelder rechts, darunter die
+        // Tabelle der einzelnen Spitzenkessel. Die Frage, WARUM der Kessel wann läuft,
+        // beantwortete keine dieser Zahlen — anders als auf der Wärmepumpen-Seite, wo
+        // die Jahresganglinie Bedarf und Produktion nebeneinanderlegt.
+        //
+        // AUFBAU wie dort: Diagramm LINKS, Ergebniszahlen RECHTS. Der Entwurf der Seite
+        // hatte die Zahlen über die ganze Breite verteilt (Brennstoffe links, Bedarf in
+        // der Mitte, Tabelle unten links) — für ein Diagramm blieb nur eine Ecke. Die
+        // Bestandsfelder wandern deshalb geschlossen in eine rechte Spalte
+        // (siehe KesselSeiteAnordnen); Designer und .resx bleiben unangetastet.
+        //
+        // Was der Kessel sieht, ist NICHT der Projektwärmebedarf, sondern der Rest nach
+        // den vorgelagerten Kaskadenstufen (simulation_spk.Waermebedarf) — genau dieser
+        // Stufeneingang wird gezeigt, sonst erklärte das Bild die Kesselstunden nicht.
+        //
+        // KEINE Serie je Kessel: Die Engine führt die Kesselleistung nur als SUMME über
+        // alle Kessel (SimulationSPK.Kesselleistung_stuendlich); je-Kessel-Ganglinien
+        // gibt es im Rechenkern nicht, und eine Engine-Änderung gehört nicht in eine
+        // Anzeigeaufgabe. Die Aufteilung je Kessel steht als Jahressumme in der Tabelle
+        // darunter. (Offen dokumentiert.)
+
+        // Maße der neuen Aufteilung. Die rechte Spalte endet bei x≈1080 und bleibt damit
+        // deutlich innerhalb der Entwurfsbreite des aufnehmenden Panels (≈1295).
+        private const int KESSEL_CHART_LINKS = 16;
+        private const int KESSEL_CHART_OBEN = 40;
+        private const int KESSEL_CHART_BREITE = 600;
+        private const int KESSEL_CHART_HOEHE = 380;
+        private const int KESSEL_SPALTE_RECHTS = 656;
+
+        /// <summary>
+        /// Legt Diagramm und Umschalter im Heizkessel-Tab an — programmatisch nach dem
+        /// Muster von <see cref="InitPufferspeicherRubrik"/>; Designer und .resx bleiben
+        /// unangetastet.
+        /// </summary>
+        private void InitKesselChart()
+        {
+            if (listView_SimSPK == null || listView_SimSPK.Parent == null) return;
+
+            KesselSeiteAnordnen();
+
+            chart_Kessel = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            chart_Kessel.Name = "chart_Kessel";
+            // Ein programmatisch erzeugtes Chart hat KEINE ChartArea - ChartManager.Init
+            // steigt ohne sie wortlos aus (if (_chart.ChartAreas.Count == 0) return).
+            chart_Kessel.ChartAreas.Add(new ChartArea("ChartArea_Kessel"));
+            chart_Kessel.BackColor = Color.WhiteSmoke;
+            chart_Kessel.BorderlineColor = Color.Transparent;
+            // Feste Position, keine Rechts-Verankerung: Die Controls der TabPage werden
+            // zur Laufzeit in das schmalere splitContainer_Parameter.Panel2 verschoben
+            // (siehe Kommentar bei InitCsvExportButtons).
+            chart_Kessel.Location = new Point(KESSEL_CHART_LINKS, KESSEL_CHART_OBEN);
+            chart_Kessel.Size = new Size(KESSEL_CHART_BREITE, KESSEL_CHART_HOEHE);
+            chart_Kessel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            chart_Kessel.Visible = false;   // erst nach einem Lauf mit Kessel
+            listView_SimSPK.Parent.Controls.Add(chart_Kessel);
+
+            checkBox_Kessel_sortiert = new CheckBox();
+            checkBox_Kessel_sortiert.Name = "checkBox_Kessel_sortiert";
+            // Derselbe Text wie die Bestands-Checkbox der Wärmepumpen-Seite
+            // (checkBox_WP_sortiert, „sortiert"/„sorted" aus der Satelliten-.resx der
+            // Form). Programmatische Steuerelemente kommen an diese .resx nicht heran und
+            // nehmen den wortgleichen Katalogschlüssel — wie in NavigatorWaerme.
+            checkBox_Kessel_sortiert.Text = MyResource.Resource.SIM_CHK_SORTIERT;
+            checkBox_Kessel_sortiert.AutoSize = true;
+            checkBox_Kessel_sortiert.Font = checkBox_WP_sortiert.Font;
+            checkBox_Kessel_sortiert.ForeColor = Color.Black;
+            // Rechts oben AM Diagramm, wie auf der Wärmepumpen-Seite. Dort liegt der
+            // Umschalter über der Zeichenfläche; hier ist er ein Geschwister des Charts
+            // und bekäme dessen Hintergrund nicht (WinForms-Transparenz nimmt den des
+            // Elternelements) — deshalb dieselbe Farbe wie die Chartfläche.
+            checkBox_Kessel_sortiert.BackColor = chart_Kessel.BackColor;
+            checkBox_Kessel_sortiert.Location = new Point(chart_Kessel.Right - 90, chart_Kessel.Top + 8);
+            checkBox_Kessel_sortiert.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            checkBox_Kessel_sortiert.Visible = false;
+            checkBox_Kessel_sortiert.CheckedChanged += checkBox_Kessel_sortiert_CheckedChanged;
+            listView_SimSPK.Parent.Controls.Add(checkBox_Kessel_sortiert);
+            checkBox_Kessel_sortiert.BringToFront();
+        }
+
+        /// <summary>
+        /// Ordnet die Heizkessel-Seite nach dem Muster der Wärmepumpen-Seite:
+        /// <b>links</b> die Grafikspalte (Diagramm oben, Kesseltabelle darunter),
+        /// <b>rechts</b> die Ergebniszahlen (Bedarfs-/Deckungsfelder oben, Brennstoffblock
+        /// darunter).
+        ///
+        /// Die Steuerelemente behalten ihre Anordnung INNERHALB ihrer Gruppe: Verschoben
+        /// wird jede Gruppe als Ganzes um denselben Versatz, ermittelt aus ihrer heutigen
+        /// umschließenden Ecke. Damit bleiben Abstände und Fluchten des Entwurfs erhalten,
+        /// und weder Designer noch .resx werden angefasst (Projektregel).
+        ///
+        /// Die Gruppenzuordnung geht über die Entwurfsposition statt über eine Liste von
+        /// 60 Steuerelementnamen: alles links von x=400 gehört zum Brennstoffblock, alles
+        /// rechts davon zum Bedarfsblock; Tabelle und ihre Überschrift stehen namentlich
+        /// darin. Eine Namensliste wäre bei jeder Designer-Änderung still unvollständig.
+        ///
+        /// Läuft genau EINMAL beim Aufbau des Formulars.
+        /// </summary>
+        private void KesselSeiteAnordnen()
+        {
+            TabPage seite = tabPage_Heizkessel;
+            if (seite == null) return;
+
+            List<Control> tabelle = new List<Control>();
+            List<Control> brennstoff = new List<Control>();
+            List<Control> bedarf = new List<Control>();
+
+            foreach (Control c in seite.Controls)
+            {
+                if (c == listView_SimSPK || c.Name == "label80") tabelle.Add(c);
+                else if (c.Left < 400) brennstoff.Add(c);
+                else bedarf.Add(c);
+            }
+
+            seite.SuspendLayout();
+
+            // Rechte Spalte: Bedarfs- und Deckungsfelder nach oben, Brennstoffblock darunter.
+            GruppeVerschieben(bedarf, KESSEL_SPALTE_RECHTS, 24);
+            GruppeVerschieben(brennstoff, KESSEL_SPALTE_RECHTS, 330);
+
+            // Linke Spalte: Kesseltabelle unter das Diagramm; sie wird dafür etwas
+            // schmaler als im Entwurf (Spaltenbreiten stellt AutoResizeColumns).
+            GruppeVerschieben(tabelle, KESSEL_CHART_LINKS, KESSEL_CHART_OBEN + KESSEL_CHART_HOEHE + 12);
+            listView_SimSPK.Width = KESSEL_CHART_BREITE;
+            listView_SimSPK.Height = 212;
+
+            seite.ResumeLayout();
+        }
+
+        /// <summary>
+        /// Verschiebt eine Gruppe von Steuerelementen so, dass ihre umschließende linke
+        /// obere Ecke auf (<paramref name="zielX"/>, <paramref name="zielY"/>) liegt.
+        /// </summary>
+        private static void GruppeVerschieben(List<Control> gruppe, int zielX, int zielY)
+        {
+            if (gruppe.Count == 0) return;
+
+            int links = int.MaxValue, oben = int.MaxValue;
+            foreach (Control c in gruppe)
+            {
+                if (c.Left < links) links = c.Left;
+                if (c.Top < oben) oben = c.Top;
+            }
+
+            int dx = zielX - links, dy = zielY - oben;
+            foreach (Control c in gruppe) c.Location = new Point(c.Left + dx, c.Top + dy);
+        }
+
+        /// <summary>
+        /// Zeigt das Kessel-Diagramm — oder blendet es aus, wenn das Ergebnis keinen
+        /// Kessel führt (Präsenzregel, siehe <see cref="ErgebnisPraesenz"/>).
+        ///
+        /// BEWUSST außerhalb von <c>if (sim.bSimulationKessel)</c> aufgerufen: Wird der
+        /// Kessel in einem Folgelauf abgewählt, muss das Diagramm des Vorlaufs
+        /// verschwinden statt stehenzubleiben — dieselbe Begründung wie bei
+        /// <see cref="PufferspeicherErgebnisAnzeigen"/>.
+        /// </summary>
+        private void KesselErgebnisAnzeigen()
+        {
+            if (chart_Kessel == null) return;
+
+            bool zeigen = sim != null && sim.simulation_spk != null
+                          && ErgebnisPraesenz.Ermitteln(sim).Heizkessel;
+
+            _kesselChartAktiv = zeigen;
+            chart_Kessel.Visible = zeigen;
+            if (checkBox_Kessel_sortiert != null) checkBox_Kessel_sortiert.Visible = zeigen;
+            if (btn_CsvExportKessel != null) btn_CsvExportKessel.Visible = zeigen;
+
+            if (!zeigen)
+            {
+                // Serien des Vorlaufs abräumen, damit kein Bild ohne Bezug stehenbleibt.
+                if (_chartKesselManager != null) _chartKesselManager.HardReset();
+                return;
+            }
+
+            if (_chartKesselManager == null) _chartKesselManager = new ChartManager(chart_Kessel);
+            KesselSerienAufbauen();
+            KesselBrennstoffZeilenAnpassen();
+        }
+
+        /// <summary>
+        /// Baut Diagrammkonfiguration und Serien der Heizkessel-Seite auf — in der
+        /// Darstellungsform, die der Umschalter „sortiert" vorgibt. Der Ablauf folgt der
+        /// Wärmepumpen-Seite (<see cref="checkBox_WP_sortiert_CheckedChanged"/>):
+        /// <c>XAxisAsNumber</c> setzen, <c>HardReset()</c>, <c>Init()</c>, Serien neu.
+        ///
+        /// DREI Serien, alle aus <see cref="SimulationSPK"/> — hier wird nichts
+        /// nachgerechnet und nichts von der Wärmepumpen-Seite übernommen:
+        ///   Wärmebedarf  = <c>simulation_spk.Waermebedarf</c>, der Stufeneingang der
+        ///                  Kessel (Rest nach den vorgelagerten Erzeugern). FLÄCHE, hinten.
+        ///   Wärmeproduktion = <c>simulation_spk.Kesselleistung_stuendlich</c>. SÄULEN,
+        ///                  darüber.
+        ///   Restwärme    = <c>simulation_spk.Restwaerme</c>, Linie ganz oben.
+        ///
+        /// <b>Warum der Bedarf EINE Serie ist</b> (anders als auf der Wärmepumpen-Seite,
+        /// die ihn in Heizwärme und Warmwasser teilt): An der Kesselposition liegt der
+        /// RESTbedarf an. Welcher Anteil davon Warmwasser ist, sagt der klassische
+        /// Rechenweg nicht — er reicht einen einzigen Vektor weiter. Eine Aufteilung wäre
+        /// hier eine Behauptung über den Warmwasserkanal, die die Engine nicht deckt.
+        ///
+        /// <b>Warum Fläche UND Säulen und nicht zwei Säulenstapel:</b> Zwei
+        /// <c>StackedGroupName</c>-Gruppen stellt MS-Chart bei Säulen NEBENEINANDER; bei
+        /// 8760 Punkten auf 600 Bildpunkten ist eine Säule 0,07 Punkte breit, halbiert
+        /// verschwindet die Produktion in der Rasterung — genau der Befund „die
+        /// Wärmeproduktion fehlt in der Grafik". Der Bedarf als eigenständige Fläche
+        /// belegt keinen Säulenplatz; die Produktionssäulen bekommen die volle Breite.
+        /// </summary>
+        private void KesselSerienAufbauen()
+        {
+            if (_chartKesselManager == null || sim == null || sim.simulation_spk == null) return;
+
+            bool sortiert = checkBox_Kessel_sortiert != null && checkBox_Kessel_sortiert.Checked;
+
+            float[] bedarf = sim.simulation_spk.Waermebedarf;
+            float[] produktion = sim.simulation_spk.Kesselleistung_stuendlich;
+            float[] rest = sim.simulation_spk.Restwaerme;
+
+            ChartManager cm = _chartKesselManager;
+            cm.YMaxValue = Math.Max(bedarf.Max(), produktion.Max()) + 1;
+            cm.YMinValue = 0;
+            cm.XAxisAsNumber = sortiert;
+            cm.XAxisTitle = sortiert
+                ? MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN
+                : MyResource.Resource.CHART_ACHSE_MONATE;
+            cm.YAxisTitle = MyResource.Resource.CHART_ACHSE_WAERMELAST;
+            cm.toolTipUnit = "kW";
+            cm.ChartTitle = MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE;
+            cm.MitLegende = true;
+            cm.MitChartBorder = true;
+            cm.MaxXVALUE = 8760;
+            cm.MitViertelStunde = false;
+
+            cm.HardReset();
+            cm.Init();
+
+            // Reihenfolge = Zeichenreihenfolge: MS-Chart zeichnet in der Reihenfolge der
+            // Series-Collection, das Zuletztangelegte liegt oben.
+            SerieAnlegen(cm, S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF,
+                         Color.FromArgb(90, Color.Red), GanglinienDarstellung.Anzeigewerte(bedarf, sortiert),
+                         sortiert ? SeriesChartType.FastLine : SeriesChartType.Area);
+
+            SerieAnlegen(cm, S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
+                         Color.Blue, GanglinienDarstellung.Anzeigewerte(produktion, sortiert),
+                         GanglinienDarstellung.Stapeltyp(sortiert), "Produktion");
+
+            SerieAnlegen(cm, S_RESTWAERME, MyResource.Resource.CHART_SEGMENT_RESTWAERME,
+                         Color.Green, GanglinienDarstellung.Anzeigewerte(rest, sortiert));
+
+            cm._chart.Invalidate();
+        }
+
+        // ====================================================================
+        //  Heizkessel-Seite: nur verwendete Brennstoffe zeigen
+        // ====================================================================
+        //
+        // Der Block „Brennstoffverbrauch der Spitzenkessel" führte ALLE zehn Brennstoffe
+        // untereinander auf — in einem Projekt mit einem Gaskessel standen dort neun
+        // Zeilen „0,00" für Öl, Koks, Kohle, Holz, Pellets, Rapsöl, Strom, tierische Fette
+        // und Sonstiges. Dieselbe Regel wie im Übersicht-Reiter (siehe ErgebnisPraesenz):
+        // sichtbar ist eine Zeile, wenn ihr JAHRESWERT > 0 ist ODER ein Kessel des
+        // Projekts diesen Brennstoff führt — so bleibt der vorhandene Gaskessel mit
+        // 0-Ergebnis sichtbar (die Antwort auf „warum verbraucht mein Kessel nichts?"),
+        // und Nichtvorhandenes verschwindet. Die übrigen Zeilen rücken nach.
+        //
+        // Die Spalten der Kesseltabelle darunter bleiben unangetastet: „Brennstoffe" und
+        // „Öl" sind dort die zwei Nutzwärmekanäle der Engine (s_waerme_Gas_Spk /
+        // s_waerme_Oel_Spk), keine Brennstoffliste.
+
+        private List<AnkerZeile> _kesselBrennstoffZeilen;
+        private Func<double>[] _kesselBrennstoffWerte;
+        private int[][] _kesselBrennstoffIds;
+
+        /// <summary>
+        /// Baut die Zeilenbeschreibung des Brennstoffblocks einmalig auf — NACH
+        /// <see cref="KesselSeiteAnordnen"/>, damit die gesicherten Anker die Positionen
+        /// der neuen Spalte sind und nicht die des Entwurfs.
+        /// </summary>
+        private void KesselBrennstoffZeilenVorbereiten()
+        {
+            if (_kesselBrennstoffZeilen != null) return;
+
+            // Reihenfolge = Reihenfolge im Entwurf (von oben nach unten).
+            Control[][] felder =
+            {
+                new Control[] { label61, tb_Gasverbrauch,      label65 },
+                new Control[] { label66, tb_Oelverbrauch,      label67 },
+                new Control[] { label68, tb_Koks,              label69 },
+                new Control[] { label74, tb_Kohle,             label75 },
+                new Control[] { label72, tb_Holzverbrauch,     label73 },
+                new Control[] { label84, tb_Pellets,           label85 },
+                new Control[] { label70, tb_Rapsoelverbrauch,  label71 },
+                new Control[] { label76, tb_Stromverbrauch,    label77 },
+                new Control[] { label86, tb_TierischeFette,    label87 },
+                new Control[] { label78, tb_Sonstigverbrauch,  label79 }
+            };
+
+            // Brennstoff-Kennungen je Zeile. Sie spiegeln die Buchung der Engine
+            // (SimulationSPK.Bilanz_und_Nutzungsgrad) — dort sind Brennstoff_Art und die
+            // Zuordnung privat und ohne Engine-Eingriff nicht erreichbar. Ändert sich die
+            // Buchung dort, gehört diese Tabelle nachgezogen (offener Punkt).
+            _kesselBrennstoffIds = new[]
+            {
+                new[] { 1, 2, 3, 4, 5 },                        // Gas
+                new[] { 6, 7, 8, 9, 18, 19, 20, 21, 22 },       // Öl
+                new[] { 10 },                                   // Koks
+                new[] { 11 },                                   // Kohle
+                new[] { 12 },                                   // Holz
+                new[] { 15 },                                   // Pellets
+                new[] { 16 },                                   // Rapsöl
+                new[] { 13 },                                   // Elektrowärme
+                new[] { 17 },                                   // Tierische Fette
+                new int[0]                                      // Sonstige: alles Übrige
+            };
+
+            _kesselBrennstoffWerte = new Func<double>[]
+            {
+                () => sim.simulation_spk.Gasverbrauch_SPK,
+                () => sim.simulation_spk.Oelverbrauch_SPK,
+                () => sim.simulation_spk.Koks_SPK,
+                () => sim.simulation_spk.Kohle_SPK,
+                () => sim.simulation_spk.Holzverbrauch_SPK,
+                () => sim.simulation_spk.Pellets_SPK,
+                () => sim.simulation_spk.Rapsoelverbrauch_SPK,
+                () => sim.simulation_spk.Stromverbrauch_Spk,
+                () => sim.simulation_spk.TierischeFette_SPK,
+                () => sim.simulation_spk.Sonstigverbrauch_SPK
+            };
+
+            _kesselBrennstoffZeilen = new List<AnkerZeile>();
+            foreach (Control[] zeile in felder)
+            {
+                AnkerZeile z = new AnkerZeile();
+                AnkerErfassen(z, zeile);
+                _kesselBrennstoffZeilen.Add(z);
+            }
+        }
+
+        /// <summary>
+        /// Blendet die Zeilen nicht verwendeter Brennstoffe aus und lässt die übrigen
+        /// nachrücken. Reine Anzeige.
+        /// </summary>
+        private void KesselBrennstoffZeilenAnpassen()
+        {
+            if (sim == null || sim.simulation_spk == null) return;
+
+            KesselBrennstoffZeilenVorbereiten();
+
+            System.Collections.Generic.HashSet<int> arten = KesselBrennstoffartenLesen(m_ID_Projekt);
+
+            // "Sonstige" fängt jede Kennung auf, die keine der übrigen Zeilen führt -
+            // dieselbe else-Verzweigung wie in der Engine.
+            System.Collections.Generic.HashSet<int> bekannt = new System.Collections.Generic.HashSet<int>();
+            foreach (int[] ids in _kesselBrennstoffIds) foreach (int id in ids) bekannt.Add(id);
+
+            // Rückfall: Kennt die Datenbank keinen Brennstoff (Abfrage fehlgeschlagen,
+            // Anlage ohne Katalogeintrag) UND trägt kein Feld einen Wert, bleibt der Block
+            // vollständig stehen. Ein leerer Block wäre die schlechtere Auskunft.
+            bool nichtsBekannt = arten.Count == 0;
+            if (nichtsBekannt)
+                foreach (Func<double> w in _kesselBrennstoffWerte) if (w() > 0) { nichtsBekannt = false; break; }
+
+            for (int i = 0; i < _kesselBrennstoffZeilen.Count; i++)
+            {
+                if (nichtsBekannt) { _kesselBrennstoffZeilen[i].Sichtbar = true; continue; }
+
+                bool wert = _kesselBrennstoffWerte[i]() > 0;
+
+                bool vorhanden;
+                if (_kesselBrennstoffIds[i].Length == 0)
+                {
+                    vorhanden = false;
+                    foreach (int a in arten) if (!bekannt.Contains(a)) { vorhanden = true; break; }
+                }
+                else
+                {
+                    vorhanden = false;
+                    foreach (int id in _kesselBrennstoffIds[i]) if (arten.Contains(id)) { vorhanden = true; break; }
+                }
+
+                _kesselBrennstoffZeilen[i].Sichtbar = wert || vorhanden;
+            }
+
+            tabPage_Heizkessel.SuspendLayout();
+            AnkerAnordnen(_kesselBrennstoffZeilen);
+            tabPage_Heizkessel.ResumeLayout();
+        }
+
+        /// <summary>
+        /// Die Brennstoff-Kennungen der Kessel dieses Projekts (<c>Tab_Heizkessel.Brennstoff</c>,
+        /// dieselbe Quelle, aus der die Engine <c>Brennstoff_Art</c> liest).
+        ///
+        /// <b>Der Verbund mit <c>Tab_Energieanlagen</c> ist nicht kosmetisch.</b>
+        /// <c>Tab_Heizkessel</c> führt je Projekt AUCH die Katalogauswahlen, die nie eine
+        /// Anlage geworden sind — Projekt 1023 hat dort 17 Zeilen, aber genau EINEN
+        /// Kessel. Ohne den Verbund erschienen die Brennstoffe aller Karteileichen als
+        /// „vorhanden" (im Beispiel eine Zeile Stromverbrauch wegen eines nie eingebauten
+        /// Elektrokessels). Verbunden wird über <c>Bezeichner</c> + <c>ID_Projekt</c> —
+        /// genau der Weg, auf dem <c>SimulationSPK</c> seine Kesseldaten sucht.
+        ///
+        /// Dialogfrei über <see cref="StilleDb"/> wie <see cref="ErgebnisPraesenz"/>:
+        /// Schlägt die Abfrage fehl, bleibt die Menge leer, und der Aufrufer fällt auf die
+        /// vollständige Anzeige zurück.
+        /// </summary>
+        private static System.Collections.Generic.HashSet<int> KesselBrennstoffartenLesen(int idProjekt)
+        {
+            System.Collections.Generic.HashSet<int> arten = new System.Collections.Generic.HashSet<int>();
+            if (idProjekt <= 0) return arten;
+
+            System.Data.DataTable dt = StilleDb.Tabelle(
+                "SELECT DISTINCT k.Brennstoff FROM Tab_Heizkessel AS k " +
+                "INNER JOIN Tab_Energieanlagen AS a ON k.Bezeichner = a.Bezeichner " +
+                "WHERE k.ID_Projekt = ? AND a.ID_Projekt = ? AND a.ID_Type = ?",
+                StilleDb.Par("@proj1", System.Data.OleDb.OleDbType.Integer, idProjekt),
+                StilleDb.Par("@proj2", System.Data.OleDb.OleDbType.Integer, idProjekt),
+                StilleDb.Par("@typ", System.Data.OleDb.OleDbType.Integer, WizardItemClass.KESSEL_TYP));
+
+            if (dt == null) return arten;
+
+            foreach (System.Data.DataRow r in dt.Rows)
+            {
+                int a = StilleDb.Zahl(StilleDb.Feld(r, "Brennstoff"), -1);
+                if (a >= 0) arten.Add(a);
+            }
+            return arten;
+        }
+
+        /// <summary>
+        /// Umschalter „sortiert" der Heizkessel-Seite: Jahresganglinie ↔ Jahresdauerlinie.
+        /// Baut das Diagramm neu auf; an den Vektoren ändert sich nichts (der
+        /// chronologische Zweig zeigt wieder die Originalwerte).
+        /// </summary>
+        private void checkBox_Kessel_sortiert_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!_kesselChartAktiv) return;
+            KesselSerienAufbauen();
+        }
+
+        /// <summary>
+        /// CSV-Export Bereich Heizkessel:
+        /// Zeitstempel; Außentemperatur; Wärmebedarf; Heizkessel; Restwärme (Stundenwerte).
+        ///
+        /// Immer CHRONOLOGISCH und immer aus den Rohvektoren — „sortiert" ist eine
+        /// Darstellungsform, keine andere Datenlage (gleiche Regel wie in NavigatorWaerme).
+        /// </summary>
+        private void btn_CsvExportKessel_Click(object sender, EventArgs e)
+        {
+            if (sim == null || !sim.bSimulationKessel || sim.simulation_spk == null)
+            {
+                MessageBox.Show(MyResource.Resource.SIM_MSG_KEINE_DATEN_HEIZKESSEL,
+                    MyResource.Resource.SIM_BTN_CSV_EXPORT, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            List<CsvSpalte> spalten = new List<CsvSpalte>();
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEBEDARF, sim.simulation_spk.Waermebedarf));
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZKESSEL, sim.simulation_spk.Kesselleistung_stuendlich));
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_RESTWAERME, sim.simulation_spk.Restwaerme));
+
+            CsvExportClass.Export(string.Format(MyResource.Resource.CHART_DATEI_HEIZKESSEL, m_ID_Projekt),
+                simulation_Waermebedarf.Stundentemperatur, spalten, false);
         }
 
         /// <summary>
@@ -1513,20 +2023,66 @@ namespace WindowsFormsApplication1
         // Zeilen „Restwärmebedarf"/„Reststrombedarf" unten: sie beschreiben das Projekt,
         // nicht eine Komponente.
 
-        /// <summary>Eine Ergebniszeile der Übersicht: Beschriftung, Wertfeld, Einheit.</summary>
-        private sealed class UebersichtZeile
+        /// <summary>
+        /// Eine Zeile aus Beschriftung, Wertfeld und Einheit, die nach einer Präsenzregel
+        /// ein- oder ausgeblendet wird und dabei auf die vorderen Entwurfsanker nachrückt.
+        ///
+        /// Die Mechanik wird an zwei Stellen gebraucht — im Übersicht-Reiter (Erzeuger)
+        /// und im Brennstoffblock der Heizkessel-Seite —, deshalb steht sie hier einmal.
+        /// </summary>
+        private class AnkerZeile
         {
             /// <summary>Die Steuerelemente der Zeile.</summary>
             public Control[] Felder;
-
-            /// <summary>Entscheidet, ob die Zeile zu diesem Ergebnis gehört.</summary>
-            public Func<ErgebnisPraesenz, bool> Sichtbar;
 
             /// <summary>Ankerhöhe aus dem Entwurf (kleinstes <c>Top</c> der Zeile).</summary>
             public int Anker;
 
             /// <summary>Abstand jedes Feldes zum Anker — hält die Zeile in sich stabil.</summary>
             public int[] Versatz;
+
+            /// <summary>Gehört die Zeile zum aktuellen Ergebnis? Vor dem Anordnen setzen.</summary>
+            public bool Sichtbar;
+        }
+
+        /// <summary>Eine Ergebniszeile der Übersicht mit ihrer Präsenzregel.</summary>
+        private sealed class UebersichtZeile : AnkerZeile
+        {
+            /// <summary>Entscheidet, ob die Zeile zu diesem Ergebnis gehört.</summary>
+            public Func<ErgebnisPraesenz, bool> Regel;
+        }
+
+        /// <summary>Erfasst Anker und Versätze einer Zeile aus den Entwurfspositionen.</summary>
+        private static void AnkerErfassen(AnkerZeile z, Control[] felder)
+        {
+            int anker = int.MaxValue;
+            foreach (Control c in felder) if (c.Top < anker) anker = c.Top;
+
+            int[] versatz = new int[felder.Length];
+            for (int i = 0; i < felder.Length; i++) versatz[i] = felder[i].Top - anker;
+
+            z.Felder = felder;
+            z.Anker = anker;
+            z.Versatz = versatz;
+        }
+
+        /// <summary>
+        /// Ordnet eine Zeilenspalte: sichtbare Zeilen der Reihe nach auf die vorderen
+        /// Entwurfsanker, unsichtbare raus. <c>Sichtbar</c> muss gesetzt sein.
+        /// </summary>
+        private static void AnkerAnordnen<T>(List<T> spalte) where T : AnkerZeile
+        {
+            int platz = 0;
+            foreach (T z in spalte)
+            {
+                foreach (Control c in z.Felder) c.Visible = z.Sichtbar;
+                if (!z.Sichtbar) continue;
+
+                int anker = spalte[platz].Anker;
+                for (int i = 0; i < z.Felder.Length; i++)
+                    z.Felder[i].Top = anker + z.Versatz[i];
+                platz++;
+            }
         }
 
         private List<UebersichtZeile> _uebSpalteWaerme;
@@ -1563,13 +2119,9 @@ namespace WindowsFormsApplication1
         /// <summary>Hilfskonstruktor einer Zeile: Anker und Versätze aus dem Entwurf.</summary>
         private static UebersichtZeile Zeile(Func<ErgebnisPraesenz, bool> sichtbar, params Control[] felder)
         {
-            int anker = int.MaxValue;
-            foreach (Control c in felder) if (c.Top < anker) anker = c.Top;
-
-            int[] versatz = new int[felder.Length];
-            for (int i = 0; i < felder.Length; i++) versatz[i] = felder[i].Top - anker;
-
-            return new UebersichtZeile { Felder = felder, Sichtbar = sichtbar, Anker = anker, Versatz = versatz };
+            UebersichtZeile z = new UebersichtZeile { Regel = sichtbar };
+            AnkerErfassen(z, felder);
+            return z;
         }
 
         /// <summary>
@@ -1592,18 +2144,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void SpalteAnordnen(List<UebersichtZeile> spalte, ErgebnisPraesenz p)
         {
-            int platz = 0;
-            foreach (UebersichtZeile z in spalte)
-            {
-                bool an = z.Sichtbar(p);
-                foreach (Control c in z.Felder) c.Visible = an;
-                if (!an) continue;
-
-                int anker = spalte[platz].Anker;
-                for (int i = 0; i < z.Felder.Length; i++)
-                    z.Felder[i].Top = anker + z.Versatz[i];
-                platz++;
-            }
+            foreach (UebersichtZeile z in spalte) z.Sichtbar = z.Regel(p);
+            AnkerAnordnen(spalte);
         }
 
         private bool Energiebedarf(double Netzverluste, string NetzverlusteEinheit)
@@ -1832,10 +2374,10 @@ namespace WindowsFormsApplication1
                              Color.DeepSkyBlue, bedarfWW, SeriesChartType.StackedArea, "Bedarf");
                 SerieAnlegen(_chartManager[3], S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
                              Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich,
-                             SeriesChartType.StackedArea, "Produktion");
+                             GanglinienDarstellung.Stapeltyp(false), "Produktion");
                 SerieAnlegen(_chartManager[3], S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
                              Color.Yellow, sim.simulation_wp.Heizstab_stuendlich,
-                             SeriesChartType.StackedArea, "Produktion");
+                             GanglinienDarstellung.Stapeltyp(false), "Produktion");
 
                 // Chart Wärmepumpe Strombedarf und Produktion
                 float[] temp = simulation_Strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich, sim.simulation_wp.Heizstab_stuendlich);
@@ -2037,6 +2579,10 @@ namespace WindowsFormsApplication1
                 listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
                 listView_SimSPK.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
             }
+
+            // Wärmelast-Jahresganglinie der Kesselseite - außerhalb des if, damit sie
+            // nach einem Lauf ohne Kessel wieder verschwindet (siehe KesselErgebnisAnzeigen).
+            KesselErgebnisAnzeigen();
 
             // ********************************************************************************************/
             // Solarthermie
@@ -2357,21 +2903,12 @@ namespace WindowsFormsApplication1
             if (checkBox_WP_sortiert.Checked)
             {
                 // --- SORTIERTER MODUS (Numerische X-Achse) ---
-                float[] sortedWBArray = (float[])sim.simulation_wp.WP_Waermeproduktion_stuendlich.Clone();
-                Array.Sort(sortedWBArray);
-                Array.Reverse(sortedWBArray);
-
-                float[] sortedHeizung = (float[])bedarfHeizung.Clone();
-                Array.Sort(sortedHeizung);
-                Array.Reverse(sortedHeizung);
-
-                float[] sortedWW = (float[])bedarfWW.Clone();
-                Array.Sort(sortedWW);
-                Array.Reverse(sortedWW);
-
-                float[] sortedHeizstab = (float[])tempHeizstab.Clone();
-                Array.Sort(sortedHeizstab);
-                Array.Reverse(sortedHeizstab);
+                // Dauerlinie je Serie - die Sortierregel steht in GanglinienDarstellung,
+                // damit Wärmepumpen-, Kessel- und Navigatorseite dieselbe verwenden.
+                float[] sortedWBArray = GanglinienDarstellung.Dauerlinie(sim.simulation_wp.WP_Waermeproduktion_stuendlich);
+                float[] sortedHeizung = GanglinienDarstellung.Dauerlinie(bedarfHeizung);
+                float[] sortedWW = GanglinienDarstellung.Dauerlinie(bedarfWW);
+                float[] sortedHeizstab = GanglinienDarstellung.Dauerlinie(tempHeizstab);
 
                 manager.XAxisAsNumber = true; // Wichtig für Init()
                 manager.HardReset();
@@ -2404,15 +2941,28 @@ namespace WindowsFormsApplication1
                 manager.HardReset();
                 manager.Init(); // Hier wird FormatXAxisWithDate() aufgerufen
 
+                // Die PRODUKTION gestapelt als SÄULEN, nicht als Fläche: Läuft die
+                // Wärmepumpe im Alternativbetrieb, ist ihre Produktion in den
+                // Kesselstunden 0, und eine Fläche zöge zwischen den Stützstellen eine
+                // Gerade — sie überdeckte den Bedarf mit Dreiecken über Stunden, in denen
+                // die Wärmepumpe nichts produziert hat. Ausführliche Begründung in
+                // GanglinienDarstellung.Stapeltyp.
+                //
+                // Der BEDARF bleibt eine Flächengruppe. Nicht aus Nachlässigkeit: Zwei
+                // Säulengruppen stellt MS-Chart NEBENEINANDER und halbiert damit die
+                // ohnehin nur 0,07 Bildpunkte breite Säule — die Produktion verschwände in
+                // der Rasterung. Heizwärme und Warmwasser addieren sich außerdem stetig
+                // und gehen gemeinsam auf null; die Interpolationsfalle, gegen die die
+                // Säulen helfen, gibt es zwischen ihnen nicht.
                 SerieAnlegen(manager, S_HEIZWAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF,
                              Color.Red, bedarfHeizung, SeriesChartType.StackedArea, "Bedarf");
                 SerieAnlegen(manager, S_WARMWASSERBEDARF, MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF,
                              Color.DeepSkyBlue, bedarfWW, SeriesChartType.StackedArea, "Bedarf");
                 SerieAnlegen(manager, S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
                              Color.Blue, sim.simulation_wp.WP_Waermeproduktion_stuendlich,
-                             SeriesChartType.StackedArea, "Produktion");
+                             GanglinienDarstellung.Stapeltyp(false), "Produktion");
                 SerieAnlegen(manager, S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
-                             Color.Yellow, heizstabAnteil, SeriesChartType.StackedArea, "Produktion");
+                             Color.Yellow, heizstabAnteil, GanglinienDarstellung.Stapeltyp(false), "Produktion");
             }
 
             // Skalierung erzwingen

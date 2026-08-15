@@ -9249,7 +9249,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>898, 550</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Detailierte Simulation</value>
+    <value>Detaillierte Simulation</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>Form_Simulation_Detail</value>

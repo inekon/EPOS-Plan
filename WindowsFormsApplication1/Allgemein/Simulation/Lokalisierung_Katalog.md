@@ -143,6 +143,77 @@ Drei-Schichten-Regel keine reine Anzeige:
 | `VDI4640Pruefung.Bodenarten` (`BODENART_SAND`, `_SANDIGER_TON`, `_LEHM`, `_SCHLUFF`) | „Sand", „Sandiger Ton", „Lehm", „Schluff" | **Steuerwert.** `BodenartIndex()` sucht darüber die Spalte der Tabelle A2. Der Wert erscheint als Platzhalter `{1}` in `SIMQ_VDI4640_GRUNDLAGE_KOLLEKTOR` und als `{4}` in `SIMQ_ERDREICH_BODENKENNWERTE`; die englische Meldung mischt dort die Sprachen. Auflösung wäre eine eigene Anzeigefunktion — Folgepaket. |
 | `ErdreichTemperatur.MONATSKUERZEL` | „Jan"…„Dez" | **Monatsname.** Der Katalog nimmt Monats- und Wochentagsnamen ausdrücklich aus (Lesehinweis oben); `CultureInfo` liefert im Deutschen „Mrz" statt „Mär" und würde die deutsche Anzeige verändern. Siehe Protokoll, Abschnitt 25.7. |
 
+## Nachträge aus dem Sichttest — Ergebnisdiagramm der Heizkessel-Seite (15.08.2026)
+
+Die Heizkessel-Seite der Detailansicht hat ein Diagramm „Wärmelast Jahresganglinie" mit
+Umschalter „sortiert" und CSV-Ausgabe bekommen — aufgebaut wie die Wärmepumpen-Seite. Für die
+**Anzeige** war kein neuer Schlüssel nötig (Titel, Achsen und Legenden decken die
+bestehenden `CHART_*`-Schlüssel ab, siehe Mehrfachnutzung unten); die vier neuen Schlüssel
+gehören ausschließlich zur CSV-Ausgabe und ihrer Meldung.
+
+**Zum Fenstertitel:** `Form_Simulation_Detail.resx` (`$this.Text`) trug den Tippfehler
+„Detailierte Simulation"; berichtigt zu „**Detaillierte** Simulation". Der englische Wert in
+der Satelliten-.resx („Detailed simulation") war bereits richtig, eine `de-DE`-Fassung des
+Titels gibt es nicht — die neutrale .resx ist die deutsche Anzeige.
+
+### Neu (4)
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `CHART_CSV_RESTWAERME` | Restwärme [kW] | Residual heat [kW] | Form_Simulation_Detail.cs (`btn_CsvExportKessel_Click`) | **neu.** Spaltenkopf der CSV-Ausgabe. Nicht zu verwechseln mit `CHART_SEGMENT_RESTWAERME` („Restwärme", Legenden- und Segmenttext ohne Einheit). |
+| `CHART_DATEI_HEIZKESSEL` | Heizkessel_Projekt_{0}.csv | Boiler_project_{0}.csv | Form_Simulation_Detail.cs (`btn_CsvExportKessel_Click`) | **neu.** Vorschlagsname der Exportdatei, Muster `CHART_DATEI_WAERMEPUMPE`; `{0}` = Projekt-ID. |
+| `SIM_MSG_KEINE_DATEN_HEIZKESSEL` | Keine Simulationsdaten vorhanden!\nBitte zuerst die Simulation mit Heizkessel durchführen. | No simulation data available!\nPlease run the simulation with the boiler first. | Form_Simulation_Detail.cs (`btn_CsvExportKessel_Click`) | **neu.** Wortgleich zu `SIM_MSG_KEINE_DATEN_WAERMEPUMPE`, nur mit dem Erzeuger ausgetauscht. |
+| `SIM_TOOLTIP_CSV_HEIZKESSEL` | Heizkessel-Simulation als CSV exportieren\n(Zeitstempel, Außentemperatur, Wärmebedarf, Heizkessel, Restwärme) | Export boiler simulation as CSV\n(time stamp, outdoor temperature, heat demand, boiler, residual heat) | Form_Simulation_Detail.cs (`InitCsvExportButtons`) | **neu.** Muster `SIM_TOOLTIP_CSV_WAERMEPUMPE`; die Klammer nennt die Spalten der Datei. |
+
+**Mehrfachnutzung bestehender Schlüssel** — das neue Diagramm kommt ohne eigene Anzeigetexte aus:
+
+| Schlüssel | zusätzliche Verwendung |
+|---|---|
+| `CHART_TITEL_WAERMELAST_JAHRESGANGLINIE` | Titel des Kessel-Diagramms (`chart_Kessel`) |
+| `CHART_ACHSE_WAERMELAST` | Y-Achse ebenda |
+| `CHART_ACHSE_JAHRESSTUNDEN`, `CHART_ACHSE_MONATE` | X-Achse ebenda, je nach Stellung von „sortiert" |
+| `CHART_LEGENDE_WAERMEBEDARF` | Bedarfsfläche ebenda (Stufeneingang der Kessel) |
+| `CHART_LEGENDE_WAERMEPRODUKTION` | Produktionssäulen ebenda |
+| `CHART_SEGMENT_RESTWAERME` | Linie „Restwärme" ebenda |
+| `SIM_CHK_SORTIERT` | Umschalter `checkBox_Kessel_sortiert` (programmatisch, wie in NavigatorWaerme) |
+| `SIM_BTN_CSV_EXPORT` | Beschriftung des dritten Export-Knopfes |
+| `CHART_CSV_WAERMEBEDARF`, `CHART_CSV_HEIZKESSEL` | Spaltenköpfe derselben CSV-Ausgabe |
+
+## Nachträge aus Etappe E0 — Quellpuffer-Dialog (15.08.2026)
+
+`Form_QuellePufferspeicher` listet seit Etappe E0 die **Projekt**-Puffer statt der
+STAMM-Speicher und liefert die Puffer-ID zurück (Konzept `Konzept_KonfigUI_Hydraulik`,
+Abschnitt 4). Dafür braucht der Dialog vier neue Texte: zwei Listenformate, ein
+Detailformat und den Hinweis für ein Projekt ohne Pufferspeicher. Alle vier sind in beiden
+`.resx` und in `Resource.Designer.cs` nachgezogen. Wie bei den übrigen Nachträgen stehen sie
+nur hier und nicht in der Etappe-1-Inventarliste weiter unten (die bleibt der Stand von L2);
+die SIMQ-Gruppe umfasst damit 142 Schlüssel.
+
+### Neu (4)
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `SIMQ_PUFFER_LISTE_EINTRAG` | {0} — {1}, {2} l, {3}/{4} °C | {0} — {1}, {2} l, {3}/{4} °C | Form_QuellePufferspeicher.cs (`SpeicherItem.ToString`) | **neu.** Ein Listeneintrag der Auswahl: Bezeichner, Verwendung, Volumen, Vorlauf/Rücklauf. In beiden Sprachen gleich — der Eintrag besteht aus Werten, Einheiten und Symbolen. |
+| `SIMQ_PUFFER_LISTE_OHNE_TEMP` | {0} — {1}, {2} l | {0} — {1}, {2} l | Form_QuellePufferspeicher.cs (`SpeicherItem.ToString`) | **neu.** Kurzform für Puffer ohne gepflegtes Temperaturpaar; „0/0 °C" wäre eine Angabe, die es nicht gibt. |
+| `SIMQ_PUFFER_DATEN_PROJEKT` | Verwendung: {0}\nGesamtvolumen: {1} l\nBereitschaftsverluste: {2} kWh/24h\nVorlauf/Rücklauf: {3} | Use: {0}\nTotal volume: {1} l\nStandby losses: {2} kWh/24h\nFlow/return: {3} | Form_QuellePufferspeicher.cs (`ZeigeSpeicherDaten`) | **neu.** Tritt an die Stelle von `SIMQ_PUFFER_DATEN` (Stammdaten: Speichertyp/Volumen/Verluste). Der Projekt-Puffer kennt keinen „Speichertyp", dafür Verwendung und Temperaturpaar. `{3}` ist bereits gesetzt („55/45 °C" bzw. „-"). |
+| `SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER` | Das Projekt enthält noch keinen Pufferspeicher. Über „Pufferspeicher anlegen…" einen anlegen. | The project does not contain a buffer storage yet. Use "Create buffer storage…" to add one. | Form_QuellePufferspeicher.cs (`PufferListeLaden`, `btnOk_Click`) | **neu.** Leerer Zustand mit Handlungsanweisung, Muster `Form_Waermesenke`. Ersetzt die frühere Meldung über fehlende STAMM-Daten, die dem Anwender nicht sagte, was zu tun ist. |
+
+**Mehrfachnutzung bestehender Schlüssel:**
+
+| Schlüssel | zusätzliche Verwendung |
+|---|---|
+| `PSP_BTN_PUFFER_ANLEGEN` | Absprungknopf in `Form_QuellePufferspeicher` (bisher nur `Form_Waermesenke`) |
+| `SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER` | zweite Fundstelle: Meldung beim OK ohne Auswahl im leeren Projekt |
+
+**Ohne Referenz, aber belassen:** `SIMQ_PUFFER_MSG_KEINE_SPEICHER` („Es sind keine
+Pufferspeicher in den Stammdaten vorhanden!") — die Meldung hing an der STAMM-Liste und hat
+mit E0 keine Fundstelle mehr. Der Schlüssel bleibt bis zur Abnahme stehen; entfernt wird er
+zusammen mit der übrigen Altlast in D2.
+
+**Ohne Referenz durch Etappe D1:** `PSP_SPALTE_ZUORDNUNG_ALT` (Spaltenkopf „Zuordnung (alt)")
+und `PSP_TIP_ZUORDNUNG_ALTMODELL` (ihr Mouseover-Hinweis) — die Spalte ist entfallen. Auch
+diese beiden bleiben bis zur Abnahme stehen, weil die Alt-Zuordnung selbst noch besteht.
+
 ## CHART — 54 Schlüssel
 
 | Schlüssel | DE | EN | Fundstellen |
