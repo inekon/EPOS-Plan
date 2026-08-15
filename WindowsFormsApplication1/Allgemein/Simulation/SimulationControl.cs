@@ -254,6 +254,7 @@ namespace WindowsFormsApplication1
 
             bSimulationWP = false;
             bSimulationKessel = false;
+            bSimulationBHKW = false;
             bSimulationSolarthermie = false;
             bSimulationPV = false;  
 
