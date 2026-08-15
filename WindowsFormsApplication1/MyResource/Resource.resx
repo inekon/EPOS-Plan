@@ -1858,4 +1858,37 @@ Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.</value>
   <data name="SIMQ_WPTYP_NICHT_GEPFLEGT" xml:space="preserve">
     <value>(nicht gepflegt)</value>
   </data>
+  <data name="CHART_LEGENDE_HEIZWAERMEBEDARF" xml:space="preserve">
+    <value>Heizwärmebedarf</value>
+  </data>
+  <data name="CHART_LEGENDE_PROFIL_LASTGANG" xml:space="preserve">
+    <value>Profil/Lastgang</value>
+  </data>
+  <data name="CHART_LEGENDE_UEBERSCHUSS" xml:space="preserve">
+    <value>Überschuss</value>
+  </data>
+  <data name="CHART_LEGENDE_WAERMEPRODUKTION" xml:space="preserve">
+    <value>Wärmeproduktion</value>
+  </data>
+  <data name="CHART_LEGENDE_WARMWASSERBEDARF" xml:space="preserve">
+    <value>Warmwasserbedarf</value>
+  </data>
+  <data name="CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Stromverlauf Jahresganglinie </value>
+  </data>
+  <data name="SIM_BTN_WAERMEBEDARF_UEBERSICHT" xml:space="preserve">
+    <value>Wärmebedarf Übersicht...</value>
+  </data>
+  <data name="SIM_CHK_WAERMEBEDARF_EINBLENDEN" xml:space="preserve">
+    <value>Wärmebedarf einblenden</value>
+  </data>
+  <data name="SIM_DASH_GRUPPE_PV" xml:space="preserve">
+    <value>Photovoltaik Autarkie</value>
+  </data>
+  <data name="SIM_DASH_GRUPPE_ST" xml:space="preserve">
+    <value>Solarthermie Deckung</value>
+  </data>
+  <data name="SIM_DASH_SPEICHER_INFO" xml:space="preserve">
+    <value>Theoretischer Speicher (PV) (kWh):</value>
+  </data>
 </root>

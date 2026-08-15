@@ -25,6 +25,7 @@ namespace WindowsFormsApplication1
         public NavigatorUebersicht(SimulationControl simctrl)
         {
             InitializeComponent();
+            BeschriftungenSetzen();
             sim = simctrl;
             this.DoubleBuffered = true;
             this.Paint += new PaintEventHandler(NavigatorUebersicht_Paint);
@@ -38,10 +39,11 @@ namespace WindowsFormsApplication1
             // AutoGenerateColumns weglassen oder auf true
             // dataGridView1.AutoGenerateColumns = true; 
 
-            // Spalte 0
+            // Spalte 0. Name ist der technische Zugriffsschlüssel (Schicht 2),
+            // HeaderText die Anzeige (Schicht 3) - beides bewusst getrennt.
             var colErzeuger = new DataGridViewTextBoxColumn
             {
-                HeaderText = "Energie-Erzeuger",
+                HeaderText = MyResource.Resource.SIM_SPALTE_ENERGIE_ERZEUGER,
                 Name = "Erzeuger",
                 FillWeight = 150 // Nutze FillWeight statt fester Breite für AutoSizeMode.Fill
             };
@@ -49,7 +51,7 @@ namespace WindowsFormsApplication1
             // Spalte 1
             var colErgebnis = new DataGridViewTextBoxColumn
             {
-                HeaderText = "Ergebnis [MWh/a]",
+                HeaderText = MyResource.Resource.SIM_SPALTE_ERGEBNIS_MWH,
                 Name = "Ergebnis",
                 FillWeight = 100
             };
@@ -60,14 +62,28 @@ namespace WindowsFormsApplication1
             SetupDataGridViewLook(dataGridView1);
         }
 
+        /// <summary>
+        /// Setzt die im Designer angelegten Beschriftungen aus dem Ressourcenkatalog
+        /// (Paket 9 / L7). Zur Begründung, warum das programmatisch und nicht über eine
+        /// <c>Localizable</c>-Designer-Ressource geschieht, siehe
+        /// <see cref="NavigatorStrom"/>.
+        ///
+        /// <c>label_1</c> und <c>label_2</c> bleiben unangetastet: beide stehen im
+        /// Designer auf <c>Visible = false</c> und werden nirgends eingeblendet.
+        /// </summary>
+        private void BeschriftungenSetzen()
+        {
+            bt_WaermebedarfUebersicht.Text = MyResource.Resource.SIM_BTN_WAERMEBEDARF_UEBERSICHT;
+        }
+
         private void FillTableWithData(DataGridView dgvErgebnisse)
         {
             dgvErgebnisse.Rows.Clear();
-            dgvErgebnisse.Rows.Add("Wärmepumpe", waerme_wp.ToString("F2"));
-            dgvErgebnisse.Rows.Add("Heizstab", waerme_heizstab.ToString("F2"));
-            dgvErgebnisse.Rows.Add("Solarthermie-Anlage", waerme_solar.ToString("F2"));
-            dgvErgebnisse.Rows.Add("HeizKessel", waerme_spk.ToString("F2"));
-            dgvErgebnisse.Rows.Add("BHKW", waerme_bhkw.ToString("F2"));
+            dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, waerme_wp.ToString("F2"));
+            dgvErgebnisse.Rows.Add(MyResource.Resource.CHART_SEGMENT_HEIZSTAB, waerme_heizstab.ToString("F2"));
+            dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_SOLARTHERMIE_ANLAGE, waerme_solar.ToString("F2"));
+            dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_TABELLE_HEIZKESSEL, waerme_spk.ToString("F2"));
+            dgvErgebnisse.Rows.Add(MyResource.Resource.SIM_ERZEUGERNAME_BHKW, waerme_bhkw.ToString("F2"));
         }
 
         private void bt_WaermebedarfUebersicht_Click(object sender, EventArgs e)
@@ -198,7 +214,7 @@ namespace WindowsFormsApplication1
 
             // 1. Wärme-Deckung
             Rectangle rectWaermeChart = new Rectangle(margin, margin, kachelBreiteLinks, kachelHoeheDonut);
-            Kacheln.DrawKPICard(e.Graphics, rectWaermeChart, "Wärmebedarfsdeckung [%]", "", "", Color.SeaGreen);
+            Kacheln.DrawKPICard(e.Graphics, rectWaermeChart, MyResource.Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG, "", "", Color.SeaGreen);
 
             double wb_gesamt = sim.simulation_Waermebedarf.Waermebedarf_Gesamt;
             double[] werteWaerme = {
@@ -209,14 +225,20 @@ namespace WindowsFormsApplication1
                 waerme_bhkw * 100 / wb_gesamt,
                 Math.Max(0, restwaermebedarf * 100 / wb_gesamt)
             };
-            string[] namenWaerme = { "Wärmepumpe", "Solarthermie", "Heizstab", "Spitzenkessel", "BHKW", "Restwärme" };
+            string[] namenWaerme = {
+                MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
+                MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE,
+                MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
+                MyResource.Resource.CHART_SEGMENT_SPITZENKESSEL,
+                MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
+                MyResource.Resource.CHART_SEGMENT_RESTWAERME };
 
             Rectangle innerWaerme = new Rectangle(rectWaermeChart.X + 10, rectWaermeChart.Y + 20, rectWaermeChart.Width - 20, rectWaermeChart.Height - 30);
             DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerWaerme, werteWaerme, (gesamt_waerme * 100 / wb_gesamt), namenWaerme, palette);
 
             // 2. Strom-Deckung (Direkt darunter)
             Rectangle rectStromChart = new Rectangle(margin, rectWaermeChart.Bottom + margin, kachelBreiteLinks, kachelHoeheDonut);
-            Kacheln.DrawKPICard(e.Graphics, rectStromChart, "Strombedarfsdeckung [%]", "", "", Color.DodgerBlue);
+            Kacheln.DrawKPICard(e.Graphics, rectStromChart, MyResource.Resource.CHART_KACHEL_STROMBEDARFSDECKUNG, "", "", Color.DodgerBlue);
 
             double se_pv = (sim.simulation_pv.Stromproduktion_gesamt) / 1000;
             double se_bhkw = sim.simulation_bhkw.Stromproduktion_BHKW_MWh;
@@ -243,7 +265,10 @@ namespace WindowsFormsApplication1
                 werteStrom[2] = 0;
             }
 
-            string[] namenStrom = { "Photovoltaik", "BHKW", "Reststrom" };
+            string[] namenStrom = {
+                MyResource.Resource.SIM_PHOTOVOLTAIK,
+                MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
+                MyResource.Resource.CHART_SEGMENT_RESTSTROM };
 
             Rectangle innerStrom = new Rectangle(rectStromChart.X + 10, rectStromChart.Y + 20, rectStromChart.Width - 20, rectStromChart.Height - 30);
             
@@ -260,12 +285,12 @@ namespace WindowsFormsApplication1
             // KPI Reststrom
             //Rectangle rectKPIStrom = new Rectangle(rectKPIWaerme.Right + margin, margin, kpiBreite, kpiHoehe);
             Rectangle rectKPIStrom = new Rectangle(rechtsX, margin, kpiBreite, kpiHoehe);
-            Kacheln.DrawKPICard(e.Graphics, rectKPIStrom, "Reststrombedarf", sim.Reststrom.ToString("N2"), "MWh/a", Color.DodgerBlue);
+            Kacheln.DrawKPICard(e.Graphics, rectKPIStrom, MyResource.Resource.SIM_KACHEL_RESTSTROMBEDARF, sim.Reststrom.ToString("N2"), "MWh/a", Color.DodgerBlue);
             
             // KPI Restwärme
             //Rectangle rectKPIWaerme = new Rectangle(rechtsX, margin, kpiBreite, kpiHoehe);
             Rectangle rectKPIWaerme = new Rectangle(rectKPIStrom.Right + margin, margin, kpiBreite, kpiHoehe);
-            Kacheln.DrawKPICard(e.Graphics, rectKPIWaerme, "Restwärmebedarf", restwaermebedarf.ToString("N2"), "MWh/a", Color.SeaGreen);
+            Kacheln.DrawKPICard(e.Graphics, rectKPIWaerme, MyResource.Resource.SIM_KACHEL_RESTWAERMEBEDARF, restwaermebedarf.ToString("N2"), "MWh/a", Color.SeaGreen);
 
             // button für Wärmebedarf Übersicht positionieren
             bt_WaermebedarfUebersicht.Top = margin;
@@ -279,7 +304,7 @@ namespace WindowsFormsApplication1
             Rectangle rectTabelle = new Rectangle(rechtsX, tabelleY, tabelleBreite, tabelleHoehe);
 
             // eine "leere" KPI Card als Container für die Tabelle
-            Kacheln.DrawKPICard(e.Graphics, rectTabelle, "Simulationsergebnisse im Detail", "", "", Color.Gray);
+            Kacheln.DrawKPICard(e.Graphics, rectTabelle, MyResource.Resource.SIM_KACHEL_SIMULATIONSERGEBNISSE, "", "", Color.Gray);
 
             // WICHTIG: Falls DataGridView existiert, richte es hier aus
             if (this.Controls.ContainsKey("dgvErgebnisse")) // Angenommen dein Grid heißt so

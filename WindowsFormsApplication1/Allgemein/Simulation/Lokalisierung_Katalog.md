@@ -41,6 +41,47 @@ beiden `.resx` und in `Resource.Designer.cs` nachgezogen; Bestand jetzt **530 Sc
 | `SIMENG_STROMPROFILE_DIAGNOSE` | Der Text trägt jetzt **zwei** Platzhalter: `…nicht berechnet werden{0} - {1}`. `{0}` nimmt den optionalen Zusatz `SIMENG_STROMPROFIL_ZULETZT_BEARBEITET` auf, `{1}` die Ausnahmemeldung. Mit nur einem Platzhalter wäre der Zusatz beim Umbau verlorengegangen; die deutsche Ausgabe ist unverändert. |
 | `SIM_BHKW_MODUL_STANDARD` | Die Fundstelle **`SimulationRunner.cs:499` ist keine Anzeige**, sondern ein Persistenzwert: `ErgebnisBHKWModulModel.Modul` wird nach `Tab_ErgebnisBHKWModul.Modul` geschrieben und von der Referenzlauf-Suite als Skalar exportiert. Sie bleibt hartkodiert deutsch (Kommentar an der Stelle). Der Schlüssel gilt nur noch für `Form_Simulation_Detail.cs:2010`. |
 
+## Nachträge aus Etappe 2b (Rest-Simulationsbereich)
+
+Beim Umbau von `Form_Simulation_Detail`, den drei Navigatoren, `DashboardForm`,
+`Form_Waermesenke`, `Form_QuelleErdreich` und `TabNavigationManager` kamen **elf**
+Schlüssel dazu; alle sind in beiden `.resx` und in `Resource.Designer.cs` nachgezogen.
+Bestand jetzt **541 Schlüssel**.
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `CHART_LEGENDE_HEIZWAERMEBEDARF` | Heizwärmebedarf | Space heating demand | Form_Simulation_Detail.cs (Serie `HEIZWAERMEBEDARF`, 3×) | **neu.** Der Legendentext hing am Seriennamen; mit der Umstellung auf technische Schlüssel braucht er einen eigenen Eintrag. |
+| `CHART_LEGENDE_WARMWASSERBEDARF` | Warmwasserbedarf | DHW demand | Form_Simulation_Detail.cs (Serie `WARMWASSERBEDARF`, 3×) | **neu.** Wie oben. |
+| `CHART_LEGENDE_WAERMEPRODUKTION` | Wärmeproduktion | Heat generation | Form_Simulation_Detail.cs (Serie `WAERMEPRODUKTION`, 6×) | **neu.** Wie oben. Nicht zu verwechseln mit `SIM_SPALTE_WAERMEPRODUKTION` („Wärmeprod. [MWh/a]"). |
+| `CHART_LEGENDE_UEBERSCHUSS` | Überschuss | Surplus | Form_Simulation_Detail.cs (Serie `UEBERSCHUSS`) | **neu.** Wie oben. |
+| `CHART_LEGENDE_PROFIL_LASTGANG` | Profil/Lastgang | Profile/load curve | NavigatorStrom.cs (Serie `PROFIL_LASTGANG`, Checkbox) | **neu.** Wie oben; zugleich Designer-Checkbox. |
+| `CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE` | Stromverlauf Jahresganglinie␠ | Electricity profile, annual load profile␠ | NavigatorStrom.cs (`chart7.Titles[0]`) | **neu.** Entwurfszeit-Titel; **abschließendes Leerzeichen** wie im Bestand, über `xml:space="preserve"` erhalten. |
+| `SIM_BTN_WAERMEBEDARF_UEBERSICHT` | Wärmebedarf Übersicht... | Heat demand overview... | NavigatorUebersicht.cs (`bt_WaermebedarfUebersicht`) | **neu.** Designer-Knopf. |
+| `SIM_CHK_WAERMEBEDARF_EINBLENDEN` | Wärmebedarf einblenden | Show heat demand | NavigatorWaerme.cs (`checkBox_Waermebedarf`) | **neu.** Designer-Checkbox. |
+| `SIM_DASH_GRUPPE_PV` | Photovoltaik Autarkie | Photovoltaic self-sufficiency | DashboardForm.cs (`groupPV`) | **neu.** Designer-Gruppe. |
+| `SIM_DASH_GRUPPE_ST` | Solarthermie Deckung | Solar thermal coverage | DashboardForm.cs (`groupST`) | **neu.** Designer-Gruppe. |
+| `SIM_DASH_SPEICHER_INFO` | Theoretischer Speicher (PV) (kWh): | Theoretical storage (PV) (kWh): | DashboardForm.cs (`lblSpeicherInfo`) | **neu.** Designer-Label. |
+
+**Mehrfachnutzung bestehender Schlüssel** (der Katalog führt gleiche deutsche Texte unter
+einem Schlüssel — Etappe 1, Abschnitt 5.1). Diese Schlüssel haben in Etappe 2b weitere
+Fundstellen bekommen:
+
+| Schlüssel | zusätzliche Verwendung |
+|---|---|
+| `CHART_ACHSE_STROMBEDARF` | Legendentext der Serien `STROMBEDARF` (Form_Simulation_Detail, Diagramme 6 und 9) |
+| `PSP_CHECKBOX_SPEICHERFUELLSTAND` | Legendentext der Serie `SPEICHERFUELLSTAND` (Form_Simulation_Detail, Diagramm 9) |
+| `CHART_LEGENDE_WAERMEBEDARF` | Legendentext der Serien `WAERMEBEDARF` (Form_Simulation_Detail, Diagramme 4, 8, 10) |
+| `CHART_SEGMENT_HEIZSTAB` | Legendentext der Serien `HEIZSTAB` (4×) und Zeile der Ergebnistabelle in NavigatorUebersicht |
+| `CHART_LEGENDE_GESAMT`, `SIM_ERZEUGERNAME_*`, `SIM_PHOTOVOLTAIK` | Designer-Checkboxen von NavigatorStrom und NavigatorWaerme |
+
+**Berichtigungen der Fundstellenangaben:**
+
+| Schlüssel | Berichtigung |
+|---|---|
+| `SIM_ROLLE_HAUPTSENKE`, `SIM_ROLLE_ZWEITSENKE` | Die Fundstellen in `WaermesenkeClass` sind die **Parameter** von `PufferPasst(...)`; sie wandern als Platzhalter `{0}` in `SIM_KEIN_PUFFER_GEWAEHLT`, `SIM_PUFFER_FREMDES_PROJEKT` und `SIM_PUFFER_VERWENDUNG_PASST_NICHT`. |
+| `SIM_KEIN_PUFFER_GEWAEHLT`, `SIM_PUFFER_FREMDES_PROJEKT`, `SIM_PUFFER_VERWENDUNG_PASST_NICHT` | Die Verwendungs-Platzhalter werden **vor dem Einsetzen** über `WaermesenkeClass.VerwendungAnzeige(...)` übersetzt. Damit ist der in Etappe 1, Abschnitt 5.5 angemeldete Vorbehalt („die englische Meldung mischt die Sprachen") erledigt. |
+| `SIM_BETRIEBSART_WAERMEGEFUEHRT/_STROMGEFUEHRT/_OHNE_EINSPEISUNG` | Diese drei dienen in `Form_Simulation_Detail` als **Suchbegriff** für den Fettdruck im Erklärtext `richTextBox_Info`. Dieser Text liegt in der neutralen Formular-`.resx` und ist **nicht** übersetzt — auf englischer Oberfläche findet die Suche ihn nicht und der Fettdruck entfällt (kein Fehler). Siehe Protokoll, Abschnitt 21, Punkt 2. |
+
 ## CHART — 54 Schlüssel
 
 | Schlüssel | DE | EN | Fundstellen |

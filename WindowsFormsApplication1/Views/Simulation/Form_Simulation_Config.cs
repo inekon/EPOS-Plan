@@ -138,6 +138,10 @@ namespace WindowsFormsApplication1
             // Fußzeile der Übersicht: Projekt-Pufferspeicher und ihr Einstieg (Konzept 4.1)
             InitPufferFusszeile();
 
+            // Statuszeile MUSS nach InitPufferFusszeile ausgerichtet werden - dort
+            // verschiebt ExtrapolationSchalterPlatzieren sie zuletzt (Paket 8).
+            StatuszeileAusrichten();
+
             // Bereich für den KI-Hilfe-Assistenten melden (nur Bedien-Kontext,
             // keine Projekt- oder Kundendaten)
             this.Activated += (s, e) =>
@@ -1226,6 +1230,81 @@ namespace WindowsFormsApplication1
                 c.Font = new Font(c.Font, FontStyle.Regular);
             }
             gb.Invalidate(); 
+        }
+
+        /// <summary>
+        /// Richtet die Statuszeile („✔ Konfiguration erfolgreich gespeichert") an der
+        /// Knopfzeile aus und holt sie in den Vordergrund.
+        ///
+        /// <b>Zwei im Harness gemessene Befunde</b> (Paket 9, Etappe 2b):
+        ///
+        /// <list type="number">
+        ///   <item><description><b>Unterkante abgeschnitten.</b> Die Entwurfsposition
+        ///     (y = 390 bei 427 px Nutzhöhe) wandert über <c>Anchor = Bottom</c> mit,
+        ///     während <c>InitPufferspeicherRubrik</c> (+105 px) und
+        ///     <c>ExtrapolationSchalterPlatzieren</c> (+fehlt) die Nutzhöhe erhöhen und
+        ///     die Zeile zusätzlich absolut verschieben. Gemessen lag die Unterkante bei
+        ///     555 px, die Nutzfläche endete bei 552 - die letzten drei Pixel der
+        ///     Meldung fehlten.</description></item>
+        ///   <item><description><b>Verdeckung beim Verkleinern.</b> Der Dialog ist
+        ///     <c>Sizable</c> und hat KEINEN Scrollbereich (siehe unten). Zieht der
+        ///     Anwender ihn kleiner, zieht die untenverankerte Statuszeile nach oben
+        ///     über <c>groupBox_Uebersicht</c> - und die stand mit Z-Index 4 VOR der
+        ///     Zeile (Z-Index 5). Gemessen bei 380 px Nutzhöhe: Zeile bei y = 363,
+        ///     vollständig hinter der Übersichtsgruppe (109…418).</description></item>
+        /// </list>
+        ///
+        /// <b>Nicht die Ursache aus Commit d49075e.</b> Dort verpassten unsichtbar
+        /// gestartete Steuerelemente den <c>AutoScroll</c>-Versatz der
+        /// <see cref="BaseForm"/>. Dieses Formular erbt von <see cref="Form"/>, nicht von
+        /// <c>BaseForm</c>; <c>AutoScroll</c> ist <c>false</c> und
+        /// <c>AutoScrollPosition</c> in jeder gemessenen Fenstergröße <c>0,0</c>. Ein
+        /// „sichtbar starten und in OnLoad ausblenden" wäre hier wirkungslos - die
+        /// Fehlposition kommt aus der Verankerung, nicht aus einem verpassten Versatz.
+        /// </summary>
+        private void StatuszeileAusrichten()
+        {
+            if (lblStatus == null || btn_Speichern == null) return;
+
+            // Senkrecht auf die Knopfzeile zentrieren: Die Knöpfe werden von
+            // InitPufferspeicherRubrik und ExtrapolationSchalterPlatzieren ohnehin
+            // nachgezogen und liegen damit garantiert in der Nutzfläche.
+            int y = btn_Speichern.Top + (btn_Speichern.Height - lblStatus.Height) / 2;
+            lblStatus.Location = new Point(lblStatus.Left, y);
+
+            // Vor alle Geschwister holen: Beim Verkleinern des Fensters wandert die
+            // untenverankerte Zeile über die Übersichtsgruppe.
+            lblStatus.BringToFront();
+
+            MindestgroesseFestlegen();
+        }
+
+        /// <summary>
+        /// Legt die Mindestgröße des Dialogs auf die Größe fest, die der fertig
+        /// aufgebaute Inhalt braucht — begrenzt auf die Arbeitsfläche des Bildschirms.
+        ///
+        /// <b>Warum.</b> Der Dialog ist <c>Sizable</c>, hat aber im Gegensatz zur
+        /// <see cref="BaseForm"/> <b>keinen Scrollbereich</b> (<c>AutoScroll = false</c>,
+        /// im Harness gemessen). Wird er kleiner gezogen, verschwindet die Knopfzeile
+        /// samt Statusmeldung nach unten aus der Nutzfläche, und die untenverankerte
+        /// Statuszeile wandert über <c>groupBox_Uebersicht</c>. Beides ist gemessen:
+        /// bei 380 px Nutzhöhe lag <c>lblStatus</c> vollständig hinter der
+        /// Übersichtsgruppe.
+        ///
+        /// Dieselbe Vorgehensweise wie in <c>BaseForm.OnLoad</c> („automatische
+        /// Mindestgröße"), nur ohne den dortigen Scrollbereich. Die Deckelung auf die
+        /// Arbeitsfläche verhindert, dass der Dialog auf einem kleinen Bildschirm größer
+        /// als dieser wird und sich dann nicht mehr verkleinern lässt.
+        /// </summary>
+        private void MindestgroesseFestlegen()
+        {
+            if (this.MinimumSize.Width != 0 || this.MinimumSize.Height != 0) return;
+
+            Size noetig = this.Size;
+            Rectangle flaeche = Screen.FromControl(this).WorkingArea;
+
+            this.MinimumSize = new Size(Math.Min(noetig.Width, flaeche.Width),
+                                        Math.Min(noetig.Height, flaeche.Height));
         }
 
         private void ShowStatus(string message, Color color)

@@ -56,11 +56,13 @@ public class TabNavigationManager
             Padding = new Padding(10),
         };
 
-        // Buttons erstellen
-        string[] names = { "🏠 " + Environment.NewLine + "Übersicht", 
-                           "ℹ️ " + Environment.NewLine + "Autarkie" + Environment.NewLine + "Analyse",
-                           "🔥 " + Environment.NewLine + "Wärme" + Environment.NewLine +"Produktion" + Environment.NewLine + "Chart",
-                           "⚡ " + Environment.NewLine + "Strom" + Environment.NewLine + "Produktion" + Environment.NewLine + " Chart" };
+        // Buttons erstellen.
+        // Die Beschriftungen stehen im Ressourcenkatalog; die .resx legt Zeilenumbrueche
+        // als LF ab (XML-Normierung), deshalb hier auf Environment.NewLine zurueckbiegen.
+        string[] names = { WindowsFormsApplication1.MyResource.Resource.SIM_NAV_UEBERSICHT.Replace("\n", Environment.NewLine),
+                           WindowsFormsApplication1.MyResource.Resource.SIM_NAV_AUTARKIE_ANALYSE.Replace("\n", Environment.NewLine),
+                           WindowsFormsApplication1.MyResource.Resource.SIM_NAV_WAERMEPRODUKTION_CHART.Replace("\n", Environment.NewLine),
+                           WindowsFormsApplication1.MyResource.Resource.SIM_NAV_STROMPRODUKTION_CHART.Replace("\n", Environment.NewLine) };
         
         for (int i = 0; i < 4; i++)
         {

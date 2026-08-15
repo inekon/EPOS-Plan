@@ -18,11 +18,58 @@ namespace WindowsFormsApplication1
         ChartManager _chartManager;
         SimulationControl sim;
 
+        // --- Technische Serienschlüssel (Paket 9 / L7) --------------------------------
+        //
+        // Schicht 2 der Drei-Schichten-Regel: sprachneutral, ASCII, unveränderlich.
+        // Sie sind der ZUGRIFFSSCHLÜSSEL auf die Chart-Serien; der angezeigte Text steht
+        // ausschließlich in Series.LegendText und kommt aus dem Ressourcenkatalog.
+        // Muster wie NavigatorWaerme (Paket 9 / L6): dort trugen die Serien ihre deutschen
+        // Anzeigenamen als Namen, hier ebenso - und ebenso uneinheitlich („Waermepumpe"
+        // ohne Umlaut). Ein übersetzter Name ließe sämtliche Series["…"]-Nachschlagestellen
+        // ins Leere laufen.
+        private const string S_GESAMT = "GESAMT";
+        private const string S_WAERMEPUMPE = "WAERMEPUMPE";
+        private const string S_HEIZSTAB = "HEIZSTAB";
+        private const string S_HEIZKESSEL = "HEIZKESSEL";
+        private const string S_PROFIL_LASTGANG = "PROFIL_LASTGANG";
+        private const string S_BHKW = "BHKW_STROM";
+
+        // „PV" ist in beiden Sprachen dasselbe Kürzel (Lokalisierungskatalog, Abschnitt
+        // „reine Einheiten und Symbole"). Schlüssel und Anzeigetext fallen hier zusammen;
+        // ein eigener LegendText wäre eine Ressource mit zweimal demselben Wert.
+        private const string S_PV = "PV";
+
         public NavigatorStrom(SimulationControl simctrl)
         {
             InitializeComponent();
+            BeschriftungenSetzen();
             sim = simctrl;
             InitCsvExportButton();
+        }
+
+        /// <summary>
+        /// Setzt die im Designer angelegten Beschriftungen aus dem Ressourcenkatalog.
+        ///
+        /// <b>Bewusste Abweichung vom WinForms-Weg</b> (Paket 9 / L7, wie vom Auftraggeber
+        /// entschieden): Eine <c>Localizable</c>-Ressource trüge je Kultur auch Position und
+        /// Größe; ein Handumbau der Designer-.resx ohne den WinForms-Designer verschöbe
+        /// Steuerelemente. Die Texte werden deshalb programmatisch aus dem Katalog gesetzt,
+        /// die Designer-Fassung bleibt als deutsche Entwurfszeit-Vorbelegung stehen.
+        /// </summary>
+        private void BeschriftungenSetzen()
+        {
+            checkBox_Gesamt.Text = MyResource.Resource.CHART_LEGENDE_GESAMT;
+            checkBox_WP.Text = MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE;
+            checkBox_Heizstab.Text = MyResource.Resource.CHART_SEGMENT_HEIZSTAB;
+            checkBox_SPK.Text = MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL;
+            checkBox_Profil_Lastgang.Text = MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG;
+            checkBox_PV.Text = MyResource.Resource.SIM_PHOTOVOLTAIK;
+            checkBox_BHKW.Text = MyResource.Resource.SIM_ERZEUGERNAME_BHKW;
+
+            // Entwurfszeit-Titel des Charts. Er ist nur zu sehen, solange SetControl noch
+            // nicht gelaufen ist - ChartManager.Init() ersetzt die Titelsammlung danach.
+            if (chart7.Titles.Count > 0)
+                chart7.Titles[0].Text = MyResource.Resource.CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE;
         }
 
         /// <summary>
@@ -32,7 +79,7 @@ namespace WindowsFormsApplication1
         {
             Button btnExport = new Button();
             btnExport.Name = "btn_CsvExport";
-            btnExport.Text = "CSV Export";
+            btnExport.Text = MyResource.Resource.SIM_BTN_CSV_EXPORT;
             btnExport.Size = new Size(105, 28);
             btnExport.Location = new Point(875, 516); // rechts neben checkBox_BHKW (y=520)
             btnExport.Anchor = AnchorStyles.Top | AnchorStyles.Left;
@@ -49,26 +96,26 @@ namespace WindowsFormsApplication1
         {
             if (sim == null || sim.simulation_Strombedarf == null || temp_ges == null)
             {
-                MessageBox.Show("Keine Simulationsdaten vorhanden!\nBitte zuerst die Simulation durchführen.",
-                    "CSV Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(MyResource.Resource.SIM_MSG_KEINE_DATEN_SIMULATION.Replace("\n", Environment.NewLine),
+                    MyResource.Resource.SIM_BTN_CSV_EXPORT, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             // nur die aktuell selektierten (angezeigten) Serien exportieren
             List<CsvSpalte> spalten = new List<CsvSpalte>();
-            if (checkBox_Gesamt.Checked) spalten.Add(new CsvSpalte("Gesamt [kW]", temp_ges));
-            if (checkBox_WP.Checked) spalten.Add(new CsvSpalte("Wärmepumpe [kW]", temp_wp));
-            if (checkBox_Heizstab.Checked) spalten.Add(new CsvSpalte("Heizstab [kW]", temp_hs));
-            if (checkBox_SPK.Checked) spalten.Add(new CsvSpalte("Heizkessel [kW]", temp_hk));
-            if (checkBox_Profil_Lastgang.Checked) spalten.Add(new CsvSpalte("Profil/Lastgang [kW]", temp_profil));
-            if (checkBox_PV.Checked) spalten.Add(new CsvSpalte("PV [kW]", sim.simulation_pv != null ? sim.simulation_pv.Stromproduktion_viertelstunde : null));
-            if (checkBox_BHKW.Checked) spalten.Add(new CsvSpalte("BHKW [kW]", temp_bhkw));
+            if (checkBox_Gesamt.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_GESAMT, temp_ges));
+            if (checkBox_WP.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEPUMPE, temp_wp));
+            if (checkBox_Heizstab.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZSTAB, temp_hs));
+            if (checkBox_SPK.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZKESSEL, temp_hk));
+            if (checkBox_Profil_Lastgang.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_PROFIL_LASTGANG, temp_profil));
+            if (checkBox_PV.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_PV, sim.simulation_pv != null ? sim.simulation_pv.Stromproduktion_viertelstunde : null));
+            if (checkBox_BHKW.Checked) spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_BHKW, temp_bhkw));
 
             float[] temperatur = (sim.simulation_Waermebedarf != null)
                 ? sim.simulation_Waermebedarf.Stundentemperatur
                 : null;
 
-            CsvExportClass.Export("Strombedarf.csv", temperatur, spalten, true);
+            CsvExportClass.Export(MyResource.Resource.CHART_DATEI_STROMBEDARF, temperatur, spalten, true);
         }
 
         public void RefreshContent()
@@ -105,34 +152,44 @@ namespace WindowsFormsApplication1
             _chartManager.YMaxValue = temp_ges.Max() + 1;
             _chartManager.YMinValue = 0;
             _chartManager.XAxisAsNumber = false;
-            _chartManager.XAxisTitle = "Monate";
-            _chartManager.YAxisTitle = "Leistung";
+            _chartManager.XAxisTitle = MyResource.Resource.CHART_ACHSE_MONATE;
+            _chartManager.YAxisTitle = MyResource.Resource.CHART_ACHSE_LEISTUNG;
             _chartManager.toolTipUnit = "kW";
-            _chartManager.ChartTitle = "Strombedarf, Stromverbrauch Jahresganglinie";
+            _chartManager.ChartTitle = MyResource.Resource.CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE;
             _chartManager.MitLegende = true;
             _chartManager.MaxXVALUE = 8760 * 4;
             _chartManager.MitViertelStunde = true;
             _chartManager.LegendMarkerBreite = 5;
 
             _chartManager.Init();
-            _chartManager.AddSeries("Gesamt", Color.Green, temp_ges);
-            _chartManager.AddSeries("Waermepumpe", Color.Orange, temp_wp);
-            _chartManager.AddSeries("Heizstab", Color.Yellow, temp_hs);
-            _chartManager.AddSeries("Heizkessel", Color.Blue, temp_hk);
-            _chartManager.AddSeries("Profil/Lastgang", Color.Brown, temp_profil);
-            _chartManager.AddSeries("BHKW", Color.Brown, temp_bhkw);
+            SerieAnlegen(S_GESAMT, MyResource.Resource.CHART_LEGENDE_GESAMT, Color.Green, temp_ges);
+            SerieAnlegen(S_WAERMEPUMPE, MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, Color.Orange, temp_wp);
+            SerieAnlegen(S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, temp_hs);
+            SerieAnlegen(S_HEIZKESSEL, MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, Color.Blue, temp_hk);
+            SerieAnlegen(S_PROFIL_LASTGANG, MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG, Color.Brown, temp_profil);
+            SerieAnlegen(S_BHKW, MyResource.Resource.SIM_ERZEUGERNAME_BHKW, Color.Brown, temp_bhkw);
 
 
             // _chartManager[7].AddSeries("Rest", Color.Black, sim.Rest_Strombedarf_viertelstuendlich);
-            _chartManager.AddSeries("PV", Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
+            _chartManager.AddSeries(S_PV, Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
             // _chartManager[7].AddSeries("Überschuss", Color.Magenta, sim.simulation_pv.Ueberschuss_viertelstunde);
-            _chartManager._chart.Series["Waermepumpe"].Enabled = false;
-            _chartManager._chart.Series["Heizstab"].Enabled = false;
-            _chartManager._chart.Series["Heizkessel"].Enabled = false;
-            _chartManager._chart.Series["Profil/Lastgang"].Enabled = false;
-            _chartManager._chart.Series["PV"].Enabled = false;
-            _chartManager._chart.Series["BHKW"].Enabled = false;
+            _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = false;
+            _chartManager._chart.Series[S_HEIZSTAB].Enabled = false;
+            _chartManager._chart.Series[S_HEIZKESSEL].Enabled = false;
+            _chartManager._chart.Series[S_PROFIL_LASTGANG].Enabled = false;
+            _chartManager._chart.Series[S_PV].Enabled = false;
+            _chartManager._chart.Series[S_BHKW].Enabled = false;
             checkBox_Gesamt.Checked = true;
+        }
+
+        /// <summary>
+        /// Legt eine Serie unter ihrem technischen Schlüssel an und hängt den
+        /// Anzeigetext an <c>LegendText</c> (Muster aus NavigatorWaerme, Paket 9 / L6).
+        /// </summary>
+        private void SerieAnlegen(string schluessel, string legende, Color farbe, float[] werte)
+        {
+            _chartManager.AddSeries(schluessel, farbe, werte);
+            _chartManager._chart.Series[schluessel].LegendText = legende;
         }
 
         private void ApplyCheckboxStates()
@@ -140,13 +197,13 @@ namespace WindowsFormsApplication1
             // Hier erzwingst du, dass das Chart genau das anzeigt, was die Checkbox sagt
             if (_chartManager != null && _chartManager._chart.Series.Count > 0)
             {
-                _chartManager._chart.Series["Gesamt"].Enabled = checkBox_Gesamt.Checked;
-                _chartManager._chart.Series["Waermepumpe"].Enabled = checkBox_WP.Checked;
-                _chartManager._chart.Series["Heizstab"].Enabled = checkBox_Heizstab.Checked;
-                _chartManager._chart.Series["Heizkessel"].Enabled = checkBox_SPK.Checked;
-                _chartManager._chart.Series["Profil/Lastgang"].Enabled = checkBox_Profil_Lastgang.Checked;
-                _chartManager._chart.Series["PV"].Enabled = checkBox_PV.Checked;
-                _chartManager._chart.Series["BHKW"].Enabled = checkBox_BHKW.Checked;
+                _chartManager._chart.Series[S_GESAMT].Enabled = checkBox_Gesamt.Checked;
+                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = checkBox_WP.Checked;
+                _chartManager._chart.Series[S_HEIZSTAB].Enabled = checkBox_Heizstab.Checked;
+                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = checkBox_SPK.Checked;
+                _chartManager._chart.Series[S_PROFIL_LASTGANG].Enabled = checkBox_Profil_Lastgang.Checked;
+                _chartManager._chart.Series[S_PV].Enabled = checkBox_PV.Checked;
+                _chartManager._chart.Series[S_BHKW].Enabled = checkBox_BHKW.Checked;
             }
         }
 
@@ -154,11 +211,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_Gesamt.Checked)
             {
-                _chartManager._chart.Series["Gesamt"].Enabled = true;
+                _chartManager._chart.Series[S_GESAMT].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["Gesamt"].Enabled = false;
+                _chartManager._chart.Series[S_GESAMT].Enabled = false;
             }
             OptimizeYAxisScale();
         }
@@ -167,11 +224,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_WP.Checked)
             {
-                _chartManager._chart.Series["Waermepumpe"].Enabled = true;
+                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["Waermepumpe"].Enabled = false;
+                _chartManager._chart.Series[S_WAERMEPUMPE].Enabled = false;
             }
             OptimizeYAxisScale();
         }
@@ -180,11 +237,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_Heizstab.Checked)
             {
-                _chartManager._chart.Series["Heizstab"].Enabled = true;
+                _chartManager._chart.Series[S_HEIZSTAB].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["Heizstab"].Enabled = false;
+                _chartManager._chart.Series[S_HEIZSTAB].Enabled = false;
             }
             OptimizeYAxisScale();
         }
@@ -193,11 +250,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_SPK.Checked)
             {
-                _chartManager._chart.Series["Heizkessel"].Enabled = true;
+                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["Heizkessel"].Enabled = false;
+                _chartManager._chart.Series[S_HEIZKESSEL].Enabled = false;
             }
             OptimizeYAxisScale();
         }
@@ -206,11 +263,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_Profil_Lastgang.Checked)
             {
-                _chartManager._chart.Series["Profil/Lastgang"].Enabled = true;
+                _chartManager._chart.Series[S_PROFIL_LASTGANG].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["Profil/Lastgang"].Enabled = false;
+                _chartManager._chart.Series[S_PROFIL_LASTGANG].Enabled = false;
             }
             OptimizeYAxisScale();
         }
@@ -220,11 +277,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_PV.Checked)
             {
-                _chartManager._chart.Series["PV"].Enabled = true;
+                _chartManager._chart.Series[S_PV].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["PV"].Enabled = false;
+                _chartManager._chart.Series[S_PV].Enabled = false;
             }
             OptimizeYAxisScale();
         }
@@ -286,11 +343,11 @@ namespace WindowsFormsApplication1
         {
             if (checkBox_BHKW.Checked)
             {
-                _chartManager._chart.Series["BHKW"].Enabled = true;
+                _chartManager._chart.Series[S_BHKW].Enabled = true;
             }
             else
             {
-                _chartManager._chart.Series["BHKW"].Enabled = false;
+                _chartManager._chart.Series[S_BHKW].Enabled = false;
             }
             OptimizeYAxisScale();
         }

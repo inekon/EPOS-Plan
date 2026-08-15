@@ -21,9 +21,11 @@ namespace WindowsFormsApplication1
     /// <see cref="WaermesenkeClass"/> und <see cref="Ladeordnung"/> — dieser Dialog ist
     /// reine Oberfläche darüber.
     ///
-    /// Paket 9 (Konzept 13.6) stellt die sichtbaren Texte auf den Ressourcenkatalog
-    /// MyResource.Resource.SIM_* um; bis dahin sind sie wie im übrigen Simulationsbereich
-    /// deutsch hartkodiert.
+    /// Die sichtbaren Texte stehen seit Paket 9 / L7 (Konzept 13.6) im Ressourcenkatalog
+    /// (<c>MyResource.Resource.SIM_*</c>). Steuerwerte — Ziel, Bedarfsart, Verwendung —
+    /// bleiben davon unberührt: sie kommen aus <see cref="WaermesenkeClass"/> bzw.
+    /// <see cref="WaermequelleClass"/> und sind deutsche Persistenzwerte
+    /// (Drei-Schichten-Regel).
     /// </summary>
     public class Form_Waermesenke : Form
     {
@@ -98,7 +100,7 @@ namespace WindowsFormsApplication1
 
         private void BaueOberflaeche()
         {
-            this.Text = "Wärmesenke";
+            this.Text = MyResource.Resource.SIM_SENKE_TITEL;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
@@ -108,7 +110,7 @@ namespace WindowsFormsApplication1
             // --- Hauptsenke ----------------------------------------------------------
             GroupBox gbHaupt = new GroupBox
             {
-                Text = "Hauptsenke",
+                Text = MyResource.Resource.SIM_ROLLE_HAUPTSENKE,
                 Location = new Point(12, 10),
                 Size = new Size(596, 132)
             };
@@ -116,7 +118,7 @@ namespace WindowsFormsApplication1
 
             _rbHeizkreis = new RadioButton
             {
-                Text = "Heizkreis (direkte Deckung des Bedarfs)",
+                Text = MyResource.Resource.SIM_RB_HEIZKREIS,
                 AutoSize = true,
                 Location = new Point(16, 24)
             };
@@ -124,7 +126,7 @@ namespace WindowsFormsApplication1
 
             Label lblBedarf = new Label
             {
-                Text = "Bedarfsart:",
+                Text = MyResource.Resource.SIM_LBL_BEDARFSART,
                 AutoSize = true,
                 Location = new Point(40, 50)
             };
@@ -136,12 +138,12 @@ namespace WindowsFormsApplication1
             };
             _cbBedarfsart.Items.AddRange(new object[]
             {
-                "Beides (Warmwasser zuerst)", "nur Warmwasser", "nur Heizwärme"
+                MyResource.Resource.SIM_BEDARF_BEIDES, MyResource.Resource.SIM_BEDARF_WARMWASSER, MyResource.Resource.SIM_BEDARF_HEIZWAERME
             });
 
             Label lblBedarfHinweis = new Label
             {
-                Text = "(nur beim Heizkreis wirksam)",
+                Text = MyResource.Resource.SIM_LBL_BEDARF_HINWEIS,
                 AutoSize = true,
                 ForeColor = SystemColors.GrayText,
                 Location = new Point(370, 50)
@@ -149,7 +151,7 @@ namespace WindowsFormsApplication1
 
             _rbPufferHeizung = new RadioButton
             {
-                Text = "Pufferspeicher Heizung",
+                Text = MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_HEIZUNG,
                 AutoSize = true,
                 Location = new Point(16, 76)
             };
@@ -164,7 +166,7 @@ namespace WindowsFormsApplication1
 
             _rbPufferBrauchwasser = new RadioButton
             {
-                Text = "Pufferspeicher Brauchwasser",
+                Text = MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER,
                 AutoSize = true,
                 Location = new Point(16, 102)
             };
@@ -189,13 +191,13 @@ namespace WindowsFormsApplication1
             // --- Ladeverhalten der Hauptsenke ----------------------------------------
             _gbLaden = new GroupBox
             {
-                Text = "Ladeverhalten am Pufferspeicher",
+                Text = MyResource.Resource.SIM_GB_LADEVERHALTEN,
                 Location = new Point(12, 150),
                 Size = new Size(596, 140)
             };
             this.Controls.Add(_gbLaden);
 
-            Label lblPrio = new Label { Text = "Ladepriorität:", AutoSize = true, Location = new Point(16, 28) };
+            Label lblPrio = new Label { Text = MyResource.Resource.SIM_LBL_LADEPRIO, AutoSize = true, Location = new Point(16, 28) };
             _cbLadeprio = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -214,7 +216,7 @@ namespace WindowsFormsApplication1
 
             _chkLadegrenze = new CheckBox
             {
-                Text = "eigene Ladeobergrenze:",
+                Text = MyResource.Resource.SIM_CHK_LADEGRENZE,
                 AutoSize = true,
                 Location = new Point(19, 66)
             };
@@ -222,12 +224,12 @@ namespace WindowsFormsApplication1
             _tbLadegrenze = new TextBox { Location = new Point(196, 63), Width = 60, Text = "70" };
             _lblLadegrenzeEinheit = new Label
             {
-                Text = "% des Speichers  (sonst gilt die Abschaltschwelle des Speichers)",
+                Text = MyResource.Resource.SIM_LBL_LADEGRENZE_EINHEIT,
                 AutoSize = true,
                 Location = new Point(262, 66)
             };
 
-            _lblPV = new Label { Text = "Bei PV-Überschuss:", AutoSize = true, Location = new Point(16, 102) };
+            _lblPV = new Label { Text = MyResource.Resource.SIM_LBL_PV_UEBERSCHUSS, AutoSize = true, Location = new Point(16, 102) };
             _cbLadeprioPV = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -248,7 +250,7 @@ namespace WindowsFormsApplication1
             // --- Zweitsenke -----------------------------------------------------------
             _chkZweitsenke = new CheckBox
             {
-                Text = "Zweitsenke (nimmt nur Überschuss bzw. verbleibendes Ladepotenzial auf)",
+                Text = MyResource.Resource.SIM_CHK_ZWEITSENKE,
                 AutoSize = true,
                 Location = new Point(20, 300)
             };
@@ -263,17 +265,17 @@ namespace WindowsFormsApplication1
             };
             this.Controls.Add(_gbZweitsenke);
 
-            Label lblZiel2 = new Label { Text = "Ziel:", AutoSize = true, Location = new Point(16, 28) };
+            Label lblZiel2 = new Label { Text = MyResource.Resource.SIM_LBL_ZIEL2, AutoSize = true, Location = new Point(16, 28) };
             _cbZiel2 = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Location = new Point(150, 24),
                 Width = 210
             };
-            _cbZiel2.Items.AddRange(new object[] { "Pufferspeicher Heizung", "Pufferspeicher Brauchwasser" });
+            _cbZiel2.Items.AddRange(new object[] { MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_HEIZUNG, MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER });
             _cbZiel2.SelectedIndexChanged += Auswahl_Geaendert;
 
-            Label lblPuffer2 = new Label { Text = "Pufferspeicher:", AutoSize = true, Location = new Point(16, 60) };
+            Label lblPuffer2 = new Label { Text = MyResource.Resource.PSP_RUBRIK_LABEL, AutoSize = true, Location = new Point(16, 60) };
             _cbPuffer2 = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -282,7 +284,7 @@ namespace WindowsFormsApplication1
             };
             _cbPuffer2.SelectedIndexChanged += Auswahl_Geaendert;
 
-            Label lblPrio2 = new Label { Text = "Ladepriorität:", AutoSize = true, Location = new Point(16, 96) };
+            Label lblPrio2 = new Label { Text = MyResource.Resource.SIM_LBL_LADEPRIO, AutoSize = true, Location = new Point(16, 96) };
             _cbLadeprio2 = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
@@ -296,7 +298,7 @@ namespace WindowsFormsApplication1
 
             _chkLadegrenze2 = new CheckBox
             {
-                Text = "Ladeobergrenze:",
+                Text = MyResource.Resource.SIM_CHK_LADEGRENZE2,
                 AutoSize = true,
                 Location = new Point(378, 95)
             };
@@ -320,14 +322,13 @@ namespace WindowsFormsApplication1
                 AutoSize = false,
                 Location = new Point(14, 462),
                 Size = new Size(390, 56),
-                Text = "Für Puffer-Senken muss der Speicher im Projekt angelegt sein " +
-                       "(mit passender Verwendung Heizung bzw. Brauchwasser)."
+                Text = MyResource.Resource.SIM_LBL_HINWEIS_PUFFER
             };
             this.Controls.Add(_lblHinweis);
 
             _btnPufferAnlegen = new Button
             {
-                Text = "Pufferspeicher anlegen…",
+                Text = MyResource.Resource.PSP_BTN_PUFFER_ANLEGEN,
                 Location = new Point(410, 466),
                 Size = new Size(198, 28)
             };
@@ -344,14 +345,14 @@ namespace WindowsFormsApplication1
 
             Button btnOk = new Button
             {
-                Text = "OK",
+                Text = MyResource.Resource.SIM_BTN_OK,
                 DialogResult = DialogResult.OK,
                 Location = new Point(this.ClientSize.Width - 190, 546),
                 Width = 85
             };
             Button btnAbbruch = new Button
             {
-                Text = "Abbrechen",
+                Text = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 DialogResult = DialogResult.Cancel,
                 Location = new Point(this.ClientSize.Width - 97, 546),
                 Width = 85
@@ -369,7 +370,8 @@ namespace WindowsFormsApplication1
         /// <summary>Füllt den Dialog aus <see cref="Daten"/> und den Projekt-Puffern.</summary>
         public void SetControls()
         {
-            if (!string.IsNullOrEmpty(AnlagenName)) this.Text = "Wärmesenke - " + AnlagenName;
+            if (!string.IsNullOrEmpty(AnlagenName))
+                this.Text = string.Format(MyResource.Resource.SIM_SENKE_TITEL_ANLAGE, AnlagenName);
 
             _aktualisiert = true;
             try
@@ -466,8 +468,9 @@ namespace WindowsFormsApplication1
             {
                 Wert = 0,
                 Text = pvVariante
-                    ? "unverändert (reguläre Priorität)"
-                    : "nach Vorgabe (" + vorgabe + " - " + Ladeordnung.ErzeugerName(ID_Type) + ")"
+                    ? MyResource.Resource.SIM_PRIO_UNVERAENDERT
+                    : string.Format(MyResource.Resource.SIM_PRIO_VORGABE,
+                                    vorgabe, Ladeordnung.ErzeugerName(ID_Type))
             });
 
             for (int p = Ladeordnung.PRIO_MIN; p <= Ladeordnung.PRIO_MAX; p++)
@@ -556,9 +559,12 @@ namespace WindowsFormsApplication1
             int pos = Ladeordnung.Position(vorschau, ID_Anlage, false);
             if (pos <= 0) return "";
 
-            string text = "Lädt als " + pos + ". von " + vorschau.Count;
+            // Formatangabe „0.#" der Obergrenze aus dem Bestand übernommen; der Katalog
+            // führt den Platzhalter normalisiert als {0} (Lesehinweis des Katalogs).
+            string text = string.Format(MyResource.Resource.SIM_POSITION_LAEDT_ALS, pos, vorschau.Count);
             if (vorschau.Count > 0 && pos <= vorschau.Count)
-                text += Environment.NewLine + "bis " + vorschau[pos - 1].Obergrenze.ToString("0.#") + " %";
+                text += Environment.NewLine + string.Format(MyResource.Resource.SIM_POSITION_BIS,
+                                                            vorschau[pos - 1].Obergrenze.ToString("0.#"));
             return text;
         }
 
@@ -622,7 +628,7 @@ namespace WindowsFormsApplication1
             WaermesenkeClass.SenkeDaten neu = AusOberflaeche(out string eingabefehler);
             if (eingabefehler != null)
             {
-                MessageBox.Show(eingabefehler, "Wärmesenke",
+                MessageBox.Show(eingabefehler, MyResource.Resource.SIM_SENKE_TITEL,
                                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 this.DialogResult = DialogResult.None;
                 return;
@@ -635,9 +641,9 @@ namespace WindowsFormsApplication1
                 {
                     // Konzept 4.6: Meldung MIT Absprung "Pufferspeicher anlegen..."
                     DialogResult wahl = MessageBox.Show(
-                        erg.Fehler + Environment.NewLine + Environment.NewLine +
-                        "Jetzt einen Pufferspeicher im Projekt anlegen?",
-                        "Wärmesenke - Pufferspeicher fehlt",
+                        string.Format(MyResource.Resource.SIM_MSG_PUFFER_ANLEGEN_FRAGE
+                                          .Replace("\n", Environment.NewLine), erg.Fehler),
+                        MyResource.Resource.SIM_TITEL_SENKE_PUFFER_FEHLT,
                         MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
                     this.DialogResult = DialogResult.None;
@@ -645,7 +651,7 @@ namespace WindowsFormsApplication1
                     return;
                 }
 
-                MessageBox.Show(erg.Fehler, "Wärmesenke",
+                MessageBox.Show(erg.Fehler, MyResource.Resource.SIM_SENKE_TITEL,
                                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 this.DialogResult = DialogResult.None;
                 return;
@@ -662,7 +668,7 @@ namespace WindowsFormsApplication1
 
             if (hinweise.Count > 0)
                 MessageBox.Show(string.Join(Environment.NewLine + Environment.NewLine, hinweise),
-                                "Wärmesenke", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                MyResource.Resource.SIM_SENKE_TITEL, MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             Daten = neu;
         }
@@ -695,17 +701,14 @@ namespace WindowsFormsApplication1
                                        StringComparison.Ordinal);
             if (!haupt && !zweit) return null;
 
-            string text = "Hinweis: Die Brauchwasser-Senke wird erst mit dem Engine-Umbau " +
-                          "(Paket 4) wirksam." + Environment.NewLine +
-                          "Sie wird gespeichert und angezeigt, geht in die Simulation aber " +
-                          "noch nicht ein.";
+            string text = MyResource.Resource.SIM_MSG_BRAUCHWASSER_UEBERGANG
+                              .Replace("\n", Environment.NewLine);
 
             // Nur die Hauptsenke einer Wärmepumpe zieht die Alt-Zuordnung mit sich
             // (die Brücke wertet ausschließlich WS_Ziel der Wärmepumpen aus).
             if (haupt && ID_Type == ProjektPuffer.TYP_WP)
                 text += Environment.NewLine + Environment.NewLine +
-                        "Die bisherige Pufferspeicher-Zuordnung dieser Wärmepumpe wird dabei " +
-                        "entfernt; bis Paket 4 rechnet die Simulation dann ohne Speicher.";
+                        MyResource.Resource.SIM_MSG_BRAUCHWASSER_WP_ZUSATZ;
 
             return text;
         }
@@ -742,7 +745,8 @@ namespace WindowsFormsApplication1
             d.LadeprioPV = string.Equals(BM_Typ, WaermequelleClass.MODUS_PV, StringComparison.Ordinal)
                 ? GewaehltePrio(_cbLadeprioPV) : 0;
 
-            if (!LadegrenzeLesen(_chkLadegrenze, _tbLadegrenze, "Hauptsenke", out d.Ladegrenze, out fehler))
+            if (!LadegrenzeLesen(_chkLadegrenze, _tbLadegrenze,
+                                 MyResource.Resource.SIM_ROLLE_HAUPTSENKE, out d.Ladegrenze, out fehler))
                 return d;
 
             if (_chkZweitsenke.Checked)
@@ -753,7 +757,8 @@ namespace WindowsFormsApplication1
                 d.ID_Puffer2 = AktuelleId(_cbPuffer2);
                 d.Ladeprio2 = GewaehltePrio(_cbLadeprio2);
 
-                if (!LadegrenzeLesen(_chkLadegrenze2, _tbLadegrenze2, "Zweitsenke", out d.Ladegrenze2, out fehler))
+                if (!LadegrenzeLesen(_chkLadegrenze2, _tbLadegrenze2,
+                                     MyResource.Resource.SIM_ROLLE_ZWEITSENKE, out d.Ladegrenze2, out fehler))
                     return d;
             }
 
@@ -771,13 +776,13 @@ namespace WindowsFormsApplication1
             float zahl;
             if (!WaermequelleClass.ZahlParsen(tb.Text, out zahl))
             {
-                fehler = "Die Ladeobergrenze der " + rolle + " muss eine Zahl sein.";
+                fehler = string.Format(MyResource.Resource.SIM_MSG_LADEGRENZE_ZAHL, rolle);
                 return false;
             }
 
             if (zahl <= 0 || zahl > 100)
             {
-                fehler = "Die Ladeobergrenze der " + rolle + " muss zwischen 0 und 100 % liegen.";
+                fehler = string.Format(MyResource.Resource.SIM_MSG_LADEGRENZE_BEREICH, rolle);
                 return false;
             }
 

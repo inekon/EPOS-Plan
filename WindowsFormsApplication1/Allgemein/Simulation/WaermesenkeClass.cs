@@ -63,10 +63,10 @@ namespace WindowsFormsApplication1
         public static string ZielAnzeige(string ziel)
         {
             if (string.Equals(ziel, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal))
-                return "Pufferspeicher Heizung";
+                return MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_HEIZUNG;
             if (string.Equals(ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal))
-                return "Pufferspeicher Brauchwasser";
-            return "Heizkreis";
+                return MyResource.Resource.SIM_ZIEL_PUFFERSPEICHER_BRAUCHWASSER;
+            return MyResource.Resource.SIM_HEIZKREIS;
         }
 
         // --- Datensatz ----------------------------------------------------------------
@@ -147,7 +147,7 @@ namespace WindowsFormsApplication1
             public override string ToString()
             {
                 return Gesamtvolumen > 0
-                    ? Bezeichner + " (" + Gesamtvolumen + " l)"
+                    ? string.Format(MyResource.Resource.SIM_PUFFER_MIT_VOLUMEN, Bezeichner, Gesamtvolumen)
                     : Bezeichner;
             }
         }
@@ -536,7 +536,7 @@ namespace WindowsFormsApplication1
         public static PruefErgebnis Pruefen(int idProjekt, int idAnlage, SenkeDaten d)
         {
             PruefErgebnis erg = new PruefErgebnis();
-            if (d == null) { erg.Ok = false; erg.Fehler = "Keine Senkendaten übergeben."; return erg; }
+            if (d == null) { erg.Ok = false; erg.Fehler = MyResource.Resource.SIM_KEINE_SENKENDATEN; return erg; }
 
             Normalisieren(d);
 
@@ -544,7 +544,7 @@ namespace WindowsFormsApplication1
             if (IstPufferZiel(d.Ziel))
             {
                 string fehler;
-                if (!PufferPasst(idProjekt, d.ID_Puffer, d.Ziel, "Hauptsenke", out fehler))
+                if (!PufferPasst(idProjekt, d.ID_Puffer, d.Ziel, MyResource.Resource.SIM_ROLLE_HAUPTSENKE, out fehler))
                 {
                     erg.Ok = false;
                     erg.Fehler = fehler;
@@ -557,7 +557,7 @@ namespace WindowsFormsApplication1
             if (d.HatZweitsenke && IstPufferZiel(d.Ziel2))
             {
                 string fehler;
-                if (!PufferPasst(idProjekt, d.ID_Puffer2, d.Ziel2, "Zweitsenke", out fehler))
+                if (!PufferPasst(idProjekt, d.ID_Puffer2, d.Ziel2, MyResource.Resource.SIM_ROLLE_ZWEITSENKE, out fehler))
                 {
                     erg.Ok = false;
                     erg.Fehler = fehler;
@@ -577,10 +577,9 @@ namespace WindowsFormsApplication1
             if (d.HatZweitsenke && IstPufferZiel(d.Ziel) && d.ID_Puffer == d.ID_Puffer2)
             {
                 erg.Ok = false;
-                erg.Fehler = "Die Zweitsenke muss sich von der Hauptsenke unterscheiden." +
-                             Environment.NewLine +
-                             "Beide zeigen auf " + ZielAnzeige(d.Ziel) +
-                             " „" + PufferName(d.ID_Puffer) + "\".";
+                erg.Fehler = string.Format(
+                    MyResource.Resource.SIM_ZWEITSENKE_GLEICH_HAUPTSENKE.Replace("\n", Environment.NewLine),
+                    ZielAnzeige(d.Ziel), PufferName(d.ID_Puffer));
                 return erg;
             }
 
@@ -590,10 +589,9 @@ namespace WindowsFormsApplication1
                 (idQuellPuffer == d.ID_Puffer || (d.HatZweitsenke && idQuellPuffer == d.ID_Puffer2)))
             {
                 erg.Ok = false;
-                erg.Fehler = "Der Pufferspeicher „" + PufferName(idQuellPuffer) + "\" ist bereits die " +
-                             "WÄRMEQUELLE dieser Anlage." + Environment.NewLine +
-                             "Derselbe Speicher kann nicht zugleich Quelle und Senke sein " +
-                             "(Kurzschluss); bitte einen anderen Speicher wählen.";
+                erg.Fehler = string.Format(
+                    MyResource.Resource.SIM_PUFFER_QUELLE_UND_SENKE.Replace("\n", Environment.NewLine),
+                    PufferName(idQuellPuffer));
                 return erg;
             }
 
@@ -611,29 +609,27 @@ namespace WindowsFormsApplication1
 
             if (idPuffer <= 0)
             {
-                fehler = "Für die " + rolle + " „" + ZielAnzeige(ziel) + "\" ist kein Pufferspeicher gewählt." +
-                         Environment.NewLine + Environment.NewLine +
-                         "Im Projekt muss ein Pufferspeicher mit der Verwendung „" + verlangt +
-                         "\" angelegt sein.";
+                fehler = string.Format(
+                    MyResource.Resource.SIM_KEIN_PUFFER_GEWAEHLT.Replace("\n", Environment.NewLine),
+                    rolle, ZielAnzeige(ziel), VerwendungAnzeige(verlangt));
                 return false;
             }
 
             PufferInfo p = PufferLesen(idPuffer);
             if (p == null || p.ID_Projekt != idProjekt)
             {
-                fehler = "Der für die " + rolle + " gewählte Pufferspeicher gehört nicht zu diesem Projekt " +
-                         "oder wurde entfernt." + Environment.NewLine + Environment.NewLine +
-                         "Bitte einen Projekt-Pufferspeicher mit der Verwendung „" + verlangt + "\" anlegen.";
+                fehler = string.Format(
+                    MyResource.Resource.SIM_PUFFER_FREMDES_PROJEKT.Replace("\n", Environment.NewLine),
+                    rolle, VerwendungAnzeige(verlangt));
                 return false;
             }
 
             if (!string.Equals(WirksameVerwendung(p), verlangt, StringComparison.OrdinalIgnoreCase))
             {
-                fehler = "Der Pufferspeicher „" + p.Bezeichner + "\" hat die Verwendung „" +
-                         WirksameVerwendung(p) + "\", die " + rolle + " verlangt aber „" + verlangt + "\"." +
-                         Environment.NewLine + Environment.NewLine +
-                         "Bitte einen passenden Speicher wählen oder die Verwendung in der " +
-                         "Pufferspeicher-Verwaltung ändern.";
+                fehler = string.Format(
+                    MyResource.Resource.SIM_PUFFER_VERWENDUNG_PASST_NICHT.Replace("\n", Environment.NewLine),
+                    p.Bezeichner, VerwendungAnzeige(WirksameVerwendung(p)),
+                    rolle, VerwendungAnzeige(verlangt));
                 return false;
             }
 
@@ -689,9 +685,7 @@ namespace WindowsFormsApplication1
             if (!brauchwasser) return null;
             if (ProjektHatBrauchwasser(idProjekt)) return null;
 
-            return "Hinweis: Dem Projekt ist kein Brauchwasserbedarf zugeordnet." +
-                   Environment.NewLine +
-                   "Ein Brauchwasserspeicher wird dann zwar geladen, aber nie entladen.";
+            return MyResource.Resource.SIM_KEIN_BRAUCHWASSERBEDARF.Replace("\n", Environment.NewLine);
         }
 
         /// <summary>true, wenn dem Projekt mindestens ein Brauchwasser-Anteil zugeordnet ist.</summary>
@@ -712,22 +706,22 @@ namespace WindowsFormsApplication1
         /// <summary>Kompakte Anzeige der Hauptsenke für die Übersicht (Konzept 4.1).</summary>
         public static string HauptsenkeAnzeige(SenkeDaten d)
         {
-            if (d == null) return "Heizkreis";
+            if (d == null) return MyResource.Resource.SIM_HEIZKREIS;
 
             if (IstPufferZiel(d.Ziel))
             {
                 string name = PufferName(d.ID_Puffer);
                 string kurz = string.Equals(d.Ziel, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal)
-                    ? "Puffer Heizung" : "Puffer Brauchw.";
+                    ? MyResource.Resource.SIM_PUFFER_HEIZUNG_KURZ : MyResource.Resource.SIM_PUFFER_BRAUCHWASSER_KURZ;
                 return name.Length > 0 ? kurz + ": " + name : kurz;
             }
 
             // Heizkreis: die Bedarfsart ist hier die Feinsteuerung (Konzept 3.1)
             switch (d.Bedarfsart)
             {
-                case WaermequelleClass.SENKE_WARMWASSER: return "Heizkreis (nur Warmwasser)";
-                case WaermequelleClass.SENKE_HEIZUNG: return "Heizkreis (nur Heizwärme)";
-                default: return "Heizkreis (beides)";
+                case WaermequelleClass.SENKE_WARMWASSER: return MyResource.Resource.SIM_HEIZKREIS_NUR_WARMWASSER;
+                case WaermequelleClass.SENKE_HEIZUNG: return MyResource.Resource.SIM_HEIZKREIS_NUR_HEIZWAERME;
+                default: return MyResource.Resource.SIM_HEIZKREIS_BEIDES;
             }
         }
 
@@ -747,7 +741,7 @@ namespace WindowsFormsApplication1
 
             string name = PufferName(d.ID_Puffer2);
             string kurz = string.Equals(d.Ziel2, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal)
-                ? "Puffer Heizung" : "Puffer Brauchw.";
+                ? MyResource.Resource.SIM_PUFFER_HEIZUNG_KURZ : MyResource.Resource.SIM_PUFFER_BRAUCHWASSER_KURZ;
             return name.Length > 0 ? kurz + ": " + name : kurz;
         }
 

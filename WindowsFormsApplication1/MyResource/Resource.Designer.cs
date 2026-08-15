@@ -412,6 +412,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärmebedarf ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_HEIZWAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_HEIZWAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil/Lastgang ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_PROFIL_LASTGANG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_PROFIL_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_UEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_WAERMEBEDARF {
@@ -426,6 +453,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_LEGENDE_WAERMEBEDARFSDECKUNG {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_WAERMEBEDARFSDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_WAERMEPRODUKTION {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_WAERMEPRODUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warmwasserbedarf ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_WARMWASSERBEDARF {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_WARMWASSERBEDARF", resourceCulture);
             }
         }
         
@@ -525,6 +570,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE {
             get {
                 return ResourceManager.GetString("CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverlauf Jahresganglinie  ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_STROMVERLAUF_JAHRESGANGLINIE", resourceCulture);
             }
         }
         
@@ -1951,6 +2005,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Übersicht... ähnelt.
+        /// </summary>
+        public static string SIM_BTN_WAERMEBEDARF_UEBERSICHT {
+            get {
+                return ResourceManager.GetString("SIM_BTN_WAERMEBEDARF_UEBERSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die eigene Ladeobergrenze: ähnelt.
         /// </summary>
         public static string SIM_CHK_LADEGRENZE {
@@ -1969,11 +2032,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf einblenden ähnelt.
+        /// </summary>
+        public static string SIM_CHK_WAERMEBEDARF_EINBLENDEN {
+            get {
+                return ResourceManager.GetString("SIM_CHK_WAERMEBEDARF_EINBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zweitsenke (nimmt nur Überschuss bzw. verbleibendes Ladepotenzial auf) ähnelt.
         /// </summary>
         public static string SIM_CHK_ZWEITSENKE {
             get {
                 return ResourceManager.GetString("SIM_CHK_ZWEITSENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik Autarkie ähnelt.
+        /// </summary>
+        public static string SIM_DASH_GRUPPE_PV {
+            get {
+                return ResourceManager.GetString("SIM_DASH_GRUPPE_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie Deckung ähnelt.
+        /// </summary>
+        public static string SIM_DASH_GRUPPE_ST {
+            get {
+                return ResourceManager.GetString("SIM_DASH_GRUPPE_ST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Theoretischer Speicher (PV) (kWh): ähnelt.
+        /// </summary>
+        public static string SIM_DASH_SPEICHER_INFO {
+            get {
+                return ResourceManager.GetString("SIM_DASH_SPEICHER_INFO", resourceCulture);
             }
         }
         
