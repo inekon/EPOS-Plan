@@ -69,6 +69,11 @@ namespace WindowsFormsApplication1
             rs.Close();
         }
 
+        /// <summary>
+        /// Schliesst den Katalogdialog. Hier wird bewusst NICHT geprueft: die Felder
+        /// dieses Formulars sind Anzeigefelder ohne Speicherweg (gespeichert wird in
+        /// Form_PufferSp_Bearbeiten), und OK ist der einzige Weg aus dem Dialog.
+        /// </summary>
         private void btn_OK_Click(object sender, EventArgs e)
         {
             Close();
@@ -124,16 +129,28 @@ namespace WindowsFormsApplication1
             rs.Close();
         }
 
+        /// <summary>
+        /// Reines Anzeigefeld (Designer: Enabled = False) - der Text kommt nur aus dem
+        /// Katalog. Folgepaket zu ab5bf32: statt modal zu melden und mit Undo()
+        /// zurueckzunehmen, wird nur noch gefaerbt, und das erst, wenn das Feld
+        /// ueberhaupt Eingaben annimmt. Bereitschaftsverluste sind ein double-Wert.
+        /// </summary>
         private void textBox_Versluste_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            if (tb == null || !tb.Enabled) return;
+            Program.ZahlFaerben(tb);
         }
 
+        /// <summary>
+        /// Wie textBox_Versluste_TextChanged; das Gesamtvolumen wird als Ganzzahl
+        /// gespeichert (PufferSpModel.Gesamtvolumen).
+        /// </summary>
         private void textBox_Volumen_TextChanged(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
-            if (!Program.checkInt(tb, tb.Text)) tb.Undo();
+            if (tb == null || !tb.Enabled) return;
+            Program.GanzzahlFaerben(tb);
         }
 
         private void label1_Click(object sender, EventArgs e)
