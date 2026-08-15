@@ -134,12 +134,37 @@ namespace WindowsFormsApplication1
             _selected_index = n;
         }
 
+        // Stiller Weg (Aufrufer: Kurvenwechsel, Folgepaket zu ab5bf32): ein ungueltiges
+        // oder leeres Feld laesst den bisherigen Wert stehen, statt beim Umschalten
+        // eine FormatException zu werfen. Gemeldet wird erst am Speichern-Knopf.
         private void RefreshArrayValues()
         {
             for (int i = 0; i < 24; i++)
             {
-                 Verteilung[_selected_index, i] = double.Parse(groupBox1.Controls["st" + (i + 1).ToString()].Text);
+                double wert;
+                if (Program.ZahlParsen(groupBox1.Controls["st" + (i + 1).ToString()].Text, out wert))
+                    Verteilung[_selected_index, i] = wert;
             }
+        }
+
+        /// <summary>
+        /// Knopf-Variante von RefreshArrayValues: prueft erst alle 24 Stundenfelder und
+        /// uebernimmt danach die geprueften Werte. Das erste ungueltige Feld meldet
+        /// sprechend, bekommt den Fokus und liefert false - der Aufrufer kehrt zurueck
+        /// und laesst den Dialog offen. Leer bleibt unzulaessig (frueher
+        /// FormatException in RefreshArrayValues).
+        /// </summary>
+        private bool VerteilungUebernehmen()
+        {
+            double[] werte = new double[24];
+            for (int i = 0; i < 24; i++)
+            {
+                TextBox tb = groupBox1.Controls["st" + (i + 1).ToString()] as TextBox;
+                if (!Program.ZahlPruefen(tb, "Stunde " + (i + 1).ToString(), out werte[i])) return false;
+            }
+
+            for (int i = 0; i < 24; i++) Verteilung[_selected_index, i] = werte[i];
+            return true;
         }
 
         private void init_Chart(List<int> xAxis,List<double> yAxis)
@@ -176,7 +201,9 @@ namespace WindowsFormsApplication1
             List<int> xAxis = new List<int>();
             List<Double> yAxis = new List<Double>();
 
-            RefreshArrayValues();
+            // Zahlen erst hier pruefen: bei ungueltiger Eingabe bleibt der Dialog
+            // offen und es wird nichts geschrieben.
+            if (!VerteilungUebernehmen()) return;
             TagV_Speichern(ID_TagV);
 
             int n = listBox_Kurve.SelectedIndex;
@@ -302,10 +329,12 @@ namespace WindowsFormsApplication1
             listBox_Typename.Items.Remove(listBox_Typename.Text);
         }
 
+        // Validating faerbt nur noch (Folgepaket zu ab5bf32, alle 24 Stundenfelder
+        // haengen an diesem Handler): kein modales Melden und kein Undo() mehr,
+        // geprueft wird am Speichern-Knopf.
         private void st1_Validating(object sender, CancelEventArgs e)
         {
-            TextBox tb = sender as TextBox;
-            if (!Program.checkDouble(tb, tb.Text)) tb.Undo();
+            Program.ZahlFaerben(sender);
         }
 
     }

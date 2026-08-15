@@ -60,18 +60,28 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void btn_Ueberschreiben_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Prueft die zwoelf Monatsfelder am Aktionsknopf (Folgepaket zu ab5bf32) und
+        /// liefert die geprueften Werte an den Speicherweg weiter. Das erste ungueltige
+        /// Feld meldet sprechend, bekommt den Fokus und liefert false - der Aufrufer
+        /// kehrt dann zurueck und laesst den Dialog offen. Leer bleibt unzulaessig,
+        /// wie zuvor die Leerpruefung in btn_Speichern.
+        /// </summary>
+        private bool MonatswertePruefen(out double[] monat)
         {
-            
+            monat = new double[12];
             for (int i = 1; i <= 12; i++)
             {
-                string val = this.Controls["Wert" + i.ToString()].Text;
-                if (!Program.checkDouble(this.Controls["Wert" + i.ToString()], val)) return;
+                TextBox tb = this.Controls["Wert" + i.ToString()] as TextBox;
+                if (!Program.ZahlPruefen(tb, "Monat " + i.ToString(), out monat[i - 1])) return false;
             }
-            
-            double[] monat = new double[12];
-            for (int i = 1; i <= 12; i++)
-                monat[i - 1] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
+            return true;
+        }
+
+        private void btn_Ueberschreiben_Click(object sender, EventArgs e)
+        {
+            double[] monat;
+            if (!MonatswertePruefen(out monat)) return;
 
             BrauchwasserStammCtrl ctrl = new BrauchwasserStammCtrl();
             // SaveHead prueft selbst auf ReadOnly und meldet ggf.
@@ -86,8 +96,12 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
+            // Zahlen zuerst pruefen - noch bevor der Namensdialog aufgeht.
+            double[] monat;
+            if (!MonatswertePruefen(out monat)) return;
+
             Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
-            
+
             frm.m_szName = textBox_Bezeichner.Text;
             frm.SetControl();
             Point p1 = btn_Speichern_Unter.Location;
@@ -99,10 +113,6 @@ namespace WindowsFormsApplication1
                 BrauchwasserStammCtrl ctrl = new BrauchwasserStammCtrl();
                 if (ctrl.Exists(frm.m_szName)) { MessageBox.Show("Name existiert bereits!"); return; }
                 textBox_Bezeichner.Text = frm.m_szName;
-
-                double[] monat = new double[12];
-                for (int i = 1; i <= 12; i++)
-                    monat[i - 1] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
 
                 if (ctrl.SaveHead(textBox_Bezeichner.Text, comboBox_Brauchwassertyp.Text, textBox_Beschreibung.Text, monat, true))
                     MessageBox.Show("Daten gespeichert!");
@@ -116,27 +126,10 @@ namespace WindowsFormsApplication1
                 MessageBox.Show("Brauchwassertyp auswählen!");
                 return;
             }
-            for (int i = 1; i <= 12; i++)
-            {
-                if (this.Controls["Wert" + i.ToString()].Text == "")
-                {
-                    MessageBox.Show("Eingaben überprüfen!");
-                    return;
-                }
-            }
-            double result = 0;
-            for (int i = 1; i <= 12; i++)
-            {
-                if(!double.TryParse(this.Controls["Wert" + i.ToString()].Text, out result))
-                {
-                    MessageBox.Show("Eingaben überprüfen!");
-                    return;
-                }
-            }
-
-            double[] monat = new double[12];
-            for (int i = 1; i <= 12; i++)
-                monat[i - 1] = double.Parse(this.Controls["Wert" + i.ToString()].Text);
+            // Leer- und Zahlpruefung jetzt zentral mit sprechender Meldung; der
+            // Speicherweg uebernimmt die geprueften Werte, statt erneut zu parsen.
+            double[] monat;
+            if (!MonatswertePruefen(out monat)) return;
 
             BrauchwasserStammCtrl ctrl = new BrauchwasserStammCtrl();
             if (ctrl.SaveHead(textBox_Bezeichner.Text, comboBox_Brauchwassertyp.Text, textBox_Beschreibung.Text, monat, true))

@@ -143,18 +143,25 @@ namespace WindowsFormsApplication1
             int Tag = listBox_Tag.SelectedIndex;
             if (Tag == -1) return;
 
+            // Folgepaket zu ab5bf32: erst alle 24 Felder pruefen, dann die geprueften
+            // Werte uebernehmen. Beim ersten ungueltigen Feld meldet der Helfer
+            // sprechend, setzt den Fokus und es wird nichts uebernommen - ein leeres
+            // Feld bleibt wie bisher unzulaessig. Kein double.Parse mehr auf dem
+            // Feldtext, damit "12.5" und "12,5" identisch als 12,5 ankommen.
+            TextBox[] felder = new TextBox[24];
+            double[] werte = new double[24];
             for (int stunde = 0; stunde < 24; stunde++)
             {
-                string ctrlName = "st" + (stunde + 1).ToString();
-                Control ctrl = tabPage1.Controls[ctrlName];
-                if (ctrl == null) continue;
+                felder[stunde] = tabPage1.Controls["st" + (stunde + 1).ToString()] as TextBox;
+                if (felder[stunde] == null) continue;
+                if (!Program.ZahlPruefen(felder[stunde], "Stunde " + (stunde + 1).ToString(), out werte[stunde])) return;
+            }
 
-                string szval = ctrl.Text;
-                if (!Program.checkDouble(ctrl, szval)) return;
-
-                double dval = double.Parse(szval);
-                arr[Tag, stunde] = dval;
-                arr_seriell[Tag * 24 + stunde] = dval;
+            for (int stunde = 0; stunde < 24; stunde++)
+            {
+                if (felder[stunde] == null) continue;
+                arr[Tag, stunde] = werte[stunde];
+                arr_seriell[Tag * 24 + stunde] = werte[stunde];
             }
         }
 

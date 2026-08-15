@@ -616,18 +616,18 @@ namespace WindowsFormsApplication1
             return summe;
         }
 
+        // Folgepaket zu ab5bf32: Validating faerbt nur noch. Einen Knopf-Speicherweg
+        // gibt es hier nicht - btn_OK schliesst nur, geschrieben wird direkt ins
+        // Modell. Deshalb still absichern: bei unlesbarem Text bleibt der bisherige
+        // Wert stehen, ohne Meldung, ohne Undo()/ClearUndo().
         private void textBox__M_GrenzL_Validating(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!Program.checkDouble(textBox__M_GrenzL, textBox__M_GrenzL.Text))
-            {
-                textBox__M_GrenzL.Undo();
-                textBox__M_GrenzL.ClearUndo();
-                return;
-            }
+            Program.ZahlFaerben(sender);
 
+            double grenzleistung;
             WErzeugerModel m = GetSelectedBHKW();
-            if (m != null)
-                m.Grenzleistung = double.Parse(textBox__M_GrenzL.Text);
+            if (m != null && Program.ZahlParsen(textBox__M_GrenzL.Text, out grenzleistung))
+                m.Grenzleistung = grenzleistung;
         }
 
         private void dataGridView1_Click(object sender, EventArgs e)
@@ -711,20 +711,30 @@ namespace WindowsFormsApplication1
                 }
             }
         }
+        // Vorlauf/Ruecklauf liegen im Modell als Int32, deshalb Ganzzahl-Faerbung.
+        // Auch hier ist Validating der Speicherweg; das frueher direkt nach dem
+        // Undo() folgende Int32.Parse lief ungeschuetzt und konnte auf leerem oder
+        // wiederhergestelltem Text eine FormatException werfen.
         private void textBox_Ruecklauf_Validating(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Ruecklauf, textBox_Ruecklauf.Text)) { textBox_Ruecklauf.Undo(); }
+            Program.GanzzahlFaerben(sender);
+
+            int ruecklauf;
             WErzeugerModel m = GetSelectedBHKW();
-            if (m != null && m.ID_Type == WizardItemClass.BHKW_TYP)
-                m.Ruecklauf = Int32.Parse(textBox_Ruecklauf.Text);
+            if (m != null && m.ID_Type == WizardItemClass.BHKW_TYP &&
+                Program.GanzzahlParsen(textBox_Ruecklauf.Text, out ruecklauf))
+                m.Ruecklauf = ruecklauf;
         }
 
         private void textBox_Vorlauf_Validating(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Vorlauf, textBox_Vorlauf.Text)) { textBox_Vorlauf.Undo(); }
+            Program.GanzzahlFaerben(sender);
+
+            int vorlauf;
             WErzeugerModel m = GetSelectedBHKW();
-            if (m != null && m.ID_Type == WizardItemClass.BHKW_TYP)
-                m.Vorlauf = Int32.Parse(textBox_Vorlauf.Text);
+            if (m != null && m.ID_Type == WizardItemClass.BHKW_TYP &&
+                Program.GanzzahlParsen(textBox_Vorlauf.Text, out vorlauf))
+                m.Vorlauf = vorlauf;
         }
 
         // ListView loest SelectedIndexChanged nicht aus, wenn sich der Index nicht aendert

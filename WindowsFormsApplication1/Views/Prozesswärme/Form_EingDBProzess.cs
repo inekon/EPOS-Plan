@@ -61,15 +61,29 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void btn_Ueberschreiben_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Prueft die zwoelf Monatsfelder am Aktionsknopf (Folgepaket zu ab5bf32) und
+        /// liefert die geprueften Werte an den Speicherweg weiter. Das erste ungueltige
+        /// Feld meldet sprechend, bekommt den Fokus und liefert false - der Aufrufer
+        /// kehrt dann zurueck und laesst den Dialog offen. Leer bleibt unzulaessig,
+        /// wie zuvor die Leerpruefung in btn_Speichern.
+        /// </summary>
+        private bool MonatswertePruefen(out double[] monat)
         {
-            
+            monat = new double[12];
             for (int i = 1; i <= 12; i++)
             {
-                string val = this.Controls["Wert" + i.ToString()].Text;
-                if (!Program.checkDouble(this.Controls["Wert" + i.ToString()], val)) return;
+                TextBox tb = this.Controls["Wert" + i.ToString()] as TextBox;
+                if (!Program.ZahlPruefen(tb, "Monat " + i.ToString(), out monat[i - 1])) return false;
             }
-            
+            return true;
+        }
+
+        private void btn_Ueberschreiben_Click(object sender, EventArgs e)
+        {
+            double[] monat;
+            if (!MonatswertePruefen(out monat)) return;
+
             // ReadOnly-Schutz: schreibgeschuetzte Stammdatensaetze nicht ueberschreiben.
             if (new ProzesswaermeStammCtrl().IsReadOnly(m_szProzessname))
             {
@@ -81,7 +95,7 @@ namespace WindowsFormsApplication1
             System.Data.OleDb.OleDbParameter[] psU = new System.Data.OleDb.OleDbParameter[15];
             psU[0] = new System.Data.OleDb.OleDbParameter("@typ", (object)comboBox_Prozesstyp.Text ?? DBNull.Value);
             psU[1] = new System.Data.OleDb.OleDbParameter("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
-            for (int i = 1; i <= 12; i++) psU[1 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, double.Parse(this.Controls["Wert" + i.ToString()].Text));
+            for (int i = 1; i <= 12; i++) psU[1 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, monat[i - 1]);
             psU[14] = new System.Data.OleDb.OleDbParameter("@bez", (object)m_szProzessname ?? DBNull.Value);
             if (DataRepository.ExecuteSQL(sqlU, psU))
                 MessageBox.Show("Daten aktualisiert!");
@@ -96,8 +110,12 @@ namespace WindowsFormsApplication1
 
         private void btn_Speichern_Unter_Click(object sender, EventArgs e)
         {
+            // Zahlen zuerst pruefen - noch bevor der Namensdialog aufgeht.
+            double[] monat;
+            if (!MonatswertePruefen(out monat)) return;
+
             Form_Sp_ItemNeu frm = new Form_Sp_ItemNeu();
-            
+
             frm.m_szName = textBox_Prozessname.Text;
             frm.SetControl();
             Point p1 = btn_Speichern_Unter.Location;
@@ -117,7 +135,7 @@ namespace WindowsFormsApplication1
                 psI[0] = new System.Data.OleDb.OleDbParameter("@bez", (object)textBox_Prozessname.Text ?? DBNull.Value);
                 psI[1] = new System.Data.OleDb.OleDbParameter("@typ", (object)comboBox_Prozesstyp.Text ?? DBNull.Value);
                 psI[2] = new System.Data.OleDb.OleDbParameter("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
-                for (int i = 1; i <= 12; i++) psI[2 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, double.Parse(this.Controls["Wert" + i.ToString()].Text));
+                for (int i = 1; i <= 12; i++) psI[2 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, monat[i - 1]);
                 psI[15] = new System.Data.OleDb.OleDbParameter("@ro", false);
                 if (DataRepository.ExecuteSQL(sqlI, psI))
                     MessageBox.Show("Daten gespeichert!");
@@ -135,21 +153,17 @@ namespace WindowsFormsApplication1
                 MessageBox.Show("Prozesstyp auswählen!");
                 return;
             }
-            for (int i = 1; i <= 12; i++)
-            {
-                if (this.Controls["Wert" + i.ToString()].Text == "")
-                {
-                    MessageBox.Show("Eingaben überprüfen!");
-                    return;
-                }
-            }
+            // Leer- und Zahlpruefung jetzt zentral mit sprechender Meldung; der
+            // Speicherweg uebernimmt die geprueften Werte, statt erneut zu parsen.
+            double[] monat;
+            if (!MonatswertePruefen(out monat)) return;
 
             string sqlI = "INSERT INTO Tab_Prozesswaerme_STAMM (Bezeichner, Typ, Beschreibung, Monat_1, Monat_2, Monat_3, Monat_4, Monat_5, Monat_6, Monat_7, Monat_8, Monat_9, Monat_10, Monat_11, Monat_12, ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             System.Data.OleDb.OleDbParameter[] psI = new System.Data.OleDb.OleDbParameter[16];
             psI[0] = new System.Data.OleDb.OleDbParameter("@bez", (object)textBox_Prozessname.Text ?? DBNull.Value);
             psI[1] = new System.Data.OleDb.OleDbParameter("@typ", (object)comboBox_Prozesstyp.Text ?? DBNull.Value);
             psI[2] = new System.Data.OleDb.OleDbParameter("@besch", (object)textBox_Beschreibung.Text ?? DBNull.Value);
-            for (int i = 1; i <= 12; i++) psI[2 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, double.Parse(this.Controls["Wert" + i.ToString()].Text));
+            for (int i = 1; i <= 12; i++) psI[2 + i] = new System.Data.OleDb.OleDbParameter("@m" + i, monat[i - 1]);
             psI[15] = new System.Data.OleDb.OleDbParameter("@ro", false);
             if (DataRepository.ExecuteSQL(sqlI, psI))
                 MessageBox.Show("Daten gespeichert!");
