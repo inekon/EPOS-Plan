@@ -562,17 +562,15 @@ namespace WindowsFormsApplication1
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
             id_type = WizardItemClass.KESSEL_TYP;
 
+            // Vollstaendig gelesene Modelle durchreichen (siehe HeizkesselKontextMenuCtrl). Die
+            // Teilkopie aus ID/ID_Kessel/ID_Type/Bezeichner/Vorlauf/Ruecklauf hat beim Speichern
+            // alle uebrigen Anlagenfelder verloren, weil WizardCtrl unten die Anlagen des Typs
+            // loescht und ueber Add_WP_Waermeerzeuger komplett neu schreibt - genullt wurden dabei
+            // ID_Carrier, Betriebsart, Sperrung/Sperrzeiten, Bivalenter_Betrieb, Abschaltpunkt,
+            // Nutzungszeit, Grenzleistung, Heizstab, Volumen, rendeMix und Solaranteil.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                WErzeugerModel item = new WErzeugerModel();
-                item.ID = werzctrl.items[i].ID;
-                item.ID_Kessel = werzctrl.items[i].ID_Kessel;
-                item.ID_Type = werzctrl.items[i].ID_Type;
-                item.Bezeichner = werzctrl.items[i].Bezeichner;
-                item.Vorlauf = werzctrl.items[i].Vorlauf;
-                item.Ruecklauf = werzctrl.items[i].Ruecklauf;
-
-                frm.list_heizkesselmodel.Add(item);
+                frm.list_heizkesselmodel.Add(werzctrl.items[i]);
             }
 
             frm.SetControls(m_ID_Projekt);
@@ -1385,17 +1383,16 @@ namespace WindowsFormsApplication1
             werzctrl.ReadAllFilter("ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
             id_type = WizardItemClass.PV_TYP;
 
+            // Vollstaendig gelesene Modelle durchreichen (siehe PhotovoltaikKontextMenuCtrl). Die
+            // Teilkopie aus ID/ID_PV/ID_Type/Bezeichner/PV_Leistung/Azimut/Neigung hat beim
+            // Speichern alle uebrigen Anlagenfelder verloren, weil WizardCtrl unten die Anlagen
+            // des Typs loescht und ueber Add_WP_Waermeerzeuger komplett neu schreibt - genullt
+            // wurden dabei ID_Carrier, Betriebsart, Sperrung/Sperrzeiten, Vorlauf/Ruecklauf,
+            // Bivalenter_Betrieb, Abschaltpunkt, Nutzungszeit, Grenzleistung, Heizstab, Volumen,
+            // rendeMix und Solaranteil.
             for (int i = 0; i < werzctrl.rows; i++)
             {
-                WErzeugerModel item = new WErzeugerModel();
-                item.ID = werzctrl.items[i].ID;
-                item.ID_PV = werzctrl.items[i].ID_PV;
-                item.ID_Type = werzctrl.items[i].ID_Type;
-                item.Bezeichner = werzctrl.items[i].Bezeichner;
-                item.PV_Leistung = werzctrl.items[i].PV_Leistung;
-                item.m_Azimut = werzctrl.items[i].m_Azimut;
-                item.m_Neigung = werzctrl.items[i].m_Neigung;
-                frm.list_pvmodel.Add(item);
+                frm.list_pvmodel.Add(werzctrl.items[i]);
             }
 
             frm.SetControls(m_szProjektname);
