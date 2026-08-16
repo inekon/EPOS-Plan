@@ -931,6 +931,15 @@ CRLF**. `git status` meldet keine Zeilenendenwarnung mehr; `git diff --stat` geg
 
 ### 9.16 Restpunkte
 
+> ✅ **ERLEDIGT mit Etappe D5b** (16.08.2026): Die sieben Punkte der D5b-Liste sind
+> abgearbeitet — Freischaltung der Quellenwahl je `ID_Type`, Dialog-Zyklus- und
+> -Kurzschlussprüfung, `WQ_ID_Puffer` als führende Identität, Groß-/Kleinschreibung der
+> Verwendung, Kanalposition des Kombispeichers und der ausstehende Beleg zu E-K2-3.
+> Umsetzung, Zahlen und die fortgeschriebene Restliste stehen in
+> [`D5b_DialogFreischaltung_Protokoll.md`](D5b_DialogFreischaltung_Protokoll.md); die
+> Punkte 8–11 (D3/D4) sind dort in Abschnitt 8 fortgeführt. Die Liste unten bleibt als
+> Stand der Etappe D5a stehen.
+
 **Für D5b:**
 
 1. ~~Puffer-Verwaltung braucht die Kombi-Option~~ — **erledigt, vorgezogen** (I-K2-4,

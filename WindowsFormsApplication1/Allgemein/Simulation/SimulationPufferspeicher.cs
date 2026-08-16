@@ -572,6 +572,15 @@ namespace WindowsFormsApplication1
         /// Vorrat. <see cref="IstBrauchwasserkanal"/> bleibt für ihn <c>false</c> — er ist
         /// kein reiner Warmwasserspeicher; die Kanalfrage beantwortet
         /// <see cref="BedientKanal"/>.
+        ///
+        /// <b>Warum der ORDINALE Vergleich hier richtig ist</b> (Etappe D5b, Befund
+        /// K3-2): <see cref="Verwendung"/> wird ausschließlich aus
+        /// <c>WaermesenkeClass.WirksameVerwendung</c> oder aus den Konstanten dieser
+        /// Klasse gefüllt, und <c>WirksameVerwendung</c> normalisiert seit D5b auf die
+        /// kanonische Schreibweise. Ein Datenbankwert <c>"kombi"</c> kommt hier deshalb
+        /// als <c>"Kombi"</c> an — vorher stand er in beiden Entladereihenfolgen
+        /// (die vergleichen <c>OrdinalIgnoreCase</c>), verhielt sich im Lauf aber wie ein
+        /// Heizungspuffer.
         /// </summary>
         public bool IstKombi
         {

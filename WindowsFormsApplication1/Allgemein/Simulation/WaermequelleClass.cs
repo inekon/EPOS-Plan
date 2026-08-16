@@ -51,6 +51,9 @@ namespace WindowsFormsApplication1
         public const string TYP_CSV = DbWerte.WQ_TYP_CSV;
         public const string TYP_ERDREICH = DbWerte.WQ_TYP_ERDREICH;
 
+        /// <summary>Keine gesonderte Wärmequelle (Etappe D5b) — der leere Spaltenwert.</summary>
+        public const string TYP_OHNE = DbWerte.WQ_TYP_OHNE;
+
         /// <summary>
         /// Größte plausible Verlegetiefe eines Erdkollektors [m]. Reale Kollektoren
         /// liegen bei 1…2 m; der Erdreichdialog begrenzt die Eingabe auf 10 m.
@@ -95,6 +98,65 @@ namespace WindowsFormsApplication1
         {
             TYP_AUSSENLUFT, TYP_KONSTANT, TYP_PUFFER, TYP_PROFIL, TYP_CSV, TYP_ERDREICH
         };
+
+        // --- Freischaltung der Quellenwahl je Erzeugerart (Etappe D5b) ----------------
+        //
+        // Konzept_KonfigUI_Hydraulik, Abschnitt 4, letzte Zeile: „Quelle Pufferspeicher
+        // auch für Heizkessel zulässig — WQ_Typ-Freischaltung je ID_Type (WP: alle Typen;
+        // Kessel: nur Puffer); Erdsonde/Erdreich bleibt WP-exklusiv (Anforderung 5)."
+        //
+        // Die ENGINE zieht dieselbe Grenze seit der D5a-Nacharbeit (Befund E-K2-2):
+        // SimulationControl.QuellbezuegeAufbauen nimmt nur TYP_WP und TYP_KESSEL auf, weil
+        // nur deren Module eine Ebenenmaske auswerten; Solarthermie und BHKW bekommen eine
+        // Warnung und bleiben auf Ebene 0. Was die Engine ohnehin abweist, darf die
+        // Oberfläche gar nicht erst anbieten - das ist der Auftrag dieser beiden Methoden.
+
+        /// <summary>
+        /// Darf diese Erzeugerart überhaupt eine Wärmequelle wählen? Wärmepumpe (alle
+        /// Typen) und Heizkessel (nur Pufferspeicher) - sonst nein.
+        /// </summary>
+        public static bool QuellenwahlMoeglich(int idType)
+        {
+            return idType == ProjektPuffer.TYP_WP || idType == ProjektPuffer.TYP_KESSEL;
+        }
+
+        /// <summary>
+        /// Die STEUERWERTE der Wärmequellen-Auswahl für eine Erzeugerart; nie
+        /// <c>null</c>, aber leer für Arten ohne Quellenwahl.
+        ///
+        /// <b>Indexkopplung.</b> Wie bei <see cref="TypWerte"/>/<see cref="TypAnzeige"/>
+        /// gehören Steuerwert und Anzeigetext über den INDEX zusammen; der Aufrufer muss
+        /// beide Listen mit demselben <paramref name="idType"/> holen (siehe
+        /// <c>Form_Simulation_Config.WaermequelleAuswahlAnzeigen</c>, die sich die
+        /// Werteliste für die Auswertung des Ereignisses merkt).
+        /// </summary>
+        public static string[] TypWerteFuer(int idType)
+        {
+            if (idType == ProjektPuffer.TYP_WP) return (string[])TypWerte.Clone();
+
+            // Heizkessel: die Eintrittstemperatur kommt aus dem Systemrücklauf ODER aus
+            // einem Quellpuffer (Kaskade). Erdreich, Quellprofil, CSV und konstante
+            // Temperatur sind Modelle der VERDAMPFERseite und haben am Brenner keine
+            // Entsprechung - der Rechenkern liest sie dort auch nirgends.
+            if (idType == ProjektPuffer.TYP_KESSEL) return new[] { TYP_OHNE, TYP_PUFFER };
+
+            return new string[0];
+        }
+
+        /// <summary>Die ANZEIGETEXTE zu <see cref="TypWerteFuer"/>, indexgleich.</summary>
+        public static string[] TypAnzeigeFuer(int idType)
+        {
+            if (idType == ProjektPuffer.TYP_WP) return TypAnzeige;
+
+            if (idType == ProjektPuffer.TYP_KESSEL)
+                return new[]
+                {
+                    MyResource.Resource.SIMQ_QUELLE_SYSTEMRUECKLAUF,
+                    MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER
+                };
+
+            return new string[0];
+        }
 
         /// <summary>
         /// Hinweistext zum CSV-Format (wird beim Einlesen angezeigt) — lokalisiert

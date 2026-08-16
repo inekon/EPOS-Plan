@@ -123,6 +123,24 @@ namespace WindowsFormsApplication1
         public const string WQ_TYP_CSV = "CSV";
         public const string WQ_TYP_ERDREICH = "Erdreich";
 
+        /// <summary>
+        /// KEINE gesonderte Wärmequelle (Etappe D5b) — der LEERE Spaltenwert.
+        ///
+        /// Es ist der Bestandswert: <c>Tab_Energieanlagen.WQ_Typ</c> ist bei jeder Anlage
+        /// leer, die nie einen Quellendialog gesehen hat (in der Referenz-Datenbank 79 von
+        /// 80 Zeilen). Für den HEIZKESSEL ist er die erste von zwei Wahlmöglichkeiten —
+        /// „Eintrittstemperatur ist der Systemrücklauf, keine Kaskade" —, und weil er als
+        /// Steuerwert in einer Auswahlliste steht, gehört er hierher statt als
+        /// <c>""</c>-Literal in den Dialogcode.
+        ///
+        /// Alle Leser behandeln ihn wie „Außenluft" bzw. „kein Quellbezug"
+        /// (<c>WaermequelleClass.Quelltemperatur</c>: <c>IsNullOrEmpty</c>;
+        /// <c>SimulationControl.QuellbezuegeAufbauen</c> und
+        /// <c>ErzeugerMitPufferQuelle</c>: Gleichheit mit
+        /// <see cref="WQ_TYP_PUFFERSPEICHER"/>).
+        /// </summary>
+        public const string WQ_TYP_OHNE = "";
+
         // =====================================================================
         // Erdreich — Quellsystem
         //   Tab_Energieanlagen.WQ_Quellsystem  (VDI 4640)

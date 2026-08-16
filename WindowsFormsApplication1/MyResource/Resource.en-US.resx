@@ -500,6 +500,12 @@ This is a hint, not a block.</value>
   <data name="PSP_ENTLADE_POSITION" xml:space="preserve">
     <value>Discharged as no. {0} of {1} {2}.</value>
   </data>
+  <data name="PSP_ENTLADE_POSITION_KANAL_HEIZUNG" xml:space="preserve">
+    <value>Heating circuit: discharged as no. {0} of {1}.</value>
+  </data>
+  <data name="PSP_ENTLADE_POSITION_KANAL_WARMWASSER" xml:space="preserve">
+    <value>DHW circuit: discharged as no. {0} of {1}.</value>
+  </data>
   <data name="PSP_FEHLER_BEZEICHNER_FEHLT" xml:space="preserve">
     <value>Please enter an identifier or select a catalogue entry.</value>
   </data>
@@ -1240,6 +1246,24 @@ The same storage cannot be source and sink at the same time (short circuit); ple
 
 Please select a suitable storage or change the use in the buffer storage management.</value>
   </data>
+  <data name="SIM_QUELLE_BETEILIGT" xml:space="preserve">
+    <value>{0} (source: {1})</value>
+  </data>
+  <data name="SIM_QUELLE_GLEICH_EIGENE_SENKE" xml:space="preserve">
+    <value>The buffer storage "{0}" is already a heat sink of this unit ({1}).
+The same storage cannot be source and sink at the same time (short circuit) — the unit would pump heat in a circle.
+
+Please select a different storage or change the heat sink of the unit.</value>
+  </data>
+  <data name="SIM_QUELLE_KASKADE_RING" xml:space="preserve">
+    <value>The source references of the buffer storages form a RING: a unit charges a storage from which it draws its own source heat again via further generators.
+
+There is therefore no computation order in which every generator is computed after its storage — the simulation would abort.
+
+Involved: {0}
+
+Please select a different buffer storage or change the heat sink of one of the units involved.</value>
+  </data>
   <data name="SIM_RB_HEIZKREIS" xml:space="preserve">
     <value>Heating circuit (direct coverage of the demand)</value>
   </data>
@@ -1777,6 +1801,11 @@ annual full-load hours from a simulation run.</value>
 
 HP type: {0}</value>
   </data>
+  <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
+    <value>Only the heat pump and the boiler can select a heat source.
+
+CHP units and solar thermal systems generate their heat themselves; there is no source reference for them. The simulation would discard such an entry with a warning.</value>
+  </data>
   <data name="SIMQ_MSG_QUELLE_NUR_WP" xml:space="preserve">
     <value>Only the heat pump has a heat source.
 
@@ -1811,6 +1840,21 @@ Flow/return: {3}</value>
   </data>
   <data name="SIMQ_PUFFER_GB_PARAMETER" xml:space="preserve">
     <value>Heat source parameters</value>
+  </data>
+  <data name="SIMQ_PUFFER_HINWEIS_ALTBEZEICHNER" xml:space="preserve">
+    <value>Source stored by name "{0}" only. OK assigns the storage selected above.</value>
+  </data>
+  <data name="SIMQ_PUFFER_HINWEIS_KASKADE" xml:space="preserve">
+    <value>Cascade (boiler): the boiler draws its inlet temperature from the selected buffer storage instead of from the system return.
+
+Share = (storage flow − boiler return) / (boiler flow − boiler return)
+
+The fuel demand drops by this share of the useful heat; the withdrawal is at the same time a discharge of the storage. If the storage delivers less, fuel covers the shortfall. The boiler is computed after the generator that charges the storage.</value>
+  </data>
+  <data name="SIMQ_PUFFER_HINWEIS_KASKADE_KURZ" xml:space="preserve">
+    <value>The boiler raises the temperature from the storage level to its own flow level — no longer from the system return.
+
+The evaporator parameters of the heat pump therefore do not apply here.</value>
   </data>
   <data name="SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER" xml:space="preserve">
     <value>The project does not contain a buffer storage yet. Use "Create buffer storage…" to add one.</value>
@@ -1871,6 +1915,9 @@ If the storage is empty, the output of the heat pump is limited; the regeneratio
   </data>
   <data name="SIMQ_QUELLE_QUELLPROFIL" xml:space="preserve">
     <value>Source profile</value>
+  </data>
+  <data name="SIMQ_QUELLE_SYSTEMRUECKLAUF" xml:space="preserve">
+    <value>System return</value>
   </data>
   <data name="SIMQ_QUELLPROFIL_BTN_ALLE_MONATE" xml:space="preserve">
     <value>Set all months to the January value</value>
@@ -1944,6 +1991,12 @@ The monthly values define the annual variation, the weekly values the daily/week
 Air-to-water: always outdoor air from the climate data.
 Brine-/water-to-water: ground, constant temperature, buffer storage,
 source profile (monthly and weekly values) or CSV file.</value>
+  </data>
+  <data name="SIMQ_TIP_QUELLE_KESSEL" xml:space="preserve">
+    <value>Heat source of the boiler (double-click to change)
+System return: the normal case — the burner raises from return to flow temperature.
+Buffer storage: cascade — the storage supplies the inlet temperature, the burner
+raises only the remainder and needs correspondingly less fuel.</value>
   </data>
   <data name="SIMQ_TIP_QUELLE_NICHT_WP" xml:space="preserve">
     <value>Only the heat pump has a heat source.
