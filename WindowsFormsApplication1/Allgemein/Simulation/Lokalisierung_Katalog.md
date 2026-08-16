@@ -863,7 +863,7 @@ nachgezogen; Bestand jetzt **590 Schlüssel**.
 
 | Schlüssel | DE | EN | Fundstelle |
 |---|---|---|---|
-| `SIM_KARTEN_KOPF_ERZEUGER` | Komponenten der Simulation (+ aufnehmen, × entfernen, ▲▼ Reihenfolge, ✎ oder Doppelklick öffnet den Dialog) | Simulation components (+ include, × remove, ▲▼ order, ✎ or double-click opens the dialog) | Form_Simulation_Config.Karten.cs (Spaltenkopf links) |
+| `SIM_KARTEN_KOPF_ERZEUGER` | Komponenten der Simulation | Simulation components | Form_Simulation_Config.Karten.cs (Spaltenkopf links) |
 | `SIM_KARTE_TITEL` | {0} · {1} | {0} · {1} | Karten.cs (Kopfzeile „Erzeuger · Anlage") |
 | `SIM_KARTE_QUELLE` | Quelle: {0} | Source: {0} | Karten.cs (Chip, blau) |
 | `SIM_KARTE_QUELLE_KASKADE` | Quelle: {0} · Kaskade | Source: {0} · cascade | Karten.cs (Chip, blau gestrichelt) |

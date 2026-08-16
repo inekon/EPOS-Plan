@@ -2741,7 +2741,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten der Simulation (+ aufnehmen, × entfernen, ▲▼ Reihenfolge, ✎ oder Doppelklick öffnet den Dialog) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten der Simulation ähnelt.
         /// </summary>
         public static string SIM_KARTEN_KOPF_ERZEUGER {
             get {
