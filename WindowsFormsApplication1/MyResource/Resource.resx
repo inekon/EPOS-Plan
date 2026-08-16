@@ -186,7 +186,7 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
     <value>Schema</value>
   </data>
   <data name="SIM_KARTEN_KOPF_ERZEUGER" xml:space="preserve">
-    <value>Komponenten der Simulation (+ aufnehmen, × entfernen, ▲▼ Reihenfolge, ✎ oder Doppelklick öffnet den Dialog)</value>
+    <value>Komponenten der Simulation</value>
   </data>
   <data name="SIM_KARTE_ANLAGE_HINZU" xml:space="preserve">
     <value>+ Anlage hinzufügen: Anlagen werden über die Projektseite angelegt.</value>
