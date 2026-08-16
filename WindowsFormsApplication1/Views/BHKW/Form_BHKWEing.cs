@@ -413,7 +413,7 @@ namespace WindowsFormsApplication1
 
         private string CreateNewEnergyCarrier(int nBrennstoff, ref int carrierId)
         {
-            using (var dlg = new Form_Kosten_Auswahl())
+            using (var dlg = new Form_Kosten_VarAuswahl())
             {
                 string szBrennstoff = "";
                 object br = DataRepository.ExecuteScalar(
@@ -422,7 +422,7 @@ namespace WindowsFormsApplication1
                 if (br != null && br != DBNull.Value)
                     szBrennstoff = br.ToString();
                 
-                dlg.m_szBVrennstoff = szBrennstoff;
+                dlg.m_szBrennstoff = szBrennstoff;
                 dlg.bOhneVariante = false;
 
                 if (dlg.ShowDialog() != DialogResult.OK) return "";

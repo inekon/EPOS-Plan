@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://epos-plan.de/schema/schritte.schema.json",
+  "title": "Drehbuch fuer die Bildaufnahme",
+  "type": "array",
+  "minItems": 1,
+  "items": { "$ref": "#/$defs/schritt" },
+
+  "$defs": {
+    "mehrsprachig": {
+      "type": "object",
+      "required": ["de"],
+      "additionalProperties": false,
+      "properties": {
+        "de": { "type": "string", "minLength": 1 },
+        "en": { "type": "string", "minLength": 1 }
+      }
+    },
+    "groesse": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 200, "maximum": 3840 },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "markierung": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["bereich"],
+        "additionalProperties": false,
+        "properties": {
+          "bereich": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 },
+            "minItems": 4,
+            "maxItems": 4,
+            "description": "x, y, breite, hoehe in Bildpunkten des Ausschnitts."
+          },
+          "text": { "$ref": "#/$defs/mehrsprachig" },
+          "form": { "enum": ["rahmen", "pfeil", "ellipse"] }
+        }
+      }
+    },
+
+    "schritt": {
+      "type": "object",
+      "required": ["id", "art"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "Dateiname des Bildes und Ziel von {{bild:...}}."
+        },
+        "art": { "enum": ["maske", "diagramm", "datei"] },
+        "unterschrift": { "$ref": "#/$defs/mehrsprachig" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "art": { "const": "maske" } } },
+          "then": {
+            "required": ["form"],
+            "additionalProperties": false,
+            "properties": {
+              "id": true, "art": true, "unterschrift": true,
+              "form": {
+                "type": "string",
+                "pattern": "^Form_[A-Za-z0-9_]+$",
+                "description": "Klassenname des Formulars in der Anwendung."
+              },
+              "projekt": {
+                "type": "string",
+                "default": "stamm",
+                "description": "stamm oder ein Variantenbezeichner aus beispiel.yaml."
+              },
+              "vorbelegung": {
+                "type": "object",
+                "description": "Je Formular in der Zuordnungstabelle des Aufnehmers definiert."
+              },
+              "fenster": { "$ref": "#/$defs/groesse" },
+              "ausschnitt": { "enum": ["fenster", "inhalt"], "default": "fenster" },
+              "markierung": { "$ref": "#/$defs/markierung" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "art": { "const": "diagramm" } } },
+          "then": {
+            "required": ["quelle"],
+            "additionalProperties": false,
+            "properties": {
+              "id": true, "art": true, "unterschrift": true,
+              "quelle": {
+                "type": "string",
+                "pattern": "^bericht:[A-Za-z]+$",
+                "description": "Baustein des Berichtsgenerators, z. B. bericht:Jahresganglinie."
+              },
+              "variante": { "type": "string", "default": "stamm" },
+              "groesse": { "$ref": "#/$defs/groesse" },
+              "markierung": { "$ref": "#/$defs/markierung" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "art": { "const": "datei" } } },
+          "then": {
+            "required": ["datei"],
+            "additionalProperties": false,
+            "properties": {
+              "id": true, "art": true, "unterschrift": true,
+              "datei": { "type": "string", "pattern": "\\.(png|jpg|svg)$" }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
