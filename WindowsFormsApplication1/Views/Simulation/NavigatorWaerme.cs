@@ -59,6 +59,20 @@ namespace WindowsFormsApplication1
         /// <summary>Abstand zwischen zwei Checkboxen beim Nachrücken.</summary>
         private const int CHK_ABSTAND = 20;
 
+        /// <summary>
+        /// Linienbreite der Konturlinie „Gesamt" im gestapelten (chronologischen) Bild.
+        /// Die Linie liegt UNTER dem Stapel; sichtbar bleibt die halbe Breite über der
+        /// Stapeloberkante. Begründung im Blockkommentar in <see cref="SerienAufbauen"/>.
+        /// </summary>
+        private const int GESAMT_KONTUR_BREITE = 4;
+
+        /// <summary>Linienbreite von „Gesamt" in der Dauerlinie — schmaler als die
+        /// Erzeugerlinien darunter, damit deckungsgleiche Kurven lesbar bleiben.</summary>
+        private const int GESAMT_DAUERLINIE_BREITE = 2;
+
+        /// <summary>Linienbreite der Erzeugerserien in der Dauerlinie.</summary>
+        private const int ERZEUGER_DAUERLINIE_BREITE = 4;
+
         /// <summary>Farbfolge der Speicherserien (wiederholt sich bei vielen Speichern).</summary>
         private static readonly Color[] SPEICHER_FARBEN =
         {
@@ -343,6 +357,64 @@ namespace WindowsFormsApplication1
             _chartManager.HardReset();
             _chartManager.Init();
 
+            // Linienbreiten der Dauerlinie: dort ist jede Serie eine eigenständige Kurve,
+            // und in einem Projekt mit nur EINEM Erzeuger ist dessen Dauerlinie punktgleich
+            // mit der von „Gesamt". Die untere (Erzeuger) wird deshalb breiter gezeichnet
+            // als die obere (Gesamt) — dasselbe Mittel wie auf der Heizkessel-Seite der
+            // Detailansicht; Strichelung scheidet aus, weil BorderDashStyle bei FastLine
+            // wirkungslos ist.
+            int erzeugerBreite = _sortiert ? ERZEUGER_DAUERLINIE_BREITE : 0;
+
+            // -----------------------------------------------------------------------
+            // 0. „Gesamt" im gestapelten Bild: die KONTUR DES STAPELS, UNTER ihm.
+            //
+            // <b>Befund vom 16.08.2026.</b> „Der Heizkessel ist im Hintergrund (blau) nicht
+            // sichtbar." Die Ursache ist NICHT der Serientyp — „Gesamt" war längst eine
+            // Linie (FastLine) — sondern die PUNKTDICHTE in Verbindung mit der obersten
+            // Zeichenlage: 8760 Stundenwerte liegen auf rund 775 Bildpunkten Plotbreite,
+            // also gut 11 Stunden je Bildspalte. Zwischen zwei benachbarten Stunden zieht
+            // die Linie einen senkrechten Strich; über den Tagesgang schwankt die Summe
+            // zwischen fast 0 und dem Tagesmaximum. In JEDER Bildspalte überstreicht die
+            // „Linie" damit den gesamten Schwankungsbereich der Summe — sie ist optisch
+            // eine gefüllte Fläche, und zwar genau über dem Bereich, in dem die oberen
+            // Stapelanteile (Heizstab, Heizkessel) liegen. Gemessen am Referenzprojekt
+            // 1023: 2.545 blaue Bildpunkte mit der Linie, 29.685 ohne sie — 91 % des
+            // Kessels waren übermalt.
+            //
+            // <b>Warum sie trotzdem nicht einfach nach hinten „als FastLine" kann.</b>
+            // MS-Chart zeichnet NICHT in der Reihenfolge der Series-Collection, sondern in
+            // TYPGRUPPEN, und die Gruppen in der Reihenfolge ihres ersten Auftretens in der
+            // Collection. Stünde „Gesamt" als FastLine an erster Stelle, rutschte die ganze
+            // FastLine-Gruppe vor den Stapel — Speicherfüllstand und Wärmebedarf
+            // verschwänden mit. Nachgemessen: Speicherfüllstand 0 Bildpunkte.
+            //
+            // <b>Die Lösung.</b> „Gesamt" bekommt mit <c>Line</c> einen EIGENEN Serientyp
+            // und steht als erste Serie. Damit entstehen drei Gruppen in genau der
+            // gewünschten Folge: Line (Gesamt) — StackedColumn (Erzeuger) — FastLine
+            // (Speicherfüllstand, Wärmebedarf). Der Stapel steht vollständig in seinen
+            // eigenen Farben; von „Gesamt" bleibt die halbe Linienbreite als grüne Kontur
+            // über der Stapeloberkante stehen.
+            //
+            // <b>Warum das die Kontrollfunktion erhält und nicht aufgibt.</b> „Gesamt"
+            // stammt aus einem eigenen Vektor (temp_ges = Summe der fünf Erzeuger, siehe
+            // SetControl). Solange alle vorhandenen Erzeuger angehakt sind, liegt die
+            // Kontur auf der Stapeloberkante — Deckung heißt: die Summe stimmt. Wird ein
+            // Erzeuger abgewählt oder fehlt einer, schrumpft der Stapel, die grüne Linie
+            // bleibt oben stehen und der fehlende Anteil ist als Abstand ablesbar. Genau
+            // dafür ist sie da. Der frühere Befund „Gesamt verschwindet unter einer
+            // Einzelserie" (Alternativbetrieb) kehrt damit NICHT zurück: Er entstand, als
+            // sich Gesamt und eine Erzeugerserie als gleich hohe FLÄCHEN überlagerten;
+            // gestapelte Säulen überlagern sich nicht, und die Kontur ragt über sie hinaus.
+            //
+            // In der DAUERLINIE gilt das alles nicht: Dort ist jede Serie für sich
+            // sortiert, monoton fallend und damit eine echte dünne Linie. „Gesamt" bleibt
+            // deshalb im sortierten Modus die oberste Serie (Abschnitt 3).
+            if (!_sortiert)
+            {
+                SerieAnlegen(S_GESAMT, MyResource.Resource.CHART_LEGENDE_GESAMT, Color.Green,
+                             temp_ges, SeriesChartType.Line, GESAMT_KONTUR_BREITE);
+            }
+
             // -----------------------------------------------------------------------
             // 1. DER STAPEL: die Erzeuger.
             //
@@ -372,15 +444,15 @@ namespace WindowsFormsApplication1
             SeriesChartType erzeugerTyp = GanglinienDarstellung.Stapeltyp(_sortiert);
 
             if (_praesenz.Waermepumpe)
-                SerieAnlegen(S_WAERMEPUMPE, MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, Color.Orange, temp_wp, erzeugerTyp);
+                SerieAnlegen(S_WAERMEPUMPE, MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, Color.Orange, temp_wp, erzeugerTyp, erzeugerBreite);
             if (_praesenz.Heizstab)
-                SerieAnlegen(S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, temp_hs, erzeugerTyp);
+                SerieAnlegen(S_HEIZSTAB, MyResource.Resource.CHART_SEGMENT_HEIZSTAB, Color.Yellow, temp_hs, erzeugerTyp, erzeugerBreite);
             if (_praesenz.Heizkessel)
-                SerieAnlegen(S_HEIZKESSEL, MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, Color.Blue, temp_hk, erzeugerTyp);
+                SerieAnlegen(S_HEIZKESSEL, MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, Color.Blue, temp_hk, erzeugerTyp, erzeugerBreite);
             if (_praesenz.Solarthermie)
-                SerieAnlegen(S_SOLARTHERMIE, MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE, Color.Brown, temp_st, erzeugerTyp);
+                SerieAnlegen(S_SOLARTHERMIE, MyResource.Resource.SIM_ERZEUGERNAME_SOLARTHERMIE, Color.Brown, temp_st, erzeugerTyp, erzeugerBreite);
             if (_praesenz.BHKW)
-                SerieAnlegen(S_BHKW, MyResource.Resource.SIM_ERZEUGERNAME_BHKW, Color.Red, temp_bhkw, erzeugerTyp);
+                SerieAnlegen(S_BHKW, MyResource.Resource.SIM_ERZEUGERNAME_BHKW, Color.Red, temp_bhkw, erzeugerTyp, erzeugerBreite);
 
             // -----------------------------------------------------------------------
             // 2. DIE LINIEN darüber — zuletzt angelegt und damit oben gezeichnet.
@@ -406,29 +478,23 @@ namespace WindowsFormsApplication1
             SerieAnlegen(S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, Color.DarkCyan, temp_profil);
 
             // ---------------------------------------------------------------------
-            // "Gesamt" ZULETZT — und damit ganz oben.
+            // 3. „Gesamt" in der DAUERLINIE — dort zuletzt und damit ganz oben.
             //
-            // Warum die Serie trotz Stapel BLEIBT: Die Stapeloberkante ist rechnerisch
-            // dasselbe, aber die Linie kommt aus einem EIGENEN Vektor (temp_ges). Weichen
-            // beide voneinander ab, ist etwas faul — ein fehlender Erzeuger, eine
-            // abgewählte Serie, ein Vorzeichenfehler. Als Kontrolllinie kostet sie nichts
-            // und ist im sortierten Modus ohnehin die einzige Summendarstellung.
+            // Im sortierten Modus wird nicht gestapelt (jede Serie ist für sich sortiert,
+            // eine Summe daraus wäre frei erfunden). „Gesamt" ist hier die einzige
+            // Summendarstellung und muss deshalb sichtbar obenauf liegen. Das Problem der
+            // chronologischen Ansicht besteht hier nicht: Eine Dauerlinie fällt monoton,
+            // benachbarte Punkte liegen dicht beieinander, die Linie bleibt eine Linie.
             //
-            // Die Position am Ende ist der eigentliche Fix eines Bestandsfehlers:
-            // MS-Chart zeichnet in der Reihenfolge der Series-Collection; bisher stand
-            // Gesamt an zweiter Stelle und wurde von jeder danach angelegten Erzeugerserie
-            // ÜBERMALT. Das fiel nicht auf, solange sich mehrere Erzeuger die Stunden
-            // teilen — steht die Wärmepumpe aber auf Betriebsart ALTERNATIV, läuft je
-            // Stunde entweder sie oder der Kessel, und die Summe ist punktweise
-            // deckungsgleich mit genau einer Einzelserie. Sie verschwand dann vollständig
-            // unter ihr, und der Kessel sah aus, als decke er alles.
-            //
-            // KEINE Strichelung als Ausweg: BorderDashStyle ist bei FastLine wirkungslos
-            // (die frühere Zeile für die Bedarfsserie war es ebenso).
-            SerieAnlegen(S_GESAMT, MyResource.Resource.CHART_LEGENDE_GESAMT, Color.Green, temp_ges);
-            // Über dem Stapel genügt eine schlanke Kontrolllinie; ohne Stapel muss sie
-            // sich gegen deckungsgleiche Einzelserien behaupten.
-            _chartManager._chart.Series[S_GESAMT].BorderWidth = _sortiert ? 3 : 2;
+            // Sie wird SCHMALER gezeichnet als die Erzeugerlinien darunter (2 gegen 4) —
+            // in einem Projekt mit nur einem Erzeuger sind beide Dauerlinien punktgleich,
+            // und vom Breiteren bleibt links und rechts ein Rand stehen. Strichelung wäre
+            // der übliche zweite Weg, ist aber bei FastLine wirkungslos.
+            if (_sortiert)
+            {
+                SerieAnlegen(S_GESAMT, MyResource.Resource.CHART_LEGENDE_GESAMT, Color.Green,
+                             temp_ges, SeriesChartType.FastLine, GESAMT_DAUERLINIE_BREITE);
+            }
 
             // Ausgangszustand: nur "Gesamt" an. ApplyCheckboxStates stellt danach den
             // tatsächlichen Stand der Checkboxen wieder her.
@@ -454,15 +520,21 @@ namespace WindowsFormsApplication1
         ///
         /// <paramref name="typ"/> überschreibt den Serientyp, den
         /// <see cref="ChartManager.AddSeries(string, Color, float[])"/> vergibt
-        /// (<c>FastLine</c>). Das ist nötig, weil <c>FastLine</c> nicht stapeln kann.
+        /// (<c>FastLine</c>). Das ist nötig, weil <c>FastLine</c> nicht stapeln kann —
+        /// und weil der Serientyp zugleich über die ZEICHENLAGE entscheidet (MS-Chart
+        /// zeichnet in Typgruppen, siehe Blockkommentar in <see cref="SerienAufbauen"/>).
+        ///
+        /// <paramref name="breite"/> = 0 belässt die Linienbreite, die
+        /// <c>AddSeries</c> vergibt (2).
         /// </summary>
         private void SerieAnlegen(string schluessel, string legende, Color farbe, float[] werte,
-                                  SeriesChartType typ = SeriesChartType.FastLine)
+                                  SeriesChartType typ = SeriesChartType.FastLine, int breite = 0)
         {
             _chartManager.AddSeries(schluessel, farbe, Anzeigewerte(werte));
             Series s = _chartManager._chart.Series[schluessel];
             s.LegendText = legende;
             GanglinienDarstellung.StapelEinstellen(s, typ, null);
+            if (breite > 0) s.BorderWidth = breite;
         }
 
         // ====================================================================
