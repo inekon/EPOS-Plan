@@ -12,9 +12,9 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
-**`2026-08-15_B3/`** — seit dem 15.08.2026, 23:04 Uhr die gültige Referenz,
-**acht Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024). Jeder neue
-Vergleich läuft gegen diesen Ordner.
+**`2026-08-16_B4/`** — seit dem 16.08.2026, 03:43 Uhr die gültige Referenz,
+**acht Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024), **190 CSV,
+2 094 451 Werte**. Jeder neue Vergleich läuft gegen diesen Ordner.
 
 > **Die Basis ist mit Feature-Flag `Kaskade_Zweikanalig` = AUS gerechnet** und bildet damit
 > weiter den einkanaligen Altpfad ab. Das bleibt so, bis die Bestandsprojekte projektweise
@@ -22,7 +22,57 @@ Vergleich läuft gegen diesen Ordner.
 > Regressionsfall gegen diese Basis — er wird gegen den Flag-aus-Lauf desselben Codes
 > verglichen (Umsetzungsprotokoll Paket 4).
 
-### Warum die Basis auf B3 gewechselt wurde
+### Warum die Basis auf B4 gewechselt wurde
+
+**Ein Anlass: die neue Ergebnisspalte aus Etappe D4.** Vollständige Zuordnung je Projekt im
+[Laufprotokoll der Basis](2026-08-16_B4/lauf_protokoll.md).
+
+Etappe **D4** hat `Tab_ErgebnisHeizkessel.Quellwaerme` eingeführt — **Migrationsschritt 10**,
+rein additives DDL, Schema-Zielstand **9 → 10**. Weil der Export `SELECT * FROM Tab_Ergebnis*`
+liest, führt `aggregate.csv` je Projekt mit Heizkessel-Ergebniszeile einen Schlüssel mehr.
+Gegen B3 meldete der Vergleich das als „Eintrag nur im Vergleichslauf" — fachlich richtig,
+aber dauerhaft erklärungsbedürftig. **B4 friert den D4-Stand einschließlich der neuen Spalte
+ein; künftige Vergleiche laufen wieder ohne `--ohne`.**
+
+**Codestand:** `3fd2787`, unverändert, gebaut aus einem `git archive`-Export außerhalb des
+Repos (0 Fehler, 6 Bestandswarnungen). **Datenquelle:** produktive `Kenndaten.accdb`,
+Zeitstempel **15.08.2026 22:50** (Datei 23:22), Schemastand **9**, nur gelesen (keine
+`Kenndaten.laccdb`). Schritt 10 lief ausschließlich auf der Arbeitskopie — die produktive
+Datei steht nachweislich weiter auf Schemastand 9.
+
+**Zuordnung B3 → B4, Projekt für Projekt:**
+
+| Projekt | Abweichung zu B3 | Ursache |
+|---|---|---|
+| 1007, 1008, 1011, 1021 | **keine — byte-/MD5-gleich** | kein Heizkessel-Ergebnisdatensatz |
+| 1017, 1018, 1023, 1024 | **je ein neuer Schlüssel** in `aggregate.csv` (`Heizkessel.Quellwaerme;0`) | Migrationsschritt 10 / Etappe D4 |
+
+Byte-Vergleich: **186 von 190 gleich**, die vier Abweichungen sind ausschließlich die
+`aggregate.csv` der vier Heizkessel-Projekte, Zeilendiff je genau eine eingefügte Zeile. Alle
+Ganglinien sind in allen acht Projekten byte-gleich.
+
+```
+vergleich 2026-08-15_B3 2026-08-16_B4 --ohne Heizkessel.Quellwaerme
+  → 8/8 PASS (2 094 451 Werte)
+```
+
+**Kein Altwert weicht ab** — D4 hat keinen Rechenweg verändert.
+
+> **Auffällig:** `Heizkessel.Quellwaerme` steht in allen vier Projekten auf **0** — kein Kessel
+> der Referenzmenge hängt an einem Quellpuffer. Die Spalte ist damit im Vergleich enthalten,
+> aber noch nicht mit einem Wert ungleich null abgedeckt (wie `Erdreich[i].*` seit Paket 7).
+> Für einen belastbaren Regressionstest dieses Pfades fehlt ein Referenzprojekt mit Kessel an
+> einem Quellpuffer.
+
+**Selbstvergleich der neuen Basis:** Ein zweiter Lauf desselben Codes auf derselben Quelle
+ergibt **8/8 PASS (2 094 451 Werte)** und **190/190 byte-/MD5-gleich** — die Basis ist
+reproduzierbar.
+
+## Frühere Stände
+
+`2026-08-15_B3/` bleibt als **vorheriger Stand** liegen (Codestand `a0a623a` + K-3,
+Schemastand 9, acht Projekte, 190 CSV) — für alle Werte außer der neuen Spalte
+byte-gleich mit B4. Warum B3 seinerzeit gesetzt wurde:
 
 **Zwei Anlässe — beide getrennt nachgewiesen.** Vollständige Zuordnung je Projekt im
 [Laufprotokoll der Basis](2026-08-15_B3/lauf_protokoll.md).
@@ -84,9 +134,7 @@ reproduzierbar.
 **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel **15.08.2026 22:50**, nur gelesen
 (keine `Kenndaten.laccdb`).
 
-## Frühere Stände
-
-`2026-08-15_B2/` bleibt als **vorheriger Stand** liegen (Codestand `925c37f`, Datenstand
+`2026-08-15_B2/` bleibt als **vorvorheriger Stand** liegen (Codestand `925c37f`, Datenstand
 15.08.2026 11:58, **neun** Projekte) — für die acht gemeinsamen Projekte byte-gleich mit B3
 und die einzige verbliebene Quelle für die Ganglinien des gelöschten Projekts 1010. Warum B2
 seinerzeit gesetzt wurde:
@@ -124,7 +172,7 @@ Basis ist reproduzierbar.
 Die Anwendung des Anwenders lief während des Laufs, hatte die Datenbank aber **nicht**
 geöffnet (keine `Kenndaten.laccdb`). Die produktive Datei wurde ausschließlich gelesen.
 
-`2026-08-14_B1-Fixes/` bleibt als **vorvorheriger Stand** liegen (Datenstand vom 14.08.2026,
+`2026-08-14_B1-Fixes/` bleibt als **älterer Stand** liegen (Datenstand vom 14.08.2026,
 neun Projekte). Gegenüber `2026-08-14_Paket4` weichen dort **drei Projekte** ab, vollständig
 zugeordnet in
 `2026-08-14_B1-Fixes/vergleich_protokoll.md`: **1008** und **1011** durch die
@@ -234,10 +282,18 @@ ist sie ein No-op.
 
 ```powershell
 & $exe vergleich <refOrdner> <neuOrdner>
+& $exe vergleich <refOrdner> <neuOrdner> --ohne Heizkessel.Quellwaerme,Weiterer.Schluessel
 ```
 
 Exit-Code 0 = alles PASS, 1 = mindestens ein FAIL. Je Projekt werden die zehn größten
 Abweichungen ausgegeben, sortiert nach dem Vielfachen der erlaubten Toleranz.
+
+`--ohne` (seit Etappe D4) nimmt **ausdrücklich benannte** Schlüssel vom Vergleich aus und
+nennt sie in der Ausgabe. Der Zweck ist eng: Führt eine Etappe eine neue **Ergebnisspalte**
+ein, wächst `aggregate.csv` zwangsläufig um einen Schlüssel, und gegen die eingefrorene Basis
+verdeckt diese Meldung die eigentliche Frage — *sind die Altwerte unverändert?* Genau dafür
+ist die Option da, **nicht** um Abweichungen wegzuschalten. Sobald die Basis neu gesetzt ist
+(hier: B4), laufen die Vergleiche wieder ohne Ausschluss.
 
 ### `pruefen` — Plausibilität eines Laufs
 
@@ -288,11 +344,11 @@ ist zwingend, wenn parallel gearbeitet wird oder die Kopie außerhalb des Repos 
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
 3. **Neu rechnen und vergleichen** — Referenz ist die aktuelle Basis, seit dem
-   15.08.2026 also `2026-08-15_B2`:
+   16.08.2026 also `2026-08-16_B4`:
    ```powershell
    & $exe lauf --ziel C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket10 `
-               --projekte 1007,1008,1010,1011,1017,1018,1021,1023,1024
-   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-15_B2 `
+               --projekte 1007,1008,1011,1017,1018,1021,1023,1024
+   & $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-16_B4 `
                     C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-20_Paket10
    ```
    `lauf` kopiert **und migriert** die Arbeitskopie selbst.
@@ -306,13 +362,13 @@ ist zwingend, wenn parallel gearbeitet wird oder die Kopie außerhalb des Repos 
 # 2. Auswahl kontrollieren (rein lesend, kopiert nichts)
 & $exe liste C:\Waermeplan\MeinTest\DB
 
-# 3. Die neun Referenzprojekte einzeln rechnen
-foreach ($id in 1007,1008,1010,1011,1017,1018,1021,1023,1024) {
+# 3. Die acht Referenzprojekte einzeln rechnen
+foreach ($id in 1007,1008,1011,1017,1018,1021,1023,1024) {
     & $exe projekt $id "C:\Waermeplan\MeinTest\Lauf\Projekt_$id" C:\Waermeplan\MeinTest\DB
 }
 
 # 4. Gegen die aktuelle Basis vergleichen und plausibilisieren
-& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-15_B2 C:\Waermeplan\MeinTest\Lauf
+& $exe vergleich C:\Waermeplan\WP_Plan\Referenzlaeufe\2026-08-16_B4 C:\Waermeplan\MeinTest\Lauf
 & $exe pruefen   C:\Waermeplan\MeinTest\Lauf
 ```
 
