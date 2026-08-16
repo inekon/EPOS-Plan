@@ -788,21 +788,32 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Hinweis auf die REICHWEITE der Übergangsbrücke (Konzept 4.4, Etappe A);
-        /// <c>null</c>, wenn keine Brauchwasser-Senke im Spiel ist.
+        /// Hinweis auf die REICHWEITE der Brauchwasser-/Kombi-Senke; <c>null</c>, wenn
+        /// keine solche Senke im Spiel ist ODER die zweikanalige Kaskade für das Projekt
+        /// bereits eingeschaltet ist.
         ///
-        /// Die Engine holt den Pufferspeicher bis Paket 4 aus <c>Z_ProjektPufferSp</c> und
-        /// kennt dort ausschließlich den HEIZUNGS-Speicher der Wärmepumpe
-        /// (<c>SimulationControl.Do_Simulation</c>). Eine Brauchwasser-Senke wird deshalb
+        /// Der Engine-Umbau ist abgeschlossen; maßgeblich ist heute allein die
+        /// Projekteinstellung <c>Tab_Einstellungen.Kaskade_Zweikanalig</c> — der Schalter
+        /// „Zweikanalige Kaskade (Vorschau)" im Konfigurationsdialog. IST SIE GESETZT,
+        /// verzweigt <c>SimulationControl.Do_Simulation</c> in die zweikanalige Kaskade
+        /// und rechnet Heizung und Warmwasser getrennt: Die Senke wirkt, es gibt nichts
+        /// zu melden.
+        ///
+        /// IST SIE NICHT GESETZT, läuft weiter der einkanalige Rechenweg. Der holt den
+        /// Pufferspeicher aus <c>Z_ProjektPufferSp</c> und kennt dort ausschließlich den
+        /// HEIZUNGS-Speicher der Wärmepumpe. Eine Brauchwasser-/Kombi-Senke wird deshalb
         /// gespeichert und angezeigt, rechnet aber noch nicht mit.
         ///
-        /// Bei der WÄRMEPUMPE kommt hinzu: <c>WaermesenkeClass.WpSenkeSpiegeln</c> findet
-        /// keine Heizungs-Puffersenke mehr und nimmt die bisherige Zuordnung zurück — die
-        /// Simulation rechnet danach ganz ohne Speicher. Das darf nicht still passieren.
-        /// Für Kessel, BHKW und Solarthermie fasst die Brücke die Zuordnung nicht an;
-        /// dort entfällt dieser Satz.
+        /// Bei der WÄRMEPUMPE kommt dann hinzu: <c>WaermesenkeClass.WpSenkeSpiegeln</c>
+        /// findet keine Heizungs-Puffersenke mehr und nimmt die bisherige Zuordnung
+        /// zurück — die Simulation rechnet danach ganz ohne Speicher. Das darf nicht
+        /// still passieren. Für Kessel, BHKW und Solarthermie fasst die Brücke die
+        /// Zuordnung nicht an; dort entfällt dieser Satz.
         ///
-        /// Entfällt mit Paket 4 zusammen mit der Brücke.
+        /// Der Flag-Stand kommt aus
+        /// <see cref="KonfigurationCtrl.KaskadeZweikanaligLesen"/> — genau dem Lesepfad,
+        /// über den auch der Konfigurationsdialog seinen Schalter vorbelegt. Keine
+        /// zweite SQL-Wahrheit.
         /// </summary>
         private string BrauchwasserUebergangsHinweis(WaermesenkeClass.SenkeDaten d)
         {
@@ -813,6 +824,10 @@ namespace WindowsFormsApplication1
             bool haupt = WaermesenkeClass.IstBrauchwasserseitig(d.Ziel);
             bool zweit = d.HatZweitsenke && WaermesenkeClass.IstBrauchwasserseitig(d.Ziel2);
             if (!haupt && !zweit) return null;
+
+            // Zweikanalige Kaskade eingeschaltet: Die Senke geht in die Simulation ein —
+            // der Hinweis wäre falsch.
+            if (KonfigurationCtrl.KaskadeZweikanaligLesen(ID_Projekt)) return null;
 
             string text = MyResource.Resource.SIM_MSG_BRAUCHWASSER_UEBERGANG
                               .Replace("\n", Environment.NewLine);

@@ -1191,11 +1191,11 @@ Im Projekt muss ein Pufferspeicher mit der Verwendung „{2}" angelegt sein.</va
     <value>PV-optimiert</value>
   </data>
   <data name="SIM_MSG_BRAUCHWASSER_UEBERGANG" xml:space="preserve">
-    <value>Hinweis: Die Brauchwasser-Senke wird erst mit dem Engine-Umbau (Paket 4) wirksam.
+    <value>Hinweis: Die Brauchwasser-/Kombi-Senke wird erst mit aktivierter zweikanaliger Kaskade wirksam (Schalter im Konfigurationsdialog).
 Sie wird gespeichert und angezeigt, geht in die Simulation aber noch nicht ein.</value>
   </data>
   <data name="SIM_MSG_BRAUCHWASSER_WP_ZUSATZ" xml:space="preserve">
-    <value>Die bisherige Pufferspeicher-Zuordnung dieser Wärmepumpe wird dabei entfernt; bis Paket 4 rechnet die Simulation dann ohne Speicher.</value>
+    <value>Die bisherige Pufferspeicher-Zuordnung dieser Wärmepumpe wird dabei entfernt; ohne zweikanalige Kaskade rechnet die Simulation dann ohne Speicher.</value>
   </data>
   <data name="SIM_MSG_ERGEBNIS_GESPEICHERT" xml:space="preserve">
     <value>Simulationsergebnis gespeichert.</value>
