@@ -44,9 +44,40 @@ namespace WindowsFormsApplication1.Referenzlauf
         public const double TOLERANZ_ABSOLUT = 0.01;
         private const int TOP_N = 10;
 
+        /// <summary>
+        /// Schluessel, die vom Vergleich AUSGENOMMEN sind (Etappe D4).
+        ///
+        /// Zweck: Eine Etappe, die eine neue ERGEBNISSPALTE einfuehrt, erweitert damit
+        /// zwangslaeufig die Schluesselliste in aggregate.csv (der Export liest
+        /// "SELECT * FROM Tab_Ergebnis*"). Gegen eine eingefrorene Basis meldet der
+        /// Vergleich das als "Eintrag nur im Vergleichslauf" - fachlich richtig, aber es
+        /// verdeckt die eigentliche Frage: Sind die ALTEN Werte unveraendert?
+        ///
+        /// Mit --ohne wird genau diese Frage gestellt. Der Ausschluss ist damit ein
+        /// WERKZEUG FUER EINEN ERKLAERTEN Unterschied, kein Weg, Abweichungen
+        /// wegzuschalten: Er wirkt nur auf ausdruecklich benannte Schluessel, und die
+        /// Ausgabe nennt sie.
+        /// </summary>
+        private static readonly HashSet<string> _ausgenommen =
+            new HashSet<string>(StringComparer.Ordinal);
+
         /// <summary>Fuehrt den Vergleich aus. Rueckgabe: 0 = alles PASS, 1 = mindestens ein FAIL.</summary>
         public static int Ausfuehren(string refOrdner, string neuOrdner)
         {
+            return Ausfuehren(refOrdner, neuOrdner, null);
+        }
+
+        /// <summary>
+        /// Wie <see cref="Ausfuehren(string,string)"/>, aber ohne die angegebenen
+        /// Schluessel (Etappe D4, siehe <see cref="_ausgenommen"/>).
+        /// </summary>
+        public static int Ausfuehren(string refOrdner, string neuOrdner, IEnumerable<string> ohne)
+        {
+            _ausgenommen.Clear();
+            if (ohne != null)
+                foreach (string s in ohne)
+                    if (!string.IsNullOrWhiteSpace(s)) _ausgenommen.Add(s.Trim());
+
             if (!Directory.Exists(refOrdner))
             {
                 Console.WriteLine("FEHLER: Referenzordner nicht gefunden: " + refOrdner);
@@ -62,6 +93,9 @@ namespace WindowsFormsApplication1.Referenzlauf
             Console.WriteLine("Vergleich: " + Path.GetFullPath(neuOrdner));
             Console.WriteLine("Toleranz : relativ " + TOLERANZ_RELATIV.ToString("G3", CultureInfo.InvariantCulture) +
                               " ab Betrag 1, sonst absolut " + TOLERANZ_ABSOLUT.ToString("G3", CultureInfo.InvariantCulture));
+            if (_ausgenommen.Count > 0)
+                Console.WriteLine("AUSGENOMMEN (--ohne): " +
+                                  string.Join(", ", _ausgenommen.OrderBy(s => s, StringComparer.Ordinal)));
             Console.WriteLine();
 
             var refProjekte = ProjektOrdner(refOrdner);
@@ -188,6 +222,8 @@ namespace WindowsFormsApplication1.Referenzlauf
         {
             foreach (var paar in a)
             {
+                if (_ausgenommen.Contains(paar.Key)) continue;
+
                 string neuWert;
                 if (!b.TryGetValue(paar.Key, out neuWert))
                 {
@@ -211,7 +247,7 @@ namespace WindowsFormsApplication1.Referenzlauf
 
             foreach (var paar in b)
             {
-                if (a.ContainsKey(paar.Key)) continue;
+                if (a.ContainsKey(paar.Key) || _ausgenommen.Contains(paar.Key)) continue;
                 ergebnis.Add(new Abweichung
                 {
                     Datei = datei, Schluessel = paar.Key, Schwere = double.MaxValue,

@@ -997,3 +997,56 @@ Brauchwasserspeicher.
 |---|---|
 | `""` (`DbWerte.WQ_TYP_OHNE`) | **Persistenzwert** in `Tab_Energieanlagen.WQ_Typ` — der leere Spaltenwert, den jede Anlage trägt, die nie einen Quellendialog gesehen hat. Er ist der Steuerwert des ersten Kessel-Eintrags; angezeigt wird er über `SIMQ_QUELLE_SYSTEMRUECKLAUF`. |
 | Meldungen des Zyklus- und des Kurzschluss-Guards **in der Engine** | unverändert Protokollkanal (siehe D5a-Nachtrag). Die beiden neuen Texte oben sind die **Dialog**-Fassungen; die Engine-Fassungen bleiben deutsche Klartexte über `SimulationProtokoll`, bis die `SIMENG_*`-Familie kommt. |
+
+## Nachtrag Etappe D4 (Ansicht „Schema")
+
+**Konzept_KonfigUI_Hydraulik, Abschnitte 3 und 6.** Die Konfigurationsseite bekommt eine
+zweite, synchronisierte Ansicht — das gezeichnete Hydraulikschema mit Kaskadenband und
+Legende — und die Kessel-Kaskade wird als Ergebnisgröße sichtbar. Dazu kamen **23
+Schlüssel**; der Bestand steht damit bei **640 `<data>`-Einträgen** je Datei (davon vier
+Nicht-Text-Einträge der Vorlage: `Name1`, `Color1`, `Bitmap1`, `Icon1`).
+
+### Neu (23)
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `SIM_ANSICHT_LABEL` | Ansicht: | View: | `Form_Simulation_Config.Schema.SchemaAufbauen` (Beschriftung vor dem Umschalter) |
+| `SIM_ANSICHT_LISTE` | Liste | List | dito, Schalter mit Steuerwert `LISTE` |
+| `SIM_ANSICHT_SCHEMA` | Schema | Schematic | dito, Schalter mit Steuerwert `SCHEMA` |
+| `SIM_SCHEMA_SPALTE_QUELLE` | Wärmequelle | Heat source | `SchemaAnsicht.SpaltenkoepfeZeichnen` (Spalte 0) |
+| `SIM_SCHEMA_SPALTE_ERZEUGER` | Erzeuger | Generators | dito (Spalte 1) |
+| `SIM_SCHEMA_SPALTE_SPEICHER` | Speicher | Storage | dito (Spalte 2) |
+| `SIM_SCHEMA_SPALTE_ABNEHMER` | Abnehmer | Consumers | dito (Spalte 3) |
+| `SIM_SCHEMA_ABNEHMER_WARMWASSER` | Warmwasser | Domestic hot water | `SchemaModell` — Abnehmerknoten und zweites Badge des Kombispeichers |
+| `SIM_SCHEMA_TIP_ABNEHMER` | Abnehmer der Wärme — er wird unmittelbar von einem Erzeuger oder aus einem Pufferspeicher versorgt. | Heat consumer — supplied directly by a generator or from a buffer storage tank. | Mouseover der beiden Abnehmerknoten |
+| `SIM_SCHEMA_QUELLE_SOLARSTRAHLUNG` | Solarstrahlung | Solar irradiation | `SchemaModell.Quelltext` (Solarthermie) |
+| `SIM_SCHEMA_QUELLE_BRENNSTOFF` | Brennstoff | Fuel | `SchemaModell.Quelltext` (BHKW) |
+| `SIM_SCHEMA_WARNUNG` | Vorlauf unter dem Puffer-Sollwert | Flow below the buffer set point | `SchemaAnsicht.KnotenZeichnen` — das amber Band am Erzeugerkasten (Warnregel Konzept 5) |
+| `SIM_SCHEMA_KETTE_KOPF` | Kaskadenkette | Cascade chain | `SchemaAnsicht.BandZeichnen` (Überschrift des Pillen-Bands) |
+| `SIM_SCHEMA_KEINE_KETTE` | Keine Kaskade im Projekt — kein Erzeuger bezieht seine Wärme aus einem Pufferspeicher. | No cascade in this project — no generator draws its heat from a buffer storage tank. | dito, wenn das Projekt keine Kette führt |
+| `SIM_SCHEMA_LEER` | Für dieses Projekt ist noch keine Hydraulik konfiguriert. | No hydraulic configuration has been set up for this project yet. | `SchemaAnsicht.OnPaint` bei leerem Modell |
+| `SIM_SCHEMA_LEGENDE_LADUNG` | Ladung (Kreis = wirksame Priorität) | Charging (circle = effective priority) | `SchemaAnsicht.LegendeZeichnen` |
+| `SIM_SCHEMA_LEGENDE_VERSORGUNG` | Versorgung / Entladung | Supply / discharge | dito |
+| `SIM_SCHEMA_LEGENDE_QUELLE` | Quellseite | Source side | dito |
+| `SIM_SCHEMA_LEGENDE_KASKADE` | Kaskade: Puffer speist den Vorlauf des nachgeschalteten Erzeugers | Cascade: buffer feeds the flow temperature of the downstream generator | dito |
+| `SIM_KESSEL_QUELLWAERME` | Quellwärme aus Kaskade: | Source heat from cascade: | `Form_Simulation_Detail.InitKesselQuellwaerme` (Beschriftung der neuen Ergebniszeile) |
+| `SIM_KESSEL_QUELLWAERME_EINHEIT` | MWh | MWh | dito, Einheit rechts vom Feld |
+| `SIM_KESSEL_QUELLWAERME_TIP` | Wärme, die die Spitzenkessel in der Kaskade aus ihrem Quellpuffer bezogen haben. … | Heat that the peak-load boilers have drawn from their source buffer in the cascade. … | Mouseover derselben Zeile |
+| `PSP_VOLLZYKLEN_KOMBI_TIP` | Kombispeicher: Heizung und Warmwasser werden aus EINEM Wärmevorrat gedeckt. … | Combined storage tank: heating and domestic hot water are covered from ONE heat reservoir. … | `Form_Simulation_Detail.PufferspeicherErgebnisAnzeigen` (Zeilenhinweis am markierten Vollzyklen-Wert) |
+
+**Wortwahl nach dem Glossar:** „Pufferspeicher" → *buffer storage*, „Warmwasser" → *domestic
+hot water* (in der Spaltenüberschrift ausgeschrieben, weil der Kasten breit genug ist und
+die Abkürzung DHW dort ohne Kontext stünde), „Kaskade" → *cascade*, „Vorlauf" → *flow*,
+„Ladung/Entladung" → *charging/discharge*. `SIM_ANSICHT_SCHEMA` ist im Englischen
+*Schematic* und nicht *Scheme* — *scheme* meint im Englischen einen Plan oder eine
+Systematik, nicht die Zeichnung einer Anlage. `MWh` ist in beiden Sprachen gleich; das ist
+die einzige Zeile, an der die Sprachgleichheitsprobe absichtlich keinen Unterschied sieht.
+
+### Nicht lokalisiert — und warum
+
+| Wert | Grund |
+|---|---|
+| `"LISTE"` / `"SCHEMA"` (`Form_Simulation_Config.ANSICHT_*`) | **Steuerwerte** der Ansichtsumschaltung, sprachneutral und ASCII (Drei-Schichten-Regel, Schicht „Schlüssel"). Sie stehen am `Tag` der beiden Schalter; die Beschriftung kommt aus `SIM_ANSICHT_LISTE`/`SIM_ANSICHT_SCHEMA`. |
+| `"QUELLE_…"`, `"ERZEUGER_…"`, `"SPEICHER_…"`, `"ABNEHMER_HEIZKREIS"`, `"ABNEHMER_WARMWASSER"` (`SchemaModell`) | **Knotenschlüssel** der Zeichnung — sie tragen die Auswahl zwischen Liste und Schema und dürfen deshalb nie ein Anzeigetext sein. Sprachneutral, ASCII, mit angehängter Datenbank-ID. |
+| `"Quellwaerme"` (`SchemaKatalog.SPALTE_KESSEL_QUELLWAERME`) | **Persistenzwert** — Spaltenname in `Tab_ErgebnisHeizkessel`. Wie alle Spaltennamen umlautfrei und eingefroren. |
+| `" *"` an der Vollzyklen-Zelle | typografische Marke ohne Wortbestand, wie die Glyphen `▲▼✎×` der Kartenansicht. Die Erklärung dazu steht im lokalisierten `PSP_VOLLZYKLEN_KOMBI_TIP`. |

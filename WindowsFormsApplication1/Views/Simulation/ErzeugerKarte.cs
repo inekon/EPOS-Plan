@@ -276,6 +276,27 @@ namespace WindowsFormsApplication1
 
         private bool _aufbau;
         private Kartenzustand _zustand = Kartenzustand.Aufgenommen;
+        private bool _hervorgehoben;
+
+        /// <summary>
+        /// ETAPPE D4 — die Karte ist das im Schema markierte Element (oder umgekehrt).
+        ///
+        /// Reine Hervorhebung: kräftigerer Rahmen in der Quellfarbe. Sie ersetzt KEINE
+        /// Auswahlmechanik der Karte (das „+/×" bleibt die Teilnahme an der Simulation);
+        /// sie sagt nur „von diesem Element ist gerade die Rede" — das Gegenstück zur
+        /// Auswahl in <c>SchemaAnsicht</c> (Konzept 3a: „die Auswahl ist mit der
+        /// Schema-Ansicht synchronisiert").
+        /// </summary>
+        public bool Hervorgehoben
+        {
+            get { return _hervorgehoben; }
+            set
+            {
+                if (_hervorgehoben == value) return;
+                _hervorgehoben = value;
+                Invalidate();
+            }
+        }
 
         /// <summary>Klick auf ▲ — die Anlage soll in der Kaskade nach vorn.</summary>
         public event EventHandler NachOben;
@@ -294,6 +315,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>Doppelklick auf einen Chip mit eigenem Editor (<see cref="ChipZiel"/>).</summary>
         public event Action<ChipDaten> ChipBearbeiten;
+
+        /// <summary>
+        /// ETAPPE D4 — einfacher Klick auf die Karte (nicht auf ▲▼✎+×).
+        ///
+        /// Er ist die Auswahl, die die Schema-Ansicht mitführt. Bewusst UNMITTELBAR und
+        /// nicht über <see cref="Melden"/>: Der Empfänger hebt nur etwas hervor und
+        /// entsorgt keine Karte — die Begründung für die verzögerte Meldung greift hier
+        /// nicht, und ein verzögerter Klick würde beim Doppelklick nach dem Editor
+        /// eintreffen.
+        /// </summary>
+        public event EventHandler Ausgewaehlt;
 
         public ErzeugerKarte()
         {
@@ -389,12 +421,18 @@ namespace WindowsFormsApplication1
                 ReferenceEquals(c, _lnkEntfernen)) return;
 
             c.DoubleClick += KarteDoppelklick;
+            c.Click += KarteGeklickt;                 // D4: Auswahl-Synchronisation
             foreach (Control k in c.Controls) DoppelklickDurchreichen(k);
         }
 
         private void KarteDoppelklick(object sender, EventArgs e)
         {
             Melden(Bearbeiten);
+        }
+
+        private void KarteGeklickt(object sender, EventArgs e)
+        {
+            if (Ausgewaehlt != null) Ausgewaehlt(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -468,6 +506,11 @@ namespace WindowsFormsApplication1
                         ChipDaten daten = d;   // eigene Bindung je Durchlauf
                         KartenChip chip = ChipBauen(daten);
                         _chips.Controls.Add(chip);
+
+                        // D4: Ein Klick auf einen Chip ist ein Klick auf die Karte -
+                        // sonst bliebe die Auswahl aus, sobald der Anwender eine Karte an
+                        // ihren Chips trifft (sie füllen die untere Kartenhälfte).
+                        chip.Click += KarteGeklickt;
 
                         if (daten.Ziel == ChipZiel.Keines)
                         {
@@ -604,8 +647,11 @@ namespace WindowsFormsApplication1
                 // Nicht aufgenommene Komponenten stehen gestrichelt und in der
                 // Flächenfarbe da — dieselbe Sprache wie beim Kaskaden-Quellchip:
                 // gestrichelt heißt „gehört dazu, ist aber nicht der Normalfall".
-                using (Pen stift = new Pen(_zustand == Kartenzustand.Aufgenommen
-                                               ? KartenStil.RAHMEN : KartenStil.RAHMEN_LEISE))
+                using (Pen stift = new Pen(_hervorgehoben
+                                               ? KartenStil.QUELLE_RAHMEN
+                                               : _zustand == Kartenzustand.Aufgenommen
+                                                   ? KartenStil.RAHMEN : KartenStil.RAHMEN_LEISE,
+                                           _hervorgehoben ? 2f : 1f))
                 {
                     if (_zustand == Kartenzustand.Verfuegbar) stift.DashStyle = DashStyle.Dash;
                     e.Graphics.DrawPath(stift, p);

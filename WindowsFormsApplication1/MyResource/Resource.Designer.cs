@@ -2028,6 +2028,44 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kombispeicher: Heizung und Warmwasser werden aus EINEM Wärmevorrat gedeckt.
+        ///Die Vollzyklen sind hier der Jahresdurchsatz bezogen auf die Kapazität —
+        ///bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert. ähnelt.
+        /// </summary>
+        public static string PSP_VOLLZYKLEN_KOMBI_TIP {
+            get {
+                return ResourceManager.GetString("PSP_VOLLZYKLEN_KOMBI_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht: ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_LABEL {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liste ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_LISTE {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schema ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_SCHEMA {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_SCHEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} kg CO2 / Jahr gespart ähnelt.
         /// </summary>
         public static string SIM_ANZEIGE_CO2_ERSPARNIS {
@@ -2731,6 +2769,35 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellwärme aus Kaskade: ähnelt.
+        /// </summary>
+        public static string SIM_KESSEL_QUELLWAERME {
+            get {
+                return ResourceManager.GetString("SIM_KESSEL_QUELLWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MWh ähnelt.
+        /// </summary>
+        public static string SIM_KESSEL_QUELLWAERME_EINHEIT {
+            get {
+                return ResourceManager.GetString("SIM_KESSEL_QUELLWAERME_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme, die die Spitzenkessel in der Kaskade aus ihrem Quellpuffer bezogen haben.
+        ///Sie ist bereits Teil der Wärmeproduktion; nur der verbleibende Anteil kostet Brennstoff.
+        ///Ohne Quellpuffer steht hier 0,00. ähnelt.
+        /// </summary>
+        public static string SIM_KESSEL_QUELLWAERME_TIP {
+            get {
+                return ResourceManager.GetString("SIM_KESSEL_QUELLWAERME_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gasverbrauch (Hu): ähnelt.
         /// </summary>
         public static string SIM_LABEL_GASVERBRAUCH {
@@ -3377,6 +3444,150 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_ROLLE_ZWEITSENKE {
             get {
                 return ResourceManager.GetString("SIM_ROLLE_ZWEITSENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warmwasser ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_ABNEHMER_WARMWASSER {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_ABNEHMER_WARMWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Kaskade im Projekt — kein Erzeuger bezieht seine Wärme aus einem Pufferspeicher. ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_KEINE_KETTE {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_KEINE_KETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaskadenkette ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_KETTE_KOPF {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_KETTE_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Projekt ist noch keine Hydraulik konfiguriert. ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_LEER {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaskade: Puffer speist den Vorlauf des nachgeschalteten Erzeugers ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_LEGENDE_KASKADE {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_LEGENDE_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladung (Kreis = wirksame Priorität) ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_LEGENDE_LADUNG {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_LEGENDE_LADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellseite ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_LEGENDE_QUELLE {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_LEGENDE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Versorgung / Entladung ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_LEGENDE_VERSORGUNG {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_LEGENDE_VERSORGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_QUELLE_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_QUELLE_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarstrahlung ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_QUELLE_SOLARSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_QUELLE_SOLARSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abnehmer ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_SPALTE_ABNEHMER {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_SPALTE_ABNEHMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_SPALTE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_SPALTE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_SPALTE_QUELLE {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_SPALTE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_SPALTE_SPEICHER {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_SPALTE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abnehmer der Wärme — er wird unmittelbar von einem Erzeuger oder aus einem Pufferspeicher versorgt. ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_TIP_ABNEHMER {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_TIP_ABNEHMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf unter dem Puffer-Sollwert ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_WARNUNG {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_WARNUNG", resourceCulture);
             }
         }
         

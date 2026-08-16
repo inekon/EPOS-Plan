@@ -135,6 +135,11 @@ namespace WindowsFormsApplication1
         public double Stromverbrauch;           // MWh/a (Hilfsstrom Kessel)
         public double Maximale_Kesselleistung;  // kW
         public double Gasspitze;                // kW
+
+        // ETAPPE D4: Wärme, die die Kessel in der Kaskade aus ihrem QUELLPUFFER bezogen
+        // haben (SimulationSPK.Quellwaerme_gesamt, hier in MWh/a wie die übrigen
+        // Wärmegrößen dieser Zeile). Ohne Quellbezug exakt 0.
+        public double Quellwaerme;              // MWh/a
         // Brennstoffverbrauch je Traeger (MWh/a)
         public double Gasverbrauch;
         public double Oelverbrauch;

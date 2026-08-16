@@ -466,6 +466,135 @@ namespace WindowsFormsApplication1
             checkBox_Kessel_sortiert.CheckedChanged += checkBox_Kessel_sortiert_CheckedChanged;
             listView_SimSPK.Parent.Controls.Add(checkBox_Kessel_sortiert);
             checkBox_Kessel_sortiert.BringToFront();
+
+            InitKesselQuellwaerme();
+        }
+
+        // ====================================================================
+        //  ETAPPE D4: Quellwärme der Kessel-Kaskade als Ergebnisgröße
+        // ====================================================================
+        //
+        // Bis D5b war die Kessel-Kaskade in der Ergebnisansicht nur INDIREKT sichtbar - am
+        // gesunkenen Brennstoffverbrauch (D5b-Restpunkt 3). Der Rechenkern führt die Größe
+        // längst (SimulationSPK.Quellwaerme_gesamt); sie fehlte nur in der Ergebniszeile
+        // und auf der Seite. Beides holt Etappe D4 nach: Schritt 10 der SchemaMigration
+        // legt Tab_ErgebnisHeizkessel.Quellwaerme an, der Runner schreibt sie, und diese
+        // Zeile zeigt sie.
+        //
+        // AUFBAU wie das Diagramm daneben: programmatisch, Designer und .resx bleiben
+        // unangetastet. Die Zeile übernimmt Maße, Schrift und Farben ihrer Nachbarzeile
+        // "Gasspitze" - so bleibt sie auch dann bündig, wenn der Entwurf sich ändert.
+
+        private Label label_KesselQuellwaerme;
+        private TextBox tb_KesselQuellwaerme;
+        private Label label_KesselQuellwaermeEinheit;
+
+        /// <summary>
+        /// Legt die Ergebniszeile „Quellwärme aus der Kaskade" unter der Zeile
+        /// „Gasspitze" an.
+        ///
+        /// Die Nachbarschaft wird zur Laufzeit GEMESSEN (Beschriftung links vom Feld,
+        /// Einheit rechts davon) statt über Steuerelementnamen aufgelöst: Die Seite ist mit
+        /// <see cref="KesselSeiteAnordnen"/> bereits umgeräumt, und eine Namensliste wäre
+        /// bei der nächsten Designer-Änderung still falsch — dieselbe Begründung wie bei
+        /// der Gruppenzuordnung dort.
+        /// </summary>
+        private void InitKesselQuellwaerme()
+        {
+            if (tabPage_Heizkessel == null || tb_Gasspitze == null) return;
+
+            Control beschriftung = NachbarZeile(tb_Gasspitze, true);
+            Control einheit = NachbarZeile(tb_Gasspitze, false);
+
+            int y = tb_Gasspitze.Bottom + 9;
+
+            tb_KesselQuellwaerme = new TextBox();
+            tb_KesselQuellwaerme.Name = "tb_KesselQuellwaerme";
+            tb_KesselQuellwaerme.ReadOnly = true;
+            tb_KesselQuellwaerme.BackColor = tb_Gasspitze.BackColor;
+            tb_KesselQuellwaerme.ForeColor = tb_Gasspitze.ForeColor;
+            tb_KesselQuellwaerme.BorderStyle = tb_Gasspitze.BorderStyle;
+            tb_KesselQuellwaerme.Font = tb_Gasspitze.Font;
+            tb_KesselQuellwaerme.TextAlign = tb_Gasspitze.TextAlign;
+            tb_KesselQuellwaerme.Bounds =
+                new Rectangle(tb_Gasspitze.Left, y, tb_Gasspitze.Width, tb_Gasspitze.Height);
+            tb_KesselQuellwaerme.Visible = false;
+            tabPage_Heizkessel.Controls.Add(tb_KesselQuellwaerme);
+
+            label_KesselQuellwaerme = new Label();
+            label_KesselQuellwaerme.Name = "label_KesselQuellwaerme";
+            label_KesselQuellwaerme.Text = MyResource.Resource.SIM_KESSEL_QUELLWAERME;
+            label_KesselQuellwaerme.AutoSize = false;
+            label_KesselQuellwaerme.Visible = false;
+            if (beschriftung != null)
+            {
+                label_KesselQuellwaerme.Font = beschriftung.Font;
+                label_KesselQuellwaerme.ForeColor = beschriftung.ForeColor;
+                label_KesselQuellwaerme.BackColor = beschriftung.BackColor;
+                label_KesselQuellwaerme.TextAlign = ContentAlignment.MiddleRight;
+                label_KesselQuellwaerme.Bounds =
+                    new Rectangle(beschriftung.Left, y, beschriftung.Width, tb_Gasspitze.Height);
+            }
+            else
+            {
+                label_KesselQuellwaerme.TextAlign = ContentAlignment.MiddleRight;
+                label_KesselQuellwaerme.Bounds =
+                    new Rectangle(tb_Gasspitze.Left - 250, y, 244, tb_Gasspitze.Height);
+            }
+            tabPage_Heizkessel.Controls.Add(label_KesselQuellwaerme);
+
+            label_KesselQuellwaermeEinheit = new Label();
+            label_KesselQuellwaermeEinheit.Name = "label_KesselQuellwaermeEinheit";
+            label_KesselQuellwaermeEinheit.Text = MyResource.Resource.SIM_KESSEL_QUELLWAERME_EINHEIT;
+            label_KesselQuellwaermeEinheit.AutoSize = true;
+            label_KesselQuellwaermeEinheit.Visible = false;
+            if (einheit != null)
+            {
+                label_KesselQuellwaermeEinheit.Font = einheit.Font;
+                label_KesselQuellwaermeEinheit.ForeColor = einheit.ForeColor;
+                label_KesselQuellwaermeEinheit.BackColor = einheit.BackColor;
+                label_KesselQuellwaermeEinheit.Location = new Point(einheit.Left, y + 4);
+            }
+            else
+            {
+                label_KesselQuellwaermeEinheit.Location = new Point(tb_Gasspitze.Right + 8, y + 4);
+            }
+            tabPage_Heizkessel.Controls.Add(label_KesselQuellwaermeEinheit);
+
+            _tooltipQuellwaerme.SetToolTip(tb_KesselQuellwaerme,
+                MyResource.Resource.SIM_KESSEL_QUELLWAERME_TIP.Replace("\n", Environment.NewLine));
+            _tooltipQuellwaerme.SetToolTip(label_KesselQuellwaerme,
+                MyResource.Resource.SIM_KESSEL_QUELLWAERME_TIP.Replace("\n", Environment.NewLine));
+        }
+
+        private readonly ToolTip _tooltipQuellwaerme = new ToolTip();
+
+        /// <summary>
+        /// Das Steuerelement, das auf derselben Zeile LINKS (<paramref name="links"/>)
+        /// bzw. RECHTS von <paramref name="feld"/> steht und ihm am nächsten liegt;
+        /// <c>null</c>, wenn es keines gibt.
+        /// </summary>
+        private static Control NachbarZeile(Control feld, bool links)
+        {
+            if (feld == null || feld.Parent == null) return null;
+
+            int mitte = feld.Top + feld.Height / 2;
+            Control treffer = null;
+            int abstand = int.MaxValue;
+
+            foreach (Control c in feld.Parent.Controls)
+            {
+                if (ReferenceEquals(c, feld)) continue;
+                if (mitte < c.Top || mitte > c.Bottom) continue;
+
+                int d = links ? feld.Left - c.Right : c.Left - feld.Right;
+                if (d < 0 || d >= abstand) continue;
+
+                abstand = d;
+                treffer = c;
+            }
+
+            return treffer;
         }
 
         /// <summary>
@@ -556,6 +685,13 @@ namespace WindowsFormsApplication1
             chart_Kessel.Visible = zeigen;
             if (checkBox_Kessel_sortiert != null) checkBox_Kessel_sortiert.Visible = zeigen;
             if (btn_CsvExportKessel != null) btn_CsvExportKessel.Visible = zeigen;
+
+            // ETAPPE D4: Die Quellwärme-Zeile folgt derselben Präsenzregel wie das
+            // Diagramm - ohne Kessel im Ergebnis hat sie nichts zu sagen.
+            if (tb_KesselQuellwaerme != null) tb_KesselQuellwaerme.Visible = zeigen;
+            if (label_KesselQuellwaerme != null) label_KesselQuellwaerme.Visible = zeigen;
+            if (label_KesselQuellwaermeEinheit != null)
+                label_KesselQuellwaermeEinheit.Visible = zeigen;
 
             if (!zeigen)
             {
@@ -880,6 +1016,9 @@ namespace WindowsFormsApplication1
             listView_SimPuffer.FullRowSelect = true;
             listView_SimPuffer.GridLines = true;
             listView_SimPuffer.MultiSelect = false;
+            // D4: Die Kombispeicher-Zeile erklärt ihre Vollzyklen im Hinweisfenster
+            // (siehe PufferspeicherErgebnisAnzeigen).
+            listView_SimPuffer.ShowItemToolTips = true;
             listView_SimPuffer.Font = listView_SimSPK.Font;
             listView_SimPuffer.Columns.Add(MyResource.Resource.PSP_BEZEICHNER_ERSATZ, -2, HorizontalAlignment.Left);
             listView_SimPuffer.Columns.Add(MyResource.Resource.PSP_SPALTE_ROLLE, -2, HorizontalAlignment.Left);
@@ -928,8 +1067,24 @@ namespace WindowsFormsApplication1
                     li.SubItems.Add(sp.Ladung_gesamt.ToString("F0"));
                     li.SubItems.Add(sp.Entladung_gesamt.ToString("F0"));
                     li.SubItems.Add(sp.Verluste_gesamt.ToString("F0"));
-                    li.SubItems.Add(sp.Vollzyklen.ToString("F1"));
+
+                    // ETAPPE D4 (D5b-Restpunkt 4): Beim KOMBISPEICHER laufen beide Kanäle
+                    // über EINEN Vorrat; die Kennzahl wird dann groß und misst den
+                    // JAHRESDURCHSATZ bezogen auf die Kapazität, nicht die Alterung des
+                    // Speichers (D5b-Szenario: 6627 an einem 13,9-kWh-Puffer).
+                    //
+                    // ENTSCHÄRFT WIRD SIE HIER, NICHT IM RECHENKERN: Der gespeicherte Wert
+                    // in Tab_ErgebnisPufferspeicher.Vollzyklen bleibt Bit für Bit der
+                    // bisherige - eine andere Formel wäre eine Ergebnisänderung und
+                    // gehörte in eine Etappe mit eigenem Referenznachweis. Die Anzeige
+                    // markiert den Wert und erklärt ihn im Hinweisfenster.
+                    li.SubItems.Add(sp.Vollzyklen.ToString("F1") + (sp.IstKombi ? " *" : ""));
                     li.SubItems.Add(sp.SOC.ToString("F1"));
+
+                    if (sp.IstKombi)
+                        li.ToolTipText = MyResource.Resource.PSP_VOLLZYKLEN_KOMBI_TIP
+                                                          .Replace("\n", Environment.NewLine);
+
                     listView_SimPuffer.Items.Add(li);
                 }
                 listView_SimPuffer.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
@@ -2561,6 +2716,14 @@ namespace WindowsFormsApplication1
 
                 tb_Max_Kesselleistung.Text = (sim.simulation_spk.Maximale_Kesselleistung_Spk).ToString("F2");
                 tb_Gasspitze.Text = sim.simulation_spk.Gasspitze_Spk.ToString("F2");
+
+                // ETAPPE D4: Quellwärme der Kaskade. Der Rechenkern führt sie in kWh, die
+                // Seite zeigt MWh wie die übrigen Wärmegrößen daneben. Ohne Quellbezug
+                // steht dort 0,00 - die Zeile bleibt sichtbar, denn „der Kessel bezieht
+                // nichts aus einem Puffer" ist die Antwort auf genau diese Frage.
+                if (tb_KesselQuellwaerme != null)
+                    tb_KesselQuellwaerme.Text =
+                        (sim.simulation_spk.Quellwaerme_gesamt / 1000.0).ToString("F2");
 
                 listView_SimSPK.Items.Clear();
                 for (int i = 0; i < sim.simulation_spk.spk_list.Count(); i++)

@@ -158,6 +158,87 @@ namespace WindowsFormsApplication1
             return new string[0];
         }
 
+        // --- Anzeige der Wärmequelle (Etappe D4: EINE Quelle für Liste und Schema) ----
+        //
+        // Die beiden folgenden Methoden standen bis D5b als PRIVATE Methoden in
+        // Form_Simulation_Config.Uebersicht.cs (WaermequelleAnzeige / ErdreichAnzeige).
+        // Mit der Schema-Ansicht braucht denselben Text ein zweiter Aufrufer; verschoben
+        // statt kopiert, damit Karte und Schema nicht auseinanderlaufen können. Der
+        // Formular-Code ruft sie unverändert auf und reicht nur seine Felder durch.
+
+        /// <summary>
+        /// Kompakte Anzeige der Wärmequelle EINER WÄRMEPUMPE.
+        ///
+        /// Bei Luft-Wasser (und bei fehlender Bauart) ist die Quelle immer die Außenluft —
+        /// die Spalte <c>WQ_Typ</c> wird dort gar nicht ausgewertet, weder hier noch in der
+        /// Engine.
+        /// </summary>
+        /// <param name="idProjekt">Projekt, gegen das ein Quellpuffer aufgelöst wird</param>
+        /// <param name="idAnlage">Tab_Energieanlagen.ID</param>
+        /// <param name="wpTyp">Tab_WP.Typ (Bauart)</param>
+        /// <param name="wqTyp">WQ_Typ</param>
+        /// <param name="wqTemp">WQ_Temp [°C]</param>
+        public static string QuelleAnzeige(int idProjekt, int idAnlage,
+                                           string wpTyp, string wqTyp, double wqTemp)
+        {
+            // Luft-Wasser-WP: Quelle ist immer die Außenluft (Klimadaten)
+            if (string.IsNullOrEmpty(wpTyp) || wpTyp == DbWerte.WP_BAUART_LUFT_WASSER)
+                return MyResource.Resource.SIMQ_QUELLE_AUSSENLUFT;
+
+            switch (wqTyp)
+            {
+                case TYP_KONSTANT:
+                    return string.Format(MyResource.Resource.SIMQ_QUELLE_KONSTANT, wqTemp.ToString("0.#"));
+
+                case TYP_PUFFER:
+                    {
+                        // E0 / ETAPPE D5b: Aufgelöst wird über die EINE Rangfolge, die auch
+                        // Engine und Erzeugerkarte benutzen - Fremdschlüssel WQ_ID_Puffer,
+                        // dann der Bezeichner in der Projektkopie.
+                        int idPuffer = WaermesenkeClass.QuellPufferDerAnlage(idProjekt, idAnlage);
+                        string name = idPuffer > 0 ? WaermesenkeClass.PufferName(idPuffer) : "";
+
+                        // ANZEIGE-Rückfall (und nur der): Löst sich nichts auf, steht der
+                        // Alttext aus WQ_Puffer da, damit der Anwender sieht, worauf die
+                        // Anlage einmal zeigte.
+                        if (name.Length == 0) name = WertLesen(idAnlage, "WQ_Puffer") as string;
+
+                        return string.IsNullOrEmpty(name)
+                            ? MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER
+                            : string.Format(MyResource.Resource.SIMQ_QUELLE_PUFFER_NAME, name);
+                    }
+
+                case TYP_PROFIL: return MyResource.Resource.SIMQ_QUELLE_QUELLPROFIL;
+                case TYP_CSV: return MyResource.Resource.SIMQ_QUELLE_CSVPROFIL;
+                case TYP_ERDREICH: return ErdreichAnzeige(idAnlage);
+                default: return MyResource.Resource.SIMQ_QUELLE_AUSSENLUFT;
+            }
+        }
+
+        /// <summary>
+        /// Kompakte Anzeige der Wärmequelle Erdreich, z. B. „Erdreich Kollektor 1,5 m"
+        /// oder „Erdsonde 2×90 m".
+        /// </summary>
+        public static string ErdreichAnzeige(int idAnlage)
+        {
+            string quellsystem = WertLesen(idAnlage, "WQ_Quellsystem") as string;
+            object oTiefe = WertLesen(idAnlage, "WQ_Tiefe");
+            double tiefe = oTiefe != null ? Convert.ToDouble(oTiefe) : 0;
+
+            if (string.Equals(quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE,
+                              StringComparison.OrdinalIgnoreCase))
+            {
+                object oAnzahl = WertLesen(idAnlage, "WQ_Anzahl");
+                int anzahl = oAnzahl != null ? Convert.ToInt32(oAnzahl) : 0;
+                if (anzahl < 1) anzahl = 1;
+                return string.Format(MyResource.Resource.SIMQ_ERDSONDE_ANZEIGE,
+                                     anzahl, tiefe.ToString("0.#"));
+            }
+
+            if (tiefe <= 0) tiefe = ErdreichTemperatur.TIEFE_DEFAULT;
+            return string.Format(MyResource.Resource.SIMQ_ERDKOLLEKTOR_ANZEIGE, tiefe.ToString("0.#"));
+        }
+
         /// <summary>
         /// Hinweistext zum CSV-Format (wird beim Einlesen angezeigt) — lokalisiert
         /// (Paket 9 / L6).

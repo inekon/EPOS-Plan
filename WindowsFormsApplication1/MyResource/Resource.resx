@@ -171,6 +171,20 @@
   <data name="PSP_KARTE_VOLUMEN" xml:space="preserve">
     <value>{0} l</value>
   </data>
+  <data name="PSP_VOLLZYKLEN_KOMBI_TIP" xml:space="preserve">
+    <value>Kombispeicher: Heizung und Warmwasser werden aus EINEM Wärmevorrat gedeckt.
+Die Vollzyklen sind hier der Jahresdurchsatz bezogen auf die Kapazität —
+bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</value>
+  </data>
+  <data name="SIM_ANSICHT_LABEL" xml:space="preserve">
+    <value>Ansicht:</value>
+  </data>
+  <data name="SIM_ANSICHT_LISTE" xml:space="preserve">
+    <value>Liste</value>
+  </data>
+  <data name="SIM_ANSICHT_SCHEMA" xml:space="preserve">
+    <value>Schema</value>
+  </data>
   <data name="SIM_KARTEN_KOPF_ERZEUGER" xml:space="preserve">
     <value>Komponenten der Simulation (+ aufnehmen, × entfernen, ▲▼ Reihenfolge, ✎ oder Doppelklick öffnet den Dialog)</value>
   </data>
@@ -235,6 +249,65 @@ physikalisch. Das ist ein Hinweis, keine Sperre.</value>
   </data>
   <data name="SIM_KARTE_ZWEITSENKE" xml:space="preserve">
     <value>Zweitsenke: {0}</value>
+  </data>
+  <data name="SIM_KESSEL_QUELLWAERME" xml:space="preserve">
+    <value>Quellwärme aus Kaskade:</value>
+  </data>
+  <data name="SIM_KESSEL_QUELLWAERME_EINHEIT" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="SIM_KESSEL_QUELLWAERME_TIP" xml:space="preserve">
+    <value>Wärme, die die Spitzenkessel in der Kaskade aus ihrem Quellpuffer bezogen haben.
+Sie ist bereits Teil der Wärmeproduktion; nur der verbleibende Anteil kostet Brennstoff.
+Ohne Quellpuffer steht hier 0,00.</value>
+  </data>
+  <data name="SIM_SCHEMA_ABNEHMER_WARMWASSER" xml:space="preserve">
+    <value>Warmwasser</value>
+  </data>
+  <data name="SIM_SCHEMA_KEINE_KETTE" xml:space="preserve">
+    <value>Keine Kaskade im Projekt — kein Erzeuger bezieht seine Wärme aus einem Pufferspeicher.</value>
+  </data>
+  <data name="SIM_SCHEMA_KETTE_KOPF" xml:space="preserve">
+    <value>Kaskadenkette</value>
+  </data>
+  <data name="SIM_SCHEMA_LEER" xml:space="preserve">
+    <value>Für dieses Projekt ist noch keine Hydraulik konfiguriert.</value>
+  </data>
+  <data name="SIM_SCHEMA_LEGENDE_KASKADE" xml:space="preserve">
+    <value>Kaskade: Puffer speist den Vorlauf des nachgeschalteten Erzeugers</value>
+  </data>
+  <data name="SIM_SCHEMA_LEGENDE_LADUNG" xml:space="preserve">
+    <value>Ladung (Kreis = wirksame Priorität)</value>
+  </data>
+  <data name="SIM_SCHEMA_LEGENDE_QUELLE" xml:space="preserve">
+    <value>Quellseite</value>
+  </data>
+  <data name="SIM_SCHEMA_LEGENDE_VERSORGUNG" xml:space="preserve">
+    <value>Versorgung / Entladung</value>
+  </data>
+  <data name="SIM_SCHEMA_QUELLE_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="SIM_SCHEMA_QUELLE_SOLARSTRAHLUNG" xml:space="preserve">
+    <value>Solarstrahlung</value>
+  </data>
+  <data name="SIM_SCHEMA_SPALTE_ABNEHMER" xml:space="preserve">
+    <value>Abnehmer</value>
+  </data>
+  <data name="SIM_SCHEMA_SPALTE_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger</value>
+  </data>
+  <data name="SIM_SCHEMA_SPALTE_QUELLE" xml:space="preserve">
+    <value>Wärmequelle</value>
+  </data>
+  <data name="SIM_SCHEMA_SPALTE_SPEICHER" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="SIM_SCHEMA_TIP_ABNEHMER" xml:space="preserve">
+    <value>Abnehmer der Wärme — er wird unmittelbar von einem Erzeuger oder aus einem Pufferspeicher versorgt.</value>
+  </data>
+  <data name="SIM_SCHEMA_WARNUNG" xml:space="preserve">
+    <value>Vorlauf unter dem Puffer-Sollwert</value>
   </data>
   <data name="Text_Select" xml:space="preserve">
     <value>Bitte auswählen!</value>

@@ -13,7 +13,7 @@ namespace WindowsFormsApplication1.Referenzlauf
     ///
     /// Modi:
     ///   lauf       [--ziel &lt;ordner&gt;] [--projekte 1007,1009] [--timeout &lt;sek&gt;]
-    ///   vergleich  &lt;refOrdner&gt; &lt;neuOrdner&gt;
+    ///   vergleich  &lt;refOrdner&gt; &lt;neuOrdner&gt; [--ohne &lt;schluessel,schluessel&gt;]
     ///   pruefen    &lt;ordner&gt;
     ///   liste      [&lt;dbOrdner&gt;]
     ///   migration  &lt;quellDb&gt; &lt;zielOrdner&gt; [--nokopie] [--schreibschutz]
@@ -54,7 +54,11 @@ namespace WindowsFormsApplication1.Referenzlauf
                     case "projekt": return ModusProjekt(args.Skip(1).ToArray());
                     case "vergleich":
                         if (args.Length < 3) { Hilfe(); return 2; }
-                        return Vergleich.Ausfuehren(args[1], args[2]);
+                        // --ohne <a,b,c>: benannte Schluessel vom Vergleich ausnehmen
+                        // (Etappe D4 - eine neue Ergebnisspalte erweitert aggregate.csv;
+                        //  siehe Vergleich._ausgenommen).
+                        return Vergleich.Ausfuehren(args[1], args[2],
+                                                    (Argument(args, "--ohne") ?? "").Split(','));
                     case "pruefen":
                         if (args.Length < 2) { Hilfe(); return 2; }
                         return Plausibilitaet.Pruefen(args[1]);
@@ -119,7 +123,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             Console.WriteLine("Referenzlauf-Suite EPOS-Plan (Paket B1)");
             Console.WriteLine();
             Console.WriteLine("  Referenzlauf.exe lauf [--ziel <ordner>] [--projekte 1007,1009] [--timeout <sek>]");
-            Console.WriteLine("  Referenzlauf.exe vergleich <refOrdner> <neuOrdner>");
+            Console.WriteLine("  Referenzlauf.exe vergleich <refOrdner> <neuOrdner> [--ohne <schluessel,schluessel>]");
             Console.WriteLine("  Referenzlauf.exe pruefen <ordner>");
             Console.WriteLine("  Referenzlauf.exe liste [<dbOrdner>]");
             Console.WriteLine("  Referenzlauf.exe migration <quellDb> <zielOrdner> [--nokopie] [--schreibschutz]");
