@@ -211,9 +211,9 @@ namespace WindowsFormsApplication1
                 model.ID_Kessel = stammId;
             }
 
-            int carrierID = 0;
-            if(CreateNewEnergyCarrier(nBrennstoff, ref carrierID)=="") return;
-            model.ID_Carrier = carrierID;
+            int caarierID = 0;
+            CreateNewEnergyCarrier(nBrennstoff, ref caarierID);
+            model.ID_Carrier = caarierID;
 
             list_heizkesselmodel.Add(model);
             AddKesselRow(model);
@@ -227,33 +227,16 @@ namespace WindowsFormsApplication1
 
         private string CreateNewEnergyCarrier(int nBrennstoff, ref int carrierId)
         {
-            using (var dlg = new Form_Kosten_VarAuswahl())
+            using (var dlg = new Form_Kosten_Auswahl())
             {
                 string szBrennstoff = "";
-                string szKategorie = "";    
-                int nKategorie = 0;
-
                 object br = DataRepository.ExecuteScalar(
                     "SELECT Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID = ?",
                     new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) });
                 if (br != null && br != DBNull.Value)
                     szBrennstoff = br.ToString();
 
-                object brkatid = DataRepository.ExecuteScalar(
-                    "SELECT ID_Kategorie FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                    new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) });
-                if (brkatid != null && brkatid != DBNull.Value)
-                    nKategorie = Convert.ToInt32(brkatid);
-
-                object brkat = DataRepository.ExecuteScalar(
-                    "SELECT Gruppe FROM Tab_BrennstoffKategorien WHERE ID = ?",
-                    new OleDbParameter[] { new OleDbParameter("@id", nKategorie) });
-                if (brkat != null && brkat != DBNull.Value)
-                    szKategorie = brkat.ToString();
-
-                dlg.m_szBrennstoff = szBrennstoff;
-                dlg.m_KategorieID = nKategorie;
-                dlg.m_szKategorie = szKategorie;    
+                dlg.m_szBVrennstoff = szBrennstoff;
                 dlg.bOhneVariante = false;
 
                 if (dlg.ShowDialog() != DialogResult.OK) return "";

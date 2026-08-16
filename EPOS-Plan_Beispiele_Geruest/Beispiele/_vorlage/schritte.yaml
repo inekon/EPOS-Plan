@@ -1,0 +1,74 @@
+# Drehbuch für die Bildaufnahme
+# Geprüft gegen schema/schritte.schema.json
+#
+# Jeder Eintrag erzeugt genau ein Bild in bilder/<sprache>/<id>.png.
+# Im Text wird es über {{bild:<id>}} eingesetzt.
+#
+# Drei Arten:
+#   diagramm  ScottPlot off-screen, kein Bildschirmfoto, kein Fenster nötig
+#   maske     Programmmaske über den Aufnehmer (Paket B-7)
+#   datei     vorhandene Bilddatei, von Hand gezeichnetes Schema
+#
+# Reihenfolge im Drehbuch = Aufnahmereihenfolge, nicht Reihenfolge im Text.
+# Schritte, die dasselbe Formular betreffen, hintereinander legen - das spart
+# Öffnen und Schließen und macht die Aufnahme merklich schneller.
+
+# --- Programmmaske ---------------------------------------------------------
+- id: projektbaum
+  art: maske
+  form: Form_Projektbaum
+  projekt: stamm              # stamm | Variantenbezeichner
+  fenster: [1600, 1000]       # feste Größe, sonst wackeln die Bilder je Lauf
+  ausschnitt: fenster         # fenster (mit Rahmen) | inhalt (ohne Rahmen)
+  unterschrift:
+    de: Projektbaum nach dem Anlegen der Bausteine
+
+# --- Maske mit Vorbelegung und Markierung ----------------------------------
+- id: beispiel-mit-markierung
+  art: maske
+  form: Form_Waermepumpe
+  projekt: stamm
+  # Vorbelegung: was der Aufnehmer vor dem Auslösen einstellt. Schlüssel sind
+  # je Formular in der Zuordnungstabelle des Aufnehmers hinterlegt.
+  vorbelegung:
+    reiter: Kennfeld
+    modul: 1
+  fenster: [1200, 820]
+  ausschnitt: inhalt
+  # Markierungen gehören hierher, NICHT in einen Bildbearbeiter. Nur so werden
+  # sie beim nächsten Lauf neu gezeichnet - und fallen auf, wenn sie nicht mehr
+  # passen. bereich: [x, y, breite, hoehe] in Bildpunkten des Ausschnitts.
+  markierung:
+    - bereich: [420, 180, 260, 90]
+      text:
+        de: Kennfeld für die tatsächliche Vorlauftemperatur
+  unterschrift:
+    de: Zwischen 35 und 55 Grad Vorlauf liegen schnell 30 Prozent Leistungszahl
+
+# --- Ergebnisdiagramm ------------------------------------------------------
+# Braucht kein Fenster und keinen Bildschirm. Wo immer möglich diese Art
+# wählen statt einer Maske - reproduzierbar, randlos, zweisprachig.
+- id: leistung-ueber-aussentemperatur
+  art: diagramm
+  quelle: bericht:LeistungUeberAussentemperatur
+  variante: stamm
+  groesse: [1200, 700]
+  unterschrift:
+    de: Ab dem Bivalenzpunkt deckt die Wärmepumpe den Bedarf nicht mehr allein
+
+# Verfügbare Quellen (Bausteine des Berichtsgenerators):
+#   bericht:Jahresganglinie
+#   bericht:Jahresdauerlinie
+#   bericht:LeistungUeberAussentemperatur
+#   bericht:DeckungRing
+#   bericht:Autarkieanalyse
+#   bericht:Monatsbilanz
+#   bericht:Speicherfuellstand
+
+# --- Vorhandene Datei ------------------------------------------------------
+# Für handgezeichnete Schemata. Trägt keine Zahlen und ändert sich selten.
+# - id: hydraulikschema
+#   art: datei
+#   datei: bilder/hydraulik.png
+#   unterschrift:
+#     de: Einbindung von Wärmepumpe und Pufferspeicher

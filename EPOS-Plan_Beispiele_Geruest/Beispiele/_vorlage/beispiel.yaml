@@ -1,0 +1,91 @@
+# Stammdaten eines Projektbeispiels
+# Geprüft gegen schema/beispiel.schema.json
+#
+# Kopieren, nicht hier bearbeiten:
+#   .\werkzeuge\neues-beispiel.ps1 -Nummer 40 -Slug schwimmbad -Titel "Schwimmbad"
+
+# --- Identität -------------------------------------------------------------
+# slug: Teil der Adresse, kleinschreibung, keine Umlaute, keine Punkte.
+#       Wird nach der ersten Veröffentlichung NICHT mehr geändert - er hängt
+#       an der Seiten-ID in veroeffentlichung.json und an Verweisen von außen.
+slug: mein-beispiel
+
+# Reihenfolge auf der Übersichtsseite. Zehnerschritte, damit sich etwas
+# dazwischenschieben lässt. Üblicherweise identisch mit dem Ordnerpräfix.
+reihenfolge: 90
+
+titel:
+  de: Titel des Beispiels
+# en: Title of the example
+
+kurzbeschreibung:
+  de: >-
+    Ein bis zwei Sätze für die Kachel auf der Übersichtsseite. Beginnt mit der
+    Ausgangslage, endet mit der Frage, die das Beispiel beantwortet.
+
+# einsteiger | fortgeschritten | experte
+schwierigkeit: einsteiger
+
+# Geschätzte Bearbeitungszeit für einen Anwender, der mitrechnet.
+dauer_minuten: 25
+
+# --- Inhalt ----------------------------------------------------------------
+# Projektdatei im selben Ordner. Bis Paket B-11 (Projektexport) steht hier
+# stattdessen der Projektname in Beispiele.accdb - siehe projekt_name.
+projekt: projekt.epx
+# projekt_name: "Beispiel EFH Wärmepumpe"
+
+# Varianten, die gerechnet und verglichen werden. "stamm" ist immer dabei und
+# muss nicht aufgeführt werden. Die Bezeichner müssen exakt denen in
+# Tab_Variante entsprechen.
+varianten: []
+# varianten:
+#   - "55 Grad Bestand"
+#   - "40 Grad nach Heizkörpertausch"
+
+sprachen: [de]
+
+# --- Sichtbarkeit ----------------------------------------------------------
+# oeffentlich | angemeldet
+# Wie auf der heutigen Seite: die Aufgabe sieht jeder, die Lösung erst nach
+# Anmeldung. Der Erzeuger klammert den Lösungsteil entsprechend.
+sichtbarkeit:
+  aufgabe: oeffentlich
+  loesung: angemeldet
+
+# Dateien, die als Download angeboten werden (über WP Download Manager).
+downloads:
+  projekt: true          # projekt.epx
+  bericht: true          # erzeugter Musterbericht (Word)
+  arbeitsblatt: false    # optionales PDF mit der Aufgabenstellung
+
+# --- Bezugsliste -----------------------------------------------------------
+# Der wichtigste Abschnitt für die Pflege. Er steuert, wann sich dieses
+# Beispiel meldet: build-beispiele.ps1 -Pruefen vergleicht stand.commit mit
+# den Änderungen an den genannten Dateien.
+#
+# Faustregel: alles eintragen, was eine Maske im Drehbuch zeichnet oder eine
+# zitierte Kennzahl rechnet. Lieber einen Anker zu viel als einen zu wenig -
+# ein falscher Alarm kostet fünf Minuten, ein übersehener eine falsche
+# Schulungsseite.
+
+# Fachliche Bereiche, frei benannt, aber im Bestand einheitlich halten:
+# Gebaeude, Brauchwasser, Prozesswaerme, Waermepumpe, BHKW, Heizkessel,
+# Solarthermie, Photovoltaik, Pufferspeicher, Stromspeicher, Heizstab,
+# Klimaregion, Kosten, Wirtschaftlichkeit, Bericht
+bereiche: []
+
+# Pfade relativ zur Repowurzel.
+code_anker: []
+# code_anker:
+#   - WindowsFormsApplication1/Allgemein/Simulation/SimulationWaermepumpe.cs
+#   - WindowsFormsApplication1/Views/Simulation/Form_Simulation_Config.cs
+#   - WindowsFormsApplication1/Allgemein/Bericht/KennzahlenKatalog.cs
+
+# --- Stand -----------------------------------------------------------------
+# Wird beim Durchsehen von Hand fortgeschrieben, nicht vom Bauvorgang.
+stand:
+  programmversion: 0.0.0.0
+  commit: ""
+  geprueft_am: ""
+  geprueft_von: ""

@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://epos-plan.de/schema/beispiel.schema.json",
+  "title": "Stammdaten eines Projektbeispiels",
+  "type": "object",
+  "required": ["slug", "reihenfolge", "titel", "kurzbeschreibung", "sichtbarkeit", "sprachen", "stand"],
+  "additionalProperties": false,
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 60,
+      "description": "Teil der Adresse. Nach der ersten Veroeffentlichung nicht mehr aendern."
+    },
+    "reihenfolge": { "type": "integer", "minimum": 0, "maximum": 999 },
+    "titel": { "$ref": "#/$defs/mehrsprachig" },
+    "kurzbeschreibung": { "$ref": "#/$defs/mehrsprachig" },
+    "schwierigkeit": { "enum": ["einsteiger", "fortgeschritten", "experte"] },
+    "dauer_minuten": { "type": "integer", "minimum": 5, "maximum": 240 },
+
+    "projekt": { "type": "string", "pattern": "\\.epx$" },
+    "projekt_name": {
+      "type": "string",
+      "description": "Uebergangsloesung bis Paket B-11: Projektname in Beispiele.accdb."
+    },
+    "varianten": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "description": "Ohne 'stamm' - der ist immer dabei."
+    },
+    "sprachen": {
+      "type": "array",
+      "items": { "enum": ["de", "en"] },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+
+    "sichtbarkeit": {
+      "type": "object",
+      "required": ["aufgabe", "loesung"],
+      "additionalProperties": false,
+      "properties": {
+        "aufgabe": { "enum": ["oeffentlich", "angemeldet"] },
+        "loesung": { "enum": ["oeffentlich", "angemeldet"] }
+      }
+    },
+    "downloads": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "projekt": { "type": "boolean" },
+        "bericht": { "type": "boolean" },
+        "arbeitsblatt": { "type": "boolean" }
+      }
+    },
+
+    "bereiche": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "Gebaeude", "Brauchwasser", "Prozesswaerme", "Waermepumpe", "BHKW",
+          "Heizkessel", "Solarthermie", "Photovoltaik", "Pufferspeicher",
+          "Stromspeicher", "Heizstab", "Klimaregion", "Kosten",
+          "Wirtschaftlichkeit", "Bericht", "Varianten"
+        ]
+      },
+      "description": "Steuert die Prueffplicht. Leer lassen heisst: das Beispiel meldet sich nie."
+    },
+    "code_anker": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Za-z0-9_./-]+$" },
+      "description": "Pfade relativ zur Repowurzel."
+    },
+
+    "stand": {
+      "type": "object",
+      "required": ["programmversion", "commit", "geprueft_am"],
+      "additionalProperties": false,
+      "properties": {
+        "programmversion": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+){3}$" },
+        "commit": { "type": "string", "pattern": "^([0-9a-f]{7,40})?$" },
+        "geprueft_am": { "type": "string", "pattern": "^([0-9]{4}-[0-9]{2}-[0-9]{2})?$" },
+        "geprueft_von": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "mehrsprachig": {
+      "type": "object",
+      "required": ["de"],
+      "additionalProperties": false,
+      "properties": {
+        "de": { "type": "string", "minLength": 1 },
+        "en": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
