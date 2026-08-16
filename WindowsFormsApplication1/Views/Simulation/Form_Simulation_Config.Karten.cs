@@ -140,6 +140,10 @@ namespace WindowsFormsApplication1
             FenstergroesseSetzen();
             KartenbereichAufbauen();
 
+            // D4: Umschalter Liste/Schema und die Schemafläche. NACH dem Kartenbereich -
+            // die Schemafläche übernimmt dessen Rechteck und Verankerung.
+            SchemaAufbauen();
+
             // Die beiden Schalter der Fußzeile entstehen wie bisher programmatisch
             // (Paket 4 und 8); platziert werden sie jetzt zusammen mit der übrigen
             // Fußzeile und nicht mehr aus sich selbst heraus.
@@ -531,6 +535,12 @@ namespace WindowsFormsApplication1
         {
             AktualisiereErzeugerKarten();
             AktualisiereSpeicherKarten();
+
+            // D4: dieselben Daten, zweite Ansicht. Das Schema rechnet nur, wenn es auch
+            // sichtbar ist (siehe AktualisiereSchema); die Hervorhebung dagegen ist nach
+            // jedem Neuaufbau der Karten nachzuziehen - die alten Karten sind entsorgt.
+            AktualisiereSchema();
+            AuswahlInKartenZeigen();
         }
 
         /// <summary>
@@ -820,6 +830,10 @@ namespace WindowsFormsApplication1
             if (info != null)
             {
                 AnlagenInfo anlage = info;
+
+                // D4: Ein einfacher Klick wählt die Anlage aus - die Auswahl teilen sich
+                // Karten- und Schema-Ansicht.
+                karte.Ausgewaehlt += delegate { KarteAusgewaehlt(anlage.ID); };
 
                 // Standard-Editor der Karte: der Senkendialog. Er ist der einzige, der
                 // für JEDEN Erzeugertyp etwas zu sagen hat (Konzept 4.2) - Quelle, Modus
@@ -1150,6 +1164,10 @@ namespace WindowsFormsApplication1
                 flow_Speicher.ResumeLayout();
                 KartenBreiteAnpassen(flow_Speicher);
             }
+
+            // D4: Der Klick ist zugleich die Auswahl - unabhängig davon, ob die Karte
+            // gerade auf- oder zugeklappt wird.
+            SpeicherkarteAusgewaehlt(karte.ID_Puffer);
         }
 
         private void SpeicherKarte_Bearbeiten(object sender, EventArgs e)

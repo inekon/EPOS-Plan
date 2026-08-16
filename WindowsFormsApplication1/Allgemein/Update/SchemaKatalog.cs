@@ -52,6 +52,7 @@ namespace WindowsFormsApplication1
         public const string TAB_APPLIKATION = "Tab_Applikation";
         public const string Z_PROJEKTPUFFERSP = "Z_ProjektPufferSp";
         public const string TAB_ERGEBNISPUFFERSPEICHER = "Tab_ErgebnisPufferspeicher";
+        public const string TAB_ERGEBNISHEIZKESSEL = "Tab_ErgebnisHeizkessel";
 
         /// <summary>
         /// Bestand: die Spalten, die die Rückfallebene schon vor ADR-001 angelegt hat
@@ -232,6 +233,45 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// Name der Ergebnisgröße „Quellwärme des Heizkessels" (Etappe D4,
+        /// Konzept_KonfigUI_Hydraulik Abschnitt 5 „Kessel-Kaskade"). EINE Wahrheit für
+        /// Migration, Schreibseite (<c>ErgebnisCtrl.Save</c>) und Leseseite
+        /// (<c>ErgebnisCtrl.ReadLast</c>) — dasselbe Muster wie
+        /// <see cref="SPALTE_KASKADE_ZWEIKANALIG"/>.
+        /// </summary>
+        public const string SPALTE_KESSEL_QUELLWAERME = "Quellwaerme";
+
+        /// <summary>
+        /// Schritt 10 der Migration — die Ergebnisspalte
+        /// <see cref="SPALTE_KESSEL_QUELLWAERME"/> in <c>Tab_ErgebnisHeizkessel</c>
+        /// (Etappe D4, Aufgabe 4; D5b-Restpunkt 3).
+        ///
+        /// <b>Was sie trägt.</b> Die Wärme, die ein Spitzenkessel in der Kaskade aus
+        /// seinem QUELLPUFFER bezogen hat (<c>SimulationSPK.Quellwaerme_gesamt</c>, hier
+        /// in MWh/a wie alle übrigen Wärmegrößen dieser Tabelle). Ohne Quellbezug ist sie
+        /// exakt 0 — der Rechenkern setzt sie in diesem Fall nirgends ungleich null.
+        ///
+        /// <b>Warum eine eigene Spalte und kein abgeleiteter Wert.</b> Die Kaskade war in
+        /// der Ergebnisansicht bisher nur INDIREKT sichtbar (am gesunkenen
+        /// Brennstoffverbrauch). Aus den gespeicherten Größen lässt sie sich nicht
+        /// zurückrechnen: <c>Waermeproduktion</c> ist die gesamte Nutzwärme, der
+        /// Brennstoffanteil steht nirgends getrennt.
+        ///
+        /// <b>DOUBLE, NULL-fähig, kein Backfill.</b> Bestandszeilen bleiben leer; die
+        /// Leseseite behandelt NULL wie 0. Ein Vorbelegen wäre eine Behauptung über Läufe,
+        /// die diese Größe nie berechnet haben.
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: <c>Tab_ErgebnisHeizkessel</c> wird ausschließlich
+        /// NAMENSBASIERT gelesen (<c>ErgebnisCtrl.ReadLast</c> über <c>D(rh, "…")</c>),
+        /// eine <c>row[0…n]</c>-Kette wie bei <c>Tab_Einstellungen</c> gibt es hier nicht.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt10_KesselQuellwaerme =
+        {
+            new SchemaSpalte(TAB_ERGEBNISHEIZKESSEL, SPALTE_KESSEL_QUELLWAERME, "DOUBLE"),
+        };
+
+        /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
         /// und ist deshalb nicht Teil von <see cref="Alle"/>.
@@ -253,6 +293,14 @@ namespace WindowsFormsApplication1
         /// <see cref="Schritt8_Energietraeger"/> steht dagegen sehr wohl hier — die Spalte
         /// kommt in keiner anderen Auswahl vor, und die stille Rückfallebene soll sie
         /// genauso sicherstellen wie die übrigen additiven Spalten.
+        ///
+        /// <see cref="Schritt10_KesselQuellwaerme"/> ist BEWUSST NICHT aufgeführt: Die
+        /// Rückfallebene <c>WaermequelleClass.SchemaSicherstellen</c> läuft beim Öffnen
+        /// der Simulationskonfiguration und bei jedem Simulationsstart — sie soll die
+        /// Spalten der EINGABEseite sicherstellen, nicht die der Ergebnistabellen. Für die
+        /// Ergebnisspalte gibt es die eigene, tolerante Vorsorge unmittelbar vor dem
+        /// Schreiben (<c>ErgebnisCtrl.StelleKesselSpaltenSicher</c>), genau wie für die
+        /// Brennstoffspalten des BHKW und die Modulspalten.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {

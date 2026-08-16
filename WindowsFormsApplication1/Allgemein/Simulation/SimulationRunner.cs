@@ -558,6 +558,14 @@ namespace WindowsFormsApplication1
                 }
                 h.Maximale_Kesselleistung = spk.Maximale_Kesselleistung_Spk;
                 h.Gasspitze = spk.Gasspitze_Spk;
+
+                // ETAPPE D4: Quellwärme der Kaskade. Der Rechenkern führt sie in kWh
+                // (Quellwaerme_gesamt summiert die Entladungen des Quellpuffers), die
+                // Ergebniszeile in MWh - dieselbe Umrechnung wie beim Strombedarf zwei
+                // Zeilen weiter oben. OHNE Quellbezug ist der Zähler exakt 0; die Spalte
+                // wird trotzdem immer geschrieben, damit „keine Kaskade" und „Spalte
+                // fehlt" unterscheidbar bleiben.
+                h.Quellwaerme = spk.Quellwaerme_gesamt / 1000.0;
                 h.Gasverbrauch = spk.Gasverbrauch_SPK;
                 h.Oelverbrauch = spk.Oelverbrauch_SPK;
                 h.Koks = spk.Koks_SPK;

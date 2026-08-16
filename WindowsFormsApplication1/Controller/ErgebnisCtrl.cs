@@ -86,6 +86,7 @@ namespace WindowsFormsApplication1
             StelleEnergieSpaltenSicher();   // fehlende Restbedarf-Spalten einmalig ergänzen
             StelleBHKWSpaltenSicher();      // fehlende Brennstoffspalten in Tab_ErgebnisBHKW einmalig ergänzen
             StelleModulSpaltenSicher();     // carrier_id (B1) + Waermeproduktion Kesselmodul (B3) ergänzen
+            StelleKesselSpaltenSicher();    // Quellwaerme der Kaskade (Etappe D4) ergänzen
             StellePufferTabelleSicher();    // Tab_ErgebnisPufferspeicher (Konzept 6.6) - Rückfallebene
 
             // Energieträger-Zuordnung einmal je Erzeuger bestimmen (Befund B1: echte
@@ -307,12 +308,15 @@ namespace WindowsFormsApplication1
                 if (m.Heizkessel != null)
                 {
                     int hId = NextId(conn, trans, TAB_KESSEL);
+                    // ETAPPE D4: Quellwaerme als LETZTE Spalte - ALTER TABLE haengt sie in
+                    // Access hinten an, und die Parameterreihenfolge folgt der Spaltenliste.
                     string sql = "INSERT INTO " + TAB_KESSEL + " (" +
                         "ID, ID_Ergebnis, Waermebedarf, Restwaermebedarf, Waermeproduktion, Strombedarf, " +
                         "Reststrombedarf, Waermebedarfsdeckung, Stromverbrauch, Maximale_Kesselleistung, Gasspitze, " +
                         "Gasverbrauch, Oelverbrauch, Koks, Rapsoelverbrauch, Holzverbrauch, Kohle, " +
-                        "Sonstigverbrauch, Pellets, TierischeFette) " +
-                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?, ?,?,?)";
+                        "Sonstigverbrauch, Pellets, TierischeFette, " +
+                        SchemaKatalog.SPALTE_KESSEL_QUELLWAERME + ") " +
+                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?)";
                     using (OleDbCommand c = new OleDbCommand(sql, conn, trans))
                     {
                         c.Parameters.Add("@id", OleDbType.Integer).Value = hId;
@@ -335,6 +339,7 @@ namespace WindowsFormsApplication1
                         c.Parameters.Add("@a16", OleDbType.Double).Value = R(m.Heizkessel.Sonstigverbrauch);
                         c.Parameters.Add("@a17", OleDbType.Double).Value = R(m.Heizkessel.Pellets);
                         c.Parameters.Add("@a18", OleDbType.Double).Value = R(m.Heizkessel.TierischeFette);
+                        c.Parameters.Add("@a19", OleDbType.Double).Value = R(m.Heizkessel.Quellwaerme);
                         c.ExecuteNonQuery();
                     }
 
@@ -655,6 +660,9 @@ namespace WindowsFormsApplication1
                 h.Sonstigverbrauch = D(rh, "Sonstigverbrauch");
                 h.Pellets = D(rh, "Pellets");
                 h.TierischeFette = D(rh, "TierischeFette");
+                // ETAPPE D4: D() liefert 0, wenn die Spalte fehlt oder NULL ist - genau
+                // die Behandlung, die Bestandszeilen ohne Quellwärme brauchen.
+                h.Quellwaerme = D(rh, SchemaKatalog.SPALTE_KESSEL_QUELLWAERME);
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_KESSEL_MODUL + " WHERE ID_ErgebnisHeizkessel = ? ORDER BY ID",
@@ -862,6 +870,33 @@ namespace WindowsFormsApplication1
                 }
             }
             catch { /* best effort - Spalten existieren dann ggf. schon */ }
+        }
+
+        /// <summary>
+        /// ETAPPE D4 — Rückfallebene für die Ergebnisspalte
+        /// <c>Tab_ErgebnisHeizkessel.Quellwaerme</c> (Quellwärme der Kaskade).
+        ///
+        /// Der reguläre Weg ist Schritt 10 der <see cref="SchemaMigration"/> beim
+        /// Programmstart. Diese Vorsorge steht daneben, weil das INSERT der Kesselzeile
+        /// die Spalte NAMENTLICH aufführt: Fehlt sie, scheiterte nicht nur die neue Größe,
+        /// sondern die ganze Ergebniszeile — und mit ihr der Lauf. Dasselbe Muster und
+        /// dieselbe Begründung wie bei den Brennstoffspalten des BHKW
+        /// (<see cref="StelleBHKWSpaltenSicher"/>) und den Modulspalten.
+        ///
+        /// Der Spaltenname kommt aus <see cref="SchemaKatalog"/> — Migration und
+        /// Rückfallebene führen keine zweite Liste.
+        /// </summary>
+        private static void StelleKesselSpaltenSicher()
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    ErgaenzeSpalte(conn, TAB_KESSEL, SchemaKatalog.SPALTE_KESSEL_QUELLWAERME, "DOUBLE");
+                }
+            }
+            catch { /* best effort - Spalte existiert dann ggf. schon */ }
         }
 
         // ---------------------------------------------------------------------------

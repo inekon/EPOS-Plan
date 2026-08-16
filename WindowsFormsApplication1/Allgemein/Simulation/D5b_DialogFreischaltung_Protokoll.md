@@ -323,6 +323,12 @@ Zeilenendenwarnung mehr.
 
 ## 8. Restpunkte für D4 (und danach)
 
+> **Nachtrag 16.08.2026:** Die Punkte 1–3 sind mit Etappe D4 erledigt, Punkt 4 teilweise
+> (Ergebnisansicht ja, Bericht offen). Umsetzung, erklärte CSV-Erweiterung und
+> Verifikation in [`D4_SchemaAnsicht_Protokoll.md`](D4_SchemaAnsicht_Protokoll.md).
+> Die in Punkt 2 genannte Ableitung steht seitdem als eigene Klasse `Hydraulikbild`;
+> `RingMeldung` rechnet sie nicht mehr selbst, sondern ruft sie auf.
+
 1. **Ansicht „Schema"** (D4) — Hydraulikschema als GDI+-Panel, Umschalter,
    Auswahl-Synchronisation. Unverändert offen.
 2. **Kaskadenband** — die automatisch abgeleitete Kaskadenkette als Pillen-Band unter dem

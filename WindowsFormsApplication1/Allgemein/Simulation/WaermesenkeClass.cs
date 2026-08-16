@@ -894,138 +894,31 @@ namespace WindowsFormsApplication1
         /// Ladeaufträgen: Ein Ladeauftrag entsteht erst im Lauf. Die Bedingung „lädt" ist
         /// deshalb dieselbe wie in <c>Ladeordnung.Ladereihenfolge</c> — Puffer-ID auf
         /// einem der beiden Senkenfelder UND ein Puffer-Ziel dazu.
+        ///
+        /// <b>ETAPPE D4 — die Ableitung steht jetzt in <see cref="Hydraulikbild"/>.</b>
+        /// Sie war bis D5b eine lokale Rechnung IN dieser Methode; die Schema-Ansicht
+        /// braucht dieselbe Abbildung (Lader je Puffer, Quelle je Anlage) und würde sie
+        /// sonst ein drittes Mal schreiben (D5b-Restpunkt 2). Verschoben, nicht geändert:
+        /// Abfrage, Zeilenordnung, Bedingungen und Relaxation sind unverändert; die
+        /// Abfrage holt nur zusätzliche Spalten für die Zeichnung.
         /// </summary>
         public static string RingMeldung(int idProjekt, int idAnlage, int idQuellPuffer)
         {
             if (idProjekt <= 0 || idAnlage <= 0 || idQuellPuffer <= 0) return null;
 
-            DataTable dt = StilleDb.Tabelle(
-                "SELECT ID, ID_Type, Bezeichner, WQ_Typ, WQ_ID_Puffer, " +
-                "       WS_Ziel, WS_ID_Puffer, WS_Ziel2, WS_ID_Puffer2 " +
-                "FROM Tab_Energieanlagen " +
-                "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
-                "ORDER BY Prioritaet, ID",
-                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
-            if (dt == null) return null;
-
-            Dictionary<int, string> nameJeAnlage = new Dictionary<int, string>();
-            Dictionary<int, int> quelleJeAnlage = new Dictionary<int, int>();
-            Dictionary<int, List<int>> laderJePuffer = new Dictionary<int, List<int>>();
-
-            foreach (DataRow r in dt.Rows)
-            {
-                int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
-                if (id <= 0) continue;
-
-                nameJeAnlage[id] = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
-
-                int idType = StilleDb.Zahl(StilleDb.Feld(r, "ID_Type"));
-                if (WaermequelleClass.QuellenwahlMoeglich(idType) &&
-                    string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
-                                  WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
-                {
-                    int q = StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
-                    if (q > 0) quelleJeAnlage[id] = q;
-                }
-
-                LaderEintragen(laderJePuffer, id,
-                               StilleDb.Text(StilleDb.Feld(r, "WS_Ziel")),
-                               StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer")));
-                LaderEintragen(laderJePuffer, id,
-                               StilleDb.Text(StilleDb.Feld(r, "WS_Ziel2")),
-                               StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer2")));
-            }
-
-            if (!nameJeAnlage.ContainsKey(idAnlage)) return null;   // nicht dieses Projekt
+            Hydraulikbild bild = Hydraulikbild.Lesen(idProjekt);
+            if (bild == null) return null;
+            if (!bild.KenntAnlage(idAnlage)) return null;          // nicht dieses Projekt
 
             // Der GEWÜNSCHTE Bezug ersetzt den gespeicherten - geprüft wird der Zustand
             // nach dem Speichern, nicht der davor.
-            quelleJeAnlage[idAnlage] = idQuellPuffer;
-
-            Dictionary<int, int> ebene = new Dictionary<int, int>();
-            foreach (int id in nameJeAnlage.Keys) ebene[id] = 0;
-
-            for (int runde = 0; runde <= ebene.Count; runde++)
-            {
-                bool geaendert = false;
-
-                foreach (KeyValuePair<int, int> bezug in quelleJeAnlage)
-                {
-                    if (!ebene.ContainsKey(bezug.Key)) continue;
-
-                    List<int> lader;
-                    if (!laderJePuffer.TryGetValue(bezug.Value, out lader)) continue;
-
-                    int soll = 0;
-                    foreach (int idLader in lader)
-                    {
-                        if (idLader == bezug.Key) continue;      // Kurzschluss, nicht Ring
-
-                        int e;
-                        if (!ebene.TryGetValue(idLader, out e)) continue;
-                        if (e + 1 > soll) soll = e + 1;
-                    }
-
-                    if (soll > ebene[bezug.Key]) { ebene[bezug.Key] = soll; geaendert = true; }
-                }
-
-                if (!geaendert) return null;                      // zyklenfrei
-            }
+            bool ring;
+            Dictionary<int, int> ebene = bild.Ebenen(idAnlage, idQuellPuffer, out ring);
+            if (!ring) return null;                                // zyklenfrei
 
             return string.Format(
                 MyResource.Resource.SIM_QUELLE_KASKADE_RING.Replace("\n", Environment.NewLine),
-                RingBeteiligte(ebene, quelleJeAnlage, laderJePuffer, nameJeAnlage));
-        }
-
-        /// <summary>Trägt eine Anlage als LADER eines Puffers ein (Bedingung wie Ladeordnung).</summary>
-        private static void LaderEintragen(Dictionary<int, List<int>> laderJePuffer,
-                                           int idAnlage, string ziel, int idPuffer)
-        {
-            if (idPuffer <= 0 || !IstPufferZiel(ziel)) return;
-
-            List<int> lader;
-            if (!laderJePuffer.TryGetValue(idPuffer, out lader))
-            {
-                lader = new List<int>();
-                laderJePuffer[idPuffer] = lader;
-            }
-            if (!lader.Contains(idAnlage)) lader.Add(idAnlage);
-        }
-
-        /// <summary>
-        /// Die Anlagen, die im Ring stecken, als lesbare Aufzählung — dieselbe Auswahl
-        /// wie in <c>Kaskadenschleife.ZyklusMeldung</c>: die mit der höchsten erreichten
-        /// Ebene, denn nur die sind unbegrenzt gewachsen.
-        /// </summary>
-        private static string RingBeteiligte(Dictionary<int, int> ebene,
-                                             Dictionary<int, int> quelleJeAnlage,
-                                             Dictionary<int, List<int>> laderJePuffer,
-                                             Dictionary<int, string> nameJeAnlage)
-        {
-            int hoechste = 0;
-            foreach (KeyValuePair<int, int> e in ebene)
-                if (e.Value > hoechste) hoechste = e.Value;
-
-            List<string> beteiligt = new List<string>();
-            foreach (KeyValuePair<int, int> bezug in quelleJeAnlage)
-            {
-                int stufe;
-                if (!ebene.TryGetValue(bezug.Key, out stufe) || stufe < hoechste) continue;
-                if (!laderJePuffer.ContainsKey(bezug.Value)) continue;
-
-                string anlage = nameJeAnlage.ContainsKey(bezug.Key) &&
-                                nameJeAnlage[bezug.Key].Length > 0
-                    ? nameJeAnlage[bezug.Key]
-                    : bezug.Key.ToString();
-
-                string puffer = PufferName(bezug.Value);
-                if (puffer.Length == 0) puffer = MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER;
-
-                beteiligt.Add(string.Format(MyResource.Resource.SIM_QUELLE_BETEILIGT,
-                                            anlage, puffer));
-            }
-
-            return beteiligt.Count > 0 ? string.Join(" · ", beteiligt.ToArray()) : "–";
+                bild.RingBeteiligte(ebene, idAnlage, idQuellPuffer));
         }
 
         /// <summary>

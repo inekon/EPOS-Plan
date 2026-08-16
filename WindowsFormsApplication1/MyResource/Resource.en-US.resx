@@ -171,6 +171,20 @@
   <data name="PSP_KARTE_VOLUMEN" xml:space="preserve">
     <value>{0} l</value>
   </data>
+  <data name="PSP_VOLLZYKLEN_KOMBI_TIP" xml:space="preserve">
+    <value>Combined storage tank: heating and domestic hot water are covered from ONE heat reservoir.
+Here the full cycles are the annual throughput relative to the capacity —
+with a small tank the figure becomes large without any additional ageing.</value>
+  </data>
+  <data name="SIM_ANSICHT_LABEL" xml:space="preserve">
+    <value>View:</value>
+  </data>
+  <data name="SIM_ANSICHT_LISTE" xml:space="preserve">
+    <value>List</value>
+  </data>
+  <data name="SIM_ANSICHT_SCHEMA" xml:space="preserve">
+    <value>Schematic</value>
+  </data>
   <data name="SIM_KARTEN_KOPF_ERZEUGER" xml:space="preserve">
     <value>Simulation components (+ include, × remove, ▲▼ order, ✎ or double-click opens the dialog)</value>
   </data>
@@ -235,6 +249,65 @@ This is a hint, not a block.</value>
   </data>
   <data name="SIM_KARTE_ZWEITSENKE" xml:space="preserve">
     <value>Secondary sink: {0}</value>
+  </data>
+  <data name="SIM_KESSEL_QUELLWAERME" xml:space="preserve">
+    <value>Source heat from cascade:</value>
+  </data>
+  <data name="SIM_KESSEL_QUELLWAERME_EINHEIT" xml:space="preserve">
+    <value>MWh</value>
+  </data>
+  <data name="SIM_KESSEL_QUELLWAERME_TIP" xml:space="preserve">
+    <value>Heat that the peak-load boilers have drawn from their source buffer in the cascade.
+It is already part of the heat production; only the remaining share consumes fuel.
+Without a source buffer this reads 0.00.</value>
+  </data>
+  <data name="SIM_SCHEMA_ABNEHMER_WARMWASSER" xml:space="preserve">
+    <value>Domestic hot water</value>
+  </data>
+  <data name="SIM_SCHEMA_KEINE_KETTE" xml:space="preserve">
+    <value>No cascade in this project — no generator draws its heat from a buffer storage tank.</value>
+  </data>
+  <data name="SIM_SCHEMA_KETTE_KOPF" xml:space="preserve">
+    <value>Cascade chain</value>
+  </data>
+  <data name="SIM_SCHEMA_LEER" xml:space="preserve">
+    <value>No hydraulic configuration has been set up for this project yet.</value>
+  </data>
+  <data name="SIM_SCHEMA_LEGENDE_KASKADE" xml:space="preserve">
+    <value>Cascade: buffer feeds the flow temperature of the downstream generator</value>
+  </data>
+  <data name="SIM_SCHEMA_LEGENDE_LADUNG" xml:space="preserve">
+    <value>Charging (circle = effective priority)</value>
+  </data>
+  <data name="SIM_SCHEMA_LEGENDE_QUELLE" xml:space="preserve">
+    <value>Source side</value>
+  </data>
+  <data name="SIM_SCHEMA_LEGENDE_VERSORGUNG" xml:space="preserve">
+    <value>Supply / discharge</value>
+  </data>
+  <data name="SIM_SCHEMA_QUELLE_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="SIM_SCHEMA_QUELLE_SOLARSTRAHLUNG" xml:space="preserve">
+    <value>Solar irradiation</value>
+  </data>
+  <data name="SIM_SCHEMA_SPALTE_ABNEHMER" xml:space="preserve">
+    <value>Consumers</value>
+  </data>
+  <data name="SIM_SCHEMA_SPALTE_ERZEUGER" xml:space="preserve">
+    <value>Generators</value>
+  </data>
+  <data name="SIM_SCHEMA_SPALTE_QUELLE" xml:space="preserve">
+    <value>Heat source</value>
+  </data>
+  <data name="SIM_SCHEMA_SPALTE_SPEICHER" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="SIM_SCHEMA_TIP_ABNEHMER" xml:space="preserve">
+    <value>Heat consumer — supplied directly by a generator or from a buffer storage tank.</value>
+  </data>
+  <data name="SIM_SCHEMA_WARNUNG" xml:space="preserve">
+    <value>Flow below the buffer set point</value>
   </data>
   <data name="Text_Select" xml:space="preserve">
     <value>Please select!</value>

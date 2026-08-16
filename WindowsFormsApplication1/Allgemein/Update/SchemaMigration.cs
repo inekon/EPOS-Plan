@@ -40,12 +40,13 @@ namespace WindowsFormsApplication1
     /// Tab_Energieanlagen.ID_Carrier nach. Schritt 9 kommt mit Etappe E0 des Konzepts
     /// Konfigurations-UI/Hydraulik hinzu und löst die Quellpuffer-Bezeichner auf den
     /// Fremdschlüssel WQ_ID_Puffer auf (Datenregel R7) - der dritte und letzte
-    /// DML-Schritt neben 5 und 7.
+    /// DML-Schritt neben 5 und 7. Schritt 10 kommt mit Etappe D4 hinzu und legt die
+    /// Ergebnisspalte Tab_ErgebnisHeizkessel.Quellwaerme an (rein additives DDL).
     /// </summary>
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 9;
+        public const int ZIEL_VERSION = 10;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -89,6 +90,17 @@ namespace WindowsFormsApplication1
         /// bereits auf Stand 8 stehende Datenbank die Schritte 1-8 nicht wiederholen darf.
         /// </summary>
         public const int SCHRITT_9_QUELLPUFFER_FK = 9;
+
+        /// <summary>
+        /// Nummer der Ergebnisspalte <c>Tab_ErgebnisHeizkessel.Quellwaerme</c> (Etappe D4
+        /// des Konzepts <c>Konzept_KonfigUI_Hydraulik</c>; D5b-Restpunkt 3).
+        ///
+        /// Rein additives DDL aus dem Spaltenkatalog, derselbe Weg wie die Schritte 1, 2,
+        /// 6 und 8 - eigener Schritt nur deshalb, weil eine bereits auf Stand 9 stehende
+        /// Datenbank die Schritte 1-9 nicht wiederholen darf (5, 7 und 9 sind die
+        /// DML-Schritte des Vorhabens).
+        /// </summary>
+        public const int SCHRITT_10_KESSEL_QUELLWAERME = 10;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -236,6 +248,12 @@ namespace WindowsFormsApplication1
                         "Quellpuffer-Fremdschlüssel WQ_ID_Puffer (Etappe E0, Regel R7)",
                         "Die Quell-Pufferreferenzen konnten nicht auf den Fremdschlüssel umgestellt werden.",
                         Schritt_9_QuellPufferFremdschluessel),
+
+            // ETAPPE D4 - Ergebnisspalte für die Quellwärme des Kessels (Kaskade).
+            new Schritt(SCHRITT_10_KESSEL_QUELLWAERME,
+                        "Ergebnisspalte Quellwaerme in Tab_ErgebnisHeizkessel (Etappe D4)",
+                        "Die Ergebnisspalte für die Quellwärme des Heizkessels konnte nicht angelegt werden.",
+                        Schritt_10_KesselQuellwaerme),
         };
 
         // =================================================================================
@@ -609,6 +627,25 @@ namespace WindowsFormsApplication1
         private static bool Schritt_8_Energietraeger(Lauf l)
         {
             return SpaltenAnlegen(l, SchemaKatalog.Schritt8_Energietraeger);
+        }
+
+        /// <summary>
+        /// Schritt 10 (Etappe D4): die Ergebnisspalte
+        /// <c>Tab_ErgebnisHeizkessel.Quellwaerme</c> — die Wärme, die ein Spitzenkessel in
+        /// der Kaskade aus seinem Quellpuffer bezogen hat.
+        ///
+        /// Derselbe additive Weg wie die Schritte 1, 2, 6 und 8 und aus demselben Katalog
+        /// (<see cref="SchemaKatalog.Schritt10_KesselQuellwaerme"/>); Begründung für Typ,
+        /// Vorbelegung und Ordinalposition steht dort.
+        ///
+        /// <b>KEIN BACKFILL, und das ist die ergebnisneutrale Wahl:</b> Ein Lauf, der vor
+        /// dieser Fassung gerechnet wurde, hat keine Quellwärme berechnet — NULL sagt
+        /// „nicht erhoben", eine 0 behauptete „erhoben und null". Die Leseseite behandelt
+        /// beides gleich, die Anzeige zeigt 0,00.
+        /// </summary>
+        private static bool Schritt_10_KesselQuellwaerme(Lauf l)
+        {
+            return SpaltenAnlegen(l, SchemaKatalog.Schritt10_KesselQuellwaerme);
         }
 
         // =================================================================================

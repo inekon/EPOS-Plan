@@ -147,9 +147,26 @@ namespace WindowsFormsApplication1
 
         private bool _aufbau;
         private bool _aufgeklappt;
+        private bool _hervorgehoben;
 
         /// <summary>Der Puffer, den die Karte zeigt (Tab_Pufferspeicher.ID).</summary>
         public int ID_Puffer { get; private set; }
+
+        /// <summary>
+        /// ETAPPE D4 — der Speicher ist das im Schema markierte Element (oder umgekehrt).
+        /// Reine Hervorhebung, unabhängig von <see cref="Aufgeklappt"/>: Der Anwender kann
+        /// eine Karte zuklappen, ohne dass die Auswahl verfällt.
+        /// </summary>
+        public bool Hervorgehoben
+        {
+            get { return _hervorgehoben; }
+            set
+            {
+                if (_hervorgehoben == value) return;
+                _hervorgehoben = value;
+                Invalidate();
+            }
+        }
 
         /// <summary>Klick auf die zugeklappte Zeile bzw. auf den Pfeil.</summary>
         public event EventHandler Umschalten;
@@ -473,7 +490,11 @@ namespace WindowsFormsApplication1
             using (GraphicsPath p = KartenStil.Rundeck(r, KartenStil.ECKE))
             {
                 using (SolidBrush b = new SolidBrush(BackColor)) e.Graphics.FillPath(b, p);
-                using (Pen stift = new Pen(_aufgeklappt ? KartenStil.RAHMEN_SPEICHER : KartenStil.RAHMEN))
+                using (Pen stift = new Pen(_hervorgehoben
+                                               ? KartenStil.QUELLE_RAHMEN
+                                               : _aufgeklappt
+                                                   ? KartenStil.RAHMEN_SPEICHER : KartenStil.RAHMEN,
+                                           _hervorgehoben ? 2f : 1f))
                     e.Graphics.DrawPath(stift, p);
             }
 
