@@ -955,10 +955,9 @@ namespace WindowsFormsApplication1
             // (Befund L0-2) - sonst mischte die englische Meldung die Sprachen.
             return MessageBox.Show(
                 string.Format(
-                    // Umbrüche der Ressource (LF) auf die Plattformform bringen - und
-                    // zwar VOR dem Einsetzen, sonst würden die bereits mit
-                    // Environment.NewLine verketteten Referenzen doppelt umgebrochen.
-                    MyResource.Resource.PSP_MELDUNG_VERWENDUNGSWECHSEL.Replace("\n", Environment.NewLine),
+                    // Umbrüche der Ressource VOR dem Einsetzen auf die Plattformform
+                    // bringen (Details in Zeilenumbruch).
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.PSP_MELDUNG_VERWENDUNGSWECHSEL),
                     alt.Bezeichner,
                     WaermesenkeClass.VerwendungAnzeige(verwendungAlt),
                     WaermesenkeClass.VerwendungAnzeige(verwendungNeu),
@@ -977,7 +976,7 @@ namespace WindowsFormsApplication1
             {
                 MessageBox.Show(
                     string.Format(
-                        MyResource.Resource.PSP_MELDUNG_ENTFERNEN_BLOCKIERT.Replace("\n", Environment.NewLine),
+                        Zeilenumbruch.Normalisieren(MyResource.Resource.PSP_MELDUNG_ENTFERNEN_BLOCKIERT),
                         _tbBezeichner.Text,
                         string.Join(Environment.NewLine + "  • ", referenzen)),
                     MyResource.Resource.PSP_TITEL_PUFFER_ENTFERNEN,
@@ -987,7 +986,7 @@ namespace WindowsFormsApplication1
 
             if (MessageBox.Show(
                     string.Format(
-                        MyResource.Resource.PSP_MELDUNG_ENTFERNEN_BESTAETIGEN.Replace("\n", Environment.NewLine),
+                        Zeilenumbruch.Normalisieren(MyResource.Resource.PSP_MELDUNG_ENTFERNEN_BESTAETIGEN),
                         _tbBezeichner.Text),
                     MyResource.Resource.PSP_TITEL_PUFFER_ENTFERNEN, MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) != DialogResult.Yes) return;

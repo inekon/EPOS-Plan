@@ -106,7 +106,7 @@ namespace WindowsFormsApplication1
         {
             if (sim == null || sim.simulation_Strombedarf == null || temp_ges == null)
             {
-                MessageBox.Show(MyResource.Resource.SIM_MSG_KEINE_DATEN_SIMULATION.Replace("\n", Environment.NewLine),
+                MessageBox.Show(Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_MSG_KEINE_DATEN_SIMULATION),
                     MyResource.Resource.SIM_BTN_CSV_EXPORT, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }

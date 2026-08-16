@@ -571,9 +571,9 @@ namespace WindowsFormsApplication1
             tabPage_Heizkessel.Controls.Add(label_KesselQuellwaermeEinheit);
 
             _tooltipQuellwaerme.SetToolTip(tb_KesselQuellwaerme,
-                MyResource.Resource.SIM_KESSEL_QUELLWAERME_TIP.Replace("\n", Environment.NewLine));
+                Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_KESSEL_QUELLWAERME_TIP));
             _tooltipQuellwaerme.SetToolTip(label_KesselQuellwaerme,
-                MyResource.Resource.SIM_KESSEL_QUELLWAERME_TIP.Replace("\n", Environment.NewLine));
+                Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_KESSEL_QUELLWAERME_TIP));
         }
 
         private readonly ToolTip _tooltipQuellwaerme = new ToolTip();
@@ -1127,8 +1127,8 @@ namespace WindowsFormsApplication1
                     li.SubItems.Add(sp.SOC.ToString("F1"));
 
                     if (sp.IstKombi)
-                        li.ToolTipText = MyResource.Resource.PSP_VOLLZYKLEN_KOMBI_TIP
-                                                          .Replace("\n", Environment.NewLine);
+                        li.ToolTipText = Zeilenumbruch.Normalisieren(
+                            MyResource.Resource.PSP_VOLLZYKLEN_KOMBI_TIP);
 
                     listView_SimPuffer.Items.Add(li);
                 }
@@ -2146,7 +2146,7 @@ namespace WindowsFormsApplication1
             if (!_ergebnisGueltig)
             {
                 MessageBox.Show(
-                    MyResource.Resource.SIM_MSG_KEIN_VOLLSTAENDIGES_ERGEBNIS.Replace("\n", Environment.NewLine),
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_MSG_KEIN_VOLLSTAENDIGES_ERGEBNIS),
                     MyResource.Resource.SIM_TITEL_ERGEBNIS_SPEICHERN, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }

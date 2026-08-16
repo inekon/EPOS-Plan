@@ -516,11 +516,9 @@ namespace WindowsFormsApplication1
         {
             if (!ErgebnisseVorhanden)
             {
-                // Die .resx legt Umbrüche als LF ab (XML-Normierung); der Bestand schrieb
-                // hier CRLF. Deshalb vor der Anzeige zurückbiegen.
                 _lblPruefung.Text = !string.IsNullOrEmpty(HinweisErgebnis)
                     ? HinweisErgebnis
-                    : MyResource.Resource.SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF.Replace("\n", "\r\n");
+                    : Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_PRUEFUNG_KEIN_LAUF);
                 return;
             }
 
@@ -544,10 +542,11 @@ namespace WindowsFormsApplication1
             // Ergebnisausweis in Paket 7); der Dialog macht ihn zusätzlich sichtbar.
             string text = erg.Anzeigetext();
             if (erg.Moeglich && erg.FestgesteinNaeherung)
-                text += MyResource.Resource.SIMQ_ERDREICH_HINWEIS_FESTGESTEIN.Replace("\n", "\r\n");
+                text += Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_HINWEIS_FESTGESTEIN);
             if (!string.IsNullOrEmpty(HinweisVorbehalt))
-                text += string.Format(MyResource.Resource.SIMQ_ERDREICH_HINWEIS_VORBEHALT.Replace("\n", "\r\n"),
-                                      HinweisVorbehalt);
+                text += string.Format(
+                    Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_HINWEIS_VORBEHALT),
+                    HinweisVorbehalt);
             if (!string.IsNullOrEmpty(HinweisFrost))
                 text += "\r\n  " + HinweisFrost;
 

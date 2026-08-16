@@ -583,7 +583,7 @@ namespace WindowsFormsApplication1
             }
 
             if (!string.IsNullOrEmpty(d.Hinweis))
-                _tip.SetToolTip(chip, d.Hinweis.Replace("\n", Environment.NewLine));
+                _tip.SetToolTip(chip, Zeilenumbruch.Normalisieren(d.Hinweis));
 
             return chip;
         }
