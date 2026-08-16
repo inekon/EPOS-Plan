@@ -950,3 +950,50 @@ ein Gerät statt einer hydraulischen Verwendung bezeichnet.
 | `"Kombi"` (`DbWerte.PSP_VERWENDUNG_KOMBI`) | **Persistenzwert** in `Tab_Pufferspeicher.Verwendung`, deutsch und eingefroren (Drei-Schichten-Regel). Er wird in SQL verglichen und steht in `Tab_ErgebnisPufferspeicher`. |
 | `"PufferKombi"` (`DbWerte.WS_ZIEL_PUFFER_KOMBI`) | **Persistenzwert** in `Tab_Energieanlagen.WS_Ziel`/`WS_Ziel2`, ebenso eingefroren. |
 | Meldungen der Kessel-Kaskade, des Zyklus-Guards, des Kurzschluss-Guards und der Altpfad-Hinweise | **Protokollkanal der Engine.** Sie laufen wie in Paket 8 vorgesehen als deutsche Klartexte über `SimulationProtokoll`; die Umstellung des gesamten Kanals ist als eigener Schritt vorgemerkt (`SIMENG_*`-Familie). Bis dahin bleiben sie Festtexte — ausdrücklich als offener Punkt geführt, nicht übersehen. |
+
+## Nachtrag Etappe D5b (Dialog-Freischaltung der Quellenwahl)
+
+**Konzept_KonfigUI_Hydraulik, Abschnitte 4 und 7.** Der Heizkessel darf seine Wärmequelle
+jetzt in der Kartenansicht wählen (Kaskade), die beiden Dialogprüfungen — Kurzschluss und
+Ring — melden im Dialog statt erst im Lauf, und der Kombispeicher zeigt seine
+Entladeposition in **beiden** Kanälen. Dazu kamen **11 Schlüssel**; einer verlor seine
+Fundstelle. Alle sind in beiden `.resx` und in `Resource.Designer.cs` nachgezogen; der
+Bestand steht jetzt bei **617 `<data>`-Einträgen** je Datei (davon vier Nicht-Text-Einträge
+der Vorlage: `Name1`, `Color1`, `Bitmap1`, `Icon1`).
+
+### Neu (11)
+
+| Schlüssel | DE | EN | Fundstelle |
+|---|---|---|---|
+| `PSP_ENTLADE_POSITION_KANAL_HEIZUNG` | Heizkanal: als {0}. von {1} entladen. | Heating circuit: discharged as no. {0} of {1}. | `Form_PufferSp_Projekt.KombiPositionstext` (Zeile 1 beim Kombispeicher) |
+| `PSP_ENTLADE_POSITION_KANAL_WARMWASSER` | Warmwasserkanal: als {0}. von {1} entladen. | DHW circuit: discharged as no. {0} of {1}. | dito (Zeile 2) |
+| `SIMQ_QUELLE_SYSTEMRUECKLAUF` | Systemrücklauf | System return | `WaermequelleClass.TypAnzeigeFuer` (Kessel, Eintrag 1); Quellen-Chip des Kessels in `Form_Simulation_Config.Karten.QuellenChip` |
+| `SIMQ_TIP_QUELLE_KESSEL` | Wärmequelle des Heizkessels (Doppelklick zum Ändern) … | Heat source of the boiler (double-click to change) … | Mouseover des Kessel-Quellenchips, `…Karten.QuellenChip` |
+| `SIMQ_MSG_QUELLE_ART` | Eine Wärmequelle wählen können nur die Wärmepumpe und der Heizkessel. … | Only the heat pump and the boiler can select a heat source. … | `Form_Simulation_Config.WaermequelleBearbeiten` (Sperre für BHKW/Solarthermie) |
+| `SIMQ_PUFFER_HINWEIS_KASKADE` | Kaskade (Heizkessel): … Anteil = (Vorlauf des Puffers − Rücklauf des Kessels) / … | Cascade (boiler): … Share = (storage flow − boiler return) / … | `Form_QuellePufferspeicher.ArtAnwenden` — steht beim Kessel an der Stelle der Verdampfer-Rubrik |
+| `SIMQ_PUFFER_HINWEIS_KASKADE_KURZ` | Der Heizkessel hebt von der Puffertemperatur auf sein eigenes Vorlaufniveau an … | The boiler raises the temperature from the storage level to its own flow level … | dito, rechte Spalte (ersetzt beim Kessel `SIMQ_PUFFER_HINWEIS_QUELLWAERME`) |
+| `SIMQ_PUFFER_HINWEIS_ALTBEZEICHNER` | Quelle bisher nur über den Namen „{0}". Mit OK wird der markierte Speicher fest zugeordnet. | Source stored by name "{0}" only. OK assigns the storage selected above. | `Form_QuellePufferspeicher.PufferListeLaden` (E0: nicht aufgelöster Altbestand) |
+| `SIM_QUELLE_GLEICH_EIGENE_SENKE` | Der Pufferspeicher „{0}" ist bereits Wärmesenke dieser Anlage ({1}). … | The buffer storage "{0}" is already a heat sink of this unit ({1}). … | `WaermesenkeClass.KurzschlussMeldung` |
+| `SIM_QUELLE_KASKADE_RING` | Die Quellbezüge der Pufferspeicher bilden einen RING: … Beteiligt: {0} … | The source references of the buffer storages form a RING: … Involved: {0} … | `WaermesenkeClass.RingMeldung` |
+| `SIM_QUELLE_BETEILIGT` | {0} (Quelle: {1}) | {0} (source: {1}) | `WaermesenkeClass.RingBeteiligte` (Aufzählungsglied der Ringmeldung) |
+
+**Wortwahl nach dem Glossar:** „Pufferspeicher" → *buffer storage*, „Heizkanal/
+Warmwasserkanal" → *heating circuit* / *DHW circuit* (Kürzel DHW zulässig, Kapitel 11),
+„Systemrücklauf" → *system return*, „Kaskade" → *cascade*, „Anlage" → *unit*. Die
+Kanalwörter sind bewusst NICHT die Speicherwörter aus `PSP_KANALWORT_*`: Dort steht, wie
+viele **Speicher** der Kanal hat („von 2 Heizungsspeichern"), hier, in **welchem Kanal**
+die Position gilt — ein Kombispeicher ist weder ein Heizungs- noch ein
+Brauchwasserspeicher.
+
+### Ohne Fundstelle seit D5b
+
+| Schlüssel | Grund |
+|---|---|
+| `SIMQ_MSG_QUELLE_NUR_WP` | Der Text („Eine Wärmequelle hat nur die Wärmepumpe. Heizkessel, BHKW und Solarthermie erzeugen ihre Wärme selbst …") ist mit der Kessel-Freischaltung **inhaltlich falsch geworden**. Statt ihn umzuschreiben — der Schlüsselname trüge die Aussage weiter — steht die neue Sperre unter `SIMQ_MSG_QUELLE_ART`. Der alte Schlüssel bleibt im Katalog stehen (Wortbestand für BHKW/Solarthermie unverändert richtig), hat aber keine Fundstelle mehr. |
+
+### Nicht lokalisiert — und warum
+
+| Wert | Grund |
+|---|---|
+| `""` (`DbWerte.WQ_TYP_OHNE`) | **Persistenzwert** in `Tab_Energieanlagen.WQ_Typ` — der leere Spaltenwert, den jede Anlage trägt, die nie einen Quellendialog gesehen hat. Er ist der Steuerwert des ersten Kessel-Eintrags; angezeigt wird er über `SIMQ_QUELLE_SYSTEMRUECKLAUF`. |
+| Meldungen des Zyklus- und des Kurzschluss-Guards **in der Engine** | unverändert Protokollkanal (siehe D5a-Nachtrag). Die beiden neuen Texte oben sind die **Dialog**-Fassungen; die Engine-Fassungen bleiben deutsche Klartexte über `SimulationProtokoll`, bis die `SIMENG_*`-Familie kommt. |

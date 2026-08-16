@@ -56,6 +56,15 @@ namespace WindowsFormsApplication1
         private AnlagenInfo _wqInfo;
         private bool _wqUpdating = false;
 
+        /// <summary>
+        /// Die STEUERWERTE, die im Inline-Editor gerade angeboten werden (Etappe D5b).
+        /// Seit der Freischaltung je <c>ID_Type</c> ist das nicht mehr immer
+        /// <see cref="WaermequelleClass.TypWerte"/>: Der Heizkessel bekommt eine eigene,
+        /// zweielementige Liste. Das Auswahlereignis liefert nur einen Index — ohne diese
+        /// Merkstelle zeigte er auf die falsche Liste.
+        /// </summary>
+        private string[] _wqTypen = new string[0];
+
         // Außentemperatur der Klimaregion (8760 Stundenwerte) für die Vorschau des
         // Erdreichdialogs. Wird beim ersten Öffnen einmal geladen und gecacht
         // (Konzept 4.5) - nicht bei jeder Parameteränderung.
@@ -398,18 +407,21 @@ namespace WindowsFormsApplication1
                     return string.Format(MyResource.Resource.SIMQ_QUELLE_KONSTANT, a.WQ_Temp.ToString("0.#"));
                 case WaermequelleClass.TYP_PUFFER:
                     {
-                        // E0: Der Fremdschlüssel ist die führende Identität - erst wenn
-                        // er fehlt oder ins Leere zeigt (Altbestand), gilt der Bezeichner.
-                        // Dieselbe Rangfolge wie in WaermequelleClass.QuellspeicherZeile.
-                        string name = null;
-                        object oId = WaermequelleClass.WertLesen(a.ID, "WQ_ID_Puffer");
-                        if (oId != null)
-                        {
-                            WaermesenkeClass.PufferInfo p =
-                                WaermesenkeClass.PufferLesen(Convert.ToInt32(oId));
-                            if (p != null) name = p.Bezeichner;
-                        }
-                        if (string.IsNullOrEmpty(name))
+                        // E0 / ETAPPE D5b: Aufgelöst wird über die EINE Rangfolge, die
+                        // auch Engine und Erzeugerkarte benutzen - Fremdschlüssel
+                        // WQ_ID_Puffer, dann der Bezeichner in der Projektkopie
+                        // (WaermesenkeClass.QuellPufferDerAnlage). Vorher stand hier eine
+                        // ZWEITE, eigene Kette: FK, sonst der Bezeichnertext ROH. Sie
+                        // konnte einen Namen anzeigen, der zu keinem Projekt-Puffer
+                        // gehört - also eine Quelle, die im Lauf gar nicht existiert.
+                        int idPuffer = WaermesenkeClass.QuellPufferDerAnlage(m_ID_Projekt, a.ID);
+                        string name = idPuffer > 0 ? WaermesenkeClass.PufferName(idPuffer) : "";
+
+                        // ANZEIGE-Rückfall (und nur der): Löst sich nichts auf, steht der
+                        // Alttext aus WQ_Puffer da, damit der Anwender sieht, worauf die
+                        // Anlage einmal zeigte. Der Quellendialog weist ihn eigens aus
+                        // (Form_QuellePufferspeicher, Hinweis „nicht aufgelöst").
+                        if (name.Length == 0)
                             name = WaermequelleClass.WertLesen(a.ID, "WQ_Puffer") as string;
 
                         return string.IsNullOrEmpty(name)
@@ -706,19 +718,30 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Wärmequelle: nur Wärmepumpen, und dort nur Sole-/Wasser-Wasser.</summary>
+        /// <summary>
+        /// Wärmequelle: Wärmepumpe (dort nur Sole-/Wasser-Wasser) und seit ETAPPE D5b
+        /// auch der HEIZKESSEL — für ihn allerdings nur mit den zwei Möglichkeiten
+        /// „Systemrücklauf" und „Pufferspeicher" (Kaskade, Konzept Anforderung 6).
+        ///
+        /// Die Freischaltung selbst steht in
+        /// <see cref="WaermequelleClass.QuellenwahlMoeglich"/> und
+        /// <see cref="WaermequelleClass.TypWerteFuer"/>; diese Methode ist nur noch der
+        /// Türsteher davor. Die Luft-Wasser-Sperre bleibt WP-spezifisch: Sie sagt etwas
+        /// über die Bauart der Wärmepumpe aus, nicht über die Quellenwahl allgemein.
+        /// </summary>
         private void WaermequelleBearbeiten(AnlagenInfo info, Rectangle zelle)
         {
-            if (!info.IstWaermepumpe)
+            if (!WaermequelleClass.QuellenwahlMoeglich(info.ID_Type))
             {
                 MessageBox.Show(
-                    MyResource.Resource.SIMQ_MSG_QUELLE_NUR_WP,
+                    MyResource.Resource.SIMQ_MSG_QUELLE_ART.Replace("\n", Environment.NewLine),
                     MyResource.Resource.SIMQ_TITEL_WAERMEQUELLE,
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            if (string.IsNullOrEmpty(info.WpTyp) || info.WpTyp == DbWerte.WP_BAUART_LUFT_WASSER)
+            if (info.IstWaermepumpe &&
+                (string.IsNullOrEmpty(info.WpTyp) || info.WpTyp == DbWerte.WP_BAUART_LUFT_WASSER))
             {
                 // Der WP-Typ ist ein Persistenzwert und bleibt als solcher stehen; nur
                 // der Ersatztext für "nicht gepflegt" ist Anzeige.
@@ -802,8 +825,16 @@ namespace WindowsFormsApplication1
         // --- Wärmequellen-Auswahl (Bestand) -------------------------------------------
 
         /// <summary>
-        /// Zeigt das Wärmequellen-Dropdown (Sole-/Wasser-Wasser-WP) unmittelbar an der
-        /// Karte an - wie es vorher in der Zelle der Übersicht aufklappte.
+        /// Zeigt das Wärmequellen-Dropdown unmittelbar an der Karte an - wie es vorher in
+        /// der Zelle der Übersicht aufklappte.
+        ///
+        /// <b>ETAPPE D5b:</b> Die Einträge kommen aus
+        /// <see cref="WaermequelleClass.TypWerteFuer"/>/<c>TypAnzeigeFuer</c> und hängen
+        /// damit an der Erzeugerart: Die Wärmepumpe bekommt die sechs bekannten Typen,
+        /// der Heizkessel genau zwei („Systemrücklauf", „Pufferspeicher"). Die gezeigte
+        /// Werteliste wird in <see cref="_wqTypen"/> festgehalten — das Ereignis liefert
+        /// nur einen INDEX, und der zeigt seit dieser Etappe je nach Art auf eine andere
+        /// Liste.
         ///
         /// <b>D2:</b> <paramref name="zellBounds"/> kommt jetzt bereits in
         /// FORMULARKOORDINATEN (die aufrufende Karte rechnet sie in
@@ -824,12 +855,21 @@ namespace WindowsFormsApplication1
             if (!this.Controls.Contains(_wqCombo)) this.Controls.Add(_wqCombo);
 
             _wqInfo = info;
+            _wqTypen = WaermequelleClass.TypWerteFuer(info.ID_Type);
+            if (_wqTypen.Length == 0) return;
 
             _wqUpdating = true;
             _wqCombo.Items.Clear();
-            _wqCombo.Items.AddRange(WaermequelleClass.TypAnzeige);
-            int aktuell = Array.IndexOf(WaermequelleClass.TypWerte,
-                string.IsNullOrEmpty(info.WQ_Typ) ? WaermequelleClass.TYP_AUSSENLUFT : info.WQ_Typ);
+            _wqCombo.Items.AddRange(WaermequelleClass.TypAnzeigeFuer(info.ID_Type));
+
+            // Vorauswahl: der gespeicherte Typ. Beim Heizkessel ist die leere Angabe ein
+            // REGULÄRER Eintrag („Systemrücklauf"), bei der Wärmepumpe steht sie wie
+            // bisher für Außenluft.
+            string aktuellerTyp = info.WQ_Typ ?? "";
+            if (info.IstWaermepumpe && aktuellerTyp.Length == 0)
+                aktuellerTyp = WaermequelleClass.TYP_AUSSENLUFT;
+
+            int aktuell = Array.IndexOf(_wqTypen, aktuellerTyp);
             _wqCombo.SelectedIndex = aktuell >= 0 ? aktuell : 0;
             _wqUpdating = false;
 
@@ -844,13 +884,26 @@ namespace WindowsFormsApplication1
         private void WqCombo_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_wqUpdating || _wqInfo == null || _wqCombo.SelectedIndex < 0) return;
+            if (_wqCombo.SelectedIndex >= _wqTypen.Length) return;
 
-            string typNeu = WaermequelleClass.TypWerte[_wqCombo.SelectedIndex];
+            string typNeu = _wqTypen[_wqCombo.SelectedIndex];
             AnlagenInfo info = _wqInfo;
             _wqCombo.Visible = false;
 
             switch (typNeu)
             {
+                case WaermequelleClass.TYP_OHNE:
+                    // ETAPPE D5b, Heizkessel: „Systemrücklauf" - die Kaskade wird
+                    // ABGEBAUT. Mit dem Typ geht auch der Fremdschlüssel weg: Ein
+                    // stehengebliebener WQ_ID_Puffer wäre genau der Altdatenrest aus
+                    // Befund E-K2-4, der den Kessel ohne Wirkung in die Stundenschleife
+                    // zieht. NULL statt 0 wegen der erzwungenen Beziehung aus Schritt 4
+                    // der SchemaMigration (dieselbe Regel wie in WaermesenkeClass).
+                    WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
+                    WaermequelleClass.WertSchreiben(info.ID, "WQ_ID_Puffer",
+                        System.Data.OleDb.OleDbType.Integer, DBNull.Value);
+                    break;
+
                 case WaermequelleClass.TYP_AUSSENLUFT:
                     WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
                     break;
@@ -876,6 +929,10 @@ namespace WindowsFormsApplication1
                         Form_QuellePufferspeicher frmQuelle = new Form_QuellePufferspeicher();
                         frmQuelle.WPName = info.Bezeichner;
                         frmQuelle.ID_Projekt = m_ID_Projekt;
+                        // D5b: Der Dialog bedient jetzt zwei Erzeugerarten - beim Kessel
+                        // beschreibt er die KASKADE statt der Verdampferwärme und blendet
+                        // die Verdampfer-Parameter aus.
+                        frmQuelle.ID_Type = info.ID_Type;
                         object oIdPuffer = WaermequelleClass.WertLesen(info.ID, "WQ_ID_Puffer");
                         if (oIdPuffer != null) frmQuelle.ID_Puffer = Convert.ToInt32(oIdPuffer);
                         frmQuelle.Pufferspeicher = WaermequelleClass.WertLesen(info.ID, "WQ_Puffer") as string;
@@ -892,6 +949,22 @@ namespace WindowsFormsApplication1
                         frmQuelle.SetControls();
                         if (frmQuelle.ShowDialog(this) != DialogResult.OK) return;
 
+                        // ETAPPE D5b — die beiden Dialogprüfungen aus Konzept Abschnitt 7,
+                        // BEVOR irgendetwas geschrieben wird (Konzept 4.6 Kurzschluss,
+                        // Kaskadenzyklus). Die Engine-Guards bleiben als zweite
+                        // Verteidigungslinie; hier soll die Konfiguration gar nicht erst
+                        // entstehen, statt später mit Warnung wirkungslos zu bleiben (E-K2-1)
+                        // oder den ganzen Lauf abzubrechen (Zyklus-Guard).
+                        WaermesenkeClass.QuellPruefErgebnis pruef =
+                            WaermesenkeClass.QuellePruefen(m_ID_Projekt, info.ID, frmQuelle.ID_Puffer);
+                        if (!pruef.Ok)
+                        {
+                            MessageBox.Show(pruef.Fehler,
+                                MyResource.Resource.SIMQ_TITEL_WAERMEQUELLE,
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;   // nichts geschrieben - der Bestand bleibt gültig
+                        }
+
                         // E0: FÜHREND ist der Fremdschlüssel. Er geht über die
                         // Überladung mit ausdrücklichem OleDbType weg — 0 ist keine
                         // gültige Puffer-ID, und die erzwungene Beziehung aus Schritt 4
@@ -903,10 +976,24 @@ namespace WindowsFormsApplication1
                         // Der Bezeichner wird MITGESCHRIEBEN: Anzeigen und die
                         // Rückfallkette der Engine (Stufe 2/3) lesen ihn weiter.
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Puffer", frmQuelle.Pufferspeicher);
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Temp", frmQuelle.Quelltemperatur);
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Spreizung", frmQuelle.Spreizung);
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Regeneration", frmQuelle.Regeneration);
-                        WaermequelleClass.WertSchreiben(info.ID, "WQ_Unbegrenzt", frmQuelle.Unbegrenzt);
+
+                        // D5b: Die vier Parameter darunter beschreiben die VERDAMPFERseite
+                        // (Quelltemperatur, nutzbare Spreizung, Regeneration, unbegrenzte
+                        // Quelle) und werden ausschließlich von SimulationWaermepumpe bzw.
+                        // WaermequelleClass.Quellspeicher gelesen. Der Kessel bezieht seinen
+                        // Temperaturhub aus dem VORLAUF des Quellpuffers
+                        // (SimulationControl.KesselTemperaturpaar) - für ihn hat der Dialog
+                        // die Felder gar nicht gezeigt, und dann darf er sie auch nicht
+                        // schreiben: Sonst überschriebe eine Kesselbearbeitung die Vorgaben
+                        // mit den Vorbelegungen 10 °C / 5 K.
+                        if (info.IstWaermepumpe)
+                        {
+                            WaermequelleClass.WertSchreiben(info.ID, "WQ_Temp", frmQuelle.Quelltemperatur);
+                            WaermequelleClass.WertSchreiben(info.ID, "WQ_Spreizung", frmQuelle.Spreizung);
+                            WaermequelleClass.WertSchreiben(info.ID, "WQ_Regeneration", frmQuelle.Regeneration);
+                            WaermequelleClass.WertSchreiben(info.ID, "WQ_Unbegrenzt", frmQuelle.Unbegrenzt);
+                        }
+
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
                         break;
                     }

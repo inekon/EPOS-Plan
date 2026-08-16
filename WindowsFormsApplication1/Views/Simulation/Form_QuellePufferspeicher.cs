@@ -44,6 +44,21 @@ namespace WindowsFormsApplication1
         private Label _lblLeer;
         private Button _btnPufferAnlegen;
 
+        /// <summary>
+        /// Die Parameter der VERDAMPFERSEITE (Quelltemperatur, nutzbare Spreizung,
+        /// Regeneration, „unbegrenzt verfügbar"). Sie gelten nur für die Wärmepumpe und
+        /// sind beim Heizkessel ausgeblendet (Etappe D5b) — dort liefert der Puffer über
+        /// seinen VORLAUF einen Teil des Temperaturhubs, und alles Übrige rechnet
+        /// <c>SimulationSPK</c> aus dem Temperaturpaar des Kessels.
+        /// </summary>
+        private GroupBox _gbParameter;
+
+        /// <summary>Erklärtext rechts — je Erzeugerart Verdampferwärme oder Kaskade (D5b).</summary>
+        private Label _lblHinweisArt;
+
+        /// <summary>Kaskadenerklärung an der Stelle der Verdampfer-Parameter (D5b, nur Kessel).</summary>
+        private Label _lblKaskade;
+
         private List<WaermesenkeClass.PufferInfo> _puffer =
             new List<WaermesenkeClass.PufferInfo>();
 
@@ -79,11 +94,25 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Name der Wärmepumpe (nur für den Fenstertitel).</summary>
+        /// <summary>Name der Anlage (nur für den Fenstertitel).</summary>
         public string WPName = "";
 
         /// <summary>Projekt der Anlage — bestimmt die Auswahlliste (E0).</summary>
         public int ID_Projekt;
+
+        /// <summary>
+        /// <c>Tab_Energieanlagen.ID_Type</c> der Anlage (Etappe D5b). Vorbelegt mit der
+        /// Wärmepumpe, damit alle Bestandsaufrufe unverändert bleiben; beim HEIZKESSEL
+        /// (<see cref="ProjektPuffer.TYP_KESSEL"/>) beschreibt der Dialog die KASKADE und
+        /// blendet die Verdampfer-Parameter aus.
+        /// </summary>
+        public int ID_Type = ProjektPuffer.TYP_WP;
+
+        /// <summary>true = der Dialog läuft für einen Heizkessel (Kaskade statt Verdampfer).</summary>
+        private bool IstKessel
+        {
+            get { return ID_Type == ProjektPuffer.TYP_KESSEL; }
+        }
 
         /// <summary>
         /// <c>Tab_Pufferspeicher.ID</c> des gewählten Projekt-Puffers — beim Öffnen
@@ -172,11 +201,17 @@ namespace WindowsFormsApplication1
             // wäre ein Projekt ohne Pufferspeicher eine Sackgasse - vorher stand hier
             // eine Meldung über die STAMM-Daten, die dem Anwender nicht sagte, was zu
             // tun ist (Muster Form_Waermesenke, Konzept 4.2/4.3).
+            // D5b: 14 px höher und 2 px weiter oben (242/34 -> 240/48). Der Hinweis trägt
+            // jetzt zwei Fälle - „kein Projektpuffer" und den nicht aufgelösten
+            // Alt-Bezeichner aus E0 -, und der zweite braucht drei Zeilen. Die Liste
+            // darüber endet bei y = 238, die Rubrik darunter beginnt bei y = 288: Der
+            // Platz ist damit vollständig ausgenutzt und nicht überschritten (gemessen
+            // mit TextRenderer, beide Sprachen).
             _lblLeer = new Label
             {
                 AutoSize = false,
-                Location = new Point(14, 242),
-                Size = new Size(300, 34),
+                Location = new Point(14, 240),
+                Size = new Size(300, 48),
                 ForeColor = SystemColors.GrayText,
                 Text = ""
             };
@@ -199,6 +234,7 @@ namespace WindowsFormsApplication1
                 Size = new Size(590, 130)
             };
             this.Controls.Add(gb);
+            _gbParameter = gb;
 
             Label l1 = new Label { Text = MyResource.Resource.SIMQ_PUFFER_QUELLTEMPERATUR, AutoSize = true, Location = new Point(16, 30) };
             Label l2 = new Label { Text = MyResource.Resource.SIMQ_PUFFER_SPREIZUNG, AutoSize = true, Location = new Point(16, 62) };
@@ -246,14 +282,27 @@ namespace WindowsFormsApplication1
             gb.Controls.Add(_lblKapazitaet);
             gb.Controls.Add(_cbUnbegrenzt);
 
-            Label hinweis = new Label
+            _lblHinweisArt = new Label
             {
                 AutoSize = false,
                 Location = new Point(330, 132),
                 Size = new Size(275, 105),
                 Text = MyResource.Resource.SIMQ_PUFFER_HINWEIS_QUELLWAERME
             };
-            this.Controls.Add(hinweis);
+            this.Controls.Add(_lblHinweisArt);
+
+            // D5b: Beim Heizkessel steht an der Stelle der Verdampfer-Parameter die
+            // Erklärung der Kaskade. Dasselbe Rechteck, damit die Fenstergeometrie
+            // unverändert bleibt (der Dialog ist FixedDialog).
+            _lblKaskade = new Label
+            {
+                AutoSize = false,
+                Location = new Point(14, 288),
+                Size = new Size(590, 130),
+                Visible = false,
+                Text = MyResource.Resource.SIMQ_PUFFER_HINWEIS_KASKADE
+            };
+            this.Controls.Add(_lblKaskade);
 
             Button btnOk = new Button
             {
@@ -286,6 +335,7 @@ namespace WindowsFormsApplication1
             if (!string.IsNullOrEmpty(WPName))
                 this.Text = string.Format(MyResource.Resource.SIMQ_PUFFER_TITEL_MIT_WP, WPName);
 
+            ArtAnwenden();
             PufferListeLaden();
 
             _tbTemperatur.Text = Quelltemperatur.ToString("F1");
@@ -297,6 +347,31 @@ namespace WindowsFormsApplication1
 
             ZeigeSpeicherDaten();
             BerechneKapazitaet();
+        }
+
+        /// <summary>
+        /// ETAPPE D5b — stellt den Dialog auf die Erzeugerart ein.
+        ///
+        /// Für die WÄRMEPUMPE bleibt alles, wie es war. Für den HEIZKESSEL entfallen die
+        /// Verdampfer-Parameter: Quelltemperatur, nutzbare Spreizung, Regeneration und
+        /// „unbegrenzt verfügbar" beschreiben die Entnahme über einen Verdampfer, und
+        /// <c>SimulationSPK</c> liest keinen davon. Der Kessel bezieht seine
+        /// Eintrittstemperatur aus dem VORLAUF des Quellpuffers und hebt von dort auf sein
+        /// eigenes Temperaturpaar an (<c>SimulationControl.KesselTemperaturpaar</c>) —
+        /// genau das erklärt der Text, der an ihrer Stelle steht. Eingabefelder, die
+        /// niemand liest, wären eine Zusage ohne Wirkung (dieselbe Regel wie beim
+        /// Betriebsmodus, Konzept 4.1).
+        /// </summary>
+        private void ArtAnwenden()
+        {
+            if (_gbParameter == null) return;
+
+            _gbParameter.Visible = !IstKessel;
+            _lblKaskade.Visible = IstKessel;
+
+            _lblHinweisArt.Text = IstKessel
+                ? MyResource.Resource.SIMQ_PUFFER_HINWEIS_KASKADE_KURZ
+                : MyResource.Resource.SIMQ_PUFFER_HINWEIS_QUELLWAERME;
         }
 
         /// <summary>
@@ -313,8 +388,32 @@ namespace WindowsFormsApplication1
                 _lbSpeicher.Items.Add(new SpeicherItem(p));
 
             bool leer = _lbSpeicher.Items.Count == 0;
-            _lblLeer.Text = leer ? MyResource.Resource.SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER : "";
             _lbSpeicher.Enabled = !leer;
+
+            if (leer)
+            {
+                _lblLeer.Text = MyResource.Resource.SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER;
+                return;
+            }
+
+            // ETAPPE E0 / D5b — NICHT AUFGELÖSTER ALTBESTAND.
+            //
+            // Schritt 9 der SchemaMigration (Regel R7) hat die Bezeichner-Referenz
+            // WQ_Puffer in den Fremdschlüssel WQ_ID_Puffer überführt, aber nur bei
+            // EINDEUTIGEN Treffern: Gibt es im Projekt keinen oder mehr als einen Puffer
+            // dieses Namens, bleibt WQ_ID_Puffer leer und es gilt weiter der Text. Für
+            // die Kaskade ist das keine gültige Identität - die Engine baut aus einem
+            // reinen Bezeichner KEINEN Quellbezug auf (QuellbezuegeAufbauen verlangt
+            // WQ_ID_Puffer > 0).
+            //
+            // Ohne diesen Hinweis passierte das Folgende STILL: Der Dialog wählt über
+            // VorauswahlSetzen den namensgleichen Puffer aus (oder, wenn es keinen gibt,
+            // schlicht den ersten der Liste), und beim Bestätigen wird DIESE ID
+            // geschrieben. Das ist die richtige Auflösung - aber der Anwender muss sehen,
+            // dass er sie gerade trifft.
+            _lblLeer.Text = (ID_Puffer <= 0 && !string.IsNullOrEmpty(Pufferspeicher))
+                ? string.Format(MyResource.Resource.SIMQ_PUFFER_HINWEIS_ALTBEZEICHNER, Pufferspeicher)
+                : "";
         }
 
         /// <summary>
@@ -419,6 +518,17 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.SIMQ_PUFFER_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 this.DialogResult = DialogResult.None;
+                return;
+            }
+
+            // D5b: Beim Heizkessel gibt es die Verdampfer-Parameter nicht (ArtAnwenden hat
+            // die Rubrik ausgeblendet). Ihre Prüfung würde die Vorbelegungen der
+            // unsichtbaren Felder bewerten und im schlimmsten Fall eine Meldung über ein
+            // Feld zeigen, das der Anwender nicht sieht.
+            if (IstKessel)
+            {
+                ID_Puffer = gewaehlt.ID;
+                Pufferspeicher = gewaehlt.Bezeichner;
                 return;
             }
 

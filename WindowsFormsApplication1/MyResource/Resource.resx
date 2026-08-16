@@ -507,6 +507,12 @@ physikalisch. Das ist ein Hinweis, keine Sperre.</value>
   <data name="PSP_ENTLADE_POSITION" xml:space="preserve">
     <value>Wird als {0}. von {1} {2} entladen.</value>
   </data>
+  <data name="PSP_ENTLADE_POSITION_KANAL_HEIZUNG" xml:space="preserve">
+    <value>Heizkanal: als {0}. von {1} entladen.</value>
+  </data>
+  <data name="PSP_ENTLADE_POSITION_KANAL_WARMWASSER" xml:space="preserve">
+    <value>Warmwasserkanal: als {0}. von {1} entladen.</value>
+  </data>
   <data name="PSP_FEHLER_BEZEICHNER_FEHLT" xml:space="preserve">
     <value>Bitte einen Bezeichner eintragen oder einen Katalogeintrag wählen.</value>
   </data>
@@ -1247,6 +1253,24 @@ Derselbe Speicher kann nicht zugleich Quelle und Senke sein (Kurzschluss); bitte
 
 Bitte einen passenden Speicher wählen oder die Verwendung in der Pufferspeicher-Verwaltung ändern.</value>
   </data>
+  <data name="SIM_QUELLE_BETEILIGT" xml:space="preserve">
+    <value>{0} (Quelle: {1})</value>
+  </data>
+  <data name="SIM_QUELLE_GLEICH_EIGENE_SENKE" xml:space="preserve">
+    <value>Der Pufferspeicher „{0}" ist bereits Wärmesenke dieser Anlage ({1}).
+Derselbe Speicher kann nicht zugleich Quelle und Senke sein (Kurzschluss) — die Anlage pumpte Wärme im Kreis.
+
+Bitte einen anderen Speicher wählen oder die Wärmesenke der Anlage ändern.</value>
+  </data>
+  <data name="SIM_QUELLE_KASKADE_RING" xml:space="preserve">
+    <value>Die Quellbezüge der Pufferspeicher bilden einen RING: Eine Anlage lädt einen Speicher, aus dem sie über weitere Erzeuger wieder ihre eigene Quellwärme bezieht.
+
+Damit gibt es keine Rechenreihenfolge, in der jeder Erzeuger nach seinem Puffer rechnet — die Simulation bräche ab.
+
+Beteiligt: {0}
+
+Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteiligten Anlagen ändern.</value>
+  </data>
   <data name="SIM_RB_HEIZKREIS" xml:space="preserve">
     <value>Heizkreis (direkte Deckung des Bedarfs)</value>
   </data>
@@ -1784,6 +1808,11 @@ Jahresvolllaststunden aus einem Simulationslauf.</value>
 
 WP-Typ: {0}</value>
   </data>
+  <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
+    <value>Eine Wärmequelle wählen können nur die Wärmepumpe und der Heizkessel.
+
+Das BHKW und die Solarthermie erzeugen ihre Wärme selbst; für sie gibt es keinen Quellbezug. Die Simulation würde einen solchen Eintrag mit einer Warnung verwerfen.</value>
+  </data>
   <data name="SIMQ_MSG_QUELLE_NUR_WP" xml:space="preserve">
     <value>Eine Wärmequelle hat nur die Wärmepumpe.
 
@@ -1818,6 +1847,21 @@ Vorlauf/Rücklauf: {3}</value>
   </data>
   <data name="SIMQ_PUFFER_GB_PARAMETER" xml:space="preserve">
     <value>Parameter der Wärmequelle</value>
+  </data>
+  <data name="SIMQ_PUFFER_HINWEIS_ALTBEZEICHNER" xml:space="preserve">
+    <value>Quelle bisher nur über den Namen „{0}". Mit OK wird der markierte Speicher fest zugeordnet.</value>
+  </data>
+  <data name="SIMQ_PUFFER_HINWEIS_KASKADE" xml:space="preserve">
+    <value>Kaskade (Heizkessel): Der Kessel bezieht seine Eintrittstemperatur aus dem gewählten Pufferspeicher statt aus dem Systemrücklauf.
+
+Anteil = (Vorlauf des Puffers − Rücklauf des Kessels) / (Vorlauf des Kessels − Rücklauf des Kessels)
+
+Um diesen Anteil der Nutzwärme sinkt der Brennstoffbedarf; die Entnahme ist zugleich eine Entladung des Speichers. Liefert der Puffer weniger, springt Brennstoff für den Fehlbetrag ein. Der Kessel rechnet nach dem Erzeuger, der den Puffer lädt.</value>
+  </data>
+  <data name="SIMQ_PUFFER_HINWEIS_KASKADE_KURZ" xml:space="preserve">
+    <value>Der Heizkessel hebt von der Puffertemperatur auf sein eigenes Vorlaufniveau an — nicht mehr vom Systemrücklauf.
+
+Die Verdampfer-Parameter der Wärmepumpe entfallen hier deshalb.</value>
   </data>
   <data name="SIMQ_PUFFER_HINWEIS_KEIN_PROJEKTPUFFER" xml:space="preserve">
     <value>Das Projekt enthält noch keinen Pufferspeicher. Über „Pufferspeicher anlegen…" einen anlegen.</value>
@@ -1878,6 +1922,9 @@ Ist der Speicher leer, wird die Leistung der Wärmepumpe begrenzt; die Regenerat
   </data>
   <data name="SIMQ_QUELLE_QUELLPROFIL" xml:space="preserve">
     <value>Quellprofil</value>
+  </data>
+  <data name="SIMQ_QUELLE_SYSTEMRUECKLAUF" xml:space="preserve">
+    <value>Systemrücklauf</value>
   </data>
   <data name="SIMQ_QUELLPROFIL_BTN_ALLE_MONATE" xml:space="preserve">
     <value>Alle Monate auf Januarwert setzen</value>
@@ -1951,6 +1998,12 @@ Die Monatswerte geben den Jahresgang vor, die Wochenwerte den Tages-/Wochengang.
 Luft-Wasser: immer Außenluft aus den Klimadaten.
 Sole-/Wasser-Wasser: Erdreich, Konstante Temperatur, Pufferspeicher,
 Quellprofil (Monats- und Wochenwerte) oder CSV-Datei.</value>
+  </data>
+  <data name="SIMQ_TIP_QUELLE_KESSEL" xml:space="preserve">
+    <value>Wärmequelle des Heizkessels (Doppelklick zum Ändern)
+Systemrücklauf: der Normalfall — der Brenner hebt vom Rücklauf auf den Vorlauf an.
+Pufferspeicher: Kaskade — der Speicher liefert die Eintrittstemperatur, der Brenner
+hebt nur noch den Rest an und braucht entsprechend weniger Brennstoff.</value>
   </data>
   <data name="SIMQ_TIP_QUELLE_NICHT_WP" xml:space="preserve">
     <value>Eine Wärmequelle hat nur die Wärmepumpe.

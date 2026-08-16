@@ -693,12 +693,17 @@ namespace WindowsFormsApplication1
             string verwendung = GewaehlteVerwendung();
             if (verwendung.Length == 0) verwendung = WaermesenkeClass.VERWENDUNG_HEIZUNG;
 
-            // D5a: Ein KOMBISPEICHER steht in BEIDEN Entladereihenfolgen. „Kombi" selbst
-            // ist kein Kanal - die Position wird deshalb im HEIZKANAL gezeigt, in dem er
-            // ebenfalls steht. Die Warmwasserposition ist damit noch nicht sichtbar; das
-            // ist als Nachtrag für D5b vermerkt (D5a-Protokoll, Restpunkte).
+            // ETAPPE D5b: Ein KOMBISPEICHER steht in BEIDEN Entladereihenfolgen — je
+            // Kanal an der Stelle seiner Entladepriorität (D5a, Konzept Abschnitt 5).
+            // D5a zeigte nur die Position im Heizkanal, weil „Kombi" selbst kein Kanal
+            // ist; die Warmwasserposition fehlte und war als Restpunkt vermerkt. Jetzt
+            // stehen BEIDE da, jede mit ihrem Kanalnamen — ohne den Kanalnamen wären zwei
+            // Zahlen nebeneinander nicht zuzuordnen.
             if (WaermesenkeClass.IstKombiVerwendung(verwendung))
-                verwendung = WaermesenkeClass.VERWENDUNG_HEIZUNG;
+            {
+                _lblEntladeInfo.Text = KombiPositionstext();
+                return;
+            }
 
             List<Ladeordnung.EntladeEintrag> reihe = Ladeordnung.Entladereihenfolge(ID_Projekt, verwendung);
             int pos = Ladeordnung.Position(reihe, _bearbeiteteId);
@@ -707,6 +712,40 @@ namespace WindowsFormsApplication1
                 ? string.Format(MyResource.Resource.PSP_ENTLADE_POSITION,
                                 pos, reihe.Count, KanalSpeicherWort(verwendung, reihe.Count))
                 : "";
+        }
+
+        /// <summary>
+        /// Die Positionen eines KOMBISPEICHERS in beiden Kanälen, zeilenweise
+        /// untereinander (Etappe D5b).
+        ///
+        /// Die Zeilen sind bewusst kürzer gefasst als der Satz für den einkanaligen Fall
+        /// (<c>PSP_ENTLADE_POSITION</c>): In das Feld passen zwei Zeilen, und der
+        /// Kanalname trägt dort die Aussage, die im einkanaligen Fall im Speicherwort
+        /// steckt („von 2 Heizungsspeichern"). Ein Kanal, in dem der Speicher nicht
+        /// auftaucht — das kann nur passieren, während der Verwendungswechsel noch nicht
+        /// übernommen ist —, bleibt weg statt eine „0. von 0" zu zeigen.
+        /// </summary>
+        private string KombiPositionstext()
+        {
+            List<string> zeilen = new List<string>();
+
+            zeilen.Add(KanalPositionstext(WaermesenkeClass.VERWENDUNG_HEIZUNG,
+                                          MyResource.Resource.PSP_ENTLADE_POSITION_KANAL_HEIZUNG));
+            zeilen.Add(KanalPositionstext(WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
+                                          MyResource.Resource.PSP_ENTLADE_POSITION_KANAL_WARMWASSER));
+
+            zeilen.RemoveAll(delegate (string z) { return z.Length == 0; });
+            return string.Join(Environment.NewLine, zeilen.ToArray());
+        }
+
+        /// <summary>Eine Kanalzeile für <see cref="KombiPositionstext"/>; "" = nicht enthalten.</summary>
+        private string KanalPositionstext(string verwendung, string muster)
+        {
+            List<Ladeordnung.EntladeEintrag> reihe =
+                Ladeordnung.Entladereihenfolge(ID_Projekt, verwendung);
+            int pos = Ladeordnung.Position(reihe, _bearbeiteteId);
+
+            return pos > 0 ? string.Format(muster, pos, reihe.Count) : "";
         }
 
         /// <summary>

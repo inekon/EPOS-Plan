@@ -550,11 +550,62 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>Verwendung eines Puffers; leere Angabe gilt als „Heizung" (siehe ProjektPuffer).</summary>
+        /// <summary>
+        /// Verwendung eines Puffers; leere Angabe gilt als „Heizung" (siehe ProjektPuffer)
+        /// und eine abweichende Schreibweise wird auf den Persistenzwert normalisiert
+        /// (Etappe D5b, siehe <see cref="NormalisierteVerwendung"/>).
+        /// </summary>
         public static string WirksameVerwendung(PufferInfo p)
         {
             if (p == null) return VERWENDUNG_HEIZUNG;
-            return p.Verwendung.Length > 0 ? p.Verwendung : VERWENDUNG_HEIZUNG;
+            return NormalisierteVerwendung(p.Verwendung);
+        }
+
+        /// <summary>
+        /// ETAPPE D5b (Review-1-Befund K3-2): bringt einen Verwendungs-DB-Wert auf seine
+        /// KANONISCHE Schreibweise.
+        ///
+        /// <b>Der Befund.</b> Diese Klasse vergleicht seit jeher
+        /// <c>OrdinalIgnoreCase</c> (<see cref="IstKombiVerwendung"/>,
+        /// <see cref="PufferPasst"/>, <c>PasstZuFilter</c>), der Rechenkern dagegen
+        /// ordinal (<c>SimulationPufferspeicher.IstKombi</c>,
+        /// <c>IstBrauchwasserkanal</c>). Ein Datenbankwert <c>"kombi"</c> stünde damit in
+        /// BEIDEN Entladereihenfolgen — die Anzeige nimmt ihn an —, verhielte sich im
+        /// Lauf aber wie ein Heizungspuffer: Der Warmwasserkanal bekäme eine Zusage, die
+        /// niemand einlöst. Dasselbe gilt für <c>"brauchwasser"</c> gegenüber
+        /// <c>"Brauchwasser"</c>.
+        ///
+        /// <b>Die Auflösung an EINER Stelle.</b> Statt jeden Vergleich im Rechenkern
+        /// umzustellen (das wäre die zweite Wahrheit über dieselbe Frage) wird der Wert
+        /// dort normalisiert, wo er in den Lauf eintritt: <see cref="WirksameVerwendung"/>
+        /// füllt <c>SimulationPufferspeicher.Verwendung</c> in
+        /// <c>SimulationControl.SpeicherRegistryAufbauen</c>. Nach dieser Zeile gibt es
+        /// im Rechenkern nur noch kanonische Werte, und die ordinalen Vergleiche dort
+        /// sind wieder richtig.
+        ///
+        /// <b>Bestandspfad unberührt.</b> Für die drei kanonischen Werte, für die leere
+        /// Angabe und für JEDEN unbekannten Wert ist das Ergebnis Zeichen für Zeichen
+        /// das bisherige — die Referenz-Datenbank führt ausschließlich <c>""</c>,
+        /// <c>"Heizung"</c> und <c>"Brauchwasser"</c>. Nur Schreibvarianten ändern sich,
+        /// und die sind heute allein über direkte Datenbankeingriffe erreichbar (alle
+        /// schreibenden Wege gehen über <c>DbWerte</c>).
+        ///
+        /// Unbekannte Werte laufen ausdrücklich UNVERÄNDERT durch: Eine Bestandsdatenbank
+        /// darf eine Verwendung führen, die diese Fassung nicht kennt, und die soll
+        /// sichtbar bleiben statt still zu „Heizung" zu werden.
+        /// </summary>
+        public static string NormalisierteVerwendung(string verwendung)
+        {
+            if (string.IsNullOrEmpty(verwendung)) return VERWENDUNG_HEIZUNG;
+
+            if (string.Equals(verwendung, VERWENDUNG_HEIZUNG, StringComparison.OrdinalIgnoreCase))
+                return VERWENDUNG_HEIZUNG;
+            if (string.Equals(verwendung, VERWENDUNG_BRAUCHWASSER, StringComparison.OrdinalIgnoreCase))
+                return VERWENDUNG_BRAUCHWASSER;
+            if (string.Equals(verwendung, VERWENDUNG_KOMBI, StringComparison.OrdinalIgnoreCase))
+                return VERWENDUNG_KOMBI;
+
+            return verwendung;
         }
 
         /// <summary>
@@ -738,6 +789,243 @@ namespace WindowsFormsApplication1
                 "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE Bezeichner = ? AND ID_Projekt = ?",
                 StilleDb.Par("@bez", OleDbType.VarWChar, bezeichner),
                 StilleDb.Par("@proj", OleDbType.Integer, idProjekt)));
+        }
+
+        // --- Validierung der QUELLENSEITE (Etappe D5b, Konzept Abschnitt 7) -----------
+        //
+        // Bis D5a konnte der Senkendialog den Kurzschluss „Quelle = eigene Senke" nur von
+        // der SENKENseite aus verhindern (Pruefen, Punkt 4); von der QUELLENseite gab es
+        // gar keinen Dialog, der ihn hätte prüfen können - für den Heizkessel war die
+        // Quellenwahl nicht freigeschaltet, für die Wärmepumpe schrieb der Quellendialog
+        // ungeprüft. Die Engine fängt beides ab (Kurzschluss-Guard E-K2-1, Zyklus-Guard
+        // der Rechenebenen), aber erst im Lauf: beim Kurzschluss mit einer Warnung und
+        // wirkungslosem Quellbezug, beim Ring mit einem ABBRUCH des ganzen Laufs.
+        //
+        // Die beiden folgenden Prüfungen sind das Dialog-Gegenstück dazu. Sie sind
+        // dialogfrei und ohne Oberfläche aufrufbar (dieselbe Bauart wie Pruefen), damit
+        // ein Prüfprogramm sie ohne Fenster fahren kann; die Engine-Guards bleiben als
+        // ZWEITE Verteidigungslinie unangetastet - sie decken Altdaten und jeden Weg ab,
+        // der nicht über diesen Dialog läuft.
+
+        /// <summary>Ergebnis der Quellenprüfung; <see cref="Fehler"/> ist der Blockertext.</summary>
+        public sealed class QuellPruefErgebnis
+        {
+            /// <summary>true = die Quelle darf gespeichert werden.</summary>
+            public bool Ok = true;
+
+            /// <summary>Meldungstext des Blockers; null, wenn <see cref="Ok"/>.</summary>
+            public string Fehler;
+        }
+
+        /// <summary>
+        /// Prüft einen beabsichtigten Quellpuffer-Bezug, BEVOR er geschrieben wird:
+        /// erst der Kurzschluss (Quelle = eigene Senke, Konzept 4.6), dann der Ring über
+        /// die Kaskadenkette (Konzept Abschnitt 7).
+        ///
+        /// <paramref name="idQuellPuffer"/> ist der GEWÜNSCHTE Bezug, nicht der
+        /// gespeicherte — die Prüfung rechnet ihn in den vorhandenen Bestand hinein.
+        /// 0 (Quelle entfernen) ist immer zulässig.
+        /// </summary>
+        public static QuellPruefErgebnis QuellePruefen(int idProjekt, int idAnlage, int idQuellPuffer)
+        {
+            QuellPruefErgebnis erg = new QuellPruefErgebnis();
+            if (idProjekt <= 0 || idAnlage <= 0 || idQuellPuffer <= 0) return erg;
+
+            erg.Fehler = KurzschlussMeldung(idAnlage, idQuellPuffer);
+            if (erg.Fehler == null) erg.Fehler = RingMeldung(idProjekt, idAnlage, idQuellPuffer);
+
+            erg.Ok = erg.Fehler == null;
+            return erg;
+        }
+
+        /// <summary>
+        /// KURZSCHLUSS (Konzept 4.6, Engine-Guard E-K2-1): Der Quellpuffer ist zugleich
+        /// Haupt- oder Zweitsenke DERSELBEN Anlage — sie pumpte Wärme im Kreis.
+        /// null = kein Kurzschluss.
+        ///
+        /// Gegenstück zu Punkt 4 in <see cref="Pruefen"/>, nur von der anderen Seite
+        /// gefragt: Dort ist die Senke neu und die Quelle steht, hier steht die Senke und
+        /// die Quelle ist neu. Gilt für Wärmepumpe UND Heizkessel — die Engine weist seit
+        /// der D5a-Nacharbeit beide ab.
+        /// </summary>
+        public static string KurzschlussMeldung(int idAnlage, int idQuellPuffer)
+        {
+            if (idAnlage <= 0 || idQuellPuffer <= 0) return null;
+
+            SenkeDaten d = Lesen(idAnlage);          // enthält Normalisieren
+            string rolle = null;
+
+            if (IstPufferZiel(d.Ziel) && d.ID_Puffer == idQuellPuffer)
+                rolle = MyResource.Resource.SIM_ROLLE_HAUPTSENKE;
+            else if (d.HatZweitsenke && d.ID_Puffer2 == idQuellPuffer)
+                rolle = MyResource.Resource.SIM_ROLLE_ZWEITSENKE;
+
+            if (rolle == null) return null;
+
+            return string.Format(
+                MyResource.Resource.SIM_QUELLE_GLEICH_EIGENE_SENKE.Replace("\n", Environment.NewLine),
+                PufferName(idQuellPuffer), rolle);
+        }
+
+        /// <summary>
+        /// RING in der Kaskadenkette (Konzept Abschnitt 7): Eine Anlage lädt einen
+        /// Speicher, aus dem sie über weitere Erzeuger wieder ihre eigene Quellwärme
+        /// bezieht — auch indirekt über A→B→C→A. null = zyklenfrei.
+        ///
+        /// <b>Dieselbe Auflösung wie die Engine.</b> Gerechnet wird die
+        /// Ebenen-Relaxation aus <c>Kaskadenschleife.EbenenRelaxieren</c>:
+        /// <c>Ebene(A) = 1 + max{ Ebene(L) : L lädt den Quellpuffer von A }</c>, iterativ,
+        /// und was nach so vielen Runden wächst, wie es Anlagen gibt, kann nur ein Ring
+        /// sein. Eine eigene Ringsuche daneben wäre eine zweite Auslegung derselben
+        /// Frage — dann könnte der Dialog eine Konfiguration durchlassen, an der die
+        /// Engine hinterher abbricht (oder umgekehrt).
+        ///
+        /// Übernommen sind auch die beiden Einschränkungen der Engine:
+        /// <list type="bullet">
+        ///   <item><description>Quellbezüge zählen nur bei Wärmepumpe und Heizkessel
+        ///     (Befund E-K2-2, <see cref="WaermequelleClass.QuellenwahlMoeglich"/>) — jede
+        ///     andere Art bleibt auf Ebene 0 und kann keinen Ring schließen.</description></item>
+        ///   <item><description>Der Selbstbezug (die Anlage lädt ihren eigenen
+        ///     Quellpuffer) ist übersprungen: Das ist der Kurzschluss aus 4.6, den
+        ///     <see cref="KurzschlussMeldung"/> mit eigenem Text abfängt.</description></item>
+        /// </list>
+        ///
+        /// Anders als die Engine arbeitet die Prüfung auf der DATENBANKSICHT statt auf den
+        /// Ladeaufträgen: Ein Ladeauftrag entsteht erst im Lauf. Die Bedingung „lädt" ist
+        /// deshalb dieselbe wie in <c>Ladeordnung.Ladereihenfolge</c> — Puffer-ID auf
+        /// einem der beiden Senkenfelder UND ein Puffer-Ziel dazu.
+        /// </summary>
+        public static string RingMeldung(int idProjekt, int idAnlage, int idQuellPuffer)
+        {
+            if (idProjekt <= 0 || idAnlage <= 0 || idQuellPuffer <= 0) return null;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, ID_Type, Bezeichner, WQ_Typ, WQ_ID_Puffer, " +
+                "       WS_Ziel, WS_ID_Puffer, WS_Ziel2, WS_ID_Puffer2 " +
+                "FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
+                "ORDER BY Prioritaet, ID",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+            if (dt == null) return null;
+
+            Dictionary<int, string> nameJeAnlage = new Dictionary<int, string>();
+            Dictionary<int, int> quelleJeAnlage = new Dictionary<int, int>();
+            Dictionary<int, List<int>> laderJePuffer = new Dictionary<int, List<int>>();
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (id <= 0) continue;
+
+                nameJeAnlage[id] = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
+
+                int idType = StilleDb.Zahl(StilleDb.Feld(r, "ID_Type"));
+                if (WaermequelleClass.QuellenwahlMoeglich(idType) &&
+                    string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+                                  WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
+                {
+                    int q = StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
+                    if (q > 0) quelleJeAnlage[id] = q;
+                }
+
+                LaderEintragen(laderJePuffer, id,
+                               StilleDb.Text(StilleDb.Feld(r, "WS_Ziel")),
+                               StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer")));
+                LaderEintragen(laderJePuffer, id,
+                               StilleDb.Text(StilleDb.Feld(r, "WS_Ziel2")),
+                               StilleDb.Zahl(StilleDb.Feld(r, "WS_ID_Puffer2")));
+            }
+
+            if (!nameJeAnlage.ContainsKey(idAnlage)) return null;   // nicht dieses Projekt
+
+            // Der GEWÜNSCHTE Bezug ersetzt den gespeicherten - geprüft wird der Zustand
+            // nach dem Speichern, nicht der davor.
+            quelleJeAnlage[idAnlage] = idQuellPuffer;
+
+            Dictionary<int, int> ebene = new Dictionary<int, int>();
+            foreach (int id in nameJeAnlage.Keys) ebene[id] = 0;
+
+            for (int runde = 0; runde <= ebene.Count; runde++)
+            {
+                bool geaendert = false;
+
+                foreach (KeyValuePair<int, int> bezug in quelleJeAnlage)
+                {
+                    if (!ebene.ContainsKey(bezug.Key)) continue;
+
+                    List<int> lader;
+                    if (!laderJePuffer.TryGetValue(bezug.Value, out lader)) continue;
+
+                    int soll = 0;
+                    foreach (int idLader in lader)
+                    {
+                        if (idLader == bezug.Key) continue;      // Kurzschluss, nicht Ring
+
+                        int e;
+                        if (!ebene.TryGetValue(idLader, out e)) continue;
+                        if (e + 1 > soll) soll = e + 1;
+                    }
+
+                    if (soll > ebene[bezug.Key]) { ebene[bezug.Key] = soll; geaendert = true; }
+                }
+
+                if (!geaendert) return null;                      // zyklenfrei
+            }
+
+            return string.Format(
+                MyResource.Resource.SIM_QUELLE_KASKADE_RING.Replace("\n", Environment.NewLine),
+                RingBeteiligte(ebene, quelleJeAnlage, laderJePuffer, nameJeAnlage));
+        }
+
+        /// <summary>Trägt eine Anlage als LADER eines Puffers ein (Bedingung wie Ladeordnung).</summary>
+        private static void LaderEintragen(Dictionary<int, List<int>> laderJePuffer,
+                                           int idAnlage, string ziel, int idPuffer)
+        {
+            if (idPuffer <= 0 || !IstPufferZiel(ziel)) return;
+
+            List<int> lader;
+            if (!laderJePuffer.TryGetValue(idPuffer, out lader))
+            {
+                lader = new List<int>();
+                laderJePuffer[idPuffer] = lader;
+            }
+            if (!lader.Contains(idAnlage)) lader.Add(idAnlage);
+        }
+
+        /// <summary>
+        /// Die Anlagen, die im Ring stecken, als lesbare Aufzählung — dieselbe Auswahl
+        /// wie in <c>Kaskadenschleife.ZyklusMeldung</c>: die mit der höchsten erreichten
+        /// Ebene, denn nur die sind unbegrenzt gewachsen.
+        /// </summary>
+        private static string RingBeteiligte(Dictionary<int, int> ebene,
+                                             Dictionary<int, int> quelleJeAnlage,
+                                             Dictionary<int, List<int>> laderJePuffer,
+                                             Dictionary<int, string> nameJeAnlage)
+        {
+            int hoechste = 0;
+            foreach (KeyValuePair<int, int> e in ebene)
+                if (e.Value > hoechste) hoechste = e.Value;
+
+            List<string> beteiligt = new List<string>();
+            foreach (KeyValuePair<int, int> bezug in quelleJeAnlage)
+            {
+                int stufe;
+                if (!ebene.TryGetValue(bezug.Key, out stufe) || stufe < hoechste) continue;
+                if (!laderJePuffer.ContainsKey(bezug.Value)) continue;
+
+                string anlage = nameJeAnlage.ContainsKey(bezug.Key) &&
+                                nameJeAnlage[bezug.Key].Length > 0
+                    ? nameJeAnlage[bezug.Key]
+                    : bezug.Key.ToString();
+
+                string puffer = PufferName(bezug.Value);
+                if (puffer.Length == 0) puffer = MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER;
+
+                beteiligt.Add(string.Format(MyResource.Resource.SIM_QUELLE_BETEILIGT,
+                                            anlage, puffer));
+            }
+
+            return beteiligt.Count > 0 ? string.Join(" · ", beteiligt.ToArray()) : "–";
         }
 
         /// <summary>

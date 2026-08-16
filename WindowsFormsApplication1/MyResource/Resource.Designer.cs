@@ -817,6 +817,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkanal: als {0}. von {1} entladen. ähnelt.
+        /// </summary>
+        public static string PSP_ENTLADE_POSITION_KANAL_HEIZUNG {
+            get {
+                return ResourceManager.GetString("PSP_ENTLADE_POSITION_KANAL_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warmwasserkanal: als {0}. von {1} entladen. ähnelt.
+        /// </summary>
+        public static string PSP_ENTLADE_POSITION_KANAL_WARMWASSER {
+            get {
+                return ResourceManager.GetString("PSP_ENTLADE_POSITION_KANAL_WARMWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Bezeichner eintragen oder einen Katalogeintrag wählen. ähnelt.
         /// </summary>
         public static string PSP_FEHLER_BEZEICHNER_FEHLT {
@@ -3291,6 +3309,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Quelle: {1}) ähnelt.
+        /// </summary>
+        public static string SIM_QUELLE_BETEILIGT {
+            get {
+                return ResourceManager.GetString("SIM_QUELLE_BETEILIGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher „{0}&quot; ist bereits Wärmesenke dieser Anlage ({1}).
+        ///Derselbe Speicher kann nicht zugleich Quelle und Senke sein (Kurzschluss) — die Anlage pumpte Wärme im Kreis.
+        ///
+        ///Bitte einen anderen Speicher wählen oder die Wärmesenke der Anlage ändern. ähnelt.
+        /// </summary>
+        public static string SIM_QUELLE_GLEICH_EIGENE_SENKE {
+            get {
+                return ResourceManager.GetString("SIM_QUELLE_GLEICH_EIGENE_SENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quellbezüge der Pufferspeicher bilden einen RING: Eine Anlage lädt einen Speicher, aus dem sie über weitere Erzeuger wieder ihre eigene Quellwärme bezieht.
+        ///
+        ///Damit gibt es keine Rechenreihenfolge, in der jeder Erzeuger nach seinem Puffer rechnet — die Simulation bräche ab.
+        ///
+        ///Beteiligt: {0}
+        ///
+        ///Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteiligten Anlagen ändern. ähnelt.
+        /// </summary>
+        public static string SIM_QUELLE_KASKADE_RING {
+            get {
+                return ResourceManager.GetString("SIM_QUELLE_KASKADE_RING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkreis (direkte Deckung des Bedarfs) ähnelt.
         /// </summary>
         public static string SIM_RB_HEIZKREIS {
@@ -4825,6 +4879,17 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Wärmequelle wählen können nur die Wärmepumpe und der Heizkessel.
+        ///
+        ///Das BHKW und die Solarthermie erzeugen ihre Wärme selbst; für sie gibt es keinen Quellbezug. Die Simulation würde einen solchen Eintrag mit einer Warnung verwerfen. ähnelt.
+        /// </summary>
+        public static string SIMQ_MSG_QUELLE_ART {
+            get {
+                return ResourceManager.GetString("SIMQ_MSG_QUELLE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eine Wärmequelle hat nur die Wärmepumpe.
         ///
         ///Heizkessel, BHKW und Solarthermie erzeugen ihre Wärme selbst; ihre
@@ -4910,6 +4975,39 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_PUFFER_GB_PARAMETER {
             get {
                 return ResourceManager.GetString("SIMQ_PUFFER_GB_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle bisher nur über den Namen „{0}&quot;. Mit OK wird der markierte Speicher fest zugeordnet. ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_HINWEIS_ALTBEZEICHNER {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_HINWEIS_ALTBEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaskade (Heizkessel): Der Kessel bezieht seine Eintrittstemperatur aus dem gewählten Pufferspeicher statt aus dem Systemrücklauf.
+        ///
+        ///Anteil = (Vorlauf des Puffers − Rücklauf des Kessels) / (Vorlauf des Kessels − Rücklauf des Kessels)
+        ///
+        ///Um diesen Anteil der Nutzwärme sinkt der Brennstoffbedarf; die Entnahme ist zugleich eine Entladung des Speichers. Liefert der Puffer weniger, springt Brennstoff für den Fehlbetrag ein. Der Kessel rechnet nach dem Erzeuger, der den Puffer lädt. ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_HINWEIS_KASKADE {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_HINWEIS_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Heizkessel hebt von der Puffertemperatur auf sein eigenes Vorlaufniveau an — nicht mehr vom Systemrücklauf.
+        ///
+        ///Die Verdampfer-Parameter der Wärmepumpe entfallen hier deshalb. ähnelt.
+        /// </summary>
+        public static string SIMQ_PUFFER_HINWEIS_KASKADE_KURZ {
+            get {
+                return ResourceManager.GetString("SIMQ_PUFFER_HINWEIS_KASKADE_KURZ", resourceCulture);
             }
         }
         
@@ -5084,6 +5182,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_QUELLE_QUELLPROFIL {
             get {
                 return ResourceManager.GetString("SIMQ_QUELLE_QUELLPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Systemrücklauf ähnelt.
+        /// </summary>
+        public static string SIMQ_QUELLE_SYSTEMRUECKLAUF {
+            get {
+                return ResourceManager.GetString("SIMQ_QUELLE_SYSTEMRUECKLAUF", resourceCulture);
             }
         }
         
@@ -5295,6 +5402,18 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_TIP_QUELLE {
             get {
                 return ResourceManager.GetString("SIMQ_TIP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle des Heizkessels (Doppelklick zum Ändern)
+        ///Systemrücklauf: der Normalfall — der Brenner hebt vom Rücklauf auf den Vorlauf an.
+        ///Pufferspeicher: Kaskade — der Speicher liefert die Eintrittstemperatur, der Brenner
+        ///hebt nur noch den Rest an und braucht entsprechend weniger Brennstoff. ähnelt.
+        /// </summary>
+        public static string SIMQ_TIP_QUELLE_KESSEL {
+            get {
+                return ResourceManager.GetString("SIMQ_TIP_QUELLE_KESSEL", resourceCulture);
             }
         }
         

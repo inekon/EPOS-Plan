@@ -916,8 +916,26 @@ namespace WindowsFormsApplication1
             return chips;
         }
 
+        /// <summary>
+        /// Der Quellen-Chip einer Erzeugerkarte.
+        ///
+        /// <b>ETAPPE D5b — Freischaltung je <c>ID_Type</c></b> (Konzept Abschnitt 4;
+        /// D5a-Restpunkt 2 und Review-2-Befund K3-1). Bis D5a war der Chip WÄRMEPUMPEN
+        /// vorbehalten: Ein Heizkessel mit Quellpuffer zeigte zwar seit D2/D3 den
+        /// Kaskaden-Chip, konnte ihn aber nicht öffnen (<c>ChipZiel.Keines</c>), und ein
+        /// Kessel OHNE Quellpuffer bekam gar keinen Chip — die Kaskade war über die
+        /// Oberfläche also nicht einzurichten, nur per SQL.
+        ///
+        /// Jetzt gilt: Wärmepumpe UND Heizkessel tragen einen anklickbaren Quellen-Chip
+        /// (<see cref="WaermequelleClass.QuellenwahlMoeglich"/>), Solarthermie und BHKW
+        /// keinen. Das ist dieselbe Grenze, die die Engine zieht (Befund E-K2-2): Nur
+        /// Wärmepumpe und Kessel werten eine Ebenenmaske aus, jede andere Art bekäme eine
+        /// Warnung und einen wirkungslosen Eintrag.
+        /// </summary>
         private void QuellenChip(AnlagenInfo info, List<ErzeugerKarte.ChipDaten> chips)
         {
+            bool waehlbar = WaermequelleClass.QuellenwahlMoeglich(info.ID_Type);
+
             // E0: WQ_ID_Puffer ist die führende Identität des Quellpuffers;
             // QuellPufferDerAnlage löst sie mit demselben Vorrang auf wie die Engine
             // (FK vor Bezeichner) und liefert 0, wenn die Quelle kein Puffer ist.
@@ -933,23 +951,37 @@ namespace WindowsFormsApplication1
                     Text = string.Format(MyResource.Resource.SIM_KARTE_QUELLE_KASKADE, name),
                     Stil = ErzeugerKarte.ChipStil.QuelleKaskade,
                     Hinweis = MyResource.Resource.SIM_KARTE_TIP_KASKADE,
-                    Ziel = info.IstWaermepumpe
-                        ? ErzeugerKarte.ChipZiel.Quelle
-                        : ErzeugerKarte.ChipZiel.Keines
+                    Ziel = waehlbar ? ErzeugerKarte.ChipZiel.Quelle : ErzeugerKarte.ChipZiel.Keines
                 });
                 return;
             }
 
-            // Ohne Quellpuffer trägt nur die Wärmepumpe eine Wärmequelle; für Kessel,
-            // BHKW und Solarthermie gibt es bis Etappe D5 keine (Konzept 4, Zeile
-            // „Quelle Pufferspeicher auch für Heizkessel").
-            if (!info.IstWaermepumpe) return;
+            // Solarthermie und BHKW haben keine wählbare Wärmequelle (Konzept 4,
+            // Anforderung 5) - für sie entsteht gar kein Chip, statt einen anzubieten und
+            // den Klick darauf mit einer Meldung abzuweisen.
+            if (!waehlbar) return;
 
+            if (info.IstWaermepumpe)
+            {
+                chips.Add(new ErzeugerKarte.ChipDaten
+                {
+                    Text = string.Format(MyResource.Resource.SIM_KARTE_QUELLE, WaermequelleAnzeige(info)),
+                    Stil = ErzeugerKarte.ChipStil.Quelle,
+                    Hinweis = MyResource.Resource.SIMQ_TIP_QUELLE,
+                    Ziel = ErzeugerKarte.ChipZiel.Quelle
+                });
+                return;
+            }
+
+            // Heizkessel ohne Quellpuffer: Er rechnet mit dem Systemrücklauf als
+            // Eintrittstemperatur - das ist der Normalfall und keine Fehlstelle. Der Chip
+            // sagt es und ist der Einstieg in die Kaskade.
             chips.Add(new ErzeugerKarte.ChipDaten
             {
-                Text = string.Format(MyResource.Resource.SIM_KARTE_QUELLE, WaermequelleAnzeige(info)),
+                Text = string.Format(MyResource.Resource.SIM_KARTE_QUELLE,
+                                     MyResource.Resource.SIMQ_QUELLE_SYSTEMRUECKLAUF),
                 Stil = ErzeugerKarte.ChipStil.Quelle,
-                Hinweis = MyResource.Resource.SIMQ_TIP_QUELLE,
+                Hinweis = MyResource.Resource.SIMQ_TIP_QUELLE_KESSEL,
                 Ziel = ErzeugerKarte.ChipZiel.Quelle
             });
         }
