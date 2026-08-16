@@ -304,6 +304,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf gesamt [kW] ähnelt.
+        /// </summary>
+        public static string CHART_CSV_WAERMEBEDARF_GESAMT {
+            get {
+                return ResourceManager.GetString("CHART_CSV_WAERMEBEDARF_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Kesselstufe [kW] ähnelt.
+        /// </summary>
+        public static string CHART_CSV_WAERMEBEDARF_KESSELSTUFE {
+            get {
+                return ResourceManager.GetString("CHART_CSV_WAERMEBEDARF_KESSELSTUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmelast [kW] ähnelt.
         /// </summary>
         public static string CHART_CSV_WAERMELAST {
@@ -466,6 +484,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf gesamt ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_WAERMEBEDARF_GESAMT {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_WAERMEBEDARF_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfsdeckung ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_WAERMEBEDARFSDECKUNG {
@@ -480,6 +507,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_LEGENDE_WAERMEPRODUKTION {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_WAERMEPRODUKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion Heizkessel ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL", resourceCulture);
             }
         }
         
@@ -4097,7 +4133,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel-Simulation als CSV exportieren
-        ///(Zeitstempel, Außentemperatur, Wärmebedarf, Heizkessel, Restwärme) ähnelt.
+        ///(Zeitstempel, Außentemperatur, Wärmebedarf gesamt, Wärmebedarf Kesselstufe, Heizkessel, Restwärme) ähnelt.
         /// </summary>
         public static string SIM_TOOLTIP_CSV_HEIZKESSEL {
             get {

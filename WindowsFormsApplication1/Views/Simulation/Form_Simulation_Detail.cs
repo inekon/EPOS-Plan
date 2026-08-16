@@ -400,9 +400,18 @@ namespace WindowsFormsApplication1
         // Bestandsfelder wandern deshalb geschlossen in eine rechte Spalte
         // (siehe KesselSeiteAnordnen); Designer und .resx bleiben unangetastet.
         //
-        // Was der Kessel sieht, ist NICHT der Projektwärmebedarf, sondern der Rest nach
-        // den vorgelagerten Kaskadenstufen (simulation_spk.Waermebedarf) — genau dieser
-        // Stufeneingang wird gezeigt, sonst erklärte das Bild die Kesselstunden nicht.
+        // BEZUGSGRÖSSE DES BEDARFS (Sichttest 16.08.2026). Gezeigt wird der
+        // GESAMTWÄRMEBEDARF des Projekts (simulation_Waermebedarf.Waermebedarf) —
+        // dieselbe Größe, die die Seite „Energiebedarf" als Gesamtwert führt.
+        //
+        // Bis hierher stand hier der Stufeneingang der Kessel
+        // (simulation_spk.Waermebedarf, also der Rest nach den vorgelagerten Erzeugern).
+        // Der ist der beim Kessel unmittelbar anliegende Bedarf, beantwortet die Frage
+        // der Seite aber nicht: Wieviel des PROJEKTbedarfs deckt der Kessel? Steht dem
+        // Kessel eine Wärmepumpe oder ein BHKW voran, lag die gezeigte Bedarfslinie
+        // unter der wirklichen Wärmelast, ohne dass das Bild das kenntlich machte.
+        // Der Stufeneingang bleibt als Zahl im Feld textBox_Waermebedarf_Heizkessel
+        // und als eigene Spalte der CSV-Ausgabe erhalten — er geht also nicht verloren.
         //
         // KEINE Serie je Kessel: Die Engine führt die Kesselleistung nur als SUMME über
         // alle Kessel (SimulationSPK.Kesselleistung_stuendlich); je-Kessel-Ganglinien
@@ -711,34 +720,48 @@ namespace WindowsFormsApplication1
         /// Wärmepumpen-Seite (<see cref="checkBox_WP_sortiert_CheckedChanged"/>):
         /// <c>XAxisAsNumber</c> setzen, <c>HardReset()</c>, <c>Init()</c>, Serien neu.
         ///
-        /// DREI Serien, alle aus <see cref="SimulationSPK"/> — hier wird nichts
-        /// nachgerechnet und nichts von der Wärmepumpen-Seite übernommen:
-        ///   Wärmebedarf  = <c>simulation_spk.Waermebedarf</c>, der Stufeneingang der
-        ///                  Kessel (Rest nach den vorgelagerten Erzeugern). FLÄCHE, hinten.
-        ///   Wärmeproduktion = <c>simulation_spk.Kesselleistung_stuendlich</c>. SÄULEN,
-        ///                  darüber.
-        ///   Restwärme    = <c>simulation_spk.Restwaerme</c>, Linie ganz oben.
+        /// DREI Serien — hier wird nichts nachgerechnet und nichts von der
+        /// Wärmepumpen-Seite übernommen:
+        ///   Wärmeproduktion Heizkessel = <c>simulation_spk.Kesselleistung_stuendlich</c>,
+        ///                  die Summe über ALLE Kessel des Projekts und nur über sie.
+        ///                  SÄULEN, unten.
+        ///   Restwärme    = <c>simulation_spk.Restwaerme</c>, Linie darüber.
+        ///   Wärmebedarf gesamt = <c>simulation_Waermebedarf.Waermebedarf</c>, der
+        ///                  Projektwärmebedarf. LINIE, zuletzt angelegt und damit ganz
+        ///                  oben (Begründung der Bezugsgröße im Blockkommentar oben).
+        ///
+        /// <b>Warum der Bedarf eine LINIE über den Säulen ist und keine Fläche darunter.</b>
+        /// Als Fläche stand er hinter den Produktionssäulen: In jeder Stunde, in der die
+        /// Kessel den anliegenden Bedarf deckten, war die Fläche vollständig von den
+        /// Säulen überdeckt — Blau verschluckte Rot (Sichttest-Befund „die Überlappung
+        /// soll verbessert werden, blau und rot beide sichtbar"). Als Linie ÜBER dem
+        /// Gefüllten bleiben beide lesbar: Bei Deckung liegt die rote Linie auf der
+        /// blauen Oberkante, bei Unterdeckung darüber. Dasselbe Muster trägt in
+        /// NavigatorWaerme die Kontrolllinie „Gesamt".
         ///
         /// <b>Warum der Bedarf EINE Serie ist</b> (anders als auf der Wärmepumpen-Seite,
-        /// die ihn in Heizwärme und Warmwasser teilt): An der Kesselposition liegt der
-        /// RESTbedarf an. Welcher Anteil davon Warmwasser ist, sagt der klassische
-        /// Rechenweg nicht — er reicht einen einzigen Vektor weiter. Eine Aufteilung wäre
-        /// hier eine Behauptung über den Warmwasserkanal, die die Engine nicht deckt.
+        /// die ihn in Heizwärme und Warmwasser teilt): Der Kessel bekommt vom klassischen
+        /// Rechenweg einen einzigen Bedarfsvektor gereicht; welcher Anteil davon
+        /// Warmwasser ist, sagt er an dieser Stelle nicht. Eine Aufteilung wäre hier eine
+        /// Behauptung über den Warmwasserkanal, die die Engine nicht deckt.
         ///
-        /// <b>Warum Fläche UND Säulen und nicht zwei Säulenstapel:</b> Zwei
-        /// <c>StackedGroupName</c>-Gruppen stellt MS-Chart bei Säulen NEBENEINANDER; bei
-        /// 8760 Punkten auf 600 Bildpunkten ist eine Säule 0,07 Punkte breit, halbiert
-        /// verschwindet die Produktion in der Rasterung — genau der Befund „die
-        /// Wärmeproduktion fehlt in der Grafik". Der Bedarf als eigenständige Fläche
-        /// belegt keinen Säulenplatz; die Produktionssäulen bekommen die volle Breite.
+        /// <b>Warum EINE Stapelgruppe:</b> Zwei <c>StackedGroupName</c>-Gruppen stellt
+        /// MS-Chart bei Säulen NEBENEINANDER; bei 8760 Punkten auf 600 Bildpunkten ist
+        /// eine Säule 0,07 Punkte breit, halbiert verschwindet die Produktion in der
+        /// Rasterung — der frühere Befund „die Wärmeproduktion fehlt in der Grafik". Die
+        /// Bedarfslinie belegt keinen Säulenplatz; die Produktionssäulen bekommen die
+        /// volle Breite.
         /// </summary>
         private void KesselSerienAufbauen()
         {
             if (_chartKesselManager == null || sim == null || sim.simulation_spk == null) return;
+            if (simulation_Waermebedarf == null) return;
 
             bool sortiert = checkBox_Kessel_sortiert != null && checkBox_Kessel_sortiert.Checked;
 
-            float[] bedarf = sim.simulation_spk.Waermebedarf;
+            // Der GESAMTbedarf des Projekts, nicht der Stufeneingang der Kessel — dasselbe
+            // Feld, aus dem die Seite „Energiebedarf" ihren Gesamtwert bildet.
+            float[] bedarf = simulation_Waermebedarf.Waermebedarf;
             float[] produktion = sim.simulation_spk.Kesselleistung_stuendlich;
             float[] rest = sim.simulation_spk.Restwaerme;
 
@@ -761,17 +784,32 @@ namespace WindowsFormsApplication1
             cm.Init();
 
             // Reihenfolge = Zeichenreihenfolge: MS-Chart zeichnet in der Reihenfolge der
-            // Series-Collection, das Zuletztangelegte liegt oben.
-            SerieAnlegen(cm, S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF,
-                         Color.FromArgb(90, Color.Red), GanglinienDarstellung.Anzeigewerte(bedarf, sortiert),
-                         sortiert ? SeriesChartType.FastLine : SeriesChartType.Area);
-
-            SerieAnlegen(cm, S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
+            // Series-Collection, das Zuletztangelegte liegt oben. Erst die Produktion,
+            // dann die Restwärme, ZULETZT der Bedarf.
+            SerieAnlegen(cm, S_WAERMEPRODUKTION, MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL,
                          Color.Blue, GanglinienDarstellung.Anzeigewerte(produktion, sortiert),
                          GanglinienDarstellung.Stapeltyp(sortiert), "Produktion");
 
+            // DAUERLINIE: Dort ist die Produktion keine Säule mehr, sondern eine Linie
+            // (GanglinienDarstellung.Stapeltyp) — und in einem Projekt, dessen Kessel den
+            // ganzen Bedarf decken, ist ihre Dauerlinie PUNKTGLEICH mit der des Bedarfs.
+            // Zwei gleich breite Linien übereinander ergäben genau wieder das Bild, das
+            // der Sichttest bemängelt hat. Die untere wird deshalb breiter gezeichnet als
+            // die obere; von Blau bleibt dann links und rechts der roten Linie ein Rand
+            // stehen. Strichelung wäre der übliche zweite Weg, ist aber bei FastLine
+            // wirkungslos (BorderDashStyle greift dort nicht) — siehe NavigatorWaerme.
+            if (sortiert) cm._chart.Series[S_WAERMEPRODUKTION].BorderWidth = 4;
+
             SerieAnlegen(cm, S_RESTWAERME, MyResource.Resource.CHART_SEGMENT_RESTWAERME,
                          Color.Green, GanglinienDarstellung.Anzeigewerte(rest, sortiert));
+
+            // Der Bedarf ZULETZT und damit ganz oben — er ist die Bezugsgröße, gegen die
+            // alles Übrige gelesen wird, und darf von keiner Erzeugerserie verdeckt
+            // werden. Volle Deckkraft statt der früheren 90/255: Eine Linie hat keine
+            // Fläche, hinter der etwas durchscheinen müsste.
+            SerieAnlegen(cm, S_WAERMEBEDARF, MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT,
+                         Color.Red, GanglinienDarstellung.Anzeigewerte(bedarf, sortiert),
+                         SeriesChartType.FastLine);
 
             cm._chart.Invalidate();
         }
@@ -963,8 +1001,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// CSV-Export Bereich Heizkessel:
-        /// Zeitstempel; Außentemperatur; Wärmebedarf; Heizkessel; Restwärme (Stundenwerte).
+        /// CSV-Export Bereich Heizkessel: Zeitstempel; Außentemperatur; Wärmebedarf
+        /// gesamt; Wärmebedarf Kesselstufe; Heizkessel; Restwärme (Stundenwerte).
+        ///
+        /// Die erste Bedarfsspalte ist die Bedarfslinie des Diagramms (Projektbedarf),
+        /// die zweite der Stufeneingang der Kessel — die Größe, die das Diagramm bis zum
+        /// Sichttest vom 16.08.2026 zeigte und die als Zahl weiter auf der Seite steht.
+        /// Sie bleibt in der Datei, weil sie die Kesselstunden erklärt; die getrennten
+        /// Spaltenköpfe sagen, welche der beiden gemeint ist.
         ///
         /// Immer CHRONOLOGISCH und immer aus den Rohvektoren — „sortiert" ist eine
         /// Darstellungsform, keine andere Datenlage (gleiche Regel wie in NavigatorWaerme).
@@ -979,7 +1023,8 @@ namespace WindowsFormsApplication1
             }
 
             List<CsvSpalte> spalten = new List<CsvSpalte>();
-            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEBEDARF, sim.simulation_spk.Waermebedarf));
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEBEDARF_GESAMT, simulation_Waermebedarf.Waermebedarf));
+            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_WAERMEBEDARF_KESSELSTUFE, sim.simulation_spk.Waermebedarf));
             spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_HEIZKESSEL, sim.simulation_spk.Kesselleistung_stuendlich));
             spalten.Add(new CsvSpalte(MyResource.Resource.CHART_CSV_RESTWAERME, sim.simulation_spk.Restwaerme));
 
