@@ -457,6 +457,12 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="CHART_CSV_WAERMEBEDARF" xml:space="preserve">
     <value>Wärmebedarf [kW]</value>
   </data>
+  <data name="CHART_CSV_WAERMEBEDARF_GESAMT" xml:space="preserve">
+    <value>Wärmebedarf gesamt [kW]</value>
+  </data>
+  <data name="CHART_CSV_WAERMEBEDARF_KESSELSTUFE" xml:space="preserve">
+    <value>Wärmebedarf Kesselstufe [kW]</value>
+  </data>
   <data name="CHART_CSV_WAERMELAST" xml:space="preserve">
     <value>Wärmelast [kW]</value>
   </data>
@@ -498,6 +504,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   </data>
   <data name="CHART_LEGENDE_WAERMEBEDARF" xml:space="preserve">
     <value>Wärmebedarf</value>
+  </data>
+  <data name="CHART_LEGENDE_WAERMEBEDARF_GESAMT" xml:space="preserve">
+    <value>Wärmebedarf gesamt</value>
   </data>
   <data name="CHART_LEGENDE_WAERMEBEDARFSDECKUNG" xml:space="preserve">
     <value>Wärmebedarfsdeckung</value>
@@ -2160,6 +2169,9 @@ Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.</value>
   <data name="CHART_LEGENDE_WAERMEPRODUKTION" xml:space="preserve">
     <value>Wärmeproduktion</value>
   </data>
+  <data name="CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL" xml:space="preserve">
+    <value>Wärmeproduktion Heizkessel</value>
+  </data>
   <data name="CHART_LEGENDE_WARMWASSERBEDARF" xml:space="preserve">
     <value>Warmwasserbedarf</value>
   </data>
@@ -2208,6 +2220,6 @@ Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
   </data>
   <data name="SIM_TOOLTIP_CSV_HEIZKESSEL" xml:space="preserve">
     <value>Heizkessel-Simulation als CSV exportieren
-(Zeitstempel, Außentemperatur, Wärmebedarf, Heizkessel, Restwärme)</value>
+(Zeitstempel, Außentemperatur, Wärmebedarf gesamt, Wärmebedarf Kesselstufe, Heizkessel, Restwärme)</value>
   </data>
 </root>

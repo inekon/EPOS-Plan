@@ -172,12 +172,12 @@ Titels gibt es nicht — die neutrale .resx ist die deutsche Anzeige.
 | `CHART_TITEL_WAERMELAST_JAHRESGANGLINIE` | Titel des Kessel-Diagramms (`chart_Kessel`) |
 | `CHART_ACHSE_WAERMELAST` | Y-Achse ebenda |
 | `CHART_ACHSE_JAHRESSTUNDEN`, `CHART_ACHSE_MONATE` | X-Achse ebenda, je nach Stellung von „sortiert" |
-| `CHART_LEGENDE_WAERMEBEDARF` | Bedarfsfläche ebenda (Stufeneingang der Kessel) |
-| `CHART_LEGENDE_WAERMEPRODUKTION` | Produktionssäulen ebenda |
+| ~~`CHART_LEGENDE_WAERMEBEDARF`~~ | Bedarfsfläche ebenda (Stufeneingang der Kessel) — **abgelöst am 16.08.2026** durch `CHART_LEGENDE_WAERMEBEDARF_GESAMT`, siehe Nachtrag am Dateiende |
+| ~~`CHART_LEGENDE_WAERMEPRODUKTION`~~ | Produktionssäulen ebenda — **abgelöst am 16.08.2026** durch `CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL` |
 | `CHART_SEGMENT_RESTWAERME` | Linie „Restwärme" ebenda |
 | `SIM_CHK_SORTIERT` | Umschalter `checkBox_Kessel_sortiert` (programmatisch, wie in NavigatorWaerme) |
 | `SIM_BTN_CSV_EXPORT` | Beschriftung des dritten Export-Knopfes |
-| `CHART_CSV_WAERMEBEDARF`, `CHART_CSV_HEIZKESSEL` | Spaltenköpfe derselben CSV-Ausgabe |
+| ~~`CHART_CSV_WAERMEBEDARF`~~, `CHART_CSV_HEIZKESSEL` | Spaltenköpfe derselben CSV-Ausgabe; die Bedarfsspalte heißt seit 16.08.2026 `CHART_CSV_WAERMEBEDARF_KESSELSTUFE`, daneben steht neu `CHART_CSV_WAERMEBEDARF_GESAMT` |
 
 ## Nachträge aus Etappe E0 — Quellpuffer-Dialog (15.08.2026)
 
@@ -1050,3 +1050,32 @@ die einzige Zeile, an der die Sprachgleichheitsprobe absichtlich keinen Untersch
 | `"QUELLE_…"`, `"ERZEUGER_…"`, `"SPEICHER_…"`, `"ABNEHMER_HEIZKREIS"`, `"ABNEHMER_WARMWASSER"` (`SchemaModell`) | **Knotenschlüssel** der Zeichnung — sie tragen die Auswahl zwischen Liste und Schema und dürfen deshalb nie ein Anzeigetext sein. Sprachneutral, ASCII, mit angehängter Datenbank-ID. |
 | `"Quellwaerme"` (`SchemaKatalog.SPALTE_KESSEL_QUELLWAERME`) | **Persistenzwert** — Spaltenname in `Tab_ErgebnisHeizkessel`. Wie alle Spaltennamen umlautfrei und eingefroren. |
 | `" *"` an der Vollzyklen-Zelle | typografische Marke ohne Wortbestand, wie die Glyphen `▲▼✎×` der Kartenansicht. Die Erklärung dazu steht im lokalisierten `PSP_VOLLZYKLEN_KOMBI_TIP`. |
+
+## Nachtrag Sichttest Kessel-Diagramm — Bezugsgröße und Überlappung (16.08.2026)
+
+Das Diagramm „Wärmelast Jahresganglinie" der Heizkessel-Seite zeigt als Bedarf jetzt den
+**Gesamtwärmebedarf des Projekts** statt des Stufeneingangs der Kessel, und der Bedarf liegt
+als Linie ÜBER den Produktionssäulen statt als Fläche dahinter. Beide Legendentexte werden
+damit mehrdeutig — „Wärmebedarf" könnte weiterhin den Stufeneingang meinen, „Wärmeproduktion"
+die Gesamtproduktion aller Erzeuger. Sie bekommen deshalb **eigene, präzisierte Schlüssel**;
+die bisherigen (`CHART_LEGENDE_WAERMEBEDARF`, `CHART_LEGENDE_WAERMEPRODUKTION`) bleiben
+unverändert für die übrigen Diagramme in Gebrauch. Die CSV-Ausgabe derselben Seite führt seit
+diesem Nachtrag beide Bedarfsgrößen nebeneinander und braucht dafür zwei getrennte Spaltenköpfe.
+
+Die **Seriennamen bleiben unverändert** (`WAERMEBEDARF`, `WAERMEPRODUKTION`, `RESTWAERME`) —
+sie sind Steuerwerte der Schicht 2 und dürfen sich nicht mit dem Anzeigetext bewegen.
+
+### Neu (4)
+
+| Schlüssel | DE | EN | Fundstellen | Grund |
+|---|---|---|---|---|
+| `CHART_LEGENDE_WAERMEBEDARF_GESAMT` | Wärmebedarf gesamt | Total heat demand | Form_Simulation_Detail.cs (`KesselSerienAufbauen`, Serie `WAERMEBEDARF`) | **neu.** Sagt, dass die rote Linie den PROJEKTbedarf zeigt und nicht den bei den Kesseln anliegenden Rest. Nicht zu verwechseln mit `CHART_LEGENDE_GESAMT` („Gesamt", Summenlinie der Erzeuger in NavigatorWaerme). |
+| `CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL` | Wärmeproduktion Heizkessel | Boiler heat generation | Form_Simulation_Detail.cs (`KesselSerienAufbauen`, Serie `WAERMEPRODUKTION`) | **neu.** Benennt den Erzeuger ausdrücklich: die Säulen sind die Summe über alle Kessel des Projekts, nicht die Gesamtproduktion. Wortwahl nach Glossar (`Heizkessel` → *boiler*). |
+| `CHART_CSV_WAERMEBEDARF_GESAMT` | Wärmebedarf gesamt [kW] | Total heat demand [kW] | Form_Simulation_Detail.cs (`btn_CsvExportKessel_Click`) | **neu.** Spaltenkopf der Bedarfslinie des Diagramms. |
+| `CHART_CSV_WAERMEBEDARF_KESSELSTUFE` | Wärmebedarf Kesselstufe [kW] | Heat demand at boiler stage [kW] | Form_Simulation_Detail.cs (`btn_CsvExportKessel_Click`) | **neu.** Spaltenkopf des Stufeneingangs, der bis hierher unter `CHART_CSV_WAERMEBEDARF` („Wärmebedarf [kW]") lief. Der alte Schlüssel bleibt für den Wärmepumpen-Export in Gebrauch; hier stünden sonst zwei Spalten „Wärmebedarf" nebeneinander. |
+
+### Geändert (1)
+
+| Schlüssel | DE neu | EN neu | Grund |
+|---|---|---|---|
+| `SIM_TOOLTIP_CSV_HEIZKESSEL` | Heizkessel-Simulation als CSV exportieren\n(Zeitstempel, Außentemperatur, **Wärmebedarf gesamt, Wärmebedarf Kesselstufe**, Heizkessel, Restwärme) | Export boiler simulation as CSV\n(time stamp, outdoor temperature, **total heat demand, heat demand at boiler stage**, boiler, residual heat) | Die Klammer nennt die Spalten der Datei; die Datei hat eine Spalte mehr bekommen. |

@@ -450,6 +450,12 @@ Without a source buffer this reads 0.00.</value>
   <data name="CHART_CSV_WAERMEBEDARF" xml:space="preserve">
     <value>Heat demand [kW]</value>
   </data>
+  <data name="CHART_CSV_WAERMEBEDARF_GESAMT" xml:space="preserve">
+    <value>Total heat demand [kW]</value>
+  </data>
+  <data name="CHART_CSV_WAERMEBEDARF_KESSELSTUFE" xml:space="preserve">
+    <value>Heat demand at boiler stage [kW]</value>
+  </data>
   <data name="CHART_CSV_WAERMELAST" xml:space="preserve">
     <value>Heat load [kW]</value>
   </data>
@@ -491,6 +497,9 @@ Without a source buffer this reads 0.00.</value>
   </data>
   <data name="CHART_LEGENDE_WAERMEBEDARF" xml:space="preserve">
     <value>Heat demand</value>
+  </data>
+  <data name="CHART_LEGENDE_WAERMEBEDARF_GESAMT" xml:space="preserve">
+    <value>Total heat demand</value>
   </data>
   <data name="CHART_LEGENDE_WAERMEBEDARFSDECKUNG" xml:space="preserve">
     <value>Heat demand coverage</value>
@@ -2153,6 +2162,9 @@ Boilers, CHP units and solar thermal generate the heat themselves.</value>
   <data name="CHART_LEGENDE_WAERMEPRODUKTION" xml:space="preserve">
     <value>Heat generation</value>
   </data>
+  <data name="CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler heat generation</value>
+  </data>
   <data name="CHART_LEGENDE_WARMWASSERBEDARF" xml:space="preserve">
     <value>DHW demand</value>
   </data>
@@ -2201,6 +2213,6 @@ Please run the simulation with the boiler first.</value>
   </data>
   <data name="SIM_TOOLTIP_CSV_HEIZKESSEL" xml:space="preserve">
     <value>Export boiler simulation as CSV
-(time stamp, outdoor temperature, heat demand, boiler, residual heat)</value>
+(time stamp, outdoor temperature, total heat demand, heat demand at boiler stage, boiler, residual heat)</value>
   </data>
 </root>
