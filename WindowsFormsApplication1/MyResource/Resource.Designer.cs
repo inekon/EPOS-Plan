@@ -2750,7 +2750,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zweikanalige Kaskade (Vorschau) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zweikanalige Kaskade ähnelt.
         /// </summary>
         public static string SIM_KASKADE_SCHALTER {
             get {
@@ -2760,13 +2760,15 @@ namespace WindowsFormsApplication1.MyResource {
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet Heiz- und Warmwasserbedarf als getrennte Kanäle und löst die
-        ///Speicherladung aus der Erzeugerkaskade heraus (Vorschau).
+        ///Speicherladung aus der Erzeugerkaskade heraus.
         ///
         ///Das ÄNDERT die Ergebnisse: Anlagen mit Pufferspeicher als Senke laden
         ///diesen, statt den Bedarf direkt zu decken; gedeckt wird aus dem Speicher.
         ///Was sich im Einzelnen ändert, steht im Umsetzungsprotokoll zu Paket 4
         ///(Teil 7, Dokumentierte Ergebnisaenderungen). Ohne Haken rechnet die
-        ///bisherige, einkanalige Kaskade unverändert weiter. ähnelt.
+        ///bisherige, einkanalige Kaskade unverändert weiter.
+        ///
+        ///Der Haken wird automatisch gesetzt, sobald die Konfi [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
         public static string SIM_KASKADE_TOOLTIP {
             get {
@@ -3083,6 +3085,39 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT {
             get {
                 return ResourceManager.GetString("SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konfiguration führt Warmwasser und Heizwärme getrennt. Ohne zweikanalige
+        ///Kaskade gehen Brauchwasser-/Kombi-Senken und Quellbezüge nicht in die Simulation ein.
+        ///
+        ///Trotzdem deaktivieren? ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KASKADE_ABWAHL {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KASKADE_ABWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die zweikanalige Kaskade wurde für dieses Projekt automatisch aktiviert, da
+        ///Warmwasser und Heizwärme getrennt geführt werden. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KASKADE_AUTOMATISCH {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KASKADE_AUTOMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konfiguration führt Warmwasser und Heizwärme getrennt.
+        ///
+        ///Soll die zweikanalige Kaskade für dieses Projekt eingeschaltet werden? ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KASKADE_FRAGE {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KASKADE_FRAGE", resourceCulture);
             }
         }
         
@@ -4073,6 +4108,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_TITEL_HINWEIS {
             get {
                 return ResourceManager.GetString("SIM_TITEL_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zweikanalige Kaskade ähnelt.
+        /// </summary>
+        public static string SIM_TITEL_KASKADE {
+            get {
+                return ResourceManager.GetString("SIM_TITEL_KASKADE", resourceCulture);
             }
         }
         
