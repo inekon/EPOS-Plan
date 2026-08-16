@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.Windows.Forms;
@@ -159,6 +160,164 @@ namespace WindowsFormsApplication1
                 StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
 
             return betroffen > 0;
+        }
+
+        // --- Automatik: wann ist die zweikanalige Kaskade NOTWENDIG? -------------------
+
+        /// <summary>
+        /// true, wenn die Konfiguration des Projekts Warmwasser und Heizwärme GETRENNT
+        /// führt und deshalb ohne die zweikanalige Kaskade Einstellungen enthielte, die
+        /// die Simulation gar nicht auswertet.
+        ///
+        /// <b>Die Regel.</b> Notwendig ist die zweikanalige Kaskade, sobald mindestens
+        /// EINE Anlage, deren Erzeugerart in der Kaskade des Projekts steht
+        /// (<c>Tab_Einstellungen.Tool_1..Tool_4</c> — dieselben vier Positionen, die
+        /// <c>SimulationControl.tool[0..3]</c> abläuft), eines dieser Merkmale trägt:
+        /// <list type="number">
+        ///   <item><description>Haupt- oder Zweitsenke ist ein Puffer BRAUCHWASSER oder
+        ///     KOMBI. Der einkanalige Weg holt den Speicher aus der Alt-Zuordnung
+        ///     <c>Z_ProjektPufferSp</c> und kennt dort ausschließlich den HEIZUNGS-Speicher
+        ///     der Wärmepumpe; eine Brauchwasser-/Kombi-Senke wird gespeichert und
+        ///     angezeigt, rechnet aber nicht mit (derselbe Sachverhalt, den bis heute
+        ///     <c>Form_Waermesenke.BrauchwasserUebergangsHinweis</c> meldet).</description></item>
+        ///   <item><description>Hauptsenke HEIZKREIS mit einer Bedarfsart ungleich
+        ///     „Beides" bei einer Erzeugerart, deren EINKANALIGER Rechenweg
+        ///     <c>WS_Typ</c> nicht auswertet — siehe die Abgrenzung unten.</description></item>
+        ///   <item><description>Ein aufgelöster Quellpuffer (<c>WQ_Typ = Pufferspeicher</c>
+        ///     mit <c>WQ_ID_Puffer &gt; 0</c>, also die Kaskade). Quellbezüge entstehen
+        ///     ausschließlich in <c>SimulationControl.QuellbezuegeAufbauen</c>, aufgerufen
+        ///     aus <c>Speicherstufe_Rechnen</c> — und die läuft nur im zweikanaligen
+        ///     Weg.</description></item>
+        /// </list>
+        ///
+        /// <b>Abgrenzung bei Merkmal 2 — die WÄRMEPUMPE zählt NICHT mit.</b> Die
+        /// Bedarfsart ist nicht durchgängig zweikanalig-exklusiv: Die einkanalige
+        /// Stundenschleife der Wärmepumpe liest <c>WS_Typ</c> sehr wohl aus
+        /// (<c>SimulationWaermepumpe.ModuleAufbauen</c> füllt <c>wp_senke</c>,
+        /// <c>Berechnung_Stundenschleife</c> wählt damit <c>rest_ww</c> bzw.
+        /// <c>rest_heiz</c>). Ein „nur Heizwärme"-Modul rechnet dort also bereits richtig,
+        /// und eine Automatik, die deshalb umschaltet, würde ohne Not ANDERE Ergebnisse
+        /// erzeugen. BHKW, Heizkessel und Solarthermie werten <c>WS_Typ</c> einkanalig
+        /// dagegen NICHT aus (der einkanalige Anker rechnete auf der Bedarfssumme; erst die
+        /// zweikanaligen Stufen folgen dem Kanal — vgl. den Kopfkommentar von
+        /// <c>SimulationControl.Simulation_BHKW_Ctrl_Zweikanalig</c>). Für sie ist die
+        /// Einstellung ohne die zweikanalige Kaskade wirkungslos, und genau das soll die
+        /// Automatik verhindern.
+        ///
+        /// <b>Keine zweite SQL-Wahrheit.</b> Gelesen wird über <see cref="Hydraulikbild"/>
+        /// (Etappe D4) — dieselbe Abbildung, mit der Senken- und Quellendialog schon heute
+        /// prüfen. Merkmal 3 fragt <c>Hydraulikbild.QuelleJeAnlage</c> und damit die
+        /// ENGINE-Wahrheit (Fremdschlüssel, nicht der Alt-Bezeichner).
+        ///
+        /// Dialogfrei (Konzept 13.4).
+        /// </summary>
+        public static bool KaskadeNotwendig(int idProjekt)
+        {
+            return KaskadeNotwendig(idProjekt, 0, null);
+        }
+
+        /// <summary>
+        /// Wie <see cref="KaskadeNotwendig(int)"/>, prüft aber den Zustand NACH dem
+        /// Speichern: <paramref name="senkeErsatz"/> tritt für die Anlage
+        /// <paramref name="idAnlageErsatz"/> an die Stelle der gespeicherten Senkenfelder.
+        ///
+        /// Dieselbe Bauart wie <c>Hydraulikbild.Ebenen(idAnlageErsatz, …)</c>: Der Dialog
+        /// soll fragen können, was gälte, WENN er jetzt speichert — sonst müsste er die
+        /// Regel ein zweites Mal auslegen. Beide Parameter leer (0/<c>null</c>) = der
+        /// gespeicherte Bestand.
+        /// </summary>
+        public static bool KaskadeNotwendig(int idProjekt, int idAnlageErsatz,
+                                            WaermesenkeClass.SenkeDaten senkeErsatz)
+        {
+            if (idProjekt <= 0) return false;
+
+            Hydraulikbild bild = Hydraulikbild.Lesen(idProjekt);
+            if (bild == null) return false;
+
+            // Der Ersatz wird normalisiert wie jeder gelesene Satz (Puffer-Ziel ohne
+            // Puffer ist kein Puffer-Ziel) - sonst bewertete die Regel eine halbe
+            // Dialogeingabe anders als denselben Stand nach dem Speichern.
+            WaermesenkeClass.SenkeDaten ersatz = null;
+            if (idAnlageErsatz > 0 && senkeErsatz != null)
+            {
+                ersatz = senkeErsatz.Kopie();
+                WaermesenkeClass.Normalisieren(ersatz);
+            }
+
+            List<string> kaskade = KaskadeErzeuger(idProjekt);
+
+            foreach (Hydraulikbild.AnlagenEintrag a in bild.Anlagen)
+            {
+                if (a == null) continue;
+
+                // Anlagen einer Erzeugerart, die in diesem Projekt gar nicht rechnet,
+                // begründen keine Notwendigkeit - ihre Senken und Quellen bleiben in
+                // JEDEM Rechenweg unbeachtet.
+                string erzeuger = ErzeugerZuTyp(a.ID_Type);
+                if (erzeuger == null || !kaskade.Contains(erzeuger)) continue;
+
+                WaermesenkeClass.SenkeDaten senke =
+                    (ersatz != null && a.ID == idAnlageErsatz) ? ersatz : a.Senke;
+
+                // (1) Brauchwasser- oder Kombi-Senke
+                if (WaermesenkeClass.IstBrauchwasserseitig(senke.Ziel)) return true;
+                if (senke.HatZweitsenke &&
+                    WaermesenkeClass.IstBrauchwasserseitig(senke.Ziel2)) return true;
+
+                // (2) getrennter Kanal am Heizkreis - ohne die Wärmepumpe (Abgrenzung oben)
+                if (a.ID_Type != ProjektPuffer.TYP_WP &&
+                    string.Equals(senke.Ziel, WaermesenkeClass.ZIEL_HEIZKREIS, StringComparison.Ordinal) &&
+                    !string.Equals(senke.Bedarfsart, WaermequelleClass.SENKE_BEIDES, StringComparison.Ordinal))
+                    return true;
+
+                // (3) aufgelöster Quellpuffer (Kaskade)
+                if (bild.QuelleJeAnlage.ContainsKey(a.ID)) return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Die Erzeugerarten der Kaskade eines Projekts als DB-Werte
+        /// (<c>Tab_Einstellungen.Tool_1..Tool_4</c>); nie <c>null</c>.
+        ///
+        /// Tool_5/Tool_6 tragen Photovoltaik und Stromspeicher und stehen deshalb nicht
+        /// zur Debatte - die Wärmekaskade endet bei Position 4
+        /// (<c>SimulationControl.KaskadeEnthaelt</c>).
+        /// </summary>
+        private static List<string> KaskadeErzeuger(int idProjekt)
+        {
+            List<string> liste = new List<string>();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT Tool_1, Tool_2, Tool_3, Tool_4 FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
+            if (dt == null || dt.Rows.Count == 0) return liste;
+
+            DataRow r = dt.Rows[0];
+            for (int i = 1; i <= 4; i++)
+            {
+                string wert = StilleDb.Text(StilleDb.Feld(r, "Tool_" + i));
+                if (wert.Length > 0 && !liste.Contains(wert)) liste.Add(wert);
+            }
+
+            return liste;
+        }
+
+        /// <summary>
+        /// <c>Tab_Energieanlagen.ID_Type</c> → DB-Wert der Erzeugerart; <c>null</c> für
+        /// alles, was kein Wärmeerzeuger ist (etwa der Pufferspeicher, Typ 12).
+        /// </summary>
+        private static string ErzeugerZuTyp(int idType)
+        {
+            switch (idType)
+            {
+                case ProjektPuffer.TYP_WP: return DbWerte.ERZEUGER_WAERMEPUMPE;
+                case ProjektPuffer.TYP_SOLARTHERMIE: return DbWerte.ERZEUGER_SOLARTHERMIE;
+                case ProjektPuffer.TYP_KESSEL: return DbWerte.ERZEUGER_HEIZKESSEL;
+                case ProjektPuffer.TYP_BHKW: return DbWerte.ERZEUGER_BHKW;
+                default: return null;
+            }
         }
 
         /// <summary>

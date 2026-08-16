@@ -50,6 +50,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die Senkeneinstellung: beim Öffnen Vorbelegung, nach OK das Ergebnis.</summary>
         public WaermesenkeClass.SenkeDaten Daten = new WaermesenkeClass.SenkeDaten();
 
+        /// <summary>
+        /// true = der aufrufende Konfigurationsdialog schaltet die zweikanalige Kaskade
+        /// nach OK automatisch ein, wenn die neue Senke sie notwendig macht. Dann
+        /// entfällt der Übergangshinweis (siehe
+        /// <see cref="BrauchwasserUebergangsHinweis"/>).
+        ///
+        /// false setzt der Aufrufer nach einer BEWUSSTEN Abwahl des Schalters: Die
+        /// Kaskade bleibt dann aus, die Brauchwasser-/Kombi-Senke rechnet nicht mit — und
+        /// genau das sagt der Übergangshinweis, der deshalb wieder erscheinen muss.
+        /// </summary>
+        public bool KaskadeAutomatikAktiv = true;
+
         // --- Oberfläche ---------------------------------------------------------------
 
         private RadioButton _rbHeizkreis;
@@ -794,7 +806,7 @@ namespace WindowsFormsApplication1
         ///
         /// Der Engine-Umbau ist abgeschlossen; maßgeblich ist heute allein die
         /// Projekteinstellung <c>Tab_Einstellungen.Kaskade_Zweikanalig</c> — der Schalter
-        /// „Zweikanalige Kaskade (Vorschau)" im Konfigurationsdialog. IST SIE GESETZT,
+        /// „Zweikanalige Kaskade" im Konfigurationsdialog. IST SIE GESETZT,
         /// verzweigt <c>SimulationControl.Do_Simulation</c> in die zweikanalige Kaskade
         /// und rechnet Heizung und Warmwasser getrennt: Die Senke wirkt, es gibt nichts
         /// zu melden.
@@ -828,6 +840,19 @@ namespace WindowsFormsApplication1
             // Zweikanalige Kaskade eingeschaltet: Die Senke geht in die Simulation ein —
             // der Hinweis wäre falsch.
             if (KonfigurationCtrl.KaskadeZweikanaligLesen(ID_Projekt)) return null;
+
+            // AUTOMATIK: Macht die NEUE Senke die zweikanalige Kaskade notwendig, schaltet
+            // der Konfigurationsdialog sie unmittelbar nach OK ein (und meldet das). Der
+            // Übergangshinweis wäre dann schon falsch, bevor er gelesen ist — er bleibt
+            // nur, wenn der Anwender den Schalter zuvor bewusst abgewählt hat
+            // (KaskadeAutomatikAktiv = false).
+            //
+            // Gefragt wird mit den NEUEN Senkendaten, nicht mit dem gespeicherten Stand:
+            // Geschrieben wird erst nach diesem Dialog, und die Regel soll den Zustand
+            // NACH dem Speichern bewerten (dieselbe Bauart wie die Ersatzparameter in
+            // Hydraulikbild.Ebenen).
+            if (KaskadeAutomatikAktiv &&
+                KonfigurationCtrl.KaskadeNotwendig(ID_Projekt, ID_Anlage, d)) return null;
 
             string text = MyResource.Resource.SIM_MSG_BRAUCHWASSER_UEBERGANG
                               .Replace("\n", Environment.NewLine);

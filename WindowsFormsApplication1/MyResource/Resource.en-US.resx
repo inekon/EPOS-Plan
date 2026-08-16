@@ -1096,17 +1096,21 @@ the curve then has to be supplemented with lower data points.</value>
     <value>Simulation results in detail</value>
   </data>
   <data name="SIM_KASKADE_SCHALTER" xml:space="preserve">
-    <value>Two-channel cascade (preview)</value>
+    <value>Two-channel cascade</value>
   </data>
   <data name="SIM_KASKADE_TOOLTIP" xml:space="preserve">
     <value>Calculates space heating and domestic hot water demand as separate channels and
-separates the storage charging from the generator cascade (preview).
+separates the storage charging from the generator cascade.
 
 This CHANGES the results: units with a buffer storage as sink charge
 it instead of covering the demand directly; the demand is covered from the storage.
 What changes in detail is described in the implementation log for package 4
 (part 7, Documented result changes). Without the tick, the
-previous single-channel cascade continues to calculate unchanged.</value>
+previous single-channel cascade continues to calculate unchanged.
+
+The tick is set automatically as soon as the configuration handles domestic
+hot water and space heating separately - the single-channel path would then
+be blind to DHW/combi storage sinks and source references.</value>
   </data>
   <data name="SIM_KEIN_BRAUCHWASSERBEDARF" xml:space="preserve">
     <value>Note: no domestic hot water demand is assigned to the project.
@@ -1204,6 +1208,22 @@ It is saved and displayed, but does not yet enter the simulation.</value>
   </data>
   <data name="SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The result could not be saved.</value>
+  </data>
+  <data name="SIM_MSG_KASKADE_ABWAHL" xml:space="preserve">
+    <value>The configuration handles domestic hot water and space heating separately. Without
+the two-channel cascade, DHW/combi storage sinks and source references are not
+included in the simulation.
+
+Deactivate anyway?</value>
+  </data>
+  <data name="SIM_MSG_KASKADE_AUTOMATISCH" xml:space="preserve">
+    <value>The two-channel cascade has been activated automatically for this project because
+domestic hot water and space heating are handled separately.</value>
+  </data>
+  <data name="SIM_MSG_KASKADE_FRAGE" xml:space="preserve">
+    <value>The configuration handles domestic hot water and space heating separately.
+
+Should the two-channel cascade be switched on for this project?</value>
   </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF" xml:space="preserve">
     <value>No fuel defined for this CHP unit.</value>
@@ -1515,6 +1535,9 @@ remaining charging potential - never mandatory demand.
   </data>
   <data name="SIM_TITEL_HINWEIS" xml:space="preserve">
     <value>Note</value>
+  </data>
+  <data name="SIM_TITEL_KASKADE" xml:space="preserve">
+    <value>Two-channel cascade</value>
   </data>
   <data name="SIM_TITEL_MELDUNGEN_LAUF" xml:space="preserve">
     <value>Messages from the simulation run</value>

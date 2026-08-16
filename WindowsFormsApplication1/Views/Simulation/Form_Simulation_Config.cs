@@ -930,6 +930,11 @@ namespace WindowsFormsApplication1
             if (fehlgeschlagen > 0)
                 ShowStatus(string.Format(MyResource.Resource.PSP_STATUS_ZUORDNUNG_FEHLGESCHLAGEN,
                                          fehlgeschlagen), Color.Firebrick);
+
+            // ZULETZT: Die Notwendigkeitsregel liest Tool_1..Tool_4 (welche Erzeuger
+            // überhaupt rechnen) und die Senken-/Quellenfelder. Beides steht erst nach
+            // dem Insert oben in der Datenbank - vorher gälte noch die alte Kaskade.
+            KaskadeAutomatikBeimSpeichern();
         }
 
         private void AddErzeuger()

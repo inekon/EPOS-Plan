@@ -1103,17 +1103,21 @@ sollen; die Kennlinie ist dann um tiefere Stützstellen zu ergänzen.</value>
     <value>Simulationsergebnisse im Detail</value>
   </data>
   <data name="SIM_KASKADE_SCHALTER" xml:space="preserve">
-    <value>Zweikanalige Kaskade (Vorschau)</value>
+    <value>Zweikanalige Kaskade</value>
   </data>
   <data name="SIM_KASKADE_TOOLTIP" xml:space="preserve">
     <value>Rechnet Heiz- und Warmwasserbedarf als getrennte Kanäle und löst die
-Speicherladung aus der Erzeugerkaskade heraus (Vorschau).
+Speicherladung aus der Erzeugerkaskade heraus.
 
 Das ÄNDERT die Ergebnisse: Anlagen mit Pufferspeicher als Senke laden
 diesen, statt den Bedarf direkt zu decken; gedeckt wird aus dem Speicher.
 Was sich im Einzelnen ändert, steht im Umsetzungsprotokoll zu Paket 4
 (Teil 7, Dokumentierte Ergebnisaenderungen). Ohne Haken rechnet die
-bisherige, einkanalige Kaskade unverändert weiter.</value>
+bisherige, einkanalige Kaskade unverändert weiter.
+
+Der Haken wird automatisch gesetzt, sobald die Konfiguration Warmwasser
+und Heizwärme getrennt führt - dann wäre der einkanalige Weg blind für
+Brauchwasser-/Kombi-Senken und Quellbezüge.</value>
   </data>
   <data name="SIM_KEIN_BRAUCHWASSERBEDARF" xml:space="preserve">
     <value>Hinweis: Dem Projekt ist kein Brauchwasserbedarf zugeordnet.
@@ -1211,6 +1215,21 @@ Sie wird gespeichert und angezeigt, geht in die Simulation aber noch nicht ein.<
   </data>
   <data name="SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Das Ergebnis konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="SIM_MSG_KASKADE_ABWAHL" xml:space="preserve">
+    <value>Die Konfiguration führt Warmwasser und Heizwärme getrennt. Ohne zweikanalige
+Kaskade gehen Brauchwasser-/Kombi-Senken und Quellbezüge nicht in die Simulation ein.
+
+Trotzdem deaktivieren?</value>
+  </data>
+  <data name="SIM_MSG_KASKADE_AUTOMATISCH" xml:space="preserve">
+    <value>Die zweikanalige Kaskade wurde für dieses Projekt automatisch aktiviert, da
+Warmwasser und Heizwärme getrennt geführt werden.</value>
+  </data>
+  <data name="SIM_MSG_KASKADE_FRAGE" xml:space="preserve">
+    <value>Die Konfiguration führt Warmwasser und Heizwärme getrennt.
+
+Soll die zweikanalige Kaskade für dieses Projekt eingeschaltet werden?</value>
   </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF" xml:space="preserve">
     <value>Kein Brennstoff für dieses BHKW definiert.</value>
@@ -1522,6 +1541,9 @@ verbleibendes Ladepotenzial aufnimmt - nie Pflichtbedarf.
   </data>
   <data name="SIM_TITEL_HINWEIS" xml:space="preserve">
     <value>Hinweis</value>
+  </data>
+  <data name="SIM_TITEL_KASKADE" xml:space="preserve">
+    <value>Zweikanalige Kaskade</value>
   </data>
   <data name="SIM_TITEL_MELDUNGEN_LAUF" xml:space="preserve">
     <value>Meldungen des Simulationslaufs</value>

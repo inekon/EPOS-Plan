@@ -47,6 +47,12 @@ namespace WindowsFormsApplication1
         private CheckBox checkBox_KaskadeZweikanalig;
         private bool _kaskadeUiUpdate = false;   // verhindert Schreiben beim Vorbelegen
 
+        // Bewusste Abwahl der zweikanaligen Kaskade TROTZ erfüllter Notwendigkeitsregel.
+        // Sie gilt für die Dauer dieses Dialogs und legt die Automatik still - ohne sie
+        // hätte die Abwahl keine Wirkung: Der nächste OK-Knopf im Senkendialog (oder das
+        // nächste Speichern) würde den Haken sofort wieder setzen.
+        private bool _kaskadeAutomatikZurueckgestellt = false;
+
         // Fußzeile, rechts: Einstellung Extrapolation_erlaubt (Paket 8, Konzept 13.4)
         private CheckBox checkBox_Extrapolation;
         private bool _extrapolationUiUpdate = false;
@@ -107,7 +113,7 @@ namespace WindowsFormsApplication1
         // --- Fußzeilenschalter --------------------------------------------------------
 
         /// <summary>
-        /// Schalter „Zweikanalige Kaskade (Vorschau)" in der Fußzeile
+        /// Schalter „Zweikanalige Kaskade" in der Fußzeile
         /// (Paket 4; Konzept Kapitel 9 „Feature-Flag empfohlen").
         ///
         /// Er schreibt die Projekteinstellung <c>Tab_Einstellungen.Kaskade_Zweikanalig</c>,
@@ -172,6 +178,32 @@ namespace WindowsFormsApplication1
 
             bool wert = checkBox_KaskadeZweikanalig.Checked;
 
+            // ABWAHL-GUARD: Der Haken geht heraus, obwohl die Konfiguration Warmwasser
+            // und Heizwärme getrennt führt. Das ist erlaubt - aber nicht stillschweigend,
+            // denn danach fallen Brauchwasser-/Kombi-Senken und Quellbezüge aus der
+            // Rechnung, ohne dass irgendwo etwas fehlt.
+            if (!wert && KonfigurationCtrl.KaskadeNotwendig(m_ID_Projekt))
+            {
+                // Ohne Replace auf Environment.NewLine: Der Ressourcenleser liefert die
+                // Umbrüche dieser .resx bereits als CRLF (gemessen). Die anderswo übliche
+                // Umsetzung machte daraus CR+CRLF und damit eine Leerzeile zu viel.
+                DialogResult wahl = MessageBox.Show(
+                    MyResource.Resource.SIM_MSG_KASKADE_ABWAHL,
+                    MyResource.Resource.SIM_TITEL_KASKADE,
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (wahl != DialogResult.Yes)
+                {
+                    _kaskadeUiUpdate = true;
+                    try { checkBox_KaskadeZweikanalig.Checked = true; }
+                    finally { _kaskadeUiUpdate = false; }
+                    return;
+                }
+
+                // Bewusste Entscheidung - sie wird respektiert (siehe Feldkommentar).
+                _kaskadeAutomatikZurueckgestellt = true;
+            }
+
             // Sofort schreiben, nicht erst beim „Speichern": Der Schalter gehört nicht zu
             // dem Einstellungssatz, den btn_Speichern_Click über KonfigurationCtrl.Update
             // wegschreibt (dessen Spaltenliste bleibt unangetastet, siehe
@@ -193,6 +225,93 @@ namespace WindowsFormsApplication1
             finally { _kaskadeUiUpdate = false; }
 
             ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
+        }
+
+        // --- Automatik der zweikanaligen Kaskade ---------------------------------------
+        //
+        // GRUNDSATZ: Geschrieben wird ausschließlich bei einer DIALOG-AKTION des Anwenders
+        // (OK im Senken- oder Quellendialog, „Konfiguration speichern"), nie still zur
+        // Laufzeit und nie beim bloßen Öffnen eines Fensters. Der Lesepfad der Engine
+        // bleibt unangetastet: Sie liest weiter nur Tab_Einstellungen.Kaskade_Zweikanalig
+        // und kennt die Regel nicht. Ein Referenzlauf mit ausgeschaltetem Flag rechnet
+        // deshalb unverändert.
+        //
+        // ZWEI AUSPRÄGUNGEN, mit Absicht verschieden:
+        //   * Nach einer SENKEN- oder QUELLEN-Änderung hat der Anwender die Notwendigkeit
+        //     gerade selbst hergestellt. Hier wird eingeschaltet und gemeldet - eine
+        //     Rückfrage wäre eine Frage nach etwas, das er soeben entschieden hat.
+        //   * Beim SPEICHERN der Konfiguration kann derselbe Stand beliebig oft
+        //     vorbeikommen (Altbestand, SQL-Pflege, wiederholtes Speichern). Dort wird
+        //     GEFRAGT statt gesetzt. Das ist die robustere der beiden im Auftrag
+        //     genannten Varianten: Sie braucht keinen gemerkten Vergleichsstand in der
+        //     Datenbank - und ein gemerkter Stand wäre genau die Stelle, an der eine
+        //     bewusste Abwahl später doch wieder verloren ginge.
+        //
+        // Eine bewusste Abwahl (_kaskadeAutomatikZurueckgestellt) legt BEIDE Ausprägungen
+        // still, solange dieser Dialog offen ist. Ohne das wäre der Abwahl-Guard eine
+        // Frage ohne Folgen.
+
+        /// <summary>
+        /// Schaltet die zweikanalige Kaskade nach einer Senken- oder Quellenänderung ein,
+        /// wenn die Konfiguration sie jetzt braucht — mit einmaliger Meldung.
+        ///
+        /// Aufzurufen NACH dem Schreiben der Senke bzw. des Quellbezugs: Die Regel liest
+        /// den gespeicherten Stand.
+        /// </summary>
+        private void KaskadeAutomatikNachAenderung()
+        {
+            if (m_ID_Projekt <= 0 || _kaskadeAutomatikZurueckgestellt) return;
+            if (KonfigurationCtrl.KaskadeZweikanaligLesen(m_ID_Projekt)) return;
+            if (!KonfigurationCtrl.KaskadeNotwendig(m_ID_Projekt)) return;
+
+            if (!KonfigurationCtrl.KaskadeZweikanaligSchreiben(m_ID_Projekt, true))
+            {
+                // Kein Einstellungssatz oder Spalte fehlt (Datenbank nicht auf
+                // Schemastand 6) - dieselbe Behandlung wie beim Schalter: melden und
+                // nichts behaupten.
+                ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
+                return;
+            }
+
+            AktualisiereKaskadeSchalter();
+
+            // Umbrüche unverändert (Begründung im Abwahl-Guard).
+            MessageBox.Show(
+                MyResource.Resource.SIM_MSG_KASKADE_AUTOMATISCH,
+                MyResource.Resource.SIM_TITEL_KASKADE,
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// Fragt beim Speichern der Konfiguration nach, wenn die Regel erfüllt ist und der
+        /// Haken fehlt (Altbestand, SQL-Pflege). „Nein" wird wie eine bewusste Abwahl
+        /// behandelt und in diesem Dialog nicht noch einmal gefragt.
+        /// </summary>
+        private void KaskadeAutomatikBeimSpeichern()
+        {
+            if (m_ID_Projekt <= 0 || _kaskadeAutomatikZurueckgestellt) return;
+            if (KonfigurationCtrl.KaskadeZweikanaligLesen(m_ID_Projekt)) return;
+            if (!KonfigurationCtrl.KaskadeNotwendig(m_ID_Projekt)) return;
+
+            DialogResult wahl = MessageBox.Show(
+                MyResource.Resource.SIM_MSG_KASKADE_FRAGE,
+                MyResource.Resource.SIM_TITEL_KASKADE,
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (wahl != DialogResult.Yes)
+            {
+                _kaskadeAutomatikZurueckgestellt = true;
+                return;
+            }
+
+            if (!KonfigurationCtrl.KaskadeZweikanaligSchreiben(m_ID_Projekt, true))
+            {
+                ShowStatus(MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER, Color.DarkRed);
+                return;
+            }
+
+            AktualisiereKaskadeSchalter();
+            ShowStatus(MyResource.Resource.SIM_STATUS_KASKADE_EIN, Color.DarkGreen);
         }
 
         /// <summary>
@@ -729,6 +848,10 @@ namespace WindowsFormsApplication1
             frm.AnlagenName = info.Bezeichner;
             frm.BM_Typ = info.BM_Typ;
             frm.Daten = WaermesenkeClass.Lesen(info.ID);
+            // Der Dialog unterdrückt seinen Übergangshinweis nur, solange die Automatik
+            // die Kaskade wirklich einschalten wird - nach einer bewussten Abwahl bleibt
+            // der Hinweis richtig und muss stehen bleiben.
+            frm.KaskadeAutomatikAktiv = !_kaskadeAutomatikZurueckgestellt;
             frm.SetControls();
 
             DialogResult ergebnis = frm.ShowDialog(this);
@@ -743,6 +866,10 @@ namespace WindowsFormsApplication1
                                Color.ForestGreen);
 
                 ZuordnungBrueckeAnwenden();
+
+                // Automatik NACH dem Schreiben: Erst jetzt steht die Senke, an der die
+                // Notwendigkeitsregel hängt.
+                KaskadeAutomatikNachAenderung();
             }
 
             // Auch nach Abbruch neu aufbauen: der Dialog kann über
@@ -944,6 +1071,12 @@ namespace WindowsFormsApplication1
                         }
 
                         WaermequelleClass.WertSchreiben(info.ID, "WQ_Typ", typNeu);
+
+                        // Ein AUFGELÖSTER Quellbezug (Fremdschlüssel, nicht der
+                        // Alt-Bezeichner) entsteht nur im zweikanaligen Weg - deshalb hier
+                        // dieselbe Automatik wie nach einer Senkenänderung. Ohne gesetzte
+                        // ID gibt es keinen Quellbezug und nichts zu entscheiden.
+                        if (frmQuelle.ID_Puffer > 0) KaskadeAutomatikNachAenderung();
                         break;
                     }
 
