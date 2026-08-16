@@ -1184,11 +1184,11 @@ The project must contain a buffer storage with the use "{2}".</value>
     <value>PV-optimised</value>
   </data>
   <data name="SIM_MSG_BRAUCHWASSER_UEBERGANG" xml:space="preserve">
-    <value>Note: The DHW sink only becomes effective with the engine conversion (package 4).
+    <value>Note: The DHW/combi sink only becomes effective once the two-channel cascade is enabled (switch in the configuration dialog).
 It is saved and displayed, but does not yet enter the simulation.</value>
   </data>
   <data name="SIM_MSG_BRAUCHWASSER_WP_ZUSATZ" xml:space="preserve">
-    <value>The previous buffer storage assignment of this heat pump is removed in the process; until package 4 the simulation then calculates without storage.</value>
+    <value>The previous buffer storage assignment of this heat pump is removed in the process; without the two-channel cascade the simulation then calculates without storage.</value>
   </data>
   <data name="SIM_MSG_ERGEBNIS_GESPEICHERT" xml:space="preserve">
     <value>Simulation result saved.</value>

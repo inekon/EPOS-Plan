@@ -3014,7 +3014,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: Die Brauchwasser-Senke wird erst mit dem Engine-Umbau (Paket 4) wirksam.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: Die Brauchwasser-/Kombi-Senke wird erst mit aktivierter zweikanaliger Kaskade wirksam (Schalter im Konfigurationsdialog).
         ///Sie wird gespeichert und angezeigt, geht in die Simulation aber noch nicht ein. ähnelt.
         /// </summary>
         public static string SIM_MSG_BRAUCHWASSER_UEBERGANG {
@@ -3024,7 +3024,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die bisherige Pufferspeicher-Zuordnung dieser Wärmepumpe wird dabei entfernt; bis Paket 4 rechnet die Simulation dann ohne Speicher. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die bisherige Pufferspeicher-Zuordnung dieser Wärmepumpe wird dabei entfernt; ohne zweikanalige Kaskade rechnet die Simulation dann ohne Speicher. ähnelt.
         /// </summary>
         public static string SIM_MSG_BRAUCHWASSER_WP_ZUSATZ {
             get {
