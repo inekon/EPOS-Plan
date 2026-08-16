@@ -6,7 +6,16 @@ echo.
 echo === GitHub-Synchronisation Waermeplan ===
 git add -A
 git diff --cached --quiet || git commit -m "Synchronisation vom %date% %time%"
-git pull --rebase origin main
+REM Merge statt Rebase: erhaelt die lokale Merge-Historie und kann nicht
+REM mitten in einem Rebase steckenbleiben (Vorfall vom 16.08.2026).
+git pull --no-rebase --no-edit origin main
+if errorlevel 1 (
+  echo.
+  echo FEHLER beim Zusammenfuehren mit GitHub - Meldung oben pruefen.
+  echo Es wurde NICHT gepusht.
+  pause
+  exit /b 1
+)
 git push origin main
 if errorlevel 1 (
   echo.
