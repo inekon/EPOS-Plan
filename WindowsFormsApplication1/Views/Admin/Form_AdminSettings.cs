@@ -72,6 +72,7 @@ namespace WindowsFormsApplication1
             Properties.Settings.Default.DBExportPath = txt_DBExportPath.Text;
             Properties.Settings.Default.DBImportPath = txt_DBImportPath.Text;
             Properties.Settings.Default.DBPath = txt_DBPath.Text;
+            Properties.Settings.Default.DBName = txt_DBName.Text;
             Properties.Settings.Default.WordPressUrl = txt_OnlineDokuUrl.Text;
             Properties.Settings.Default.WordPressPrefix = txt_WPPrefix.Text;
             Properties.Settings.Default.PVGISUrl = txt_PVGISUrl.Text;
@@ -130,6 +131,7 @@ namespace WindowsFormsApplication1
             txt_DBExportPath.Text = GetConfiguredOrDefaultDBExportPath(txt_VDIPath.Text);
             txt_DBImportPath.Text = GetConfiguredOrDefaultDBImportPath(txt_VDIPath.Text);
             txt_DBPath.Text = GetConfiguredOrDefaultDBPath();
+            txt_DBName.Text = Properties.Settings.Default.DBName;
 
             // 3. Allgemein-Pfad bestimmen
             txt_AllgemeinPath.Text = GetConfiguredOrDefaultPath("");
@@ -165,6 +167,7 @@ namespace WindowsFormsApplication1
                 txt_DBExportPath.Text = GetConfiguredOrDefaultDBExportPath(txt_VDIPath.Text);
                 txt_DBImportPath.Text = GetConfiguredOrDefaultDBImportPath(txt_VDIPath.Text);
                 txt_DBPath.Text = GetConfiguredOrDefaultDBPath();
+                txt_DBPath.Text = Properties.Settings.Default.DBName;
                 txt_AllgemeinPath.Text = GetConfiguredOrDefaultPath("");
 
                 MessageBox.Show("Die Standardwerte wurden geladen. Klicken Sie auf 'Speichern', um sie zu übernehmen.", "Zurücksetzen erfolgreich", MessageBoxButtons.OK, MessageBoxIcon.Information);

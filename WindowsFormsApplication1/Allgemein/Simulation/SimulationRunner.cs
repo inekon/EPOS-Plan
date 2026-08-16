@@ -506,6 +506,12 @@ namespace WindowsFormsApplication1
                     mo.Modul = bh.bhkw_list_Namen[i] ?? "Standard BHKW";
                     mo.Waermeproduktion = bh.s_waerme_MWh[i];
                     mo.Stromproduktion = bh.s_strom_MWh[i];
+
+                    int cid = 0;
+                    if (bh.bhkw_carrier != null && mo.Modul != null)
+                        bh.bhkw_carrier.TryGetValue(mo.Modul.Trim(), out cid);
+                    mo.CarrierId = cid;
+
                     b.Module.Add(mo);
                 }
 
@@ -584,6 +590,12 @@ namespace WindowsFormsApplication1
                     mo.Waerme_Gas = spk.s_waerme_Gas_Spk[i];
                     mo.Waerme_Oel = spk.s_waerme_Oel_Spk[i];
                     mo.Jahresnutzungsgrad = spk.Kessel_Jahresnutzungsgrad_Spk[i];
+
+                    int cid = 0;
+                    if (spk.spk_carrier != null && mo.Modul != null)
+                        spk.spk_carrier.TryGetValue(mo.Modul.Trim(), out cid);
+                    mo.CarrierId = cid;
+
                     h.Module.Add(mo);
                 }
 

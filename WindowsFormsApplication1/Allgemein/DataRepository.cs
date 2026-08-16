@@ -324,7 +324,7 @@ namespace WindowsFormsApplication1
                 string programData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
                 ordner = Path.Combine(programData, "EPOS_PLAN");
             }
-            return Path.Combine(ordner, DB_DATEINAME);
+            return Path.Combine(ordner, Properties.Settings.Default.DBName); // DB_DATEINAME);
         }
 
         public static int GetMaxID(string tableName, string fieldName = "ID")

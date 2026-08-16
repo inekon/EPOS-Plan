@@ -357,6 +357,25 @@ namespace WindowsFormsApplication1
             // ihr: Der einkanalige Altpfad bleibt damit Zeile für Zeile unverändert und
             // ist als Rückfallebene durch Lesen nachweisbar, nicht erst durch Messen.
             // ***********************************************************************
+
+            // carrier ID, notwendig für die Berichtserzeugung holen (Brennstoff, Kosten, Emissionsberechnung)
+            RecordSet rs = new RecordSet();
+
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.BHKW_TYP);
+            while (rs.Next())
+            {
+                simulation_bhkw.bhkw_carrier.TryAdd((string)rs.Read("Bezeichner"), (int)rs.Read("ID_Carrier"));
+            }
+            rs.Close();
+
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
+            while (rs.Next())
+            {
+                simulation_spk.spk_carrier.TryAdd((string)rs.Read("Bezeichner"), (int)rs.Read("ID_Carrier"));
+            }
+            rs.Close();
+
+
             if (KaskadeZweikanalig)
             {
                 Kaskade_Zweikanalig();
@@ -2906,6 +2925,8 @@ namespace WindowsFormsApplication1
                 simulation_bhkw.bhkw_list.Add((int)rs.Read("ID_BHKW"));
                 simulation_bhkw.bhkw_anlagen_ids.Add((int)rs.Read("ID"));
                 simulation_bhkw.bhkw_list_Namen.Add((string)rs.Read("Bezeichner"));
+        //        simulation_bhkw.bhkw_carrier.TryAdd((string)rs.Read("Bezeichner"), (int)rs.Read("ID_Carrier"));
+
                 double Grenzleistung = (double)rs.Read("Grenzleistung") / 100;
                 simulation_bhkw.bhkwGrenzL[i++] = (float)Grenzleistung;
             }
@@ -2956,6 +2977,7 @@ namespace WindowsFormsApplication1
             {
                 simulation_spk.spk_list.Add((string)rs.Read("Bezeichner"));
                 simulation_spk.spk_anlagen_ids.Add((int)rs.Read("ID"));
+                //simulation_spk.spk_carrier.TryAdd((string)rs.Read("Bezeichner"), (int)rs.Read("ID_Carrier"));
             }
             rs.Close();
 

@@ -24,6 +24,9 @@ namespace WindowsFormsApplication1
         // Listen und Projektdaten
         public List<string> spk_list = new List<string>();
 
+        public Dictionary<string, int> spk_carrier = new Dictionary<string, int>();
+
+
         /// <summary>
         /// <c>Tab_Energieanlagen.ID</c> je Kessel, INDEXGLEICH zu <see cref="spk_list"/>
         /// (Konzept 6.2). Gefüllt von <c>SimulationControl.Simulation_SPK_Ctrl</c>.
