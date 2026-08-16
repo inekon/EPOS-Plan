@@ -378,3 +378,6 @@ Referenzlaeufe/2026-08-15_Paket8_FlagAus_v2/
 Referenzlaeufe/2026-08-15_Paket8_Nacharbeit_FlagAus/
 Referenzlaeufe/2026-08-15_Paket9_Bericht/
 dev/
+
+# Editor-Sicherungskopien
+*.bak

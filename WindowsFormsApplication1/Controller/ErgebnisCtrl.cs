@@ -297,7 +297,7 @@ namespace WindowsFormsApplication1
                                     c.Parameters.Add("@v", OleDbType.Double).Value = DBNull.Value;
                                 }
                                 c.Parameters.Add("@ca", OleDbType.Integer).Value =
-                                    bhkwCarrier > 0 ? (object)bhkwCarrier : DBNull.Value;
+                                    mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value;
                                 c.ExecuteNonQuery();
                             }
                         }
@@ -366,7 +366,7 @@ namespace WindowsFormsApplication1
                                 c.Parameters.Add("@v", OleDbType.Double).Value = R(mo.Verbrauch);
                                 c.Parameters.Add("@j", OleDbType.Double).Value = R(mo.Jahresnutzungsgrad);
                                 c.Parameters.Add("@ca", OleDbType.Integer).Value =
-                                    kesselCarrier > 0 ? (object)kesselCarrier : DBNull.Value;
+                                    mo.CarrierId > 0 ? (object)mo.CarrierId : DBNull.Value;
                                 c.ExecuteNonQuery();
                             }
                         }

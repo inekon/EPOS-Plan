@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
 {
     public partial class Form_BHKWEing : Form
     {
-        BHKWCtrl ctrl = new BHKWCtrl();               // Projekt-Operationen (Kopieren/Löschen)
+        BHKWCtrl ctrl = new BHKWCtrl();               // Projekt-Operationen (Kopieren/LÃ¶schen)
         BHKWStammCtrl ctrlStamm = new BHKWStammCtrl(); // Stammdaten (Auswahlliste)
         public List<WErzeugerModel> list_werzmodel = new List<WErzeugerModel>();
         public int m_nType = WizardItemClass.BHKW_TYP;
@@ -52,25 +52,25 @@ namespace WindowsFormsApplication1
             dgv.BackgroundColor = Color.White;
             dgv.GridColor = Color.White;
 
-            // Grundfarbe für alle Zeilen
+            // Grundfarbe fÃ¼r alle Zeilen
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
-            // Farbe für jede zweite Zeile (Zebra)
+            // Farbe fÃ¼r jede zweite Zeile (Zebra)
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
 
             dgv.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            // Erlaubt eigene Farben für den Header (sonst bleibt er Windows-Grau)
+            // Erlaubt eigene Farben fÃ¼r den Header (sonst bleibt er Windows-Grau)
             dgv.EnableHeadersVisualStyles = false;
 
-            // Hintergrundfarbe festlegen (ein kräftiges "BHKW-Blau")
+            // Hintergrundfarbe festlegen (ein krÃ¤ftiges "BHKW-Blau")
             dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(51, 102, 153);
 
-            // Schriftfarbe auf Weiß setzen (für den Kontrast zum dunklen Blau)
+            // Schriftfarbe auf WeiÃŸ setzen (fÃ¼r den Kontrast zum dunklen Blau)
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
 
             // Der Text bestimmt die Breite (sehr genau, kann aber bei viel Text flackern)
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
 
-            // ODER: Die Spalten teilen sich den verfügbaren Platz gleichmäßig auf (füllt das ganze Grid aus)
+            // ODER: Die Spalten teilen sich den verfÃ¼gbaren Platz gleichmÃ¤ÃŸig auf (fÃ¼llt das ganze Grid aus)
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             InitAuswahlListe();
@@ -129,7 +129,7 @@ namespace WindowsFormsApplication1
             listBox_Auswahl.Columns[0].Width = w;
         }
 
-        // Liest einen Integer-Spaltenwert; probiert mehrere Spaltennamen (z. B. Ruecklauf/Rücklauf).
+        // Liest einen Integer-Spaltenwert; probiert mehrere Spaltennamen (z. B. Ruecklauf/RÃ¼cklauf).
         private static int IntCol(DataRow row, params string[] cols)
         {
             foreach (string c in cols)
@@ -151,18 +151,21 @@ namespace WindowsFormsApplication1
             else if (comboBox_Leistung.Text == "200 bis 500 kW") szFilterLeistung = "Ptherm >=200 and Ptherm <500";
             else if (comboBox_Leistung.Text == "500 bis 800 kW") szFilterLeistung = "Ptherm >=500 and Ptherm <800";
             else if (comboBox_Leistung.Text == "800 bis 1200 kW") szFilterLeistung = "Ptherm >=800 and Ptherm <1200";
-            else if (comboBox_Leistung.Text == "über 1.200 kW") szFilterLeistung = "Ptherm >=1200";
+            else if (comboBox_Leistung.Text == "Ã¼ber 1.200 kW") szFilterLeistung = "Ptherm >=1200";
 
             if (comboBox_Brennstoff.Text == "Gas") szFilter = "(Brennstoff >=1 and Brennstoff <=5) or Brennstoff=14";
-            else if (comboBox_Brennstoff.Text == "Öl") szFilter = "(Brennstoff >=6 and Brennstoff <=9) or (Brennstoff >=18 and Brennstoff <=22)";
+            else if (comboBox_Brennstoff.Text == "Ã–l") szFilter = "(Brennstoff >=6 and Brennstoff <=9) or (Brennstoff >=18 and Brennstoff <=22)";
             else if (comboBox_Brennstoff.Text == "Koks") szFilter = "Brennstoff=10";
             else if (comboBox_Brennstoff.Text == "Kohle") szFilter = "Brennstoff=11";
             else if (comboBox_Brennstoff.Text == "Holz") szFilter = "Brennstoff=12";
             else if (comboBox_Brennstoff.Text == "Tierische Fette") szFilter = "Brennstoff=17";
             else if (comboBox_Brennstoff.Text == "Strom") szFilter = "Brennstoff=13";
             else if (comboBox_Brennstoff.Text == "Pellets") szFilter = "Brennstoff=15";
-            else if (comboBox_Brennstoff.Text == "Rapsöl") szFilter = "Brennstoff=16";
-            else if (comboBox_Brennstoff.Text == "Sonstige") szFilter = "Brennstoff=23";
+            else if (comboBox_Brennstoff.Text == "RapsÃ¶l") szFilter = "Brennstoff=16";
+            else if (comboBox_Brennstoff.Text == "Tierische Fette") szFilter = "Brennstoff=17";
+            else if (comboBox_Brennstoff.Text == "FernwÃ¤rme") szFilter = "Brennstoff=23";
+            else if (comboBox_Brennstoff.Text == "Sonstige EnergietrÃ¤ger") szFilter = "Brennstoff=24";
+            else if (comboBox_Brennstoff.Text == "Wasserstoff") szFilter = "Brennstoff=25";
             else if (comboBox_Brennstoff.Text == "Alle") szFilter = "Brennstoff Like '%'";
 
             if (szFilterLeistung == "") szFilterLeistung = "Ptherm Like '%'";
@@ -173,7 +176,7 @@ namespace WindowsFormsApplication1
         }
 
         // Auswahlliste (Pick-Liste) speist sich jetzt aus den STAMM-Daten (Tab_BHKW_STAMM),
-        // gelesen über das DataRepository.
+        // gelesen Ã¼ber das DataRepository.
         private void SetFilter()
         {
             string szWhere = BuildFilter();
@@ -279,8 +282,8 @@ namespace WindowsFormsApplication1
             comboBox_Leistung.SelectedIndex = 0;
         }
 
-        // Liest die Detail-Felder eines Bezeichners für die Anzeige.
-        // Pick-Liste zeigt STAMM-Daten; bereits gewählte (Projekt) werden aus Tab_BHKW gelesen.
+        // Liest die Detail-Felder eines Bezeichners fÃ¼r die Anzeige.
+        // Pick-Liste zeigt STAMM-Daten; bereits gewÃ¤hlte (Projekt) werden aus Tab_BHKW gelesen.
         private void FillDetailsFromStamm(string szName)
         {
             DataTable dt = DataRepository.GetDataTable(
@@ -347,11 +350,11 @@ namespace WindowsFormsApplication1
             if (dataGridView1.CurrentCell == null || dataGridView1.CurrentCell.RowIndex == -1) return;
             model.Bezeichner = (string)dataGridView1.CurrentRow.Cells[0].Value;
 
-            // Stamm-ID des ausgewählten Datensatzes ermitteln
+            // Stamm-ID des ausgewÃ¤hlten Datensatzes ermitteln
             int stammId = DataRepository.GetIdByName(BHKWStammCtrl.TABLE, "Bezeichner", model.Bezeichner);
             if (stammId <= 0)
             {
-                MessageBox.Show("Das ausgewählte BHKW wurde in den Stammdaten nicht gefunden.");
+                MessageBox.Show("Das ausgewÃ¤hlte BHKW wurde in den Stammdaten nicht gefunden.");
                 return;
             }
             model.ID_Type = WizardItemClass.BHKW_TYP;
@@ -366,19 +369,19 @@ namespace WindowsFormsApplication1
             {
                 DataRow sr = dtStamm.Rows[0];
                 model.Vorlauf = IntCol(sr, "Vorlauf");
-                model.Ruecklauf = IntCol(sr, "Ruecklauf", "Rücklauf");
+                model.Ruecklauf = IntCol(sr, "Ruecklauf", "RÃ¼cklauf");
                 nBrennstoff = IntCol(sr, "Brennstoff"); 
             }
 
             // Datentechnisch: Datensatz aus der STAMM-Tabelle in die Projekt-Tabelle kopieren,
-            // sofern für das Projekt noch nicht vorhanden. ID_Projekt wird dabei gesetzt.
+            // sofern fÃ¼r das Projekt noch nicht vorhanden. ID_Projekt wird dabei gesetzt.
             if (m_ID_Projekt > 0)
             {
                 // CopyFromStamm liefert die (neue oder bereits vorhandene) Tab_BHKW-Projekt-ID.
                 int projektId = ctrl.CopyFromStamm(stammId, m_ID_Projekt);
                 if (projektId <= 0)
                 {
-                    MessageBox.Show("Der Datensatz konnte nicht in das Projekt übernommen werden.");
+                    MessageBox.Show("Der Datensatz konnte nicht in das Projekt Ã¼bernommen werden.");
                     return;
                 }
                 // WICHTIG: ID_BHKW referenziert die Projekt-Tabelle (Tab_BHKW), NICHT die Stammdaten.
@@ -400,7 +403,7 @@ namespace WindowsFormsApplication1
             AddAuswahlRow(model);
             if (listBox_Auswahl.Items.Count > 0) listBox_Auswahl.Items[listBox_Auswahl.Items.Count - 1].Selected = true;
 
-            // Neues, leeres model-Objekt für den nächsten Hinzufügen-Vorgang
+            // Neues, leeres model-Objekt fÃ¼r den nÃ¤chsten HinzufÃ¼gen-Vorgang
             model = new WErzeugerModel();
 
             textBox_Summe_Leistung.Text = SummeLeistung().ToString();
@@ -416,13 +419,30 @@ namespace WindowsFormsApplication1
             using (var dlg = new Form_Kosten_VarAuswahl())
             {
                 string szBrennstoff = "";
+                string szKategorie = "";
+                int nKategorie = 0;
+
                 object br = DataRepository.ExecuteScalar(
                     "SELECT Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID = ?",
                     new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) });
                 if (br != null && br != DBNull.Value)
                     szBrennstoff = br.ToString();
-                
+
+                object brkatid = DataRepository.ExecuteScalar(
+                    "SELECT ID_Kategorie FROM Tab_Brennstoff_Stamm WHERE ID = ?",
+                    new OleDbParameter[] { new OleDbParameter("@id", nBrennstoff) });
+                if (brkatid != null && brkatid != DBNull.Value)
+                    nKategorie = Convert.ToInt32(brkatid);
+
+                object brkat = DataRepository.ExecuteScalar(
+                    "SELECT Gruppe FROM Tab_BrennstoffKategorien WHERE ID = ?",
+                    new OleDbParameter[] { new OleDbParameter("@id", nKategorie) });
+                if (brkat != null && brkat != DBNull.Value)
+                    szKategorie = brkat.ToString();
+
                 dlg.m_szBrennstoff = szBrennstoff;
+                dlg.m_KategorieID = nKategorie;
+                dlg.m_szKategorie = szKategorie;
                 dlg.bOhneVariante = false;
 
                 if (dlg.ShowDialog() != DialogResult.OK) return "";
@@ -437,7 +457,7 @@ namespace WindowsFormsApplication1
                     double default_so2 = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", dlg.SelectedBrennstoffID));
                     double default_nox = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", dlg.SelectedBrennstoffID));
 
-                    // 1) Katalog-Träger suchen; existiert er, wird er wiederverwendet
+                    // 1) Katalog-TrÃ¤ger suchen; existiert er, wird er wiederverwendet
                     carrierId = -1;
                     object existing = DataRepository.ExecuteScalar(
                         "SELECT id FROM energy_carrier WHERE name = ?",
@@ -471,39 +491,38 @@ namespace WindowsFormsApplication1
                         carrierId = DataRepository.ExecuteInsertAndGetId(insertSql, ps);
                     }
 
-                    // 1b) Ab hier PROJEKTGEBUNDENE Sätze - die gehen nur mit einem wirklich
-                    // gespeicherten Projekt. SetControls belegt m_ID_Projekt NICHT (es bekommt
-                    // nur den Projektnamen); die Nicht-Wizard-Aufrufer setzen das Feld vor
-                    // ShowDialog selbst (BHKWKontextMenuCtrl, Form_Start), im Wizard bleibt es
-                    // deshalb auf 0. energy_price und energy_Project_settings haben aber
-                    // je eine erzwungene Beziehung auf Tab_Projekt.ID - beide INSERTs
-                    // scheiterten damit (zwei "Datenbankfehler"-Meldungen), und das Projekt
-                    // hatte anschließend einen Energieträger an der Anlage, aber KEINEN
-                    // Preis-/Emissionssatz. Im Wizard bleibt es deshalb beim Katalogträger;
-                    // die projektgebundenen Sätze trägt WizardCtrl.Add_Projekt_Energietraeger
-                    // beim Speichern nach.
+                    // 1b) Ab hier PROJEKTGEBUNDENE SÃ¤tze - die gehen nur mit einem wirklich
+                    // gespeicherten Projekt. Im Wizard ist m_ID_Projekt lediglich die in
+                    // WizardParent geratene ProjektCtrl.GetMaxID()+1; die Tab_Projekt-Zeile
+                    // entsteht erst beim Speichern Ã¼ber Add_Projekt/@@IDENTITY. energy_price
+                    // und energy_Project_settings haben aber je eine erzwungene Beziehung auf
+                    // Tab_Projekt.ID - mit der Rate-ID scheiterten beide INSERTs (zwei
+                    // "Datenbankfehler"-Meldungen), und das Projekt hatte anschlieÃŸend einen
+                    // EnergietrÃ¤ger an der Anlage, aber KEINEN Preis-/Emissionssatz.
+                    // Im Wizard bleibt es deshalb beim KatalogtrÃ¤ger; die projektgebundenen
+                    // SÃ¤tze trÃ¤gt WizardCtrl.Add_Projekt_Energietraeger beim Speichern nach.
                     if (m_bWizard || m_ID_Projekt <= 0)
                     {
-                        MessageBox.Show("Energieträgervariante vorgemerkt. Die Preis- und Emissionssätze " +
+                        MessageBox.Show("EnergietrÃ¤gervariante vorgemerkt. Die Preis- und EmissionssÃ¤tze " +
                                         "werden beim Speichern des Projekts angelegt.");
                         return dlg.SelectedName;
                     }
 
-                    // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln
+                    // 2) Ist der TrÃ¤ger diesem Projekt schon zugeordnet? -> nicht doppeln
                     int vorhanden = Convert.ToInt32(DataRepository.ExecuteScalar(
-                        "SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
+                        "SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_EnergietrÃ¤ger = ?",
                         new OleDbParameter[] {
                     new OleDbParameter("@pid", m_ID_Projekt),
                     new OleDbParameter("@eid", carrierId)
                         }));
                     if (vorhanden > 0)
                     {
-                        MessageBox.Show($"Die Energieträgervariante '{dlg.SelectedName}' ist diesem Projekt bereits zugeordnet.");
+                        MessageBox.Show($"Die EnergietrÃ¤gervariante '{dlg.SelectedName}' ist diesem Projekt bereits zugeordnet.");
                         return dlg.SelectedName;
                     }
 
-                    // 3) Projektbezogene Sätze anlegen (Preis-Historie + Projekt-Einstellungen)
-                    // Befund B5 (11.08.2026): der Ersteintrag ließ leistungspreis leer,
+                    // 3) Projektbezogene SÃ¤tze anlegen (Preis-Historie + Projekt-Einstellungen)
+                    // Befund B5 (11.08.2026): der Ersteintrag lieÃŸ leistungspreis leer,
                     // obwohl der Standardwert aus Tab_Brennstoff_Stamm ermittelt wurde.
                     string sqlHistory = @"INSERT INTO energy_price
                          (carrier_id, id_projekt, arbeitspreis, heizwert, grundpreis, valid_from, arbeitspreis_unit, leistungspreis)
@@ -520,7 +539,7 @@ namespace WindowsFormsApplication1
                     });
 
                     string sqlInsert = @"INSERT INTO energy_Project_settings
-                         (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
+                         (ID_Projekt, ID_EnergietrÃ¤ger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
                           custom_price_base, ID_Umrechnung, co2, so2, nox)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     DataRepository.ExecuteSQL(sqlInsert, new OleDbParameter[] {
@@ -537,7 +556,7 @@ namespace WindowsFormsApplication1
                         new OleDbParameter("@nox",    default_nox)
                     });
 
-                    MessageBox.Show("Energieträgervariante erfolgreich angelegt.");
+                    MessageBox.Show("EnergietrÃ¤gervariante erfolgreich angelegt.");
                     return dlg.SelectedName;
                 }
                 catch (Exception ex)
@@ -547,7 +566,7 @@ namespace WindowsFormsApplication1
             }
             return "";
         }
-        private void btn_BHKW_Löschen_Click(object sender, EventArgs e)
+        private void btn_BHKW_LÃ¶schen_Click(object sender, EventArgs e)
         {
             if (listBox_Auswahl.SelectedItems.Count == 0) return;
             ListViewItem lvi = listBox_Auswahl.SelectedItems[0];
@@ -654,12 +673,12 @@ namespace WindowsFormsApplication1
             Form_DBBHKW frm = new Form_DBBHKW();
             frm.m_mode = Form_DBBHKW.MODE_EDIT;
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
-            if (sr.Count == 0) { MessageBox.Show("Bitte ein BHKW auswählen!"); return; }
+            if (sr.Count == 0) { MessageBox.Show("Bitte ein BHKW auswÃ¤hlen!"); return; }
 
             string szName = (string)dataGridView1.CurrentRow.Cells[0].Value;
 
-            // Editor ist auch für schreibgeschützte (ReadOnly) Datensätze aufrufbar;
-            // dort ist lediglich der "Überschreiben"-Button gesperrt.
+            // Editor ist auch fÃ¼r schreibgeschÃ¼tzte (ReadOnly) DatensÃ¤tze aufrufbar;
+            // dort ist lediglich der "Ãœberschreiben"-Button gesperrt.
             frm.SetControls(szName);
             DialogResult result = frm.ShowDialog();
             if (result == DialogResult.OK) SetFilter();
@@ -686,25 +705,25 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void btn_DBBHKW_Löschen_Click(object sender, EventArgs e)
+        private void btn_DBBHKW_LÃ¶schen_Click(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
-            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte ein BHKW auswählen!"); return; }
+            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte ein BHKW auswÃ¤hlen!"); return; }
 
             string szName = (string)dataGridView1.SelectedRows[0].Cells[0].Value;
 
-            // ReadOnly-Stammdatensätze dürfen nicht gelöscht werden
+            // ReadOnly-StammdatensÃ¤tze dÃ¼rfen nicht gelÃ¶scht werden
             if (ctrlStamm.IsReadOnly(szName))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschÃ¼tzt (ReadOnly) und kann nicht gelÃ¶scht werden.",
+                    "SchreibgeschÃ¼tzt", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            var result = MessageBox.Show("Wollen Sie wirklich das BHKW löschen?", "Löschen", MessageBoxButtons.YesNo);
+            var result = MessageBox.Show("Wollen Sie wirklich das BHKW lÃ¶schen?", "LÃ¶schen", MessageBoxButtons.YesNo);
             if (result == DialogResult.Yes)
             {
-                // Löschen aus der STAMM-Tabelle über den Stamm-Controller (DataRepository)
+                // LÃ¶schen aus der STAMM-Tabelle Ã¼ber den Stamm-Controller (DataRepository)
                 if (ctrlStamm.Delete(szName))
                 {
                     dataGridView1.Rows.RemoveAt(dataGridView1.SelectedRows[0].Index);

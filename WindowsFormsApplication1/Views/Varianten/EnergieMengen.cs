@@ -38,30 +38,21 @@ namespace WindowsFormsApplication1
 
             // BHKW – je Modul; Verbrauch (Brennstoffenergie) steht bereits im Modul.
             if (m.BHKW != null && m.BHKW.Module != null)
+            { 
                 foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module)
-                    Zeile(tab, projektId, "BHKW", mo.Modul, CarrierFor(bhkwCarrier, mo.Modul), mo.Verbrauch, useHs);
-
-            // Heizkessel – dominante Brennstoffenergie aus dem Aggregat, je Modul anteilig nach Wärme.
-            if (m.Heizkessel != null)
-            {
-                double verb = DominanterVerbrauch(m.Heizkessel);
-
-                if (m.Heizkessel.Module != null && m.Heizkessel.Module.Count > 0)
                 {
-                    double basis = 0;
-                    foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module) basis += (mo.Waerme_Gas + mo.Waerme_Oel);
-                    foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
-                    {
-                        double anteil = basis > 0 ? (mo.Waerme_Gas + mo.Waerme_Oel) / basis : 1.0 / m.Heizkessel.Module.Count;
-                        Zeile(tab, projektId, "Heizkessel", mo.Modul, CarrierFor(kesselCarrier, mo.Modul), verb * anteil, useHs);
-                    }
+                    Zeile(tab, projektId, "BHKW", mo.Modul, mo.CarrierId, mo.Verbrauch, useHs);
                 }
-                else
+            }
+            
+            // Heizkessel – dominante Brennstoffenergie aus dem Aggregat, je Modul anteilig nach Wärme.
+            if (m.Heizkessel != null && m.Heizkessel.Module != null)
+            {
+   
+                foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
                 {
-                    // ohne Modulliste: erster/einziger Kessel des Projekts
-                    int cid = 0;
-                    foreach (KeyValuePair<string, int> kv in kesselCarrier) { cid = kv.Value; break; }
-                    Zeile(tab, projektId, "Heizkessel", "Spitzenkessel", cid, verb, useHs);
+                    double verb = mo.Waerme_Gas + mo.Waerme_Oel;
+                    Zeile(tab, projektId, "Heizkessel", mo.Modul, mo.CarrierId, verb , useHs);
                 }
             }
 
@@ -120,14 +111,20 @@ namespace WindowsFormsApplication1
             return map;
         }
 
-        private static int CarrierFor(Dictionary<string, int> map, string bezeichner)
+        private static int CarrierFor(Dictionary<string, int> map, string bezeichner, int projektId)
         {
             int cid = 0;
             map.TryGetValue(bezeichner.Trim(), out cid);
-            RecordSet rs = new RecordSet();
-            rs.Open("select id from energy_carrier where id_brennstoff=" + cid);
-            if (rs.Next()) cid = (int)rs.Read("id");
-            rs.Close();
+
+            object o = DataRepository.ExecuteScalar(
+                "SELECT id_carrier FROM Tab_Energieanlagen " +
+                "WHERE bezeichner = ? AND ID_Projekt = ?",
+                new OleDbParameter("@b", bezeichner),
+                new OleDbParameter("@p", projektId));
+
+            if (o != null && o != DBNull.Value)
+                cid = Convert.ToInt32(o);
+
             return cid;
         }
 

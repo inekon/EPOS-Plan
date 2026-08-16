@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
@@ -46,9 +46,9 @@ namespace WindowsFormsApplication1
             dgv.BackgroundColor = Color.White;
             dgv.GridColor = Color.White;
 
-			// Grundfarbe für alle Zeilen
+			// Grundfarbe fÃ¼r alle Zeilen
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
-            // Farbe für jede zweite Zeile (Zebra)
+            // Farbe fÃ¼r jede zweite Zeile (Zebra)
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
         }
 
@@ -95,7 +95,7 @@ namespace WindowsFormsApplication1
                 dataGridView1.Rows[0].Cells[0].Selected = true;
         }
 
-        // Liest die Detail-Felder für den ausgewählten STAMM-Datensatz.
+        // Liest die Detail-Felder fÃ¼r den ausgewÃ¤hlten STAMM-Datensatz.
         private void FillDetails(string szName)
         {
             DataTable dt = DataRepository.GetDataTable(
@@ -120,7 +120,7 @@ namespace WindowsFormsApplication1
             FillDetails((string)dataGridView1.CurrentRow.Cells[0].Value);
         }
 
-        // Filterliste basiert jetzt auf den STAMM-Daten (Tab_BHKW_STAMM), gelesen über DataRepository.
+        // Filterliste basiert jetzt auf den STAMM-Daten (Tab_BHKW_STAMM), gelesen Ã¼ber DataRepository.
         private void SetFilter()
         {
             string szFilter = "";
@@ -135,18 +135,21 @@ namespace WindowsFormsApplication1
             else if (comboBox_Leistung.Text == "200 bis 500 kW") szFilterLeistung = "Ptherm >=200 and Ptherm <500";
             else if (comboBox_Leistung.Text == "500 bis 800 kW") szFilterLeistung = "Ptherm >=500 and Ptherm <800";
             else if (comboBox_Leistung.Text == "800 bis 1200 kW") szFilterLeistung = "Ptherm >=800 and Ptherm <1200";
-            else if (comboBox_Leistung.Text == "über 1.200 kW") szFilterLeistung = "Ptherm >=1200";
+            else if (comboBox_Leistung.Text == "Ã¼ber 1.200 kW") szFilterLeistung = "Ptherm >=1200";
 
             if (comboBox_Brennstoff.Text == "Gas") szFilter = "(Brennstoff >=1 and Brennstoff <=5) or Brennstoff=14";
-            else if (comboBox_Brennstoff.Text == "Öl") szFilter = "(Brennstoff >=6 and Brennstoff <=9) or (Brennstoff >=18 and Brennstoff <=22)";
+            else if (comboBox_Brennstoff.Text == "Ã–l") szFilter = "(Brennstoff >=6 and Brennstoff <=9) or (Brennstoff >=18 and Brennstoff <=22)";
             else if (comboBox_Brennstoff.Text == "Koks") szFilter = "Brennstoff=10";
             else if (comboBox_Brennstoff.Text == "Kohle") szFilter = "Brennstoff=11";
             else if (comboBox_Brennstoff.Text == "Holz") szFilter = "Brennstoff=12";
             else if (comboBox_Brennstoff.Text == "Tierische Fette") szFilter = "Brennstoff=17";
             else if (comboBox_Brennstoff.Text == "Strom") szFilter = "Brennstoff=13";
             else if (comboBox_Brennstoff.Text == "Pellets") szFilter = "Brennstoff=15";
-            else if (comboBox_Brennstoff.Text == "Rapsöl") szFilter = "Brennstoff=16";
-            else if (comboBox_Brennstoff.Text == "Sonstige") szFilter = "Brennstoff=23";
+            else if (comboBox_Brennstoff.Text == "RapsÃ¶l") szFilter = "Brennstoff=16";
+            else if (comboBox_Brennstoff.Text == "Tierische Fette") szFilter = "Brennstoff=17";
+            else if (comboBox_Brennstoff.Text == "FernwÃ¤rme") szFilter = "Brennstoff=23";
+            else if (comboBox_Brennstoff.Text == "Sonstige EnergietrÃ¤ger") szFilter = "Brennstoff=24";
+            else if (comboBox_Brennstoff.Text == "Wasserstoff") szFilter = "Brennstoff=25";
             else if (comboBox_Brennstoff.Text == "Alle") szFilter = "Brennstoff Like '%'";
 
             if (szFilterLeistung == "") szFilterLeistung = "Ptherm Like '%'";
@@ -172,7 +175,7 @@ namespace WindowsFormsApplication1
                     row["Firma"].ToString() + "\nBrennstoff: " + brennText +
                     "\nPtherm: " + row["Ptherm"].ToString() + " kW" +
                     "\nPel: " + row["Pel"].ToString() + " kW");
-                // Schreibgeschützte (ReadOnly) Datensätze optisch grau kennzeichnen
+                // SchreibgeschÃ¼tzte (ReadOnly) DatensÃ¤tze optisch grau kennzeichnen
                 if (ro)
                     dgv.Rows[i].DefaultCellStyle.ForeColor = Color.Gray;
                 dgv.Rows[i++].DividerHeight = 5;
@@ -189,7 +192,7 @@ namespace WindowsFormsApplication1
             SetFilter();
         }
 
-        // Liefert den Bezeichner der aktuell gewählten Zeile.
+        // Liefert den Bezeichner der aktuell gewÃ¤hlten Zeile.
         private string SelectedBezeichner()
         {
             if (dataGridView1.CurrentRow == null) return "";
@@ -199,12 +202,12 @@ namespace WindowsFormsApplication1
         private void btn_DBBHKW_Edit_Click(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection sr =  dataGridView1.SelectedRows;
-            if(sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte ein BHKW auswählen!"); return; }
+            if(sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte ein BHKW auswÃ¤hlen!"); return; }
 
             string szName = SelectedBezeichner();
 
-            // Editor ist auch für schreibgeschützte (ReadOnly) Datensätze aufrufbar;
-            // dort ist lediglich der "Überschreiben"-Button gesperrt.
+            // Editor ist auch fÃ¼r schreibgeschÃ¼tzte (ReadOnly) DatensÃ¤tze aufrufbar;
+            // dort ist lediglich der "Ãœberschreiben"-Button gesperrt.
             Form_DBBHKW frm = new Form_DBBHKW();
             frm.m_mode = Form_DBBHKW.MODE_EDIT;
             frm.SetControls(szName);
@@ -233,25 +236,25 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void btn_DBBHKW_Löschen_Click(object sender, EventArgs e)
+        private void btn_DBBHKW_LÃ¶schen_Click(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection sr = dataGridView1.SelectedRows;
-            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte ein BHKW auswählen!"); return; }
+            if (sr.Count == 0) { System.Windows.Forms.MessageBox.Show("Bitte ein BHKW auswÃ¤hlen!"); return; }
 
             string szName = SelectedBezeichner();
 
-            // ReadOnly-Schutz: schreibgeschützte Datensätze nicht löschbar
+            // ReadOnly-Schutz: schreibgeschÃ¼tzte DatensÃ¤tze nicht lÃ¶schbar
             if (ctrl.IsReadOnly(szName))
             {
-                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.",
-                    "Schreibgeschützt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Dieser Stammdatensatz ist schreibgeschÃ¼tzt (ReadOnly) und kann nicht gelÃ¶scht werden.",
+                    "SchreibgeschÃ¼tzt", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            DialogResult dialogResult = MessageBox.Show("Soll " + szName + " wirklich gelöscht werden ?", "Löschen", MessageBoxButtons.YesNo);
+            DialogResult dialogResult = MessageBox.Show("Soll " + szName + " wirklich gelÃ¶scht werden ?", "LÃ¶schen", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.No) return;
 
-            // Löschen über den Stamm-Controller (nutzt DataRepository, prüft ReadOnly erneut)
+            // LÃ¶schen Ã¼ber den Stamm-Controller (nutzt DataRepository, prÃ¼ft ReadOnly erneut)
             if (ctrl.Delete(szName))
             {
                 dataGridView1.Rows.RemoveAt(dataGridView1.SelectedRows[0].Index);

@@ -10,6 +10,9 @@ namespace WindowsFormsApplication1
         public List<int> bhkw_list = new List<int>();
         public List<string> bhkw_list_Namen = new List<string>();
 
+        public Dictionary<string, int> bhkw_carrier = new Dictionary<string, int>();
+
+
         /// <summary>
         /// <c>Tab_Energieanlagen.ID</c> je BHKW, INDEXGLEICH zu <see cref="bhkw_list"/>
         /// (Konzept 6.2). Gefüllt von <c>SimulationControl.Simulation_BHKW_Ctrl</c>.
