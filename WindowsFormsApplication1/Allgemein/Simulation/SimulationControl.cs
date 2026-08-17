@@ -416,21 +416,15 @@ namespace WindowsFormsApplication1
             // ***********************************************************************
 
             // carrier ID, notwendig für die Berichtserzeugung holen (Brennstoff, Kosten, Emissionsberechnung)
-            RecordSet rs = new RecordSet();
-
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.BHKW_TYP);
-            while (rs.Next())
-            {
-                simulation_bhkw.bhkw_carrier.TryAdd((string)rs.Read("Bezeichner"), (int)rs.Read("ID_Carrier"));
-            }
-            rs.Close();
-
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.KESSEL_TYP);
-            while (rs.Next())
-            {
-                simulation_spk.spk_carrier.TryAdd((string)rs.Read("Bezeichner"), (int)rs.Read("ID_Carrier"));
-            }
-            rs.Close();
+            //
+            // NULL-TOLERANT (Frage 21): Im Bestand stehen Anlagen ohne ID_Carrier bzw.
+            // ohne Bezeichner (Projekt 1011); der direkte Cast brach den Lauf hier mit
+            // einer InvalidCastException ab, bevor irgendein Ergebnis entstand. Eine
+            // fehlende Zuordnung ist jetzt eine WARNUNG im Protokoll - gerechnet wird,
+            // die Anlage steht im Bericht aber ohne Energieträger da (CarrierId 0, die
+            // TryGetValue-Vorbelegung im SimulationRunner).
+            EnergietraegerZuordnungLesen(WizardItemClass.BHKW_TYP, "BHKW", simulation_bhkw.bhkw_carrier);
+            EnergietraegerZuordnungLesen(WizardItemClass.KESSEL_TYP, "Heizkessel", simulation_spk.spk_carrier);
 
 
             if (KaskadeZweikanalig)
@@ -562,6 +556,51 @@ namespace WindowsFormsApplication1
                 sp.KennzahlenBerechnen();
 
             ErdreichAuswertung.AusLauf(this);
+        }
+
+        /// <summary>
+        /// Liest je Anlage des Typs die Zuordnung Bezeichner → ID_Carrier aus
+        /// <c>Tab_Energieanlagen</c> in <paramref name="ziel"/> - die Grundlage der
+        /// Berichtserzeugung (Brennstoff, Kosten, Emissionen).
+        ///
+        /// NULL-TOLERANT nach dem Muster von <c>WErzeugerCtrl.Belegt</c> (Frage 21):
+        /// Ein NULL in Bezeichner oder ID_Carrier ist ein Datenzustand, kein
+        /// Absturzgrund. Projekt 1011 führt genau so eine Anlage und brach bis dahin
+        /// mit einer InvalidCastException ab - ohne Protokoll, ohne Ergebnis. Solche
+        /// Anlagen werden übersprungen und als Warnung gemeldet (Konzept 13.4: kein
+        /// Ergebnis, das vollständig aussieht); im Bericht stehen sie wie jede Anlage
+        /// ohne Zuordnung mit CarrierId 0 (SimulationRunner, TryGetValue-Vorbelegung).
+        /// </summary>
+        private void EnergietraegerZuordnungLesen(int idType, string gewerk, Dictionary<string, int> ziel)
+        {
+            RecordSet rs = new RecordSet();
+            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + idType);
+            while (rs.Next())
+            {
+                object bezeichner = rs.Read("Bezeichner");
+                object carrier = rs.Read("ID_Carrier");
+
+                if (bezeichner == null || bezeichner == DBNull.Value)
+                {
+                    Protokoll.Warnung("Energieträger-Zuordnung: Eine " + gewerk + "-Anlage des Projekts " +
+                                      "(Tab_Energieanlagen ID " + rs.GetString("ID") + ") trägt keinen " +
+                                      "Bezeichner - Brennstoff, Kosten und Emissionen dieser Anlage können " +
+                                      "im Bericht keinem Energieträger zugeordnet werden.");
+                    continue;
+                }
+
+                if (carrier == null || carrier == DBNull.Value)
+                {
+                    Protokoll.Warnung("Energieträger-Zuordnung: Der " + gewerk + "-Anlage „" + bezeichner +
+                                      "\" ist kein Energieträger zugeordnet (ID_Carrier leer) - Brennstoff, " +
+                                      "Kosten und Emissionen dieser Anlage können im Bericht nicht " +
+                                      "ausgewiesen werden.");
+                    continue;
+                }
+
+                ziel.TryAdd(bezeichner.ToString(), Convert.ToInt32(carrier));
+            }
+            rs.Close();
         }
 
         // ===================================================================
