@@ -173,7 +173,10 @@ namespace WindowsFormsApplication1
                         werzctrl.items[i].Beschreibung = wpctrl.items[0].Beschreibung;
                         werzctrl.items[i].Firma = wpctrl.items[0].Firma;
                         werzctrl.items[i].Typ = wpctrl.items[0].Typ;
-                        werzctrl.items[i].ID_Type = werzctrl.items[0].ID_Type;
+                        // ID_Type gehoert nicht zum Stammdaten-Merge: er unterscheidet Plan-
+                        // (WP_TYP) und Referenzliste (REF_WP_TYP) und steht nach ReadAllFilter
+                        // je Zeile korrekt. Der fruehere Angleich an items[0] kippte bei
+                        // Mischbestand den Typ der bearbeiteten Zeile.
                         werzctrl.items[i].Heizung = wpctrl.items[0].Heizung;
                         list.Add(werzctrl.items[i]);
                         index = i;
@@ -213,7 +216,11 @@ namespace WindowsFormsApplication1
 
                 WizardCtrl wizctrl = new WizardCtrl();
 
-                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt);
+                // Nur die beiden WP-Typen loeschen (Plan- und Referenzliste dieses Menues):
+                // list_alle fuehrt ausschliesslich WP-Zeilen, ein Loeschen ohne Typfilter
+                // wuerde alle uebrigen Gewerke des Projekts unwiederbringlich mitnehmen.
+                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, WizardItemClass.WP_TYP);
+                wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, WizardItemClass.REF_WP_TYP);
                 wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, list_alle);
 
                 ProjektCtrl projctrl = new ProjektCtrl();

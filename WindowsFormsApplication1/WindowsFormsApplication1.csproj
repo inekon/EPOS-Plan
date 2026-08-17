@@ -60,6 +60,13 @@
     <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.resx" />
   </ItemGroup>
 
+  <!-- Projektreferenzen -->
+  <ItemGroup>
+    <!-- Stromspeicher-Modul AP1: UI-freie Rechenbibliothek (net8.0, AnyCPU).
+         Die Engine hat selbst keine Referenzen und bindet nichts nach. -->
+    <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
+  </ItemGroup>
+
   <!-- NuGet-Pakete -->
   <ItemGroup>
     <!-- Chart-Ersatz: Port mit identischem Namespace System.Windows.Forms.DataVisualization.Charting -->

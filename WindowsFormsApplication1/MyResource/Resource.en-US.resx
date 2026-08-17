@@ -1649,6 +1649,21 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_SIMULATION_ABGEBROCHEN" xml:space="preserve">
     <value>Simulation aborted: {0}</value>
   </data>
+  <data name="SIMENG_SPEICHER_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Electricity storage: the storage calculation failed ({0}) - the run continues without any storage effect.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_KEIN_SPEICHER" xml:space="preserve">
+    <value>Electricity storage: no storage unit is assigned to the project - the storage calculation is skipped.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_OHNE_KAPAZITAET" xml:space="preserve">
+    <value>Electricity storage: the assigned unit has no capacity (energy = 0) - the storage calculation is skipped.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_OHNE_LEISTUNG" xml:space="preserve">
+    <value>Electricity storage: no power rating is stored for the unit - calculating with 1 C (power = capacity), as before.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_RASTER_ABWEICHUNG" xml:space="preserve">
+    <value>Electricity storage: the result series has {0} instead of {1} intervals - the run continues without any storage effect.</value>
+  </data>
   <data name="SIMENG_SPEICHERN_DES_ERGEBNISSES" xml:space="preserve">
     <value>Saving the result: {0}</value>
   </data>
@@ -2237,5 +2252,1725 @@ Please run the simulation with the boiler first.</value>
   <data name="SIM_TOOLTIP_CSV_HEIZKESSEL" xml:space="preserve">
     <value>Export boiler simulation as CSV
 (time stamp, outdoor temperature, total heat demand, heat demand at boiler stage, boiler, residual heat)</value>
+  </data>
+  <data name="SP_GRUPPE_GERAETETECHNIK" xml:space="preserve">
+    <value>Device data</value>
+  </data>
+  <data name="SP_LABEL_WIRKUNGSGRAD_RT" xml:space="preserve">
+    <value>Round-trip efficiency</value>
+  </data>
+  <data name="SP_LABEL_ZYKLEN" xml:space="preserve">
+    <value>Cycles (guaranteed)</value>
+  </data>
+  <data name="SP_LABEL_VERSCHLEISSKOSTEN" xml:space="preserve">
+    <value>Wear cost</value>
+  </data>
+  <data name="SP_LABEL_LEISTUNGSKOSTEN" xml:space="preserve">
+    <value>Power-related cost</value>
+  </data>
+  <data name="SP_LABEL_INVESTITION_FIX" xml:space="preserve">
+    <value>Fixed investment</value>
+  </data>
+  <data name="SP_LABEL_STANDBY" xml:space="preserve">
+    <value>Standby consumption</value>
+  </data>
+  <data name="SP_EINHEIT_ZYKLUSKOSTEN" xml:space="preserve">
+    <value>€/(kWh·cycle)</value>
+  </data>
+  <data name="SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG" xml:space="preserve">
+    <value>Operating strategy (active variant)</value>
+  </data>
+  <data name="SP_PARAM_GRUPPE_QUELLEN" xml:space="preserve">
+    <value>Permitted charging sources</value>
+  </data>
+  <data name="SP_PARAM_GRUPPE_WIRTSCHAFT" xml:space="preserve">
+    <value>Economics</value>
+  </data>
+  <data name="SP_PARAM_LABEL_SOC_MIN" xml:space="preserve">
+    <value>Min. state of charge</value>
+  </data>
+  <data name="SP_PARAM_LABEL_SOC_MAX" xml:space="preserve">
+    <value>Max. state of charge</value>
+  </data>
+  <data name="SP_PARAM_LABEL_LADELEISTUNG" xml:space="preserve">
+    <value>Charge/discharge power [kW]</value>
+  </data>
+  <data name="SP_PARAM_LABEL_LADESCHWELLE" xml:space="preserve">
+    <value>Charging threshold [ct/kWh]</value>
+  </data>
+  <data name="SP_PARAM_LABEL_BETRIEBSART" xml:space="preserve">
+    <value>Operating mode</value>
+  </data>
+  <data name="SP_PARAM_LABEL_BERECHNUNGSART" xml:space="preserve">
+    <value>Calculation type</value>
+  </data>
+  <data name="SP_PARAM_LABEL_KOMPATIBILITAET" xml:space="preserve">
+    <value>Excel compatibility mode</value>
+  </data>
+  <data name="SP_PARAM_LABEL_KAPITALZINS" xml:space="preserve">
+    <value>Interest rate</value>
+  </data>
+  <data name="SP_PARAM_LABEL_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Service life</value>
+  </data>
+  <data name="SP_PARAM_LABEL_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Grid demand charge</value>
+  </data>
+  <data name="SP_PARAM_LABEL_NETZLADEAUFSCHLAG" xml:space="preserve">
+    <value>Grid charging surcharge</value>
+  </data>
+  <data name="SP_PARAM_CHK_PV" xml:space="preserve">
+    <value>PV surplus</value>
+  </data>
+  <data name="SP_PARAM_CHK_BHKW" xml:space="preserve">
+    <value>CHP surplus</value>
+  </data>
+  <data name="SP_PARAM_CHK_BHKW_STROMGEFUEHRT" xml:space="preserve">
+    <value>Electricity-led CHP recharging</value>
+  </data>
+  <data name="SP_PARAM_CHK_NETZENTLADUNG" xml:space="preserve">
+    <value>Discharge to the grid (sale)</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_AUSBAUSTUFE" xml:space="preserve">
+    <value>later development stage - no effect on the result yet</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_LADELEISTUNG" xml:space="preserve">
+    <value>Device data: sum of the ratings of all storage units in the project</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
+    <value>For reference calculations against the Excel workbook only - not a production result.</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_SOC_EINHEIT" xml:space="preserve">
+    <value>The SoC band of a variant is always given in % of the nominal capacity.</value>
+  </data>
+  <data name="SP_PARAM_STATUS_VARIANTE" xml:space="preserve">
+    <value>Active variant: {0}</value>
+  </data>
+  <data name="SP_PARAM_STATUS_KEINE_VARIANTE" xml:space="preserve">
+    <value>No active storage variant - the inputs are disabled.</value>
+  </data>
+  <data name="SP_BETRIEBSART_ANZEIGE_GRUENSTROM" xml:space="preserve">
+    <value>Green power (surplus generation only)</value>
+  </data>
+  <data name="SP_BETRIEBSART_ANZEIGE_GRAUSTROM" xml:space="preserve">
+    <value>Grey power (grid charging allowed)</value>
+  </data>
+  <data name="SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG" xml:space="preserve">
+    <value>Continuous use</value>
+  </data>
+  <data name="SP_ERG_TITEL" xml:space="preserve">
+    <value>Battery storage - results</value>
+  </data>
+  <data name="SP_ERG_KEIN_LAUF" xml:space="preserve">
+    <value>No storage calculation yet - please run the simulation.</value>
+  </data>
+  <data name="SP_ERG_KOPF_VARIANTE" xml:space="preserve">
+    <value>{0} · {1} · {2}</value>
+  </data>
+  <data name="SP_ERG_SPALTE_KENNZAHL" xml:space="preserve">
+    <value>Indicator</value>
+  </data>
+  <data name="SP_ERG_SPALTE_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="SP_ERG_SPALTE_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="SP_ERG_GRUPPE_ENERGIE" xml:space="preserve">
+    <value>Energy</value>
+  </data>
+  <data name="SP_ERG_GRUPPE_SPEICHER" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="SP_ERG_GRUPPE_WIRTSCHAFT" xml:space="preserve">
+    <value>Economics</value>
+  </data>
+  <data name="SP_ERG_LADUNG_PV" xml:space="preserve">
+    <value>Charging from PV surplus</value>
+  </data>
+  <data name="SP_ERG_LADUNG_BHKW" xml:space="preserve">
+    <value>Charging from CHP surplus</value>
+  </data>
+  <data name="SP_ERG_LADUNG_NETZ" xml:space="preserve">
+    <value>Charging from the grid</value>
+  </data>
+  <data name="SP_ERG_LADUNG_GESAMT" xml:space="preserve">
+    <value>Total charging</value>
+  </data>
+  <data name="SP_ERG_ENTLADUNG" xml:space="preserve">
+    <value>Discharging</value>
+  </data>
+  <data name="SP_ERG_VERLUSTE" xml:space="preserve">
+    <value>Storage losses</value>
+  </data>
+  <data name="SP_ERG_NETZBEZUG_OHNE" xml:space="preserve">
+    <value>Grid supply without storage</value>
+  </data>
+  <data name="SP_ERG_NETZBEZUG_MIT" xml:space="preserve">
+    <value>Grid supply with storage</value>
+  </data>
+  <data name="SP_ERG_EINSPEISUNG_OHNE" xml:space="preserve">
+    <value>Grid feed-in without storage</value>
+  </data>
+  <data name="SP_ERG_EINSPEISUNG_MIT" xml:space="preserve">
+    <value>Grid feed-in with storage</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH" xml:space="preserve">
+    <value>Self-consumption rate (with storage)</value>
+  </data>
+  <data name="SP_ERG_AUTARKIE" xml:space="preserve">
+    <value>Self-sufficiency (with storage)</value>
+  </data>
+  <data name="SP_ERG_VOLLZYKLEN" xml:space="preserve">
+    <value>Equivalent full cycles n_cyc</value>
+  </data>
+  <data name="SP_ERG_SOC_MIN" xml:space="preserve">
+    <value>State of charge minimum</value>
+  </data>
+  <data name="SP_ERG_SOC_MITTEL" xml:space="preserve">
+    <value>State of charge average</value>
+  </data>
+  <data name="SP_ERG_SOC_MAX" xml:space="preserve">
+    <value>State of charge maximum</value>
+  </data>
+  <data name="SP_ERG_ZEITANTEIL_UNTEN" xml:space="preserve">
+    <value>Time share at the lower limit</value>
+  </data>
+  <data name="SP_ERG_ZEITANTEIL_OBEN" xml:space="preserve">
+    <value>Time share at the upper limit</value>
+  </data>
+  <data name="SP_ERG_ZYKLEN_HOCHRECHNUNG" xml:space="preserve">
+    <value>Cycles over the service life</value>
+  </data>
+  <data name="SP_ERG_ZYKLEN_ZUGESICHERT" xml:space="preserve">
+    <value>guaranteed cycles N_cyc</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_BEZUG" xml:space="preserve">
+    <value>Yield: avoided grid supply</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_VERGUETUNG" xml:space="preserve">
+    <value>Deduction: lost feed-in payment</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_NETZ" xml:space="preserve">
+    <value>Yield: sale to the grid</value>
+  </data>
+  <data name="SP_ERG_KOSTEN_LADUNG" xml:space="preserve">
+    <value>Cost: grid charging</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Yield: demand-charge saving</value>
+  </data>
+  <data name="SP_ERG_VERSCHLEISS" xml:space="preserve">
+    <value>Operating cost: wear K_wear (not included in dJ)</value>
+  </data>
+  <data name="SP_ERG_INVESTITION" xml:space="preserve">
+    <value>Investment I</value>
+  </data>
+  <data name="SP_ERG_ANNUITAET" xml:space="preserve">
+    <value>Annuity A</value>
+  </data>
+  <data name="SP_ERG_JAHRESUEBERSCHUSS" xml:space="preserve">
+    <value>Annual surplus dJ</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_JAHR1" xml:space="preserve">
+    <value>Reference-year yield E_a,1</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_AEQUIVALENT" xml:space="preserve">
+    <value>Degradation-equivalent yield E_a,eq</value>
+  </data>
+  <data name="SP_ERG_AMORT_STATISCH" xml:space="preserve">
+    <value>Static payback</value>
+  </data>
+  <data name="SP_ERG_AMORT_DYNAMISCH" xml:space="preserve">
+    <value>Dynamic payback</value>
+  </data>
+  <data name="SP_ERG_KAPITALWERT" xml:space="preserve">
+    <value>Net present value (NPV)</value>
+  </data>
+  <data name="SP_ERG_NICHT_AMORTISIERBAR" xml:space="preserve">
+    <value>not amortisable</value>
+  </data>
+  <data name="SP_ERG_UEBER_NUTZUNGSDAUER" xml:space="preserve">
+    <value>&gt; service life</value>
+  </data>
+  <data name="SP_ERG_AMPEL_OK" xml:space="preserve">
+    <value>Cycle budget met: {0:N0} of {1:N0} guaranteed cycles.</value>
+  </data>
+  <data name="SP_ERG_AMPEL_KNAPP" xml:space="preserve">
+    <value>Cycle budget tight: {0:N0} of {1:N0} guaranteed cycles.</value>
+  </data>
+  <data name="SP_ERG_AMPEL_UEBERSCHRITTEN" xml:space="preserve">
+    <value>Cycle budget exceeded: {0:N0} projected against {1:N0} guaranteed cycles.</value>
+  </data>
+  <data name="SP_ERG_AMPEL_OHNE_ANGABE" xml:space="preserve">
+    <value>Without a guaranteed cycle count (N_cyc) no budget assessment is possible.</value>
+  </data>
+  <data name="SP_ERG_KOMPATIBILITAET_AKTIV" xml:space="preserve">
+    <value>Excel compatibility mode active - this is not a production result.</value>
+  </data>
+  <data name="SP_CHART_TITEL_SOC" xml:space="preserve">
+    <value>State of charge - annual profile</value>
+  </data>
+  <data name="SP_CHART_ACHSE_SOC" xml:space="preserve">
+    <value>Storage [kWh]</value>
+  </data>
+  <data name="SP_CSV_SOC" xml:space="preserve">
+    <value>State of charge [kWh]</value>
+  </data>
+  <data name="SP_CSV_LADUNG" xml:space="preserve">
+    <value>Charging [kWh]</value>
+  </data>
+  <data name="SP_CSV_ENTLADUNG" xml:space="preserve">
+    <value>Discharging [kWh]</value>
+  </data>
+  <data name="SP_CSV_GELDWERT" xml:space="preserve">
+    <value>Monetary value [EUR]</value>
+  </data>
+  <data name="SP_DATEI_STROMSPEICHER" xml:space="preserve">
+    <value>Battery_storage_project_{0}.csv</value>
+  </data>
+  <data name="SP_TOOLTIP_CSV" xml:space="preserve">
+    <value>Export storage calculation as CSV
+(time stamp, outdoor temperature, state of charge, charging, discharging, monetary value)</value>
+  </data>
+  <data name="CHART_SEGMENT_SPEICHERENTLADUNG" xml:space="preserve">
+    <value>Storage discharge</value>
+  </data>
+  <data name="SP_SPALTE_ERTRAG" xml:space="preserve">
+    <value>Yield [EUR/a]</value>
+  </data>
+  <data name="SP_SPALTE_AMORTISATION" xml:space="preserve">
+    <value>Payback [a]</value>
+  </data>
+  <data name="SP_MARKER_AKTIVE_VARIANTE" xml:space="preserve">
+    <value>{0} (active)</value>
+  </data>
+  <data name="SIMENG_SPEICHER_OHNE_VARIANTE" xml:space="preserve">
+    <value>The project has no active storage variant - the default values are used.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_AGGREGATION" xml:space="preserve">
+    <value>Without an active storage variant the overall run sums up all storage plants of the project as before (sum of their capacities).</value>
+  </data>
+  <data name="SIMENG_SPEICHER_AKTIVE_OHNE_ANLAGE" xml:space="preserve">
+    <value>The active storage variant does not belong to any storage plant of this project - the run falls back to the sum of all storage plants.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_SOC_BAND" xml:space="preserve">
+    <value>The SoC band of the active variant is unusable (max &lt;= min) - the 10/90 % default applies.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_BERECHNUNGSART" xml:space="preserve">
+    <value>The calculation type "{0}" is not implemented yet - continuous use is calculated instead.</value>
+  </data>
+  <data name="IMPORT_PROT_KEINE_WERTE" xml:space="preserve">
+    <value>The file does not contain a single value.</value>
+  </data>
+  <data name="IMPORT_PROT_UNGUELTIGER_WERT" xml:space="preserve">
+    <value>Line {0}: not a valid number (NaN or infinity).</value>
+  </data>
+  <data name="IMPORT_PROT_ZEITSTEMPEL_ANZAHL" xml:space="preserve">
+    <value>Value and time stamp columns differ in length ({0} vs. {1}).</value>
+  </data>
+  <data name="IMPORT_PROT_RASTER_ERKANNT" xml:space="preserve">
+    <value>Time resolution detected: {0} values, {1} intervals per hour.</value>
+  </data>
+  <data name="IMPORT_PROT_RASTER_UNBEKANNT" xml:space="preserve">
+    <value>{0} values do not match any annual resolution (8,760 / 8,784 / 35,040 / 35,136 / 525,600 / 527,040).</value>
+  </data>
+  <data name="IMPORT_PROT_RASTER_ABWEICHEND" xml:space="preserve">
+    <value>The selected resolution ({0} intervals per hour) does not match the file; {1} is used instead.</value>
+  </data>
+  <data name="IMPORT_PROT_RASTER_AUS_ZEIT" xml:space="preserve">
+    <value>Time stamp spacing {0} minutes, i.e. {1} intervals per hour.</value>
+  </data>
+  <data name="IMPORT_PROT_RASTER_WIDERSPRUCH" xml:space="preserve">
+    <value>Time stamp spacing ({0} intervals per hour) contradicts the number of values ({1}).</value>
+  </data>
+  <data name="IMPORT_PROT_ZEITSCHRITT_UNBEKANNT" xml:space="preserve">
+    <value>A time stamp spacing of {0} minutes is not a known resolution (60, 15 or 1 minute).</value>
+  </data>
+  <data name="IMPORT_PROT_KONVENTION_ANFANG" xml:space="preserve">
+    <value>Time stamps are read as the start of the interval.</value>
+  </data>
+  <data name="IMPORT_PROT_KONVENTION_ENDE" xml:space="preserve">
+    <value>Time stamps are read as the end of the interval (first entry {0}) and shifted back by one interval.</value>
+  </data>
+  <data name="IMPORT_PROT_JAHRESANFANG" xml:space="preserve">
+    <value>The series does not start on 1 January at 00:00 but on {0}.</value>
+  </data>
+  <data name="IMPORT_PROT_NICHT_MONOTON" xml:space="preserve">
+    <value>Line {1}: time stamp {0} precedes the previous one.</value>
+  </data>
+  <data name="IMPORT_PROT_DUBLETTE" xml:space="preserve">
+    <value>Duplicate time stamp {0} ({1} values) outside the daylight saving change.</value>
+  </data>
+  <data name="IMPORT_PROT_LUECKE" xml:space="preserve">
+    <value>{1} intervals are missing from {0}.</value>
+  </data>
+  <data name="IMPORT_PROT_SOMMERZEIT_DUBLETTE" xml:space="preserve">
+    <value>Daylight saving: the duplicate hour {0} was averaged from {1} values.</value>
+  </data>
+  <data name="IMPORT_PROT_SOMMERZEIT_LUECKE" xml:space="preserve">
+    <value>Daylight saving: the missing hour from {0} was filled with {1} repetitions of the preceding interval.</value>
+  </data>
+  <data name="IMPORT_PROT_EINHEIT_UMGERECHNET" xml:space="preserve">
+    <value>Unit converted: kWh per interval times {0} gives kW.</value>
+  </data>
+  <data name="IMPORT_PROT_MINUTEN_GEMITTELT" xml:space="preserve">
+    <value>Minute values averaged to 15 minutes: {0} values became {1}.</value>
+  </data>
+  <data name="IMPORT_PROT_MINUTEN_REST" xml:space="preserve">
+    <value>{0} minute values are not divisible by 15 without a remainder.</value>
+  </data>
+  <data name="IMPORT_PROT_SCHALTJAHR" xml:space="preserve">
+    <value>Leap year normalised: {0} values became {1}; 29 February ({2} values) was dropped.</value>
+  </data>
+  <data name="IMPORT_PROT_SCHALTJAHR_POSITION" xml:space="preserve">
+    <value>Without time stamps 29 February was located by position: lines {0} to {1}.</value>
+  </data>
+  <data name="IMPORT_PROT_LAENGE_FALSCH" xml:space="preserve">
+    <value>The series has {0} values, {1} are expected.</value>
+  </data>
+  <data name="IMPORT_PROT_NEGATIVE_WERTE" xml:space="preserve">
+    <value>{0} negative values, smallest value {1} kW.</value>
+  </data>
+  <data name="IMPORT_PROT_NULLSERIE" xml:space="preserve">
+    <value>From line {0} on, {1} consecutive intervals are zero.</value>
+  </data>
+  <data name="IMPORT_PROT_ALLE_NULL" xml:space="preserve">
+    <value>The whole series is zero.</value>
+  </data>
+  <data name="IMPORT_PROT_AUSREISSER" xml:space="preserve">
+    <value>{0} values exceed {3} times the median ({2} kW); largest value {1} kW.</value>
+  </data>
+  <data name="IMPORT_PROT_ERGEBNIS" xml:space="preserve">
+    <value>Result: {0} values, {1} intervals per hour, annual energy {2} kWh.</value>
+  </data>
+  <data name="IMPORT_PROT_DATEI_FEHLT" xml:space="preserve">
+    <value>File not found: {0}</value>
+  </data>
+  <data name="IMPORT_PROT_DATEI_LEER" xml:space="preserve">
+    <value>The file does not contain a usable line.</value>
+  </data>
+  <data name="IMPORT_PROT_LESEFEHLER" xml:space="preserve">
+    <value>The file cannot be read: {0}</value>
+  </data>
+  <data name="IMPORT_PROT_FORMAT_ERKANNT" xml:space="preserve">
+    <value>Format detected: delimiter "{0}", decimal separator "{1}", {2} columns, header row (1 = yes): {3}.</value>
+  </data>
+  <data name="IMPORT_PROT_SPALTENWAHL" xml:space="preserve">
+    <value>Column selection: value column {0}, time stamp column {1} (0 = none).</value>
+  </data>
+  <data name="IMPORT_PROT_ZAHL_UNLESBAR" xml:space="preserve">
+    <value>Line {0}: "{1}" is not a number.</value>
+  </data>
+  <data name="IMPORT_PROT_ZEIT_UNLESBAR" xml:space="preserve">
+    <value>Line {0}: "{1}" is not a time stamp.</value>
+  </data>
+  <data name="IMPORT_PROT_SPALTE_FEHLT" xml:space="preserve">
+    <value>Line {0} has only {1} fields.</value>
+  </data>
+  <data name="IMPORT_PROT_WEITERE_FEHLER" xml:space="preserve">
+    <value>{0} further errors of the same kind were not listed individually.</value>
+  </data>
+  <data name="IMPORT_PROT_EXCEL_FEHLT" xml:space="preserve">
+    <value>Excel is not available on this machine. Please save the file as CSV and import it again.</value>
+  </data>
+  <data name="IMPORT_PROT_EXCEL_BLATT" xml:space="preserve">
+    <value>Worksheet "{0}" was not found; "{1}" is read instead.</value>
+  </data>
+  <data name="IMPORT_PROT_GELESEN" xml:space="preserve">
+    <value>Read: {0} values, {1} time stamps.</value>
+  </data>
+  <data name="IMPORT_TITEL_OPTIONEN" xml:space="preserve">
+    <value>Import load curve - format and preview</value>
+  </data>
+  <data name="IMPORT_GRP_OPTIONEN" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="IMPORT_GRP_VORSCHAU" xml:space="preserve">
+    <value>Preview (first {0} lines)</value>
+  </data>
+  <data name="IMPORT_LBL_DATEI" xml:space="preserve">
+    <value>File: {0}</value>
+  </data>
+  <data name="IMPORT_LBL_TRENNZEICHEN" xml:space="preserve">
+    <value>Delimiter:</value>
+  </data>
+  <data name="IMPORT_LBL_DEZIMALTRENNER" xml:space="preserve">
+    <value>Decimal separator:</value>
+  </data>
+  <data name="IMPORT_LBL_KOPFZEILE" xml:space="preserve">
+    <value>First line is a header row</value>
+  </data>
+  <data name="IMPORT_LBL_WERTSPALTE" xml:space="preserve">
+    <value>Value column:</value>
+  </data>
+  <data name="IMPORT_LBL_ZEITSPALTE" xml:space="preserve">
+    <value>Time stamp column:</value>
+  </data>
+  <data name="IMPORT_LBL_EINHEIT" xml:space="preserve">
+    <value>Unit of the values:</value>
+  </data>
+  <data name="IMPORT_LBL_RASTER" xml:space="preserve">
+    <value>Time resolution:</value>
+  </data>
+  <data name="IMPORT_LBL_KONVENTION" xml:space="preserve">
+    <value>Time stamp denotes:</value>
+  </data>
+  <data name="IMPORT_LBL_BLATT" xml:space="preserve">
+    <value>Worksheet:</value>
+  </data>
+  <data name="IMPORT_HINWEIS_OPTIONEN" xml:space="preserve">
+    <value>The preset comes from the file analysis. Refresh the preview after a change.</value>
+  </data>
+  <data name="IMPORT_BTN_AKTUALISIEREN" xml:space="preserve">
+    <value>Refresh preview</value>
+  </data>
+  <data name="IMPORT_BTN_OK" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="IMPORT_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="IMPORT_TRENN_SEMIKOLON" xml:space="preserve">
+    <value>Semicolon  ;</value>
+  </data>
+  <data name="IMPORT_TRENN_KOMMA" xml:space="preserve">
+    <value>Comma  ,</value>
+  </data>
+  <data name="IMPORT_TRENN_TABULATOR" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="IMPORT_TRENN_PIPE" xml:space="preserve">
+    <value>Vertical bar  |</value>
+  </data>
+  <data name="IMPORT_TRENN_KEINES" xml:space="preserve">
+    <value>none (one value per line)</value>
+  </data>
+  <data name="IMPORT_DEZ_KOMMA" xml:space="preserve">
+    <value>Comma  ,</value>
+  </data>
+  <data name="IMPORT_DEZ_PUNKT" xml:space="preserve">
+    <value>Point  .</value>
+  </data>
+  <data name="IMPORT_EINHEIT_KW" xml:space="preserve">
+    <value>kW (power)</value>
+  </data>
+  <data name="IMPORT_EINHEIT_KWH" xml:space="preserve">
+    <value>kWh per interval (energy)</value>
+  </data>
+  <data name="IMPORT_RASTER_AUTO" xml:space="preserve">
+    <value>detect automatically</value>
+  </data>
+  <data name="IMPORT_RASTER_STUNDE" xml:space="preserve">
+    <value>hourly values</value>
+  </data>
+  <data name="IMPORT_RASTER_VIERTEL" xml:space="preserve">
+    <value>quarter-hour values</value>
+  </data>
+  <data name="IMPORT_RASTER_MINUTE" xml:space="preserve">
+    <value>minute values (averaged to 15 minutes)</value>
+  </data>
+  <data name="IMPORT_KONV_AUTO" xml:space="preserve">
+    <value>detect automatically</value>
+  </data>
+  <data name="IMPORT_KONV_ANFANG" xml:space="preserve">
+    <value>start of interval</value>
+  </data>
+  <data name="IMPORT_KONV_ENDE" xml:space="preserve">
+    <value>end of interval</value>
+  </data>
+  <data name="IMPORT_SPALTE_KEINE" xml:space="preserve">
+    <value>(none)</value>
+  </data>
+  <data name="IMPORT_SPALTE_N" xml:space="preserve">
+    <value>Column {0}</value>
+  </data>
+  <data name="IMPORT_SPALTE_ZEILE" xml:space="preserve">
+    <value>Line</value>
+  </data>
+  <data name="IMPORT_TITEL_PROTOKOLL" xml:space="preserve">
+    <value>Validation log of the load curve import</value>
+  </data>
+  <data name="IMPORT_SPALTE_STUFE" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="IMPORT_SPALTE_MELDUNG" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="IMPORT_STUFE_INFO" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="IMPORT_STUFE_WARNUNG" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="IMPORT_STUFE_FEHLER" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="IMPORT_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="IMPORT_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="IMPORT_KOPF_OK" xml:space="preserve">
+    <value>The file has been validated and can be applied.</value>
+  </data>
+  <data name="IMPORT_KOPF_EINGRIFF" xml:space="preserve">
+    <value>The series was adjusted or shows anomalies. Please review and confirm.</value>
+  </data>
+  <data name="IMPORT_KOPF_FEHLER" xml:space="preserve">
+    <value>The file cannot be imported. The errors are listed below.</value>
+  </data>
+  <data name="IMPORT_DATEIFILTER" xml:space="preserve">
+    <value>Load curve files (*.csv;*.txt;*.xlsx;*.xlsm;*.xls)|*.csv;*.txt;*.xlsx;*.xlsm;*.xls|CSV (*.csv)|*.csv|Text file (*.txt)|*.txt|Excel (*.xlsx;*.xlsm;*.xls)|*.xlsx;*.xlsm;*.xls|All files (*.*)|*.*</value>
+  </data>
+  <data name="IMPORT_MSG_BEREITS_VORHANDEN" xml:space="preserve">
+    <value>This load curve already exists in the database.</value>
+  </data>
+  <data name="IMPORT_MSG_HINWEIS" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="IMPORT_MSG_FEHLER_SPEICHERN" xml:space="preserve">
+    <value>Error while saving the load curve. The data was not stored.</value>
+  </data>
+  <data name="IMPORT_MSG_ERFOLG" xml:space="preserve">
+    <value>Load curve "{0}" was imported with {1} values (time interval {2}).</value>
+  </data>
+  <data name="IMPORT_MSG_TITEL" xml:space="preserve">
+    <value>Import load curve</value>
+  </data>
+  <data name="IMPORT_GANGLINIE_RASTER_PASST_NICHT" xml:space="preserve">
+    <value>Load curve {0} has {1} values, but the stored time interval {2} requires {3}. The load curve was not calculated - please import it again.</value>
+  </data>
+  <data name="PREIS_HINWEIS_KEIN_STROMTRAEGER" xml:space="preserve">
+    <value>The project has no electricity energy carrier assigned - the default surcharge and feed-in values apply.</value>
+  </data>
+  <data name="PREIS_HINWEIS_KEIN_PROFIL" xml:space="preserve">
+    <value>The variant is set to cost profile but none is selected - the fixed price is used instead.</value>
+  </data>
+  <data name="PREIS_HINWEIS_PROFIL_UNBRAUCHBAR" xml:space="preserve">
+    <value>The cost profile "{0}" has no twelve readable monthly values - the fixed price is used instead.</value>
+  </data>
+  <data name="PREIS_HINWEIS_KEINE_SPOTREIHE" xml:space="preserve">
+    <value>The variant is set to spot market but no price series is available - the fixed price is used instead.</value>
+  </data>
+  <data name="PREIS_HINWEIS_SPOTREIHE_LAENGE" xml:space="preserve">
+    <value>The price series "{0}" has {1} values instead of 8760 or 35040 - the fixed price is used instead.</value>
+  </data>
+  <data name="PREIS_HINWEIS_RUECKFALL_FIXPREIS" xml:space="preserve">
+    <value>No electricity work price is maintained - the fallback value of {0} ct/kWh is used.</value>
+  </data>
+  <data name="PREIS_HINWEIS_VERSION_SPAETER" xml:space="preserve">
+    <value>No price version existed on {0} - the oldest available one is used.</value>
+  </data>
+  <data name="PREIS_HINWEIS_ARBEITSPREIS_NULL" xml:space="preserve">
+    <value>The valid price version carries a work price of 0 - the next fallback level applies.</value>
+  </data>
+  <data name="PREIS_VERSION_PROJEKTEINSTELLUNG" xml:space="preserve">
+    <value>Project setting (no price history)</value>
+  </data>
+  <data name="PREIS_HINWEIS_OHNE_HISTORIE" xml:space="preserve">
+    <value>There is no price history for electricity - the work price from the project setting applies.</value>
+  </data>
+  <data name="PREIS_VERSION_KATALOG" xml:space="preserve">
+    <value>Catalogue price of the energy carrier</value>
+  </data>
+  <data name="PREIS_HINWEIS_KATALOGPREIS" xml:space="preserve">
+    <value>Neither price history nor project setting carries a work price - the catalogue price applies.</value>
+  </data>
+  <data name="PREIS_IMPORT_KEINE_DATEN" xml:space="preserve">
+    <value>The file contains no readable data row.</value>
+  </data>
+  <data name="PREIS_IMPORT_KOPF" xml:space="preserve">
+    <value>Spot price file, year {0}: {1} data rows read.</value>
+  </data>
+  <data name="PREIS_IMPORT_UNLESBAR" xml:space="preserve">
+    <value>{0} rows could not be parsed (row numbers: {1}).</value>
+  </data>
+  <data name="PREIS_IMPORT_FREMDES_JAHR" xml:space="preserve">
+    <value>{0} rows carry a year other than {1} - they were still placed by month and day.</value>
+  </data>
+  <data name="PREIS_IMPORT_SCHALTJAHR" xml:space="preserve">
+    <value>Leap year: {0} rows of 29 February skipped (the calculation core uses 8760 hours).</value>
+  </data>
+  <data name="PREIS_IMPORT_DOPPELSTUNDE" xml:space="preserve">
+    <value>Autumn changeover {0} hour {1}: {2} values averaged (summer and winter time).</value>
+  </data>
+  <data name="PREIS_IMPORT_FEHLSTUNDE" xml:space="preserve">
+    <value>Spring changeover {0} hour {1}: does not exist, filled from the neighbouring hours.</value>
+  </data>
+  <data name="PREIS_IMPORT_LUECKE" xml:space="preserve">
+    <value>Gap {0} hour {1}: no value in the file, filled from the neighbouring hours.</value>
+  </data>
+  <data name="PREIS_IMPORT_MEHRFACH" xml:space="preserve">
+    <value>Duplicate entry {0} hour {1}: {2} values averaged (not a changeover date).</value>
+  </data>
+  <data name="PREIS_IMPORT_ERGEBNIS" xml:space="preserve">
+    <value>Result: {0} hourly values, {1} to {2} ct/kWh, mean {3} ct/kWh.</value>
+  </data>
+  <data name="PREIS_IMPORT_NEGATIV" xml:space="preserve">
+    <value>Of these, {0} are negative prices - this is valid and included in the calculation.</value>
+  </data>
+  <data name="PREIS_IMPORT_VOLLSTAENDIG" xml:space="preserve">
+    <value>The series is complete.</value>
+  </data>
+  <data name="PREIS_IMPORT_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>The series is INCOMPLETE - the filled hours are estimates.</value>
+  </data>
+  <data name="PREIS_GRUPPE_AUFSCHLAG" xml:space="preserve">
+    <value>Surcharges on the electricity purchase price</value>
+  </data>
+  <data name="PREIS_MODUS_AUFGESCHLUESSELT" xml:space="preserve">
+    <value>itemised</value>
+  </data>
+  <data name="PREIS_MODUS_GESAMTWERT" xml:space="preserve">
+    <value>total value (override)</value>
+  </data>
+  <data name="PREIS_KOMP_NETZENTGELT" xml:space="preserve">
+    <value>Grid usage fee (energy)</value>
+  </data>
+  <data name="PREIS_KOMP_UMLAGEN" xml:space="preserve">
+    <value>Levies (total)</value>
+  </data>
+  <data name="PREIS_KOMP_STROMSTEUER" xml:space="preserve">
+    <value>Electricity tax</value>
+  </data>
+  <data name="PREIS_KOMP_KONZESSION" xml:space="preserve">
+    <value>Concession fee</value>
+  </data>
+  <data name="PREIS_KOMP_VERTRIEB" xml:space="preserve">
+    <value>Sales margin</value>
+  </data>
+  <data name="PREIS_STROMSTEUER_REGELFALL" xml:space="preserve">
+    <value>2.05</value>
+  </data>
+  <data name="PREIS_STROMSTEUER_REDUZIERT" xml:space="preserve">
+    <value>0.05</value>
+  </data>
+  <data name="PREIS_LABEL_GESAMTAUFSCHLAG" xml:space="preserve">
+    <value>Total surcharge</value>
+  </data>
+  <data name="PREIS_GRUPPE_VERGUETUNG" xml:space="preserve">
+    <value>Feed-in remuneration</value>
+  </data>
+  <data name="PREIS_LABEL_VERGUETUNG_PV" xml:space="preserve">
+    <value>Photovoltaics v_pv</value>
+  </data>
+  <data name="PREIS_LABEL_VERGUETUNG_BHKW" xml:space="preserve">
+    <value>CHP v_bhkw</value>
+  </data>
+  <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
+    <value>Sum of active components: {0} ct/kWh   |   effective surcharge: {1} ct/kWh</value>
+  </data>
+  <data name="PREIS_REST_NICHT_AUFGESCHLUESSELT" xml:space="preserve">
+    <value>Non-itemised remainder: {0} ct/kWh</value>
+  </data>
+  <data name="PREIS_REST_HINWEIS_MODUS" xml:space="preserve">
+    <value>In "itemised" mode the effective surcharge is the sum of the active components.</value>
+  </data>
+  <data name="PREIS_BTN_SPOTIMPORT" xml:space="preserve">
+    <value>Import spot market prices ...</value>
+  </data>
+  <data name="PREIS_BTN_KOSTENPROFIL" xml:space="preserve">
+    <value>Edit cost profile ...</value>
+  </data>
+  <data name="PREIS_IMPORT_TITEL" xml:space="preserve">
+    <value>Import spot market prices</value>
+  </data>
+  <data name="PREIS_IMPORT_INFO" xml:space="preserve">
+    <value>Expected is a CSV file with semicolons and decimal commas: date; from; time zone from; to; time zone to; price in ct/kWh. Daylight saving changeovers and leap years are evaluated and logged.</value>
+  </data>
+  <data name="PREIS_IMPORT_LABEL_DATEI" xml:space="preserve">
+    <value>File:</value>
+  </data>
+  <data name="PREIS_IMPORT_BTN_DATEI" xml:space="preserve">
+    <value>Select file ...</value>
+  </data>
+  <data name="PREIS_IMPORT_LABEL_BEZEICHNER" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="PREIS_IMPORT_CHK_STAMM" xml:space="preserve">
+    <value>make available to all projects</value>
+  </data>
+  <data name="PREIS_IMPORT_LABEL_PROTOKOLL" xml:space="preserve">
+    <value>Validation log:</value>
+  </data>
+  <data name="PREIS_IMPORT_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="PREIS_IMPORT_DATEIFILTER" xml:space="preserve">
+    <value>Spot price files (*.csv)|*.csv|All files (*.*)|*.*</value>
+  </data>
+  <data name="PREIS_IMPORT_STATUS_BEREIT" xml:space="preserve">
+    <value>Ready to apply (year {0}).</value>
+  </data>
+  <data name="PREIS_IMPORT_STATUS_UNBRAUCHBAR" xml:space="preserve">
+    <value>The file does not yield a usable price series.</value>
+  </data>
+  <data name="PREIS_IMPORT_STATUS_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The price series could not be saved.</value>
+  </data>
+  <data name="PREIS_IMPORT_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Price series {0} saved with {1} values.</value>
+  </data>
+  <data name="PREIS_IMPORT_STATUS_SCHREIBT" xml:space="preserve">
+    <value>{0} values written ...</value>
+  </data>
+  <data name="PREIS_PROFIL_TITEL" xml:space="preserve">
+    <value>Cost profile</value>
+  </data>
+  <data name="PREIS_PROFIL_NEU" xml:space="preserve">
+    <value>New cost profile</value>
+  </data>
+  <data name="PREIS_PROFIL_INFO" xml:space="preserve">
+    <value>The purchase price is the monthly value of the respective month plus the weekly value for weekday and hour. All values in ct/kWh.</value>
+  </data>
+  <data name="PREIS_PROFIL_LABEL_BEZEICHNER" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="PREIS_PROFIL_TAB_MONATSWERTE" xml:space="preserve">
+    <value>Monthly values</value>
+  </data>
+  <data name="PREIS_PROFIL_KOPF_MONAT" xml:space="preserve">
+    <value>Price level per month [ct/kWh]</value>
+  </data>
+  <data name="PREIS_PROFIL_BTN_ALLE_MONATE" xml:space="preserve">
+    <value>Apply January value to all months</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_JANUAR" xml:space="preserve">
+    <value>The January value is not a valid number.</value>
+  </data>
+  <data name="PREIS_PROFIL_TAB_WOCHENWERTE" xml:space="preserve">
+    <value>Weekly values</value>
+  </data>
+  <data name="PREIS_PROFIL_KOPF_WOCHE" xml:space="preserve">
+    <value>Deviation per hour of the selected weekday [ct/kWh]</value>
+  </data>
+  <data name="PREIS_PROFIL_LBL_WOCHENTAG" xml:space="preserve">
+    <value>Weekday:</value>
+  </data>
+  <data name="PREIS_PROFIL_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Copy day</value>
+  </data>
+  <data name="PREIS_PROFIL_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Paste day</value>
+  </data>
+  <data name="PREIS_PROFIL_BTN_ALLE_TAGE" xml:space="preserve">
+    <value>Apply to all days</value>
+  </data>
+  <data name="PREIS_PROFIL_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply the hourly values of this day</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_ERST_KOPIEREN" xml:space="preserve">
+    <value>Please copy a day first.</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_ALLE_TAGE" xml:space="preserve">
+    <value>The daily profile now applies to all seven weekdays.</value>
+  </data>
+  <data name="PREIS_PROFIL_HINWEIS_ABWEICHUNG" xml:space="preserve">
+    <value>The weekly values are deviations from the monthly value. A peak/off-peak tariff results from giving all seven days the same profile.</value>
+  </data>
+  <data name="PREIS_PROFIL_TAB_GRAFIK" xml:space="preserve">
+    <value>Chart</value>
+  </data>
+  <data name="PREIS_CHART_ACHSE_PREIS" xml:space="preserve">
+    <value>Price [ct/kWh]</value>
+  </data>
+  <data name="PREIS_CHART_SERIE_KOSTENPROFIL" xml:space="preserve">
+    <value>Cost profile</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_STUNDE_UNGUELTIG" xml:space="preserve">
+    <value>Hour {0}: "{1}" is not a valid number.</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_MONAT_UNGUELTIG" xml:space="preserve">
+    <value>{0}: "{1}" is not a valid number.</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The cost profile could not be saved.</value>
+  </data>
+  <data name="PREIS_PARAM_GRUPPE_PREISQUELLE" xml:space="preserve">
+    <value>Price source</value>
+  </data>
+  <data name="PREIS_PARAM_LABEL_PREISQUELLE" xml:space="preserve">
+    <value>Price source</value>
+  </data>
+  <data name="PREIS_QUELLE_ANZEIGE_FIXPREIS" xml:space="preserve">
+    <value>Fixed price from the cost module</value>
+  </data>
+  <data name="PREIS_QUELLE_ANZEIGE_PROFIL" xml:space="preserve">
+    <value>Cost profile</value>
+  </data>
+  <data name="PREIS_QUELLE_ANZEIGE_SPOTMARKT" xml:space="preserve">
+    <value>Spot market series</value>
+  </data>
+  <data name="PREIS_PARAM_LABEL_REIHE" xml:space="preserve">
+    <value>Price series</value>
+  </data>
+  <data name="PREIS_PARAM_LABEL_PROFIL" xml:space="preserve">
+    <value>Cost profile</value>
+  </data>
+  <data name="PREIS_PARAM_REIHE_EINTRAG" xml:space="preserve">
+    <value>{0} ({1}, {2} values)</value>
+  </data>
+  <data name="PREIS_PARAM_CHK_AUFSCHLAG" xml:space="preserve">
+    <value>Apply the surcharges from the cost module</value>
+  </data>
+  <data name="PREIS_PARAM_HINWEIS_AUFSCHLAG" xml:space="preserve">
+    <value>Switch off if the selected series is already a full price (concept 4.2).</value>
+  </data>
+  <data name="PREIS_PARAM_INFO" xml:space="preserve">
+    <value>Mean energy price {0} ct/kWh + surcharge {1} ct/kWh = purchase price {2} ct/kWh   |   price version: {3}</value>
+  </data>
+  <data name="SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG" xml:space="preserve">
+    <value>Night use</value>
+  </data>
+  <data name="NACHT_ERG_SPALTE_VERGLEICH" xml:space="preserve">
+    <value>Continuous use (comparison)</value>
+  </data>
+  <data name="NACHT_ERG_VERGLEICH_HINWEIS" xml:space="preserve">
+    <value>The comparison column shows what continuous use would have delivered from the same data. Only the result of the selected calculation type is saved.</value>
+  </data>
+  <data name="NACHT_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
+    <value>The Excel compatibility mode applies to continuous use only - there is no Excel reference for night use. The calculation runs with the energy model.</value>
+  </data>
+  <data name="NACHT_HINWEIS_VERGLEICH_FEHLER" xml:space="preserve">
+    <value>The comparison run with continuous use failed: {0}</value>
+  </data>
+  <data name="NACHT_OHNE_EXCEL_REFERENZ" xml:space="preserve">
+    <value>There is no Excel reference for night use; the compatibility mode is not available there.</value>
+  </data>
+  <data name="PEAK_MENUE" xml:space="preserve">
+    <value>Peak shaving</value>
+  </data>
+  <data name="PEAK_TITEL" xml:space="preserve">
+    <value>Peak shaving</value>
+  </data>
+  <data name="PEAK_GRP_QUELLE" xml:space="preserve">
+    <value>Load curve</value>
+  </data>
+  <data name="PEAK_OPT_GANGLINIE" xml:space="preserve">
+    <value>Existing load curve</value>
+  </data>
+  <data name="PEAK_OPT_DATEI" xml:space="preserve">
+    <value>Import file</value>
+  </data>
+  <data name="PEAK_BTN_DATEI" xml:space="preserve">
+    <value>Select file …</value>
+  </data>
+  <data name="PEAK_LBL_REIHE" xml:space="preserve">
+    <value>{0}: {1} values, annual maximum {2} kW</value>
+  </data>
+  <data name="PEAK_LBL_KEINE_REIHE" xml:space="preserve">
+    <value>No load curve loaded.</value>
+  </data>
+  <data name="PEAK_QUELLE_PROJEKT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="PEAK_QUELLE_STAMM" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="PEAK_GANGLINIE_EINTRAG" xml:space="preserve">
+    <value>{0}  [{1}]</value>
+  </data>
+  <data name="PEAK_GRP_PARAMETER" xml:space="preserve">
+    <value>Storage and valuation parameters</value>
+  </data>
+  <data name="PEAK_LBL_P" xml:space="preserve">
+    <value>Power P [kW]</value>
+  </data>
+  <data name="PEAK_LBL_KAPAZITAET" xml:space="preserve">
+    <value>Capacity [kWh]</value>
+  </data>
+  <data name="PEAK_LBL_ETA" xml:space="preserve">
+    <value>Efficiency η_RT [-]</value>
+  </data>
+  <data name="PEAK_LBL_SOCMIN" xml:space="preserve">
+    <value>State of charge min. [%]</value>
+  </data>
+  <data name="PEAK_LBL_SOCMAX" xml:space="preserve">
+    <value>State of charge max. [%]</value>
+  </data>
+  <data name="PEAK_LBL_STARTSOC" xml:space="preserve">
+    <value>Initial state of charge [%]</value>
+  </data>
+  <data name="PEAK_LBL_ZIEL" xml:space="preserve">
+    <value>Target threshold P_target [kW]</value>
+  </data>
+  <data name="PEAK_CHK_ADAPTIV" xml:space="preserve">
+    <value>Adaptive (ratchet threshold)</value>
+  </data>
+  <data name="PEAK_BTN_MINIMAL" xml:space="preserve">
+    <value>Determine minimum sustainable threshold</value>
+  </data>
+  <data name="PEAK_LBL_LP" xml:space="preserve">
+    <value>Demand charge L_P [€/(kW·a)]</value>
+  </data>
+  <data name="PEAK_LBL_BEZUGSPREIS" xml:space="preserve">
+    <value>Mean supply price [ct/kWh]</value>
+  </data>
+  <data name="PEAK_CHK_KOMPAT" xml:space="preserve">
+    <value>Compatibility mode (η = 1, SoC_min = 0)</value>
+  </data>
+  <data name="PEAK_LBL_CCAP" xml:space="preserve">
+    <value>Investment c_cap [€/kWh]</value>
+  </data>
+  <data name="PEAK_LBL_CPOW" xml:space="preserve">
+    <value>Investment c_pow [€/kW]</value>
+  </data>
+  <data name="PEAK_LBL_IFIX" xml:space="preserve">
+    <value>Fixed investment [€]</value>
+  </data>
+  <data name="PEAK_LBL_ZINS" xml:space="preserve">
+    <value>Interest rate [%]</value>
+  </data>
+  <data name="PEAK_LBL_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Service life [a]</value>
+  </data>
+  <data name="PEAK_BTN_RECHNEN" xml:space="preserve">
+    <value>Calculate</value>
+  </data>
+  <data name="PEAK_CHK_SOC" xml:space="preserve">
+    <value>Show state of charge in the chart</value>
+  </data>
+  <data name="PEAK_BTN_CSV" xml:space="preserve">
+    <value>CSV export</value>
+  </data>
+  <data name="PEAK_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="PEAK_TAB_KENNZAHLEN" xml:space="preserve">
+    <value>Key figures</value>
+  </data>
+  <data name="PEAK_TAB_CHART" xml:space="preserve">
+    <value>Load curve before/after</value>
+  </data>
+  <data name="PEAK_TAB_MONATE" xml:space="preserve">
+    <value>Monthly peaks</value>
+  </data>
+  <data name="PEAK_SP_GROESSE" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="PEAK_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="PEAK_SP_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="PEAK_SP_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="PEAK_SP_ALT" xml:space="preserve">
+    <value>Peak without storage [kW]</value>
+  </data>
+  <data name="PEAK_SP_NEU" xml:space="preserve">
+    <value>Peak with storage [kW]</value>
+  </data>
+  <data name="PEAK_SP_KAPPUNG" xml:space="preserve">
+    <value>Reduction [kW]</value>
+  </data>
+  <data name="PEAK_KZ_SPITZE_ALT" xml:space="preserve">
+    <value>Load peak without storage (annual maximum)</value>
+  </data>
+  <data name="PEAK_KZ_SPITZE_NEU" xml:space="preserve">
+    <value>Load peak with storage (annual maximum)</value>
+  </data>
+  <data name="PEAK_KZ_KAPPUNG" xml:space="preserve">
+    <value>Reduction of the annual peak</value>
+  </data>
+  <data name="PEAK_KZ_SCHWELLE" xml:space="preserve">
+    <value>Threshold achieved</value>
+  </data>
+  <data name="PEAK_KZ_GERISSEN" xml:space="preserve">
+    <value>Threshold exceeded (storage too small)</value>
+  </data>
+  <data name="PEAK_JA" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="PEAK_NEIN" xml:space="preserve">
+    <value>no</value>
+  </data>
+  <data name="PEAK_KZ_LADEENERGIE" xml:space="preserve">
+    <value>Charging energy (AC)</value>
+  </data>
+  <data name="PEAK_KZ_ENTLADEENERGIE" xml:space="preserve">
+    <value>Discharging energy (AC)</value>
+  </data>
+  <data name="PEAK_KZ_VERLUSTE" xml:space="preserve">
+    <value>Conversion losses</value>
+  </data>
+  <data name="PEAK_KZ_VOLLZYKLEN" xml:space="preserve">
+    <value>Equivalent full cycles</value>
+  </data>
+  <data name="PEAK_KZ_ERSPARNIS" xml:space="preserve">
+    <value>Demand charge saving</value>
+  </data>
+  <data name="PEAK_KZ_VERLUSTKOSTEN" xml:space="preserve">
+    <value>Cost of the shifting losses</value>
+  </data>
+  <data name="PEAK_KZ_ERTRAG" xml:space="preserve">
+    <value>Peak shaving yield (E_a,1)</value>
+  </data>
+  <data name="PEAK_KZ_INVEST" xml:space="preserve">
+    <value>Investment</value>
+  </data>
+  <data name="PEAK_KZ_ANNUITAET" xml:space="preserve">
+    <value>Annuity (capital service)</value>
+  </data>
+  <data name="PEAK_KZ_UEBERSCHUSS" xml:space="preserve">
+    <value>Annual surplus ΔJ</value>
+  </data>
+  <data name="PEAK_KZ_AMORT_STAT" xml:space="preserve">
+    <value>Static payback</value>
+  </data>
+  <data name="PEAK_KZ_AMORT_DYN" xml:space="preserve">
+    <value>Dynamic payback</value>
+  </data>
+  <data name="PEAK_KZ_NPV" xml:space="preserve">
+    <value>Net present value</value>
+  </data>
+  <data name="PEAK_AMORT_UEBER" xml:space="preserve">
+    <value>&gt; service life</value>
+  </data>
+  <data name="PEAK_AMORT_NIE" xml:space="preserve">
+    <value>not amortisable</value>
+  </data>
+  <data name="PEAK_MONAT_GESAMT" xml:space="preserve">
+    <value>Entire series</value>
+  </data>
+  <data name="PEAK_CHART_TITEL" xml:space="preserve">
+    <value>Load curve before and after shaving</value>
+  </data>
+  <data name="PEAK_CHART_X" xml:space="preserve">
+    <value>Course of the year</value>
+  </data>
+  <data name="PEAK_CHART_Y" xml:space="preserve">
+    <value>Power [kW]</value>
+  </data>
+  <data name="PEAK_CHART_Y2" xml:space="preserve">
+    <value>State of charge [kWh]</value>
+  </data>
+  <data name="PEAK_SERIE_ALT" xml:space="preserve">
+    <value>Load curve without storage</value>
+  </data>
+  <data name="PEAK_SERIE_NEU" xml:space="preserve">
+    <value>Load curve with storage</value>
+  </data>
+  <data name="PEAK_SERIE_SOC" xml:space="preserve">
+    <value>State of charge</value>
+  </data>
+  <data name="PEAK_CSV_PALT" xml:space="preserve">
+    <value>Load without storage [kW]</value>
+  </data>
+  <data name="PEAK_CSV_PNEU" xml:space="preserve">
+    <value>Load with storage [kW]</value>
+  </data>
+  <data name="PEAK_CSV_SOC" xml:space="preserve">
+    <value>State of charge [kWh]</value>
+  </data>
+  <data name="PEAK_CSV_LADUNG" xml:space="preserve">
+    <value>Charging [kWh]</value>
+  </data>
+  <data name="PEAK_CSV_ENTLADUNG" xml:space="preserve">
+    <value>Discharging [kWh]</value>
+  </data>
+  <data name="PEAK_DATEI" xml:space="preserve">
+    <value>peak-shaving.csv</value>
+  </data>
+  <data name="PEAK_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>Preset from device and active variant: {0}</value>
+  </data>
+  <data name="PEAK_HERKUNFT_VORGABE" xml:space="preserve">
+    <value>Preset: specification defaults</value>
+  </data>
+  <data name="PEAK_HINWEIS" xml:space="preserve">
+    <value>The reference quantity for the load peak is the annual maximum of the quarter-hourly power; the monthly evaluation is available as an option. At this stage results are not stored in the database – CSV is the export route. Demand charge and mean supply price have to be entered; without them the monetisation stays at 0.</value>
+  </data>
+  <data name="PEAK_MSG_KEINE_REIHE" xml:space="preserve">
+    <value>Please select or import a load curve first.</value>
+  </data>
+  <data name="PEAK_MSG_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>Please calculate first.</value>
+  </data>
+  <data name="PEAK_MSG_KAPAZITAET" xml:space="preserve">
+    <value>The capacity must be greater than 0.</value>
+  </data>
+  <data name="PEAK_MSG_BAND" xml:space="preserve">
+    <value>The upper state of charge must be above the lower one.</value>
+  </data>
+  <data name="PEAK_MSG_ETA" xml:space="preserve">
+    <value>The efficiency must be in the range (0 … 1].</value>
+  </data>
+  <data name="PEAK_MSG_NUTZUNGSDAUER" xml:space="preserve">
+    <value>The service life must be greater than 0.</value>
+  </data>
+  <data name="PEAK_MSG_MINIMAL" xml:space="preserve">
+    <value>Smallest sustainable target threshold: {0} kW. The value is now in the threshold field; the adaptive search has been switched off.</value>
+  </data>
+  <data name="PEAK_MSG_GERISSEN" xml:space="preserve">
+    <value>The storage cannot hold the target threshold: the new peak is {0} kW. Increase capacity or power, or raise the threshold.</value>
+  </data>
+  <data name="OPT_TITEL" xml:space="preserve">
+    <value>Optimise sizing</value>
+  </data>
+  <data name="OPT_GRP_SUCHRAUM" xml:space="preserve">
+    <value>Search range</value>
+  </data>
+  <data name="OPT_GRP_ERGEBNIS" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="OPT_LBL_CMIN" xml:space="preserve">
+    <value>Capacity from [kWh]</value>
+  </data>
+  <data name="OPT_LBL_CMAX" xml:space="preserve">
+    <value>Capacity to [kWh]</value>
+  </data>
+  <data name="OPT_LBL_STUETZSTELLEN" xml:space="preserve">
+    <value>Grid points</value>
+  </data>
+  <data name="OPT_LBL_RMIN" xml:space="preserve">
+    <value>C rate from [1/h]</value>
+  </data>
+  <data name="OPT_LBL_RMAX" xml:space="preserve">
+    <value>C rate to [1/h]</value>
+  </data>
+  <data name="OPT_LBL_RSCHRITT" xml:space="preserve">
+    <value>Step [1/h]</value>
+  </data>
+  <data name="OPT_LBL_STRATEGIE" xml:space="preserve">
+    <value>Calculation mode</value>
+  </data>
+  <data name="OPT_CHK_FEINRASTER" xml:space="preserve">
+    <value>Refine around the optimum</value>
+  </data>
+  <data name="OPT_CHK_KVER" xml:space="preserve">
+    <value>Include wear cost in the objective</value>
+  </data>
+  <data name="OPT_LBL_PUNKTE" xml:space="preserve">
+    <value>Grid points: {0}</value>
+  </data>
+  <data name="OPT_LBL_AKTUELL" xml:space="preserve">
+    <value>Current sizing: {0} kWh / {1} kW ({2} C)</value>
+  </data>
+  <data name="OPT_HINWEIS_ZIELFUNKTION" xml:space="preserve">
+    <value>The objective is the annual surplus after capital service ΔJ = E_a,eq − (c_cap·C + c_pow·P + I_fix) · a(i_z, N). Payback time is deliberately a secondary indicator, not an objective.</value>
+  </data>
+  <data name="OPT_HINWEIS_KVER" xml:space="preserve">
+    <value>Caution: annuity and wear cost price the same thing. As long as c_ver is derived from the investment, including it double counts.</value>
+  </data>
+  <data name="OPT_HINWEIS_SUCHRAUM" xml:space="preserve">
+    <value>Proposal of the specification: 500 … 5,000 kWh with 10 grid points, 0.5 … 3.0 C in 0.5 steps.</value>
+  </data>
+  <data name="OPT_BTN_OEFFNEN" xml:space="preserve">
+    <value>Optimise sizing …</value>
+  </data>
+  <data name="OPT_BTN_START" xml:space="preserve">
+    <value>Start optimisation</value>
+  </data>
+  <data name="OPT_BTN_ABBRUCH" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="OPT_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply best point …</value>
+  </data>
+  <data name="OPT_BTN_CSV" xml:space="preserve">
+    <value>Grid as CSV …</value>
+  </data>
+  <data name="OPT_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="OPT_STATUS_BEREIT" xml:space="preserve">
+    <value>Ready.</value>
+  </data>
+  <data name="OPT_STATUS_PUNKT" xml:space="preserve">
+    <value>Grid point {0} of {1}</value>
+  </data>
+  <data name="OPT_STATUS_PUNKT_FEIN" xml:space="preserve">
+    <value>Grid point {0} of {1} (refinement)</value>
+  </data>
+  <data name="OPT_STATUS_FERTIG" xml:space="preserve">
+    <value>{0} grid points in {1} s — optimum {2} kWh / {3} C</value>
+  </data>
+  <data name="OPT_STATUS_ABGEBROCHEN" xml:space="preserve">
+    <value>Cancelled — no complete grid available.</value>
+  </data>
+  <data name="OPT_CHART_HEATMAP_TITEL" xml:space="preserve">
+    <value>Annual surplus ΔJ [EUR/a]</value>
+  </data>
+  <data name="OPT_CHART_X_CRATE" xml:space="preserve">
+    <value>C rate [1/h]</value>
+  </data>
+  <data name="OPT_CHART_Y_KAPAZITAET" xml:space="preserve">
+    <value>Capacity [kWh]</value>
+  </data>
+  <data name="OPT_CHART_SCHNITT_TITEL" xml:space="preserve">
+    <value>Cut at {0} C</value>
+  </data>
+  <data name="OPT_CHART_SCHNITT_Y" xml:space="preserve">
+    <value>ΔJ [EUR/a]</value>
+  </data>
+  <data name="OPT_CHART_FARBSKALA" xml:space="preserve">
+    <value>ΔJ [EUR/a]</value>
+  </data>
+  <data name="OPT_ZELLE_LEER" xml:space="preserve">
+    <value>Hover a cell to see its values.</value>
+  </data>
+  <data name="OPT_ZELLE" xml:space="preserve">
+    <value>{0} kWh · {1} C · P = {2} kW · ΔJ = {3} EUR/a · T_stat = {4}</value>
+  </data>
+  <data name="OPT_WARN_RAND" xml:space="preserve">
+    <value>Optimum at the edge — extend the search range ({0}).</value>
+  </data>
+  <data name="OPT_WARN_RAND_C_UNTEN" xml:space="preserve">
+    <value>capacity at the lower bound</value>
+  </data>
+  <data name="OPT_WARN_RAND_C_OBEN" xml:space="preserve">
+    <value>capacity at the upper bound</value>
+  </data>
+  <data name="OPT_WARN_RAND_R_UNTEN" xml:space="preserve">
+    <value>C rate at the lower bound</value>
+  </data>
+  <data name="OPT_WARN_RAND_R_OBEN" xml:space="preserve">
+    <value>C rate at the upper bound</value>
+  </data>
+  <data name="OPT_WARN_CPOW" xml:space="preserve">
+    <value>The power related investment c_pow is 0 — the C rate axis is cost neutral, so the optimum inevitably moves to the upper C rate bound.</value>
+  </data>
+  <data name="OPT_WARN_KVER_AKTIV" xml:space="preserve">
+    <value>K_ver is included in ΔJ (specification 5.4).</value>
+  </data>
+  <data name="OPT_WARN_ZYKLEN" xml:space="preserve">
+    <value>The best point yields {0} full cycles over the service life against {1} guaranteed.</value>
+  </data>
+  <data name="OPT_SP_GROESSE" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="OPT_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="OPT_SP_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="OPT_KZ_GRUPPE_AUSLEGUNG" xml:space="preserve">
+    <value>Sizing of the best point</value>
+  </data>
+  <data name="OPT_KZ_GRUPPE_WIRTSCHAFT" xml:space="preserve">
+    <value>Economics</value>
+  </data>
+  <data name="OPT_KZ_GRUPPE_SPEICHER" xml:space="preserve">
+    <value>Storage and energy</value>
+  </data>
+  <data name="OPT_KZ_KAPAZITAET" xml:space="preserve">
+    <value>Nominal capacity C_nom</value>
+  </data>
+  <data name="OPT_KZ_CRATE" xml:space="preserve">
+    <value>C rate</value>
+  </data>
+  <data name="OPT_KZ_LEISTUNG" xml:space="preserve">
+    <value>Charge/discharge power P</value>
+  </data>
+  <data name="OPT_KZ_ZIELFUNKTION" xml:space="preserve">
+    <value>Objective ΔJ</value>
+  </data>
+  <data name="OPT_KZ_UEBERSCHUSS" xml:space="preserve">
+    <value>Annual surplus without K_ver</value>
+  </data>
+  <data name="OPT_KZ_ERTRAG1" xml:space="preserve">
+    <value>Reference year yield E_a,1</value>
+  </data>
+  <data name="OPT_KZ_ERTRAGAEQ" xml:space="preserve">
+    <value>Equivalent yield E_a,eq</value>
+  </data>
+  <data name="OPT_KZ_INVEST" xml:space="preserve">
+    <value>Investment I</value>
+  </data>
+  <data name="OPT_KZ_ANNUITAET" xml:space="preserve">
+    <value>Annuity A</value>
+  </data>
+  <data name="OPT_KZ_NPV" xml:space="preserve">
+    <value>Net present value</value>
+  </data>
+  <data name="OPT_KZ_AMORT_STAT" xml:space="preserve">
+    <value>Static payback</value>
+  </data>
+  <data name="OPT_KZ_AMORT_DYN" xml:space="preserve">
+    <value>Dynamic payback</value>
+  </data>
+  <data name="OPT_KZ_ZYKLEN" xml:space="preserve">
+    <value>Equivalent full cycles</value>
+  </data>
+  <data name="OPT_KZ_ZYKLEN_N" xml:space="preserve">
+    <value>Cycles over the service life</value>
+  </data>
+  <data name="OPT_KZ_KVER" xml:space="preserve">
+    <value>Wear cost K_ver</value>
+  </data>
+  <data name="OPT_KZ_EIGENVERBRAUCH" xml:space="preserve">
+    <value>Self consumption ratio</value>
+  </data>
+  <data name="OPT_KZ_AUTARKIE" xml:space="preserve">
+    <value>Self sufficiency</value>
+  </data>
+  <data name="OPT_KZ_LADEENERGIE" xml:space="preserve">
+    <value>Charged energy</value>
+  </data>
+  <data name="OPT_KZ_ENTLADEENERGIE" xml:space="preserve">
+    <value>Discharged energy</value>
+  </data>
+  <data name="OPT_KZ_VERLUSTE" xml:space="preserve">
+    <value>Storage losses</value>
+  </data>
+  <data name="OPT_AMORT_UEBER" xml:space="preserve">
+    <value>&gt; service life</value>
+  </data>
+  <data name="OPT_AMORT_NIE" xml:space="preserve">
+    <value>not amortisable</value>
+  </data>
+  <data name="OPT_MSG_KEIN_LAUF" xml:space="preserve">
+    <value>The simulation has not been run yet. Sizing optimisation needs the load profile and the generation series of a complete run.</value>
+  </data>
+  <data name="OPT_MSG_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>There is no optimisation result yet.</value>
+  </data>
+  <data name="OPT_MSG_FEHLER" xml:space="preserve">
+    <value>The optimisation failed: {0}</value>
+  </data>
+  <data name="OPT_MSG_CMIN" xml:space="preserve">
+    <value>The lower capacity bound must be greater than 0.</value>
+  </data>
+  <data name="OPT_MSG_CMAX" xml:space="preserve">
+    <value>The upper capacity bound must be above the lower one.</value>
+  </data>
+  <data name="OPT_MSG_STUETZSTELLEN" xml:space="preserve">
+    <value>The capacity axis needs at least 2 grid points.</value>
+  </data>
+  <data name="OPT_MSG_RMIN" xml:space="preserve">
+    <value>The lower C rate must be greater than 0.</value>
+  </data>
+  <data name="OPT_MSG_RMAX" xml:space="preserve">
+    <value>The upper C rate must not be below the lower one.</value>
+  </data>
+  <data name="OPT_MSG_RSCHRITT" xml:space="preserve">
+    <value>The C rate step must be greater than 0.</value>
+  </data>
+  <data name="OPT_MSG_MEHRERE_ANLAGEN" xml:space="preserve">
+    <value>The project holds several storage units. The optimisation works on their sum; splitting an optimum across several devices is not unambiguous. Please enter the values manually.</value>
+  </data>
+  <data name="OPT_MSG_UEBERNAHME_FRAGE" xml:space="preserve">
+    <value>Apply capacity {0} kWh and power {1} kW to the device data?
+
+The simulation will not be recalculated.</value>
+  </data>
+  <data name="OPT_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>The sizing has been applied. The simulation is now out of date — please run it again.</value>
+  </data>
+  <data name="OPT_MSG_UEBERNAHME_FEHLER" xml:space="preserve">
+    <value>The sizing could not be written.</value>
+  </data>
+  <data name="OPT_DATEI" xml:space="preserve">
+    <value>SizingGrid_Project{0}.csv</value>
+  </data>
+  <data name="OPT_CSV_TITEL" xml:space="preserve">
+    <value>CSV export</value>
+  </data>
+  <data name="OPT_CSV_PHASE" xml:space="preserve">
+    <value>Phase</value>
+  </data>
+  <data name="OPT_CSV_PHASE_GROB" xml:space="preserve">
+    <value>Coarse grid</value>
+  </data>
+  <data name="OPT_CSV_PHASE_FEIN" xml:space="preserve">
+    <value>Refinement</value>
+  </data>
+  <data name="OPT_CSV_GESCHRIEBEN" xml:space="preserve">
+    <value>The file has been created:
+{0}</value>
+  </data>
+  <data name="OPT_CSV_FEHLER" xml:space="preserve">
+    <value>Error while writing the CSV file:
+{0}</value>
+  </data>
+  <data name="VAR_TITEL" xml:space="preserve">
+    <value>Storage variants</value>
+  </data>
+  <data name="VAR_MENU_NEU" xml:space="preserve">
+    <value>Create new variant…</value>
+  </data>
+  <data name="VAR_MENU_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplicate variant</value>
+  </data>
+  <data name="VAR_MENU_AKTIV" xml:space="preserve">
+    <value>Set as active</value>
+  </data>
+  <data name="VAR_MENU_LOESCHEN" xml:space="preserve">
+    <value>Delete variant</value>
+  </data>
+  <data name="VAR_MENU_VERGLEICH" xml:space="preserve">
+    <value>Comparison: in the simulation after a run</value>
+  </data>
+  <data name="VAR_NAME_VORSCHLAG" xml:space="preserve">
+    <value>{0} (variant {1})</value>
+  </data>
+  <data name="VAR_MSG_ANLAGE_FEHLT" xml:space="preserve">
+    <value>The plant row of this variant was not found. Please refresh the overview.</value>
+  </data>
+  <data name="VAR_MSG_GERAET_FEHLT" xml:space="preserve">
+    <value>No storage device is assigned to this variant. Please assign one via “Add/Edit” first.</value>
+  </data>
+  <data name="VAR_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>The name “{0}” is already used in this project. Please choose a different one.</value>
+  </data>
+  <data name="VAR_MSG_ANLEGEN_FEHLER" xml:space="preserve">
+    <value>The variant could not be created. Details are in the log.</value>
+  </data>
+  <data name="VAR_MSG_VARIANTENZEILE_FEHLER" xml:space="preserve">
+    <value>The plant row was created, but the variant’s operating parameters were not. Please check the parameter page.</value>
+  </data>
+  <data name="VAR_MSG_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Delete the variant “{0}” including all its operating parameters?</value>
+  </data>
+  <data name="VAR_MSG_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>The variant could not be deleted.</value>
+  </data>
+  <data name="VAR_MSG_AKTIV_FRAGE" xml:space="preserve">
+    <value>Set the variant “{0}” as the project’s active variant?
+
+It then feeds the overview and the overall simulation. The existing simulation run stays unchanged.</value>
+  </data>
+  <data name="VAR_MSG_AKTIV_FEHLER" xml:space="preserve">
+    <value>The active variant could not be set.</value>
+  </data>
+  <data name="VAR_VGL_TITEL" xml:space="preserve">
+    <value>Battery storage variant comparison</value>
+  </data>
+  <data name="VAR_VGL_BTN_OEFFNEN" xml:space="preserve">
+    <value>Compare variants…</value>
+  </data>
+  <data name="VAR_VGL_TOOLTIP_OEFFNEN" xml:space="preserve">
+    <value>Runs every storage variant of the project on the existing simulation and puts the key figures side by side.</value>
+  </data>
+  <data name="VAR_VGL_SP_AKTIV" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="VAR_VGL_SP_BEZEICHNUNG" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="VAR_VGL_SP_BETRIEBSART" xml:space="preserve">
+    <value>Operating mode</value>
+  </data>
+  <data name="VAR_VGL_SP_BERECHNUNGSART" xml:space="preserve">
+    <value>Calculation method</value>
+  </data>
+  <data name="VAR_VGL_SP_KAPAZITAET" xml:space="preserve">
+    <value>Capacity [kWh]</value>
+  </data>
+  <data name="VAR_VGL_SP_LEISTUNG" xml:space="preserve">
+    <value>Power [kW]</value>
+  </data>
+  <data name="VAR_VGL_SP_INVESTITION" xml:space="preserve">
+    <value>Investment [€]</value>
+  </data>
+  <data name="VAR_VGL_SP_ERTRAG" xml:space="preserve">
+    <value>Yield E_a,eq [€/a]</value>
+  </data>
+  <data name="VAR_VGL_SP_DELTAJ" xml:space="preserve">
+    <value>ΔJ [€/a]</value>
+  </data>
+  <data name="VAR_VGL_SP_AMORTISATION" xml:space="preserve">
+    <value>Payback [a]</value>
+  </data>
+  <data name="VAR_VGL_SP_NPV" xml:space="preserve">
+    <value>Net present value [€]</value>
+  </data>
+  <data name="VAR_VGL_SP_VOLLZYKLEN" xml:space="preserve">
+    <value>Full cycles [1/a]</value>
+  </data>
+  <data name="VAR_VGL_MARKER_AKTIV" xml:space="preserve">
+    <value>active</value>
+  </data>
+  <data name="VAR_VGL_BTN_AKTIV" xml:space="preserve">
+    <value>Set as active</value>
+  </data>
+  <data name="VAR_VGL_STATUS" xml:space="preserve">
+    <value>{0} variants calculated ({1} ms). Best by ΔJ: {2}.</value>
+  </data>
+  <data name="VAR_VGL_STATUS_LEER" xml:space="preserve">
+    <value>The project has no storage variant.</value>
+  </data>
+  <data name="VAR_VGL_STATUS_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>No variant could be calculated — details are in the log.</value>
+  </data>
+  <data name="VAR_VGL_KEIN_LAUF" xml:space="preserve">
+    <value>The comparison needs a completed simulation run. Please start the simulation first.</value>
+  </data>
+  <data name="VAR_VGL_FEHLER_ZEILE" xml:space="preserve">
+    <value>not calculable</value>
+  </data>
+  <data name="VAR_VGL_LEGENDE" xml:space="preserve">
+    <value>Green background: best variant by ΔJ = E_a,eq − I·a(i_z, N). Bold: the active variant — it feeds the overview and the overall simulation.</value>
+  </data>
+  <data name="VAR_VGL_HINWEIS_KEINE_AKTIVE" xml:space="preserve">
+    <value>Caution: none of these variants is marked as active. Until that is done, the overall simulation falls back to the sum of all storage plants of the project — select the desired row and press “Set as active”.</value>
+  </data>
+  <data name="VAR_VGL_PROTOKOLL" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="VAR_VGL_PROTOKOLL_ZEILE" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="VAR_VGL_DATEI" xml:space="preserve">
+    <value>VariantComparison_Project{0}.csv</value>
+  </data>
+  <data name="VAR_VGL_MSG_KEINE_AUSWAHL" xml:space="preserve">
+    <value>Please select a variant in the table first.</value>
+  </data>
+  <data name="VAR_VGL_MSG_FEHLER" xml:space="preserve">
+    <value>The variant comparison failed: {0}</value>
+  </data>
+  <data name="SP_BERECHNUNG_ANZEIGE_ARBITRAGE" xml:space="preserve">
+    <value>Price control / arbitrage</value>
+  </data>
+  <data name="ARB_OHNE_EXCEL_REFERENZ" xml:space="preserve">
+    <value>There is no Excel reference for price control - the arbitrage logic of the V7 workbook was not executable at run time. The calculation runs with the energy model.</value>
+  </data>
+  <data name="ARB_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
+    <value>The Excel compatibility mode applies to continuous use only - there is no Excel reference for price control. The calculation runs with the energy model.</value>
+  </data>
+  <data name="ARB_HINWEIS_OHNE_NETZENTLADUNG" xml:space="preserve">
+    <value>Price control without discharge to the grid: without a sales option no pairing is viable. Continuous use is calculated instead.</value>
+  </data>
+  <data name="ARB_HINWEIS_NUR_VERKAUF" xml:space="preserve">
+    <value>Green power mode: no charging from the grid. Only sales from the existing state of charge are planned.</value>
+  </data>
+  <data name="ARB_HINWEIS_OHNE_PREISREIHEN" xml:space="preserve">
+    <value>The price series for price control are missing. Continuous use is calculated instead.</value>
+  </data>
+  <data name="ARB_HINWEIS_PLAN" xml:space="preserve">
+    <value>Price control: {0} pairings, {1} sales slots, {2} candidates rejected by the path check; wear {3} ct/kWh; cycle budget {4} % used.</value>
+  </data>
+  <data name="ARB_PARAM_HINWEIS_NETZENTLADUNG" xml:space="preserve">
+    <value>Allows active sales to the grid. It takes effect with the calculation mode “Price control / arbitrage”, which derives the sales periods from the revenue and grid charging price series. Self-consumption keeps priority.</value>
+  </data>
+  <data name="ARB_PARAM_HINWEIS_LADESCHWELLE" xml:space="preserve">
+    <value>Additional limit for grid charging: charging only takes place if the grid charging price (energy price + surcharge) does not exceed this value. 0 = no limit. Effective only with the calculation mode “Price control / arbitrage”.</value>
+  </data>
+  <data name="ARB_PARAM_HINWEIS_NETZLADEAUFSCHLAG" xml:space="preserve">
+    <value>The default of 0 assumes exemption from grid fees for the storage unit. If no exemption applies, enter the full surcharge here - the economics of grid charging depend heavily on it.</value>
+  </data>
+  <data name="ARB_ERG_VERKAUF" xml:space="preserve">
+    <value>Discharge to grid (sale)</value>
+  </data>
+  <data name="ARB_ERG_BUDGET" xml:space="preserve">
+    <value>Cycle budget (annual share)</value>
+  </data>
+  <data name="ARB_ERG_BUDGET_AUSLASTUNG" xml:space="preserve">
+    <value>Cycle budget utilisation</value>
+  </data>
+  <data name="ARB_ERG_KVER" xml:space="preserve">
+    <value>Wear per kWh discharged</value>
+  </data>
+  <data name="ARB_ERG_PAARE" xml:space="preserve">
+    <value>Price control: accepted pairings</value>
+  </data>
+  <data name="ARB_ERG_AMPEL_ERSCHOEPFT" xml:space="preserve">
+    <value>The cycle budget was exhausted before the end of the year - price control stopped planning at that point.</value>
+  </data>
+  <data name="ARB_CSV_LADUNG_NETZ" xml:space="preserve">
+    <value>Grid charging [kWh]</value>
+  </data>
+  <data name="ARB_CSV_VERKAUF" xml:space="preserve">
+    <value>Grid sale [kWh]</value>
+  </data>
+  <data name="SP_LABEL_ENERGIE" xml:space="preserve">
+    <value>Energy (capacity) [kWh]:</value>
+  </data>
+  <data name="SP_LABEL_ENERGIE_KURZ" xml:space="preserve">
+    <value>Energy (capacity)</value>
+  </data>
+  <data name="SP_LABEL_MODULKOSTEN" xml:space="preserve">
+    <value>Module costs [€/kWh]:</value>
+  </data>
+  <data name="SP_PARAM_LABEL_KAPAZITAET" xml:space="preserve">
+    <value>Capacity [kWh]</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_KAPAZITAET" xml:space="preserve">
+    <value>Device data: capacity of the storage unit actually calculated (active variant); without an active variant the sum over all storage units of the project</value>
+  </data>
+  <data name="SP_PARAM_SOC_KWH" xml:space="preserve">
+    <value>= {0} kWh</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_SOC_KWH" xml:space="preserve">
+    <value>kWh equivalent of the percentage, referred to the capacity shown above</value>
+  </data>
+  <data name="SP_ERG_LAST" xml:space="preserve">
+    <value>Electricity demand (load)</value>
+  </data>
+  <data name="SP_ERG_ERZEUGUNG_PV" xml:space="preserve">
+    <value>PV generation</value>
+  </data>
+  <data name="SP_ERG_ERZEUGUNG_BHKW" xml:space="preserve">
+    <value>CHP generation</value>
+  </data>
+  <data name="SP_ERG_DIREKTVERBRAUCH" xml:space="preserve">
+    <value>Direct consumption from generation</value>
+  </data>
+  <data name="SP_ERG_OHNE_ERZEUGUNG" xml:space="preserve">
+    <value>This run contains no generation (PV/CHP): self-consumption ratio and feed-in cannot be determined, the storage can only release its initial charge.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_OHNE_ERZEUGUNG" xml:space="preserve">
+    <value>The battery storage was calculated WITHOUT any generation series ({0}). Self-consumption ratio, feed-in and charging from generation are therefore meaningless - the storage only releases its initial charge.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_PV_NICHT_AKTIV" xml:space="preserve">
+    <value>photovoltaics are not included in this run</value>
+  </data>
+  <data name="SIMENG_SPEICHER_PV_OHNE_ERTRAG" xml:space="preserve">
+    <value>photovoltaics were calculated but yield nothing</value>
+  </data>
+  <data name="SIM_KARTE_TIP_AUFKLAPPEN" xml:space="preserve">
+    <value>Show and hide device data</value>
+  </data>
+  <data name="SIM_KARTE_OHNE_GERAET" xml:space="preserve">
+    <value>device data not maintained</value>
+  </data>
+  <data name="SIM_KARTE_SP_KAPAZITAET" xml:space="preserve">
+    <value>Capacity {0} kWh</value>
+  </data>
+  <data name="SIM_KARTE_SP_LEISTUNG" xml:space="preserve">
+    <value>Power {0} kW</value>
+  </data>
+  <data name="SIM_KARTE_SP_WIRKUNGSGRAD" xml:space="preserve">
+    <value>η_RT {0}</value>
+  </data>
+  <data name="SIM_KARTE_SP_TYP" xml:space="preserve">
+    <value>Type {0}</value>
+  </data>
+  <data name="SIM_KARTE_SP_ZYKLEN" xml:space="preserve">
+    <value>N_zyk {0}</value>
+  </data>
+  <data name="SIM_KARTE_SP_VARIANTE" xml:space="preserve">
+    <value>Variant {0}</value>
+  </data>
+  <data name="SIM_KARTE_SP_BAND" xml:space="preserve">
+    <value>SoC band {0}–{1} %</value>
+  </data>
+  <data name="SIM_KARTE_SP_NETZENTLADUNG_AN" xml:space="preserve">
+    <value>Grid discharge on</value>
+  </data>
+  <data name="SIM_KARTE_SP_NETZENTLADUNG_AUS" xml:space="preserve">
+    <value>Grid discharge off</value>
+  </data>
+  <data name="SIM_KARTE_SP_OHNE_VARIANTE" xml:space="preserve">
+    <value>no active variant</value>
+  </data>
+  <data name="SIM_KARTE_PV_MODUL" xml:space="preserve">
+    <value>Module {0}</value>
+  </data>
+  <data name="SIM_KARTE_PV_ANZAHL" xml:space="preserve">
+    <value>{0} modules</value>
+  </data>
+  <data name="SIM_KARTE_PV_AUSRICHTUNG" xml:space="preserve">
+    <value>Tilt {0}° · azimuth {1}°</value>
+  </data>
+  <data name="SIM_KARTE_PV_KWP" xml:space="preserve">
+    <value>{0} kWp (calculated)</value>
   </data>
 </root>

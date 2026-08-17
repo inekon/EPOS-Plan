@@ -53,8 +53,13 @@ namespace WindowsFormsApplication1
                 {
                     z.Reihen[ZeitreihenSatz.PV_GENUTZT] = D(sim.simulation_pv.Stromproduktion);
                     z.Reihen[ZeitreihenSatz.PV_UEBERSCHUSS] = D(sim.simulation_pv.Ueberschuss);
-                    z.Reihen[ZeitreihenSatz.PV_SPEICHER_SOC] = D(sim.simulation_pv.Speicherfuellstand);
                 }
+
+                // Stromspeicher: seit AP2b eigenes Gewerk mit eigenem Flag - der SOC
+                // hing bis dahin am PV-Objekt (simulation_pv.Speicherfuellstand).
+                if (sim.bSimulationSSP)
+                    z.Reihen[ZeitreihenSatz.PV_SPEICHER_SOC] = D(sim.Speicherfuellstand_stuendlich);
+
                 z.Reihen[ZeitreihenSatz.NETZBEZUG] = Stunden(sim, sim.Rest_Strombedarf_viertelstuendlich);
 
                 // Restwärme (Referenz des letzten Gewerks → Kopie zwingend).

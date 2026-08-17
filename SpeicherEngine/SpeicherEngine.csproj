@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    SpeicherEngine - UI-freie, DB-freie Rechenbibliothek des Stromspeicher-Moduls.
+
+    Bewusste Festlegungen (Fachkonzept 8.1 / Umsetzungskonzept 2.1):
+      * TargetFramework net8.0 (NICHT -windows): keine WinForms-, keine WPF-Bindung.
+      * Kein <PlatformTarget> -> AnyCPU. Die x86-Pflicht des Hauptprojekts kommt
+        von ACE OLEDB und geht die Engine nichts an.
+      * Keine Paket- und keine Projektreferenzen. Die Engine darf weder
+        WPPlan.Core noch DataRepository noch System.Windows.Forms sehen.
+      * Nullable enable, LangVersion latest.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>SpeicherEngine</RootNamespace>
+    <AssemblyName>SpeicherEngine</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+  </PropertyGroup>
+
+</Project>

@@ -49,6 +49,8 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value)
                     item.m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
 
+                GeraetefelderLesen(item, dt, row);
+
                 _internalList.Add(item);
             }
         }
@@ -72,6 +74,7 @@ namespace WindowsFormsApplication1
             m_Degradation = 0;
             m_Ladezustand = 0;
             m_Modulkosten = 0;
+            GeraetefelderZuruecksetzen(this);
 
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -100,6 +103,8 @@ namespace WindowsFormsApplication1
 
                 if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value)
                     m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
+
+                GeraetefelderLesen(this, dt, row);
 
                 // UI-Kompatibilität wahren
                 _internalList.Clear();
@@ -130,6 +135,7 @@ namespace WindowsFormsApplication1
             m_Degradation = 0;
             m_Ladezustand = 0;
             m_Modulkosten = 0;
+            GeraetefelderZuruecksetzen(this);
 
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -159,6 +165,8 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value)
                     m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
 
+                GeraetefelderLesen(this, dt, row);
+
                 // UI-Kompatibilität wahren
                 _internalList.Clear();
                 _internalList.Add(this);
@@ -167,6 +175,48 @@ namespace WindowsFormsApplication1
             {
                 _internalList.Clear();
             }
+        }
+
+        // --- AP3: Geraetetechnik (Fachkonzept Stromspeicher 5.1) ---
+        //
+        // Die sechs neuen Spalten stehen bewusst in EINER Lesemethode statt dreimal
+        // ausgeschrieben: ReadAll und die beiden ReadSingle-Ueberladungen lesen
+        // denselben Satz, und genau solche Kopien laufen erfahrungsgemaess auseinander
+        // (siehe den korrigierten Copy-Paste-Fehler in Form_AdminStromspeicher).
+        //
+        // Namensbasiert mit Columns.Contains-Wache wie der Bestand darueber: Auf einer
+        // Datenbank vor Migrationsschritt 11 fehlen die Spalten, das Lesen bleibt
+        // trotzdem fehlerfrei und die Felder behalten ihre 0.
+
+        private static void GeraetefelderZuruecksetzen(StromspeicherModel m)
+        {
+            m.m_WirkungsgradRT = 0.0;
+            m.m_ZyklenZugesichert = 0;
+            m.m_Verschleisskosten = 0.0;
+            m.m_Leistungskosten = 0.0;
+            m.m_InvestitionFix = 0.0;
+            m.m_StandbyVerbrauch = 0.0;
+        }
+
+        private static void GeraetefelderLesen(StromspeicherModel m, DataTable dt, DataRow row)
+        {
+            if (dt.Columns.Contains("Wirkungsgrad_RT") && row["Wirkungsgrad_RT"] != DBNull.Value)
+                m.m_WirkungsgradRT = Convert.ToDouble(row["Wirkungsgrad_RT"]);
+
+            if (dt.Columns.Contains("Zyklen_Zugesichert") && row["Zyklen_Zugesichert"] != DBNull.Value)
+                m.m_ZyklenZugesichert = Convert.ToInt32(row["Zyklen_Zugesichert"]);
+
+            if (dt.Columns.Contains("Verschleisskosten") && row["Verschleisskosten"] != DBNull.Value)
+                m.m_Verschleisskosten = Convert.ToDouble(row["Verschleisskosten"]);
+
+            if (dt.Columns.Contains("Leistungskosten") && row["Leistungskosten"] != DBNull.Value)
+                m.m_Leistungskosten = Convert.ToDouble(row["Leistungskosten"]);
+
+            if (dt.Columns.Contains("Investition_Fix") && row["Investition_Fix"] != DBNull.Value)
+                m.m_InvestitionFix = Convert.ToDouble(row["Investition_Fix"]);
+
+            if (dt.Columns.Contains("Standby_Verbrauch") && row["Standby_Verbrauch"] != DBNull.Value)
+                m.m_StandbyVerbrauch = Convert.ToDouble(row["Standby_Verbrauch"]);
         }
 
         // --- STAMM -> PROJEKT KOPIE (analog HeizkesselCtrl/BHKWCtrl) ---
@@ -193,6 +243,8 @@ namespace WindowsFormsApplication1
         // WErzeugerModel.ID_SP tragen muss (Beziehung verweist auf die Projekt-Tabelle).
         public int CopyFromStamm(int stammId, int idProjekt)
         {
+            StelleGeraetespaltenSicher();   // AP3-Spalten, bevor sie namentlich im INSERT stehen
+
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
@@ -217,9 +269,13 @@ namespace WindowsFormsApplication1
                 int neueId = DataRepository.GetMaxID("Tab_Stromspeicher") + 1;
 
                 // ReadOnly wird NICHT uebernommen (existiert in der Projekt-Tabelle nicht).
+                // AP3: die sechs Geraetefelder wandern mit - sie beschreiben das Geraet und
+                // muessen in der Projektkopie stehen, sonst rechnete die Simulation mit den
+                // Nullen der Kopie statt mit den Katalogwerten.
                 string sql = @"INSERT INTO Tab_Stromspeicher
-                    (ID, ID_Projekt, Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    (ID, ID_Projekt, Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten,
+                     Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 OleDbParameter[] ps = {
                     new OleDbParameter("@id", neueId),
@@ -230,7 +286,13 @@ namespace WindowsFormsApplication1
                     P("@ene", ColOrNull(s, "Energie")),
                     P("@deg", ColOrNull(s, "Degradation")),
                     P("@lad", ColOrNull(s, "Ladezustand")),
-                    P("@mod", ColOrNull(s, "Modulkosten"))
+                    P("@mod", ColOrNull(s, "Modulkosten")),
+                    P("@eta", ColOrNull(s, "Wirkungsgrad_RT")),
+                    P("@nzyk", ColOrNull(s, "Zyklen_Zugesichert")),
+                    P("@cver", ColOrNull(s, "Verschleisskosten")),
+                    P("@cpow", ColOrNull(s, "Leistungskosten")),
+                    P("@ifix", ColOrNull(s, "Investition_Fix")),
+                    P("@stby", ColOrNull(s, "Standby_Verbrauch"))
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -258,9 +320,74 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@idProj", idProjekt));
         }
 
+        /// <summary>
+        /// Schreibt Nennkapazitaet und Lade-/Entladeleistung eines Projektspeichers
+        /// (AP8: Uebernahme des Bestpunkts der Auslegungsoptimierung).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Zielgenaues UPDATE mit genau zwei Spalten</b> statt eines
+        /// Vollsatz-Schreibens: Die Auslegungsoptimierung veraendert ausschliesslich
+        /// C_nom und P. Ein UPDATE ueber alle 15 Geraetespalten wuerde jeden Wert
+        /// mitschreiben, der zwischen dem Lesen und dem Uebernehmen anderswo geaendert
+        /// wurde - und es wuerde auf einer Datenbank vor Migrationsschritt 11a am
+        /// Fehlen der sechs neuen Spalten scheitern. Beides ist hier vermeidbar.
+        /// </para>
+        /// <para>
+        /// Der Schluessel ist die <c>Tab_Stromspeicher.ID</c> des PROJEKT-Datensatzes
+        /// (nicht die STAMM-ID) - derselbe Wert, den <c>Tab_Energieanlagen.ID_SP</c>
+        /// traegt. Der Stammkatalog bleibt unberuehrt: Eine Auslegungsentscheidung
+        /// gehoert zum Projekt, nicht in die Auslieferungsdaten.
+        /// </para>
+        /// </remarks>
+        /// <param name="id"><c>Tab_Stromspeicher.ID</c> des Projektdatensatzes.</param>
+        /// <param name="energieKwh">Nennkapazitaet C_nom [kWh].</param>
+        /// <param name="leistungKw">Lade-/Entladeleistung P [kW].</param>
+        /// <returns><c>true</c> bei Erfolg.</returns>
+        public bool UpdateGeraetegroesse(int id, double energieKwh, double leistungKw)
+        {
+            if (id <= 0) return false;
+
+            string sql = "UPDATE Tab_Stromspeicher SET Energie = ?, Leistung = ? WHERE ID = ?";
+
+            return DataRepository.ExecuteSQL(sql,
+                new OleDbParameter("@ene", energieKwh),
+                new OleDbParameter("@lei", leistungKw),
+                new OleDbParameter("@id", id));
+        }
+
         private static OleDbParameter P(string name, object value)
         {
             return new OleDbParameter(name, value ?? DBNull.Value);
+        }
+
+        private static bool _geraetespaltenGeprueft;
+
+        /// <summary>
+        /// AP3-Rueckfallebene fuer die sechs Geraetespalten in Tab_Stromspeicher und
+        /// Tab_Stromspeicher_STAMM.
+        ///
+        /// Der regulaere Weg ist Schritt 11a der SchemaMigration beim Programmstart.
+        /// Diese Vorsorge steht daneben, weil INSERT und UPDATE die Spalten NAMENTLICH
+        /// auffuehren: Fehlen sie, scheitert nicht nur die neue Groesse, sondern der
+        /// ganze Datensatz. Dasselbe Muster und dieselbe Begruendung wie bei
+        /// ErgebnisCtrl.StelleKesselSpaltenSicher.
+        ///
+        /// Die Spaltenliste kommt aus SchemaKatalog - Migration und Rueckfallebene
+        /// fuehren keine zweite Liste. Prozessweit genau ein Versuch, auch bei
+        /// Fehlschlag (dann meldet der folgende Datenbankzugriff den echten Grund).
+        /// </summary>
+        public static void StelleGeraetespaltenSicher()
+        {
+            if (_geraetespaltenGeprueft) return;
+            _geraetespaltenGeprueft = true;
+
+            try
+            {
+                foreach (SchemaSpalte sp in SchemaKatalog.Schritt11_Stromspeicher)
+                    WaermequelleClass.SpalteSicherstellen(sp.Tabelle, sp.Name, sp.TypDefinition);
+            }
+            catch { /* best effort - die Spalten existieren dann ggf. schon */ }
         }
 
         private static object ColOrNull(DataRow row, string col)

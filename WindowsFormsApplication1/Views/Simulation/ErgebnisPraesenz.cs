@@ -67,6 +67,16 @@ namespace WindowsFormsApplication1
         public bool Speicher;
 
         /// <summary>
+        /// Stromspeicher mit Rechenergebnis im Lauf (AP3b).
+        ///
+        /// Bewusst NICHT über den Anlagenbestand (Punkt 4 der Regel): Ein
+        /// Speichersegment im Strom-Donut hat nur dann eine Größe, wenn die
+        /// <c>SpeicherEngine</c> gerechnet hat. Ein vorhandener, aber nicht gerechneter
+        /// Speicher (Tool 6 aus, kein Lauf) hätte sonst ein Segment der Größe 0.
+        /// </summary>
+        public bool Stromspeicher;
+
+        /// <summary>
         /// Rückfallebene: alles sichtbar. Für Aufrufer ohne <see cref="SimulationControl"/>
         /// und für den Zustand vor dem ersten Lauf — dort darf nichts verschwinden, was
         /// später erscheinen soll.
@@ -81,7 +91,8 @@ namespace WindowsFormsApplication1
                 Solarthermie = true,
                 BHKW = true,
                 Photovoltaik = true,
-                Speicher = true
+                Speicher = true,
+                Stromspeicher = true
             };
         }
 
@@ -132,6 +143,10 @@ namespace WindowsFormsApplication1
             // Die Füllstandsserien entstehen aus der Speicherliste des Laufs - ohne sie
             // gibt es nichts anzuzeigen, unabhängig vom Anlagenbestand.
             p.Speicher = (sim.AlleSpeicher() != null && sim.AlleSpeicher().Count > 0);
+
+            // Der Stromspeicher zählt allein über das Engine-Ergebnis (AP3b) - es ist
+            // die einzige Quelle der Entladeenergie, aus der das Donut-Segment entsteht.
+            p.Stromspeicher = (sim.bSimulationSSP && sim.Speicherergebnis != null);
 
             return p;
         }

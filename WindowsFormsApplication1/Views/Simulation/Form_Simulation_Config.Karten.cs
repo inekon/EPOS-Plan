@@ -85,6 +85,14 @@ namespace WindowsFormsApplication1
         private int _offenerSpeicher;
 
         /// <summary>
+        /// ABNAHMEBEFUND 3 — aufgeklappte Karte der Strom-/Speicherseite als
+        /// <c>Tab_Energieanlagen.ID_Type</c> (<c>PV_TYP</c> bzw. <c>SP_TYP</c>);
+        /// 0 = keine. Dieselbe Regel wie bei den Wärmespeichern: Es ist immer höchstens
+        /// EINE Karte offen, und die Karte selbst kennt ihre Nachbarn nicht.
+        /// </summary>
+        private int _offeneStromgruppe;
+
+        /// <summary>
         /// Quellpuffer-ID → Anlagen, die ihn als Wärmequelle nutzen („Quelle für",
         /// Konzept 3a). Wird je Auffrischung EINMAL gefüllt (<see cref="QuellnutzerSammeln"/>).
         /// </summary>
@@ -710,6 +718,18 @@ namespace WindowsFormsApplication1
                     CheckBox h = haken;
                     karte.Entfernen += delegate { StromAuswahlSetzen(f, h, ""); };
 
+                    // ABNAHMEBEFUND 3: Die beiden Stromkarten zeigten bis hierher nur den
+                    // Anlagennamen. Die Gerätedaten stehen jetzt in einem Aufklappbereich
+                    // - lesend, wie die ganze Seite; gepflegt wird weiter im Katalog bzw.
+                    // auf der Parameterseite der Simulation.
+                    //
+                    // Der ID_Type im Tag ist die Gruppenkennung, an der die
+                    // "höchstens eine offen"-Regel die Karten unterscheidet. Die
+                    // Wärmekarten tragen dort ihre AnlagenInfo und bleiben deshalb
+                    // unberührt.
+                    karte.Tag = idType;
+                    karte.Umschalten += StromKarte_Umschalten;
+
                     karte.Setzen(new ErzeugerKarte.Aufbau
                     {
                         Titel = namen.Count > 0
@@ -718,6 +738,8 @@ namespace WindowsFormsApplication1
                                             string.Join(" · ", namen.ToArray()))
                             : ErzeugerKatalog.Anzeige(dbWert),
                         Chips = chips,
+                        Detailchips = StromDetailchips(idType),
+                        Aufgeklappt = _offeneStromgruppe == idType,
                         Umschaltbar = true
                     });
                     continue;
@@ -728,6 +750,245 @@ namespace WindowsFormsApplication1
                 string wert = dbWert;
                 VerfuegbarKarte(dbWert, idType, delegate { StromAuswahlSetzen(f2, h2, wert); });
             }
+        }
+
+        // --- Aufklappbare Gerätedaten der Strom- und Speicherkarte (Abnahmebefund 3) ---
+        //
+        // AUSGANGSLAGE. Die beiden Gruppen „Stromerzeuger" und „Energiespeicher" trugen
+        // nur den Anlagennamen. Was die Simulation daraus macht - Kapazität, Leistung,
+        // Wirkungsgrad, Betriebsart, SoC-Band bzw. Modul, Anzahl, Ausrichtung - stand
+        // nirgends auf dieser Seite, obwohl genau sie die Konfiguration zeigen soll.
+        //
+        // NUR LESEND, wie die ganze Kartenansicht (Konzept 3: „Lesefläche, keine
+        // Parallel-Editierwelt"): Gepflegt werden die Gerätedaten im Speicher- bzw.
+        // PV-Katalog, die Betriebsführung auf der Parameterseite der Simulation.
+        //
+        // DATENZUGRIFF über die vorhandenen Controller (StromspeicherCtrl,
+        // StromspeicherVarianteCtrl, PhotovoltaikCtrl, WErzeugerCtrl) - kein RecordSet in
+        // neuem Code (CLAUDE.md).
+
+        /// <summary>
+        /// Schaltet den Detailbereich einer Stromkarte auf oder zu — Zeile für Zeile
+        /// derselbe Ablauf wie <see cref="SpeicherKarte_Umschalten"/>.
+        /// </summary>
+        /// <remarks>
+        /// Umgeschaltet wird an den VORHANDENEN Karten, die Spalte wird NICHT neu
+        /// aufgebaut. Das ist nicht nur schneller: Ein Neuaufbau entsorgt genau die
+        /// Karte, aus deren Klick-Ereignis dieser Aufruf kommt (siehe
+        /// <c>ErzeugerKarte.Melden</c>).
+        /// </remarks>
+        private void StromKarte_Umschalten(object sender, EventArgs e)
+        {
+            ErzeugerKarte karte = sender as ErzeugerKarte;
+            if (karte == null || !(karte.Tag is int)) return;
+
+            _offeneStromgruppe = karte.Aufgeklappt ? 0 : (int)karte.Tag;
+
+            // Es ist immer höchstens eine Karte offen (Konzept 3a).
+            flow_Erzeuger.SuspendLayout();
+            try
+            {
+                foreach (Control c in flow_Erzeuger.Controls)
+                {
+                    ErzeugerKarte k = c as ErzeugerKarte;
+                    if (k != null && k.Tag is int)
+                        k.Aufgeklappt = (int)k.Tag == _offeneStromgruppe;
+                }
+            }
+            finally
+            {
+                flow_Erzeuger.ResumeLayout();
+                KartenBreiteAnpassen(flow_Erzeuger);
+            }
+        }
+
+        /// <summary>
+        /// Die Detailchips der Strom- bzw. Speicherkarte. Leere Liste = kein
+        /// Aufklappbereich (die Karte sieht dann aus wie bisher).
+        /// </summary>
+        private List<ErzeugerKarte.ChipDaten> StromDetailchips(int idType)
+        {
+            if (idType == WizardItemClass.SP_TYP) return SpeicherDetailchips();
+            if (idType == WizardItemClass.PV_TYP) return PvDetailchips();
+            return new List<ErzeugerKarte.ChipDaten>();
+        }
+
+        /// <summary>
+        /// Gerätedaten aller Speicheranlagen des Projekts plus die Betriebsführung der
+        /// AKTIVEN Variante (Fachkonzept 5.1/7.3) — das ist die Einheit, die die
+        /// Gesamtsimulation rechnet.
+        /// </summary>
+        private List<ErzeugerKarte.ChipDaten> SpeicherDetailchips()
+        {
+            List<ErzeugerKarte.ChipDaten> chips = new List<ErzeugerKarte.ChipDaten>();
+            if (m_ID_Projekt <= 0) return chips;
+
+            System.Globalization.CultureInfo kultur = System.Globalization.CultureInfo.CurrentCulture;
+
+            WErzeugerCtrl anlagen = new WErzeugerCtrl();
+            anlagen.ReadAllFilter("ID_Projekt=" + m_ID_Projekt +
+                                  " and ID_Type=" + WizardItemClass.SP_TYP);
+
+            List<int> gezeigt = new List<int>();
+            for (int i = 0; i < anlagen.rows; i++)
+            {
+                int idGeraet = anlagen.items[i].ID_SP;
+                if (idGeraet <= 0 || gezeigt.Contains(idGeraet)) continue;
+                gezeigt.Add(idGeraet);
+
+                StromspeicherCtrl geraet = new StromspeicherCtrl();
+                geraet.ReadSingle(idGeraet);
+                if (geraet.m_ID <= 0) continue;
+
+                Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_SP_KAPAZITAET,
+                                          geraet.m_Energie.ToString("N2", kultur)),
+                     ErzeugerKarte.ChipStil.Senke);
+                Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_SP_LEISTUNG,
+                                          geraet.m_Leistung.ToString("N2", kultur)));
+
+                double etaRt = geraet.m_WirkungsgradRT > 0.0
+                    ? geraet.m_WirkungsgradRT : StromspeicherModel.WIRKUNGSGRAD_RT_VORGABE;
+                Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_SP_WIRKUNGSGRAD,
+                                          etaRt.ToString("N2", kultur)));
+
+                if (!string.IsNullOrEmpty(geraet.m_szTyp))
+                    Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_SP_TYP, geraet.m_szTyp),
+                         ErzeugerKarte.ChipStil.Flaeche);
+
+                if (geraet.m_ZyklenZugesichert > 0)
+                    Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_SP_ZYKLEN,
+                                              geraet.m_ZyklenZugesichert.ToString("N0", kultur)));
+            }
+
+            if (chips.Count == 0)
+            {
+                Chip(chips, MyResource.Resource.SIM_KARTE_OHNE_GERAET, ErzeugerKarte.ChipStil.Flaeche);
+                return chips;
+            }
+
+            SpeicherVariantenchips(chips, kultur);
+            return chips;
+        }
+
+        /// <summary>
+        /// Die Betriebsführung der aktiven Variante als Chips; ohne aktive Variante ein
+        /// Hinweis. Genau diese Unterscheidung entscheidet auch im Rechenweg, ob die
+        /// Simulation eine Variante rechnet oder auf die Aggregation zurückfällt
+        /// (<c>StromspeicherSimCtrl.LeseParameter</c>).
+        /// </summary>
+        private void SpeicherVariantenchips(List<ErzeugerKarte.ChipDaten> chips,
+                                            System.Globalization.CultureInfo kultur)
+        {
+            StromspeicherVarianteModel variante = null;
+            try
+            {
+                variante = new StromspeicherVarianteCtrl().ReadAktiveVariante(m_ID_Projekt);
+            }
+            catch (Exception ex)
+            {
+                // Die Karte ist Beiwerk - sie darf den Dialog nicht kippen, wenn die
+                // Variantentabelle (Migrationsschritt 11b) noch fehlt.
+                Console.WriteLine("Die aktive Speichervariante konnte nicht gelesen werden: " + ex.Message);
+            }
+
+            if (variante == null)
+            {
+                Chip(chips, MyResource.Resource.SIM_KARTE_SP_OHNE_VARIANTE,
+                     ErzeugerKarte.ChipStil.Warnung);
+                return;
+            }
+
+            Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_SP_VARIANTE,
+                                      BetriebsartAnzeige(variante.Betriebsart)),
+                 ErzeugerKarte.ChipStil.Quelle);
+            Chip(chips, BerechnungsartAnzeige(variante.Berechnungsart),
+                 ErzeugerKarte.ChipStil.Quelle);
+            Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_SP_BAND,
+                                      variante.SoC_Min_Prozent.ToString("N0", kultur),
+                                      variante.SoC_Max_Prozent.ToString("N0", kultur)));
+            Chip(chips, variante.Netzentladung
+                     ? MyResource.Resource.SIM_KARTE_SP_NETZENTLADUNG_AN
+                     : MyResource.Resource.SIM_KARTE_SP_NETZENTLADUNG_AUS,
+                 ErzeugerKarte.ChipStil.Flaeche);
+        }
+
+        /// <summary>
+        /// Gerätedaten aller PV-Anlagen des Projekts: Modul, Anzahl, Ausrichtung und die
+        /// rechnerische Spitzenleistung.
+        /// </summary>
+        /// <remarks>
+        /// <c>Tab_Energieanlagen.PV_Leistung</c> ist trotz seines Namens die
+        /// MODULANZAHL — so liest es <c>SimulationPV.Berechnung</c> (Fläche =
+        /// Breite · Länge · PV_Leistung). Die kWp-Angabe entsteht daraus mit der
+        /// Modulleistung <c>Tab_PV.Leistung</c> [W] und ist deshalb als „rechnerisch"
+        /// gekennzeichnet: Sie steht nirgends gepflegt in der Datenbank.
+        /// </remarks>
+        private List<ErzeugerKarte.ChipDaten> PvDetailchips()
+        {
+            List<ErzeugerKarte.ChipDaten> chips = new List<ErzeugerKarte.ChipDaten>();
+            if (m_ID_Projekt <= 0) return chips;
+
+            System.Globalization.CultureInfo kultur = System.Globalization.CultureInfo.CurrentCulture;
+
+            WErzeugerCtrl anlagen = new WErzeugerCtrl();
+            anlagen.ReadAllFilter("ID_Projekt=" + m_ID_Projekt +
+                                  " and ID_Type=" + WizardItemClass.PV_TYP);
+
+            for (int i = 0; i < anlagen.rows; i++)
+            {
+                WErzeugerModel anlage = anlagen.items[i];
+
+                PhotovoltaikCtrl modul = new PhotovoltaikCtrl();
+                if (anlage.ID_PV > 0) modul.ReadSingle(anlage.ID_PV);
+
+                if (!string.IsNullOrEmpty(modul.m_szName))
+                    Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_PV_MODUL, modul.m_szName),
+                         ErzeugerKarte.ChipStil.Flaeche);
+
+                long anzahl = (long)anlage.PV_Leistung;
+                Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_PV_ANZAHL,
+                                          anzahl.ToString("N0", kultur)),
+                     ErzeugerKarte.ChipStil.Quelle);
+
+                Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_PV_AUSRICHTUNG,
+                                          anlage.m_Neigung.ToString(kultur),
+                                          anlage.m_Azimut.ToString(kultur)));
+
+                if (modul.m_Leistung > 0.0 && anzahl > 0)
+                    Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_PV_KWP,
+                                              (modul.m_Leistung * anzahl / 1000.0).ToString("N2", kultur)));
+            }
+
+            if (chips.Count == 0)
+                Chip(chips, MyResource.Resource.SIM_KARTE_OHNE_GERAET, ErzeugerKarte.ChipStil.Flaeche);
+
+            return chips;
+        }
+
+        /// <summary>Anzeigetext einer Betriebsart (Persistenzwert → Sprachschicht).</summary>
+        private static string BetriebsartAnzeige(string dbWert)
+        {
+            return dbWert == DbWerte.SP_BETRIEBSART_GRAUSTROM
+                ? MyResource.Resource.SP_BETRIEBSART_ANZEIGE_GRAUSTROM
+                : MyResource.Resource.SP_BETRIEBSART_ANZEIGE_GRUENSTROM;
+        }
+
+        /// <summary>Anzeigetext einer Berechnungsart (Persistenzwert → Sprachschicht).</summary>
+        private static string BerechnungsartAnzeige(string dbWert)
+        {
+            if (dbWert == DbWerte.SP_BERECHNUNG_NACHTNUTZUNG)
+                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG;
+            if (dbWert == DbWerte.SP_BERECHNUNG_ARBITRAGE)
+                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ARBITRAGE;
+            return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG;
+        }
+
+        /// <summary>Hängt einen Detailchip an - leere Texte werden übergangen.</summary>
+        private static void Chip(List<ErzeugerKarte.ChipDaten> chips, string text,
+                                 ErzeugerKarte.ChipStil stil = ErzeugerKarte.ChipStil.Neutral)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            chips.Add(new ErzeugerKarte.ChipDaten { Text = text, Stil = stil });
         }
 
         /// <summary>Eine gestrichelte Karte „im Katalog wählbar, nicht aufgenommen".</summary>

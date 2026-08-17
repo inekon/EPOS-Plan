@@ -37,6 +37,14 @@ namespace WindowsFormsApplication1
         private int id_conversion; // Speichert die ID der aktuell ausgewählten Umrechnung
         private bool _isUpdatingUi = false; // Verhindert Endlosschleifen bei automatischer UI-Anpassung
 
+        /// <summary>
+        /// Aufschlagsblock des Stromtarifs (AP4, Fachkonzept 4.2/4.3) — nur beim
+        /// Strom-Carrier belegt, sonst <c>null</c>. Netzentgelt, Umlagen, Stromsteuer,
+        /// Konzessionsabgabe und Vertrieb gibt es bei Gas oder Fernwärme nicht; der
+        /// Block wird deshalb nicht ausgegraut, sondern gar nicht erst angelegt.
+        /// </summary>
+        private ucStromAufschlaege _aufschlaege;
+
         public ucFuelSettings(int projectId, EnergyCarrier carrier)
         {
             InitializeComponent();
@@ -89,6 +97,41 @@ namespace WindowsFormsApplication1
             }
 
             LoadData();
+            BaueAufschlagsblock();
+        }
+
+        /// <summary>
+        /// Hängt beim Strom-Carrier den Aufschlagsblock unter die Preishistorie
+        /// (AP4, Fachkonzept 4.2/4.3) und wächst um dessen Höhe.
+        /// </summary>
+        /// <remarks>
+        /// Programmatisch angehängt statt in den Designer eingebaut: <c>ucFuelSettings</c>
+        /// gilt für JEDEN Energieträger, der Aufschlagsblock nur für Strom — und
+        /// Designer-Dateien werden im Projekt nicht von Hand editiert (CLAUDE.md). Der
+        /// Bestandsdialog bleibt dadurch unverändert, für alle anderen Träger auch in
+        /// seiner Höhe.
+        /// </remarks>
+        private void BaueAufschlagsblock()
+        {
+            if (_carrier == null) return;
+            if (!string.Equals(_carrier.PricingModel, StromAufschlagCtrl.PRICING_MODEL_STROM,
+                               StringComparison.OrdinalIgnoreCase))
+                return;
+
+            try
+            {
+                _aufschlaege = new ucStromAufschlaege(_projectId, _carrier.ID);
+                _aufschlaege.Location = new Point(17, this.Height + 8);
+                this.Height += ucStromAufschlaege.HOEHE + 16;
+                this.Controls.Add(_aufschlaege);
+            }
+            catch (Exception ex)
+            {
+                // Ein fehlender Aufschlagsblock darf die Preispflege nicht blockieren -
+                // etwa auf einer Datenbank, deren Migrationsschritt 12 nicht durchlief.
+                Console.WriteLine("Der Aufschlagsblock konnte nicht aufgebaut werden: " + ex.Message);
+                _aufschlaege = null;
+            }
         }
 
         private void LoadData()
@@ -416,6 +459,10 @@ namespace WindowsFormsApplication1
                     new OleDbParameter("@nox", currentNOx)
                 });
             }
+
+            // AP4: Der Aufschlagsblock schreibt in dieselbe Zeile und deshalb ERST
+            // JETZT - vor dem Upsert oben gäbe es beim ersten Speichern noch keine.
+            if (_aufschlaege != null) _aufschlaege.Uebernehmen();
         }
 
         private void btn_Save_Click(object sender, EventArgs e)
