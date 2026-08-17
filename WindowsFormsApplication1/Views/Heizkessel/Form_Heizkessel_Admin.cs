@@ -99,7 +99,10 @@ namespace WindowsFormsApplication1
             else if (comboBox_Brennstoffart.Text == "Strom") szFilter = "Brennstoff=13";
             else if (comboBox_Brennstoffart.Text == "Pellets") szFilter = "Brennstoff=15";
             else if (comboBox_Brennstoffart.Text == "Rapsöl") szFilter = "Brennstoff=16";
-            else if (comboBox_Brennstoffart.Text == "Sonstige") szFilter = "Brennstoff=23";
+            else if (comboBox_Brennstoffart.Text == "Tierische Fette") szFilter = "Brennstoff=17";
+            else if (comboBox_Brennstoffart.Text == "Fernwärme") szFilter = "Brennstoff=23";
+            else if (comboBox_Brennstoffart.Text == "Sonstige Energieträger") szFilter = "Brennstoff=24";
+            else if (comboBox_Brennstoffart.Text == "Wasserstoff") szFilter = "Brennstoff=25";
             else if (comboBox_Brennstoffart.Text == "Alle") szFilter = "Brennstoff Like '%'";
 
             listBox_Kessel_DB.Items.Clear();
