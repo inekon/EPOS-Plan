@@ -4593,7 +4593,7 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>280</value>
   </data>
   <data name="label54.Text" xml:space="preserve">
-    <value>Untere Leistungsgrenze der Module [50%]</value>
+    <value>Untere Leistungsgrenze der Module [30%]</value>
   </data>
   <data name="&gt;&gt;label54.Name" xml:space="preserve">
     <value>label54</value>
@@ -9256,5 +9256,19 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
     <value>System.Windows.Forms.Form, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <!-- BHKW-ANZEIGE-NACHZUG: drei Anzeigetexte der BHKW-Ergebnisseite. Sie stehen hier
+       und nicht im Katalog MyResource\Resource.resx, weil die Steuerelemente bzw. die
+       Chartserie programmatisch entstehen und der Katalog zur Umsetzungszeit nicht
+       verfuegbar war. Gelesen ueber Form_Simulation_Detail.TextAusFormResx; dort steht
+       derselbe Wortlaut als Rueckfall, falls ein Eintrag fehlt. -->
+  <data name="SIMDET_BHKW_SPEICHERLADUNG" xml:space="preserve">
+    <value>davon in den Speicher:</value>
+  </data>
+  <data name="SIMDET_BHKW_SPEICHERDECKUNG" xml:space="preserve">
+    <value>aus dem Speicher gedeckt:</value>
+  </data>
+  <data name="SIMDET_BHKW_SERIE_SPEICHERLADUNG" xml:space="preserve">
+    <value>Speicherladung</value>
   </data>
 </root>

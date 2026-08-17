@@ -346,12 +346,19 @@ namespace WindowsFormsApplication1
         /// Der Bezeichner wird über <see cref="EindeutigerBezeichner"/> geführt.
         /// </summary>
         /// <returns>ID des neuen Puffers, -1 bei Fehler.</returns>
+        /// <param name="schwelleReserve">
+        /// Mindestfüllstand/Notreserve [%] (Paket BHKW-Regulär). VORBELEGT, damit die
+        /// Aufrufer aus dem Katalogweg (<see cref="CopyFromStammNeu"/>) und aus der
+        /// Migration unverändert bleiben und ein neu angelegter Puffer dieselbe Reserve
+        /// bekommt wie ein migrierter.
+        /// </param>
         public static int ProjektPufferAnlegen(int idProjekt, string bezeichner, string hersteller,
                                                string speichertyp, int volumenLiter, double verluste,
                                                double investitionskosten, string verwendung,
                                                int? vorlauf, int? ruecklauf,
                                                double schwelleEin, double schwelleAus,
-                                               double schwelleAusNachrang, int entladeprio)
+                                               double schwelleAusNachrang, int entladeprio,
+                                               double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT)
         {
             if (idProjekt <= 0 || string.IsNullOrEmpty(bezeichner)) return -1;
 
@@ -366,7 +373,8 @@ namespace WindowsFormsApplication1
                                       neueId, idProjekt, name, hersteller, speichertyp,
                                       volumenLiter, verluste, investitionskosten, verwendung,
                                       vorlauf, ruecklauf,
-                                      schwelleEin, schwelleAus, schwelleAusNachrang, entladeprio)) < 0)
+                                      schwelleEin, schwelleAus, schwelleAusNachrang, entladeprio,
+                                      schwelleReserve)) < 0)
                 return -1;
 
             // Anlagenzeile nachtragen - eine je Projekt + Bezeichner (Regel R4 der Migration)
@@ -383,7 +391,8 @@ namespace WindowsFormsApplication1
                                                 double verluste, double investitionskosten,
                                                 string verwendung, int? vorlauf, int? ruecklauf,
                                                 double schwelleEin, double schwelleAus,
-                                                double schwelleAusNachrang, int entladeprio)
+                                                double schwelleAusNachrang, int entladeprio,
+                                                double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT)
         {
             if (idPuffer <= 0 || string.IsNullOrEmpty(bezeichner)) return false;
 
@@ -400,7 +409,8 @@ namespace WindowsFormsApplication1
                                       idPuffer, name, hersteller, speichertyp, volumenLiter,
                                       verluste, investitionskosten, verwendung,
                                       vorlauf, ruecklauf,
-                                      schwelleEin, schwelleAus, schwelleAusNachrang, entladeprio)) < 0)
+                                      schwelleEin, schwelleAus, schwelleAusNachrang, entladeprio,
+                                      schwelleReserve)) < 0)
                 return false;
 
             // Die Anlagenzeile führt denselben Bezeichner - sonst greift
@@ -471,6 +481,13 @@ namespace WindowsFormsApplication1
         /// Anlagen, die den Puffer als Quelle oder Senke referenzieren — Grundlage für
         /// die Blockade beim Entfernen (Konzept 5.2, Konsistenzregel). Je Treffer ein
         /// fertiger Anzeigetext.
+        ///
+        /// PAKET PARALLELVERBUND: Eine VERBUNDMITGLIEDSCHAFT (<c>Z_AnlagePufferVerbund</c>)
+        /// ist eine Referenz wie jede andere und erscheint hier mit derselben Wirkung. Sie
+        /// muss es sein: Verschwindet ein Mitglied stillschweigend, sinkt die gerechnete
+        /// Kapazität des Verbunds, ohne dass es jemand erfährt. In der Datenbank sichert
+        /// das zusätzlich die restriktive Beziehung <c>FK_Verbund_Puffer</c> ab; hier steht
+        /// die Aussage, die der Anwender liest.
         /// </summary>
         public static List<string> ReferenzenAufPuffer(int idPuffer)
         {
@@ -498,6 +515,19 @@ namespace WindowsFormsApplication1
                 if (StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer")) == idPuffer) rollen.Add("Wärmequelle");
 
                 treffer.Add(bezeichner + " (" + erzeuger + ") - " + string.Join(", ", rollen));
+            }
+
+            // PAKET PARALLELVERBUND: die Verbundmitgliedschaften. Eigene Abfrage statt
+            // eines vierten OR-Glieds oben - die Zuordnung steht in einer ANDEREN Tabelle,
+            // und ein OUTER JOIN nur für den Löschhinweis wäre die teurere Lösung für
+            // dasselbe Ergebnis. Die Rolle heißt „Verbundmitglied", damit der Anwender in
+            // der Blockademeldung sofort sieht, dass es nicht um Haupt- oder Zweitsenke
+            // geht.
+            foreach (KeyValuePair<int, string> m in
+                     AnlagePufferVerbundCtrl.MitgliedschaftenAufPuffer(idPuffer))
+            {
+                string zeile = m.Value + " - Verbundmitglied";
+                if (!treffer.Contains(zeile)) treffer.Add(zeile);
             }
 
             return treffer;
@@ -939,10 +969,18 @@ namespace WindowsFormsApplication1
         /// anschliessende DELETE nicht an der restriktiven Beziehung scheitert.
         /// Still: fehlt eine der Spalten (Datenbank noch nicht migriert), wird der
         /// Fehler uebergangen.
+        ///
+        /// PAKET PARALLELVERBUND: Die Verbundzeilen werden GELOESCHT, nicht genullt - eine
+        /// Zuordnungszeile ohne Puffer hat keine Bedeutung (dieselbe Behandlung wie
+        /// Z_ProjektPufferSp in ProjektPufferEntfernen). Ohne diesen Schritt scheiterte das
+        /// DELETE FROM Tab_Pufferspeicher an der restriktiven Beziehung FK_Verbund_Puffer,
+        /// genau wie es ohne das Nullen von WS_ID_Puffer scheitern wuerde.
         /// </summary>
         private static void ReferenzenLoesen(List<int> pufferIds)
         {
             if (pufferIds == null || pufferIds.Count == 0) return;
+
+            AnlagePufferVerbundCtrl.ReferenzenEntfernen(pufferIds);
 
             string liste = string.Join(",", pufferIds);
             try

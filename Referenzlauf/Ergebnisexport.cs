@@ -141,15 +141,30 @@ namespace WindowsFormsApplication1.Referenzlauf
                 dateien += Vektor(zielOrdner, "pv_produktion_theoretisch.csv", pv.Stromproduktion_Theoretisch, summen);
                 dateien += Vektor(zielOrdner, "pv_ueberschuss.csv", pv.Ueberschuss, summen);
                 dateien += Vektor(zielOrdner, "pv_reststrom.csv", pv.Reststrom, summen);
-                dateien += Vektor(zielOrdner, "pv_speicherfuellstand.csv", pv.Speicherfuellstand, summen);
                 dateien += Vektor(zielOrdner, "pv_strombedarf.csv", pv.Strombedarf_stuendlich, summen);
             }
 
             // --- Stromspeicher --------------------------------------------------------------
-            if (sim.bSimulationSSP && sim.simulation_ssp != null)
+            //
+            // NACHZUG (Paket BHKW-Regulär, Nebenbefund): Dieses Werkzeug liegt NICHT in der
+            // .sln und ist beim Stromspeicher-Paket AP2b nicht mitgezogen worden. Es griff
+            // bis hierher auf zwei Größen zu, die AP2b abgelöst hat:
+            //
+            //   pv.Speicherfuellstand      -> SimulationControl.Speicherfuellstand_stuendlich
+            //   sim.simulation_ssp.Strom…  -> SimulationControl.Speicherfuellstand_viertelstuendlich
+            //                                 (der SimulationSSP-Stub ist durch die
+            //                                  SpeicherEngine ersetzt)
+            //
+            // Ohne diesen Nachzug ließ sich das Werkzeug nicht mehr übersetzen und damit
+            // KEIN Referenzlauf mehr fahren. Der Eingriff bleibt auf die Umlenkung der
+            // Spaltenquellen beschränkt; die Dateinamen behalten ihre bisherigen Namen,
+            // damit der Vergleich mit älteren Referenzständen möglich bleibt.
+            if (sim.bSimulationSSP)
             {
                 dateien += Vektor(zielOrdner, "ssp_gespeichert_viertelstunde.csv",
-                                  sim.simulation_ssp.Stromgespeichert, summen);
+                                  sim.Speicherfuellstand_viertelstuendlich, summen);
+                dateien += Vektor(zielOrdner, "pv_speicherfuellstand.csv",
+                                  sim.Speicherfuellstand_stuendlich, summen);
             }
 
             // --- Skalare -----------------------------------------------------------------

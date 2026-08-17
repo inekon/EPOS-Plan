@@ -62,6 +62,12 @@ namespace WindowsFormsApplication1
         private TextBox _tbSchwelleAus;
         private TextBox _tbSchwelleNachrang;
 
+        /// <summary>
+        /// Mindestfüllstand/Notreserve [%] (Paket BHKW-Regulär). Das vierte Schwellenfeld
+        /// der Gruppe; es wirkt AUSSCHLIESSLICH auf die Entladung im BHKW-Pfad.
+        /// </summary>
+        private TextBox _tbSchwelleReserve;
+
         private ListView _lvLaden;
         private ComboBox _cbEntladeprio;
         private Label _lblEntladeInfo;
@@ -119,7 +125,10 @@ namespace WindowsFormsApplication1
             this.StartPosition = FormStartPosition.CenterParent;
             this.MinimizeBox = false;
             this.MaximizeBox = false;
-            this.ClientSize = new Size(700, 616);
+            // PAKET BHKW-REGULÄR: 32 px höher als bisher (616). Die Eigenschaftengruppe
+            // hat eine vierte Schwellenzeile für den Mindestfüllstand bekommen; alles
+            // darunter ist um denselben Betrag nachgerückt.
+            this.ClientSize = new Size(700, 648);
 
             // --- Bestand --------------------------------------------------------------
             GroupBox gbListe = new GroupBox
@@ -151,7 +160,7 @@ namespace WindowsFormsApplication1
             {
                 Text = MyResource.Resource.PSP_GRUPPE_EIGENSCHAFTEN,
                 Location = new Point(12, 136),
-                Size = new Size(676, 200)
+                Size = new Size(676, 232)   // +32 für die Mindestfüllstand-Zeile
             };
             this.Controls.Add(gbDaten);
 
@@ -247,11 +256,25 @@ namespace WindowsFormsApplication1
             _tbSchwelleNachrang = new TextBox { Location = new Point(600, 157), Width = 56 };
             gbDaten.Controls.Add(_tbSchwelleNachrang);
 
+            // PAKET BHKW-REGULÄR: MINDESTFÜLLSTAND/NOTRESERVE [%] als viertes
+            // Schwellenfeld. Eigene Zeile, weil die Zeile der drei Schaltschwellen über
+            // die ganze Gruppenbreite belegt ist.
+            //
+            // Der Parameter wirkt AUSSCHLIESSLICH auf die Entladung im BHKW-Pfad (ein BHKW
+            // braucht einen Anlaufvorrat); alle anderen Erzeuger entladen den Speicher
+            // unverändert bis 0. Das Feld steht trotzdem an JEDEM Puffer - der Anwender
+            // weiß beim Anlegen nicht, welcher Erzeuger den Speicher später bedient, und
+            // eine Sichtbarkeitsregel nach Erzeugerart hätte den Wert bei einer späteren
+            // Zuordnung stillschweigend entwertet.
+            gbDaten.Controls.Add(Beschriftung(MyResource.Resource.PSP_LABEL_MINDESTFUELLSTAND, 16, 193));
+            _tbSchwelleReserve = new TextBox { Location = new Point(260, 190), Width = 60 };
+            gbDaten.Controls.Add(_tbSchwelleReserve);
+
             // --- Ladereihenfolge ------------------------------------------------------
             GroupBox gbLaden = new GroupBox
             {
                 Text = MyResource.Resource.PSP_GRUPPE_LADEREIHENFOLGE,
-                Location = new Point(12, 342),
+                Location = new Point(12, 374),   // +32 (Mindestfüllstand-Zeile)
                 Size = new Size(676, 152)
             };
             this.Controls.Add(gbLaden);
@@ -279,14 +302,14 @@ namespace WindowsFormsApplication1
             {
                 Text = MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET,
                 AutoSize = true,
-                Location = new Point(16, 506)
+                Location = new Point(16, 538)   // +32 (Mindestfüllstand-Zeile)
             };
             this.Controls.Add(lblEntlade);
 
             _cbEntladeprio = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                Location = new Point(180, 502),
+                Location = new Point(180, 534),   // +32
                 Width = 210
             };
             this.Controls.Add(_cbEntladeprio);
@@ -294,7 +317,7 @@ namespace WindowsFormsApplication1
             _lblEntladeInfo = new Label
             {
                 AutoSize = false,
-                Location = new Point(400, 506),
+                Location = new Point(400, 538),   // +32
                 Size = new Size(288, 32),
                 Text = ""
             };
@@ -303,7 +326,7 @@ namespace WindowsFormsApplication1
             _lblStatus = new Label
             {
                 AutoSize = false,
-                Location = new Point(14, 546),
+                Location = new Point(14, 578),   // +32
                 Size = new Size(430, 32),
                 Text = ""
             };
@@ -312,7 +335,7 @@ namespace WindowsFormsApplication1
             _btnUebernehmen = new Button
             {
                 Text = MyResource.Resource.PSP_BTN_UEBERNEHMEN,
-                Location = new Point(this.ClientSize.Width - 300, 578),
+                Location = new Point(this.ClientSize.Width - 300, 610),   // +32
                 Width = 130,
                 Height = 28
             };
@@ -323,7 +346,7 @@ namespace WindowsFormsApplication1
             {
                 Text = MyResource.Resource.PSP_BTN_SCHLIESSEN,
                 DialogResult = DialogResult.OK,
-                Location = new Point(this.ClientSize.Width - 150, 578),
+                Location = new Point(this.ClientSize.Width - 150, 610),   // +32
                 Width = 130,
                 Height = 28
             };
@@ -490,6 +513,9 @@ namespace WindowsFormsApplication1
                 _tbSchwelleEin.Text = ProjektPuffer.SCHWELLE_EIN_DEFAULT.ToString("0.#");
                 _tbSchwelleAus.Text = ProjektPuffer.SCHWELLE_AUS_DEFAULT.ToString("0.#");
                 _tbSchwelleNachrang.Text = ProjektPuffer.SCHWELLE_AUS_DEFAULT.ToString("0.#");
+                // PAKET BHKW-REGULÄR: dieselbe Vorbelegung, die Migrationsschritt 13 in den
+                // Bestand schreibt - ein neuer Puffer verhält sich wie ein migrierter.
+                _tbSchwelleReserve.Text = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT.ToString("0.#");
                 _cbEntladeprio.SelectedIndex = 0;
 
                 _btnUebernehmen.Text = MyResource.Resource.PSP_BTN_ANLEGEN;
@@ -529,6 +555,7 @@ namespace WindowsFormsApplication1
                 _tbSchwelleEin.Text = p.SchwelleEin.ToString("0.#");
                 _tbSchwelleAus.Text = p.SchwelleAus.ToString("0.#");
                 _tbSchwelleNachrang.Text = p.SchwelleAusNachrang.ToString("0.#");
+                _tbSchwelleReserve.Text = p.SchwelleReserve.ToString("0.#");
 
                 PrioWaehlen(_cbEntladeprio, p.Entladeprio);
 
@@ -856,12 +883,13 @@ namespace WindowsFormsApplication1
         {
             string bezeichner, verwendung, fehler;
             int volumen, entladeprio;
-            double verluste, schwelleEin, schwelleAus, schwelleNachrang;
+            double verluste, schwelleEin, schwelleAus, schwelleNachrang, schwelleReserve;
             int? vorlauf, ruecklauf;
 
             if (!EingabenLesen(out bezeichner, out verwendung, out volumen, out verluste,
                                out vorlauf, out ruecklauf, out schwelleEin, out schwelleAus,
-                               out schwelleNachrang, out entladeprio, out fehler))
+                               out schwelleNachrang, out entladeprio, out schwelleReserve,
+                               out fehler))
             {
                 MessageBox.Show(fehler, MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
                                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -879,7 +907,7 @@ namespace WindowsFormsApplication1
                 int neueId = PufferSpCtrl.ProjektPufferAnlegen(
                     ID_Projekt, bezeichner, hersteller, speichertyp, volumen, verluste,
                     investition, verwendung, vorlauf, ruecklauf,
-                    schwelleEin, schwelleAus, schwelleNachrang, entladeprio);
+                    schwelleEin, schwelleAus, schwelleNachrang, entladeprio, schwelleReserve);
 
                 if (neueId <= 0)
                 {
@@ -903,7 +931,7 @@ namespace WindowsFormsApplication1
                 if (!PufferSpCtrl.ProjektPufferAendern(
                         _bearbeiteteId, ID_Projekt, bezeichner, hersteller, speichertyp, volumen,
                         verluste, investition, verwendung, vorlauf, ruecklauf,
-                        schwelleEin, schwelleAus, schwelleNachrang, entladeprio))
+                        schwelleEin, schwelleAus, schwelleNachrang, entladeprio, schwelleReserve))
                 {
                     MessageBox.Show(MyResource.Resource.PSP_MELDUNG_AENDERN_FEHLGESCHLAGEN,
                                     MyResource.Resource.SIMQ_TYP_PUFFERSPEICHER,
@@ -1066,7 +1094,7 @@ namespace WindowsFormsApplication1
                                    out double verluste, out int? vorlauf, out int? ruecklauf,
                                    out double schwelleEin, out double schwelleAus,
                                    out double schwelleNachrang, out int entladeprio,
-                                   out string fehler)
+                                   out double schwelleReserve, out string fehler)
         {
             bezeichner = (_tbBezeichner.Text ?? "").Trim();
             verwendung = GewaehlteVerwendung();   // DB-Wert, nicht der Anzeigetext (L0-2)
@@ -1077,6 +1105,7 @@ namespace WindowsFormsApplication1
             schwelleEin = ProjektPuffer.SCHWELLE_EIN_DEFAULT;
             schwelleAus = ProjektPuffer.SCHWELLE_AUS_DEFAULT;
             schwelleNachrang = ProjektPuffer.SCHWELLE_AUS_DEFAULT;
+            schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT;
             entladeprio = GewaehltePrio(_cbEntladeprio);
             fehler = null;
 
@@ -1148,10 +1177,31 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
+            // PAKET BHKW-REGULÄR: Mindestfüllstand/Notreserve. Er wird mit nullErlaubt
+            // gelesen - anders als die drei Schaltschwellen ist 0 hier eine GÜLTIGE Angabe
+            // und bedeutet „dieser Speicher darf leergefahren werden".
+            if (!SchwelleLesen(_tbSchwelleReserve, MyResource.Resource.PSP_NAME_MINDESTFUELLSTAND,
+                               out schwelleReserve, out fehler, true)) return false;
+
+            // Läge die Reserve auf oder über der Abschaltschwelle, wäre der Speicher für die
+            // Bedarfsdeckung wirkungslos: Er dürfte nie unter eine Marke entladen, die
+            // oberhalb seines Ladeziels liegt.
+            if (schwelleReserve >= schwelleAus)
+            {
+                fehler = MyResource.Resource.PSP_FEHLER_RESERVE_UEBER_AUS;
+                return false;
+            }
+
             return true;
         }
 
-        private static bool SchwelleLesen(TextBox tb, string name, out double wert, out string fehler)
+        /// <param name="nullErlaubt">
+        /// <c>true</c> = der Wert 0 ist eine gültige Angabe (Paket BHKW-Regulär: die
+        /// Notreserve darf ausdrücklich 0 sein). Für die drei Schaltschwellen bleibt es beim
+        /// bisherigen Bereich „größer 0 bis 100".
+        /// </param>
+        private static bool SchwelleLesen(TextBox tb, string name, out double wert, out string fehler,
+                                          bool nullErlaubt = false)
         {
             wert = 0;
             fehler = null;
@@ -1163,7 +1213,7 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            if (f <= 0 || f > 100)
+            if (f < 0 || (f == 0 && !nullErlaubt) || f > 100)
             {
                 fehler = string.Format(MyResource.Resource.PSP_FEHLER_SCHWELLE_BEREICH, name);
                 return false;

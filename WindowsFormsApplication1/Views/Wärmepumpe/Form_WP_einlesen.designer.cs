@@ -61,6 +61,8 @@ namespace WindowsFormsApplication1
             num_LeistungBis = new System.Windows.Forms.NumericUpDown();
             lbl_LeistungFilter = new System.Windows.Forms.Label();
             lbl_LeistungBis = new System.Windows.Forms.Label();
+            lbl_Filter = new System.Windows.Forms.Label();
+            txt_Filter = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)num_LeistungVon).BeginInit();
             ((System.ComponentModel.ISupportInitialize)num_LeistungBis).BeginInit();
             SuspendLayout();
@@ -87,6 +89,8 @@ namespace WindowsFormsApplication1
             resources.ApplyResources(Liste_WP, "Liste_WP");
             Liste_WP.ForeColor = System.Drawing.Color.Black;
             Liste_WP.Name = "Liste_WP";
+            // Mehrfachauswahl: der Anwender kann mehrere VDI-Eintraege in einem Vorgang laden.
+            Liste_WP.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             Liste_WP.SelectedIndexChanged += Liste_WP_SelectedIndexChanged;
             // 
             // btn_VDI3805
@@ -279,6 +283,20 @@ namespace WindowsFormsApplication1
             lbl_LeistungBis.ForeColor = System.Drawing.Color.Black;
             lbl_LeistungBis.Name = "lbl_LeistungBis";
             // 
+            // lbl_Filter
+            // 
+            resources.ApplyResources(lbl_Filter, "lbl_Filter");
+            lbl_Filter.ForeColor = System.Drawing.Color.Black;
+            lbl_Filter.Name = "lbl_Filter";
+            // 
+            // txt_Filter
+            // 
+            txt_Filter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(txt_Filter, "txt_Filter");
+            txt_Filter.ForeColor = System.Drawing.Color.Black;
+            txt_Filter.Name = "txt_Filter";
+            txt_Filter.TextChanged += Suchfilter_TextChanged;
+            // 
             // Form_WP_einlesen
             // 
             resources.ApplyResources(this, "$this");
@@ -315,6 +333,8 @@ namespace WindowsFormsApplication1
             Controls.Add(textBox__Wirkungsgrad);
             Controls.Add(Label17);
             Controls.Add(textBox_Typ);
+            Controls.Add(lbl_Filter);
+            Controls.Add(txt_Filter);
             ForeColor = System.Drawing.Color.Black;
             Name = "Form_WP_einlesen";
             ((System.ComponentModel.ISupportInitialize)num_LeistungVon).EndInit();
@@ -357,6 +377,8 @@ private System.Windows.Forms.Label label7;
         private System.Windows.Forms.NumericUpDown num_LeistungBis;
         private System.Windows.Forms.Label lbl_LeistungFilter;
         private System.Windows.Forms.Label lbl_LeistungBis;
+        private System.Windows.Forms.Label lbl_Filter;
+        private System.Windows.Forms.TextBox txt_Filter;
 
 
  

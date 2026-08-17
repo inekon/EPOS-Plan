@@ -180,6 +180,13 @@ namespace WindowsFormsApplication1
         ///     der Wärmepumpe; eine Brauchwasser-/Kombi-Senke wird gespeichert und
         ///     angezeigt, rechnet aber nicht mit (derselbe Sachverhalt, den bis heute
         ///     <c>Form_Waermesenke.BrauchwasserUebergangsHinweis</c> meldet).</description></item>
+        ///   <item><description>Die Hauptsenke ist ein PARALLELVERBUND — mehrere
+        ///     Pufferspeicher als ein gemeinsamer Wärmevorrat (Paket Parallelverbund).
+        ///     Derselbe Sachverhalt wie bei Merkmal 1: Der einkanalige Weg kennt keine
+        ///     Ladeaufträge, die aufsummierte Kapazität wäre gespeichert und angezeigt,
+        ///     aber nicht gerechnet. Die Engine erzwingt den Rechenweg deshalb ohnehin
+        ///     (<c>SimulationControl._verbundErzwingtSpeicherstufe</c>) — dieser Zweig hält
+        ///     den SCHALTER mit dem tatsächlichen Rechenweg im Gleichstand.</description></item>
         ///   <item><description>Hauptsenke HEIZKREIS mit einer Bedarfsart ungleich
         ///     „Beides" bei einer Erzeugerart, deren EINKANALIGER Rechenweg
         ///     <c>WS_Typ</c> nicht auswertet — siehe die Abgrenzung unten.</description></item>
@@ -263,6 +270,25 @@ namespace WindowsFormsApplication1
                 if (WaermesenkeClass.IstBrauchwasserseitig(senke.Ziel)) return true;
                 if (senke.HatZweitsenke &&
                     WaermesenkeClass.IstBrauchwasserseitig(senke.Ziel2)) return true;
+
+                // (1b) PARALLELVERBUND (Paket Parallelverbund, Entscheidung 17.08.2026):
+                // Lädt die Anlage einen gemeinsamen Vorrat aus mehreren Pufferspeichern,
+                // ist die Speicherstufe zwingend - der einkanalige Altpfad kennt keine
+                // Ladeaufträge und würde die aufsummierte Kapazität nicht rechnen (siehe
+                // SimulationControl._verbundErzwingtSpeicherstufe). Ohne diesen Zweig
+                // erzwänge die Engine den Rechenweg, während der Schalter im
+                // Konfigurationsdialog weiter "aus" zeigte - zwei Aussagen über dasselbe.
+                //
+                // Der ERSATZ zählt hier wie bei den übrigen Merkmalen: Der Dialog fragt,
+                // was gälte, WENN er jetzt speichert. Für alle anderen Anlagen gilt der
+                // gespeicherte Stand. Hydraulikbild trägt die Mitglieder nicht (es liest
+                // über AusDatenzeile, ohne Verbund-Nachschlag je Zeile) - deshalb der
+                // punktuelle Griff, und zwar nur für Anlagen, die in diesem Projekt
+                // überhaupt rechnen.
+                bool verbund = (ersatz != null && a.ID == idAnlageErsatz)
+                    ? ersatz.HatVerbund
+                    : WaermesenkeClass.VerbundLesen(a.ID).Count > 0;
+                if (verbund) return true;
 
                 // (2) getrennter Kanal am Heizkreis - ohne die Wärmepumpe (Abgrenzung oben)
                 if (a.ID_Type != ProjektPuffer.TYP_WP &&

@@ -59,6 +59,18 @@ namespace WindowsFormsApplication1
         /// <summary>Einschaltschwelle eines Puffers ohne eigene Vorgabe [%] (Konzept 5.1).</summary>
         public const double SCHWELLE_EIN_DEFAULT = 10.0;
 
+        /// <summary>
+        /// Mindestfüllstand/Notreserve eines Puffers ohne eigene Vorgabe [%] (Paket
+        /// BHKW-Regulär, Entscheidung des Anwenders 17.08.2026, Punkt 3).
+        ///
+        /// Sie wirkt AUSSCHLIESSLICH auf die Entladung im BHKW-Pfad — alle anderen
+        /// Erzeuger entladen unverändert bis 0. Der Wert ist derselbe, den
+        /// Migrationsschritt 13 in den Bestand schreibt; die Konstante trägt ihn für
+        /// Datenbanken, in denen die Spalte noch NULL ist (Migration nicht gelaufen, Spalte
+        /// nur über die Rückfallebene <c>WaermequelleClass.SchemaSicherstellen</c> angelegt).
+        /// </summary>
+        public const double SCHWELLE_RESERVE_DEFAULT = 10.0;
+
         /// <summary>Vorgabe-Ladepriorität nach Erzeugertyp (<c>WS_Ladeprio = 0</c>).</summary>
         public static int VorgabeLadeprio(int idType)
         {

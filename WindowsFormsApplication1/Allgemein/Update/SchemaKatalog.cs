@@ -63,6 +63,30 @@ namespace WindowsFormsApplication1
         public const string TAB_KOSTENPROFIL = "Tab_Kostenprofil";
 
         /// <summary>
+        /// PAKET PARALLELVERBUND (Entscheidung des Anwenders 17.08.2026): die ZUSÄTZLICHEN
+        /// Mitglieder eines Pufferverbunds je Wärmeerzeuger-Anlage.
+        ///
+        /// <b>Warum eine eigene Tabelle und keine weiteren Spalten.</b> Der Verbund hat
+        /// keine feste Obergrenze — „mehrere Pufferspeicher parallel" wären als
+        /// <c>WS_ID_Puffer3…n</c> eine Spaltenreihe ohne Ende, und jede neue Spalte
+        /// verlangte eine weitere Beziehung, eine weitere Leseregel und einen weiteren
+        /// Zweig in <c>Normalisieren</c>. Der LEITSPEICHER bleibt dagegen ausdrücklich in
+        /// <c>WS_ID_Puffer</c>: Ordinalketten, Beziehungen und beide Senken-Slots sind
+        /// damit UNVERÄNDERT, und eine leere Verbundtabelle ergibt exakt das heutige
+        /// Verhalten (Regressionszusage des Pakets).
+        ///
+        /// <b>Die Tabelle hängt an der ANLAGE, nicht am Puffer.</b> Damit bleibt die
+        /// Invariante S-1 aus <c>Konzept_KonfigUI_Hydraulik</c> gewahrt (keine
+        /// Puffer→Puffer-Beziehung): Der Verbund ist eine Aussage darüber, WIE EIN ERZEUGER
+        /// lädt, nicht eine Eigenschaft der Behälter untereinander. Dieselbe zwei Puffer
+        /// können in einem anderen Projekt völlig unabhängig arbeiten.
+        ///
+        /// Präfix <c>Z_</c> nach der Namenskonvention des Schemas (Zuordnung), Muster
+        /// <see cref="Z_PROJEKTPUFFERSP"/>.
+        /// </summary>
+        public const string Z_ANLAGEPUFFERVERBUND = "Z_AnlagePufferVerbund";
+
+        /// <summary>
         /// Bestand: die Spalten, die die Rückfallebene schon vor ADR-001 angelegt hat
         /// (Wärmequelle/-senke, Betriebsmodus, Kaskadenpriorität, Speicherregelung der
         /// Alt-Zuordnung). Sie sind in allen gepflegten Datenbanken vorhanden und
@@ -277,6 +301,45 @@ namespace WindowsFormsApplication1
         public static readonly SchemaSpalte[] Schritt10_KesselQuellwaerme =
         {
             new SchemaSpalte(TAB_ERGEBNISHEIZKESSEL, SPALTE_KESSEL_QUELLWAERME, "DOUBLE"),
+        };
+
+        /// <summary>
+        /// Name des Puffer-Parameters „Mindestfüllstand/Notreserve" [%] (Paket
+        /// BHKW-Regulär, Entscheidung des Anwenders 17.08.2026, Punkt 3). EINE Wahrheit für
+        /// Migration, Leseseite (<c>WaermesenkeClass.PufferLaden</c>), Schreibseite
+        /// (<c>ProjektPuffer</c>) und Oberfläche (<c>Form_PufferSp_Projekt</c>) — dasselbe
+        /// Muster wie <see cref="SPALTE_KASKADE_ZWEIKANALIG"/>.
+        /// </summary>
+        public const string SPALTE_SCHWELLE_RESERVE = "Schwelle_Reserve";
+
+        /// <summary>
+        /// Schritt 13 der Migration — die Notreserve des Pufferspeichers
+        /// (<see cref="SPALTE_SCHWELLE_RESERVE"/>).
+        ///
+        /// <b>Was sie trägt.</b> Den Füllstand in Prozent, den die BHKW-Entladung nicht
+        /// unterschreiten darf. Ein BHKW ist eine Maschine mit Anfahrverhalten: Fährt sein
+        /// Speicher vollständig leer, gibt es keinen Vorrat mehr, aus dem die nächste
+        /// Bedarfsspitze bis zum Anlaufen gedeckt werden könnte. Andere Erzeuger haben
+        /// dieses Problem nicht und entladen weiterhin bis 0 — die Spalte wirkt
+        /// AUSSCHLIESSLICH im BHKW-Pfad (siehe
+        /// <c>SimulationPufferspeicher.BhkwReserve_kWh</c>).
+        ///
+        /// <b>DOUBLE mit Vorbelegung 10.</b> Anders als bei
+        /// <see cref="SPALTE_KESSEL_QUELLWAERME"/> gibt es hier ein DML: Der Wert ist ein
+        /// PARAMETER, kein Ergebnis, und NULL hieße für den Rechenkern „keine Reserve" —
+        /// also eine stille fachliche Aussage über Bestandsdaten, die niemand getroffen
+        /// hat. 10 % ist die Vorbelegung, die der Anwender festgelegt hat, für Bestand und
+        /// Neuanlagen gleich (<c>SchemaMigration.Schritt_13_BhkwRegulaer</c>).
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: <c>Tab_Pufferspeicher</c> wird namensbasiert gelesen
+        /// (<c>WaermesenkeClass</c> mit ausgeschriebener SELECT-Liste,
+        /// <c>PufferSpCtrl</c>) — eine <c>row[0…n]</c>-Kette wie bei
+        /// <c>Tab_Einstellungen</c> gibt es auf dieser Tabelle nicht.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt13_Mindestfuellstand =
+        {
+            new SchemaSpalte(TAB_PUFFERSPEICHER, SPALTE_SCHWELLE_RESERVE, "DOUBLE"),
         };
 
         /// <summary>
@@ -507,6 +570,15 @@ namespace WindowsFormsApplication1
         /// tolerante Vorsorge unmittelbar vor dem Zugriff
         /// (<c>StromAufschlagCtrl.StelleSpaltenSicher</c>) — dasselbe Muster wie bei den
         /// Brennstoffspalten des BHKW.
+        ///
+        /// <see cref="Schritt13_Mindestfuellstand"/> steht sehr wohl hier, und zwar
+        /// zwingend: <c>Schwelle_Reserve</c> ist eine EINGABEspalte an
+        /// <c>Tab_Pufferspeicher</c> — genau der Umfang, für den die Rückfallebene gedacht
+        /// ist (dieselbe Begründung wie bei Schritt 2). Sie wird außerdem in der
+        /// AUSGESCHRIEBENEN SELECT-Liste von <c>WaermesenkeClass.PufferLaden</c> gelesen;
+        /// fehlt sie in der Datenbank, scheitert dort die Abfrage und mit ihr der ganze
+        /// Lauf. Die Rückfallebene läuft bei jedem Simulationsstart und schließt genau
+        /// diese Lücke, auch wenn die Migration nie angestoßen wurde.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
@@ -518,6 +590,7 @@ namespace WindowsFormsApplication1
                 foreach (SchemaSpalte s in Schritt6_FeatureFlag) yield return s;
                 foreach (SchemaSpalte s in Schritt8_Energietraeger) yield return s;
                 foreach (SchemaSpalte s in Schritt11_Stromspeicher) yield return s;
+                foreach (SchemaSpalte s in Schritt13_Mindestfuellstand) yield return s;
             }
         }
     }

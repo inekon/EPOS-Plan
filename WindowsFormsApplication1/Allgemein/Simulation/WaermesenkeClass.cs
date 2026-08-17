@@ -129,9 +129,45 @@ namespace WindowsFormsApplication1
                 get { return !string.IsNullOrEmpty(Ziel2); }
             }
 
+            /// <summary>
+            /// PAKET PARALLELVERBUND (Entscheidung des Anwenders 17.08.2026): die
+            /// ZUSÄTZLICHEN Pufferspeicher, die mit <see cref="ID_Puffer"/> EINEN
+            /// gemeinsamen Wärmevorrat bilden — Kapazitäten addiert, ein Füllstand, eine
+            /// Schaltschwelle.
+            ///
+            /// <see cref="ID_Puffer"/> ist der LEITSPEICHER: Er steht weiter in
+            /// <c>WS_ID_Puffer</c>, trägt die Schwellen und die Entladepriorität des
+            /// Verbunds und ist die ID, unter der Rechenobjekt und Ergebniszeile laufen.
+            /// Diese Liste enthält ihn ausdrücklich NICHT.
+            ///
+            /// <b>Leer = kein Verbund</b> und damit exakt das Verhalten vor dem Paket. Die
+            /// Liste ist nie <c>null</c>.
+            ///
+            /// <b>Nur die HAUPTsenke kennt einen Verbund.</b> Die Zweitsenke bleibt EIN
+            /// Ziel (Entscheidung des Anwenders): Sie verwertet Überschuss, und ein
+            /// zweiter Vorrat mit eigener Schwellenlogik an dieser Stelle wäre eine
+            /// Rechenänderung ohne fachlichen Auftrag.
+            /// </summary>
+            public List<int> VerbundMitglieder = new List<int>();
+
+            /// <summary>true, wenn die Hauptsenke ein Parallelverbund aus mehreren Speichern ist.</summary>
+            public bool HatVerbund
+            {
+                get { return VerbundMitglieder != null && VerbundMitglieder.Count > 0; }
+            }
+
             public SenkeDaten Kopie()
             {
-                return (SenkeDaten)MemberwiseClone();
+                SenkeDaten k = (SenkeDaten)MemberwiseClone();
+
+                // MemberwiseClone kopiert die LISTENREFERENZ. Ohne diese Zeile teilten
+                // Original und Kopie dieselbe Mitgliederliste, und der Ersatzdatensatz der
+                // Kaskaden-Automatik (KonfigurationCtrl.KaskadeNotwendig normalisiert eine
+                // Kopie) könnte den Dialogstand verändern, aus dem er gebildet wurde.
+                k.VerbundMitglieder = VerbundMitglieder == null
+                    ? new List<int>()
+                    : new List<int>(VerbundMitglieder);
+                return k;
             }
         }
 
@@ -150,6 +186,14 @@ namespace WindowsFormsApplication1
             public double SchwelleAus;
             public double SchwelleAusNachrang;
             public int Entladeprio;
+
+            /// <summary>
+            /// <c>Schwelle_Reserve</c> — Mindestfüllstand/Notreserve [%] (Paket
+            /// BHKW-Regulär). Vorbelegung
+            /// <see cref="Ladeordnung.SCHWELLE_RESERVE_DEFAULT"/>, wirksam ausschließlich
+            /// im BHKW-Pfad.
+            /// </summary>
+            public double SchwelleReserve = Ladeordnung.SCHWELLE_RESERVE_DEFAULT;
 
             /// <summary>true, wenn <c>Verwendung</c> in der Datenbank nicht gepflegt ist.</summary>
             public bool VerwendungFehlt;
@@ -174,7 +218,17 @@ namespace WindowsFormsApplication1
 
         // --- Lesen und Schreiben ------------------------------------------------------
 
-        /// <summary>Liest die Senkenfelder einer Anlage; nie <c>null</c>.</summary>
+        /// <summary>
+        /// Liest die Senkenfelder einer Anlage; nie <c>null</c>.
+        ///
+        /// PAKET PARALLELVERBUND: Zusätzlich zur Anlagenzeile kommen die
+        /// <see cref="SenkeDaten.VerbundMitglieder"/> aus <c>Z_AnlagePufferVerbund</c> mit —
+        /// eine zweite Abfrage, und genau deshalb steht sie HIER und nicht in
+        /// <see cref="AusDatenzeile"/>: Die Erzeuger-Übersicht baut ihre Karten aus EINER
+        /// Projektabfrage über <c>AusDatenzeile</c>, und ein Verbund-Nachschlag je Zeile
+        /// wäre dort ein N+1 auf einer Anzeigefläche. Die Karten brauchen den Verbund
+        /// ohnehin nur als Zusatz am Chip und holen ihn punktuell.
+        /// </summary>
         public static SenkeDaten Lesen(int idAnlage)
         {
             SenkeDaten d = new SenkeDaten();
@@ -187,7 +241,28 @@ namespace WindowsFormsApplication1
                 StilleDb.Par("@id", OleDbType.Integer, idAnlage));
             if (dt == null || dt.Rows.Count == 0) return d;
 
-            return AusDatenzeile(dt.Rows[0]);
+            d = AusDatenzeile(dt.Rows[0]);
+            d.VerbundMitglieder = VerbundLesen(idAnlage);
+
+            // Nach dem Nachladen noch einmal normalisieren: Erst jetzt sind Leitspeicher
+            // UND Mitglieder beisammen, und nur so fällt eine Zeile auf, die auf den
+            // Leitspeicher selbst zeigt (Altbestand, von Hand eingetragen).
+            Normalisieren(d);
+            return d;
+        }
+
+        /// <summary>
+        /// Die zusätzlichen Verbundmitglieder einer Anlage (Paket Parallelverbund); nie
+        /// <c>null</c>, ohne Verbund leer.
+        ///
+        /// Die EINE Auflösungsstelle für alle Leser — Dialog, Registry-Speisung und
+        /// Anzeigen greifen hierüber zu, damit es keine zweite Auslegung der
+        /// Zuordnungstabelle gibt. Der Datenzugriff selbst steckt in
+        /// <see cref="AnlagePufferVerbundCtrl"/> (Controller-Schicht).
+        /// </summary>
+        public static List<int> VerbundLesen(int idAnlage)
+        {
+            return AnlagePufferVerbundCtrl.MitgliederLesen(idAnlage);
         }
 
         /// <summary>
@@ -281,6 +356,61 @@ namespace WindowsFormsApplication1
                 d.Ladeprio2 = 0;
                 d.Ladegrenze2 = 0;
             }
+
+            VerbundNormalisieren(d);
+        }
+
+        /// <summary>
+        /// Räumt die Mitgliederliste des Parallelverbunds auf — dieselbe Denkweise wie für
+        /// die Puffer-Slots eine Ebene höher: Was fachlich nicht sein kann, wird
+        /// STILL entfernt, nicht dem Aufrufer als Fehler zugestellt.
+        ///
+        /// Vier Regeln, alle aus der Konfliktregel des Pakets:
+        ///   1. OHNE Puffer-Ziel gibt es keinen Verbund. Steht die Hauptsenke auf
+        ///      Heizkreis (auch nach der N5-Rückstufung oben), ist die Liste
+        ///      gegenstandslos — sonst blieben Verbundzeilen an einer Anlage hängen, die
+        ///      gar keinen Speicher lädt, und die Registry-Speisung fände Mitglieder ohne
+        ///      Leitspeicher.
+        ///   2. Der LEITSPEICHER ist kein Mitglied seiner selbst. Eine solche Zeile käme
+        ///      aus Altbestand oder Handeintrag und verdoppelte die Kapazität des
+        ///      Leitspeichers.
+        ///   3. Keine Doppelnennung — ein Behälter zählt einmal.
+        ///   4. Die ZWEITSENKE derselben Anlage kann nicht Mitglied des Hauptverbunds
+        ///      sein: Sie ist ein eigenes Ladeziel mit eigener Priorität und eigener
+        ///      Obergrenze. Diese Regel weist <see cref="Pruefen"/> zwar ausdrücklich mit
+        ///      Meldung ab; sie steht ZUSÄTZLICH hier, weil Normalisieren auch auf
+        ///      gelesenen Beständen läuft, die niemand mehr durch den Dialog schickt.
+        ///
+        /// Nicht geprüft wird hier, ob ein Mitglied zum Projekt gehört, die richtige
+        /// Verwendung trägt oder anderweitig belegt ist — das braucht Datenbankzugriffe
+        /// und gehört deshalb in <see cref="Pruefen"/> bzw. in die Engine-Warnung.
+        /// Normalisieren bleibt eine reine Feldregel ohne SQL (Bestandsverhalten).
+        /// </summary>
+        private static void VerbundNormalisieren(SenkeDaten d)
+        {
+            if (d.VerbundMitglieder == null)
+            {
+                d.VerbundMitglieder = new List<int>();
+                return;
+            }
+
+            if (!IstPufferZiel(d.Ziel) || d.ID_Puffer <= 0)
+            {
+                d.VerbundMitglieder.Clear();
+                return;
+            }
+
+            List<int> sauber = new List<int>();
+            foreach (int id in d.VerbundMitglieder)
+            {
+                if (id <= 0) continue;
+                if (id == d.ID_Puffer) continue;                       // Regel 2
+                if (sauber.Contains(id)) continue;                     // Regel 3
+                if (d.HatZweitsenke && id == d.ID_Puffer2) continue;   // Regel 4
+                sauber.Add(id);
+            }
+
+            d.VerbundMitglieder = sauber;
         }
 
         /// <summary>
@@ -314,6 +444,16 @@ namespace WindowsFormsApplication1
                                                  OleDbType.Integer, IdOderNull(d.ID_Puffer2));
             ok &= WaermequelleClass.WertSchreiben(idAnlage, "WS_Ladeprio2", d.Ladeprio2);
             ok &= WaermequelleClass.WertSchreiben(idAnlage, "WS_Ladegrenze2", d.Ladegrenze2);
+
+            // PAKET PARALLELVERBUND: die Mitglieder in EINEM Zug mit den Senkenfeldern.
+            //
+            // Das ist ausdrücklich Teil DIESER Methode und keine zweite Speicherstelle im
+            // Dialog: Leitspeicher und Mitglieder gehören zusammen, und die Aufrufer
+            // (Konfigurationsdialog, WpSenkeSpiegeln-Umfeld) müssen dafür nichts wissen.
+            // IMMER geschrieben, auch die leere Liste - das ist der Weg, auf dem ein
+            // Verbund im Dialog wieder aufgelöst wird (Delete/Insert in
+            // AnlagePufferVerbundCtrl.Schreiben).
+            ok &= AnlagePufferVerbundCtrl.Schreiben(idAnlage, d.VerbundMitglieder);
 
             return ok;
         }
@@ -403,7 +543,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID, ID_Projekt, Bezeichner, Verwendung, Gesamtvolumen, Bereitschaftsverluste, " +
-                "       Vorlauf, Ruecklauf, Schwelle_Ein, Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio " +
+                "       Vorlauf, Ruecklauf, Schwelle_Ein, Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio, " +
+                "       Schwelle_Reserve " +
                 "FROM Tab_Pufferspeicher WHERE ID_Projekt = ? ORDER BY Bezeichner, ID",
                 StilleDb.Par("@proj", OleDbType.Integer, idProjekt));
             if (dt == null) return liste;
@@ -440,7 +581,8 @@ namespace WindowsFormsApplication1
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID, ID_Projekt, Bezeichner, Verwendung, Gesamtvolumen, Bereitschaftsverluste, " +
-                "       Vorlauf, Ruecklauf, Schwelle_Ein, Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio " +
+                "       Vorlauf, Ruecklauf, Schwelle_Ein, Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio, " +
+                "       Schwelle_Reserve " +
                 "FROM Tab_Pufferspeicher WHERE ID = ?",
                 StilleDb.Par("@id", OleDbType.Integer, idPuffer));
             if (dt == null || dt.Rows.Count == 0) return null;
@@ -464,6 +606,21 @@ namespace WindowsFormsApplication1
             p.SchwelleAus = StilleDb.Kommazahl(StilleDb.Feld(r, "Schwelle_Aus"), Ladeordnung.SCHWELLE_AUS_DEFAULT);
             p.SchwelleAusNachrang = StilleDb.Kommazahl(StilleDb.Feld(r, "Schwelle_Aus_Nachrang"), p.SchwelleAus);
             p.Entladeprio = StilleDb.Zahl(StilleDb.Feld(r, "Entladeprio"));
+
+            // PAKET BHKW-REGULÄR: Mindestfüllstand/Notreserve [%]. NULL bedeutet hier
+            // „nicht gepflegt" und wird auf die Vorbelegung gehoben - dieselbe Regel wie
+            // bei den drei Schaltschwellen darüber, und dieselbe 10, die
+            // Migrationsschritt 13 in den Bestand schreibt.
+            //
+            // ABGRENZUNG zu den Schwellen: Hier wird NICHT „<= 0 -> Default" geprüft. Eine
+            // ausdrückliche 0 ist die zulässige Aussage „dieser Speicher darf leergefahren
+            // werden"; sie stammt dann vom Anwender und darf nicht überschrieben werden.
+            // Nur das FEHLEN eines Werts wird vorbelegt, und das leistet der
+            // Default-Parameter von StilleDb.Kommazahl.
+            p.SchwelleReserve = StilleDb.Kommazahl(StilleDb.Feld(r, "Schwelle_Reserve"),
+                                                   Ladeordnung.SCHWELLE_RESERVE_DEFAULT);
+            if (p.SchwelleReserve < 0) p.SchwelleReserve = 0;
+
             if (p.SchwelleEin <= 0) p.SchwelleEin = Ladeordnung.SCHWELLE_EIN_DEFAULT;
             if (p.SchwelleAus <= 0) p.SchwelleAus = Ladeordnung.SCHWELLE_AUS_DEFAULT;
             if (p.SchwelleAusNachrang <= 0) p.SchwelleAusNachrang = p.SchwelleAus;
@@ -718,9 +875,130 @@ namespace WindowsFormsApplication1
                 return erg;
             }
 
-            // 5. Kanal ohne Bedarf -> nur Hinweis, kein Blocker
+            // 5. PARALLELVERBUND: Kein Mitglied darf anderweitig eigenständiges Ziel sein
+            //
+            // Steht VOR der Kanalwarnung, weil es ein BLOCKER ist. Die Regel selbst und
+            // ihre Begründung stehen in AnlagePufferVerbundCtrl.KonfliktPruefen; hier wird
+            // aus dem ersten Befund die Meldung gebaut. Ohne Verbund ist der Aufruf ein
+            // No-op (leere Mitgliederliste -> leere Befundliste).
+            if (d.HatVerbund)
+            {
+                string verbundFehler = VerbundKonfliktMeldung(idProjekt, idAnlage, d);
+                if (verbundFehler != null)
+                {
+                    erg.Ok = false;
+                    erg.Fehler = verbundFehler;
+                    return erg;
+                }
+            }
+
+            // 6. Kanal ohne Bedarf -> nur Hinweis, kein Blocker
             erg.Warnung = KanalWarnung(idProjekt, d);
             return erg;
+        }
+
+        /// <summary>
+        /// Baut aus dem ERSTEN Konfliktbefund des Parallelverbunds die Anwendermeldung;
+        /// <c>null</c>, wenn die Zuordnung in Ordnung ist.
+        ///
+        /// <b>Nur der erste Befund.</b> Dieselbe Bauart wie die Punkte 1 bis 4 darüber:
+        /// Der Dialog nennt einen Grund, der Anwender räumt ihn weg, der nächste Versuch
+        /// zeigt den nächsten. Eine Sammelmeldung über fünf Speicher wäre in einer
+        /// MessageBox nicht lesbar.
+        ///
+        /// <b>Die Textbausteine kommen aus dem Ressourcenkatalog</b>, die IDs und
+        /// Grundcodes aus dem Controller — der Grundcode ist ein STEUERWERT und wird nie
+        /// angezeigt (Drei-Schichten-Regel).
+        /// </summary>
+        private static string VerbundKonfliktMeldung(int idProjekt, int idAnlage, SenkeDaten d)
+        {
+            string verwendungLeit = VerwendungZuZiel(d.Ziel);
+
+            List<AnlagePufferVerbundCtrl.Konfliktbefund> befunde =
+                AnlagePufferVerbundCtrl.KonfliktPruefen(idProjekt, idAnlage, d.ID_Puffer,
+                                                        d.HatZweitsenke ? d.ID_Puffer2 : 0,
+                                                        d.VerbundMitglieder, verwendungLeit);
+            if (befunde.Count == 0) return null;
+
+            AnlagePufferVerbundCtrl.Konfliktbefund b = befunde[0];
+            string name = PufferName(b.ID_Puffer);
+            string kopf;
+
+            switch (b.Grund)
+            {
+                case AnlagePufferVerbundCtrl.GRUND_HAUPTSENKE:
+                case AnlagePufferVerbundCtrl.GRUND_ZWEITSENKE:
+                    kopf = string.Format(MyResource.Resource.SIM_VERBUND_KONFLIKT_SENKE,
+                                         name, AnlagenName(b.ID_AndereAnlage));
+                    break;
+
+                case AnlagePufferVerbundCtrl.GRUND_ANDERER_VERBUND:
+                    kopf = string.Format(MyResource.Resource.SIM_VERBUND_KONFLIKT_FREMDVERBUND,
+                                         name, PufferName(b.ID_FremderLeit));
+                    break;
+
+                case AnlagePufferVerbundCtrl.GRUND_LEIT_IST_MITGLIED:
+                    kopf = string.Format(MyResource.Resource.SIM_VERBUND_KONFLIKT_LEIT_IST_MITGLIED,
+                                         name, PufferName(b.ID_FremderLeit));
+                    break;
+
+                case AnlagePufferVerbundCtrl.GRUND_QUELLE:
+                    kopf = string.Format(MyResource.Resource.SIM_VERBUND_KONFLIKT_QUELLE, name);
+                    break;
+
+                default:
+                    kopf = string.Format(MyResource.Resource.SIM_VERBUND_KONFLIKT_PASST_NICHT,
+                                         name, VerwendungAnzeige(verwendungLeit));
+                    break;
+            }
+
+            return kopf.Replace("\n", Environment.NewLine) + Environment.NewLine +
+                   Environment.NewLine +
+                   MyResource.Resource.SIM_VERBUND_KONFLIKT_ERKLAERUNG.Replace("\n", Environment.NewLine);
+        }
+
+        /// <summary>Bezeichner einer Anlage für Meldungen; leer, wenn es sie nicht (mehr) gibt.</summary>
+        private static string AnlagenName(int idAnlage)
+        {
+            if (idAnlage <= 0) return "";
+
+            return StilleDb.Text(StilleDb.Scalar(
+                "SELECT Bezeichner FROM Tab_Energieanlagen WHERE ID = ?",
+                StilleDb.Par("@id", OleDbType.Integer, idAnlage)));
+        }
+
+        // --- Verbundkennzahlen für Dialog und Anzeigen ---------------------------------
+
+        /// <summary>
+        /// Nutzbare Gesamtkapazität eines Parallelverbunds [kWh]: <c>Q_max</c> des
+        /// Leitspeichers plus <c>Q_max</c> jedes Mitglieds.
+        ///
+        /// <b>Q_max wird summiert, NICHT das Volumen.</b> Jeder Behälter bringt sein
+        /// EIGENES Temperaturpaar mit; zwei mal 1000 l bei 60/40 und 50/40 ergeben nicht
+        /// dieselbe Kapazität wie 2000 l bei einer der beiden Spreizungen. Die Summe der
+        /// Einzelkapazitäten ist die physikalisch richtige Größe und dieselbe Zahl, mit
+        /// der die Engine rechnet (<c>SimulationControl.VerbundAufaddieren</c>).
+        ///
+        /// Ein Mitglied ohne gepflegtes Temperaturpaar trägt hier 0 bei
+        /// (<see cref="PufferInfo.Q_max"/> liefert dann 0) — die Engine setzt an dieser
+        /// Stelle ihren ΔT-Rückfall an und meldet ihn. Die Dialoganzeige darf keine
+        /// Ersatzannahme erfinden, die im Lauf anders ausfällt.
+        /// </summary>
+        public static double VerbundKapazitaet(int idLeit, IList<int> mitglieder)
+        {
+            double summe = 0;
+
+            PufferInfo leit = PufferLesen(idLeit);
+            if (leit != null) summe += leit.Q_max;
+
+            if (mitglieder != null)
+                foreach (int id in mitglieder)
+                {
+                    PufferInfo p = PufferLesen(id);
+                    if (p != null) summe += p.Q_max;
+                }
+
+            return summe;
         }
 
         /// <summary>Existiert der Puffer im Projekt und passt seine Verwendung zum Ziel?</summary>

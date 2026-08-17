@@ -804,10 +804,54 @@ namespace WindowsFormsApplication1
             Konfiguration.m_Tool_5 = checkBox5.Checked ? GetDbValue(comboBox5) : "";
             Konfiguration.m_Tool_6 = checkBox6.Checked ? GetDbValue(comboBox6) : "";
 
+            // ABNAHMEBEFUND 3: Das Feature-Flag der zweikanaligen Kaskade steht NICHT in
+            // der Spaltenliste von KonfigurationCtrl.Insert (Begründung dort und bei
+            // KaskadeZweikanaligSchreiben: Die Liste hängt an der Ordinalkette von
+            // ReadSingle). Der Delete/Insert-Zyklus unten löschte das Flag deshalb bei
+            // JEDEM Speichern still weg - die neue Zeile bekam von Access die
+            // YESNO-Vorbelegung False. Auffällig wurde es erst an der Folge:
+            // KaskadeAutomatikBeimSpeichern las danach „aus" und fragte, ob eingeschaltet
+            // werden soll, während der Haken der Fußzeile weiter gesetzt dastand.
+            // Schwerer wog das Stille daran - der nächste Lauf rechnete wieder einkanalig.
+            //
+            // Gerettet wird der GESPEICHERTE Stand und nicht der des Hakens: Der Schalter
+            // schreibt sofort (checkBox_KaskadeZweikanalig_CheckedChanged), beide Werte
+            // sind also deckungsgleich; wo sie es nicht sind, ist die Datenbank die
+            // Wahrheit. Dasselbe Muster, mit dem Insert seit Paket 8 die Einstellung
+            // Extrapolation_erlaubt nachzieht.
+            bool kaskadeZweikanalig = KonfigurationCtrl.KaskadeZweikanaligLesen(m_ID_Projekt);
+
+            // FRAGE 23 (Nachtrag zu Abnahmebefund 3): Gleiche Fehlerklasse, UMGEKEHRTE
+            // Vorbelegung. Auch Extrapolation_erlaubt steht nicht in der Spaltenliste
+            // von Insert - dort zieht ein stilles UPDATE die Vorbelegung WAHR nach.
+            // Für NEUE Projekte ist das richtig (Paket 8); beim Wiederspeichern eines
+            // bestehenden Projekts überschrieb es die bewusste Abwahl des Anwenders
+            // (checkBox_Extrapolation schreibt sofort, die Datenbank ist die Wahrheit),
+            // und der nächste Lauf extrapolierte wieder still.
+            //
+            // Der Lesezugriff VOR dem Delete unterscheidet beide Fälle: Bei fehlender
+            // Zeile (neues Projekt), fehlender Spalte, NULL oder Schemastand < 7
+            // liefert ExtrapolationErlaubtLesen die Vorbelegung WAHR - dann bleibt
+            // unten alles beim Insert-Stand, und "NULL heißt Datenlücke" (Befund N8)
+            // kippt nicht.
+            bool extrapolationErlaubt = KonfigurationCtrl.ExtrapolationErlaubtLesen(m_ID_Projekt);
+
             ctrl.model = Konfiguration;
             if (!ctrl.Delete(m_ID_Projekt)) return;
             if (ctrl.Insert(m_ID_Projekt))
                 ShowStatus(MyResource.Resource.SIM_STATUS_KONFIG_GESPEICHERT, Color.ForestGreen);
+
+            // Nur wenn er AN war: Ein blindes Schreiben von false wäre auf einer
+            // Datenbank ohne Schemastand 6 eine Fehlermeldung ohne Anlass.
+            if (kaskadeZweikanalig)
+                KonfigurationCtrl.KaskadeZweikanaligSchreiben(m_ID_Projekt, true);
+
+            // Spiegelbildlich nur die ABWAHL zurückschreiben - WAHR hat Insert gerade
+            // selbst nachgezogen. Ein FALSE aus ExtrapolationErlaubtLesen setzt
+            // Schemastand 7 voraus, das UPDATE trifft also nie eine Datenbank ohne
+            // die Spalte.
+            if (!extrapolationErlaubt)
+                KonfigurationCtrl.ExtrapolationErlaubtSchreiben(m_ID_Projekt, false);
 
             int prioritaet = 1;
 

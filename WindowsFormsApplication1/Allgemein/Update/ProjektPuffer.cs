@@ -45,6 +45,14 @@ namespace WindowsFormsApplication1
         public const double SCHWELLE_AUS_DEFAULT = 95.0;
 
         /// <summary>
+        /// Mindestfüllstand/Notreserve [%] bei Neuanlage (Paket BHKW-Regulär, Entscheidung
+        /// des Anwenders 17.08.2026, Punkt 3). DERSELBE Wert, den Migrationsschritt 13 in
+        /// den Bestand schreibt: Ein neu angelegter Puffer soll sich verhalten wie ein
+        /// migrierter.
+        /// </summary>
+        public const double SCHWELLE_RESERVE_DEFAULT = 10.0;
+
+        /// <summary>
         /// Literal des Erzeugers in <c>Z_ProjektPufferSp.Erzeuger</c>, auf das die Engine
         /// vergleicht (<c>SimulationControl.Do_Simulation</c>: alles andere wird mit
         /// <c>continue</c> übersprungen). Steht hier, damit Engine, Migration (R1) und
@@ -230,8 +238,8 @@ namespace WindowsFormsApplication1
             "INSERT INTO Tab_Pufferspeicher " +
             "(ID, ID_Projekt, Bezeichner, Hersteller, Speichertyp, Gesamtvolumen, " +
             " Bereitschaftsverluste, Investitionskosten, Verwendung, Vorlauf, Ruecklauf, " +
-            " Schwelle_Ein, Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio) " +
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            " Schwelle_Ein, Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio, Schwelle_Reserve) " +
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         /// <summary>Gegenstück zu <see cref="SQL_PUFFER_INSERT_VOLL"/> zum Ändern.</summary>
         public const string SQL_PUFFER_UPDATE_VOLL =
@@ -239,7 +247,7 @@ namespace WindowsFormsApplication1
             "Bezeichner = ?, Hersteller = ?, Speichertyp = ?, Gesamtvolumen = ?, " +
             "Bereitschaftsverluste = ?, Investitionskosten = ?, Verwendung = ?, " +
             "Vorlauf = ?, Ruecklauf = ?, Schwelle_Ein = ?, Schwelle_Aus = ?, " +
-            "Schwelle_Aus_Nachrang = ?, Entladeprio = ? WHERE ID = ?";
+            "Schwelle_Aus_Nachrang = ?, Entladeprio = ?, Schwelle_Reserve = ? WHERE ID = ?";
 
         /// <summary>
         /// Parameter zu <see cref="SQL_PUFFER_INSERT_VOLL"/>.
@@ -248,11 +256,17 @@ namespace WindowsFormsApplication1
         /// wie in <see cref="PufferParameter"/>: eine halbe oder vertauschte Angabe ergäbe
         /// keine auswertbare Spreizung und verdeckte nur den Rückfallweg.
         /// </summary>
+        /// <param name="schwelleReserve">
+        /// Mindestfüllstand/Notreserve [%] (Paket BHKW-Regulär). Der Parameter steht am
+        /// ENDE der Liste, weil die Spalte per <c>ALTER TABLE ADD COLUMN</c> hinten
+        /// angehängt wird und beide SQL-Anweisungen sie dort führen.
+        /// </param>
         public static OleDbParameter[] PufferParameterVoll(
             int idPuffer, int idProjekt, string bezeichner, string hersteller, string speichertyp,
             int volumenLiter, double verluste, double investitionskosten, string verwendung,
             int? vorlauf, int? ruecklauf,
-            double schwelleEin, double schwelleAus, double schwelleAusNachrang, int entladeprio)
+            double schwelleEin, double schwelleAus, double schwelleAusNachrang, int entladeprio,
+            double schwelleReserve)
         {
             bool paar = IstTemperaturpaar(vorlauf, ruecklauf);
 
@@ -272,7 +286,8 @@ namespace WindowsFormsApplication1
                 Par("@sEin",     OleDbType.Double,   schwelleEin),
                 Par("@sAus",     OleDbType.Double,   schwelleAus),
                 Par("@sNachr",   OleDbType.Double,   schwelleAusNachrang),
-                Par("@entlade",  OleDbType.Integer,  entladeprio)
+                Par("@entlade",  OleDbType.Integer,  entladeprio),
+                Par("@sReserve", OleDbType.Double,   schwelleReserve)
             };
         }
 
@@ -281,7 +296,8 @@ namespace WindowsFormsApplication1
             int idPuffer, string bezeichner, string hersteller, string speichertyp,
             int volumenLiter, double verluste, double investitionskosten, string verwendung,
             int? vorlauf, int? ruecklauf,
-            double schwelleEin, double schwelleAus, double schwelleAusNachrang, int entladeprio)
+            double schwelleEin, double schwelleAus, double schwelleAusNachrang, int entladeprio,
+            double schwelleReserve)
         {
             bool paar = IstTemperaturpaar(vorlauf, ruecklauf);
 
@@ -300,6 +316,7 @@ namespace WindowsFormsApplication1
                 Par("@sAus",     OleDbType.Double,   schwelleAus),
                 Par("@sNachr",   OleDbType.Double,   schwelleAusNachrang),
                 Par("@entlade",  OleDbType.Integer,  entladeprio),
+                Par("@sReserve", OleDbType.Double,   schwelleReserve),
                 Par("@id",       OleDbType.Integer,  idPuffer)
             };
         }
