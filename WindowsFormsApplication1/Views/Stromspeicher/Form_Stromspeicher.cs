@@ -8,7 +8,6 @@ namespace WindowsFormsApplication1
 {
     public partial class Form_Stromspeicher : Form
     {
-        private WErzeugerModel model = new WErzeugerModel();
         private WErzeugerCtrl ctrl = new WErzeugerCtrl();
         private StromspeicherStammCtrl spctrl = new StromspeicherStammCtrl();
         public List<WErzeugerModel> list_werzmodel = new List<WErzeugerModel>();
@@ -54,8 +53,37 @@ namespace WindowsFormsApplication1
             dgv.RowsDefaultCellStyle.BackColor = Color.White;
             // Farbe für jede zweite Zeile (Zebra)
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(215, 230, 245);
-			
+
+			EinheitenBeschriftungKorrigieren();
 			SetDBList();
+        }
+
+        /// <summary>
+        /// Setzt die beiden Beschriftungen richtig, deren EINHEIT im Designer falsch
+        /// steht (Abnahmebefund 1 zum ersten App-Start).
+        ///
+        /// <para>
+        /// <c>Tab_Stromspeicher.Energie</c> ist die nutzbare Nennkapazität C_nom in
+        /// <b>kWh</b> (<c>StromspeicherModel.m_Energie</c>) und nicht eine Leistung; das
+        /// Etikett „Energie [kW]" der drei <c>.resx</c>-Fassungen war schlicht falsch.
+        /// <c>Modulkosten</c> sind seit dem AP0-Entscheid vom 16.08.2026 der
+        /// kapazitätsbezogene Satz c_cap in <b>€/kWh</b>
+        /// (<c>StromspeicherSimCtrl.LeseParameter</c> übernimmt sie ohne Umrechnung),
+        /// nicht ein Betrag in €.
+        /// </para>
+        /// <para>
+        /// Gesetzt wird IM CODE aus dem Ressourcenkatalog statt in den drei
+        /// Satellitendateien: <c>CLAUDE.md</c> schließt das Bearbeiten von Designer- und
+        /// <c>.resx</c>-Dateien von Hand aus, und über <c>MyResource</c> ist der Text in
+        /// beiden Sprachen gepflegt (Drei-Schichten-Regel). Dasselbe Muster wie in
+        /// <c>Form_Simulation_Detail.InitStromspeicherParameter</c> für die dortigen
+        /// Bestandsbeschriftungen.
+        /// </para>
+        /// </summary>
+        private void EinheitenBeschriftungKorrigieren()
+        {
+            label7.Text = MyResource.Resource.SP_LABEL_ENERGIE;
+            label9.Text = MyResource.Resource.SP_LABEL_MODULKOSTEN;
         }
 
         private void Form_Stromspeicher_Load(object sender, EventArgs e)
@@ -99,6 +127,12 @@ namespace WindowsFormsApplication1
         private void btn_Hinzu_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentCell.RowIndex == -1) return;
+
+            // Je Klick eine EIGENE Instanz: Bis AP2b landete hier immer dasselbe
+            // Feldobjekt in der Liste - mehrfaches Hinzufügen legte damit n Verweise auf
+            // einen Datensatz ab, und jede spätere Änderung an ihm schlug auf alle
+            // Listeneinträge durch.
+            WErzeugerModel model = new WErzeugerModel();
             model.Bezeichner = (string)dataGridView1.CurrentRow.Cells[0].Value;
             RecordSet rs = new RecordSet();
 
@@ -106,10 +140,10 @@ namespace WindowsFormsApplication1
             if (!rs.EOF())
             {
                 model.ID_SP = (int)rs.Read("ID");
-                model.ID_Type = WizardItemClass.SP_TYP; 
+                model.ID_Type = WizardItemClass.SP_TYP;
             }
             rs.Close();
- 
+
             list_werzmodel.Add(model);
             if (m_bWizard) wizardparent.list_werzmodel = list_werzmodel;
 
@@ -120,8 +154,7 @@ namespace WindowsFormsApplication1
         private void btn_Entfernen_Click(object sender, EventArgs e)
         {
             if (listBox_SP.Text == "") return;
-            model.Bezeichner = listBox_SP.Text;
-    
+
             for (int i = 0; i < list_werzmodel.Count; i++)
             {
                 if (list_werzmodel[i].Bezeichner == listBox_SP.Text && list_werzmodel[i].ID_Type == WizardItemClass.SP_TYP)

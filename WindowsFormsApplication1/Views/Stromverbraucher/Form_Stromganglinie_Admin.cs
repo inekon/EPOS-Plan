@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Globalization;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -16,7 +18,6 @@ namespace WindowsFormsApplication1
         public string m_szProjekt = "";
         public DialogResult result = DialogResult.Cancel;
         public List<StromganglinieModel> DateiListe = new List<StromganglinieModel>();
-        private ToolsClass tool = new ToolsClass();
         string filename = "";
         string filebasename = "";
         string szAppDataPath = "";
@@ -74,17 +75,27 @@ namespace WindowsFormsApplication1
             SetControls(); 
         }
 
+        // Lastgangimport (AP5, Fachkonzept 3.2). Ersetzt den frueheren Weg
+        // ".txt, ein Wert je Zeile, harte Anzahlpruefung, Abbruch-MessageBox" durch die
+        // Kette Leseschicht -> Pruefung -> Protokoll -> unveraenderte Ablage:
+        //
+        //   GanglinienDatei.Erkenne   Trennzeichen/Dezimaltrenner/Kopfzeile/Spalten
+        //   Form_GanglinieImportOptionen  Vorbelegung anzeigen und uebersteuern lassen
+        //   GanglinienDatei.Lies      CSV/TXT ueber NReco, Excel als ein Bulk-Read
+        //   GanglinienPruefung.Pruefe Raster, Einheit, Schaltjahr, Sommerzeit, Plausibilitaet
+        //   Form_GanglinieProtokoll   Anzeige; Fehler blockieren, Eingriffe brauchen Bestaetigung
+        //   StromganglinieStammCtrl.ImportGanglinie  Ablage wie bisher (eine Transaktion)
+        //
+        // Die Kopie der Quelldatei im Anwenderordner "Strom" bleibt die verlustfreie
+        // Originalablage - die Datenbank fuehrt nur die normalisierte Reihe.
         private void btn_Einlesen_Click(object sender, EventArgs e)
         {
-            StromganglinieCtrl ctrl_ganglinie = new StromganglinieCtrl();
-            StromganglinieDatenCtrl ctrl = new StromganglinieDatenCtrl();
             StromganglinieStammCtrl ctrl_stamm = new StromganglinieStammCtrl();
-            int Zeitinterval = 0;
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
 
             openFileDialog.InitialDirectory = szAppDataPath;
-            openFileDialog.Filter = "(*.txt)|*.txt";
+            openFileDialog.Filter = MyResource.Resource.IMPORT_DATEIFILTER;
             openFileDialog.FilterIndex = 1;
             openFileDialog.RestoreDirectory = true;
 
@@ -98,6 +109,7 @@ namespace WindowsFormsApplication1
                     string szQuelle = Path.Combine(szAppDataPath, filebasename);
                     if (!File.Exists(szQuelle))
                     {
+                        Directory.CreateDirectory(szAppDataPath);
                         File.Copy(filename, szQuelle, true);
                     }
                 }
@@ -105,64 +117,118 @@ namespace WindowsFormsApplication1
             }
             openFileDialog = null;
 
-
             if (filebasename == "" || filebasename == null ) return;
-            
+
             // Datei schon eingelesen?
-            if (listBox_Extern.FindString(Path.GetFileNameWithoutExtension(filebasename)) != ListBox.NoMatches)
+            string szBezeichner = Path.GetFileNameWithoutExtension(filebasename);
+            if (listBox_Extern.FindStringExact(szBezeichner) != ListBox.NoMatches)
             {
-                MessageBox.Show("Stromganglinie ist bereits in Datenbank vorhanden!", "Hinweis", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(MyResource.Resource.IMPORT_MSG_BEREITS_VORHANDEN,
+                                MyResource.Resource.IMPORT_MSG_HINWEIS,
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // Datei in Liste einlesen 
-            if (!tool.OpenText(szAppDataPath + "\\" + filebasename)) return;
+            // Ab hier wird die Kopie im Anwenderordner gelesen, wenn sie existiert.
+            string szPfad = Path.Combine(szAppDataPath, filebasename);
+            if (!File.Exists(szPfad)) szPfad = filename;
 
-            // Anzahl Daten prüfen 
-            if (comboBox_Zeitinterval.Text == "Stundenwerte") Zeitinterval = 1;
-            else if (comboBox_Zeitinterval.Text == "1/4 Stundenwerte") Zeitinterval = 4;
-            else if (comboBox_Zeitinterval.Text == "Minutenwerte") Zeitinterval = 60;
-      
-            if (comboBox_Zeitinterval.Text == "Stundenwerte" && tool.textList.Count != 8760)
+            // 1) Format erkennen
+            GanglinienVorschau vorschau;
+            Cursor.Current = Cursors.WaitCursor;
+            try { vorschau = GanglinienDatei.Erkenne(szPfad); }
+            finally { Cursor.Current = Cursors.Default; }
+
+            if (vorschau == null || !vorschau.Lesbar)
             {
-                MessageBox.Show("Anzahl der Werte stimmt nicht mit dem Zeitinterval überin!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            else if (comboBox_Zeitinterval.Text == "1/4 Stundenwerte" && tool.textList.Count != 8760*4)
-            {
-                MessageBox.Show("Anzahl der Werte stimmt nicht mit dem Zeitinterval überin!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            else if (comboBox_Zeitinterval.Text == "Minutenwerte" && tool.textList.Count != 8760*60)
-            {
-                MessageBox.Show("Anzahl der Werte stimmt nicht mit dem Zeitinterval überin!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Form_GanglinieProtokoll.Zeigen(this, vorschau != null ? vorschau.Meldungen : null, false, true);
                 return;
             }
 
-            // Datensatz in DB Tab_Stromganglinie anlegen
-            ctrl_ganglinie.m_szBezeichner = Path.GetFileNameWithoutExtension(filebasename);
-            ctrl_ganglinie.m_Zeitinterval = Zeitinterval; // 1=Stundenwerte, 4=1/4 Stundenwerte, 60=Minutenwerte  
+            // Vorbelegung des Rasters aus der Auswahlliste des Dialogs (Index statt
+            // Anzeigetext - die Beschriftungen sind uebersetzt, die Reihenfolge nicht).
+            vorschau.Vorschlag.Raster = RasterAusAuswahl();
 
-            // Daten in DB schreiben
+            // 2) Optionen bestaetigen oder uebersteuern
+            GanglinienImportOptionen optionen;
+            using (Form_GanglinieImportOptionen dlg = new Form_GanglinieImportOptionen(szPfad, vorschau))
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                optionen = dlg.Optionen;
+            }
+
+            // 3) Datei lesen und 4) pruefen
+            GanglinienRohdaten roh;
+            GanglinienPruefErgebnis ergebnis = null;
             Cursor.Current = Cursors.WaitCursor;
             try
             {
-                // Wir übergeben das Kopf-Controller-Objekt (für den ersten Insert) 
-                // und die rohe Textliste (für das performante Parsen und Einfügen)
-                bool success = ctrl_stamm.ImportGanglinie(ctrl_ganglinie.m_szBezeichner, ctrl_ganglinie.m_Zeitinterval, tool.textList);
-
-                if (!success)
+                roh = GanglinienDatei.Lies(szPfad, optionen);
+                if (roh.Erfolgreich)
                 {
-                    MessageBox.Show("Fehler beim Speichern der Ganglinie. Die Daten wurden nicht gespeichert.");
+                    ergebnis = GanglinienPruefung.Pruefe(new GanglinienPruefEingang
+                    {
+                        Rohwerte = roh.Werte,
+                        Zeitstempel = roh.Zeitstempel,
+                        Einheit = optionen.Einheit,
+                        DeklariertesRaster = optionen.Raster,
+                        Konvention = optionen.Konvention
+                    });
                 }
+            }
+            finally { Cursor.Current = Cursors.Default; }
+
+            // 5) Protokoll zusammenfuehren und anzeigen
+            List<PruefMeldung> protokoll = new List<PruefMeldung>(roh.Meldungen);
+            if (ergebnis != null) protokoll.AddRange(ergebnis.Protokoll);
+
+            bool moeglich = roh.Erfolgreich && ergebnis != null && ergebnis.Erfolgreich;
+            bool bestaetigen = !moeglich || ergebnis == null || ergebnis.BestaetigungNoetig;
+
+            if (!Form_GanglinieProtokoll.Zeigen(this, protokoll, moeglich, bestaetigen)) return;
+
+            // 6) Ablage - unveraendertes Transaktionsmuster des Bestands
+            Cursor.Current = Cursors.WaitCursor;
+            bool success;
+            try
+            {
+                success = ctrl_stamm.ImportGanglinie(szBezeichner, ergebnis.Zeitinterval, ergebnis.Werte);
             }
             finally
             {
                 Cursor.Current = Cursors.Default;
             }
 
+            if (!success)
+            {
+                MessageBox.Show(MyResource.Resource.IMPORT_MSG_FEHLER_SPEICHERN,
+                                MyResource.Resource.IMPORT_MSG_TITEL,
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                MessageBox.Show(string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.IMPORT_MSG_ERFOLG,
+                                    szBezeichner, ergebnis.Werte.Length, ergebnis.Zeitinterval),
+                                MyResource.Resource.IMPORT_MSG_TITEL,
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
             SetControls();
         }
 
+        // Vorbelegung des Rasters aus comboBox_Zeitinterval. Bewertet wird der Index,
+        // nicht der Anzeigetext: die Eintraege sind lokalisiert (de "Stundenwerte" /
+        // en "Hourly values"), ihre Reihenfolge ist in beiden Satellitendateien gleich.
+        private GanglinienRaster RasterAusAuswahl()
+        {
+            switch (comboBox_Zeitinterval.SelectedIndex)
+            {
+                case 0: return GanglinienRaster.Stunde;
+                case 1: return GanglinienRaster.Viertelstunde;
+                case 2: return GanglinienRaster.Minute;
+                default: return GanglinienRaster.Unbekannt;
+            }
+        }
     }
 }

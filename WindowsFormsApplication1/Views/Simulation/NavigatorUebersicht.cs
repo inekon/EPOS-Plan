@@ -26,7 +26,8 @@ namespace WindowsFormsApplication1
             ColorTranslator.FromHtml("#F1C40F"), // Heizstab
             ColorTranslator.FromHtml("#95A5A6"), // Kessel
             ColorTranslator.FromHtml("#75A5A6"), // BHKW
-            ColorTranslator.FromHtml("#3498DB")  // Rest
+            ColorTranslator.FromHtml("#3498DB"), // Rest
+            ColorTranslator.FromHtml("#9B59B6")  // Speicherentladung (AP3b)
         };
 
         public NavigatorUebersicht(SimulationControl simctrl)
@@ -279,6 +280,17 @@ namespace WindowsFormsApplication1
             double se_bhkw = sim.simulation_bhkw.Stromproduktion_BHKW_MWh;
             double se_spk = sim.simulation_spk.Stromverbrauch_Spk;
 
+            // Speicherentladung [MWh/a] als eigener Deckungsanteil (AP3b, Fachkonzept 7.1).
+            // Keine Doppelzählung mit der PV-Zeile: se_pv führt seit dem Rückbau in AP2b
+            // ausschließlich den DIREKTverbrauch (SimulationPV: Stromproduktion =
+            // min(Erzeugung, Bedarf)); was über den Speicher läuft, steckt dort nicht drin.
+            //
+            // Die eigene Null-Prüfung neben dem Präsenzflag ist nötig: Vor dem ersten
+            // SetControl gilt ErgebnisPraesenz.Alles(), und ein Speicherergebnis gibt es
+            // dann noch nicht - anders als bei simulation_pv/-bhkw, die immer instanziiert sind.
+            bool zeigeSpeicher = _praesenz.Stromspeicher && sim.Speicherergebnis != null;
+            double se_speicher = zeigeSpeicher ? sim.Speicherergebnis.EntladeenergieKwh / 1000.0 : 0.0;
+
             double sb_gesamt = 0;
             sb_gesamt = sim.simulation_Strombedarf.Strombedarf_gesamt
                         + (sim.simulation_wp.WP_Strombedarf_gesamt
@@ -295,8 +307,13 @@ namespace WindowsFormsApplication1
             if (_praesenz.BHKW)
                 segStrom.Add(Tuple.Create(sb_gesamt > 0 ? se_bhkw * 100 / sb_gesamt : 0,
                     MyResource.Resource.SIM_ERZEUGERNAME_BHKW, palette[1]));
+            // Eigenes Segment für den Speicher - er ist keine Erzeugung, deckt aber
+            // Bedarf und gehört damit sichtbar in die Strom-Deckung.
+            if (zeigeSpeicher)
+                segStrom.Add(Tuple.Create(sb_gesamt > 0 ? se_speicher * 100 / sb_gesamt : 0,
+                    MyResource.Resource.CHART_SEGMENT_SPEICHERENTLADUNG, palette[6]));
             segStrom.Add(Tuple.Create(
-                sb_gesamt > 0 ? Math.Max(0, (sb_gesamt - se_pv - se_bhkw) * 100 / sb_gesamt) : 0,
+                sb_gesamt > 0 ? Math.Max(0, (sb_gesamt - se_pv - se_bhkw - se_speicher) * 100 / sb_gesamt) : 0,
                 MyResource.Resource.CHART_SEGMENT_RESTSTROM, palette[2]));
 
             double[] werteStrom = segStrom.Select(s => s.Item1).ToArray();
@@ -306,7 +323,7 @@ namespace WindowsFormsApplication1
             Rectangle innerStrom = new Rectangle(rectStromChart.X + 10, rectStromChart.Y + 20, rectStromChart.Width - 20, rectStromChart.Height - 30);
 
             if(sb_gesamt > 0)
-                DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, ((se_pv + se_spk + se_bhkw) * 100 / sb_gesamt), namenStrom, farbenStrom);
+                DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, ((se_pv + se_spk + se_bhkw + se_speicher) * 100 / sb_gesamt), namenStrom, farbenStrom);
             else
                 DonutChartDrawer.DrawChartWithDynamicLegend(e.Graphics, innerStrom, werteStrom, 100, namenStrom, farbenStrom);
 

@@ -31,6 +31,39 @@ namespace WindowsFormsApplication1
 
             // Lizenzverwaltung einbinden (Administration → Lizenz)
             InitLizenzMenue();
+
+            // Lastspitzenkappung einbinden (Strombedarf & Speicher → Peak-Shaving)
+            InitPeakShavingMenue();
+        }
+
+        /// <summary>
+        /// Bindet die Lastspitzenkappung (Peak-Shaving) ein: eigener Menüeintrag
+        /// direkt unterhalb von „Stromspeicher“ (Fachkonzept 6.4 – separate
+        /// Funktionalität, offener Punkt 10, AP7).
+        ///
+        /// Bewusst programmatisch, damit Designer und .resx unberührt bleiben; der
+        /// Anzeigetext kommt aus MyResource und ist damit zweisprachig.
+        /// </summary>
+        private void InitPeakShavingMenue()
+        {
+            try
+            {
+                ToolStripMenuItem eintrag = new ToolStripMenuItem(
+                    MyResource.Resource.PEAK_MENUE);
+                eintrag.Name = "MenuItem_PeakShaving";
+                eintrag.Click += (s, e) => new MenueCtrl().PeakShavingBearbeiten();
+
+                // Direkt unterhalb von „Stromspeicher“ einordnen
+                int position = MenuItem_StromBedarfundSp.DropDownItems.IndexOf(MenuItem_Stromspeicher);
+                if (position >= 0)
+                    MenuItem_StromBedarfundSp.DropDownItems.Insert(position + 1, eintrag);
+                else
+                    MenuItem_StromBedarfundSp.DropDownItems.Add(eintrag);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Peak-Shaving-Menü konnte nicht eingebunden werden: " + ex.Message);
+            }
         }
 
         /// <summary>Produktname für Titelleiste, Kopfzeile und Meldungen.</summary>

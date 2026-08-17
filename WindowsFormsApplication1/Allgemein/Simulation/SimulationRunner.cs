@@ -214,6 +214,8 @@ namespace WindowsFormsApplication1
             m.Sim_Solarthermie = sim.bSimulationSolarthermie;
             m.Sim_BHKW = sim.bSimulationBHKW;
             m.Sim_PV = sim.bSimulationPV;
+            // AP2b: bSimulationSSP steht seit dem Engine-Einbau für einen ECHTEN
+            // Speicherlauf - bis dahin hieß es nur "Tool 6 war aktiv".
             m.Sim_Stromspeicher = sim.bSimulationSSP;
 
             // Detail: Waerme-/Strombedarf (immer vorhanden).
@@ -725,6 +727,22 @@ namespace WindowsFormsApplication1
                     SOC_Max = sp.SOC_Max,
                     Vollzyklen = sp.Vollzyklen
                 });
+            }
+
+            // Detail: Stromspeicher (Fachkonzept Stromspeicher 7.1) - eine Zeile je
+            // gerechneter Speichervariante. Bedingung ist derselbe Marker, der auch
+            // m.Sim_Stromspeicher setzt: bSimulationSSP steht seit AP2b für einen
+            // ECHTEN Engine-Lauf, und ErgebnisCtrl.Save schreibt den Block nur bei
+            // gesetztem Flag - Kopf und Detail können so nicht widersprechen.
+            //
+            // Die Abbildung selbst liegt in StromspeicherSimCtrl (AP3b): Die
+            // Ergebnisseite verwendet dieselbe Methode, damit Bildschirm und Datenbank
+            // nicht auseinanderlaufen. Der Zusammenbau des ErgebnisModel bleibt wie bei
+            // allen anderen Detailmodellen HIER.
+            if (sim.bSimulationSSP && sim.Speicherergebnis != null)
+            {
+                m.Stromspeicher.Add(StromspeicherSimCtrl.AlsErgebnismodell(
+                    sim.Speicherergebnis, sim.Speicherkontext));
             }
 
             return m;

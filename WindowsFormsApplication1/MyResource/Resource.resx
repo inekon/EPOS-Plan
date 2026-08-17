@@ -1655,6 +1655,21 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_SIMULATION_ABGEBROCHEN" xml:space="preserve">
     <value>Simulation abgebrochen: {0}</value>
   </data>
+  <data name="SIMENG_SPEICHER_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Stromspeicher: Die Speicherrechnung ist fehlgeschlagen ({0}) - der Lauf rechnet ohne Speicherwirkung weiter.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_KEIN_SPEICHER" xml:space="preserve">
+    <value>Stromspeicher: Dem Projekt ist kein Stromspeicher zugeordnet - die Speicherrechnung entfällt.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_OHNE_KAPAZITAET" xml:space="preserve">
+    <value>Stromspeicher: Der zugeordnete Speicher hat keine Kapazität (Energie = 0) - die Speicherrechnung entfällt.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_OHNE_LEISTUNG" xml:space="preserve">
+    <value>Stromspeicher: Für den Speicher ist keine Leistung hinterlegt - gerechnet wird mit 1 C (Leistung = Kapazität), wie im bisherigen Verhalten.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_RASTER_ABWEICHUNG" xml:space="preserve">
+    <value>Stromspeicher: Die Ergebnisreihe hat {0} statt {1} Intervalle - der Lauf rechnet ohne Speicherwirkung weiter.</value>
+  </data>
   <data name="SIMENG_SPEICHERN_DES_ERGEBNISSES" xml:space="preserve">
     <value>Speichern des Ergebnisses: {0}</value>
   </data>
@@ -2243,5 +2258,1725 @@ Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
   <data name="SIM_TOOLTIP_CSV_HEIZKESSEL" xml:space="preserve">
     <value>Heizkessel-Simulation als CSV exportieren
 (Zeitstempel, Außentemperatur, Wärmebedarf gesamt, Wärmebedarf Kesselstufe, Heizkessel, Restwärme)</value>
+  </data>
+  <data name="SP_GRUPPE_GERAETETECHNIK" xml:space="preserve">
+    <value>Gerätetechnik</value>
+  </data>
+  <data name="SP_LABEL_WIRKUNGSGRAD_RT" xml:space="preserve">
+    <value>Wirkungsgrad (Round-Trip)</value>
+  </data>
+  <data name="SP_LABEL_ZYKLEN" xml:space="preserve">
+    <value>Zyklen (zugesichert)</value>
+  </data>
+  <data name="SP_LABEL_VERSCHLEISSKOSTEN" xml:space="preserve">
+    <value>Verschleißkosten</value>
+  </data>
+  <data name="SP_LABEL_LEISTUNGSKOSTEN" xml:space="preserve">
+    <value>Leistungskosten</value>
+  </data>
+  <data name="SP_LABEL_INVESTITION_FIX" xml:space="preserve">
+    <value>Investition (fix)</value>
+  </data>
+  <data name="SP_LABEL_STANDBY" xml:space="preserve">
+    <value>Standby-Verbrauch</value>
+  </data>
+  <data name="SP_EINHEIT_ZYKLUSKOSTEN" xml:space="preserve">
+    <value>€/(kWh·Zyklus)</value>
+  </data>
+  <data name="SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG" xml:space="preserve">
+    <value>Betriebsführung (aktive Variante)</value>
+  </data>
+  <data name="SP_PARAM_GRUPPE_QUELLEN" xml:space="preserve">
+    <value>Zulässige Ladequellen</value>
+  </data>
+  <data name="SP_PARAM_GRUPPE_WIRTSCHAFT" xml:space="preserve">
+    <value>Wirtschaftlichkeit</value>
+  </data>
+  <data name="SP_PARAM_LABEL_SOC_MIN" xml:space="preserve">
+    <value>Ladezustand min.</value>
+  </data>
+  <data name="SP_PARAM_LABEL_SOC_MAX" xml:space="preserve">
+    <value>Ladezustand max.</value>
+  </data>
+  <data name="SP_PARAM_LABEL_LADELEISTUNG" xml:space="preserve">
+    <value>Lade-/Entladeleistung [kW]</value>
+  </data>
+  <data name="SP_PARAM_LABEL_LADESCHWELLE" xml:space="preserve">
+    <value>Ladeschwellwert [ct/kWh]</value>
+  </data>
+  <data name="SP_PARAM_LABEL_BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart</value>
+  </data>
+  <data name="SP_PARAM_LABEL_BERECHNUNGSART" xml:space="preserve">
+    <value>Berechnungsart</value>
+  </data>
+  <data name="SP_PARAM_LABEL_KOMPATIBILITAET" xml:space="preserve">
+    <value>Excel-Kompatibilitätsmodus</value>
+  </data>
+  <data name="SP_PARAM_LABEL_KAPITALZINS" xml:space="preserve">
+    <value>Kapitalzins</value>
+  </data>
+  <data name="SP_PARAM_LABEL_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Nutzungsdauer</value>
+  </data>
+  <data name="SP_PARAM_LABEL_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Leistungspreis Netz</value>
+  </data>
+  <data name="SP_PARAM_LABEL_NETZLADEAUFSCHLAG" xml:space="preserve">
+    <value>Aufschlag Netzladestrom</value>
+  </data>
+  <data name="SP_PARAM_CHK_PV" xml:space="preserve">
+    <value>PV-Überschuss</value>
+  </data>
+  <data name="SP_PARAM_CHK_BHKW" xml:space="preserve">
+    <value>BHKW-Überschuss</value>
+  </data>
+  <data name="SP_PARAM_CHK_BHKW_STROMGEFUEHRT" xml:space="preserve">
+    <value>BHKW stromgeführt nachladen</value>
+  </data>
+  <data name="SP_PARAM_CHK_NETZENTLADUNG" xml:space="preserve">
+    <value>Entladung ins Netz (Verkauf)</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_AUSBAUSTUFE" xml:space="preserve">
+    <value>ab Ausbaustufe – noch ohne Wirkung auf das Ergebnis</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_LADELEISTUNG" xml:space="preserve">
+    <value>Gerätedatum: Summe der Leistungen aller Speicheranlagen des Projekts</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
+    <value>Nur für Referenzrechnungen gegen die Excel-Mappe – kein Produktivergebnis.</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_SOC_EINHEIT" xml:space="preserve">
+    <value>Das SoC-Band einer Variante steht immer in % der Nennkapazität.</value>
+  </data>
+  <data name="SP_PARAM_STATUS_VARIANTE" xml:space="preserve">
+    <value>Aktive Variante: {0}</value>
+  </data>
+  <data name="SP_PARAM_STATUS_KEINE_VARIANTE" xml:space="preserve">
+    <value>Keine aktive Speichervariante – die Eingaben sind gesperrt.</value>
+  </data>
+  <data name="SP_BETRIEBSART_ANZEIGE_GRUENSTROM" xml:space="preserve">
+    <value>Grünstrom (nur Erzeugungsüberschuss)</value>
+  </data>
+  <data name="SP_BETRIEBSART_ANZEIGE_GRAUSTROM" xml:space="preserve">
+    <value>Graustrom (Netzladung zulässig)</value>
+  </data>
+  <data name="SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG" xml:space="preserve">
+    <value>Dauernutzung</value>
+  </data>
+  <data name="SP_ERG_TITEL" xml:space="preserve">
+    <value>Stromspeicher – Ergebnis</value>
+  </data>
+  <data name="SP_ERG_KEIN_LAUF" xml:space="preserve">
+    <value>Noch keine Speicherrechnung – bitte die Simulation starten.</value>
+  </data>
+  <data name="SP_ERG_KOPF_VARIANTE" xml:space="preserve">
+    <value>{0} · {1} · {2}</value>
+  </data>
+  <data name="SP_ERG_SPALTE_KENNZAHL" xml:space="preserve">
+    <value>Kennzahl</value>
+  </data>
+  <data name="SP_ERG_SPALTE_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="SP_ERG_SPALTE_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="SP_ERG_GRUPPE_ENERGIE" xml:space="preserve">
+    <value>Energie</value>
+  </data>
+  <data name="SP_ERG_GRUPPE_SPEICHER" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="SP_ERG_GRUPPE_WIRTSCHAFT" xml:space="preserve">
+    <value>Wirtschaft</value>
+  </data>
+  <data name="SP_ERG_LADUNG_PV" xml:space="preserve">
+    <value>Ladung aus PV-Überschuss</value>
+  </data>
+  <data name="SP_ERG_LADUNG_BHKW" xml:space="preserve">
+    <value>Ladung aus BHKW-Überschuss</value>
+  </data>
+  <data name="SP_ERG_LADUNG_NETZ" xml:space="preserve">
+    <value>Ladung aus dem Netz</value>
+  </data>
+  <data name="SP_ERG_LADUNG_GESAMT" xml:space="preserve">
+    <value>Ladung gesamt</value>
+  </data>
+  <data name="SP_ERG_ENTLADUNG" xml:space="preserve">
+    <value>Entladung</value>
+  </data>
+  <data name="SP_ERG_VERLUSTE" xml:space="preserve">
+    <value>Speicherverluste</value>
+  </data>
+  <data name="SP_ERG_NETZBEZUG_OHNE" xml:space="preserve">
+    <value>Netzbezug ohne Speicher</value>
+  </data>
+  <data name="SP_ERG_NETZBEZUG_MIT" xml:space="preserve">
+    <value>Netzbezug mit Speicher</value>
+  </data>
+  <data name="SP_ERG_EINSPEISUNG_OHNE" xml:space="preserve">
+    <value>Einspeisung ohne Speicher</value>
+  </data>
+  <data name="SP_ERG_EINSPEISUNG_MIT" xml:space="preserve">
+    <value>Einspeisung mit Speicher</value>
+  </data>
+  <data name="SP_ERG_EIGENVERBRAUCH" xml:space="preserve">
+    <value>Eigenverbrauchsquote (mit Speicher)</value>
+  </data>
+  <data name="SP_ERG_AUTARKIE" xml:space="preserve">
+    <value>Autarkiegrad (mit Speicher)</value>
+  </data>
+  <data name="SP_ERG_VOLLZYKLEN" xml:space="preserve">
+    <value>Äquivalente Vollzyklen n_zyk</value>
+  </data>
+  <data name="SP_ERG_SOC_MIN" xml:space="preserve">
+    <value>Ladezustand Minimum</value>
+  </data>
+  <data name="SP_ERG_SOC_MITTEL" xml:space="preserve">
+    <value>Ladezustand Mittel</value>
+  </data>
+  <data name="SP_ERG_SOC_MAX" xml:space="preserve">
+    <value>Ladezustand Maximum</value>
+  </data>
+  <data name="SP_ERG_ZEITANTEIL_UNTEN" xml:space="preserve">
+    <value>Zeitanteil an der Untergrenze</value>
+  </data>
+  <data name="SP_ERG_ZEITANTEIL_OBEN" xml:space="preserve">
+    <value>Zeitanteil an der Obergrenze</value>
+  </data>
+  <data name="SP_ERG_ZYKLEN_HOCHRECHNUNG" xml:space="preserve">
+    <value>Zyklen über die Nutzungsdauer</value>
+  </data>
+  <data name="SP_ERG_ZYKLEN_ZUGESICHERT" xml:space="preserve">
+    <value>zugesicherte Zyklen N_zyk</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_BEZUG" xml:space="preserve">
+    <value>Ertrag: vermiedener Netzbezug</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_VERGUETUNG" xml:space="preserve">
+    <value>Abzug: entgangene Einspeisevergütung</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_NETZ" xml:space="preserve">
+    <value>Ertrag: Verkauf ins Netz</value>
+  </data>
+  <data name="SP_ERG_KOSTEN_LADUNG" xml:space="preserve">
+    <value>Kosten: Netzladung</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Ertrag: Leistungspreisersparnis</value>
+  </data>
+  <data name="SP_ERG_VERSCHLEISS" xml:space="preserve">
+    <value>Betriebskosten: Verschleiß K_ver (nicht in ΔJ)</value>
+  </data>
+  <data name="SP_ERG_INVESTITION" xml:space="preserve">
+    <value>Investition I</value>
+  </data>
+  <data name="SP_ERG_ANNUITAET" xml:space="preserve">
+    <value>Annuität A</value>
+  </data>
+  <data name="SP_ERG_JAHRESUEBERSCHUSS" xml:space="preserve">
+    <value>Jahresüberschuss ΔJ</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_JAHR1" xml:space="preserve">
+    <value>Ertrag Referenzjahr E_a,1</value>
+  </data>
+  <data name="SP_ERG_ERTRAG_AEQUIVALENT" xml:space="preserve">
+    <value>Ertrag degradationsäquivalent E_a,äq</value>
+  </data>
+  <data name="SP_ERG_AMORT_STATISCH" xml:space="preserve">
+    <value>Amortisation statisch</value>
+  </data>
+  <data name="SP_ERG_AMORT_DYNAMISCH" xml:space="preserve">
+    <value>Amortisation dynamisch</value>
+  </data>
+  <data name="SP_ERG_KAPITALWERT" xml:space="preserve">
+    <value>Kapitalwert (NPV)</value>
+  </data>
+  <data name="SP_ERG_NICHT_AMORTISIERBAR" xml:space="preserve">
+    <value>nicht amortisierbar</value>
+  </data>
+  <data name="SP_ERG_UEBER_NUTZUNGSDAUER" xml:space="preserve">
+    <value>&gt; Nutzungsdauer</value>
+  </data>
+  <data name="SP_ERG_AMPEL_OK" xml:space="preserve">
+    <value>Zyklenbudget eingehalten: {0:N0} von {1:N0} zugesicherten Zyklen.</value>
+  </data>
+  <data name="SP_ERG_AMPEL_KNAPP" xml:space="preserve">
+    <value>Zyklenbudget knapp: {0:N0} von {1:N0} zugesicherten Zyklen.</value>
+  </data>
+  <data name="SP_ERG_AMPEL_UEBERSCHRITTEN" xml:space="preserve">
+    <value>Zyklenbudget überschritten: {0:N0} hochgerechnete gegenüber {1:N0} zugesicherten Zyklen.</value>
+  </data>
+  <data name="SP_ERG_AMPEL_OHNE_ANGABE" xml:space="preserve">
+    <value>Ohne zugesicherte Zyklenzahl (N_zyk) ist keine Budgetbewertung möglich.</value>
+  </data>
+  <data name="SP_ERG_KOMPATIBILITAET_AKTIV" xml:space="preserve">
+    <value>Excel-Kompatibilitätsmodus aktiv – dies ist kein Produktivergebnis.</value>
+  </data>
+  <data name="SP_CHART_TITEL_SOC" xml:space="preserve">
+    <value>Ladezustand – Jahresgang</value>
+  </data>
+  <data name="SP_CHART_ACHSE_SOC" xml:space="preserve">
+    <value>Speicher [kWh]</value>
+  </data>
+  <data name="SP_CSV_SOC" xml:space="preserve">
+    <value>Ladezustand [kWh]</value>
+  </data>
+  <data name="SP_CSV_LADUNG" xml:space="preserve">
+    <value>Ladung [kWh]</value>
+  </data>
+  <data name="SP_CSV_ENTLADUNG" xml:space="preserve">
+    <value>Entladung [kWh]</value>
+  </data>
+  <data name="SP_CSV_GELDWERT" xml:space="preserve">
+    <value>Geldwert [€]</value>
+  </data>
+  <data name="SP_DATEI_STROMSPEICHER" xml:space="preserve">
+    <value>Stromspeicher_Projekt_{0}.csv</value>
+  </data>
+  <data name="SP_TOOLTIP_CSV" xml:space="preserve">
+    <value>Speicherrechnung als CSV exportieren
+(Zeitstempel, Außentemperatur, Ladezustand, Ladung, Entladung, Geldwert)</value>
+  </data>
+  <data name="CHART_SEGMENT_SPEICHERENTLADUNG" xml:space="preserve">
+    <value>Speicherentladung</value>
+  </data>
+  <data name="SP_SPALTE_ERTRAG" xml:space="preserve">
+    <value>Ertrag [€/a]</value>
+  </data>
+  <data name="SP_SPALTE_AMORTISATION" xml:space="preserve">
+    <value>Amortisation [a]</value>
+  </data>
+  <data name="SP_MARKER_AKTIVE_VARIANTE" xml:space="preserve">
+    <value>{0} (aktiv)</value>
+  </data>
+  <data name="SIMENG_SPEICHER_OHNE_VARIANTE" xml:space="preserve">
+    <value>Das Projekt fuehrt keine aktive Speichervariante - gerechnet wird mit den Vorgabewerten.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_AGGREGATION" xml:space="preserve">
+    <value>Ohne aktive Speichervariante rechnet der Gesamtlauf wie bisher ueber alle Speicheranlagen des Projekts zusammen (Summe der Kapazitaeten).</value>
+  </data>
+  <data name="SIMENG_SPEICHER_AKTIVE_OHNE_ANLAGE" xml:space="preserve">
+    <value>Die aktive Speichervariante gehoert zu keiner Speicheranlage dieses Projekts - gerechnet wird ersatzweise ueber alle Speicheranlagen zusammen.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_SOC_BAND" xml:space="preserve">
+    <value>Das SoC-Band der aktiven Variante ist unbrauchbar (max &lt;= min) - es gilt die 10/90-%-Vorgabe.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_BERECHNUNGSART" xml:space="preserve">
+    <value>Die Berechnungsart "{0}" ist noch nicht umgesetzt - gerechnet wird die Dauernutzung.</value>
+  </data>
+  <data name="IMPORT_PROT_KEINE_WERTE" xml:space="preserve">
+    <value>Die Datei enthält keinen einzigen Wert.</value>
+  </data>
+  <data name="IMPORT_PROT_UNGUELTIGER_WERT" xml:space="preserve">
+    <value>Zeile {0}: kein gültiger Zahlenwert (NaN oder unendlich).</value>
+  </data>
+  <data name="IMPORT_PROT_ZEITSTEMPEL_ANZAHL" xml:space="preserve">
+    <value>Wert- und Zeitstempelspalte sind unterschiedlich lang ({0} zu {1}).</value>
+  </data>
+  <data name="IMPORT_PROT_RASTER_ERKANNT" xml:space="preserve">
+    <value>Zeitraster erkannt: {0} Werte, {1} Intervalle je Stunde.</value>
+  </data>
+  <data name="IMPORT_PROT_RASTER_UNBEKANNT" xml:space="preserve">
+    <value>{0} Werte passen zu keinem Jahresraster (8.760 / 8.784 / 35.040 / 35.136 / 525.600 / 527.040).</value>
+  </data>
+  <data name="IMPORT_PROT_RASTER_ABWEICHEND" xml:space="preserve">
+    <value>Das gewählte Raster ({0} Intervalle je Stunde) passt nicht zur Datei; verwendet wird {1}.</value>
+  </data>
+  <data name="IMPORT_PROT_RASTER_AUS_ZEIT" xml:space="preserve">
+    <value>Zeitstempelabstand {0} Minuten, also {1} Intervalle je Stunde.</value>
+  </data>
+  <data name="IMPORT_PROT_RASTER_WIDERSPRUCH" xml:space="preserve">
+    <value>Zeitstempelabstand ({0} Intervalle je Stunde) und Wertanzahl ({1}) widersprechen sich.</value>
+  </data>
+  <data name="IMPORT_PROT_ZEITSCHRITT_UNBEKANNT" xml:space="preserve">
+    <value>Der Zeitstempelabstand von {0} Minuten ergibt kein bekanntes Raster (60, 15 oder 1 Minute).</value>
+  </data>
+  <data name="IMPORT_PROT_KONVENTION_ANFANG" xml:space="preserve">
+    <value>Zeitstempel werden als Intervallanfang gelesen.</value>
+  </data>
+  <data name="IMPORT_PROT_KONVENTION_ENDE" xml:space="preserve">
+    <value>Zeitstempel werden als Intervallende gelesen (erster Eintrag {0}) und um ein Intervall zurückgesetzt.</value>
+  </data>
+  <data name="IMPORT_PROT_JAHRESANFANG" xml:space="preserve">
+    <value>Die Reihe beginnt nicht am 1. Januar um 00:00, sondern am {0}.</value>
+  </data>
+  <data name="IMPORT_PROT_NICHT_MONOTON" xml:space="preserve">
+    <value>Zeile {1}: der Zeitstempel {0} liegt vor dem vorhergehenden.</value>
+  </data>
+  <data name="IMPORT_PROT_DUBLETTE" xml:space="preserve">
+    <value>Doppelter Zeitstempel {0} ({1} Werte) außerhalb der Zeitumstellung.</value>
+  </data>
+  <data name="IMPORT_PROT_LUECKE" xml:space="preserve">
+    <value>Ab {0} fehlen {1} Intervalle.</value>
+  </data>
+  <data name="IMPORT_PROT_SOMMERZEIT_DUBLETTE" xml:space="preserve">
+    <value>Zeitumstellung: die doppelte Stunde {0} wurde aus {1} Werten gemittelt.</value>
+  </data>
+  <data name="IMPORT_PROT_SOMMERZEIT_LUECKE" xml:space="preserve">
+    <value>Zeitumstellung: die fehlende Stunde ab {0} wurde mit {1} Wiederholungen des Vorintervalls aufgefüllt.</value>
+  </data>
+  <data name="IMPORT_PROT_EINHEIT_UMGERECHNET" xml:space="preserve">
+    <value>Einheit umgerechnet: kWh je Intervall mal {0} ergibt kW.</value>
+  </data>
+  <data name="IMPORT_PROT_MINUTEN_GEMITTELT" xml:space="preserve">
+    <value>Minutenwerte auf 15 Minuten gemittelt: aus {0} Werten wurden {1}.</value>
+  </data>
+  <data name="IMPORT_PROT_MINUTEN_REST" xml:space="preserve">
+    <value>{0} Minutenwerte sind nicht ohne Rest durch 15 teilbar.</value>
+  </data>
+  <data name="IMPORT_PROT_SCHALTJAHR" xml:space="preserve">
+    <value>Schaltjahr normalisiert: aus {0} Werten wurden {1}; der 29. Februar ({2} Werte) entfällt.</value>
+  </data>
+  <data name="IMPORT_PROT_SCHALTJAHR_POSITION" xml:space="preserve">
+    <value>Ohne Zeitstempel wurde der 29. Februar über die Position bestimmt: Zeile {0} bis {1}.</value>
+  </data>
+  <data name="IMPORT_PROT_LAENGE_FALSCH" xml:space="preserve">
+    <value>Die Reihe hat {0} Werte, erwartet werden {1}.</value>
+  </data>
+  <data name="IMPORT_PROT_NEGATIVE_WERTE" xml:space="preserve">
+    <value>{0} negative Werte, kleinster Wert {1} kW.</value>
+  </data>
+  <data name="IMPORT_PROT_NULLSERIE" xml:space="preserve">
+    <value>Ab Zeile {0} stehen {1} Intervalle hintereinander auf null.</value>
+  </data>
+  <data name="IMPORT_PROT_ALLE_NULL" xml:space="preserve">
+    <value>Die gesamte Reihe ist null.</value>
+  </data>
+  <data name="IMPORT_PROT_AUSREISSER" xml:space="preserve">
+    <value>{0} Werte liegen über dem {3}-fachen des Medians ({2} kW); größter Wert {1} kW.</value>
+  </data>
+  <data name="IMPORT_PROT_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis: {0} Werte, {1} Intervalle je Stunde, Jahresarbeit {2} kWh.</value>
+  </data>
+  <data name="IMPORT_PROT_DATEI_FEHLT" xml:space="preserve">
+    <value>Die Datei wurde nicht gefunden: {0}</value>
+  </data>
+  <data name="IMPORT_PROT_DATEI_LEER" xml:space="preserve">
+    <value>Die Datei enthält keine auswertbare Zeile.</value>
+  </data>
+  <data name="IMPORT_PROT_LESEFEHLER" xml:space="preserve">
+    <value>Die Datei kann nicht gelesen werden: {0}</value>
+  </data>
+  <data name="IMPORT_PROT_FORMAT_ERKANNT" xml:space="preserve">
+    <value>Format erkannt: Trennzeichen "{0}", Dezimaltrenner "{1}", {2} Spalten, Kopfzeile (1 = ja): {3}.</value>
+  </data>
+  <data name="IMPORT_PROT_SPALTENWAHL" xml:space="preserve">
+    <value>Spaltenwahl: Wertspalte {0}, Zeitstempelspalte {1} (0 = keine).</value>
+  </data>
+  <data name="IMPORT_PROT_ZAHL_UNLESBAR" xml:space="preserve">
+    <value>Zeile {0}: "{1}" ist keine Zahl.</value>
+  </data>
+  <data name="IMPORT_PROT_ZEIT_UNLESBAR" xml:space="preserve">
+    <value>Zeile {0}: "{1}" ist kein Zeitstempel.</value>
+  </data>
+  <data name="IMPORT_PROT_SPALTE_FEHLT" xml:space="preserve">
+    <value>Zeile {0} hat nur {1} Felder.</value>
+  </data>
+  <data name="IMPORT_PROT_WEITERE_FEHLER" xml:space="preserve">
+    <value>{0} weitere gleichartige Fehler wurden nicht einzeln aufgeführt.</value>
+  </data>
+  <data name="IMPORT_PROT_EXCEL_FEHLT" xml:space="preserve">
+    <value>Excel steht auf diesem Rechner nicht zur Verfügung. Bitte die Datei als CSV speichern und erneut einlesen.</value>
+  </data>
+  <data name="IMPORT_PROT_EXCEL_BLATT" xml:space="preserve">
+    <value>Das Tabellenblatt "{0}" wurde nicht gefunden; gelesen wird "{1}".</value>
+  </data>
+  <data name="IMPORT_PROT_GELESEN" xml:space="preserve">
+    <value>Gelesen: {0} Werte, {1} Zeitstempel.</value>
+  </data>
+  <data name="IMPORT_TITEL_OPTIONEN" xml:space="preserve">
+    <value>Lastgang einlesen - Format und Vorschau</value>
+  </data>
+  <data name="IMPORT_GRP_OPTIONEN" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="IMPORT_GRP_VORSCHAU" xml:space="preserve">
+    <value>Vorschau (erste {0} Zeilen)</value>
+  </data>
+  <data name="IMPORT_LBL_DATEI" xml:space="preserve">
+    <value>Datei: {0}</value>
+  </data>
+  <data name="IMPORT_LBL_TRENNZEICHEN" xml:space="preserve">
+    <value>Trennzeichen:</value>
+  </data>
+  <data name="IMPORT_LBL_DEZIMALTRENNER" xml:space="preserve">
+    <value>Dezimaltrenner:</value>
+  </data>
+  <data name="IMPORT_LBL_KOPFZEILE" xml:space="preserve">
+    <value>Erste Zeile ist eine Kopfzeile</value>
+  </data>
+  <data name="IMPORT_LBL_WERTSPALTE" xml:space="preserve">
+    <value>Wertspalte:</value>
+  </data>
+  <data name="IMPORT_LBL_ZEITSPALTE" xml:space="preserve">
+    <value>Zeitstempelspalte:</value>
+  </data>
+  <data name="IMPORT_LBL_EINHEIT" xml:space="preserve">
+    <value>Einheit der Werte:</value>
+  </data>
+  <data name="IMPORT_LBL_RASTER" xml:space="preserve">
+    <value>Zeitraster:</value>
+  </data>
+  <data name="IMPORT_LBL_KONVENTION" xml:space="preserve">
+    <value>Zeitstempel bezeichnet:</value>
+  </data>
+  <data name="IMPORT_LBL_BLATT" xml:space="preserve">
+    <value>Tabellenblatt:</value>
+  </data>
+  <data name="IMPORT_HINWEIS_OPTIONEN" xml:space="preserve">
+    <value>Die Vorbelegung stammt aus der Dateianalyse. Nach einer Änderung die Vorschau aktualisieren.</value>
+  </data>
+  <data name="IMPORT_BTN_AKTUALISIEREN" xml:space="preserve">
+    <value>Vorschau aktualisieren</value>
+  </data>
+  <data name="IMPORT_BTN_OK" xml:space="preserve">
+    <value>Einlesen</value>
+  </data>
+  <data name="IMPORT_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="IMPORT_TRENN_SEMIKOLON" xml:space="preserve">
+    <value>Semikolon  ;</value>
+  </data>
+  <data name="IMPORT_TRENN_KOMMA" xml:space="preserve">
+    <value>Komma  ,</value>
+  </data>
+  <data name="IMPORT_TRENN_TABULATOR" xml:space="preserve">
+    <value>Tabulator</value>
+  </data>
+  <data name="IMPORT_TRENN_PIPE" xml:space="preserve">
+    <value>Senkrechter Strich  |</value>
+  </data>
+  <data name="IMPORT_TRENN_KEINES" xml:space="preserve">
+    <value>keines (ein Wert je Zeile)</value>
+  </data>
+  <data name="IMPORT_DEZ_KOMMA" xml:space="preserve">
+    <value>Komma  ,</value>
+  </data>
+  <data name="IMPORT_DEZ_PUNKT" xml:space="preserve">
+    <value>Punkt  .</value>
+  </data>
+  <data name="IMPORT_EINHEIT_KW" xml:space="preserve">
+    <value>kW (Leistung)</value>
+  </data>
+  <data name="IMPORT_EINHEIT_KWH" xml:space="preserve">
+    <value>kWh je Intervall (Arbeit)</value>
+  </data>
+  <data name="IMPORT_RASTER_AUTO" xml:space="preserve">
+    <value>automatisch erkennen</value>
+  </data>
+  <data name="IMPORT_RASTER_STUNDE" xml:space="preserve">
+    <value>Stundenwerte</value>
+  </data>
+  <data name="IMPORT_RASTER_VIERTEL" xml:space="preserve">
+    <value>Viertelstundenwerte</value>
+  </data>
+  <data name="IMPORT_RASTER_MINUTE" xml:space="preserve">
+    <value>Minutenwerte (werden auf 15 Minuten gemittelt)</value>
+  </data>
+  <data name="IMPORT_KONV_AUTO" xml:space="preserve">
+    <value>automatisch erkennen</value>
+  </data>
+  <data name="IMPORT_KONV_ANFANG" xml:space="preserve">
+    <value>Intervallanfang</value>
+  </data>
+  <data name="IMPORT_KONV_ENDE" xml:space="preserve">
+    <value>Intervallende</value>
+  </data>
+  <data name="IMPORT_SPALTE_KEINE" xml:space="preserve">
+    <value>(keine)</value>
+  </data>
+  <data name="IMPORT_SPALTE_N" xml:space="preserve">
+    <value>Spalte {0}</value>
+  </data>
+  <data name="IMPORT_SPALTE_ZEILE" xml:space="preserve">
+    <value>Zeile</value>
+  </data>
+  <data name="IMPORT_TITEL_PROTOKOLL" xml:space="preserve">
+    <value>Prüfprotokoll des Lastgangimports</value>
+  </data>
+  <data name="IMPORT_SPALTE_STUFE" xml:space="preserve">
+    <value>Stufe</value>
+  </data>
+  <data name="IMPORT_SPALTE_MELDUNG" xml:space="preserve">
+    <value>Meldung</value>
+  </data>
+  <data name="IMPORT_STUFE_INFO" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="IMPORT_STUFE_WARNUNG" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="IMPORT_STUFE_FEHLER" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="IMPORT_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="IMPORT_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="IMPORT_KOPF_OK" xml:space="preserve">
+    <value>Die Datei wurde geprüft und kann übernommen werden.</value>
+  </data>
+  <data name="IMPORT_KOPF_EINGRIFF" xml:space="preserve">
+    <value>Die Reihe wurde angepasst oder es liegen Auffälligkeiten vor. Bitte prüfen und bestätigen.</value>
+  </data>
+  <data name="IMPORT_KOPF_FEHLER" xml:space="preserve">
+    <value>Die Datei kann nicht importiert werden. Die Fehler stehen unten.</value>
+  </data>
+  <data name="IMPORT_DATEIFILTER" xml:space="preserve">
+    <value>Lastgangdateien (*.csv;*.txt;*.xlsx;*.xlsm;*.xls)|*.csv;*.txt;*.xlsx;*.xlsm;*.xls|CSV (*.csv)|*.csv|Textdatei (*.txt)|*.txt|Excel (*.xlsx;*.xlsm;*.xls)|*.xlsx;*.xlsm;*.xls|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="IMPORT_MSG_BEREITS_VORHANDEN" xml:space="preserve">
+    <value>Diese Stromganglinie ist bereits in der Datenbank vorhanden.</value>
+  </data>
+  <data name="IMPORT_MSG_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="IMPORT_MSG_FEHLER_SPEICHERN" xml:space="preserve">
+    <value>Fehler beim Speichern der Ganglinie. Die Daten wurden nicht gespeichert.</value>
+  </data>
+  <data name="IMPORT_MSG_ERFOLG" xml:space="preserve">
+    <value>Die Ganglinie "{0}" wurde mit {1} Werten eingelesen (Zeitinterval {2}).</value>
+  </data>
+  <data name="IMPORT_MSG_TITEL" xml:space="preserve">
+    <value>Lastgang einlesen</value>
+  </data>
+  <data name="IMPORT_GANGLINIE_RASTER_PASST_NICHT" xml:space="preserve">
+    <value>Die Stromganglinie {0} hat {1} Werte, das gespeicherte Zeitinterval {2} verlangt {3}. Die Ganglinie wurde nicht gerechnet - bitte neu einlesen.</value>
+  </data>
+  <data name="PREIS_HINWEIS_KEIN_STROMTRAEGER" xml:space="preserve">
+    <value>Dem Projekt ist kein Strom-Energietraeger zugeordnet - es gelten die Vorgabewerte fuer Aufschlag und Verguetung.</value>
+  </data>
+  <data name="PREIS_HINWEIS_KEIN_PROFIL" xml:space="preserve">
+    <value>Die Variante steht auf Kostenprofil, es ist aber keines gewaehlt - gerechnet wird mit dem Fixpreis.</value>
+  </data>
+  <data name="PREIS_HINWEIS_PROFIL_UNBRAUCHBAR" xml:space="preserve">
+    <value>Das Kostenprofil "{0}" hat keine zwoelf lesbaren Monatswerte - gerechnet wird mit dem Fixpreis.</value>
+  </data>
+  <data name="PREIS_HINWEIS_KEINE_SPOTREIHE" xml:space="preserve">
+    <value>Die Variante steht auf Spotmarkt, es liegt aber keine Preisreihe vor - gerechnet wird mit dem Fixpreis.</value>
+  </data>
+  <data name="PREIS_HINWEIS_SPOTREIHE_LAENGE" xml:space="preserve">
+    <value>Die Preisreihe "{0}" hat {1} Werte statt 8760 oder 35040 - gerechnet wird mit dem Fixpreis.</value>
+  </data>
+  <data name="PREIS_HINWEIS_RUECKFALL_FIXPREIS" xml:space="preserve">
+    <value>Fuer den Strombezug ist kein Arbeitspreis gepflegt - gerechnet wird mit dem Rueckfallwert {0} ct/kWh.</value>
+  </data>
+  <data name="PREIS_HINWEIS_VERSION_SPAETER" xml:space="preserve">
+    <value>Zum Stichtag {0} gab es noch keine Preisversion - es gilt die aelteste vorhandene.</value>
+  </data>
+  <data name="PREIS_HINWEIS_ARBEITSPREIS_NULL" xml:space="preserve">
+    <value>Die gueltige Preisversion fuehrt den Arbeitspreis 0 - es gilt die naechste Rueckfallstufe.</value>
+  </data>
+  <data name="PREIS_VERSION_PROJEKTEINSTELLUNG" xml:space="preserve">
+    <value>Projekteinstellung (ohne Preishistorie)</value>
+  </data>
+  <data name="PREIS_HINWEIS_OHNE_HISTORIE" xml:space="preserve">
+    <value>Fuer den Strombezug gibt es keine Preishistorie - es gilt der Arbeitspreis der Projekteinstellung.</value>
+  </data>
+  <data name="PREIS_VERSION_KATALOG" xml:space="preserve">
+    <value>Katalogpreis des Energietraegers</value>
+  </data>
+  <data name="PREIS_HINWEIS_KATALOGPREIS" xml:space="preserve">
+    <value>Weder Preishistorie noch Projekteinstellung fuehren einen Arbeitspreis - es gilt der Katalogpreis.</value>
+  </data>
+  <data name="PREIS_IMPORT_KEINE_DATEN" xml:space="preserve">
+    <value>Die Datei enthaelt keine lesbare Datenzeile.</value>
+  </data>
+  <data name="PREIS_IMPORT_KOPF" xml:space="preserve">
+    <value>Spotpreisdatei Jahr {0}: {1} Datenzeilen gelesen.</value>
+  </data>
+  <data name="PREIS_IMPORT_UNLESBAR" xml:space="preserve">
+    <value>{0} Zeilen konnten nicht zerlegt werden (Zeilennummern: {1}).</value>
+  </data>
+  <data name="PREIS_IMPORT_FREMDES_JAHR" xml:space="preserve">
+    <value>{0} Zeilen tragen ein anderes Jahr als {1} - sie wurden trotzdem nach Monat und Tag eingeordnet.</value>
+  </data>
+  <data name="PREIS_IMPORT_SCHALTJAHR" xml:space="preserve">
+    <value>Schaltjahr: {0} Zeilen des 29. Februar ausgelassen (der Rechenkern fuehrt 8760 Stunden).</value>
+  </data>
+  <data name="PREIS_IMPORT_DOPPELSTUNDE" xml:space="preserve">
+    <value>Herbstumstellung {0} Stunde {1}: {2} Werte gemittelt (Sommer- und Winterzeit).</value>
+  </data>
+  <data name="PREIS_IMPORT_FEHLSTUNDE" xml:space="preserve">
+    <value>Fruehjahrsumstellung {0} Stunde {1}: existiert nicht, aus den Nachbarstunden ergaenzt.</value>
+  </data>
+  <data name="PREIS_IMPORT_LUECKE" xml:space="preserve">
+    <value>Luecke {0} Stunde {1}: kein Wert in der Datei, aus den Nachbarstunden ergaenzt.</value>
+  </data>
+  <data name="PREIS_IMPORT_MEHRFACH" xml:space="preserve">
+    <value>Mehrfacheintrag {0} Stunde {1}: {2} Werte gemittelt (kein Umstellungstermin).</value>
+  </data>
+  <data name="PREIS_IMPORT_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis: {0} Stundenwerte, {1} bis {2} ct/kWh, Mittel {3} ct/kWh.</value>
+  </data>
+  <data name="PREIS_IMPORT_NEGATIV" xml:space="preserve">
+    <value>Davon {0} negative Preise - das ist zulaessig und wird mitgerechnet.</value>
+  </data>
+  <data name="PREIS_IMPORT_VOLLSTAENDIG" xml:space="preserve">
+    <value>Die Reihe ist vollstaendig.</value>
+  </data>
+  <data name="PREIS_IMPORT_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Die Reihe ist UNVOLLSTAENDIG - die ergaenzten Stunden sind Schaetzwerte.</value>
+  </data>
+  <data name="PREIS_GRUPPE_AUFSCHLAG" xml:space="preserve">
+    <value>Aufschlaege auf den Strombezugspreis</value>
+  </data>
+  <data name="PREIS_MODUS_AUFGESCHLUESSELT" xml:space="preserve">
+    <value>aufgeschluesselt</value>
+  </data>
+  <data name="PREIS_MODUS_GESAMTWERT" xml:space="preserve">
+    <value>Gesamtwert (Override)</value>
+  </data>
+  <data name="PREIS_KOMP_NETZENTGELT" xml:space="preserve">
+    <value>Netzentgelt Arbeit</value>
+  </data>
+  <data name="PREIS_KOMP_UMLAGEN" xml:space="preserve">
+    <value>Umlagen (Summe)</value>
+  </data>
+  <data name="PREIS_KOMP_STROMSTEUER" xml:space="preserve">
+    <value>Stromsteuer</value>
+  </data>
+  <data name="PREIS_KOMP_KONZESSION" xml:space="preserve">
+    <value>Konzessionsabgabe</value>
+  </data>
+  <data name="PREIS_KOMP_VERTRIEB" xml:space="preserve">
+    <value>Vertrieb</value>
+  </data>
+  <data name="PREIS_STROMSTEUER_REGELFALL" xml:space="preserve">
+    <value>2,05</value>
+  </data>
+  <data name="PREIS_STROMSTEUER_REDUZIERT" xml:space="preserve">
+    <value>0,05</value>
+  </data>
+  <data name="PREIS_LABEL_GESAMTAUFSCHLAG" xml:space="preserve">
+    <value>Gesamtaufschlag</value>
+  </data>
+  <data name="PREIS_GRUPPE_VERGUETUNG" xml:space="preserve">
+    <value>Verguetung fuer eingespeisten Strom</value>
+  </data>
+  <data name="PREIS_LABEL_VERGUETUNG_PV" xml:space="preserve">
+    <value>Photovoltaik v_pv</value>
+  </data>
+  <data name="PREIS_LABEL_VERGUETUNG_BHKW" xml:space="preserve">
+    <value>BHKW v_bhkw</value>
+  </data>
+  <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
+    <value>Summe der aktiven Komponenten: {0} ct/kWh   |   wirksamer Aufschlag: {1} ct/kWh</value>
+  </data>
+  <data name="PREIS_REST_NICHT_AUFGESCHLUESSELT" xml:space="preserve">
+    <value>Nicht aufgeschluesselter Rest: {0} ct/kWh</value>
+  </data>
+  <data name="PREIS_REST_HINWEIS_MODUS" xml:space="preserve">
+    <value>Im Modus "aufgeschluesselt" ist der wirksame Aufschlag die Summe der aktiven Komponenten.</value>
+  </data>
+  <data name="PREIS_BTN_SPOTIMPORT" xml:space="preserve">
+    <value>Spotmarktpreise importieren ...</value>
+  </data>
+  <data name="PREIS_BTN_KOSTENPROFIL" xml:space="preserve">
+    <value>Kostenprofil bearbeiten ...</value>
+  </data>
+  <data name="PREIS_IMPORT_TITEL" xml:space="preserve">
+    <value>Spotmarktpreise importieren</value>
+  </data>
+  <data name="PREIS_IMPORT_INFO" xml:space="preserve">
+    <value>Erwartet wird eine CSV-Datei mit Semikolon und Dezimalkomma: Datum; von; Zeitzone von; bis; Zeitzone bis; Preis in ct/kWh. Zeitumstellung und Schaltjahr werden ausgewertet und protokolliert.</value>
+  </data>
+  <data name="PREIS_IMPORT_LABEL_DATEI" xml:space="preserve">
+    <value>Datei:</value>
+  </data>
+  <data name="PREIS_IMPORT_BTN_DATEI" xml:space="preserve">
+    <value>Datei waehlen ...</value>
+  </data>
+  <data name="PREIS_IMPORT_LABEL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung:</value>
+  </data>
+  <data name="PREIS_IMPORT_CHK_STAMM" xml:space="preserve">
+    <value>allen Projekten zur Verfuegung stellen</value>
+  </data>
+  <data name="PREIS_IMPORT_LABEL_PROTOKOLL" xml:space="preserve">
+    <value>Validierungsprotokoll:</value>
+  </data>
+  <data name="PREIS_IMPORT_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Uebernehmen</value>
+  </data>
+  <data name="PREIS_IMPORT_DATEIFILTER" xml:space="preserve">
+    <value>Spotpreisdateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="PREIS_IMPORT_STATUS_BEREIT" xml:space="preserve">
+    <value>Bereit zur Uebernahme (Jahr {0}).</value>
+  </data>
+  <data name="PREIS_IMPORT_STATUS_UNBRAUCHBAR" xml:space="preserve">
+    <value>Die Datei ergibt keine brauchbare Preisreihe.</value>
+  </data>
+  <data name="PREIS_IMPORT_STATUS_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Preisreihe konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="PREIS_IMPORT_STATUS_GESPEICHERT" xml:space="preserve">
+    <value>Preisreihe {0} mit {1} Werten gespeichert.</value>
+  </data>
+  <data name="PREIS_IMPORT_STATUS_SCHREIBT" xml:space="preserve">
+    <value>{0} Werte geschrieben ...</value>
+  </data>
+  <data name="PREIS_PROFIL_TITEL" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="PREIS_PROFIL_NEU" xml:space="preserve">
+    <value>Neues Kostenprofil</value>
+  </data>
+  <data name="PREIS_PROFIL_INFO" xml:space="preserve">
+    <value>Der Bezugspreis ergibt sich aus dem Monatswert des jeweiligen Monats zuzueglich des Wochenwerts fuer Wochentag und Stunde. Alle Werte in ct/kWh.</value>
+  </data>
+  <data name="PREIS_PROFIL_LABEL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung:</value>
+  </data>
+  <data name="PREIS_PROFIL_TAB_MONATSWERTE" xml:space="preserve">
+    <value>Monatswerte</value>
+  </data>
+  <data name="PREIS_PROFIL_KOPF_MONAT" xml:space="preserve">
+    <value>Preisniveau je Monat [ct/kWh]</value>
+  </data>
+  <data name="PREIS_PROFIL_BTN_ALLE_MONATE" xml:space="preserve">
+    <value>Januarwert auf alle Monate uebertragen</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_JANUAR" xml:space="preserve">
+    <value>Der Januarwert ist keine gueltige Zahl.</value>
+  </data>
+  <data name="PREIS_PROFIL_TAB_WOCHENWERTE" xml:space="preserve">
+    <value>Wochenwerte</value>
+  </data>
+  <data name="PREIS_PROFIL_KOPF_WOCHE" xml:space="preserve">
+    <value>Abweichung je Stunde des gewaehlten Wochentags [ct/kWh]</value>
+  </data>
+  <data name="PREIS_PROFIL_LBL_WOCHENTAG" xml:space="preserve">
+    <value>Wochentag:</value>
+  </data>
+  <data name="PREIS_PROFIL_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Tag kopieren</value>
+  </data>
+  <data name="PREIS_PROFIL_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Tag einfuegen</value>
+  </data>
+  <data name="PREIS_PROFIL_BTN_ALLE_TAGE" xml:space="preserve">
+    <value>Auf alle Tage uebertragen</value>
+  </data>
+  <data name="PREIS_PROFIL_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Stundenwerte des Tages uebernehmen</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_ERST_KOPIEREN" xml:space="preserve">
+    <value>Bitte zuerst einen Tag kopieren.</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_ALLE_TAGE" xml:space="preserve">
+    <value>Der Tagesgang gilt jetzt fuer alle sieben Wochentage.</value>
+  </data>
+  <data name="PREIS_PROFIL_HINWEIS_ABWEICHUNG" xml:space="preserve">
+    <value>Die Wochenwerte sind Abweichungen vom Monatswert. Ein HT/NT-Tarif entsteht, indem alle sieben Tage denselben Gang tragen.</value>
+  </data>
+  <data name="PREIS_PROFIL_TAB_GRAFIK" xml:space="preserve">
+    <value>Grafik</value>
+  </data>
+  <data name="PREIS_CHART_ACHSE_PREIS" xml:space="preserve">
+    <value>Preis [ct/kWh]</value>
+  </data>
+  <data name="PREIS_CHART_SERIE_KOSTENPROFIL" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_STUNDE_UNGUELTIG" xml:space="preserve">
+    <value>Stunde {0}: "{1}" ist keine gueltige Zahl.</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_MONAT_UNGUELTIG" xml:space="preserve">
+    <value>{0}: "{1}" ist keine gueltige Zahl.</value>
+  </data>
+  <data name="PREIS_PROFIL_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Das Kostenprofil konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="PREIS_PARAM_GRUPPE_PREISQUELLE" xml:space="preserve">
+    <value>Preisbeschaffung</value>
+  </data>
+  <data name="PREIS_PARAM_LABEL_PREISQUELLE" xml:space="preserve">
+    <value>Preisquelle</value>
+  </data>
+  <data name="PREIS_QUELLE_ANZEIGE_FIXPREIS" xml:space="preserve">
+    <value>Fixpreis aus dem Kostenmodul</value>
+  </data>
+  <data name="PREIS_QUELLE_ANZEIGE_PROFIL" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="PREIS_QUELLE_ANZEIGE_SPOTMARKT" xml:space="preserve">
+    <value>Spotmarktreihe</value>
+  </data>
+  <data name="PREIS_PARAM_LABEL_REIHE" xml:space="preserve">
+    <value>Preisreihe</value>
+  </data>
+  <data name="PREIS_PARAM_LABEL_PROFIL" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="PREIS_PARAM_REIHE_EINTRAG" xml:space="preserve">
+    <value>{0} ({1}, {2} Werte)</value>
+  </data>
+  <data name="PREIS_PARAM_CHK_AUFSCHLAG" xml:space="preserve">
+    <value>Aufschlaege des Kostenmoduls anwenden</value>
+  </data>
+  <data name="PREIS_PARAM_HINWEIS_AUFSCHLAG" xml:space="preserve">
+    <value>Aus, wenn die gewaehlte Reihe bereits ein Vollpreis ist (Fachkonzept 4.2).</value>
+  </data>
+  <data name="PREIS_PARAM_INFO" xml:space="preserve">
+    <value>Energiepreis im Mittel {0} ct/kWh + Aufschlag {1} ct/kWh = Bezugspreis {2} ct/kWh   |   Preisversion: {3}</value>
+  </data>
+  <data name="SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG" xml:space="preserve">
+    <value>Nachtnutzung</value>
+  </data>
+  <data name="NACHT_ERG_SPALTE_VERGLEICH" xml:space="preserve">
+    <value>Dauernutzung (Vergleich)</value>
+  </data>
+  <data name="NACHT_ERG_VERGLEICH_HINWEIS" xml:space="preserve">
+    <value>Die Vergleichsspalte zeigt, was die Dauernutzung mit denselben Daten geliefert hätte. Gespeichert wird nur das Ergebnis der gewählten Berechnungsart.</value>
+  </data>
+  <data name="NACHT_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
+    <value>Der Excel-Kompatibilitätsmodus gilt nur für die Dauernutzung – für die Nachtnutzung gibt es keine Excel-Referenz. Gerechnet wird energetisch.</value>
+  </data>
+  <data name="NACHT_HINWEIS_VERGLEICH_FEHLER" xml:space="preserve">
+    <value>Der Vergleichslauf mit der Dauernutzung ist fehlgeschlagen: {0}</value>
+  </data>
+  <data name="NACHT_OHNE_EXCEL_REFERENZ" xml:space="preserve">
+    <value>Für die Nachtnutzung gibt es keine Excel-Referenz; der Kompatibilitätsmodus ist dort nicht vorgesehen.</value>
+  </data>
+  <data name="PEAK_MENUE" xml:space="preserve">
+    <value>Lastspitzenkappung (Peak-Shaving)</value>
+  </data>
+  <data name="PEAK_TITEL" xml:space="preserve">
+    <value>Lastspitzenkappung (Peak-Shaving)</value>
+  </data>
+  <data name="PEAK_GRP_QUELLE" xml:space="preserve">
+    <value>Lastgang</value>
+  </data>
+  <data name="PEAK_OPT_GANGLINIE" xml:space="preserve">
+    <value>Vorhandene Ganglinie</value>
+  </data>
+  <data name="PEAK_OPT_DATEI" xml:space="preserve">
+    <value>Datei importieren</value>
+  </data>
+  <data name="PEAK_BTN_DATEI" xml:space="preserve">
+    <value>Datei wählen …</value>
+  </data>
+  <data name="PEAK_LBL_REIHE" xml:space="preserve">
+    <value>{0}: {1} Werte, Jahresmaximum {2} kW</value>
+  </data>
+  <data name="PEAK_LBL_KEINE_REIHE" xml:space="preserve">
+    <value>Kein Lastgang geladen.</value>
+  </data>
+  <data name="PEAK_QUELLE_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="PEAK_QUELLE_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="PEAK_GANGLINIE_EINTRAG" xml:space="preserve">
+    <value>{0}  [{1}]</value>
+  </data>
+  <data name="PEAK_GRP_PARAMETER" xml:space="preserve">
+    <value>Speicher- und Bewertungsparameter</value>
+  </data>
+  <data name="PEAK_LBL_P" xml:space="preserve">
+    <value>Leistung P [kW]</value>
+  </data>
+  <data name="PEAK_LBL_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität [kWh]</value>
+  </data>
+  <data name="PEAK_LBL_ETA" xml:space="preserve">
+    <value>Wirkungsgrad η_RT [-]</value>
+  </data>
+  <data name="PEAK_LBL_SOCMIN" xml:space="preserve">
+    <value>Ladezustand min. [%]</value>
+  </data>
+  <data name="PEAK_LBL_SOCMAX" xml:space="preserve">
+    <value>Ladezustand max. [%]</value>
+  </data>
+  <data name="PEAK_LBL_STARTSOC" xml:space="preserve">
+    <value>Start-Ladezustand [%]</value>
+  </data>
+  <data name="PEAK_LBL_ZIEL" xml:space="preserve">
+    <value>Zielschwelle P_ziel [kW]</value>
+  </data>
+  <data name="PEAK_CHK_ADAPTIV" xml:space="preserve">
+    <value>Adaptiv (Schwelle nachziehen)</value>
+  </data>
+  <data name="PEAK_BTN_MINIMAL" xml:space="preserve">
+    <value>Minimale haltbare Schwelle ermitteln</value>
+  </data>
+  <data name="PEAK_LBL_LP" xml:space="preserve">
+    <value>Leistungspreis L_P [€/(kW·a)]</value>
+  </data>
+  <data name="PEAK_LBL_BEZUGSPREIS" xml:space="preserve">
+    <value>Bezugspreis mittel [ct/kWh]</value>
+  </data>
+  <data name="PEAK_CHK_KOMPAT" xml:space="preserve">
+    <value>Kompatibilitätsmodus (η = 1, SoC_min = 0)</value>
+  </data>
+  <data name="PEAK_LBL_CCAP" xml:space="preserve">
+    <value>Investition c_cap [€/kWh]</value>
+  </data>
+  <data name="PEAK_LBL_CPOW" xml:space="preserve">
+    <value>Investition c_pow [€/kW]</value>
+  </data>
+  <data name="PEAK_LBL_IFIX" xml:space="preserve">
+    <value>Investition fix [€]</value>
+  </data>
+  <data name="PEAK_LBL_ZINS" xml:space="preserve">
+    <value>Kapitalzins [%]</value>
+  </data>
+  <data name="PEAK_LBL_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Nutzungsdauer [a]</value>
+  </data>
+  <data name="PEAK_BTN_RECHNEN" xml:space="preserve">
+    <value>Berechnen</value>
+  </data>
+  <data name="PEAK_CHK_SOC" xml:space="preserve">
+    <value>Ladezustand im Diagramm zeigen</value>
+  </data>
+  <data name="PEAK_BTN_CSV" xml:space="preserve">
+    <value>CSV-Export</value>
+  </data>
+  <data name="PEAK_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="PEAK_TAB_KENNZAHLEN" xml:space="preserve">
+    <value>Kennzahlen</value>
+  </data>
+  <data name="PEAK_TAB_CHART" xml:space="preserve">
+    <value>Lastgang vorher/nachher</value>
+  </data>
+  <data name="PEAK_TAB_MONATE" xml:space="preserve">
+    <value>Monatsspitzen</value>
+  </data>
+  <data name="PEAK_SP_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="PEAK_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="PEAK_SP_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="PEAK_SP_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="PEAK_SP_ALT" xml:space="preserve">
+    <value>Spitze ohne Speicher [kW]</value>
+  </data>
+  <data name="PEAK_SP_NEU" xml:space="preserve">
+    <value>Spitze mit Speicher [kW]</value>
+  </data>
+  <data name="PEAK_SP_KAPPUNG" xml:space="preserve">
+    <value>Kappung [kW]</value>
+  </data>
+  <data name="PEAK_KZ_SPITZE_ALT" xml:space="preserve">
+    <value>Lastspitze ohne Speicher (Jahresmaximum)</value>
+  </data>
+  <data name="PEAK_KZ_SPITZE_NEU" xml:space="preserve">
+    <value>Lastspitze mit Speicher (Jahresmaximum)</value>
+  </data>
+  <data name="PEAK_KZ_KAPPUNG" xml:space="preserve">
+    <value>Kappung der Jahresspitze</value>
+  </data>
+  <data name="PEAK_KZ_SCHWELLE" xml:space="preserve">
+    <value>Erreichte Schwelle</value>
+  </data>
+  <data name="PEAK_KZ_GERISSEN" xml:space="preserve">
+    <value>Schwelle gerissen (Speicher zu klein)</value>
+  </data>
+  <data name="PEAK_JA" xml:space="preserve">
+    <value>ja</value>
+  </data>
+  <data name="PEAK_NEIN" xml:space="preserve">
+    <value>nein</value>
+  </data>
+  <data name="PEAK_KZ_LADEENERGIE" xml:space="preserve">
+    <value>Ladeenergie (AC)</value>
+  </data>
+  <data name="PEAK_KZ_ENTLADEENERGIE" xml:space="preserve">
+    <value>Entladeenergie (AC)</value>
+  </data>
+  <data name="PEAK_KZ_VERLUSTE" xml:space="preserve">
+    <value>Umwandlungsverluste</value>
+  </data>
+  <data name="PEAK_KZ_VOLLZYKLEN" xml:space="preserve">
+    <value>Äquivalente Vollzyklen</value>
+  </data>
+  <data name="PEAK_KZ_ERSPARNIS" xml:space="preserve">
+    <value>Leistungspreisersparnis</value>
+  </data>
+  <data name="PEAK_KZ_VERLUSTKOSTEN" xml:space="preserve">
+    <value>Kosten der Verschiebeverluste</value>
+  </data>
+  <data name="PEAK_KZ_ERTRAG" xml:space="preserve">
+    <value>Ertrag Peak-Shaving (E_a,1)</value>
+  </data>
+  <data name="PEAK_KZ_INVEST" xml:space="preserve">
+    <value>Investition</value>
+  </data>
+  <data name="PEAK_KZ_ANNUITAET" xml:space="preserve">
+    <value>Annuität (Kapitaldienst)</value>
+  </data>
+  <data name="PEAK_KZ_UEBERSCHUSS" xml:space="preserve">
+    <value>Jahresüberschuss ΔJ</value>
+  </data>
+  <data name="PEAK_KZ_AMORT_STAT" xml:space="preserve">
+    <value>Amortisation statisch</value>
+  </data>
+  <data name="PEAK_KZ_AMORT_DYN" xml:space="preserve">
+    <value>Amortisation dynamisch</value>
+  </data>
+  <data name="PEAK_KZ_NPV" xml:space="preserve">
+    <value>Kapitalwert</value>
+  </data>
+  <data name="PEAK_AMORT_UEBER" xml:space="preserve">
+    <value>&gt; Nutzungsdauer</value>
+  </data>
+  <data name="PEAK_AMORT_NIE" xml:space="preserve">
+    <value>nicht amortisierbar</value>
+  </data>
+  <data name="PEAK_MONAT_GESAMT" xml:space="preserve">
+    <value>Gesamtreihe</value>
+  </data>
+  <data name="PEAK_CHART_TITEL" xml:space="preserve">
+    <value>Lastgang vor und nach der Kappung</value>
+  </data>
+  <data name="PEAK_CHART_X" xml:space="preserve">
+    <value>Jahresverlauf</value>
+  </data>
+  <data name="PEAK_CHART_Y" xml:space="preserve">
+    <value>Leistung [kW]</value>
+  </data>
+  <data name="PEAK_CHART_Y2" xml:space="preserve">
+    <value>Ladezustand [kWh]</value>
+  </data>
+  <data name="PEAK_SERIE_ALT" xml:space="preserve">
+    <value>Lastgang ohne Speicher</value>
+  </data>
+  <data name="PEAK_SERIE_NEU" xml:space="preserve">
+    <value>Lastgang mit Speicher</value>
+  </data>
+  <data name="PEAK_SERIE_SOC" xml:space="preserve">
+    <value>Ladezustand</value>
+  </data>
+  <data name="PEAK_CSV_PALT" xml:space="preserve">
+    <value>Lastgang ohne Speicher [kW]</value>
+  </data>
+  <data name="PEAK_CSV_PNEU" xml:space="preserve">
+    <value>Lastgang mit Speicher [kW]</value>
+  </data>
+  <data name="PEAK_CSV_SOC" xml:space="preserve">
+    <value>Ladezustand [kWh]</value>
+  </data>
+  <data name="PEAK_CSV_LADUNG" xml:space="preserve">
+    <value>Ladung [kWh]</value>
+  </data>
+  <data name="PEAK_CSV_ENTLADUNG" xml:space="preserve">
+    <value>Entladung [kWh]</value>
+  </data>
+  <data name="PEAK_DATEI" xml:space="preserve">
+    <value>Peak-Shaving.csv</value>
+  </data>
+  <data name="PEAK_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>Vorbelegung aus Gerät und aktiver Variante: {0}</value>
+  </data>
+  <data name="PEAK_HERKUNFT_VORGABE" xml:space="preserve">
+    <value>Vorbelegung: Vorgaben des Fachkonzepts</value>
+  </data>
+  <data name="PEAK_HINWEIS" xml:space="preserve">
+    <value>Bezugsgröße der Lastspitze ist das Jahresmaximum der Viertelstundenleistung; die Monatsauswertung steht als Option daneben. Ergebnisse werden in dieser Stufe nicht in der Datenbank gespeichert – Exportweg ist CSV. Leistungspreis und mittlerer Bezugspreis sind einzugeben; ohne sie bleibt die Monetarisierung 0.</value>
+  </data>
+  <data name="PEAK_MSG_KEINE_REIHE" xml:space="preserve">
+    <value>Bitte zuerst einen Lastgang wählen oder importieren.</value>
+  </data>
+  <data name="PEAK_MSG_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>Bitte zuerst rechnen.</value>
+  </data>
+  <data name="PEAK_MSG_KAPAZITAET" xml:space="preserve">
+    <value>Die Kapazität muss größer als 0 sein.</value>
+  </data>
+  <data name="PEAK_MSG_BAND" xml:space="preserve">
+    <value>Der obere Ladezustand muss über dem unteren liegen.</value>
+  </data>
+  <data name="PEAK_MSG_ETA" xml:space="preserve">
+    <value>Der Wirkungsgrad muss im Bereich (0 … 1] liegen.</value>
+  </data>
+  <data name="PEAK_MSG_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Die Nutzungsdauer muss größer als 0 sein.</value>
+  </data>
+  <data name="PEAK_MSG_MINIMAL" xml:space="preserve">
+    <value>Kleinste haltbare Zielschwelle: {0} kW. Der Wert steht jetzt im Schwellenfeld, die adaptive Suche ist ausgeschaltet.</value>
+  </data>
+  <data name="PEAK_MSG_GERISSEN" xml:space="preserve">
+    <value>Der Speicher hält die Zielschwelle nicht: die neue Spitze liegt bei {0} kW. Kapazität oder Leistung erhöhen oder die Schwelle anheben.</value>
+  </data>
+  <data name="OPT_TITEL" xml:space="preserve">
+    <value>Auslegung optimieren</value>
+  </data>
+  <data name="OPT_GRP_SUCHRAUM" xml:space="preserve">
+    <value>Suchraum</value>
+  </data>
+  <data name="OPT_GRP_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="OPT_LBL_CMIN" xml:space="preserve">
+    <value>Kapazität von [kWh]</value>
+  </data>
+  <data name="OPT_LBL_CMAX" xml:space="preserve">
+    <value>Kapazität bis [kWh]</value>
+  </data>
+  <data name="OPT_LBL_STUETZSTELLEN" xml:space="preserve">
+    <value>Stützstellen</value>
+  </data>
+  <data name="OPT_LBL_RMIN" xml:space="preserve">
+    <value>C-Rate von [1/h]</value>
+  </data>
+  <data name="OPT_LBL_RMAX" xml:space="preserve">
+    <value>C-Rate bis [1/h]</value>
+  </data>
+  <data name="OPT_LBL_RSCHRITT" xml:space="preserve">
+    <value>Schrittweite [1/h]</value>
+  </data>
+  <data name="OPT_LBL_STRATEGIE" xml:space="preserve">
+    <value>Berechnungsart</value>
+  </data>
+  <data name="OPT_CHK_FEINRASTER" xml:space="preserve">
+    <value>Feinraster um das Optimum</value>
+  </data>
+  <data name="OPT_CHK_KVER" xml:space="preserve">
+    <value>Verschleißkosten in die Zielfunktion</value>
+  </data>
+  <data name="OPT_LBL_PUNKTE" xml:space="preserve">
+    <value>Rasterpunkte: {0}</value>
+  </data>
+  <data name="OPT_LBL_AKTUELL" xml:space="preserve">
+    <value>Aktuelle Auslegung: {0} kWh / {1} kW ({2} C)</value>
+  </data>
+  <data name="OPT_HINWEIS_ZIELFUNKTION" xml:space="preserve">
+    <value>Maximiert wird der Jahresüberschuss nach Kapitaldienst ΔJ = E_a,äq − (c_cap·C + c_pow·P + I_fix) · a(i_z, N). Die Amortisationszeit ist bewusst keine Zielgröße, sondern Sekundärkennzahl.</value>
+  </data>
+  <data name="OPT_HINWEIS_KVER" xml:space="preserve">
+    <value>Achtung: Annuität und Verschleißkosten bepreisen denselben Sachverhalt. Solange c_ver aus der Investition abgeleitet ist, ist die Einrechnung eine Doppelzählung.</value>
+  </data>
+  <data name="OPT_HINWEIS_SUCHRAUM" xml:space="preserve">
+    <value>Vorschlag des Fachkonzepts: 500 … 5.000 kWh mit 10 Stützstellen, 0,5 … 3,0 C in 0,5er-Schritten.</value>
+  </data>
+  <data name="OPT_BTN_OEFFNEN" xml:space="preserve">
+    <value>Auslegung optimieren …</value>
+  </data>
+  <data name="OPT_BTN_START" xml:space="preserve">
+    <value>Optimierung starten</value>
+  </data>
+  <data name="OPT_BTN_ABBRUCH" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="OPT_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Bestpunkt übernehmen …</value>
+  </data>
+  <data name="OPT_BTN_CSV" xml:space="preserve">
+    <value>Raster als CSV …</value>
+  </data>
+  <data name="OPT_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="OPT_STATUS_BEREIT" xml:space="preserve">
+    <value>Bereit.</value>
+  </data>
+  <data name="OPT_STATUS_PUNKT" xml:space="preserve">
+    <value>Rasterpunkt {0} von {1}</value>
+  </data>
+  <data name="OPT_STATUS_PUNKT_FEIN" xml:space="preserve">
+    <value>Rasterpunkt {0} von {1} (Feinraster)</value>
+  </data>
+  <data name="OPT_STATUS_FERTIG" xml:space="preserve">
+    <value>{0} Rasterpunkte in {1} s — Optimum {2} kWh / {3} C</value>
+  </data>
+  <data name="OPT_STATUS_ABGEBROCHEN" xml:space="preserve">
+    <value>Abgebrochen — es liegt kein vollständiges Raster vor.</value>
+  </data>
+  <data name="OPT_CHART_HEATMAP_TITEL" xml:space="preserve">
+    <value>Jahresüberschuss ΔJ [€/a]</value>
+  </data>
+  <data name="OPT_CHART_X_CRATE" xml:space="preserve">
+    <value>C-Rate [1/h]</value>
+  </data>
+  <data name="OPT_CHART_Y_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität [kWh]</value>
+  </data>
+  <data name="OPT_CHART_SCHNITT_TITEL" xml:space="preserve">
+    <value>Schnittkurve bei {0} C</value>
+  </data>
+  <data name="OPT_CHART_SCHNITT_Y" xml:space="preserve">
+    <value>ΔJ [€/a]</value>
+  </data>
+  <data name="OPT_CHART_FARBSKALA" xml:space="preserve">
+    <value>ΔJ [€/a]</value>
+  </data>
+  <data name="OPT_ZELLE_LEER" xml:space="preserve">
+    <value>Zelle mit der Maus überfahren, um ihre Werte zu sehen.</value>
+  </data>
+  <data name="OPT_ZELLE" xml:space="preserve">
+    <value>{0} kWh · {1} C · P = {2} kW · ΔJ = {3} €/a · T_stat = {4}</value>
+  </data>
+  <data name="OPT_WARN_RAND" xml:space="preserve">
+    <value>Optimum am Rand — Suchbereich erweitern ({0}).</value>
+  </data>
+  <data name="OPT_WARN_RAND_C_UNTEN" xml:space="preserve">
+    <value>Kapazität an der Untergrenze</value>
+  </data>
+  <data name="OPT_WARN_RAND_C_OBEN" xml:space="preserve">
+    <value>Kapazität an der Obergrenze</value>
+  </data>
+  <data name="OPT_WARN_RAND_R_UNTEN" xml:space="preserve">
+    <value>C-Rate an der Untergrenze</value>
+  </data>
+  <data name="OPT_WARN_RAND_R_OBEN" xml:space="preserve">
+    <value>C-Rate an der Obergrenze</value>
+  </data>
+  <data name="OPT_WARN_CPOW" xml:space="preserve">
+    <value>Die leistungsbezogene Investition c_pow ist 0 — die C-Rate-Achse ist kostenneutral, das Optimum wandert zwangsläufig an die obere C-Raten-Grenze.</value>
+  </data>
+  <data name="OPT_WARN_KVER_AKTIV" xml:space="preserve">
+    <value>K_ver ist in ΔJ eingerechnet (Fachkonzept 5.4).</value>
+  </data>
+  <data name="OPT_WARN_ZYKLEN" xml:space="preserve">
+    <value>Der Bestpunkt rechnet {0} Vollzyklen über die Nutzungsdauer gegen {1} zugesicherte.</value>
+  </data>
+  <data name="OPT_SP_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="OPT_SP_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="OPT_SP_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="OPT_KZ_GRUPPE_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegung des Bestpunkts</value>
+  </data>
+  <data name="OPT_KZ_GRUPPE_WIRTSCHAFT" xml:space="preserve">
+    <value>Wirtschaftlichkeit</value>
+  </data>
+  <data name="OPT_KZ_GRUPPE_SPEICHER" xml:space="preserve">
+    <value>Speicher und Energie</value>
+  </data>
+  <data name="OPT_KZ_KAPAZITAET" xml:space="preserve">
+    <value>Nennkapazität C_nom</value>
+  </data>
+  <data name="OPT_KZ_CRATE" xml:space="preserve">
+    <value>C-Rate</value>
+  </data>
+  <data name="OPT_KZ_LEISTUNG" xml:space="preserve">
+    <value>Lade-/Entladeleistung P</value>
+  </data>
+  <data name="OPT_KZ_ZIELFUNKTION" xml:space="preserve">
+    <value>Zielfunktion ΔJ</value>
+  </data>
+  <data name="OPT_KZ_UEBERSCHUSS" xml:space="preserve">
+    <value>Jahresüberschuss ohne K_ver</value>
+  </data>
+  <data name="OPT_KZ_ERTRAG1" xml:space="preserve">
+    <value>Ertrag Referenzjahr E_a,1</value>
+  </data>
+  <data name="OPT_KZ_ERTRAGAEQ" xml:space="preserve">
+    <value>Ertrag äquivalent E_a,äq</value>
+  </data>
+  <data name="OPT_KZ_INVEST" xml:space="preserve">
+    <value>Investition I</value>
+  </data>
+  <data name="OPT_KZ_ANNUITAET" xml:space="preserve">
+    <value>Annuität A</value>
+  </data>
+  <data name="OPT_KZ_NPV" xml:space="preserve">
+    <value>Kapitalwert NPV</value>
+  </data>
+  <data name="OPT_KZ_AMORT_STAT" xml:space="preserve">
+    <value>Amortisation statisch</value>
+  </data>
+  <data name="OPT_KZ_AMORT_DYN" xml:space="preserve">
+    <value>Amortisation dynamisch</value>
+  </data>
+  <data name="OPT_KZ_ZYKLEN" xml:space="preserve">
+    <value>Äquivalente Vollzyklen</value>
+  </data>
+  <data name="OPT_KZ_ZYKLEN_N" xml:space="preserve">
+    <value>Zyklen über die Nutzungsdauer</value>
+  </data>
+  <data name="OPT_KZ_KVER" xml:space="preserve">
+    <value>Verschleißkosten K_ver</value>
+  </data>
+  <data name="OPT_KZ_EIGENVERBRAUCH" xml:space="preserve">
+    <value>Eigenverbrauchsquote</value>
+  </data>
+  <data name="OPT_KZ_AUTARKIE" xml:space="preserve">
+    <value>Autarkiegrad</value>
+  </data>
+  <data name="OPT_KZ_LADEENERGIE" xml:space="preserve">
+    <value>Ladeenergie</value>
+  </data>
+  <data name="OPT_KZ_ENTLADEENERGIE" xml:space="preserve">
+    <value>Entladeenergie</value>
+  </data>
+  <data name="OPT_KZ_VERLUSTE" xml:space="preserve">
+    <value>Speicherverluste</value>
+  </data>
+  <data name="OPT_AMORT_UEBER" xml:space="preserve">
+    <value>&gt; Nutzungsdauer</value>
+  </data>
+  <data name="OPT_AMORT_NIE" xml:space="preserve">
+    <value>nicht amortisierbar</value>
+  </data>
+  <data name="OPT_MSG_KEIN_LAUF" xml:space="preserve">
+    <value>Die Simulation ist noch nicht gerechnet. Die Auslegungsoptimierung braucht den Lastgang und die Erzeugungsreihen eines vollständigen Laufs.</value>
+  </data>
+  <data name="OPT_MSG_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>Es liegt noch kein Optimierungsergebnis vor.</value>
+  </data>
+  <data name="OPT_MSG_FEHLER" xml:space="preserve">
+    <value>Die Optimierung ist fehlgeschlagen: {0}</value>
+  </data>
+  <data name="OPT_MSG_CMIN" xml:space="preserve">
+    <value>Die untere Kapazitätsgrenze muss größer als 0 sein.</value>
+  </data>
+  <data name="OPT_MSG_CMAX" xml:space="preserve">
+    <value>Die obere Kapazitätsgrenze muss über der unteren liegen.</value>
+  </data>
+  <data name="OPT_MSG_STUETZSTELLEN" xml:space="preserve">
+    <value>Die Kapazitätsachse braucht mindestens 2 Stützstellen.</value>
+  </data>
+  <data name="OPT_MSG_RMIN" xml:space="preserve">
+    <value>Die untere C-Rate muss größer als 0 sein.</value>
+  </data>
+  <data name="OPT_MSG_RMAX" xml:space="preserve">
+    <value>Die obere C-Rate darf nicht unter der unteren liegen.</value>
+  </data>
+  <data name="OPT_MSG_RSCHRITT" xml:space="preserve">
+    <value>Die Schrittweite der C-Rate muss größer als 0 sein.</value>
+  </data>
+  <data name="OPT_MSG_MEHRERE_ANLAGEN" xml:space="preserve">
+    <value>Das Projekt führt mehrere Speicheranlagen. Die Optimierung rechnet mit ihrer Summe; die Aufteilung eines Optimums auf mehrere Geräte ist nicht eindeutig. Bitte die Werte von Hand eintragen.</value>
+  </data>
+  <data name="OPT_MSG_UEBERNAHME_FRAGE" xml:space="preserve">
+    <value>Kapazität {0} kWh und Leistung {1} kW in die Gerätedaten der Anlage übernehmen?
+
+Die Simulation wird dabei nicht neu gerechnet.</value>
+  </data>
+  <data name="OPT_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Die Auslegung wurde übernommen. Die Simulation ist damit nicht mehr aktuell — bitte neu rechnen.</value>
+  </data>
+  <data name="OPT_MSG_UEBERNAHME_FEHLER" xml:space="preserve">
+    <value>Die Auslegung konnte nicht geschrieben werden.</value>
+  </data>
+  <data name="OPT_DATEI" xml:space="preserve">
+    <value>Auslegungsraster_Projekt{0}.csv</value>
+  </data>
+  <data name="OPT_CSV_TITEL" xml:space="preserve">
+    <value>CSV-Export</value>
+  </data>
+  <data name="OPT_CSV_PHASE" xml:space="preserve">
+    <value>Phase</value>
+  </data>
+  <data name="OPT_CSV_PHASE_GROB" xml:space="preserve">
+    <value>Grobraster</value>
+  </data>
+  <data name="OPT_CSV_PHASE_FEIN" xml:space="preserve">
+    <value>Feinraster</value>
+  </data>
+  <data name="OPT_CSV_GESCHRIEBEN" xml:space="preserve">
+    <value>Die Datei wurde erstellt:
+{0}</value>
+  </data>
+  <data name="OPT_CSV_FEHLER" xml:space="preserve">
+    <value>Fehler beim Schreiben der CSV-Datei:
+{0}</value>
+  </data>
+  <data name="VAR_TITEL" xml:space="preserve">
+    <value>Speichervarianten</value>
+  </data>
+  <data name="VAR_MENU_NEU" xml:space="preserve">
+    <value>Neue Variante anlegen…</value>
+  </data>
+  <data name="VAR_MENU_DUPLIZIEREN" xml:space="preserve">
+    <value>Variante duplizieren</value>
+  </data>
+  <data name="VAR_MENU_AKTIV" xml:space="preserve">
+    <value>Als aktiv setzen</value>
+  </data>
+  <data name="VAR_MENU_LOESCHEN" xml:space="preserve">
+    <value>Variante löschen</value>
+  </data>
+  <data name="VAR_MENU_VERGLEICH" xml:space="preserve">
+    <value>Vergleich: in der Simulation nach einem Lauf</value>
+  </data>
+  <data name="VAR_NAME_VORSCHLAG" xml:space="preserve">
+    <value>{0} (Variante {1})</value>
+  </data>
+  <data name="VAR_MSG_ANLAGE_FEHLT" xml:space="preserve">
+    <value>Die Anlagenzeile dieser Variante wurde nicht gefunden. Bitte die Übersicht auffrischen.</value>
+  </data>
+  <data name="VAR_MSG_GERAET_FEHLT" xml:space="preserve">
+    <value>Zu dieser Variante ist kein Speichergerät hinterlegt. Bitte zuerst über „Hinzufügen/Bearbeiten“ ein Gerät zuordnen.</value>
+  </data>
+  <data name="VAR_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>Der Name „{0}“ ist im Projekt bereits vergeben. Bitte einen anderen wählen.</value>
+  </data>
+  <data name="VAR_MSG_ANLEGEN_FEHLER" xml:space="preserve">
+    <value>Die Variante konnte nicht angelegt werden. Einzelheiten stehen im Protokoll.</value>
+  </data>
+  <data name="VAR_MSG_VARIANTENZEILE_FEHLER" xml:space="preserve">
+    <value>Die Anlagenzeile wurde angelegt, die Betriebsparameter der Variante jedoch nicht. Bitte die Parameterseite prüfen.</value>
+  </data>
+  <data name="VAR_MSG_LOESCHEN_FRAGE" xml:space="preserve">
+    <value>Die Variante „{0}“ mit allen Betriebsparametern löschen?</value>
+  </data>
+  <data name="VAR_MSG_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>Die Variante konnte nicht gelöscht werden.</value>
+  </data>
+  <data name="VAR_MSG_AKTIV_FRAGE" xml:space="preserve">
+    <value>Die Variante „{0}“ als aktive Variante des Projekts setzen?
+
+Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simulationslauf bleibt unverändert.</value>
+  </data>
+  <data name="VAR_MSG_AKTIV_FEHLER" xml:space="preserve">
+    <value>Die aktive Variante konnte nicht gesetzt werden.</value>
+  </data>
+  <data name="VAR_VGL_TITEL" xml:space="preserve">
+    <value>Variantenvergleich Stromspeicher</value>
+  </data>
+  <data name="VAR_VGL_BTN_OEFFNEN" xml:space="preserve">
+    <value>Varianten vergleichen…</value>
+  </data>
+  <data name="VAR_VGL_TOOLTIP_OEFFNEN" xml:space="preserve">
+    <value>Rechnet jede Speichervariante des Projekts auf dem vorliegenden Simulationslauf und stellt die Kennzahlen nebeneinander.</value>
+  </data>
+  <data name="VAR_VGL_SP_AKTIV" xml:space="preserve">
+    <value>Aktiv</value>
+  </data>
+  <data name="VAR_VGL_SP_BEZEICHNUNG" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="VAR_VGL_SP_BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart</value>
+  </data>
+  <data name="VAR_VGL_SP_BERECHNUNGSART" xml:space="preserve">
+    <value>Berechnungsart</value>
+  </data>
+  <data name="VAR_VGL_SP_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität [kWh]</value>
+  </data>
+  <data name="VAR_VGL_SP_LEISTUNG" xml:space="preserve">
+    <value>Leistung [kW]</value>
+  </data>
+  <data name="VAR_VGL_SP_INVESTITION" xml:space="preserve">
+    <value>Investition [€]</value>
+  </data>
+  <data name="VAR_VGL_SP_ERTRAG" xml:space="preserve">
+    <value>Ertrag E_a,äq [€/a]</value>
+  </data>
+  <data name="VAR_VGL_SP_DELTAJ" xml:space="preserve">
+    <value>ΔJ [€/a]</value>
+  </data>
+  <data name="VAR_VGL_SP_AMORTISATION" xml:space="preserve">
+    <value>Amortisation [a]</value>
+  </data>
+  <data name="VAR_VGL_SP_NPV" xml:space="preserve">
+    <value>Kapitalwert [€]</value>
+  </data>
+  <data name="VAR_VGL_SP_VOLLZYKLEN" xml:space="preserve">
+    <value>Vollzyklen [1/a]</value>
+  </data>
+  <data name="VAR_VGL_MARKER_AKTIV" xml:space="preserve">
+    <value>aktiv</value>
+  </data>
+  <data name="VAR_VGL_BTN_AKTIV" xml:space="preserve">
+    <value>Als aktiv setzen</value>
+  </data>
+  <data name="VAR_VGL_STATUS" xml:space="preserve">
+    <value>{0} Varianten gerechnet ({1} ms). Beste nach ΔJ: {2}.</value>
+  </data>
+  <data name="VAR_VGL_STATUS_LEER" xml:space="preserve">
+    <value>Das Projekt führt keine Speichervariante.</value>
+  </data>
+  <data name="VAR_VGL_STATUS_OHNE_ERGEBNIS" xml:space="preserve">
+    <value>Keine Variante konnte gerechnet werden — Einzelheiten stehen im Protokoll.</value>
+  </data>
+  <data name="VAR_VGL_KEIN_LAUF" xml:space="preserve">
+    <value>Der Vergleich braucht einen gerechneten Simulationslauf. Bitte zuerst die Simulation starten.</value>
+  </data>
+  <data name="VAR_VGL_FEHLER_ZEILE" xml:space="preserve">
+    <value>nicht rechenbar</value>
+  </data>
+  <data name="VAR_VGL_LEGENDE" xml:space="preserve">
+    <value>Grün hinterlegt: beste Variante nach ΔJ = E_a,äq − I·a(i_z, N). Fett: die aktive Variante — sie speist Übersichtsanzeige und Gesamtsimulation.</value>
+  </data>
+  <data name="VAR_VGL_HINWEIS_KEINE_AKTIVE" xml:space="preserve">
+    <value>Achtung: Keine dieser Varianten ist als aktiv markiert. Solange das so bleibt, rechnet die Gesamtsimulation ersatzweise über alle Speicheranlagen des Projekts zusammen — wählen Sie die gewünschte Zeile und drücken Sie „Als aktiv setzen".</value>
+  </data>
+  <data name="VAR_VGL_PROTOKOLL" xml:space="preserve">
+    <value>Protokoll</value>
+  </data>
+  <data name="VAR_VGL_PROTOKOLL_ZEILE" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="VAR_VGL_DATEI" xml:space="preserve">
+    <value>Variantenvergleich_Projekt{0}.csv</value>
+  </data>
+  <data name="VAR_VGL_MSG_KEINE_AUSWAHL" xml:space="preserve">
+    <value>Bitte zuerst eine Variante in der Tabelle auswählen.</value>
+  </data>
+  <data name="VAR_VGL_MSG_FEHLER" xml:space="preserve">
+    <value>Der Variantenvergleich ist fehlgeschlagen: {0}</value>
+  </data>
+  <data name="SP_BERECHNUNG_ANZEIGE_ARBITRAGE" xml:space="preserve">
+    <value>Preissteuerung / Arbitrage</value>
+  </data>
+  <data name="ARB_OHNE_EXCEL_REFERENZ" xml:space="preserve">
+    <value>Für die Preissteuerung gibt es keine Excel-Referenz – die Arbitragelogik der V7-Mappe war zur Laufzeit nicht ausführbar. Gerechnet wird energetisch.</value>
+  </data>
+  <data name="ARB_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
+    <value>Der Excel-Kompatibilitätsmodus gilt nur für die Dauernutzung – für die Preissteuerung gibt es keine Excel-Referenz. Gerechnet wird energetisch.</value>
+  </data>
+  <data name="ARB_HINWEIS_OHNE_NETZENTLADUNG" xml:space="preserve">
+    <value>Preissteuerung ohne Entladung ins Netz: Ohne Verkaufsmöglichkeit trägt keine Paarung. Gerechnet wird die Dauernutzung.</value>
+  </data>
+  <data name="ARB_HINWEIS_NUR_VERKAUF" xml:space="preserve">
+    <value>Grünstrombetrieb: Aus dem Netz wird nicht geladen. Geplant wird ausschließlich der Verkauf aus vorhandenem Ladezustand.</value>
+  </data>
+  <data name="ARB_HINWEIS_OHNE_PREISREIHEN" xml:space="preserve">
+    <value>Die Preisreihen der Preissteuerung fehlen. Gerechnet wird die Dauernutzung.</value>
+  </data>
+  <data name="ARB_HINWEIS_PLAN" xml:space="preserve">
+    <value>Preissteuerung: {0} Paarungen, {1} Verkaufsslots, {2} Kandidaten an der Pfadprüfung verworfen; Verschleiß {3} ct/kWh; Zyklenbudget zu {4} % ausgelastet.</value>
+  </data>
+  <data name="ARB_PARAM_HINWEIS_NETZENTLADUNG" xml:space="preserve">
+    <value>Erlaubt den aktiven Verkauf ins Netz. Wirksam wird er mit der Berechnungsart „Preissteuerung / Arbitrage“: Sie bestimmt die Verkaufszeitpunkte aus Erlös- und Netzladepreisreihe. Der Eigenverbrauch behält Vorrang.</value>
+  </data>
+  <data name="ARB_PARAM_HINWEIS_LADESCHWELLE" xml:space="preserve">
+    <value>Zusätzliche Schranke für die Netzladung: Geladen wird nur, wenn der Netzladepreis (Energiepreis + Aufschlag) diesen Wert nicht überschreitet. 0 = keine Schranke. Wirksam nur bei der Berechnungsart „Preissteuerung / Arbitrage“.</value>
+  </data>
+  <data name="ARB_PARAM_HINWEIS_NETZLADEAUFSCHLAG" xml:space="preserve">
+    <value>Default 0 unterstellt Netzentgeltbefreiung für den Speicher. Liegt keine Befreiung vor, hier den vollen Aufschlag eintragen – davon hängt die Wirtschaftlichkeit der Netzladung entscheidend ab.</value>
+  </data>
+  <data name="ARB_ERG_VERKAUF" xml:space="preserve">
+    <value>Entladung ins Netz (Verkauf)</value>
+  </data>
+  <data name="ARB_ERG_BUDGET" xml:space="preserve">
+    <value>Zyklenbudget (Jahresanteil)</value>
+  </data>
+  <data name="ARB_ERG_BUDGET_AUSLASTUNG" xml:space="preserve">
+    <value>Zyklenbudget-Auslastung</value>
+  </data>
+  <data name="ARB_ERG_KVER" xml:space="preserve">
+    <value>Verschleiß je ausgespeicherter kWh</value>
+  </data>
+  <data name="ARB_ERG_PAARE" xml:space="preserve">
+    <value>Preissteuerung: angenommene Paarungen</value>
+  </data>
+  <data name="ARB_ERG_AMPEL_ERSCHOEPFT" xml:space="preserve">
+    <value>Das Zyklenbudget war vor Jahresende aufgebraucht – die Preissteuerung hat danach nicht mehr geplant.</value>
+  </data>
+  <data name="ARB_CSV_LADUNG_NETZ" xml:space="preserve">
+    <value>Netzladung [kWh]</value>
+  </data>
+  <data name="ARB_CSV_VERKAUF" xml:space="preserve">
+    <value>Netzverkauf [kWh]</value>
+  </data>
+  <data name="SP_LABEL_ENERGIE" xml:space="preserve">
+    <value>Energie (Kapazität) [kWh]:</value>
+  </data>
+  <data name="SP_LABEL_ENERGIE_KURZ" xml:space="preserve">
+    <value>Energie (Kapazität)</value>
+  </data>
+  <data name="SP_LABEL_MODULKOSTEN" xml:space="preserve">
+    <value>Modulkosten [€/kWh]:</value>
+  </data>
+  <data name="SP_PARAM_LABEL_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität [kWh]</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_KAPAZITAET" xml:space="preserve">
+    <value>Gerätedatum: Kapazität der gerechneten Speicheranlage (aktive Variante); ohne aktive Variante die Summe aller Speicheranlagen des Projekts</value>
+  </data>
+  <data name="SP_PARAM_SOC_KWH" xml:space="preserve">
+    <value>= {0} kWh</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_SOC_KWH" xml:space="preserve">
+    <value>kWh-Äquivalent des Prozentwerts, bezogen auf die oben angezeigte Kapazität</value>
+  </data>
+  <data name="SP_ERG_LAST" xml:space="preserve">
+    <value>Strombedarf (Last)</value>
+  </data>
+  <data name="SP_ERG_ERZEUGUNG_PV" xml:space="preserve">
+    <value>PV-Erzeugung</value>
+  </data>
+  <data name="SP_ERG_ERZEUGUNG_BHKW" xml:space="preserve">
+    <value>BHKW-Erzeugung</value>
+  </data>
+  <data name="SP_ERG_DIREKTVERBRAUCH" xml:space="preserve">
+    <value>Direktverbrauch aus Erzeugung</value>
+  </data>
+  <data name="SP_ERG_OHNE_ERZEUGUNG" xml:space="preserve">
+    <value>Dieser Lauf enthält keine Erzeugung (PV/BHKW): Eigenverbrauchsquote und Einspeisung sind nicht bestimmbar, der Speicher kann nur seine Anfangsladung abgeben.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_OHNE_ERZEUGUNG" xml:space="preserve">
+    <value>Der Stromspeicher wurde OHNE Erzeugungsreihe gerechnet ({0}). Eigenverbrauchsquote, Einspeisung und Ladung aus Erzeugung bleiben damit ohne Aussage - der Speicher gibt nur seine Anfangsladung ab.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_PV_NICHT_AKTIV" xml:space="preserve">
+    <value>die Photovoltaik ist in diesem Lauf nicht aufgenommen</value>
+  </data>
+  <data name="SIMENG_SPEICHER_PV_OHNE_ERTRAG" xml:space="preserve">
+    <value>die Photovoltaik wurde gerechnet, liefert aber keinen Ertrag</value>
+  </data>
+  <data name="SIM_KARTE_TIP_AUFKLAPPEN" xml:space="preserve">
+    <value>Gerätedaten ein- und ausblenden</value>
+  </data>
+  <data name="SIM_KARTE_OHNE_GERAET" xml:space="preserve">
+    <value>Gerätedaten nicht gepflegt</value>
+  </data>
+  <data name="SIM_KARTE_SP_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität {0} kWh</value>
+  </data>
+  <data name="SIM_KARTE_SP_LEISTUNG" xml:space="preserve">
+    <value>Leistung {0} kW</value>
+  </data>
+  <data name="SIM_KARTE_SP_WIRKUNGSGRAD" xml:space="preserve">
+    <value>η_RT {0}</value>
+  </data>
+  <data name="SIM_KARTE_SP_TYP" xml:space="preserve">
+    <value>Typ {0}</value>
+  </data>
+  <data name="SIM_KARTE_SP_ZYKLEN" xml:space="preserve">
+    <value>N_zyk {0}</value>
+  </data>
+  <data name="SIM_KARTE_SP_VARIANTE" xml:space="preserve">
+    <value>Variante {0}</value>
+  </data>
+  <data name="SIM_KARTE_SP_BAND" xml:space="preserve">
+    <value>SoC-Band {0}–{1} %</value>
+  </data>
+  <data name="SIM_KARTE_SP_NETZENTLADUNG_AN" xml:space="preserve">
+    <value>Netzentladung an</value>
+  </data>
+  <data name="SIM_KARTE_SP_NETZENTLADUNG_AUS" xml:space="preserve">
+    <value>Netzentladung aus</value>
+  </data>
+  <data name="SIM_KARTE_SP_OHNE_VARIANTE" xml:space="preserve">
+    <value>keine aktive Variante</value>
+  </data>
+  <data name="SIM_KARTE_PV_MODUL" xml:space="preserve">
+    <value>Modul {0}</value>
+  </data>
+  <data name="SIM_KARTE_PV_ANZAHL" xml:space="preserve">
+    <value>{0} Module</value>
+  </data>
+  <data name="SIM_KARTE_PV_AUSRICHTUNG" xml:space="preserve">
+    <value>Neigung {0}° · Azimut {1}°</value>
+  </data>
+  <data name="SIM_KARTE_PV_KWP" xml:space="preserve">
+    <value>{0} kWp (rechnerisch)</value>
   </data>
 </root>

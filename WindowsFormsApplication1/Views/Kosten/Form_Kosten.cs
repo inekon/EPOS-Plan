@@ -68,6 +68,90 @@ namespace WindowsFormsApplication1
 
             FillCarrierComboBox();
             RenderEnergieTab();
+            BauePreisreihenEinstieg();
+        }
+
+        /// <summary>
+        /// Einstieg in Spotpreisimport und Kostenprofil-Editor (AP4, Fachkonzept 4.1) —
+        /// zwei Knöpfe unter der Energieträgerliste im Reiter „Energiekosten".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum hier und nicht als eigener Menüpunkt.</b> Beides sind PREISDATEN des
+        /// Strom-Energieträgers und gehören damit dorthin, wo der Strompreis ohnehin
+        /// gepflegt wird: Arbeitspreis, Preishistorie und der Aufschlagsblock aus 4.2
+        /// stehen alle im Reiter „Energiekosten" dieses Formulars. Ein eigener
+        /// Navigationseintrag hätte die Preispflege auf zwei Orte verteilt, und der
+        /// Anwender müsste wissen, dass „Spotpreise" und „Arbeitspreis" dasselbe Feld
+        /// im Rechenweg füttern. Der Kostenbereich hat außerdem bereits seine
+        /// Verwaltungsknöpfe an genau dieser Stelle (Hinzufügen/Löschen des Trägers).
+        /// </para>
+        /// <para>
+        /// Programmatisch angehängt, damit <c>Form_Kosten.Designer.cs</c> unberührt
+        /// bleibt (CLAUDE.md: Designer-Dateien nicht von Hand editieren).
+        /// </para>
+        /// </remarks>
+        private void BauePreisreihenEinstieg()
+        {
+            try
+            {
+                Panel leiste = new Panel
+                {
+                    Location = new Point(17, 625),
+                    Size = new Size(355, 66),
+                    BackColor = Color.LightGray
+                };
+
+                Button btnSpot = new Button
+                {
+                    Text = MyResource.Resource.PREIS_BTN_SPOTIMPORT,
+                    Location = new Point(6, 4),
+                    Size = new Size(342, 28),
+                    Font = new Font("Segoe UI", 9.75f)
+                };
+                btnSpot.Click += (s, e) =>
+                {
+                    using (Form_SpotpreisImport dlg = new Form_SpotpreisImport(m_ID_Projekt))
+                        dlg.ShowDialog(this);
+                };
+
+                Button btnProfil = new Button
+                {
+                    Text = MyResource.Resource.PREIS_BTN_KOSTENPROFIL,
+                    Location = new Point(6, 34),
+                    Size = new Size(342, 28),
+                    Font = new Font("Segoe UI", 9.75f)
+                };
+                btnProfil.Click += (s, e) => KostenprofilBearbeiten();
+
+                leiste.Controls.Add(btnSpot);
+                leiste.Controls.Add(btnProfil);
+                tabEnergie.Controls.Add(leiste);
+                leiste.BringToFront();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Der Preisreihen-Einstieg konnte nicht aufgebaut werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Öffnet den Kostenprofil-Editor: das erste Profil des Projekts, oder ein neues,
+        /// wenn noch keines existiert.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst keine eigene Auswahlmaske: Ein Projekt führt in aller Regel EIN
+        /// Kostenprofil. Mehrere Profile bleiben über die Variantenauswahl auf der
+        /// Speicher-Parameterseite erreichbar; eine dritte Liste hier wäre Beiwerk.
+        /// </remarks>
+        private void KostenprofilBearbeiten()
+        {
+            KostenprofilCtrl ctrl = new KostenprofilCtrl();
+            var vorhandene = ctrl.ReadAllByProjekt(m_ID_Projekt);
+            int id = vorhandene.Count > 0 ? vorhandene[0].ID : 0;
+
+            using (Form_Kostenprofil dlg = new Form_Kostenprofil(m_ID_Projekt, id))
+                dlg.ShowDialog(this);
         }
 
         private void Form_Kosten_Load(object sender, EventArgs e)

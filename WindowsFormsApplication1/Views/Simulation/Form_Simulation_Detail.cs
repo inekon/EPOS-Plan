@@ -318,6 +318,11 @@ namespace WindowsFormsApplication1
             // CSV-Export-Buttons (programmatisch, kein Designer/.resx nötig)
             InitCsvExportButtons();
 
+            // Stromspeicher (AP3b): Parametereingaben je Variante und die bis hierher
+            // leere Ergebnisseite - beide programmatisch, wie die Blöcke darüber.
+            InitStromspeicherParameter();
+            InitStromspeicherSeite();
+
             // Bereich für den KI-Hilfe-Assistenten melden; die aktive
             // Registerkarte wird automatisch mit erkannt.
             this.Activated += (s, e) => HilfeKontext.SetzeBereich("Detaillierte Simulation");
@@ -1774,6 +1779,7 @@ namespace WindowsFormsApplication1
             MacheTextAbschnittFett(richTextBox_Info, MyResource.Resource.SIM_BETRIEBSART_OHNE_EINSPEISUNG);
 
             LeseKonfiguration();
+            LeseSpeicherVariante();
             PendelspeicherFeldEinrichten();
 
             // Blockade bei nicht abgeschlossener Schema-Migration (ADR-001, Aufgabe 6):
@@ -2157,7 +2163,22 @@ namespace WindowsFormsApplication1
 
             int id = new ErgebnisCtrl().Save(m);
             if (id > 0)
+            {
+                // AP3b: Die Speicherübersicht in FormMain zeigt Ertrag und Amortisation
+                // der ZULETZT GESPEICHERTEN Rechnung - ohne diese Auffrischung stünden
+                // dort bis zum nächsten Projektwechsel die Werte des Vorlaufs.
+                try
+                {
+                    projektCtrl.ReadSingle(m_ID_Projekt);
+                    if (Program.mainfrm != null) Program.mainfrm.SetSPControl(projektCtrl.m_szProjektname);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Die Speicheruebersicht konnte nicht aufgefrischt werden: " + ex.Message);
+                }
+
                 MessageBox.Show(MyResource.Resource.SIM_MSG_ERGEBNIS_GESPEICHERT, MyResource.Resource.SIM_ERGEBNIS);
+            }
             else
                 MessageBox.Show(MyResource.Resource.SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT, MyResource.Resource.SIM_TITEL_FEHLER);
         }
@@ -2865,7 +2886,9 @@ namespace WindowsFormsApplication1
             _chartManager[9].MitViertelStunde = true;
             _chartManager[9].Init();
             // NUR DER SPEICHER geht auf die rechte Achse (true = Sekundärachse kWh)
-            SerieAnlegen(_chartManager[9], S_SPEICHERFUELLSTAND, MyResource.Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND, Color.FromArgb(120, 130, 140), sim.simulation_pv.Speicherfuellstand_viertelstunde);
+            // AP2b: Der Ladezustand kommt aus dem SpeicherErgebnis der Engine, nicht
+            // mehr aus der abgelösten PV-Batterielogik - Serie, Farbe und Achse bleiben.
+            SerieAnlegen(_chartManager[9], S_SPEICHERFUELLSTAND, MyResource.Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND, Color.FromArgb(120, 130, 140), sim.Speicherfuellstand_viertelstuendlich);
             SerieAnlegen(_chartManager[9], S_UEBERSCHUSS, MyResource.Resource.CHART_LEGENDE_UEBERSCHUSS, Color.Yellow, sim.simulation_pv.Ueberschuss_viertelstunde);
             SerieAnlegen(_chartManager[9], S_STROMBEDARF, MyResource.Resource.CHART_ACHSE_STROMBEDARF, Color.Red, sim.simulation_pv.Strombedarf);
             SerieAnlegen(_chartManager[9], S_PHOTOVOLTAIK, MyResource.Resource.SIM_PHOTOVOLTAIK, Color.BlueViolet, sim.simulation_pv.Stromproduktion_viertelstunde);
@@ -2978,6 +3001,12 @@ namespace WindowsFormsApplication1
             waerme_solar = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000;
             gesamt_waerme = waerme_spk + waerme_wp + waerme_heizstab + waerme_solar;
             restwaermebedarf = sim.simulation_Waermebedarf.Waermebedarf_Gesamt - gesamt_waerme;
+
+            // ********************************************************************************************/
+            // Stromspeicher (AP3b) - außerhalb jeder Bedingung, damit die Seite nach
+            // einem Lauf OHNE Speicher wieder leer ist (Muster KesselErgebnisAnzeigen).
+            // ********************************************************************************************/
+            SpeicherErgebnisAnzeigen();
 
             _navManager.RefreshActivePage();
         }
@@ -3331,7 +3360,9 @@ namespace WindowsFormsApplication1
 
             if (checkBox_Speicherzustand.Checked)
             {
-                neueMax = sim.Stundenwerte_zu_viertelstunden(sim.simulation_pv.Speicherfuellstand).Max() * 1.1;//sim.simulation_pv.Strombedarf.Max() + 1;
+                // AP2b: Quelle ist die viertelstündliche SoC-Reihe der SpeicherEngine -
+                // die Spreizung stündlicher Werte entfällt, das Maximum bleibt dasselbe.
+                neueMax = sim.Speicherfuellstand_viertelstuendlich.Max() * 1.1;
                 if (neueMax < 10) neueMax = 10; // Minimum setzen, damit die Achse nicht zu klein wird
             }
             else
@@ -3622,13 +3653,10 @@ namespace WindowsFormsApplication1
                 else if (mode == 1) radioButton_Stromgefuehrt.Checked = true;
                 else radioButton_OhneStromEinspeisung.Checked = true;
                 radioButton_OhneStromEinspeisung.CheckedChanged += radioButton_Stromgefuehrt_CheckedChanged;
-                textBox_Stromspeicher_Ladeenergie_min.Text = ctrl.model.m_Ladefuellstand_Min.ToString();
-                textBox_Stromspeicher_Ladeenergie_max.Text = ctrl.model.m_Ladefuellstand_Max.ToString();
-                comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text = ctrl.model.m_Ladefuellstand_Min_Auswahl;
-                comboBox_Stromspeicher_LadeenergieMax_auswahl.Text = ctrl.model.m_Ladefuellstand_Max_Auswahl;
-                textBox_Stromspeicher_Ladeleistung_max.Text = ctrl.model.m_Ladeleistung_Max.ToString();
-                comboBox_Stromspeicher_LadeleistungMax_auswahl.Text = ctrl.model.m_Ladeleistung_Max_Auswahl.ToString();
-                textBox_Speicher_Ladeschwelle.Text = ctrl.model.m_Ladeschwellwert.ToString();
+                // Die vier Ladeparameter standen bis AP3b hier: sie kamen projektweit
+                // aus Tab_Einstellungen und wirkten nirgends. Seit Fachkonzept 5.6 hängen
+                // sie an der aktiven Speichervariante - gelesen wird in
+                // LeseSpeicherVariante(), geschrieben zielgenau je Feld.
             }
         }
 
@@ -3677,39 +3705,1765 @@ namespace WindowsFormsApplication1
 
 
 
+        // ====================================================================
+        //  Ladeparameter: seit AP3b Sache der aktiven Speichervariante
+        // ====================================================================
+        //
+        // Die vier Felder im Designer bleiben, ihr Ziel wechselt: Bis hierher schrieben
+        // sie projektweit nach Tab_Einstellungen (Ladefuellstand_Min/_Max,
+        // Ladeleistung_Max, Ladeschwellwert) - Werte, die keine Simulation je gelesen
+        // hat (Umsetzungskonzept 1.2 g). Sie gehen jetzt in Tab_StromspeicherVariante,
+        // weil jede Variante ein eigenes SoC-Band braucht (Fachkonzept 5.6/7.3).
+        //
+        // Das Schreibmuster der Seite bleibt: zielgenau beim Verlassen des Feldes.
+
         private void textBox_Stromspeicher_Ladeenergie_min_Leave(object sender, EventArgs e)
         {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladefuellstand_Min = Convert.ToInt32(textBox_Stromspeicher_Ladeenergie_min.Text));
+            double wert;
+            if (SpZahl(textBox_Stromspeicher_Ladeenergie_min, out wert))
+                SpeichereVariantenAenderung(v => v.SoC_Min_Prozent = wert);
+            else
+                SpFeldZuruecksetzen(textBox_Stromspeicher_Ladeenergie_min,
+                                    _speicherVariante != null ? _speicherVariante.SoC_Min_Prozent : 0.0, "F0");
         }
 
         private void textBox_Stromspeicher_Ladeenergie_max_Leave(object sender, EventArgs e)
         {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladefuellstand_Max = Convert.ToInt32(textBox_Stromspeicher_Ladeenergie_max.Text));
+            double wert;
+            if (SpZahl(textBox_Stromspeicher_Ladeenergie_max, out wert))
+                SpeichereVariantenAenderung(v => v.SoC_Max_Prozent = wert);
+            else
+                SpFeldZuruecksetzen(textBox_Stromspeicher_Ladeenergie_max,
+                                    _speicherVariante != null ? _speicherVariante.SoC_Max_Prozent : 0.0, "F0");
         }
 
+        /// <summary>
+        /// Die Lade-/Entladeleistung ist seit AP3b GERÄTEDATUM (Summe der
+        /// <c>Tab_Stromspeicher.Leistung</c> aller Speicheranlagen des Projekts) und
+        /// wird hier nur angezeigt — das Feld steht auf <c>ReadOnly</c>. Gepflegt wird
+        /// die Leistung im Speicherkatalog (<c>Form_AdminStromspeicher</c>).
+        /// </summary>
         private void textBox_Stromspeicher_Ladeleistung_max_Leave(object sender, EventArgs e)
         {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladeleistung_Max = Convert.ToInt32(textBox_Stromspeicher_Ladeleistung_max.Text));
         }
 
         private void textBox_Speicher_Ladeschwelle_Leave(object sender, EventArgs e)
         {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladeschwellwert = Convert.ToDouble(textBox_Speicher_Ladeschwelle.Text));
+            double wert;
+            if (SpZahl(textBox_Speicher_Ladeschwelle, out wert))
+                SpeichereVariantenAenderung(v => v.Ladeschwellwert = wert);
+            else
+                SpFeldZuruecksetzen(textBox_Speicher_Ladeschwelle,
+                                    _speicherVariante != null ? _speicherVariante.Ladeschwellwert : 0.0, "F2");
         }
+
+        // Die drei Einheiten-Auswahlfelder sind seit AP3b fest: Das SoC-Band einer
+        // Variante steht immer in % der Nennkapazität (die Alternative "kWh/a" der
+        // Auswahlliste ist ohne Gerätekapazität nicht umrechenbar), die Leistung immer
+        // in kW. Die Felder sind deshalb gesperrt bzw. ausgeblendet; ihre Ereignisse
+        // können nur noch beim programmatischen Setzen auslösen und dürfen dann nichts
+        // schreiben.
 
         private void comboBox_Stromspeicher_LadeenergieMax_auswahl_SelectedValueChanged(object sender, EventArgs e)
         {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladefuellstand_Max_Auswahl = comboBox_Stromspeicher_LadeenergieMax_auswahl.Text);
         }
 
         private void comboBox8_Stromspeicher_LadeenergieMin_auswahl_SelectedValueChanged(object sender, EventArgs e)
         {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladefuellstand_Min_Auswahl = comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text);
         }
 
         private void comboBox_Stromspeicher_LadeleistungMax_auswahl_SelectedValueChanged(object sender, EventArgs e)
         {
-            SpeichereKonfigurationsAenderung(model => model.m_Ladeleistung_Max_Auswahl = comboBox_Stromspeicher_LadeleistungMax_auswahl.Text);
+        }
+
+        // ====================================================================
+        //  Parameterseite Stromspeicher (AP3b, Fachkonzept 5.1/5.6)
+        // ====================================================================
+        //
+        // AUSGANGSLAGE. Die Seite trug vier Eingabefelder (SoC-Band, Ladeleistung,
+        // Ladeschwellwert), die projektweit nach Tab_Einstellungen schrieben und von
+        // keiner Rechnung gelesen wurden. Alles, was die Engine wirklich braucht -
+        // Betriebsart, Quellen, Berechnungsart, Zins, Nutzungsdauer - fehlte.
+        //
+        // AUFBAU. Die vier Bestandsfelder hängen jetzt an der aktiven Variante; die
+        // neuen Eingaben entstehen HIER IM CODE und nicht im Designer, aus demselben
+        // Grund wie in Form_AdminStromspeicher (AP3a): Das Formular legt jede Position
+        // und Beschriftung in Form_Simulation_Detail.resx ab (durchgängig
+        // resources.ApplyResources); neue Steuerelemente dort einzutragen hieße,
+        // Designer- und Ressourcendateien von Hand zu schreiben - was CLAUDE.md
+        // ausschließt.
+        //
+        // Auch die vier BESTANDSBESCHRIFTUNGEN werden hier gesetzt: Sie tragen im
+        // Designer feste deutsche Texte ("Minimum Ladeenergie"), und die englische
+        // Satellitendatei bildet zwei von ihnen sogar auf fremde Texte ab ("Result",
+        // "Residual heat requirement:"). Der Weg über den Ressourcenkatalog ist das
+        // Hausmuster für genau diesen Fall (NavigatorUebersicht.BeschriftungenSetzen).
+        //
+        // LAYOUT. Linke Spalte = Raster des Bestands (Label 35, Feld 217, Einheit 316),
+        // darunter die Betriebsführung; rechte Spalte ab x = 420 die Ladequellen und
+        // die Wirtschaftlichkeit.
+
+        private const int SP_SPALTE_A_LABEL = 35;
+        private const int SP_SPALTE_A_FELD = 217;
+        private const int SP_SPALTE_A_EINHEIT = 316;
+
+        /// <summary>
+        /// Spalte des kWh-Äquivalents neben den SoC-Prozentfeldern (Abnahmebefund 1).
+        /// Sie liegt auf dem Platz der beiden gesperrten Einheiten-Auswahllisten, die
+        /// dafür unsichtbar werden, und endet vor der rechten Spalte (x = 420).
+        /// </summary>
+        private const int SP_SPALTE_A_KWH = 340;
+        // Die rechte Spalte endet bei x ≈ 760 und bleibt damit innerhalb der Breite, die
+        // von tabPage_Stromspeicher_Parameter (1016 px) nach Abzug der 200 px breiten
+        // Menüspalte des TabListMapper sichtbar bleibt.
+        private const int SP_SPALTE_B_LABEL = 420;
+        private const int SP_SPALTE_B_FELD = 600;
+        private const int SP_SPALTE_B_EINHEIT = 696;
+        private const int SP_FELD_BREITE = 89;
+        private const int SP_FELD_HOEHE = 25;
+        private const int SP_ZEILE_HOEHE = 32;
+
+        private ComboBox comboBox_SpBetriebsart;
+        private ComboBox comboBox_SpBerechnungsart;
+        private CheckBox checkBox_SpPV;
+        private CheckBox checkBox_SpBHKW;
+        private CheckBox checkBox_SpBHKWStromgefuehrt;
+        private CheckBox checkBox_SpNetzentladung;
+        private CheckBox checkBox_SpKompatibilitaet;
+        private TextBox textBox_SpKapitalzins;
+        private TextBox textBox_SpNutzungsdauer;
+        private TextBox textBox_SpLeistungspreis;
+        private TextBox textBox_SpNetzladeaufschlag;
+        private Label label_SpVariantenstatus;
+
+        // --- Gerätedaten der gerechneten Einheit (Abnahmebefund 1) ---
+        private TextBox textBox_SpKapazitaet;
+        private Label label_SpSoCMinKwh;
+        private Label label_SpSoCMaxKwh;
+
+        // --- Preisbeschaffung (AP4, Fachkonzept 4.1/4.2) ---
+        private ComboBox comboBox_SpPreisquelle;
+        private ComboBox comboBox_SpPreisreihe;
+        private CheckBox checkBox_SpAufschlag;
+        private Label label_SpPreisinfo;
+        private Label label_SpPreisreiheLabel;
+
+        /// <summary>Die aktive Speichervariante des Projekts, oder <c>null</c>.</summary>
+        private StromspeicherVarianteModel _speicherVariante;
+
+        /// <summary>
+        /// Sperrt das Zurückschreiben, solange die Felder programmatisch befüllt
+        /// werden — sonst löste jedes Setzen von <c>Text</c> bzw. <c>Checked</c> ein
+        /// UPDATE aus.
+        /// </summary>
+        private bool _speicherFelderLaden;
+
+        /// <summary>
+        /// Ob das Projekt eine aktive Speichervariante führt — die Grundbedingung
+        /// jeder Eingabe auf der Parameterseite. Gemerkt, weil
+        /// <see cref="SpKompatibilitaetVerfuegbarkeit"/> auch außerhalb von
+        /// <see cref="LeseSpeicherVariante"/> läuft (bei jedem Wechsel der
+        /// Berechnungsart).
+        /// </summary>
+        private bool _speicherVarianteVorhanden;
+
+        /// <summary>
+        /// Auswahleintrag einer ComboBox: Persistenzwert (Schicht 1, deutsch und
+        /// eingefroren) und Anzeigetext (Schicht 3) getrennt — die Drei-Schichten-Regel
+        /// verbietet, den Anzeigetext als Steuerwert zu verwenden.
+        /// </summary>
+        private sealed class SpAuswahl
+        {
+            public readonly string Wert;
+            private readonly string _anzeige;
+
+            public SpAuswahl(string wert, string anzeige)
+            {
+                Wert = wert;
+                _anzeige = anzeige;
+            }
+
+            public override string ToString() { return _anzeige; }
+        }
+
+        /// <summary>
+        /// Auswahleintrag einer Preisreihe bzw. eines Kostenprofils: die
+        /// Datenbank-ID und der Anzeigetext (AP4).
+        /// </summary>
+        private sealed class SpReihe
+        {
+            public readonly int Id;
+            private readonly string _anzeige;
+
+            public SpReihe(int id, string anzeige)
+            {
+                Id = id;
+                _anzeige = anzeige;
+            }
+
+            public override string ToString() { return _anzeige; }
+        }
+
+        private void InitStromspeicherParameter()
+        {
+            if (tabPage_Stromspeicher_Parameter == null) return;
+
+            // Die Seite hat mit dem Preisblock (AP4) mehr Inhalt als Fläche auf kleinen
+            // Bildschirmen - AutoScroll statt gequetschter Zeilenabstände.
+            tabPage_Stromspeicher_Parameter.AutoScroll = true;
+
+            // --- Bestandsfelder: Beschriftung, Rolle, Einheit -----------------
+            label40.Text = MyResource.Resource.SP_PARAM_LABEL_SOC_MIN;
+            label11.Text = MyResource.Resource.SP_PARAM_LABEL_SOC_MAX;
+            label7.Text = MyResource.Resource.SP_PARAM_LABEL_LADELEISTUNG;
+            label12.Text = MyResource.Resource.SP_PARAM_LABEL_LADESCHWELLE;
+
+            textBox_Stromspeicher_Ladeenergie_min.TextChanged += (s, e) => Program.ZahlFaerben(s);
+            textBox_Stromspeicher_Ladeenergie_max.TextChanged += (s, e) => Program.ZahlFaerben(s);
+            textBox_Speicher_Ladeschwelle.TextChanged += (s, e) => Program.ZahlFaerben(s);
+
+            // Abnahmebefund 1: Das SoC-Band steht in Prozent, der Anwender denkt in kWh.
+            // Das Aequivalent laeuft am TextChanged mit - also schon waehrend der Eingabe
+            // und nicht erst beim Verlassen des Feldes.
+            textBox_Stromspeicher_Ladeenergie_min.TextChanged += (s, e) => SpSoCAequivalenteAktualisieren();
+            textBox_Stromspeicher_Ladeenergie_max.TextChanged += (s, e) => SpSoCAequivalenteAktualisieren();
+
+            // Der Ladeschwellwert hat seit AP10 die Bedeutung, die Fachkonzept 5.6 für
+            // ihn vorsieht: manuelle Zusatzschranke der Preissteuerung (6.5). Bis dahin
+            // war er ein migriertes Altfeld ohne Wirkung.
+            tooltip.SetToolTip(textBox_Speicher_Ladeschwelle, MyResource.Resource.ARB_PARAM_HINWEIS_LADESCHWELLE);
+            tooltip.SetToolTip(label12, MyResource.Resource.ARB_PARAM_HINWEIS_LADESCHWELLE);
+
+            // Die Einheit des SoC-Bands ist fest: % der Nennkapazität. Die zweite
+            // Auswahl "kWh/a" der Liste ist ohne Gerätekapazität nicht umrechenbar.
+            //
+            // ABNAHMEBEFUND 1: Die beiden gesperrten Auswahllisten weichen dem
+            // kWh-Äquivalent - dieselbe Behandlung, die die Ladeleistungs-Liste eine
+            // Zeile weiter unten schon seit AP3b bekommt. Eine Liste mit genau einem
+            // wählbaren Eintrag ist keine Auswahl, sondern eine Einheit; als Text
+            // geschrieben bleibt in der linken Spalte Platz für die Umrechnung, die der
+            // Anwender wirklich braucht.
+            comboBox8_Stromspeicher_LadeenergieMin_auswahl.Text = DbWerte.SP_EINHEIT_PROZENT;
+            comboBox8_Stromspeicher_LadeenergieMin_auswahl.Enabled = false;
+            comboBox8_Stromspeicher_LadeenergieMin_auswahl.Visible = false;
+            comboBox_Stromspeicher_LadeenergieMax_auswahl.Text = DbWerte.SP_EINHEIT_PROZENT;
+            comboBox_Stromspeicher_LadeenergieMax_auswahl.Enabled = false;
+            comboBox_Stromspeicher_LadeenergieMax_auswahl.Visible = false;
+
+            SpEinheitAnlegen(DbWerte.SP_EINHEIT_PROZENT, SP_SPALTE_A_EINHEIT, 32,
+                             MyResource.Resource.SP_PARAM_HINWEIS_SOC_EINHEIT);
+            SpEinheitAnlegen(DbWerte.SP_EINHEIT_PROZENT, SP_SPALTE_A_EINHEIT, 64,
+                             MyResource.Resource.SP_PARAM_HINWEIS_SOC_EINHEIT);
+
+            label_SpSoCMinKwh = SpEinheitAnlegen("", SP_SPALTE_A_KWH, 32,
+                                                 MyResource.Resource.SP_PARAM_HINWEIS_SOC_KWH);
+            label_SpSoCMaxKwh = SpEinheitAnlegen("", SP_SPALTE_A_KWH, 64,
+                                                 MyResource.Resource.SP_PARAM_HINWEIS_SOC_KWH);
+
+            // Die Ladeleistung ist Gerätedatum und wird nur noch angezeigt. Die
+            // zugehörige Einheitenauswahl entfällt - "kW" steht am Label, und die
+            // Liste kennt die Einheit gar nicht (nur "%" und "kWh/a").
+            textBox_Stromspeicher_Ladeleistung_max.ReadOnly = true;
+            textBox_Stromspeicher_Ladeleistung_max.BackColor = SystemColors.Control;
+            comboBox_Stromspeicher_LadeleistungMax_auswahl.Visible = false;
+            tooltip.SetToolTip(textBox_Stromspeicher_Ladeleistung_max,
+                               MyResource.Resource.SP_PARAM_HINWEIS_LADELEISTUNG);
+
+            // ABNAHMEBEFUND 1: Die KAPAZITÄT fehlte auf der Seite ganz - die Größe, um
+            // die es beim Speicher zuerst geht. Sie steht direkt bei der zweiten
+            // schreibgeschützten Gerätegröße (Lade-/Entladeleistung) und im selben
+            // Raster; die Einheit trägt das Label, wie bei der Leistung auch.
+            textBox_SpKapazitaet = SpAnzeigefeldAnlegen(
+                MyResource.Resource.SP_PARAM_LABEL_KAPAZITAET, 168,
+                MyResource.Resource.SP_PARAM_HINWEIS_KAPAZITAET);
+
+            // Der Hinweis steht UNTER dem Block der Bestandsfelder und bleibt in der
+            // linken Spalte (x < 420) - rechts daneben liegen die Ladequellen-Schalter.
+            SpHinweisAnlegen(MyResource.Resource.SP_PARAM_HINWEIS_LADELEISTUNG,
+                             SP_SPALTE_A_LABEL, 200, 370, 30);
+
+            // --- Linke Spalte: Betriebsführung --------------------------------
+            int zeile = 234;
+            SpKopfAnlegen(MyResource.Resource.SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG, SP_SPALTE_A_LABEL, zeile);
+
+            zeile += 28;
+            comboBox_SpBetriebsart = SpAuswahlAnlegen(
+                MyResource.Resource.SP_PARAM_LABEL_BETRIEBSART, SP_SPALTE_A_LABEL, SP_SPALTE_A_FELD, zeile,
+                new[]
+                {
+                    new SpAuswahl(DbWerte.SP_BETRIEBSART_GRUENSTROM, MyResource.Resource.SP_BETRIEBSART_ANZEIGE_GRUENSTROM),
+                    new SpAuswahl(DbWerte.SP_BETRIEBSART_GRAUSTROM, MyResource.Resource.SP_BETRIEBSART_ANZEIGE_GRAUSTROM)
+                });
+            comboBox_SpBetriebsart.SelectedIndexChanged += (s, e) =>
+                SpeichereVariantenAenderung(v => v.Betriebsart = SpGewaehlterWert(comboBox_SpBetriebsart));
+
+            zeile += SP_ZEILE_HOEHE;
+            // Berechnungsart: Die Liste wächst mit den Ausbaustufen - jede ist EINE
+            // weitere Zeile hier. Was die Engine nicht kann, steht bewusst nicht in der
+            // Liste: Ein wählbarer, aber wirkungsloser Eintrag wäre schlimmer als ein
+            // fehlender. Umgesetzt sind Dauernutzung (AP1), Nachtnutzung (AP6) und
+            // Preissteuerung/Arbitrage (AP10).
+            comboBox_SpBerechnungsart = SpAuswahlAnlegen(
+                MyResource.Resource.SP_PARAM_LABEL_BERECHNUNGSART, SP_SPALTE_A_LABEL, SP_SPALTE_A_FELD, zeile,
+                new[]
+                {
+                    new SpAuswahl(DbWerte.SP_BERECHNUNG_DAUERNUTZUNG, MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG),
+                    new SpAuswahl(DbWerte.SP_BERECHNUNG_NACHTNUTZUNG, MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG),
+                    new SpAuswahl(DbWerte.SP_BERECHNUNG_ARBITRAGE, MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ARBITRAGE)
+                });
+            comboBox_SpBerechnungsart.SelectedIndexChanged += (s, e) =>
+            {
+                SpeichereVariantenAenderung(v => v.Berechnungsart = SpGewaehlterWert(comboBox_SpBerechnungsart));
+                SpKompatibilitaetVerfuegbarkeit();
+            };
+
+            zeile += SP_ZEILE_HOEHE;
+            checkBox_SpKompatibilitaet = SpSchalterAnlegen(
+                MyResource.Resource.SP_PARAM_LABEL_KOMPATIBILITAET, SP_SPALTE_A_FELD, zeile, true);
+            tooltip.SetToolTip(checkBox_SpKompatibilitaet, MyResource.Resource.SP_PARAM_HINWEIS_KOMPATIBILITAET);
+            checkBox_SpKompatibilitaet.CheckedChanged += (s, e) =>
+                SpeichereVariantenAenderung(v => v.Kompatibilitaetsmodus = checkBox_SpKompatibilitaet.Checked);
+
+            zeile += 24;
+            // Breite so bemessen, dass der Hinweis vor der rechten Spalte (x = 420) endet.
+            SpHinweisAnlegen(MyResource.Resource.SP_PARAM_HINWEIS_KOMPATIBILITAET, SP_SPALTE_A_LABEL, zeile, 370, 30);
+
+            // --- Rechte Spalte: Ladequellen -----------------------------------
+            zeile = 32;
+            SpKopfAnlegen(MyResource.Resource.SP_PARAM_GRUPPE_QUELLEN, SP_SPALTE_B_LABEL, zeile);
+
+            zeile += 28;
+            checkBox_SpPV = SpSchalterAnlegen(MyResource.Resource.SP_PARAM_CHK_PV, SP_SPALTE_B_LABEL, zeile, true);
+            checkBox_SpPV.CheckedChanged += (s, e) =>
+                SpeichereVariantenAenderung(v => v.PV_Zulaessig = checkBox_SpPV.Checked);
+
+            zeile += 26;
+            checkBox_SpBHKW = SpSchalterAnlegen(MyResource.Resource.SP_PARAM_CHK_BHKW, SP_SPALTE_B_LABEL, zeile, true);
+            checkBox_SpBHKW.CheckedChanged += (s, e) =>
+                SpeichereVariantenAenderung(v => v.BHKW_Ueberschuss_Zulaessig = checkBox_SpBHKW.Checked);
+
+            // Netzentladung: seit AP10 WIRKSAM. Sie ist unabhängig von der Betriebsart
+            // (Fachkonzept 2.1 - auch ein Grünstromspeicher darf verkaufen), braucht
+            // aber die Berechnungsart „Preissteuerung / Arbitrage": Erst die bestimmt,
+            // WANN verkauft wird. Genau das sagt der Tooltip.
+            zeile += 26;
+            checkBox_SpNetzentladung = SpSchalterAnlegen(
+                MyResource.Resource.SP_PARAM_CHK_NETZENTLADUNG, SP_SPALTE_B_LABEL, zeile, true);
+            tooltip.SetToolTip(checkBox_SpNetzentladung, MyResource.Resource.ARB_PARAM_HINWEIS_NETZENTLADUNG);
+            checkBox_SpNetzentladung.CheckedChanged += (s, e) =>
+                SpeichereVariantenAenderung(v => v.Netzentladung = checkBox_SpNetzentladung.Checked);
+
+            // Stromgeführtes BHKW-Nachladen bleibt ohne Rechenweg (Ausbaustufe 11). Der
+            // Schalter ist sichtbar und ausgegraut - der Anwender soll sehen, dass es
+            // ihn gibt, aber nicht auf eine Wirkung warten, die ausbleibt. Der
+            // Ausbaustufen-Hinweis steht deshalb jetzt unter IHM.
+            zeile += 26;
+            checkBox_SpBHKWStromgefuehrt = SpSchalterAnlegen(
+                MyResource.Resource.SP_PARAM_CHK_BHKW_STROMGEFUEHRT, SP_SPALTE_B_LABEL, zeile, false);
+            tooltip.SetToolTip(checkBox_SpBHKWStromgefuehrt, MyResource.Resource.SP_PARAM_HINWEIS_AUSBAUSTUFE);
+
+            zeile += 26;
+            SpHinweisAnlegen(MyResource.Resource.SP_PARAM_HINWEIS_AUSBAUSTUFE, SP_SPALTE_B_LABEL + 18, zeile, 340);
+
+            // --- Rechte Spalte: Wirtschaftlichkeit ----------------------------
+            zeile = 200;
+            SpKopfAnlegen(MyResource.Resource.SP_PARAM_GRUPPE_WIRTSCHAFT, SP_SPALTE_B_LABEL, zeile);
+
+            zeile += 28;
+            textBox_SpKapitalzins = SpFeldAnlegen(MyResource.Resource.SP_PARAM_LABEL_KAPITALZINS, "%", zeile);
+            textBox_SpKapitalzins.Leave += (s, e) =>
+            {
+                double wert;
+                if (SpZahl(textBox_SpKapitalzins, out wert)) SpeichereVariantenAenderung(v => v.Kapitalzins = wert);
+                else SpFeldZuruecksetzen(textBox_SpKapitalzins, _speicherVariante != null ? _speicherVariante.Kapitalzins : 0.0, "F2");
+            };
+
+            zeile += SP_ZEILE_HOEHE;
+            textBox_SpNutzungsdauer = SpFeldAnlegen(MyResource.Resource.SP_PARAM_LABEL_NUTZUNGSDAUER, "a", zeile);
+            textBox_SpNutzungsdauer.Leave += (s, e) =>
+            {
+                double wert;
+                if (SpZahl(textBox_SpNutzungsdauer, out wert)) SpeichereVariantenAenderung(v => v.Nutzungsdauer = wert);
+                else SpFeldZuruecksetzen(textBox_SpNutzungsdauer, _speicherVariante != null ? _speicherVariante.Nutzungsdauer : 0.0, "F0");
+            };
+
+            // L_P wird auf DIESER Seite nicht monetarisiert: Die Leistungspreisersparnis
+            // entsteht im Peak-Shaving, und das hat seit AP7 eine eigene Maske
+            // (Fachkonzept 4.4/6.4). Das Feld speichert deshalb nur; der Tooltip weist
+            // die Ausbaustufe aus. Der Netzladeaufschlag a_netzlade darunter ist seit
+            // AP10 wirksam - er bildet p_netzlade = p_energie + a_netzlade.
+            zeile += SP_ZEILE_HOEHE;
+            textBox_SpLeistungspreis = SpFeldAnlegen(MyResource.Resource.SP_PARAM_LABEL_LEISTUNGSPREIS, "€/(kW·a)", zeile);
+            tooltip.SetToolTip(textBox_SpLeistungspreis, MyResource.Resource.SP_PARAM_HINWEIS_AUSBAUSTUFE);
+            textBox_SpLeistungspreis.Leave += (s, e) =>
+            {
+                double wert;
+                if (SpZahl(textBox_SpLeistungspreis, out wert)) SpeichereVariantenAenderung(v => v.L_P = wert);
+                else SpFeldZuruecksetzen(textBox_SpLeistungspreis, _speicherVariante != null ? _speicherVariante.L_P : 0.0, "F2");
+            };
+
+            zeile += SP_ZEILE_HOEHE;
+            textBox_SpNetzladeaufschlag = SpFeldAnlegen(MyResource.Resource.SP_PARAM_LABEL_NETZLADEAUFSCHLAG, "ct/kWh", zeile);
+            tooltip.SetToolTip(textBox_SpNetzladeaufschlag, MyResource.Resource.ARB_PARAM_HINWEIS_NETZLADEAUFSCHLAG);
+            textBox_SpNetzladeaufschlag.Leave += (s, e) =>
+            {
+                double wert;
+                if (SpZahl(textBox_SpNetzladeaufschlag, out wert)) SpeichereVariantenAenderung(v => v.A_Netzlade = wert);
+                else SpFeldZuruecksetzen(textBox_SpNetzladeaufschlag, _speicherVariante != null ? _speicherVariante.A_Netzlade : 0.0, "F2");
+            };
+
+            // --- Linke Spalte: Preisbeschaffung (AP4, Fachkonzept 4.1/4.2) -----
+            //
+            // Der Block steht bei der BETRIEBSFÜHRUNG und nicht bei der
+            // Wirtschaftlichkeit: Die Preisquelle entscheidet über den Geldwert JEDES
+            // Intervalls und damit über den Fahrplan des Speichers, nicht erst über die
+            // Jahresauswertung. Die Aufschlagskomponenten selbst werden im Kostenmodul
+            // gepflegt (ucStromAufschlaege) - hier steht nur, OB sie gelten.
+            zeile = 390;
+            SpKopfAnlegen(MyResource.Resource.PREIS_PARAM_GRUPPE_PREISQUELLE, SP_SPALTE_A_LABEL, zeile);
+
+            zeile += 28;
+            comboBox_SpPreisquelle = SpAuswahlAnlegen(
+                MyResource.Resource.PREIS_PARAM_LABEL_PREISQUELLE, SP_SPALTE_A_LABEL, SP_SPALTE_A_FELD, zeile,
+                new[]
+                {
+                    new SpAuswahl(DbWerte.SP_PREISQUELLE_FIXPREIS, MyResource.Resource.PREIS_QUELLE_ANZEIGE_FIXPREIS),
+                    new SpAuswahl(DbWerte.SP_PREISQUELLE_PROFIL, MyResource.Resource.PREIS_QUELLE_ANZEIGE_PROFIL),
+                    new SpAuswahl(DbWerte.SP_PREISQUELLE_SPOTMARKT, MyResource.Resource.PREIS_QUELLE_ANZEIGE_SPOTMARKT)
+                });
+            comboBox_SpPreisquelle.SelectedIndexChanged += (s, e) =>
+            {
+                SpeichereVariantenAenderung(v => v.Preisquelle = SpGewaehlterWert(comboBox_SpPreisquelle));
+                SpReihenlisteFuellen();
+            };
+
+            zeile += SP_ZEILE_HOEHE;
+            label_SpPreisreiheLabel = new Label
+            {
+                Text = MyResource.Resource.PREIS_PARAM_LABEL_REIHE,
+                Location = new Point(SP_SPALTE_A_LABEL, zeile + 4),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9.75f, FontStyle.Regular)
+            };
+            tabPage_Stromspeicher_Parameter.Controls.Add(label_SpPreisreiheLabel);
+
+            comboBox_SpPreisreihe = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Location = new Point(SP_SPALTE_A_FELD, zeile),
+                Size = new Size(340, SP_FELD_HOEHE),
+                Font = new Font("Segoe UI", 9.75f, FontStyle.Regular)
+            };
+            comboBox_SpPreisreihe.SelectedIndexChanged += (s, e) => SpReiheGewaehlt();
+            tabPage_Stromspeicher_Parameter.Controls.Add(comboBox_SpPreisreihe);
+
+            zeile += SP_ZEILE_HOEHE;
+            checkBox_SpAufschlag = SpSchalterAnlegen(
+                MyResource.Resource.PREIS_PARAM_CHK_AUFSCHLAG, SP_SPALTE_A_FELD, zeile, true);
+            tooltip.SetToolTip(checkBox_SpAufschlag, MyResource.Resource.PREIS_PARAM_HINWEIS_AUFSCHLAG);
+            checkBox_SpAufschlag.CheckedChanged += (s, e) =>
+            {
+                SpeichereVariantenAenderung(v => v.Aufschlag_Anwenden = checkBox_SpAufschlag.Checked);
+                SpPreisinfoAktualisieren();
+            };
+
+            zeile += 26;
+            label_SpPreisinfo = SpHinweisAnlegen("", SP_SPALTE_A_LABEL, zeile, 700, 34);
+
+            // --- Fußzeile: welche Variante wird hier bearbeitet? ---------------
+            label_SpVariantenstatus = SpHinweisAnlegen("", SP_SPALTE_A_LABEL, zeile + 40, 700, 24);
+            label_SpVariantenstatus.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+
+            // --- Auslegungsoptimierung (AP8, Fachkonzept 6.3) ------------------
+            //
+            // Der EINZIGE Einbau dieses Pakets auf der Parameterseite: ein Knopf, der
+            // den eigenständigen Dialog öffnet. Die Rastersuche braucht nichts von
+            // dieser Seite außer dem Projekt und dem gerechneten Simulationsobjekt;
+            // alles Weitere - Suchraum, Fortschritt, Heatmap, Übernahme - steht in
+            // Form_SpeicherOptimierung.
+            Button knopfOptimierung = new Button();
+            knopfOptimierung.Name = "button_SpOptimierung";
+            knopfOptimierung.Text = MyResource.Resource.OPT_BTN_OEFFNEN;
+            knopfOptimierung.Location = new Point(SP_SPALTE_B_LABEL, zeile + 36);
+            knopfOptimierung.Size = new Size(220, 30);
+            knopfOptimierung.Click += SpOptimierung_Click;
+            tooltip.SetToolTip(knopfOptimierung, MyResource.Resource.OPT_HINWEIS_ZIELFUNKTION);
+            tabPage_Stromspeicher_Parameter.Controls.Add(knopfOptimierung);
+        }
+
+        /// <summary>
+        /// Öffnet die Auslegungsoptimierung (AP8).
+        /// </summary>
+        /// <remarks>
+        /// Nach einer Übernahme des Bestpunkts wird die Parameterseite aufgefrischt —
+        /// die angezeigte Ladeleistung ist ein Gerätedatum und hat sich dann geändert.
+        /// Neu gerechnet wird bewusst nicht; das entscheidet der Anwender.
+        /// </remarks>
+        private void SpOptimierung_Click(object sender, EventArgs e)
+        {
+            using (Form_SpeicherOptimierung frm = new Form_SpeicherOptimierung(sim, m_ID_Projekt))
+            {
+                frm.ShowDialog(this);
+                if (frm.AuslegungUebernommen) LeseSpeicherVariante();
+            }
+        }
+
+        // ====================================================================
+        //  Preisbeschaffung der Parameterseite (AP4)
+        // ====================================================================
+
+        /// <summary>
+        /// Füllt die Reihenauswahl passend zur gewählten Preisquelle: Spotreihen aus
+        /// <c>Tab_Preisreihe</c>, Kostenprofile aus <c>Tab_Kostenprofil</c>. Beim
+        /// Fixpreis ist die Liste leer und gesperrt.
+        /// </summary>
+        private void SpReihenlisteFuellen()
+        {
+            if (comboBox_SpPreisreihe == null) return;
+
+            string quelle = SpGewaehlterWert(comboBox_SpPreisquelle);
+            bool laden = _speicherFelderLaden;
+            _speicherFelderLaden = true;
+
+            try
+            {
+                comboBox_SpPreisreihe.Items.Clear();
+                comboBox_SpPreisreihe.Enabled = quelle != DbWerte.SP_PREISQUELLE_FIXPREIS;
+
+                if (quelle == DbWerte.SP_PREISQUELLE_SPOTMARKT)
+                {
+                    label_SpPreisreiheLabel.Text = MyResource.Resource.PREIS_PARAM_LABEL_REIHE;
+                    foreach (PreisreiheModel p in new PreisreiheCtrl().ReadVerfuegbare(m_ID_Projekt))
+                        comboBox_SpPreisreihe.Items.Add(new SpReihe(p.ID,
+                            string.Format(MyResource.Resource.PREIS_PARAM_REIHE_EINTRAG,
+                                          p.Bezeichner, p.Jahr, p.Werteanzahl)));
+
+                    SpReiheWaehlen(_speicherVariante != null ? _speicherVariante.ID_Preisreihe : 0);
+                }
+                else if (quelle == DbWerte.SP_PREISQUELLE_PROFIL)
+                {
+                    label_SpPreisreiheLabel.Text = MyResource.Resource.PREIS_PARAM_LABEL_PROFIL;
+                    foreach (KostenprofilModel p in new KostenprofilCtrl().ReadAllByProjekt(m_ID_Projekt))
+                        comboBox_SpPreisreihe.Items.Add(new SpReihe(p.ID, p.Bezeichner));
+
+                    SpReiheWaehlen(_speicherVariante != null ? _speicherVariante.ID_Kostenprofil : 0);
+                }
+                else
+                {
+                    label_SpPreisreiheLabel.Text = MyResource.Resource.PREIS_PARAM_LABEL_REIHE;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Preisreihen konnten nicht gelesen werden: " + ex.Message);
+            }
+            finally
+            {
+                _speicherFelderLaden = laden;
+            }
+
+            SpPreisinfoAktualisieren();
+        }
+
+        private void SpReiheWaehlen(int id)
+        {
+            for (int i = 0; i < comboBox_SpPreisreihe.Items.Count; i++)
+            {
+                SpReihe r = comboBox_SpPreisreihe.Items[i] as SpReihe;
+                if (r != null && r.Id == id) { comboBox_SpPreisreihe.SelectedIndex = i; return; }
+            }
+            comboBox_SpPreisreihe.SelectedIndex = -1;
+        }
+
+        /// <summary>
+        /// Schreibt die gewählte Reihe in die Variante — je nach Preisquelle in
+        /// <c>ID_Preisreihe</c> oder <c>ID_Kostenprofil</c>. Beide Felder getrennt zu
+        /// führen erlaubt den Wechsel zwischen den Quellen, ohne die jeweils andere
+        /// Auswahl zu verlieren.
+        /// </summary>
+        private void SpReiheGewaehlt()
+        {
+            SpReihe r = comboBox_SpPreisreihe.SelectedItem as SpReihe;
+            int id = r != null ? r.Id : 0;
+            string quelle = SpGewaehlterWert(comboBox_SpPreisquelle);
+
+            if (quelle == DbWerte.SP_PREISQUELLE_SPOTMARKT)
+                SpeichereVariantenAenderung(v => v.ID_Preisreihe = id);
+            else if (quelle == DbWerte.SP_PREISQUELLE_PROFIL)
+                SpeichereVariantenAenderung(v => v.ID_Kostenprofil = id);
+
+            SpPreisinfoAktualisieren();
+        }
+
+        /// <summary>
+        /// Zeigt an, welcher Bezugspreis mit den aktuellen Einstellungen entsteht —
+        /// dieselbe Kette, die auch die Simulation durchläuft
+        /// (<see cref="StromPreisCtrl"/>), damit auf dem Bildschirm keine zweite
+        /// Preisrechnung steht.
+        /// </summary>
+        private void SpPreisinfoAktualisieren()
+        {
+            if (label_SpPreisinfo == null) return;
+
+            try
+            {
+                StromPreisErgebnis p = new StromPreisCtrl().Baue(
+                    m_ID_Projekt, _speicherVariante, SpeicherEngine.RasterAdapter.ViertelstundenJahr);
+
+                CultureInfo k = CultureInfo.CurrentCulture;
+                string text = string.Format(MyResource.Resource.PREIS_PARAM_INFO,
+                                            p.EnergiepreisMittelCtKwh.ToString("0.###", k),
+                                            p.AufschlagCtKwh.ToString("0.###", k),
+                                            p.BezugspreisMittelCtKwh.ToString("0.###", k),
+                                            p.Preisversion);
+
+                if (!string.IsNullOrEmpty(p.Hinweis))
+                    text += Environment.NewLine + p.Hinweis.Replace(Environment.NewLine, "  ");
+
+                label_SpPreisinfo.Text = text;
+                label_SpPreisinfo.ForeColor = string.IsNullOrEmpty(p.Hinweis)
+                    ? Color.FromArgb(100, 100, 100)
+                    : Color.Firebrick;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Preisvorschau konnte nicht gerechnet werden: " + ex.Message);
+                label_SpPreisinfo.Text = "";
+            }
+        }
+
+        /// <summary>Gruppenüberschrift der Parameterseite.</summary>
+        private void SpKopfAnlegen(string text, int links, int oben)
+        {
+            Label kopf = new Label();
+            kopf.Text = text;
+            kopf.Location = new Point(links, oben);
+            kopf.AutoSize = true;
+            kopf.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
+            tabPage_Stromspeicher_Parameter.Controls.Add(kopf);
+        }
+
+        /// <summary>Kleingedruckter Hinweis (grau, mehrzeilig).</summary>
+        private Label SpHinweisAnlegen(string text, int links, int oben, int breite, int hoehe = 34)
+        {
+            Label hinweis = new Label();
+            hinweis.Text = text;
+            hinweis.Location = new Point(links, oben);
+            hinweis.Size = new Size(breite, hoehe);
+            hinweis.AutoSize = false;
+            hinweis.Font = new Font("Segoe UI", 8.25f, FontStyle.Regular);
+            hinweis.ForeColor = Color.FromArgb(100, 100, 100);
+            tabPage_Stromspeicher_Parameter.Controls.Add(hinweis);
+            return hinweis;
+        }
+
+        /// <summary>Beschriftung + Eingabefeld + Einheit in der rechten Spalte.</summary>
+        private TextBox SpFeldAnlegen(string beschriftung, string einheit, int oben)
+        {
+            Label lbl = new Label();
+            lbl.Text = beschriftung;
+            lbl.Location = new Point(SP_SPALTE_B_LABEL, oben + 4);
+            lbl.AutoSize = true;
+            lbl.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+            tabPage_Stromspeicher_Parameter.Controls.Add(lbl);
+
+            TextBox tb = new TextBox();
+            tb.Location = new Point(SP_SPALTE_B_FELD, oben);
+            tb.Size = new Size(SP_FELD_BREITE, SP_FELD_HOEHE);
+            tb.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+            tb.TextChanged += (s, e) => Program.ZahlFaerben(s);
+            tabPage_Stromspeicher_Parameter.Controls.Add(tb);
+
+            Label lblEinheit = new Label();
+            lblEinheit.Text = einheit;
+            lblEinheit.Location = new Point(SP_SPALTE_B_EINHEIT, oben + 4);
+            lblEinheit.AutoSize = true;
+            lblEinheit.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+            tabPage_Stromspeicher_Parameter.Controls.Add(lblEinheit);
+
+            return tb;
+        }
+
+        /// <summary>
+        /// Kleines Beschriftungsfeld in der linken Spalte (Einheit bzw. kWh-Äquivalent) —
+        /// Abnahmebefund 1.
+        /// </summary>
+        private Label SpEinheitAnlegen(string text, int links, int oben, string hinweis)
+        {
+            Label lbl = new Label();
+            lbl.Text = text;
+            lbl.Location = new Point(links, oben + 4);
+            lbl.AutoSize = true;
+            lbl.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+            lbl.ForeColor = Color.FromArgb(100, 100, 100);
+            if (!string.IsNullOrEmpty(hinweis)) tooltip.SetToolTip(lbl, hinweis);
+            tabPage_Stromspeicher_Parameter.Controls.Add(lbl);
+            lbl.BringToFront();
+            return lbl;
+        }
+
+        /// <summary>
+        /// Schreibgeschütztes Anzeigefeld im Raster der linken Spalte (Abnahmebefund 1):
+        /// Beschriftung inklusive Einheit, Feld auf <c>ReadOnly</c> und in Systemfarbe —
+        /// dieselbe Darstellung, die die Lade-/Entladeleistung seit AP3b hat.
+        /// </summary>
+        private TextBox SpAnzeigefeldAnlegen(string beschriftung, int oben, string hinweis)
+        {
+            Label lbl = new Label();
+            lbl.Text = beschriftung;
+            lbl.Location = new Point(SP_SPALTE_A_LABEL, oben + 4);
+            lbl.AutoSize = true;
+            lbl.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+            tabPage_Stromspeicher_Parameter.Controls.Add(lbl);
+
+            TextBox tb = new TextBox();
+            tb.Location = new Point(SP_SPALTE_A_FELD, oben);
+            tb.Size = new Size(SP_FELD_BREITE, SP_FELD_HOEHE);
+            tb.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+            tb.ReadOnly = true;
+            tb.BackColor = SystemColors.Control;
+            tabPage_Stromspeicher_Parameter.Controls.Add(tb);
+
+            if (!string.IsNullOrEmpty(hinweis))
+            {
+                tooltip.SetToolTip(lbl, hinweis);
+                tooltip.SetToolTip(tb, hinweis);
+            }
+
+            return tb;
+        }
+
+        /// <summary>
+        /// Schreibt das kWh-Äquivalent der beiden SoC-Prozentfelder fort
+        /// (Abnahmebefund 1) — bezogen auf die Kapazität, die eine Handbreit darunter
+        /// steht, damit die beiden Zahlen zueinander passen.
+        /// </summary>
+        /// <remarks>
+        /// Ohne gepflegte Kapazität oder bei unlesbarem Prozentwert bleibt das Feld leer:
+        /// Eine „0,00 kWh" wäre an dieser Stelle eine Aussage, die niemand gemacht hat.
+        /// </remarks>
+        private void SpSoCAequivalenteAktualisieren()
+        {
+            if (label_SpSoCMinKwh == null || label_SpSoCMaxKwh == null) return;
+
+            double kapazitaet;
+            if (!Program.ZahlParsen(textBox_SpKapazitaet != null ? textBox_SpKapazitaet.Text : "", out kapazitaet))
+                kapazitaet = 0.0;
+
+            label_SpSoCMinKwh.Text = SpKwhText(textBox_Stromspeicher_Ladeenergie_min, kapazitaet);
+            label_SpSoCMaxKwh.Text = SpKwhText(textBox_Stromspeicher_Ladeenergie_max, kapazitaet);
+        }
+
+        private static string SpKwhText(TextBox prozentfeld, double kapazitaetKwh)
+        {
+            double prozent;
+            if (kapazitaetKwh <= 0.0 || !Program.ZahlParsen(prozentfeld.Text, out prozent)) return "";
+
+            return string.Format(MyResource.Resource.SP_PARAM_SOC_KWH,
+                                 (kapazitaetKwh * prozent / 100.0).ToString("N2", CultureInfo.CurrentCulture));
+        }
+
+        /// <summary>Beschriftung + Auswahlliste (nur Listenauswahl, kein freier Text).</summary>
+        private ComboBox SpAuswahlAnlegen(string beschriftung, int linksLabel, int linksFeld, int oben,
+                                          SpAuswahl[] eintraege)
+        {
+            Label lbl = new Label();
+            lbl.Text = beschriftung;
+            lbl.Location = new Point(linksLabel, oben + 4);
+            lbl.AutoSize = true;
+            lbl.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+            tabPage_Stromspeicher_Parameter.Controls.Add(lbl);
+
+            ComboBox cb = new ComboBox();
+            cb.DropDownStyle = ComboBoxStyle.DropDownList;
+            cb.Location = new Point(linksFeld, oben);
+            cb.Size = new Size(177, SP_FELD_HOEHE);
+            cb.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+            cb.Items.AddRange(eintraege);
+            tabPage_Stromspeicher_Parameter.Controls.Add(cb);
+
+            return cb;
+        }
+
+        /// <summary>Schalter; <paramref name="bedienbar"/> false = sichtbar, aber ausgegraut.</summary>
+        private CheckBox SpSchalterAnlegen(string beschriftung, int links, int oben, bool bedienbar)
+        {
+            CheckBox cb = new CheckBox();
+            cb.Text = beschriftung;
+            cb.Location = new Point(links, oben);
+            cb.AutoSize = true;
+            cb.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+            cb.Enabled = bedienbar;
+            tabPage_Stromspeicher_Parameter.Controls.Add(cb);
+            return cb;
+        }
+
+        /// <summary>Persistenzwert des gewählten Listeneintrags (leer, wenn nichts gewählt ist).</summary>
+        private static string SpGewaehlterWert(ComboBox cb)
+        {
+            SpAuswahl a = cb.SelectedItem as SpAuswahl;
+            return a != null ? a.Wert : "";
+        }
+
+        /// <summary>
+        /// Gibt den Kompatibilitätsschalter nur für die Berechnungsart frei, für die
+        /// es überhaupt eine Excel-Vorlage gibt — die Dauernutzung (AP6).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Für die Nachtnutzung hinterlegte die V7-Mappe nur eine als
+        /// Dauernutzungssimulation unbrauchbare Altversion; sie ist eine Neudefinition
+        /// und ausdrücklich nicht Excel-verifizierbar (Fachkonzept 6.1). Die Engine
+        /// lehnt die Kombination ab, die Oberfläche bietet sie deshalb erst gar nicht
+        /// an.
+        /// </para>
+        /// <para>
+        /// <b>Der gespeicherte Wert bleibt unangetastet.</b> Der Schalter wird nur
+        /// gesperrt, nicht zurückgesetzt: Wer von der Nachtnutzung zur Dauernutzung
+        /// zurückwechselt, findet seine Einstellung wieder vor. Eine Altvariante mit
+        /// beidem rechnet der Controller mit Protokollhinweis energetisch.
+        /// </para>
+        /// </remarks>
+        private void SpKompatibilitaetVerfuegbarkeit()
+        {
+            if (checkBox_SpKompatibilitaet == null) return;
+
+            string berechnungsart = SpGewaehlterWert(comboBox_SpBerechnungsart);
+            bool nurDauernutzung = berechnungsart == DbWerte.SP_BERECHNUNG_DAUERNUTZUNG;
+
+            checkBox_SpKompatibilitaet.Enabled = _speicherVarianteVorhanden && nurDauernutzung;
+
+            string hinweis;
+            if (nurDauernutzung) hinweis = MyResource.Resource.SP_PARAM_HINWEIS_KOMPATIBILITAET;
+            else if (berechnungsart == DbWerte.SP_BERECHNUNG_ARBITRAGE)
+                hinweis = MyResource.Resource.ARB_HINWEIS_KOMPATIBILITAET;
+            else hinweis = MyResource.Resource.NACHT_HINWEIS_KOMPATIBILITAET;
+
+            tooltip.SetToolTip(checkBox_SpKompatibilitaet, hinweis);
+        }
+
+        /// <summary>Wählt den Eintrag mit dem angegebenen Persistenzwert aus.</summary>
+        private static void SpWertWaehlen(ComboBox cb, string wert)
+        {
+            for (int i = 0; i < cb.Items.Count; i++)
+            {
+                SpAuswahl a = cb.Items[i] as SpAuswahl;
+                if (a != null && a.Wert == wert) { cb.SelectedIndex = i; return; }
+            }
+            if (cb.Items.Count > 0) cb.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// Liest ein Zahlenfeld der Speicherseite beim Verlassen — Komma oder Punkt
+        /// zulässig (<see cref="Program.ZahlParsen"/>, also der Eingabe des Anwenders in
+        /// seiner Kultur folgend).
+        /// </summary>
+        /// <remarks>
+        /// Bewusst OHNE die modale Meldung aus <see cref="Program.ZahlPruefen"/>: Die
+        /// setzt Fokus und Auswahl zurück, und aus einem <c>Leave</c>-Ereignis heraus
+        /// kann das dasselbe Ereignis erneut auslösen. Die Seite speichert beim
+        /// Verlassen des Feldes, hat also keinen Übernehmen-Knopf, an dem gemeldet
+        /// werden könnte. Rückmeldung gibt stattdessen die Einfärbung am
+        /// <c>TextChanged</c> (<see cref="Program.ZahlFaerben"/>); ein unlesbares Feld
+        /// behält den gespeicherten Wert.
+        /// </remarks>
+        private static bool SpZahl(TextBox feld, out double wert)
+        {
+            return Program.ZahlParsen(feld.Text, out wert);
+        }
+
+        /// <summary>Stellt den gespeicherten Wert eines Feldes wieder her.</summary>
+        private void SpFeldZuruecksetzen(TextBox feld, double wert, string format)
+        {
+            bool vorher = _speicherFelderLaden;
+            _speicherFelderLaden = true;
+            feld.Text = wert.ToString(format, CultureInfo.CurrentCulture);
+            Program.ZahlFaerben(feld);
+            _speicherFelderLaden = vorher;
+        }
+
+        /// <summary>
+        /// Übernimmt eine Änderung in die aktive Variante und schreibt sie zielgenau
+        /// zurück (Muster <see cref="SpeichereKonfigurationsAenderung"/>).
+        /// </summary>
+        private void SpeichereVariantenAenderung(Action<StromspeicherVarianteModel> anpassungsAktion)
+        {
+            if (_speicherFelderLaden || _speicherVariante == null) return;
+
+            try
+            {
+                anpassungsAktion(_speicherVariante);
+                new StromspeicherVarianteCtrl().Update(_speicherVariante);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim automatischen Speichern der Speichervariante: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Füllt die Parameterseite aus der aktiven Speichervariante des Projekts und
+        /// aus den Gerätedaten. Ohne aktive Variante bleiben die Eingaben gesperrt.
+        /// </summary>
+        private void LeseSpeicherVariante()
+        {
+            if (comboBox_SpBetriebsart == null) return;   // Seite nicht aufgebaut
+
+            try
+            {
+                _speicherVariante = new StromspeicherVarianteCtrl().ReadAktiveVariante(m_ID_Projekt);
+            }
+            catch (Exception ex)
+            {
+                _speicherVariante = null;
+                Console.WriteLine("Die Speichervariante konnte nicht gelesen werden: " + ex.Message);
+            }
+
+            bool vorhanden = _speicherVariante != null;
+            StromspeicherVarianteModel v = _speicherVariante ?? new StromspeicherVarianteModel();
+
+            _speicherFelderLaden = true;
+            try
+            {
+                CultureInfo kultur = CultureInfo.CurrentCulture;
+
+                textBox_Stromspeicher_Ladeenergie_min.Text = v.SoC_Min_Prozent.ToString("F0", kultur);
+                textBox_Stromspeicher_Ladeenergie_max.Text = v.SoC_Max_Prozent.ToString("F0", kultur);
+                textBox_Speicher_Ladeschwelle.Text = v.Ladeschwellwert.ToString("F2", kultur);
+
+                // Gerätedaten der Einheit, die auch gerechnet wird (Abnahmebefund 1).
+                double kapazitaetKwh, leistungKw;
+                SpGeraetedaten(out kapazitaetKwh, out leistungKw);
+                textBox_Stromspeicher_Ladeleistung_max.Text = leistungKw.ToString("F2", kultur);
+                if (textBox_SpKapazitaet != null)
+                    textBox_SpKapazitaet.Text = kapazitaetKwh.ToString("F2", kultur);
+
+                SpWertWaehlen(comboBox_SpBetriebsart, v.Betriebsart);
+                SpWertWaehlen(comboBox_SpBerechnungsart, v.Berechnungsart);
+                SpWertWaehlen(comboBox_SpPreisquelle, v.Preisquelle);
+                checkBox_SpAufschlag.Checked = v.Aufschlag_Anwenden;
+
+                checkBox_SpPV.Checked = v.PV_Zulaessig;
+                checkBox_SpBHKW.Checked = v.BHKW_Ueberschuss_Zulaessig;
+                checkBox_SpBHKWStromgefuehrt.Checked = v.BHKW_Stromgefuehrt;
+                checkBox_SpNetzentladung.Checked = v.Netzentladung;
+                checkBox_SpKompatibilitaet.Checked = v.Kompatibilitaetsmodus;
+
+                textBox_SpKapitalzins.Text = v.Kapitalzins.ToString("F2", kultur);
+                textBox_SpNutzungsdauer.Text = v.Nutzungsdauer.ToString("F0", kultur);
+                textBox_SpLeistungspreis.Text = v.L_P.ToString("F2", kultur);
+                textBox_SpNetzladeaufschlag.Text = v.A_Netzlade.ToString("F2", kultur);
+
+                label_SpVariantenstatus.Text = vorhanden
+                    ? string.Format(MyResource.Resource.SP_PARAM_STATUS_VARIANTE, SpVariantenname(v))
+                    : MyResource.Resource.SP_PARAM_STATUS_KEINE_VARIANTE;
+                label_SpVariantenstatus.ForeColor = vorhanden ? Color.Black : Color.Firebrick;
+
+                // Ohne aktive Variante gäbe es kein Ziel für das Zurückschreiben - dann
+                // wären die Felder Attrappen. Der Ausbaustufen-Schalter
+                // "BHKW stromgeführt" bleibt in jedem Fall gesperrt.
+                textBox_Stromspeicher_Ladeenergie_min.Enabled = vorhanden;
+                textBox_Stromspeicher_Ladeenergie_max.Enabled = vorhanden;
+                textBox_Speicher_Ladeschwelle.Enabled = vorhanden;
+                comboBox_SpBetriebsart.Enabled = vorhanden;
+                comboBox_SpBerechnungsart.Enabled = vorhanden;
+                checkBox_SpPV.Enabled = vorhanden;
+                checkBox_SpBHKW.Enabled = vorhanden;
+                checkBox_SpNetzentladung.Enabled = vorhanden;
+                textBox_SpKapitalzins.Enabled = vorhanden;
+                textBox_SpNutzungsdauer.Enabled = vorhanden;
+                textBox_SpLeistungspreis.Enabled = vorhanden;
+                textBox_SpNetzladeaufschlag.Enabled = vorhanden;
+
+                comboBox_SpPreisquelle.Enabled = vorhanden;
+                checkBox_SpAufschlag.Enabled = vorhanden;
+
+                _speicherVarianteVorhanden = vorhanden;
+                SpKompatibilitaetVerfuegbarkeit();
+
+                // Erst NACH den Prozent- und Kapazitätsfeldern: Das Äquivalent liest
+                // beide. Am TextChanged hängt es zwar auch, dort ist es aber durch
+                // _speicherFelderLaden nicht gesperrt und die Kapazität stünde beim
+                // ersten der beiden Felder noch nicht.
+                SpSoCAequivalenteAktualisieren();
+            }
+            finally
+            {
+                _speicherFelderLaden = false;
+            }
+
+            // Erst NACH dem Freigeben der Felder: Die Reihenliste liest die Datenbank
+            // und aktualisiert die Preisvorschau - beides braucht die fertig gefüllte
+            // Variante, und die Auswahl darf dabei kein UPDATE auslösen.
+            SpReihenlisteFuellen();
+        }
+
+        /// <summary>
+        /// Anzeigename der Variante: der Bezeichner der zugehörigen Anlagenzeile, sonst
+        /// deren ID. Die Variantentabelle selbst führt keinen Namen — der Name gehört
+        /// zur Anlage (Fachkonzept 7.3).
+        /// </summary>
+        private static string SpVariantenname(StromspeicherVarianteModel v)
+        {
+            try
+            {
+                object wert = DataRepository.ExecuteScalar(
+                    "SELECT Bezeichner FROM Tab_Energieanlagen WHERE ID = ?",
+                    new System.Data.OleDb.OleDbParameter("@id", v.ID_Energieanlage));
+                if (wert != null && wert != DBNull.Value && wert.ToString().Length > 0)
+                    return wert.ToString();
+            }
+            catch { /* Anzeigename ist Beiwerk - der Status erscheint auch ohne ihn */ }
+
+            return v.ID_Energieanlage.ToString(CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Kapazität [kWh] und Lade-/Entladeleistung [kW] der Einheit, die auch
+        /// GERECHNET wird — dieselbe Auswahlregel wie
+        /// <see cref="StromspeicherSimCtrl.LeseParameter(int)"/> (Fachkonzept 7.3).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Bis zum Abnahmebefund 1 summierte die Seite hier über ALLE
+        /// <c>SP_TYP</c>-Anlagen des Projekts. Seit AP9b rechnet die Simulation aber die
+        /// Anlagenzeile der aktiven Variante, nicht deren Summe — bei mehreren Varianten
+        /// zeigte die Parameterseite damit eine Leistung, mit der nie jemand gerechnet
+        /// hat (Projekt 1011 der Produktiv-DB: vier Speicherzeilen, angezeigt wurden
+        /// 43,9 kW statt der 11,04 kW der aktiven Variante).
+        /// </para>
+        /// <para>
+        /// Der Rückfall auf die Aggregation bleibt genau dort, wo ihn auch der Controller
+        /// nimmt: wenn sich keine aktive Variantenzeile bestimmen lässt (Altprojekt vor
+        /// Migrationsschritt 11d oder eine Variante, die auf keine Speicheranlage dieses
+        /// Projekts mehr zeigt). Der Hinweistext am Feld nennt beide Fälle.
+        /// </para>
+        /// </remarks>
+        private void SpGeraetedaten(out double kapazitaetKwh, out double leistungKw)
+        {
+            kapazitaetKwh = 0.0;
+            leistungKw = 0.0;
+
+            try
+            {
+                string sql =
+                    "SELECT SUM(sp.Energie) AS C, SUM(sp.Leistung) AS P " +
+                    "FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
+
+                var parameter = new System.Collections.Generic.List<System.Data.OleDb.OleDbParameter>
+                {
+                    new System.Data.OleDb.OleDbParameter("@proj", m_ID_Projekt),
+                    new System.Data.OleDb.OleDbParameter("@typ", WizardItemClass.SP_TYP)
+                };
+
+                // Die Anlage der aktiven Variante, sofern sie eine Speicheranlage dieses
+                // Projekts ist - die WHERE-Bedingung oben prüft das gleich mit.
+                if (_speicherVariante != null && _speicherVariante.ID_Energieanlage > 0)
+                {
+                    sql += " AND a.ID = ?";
+                    parameter.Add(new System.Data.OleDb.OleDbParameter(
+                                      "@anlage", _speicherVariante.ID_Energieanlage));
+                }
+
+                System.Data.DataTable dt = DataRepository.GetDataTable(sql, parameter.ToArray());
+                if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["C"] != DBNull.Value)
+                {
+                    kapazitaetKwh = Convert.ToDouble(dt.Rows[0]["C"]);
+                    if (dt.Rows[0]["P"] != DBNull.Value) leistungKw = Convert.ToDouble(dt.Rows[0]["P"]);
+                    return;
+                }
+
+                // Rückfall: Die aktive Variante zeigt ins Leere - dann gilt wieder die
+                // Aggregation über alle Speicheranlagen (Verhalten bis AP9a).
+                if (parameter.Count > 2)
+                {
+                    dt = DataRepository.GetDataTable(
+                        "SELECT SUM(sp.Energie) AS C, SUM(sp.Leistung) AS P " +
+                        "FROM Tab_Energieanlagen AS a " +
+                        "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
+                        "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                        parameter[0], parameter[1]);
+
+                    if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["C"] != DBNull.Value)
+                    {
+                        kapazitaetKwh = Convert.ToDouble(dt.Rows[0]["C"]);
+                        if (dt.Rows[0]["P"] != DBNull.Value) leistungKw = Convert.ToDouble(dt.Rows[0]["P"]);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Gerätedaten des Speichers konnten nicht gelesen werden: " + ex.Message);
+            }
+        }
+
+        // ====================================================================
+        //  Ergebnisseite Stromspeicher (AP3b, Fachkonzept 7.1/7.2)
+        // ====================================================================
+        //
+        // AUSGANGSLAGE. tabPage_Stromspeicher war leer (Designer.cs:2739-2743) - die
+        // Seite erschien in der Navigation samt Batterie-Icon und zeigte nichts.
+        //
+        // AUFBAU wie auf den Nachbarseiten: Diagramm LINKS, Kennzahlen RECHTS, darunter
+        // die CSV-Ausgabe. Programmatisch aus demselben Grund wie die Parameterseite
+        // (das Formular arbeitet durchgängig mit resources.ApplyResources).
+        //
+        // DER KENNZAHLENBLOCK ist eine ListView mit drei Gruppen (Energie, Speicher,
+        // Wirtschaft) statt drei Dutzend Beschriftungspaaren: Er bleibt dadurch
+        // erweiterbar, scrollt von selbst und braucht keine Positionsrechnerei. Die
+        // Werte kommen aus GENAU DER Abbildung, die auch gespeichert wird
+        // (StromspeicherSimCtrl.AlsErgebnismodell) - Bildschirm und Datenbank können
+        // nicht auseinanderlaufen.
+        //
+        // DAS SOC-DIAGRAMM setzt MaxXVALUE UND MitViertelStunde (Vorbild
+        // NavigatorStrom): Ohne beides kappt ChartManager.AddSeries die Reihe auf 8.760
+        // Punkte, und der Jahresgang bräche Ende März ab. Eine Sekundärachse braucht
+        // die Seite nicht - anders als im PV-Diagramm ist der Ladezustand hier die
+        // Primärgröße.
+
+        // Maße der Seitenaufteilung: Diagramm links, Kennzahlen rechts. Die rechte
+        // Kante liegt bei x ≈ 1276 und damit innerhalb der Entwurfsbreite des
+        // aufnehmenden Panels (≈1295, siehe Kommentar bei InitKesselChart).
+        private const int SP_ERG_RAND = 16;
+        private const int SP_ERG_CHART_OBEN = 46;
+        private const int SP_ERG_CHART_BREITE = 640;
+        private const int SP_ERG_CHART_HOEHE = 380;
+        private const int SP_ERG_LISTE_LINKS = 676;
+        private const int SP_ERG_LISTE_BREITE = 600;
+
+        // Spaltenbreiten des Kennzahlenblocks. Die Summe bleibt in beiden Zuständen
+        // bei 560 px und damit innerhalb der Listenbreite - die Vergleichsspalte
+        // (AP6) wird nicht angehängt, sondern aus den drei Bestandsspalten
+        // freigeräumt. Eine ListView kann Spalten nicht ausblenden; "nicht vorhanden"
+        // heißt hier deshalb Breite 0.
+        private const int SP_ERG_SP_KENNZAHL = 300;
+        private const int SP_ERG_SP_WERT = 150;
+        private const int SP_ERG_SP_EINHEIT = 110;
+        private const int SP_ERG_SP_KENNZAHL_VGL = 230;
+        private const int SP_ERG_SP_WERT_VGL = 130;
+        private const int SP_ERG_SP_VERGLEICH_VGL = 130;
+        private const int SP_ERG_SP_EINHEIT_VGL = 70;
+
+        // Spaltenindizes des Kennzahlenblocks.
+        private const int SP_ERG_IDX_WERT = 1;
+        private const int SP_ERG_IDX_VERGLEICH = 2;
+        private const int SP_ERG_IDX_EINHEIT = 3;
+
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart_Speicher;
+        private ChartManager _chartSpeicherManager;
+        private ListView listView_SpeicherKennzahlen;
+        private Label label_SpeicherStatus;
+        private Label label_SpeicherAmpel;
+
+        /// <summary>
+        /// Warnzeile „dieser Lauf enthält keine Erzeugung" (Abnahmebefund 2). Sie steht
+        /// unter den Ausgabeknöpfen und ist nur belegt, wenn sie etwas zu sagen hat.
+        /// </summary>
+        private Label label_SpeicherErzeugungshinweis;
+        private Button btn_CsvExportSpeicher;
+        private Button btn_SpVariantenVergleich;
+
+        private void InitStromspeicherSeite()
+        {
+            if (tabPage_Stromspeicher == null) return;
+
+            label_SpeicherStatus = new Label();
+            label_SpeicherStatus.Name = "label_SpeicherStatus";
+            label_SpeicherStatus.Text = MyResource.Resource.SP_ERG_KEIN_LAUF;
+            label_SpeicherStatus.Location = new Point(SP_ERG_RAND, 14);
+            label_SpeicherStatus.Size = new Size(1200, 22);
+            label_SpeicherStatus.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
+            tabPage_Stromspeicher.Controls.Add(label_SpeicherStatus);
+
+            chart_Speicher = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            chart_Speicher.Name = "chart_Speicher";
+            // Ein programmatisch erzeugtes Chart hat KEINE ChartArea - ChartManager.Init
+            // steigt ohne sie wortlos aus (siehe InitKesselChart).
+            chart_Speicher.ChartAreas.Add(new ChartArea("ChartArea_Speicher"));
+            chart_Speicher.BackColor = Color.WhiteSmoke;
+            chart_Speicher.BorderlineColor = Color.Transparent;
+            // Feste Position, keine Rechts-Verankerung: Die Steuerelemente der TabPage
+            // wandern zur Laufzeit in splitContainer_Parameter.Panel2 (siehe Kommentar
+            // bei InitCsvExportButtons).
+            chart_Speicher.Location = new Point(SP_ERG_RAND, SP_ERG_CHART_OBEN);
+            chart_Speicher.Size = new Size(SP_ERG_CHART_BREITE, SP_ERG_CHART_HOEHE);
+            chart_Speicher.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            chart_Speicher.Visible = false;              // erst nach einem Speicherlauf
+            tabPage_Stromspeicher.Controls.Add(chart_Speicher);
+
+            btn_CsvExportSpeicher = new Button();
+            btn_CsvExportSpeicher.Name = "btn_CsvExportSpeicher";
+            btn_CsvExportSpeicher.Text = MyResource.Resource.SIM_BTN_CSV_EXPORT;
+            btn_CsvExportSpeicher.Size = new Size(150, 32);
+            btn_CsvExportSpeicher.Location = new Point(SP_ERG_RAND, SP_ERG_CHART_OBEN + SP_ERG_CHART_HOEHE + 12);
+            btn_CsvExportSpeicher.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            btn_CsvExportSpeicher.BackColor = SystemColors.Control;
+            btn_CsvExportSpeicher.ForeColor = Color.Black;
+            btn_CsvExportSpeicher.UseVisualStyleBackColor = false;
+            btn_CsvExportSpeicher.Visible = false;
+            btn_CsvExportSpeicher.Click += btn_CsvExportSpeicher_Click;
+            tooltip.SetToolTip(btn_CsvExportSpeicher, MyResource.Resource.SP_TOOLTIP_CSV);
+            tabPage_Stromspeicher.Controls.Add(btn_CsvExportSpeicher);
+
+            // AP9: Einstieg in den Variantenvergleich (Fachkonzept 7.3). Er steht HIER
+            // und nicht am Kontextmenü der Übersicht, weil er genau eines braucht, was
+            // es nur auf dieser Seite gibt: das fertig gerechnete sim-Objekt, auf dem
+            // StromspeicherSimCtrl.RechneVariante je Variante läuft. Sichtbar wird der
+            // Knopf erst nach einem Lauf und nur, wenn es überhaupt etwas zu vergleichen
+            // gibt (mehr als eine Speicheranlage) - siehe SpeicherErgebnisAnzeigen.
+            btn_SpVariantenVergleich = new Button();
+            btn_SpVariantenVergleich.Name = "btn_SpVariantenVergleich";
+            btn_SpVariantenVergleich.Text = MyResource.Resource.VAR_VGL_BTN_OEFFNEN;
+            btn_SpVariantenVergleich.Size = new Size(200, 32);
+            btn_SpVariantenVergleich.Location = new Point(SP_ERG_RAND + 162,
+                                                          SP_ERG_CHART_OBEN + SP_ERG_CHART_HOEHE + 12);
+            btn_SpVariantenVergleich.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            btn_SpVariantenVergleich.BackColor = SystemColors.Control;
+            btn_SpVariantenVergleich.ForeColor = Color.Black;
+            btn_SpVariantenVergleich.UseVisualStyleBackColor = false;
+            btn_SpVariantenVergleich.Visible = false;
+            btn_SpVariantenVergleich.Click += btn_SpVariantenVergleich_Click;
+            tooltip.SetToolTip(btn_SpVariantenVergleich, MyResource.Resource.VAR_VGL_TOOLTIP_OEFFNEN);
+            tabPage_Stromspeicher.Controls.Add(btn_SpVariantenVergleich);
+
+            listView_SpeicherKennzahlen = new ListView();
+            listView_SpeicherKennzahlen.Name = "listView_SpeicherKennzahlen";
+            listView_SpeicherKennzahlen.View = View.Details;
+            listView_SpeicherKennzahlen.FullRowSelect = true;
+            listView_SpeicherKennzahlen.GridLines = true;
+            listView_SpeicherKennzahlen.MultiSelect = false;
+            listView_SpeicherKennzahlen.HeaderStyle = ColumnHeaderStyle.Nonclickable;
+            listView_SpeicherKennzahlen.ShowGroups = true;
+            listView_SpeicherKennzahlen.Font = new Font("Segoe UI", 9.75f, FontStyle.Regular);
+            listView_SpeicherKennzahlen.Location = new Point(SP_ERG_LISTE_LINKS, SP_ERG_CHART_OBEN);
+            listView_SpeicherKennzahlen.Size = new Size(SP_ERG_LISTE_BREITE, 560);
+            listView_SpeicherKennzahlen.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            listView_SpeicherKennzahlen.Columns.Add(MyResource.Resource.SP_ERG_SPALTE_KENNZAHL, SP_ERG_SP_KENNZAHL, HorizontalAlignment.Left);
+            listView_SpeicherKennzahlen.Columns.Add(MyResource.Resource.SP_ERG_SPALTE_WERT, SP_ERG_SP_WERT, HorizontalAlignment.Right);
+            // Vergleichsspalte (AP6): steht immer im Spaltensatz, ist aber ohne
+            // Vergleichslauf 0 px breit - siehe SpVergleichsspalteSetzen.
+            listView_SpeicherKennzahlen.Columns.Add(MyResource.Resource.NACHT_ERG_SPALTE_VERGLEICH, 0, HorizontalAlignment.Right);
+            listView_SpeicherKennzahlen.Columns.Add(MyResource.Resource.SP_ERG_SPALTE_EINHEIT, SP_ERG_SP_EINHEIT, HorizontalAlignment.Left);
+            listView_SpeicherKennzahlen.Groups.Add(new ListViewGroup("ENERGIE", MyResource.Resource.SP_ERG_GRUPPE_ENERGIE));
+            listView_SpeicherKennzahlen.Groups.Add(new ListViewGroup("SPEICHER", MyResource.Resource.SP_ERG_GRUPPE_SPEICHER));
+            listView_SpeicherKennzahlen.Groups.Add(new ListViewGroup("WIRTSCHAFT", MyResource.Resource.SP_ERG_GRUPPE_WIRTSCHAFT));
+            tabPage_Stromspeicher.Controls.Add(listView_SpeicherKennzahlen);
+
+            // Abnahmebefund 2: Ein Lauf ohne jede Erzeugung sagt es hier im Klartext -
+            // sonst liest sich die 0-%-Eigenverbrauchsquote wie ein Rechenfehler.
+            label_SpeicherErzeugungshinweis = new Label();
+            label_SpeicherErzeugungshinweis.Name = "label_SpeicherErzeugungshinweis";
+            label_SpeicherErzeugungshinweis.Location =
+                new Point(SP_ERG_RAND, SP_ERG_CHART_OBEN + SP_ERG_CHART_HOEHE + 56);
+            label_SpeicherErzeugungshinweis.Size = new Size(SP_ERG_CHART_BREITE, 44);
+            label_SpeicherErzeugungshinweis.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
+            label_SpeicherErzeugungshinweis.ForeColor = Color.Firebrick;
+            label_SpeicherErzeugungshinweis.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            tabPage_Stromspeicher.Controls.Add(label_SpeicherErzeugungshinweis);
+
+            label_SpeicherAmpel = new Label();
+            label_SpeicherAmpel.Name = "label_SpeicherAmpel";
+            label_SpeicherAmpel.Location = new Point(SP_ERG_LISTE_LINKS, SP_ERG_CHART_OBEN + 570);
+            label_SpeicherAmpel.Size = new Size(SP_ERG_LISTE_BREITE, 44);
+            label_SpeicherAmpel.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
+            label_SpeicherAmpel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            tabPage_Stromspeicher.Controls.Add(label_SpeicherAmpel);
+        }
+
+        /// <summary>
+        /// Füllt die Ergebnisseite aus dem Speicherlauf — oder räumt sie ab, wenn der
+        /// Lauf keinen Speicher enthielt.
+        /// </summary>
+        private void SpeicherErgebnisAnzeigen()
+        {
+            if (listView_SpeicherKennzahlen == null) return;
+
+            listView_SpeicherKennzahlen.Items.Clear();
+            label_SpeicherAmpel.Text = "";
+            if (label_SpeicherErzeugungshinweis != null) label_SpeicherErzeugungshinweis.Text = "";
+
+            SpeicherEngine.SpeicherErgebnis erg = sim != null ? sim.Speicherergebnis : null;
+            if (erg == null || !sim.bSimulationSSP)
+            {
+                label_SpeicherStatus.Text = MyResource.Resource.SP_ERG_KEIN_LAUF;
+                label_SpeicherStatus.ForeColor = Color.Firebrick;
+                chart_Speicher.Visible = false;
+                btn_CsvExportSpeicher.Visible = false;
+                btn_SpVariantenVergleich.Visible = false;
+                SpVergleichsspalteSetzen(false);
+                // Serien des Vorlaufs abräumen, damit kein Bild ohne Bezug stehenbleibt
+                // (Muster KesselErgebnisAnzeigen).
+                if (_chartSpeicherManager != null) _chartSpeicherManager.HardReset();
+                return;
+            }
+
+            StromspeicherLaufKontext kontext = sim.Speicherkontext;
+            ErgebnisStromspeicherModel k = StromspeicherSimCtrl.AlsErgebnismodell(erg, kontext);
+
+            // Vergleichslauf (AP6): Er existiert genau dann, wenn die Variante mit einer
+            // anderen Berechnungsart als der Dauernutzung gerechnet hat. Abgebildet wird
+            // er über DIESELBE Methode wie das Hauptergebnis - beide Spalten zeigen
+            // damit garantiert dieselbe Größe, nur aus einem anderen Lauf.
+            SpeicherEngine.SpeicherErgebnis vergleich = kontext != null ? kontext.Vergleichsergebnis : null;
+            ErgebnisStromspeicherModel kv = vergleich != null
+                ? StromspeicherSimCtrl.AlsErgebnismodell(vergleich, kontext)
+                : null;
+
+            label_SpeicherStatus.Text = string.Format(MyResource.Resource.SP_ERG_KOPF_VARIANTE,
+                                                      k.Bezeichner, k.Betriebsart, k.Berechnungsart);
+            label_SpeicherStatus.ForeColor = Color.Black;
+
+            SpVergleichsspalteSetzen(vergleich != null);
+            SpKennzahlenFuellen(k, erg, kontext, kv, vergleich);
+            SpZyklenampelSetzen(k, kontext);
+            SpErzeugungshinweisSetzen(erg);
+            SpSoCDiagrammZeichnen();
+
+            btn_CsvExportSpeicher.Visible = true;
+
+            // Vergleichen lässt sich erst ab zwei Varianten (Fachkonzept 7.3). Bei
+            // einer einzigen zeigte die Maske dieselben Zahlen, die eine Handbreit
+            // weiter links bereits stehen.
+            btn_SpVariantenVergleich.Visible = SpVariantenzahl() > 1;
+        }
+
+        /// <summary>
+        /// Anzahl der <c>SP_TYP</c>-Anlagenzeilen des Projekts — die Zahl der
+        /// Speichervarianten (Fachkonzept 7.3: eine Variante ist eine Anlagenzeile).
+        /// </summary>
+        private int SpVariantenzahl()
+        {
+            try
+            {
+                object wert = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                    new System.Data.OleDb.OleDbParameter("@proj", m_ID_Projekt),
+                    new System.Data.OleDb.OleDbParameter("@typ", WizardItemClass.SP_TYP));
+
+                if (wert != null && wert != DBNull.Value) return Convert.ToInt32(wert);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Zahl der Speichervarianten konnte nicht gelesen werden: " + ex.Message);
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Öffnet den Variantenvergleich (AP9) auf dem vorliegenden Simulationslauf.
+        /// </summary>
+        /// <remarks>
+        /// Wurde dort die aktive Variante umgestellt, lädt die Parameterseite neu — sie
+        /// zeigt immer die AKTIVE Variante (<see cref="LeseSpeicherVariante"/>). Neu
+        /// gerechnet wird bewusst nicht: Der angezeigte Lauf beschreibt, was gerechnet
+        /// wurde, und wann er wiederholt wird, entscheidet der Anwender. Dasselbe
+        /// Verhalten wie bei der Übernahme aus der Auslegungsoptimierung.
+        /// </remarks>
+        private void btn_SpVariantenVergleich_Click(object sender, EventArgs e)
+        {
+            using (Form_SpeicherVariantenVergleich frm =
+                       new Form_SpeicherVariantenVergleich(sim, m_ID_Projekt))
+            {
+                frm.ShowDialog(this);
+                if (frm.AktiveVarianteGeaendert) LeseSpeicherVariante();
+            }
+        }
+
+        /// <summary>
+        /// Blendet die Vergleichsspalte ein oder aus (AP6, Fachkonzept Etappe 6).
+        /// </summary>
+        /// <remarks>
+        /// Eine <see cref="ListView"/> kann Spalten nicht ausblenden; "nicht vorhanden"
+        /// heißt deshalb Breite 0. Der Platz kommt aus den drei Bestandsspalten, die
+        /// Gesamtbreite bleibt gleich — die Liste liegt in einer TabPage mit fester
+        /// Entwurfsbreite und darf nicht über deren rechte Kante hinauswachsen.
+        /// </remarks>
+        private void SpVergleichsspalteSetzen(bool mitVergleich)
+        {
+            listView_SpeicherKennzahlen.Columns[0].Width =
+                mitVergleich ? SP_ERG_SP_KENNZAHL_VGL : SP_ERG_SP_KENNZAHL;
+            listView_SpeicherKennzahlen.Columns[SP_ERG_IDX_WERT].Width =
+                mitVergleich ? SP_ERG_SP_WERT_VGL : SP_ERG_SP_WERT;
+            listView_SpeicherKennzahlen.Columns[SP_ERG_IDX_VERGLEICH].Width =
+                mitVergleich ? SP_ERG_SP_VERGLEICH_VGL : 0;
+            listView_SpeicherKennzahlen.Columns[SP_ERG_IDX_EINHEIT].Width =
+                mitVergleich ? SP_ERG_SP_EINHEIT_VGL : SP_ERG_SP_EINHEIT;
+
+            tooltip.SetToolTip(listView_SpeicherKennzahlen,
+                               mitVergleich ? MyResource.Resource.NACHT_ERG_VERGLEICH_HINWEIS : "");
+        }
+
+        /// <summary>
+        /// Füllt den Kennzahlenblock. <paramref name="kv"/> und
+        /// <paramref name="vergleich"/> sind <c>null</c>, wenn es keinen
+        /// Vergleichslauf gibt; dann bleibt die Vergleichsspalte leer.
+        /// </summary>
+        private void SpKennzahlenFuellen(ErgebnisStromspeicherModel k,
+                                         SpeicherEngine.SpeicherErgebnis erg,
+                                         StromspeicherLaufKontext kontext,
+                                         ErgebnisStromspeicherModel kv,
+                                         SpeicherEngine.SpeicherErgebnis vergleich)
+        {
+            const string KWH = "kWh/a";
+            const string EUR_A = "€/a";
+
+            // ABNAHMEBEFUND 2: Zuerst die EINGANGSGRÖSSEN des Laufs. Bis hierher zeigte
+            // die Seite ausschließlich Ergebnisse; ob der Speicher überhaupt eine Last
+            // und eine Erzeugung vor sich hatte, war ihr nicht zu entnehmen - und genau
+            // das war die Frage des Anwenders („die Kopplung an PV und Strombedarf
+            // scheint nicht zu passen"). Die vier Zeilen stehen bereits in
+            // SpeicherKennzahlen und kosten keine zweite Rechnung.
+            SpeicherEngine.SpeicherKennzahlen ein = erg.Kennzahlen;
+            SpeicherEngine.SpeicherKennzahlen einVgl = vergleich != null ? vergleich.Kennzahlen : null;
+
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_LAST, ein.LastKwh,
+                    einVgl != null ? einVgl.LastKwh : (double?)null, "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_ERZEUGUNG_PV, ein.ErzeugungPvKwh,
+                    einVgl != null ? einVgl.ErzeugungPvKwh : (double?)null, "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_ERZEUGUNG_BHKW, ein.ErzeugungBhkwKwh,
+                    einVgl != null ? einVgl.ErzeugungBhkwKwh : (double?)null, "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_DIREKTVERBRAUCH, ein.DirektverbrauchKwh,
+                    einVgl != null ? einVgl.DirektverbrauchKwh : (double?)null, "N0", KWH);
+
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_LADUNG_PV, k.Ladung_PV, Vgl(kv, x => x.Ladung_PV), "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_LADUNG_BHKW, k.Ladung_BHKW, Vgl(kv, x => x.Ladung_BHKW), "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_LADUNG_NETZ, k.Ladung_Netz, Vgl(kv, x => x.Ladung_Netz), "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_LADUNG_GESAMT, k.Ladung_Gesamt, Vgl(kv, x => x.Ladung_Gesamt), "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_ENTLADUNG, k.Entladung_Gesamt, Vgl(kv, x => x.Entladung_Gesamt), "N0", KWH);
+            // Netzverkauf (AP10): Die Größe steht nicht im Ergebnismodell - sie ist dort
+            // im Entladungssummenwert enthalten und wird hier eigens ausgewiesen.
+            SpZeile("ENERGIE", MyResource.Resource.ARB_ERG_VERKAUF, SpVerkaufKwh(kontext), "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_VERLUSTE, k.Verluste_Gesamt, Vgl(kv, x => x.Verluste_Gesamt), "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_NETZBEZUG_OHNE, k.Netzbezug_Ohne, Vgl(kv, x => x.Netzbezug_Ohne), "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_NETZBEZUG_MIT, k.Netzbezug_Mit, Vgl(kv, x => x.Netzbezug_Mit), "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_EINSPEISUNG_OHNE, k.Einspeisung_Ohne, Vgl(kv, x => x.Einspeisung_Ohne), "N0", KWH);
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_EINSPEISUNG_MIT, k.Einspeisung_Mit, Vgl(kv, x => x.Einspeisung_Mit), "N0", KWH);
+            // ABNAHMEBEFUND 2: Ohne Erzeugung ist die Eigenverbrauchsquote NICHT NULL,
+            // sondern unbestimmt (0/0). Die Engine muss dafür 0 führen - das Feld geht so
+            // in Tab_ErgebnisStromspeicher, und Access nimmt kein NaN entgegen. Auf dem
+            // Bildschirm steht deshalb der Gedankenstrich; die Warnzeile unter den
+            // Ausgabeknöpfen sagt, warum.
+            bool mitErzeugung = ein.ErzeugungKwh > 0.0;
+            if (mitErzeugung)
+                SpZeile("ENERGIE", MyResource.Resource.SP_ERG_EIGENVERBRAUCH, k.Eigenverbrauchsquote, Vgl(kv, x => x.Eigenverbrauchsquote), "N1", "%");
+            else
+                SpZeileText("ENERGIE", MyResource.Resource.SP_ERG_EIGENVERBRAUCH, SP_ERG_UNBESTIMMT, "", "%");
+
+            SpZeile("ENERGIE", MyResource.Resource.SP_ERG_AUTARKIE, k.Autarkiegrad, Vgl(kv, x => x.Autarkiegrad), "N1", "%");
+
+            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_VOLLZYKLEN, k.Vollzyklen, Vgl(kv, x => x.Vollzyklen), "N1", "1/a");
+            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_SOC_MIN, k.SoC_Min, Vgl(kv, x => x.SoC_Min), "N1", "kWh");
+            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_SOC_MITTEL, k.SoC_Mittel, Vgl(kv, x => x.SoC_Mittel), "N1", "kWh");
+            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_SOC_MAX, k.SoC_Max, Vgl(kv, x => x.SoC_Max), "N1", "kWh");
+            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_ZEITANTEIL_UNTEN, k.Zeitanteil_Untergrenze, Vgl(kv, x => x.Zeitanteil_Untergrenze), "N1", "%");
+            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_ZEITANTEIL_OBEN, k.Zeitanteil_Obergrenze, Vgl(kv, x => x.Zeitanteil_Obergrenze), "N1", "%");
+            ListViewItem zyklen = SpZeile("SPEICHER", MyResource.Resource.SP_ERG_ZYKLEN_HOCHRECHNUNG,
+                                          k.Zyklen_Hochrechnung, Vgl(kv, x => x.Zyklen_Hochrechnung), "N0", "-");
+            zyklen.BackColor = SpAmpelfarbe(k, kontext);
+            // Zugesicherte Zyklen sind ein Gerätedatum, kein Ergebnis - hier gibt es
+            // nichts zu vergleichen.
+            SpZeile("SPEICHER", MyResource.Resource.SP_ERG_ZYKLEN_ZUGESICHERT,
+                    kontext != null ? kontext.ZyklenZugesichert : 0.0, "N0", "-");
+
+            SpBudgetzeilen(kontext);
+
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_BEZUG, k.Ertrag_Bezugsersparnis, Vgl(kv, x => x.Ertrag_Bezugsersparnis), "N2", EUR_A);
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_VERGUETUNG, -k.Ertrag_Verguetung_Entgangen, Vgl(kv, x => -x.Ertrag_Verguetung_Entgangen), "N2", EUR_A);
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_NETZ, k.Ertrag_Netzerloes, Vgl(kv, x => x.Ertrag_Netzerloes), "N2", EUR_A);
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_KOSTEN_LADUNG, k.Kosten_Ladung, Vgl(kv, x => x.Kosten_Ladung), "N2", EUR_A);
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_LEISTUNGSPREIS, k.Ertrag_Leistungspreis, Vgl(kv, x => x.Ertrag_Leistungspreis), "N2", EUR_A);
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_VERSCHLEISS, k.Verschleisskosten, Vgl(kv, x => x.Verschleisskosten), "N2", EUR_A);
+            // Investition und Annuität hängen allein an den Parametern, nicht an der
+            // Betriebsstrategie - sie stehen in beiden Spalten gleich und bekommen
+            // deshalb keinen Vergleichswert.
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_INVESTITION, k.Investition, "N2", "€");
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ANNUITAET, k.Annuitaet, "N2", EUR_A);
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_JAHRESUEBERSCHUSS, k.Jahresueberschuss, Vgl(kv, x => x.Jahresueberschuss), "N2", EUR_A);
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_JAHR1, k.Ertrag_Jahr1, Vgl(kv, x => x.Ertrag_Jahr1), "N2", EUR_A);
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_ERTRAG_AEQUIVALENT, k.Ertrag_Aequivalent, Vgl(kv, x => x.Ertrag_Aequivalent), "N2", EUR_A);
+
+            // Amortisation direkt aus dem Engine-Ergebnis: Es kennt die beiden Fälle
+            // "nicht amortisierbar" und "> Nutzungsdauer", die der gespeicherte Satz als
+            // 0 führen muss (Access nimmt kein Infinity entgegen).
+            SpZeileText("WIRTSCHAFT", MyResource.Resource.SP_ERG_AMORT_STATISCH,
+                        SpAmortisationstext(erg.Wirtschaftlichkeit.StatischeAmortisation),
+                        vergleich != null ? SpAmortisationstext(vergleich.Wirtschaftlichkeit.StatischeAmortisation) : "",
+                        "a");
+            SpZeileText("WIRTSCHAFT", MyResource.Resource.SP_ERG_AMORT_DYNAMISCH,
+                        SpAmortisationstext(erg.Wirtschaftlichkeit.DynamischeAmortisation),
+                        vergleich != null ? SpAmortisationstext(vergleich.Wirtschaftlichkeit.DynamischeAmortisation) : "",
+                        "a");
+            SpZeile("WIRTSCHAFT", MyResource.Resource.SP_ERG_KAPITALWERT, k.Kapitalwert, Vgl(kv, x => x.Kapitalwert), "N2", "€");
+        }
+
+        /// <summary>
+        /// Anzeige einer Kennzahl, die in DIESEM Lauf keinen Bezug hat (Abnahmebefund 2).
+        /// Ein Symbol, kein Text — sprachneutral wie die Einheitenspalte.
+        /// </summary>
+        private const string SP_ERG_UNBESTIMMT = "–";
+
+        /// <summary>
+        /// Setzt die Warnzeile für einen Lauf ohne jede Erzeugung (Abnahmebefund 2).
+        /// </summary>
+        /// <remarks>
+        /// Sie ist das Gegenstück zum Protokollhinweis aus
+        /// <c>StromspeicherSimCtrl.ErzeugungPruefen</c>: Der Anwender sieht das Protokoll
+        /// nicht zwingend, die Ergebnisseite dagegen immer. Bedingung ist die Erzeugung
+        /// des Laufs, nicht das PV-Modulflag — eine gerechnete PV-Anlage ohne Ertrag
+        /// führt zu demselben Bild.
+        /// </remarks>
+        private void SpErzeugungshinweisSetzen(SpeicherEngine.SpeicherErgebnis erg)
+        {
+            if (label_SpeicherErzeugungshinweis == null) return;
+
+            label_SpeicherErzeugungshinweis.Text = erg.Kennzahlen.ErzeugungKwh > 0.0
+                ? ""
+                : MyResource.Resource.SP_ERG_OHNE_ERZEUGUNG;
+        }
+
+        /// <summary>
+        /// Wert des Vergleichslaufs, oder <c>null</c>, wenn es keinen gibt — damit
+        /// steht die Fallunterscheidung genau einmal statt in jeder Zeile.
+        /// </summary>
+        private static double? Vgl(ErgebnisStromspeicherModel kv, Func<ErgebnisStromspeicherModel, double> auswahl)
+        {
+            return kv != null ? auswahl(kv) : (double?)null;
+        }
+
+        /// <summary>Ins Netz verkaufte Energie des Laufs [kWh/a]; 0 ohne Preissteuerung.</summary>
+        private static double SpVerkaufKwh(StromspeicherLaufKontext kontext)
+        {
+            return kontext != null && kontext.Arbitrageergebnis != null
+                ? kontext.Arbitrageergebnis.Kennzahlen.VerkaufKwh
+                : 0.0;
+        }
+
+        /// <summary>
+        /// Zeilen der Preissteuerung im Speicherblock (AP10, Fachkonzept 6.5): das
+        /// Jahres-Zyklenbudget, seine Auslastung mit Warnfärbung analog zur
+        /// Zyklen-Ampel, der Verschleiß je ausgespeicherter kWh und die Zahl der
+        /// angenommenen Paarungen.
+        /// </summary>
+        /// <remarks>
+        /// Sie erscheinen nur, wenn wirklich mit der Preissteuerung gerechnet wurde —
+        /// ohne sie ist das Budget keine Schranke, sondern nur eine zweite Schreibweise
+        /// der Zyklenhochrechnung, die eine Zeile weiter oben bereits steht.
+        /// </remarks>
+        private void SpBudgetzeilen(StromspeicherLaufKontext kontext)
+        {
+            SpeicherEngine.ArbitrageErgebnis arb = kontext != null ? kontext.Arbitrageergebnis : null;
+            if (arb == null) return;
+
+            SpeicherEngine.ArbitrageKennzahlen a = arb.Kennzahlen;
+
+            SpZeile("SPEICHER", MyResource.Resource.ARB_ERG_BUDGET, a.ZyklenbudgetDcKwhProA, "N0", "kWh/a");
+
+            ListViewItem auslastung = SpZeile("SPEICHER", MyResource.Resource.ARB_ERG_BUDGET_AUSLASTUNG,
+                                              a.BudgetauslastungProzent, "N1", "%");
+            auslastung.BackColor = SpBudgetfarbe(a);
+
+            SpZeile("SPEICHER", MyResource.Resource.ARB_ERG_KVER, a.VerschleissCtKwh, "N3", "ct/kWh");
+            SpZeile("SPEICHER", MyResource.Resource.ARB_ERG_PAARE,
+                    a.PaareAngenommen + a.VerkaufsslotsAngenommen, "N0", "-");
+        }
+
+        /// <summary>
+        /// Warnfärbung der Budgetzeile — dieselbe Staffelung wie
+        /// <see cref="SpAmpelfarbe"/>: grün bis 90 %, gelb darüber, rot bei
+        /// Überschreitung, neutral ohne gepflegtes Budget.
+        /// </summary>
+        private static Color SpBudgetfarbe(SpeicherEngine.ArbitrageKennzahlen a)
+        {
+            if (a.ZyklenbudgetDcKwhProA <= 0.0) return Color.FromArgb(240, 240, 240);
+            if (a.BudgetauslastungProzent > 100.0) return Color.FromArgb(255, 205, 205);
+            if (a.BudgetauslastungProzent > 90.0) return Color.FromArgb(255, 240, 190);
+            return Color.FromArgb(215, 245, 215);
+        }
+
+        private ListViewItem SpZeile(string gruppe, string bezeichnung, double wert, string format, string einheit)
+        {
+            return SpZeileText(gruppe, bezeichnung, wert.ToString(format, CultureInfo.CurrentCulture), "", einheit);
+        }
+
+        private ListViewItem SpZeile(string gruppe, string bezeichnung, double wert, double? vergleich,
+                                     string format, string einheit)
+        {
+            return SpZeileText(gruppe, bezeichnung,
+                               wert.ToString(format, CultureInfo.CurrentCulture),
+                               vergleich.HasValue ? vergleich.Value.ToString(format, CultureInfo.CurrentCulture) : "",
+                               einheit);
+        }
+
+        private ListViewItem SpZeileText(string gruppe, string bezeichnung, string wert, string vergleich, string einheit)
+        {
+            ListViewItem item = new ListViewItem(bezeichnung);
+            item.SubItems.Add(wert);
+            item.SubItems.Add(vergleich);
+            item.SubItems.Add(einheit);
+
+            foreach (ListViewGroup g in listView_SpeicherKennzahlen.Groups)
+                if (g.Name == gruppe) { item.Group = g; break; }
+
+            listView_SpeicherKennzahlen.Items.Add(item);
+            return item;
+        }
+
+        /// <summary>
+        /// Amortisationszeit als Text: die Jahre, oder der Klartext des Sonderfalls
+        /// (Fachkonzept 7.1 — die V7-Mappe schrieb beides in dieselbe Zelle, die Engine
+        /// trennt Zustand und Zahl).
+        /// </summary>
+        private static string SpAmortisationstext(SpeicherEngine.Amortisation a)
+        {
+            switch (a.Status)
+            {
+                case SpeicherEngine.AmortisationStatus.NichtAmortisierbar:
+                    return MyResource.Resource.SP_ERG_NICHT_AMORTISIERBAR;
+                case SpeicherEngine.AmortisationStatus.UeberNutzungsdauer:
+                    return MyResource.Resource.SP_ERG_UEBER_NUTZUNGSDAUER;
+                default:
+                    return a.Jahre.ToString("N1", CultureInfo.CurrentCulture);
+            }
+        }
+
+        /// <summary>
+        /// Ampelfarbe der Zyklenzeile (Fachkonzept 5.4/7.1): grün bis 90 % des Budgets,
+        /// gelb darüber, rot bei Überschreitung, neutral ohne gepflegte N_zyk.
+        /// </summary>
+        private static Color SpAmpelfarbe(ErgebnisStromspeicherModel k, StromspeicherLaufKontext kontext)
+        {
+            double budget = kontext != null ? kontext.ZyklenZugesichert : 0.0;
+            if (budget <= 0.0) return Color.FromArgb(240, 240, 240);
+            if (k.Zyklen_Hochrechnung > budget) return Color.FromArgb(255, 205, 205);
+            if (k.Zyklen_Hochrechnung > budget * 0.9) return Color.FromArgb(255, 240, 190);
+            return Color.FromArgb(215, 245, 215);
+        }
+
+        private void SpZyklenampelSetzen(ErgebnisStromspeicherModel k, StromspeicherLaufKontext kontext)
+        {
+            double budget = kontext != null ? kontext.ZyklenZugesichert : 0.0;
+            string text;
+            Color farbe;
+
+            if (budget <= 0.0)
+            {
+                text = MyResource.Resource.SP_ERG_AMPEL_OHNE_ANGABE;
+                farbe = Color.FromArgb(100, 100, 100);
+            }
+            else if (k.Zyklen_Hochrechnung > budget)
+            {
+                text = string.Format(MyResource.Resource.SP_ERG_AMPEL_UEBERSCHRITTEN, k.Zyklen_Hochrechnung, budget);
+                farbe = Color.Firebrick;
+            }
+            else if (k.Zyklen_Hochrechnung > budget * 0.9)
+            {
+                text = string.Format(MyResource.Resource.SP_ERG_AMPEL_KNAPP, k.Zyklen_Hochrechnung, budget);
+                farbe = Color.DarkGoldenrod;
+            }
+            else
+            {
+                text = string.Format(MyResource.Resource.SP_ERG_AMPEL_OK, k.Zyklen_Hochrechnung, budget);
+                farbe = Color.DarkGreen;
+            }
+
+            // Ein vorzeitig aufgebrauchtes Zyklenbudget erklärt, warum die
+            // Preissteuerung ab einem bestimmten Tag nichts mehr geplant hat (AP10,
+            // Fachkonzept 6.5).
+            if (kontext != null && kontext.Arbitrageergebnis != null
+                && kontext.Arbitrageergebnis.Kennzahlen.BudgetErschoepft)
+            {
+                text = MyResource.Resource.ARB_ERG_AMPEL_ERSCHOEPFT + Environment.NewLine + text;
+                farbe = Color.Firebrick;
+            }
+
+            // Der Kompatibilitätsmodus liefert bewusst kein Produktivergebnis - das darf
+            // auf der Seite nicht untergehen (Fachkonzept 5.2).
+            if (kontext != null && kontext.Kompatibilitaetsmodus)
+            {
+                text = MyResource.Resource.SP_ERG_KOMPATIBILITAET_AKTIV + Environment.NewLine + text;
+                farbe = Color.Firebrick;
+            }
+
+            label_SpeicherAmpel.Text = text;
+            label_SpeicherAmpel.ForeColor = farbe;
+        }
+
+        private void SpSoCDiagrammZeichnen()
+        {
+            // EIN ChartManager über die Lebensdauer des Formulars, davor HardReset -
+            // Muster der Kesselseite. Init() abonniert Legenden- und Mausrad-Ereignisse
+            // am rohen Chart; ein neuer Manager je Lauf sammelte diese Abonnements an.
+            if (_chartSpeicherManager == null) _chartSpeicherManager = new ChartManager(chart_Speicher);
+
+            ChartManager cm = _chartSpeicherManager;
+            cm.YMaxValue = sim.Speicherfuellstand_viertelstuendlich.Max();
+            cm.YMinValue = 0;
+            cm.XAxisAsNumber = false;
+            cm.XAxisTitle = MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN;
+            cm.YAxisTitle = MyResource.Resource.SP_CHART_ACHSE_SOC;
+            cm.toolTipUnit = "kWh";
+            cm.ChartTitle = MyResource.Resource.SP_CHART_TITEL_SOC;
+            cm.MitLegende = true;
+            cm.MitChartBorder = true;
+            cm.AreaLine = false;
+            // BEIDE Angaben sind nötig - sonst kappt AddSeries auf 8.760 Punkte
+            // (Vorbild NavigatorStrom).
+            cm.MaxXVALUE = 8760 * 4;
+            cm.MitViertelStunde = true;
+
+            cm.HardReset();
+            cm.Init();
+
+            SerieAnlegen(cm, S_SPEICHERFUELLSTAND,
+                         MyResource.Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND,
+                         Color.FromArgb(120, 130, 140), sim.Speicherfuellstand_viertelstuendlich);
+
+            chart_Speicher.Visible = true;
+        }
+
+        /// <summary>
+        /// Intervallreihen des Speicherlaufs als CSV (Fachkonzept 7.2: Zeitreihen
+        /// ausschließlich als CSV, nie über die Excel-Interop-Schnittstelle).
+        /// </summary>
+        private void btn_CsvExportSpeicher_Click(object sender, EventArgs e)
+        {
+            if (sim == null || sim.Speicherergebnis == null)
+            {
+                MessageBox.Show(MyResource.Resource.SP_ERG_KEIN_LAUF, MyResource.Resource.SIM_STROMSPEICHER,
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            SpeicherEngine.SpeicherErgebnis erg = sim.Speicherergebnis;
+
+            List<CsvSpalte> spalten = new List<CsvSpalte>();
+            spalten.Add(new CsvSpalte(MyResource.Resource.SP_CSV_SOC,
+                                      SpeicherEngine.RasterAdapter.ZuFloat(erg.SoCKwh)));
+            spalten.Add(new CsvSpalte(MyResource.Resource.SP_CSV_LADUNG,
+                                      SpeicherEngine.RasterAdapter.ZuFloat(erg.LadungAcKwh)));
+            spalten.Add(new CsvSpalte(MyResource.Resource.SP_CSV_ENTLADUNG,
+                                      SpeicherEngine.RasterAdapter.ZuFloat(erg.EntladungAcKwh)));
+            spalten.Add(new CsvSpalte(MyResource.Resource.SP_CSV_GELDWERT,
+                                      SpeicherEngine.RasterAdapter.ZuFloat(erg.GeldwertEur)));
+
+            // Netzpfade (AP10) nur, wenn mit der Preissteuerung gerechnet wurde - zwei
+            // dauerhafte Nullspalten wären im Export nur Ballast.
+            SpeicherEngine.ArbitrageErgebnis arb = sim.Speicherkontext != null
+                ? sim.Speicherkontext.Arbitrageergebnis
+                : null;
+            if (arb != null)
+            {
+                spalten.Add(new CsvSpalte(MyResource.Resource.ARB_CSV_LADUNG_NETZ,
+                                          SpeicherEngine.RasterAdapter.ZuFloat(arb.LadungNetzAcKwh)));
+                spalten.Add(new CsvSpalte(MyResource.Resource.ARB_CSV_VERKAUF,
+                                          SpeicherEngine.RasterAdapter.ZuFloat(arb.VerkaufAcKwh)));
+            }
+
+            CsvExportClass.Export(string.Format(MyResource.Resource.SP_DATEI_STROMSPEICHER, m_ID_Projekt),
+                                  simulation_Waermebedarf.Stundentemperatur, spalten, true);
         }
 
         private Panel ErstelleBrennstoffZeile(string bezeichnung, double verbrauchswert)
