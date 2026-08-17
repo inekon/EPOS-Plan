@@ -104,7 +104,7 @@
             resources.ApplyResources(btn_Hinzu, "btn_Hinzu");
             btn_Hinzu.Name = "btn_Hinzu";
             btn_Hinzu.UseVisualStyleBackColor = true;
-            btn_Hinzu.Click += btn_Hinzzu_Click;
+            btn_Hinzu.Click += btn_Hinzu_Click;
             // 
             // btn_Entfernen
             // 

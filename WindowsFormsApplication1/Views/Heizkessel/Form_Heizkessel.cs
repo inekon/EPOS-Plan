@@ -23,6 +23,9 @@ namespace WindowsFormsApplication1
         int startindex = 100000;
         private bool m_bWizard = false;
         private WizardParent wizardparent = null;
+        // Blockt cmbBrennstoffArt_SelectedIndexChanged waehrend des programmatischen
+        // Befuellens, damit die Bindung nicht m.ID_Carrier ueberschreibt.
+        private bool _updateCarrierCombo = false;
 
         public Form_Heizkessel()
         {
@@ -30,6 +33,9 @@ namespace WindowsFormsApplication1
             InitKesselListe();
             listBox_Kessel_DB.Items.Clear();
             listBox_Kessel.Items.Clear();
+
+            // Handler GENAU EINMAL abonnieren (nur echte Benutzerauswahl aendert ID_Carrier).
+            cmbBrennstoffArt.SelectedIndexChanged += cmbBrennstoffArt_SelectedIndexChanged;
         }
 
         // Konfiguriert die Auswahl-ListView (Details, Spalten Name + ID). Der Steuerungsname
@@ -333,6 +339,17 @@ namespace WindowsFormsApplication1
                                 return "";
                             }
 
+                            // 1b) Wizard / kein echtes Projekt: nur der Katalog-Träger. energy_price
+                            // und energy_Project_settings haben eine Beziehung auf Tab_Projekt.ID, die
+                            // im Wizard noch nicht existiert -> die trägt WizardCtrl beim Speichern nach.
+                            if (m_bWizard || m_ID_Projekt <= 0)
+                            {
+                                tx.Commit();
+                                MessageBox.Show("Energieträgervariante vorgemerkt. Die Preis- und Emissionssätze " +
+                                                "werden beim Speichern des Projekts angelegt.");
+                                return dlg.SelectedName;
+                            }
+
                             // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln.
                             int vorhanden;
                             using (var cmd = new OleDbCommand(
@@ -451,8 +468,41 @@ namespace WindowsFormsApplication1
             WErzeugerModel m = GetSelectedKessel();
             if (m == null) return;
 
+            cmbBrennstoffArt.Visible = true;
+            label_BrennstoffArt.Visible = true;
+
             textBox_Vorlauf.Text = m.Vorlauf.ToString();
             textBox_Ruecklauf.Text = m.Ruecklauf.ToString();
+
+            // cmbBrennstoffArt mit den Varianten der Carrier-Gruppe füllen und den
+            // zugeordneten Träger vorwählen (analog Form_BHKWEing). Während des
+            // programmatischen Befüllens den Handler per Flag blocken.
+            _updateCarrierCombo = true;
+            try
+            {
+                DataTable dtCar = DataRepository.GetDataTable(
+                    "SELECT name, group_code FROM energy_carrier WHERE id = ?",
+                    new OleDbParameter("@id", m.ID_Carrier));
+                if (dtCar != null && dtCar.Rows.Count > 0)
+                {
+                    string code = dtCar.Rows[0]["group_code"].ToString();
+
+                    cmbBrennstoffArt.DataSource = DataRepository.GetDataTable(
+                        "SELECT id, name FROM energy_carrier WHERE group_code = ? ORDER BY name",
+                        new OleDbParameter("@gc", code));
+                    cmbBrennstoffArt.DisplayMember = "name";
+                    cmbBrennstoffArt.ValueMember = "id";
+                    cmbBrennstoffArt.SelectedValue = m.ID_Carrier;
+                }
+                else
+                {
+                    cmbBrennstoffArt.DataSource = null;
+                }
+            }
+            finally
+            {
+                _updateCarrierCombo = false;
+            }
 
             RecordSet rs = new RecordSet();
             rs.Open("select * from [Tab_Heizkessel] where ID=" + m.ID_Kessel);
@@ -469,8 +519,37 @@ namespace WindowsFormsApplication1
             rs.Close();
         }
 
+        private void cmbBrennstoffArt_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Programmatisches Befüllen (ApplySelectedKessel) ignorieren.
+            if (_updateCarrierCombo) return;
+
+            WErzeugerModel m = GetSelectedKessel();
+            if (m == null) return;
+
+            object val = cmbBrennstoffArt.SelectedValue;
+            if (val == null || val == DBNull.Value) return;
+            int idcarrier_alt = m.ID_Carrier;
+            
+            m.ID_Carrier = Convert.ToInt32(val);
+
+            string sqlUpdate =
+                "UPDATE energy_Project_settings " +
+                "SET ID_Energieträger = ? " +
+                "WHERE ID_Projekt = ? AND ID_Energieträger = ?";
+
+            DataRepository.ExecuteSQL(sqlUpdate, new OleDbParameter[] {
+                new OleDbParameter("@neu", m.ID_Carrier),   // SET-Wert
+                new OleDbParameter("@pid", m_ID_Projekt),    // Filter Projekt
+                new OleDbParameter("@alt", idcarrier_alt)    // Filter bisheriger Träger
+            });
+        }
+
         private void listBox_Kessel_DB_SelectedIndexChanged(object sender, EventArgs e)
         {
+            cmbBrennstoffArt.Visible = false;
+            label_BrennstoffArt.Visible = false;    
+            
             RecordSet rs = new RecordSet();
 
             rs.Open("select * from [Tab_Heizkessel_STAMM] where Bezeichner='" + listBox_Kessel_DB.Text + "'");
@@ -593,18 +672,22 @@ namespace WindowsFormsApplication1
 
         private void textBox_Ruecklauf_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Ruecklauf, textBox_Ruecklauf.Text)) { textBox_Ruecklauf.Undo(); }
+            // Nach fehlgeschlagener Prüfung zurück (früher lief Int32.Parse trotzdem
+            // -> FormatException auf leerem/wiederhergestelltem Text). Zusätzlich TryParse.
+            if (!Program.checkInt(textBox_Ruecklauf, textBox_Ruecklauf.Text)) { textBox_Ruecklauf.Undo(); return; }
             WErzeugerModel m = GetSelectedKessel();
-            if (m != null && m.ID_Type == WizardItemClass.KESSEL_TYP)
-                m.Ruecklauf = Int32.Parse(textBox_Ruecklauf.Text);
+            int val;
+            if (m != null && m.ID_Type == WizardItemClass.KESSEL_TYP && Int32.TryParse(textBox_Ruecklauf.Text, out val))
+                m.Ruecklauf = val;
         }
 
         private void textBox_Vorlauf_Validating(object sender, CancelEventArgs e)
         {
-            if (!Program.checkInt(textBox_Vorlauf, textBox_Vorlauf.Text)) { textBox_Vorlauf.Undo(); }
+            if (!Program.checkInt(textBox_Vorlauf, textBox_Vorlauf.Text)) { textBox_Vorlauf.Undo(); return; }
             WErzeugerModel m = GetSelectedKessel();
-            if (m != null && m.ID_Type == WizardItemClass.KESSEL_TYP)
-                m.Vorlauf = Int32.Parse(textBox_Vorlauf.Text);
+            int val;
+            if (m != null && m.ID_Type == WizardItemClass.KESSEL_TYP && Int32.TryParse(textBox_Vorlauf.Text, out val))
+                m.Vorlauf = val;
         }
 
         // ListView loest SelectedIndexChanged nicht aus, wenn sich der Index nicht aendert
