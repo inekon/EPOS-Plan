@@ -289,7 +289,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="listBox_Kessel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>316, 191</value>
+    <value>316, 151</value>
   </data>
   <data name="listBox_Kessel.TabIndex" type="System.Int32, mscorlib">
     <value>84</value>
@@ -525,13 +525,70 @@
   <data name="&gt;&gt;btn_Löschen.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
+  <data name="label19.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="label19.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="label19.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 219</value>
+  </data>
+  <data name="label19.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="label19.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 17</value>
+  </data>
+  <data name="label19.TabIndex" type="System.Int32, mscorlib">
+    <value>118</value>
+  </data>
+  <data name="label19.Text" xml:space="preserve">
+    <value>Brennstoff:</value>
+  </data>
+  <data name="&gt;&gt;label19.Name" xml:space="preserve">
+    <value>label19</value>
+  </data>
+  <data name="&gt;&gt;label19.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;label19.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;label19.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="cmbBrennstoffArt.Location" type="System.Drawing.Point, System.Drawing">
+    <value>115, 219</value>
+  </data>
+  <data name="cmbBrennstoffArt.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="cmbBrennstoffArt.Size" type="System.Drawing.Size, System.Drawing">
+    <value>208, 25</value>
+  </data>
+  <data name="cmbBrennstoffArt.TabIndex" type="System.Int32, mscorlib">
+    <value>117</value>
+  </data>
+  <data name="&gt;&gt;cmbBrennstoffArt.Name" xml:space="preserve">
+    <value>cmbBrennstoffArt</value>
+  </data>
+  <data name="&gt;&gt;cmbBrennstoffArt.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cmbBrennstoffArt.Parent" xml:space="preserve">
+    <value>groupBox1</value>
+  </data>
+  <data name="&gt;&gt;cmbBrennstoffArt.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
   <data name="checkBox_Brennwert.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="checkBox_Brennwert.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="checkBox_Brennwert.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
@@ -557,7 +614,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;checkBox_Brennwert.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>2</value>
   </data>
   <data name="label3.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -590,7 +647,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;label3.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
   <data name="textBox_Investitionskosten.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -623,7 +680,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;textBox_Investitionskosten.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>4</value>
   </data>
   <data name="label18.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -656,7 +713,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;label18.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="textBox_Kesselbeschreibung.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -692,7 +749,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;textBox_Kesselbeschreibung.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>6</value>
   </data>
   <data name="label14.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -725,7 +782,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;label14.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>7</value>
   </data>
   <data name="textBox_Kesselleistung.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -758,7 +815,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;textBox_Kesselleistung.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>8</value>
   </data>
   <data name="label15.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -791,7 +848,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;label15.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>9</value>
   </data>
   <data name="textBox_Kesseltyp.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -821,7 +878,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;textBox_Kesseltyp.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>10</value>
   </data>
   <data name="label16.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -854,7 +911,7 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;label16.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>11</value>
   </data>
   <data name="textBox_Kesselname.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -884,13 +941,13 @@
     <value>groupBox1</value>
   </data>
   <data name="&gt;&gt;textBox_Kesselname.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>12</value>
   </data>
   <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 256</value>
+    <value>12, 216</value>
   </data>
   <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>407, 218</value>
+    <value>407, 251</value>
   </data>
   <data name="groupBox1.TabIndex" type="System.Int32, mscorlib">
     <value>110</value>
