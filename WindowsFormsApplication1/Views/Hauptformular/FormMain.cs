@@ -104,9 +104,20 @@ namespace WindowsFormsApplication1
             listView_SP.Columns.Add("Name", -2, HorizontalAlignment.Left);
             listView_SP.Columns.Add("Typ", -2, HorizontalAlignment.Left);
             listView_SP.Columns.Add("Leistung [kW]", -2, HorizontalAlignment.Left);
-            listView_SP.Columns.Add("Energie", -2, HorizontalAlignment.Left);
-            listView_SP.Columns.Add("Degradation", -2, HorizontalAlignment.Left);
-            listView_SP.Columns.Add("Ladezustand", -2, HorizontalAlignment.Left);
+            // Abnahmebefund 1: Die Spalte zeigt Tab_Stromspeicher.Energie - die nutzbare
+            // Nennkapazitaet C_nom in kWh. Ohne Einheit im Kopf war sie neben
+            // "Leistung [kW]" nicht von einer zweiten Leistungsangabe zu unterscheiden.
+            // Nur die Einheit ergaenzt; die Uebersetzung der sechs Bestandsspalten bleibt
+            // der eigene Vorgang, den der Hinweis weiter unten beschreibt.
+            listView_SP.Columns.Add("Energie [kWh]", -2, HorizontalAlignment.Left);
+            listView_SP.Columns.Add("Degradation [%/a]", -2, HorizontalAlignment.Left);
+            listView_SP.Columns.Add("Ladezustand [%]", -2, HorizontalAlignment.Left);
+            // AP3b (Fachkonzept Stromspeicher 5.5): Ertrag und Amortisation der zuletzt
+            // gespeicherten Rechnung. Zweisprachig ueber den Ressourcenkatalog - die
+            // sechs Bestandsspalten bleiben unangetastet, ihre Lokalisierung ist ein
+            // eigener Vorgang fuer alle Listen dieses Formulars.
+            listView_SP.Columns.Add(MyResource.Resource.SP_SPALTE_ERTRAG, -2, HorizontalAlignment.Left);
+            listView_SP.Columns.Add(MyResource.Resource.SP_SPALTE_AMORTISATION, -2, HorizontalAlignment.Left);
             listView_SP.Width = tabControl_Komponenten.ClientSize.Width;
             listView_SP.Height = tabControl_Komponenten.ClientSize.Height;
             listView_SP.Top = -2;
@@ -269,6 +280,15 @@ namespace WindowsFormsApplication1
             WPCtrl wpctrl = new WPCtrl();
 
             projctrl.ReadSingle(textBox_Projekt.Text);
+
+            // AP3b: Kennzahlen der zuletzt gespeicherten Rechnung und die aktive
+            // Variante des Projekts - beides einmal vor der Schleife beschafft, damit
+            // je Anlagenzeile keine eigene Abfrage laeuft. Beide Wege gehen ueber
+            // DataRepository (ErgebnisCtrl / StromspeicherVarianteCtrl); der RecordSet
+            // unten ist Bestand und bleibt unangetastet.
+            Dictionary<int, ErgebnisStromspeicherModel> ergebnisse = SpErgebnisseLesen(projctrl.m_ID);
+            HashSet<int> aktiveVarianten = SpAktiveVariantenLesen(projctrl.m_ID);
+
             RecordSet rs = new RecordSet();
             rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + projctrl.m_ID + " and (ID_Type=" + WizardItemClass.SP_TYP + " or ID_Type=" + WizardItemClass.REF_SP_TYP + ")");
             listView_SP.Items.Clear();
@@ -281,13 +301,44 @@ namespace WindowsFormsApplication1
 
                 if (!rs_sp.EOF())
                 {
-                    lvitem.Text = (string)rs_sp.Read("Bezeichner");
+                    int idAnlage = Convert.ToInt32(rs.Read("ID"));
+
+                    // AP9: Der Name der ZEILE ist der Variantenname
+                    // (Tab_Energieanlagen.Bezeichner), nicht der des Geraets. Bis AP9
+                    // waren beide immer gleich - der Wizard setzt den Geraetenamen ein -,
+                    // und die Anzeige las deshalb den Geraetenamen. Seit es mehrere
+                    // Varianten DESSELBEN Geraets geben kann (Fachkonzept 7.3), waeren
+                    // sie so nicht mehr unterscheidbar. Leerer Anlagenname faellt auf den
+                    // Geraetenamen zurueck; fuer Altzeilen aendert sich damit nichts.
+                    object anlagenname = rs.Read("Bezeichner");
+                    string geraetename = (string)rs_sp.Read("Bezeichner");
+                    string bezeichner = (anlagenname != null && anlagenname.ToString().Length > 0)
+                                        ? anlagenname.ToString()
+                                        : geraetename;
+
+                    // Kennzeichnung der aktiven Variante in der Namensspalte
+                    // (Fachkonzept 5.5). Sie speist Uebersicht und Gesamtsimulation.
+                    lvitem.Text = aktiveVarianten.Contains(idAnlage)
+                        ? string.Format(MyResource.Resource.SP_MARKER_AKTIVE_VARIANTE, bezeichner)
+                        : bezeichner;
+
                     lvitem.SubItems.Add(rs_sp.Read("Typ").ToString());
                     lvitem.SubItems.Add(rs_sp.Read("Leistung").ToString());
                     lvitem.SubItems.Add(rs_sp.Read("Energie").ToString());
                     lvitem.SubItems.Add(rs_sp.Read("Degradation").ToString());
                     lvitem.SubItems.Add(rs_sp.Read("Ladezustand").ToString());
-                    lvitem.SubItems.Add(rs.Read("ID").ToString());
+
+                    // Ertrag und Amortisation der letzten Rechnung; leer, wenn es fuer
+                    // diese Anlage keine gibt (noch nie gerechnet oder anderer Speicher).
+                    ErgebnisStromspeicherModel erg;
+                    if (!ergebnisse.TryGetValue(idAnlage, out erg)) erg = null;
+                    lvitem.SubItems.Add(erg != null ? erg.Ertrag_Aequivalent.ToString("N0") : "");
+                    lvitem.SubItems.Add(erg != null && erg.Amortisation_Statisch > 0.0
+                                        ? erg.Amortisation_Statisch.ToString("N1") : "");
+
+                    // Die Anlagen-ID bleibt das LETZTE Unterelement und damit ohne eigene
+                    // Spalte unsichtbar - SpKontextMenuCtrl liest sie von dort.
+                    lvitem.SubItems.Add(idAnlage.ToString());
                     if ((int)rs.Read("ID_Type") == WizardItemClass.SP_TYP)
                     {
                         listView_SP.Items.Add(lvitem);
@@ -299,6 +350,50 @@ namespace WindowsFormsApplication1
 
             listView_SP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
             listView_SP.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+        }
+
+        /// <summary>
+        /// Kennzahlen der zuletzt gespeicherten Rechnung, nach Anlagenzeile
+        /// (<c>Tab_Energieanlagen.ID</c>) aufgeschluesselt. Leeres Verzeichnis, wenn das
+        /// Projekt noch kein Ergebnis hat (Fachkonzept 5.5).
+        /// </summary>
+        private static Dictionary<int, ErgebnisStromspeicherModel> SpErgebnisseLesen(int idProjekt)
+        {
+            Dictionary<int, ErgebnisStromspeicherModel> treffer = new Dictionary<int, ErgebnisStromspeicherModel>();
+            if (idProjekt <= 0) return treffer;
+
+            try
+            {
+                // ErgebnisCtrl.Load liefert das juengste Ergebnis des Projekts
+                // (ORDER BY ID DESC) samt Speicherzeilen.
+                ErgebnisModel m = new ErgebnisCtrl().Load(idProjekt);
+                if (m == null || m.Stromspeicher == null) return treffer;
+
+                foreach (ErgebnisStromspeicherModel es in m.Stromspeicher)
+                    if (es.ID_Energieanlage > 0 && !treffer.ContainsKey(es.ID_Energieanlage))
+                        treffer.Add(es.ID_Energieanlage, es);
+            }
+            catch { /* Uebersicht darf an fehlenden Ergebnistabellen nicht scheitern */ }
+
+            return treffer;
+        }
+
+        /// <summary>
+        /// Anlagenzeilen des Projekts, deren Speichervariante als aktiv markiert ist.
+        /// </summary>
+        private static HashSet<int> SpAktiveVariantenLesen(int idProjekt)
+        {
+            HashSet<int> aktive = new HashSet<int>();
+            if (idProjekt <= 0) return aktive;
+
+            try
+            {
+                foreach (StromspeicherVarianteModel v in new StromspeicherVarianteCtrl().ReadAllByProjekt(idProjekt))
+                    if (v.Aktiv && v.ID_Energieanlage > 0) aktive.Add(v.ID_Energieanlage);
+            }
+            catch { /* Datenbank vor Migrationsschritt 11b: keine Markierung */ }
+
+            return aktive;
         }
 
         private void listView_WP_MouseDoubleClick(object sender, MouseEventArgs e)

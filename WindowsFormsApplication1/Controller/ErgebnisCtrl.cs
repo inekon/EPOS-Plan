@@ -30,6 +30,7 @@ namespace WindowsFormsApplication1
         public const string TAB_PV = "Tab_ErgebnisPhotovoltaik";
         public const string TAB_PV_MODUL = "Tab_ErgebnisPhotovoltaikModul";
         public const string TAB_PUFFER = "Tab_ErgebnisPufferspeicher";
+        public const string TAB_SP = "Tab_ErgebnisStromspeicher";
 
         // Alte, funktionslose Signatur — nur für Übergangskompatibilität erhalten.
         [Obsolete("Delete(int idProjekt) verwenden — diese Überladung löscht nichts.")]
@@ -48,6 +49,7 @@ namespace WindowsFormsApplication1
                 // die Pufferzeilen blieben als Waisen stehen und zeigten wegen der
                 // MAX(ID)+1-Vergabe spaeter auf fremde Laeufe (Konzept 6.6).
                 PufferzeilenLoeschen(conn, trans, idProjekt);
+                DetailzeilenLoeschen(conn, trans, TAB_SP, idProjekt);
 
                 //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
                 using (OleDbCommand c = new OleDbCommand(
@@ -88,6 +90,7 @@ namespace WindowsFormsApplication1
             StelleModulSpaltenSicher();     // carrier_id (B1) + Waermeproduktion Kesselmodul (B3) ergänzen
             StelleKesselSpaltenSicher();    // Quellwaerme der Kaskade (Etappe D4) ergänzen
             StellePufferTabelleSicher();    // Tab_ErgebnisPufferspeicher (Konzept 6.6) - Rückfallebene
+            StelleStromspeicherTabelleSicher(); // Tab_ErgebnisStromspeicher (AP3, Fachkonzept 7.1)
 
             // Energieträger-Zuordnung einmal je Erzeuger bestimmen (Befund B1: echte
             // carrier_id statt des Brennstoff-Strings — Basis für Kosten/Wirtschaftlichkeit).
@@ -107,6 +110,7 @@ namespace WindowsFormsApplication1
                 //    Ohne dieses Delete blieben Waisenzeilen stehen, die wegen der
                 //    MAX(ID)+1-Vergabe spaeter auf fremde Laeufe zeigen wuerden (6.6).
                 PufferzeilenLoeschen(conn, trans, m.ID_Projekt);
+                DetailzeilenLoeschen(conn, trans, TAB_SP, m.ID_Projekt);
 
                 //    Zusaetzlich alle Waisen abraeumen, deren Kopf nicht mehr existiert.
                 //    Notwendig, weil ein frueherer Kopf-Delete OHNE Loeschweitergabe
@@ -117,6 +121,16 @@ namespace WindowsFormsApplication1
                 {
                     using (OleDbCommand c = new OleDbCommand(
                         "DELETE FROM " + TAB_PUFFER + " WHERE ID_Ergebnis NOT IN " +
+                        "(SELECT ID FROM " + TAB_KOPF + ")", conn, trans))
+                        c.ExecuteNonQuery();
+                }
+                catch { /* Tabelle (noch) nicht vorhanden - dann gibt es auch keine Waisen */ }
+
+                //    Dieselbe Waisenpruefung fuer die Stromspeicherzeilen (AP3).
+                try
+                {
+                    using (OleDbCommand c = new OleDbCommand(
+                        "DELETE FROM " + TAB_SP + " WHERE ID_Ergebnis NOT IN " +
                         "(SELECT ID FROM " + TAB_KOPF + ")", conn, trans))
                         c.ExecuteNonQuery();
                 }
@@ -491,6 +505,85 @@ namespace WindowsFormsApplication1
                     }
                 }
 
+                // 10. Detail: Stromspeicher (Fachkonzept Stromspeicher 7.1) - eine Zeile
+                //     je gerechneter Speicheranlage. Aufbau wie Block 8 (Photovoltaik):
+                //     NextId einmal holen und hochzaehlen, Werte kaufmaennisch runden,
+                //     alles in DERSELBEN Transaktion wie der Kopf.
+                //
+                //     Das Flag m.Sim_Stromspeicher entscheidet ueber den Block: Es sagt
+                //     "die Speicherrechnung lief" und wird ab AP3b nur noch nach einem
+                //     echten Engine-Lauf gesetzt (heute: SimulationRunner). Ohne Flag
+                //     wird nichts geschrieben, auch wenn die Liste versehentlich gefuellt
+                //     waere - Kopf und Detail sollen nie widersprechen.
+                if (m.Sim_Stromspeicher && m.Stromspeicher != null && m.Stromspeicher.Count > 0)
+                {
+                    int spId = NextId(conn, trans, TAB_SP);
+                    string sqlS = "INSERT INTO " + TAB_SP + " (" +
+                        "ID, ID_Ergebnis, ID_Energieanlage, Bezeichner, Betriebsart, Berechnungsart, " +
+                        "Ladung_PV, Ladung_BHKW, Ladung_Netz, Ladung_Gesamt, Entladung_Gesamt, Verluste_Gesamt, " +
+                        "Netzbezug_Mit, Netzbezug_Ohne, Einspeisung_Mit, Einspeisung_Ohne, " +
+                        "Eigenverbrauchsquote, Autarkiegrad, " +
+                        "Vollzyklen, SoC_Min, SoC_Mittel, SoC_Max, " +
+                        "Zeitanteil_Untergrenze, Zeitanteil_Obergrenze, Zyklen_Hochrechnung, " +
+                        "Ertrag_Bezugsersparnis, Ertrag_Verguetung_Entgangen, Ertrag_Netzerloes, " +
+                        "Kosten_Ladung, Ertrag_Leistungspreis, Verschleisskosten, " +
+                        "Investition, Annuitaet, Jahresueberschuss, Ertrag_Jahr1, Ertrag_Aequivalent, " +
+                        "Amortisation_Statisch, Amortisation_Dynamisch, Kapitalwert, Preisversion) " +
+                        "VALUES (?,?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?, ?,?,?,?, ?,?,?, " +
+                        "?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)";
+                    foreach (ErgebnisStromspeicherModel es in m.Stromspeicher)
+                    {
+                        using (OleDbCommand c = new OleDbCommand(sqlS, conn, trans))
+                        {
+                            c.Parameters.Add("@id", OleDbType.Integer).Value = spId++;
+                            c.Parameters.Add("@erg", OleDbType.Integer).Value = kopfId;
+                            c.Parameters.Add("@anl", OleDbType.Integer).Value =
+                                es.ID_Energieanlage > 0 ? (object)es.ID_Energieanlage : DBNull.Value;
+                            c.Parameters.Add("@bez", OleDbType.VarWChar).Value = (object)(es.Bezeichner ?? "");
+                            c.Parameters.Add("@bart", OleDbType.VarWChar).Value = (object)(es.Betriebsart ?? "");
+                            c.Parameters.Add("@rart", OleDbType.VarWChar).Value = (object)(es.Berechnungsart ?? "");
+
+                            c.Parameters.Add("@e1", OleDbType.Double).Value = R(es.Ladung_PV);
+                            c.Parameters.Add("@e2", OleDbType.Double).Value = R(es.Ladung_BHKW);
+                            c.Parameters.Add("@e3", OleDbType.Double).Value = R(es.Ladung_Netz);
+                            c.Parameters.Add("@e4", OleDbType.Double).Value = R(es.Ladung_Gesamt);
+                            c.Parameters.Add("@e5", OleDbType.Double).Value = R(es.Entladung_Gesamt);
+                            c.Parameters.Add("@e6", OleDbType.Double).Value = R(es.Verluste_Gesamt);
+                            c.Parameters.Add("@e7", OleDbType.Double).Value = R(es.Netzbezug_Mit);
+                            c.Parameters.Add("@e8", OleDbType.Double).Value = R(es.Netzbezug_Ohne);
+                            c.Parameters.Add("@e9", OleDbType.Double).Value = R(es.Einspeisung_Mit);
+                            c.Parameters.Add("@e10", OleDbType.Double).Value = R(es.Einspeisung_Ohne);
+                            c.Parameters.Add("@e11", OleDbType.Double).Value = R(es.Eigenverbrauchsquote);
+                            c.Parameters.Add("@e12", OleDbType.Double).Value = R(es.Autarkiegrad);
+
+                            c.Parameters.Add("@s1", OleDbType.Double).Value = R(es.Vollzyklen);
+                            c.Parameters.Add("@s2", OleDbType.Double).Value = R(es.SoC_Min);
+                            c.Parameters.Add("@s3", OleDbType.Double).Value = R(es.SoC_Mittel);
+                            c.Parameters.Add("@s4", OleDbType.Double).Value = R(es.SoC_Max);
+                            c.Parameters.Add("@s5", OleDbType.Double).Value = R(es.Zeitanteil_Untergrenze);
+                            c.Parameters.Add("@s6", OleDbType.Double).Value = R(es.Zeitanteil_Obergrenze);
+                            c.Parameters.Add("@s7", OleDbType.Double).Value = R(es.Zyklen_Hochrechnung);
+
+                            c.Parameters.Add("@w1", OleDbType.Double).Value = R(es.Ertrag_Bezugsersparnis);
+                            c.Parameters.Add("@w2", OleDbType.Double).Value = R(es.Ertrag_Verguetung_Entgangen);
+                            c.Parameters.Add("@w3", OleDbType.Double).Value = R(es.Ertrag_Netzerloes);
+                            c.Parameters.Add("@w4", OleDbType.Double).Value = R(es.Kosten_Ladung);
+                            c.Parameters.Add("@w5", OleDbType.Double).Value = R(es.Ertrag_Leistungspreis);
+                            c.Parameters.Add("@w6", OleDbType.Double).Value = R(es.Verschleisskosten);
+                            c.Parameters.Add("@w7", OleDbType.Double).Value = R(es.Investition);
+                            c.Parameters.Add("@w8", OleDbType.Double).Value = R(es.Annuitaet);
+                            c.Parameters.Add("@w9", OleDbType.Double).Value = R(es.Jahresueberschuss);
+                            c.Parameters.Add("@w10", OleDbType.Double).Value = R(es.Ertrag_Jahr1);
+                            c.Parameters.Add("@w11", OleDbType.Double).Value = R(es.Ertrag_Aequivalent);
+                            c.Parameters.Add("@w12", OleDbType.Double).Value = R(es.Amortisation_Statisch);
+                            c.Parameters.Add("@w13", OleDbType.Double).Value = R(es.Amortisation_Dynamisch);
+                            c.Parameters.Add("@w14", OleDbType.Double).Value = R(es.Kapitalwert);
+                            c.Parameters.Add("@w15", OleDbType.VarWChar).Value = (object)(es.Preisversion ?? "");
+                            c.ExecuteNonQuery();
+                        }
+                    }
+                }
+
                 trans.Commit();
                 m.ID = kopfId;
                 return kopfId;
@@ -778,6 +871,60 @@ namespace WindowsFormsApplication1
                     m.Pufferspeicher.Add(sp);
                 }
 
+            // Detail: Stromspeicher (Fachkonzept Stromspeicher 7.1). Dieselbe stille
+            // Ruecklaufebene wie beim Pufferspeicher darueber und aus demselben Grund:
+            // Auf einer Datenbank vor Migrationsschritt 11c fehlt die Tabelle, und die
+            // leere Liste ist der vorgesehene Normalfall - keine Fehlermeldung.
+            DataTable dsp2 = StromspeicherZeilenLesenStill(m.ID);
+            if (dsp2 != null)
+                foreach (DataRow res in dsp2.Rows)
+                {
+                    ErgebnisStromspeicherModel es = new ErgebnisStromspeicherModel();
+                    es.ID_Energieanlage = I(res, "ID_Energieanlage");
+                    es.Bezeichner = S(res, "Bezeichner");
+                    es.Betriebsart = S(res, "Betriebsart");
+                    es.Berechnungsart = S(res, "Berechnungsart");
+
+                    es.Ladung_PV = D(res, "Ladung_PV");
+                    es.Ladung_BHKW = D(res, "Ladung_BHKW");
+                    es.Ladung_Netz = D(res, "Ladung_Netz");
+                    es.Ladung_Gesamt = D(res, "Ladung_Gesamt");
+                    es.Entladung_Gesamt = D(res, "Entladung_Gesamt");
+                    es.Verluste_Gesamt = D(res, "Verluste_Gesamt");
+                    es.Netzbezug_Mit = D(res, "Netzbezug_Mit");
+                    es.Netzbezug_Ohne = D(res, "Netzbezug_Ohne");
+                    es.Einspeisung_Mit = D(res, "Einspeisung_Mit");
+                    es.Einspeisung_Ohne = D(res, "Einspeisung_Ohne");
+                    es.Eigenverbrauchsquote = D(res, "Eigenverbrauchsquote");
+                    es.Autarkiegrad = D(res, "Autarkiegrad");
+
+                    es.Vollzyklen = D(res, "Vollzyklen");
+                    es.SoC_Min = D(res, "SoC_Min");
+                    es.SoC_Mittel = D(res, "SoC_Mittel");
+                    es.SoC_Max = D(res, "SoC_Max");
+                    es.Zeitanteil_Untergrenze = D(res, "Zeitanteil_Untergrenze");
+                    es.Zeitanteil_Obergrenze = D(res, "Zeitanteil_Obergrenze");
+                    es.Zyklen_Hochrechnung = D(res, "Zyklen_Hochrechnung");
+
+                    es.Ertrag_Bezugsersparnis = D(res, "Ertrag_Bezugsersparnis");
+                    es.Ertrag_Verguetung_Entgangen = D(res, "Ertrag_Verguetung_Entgangen");
+                    es.Ertrag_Netzerloes = D(res, "Ertrag_Netzerloes");
+                    es.Kosten_Ladung = D(res, "Kosten_Ladung");
+                    es.Ertrag_Leistungspreis = D(res, "Ertrag_Leistungspreis");
+                    es.Verschleisskosten = D(res, "Verschleisskosten");
+                    es.Investition = D(res, "Investition");
+                    es.Annuitaet = D(res, "Annuitaet");
+                    es.Jahresueberschuss = D(res, "Jahresueberschuss");
+                    es.Ertrag_Jahr1 = D(res, "Ertrag_Jahr1");
+                    es.Ertrag_Aequivalent = D(res, "Ertrag_Aequivalent");
+                    es.Amortisation_Statisch = D(res, "Amortisation_Statisch");
+                    es.Amortisation_Dynamisch = D(res, "Amortisation_Dynamisch");
+                    es.Kapitalwert = D(res, "Kapitalwert");
+                    es.Preisversion = S(res, "Preisversion");
+
+                    m.Stromspeicher.Add(es);
+                }
+
             return m;
         }
 
@@ -977,10 +1124,63 @@ namespace WindowsFormsApplication1
             catch { /* best effort - Save faengt einen echten Fehler ohnehin ab */ }
         }
 
+        /// <summary>
+        /// AP3 - Rueckfallebene fuer Tab_ErgebnisStromspeicher (Fachkonzept
+        /// Stromspeicher 7.1) auf Datenbanken, deren SchemaMigration (Schritt 11c) noch
+        /// nicht gelaufen ist. Aufbau, Begruendung und Duplikattoleranz wie bei
+        /// <see cref="StellePufferTabelleSicher"/>; die Anweisungen kommen aus
+        /// <see cref="SchemaMigration"/>, damit es keinen zweiten Spaltensatz gibt.
+        /// </summary>
+        private static void StelleStromspeicherTabelleSicher()
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+
+                    if (!TabelleVorhanden(conn, TAB_SP))
+                    {
+                        try { Ddl(conn, SchemaMigration.SQL_CREATE_ERGEBNISSTROMSPEICHER); }
+                        catch { return; /* ohne Tabelle sind Index und Constraint sinnlos */ }
+                    }
+
+                    if (!IndexVorhanden(conn, TAB_SP, "idx_ErgStromspeicher"))
+                    {
+                        try { Ddl(conn, SchemaMigration.SQL_INDEX_ERGSTROMSPEICHER); }
+                        catch { }
+                    }
+
+                    if (!FremdschluesselVorhanden(conn, TAB_SP, "ID_Ergebnis"))
+                    {
+                        // Waisen zuerst - dieselbe Reihenfolge und derselbe Grund wie
+                        // beim Pufferspeicher: Access weist ADD CONSTRAINT zurueck,
+                        // solange Zeilen ohne gueltigen Kopf existieren.
+                        try
+                        {
+                            Ddl(conn, "DELETE FROM " + TAB_SP + " WHERE ID_Ergebnis NOT IN " +
+                                      "(SELECT ID FROM " + TAB_KOPF + ")");
+                        }
+                        catch { }
+
+                        try { Ddl(conn, SchemaMigration.SQL_FK_ERGSTROMSPEICHER); }
+                        catch { }
+                    }
+                }
+            }
+            catch { /* best effort - Save faengt einen echten Fehler ohnehin ab */ }
+        }
+
         private static bool PufferTabelleVorhanden(OleDbConnection conn)
         {
+            return TabelleVorhanden(conn, TAB_PUFFER);
+        }
+
+        /// <summary>Gibt es die Tabelle? (Muster PufferTabelleVorhanden, nur mit Tabellennamen)</summary>
+        private static bool TabelleVorhanden(OleDbConnection conn, string tabelle)
+        {
             DataTable schema = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables,
-                new object[] { null, null, TAB_PUFFER, "TABLE" });
+                new object[] { null, null, tabelle, "TABLE" });
             return schema != null && schema.Rows.Count > 0;
         }
 
@@ -1033,10 +1233,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void PufferzeilenLoeschen(OleDbConnection conn, OleDbTransaction trans, int idProjekt)
         {
+            DetailzeilenLoeschen(conn, trans, TAB_PUFFER, idProjekt);
+        }
+
+        /// <summary>
+        /// Wie <see cref="PufferzeilenLoeschen"/>, nur mit dem Tabellennamen als
+        /// Parameter - AP3 braucht denselben Vorablauf fuer Tab_ErgebnisStromspeicher.
+        /// </summary>
+        private static void DetailzeilenLoeschen(OleDbConnection conn, OleDbTransaction trans,
+                                                 string tabelle, int idProjekt)
+        {
             try
             {
                 using (OleDbCommand c = new OleDbCommand(
-                    "DELETE FROM " + TAB_PUFFER + " WHERE ID_Ergebnis IN " +
+                    "DELETE FROM " + tabelle + " WHERE ID_Ergebnis IN " +
                     "(SELECT ID FROM " + TAB_KOPF + " WHERE ID_Projekt = ?)", conn, trans))
                 {
                     c.Parameters.Add("@p", OleDbType.Integer).Value = idProjekt;
@@ -1068,6 +1278,34 @@ namespace WindowsFormsApplication1
                     DataTable dt = new DataTable();
                     using (OleDbCommand cmd = new OleDbCommand(
                         "SELECT * FROM " + TAB_PUFFER + " WHERE ID_Ergebnis = ? ORDER BY ID", conn))
+                    {
+                        cmd.Parameters.Add("@e", OleDbType.Integer).Value = idErgebnis;
+                        using (OleDbDataAdapter ad = new OleDbDataAdapter(cmd)) ad.Fill(dt);
+                    }
+                    return dt;
+                }
+            }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// Liest die Stromspeicherzeilen eines Ergebniskopfes ueber eine EIGENE, stille
+        /// OleDb-Verbindung - dieselbe Bauform und dieselbe Begruendung wie
+        /// <see cref="PufferZeilenLesenStill"/>. Rueckgabe null, wenn die Tabelle fehlt
+        /// oder der Zugriff scheitert.
+        /// </summary>
+        private static DataTable StromspeicherZeilenLesenStill(int idErgebnis)
+        {
+            try
+            {
+                using (OleDbConnection conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                {
+                    conn.Open();
+                    if (!TabelleVorhanden(conn, TAB_SP)) return null;
+
+                    DataTable dt = new DataTable();
+                    using (OleDbCommand cmd = new OleDbCommand(
+                        "SELECT * FROM " + TAB_SP + " WHERE ID_Ergebnis = ? ORDER BY ID", conn))
                     {
                         cmd.Parameters.Add("@e", OleDbType.Integer).Value = idErgebnis;
                         using (OleDbDataAdapter ad = new OleDbDataAdapter(cmd)) ad.Fill(dt);

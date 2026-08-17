@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting; // WICHTIG für Charting-Typen
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -180,46 +181,37 @@ namespace WindowsFormsApplication1
             isUpdatingUI = true; // Event SPERRE AKTIVIEREN
 
             // Speicher-Parameter
- 
+
             speicherKWh = (double)numSpeicherKWh.Value;
 
-            double aktuellerSpeicherinhalt = 0;
-   
-            // Berechnungen
-            double gesStromBedarfBrutto = stromBedarf.Sum(); // Brutto-Bedarf
-            double gesWaerme = waermeBedarf.Sum();
+            // Speicherwirkung über die SpeicherEngine (AP2b). Bis dahin stand hier eine
+            // zweite, unabhängige Speicherrechnung (stündlich, verlustfrei, ohne
+            // SoC-Band und Leistungsgrenze), die neben der Simulation abweichende
+            // Autarkiegrade anzeigte - Fachkonzept 8.2, Rudiment 3.
+            SpeicherErgebnis speicher = RechneSpeicher();
 
+            // Berechnungen
+            double gesWaerme = waermeBedarf.Sum();
             double stPotenzialGesamt = stProd.Sum();
 
-            double pvDirektSumme = 0;
-            double pvAusSpeicherSumme = 0;
+            // Last, Direktverbrauch und Speicherentnahme kommen aus derselben
+            // Intervallzerlegung wie die Simulationskette (Vorverarbeitung 6).
+            double gesStromBedarfBrutto = speicher.Kennzahlen.LastKwh; // Brutto-Bedarf
+            double pvDirektSumme = speicher.Kennzahlen.DirektverbrauchKwh;
+            double pvAusSpeicherSumme = speicher.EntladeenergieKwh;
+
+            // Solarthermie (Genutzte Wärme) - unverändert stündlich
             double stGenutztSumme = 0;
-
-            double StromberdarfBrutto = stromBedarf.Sum();  
-
-            // Jahressimulation
             for (int i = 0; i < 8760; i++)
             {
-                // PV & Speicher (auf Brutto-Bedarf gerechnet)
-                double direkt = Math.Min(pvProd[i] * 0.95, stromBedarf[i]);
-                pvDirektSumme += direkt;
-
-                double ueberschuss = pvProd[i] - direkt;
-                double bedarfNachDirekt = stromBedarf[i] - direkt;
-
-                // Laden - Entladen
-                double ladeMenge = Math.Min(ueberschuss, speicherKWh - aktuellerSpeicherinhalt);
-                aktuellerSpeicherinhalt += ladeMenge;
-                double entnahme = Math.Min(bedarfNachDirekt, aktuellerSpeicherinhalt);
-                aktuellerSpeicherinhalt -= entnahme;
-                pvAusSpeicherSumme += entnahme;
-
-                // Solarthermie (Genutzte Wärme)
                 stGenutztSumme += Math.Min(stProd[i], waermeBedarf[i]);
             }
 
             // Kennzahlen
-            // Autarkie: (Direktverbrauch + Speicherentnahme) / Gesamtbedarf    wechselrichterWirkungsgrad = 0.95 Verluste ca. 5%
+            // Autarkie: (Direktverbrauch + Speicherentnahme) / Gesamtbedarf. Der
+            // Wechselrichterfaktor 0,95 steckt bereits in pvProd
+            // (SimulationPV.pvPotentialGesamt_stuendlich) und wird hier NICHT erneut
+            // angesetzt - bis AP2b tat das die Kachel, das Monatsdiagramm aber nicht.
             double autarkiePV = gesStromBedarfBrutto > 0 ? ((pvDirektSumme + pvAusSpeicherSumme) / gesStromBedarfBrutto) * 100 : 0;
             double deckungST = gesWaerme > 0 ? (stGenutztSumme / gesWaerme) * 100 : 0;
 
@@ -244,7 +236,7 @@ namespace WindowsFormsApplication1
                                         co2Saved.ToString("N0"));
 
             // Chart
-            FillMonthlyChart();
+            FillMonthlyChart(speicher);
 
             // Speichernutzen
             lblTest.Text = string.Format(MyResource.Resource.SIM_ANZEIGE_SPEICHERNUTZEN,
@@ -253,16 +245,52 @@ namespace WindowsFormsApplication1
             isUpdatingUI = false; // Event SPERRE DEAKTIVIEREN
         }
 
-        private void FillMonthlyChart()
+        /// <summary>
+        /// Rechnet die Speicherwirkung der eingestellten Kapazität über die
+        /// <see cref="SpeicherEngine"/> — dasselbe Modell wie die Simulationskette.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Die Kachel bleibt eine Was-wäre-wenn-Betrachtung: Der Anwender verstellt die
+        /// Kapazität und sieht ihre Wirkung sofort. Gerechnet wird sie seit AP2b aber
+        /// mit derselben Strategie, demselben SoC-Band und demselben Verlustmodell wie
+        /// der Lauf selbst — die Vorgabewerte stehen an genau einer Stelle
+        /// (<see cref="StromspeicherSimCtrl.StandardParameter"/>). Die Leistungsgrenze
+        /// ist 1 C, wie beim Kettenlauf ohne hinterlegte Leistung.
+        /// </para>
+        /// <para>
+        /// Die Reihen kommen stündlich herein und werden per Wertwiederholung auf das
+        /// Viertelstundenraster der Engine gebracht; die Monatssummen sind davon
+        /// unberührt. BHKW bleibt außen vor — die Kachel beschreibt die PV-Autarkie.
+        /// </para>
+        /// </remarks>
+        private SpeicherErgebnis RechneSpeicher()
+        {
+            _lastKw = RasterAdapter.ZuViertelstundenDouble(stromBedarf);
+            _pvKw = RasterAdapter.ZuViertelstundenDouble(pvProd);
+
+            SpeicherEingang eingang = new SpeicherEingang(
+                _lastKw, _pvKw,
+                SpeicherEingang.KonstanteReihe(StromspeicherSimCtrl.FIXPREIS_BEZUG_CT_KWH, _lastKw.Length));
+
+            SpeicherParameter parameter = StromspeicherSimCtrl.StandardParameter(speicherKWh, speicherKWh);
+
+            return new Dauernutzung(SpeicherModus.Energetisch).Berechne(eingang, parameter);
+        }
+
+        /// <summary>Lastgang [kW] des letzten Laufs im Viertelstundenraster (Quelle des Monatsdiagramms).</summary>
+        private double[] _lastKw;
+
+        /// <summary>PV-Erzeugung [kW] des letzten Laufs im Viertelstundenraster.</summary>
+        private double[] _pvKw;
+
+        private void FillMonthlyChart(SpeicherErgebnis speicher)
         {
             // Alle Datenpunkte leeren
             foreach (var series in chartSolar.Series)
             {
                 series.Points.Clear();
             }
-
-            // Speichersimulation monatsübergreifend
-            double aktuellerSpeicher = 0;
 
             for (int m = 0; m < 12; m++)
             {
@@ -271,33 +299,26 @@ namespace WindowsFormsApplication1
                 double monatsSpeicher = 0; // Speicher -> Haus
                 double monatsLuecke = 0;    // Netz -> Haus (Die Lücke)
 
-                // Indizierung basierend auf der 8760/12 Annahme (730 Stunden/Monat)
-                for (int h = 0; h < 730; h++)
+                // Indizierung basierend auf der 8760/12 Annahme (730 Stunden/Monat),
+                // im Viertelstundenraster der Engine also 2.920 Intervalle je Monat.
+                for (int v = 0; v < 2920; v++)
                 {
-                    int i = (m * 730) + h;
-                    if (i >= 8760) break;
+                    int i = (m * 2920) + v;
+                    if (i >= _lastKw.Length) break;
 
-                    // Der Direktverbrauch (Sonne deckt Bedarf direkt)
-                    double direkt = Math.Min(pvProd[i], stromBedarf[i]);
-                    monatsDirekt += direkt;
+                    // Zerlegung des Intervalls wie in der Simulationskette
+                    // (Fachkonzept 6): Direktdeckung und Residuallast.
+                    IntervallEnergien e = Vorverarbeitung.Berechne(
+                        _lastKw[i], _pvKw[i], 0.0, StromspeicherSimCtrl.INTERVALL_H, true, false);
 
-                    // Was übrig ist (Überschuss) und was noch fehlt
-                    double ueberschuss = pvProd[i] - direkt;
-                    double bedarfNachDirekt = stromBedarf[i] - direkt;
+                    monatsDirekt += e.EDirektKwh;
 
-                    // Speicher-Logik stündlich
-                    // Laden
-                    double ladeMenge = Math.Min(ueberschuss, speicherKWh - aktuellerSpeicher);
-                    aktuellerSpeicher += ladeMenge;
-
-                    // Entladen (Speicher deckt Restbedarf)
-                    double entnahme = Math.Min(bedarfNachDirekt, aktuellerSpeicher);
-                    aktuellerSpeicher -= entnahme;
-                    monatsSpeicher += entnahme; // WICHTIG: Speicherstrom ist genutzte Energie!
+                    // WICHTIG: Speicherstrom ist genutzte Energie!
+                    double entnahme = speicher.EntladungAcKwh[i];
+                    monatsSpeicher += entnahme;
 
                     // Die Lücke (was Netz noch liefern muss)
-                    double restbedarfNachSpeicher = bedarfNachDirekt - entnahme;
-                    monatsLuecke += restbedarfNachSpeicher;
+                    monatsLuecke += e.EDefizitKwh - entnahme;
                 }
 
                 // Monatspunkt hinzufügen (gestapelt übereinander).

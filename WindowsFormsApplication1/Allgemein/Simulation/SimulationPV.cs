@@ -4,6 +4,29 @@ using System.Linq;
 
 namespace WindowsFormsApplication1
 {
+    /// <summary>
+    /// Photovoltaik-Modul der Simulationskette: Erzeugung, Direktverbrauch,
+    /// Überschuss und Reststrom im Stundenraster.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Reine PV-Rechnung seit AP2b.</b> Bis dahin steckte hier eine zweite,
+    /// verlustfreie Batterielogik (Fachkonzept 8.2, Rudiment 2): Sie lud aus dem
+    /// PV-Überschuss, entlud gegen die Restlast und schlug die Entnahme dem
+    /// PV-Ertrag zu. Der Speicher wird jetzt ausschließlich von der
+    /// <c>SpeicherEngine</c> gerechnet (<c>StromspeicherSimCtrl</c>), diese Klasse
+    /// kennt ihn nicht mehr.
+    /// </para>
+    /// <para>
+    /// <b>Geänderte Ausweissemantik.</b> <see cref="Stromproduktion"/> ist seither
+    /// der Direktverbrauch (die frühere Reihe <c>Stromproduktion_OhneSpeicher</c>),
+    /// <see cref="Ueberschuss"/> der volle Erzeugungsüberschuss vor Speicherladung
+    /// und <see cref="Reststrom"/> die Residuallast vor Speicherentladung. Der
+    /// PV-Ertragsausweis der Oberfläche fällt dadurch um die frühere Speicherentnahme
+    /// niedriger aus; die Speicherwirkung wird getrennt ausgewiesen (Umsetzungskonzept
+    /// Frage 12).
+    /// </para>
+    /// </remarks>
     public class SimulationPV
     {
         // --- Datenstrukturen ---
@@ -24,15 +47,11 @@ namespace WindowsFormsApplication1
         public float[] Stromproduktion = new float[8760];
         public float[] Reststrom = new float[8760];
         public float[] Ueberschuss = new float[8760];
-        public float[] Speicherfuellstand = new float[8760];
-        public float[] Stromproduktion_OhneSpeicher = new float[8760];
 
         // Ergebnis-Arrays (Viertelstündlich für das UI/Chart)
         public float[] Stromproduktion_viertelstunde = new float[8760 * 4];
-        public float[] Stromproduktion_OhneSpeicher_viertelstunde = new float[8760 * 4];
         public float[] Reststrom_viertelstunde = new float[8760 * 4];
         public float[] Ueberschuss_viertelstunde = new float[8760 * 4];
-        public float[] Speicherfuellstand_viertelstunde = new float[8760 * 4];
 
         // Statistiken
         public double Stromproduktion_Max = 0;
@@ -40,23 +59,13 @@ namespace WindowsFormsApplication1
         public float Stromproduktion_gesamt = 0;
         public float Stromproduktion_Theoretisch_gesamt = 0;
 
-        // Speicher-Parameter
-        public double SpeicherKapazitaetKWh = 0;
-        public double MaxLadeLeistungKW = 0;
-
         public void Init()
         {
             Array.Clear(Stromproduktion, 0, Stromproduktion.Length);
             Array.Clear(Stromproduktion_Theoretisch, 0, Stromproduktion_Theoretisch.Length);
             Array.Clear(Reststrom, 0, Reststrom.Length);
             Array.Clear(Ueberschuss, 0, Ueberschuss.Length);
-            Array.Clear(Speicherfuellstand, 0, Speicherfuellstand.Length);
             Array.Clear(pvPotentialGesamt_stuendlich, 0, pvPotentialGesamt_stuendlich.Length);
-            Array.Clear(Speicherfuellstand_viertelstunde, 0, Speicherfuellstand_viertelstunde.Length);
-            Array.Clear(Speicherfuellstand, 0, Speicherfuellstand.Length);
-            Array.Clear(Stromproduktion_OhneSpeicher_viertelstunde, 0, Stromproduktion_OhneSpeicher_viertelstunde.Length);
-            Array.Clear(Stromproduktion_OhneSpeicher, 0, Stromproduktion_OhneSpeicher.Length);
-            SpeicherKapazitaetKWh = 0;
             Modul_Ergebnisse.Clear();
         }
 
@@ -66,25 +75,9 @@ namespace WindowsFormsApplication1
             RecordSet rs = new RecordSet();
             int nID_Klimaregion = 0;
             double Lon = 0, Lat = 0;
-            int id = 0;
 
             Init();
 
-            // alle Sromspeicher zum Projekt durchgehen und Leistung aufsummieren (oder direkt aus sim-Objekt, falls dort schon vorhanden)
-            ctrl.ReadAllFilter("ID_Projekt=" + ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
-            
-            for (int i = 0; i < ctrl.rows; i++)
-            {
-                id = ctrl.items[i].ID_SP;
-                rs.Open("select * from Tab_Stromspeicher where ID=" + id);
-                if (rs.Next())
-                {
-                    SpeicherKapazitaetKWh += (double)rs.Read("Energie");
-                }
-                rs.Close();
-                MaxLadeLeistungKW = SpeicherKapazitaetKWh; 
-            }
-     
             // Bedarf von 15-Min auf 1-Std mitteln
             Strombedarf_stuendlich = Viertelstunden_zu_stunden(Strombedarf);
 
@@ -139,9 +132,7 @@ namespace WindowsFormsApplication1
                 });
             }
 
-            // SCHRITT: ZEITSCHRITT-SIMULATION (BATTERIE & VERBRAUCH)
-            double aktuellerSOC = 0; // Aktueller Speicherinhalt in kWh
-
+            // SCHRITT: ZEITSCHRITT-SIMULATION (VERBRAUCH)
             for (int i = 0; i < 8760; i++)
             {
                 double erzeugung = pvPotentialGesamt_stuendlich[i];
@@ -149,39 +140,13 @@ namespace WindowsFormsApplication1
 
                 Stromproduktion_Theoretisch[i] = (float)erzeugung;
 
-                // Priorität 1: Direktverbrauch
+                // Direktverbrauch - seit AP2b der EINZIGE Verrechnungsschritt hier.
                 double direktVerbrauch = Math.Min(erzeugung, bedarf);
 
-                double ueberschussNachDirekt = erzeugung - direktVerbrauch;
-                double restbedarfNachPV = bedarf - direktVerbrauch;
-
-                double ladeEnergie = 0;
-                double entnahmeEnergie = 0;
-
-                // Priorität 2: Speicher laden (wenn Überschuss da ist)
-                if (ueberschussNachDirekt > 0)
-                {
-                    ladeEnergie = Math.Min(ueberschussNachDirekt, SpeicherKapazitaetKWh - aktuellerSOC);
-                    ladeEnergie = Math.Min(ladeEnergie, MaxLadeLeistungKW);
-                    aktuellerSOC += ladeEnergie;
-                }
-
-                // Priorität 3: Speicher entladen (wenn noch Bedarf offen ist)
-                if (restbedarfNachPV > 0)
-                {
-                    entnahmeEnergie = Math.Min(restbedarfNachPV, aktuellerSOC);
-                    entnahmeEnergie = Math.Min(entnahmeEnergie, MaxLadeLeistungKW);
-                    aktuellerSOC -= entnahmeEnergie;
-                }
-
                 // Ergebnisse für diese Stunde festschreiben
-                Ueberschuss[i] = (float)(ueberschussNachDirekt - ladeEnergie); // Was ins Netz geht
-                Reststrom[i] = (float)(restbedarfNachPV - entnahmeEnergie);   // Was vom Netz kommt
-                Speicherfuellstand[i] = (float)aktuellerSOC;                  // Aktueller SOC
-
-                // Genutzte Produktion = Direkt verbraucht + in den Speicher geladen
-                Stromproduktion[i] = (float)(direktVerbrauch + entnahmeEnergie);
-                Stromproduktion_OhneSpeicher[i] = (float)direktVerbrauch;   
+                Ueberschuss[i] = (float)(erzeugung - direktVerbrauch);   // Was ins Netz geht
+                Reststrom[i] = (float)(bedarf - direktVerbrauch);        // Was vom Netz kommt
+                Stromproduktion[i] = (float)direktVerbrauch;             // Genutzte Produktion
 
                 if (erzeugung > Stromproduktion_Max) Stromproduktion_Max = erzeugung;
             }
@@ -194,9 +159,6 @@ namespace WindowsFormsApplication1
             Stromproduktion_viertelstunde = Stundenwerte_zu_viertelstunden(Stromproduktion);
             Reststrom_viertelstunde = Stundenwerte_zu_viertelstunden(Reststrom);
             Ueberschuss_viertelstunde = Stundenwerte_zu_viertelstunden(Ueberschuss);
-
-            // Wichtig für die Nachtkurve: Interpolation des Speicherstands
-            Speicherfuellstand_viertelstunde = Stundenwerte_zu_viertelstunden_Interpoliert(Speicherfuellstand);
 
             return Stromproduktion_viertelstunde;
         }
@@ -213,22 +175,11 @@ namespace WindowsFormsApplication1
             return v;
         }
 
-        public float[] Stundenwerte_zu_viertelstunden_Interpoliert(float[] stundenwerte)
-        {
-            float[] v = new float[stundenwerte.Length * 4];
-            for (int i = 0; i < stundenwerte.Length; i++)
-            {
-                float curr = stundenwerte[i];
-                float next = (i < stundenwerte.Length - 1) ? stundenwerte[i + 1] : curr;
-                float diff = (next - curr) / 4.0f;
-
-                v[i * 4] = curr;
-                v[i * 4 + 1] = curr + diff;
-                v[i * 4 + 2] = curr + (diff * 2);
-                v[i * 4 + 3] = curr + (diff * 3);
-            }
-            return v;
-        }
+        // Stundenwerte_zu_viertelstunden_Interpoliert ist mit AP2b entfallen: Die
+        // lineare Spreizung glättete allein die Treppenstufen des stündlich gerechneten
+        // Speicherfüllstands. Die SpeicherEngine liefert den Ladezustand nativ
+        // viertelstündlich (SimulationControl.Speicherfuellstand_viertelstuendlich),
+        // die Interpolation hat damit keinen Gegenstand mehr.
 
         public float[] Viertelstunden_zu_stunden(float[] v)
         {
