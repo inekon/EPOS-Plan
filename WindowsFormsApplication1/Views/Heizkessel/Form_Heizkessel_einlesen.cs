@@ -19,6 +19,11 @@ namespace WindowsFormsApplication1
         // Zuordnung: Position in der (gefilterten) ListBox -> Index in ctrl._list
         private System.Collections.Generic.List<int> _anzeigeIndex = new System.Collections.Generic.List<int>();
 
+        // Sperre gegen Rueckkopplung: waehrend FuelleListe() die Markierung
+        // wiederherstellt, feuert SelectedIndexChanged und wuerde die Detailfelder
+        // auf einen Zwischenstand setzen.
+        private bool _listeWirdGefuellt = false;
+
         public Form_Heizkessel_einlesen()
         {
             InitializeComponent();
@@ -30,13 +35,27 @@ namespace WindowsFormsApplication1
             FuelleListe();
         }
 
-        // Fuellt die ListBox aus ctrl._list unter Beruecksichtigung des Leistungsfilters
-        // und merkt sich je Zeile den echten Index in ctrl._list.
+        // Live-Filter ueber Bezeichner und Firma (Anwenderanforderung 17.08.2026).
+        private void Suchfilter_TextChanged(object sender, EventArgs e)
+        {
+            FuelleListe();
+        }
+
+        // Fuellt die ListBox aus ctrl._list unter Beruecksichtigung des Leistungs-
+        // und des Suchfilters und merkt sich je Zeile den echten Index in ctrl._list.
         private void FuelleListe()
         {
             double min = (double)num_LeistungVon.Value;
             double max = (double)num_LeistungBis.Value;
+            string suche = txt_Filter.Text;
 
+            // Markierung (echte Indizes) sichern und nach dem Neuaufbau fuer alle
+            // weiterhin sichtbaren Eintraege wiederherstellen: so geht eine bereits
+            // getroffene Auswahl beim Tippen im Filter nicht stillschweigend
+            // verloren, und unsichtbare Eintraege bleiben unmarkiert.
+            System.Collections.Generic.List<int> markiert = MarkierteQuellIndizes();
+
+            _listeWirdGefuellt = true;
             Liste_Heizkessel.BeginUpdate();
             Liste_Heizkessel.Items.Clear();
             _anzeigeIndex.Clear();
@@ -45,10 +64,28 @@ namespace WindowsFormsApplication1
                 double p = Program.convertTxt2Double(ctrl._list[i].m_szThLeistung);
                 if (p < min) continue;
                 if (p > max) continue;
+                if (!VdiAuswahlFilter.Passt(suche, ctrl._list[i].m_szName, ctrl._list[i].m_szFirma)) continue;
                 Liste_Heizkessel.Items.Add(ctrl._list[i].m_szName);
                 _anzeigeIndex.Add(i);
             }
+            for (int zeile = 0; zeile < _anzeigeIndex.Count; zeile++)
+            {
+                if (markiert.Contains(_anzeigeIndex[zeile])) Liste_Heizkessel.SetSelected(zeile, true);
+            }
             Liste_Heizkessel.EndUpdate();
+            _listeWirdGefuellt = false;
+
+            // Detailfelder auf die verbleibende Markierung nachziehen, damit sie
+            // nach dem Umfiltern nicht mehr auf einen ausgefilterten Eintrag
+            // zeigen (bei der Uebernahme sind sie die Quelle bzw. die Anzeige).
+            if (Liste_Heizkessel.SelectedIndex >= 0 && Liste_Heizkessel.SelectedIndex < _anzeigeIndex.Count)
+                ZeigeDetails(_anzeigeIndex[Liste_Heizkessel.SelectedIndex]);
+        }
+
+        // Markierte Zeilen -> Indizes in ctrl._list.
+        private System.Collections.Generic.List<int> MarkierteQuellIndizes()
+        {
+            return VdiAuswahlFilter.QuellIndizes(Liste_Heizkessel.SelectedIndices, _anzeigeIndex);
         }
 
         private void btn_Beenden_Click(object sender, EventArgs e)
@@ -82,33 +119,113 @@ namespace WindowsFormsApplication1
 
         private void Liste_WP_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (_listeWirdGefuellt) return;   // Neuaufbau der Liste, kein Anwenderklick
+
             int sel = Liste_Heizkessel.SelectedIndex;
-            if (sel >= 0 && sel < _anzeigeIndex.Count)
-            {
-                int i = _anzeigeIndex[sel];
-                textBox_Name.Text = Liste_Heizkessel.Text;
-                textBox_Firma.Text = ctrl._list[i].m_szFirma;
-                textBox_Bauart.Text = ctrl._list[i].m_szBauart;
-                textBox_ThLeistung.Text = ctrl._list[i].m_szThLeistung;
-                textBox_Brennstoff.Text = ctrl._list[i].m_szBrennstoff;
-                textBox_Versluste.Text = ctrl._list[i].m_szVerluste;
-                textBox__Wirkungsgrad.Text = ctrl._list[i].m_szWirkungsgrad;
-                szBrennstoffIndex = ctrl._list[i].m_szBrennstoffIndex;
-                szCO2 = ctrl._list[i].m_szCO2;
-                szNOx = ctrl._list[i].m_szNOX;
-                szCO = ctrl._list[i].m_szCO;
-            }
+            if (sel < 0 || sel >= _anzeigeIndex.Count) return;
+            ZeigeDetails(_anzeigeIndex[sel]);
+        }
+
+        // Uebertraegt einen VDI-Eintrag in die Detailfelder. Die Felder (und die
+        // Zusatzwerte szBrennstoffIndex/szCO2/szNOx/szCO) sind auch beim
+        // Mehrfachladen der Traeger fuer die Uebernahme (InitDatensatzUpdate liest
+        // sie aus) - damit bleibt es bei genau einem Schreibweg.
+        private void ZeigeDetails(int i)
+        {
+            if (i < 0 || i >= ctrl._list.Count) return;
+
+            textBox_Name.Text = ctrl._list[i].m_szName;
+            textBox_Firma.Text = ctrl._list[i].m_szFirma;
+            textBox_Bauart.Text = ctrl._list[i].m_szBauart;
+            textBox_ThLeistung.Text = ctrl._list[i].m_szThLeistung;
+            textBox_Brennstoff.Text = ctrl._list[i].m_szBrennstoff;
+            textBox_Versluste.Text = ctrl._list[i].m_szVerluste;
+            textBox__Wirkungsgrad.Text = ctrl._list[i].m_szWirkungsgrad;
+            szBrennstoffIndex = ctrl._list[i].m_szBrennstoffIndex;
+            szCO2 = ctrl._list[i].m_szCO2;
+            szNOx = ctrl._list[i].m_szNOX;
+            szCO = ctrl._list[i].m_szCO;
         }
 
         private void btn_Uebernehmen_Click(object sender, EventArgs e)
         {
-            OleDbTransaction transaction = null;
-
-            if (string.IsNullOrEmpty(textBox_Name.Text))
+            // Mehrfachselektion: je markierter Eintrag laeuft genau der bestehende
+            // Einzel-Weg (UebernehmeEintrag) - nur in einer Schleife, damit es
+            // keinen zweiten Schreibpfad in die STAMM-Tabelle gibt.
+            System.Collections.Generic.List<int> markiert = MarkierteQuellIndizes();
+            if (markiert.Count == 0)
             {
                 MessageBox.Show("Bitte einen Heizkessel selektieren!");
                 return;
             }
+
+            if (markiert.Count == 1)
+            {
+                // Einzelfall: Meldungen und Dialogverhalten bleiben wie im Bestand;
+                // die Detailfelder werden nicht neu besetzt, damit eine Korrektur
+                // von Hand erhalten bleibt.
+                VdiUebernahmeErgebnis einzel = UebernehmeEintrag();
+                if (einzel == VdiUebernahmeErgebnis.Duplikat)
+                {
+                    MessageBox.Show("Daten bereits eingelesen!");
+                }
+                else if (einzel == VdiUebernahmeErgebnis.Gespeichert)
+                {
+                    MessageBox.Show("Datensatz erfolgreich neu angelegt.");
+                    this.DialogResult = DialogResult.OK;
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show("Fehler: Name existiert bereits oder Datenbankfehler!");
+                }
+                return;
+            }
+
+            int nGespeichert = 0;
+            int nDuplikat = 0;
+            int nFehler = 0;
+            Cursor alt = Cursor;
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                foreach (int i in markiert)
+                {
+                    // Detailfelder je Eintrag besetzen - sie sind der Traeger fuer
+                    // InitDatensatzUpdate() und damit fuer die Uebernahme.
+                    ZeigeDetails(i);
+
+                    // Ein fehlerhafter Eintrag darf den Gesamtvorgang nicht abbrechen.
+                    VdiUebernahmeErgebnis ergebnis = UebernehmeEintrag();
+                    if (ergebnis == VdiUebernahmeErgebnis.Gespeichert) nGespeichert++;
+                    else if (ergebnis == VdiUebernahmeErgebnis.Duplikat) nDuplikat++;
+                    else nFehler++;
+                }
+            }
+            finally
+            {
+                Cursor = alt;
+            }
+
+            MessageBox.Show(VdiAuswahlFilter.LadeMeldung(nGespeichert, markiert.Count, nDuplikat, nFehler));
+
+            // Wie im Bestand wird der Dialog nach erfolgreicher Uebernahme beendet;
+            // ohne einen einzigen Treffer bleibt er offen, damit der Anwender
+            // Filter und Auswahl korrigieren kann.
+            if (nGespeichert > 0)
+            {
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
+        }
+
+        // Uebernahme genau eines Eintrags in Tab_Heizkessel_STAMM. Unveraenderter
+        // Bestandsweg samt Transaktion (Quelle sind die Detailfelder), nur mit
+        // Ergebnis als Rueckgabewert statt MessageBox - die Meldung und das
+        // Schliessen des Dialogs entscheidet der Aufrufer.
+        private VdiUebernahmeErgebnis UebernehmeEintrag()
+        {
+            OleDbTransaction transaction = null;
 
             try
             {
@@ -131,9 +248,8 @@ namespace WindowsFormsApplication1
                         int count = Convert.ToInt32(checkCmd.ExecuteScalar());
                         if (count > 0)
                         {
-                            MessageBox.Show("Daten bereits eingelesen!");
                             transaction.Rollback();
-                            return;
+                            return VdiUebernahmeErgebnis.Duplikat;
                         }
                     }
 
@@ -145,26 +261,23 @@ namespace WindowsFormsApplication1
                     {
                         // Nur wenn das Insert mitsamt allen Feldern erfolgreich war, festschreiben
                         transaction.Commit();
-                        MessageBox.Show("Datensatz erfolgreich neu angelegt.");
-                        this.DialogResult = DialogResult.OK;
-                        this.Close();
+                        return VdiUebernahmeErgebnis.Gespeichert;
                     }
-                    else
-                    {
-                        transaction.Rollback();
-                        MessageBox.Show("Fehler: Name existiert bereits oder Datenbankfehler!");
-                    }
+
+                    transaction.Rollback();
+                    return VdiUebernahmeErgebnis.Fehler;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Fehler bei Heizkessel Übernehmen: " + ex.Message);
-                MessageBox.Show("Fehler: Name existiert bereits oder Datenbankfehler!");
 
                 if (transaction != null && transaction.Connection != null)
                 {
                     try { transaction.Rollback(); } catch { }
                 }
+
+                return VdiUebernahmeErgebnis.Fehler;
             }
         }
 

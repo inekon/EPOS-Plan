@@ -93,6 +93,31 @@ namespace WindowsFormsApplication1
         private int _offeneStromgruppe;
 
         /// <summary>
+        /// ABNAHMEBEFUND 1 — stehen die NICHT gewählten Komponenten in der Spalte?
+        ///
+        /// Vorbelegung <c>false</c>: Die Spalte zeigt, was gerechnet wird. Die
+        /// gestrichelten Platzhalter („BHKW — nicht in der Simulation · keine Anlage im
+        /// Projekt") sind seit D2 aber der EINZIGE Weg, eine Komponente überhaupt
+        /// zuzuschalten — die vier Erzeuger-Combos samt Haken und die beiden
+        /// Strom-Auswahlfelder sind unsichtbar (<see cref="AltSteuerelementeStilllegen"/>)
+        /// und werden nur noch programmatisch bedient. Ausgeblendet heißt deshalb
+        /// „eingeklappt", nicht „weg": Der Textschalter am Spaltenende
+        /// (<see cref="VerfuegbarSchalterAnfuegen"/>) holt sie zurück.
+        ///
+        /// Sitzungszustand, bewusst nicht persistiert: Die Ansicht legt bisher keinen
+        /// einzigen Anzeigezustand in der Datenbank ab (auch <c>_offenerSpeicher</c> und
+        /// <c>_offeneStromgruppe</c> nicht) — eine Spalte in <c>Tab_Einstellungen</c> für
+        /// eine Sichtvorliebe wäre der erste Bruch mit diesem Muster.
+        /// </summary>
+        private bool _verfuegbareZeigen;
+
+        /// <summary>
+        /// Wie viele Platzhalterkarten der laufende Spaltenaufbau unterdrückt hat — die
+        /// Zahl im Einblendeschalter.
+        /// </summary>
+        private int _verfuegbarVersteckt;
+
+        /// <summary>
         /// Quellpuffer-ID → Anlagen, die ihn als Wärmequelle nutzen („Quelle für",
         /// Konzept 3a). Wird je Auffrischung EINMAL gefüllt (<see cref="QuellnutzerSammeln"/>).
         /// </summary>
@@ -585,12 +610,16 @@ namespace WindowsFormsApplication1
             try
             {
                 SpalteLeeren(flow_Erzeuger, null);
+                _verfuegbarVersteckt = 0;
 
                 WaermeerzeugerGruppe();
                 StromGruppe(label2.Text, comboBox5, checkBox5,
                             ErzeugerKatalog.STROMERZEUGER, WizardItemClass.PV_TYP);
                 StromGruppe(label3.Text, comboBox6, checkBox6,
                             ErzeugerKatalog.ENERGIESPEICHER, WizardItemClass.SP_TYP);
+
+                // ABNAHMEBEFUND 1: der Weg zurück zu den ausgeblendeten Platzhaltern.
+                VerfuegbarSchalterAnfuegen();
 
                 // „+ Anlage hinzufügen …": Ein Einstieg ohne Wizard-Kontext gibt es
                 // nicht — Anlagen entstehen im Assistenten bzw. über die Projektseite
@@ -680,6 +709,15 @@ namespace WindowsFormsApplication1
                 VerfuegbarKarte(dbWert, TypZuAnlagentyp(dbWert),
                                 delegate { KaskadeAufnehmen(dbWert); });
             }
+
+            // ABNAHMEBEFUND 1: Seit die Platzhalter ausgeblendet sind, kann diese Gruppe
+            // LEER sein — vorher standen dort immer vier gestrichelte Karten. Eine
+            // Überschrift ohne alles darunter sagt nichts; der Satz sagt, dass die Gruppe
+            // stimmt und nur nichts gewählt ist. Der Ressourcenschlüssel liegt seit D2
+            // ungenutzt bereit und ist für genau diesen Fall geschrieben.
+            if (kaskade.Count == 0)
+                flow_Erzeuger.Controls.Add(
+                    Hinweiszeile(MyResource.Resource.SIM_KARTE_KEINE_ERZEUGER));
         }
 
         /// <summary>
@@ -991,9 +1029,21 @@ namespace WindowsFormsApplication1
             chips.Add(new ErzeugerKarte.ChipDaten { Text = text, Stil = stil });
         }
 
-        /// <summary>Eine gestrichelte Karte „im Katalog wählbar, nicht aufgenommen".</summary>
+        /// <summary>
+        /// Eine gestrichelte Karte „im Katalog wählbar, nicht aufgenommen".
+        ///
+        /// ABNAHMEBEFUND 1: Standardmäßig entsteht sie GAR NICHT — die Spalte zeigt, was
+        /// gerechnet wird. Gezählt wird trotzdem, denn die Zahl steht im Einblendeschalter
+        /// am Spaltenende (<see cref="_verfuegbareZeigen"/>).
+        /// </summary>
         private void VerfuegbarKarte(string dbWert, int idType, EventHandler aufnehmen)
         {
+            if (!_verfuegbareZeigen)
+            {
+                _verfuegbarVersteckt++;
+                return;
+            }
+
             List<string> namen = idType > 0 ? AnlagenNamen(idType) : new List<string>();
 
             List<ErzeugerKarte.ChipDaten> chips = new List<ErzeugerKarte.ChipDaten>();
@@ -1024,6 +1074,53 @@ namespace WindowsFormsApplication1
                 Zustand = ErzeugerKarte.Kartenzustand.Verfuegbar,
                 Umschaltbar = true
             });
+        }
+
+        /// <summary>
+        /// ABNAHMEBEFUND 1 — Textschalter am Ende der Erzeugerspalte, der die nicht
+        /// gewählten Komponenten ein- und wieder ausblendet.
+        ///
+        /// Er steht am SPALTENENDE und nicht je Gruppe: Die Zahl der Platzhalter ist
+        /// klein (höchstens vier Wärmeerzeuger plus zwei Stromplätze), drei Schalter
+        /// wären mehr Bedienelement als Inhalt. Sein Stil ist der der übrigen
+        /// Spaltenhinweise (<see cref="Hinweiszeile"/>) in der Quellfarbe, mit der auch
+        /// das „+ aufnehmen" der Karten geschrieben ist.
+        ///
+        /// Gibt es nichts zu verstecken und ist nichts versteckt, erscheint er nicht —
+        /// eine vollständig aufgenommene Konfiguration bekommt keine leere Zeile.
+        /// </summary>
+        private void VerfuegbarSchalterAnfuegen()
+        {
+            if (!_verfuegbareZeigen && _verfuegbarVersteckt == 0) return;
+
+            Label l = Hinweiszeile(_verfuegbareZeigen
+                ? MyResource.Resource.SIM_KARTE_VERFUEGBAR_AUSBLENDEN
+                : string.Format(MyResource.Resource.SIM_KARTE_VERFUEGBAR_EINBLENDEN,
+                                _verfuegbarVersteckt));
+            l.ForeColor = KartenStil.QUELLE_TEXT;
+            l.Cursor = Cursors.Hand;
+            l.Margin = new Padding(0, 8, 0, 4);
+
+            l.Click += delegate
+            {
+                _verfuegbareZeigen = !_verfuegbareZeigen;
+
+                // VERZÖGERT, aus demselben Grund wie ErzeugerKarte.Melden: Der Neuaufbau
+                // entsorgt über SpalteLeeren genau dieses Label, aus dessen Klick-Ereignis
+                // der Aufruf kommt.
+                //
+                // Nur die ERZEUGERSPALTE: Speicherkarten und Schema hängen nicht an dieser
+                // Sichtvorliebe, und ihr Neuaufbau kostet bei einem Projekt mit vielen
+                // Puffern spürbar (siehe SpeicherKarteDaten). Die Hervorhebung ist danach
+                // nachzuziehen — die alten Karten sind entsorgt.
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    AktualisiereErzeugerKarten();
+                    AuswahlInKartenZeigen();
+                });
+            };
+
+            flow_Erzeuger.Controls.Add(l);
         }
 
         /// <summary>Fette Gruppenüberschrift wie in der abgelösten Rubrik.</summary>

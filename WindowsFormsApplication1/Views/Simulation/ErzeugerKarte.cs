@@ -493,8 +493,25 @@ namespace WindowsFormsApplication1
             Melden(Bearbeiten);
         }
 
+        /// <summary>
+        /// Einfacher Klick auf die Karte.
+        ///
+        /// <b>Abnahmebefund 2 — die ganze ZEILE schaltet um, nicht nur die Glyphe.</b>
+        /// Bis hierher meldete ausschließlich <see cref="_lblPfeil"/> das Umschalten;
+        /// das ist eine acht Pixel breite Trefferfläche in einer über 600 px breiten
+        /// Karte, und jeder Klick daneben lief wirkungslos in die Auswahl. Genau das
+        /// hat der Anwender gemeldet („trägt das Dreieck, klappt aber nichts auf").
+        /// <see cref="SpeicherKarte"/> macht es seit jeher richtig: Dort reicht
+        /// <c>KlickDurchreichen</c> den Klick JEDES Kindes an das Umschalten weiter.
+        ///
+        /// Karten ohne Detailbereich (alle Wärmeerzeuger) bleiben unberührt — dort ist
+        /// <c>_detail</c> leer, und der Klick bedeutet weiterhin nur „Auswahl".
+        /// </summary>
         private void KarteGeklickt(object sender, EventArgs e)
         {
+            if (_detail.Controls.Count > 0 && Umschalten != null)
+                Umschalten(this, EventArgs.Empty);
+
             if (Ausgewaehlt != null) Ausgewaehlt(this, EventArgs.Empty);
         }
 
@@ -681,6 +698,28 @@ namespace WindowsFormsApplication1
             if (!_aufbau) Neuordnen();
         }
 
+        /// <summary>
+        /// ABNAHMEBEFUND 4 — beim Sichtbarwerden einmal nachordnen.
+        ///
+        /// <see cref="Neuordnen"/> fragt die Schalter über den Visible-GETTER ab, und
+        /// der liefert den WIRKSAMEN Zustand — also false für ALLE Kinder, solange das
+        /// übergeordnete Fenster noch nicht angezeigt wird (dieselbe Falle wie bei
+        /// <see cref="HoeheNachfuehren"/> beschrieben). Die Karten entstehen aber in
+        /// <c>SetControls</c>, also VOR dem ersten Anzeigen: Neuordnen platzierte dort
+        /// keinen einzigen Schalter (▲▼✎× blieben auf Restkoordinaten außerhalb der
+        /// Karte; im Harness gemessen: ✎ bei x = −172 auf einer 622 px breiten Karte)
+        /// und schob den Titel auf die Rangposition, dessen Anfang das Rang-Label dann
+        /// verdeckte. Blieb die Fenstergröße nach dem Anzeigen unverändert, kam kein
+        /// OnResize mehr — die Kopfzeile stand dauerhaft falsch. Genau deshalb wirkte
+        /// der Fehler sporadisch: Er heilte überall dort, wo BaseForm oder der Anwender
+        /// das Fenster nach dem Anzeigen noch umformte.
+        /// </summary>
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            base.OnVisibleChanged(e);
+            if (Visible && !_aufbau && !IsDisposed) Neuordnen();
+        }
+
         private void Neuordnen()
         {
             if (_aufbau) return;
@@ -715,22 +754,59 @@ namespace WindowsFormsApplication1
             int kopfUnten = _lblTitel.Bottom;
             foreach (Label l in schalter) if (l.Visible && l.Bottom > kopfUnten) kopfUnten = l.Bottom;
 
+            int innen = Math.Max(60, ClientSize.Width - 2 * KartenStil.RAND);
+
             _chips.Location = new Point(KartenStil.RAND, kopfUnten + 6);
-            _chips.Width = Math.Max(60, ClientSize.Width - 2 * KartenStil.RAND);
+            Innenbreite(_chips, innen);
 
             // Der Detailbereich steht UNTER den Chips und in derselben Innenbreite.
             _detail.Location = new Point(KartenStil.RAND,
                                          (_chips.Controls.Count > 0 ? _chips.Bottom : kopfUnten) + 6);
-            _detail.Width = _chips.Width;
+            Innenbreite(_detail, innen);
 
             HoeheNachfuehren();
         }
 
+        /// <summary>
+        /// Zwingt einen Chipbereich auf die Innenbreite der Karte.
+        ///
+        /// <b>Abnahmebefund 2 — die Breite allein genügt nicht.</b> Ein
+        /// <see cref="FlowLayoutPanel"/> mit <c>AutoSize</c> und
+        /// <see cref="AutoSizeMode.GrowAndShrink"/> misst seine Wunschgröße OHNE
+        /// Breitenvorgabe und legt deshalb alle Chips in EINE Zeile — die gesetzte
+        /// Breite überschreibt die nächste Layoutrunde wieder, und
+        /// <c>WrapContents</c> bleibt wirkungslos. Im Harness gemessen: 1213 px
+        /// Detailbereich in einer 622 px breiten Karte (acht Gerätechips des
+        /// Stromspeichers), also die Hälfte der Gerätedaten außerhalb des
+        /// Kartenrands abgeschnitten. Erst <see cref="Control.MaximumSize"/>
+        /// begrenzt die Messung, und der Umbruch greift.
+        ///
+        /// Dasselbe Mittel wie in <c>SpeicherKarte.Neuordnen</c>, wo die Detailzeilen
+        /// über <c>MaximumSize</c> auf die Innenbreite der KARTE gestellt werden.
+        /// </summary>
+        private static void Innenbreite(FlowLayoutPanel bereich, int breite)
+        {
+            if (bereich.MaximumSize.Width != breite)
+                bereich.MaximumSize = new Size(breite, 0);
+            if (bereich.Width != breite) bereich.Width = breite;
+        }
+
+        /// <summary>
+        /// Höhe der Karte an ihren Inhalt anpassen.
+        ///
+        /// Maßgeblich ist <see cref="_aufgeklappt"/> und NICHT <c>_detail.Visible</c> —
+        /// dieselbe Begründung wie in <c>SpeicherKarte.HoeheNachfuehren</c>: Der
+        /// Visible-GETTER liefert den WIRKSAMEN Zustand und damit <c>false</c>, solange
+        /// das übergeordnete Fenster noch nicht angezeigt wird. Die Karten entstehen
+        /// aber in <c>SetControls</c>, also VOR dem ersten Anzeigen; eine dort bereits
+        /// aufgeklappte Karte (<c>_offeneStromgruppe</c>) bekäme sonst die zugeklappte
+        /// Höhe und richtete sich erst bei der nächsten Größenänderung.
+        /// </summary>
         private void HoeheNachfuehren()
         {
             int noetig = _chips.Bottom + KartenStil.RAND;
             if (_chips.Controls.Count == 0) noetig = _lblTitel.Bottom + KartenStil.RAND;
-            if (_detail.Visible && _detail.Controls.Count > 0) noetig = _detail.Bottom + KartenStil.RAND;
+            if (_aufgeklappt && _detail.Controls.Count > 0) noetig = _detail.Bottom + KartenStil.RAND;
             if (Height != noetig) Height = noetig;
         }
 

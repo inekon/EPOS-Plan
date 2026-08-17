@@ -64,6 +64,8 @@ namespace WindowsFormsApplication1
             num_AperturBis = new System.Windows.Forms.NumericUpDown();
             lbl_AperturFilter = new System.Windows.Forms.Label();
             lbl_AperturBis = new System.Windows.Forms.Label();
+            lbl_Filter = new System.Windows.Forms.Label();
+            txt_Filter = new System.Windows.Forms.TextBox();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)num_AperturVon).BeginInit();
             ((System.ComponentModel.ISupportInitialize)num_AperturBis).BeginInit();
@@ -91,6 +93,8 @@ namespace WindowsFormsApplication1
             resources.ApplyResources(Liste_Kollektoren, "Liste_Kollektoren");
             Liste_Kollektoren.ForeColor = System.Drawing.Color.Black;
             Liste_Kollektoren.Name = "Liste_Kollektoren";
+            // Mehrfachauswahl: der Anwender kann mehrere VDI-Eintraege in einem Vorgang laden.
+            Liste_Kollektoren.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             Liste_Kollektoren.SelectedIndexChanged += Liste_WP_SelectedIndexChanged;
             // 
             // btn_VDI3805
@@ -325,6 +329,20 @@ namespace WindowsFormsApplication1
             lbl_AperturBis.ForeColor = System.Drawing.Color.Black;
             lbl_AperturBis.Name = "lbl_AperturBis";
             // 
+            // lbl_Filter
+            // 
+            resources.ApplyResources(lbl_Filter, "lbl_Filter");
+            lbl_Filter.ForeColor = System.Drawing.Color.Black;
+            lbl_Filter.Name = "lbl_Filter";
+            // 
+            // txt_Filter
+            // 
+            txt_Filter.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            resources.ApplyResources(txt_Filter, "txt_Filter");
+            txt_Filter.ForeColor = System.Drawing.Color.Black;
+            txt_Filter.Name = "txt_Filter";
+            txt_Filter.TextChanged += Suchfilter_TextChanged;
+            // 
             // Form_SolarKollektoren_einlesen
             // 
             resources.ApplyResources(this, "$this");
@@ -346,6 +364,8 @@ namespace WindowsFormsApplication1
             Controls.Add(textBox_Name);
             Controls.Add(Label17);
             Controls.Add(textBox_Bauart);
+            Controls.Add(lbl_Filter);
+            Controls.Add(txt_Filter);
             ForeColor = System.Drawing.Color.Black;
             Name = "Form_SolarKollektoren_einlesen";
             groupBox1.ResumeLayout(false);
@@ -393,5 +413,7 @@ private System.Windows.Forms.TextBox textBox_Bauart;
         private System.Windows.Forms.NumericUpDown num_AperturBis;
         private System.Windows.Forms.Label lbl_AperturFilter;
         private System.Windows.Forms.Label lbl_AperturBis;
+        private System.Windows.Forms.Label lbl_Filter;
+        private System.Windows.Forms.TextBox txt_Filter;
     }
 }
