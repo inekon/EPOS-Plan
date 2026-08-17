@@ -34,7 +34,17 @@
 
     <!-- Satellitenkulturen (de-DE/en-US) wie zuvor -->
     <SatelliteResourceLanguages>de-DE;en-US</SatelliteResourceLanguages>
+	<DefaultItemExcludes>$(DefaultItemExcludes);.claude\**</DefaultItemExcludes>
   </PropertyGroup>
+  
+  <ItemGroup>
+  <Compile Remove=".claude\**" />
+  <EmbeddedResource Remove=".claude\**" />
+  <None Remove=".claude\**" />
+  <Page Remove=".claude\**" />
+  <Resource Remove=".claude\**" />
+  <ApplicationDefinition Remove=".claude\**" />
+</ItemGroup>
 
   <!-- Plattform-spezifische Konfigurationen -->
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
