@@ -42,11 +42,19 @@ namespace WindowsFormsApplication1
     /// Fremdschlüssel WQ_ID_Puffer auf (Datenregel R7) - der dritte und letzte
     /// DML-Schritt neben 5 und 7. Schritt 10 kommt mit Etappe D4 hinzu und legt die
     /// Ergebnisspalte Tab_ErgebnisHeizkessel.Quellwaerme an (rein additives DDL).
+    /// Schritt 11 kommt mit Arbeitspaket AP3 des Stromspeicher-Moduls hinzu und ist der
+    /// erste Schritt mit vier Teilen in EINER Version (11a Gerätespalten, 11b und 11c je
+    /// eine neue Tabelle, 11d die einmalige Übernahme der projektweiten Ladeparameter) -
+    /// dieselbe Bauform wie Schritt 4 mit seinen Teilen 4a bis 4e. Schritt 12 kommt
+    /// mit Arbeitspaket AP4 (Preis- und Verguetungsmodell) hinzu und ist ebenso
+    /// mehrteilig: 12a Aufschlagsspalten an energy_project_settings, 12b/12c die
+    /// Preisreihen- und Kostenprofiltabellen, 12d die Vorbelegung der
+    /// Aufschlagskomponenten - nur fuer den Strom-Carrier.
     /// </summary>
     public static class SchemaMigration
     {
         /// <summary>Schemastand, den ein vollständiger Lauf dieser Programmfassung erreicht.</summary>
-        public const int ZIEL_VERSION = 10;
+        public const int ZIEL_VERSION = 12;
 
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
@@ -101,6 +109,50 @@ namespace WindowsFormsApplication1
         /// DML-Schritte des Vorhabens).
         /// </summary>
         public const int SCHRITT_10_KESSEL_QUELLWAERME = 10;
+
+        /// <summary>
+        /// Nummer des Stromspeicher-Pakets (Arbeitspaket AP3 des Umsetzungskonzepts
+        /// <c>Umsetzungskonzept_Stromspeicher_EPOS-Plan</c>, Fachkonzept 5.1/5.6/7.1/7.3).
+        ///
+        /// <b>Vier Teile in EINER Version</b> - Bauform wie Schritt 4:
+        ///   11a  Gerätespalten in <c>Tab_Stromspeicher</c> und
+        ///        <c>Tab_Stromspeicher_STAMM</c> (additives DDL aus dem Spaltenkatalog),
+        ///   11b  neue Tabelle <c>Tab_StromspeicherVariante</c> (Betriebsführung je
+        ///        Speichervariante, 1:1 zu <c>Tab_Energieanlagen</c>),
+        ///   11c  neue Tabelle <c>Tab_ErgebnisStromspeicher</c> (Kennzahlenblock 7.1),
+        ///   11d  einmaliges DML: Übernahme der projektweiten Ladeparameter aus
+        ///        <c>Tab_Einstellungen</c> auf die Variantenebene (Fachkonzept 5.6).
+        ///
+        /// <b>Warum nicht vier eigene Schrittnummern.</b> Der Marker ist die
+        /// Schrittnummer; vier Nummern hießen vier Zielversionen für EINE fachliche
+        /// Nachlieferung. Die Teile hängen zudem hart aneinander - 11d schreibt in die
+        /// Tabelle aus 11b -, eine Datenbank darf also nie zwischen ihnen stehen
+        /// bleiben. Genau dafür gibt es die Teilgliederung innerhalb eines Schritts, wie
+        /// sie Schritt 4 seit ETAPPE 1 vorführt.
+        /// </summary>
+        public const int SCHRITT_11_STROMSPEICHER = 11;
+
+        /// <summary>
+        /// Nummer des Preis- und Verguetungsmodells (Arbeitspaket AP4 des
+        /// Umsetzungskonzepts, Fachkonzept 4.1/4.2/4.3, Persistenzweg 8.4).
+        ///
+        /// <b>Vier Teile in EINER Version</b> - dieselbe Bauform wie Schritt 11:
+        ///   12a  Aufschlags- und Verguetungsspalten in <c>energy_project_settings</c>
+        ///        (additives DDL aus dem Spaltenkatalog),
+        ///   12b  neue Tabellen <c>Tab_Preisreihe</c> und <c>Tab_PreisreiheDaten</c>
+        ///        (Spotreihe nach dem Ganglinienmuster, Fachkonzept 8.4),
+        ///   12c  neue Tabelle <c>Tab_Kostenprofil</c> (12 Monats- und 168 Wochenwerte
+        ///        als ";"-Zeichenketten, Muster <c>Form_Quellprofil</c>),
+        ///   12d  einmaliges DML: Vorbelegung der fuenf Aufschlagskomponenten, des
+        ///        Modus und der beiden Verguetungssaetze - AUSSCHLIESSLICH fuer Zeilen
+        ///        des Strom-Carriers (Fachkonzept 4.2).
+        ///
+        /// <b>Idempotent</b> (unabhaengig vom Marker): 12a und die drei CREATE TABLE
+        /// gehen ueber Vorhandenes hinweg; 12d belegt nur Zeilen vor, deren
+        /// Aufschlagsspalten noch NULL sind - ein spaeter vom Anwender geaenderter Wert
+        /// wird nie ueberschrieben.
+        /// </summary>
+        public const int SCHRITT_12_PREISMODELL = 12;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -166,6 +218,38 @@ namespace WindowsFormsApplication1
 
         /// <summary>R7: Anlagen, deren <c>WQ_Puffer</c> eindeutig zum Projekt-Puffer aufgelöst wurde.</summary>
         public static int DatenQuellPufferFk { get; private set; }
+
+        // --- Zählwerk der Ladeparameter-Übernahme aus Schritt 11d (AP3) ---------------
+
+        /// <summary>
+        /// Schritt 11d: angelegte Zeilen in <c>Tab_StromspeicherVariante</c> - eine je
+        /// vorhandener Speicheranlage (<c>ID_Type</c> 4 bzw. 6).
+        /// </summary>
+        public static int DatenSpVariantenNeu { get; private set; }
+
+        /// <summary>
+        /// Schritt 11d: davon als aktive Variante ihres Projekts markiert (höchstens
+        /// eine je Projekt).
+        /// </summary>
+        public static int DatenSpVariantenAktiv { get; private set; }
+
+        /// <summary>
+        /// Schritt 11d: Varianten, die das SoC-Band aus den projektweiten Werten
+        /// <c>Ladefuellstand_Min/_Max</c> übernommen haben. Die Differenz zu
+        /// <see cref="DatenSpVariantenNeu"/> sind die Projekte, deren Altwerte
+        /// unbrauchbar waren (nie gepflegt, Einheit „kWh/a" oder unplausibles Band) -
+        /// dort gilt die Vorgabe 10/90 % aus Fachkonzept 5.1.
+        /// </summary>
+        public static int DatenSpBandUebernommen { get; private set; }
+
+        // --- Zählwerk der Aufschlagsvorbelegung aus Schritt 12d (AP4) ------------------
+
+        /// <summary>
+        /// Schritt 12d: Zeilen in <c>energy_project_settings</c>, die mit den
+        /// Aufschlagsvorschlägen des Fachkonzepts 4.2 vorbelegt wurden - je Projekt
+        /// höchstens eine (die des Strom-Carriers).
+        /// </summary>
+        public static int DatenAufschlagVorbelegt { get; private set; }
 
         /// <summary>
         /// R7: Anlagen, bei denen der Bezeichner NICHT eindeutig auflösbar war (kein
@@ -254,6 +338,21 @@ namespace WindowsFormsApplication1
                         "Ergebnisspalte Quellwaerme in Tab_ErgebnisHeizkessel (Etappe D4)",
                         "Die Ergebnisspalte für die Quellwärme des Heizkessels konnte nicht angelegt werden.",
                         Schritt_10_KesselQuellwaerme),
+
+            // AP3 - Stromspeicher: Gerätespalten, Varianten- und Ergebnistabelle,
+            //       Übernahme der projektweiten Ladeparameter (Fachkonzept 5.1/5.6/7.1/7.3).
+            new Schritt(SCHRITT_11_STROMSPEICHER,
+                        "Stromspeicher: Gerätespalten, Tab_StromspeicherVariante, Tab_ErgebnisStromspeicher, Ladeparameter (AP3)",
+                        "Das Stromspeicher-Schema konnte nicht angelegt werden.",
+                        Schritt_11_Stromspeicher),
+
+            // AP4 - Preis- und Vergütungsmodell: Aufschlagsspalten an
+            //       energy_project_settings, Preisreihen- und Kostenprofiltabelle,
+            //       Vorbelegung der Komponenten (Fachkonzept 4.1/4.2/4.3, 8.4).
+            new Schritt(SCHRITT_12_PREISMODELL,
+                        "Preismodell: Aufschlagsspalten, Tab_Preisreihe(Daten), Tab_Kostenprofil, Vorbelegung (AP4)",
+                        "Das Preis- und Vergütungsmodell konnte nicht angelegt werden.",
+                        Schritt_12_Preismodell),
         };
 
         // =================================================================================
@@ -285,6 +384,10 @@ namespace WindowsFormsApplication1
             DatenExtrapolationVorbelegt = 0;
             DatenQuellPufferFk = 0;
             DatenQuellPufferOffen = 0;
+            DatenSpVariantenNeu = 0;
+            DatenSpVariantenAktiv = 0;
+            DatenSpBandUebernommen = 0;
+            DatenAufschlagVorbelegt = 0;
 
             var l = new Lauf();
             string dbPfad;
@@ -443,6 +546,16 @@ namespace WindowsFormsApplication1
                 l.Zeile("Datenregel R7 (E0): " + DatenQuellPufferFk +
                         " Quellpuffer auf WQ_ID_Puffer aufgelöst, " + DatenQuellPufferOffen +
                         " offen (Bezeichner bleibt Rückfallweg).");
+
+            if (DatenSpVariantenNeu > 0)
+                l.Zeile("Stromspeicher 5.6 (AP3): " + DatenSpVariantenNeu +
+                        " Speichervarianten angelegt, davon " + DatenSpVariantenAktiv +
+                        " als aktive Variante ihres Projekts, " + DatenSpBandUebernommen +
+                        " mit SoC-Band aus den projektweiten Ladeparametern.");
+
+            if (DatenAufschlagVorbelegt > 0)
+                l.Zeile("Preismodell 4.2 (AP4): " + DatenAufschlagVorbelegt +
+                        " Strom-Energieträgerzeilen mit den Aufschlagsvorschlägen vorbelegt.");
 
             return alleOk && StandNachher >= ZIEL_VERSION;
         }
@@ -778,6 +891,693 @@ namespace WindowsFormsApplication1
             }
 
             return ok;
+        }
+
+        // =================================================================================
+        // Schritt 11 - Stromspeicher (AP3): Gerätespalten, zwei neue Tabellen, Ladeparameter
+        // =================================================================================
+
+        // Die Vorgabewerte (SoC-Band, Kapitalzins, Nutzungsdauer) stehen im Modell
+        // StromspeicherVarianteModel - EINE Wahrheit für Migration und Oberfläche.
+        // Eine zweite Liste hier wäre genau die Doppelung, die der Spaltenkatalog für
+        // die Schemaseite schon vermeidet.
+
+        /// <summary>
+        /// Betriebsführung je Speichervariante (Fachkonzept Stromspeicher 7.3), 1:1 zu
+        /// <c>Tab_Energieanlagen</c>.
+        ///
+        /// <b>Kein DEFAULT auf den Ja/Nein-Spalten.</b> Access kennt für YESNO kein NULL;
+        /// jede Zeile dieser Tabelle entsteht ausschließlich über ein INSERT dieses
+        /// Vorhabens (Schritt 11d bzw. <c>StromspeicherVarianteCtrl.Insert</c>), das die
+        /// gewollten Werte AUSDRÜCKLICH setzt. Ein DDL-DEFAULT wäre damit eine zweite,
+        /// stille Wahrheit über dieselbe Vorbelegung - genau das, was die Regel „YESNO
+        /// braucht für ‚an' einen eigenen DML-Schritt" verhindern soll. Der Fall
+        /// <c>Extrapolation_erlaubt</c> (Schritt 7) lag anders: dort belegte ein
+        /// <c>ADD COLUMN</c> BESTEHENDE Zeilen mit False, und nur deshalb brauchte es das
+        /// nachziehende UPDATE.
+        ///
+        /// <b>Einheiten:</b> <c>SoC_Min_Prozent</c>/<c>SoC_Max_Prozent</c> in % der
+        /// Nennkapazität, <c>Kapitalzins</c> in %/a, <c>Nutzungsdauer</c> in Jahren,
+        /// <c>L_P</c> in €/(kW·a), <c>A_Netzlade</c> in ct/kWh - wie an der Oberfläche
+        /// angezeigt. Die Umrechnung auf die Engine-Konvention (Zins als Bruch) macht der
+        /// Controller, nicht die Datenbank.
+        /// </summary>
+        public const string SQL_CREATE_SPVARIANTE =
+            "CREATE TABLE Tab_StromspeicherVariante (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Energieanlage LONG, Betriebsart TEXT(50), " +
+            "PV_Zulaessig YESNO, BHKW_Ueberschuss_Zulaessig YESNO, BHKW_Stromgefuehrt YESNO, " +
+            "Netzentladung YESNO, SoC_Min_Prozent DOUBLE, SoC_Max_Prozent DOUBLE, " +
+            "Berechnungsart TEXT(50), Preisquelle TEXT(50), Kompatibilitaetsmodus YESNO, " +
+            "Kapitalzins DOUBLE, Nutzungsdauer DOUBLE, L_P DOUBLE, A_Netzlade DOUBLE, " +
+            "Aktiv YESNO, Ladeschwellwert DOUBLE)";
+
+        /// <summary>Index über den Anlagenverweis - der einzige Suchweg auf diese Tabelle.</summary>
+        public const string SQL_INDEX_SPVARIANTE =
+            "CREATE INDEX idx_SpVariante ON Tab_StromspeicherVariante (ID_Energieanlage)";
+
+        /// <summary>
+        /// Löschweitergabe von der Anlage auf ihre Variantenzeile. Begründung siehe
+        /// <see cref="SpVarianteTabelle"/>.
+        /// </summary>
+        public const string SQL_FK_SPVARIANTE =
+            "ALTER TABLE Tab_StromspeicherVariante ADD CONSTRAINT FK_SpVariante_Anlage " +
+            "FOREIGN KEY (ID_Energieanlage) REFERENCES Tab_Energieanlagen (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// Kennzahlenblock eines Speicherlaufs (Fachkonzept Stromspeicher 7.1), Muster
+        /// <c>Tab_ErgebnisPhotovoltaik</c>: eine Zeile je Speicheranlage und Lauf,
+        /// ausschließlich SKALARE.
+        ///
+        /// <b>Keine Zeitreihen</b> - AP0-Entscheid vom 16.08.2026 (Frage 2): SoC-Gang,
+        /// Geldwert je Intervall und Netzbezug vor/nach werden bei Bedarf neu gerechnet
+        /// (ein Jahreslauf liegt im Millisekundenbereich) oder als CSV exportiert. Für
+        /// Ergebniszeitreihen gibt es im Bestand kein Muster; <c>Tab_Ergebnis*</c>
+        /// speichert durchgängig Skalare.
+        ///
+        /// <b>Warum Bezeichner, Betriebsart und Berechnungsart mitlaufen.</b> Sie stehen
+        /// auch in Variante und Anlage - aber dort VERÄNDERLICH. Ein Ergebnis muss
+        /// aussagen können, WAS gerechnet wurde, auch nachdem die Variante umgestellt
+        /// wurde; dieselbe Begründung wie beim <c>Bezeichner</c> in
+        /// <c>Tab_ErgebnisPufferspeicher</c>.
+        ///
+        /// <b>Einheiten:</b> Energien kWh/a, Leistungen kW, Geldgrößen €/a bzw. €,
+        /// Quoten und Zeitanteile %, Amortisationen a.
+        /// </summary>
+        public const string SQL_CREATE_ERGEBNISSTROMSPEICHER =
+            "CREATE TABLE Tab_ErgebnisStromspeicher (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Ergebnis LONG, ID_Energieanlage LONG, Bezeichner TEXT(255), " +
+            "Betriebsart TEXT(50), Berechnungsart TEXT(50), " +
+            // Energie (7.1, Block 1)
+            "Ladung_PV DOUBLE, Ladung_BHKW DOUBLE, Ladung_Netz DOUBLE, Ladung_Gesamt DOUBLE, " +
+            "Entladung_Gesamt DOUBLE, Verluste_Gesamt DOUBLE, " +
+            "Netzbezug_Mit DOUBLE, Netzbezug_Ohne DOUBLE, " +
+            "Einspeisung_Mit DOUBLE, Einspeisung_Ohne DOUBLE, " +
+            "Eigenverbrauchsquote DOUBLE, Autarkiegrad DOUBLE, " +
+            // Speicher (7.1, Block 2)
+            "Vollzyklen DOUBLE, SoC_Min DOUBLE, SoC_Mittel DOUBLE, SoC_Max DOUBLE, " +
+            "Zeitanteil_Untergrenze DOUBLE, Zeitanteil_Obergrenze DOUBLE, " +
+            "Zyklen_Hochrechnung DOUBLE, " +
+            // Wirtschaft (7.1, Block 3)
+            "Ertrag_Bezugsersparnis DOUBLE, Ertrag_Verguetung_Entgangen DOUBLE, " +
+            "Ertrag_Netzerloes DOUBLE, Kosten_Ladung DOUBLE, Ertrag_Leistungspreis DOUBLE, " +
+            "Verschleisskosten DOUBLE, Investition DOUBLE, Annuitaet DOUBLE, " +
+            "Jahresueberschuss DOUBLE, Ertrag_Jahr1 DOUBLE, Ertrag_Aequivalent DOUBLE, " +
+            "Amortisation_Statisch DOUBLE, Amortisation_Dynamisch DOUBLE, " +
+            "Kapitalwert DOUBLE, Preisversion TEXT(50))";
+
+        /// <summary>Index über den Ergebniskopf - der Lesezugriff von <c>ErgebnisCtrl.Load</c>.</summary>
+        public const string SQL_INDEX_ERGSTROMSPEICHER =
+            "CREATE INDEX idx_ErgStromspeicher ON Tab_ErgebnisStromspeicher (ID_Ergebnis)";
+
+        /// <summary>
+        /// Löschweitergabe vom Ergebniskopf auf die Speicherzeilen - dieselbe
+        /// Konstruktion wie <c>FK_ErgPuffer</c> (Konzept 13.7).
+        /// </summary>
+        public const string SQL_FK_ERGSTROMSPEICHER =
+            "ALTER TABLE Tab_ErgebnisStromspeicher ADD CONSTRAINT FK_ErgStromspeicher " +
+            "FOREIGN KEY (ID_Ergebnis) REFERENCES Tab_Ergebnis (ID) ON DELETE CASCADE";
+
+        private const string SQL_INSERT_SPVARIANTE =
+            "INSERT INTO Tab_StromspeicherVariante (ID, ID_Energieanlage, Betriebsart, " +
+            "PV_Zulaessig, BHKW_Ueberschuss_Zulaessig, BHKW_Stromgefuehrt, Netzentladung, " +
+            "SoC_Min_Prozent, SoC_Max_Prozent, Berechnungsart, Preisquelle, " +
+            "Kompatibilitaetsmodus, Kapitalzins, Nutzungsdauer, L_P, A_Netzlade, " +
+            "Aktiv, Ladeschwellwert) " +
+            "VALUES (?,?,?, ?,?,?,?, ?,?, ?,?, ?,?,?,?,?, ?,?)";
+
+        /// <summary>
+        /// <b>Schritt 11 (AP3, Stromspeicher).</b> Vier Teile in fester Reihenfolge -
+        /// dieselbe Bauform wie Schritt 4:
+        ///
+        ///   <b>11a</b> Gerätespalten in <c>Tab_Stromspeicher</c> und
+        ///   <c>Tab_Stromspeicher_STAMM</c>, additiv aus
+        ///   <see cref="SchemaKatalog.Schritt11_Stromspeicher"/>.
+        ///
+        ///   <b>11b</b> <c>Tab_StromspeicherVariante</c> samt Index und Löschweitergabe.
+        ///   HART: schlägt die Tabelle fehl, bricht der Schritt sofort ab - 11d schreibt
+        ///   in genau diese Tabelle, ein Weiterlaufen würde nur Folgefehler protokollieren.
+        ///
+        ///   <b>11c</b> <c>Tab_ErgebnisStromspeicher</c> samt Index und Löschweitergabe.
+        ///
+        ///   <b>11d</b> das einmalige DML: für jede vorhandene Speicheranlage eine
+        ///   Variantenzeile, vorbelegt aus den projektweiten Ladeparametern
+        ///   (Fachkonzept 5.6).
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): 11a und die beiden CREATE TABLE
+        /// gehen über Vorhandenes hinweg, 11d legt nur an, wo für die Anlage noch keine
+        /// Variante existiert.
+        ///
+        /// <b>Ergebnisneutral.</b> Bis AP3b wertet kein Rechenweg die neuen Tabellen aus;
+        /// <c>StromspeicherSimCtrl</c> arbeitet weiter mit seinen Konstanten. Der Schritt
+        /// legt also Struktur und Vorbelegung an, ohne einen laufenden Rechenweg zu ändern.
+        /// </summary>
+        private static bool Schritt_11_Stromspeicher(Lauf l)
+        {
+            // --- 11a) Gerätetechnik an Projekt- und Katalogtabelle -------------------
+            bool ok = SpaltenAnlegen(l, SchemaKatalog.Schritt11_Stromspeicher);
+
+            // --- 11b) Betriebsführung je Variante ------------------------------------
+            if (!SpVarianteTabelle(l)) return false;
+
+            // --- 11c) Kennzahlenblock der Ergebnisseite -------------------------------
+            ok &= SpErgebnisTabelle(l);
+
+            // --- 11d) Übernahme der projektweiten Ladeparameter (Fachkonzept 5.6) -----
+            ok &= SpLadeparameterUebernehmen(l);
+
+            return ok;
+        }
+
+        /// <summary>
+        /// 11b: <c>Tab_StromspeicherVariante</c>.
+        ///
+        /// <b>Löschweitergabe auf <c>Tab_Energieanlagen</c>.</b> Anders als bei den
+        /// Puffer-Beziehungen aus Schritt 4 steht hier kein Erzeuger auf der Kindseite,
+        /// sondern eine reine Eigenschaftszeile der Anlage - sie soll mit ihr
+        /// verschwinden. Ohne Weitergabe blieben Waisen stehen, die wegen der
+        /// MAX(ID)+1-Vergabe später auf FREMDE Anlagen zeigen würden; dieselbe Begründung
+        /// wie bei <c>FK_ErgPuffer</c> (Konzept 6.6).
+        ///
+        /// <b>Index und Beziehung sind WEICH.</b> Nur die Tabelle ist tragend. Access
+        /// verlangt für den Fremdschlüssel einen eindeutigen Index über
+        /// <c>Tab_Energieanlagen.ID</c>; der Primärschlüssel dieser Tabelle ist
+        /// zusammengesetzt (ID, ID_Projekt), die Eindeutigkeit von ID allein hängt am
+        /// Zusatzindex <c>Tab_WaermeerzeugerID</c>. Fehlt der auf einer fremden
+        /// Datenbank, soll das die ganze Migration nicht anhalten - die Tabelle ist dann
+        /// vorhanden und benutzbar, nur das Aufräumen bleibt Sache des Codes.
+        /// </summary>
+        private static bool SpVarianteTabelle(Lauf l)
+        {
+            if (!Ddl(l, SQL_CREATE_SPVARIANTE, "Tabelle Tab_StromspeicherVariante")) return false;
+
+            if (!Ddl(l, SQL_INDEX_SPVARIANTE, "Index idx_SpVariante"))
+                l.Notiz("Index idx_SpVariante fehlt - nur ein Tempoverlust beim Lesen der Variante.");
+
+            if (!Ddl(l, SQL_FK_SPVARIANTE, "Beziehung FK_SpVariante_Anlage (mit Löschweitergabe)"))
+                l.Notiz("Beziehung FK_SpVariante_Anlage fehlt - Variantenzeilen gelöschter Anlagen " +
+                        "müssen dann vom Programm abgeräumt werden " +
+                        "(StromspeicherVarianteCtrl.DeleteByEnergieanlage).");
+
+            return true;
+        }
+
+        /// <summary>
+        /// 11c: <c>Tab_ErgebnisStromspeicher</c> - Aufbau exakt wie Schritt 3 für
+        /// <c>Tab_ErgebnisPufferspeicher</c>, samt Löschweitergabe an
+        /// <c>Tab_Ergebnis</c>. Die räumt das <c>DELETE FROM Tab_Ergebnis</c> in
+        /// <c>ErgebnisCtrl.Save</c> mit ab; ohne sie entstünden Waisenzeilen, die wegen
+        /// der MAX(ID)+1-Vergabe später auf fremde Läufe zeigen würden (Konzept 13.7).
+        /// </summary>
+        private static bool SpErgebnisTabelle(Lauf l)
+        {
+            bool ok = Ddl(l, SQL_CREATE_ERGEBNISSTROMSPEICHER, "Tabelle Tab_ErgebnisStromspeicher");
+
+            ok &= Ddl(l, SQL_INDEX_ERGSTROMSPEICHER, "Index idx_ErgStromspeicher");
+
+            ok &= Ddl(l, SQL_FK_ERGSTROMSPEICHER, "Beziehung FK_ErgStromspeicher (mit Löschweitergabe)");
+
+            return ok;
+        }
+
+        /// <summary>
+        /// <b>11d - Migration der projektweiten Ladeparameter</b> (Fachkonzept
+        /// Stromspeicher 5.6).
+        ///
+        /// Für jede Zeile in <c>Tab_Energieanlagen</c> mit
+        /// <c>ID_Type IN (SP_TYP, REF_SP_TYP)</c> entsteht eine Variantenzeile,
+        /// vorbelegt mit den projektweiten Werten aus <c>Tab_Einstellungen</c>.
+        ///
+        /// <b>Risikofrei</b> (Umsetzungskonzept 1.2 g): Die vier Altfelder haben heute
+        /// KEINEN einzigen Simulationszugriff - sie werden nur in
+        /// <c>KonfigurationCtrl</c> und der Parameter-UI geführt. Die Übernahme kann
+        /// deshalb kein Ergebnis verändern; sie hebt Werte, die bisher wirkungslos waren,
+        /// auf die Ebene, auf der sie ab AP3b wirken.
+        ///
+        /// <b>Die Altfelder bleiben stehen</b> und werden zu Vorgabewerten für neue
+        /// Varianten umdeklariert (5.6 Punkt 3). <c>Tab_Einstellungen</c> wird von diesem
+        /// Schritt NICHT angefasst - weder gelöscht noch beschrieben; die Ordinalkette in
+        /// <c>KonfigurationCtrl.ReadSingle</c> (row[0…22]) bleibt damit unberührt.
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Es entsteht nur eine Zeile, wo die
+        /// Anlage noch keine Variante hat; und „aktiv" wird nur vergeben, wenn das
+        /// Projekt noch keine aktive Variante führt.
+        /// </summary>
+        private static bool SpLadeparameterUebernehmen(Lauf l)
+        {
+            DataTable projekte = Abfrage(l, "SELECT ID FROM Tab_Projekt ORDER BY ID");
+            if (projekte == null)
+            {
+                l.Notiz("Tab_Projekt ist nicht lesbar - Teil 11d wurde nicht ausgeführt.");
+                return false;
+            }
+
+            bool ok = true;
+            foreach (DataRow p in projekte.Rows)
+            {
+                int idProjekt = Zahl(p["ID"]);
+                if (idProjekt <= 0) continue;
+
+                if (!SpVariantenFuerProjekt(l, idProjekt)) ok = false;
+            }
+
+            l.Notiz("11d: " + DatenSpVariantenNeu + " Speichervarianten angelegt, " +
+                    DatenSpVariantenAktiv + " davon aktiv, " + DatenSpBandUebernommen +
+                    " mit übernommenem SoC-Band");
+            return ok;
+        }
+
+        private static bool SpVariantenFuerProjekt(Lauf l, int idProjekt)
+        {
+            DataTable anlagen = Abfrage(l,
+                "SELECT ID, Bezeichner FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? AND ID_Type IN (" +
+                WizardItemClass.SP_TYP.ToString(CultureInfo.InvariantCulture) + ", " +
+                WizardItemClass.REF_SP_TYP.ToString(CultureInfo.InvariantCulture) + ") ORDER BY ID",
+                new OleDbParameter("@proj", idProjekt));
+
+            if (anlagen == null) return false;
+            if (anlagen.Rows.Count == 0) return true;   // Projekt ohne Speicher - nichts zu tun
+
+            double socMin, socMax, schwelle;
+            bool bandUebernommen;
+            SpLadeparameterLesen(l, idProjekt, out socMin, out socMax, out bandUebernommen, out schwelle);
+
+            // Führt das Projekt bereits eine aktive Variante? Dann wird keine zweite
+            // gesetzt - der Anwenderwille aus einem früheren Lauf bleibt stehen.
+            bool aktivVergeben = Zahl(Scalar(l,
+                "SELECT COUNT(*) FROM Tab_StromspeicherVariante AS v " +
+                "INNER JOIN Tab_Energieanlagen AS a ON v.ID_Energieanlage = a.ID " +
+                "WHERE a.ID_Projekt = ? AND v.Aktiv = TRUE",
+                new OleDbParameter("@proj", idProjekt))) > 0;
+
+            bool ok = true;
+            foreach (DataRow r in anlagen.Rows)
+            {
+                int idAnlage = Zahl(r["ID"]);
+                if (idAnlage <= 0) continue;
+
+                // IDEMPOTENZ: eine bestehende Variante wird nie überschrieben.
+                if (Zahl(Scalar(l, "SELECT COUNT(*) FROM Tab_StromspeicherVariante WHERE ID_Energieanlage = ?",
+                                new OleDbParameter("@anl", idAnlage))) > 0)
+                    continue;
+
+                bool aktiv = !aktivVergeben;
+                int neueId = Zahl(Scalar(l, "SELECT MAX(ID) FROM Tab_StromspeicherVariante")) + 1;
+
+                int betroffen = NonQuery(l, SQL_INSERT_SPVARIANTE,
+                    Par("@id", OleDbType.Integer, neueId),
+                    Par("@anl", OleDbType.Integer, idAnlage),
+                    Par("@bart", OleDbType.VarWChar, DbWerte.SP_BETRIEBSART_GRUENSTROM),
+                    Par("@pv", OleDbType.Boolean, true),      // Grünstrom-Vorbelegung: PV
+                    Par("@bhkw", OleDbType.Boolean, true),    //   und BHKW-Überschuss an
+                    Par("@bhkwstrom", OleDbType.Boolean, false),
+                    Par("@netzent", OleDbType.Boolean, false),
+                    Par("@socmin", OleDbType.Double, socMin),
+                    Par("@socmax", OleDbType.Double, socMax),
+                    Par("@rart", OleDbType.VarWChar, DbWerte.SP_BERECHNUNG_DAUERNUTZUNG),
+                    Par("@pquelle", OleDbType.VarWChar, DbWerte.SP_PREISQUELLE_FIXPREIS),
+                    Par("@kompat", OleDbType.Boolean, false),
+                    Par("@zins", OleDbType.Double, StromspeicherVarianteModel.KAPITALZINS_VORGABE),
+                    Par("@nutz", OleDbType.Double, StromspeicherVarianteModel.NUTZUNGSDAUER_VORGABE),
+                    Par("@lp", OleDbType.Double, 0.0),
+                    Par("@anetz", OleDbType.Double, 0.0),
+                    Par("@aktiv", OleDbType.Boolean, aktiv),
+                    Par("@schwelle", OleDbType.Double, schwelle));
+
+                if (betroffen < 0) { ok = false; continue; }
+
+                DatenSpVariantenNeu++;
+                if (bandUebernommen) DatenSpBandUebernommen++;
+                if (aktiv) { DatenSpVariantenAktiv++; aktivVergeben = true; }
+
+                l.Notiz("Projekt " + idProjekt + " 11d: Anlage " + idAnlage + " (" +
+                        Txt(r["Bezeichner"]) + ") -> Variante " + neueId +
+                        ", SoC " + Anzeige(socMin) + "…" + Anzeige(socMax) + " %" +
+                        (aktiv ? ", aktiv" : ""));
+            }
+
+            return ok;
+        }
+
+        /// <summary>
+        /// Liest das SoC-Band und den Ladeschwellwert eines Projekts aus
+        /// <c>Tab_Einstellungen</c>.
+        ///
+        /// <b>Nur die Einheit „%" ist übernehmbar.</b> Die Auswahlliste der Oberfläche
+        /// bietet „%" und „kWh/a"; eine kWh-Angabe ließe sich nur mit der Gerätekapazität
+        /// umrechnen, und die steht je Anlage anders. Bei „kWh/a", bei unplausiblem Band
+        /// (nicht 0 ≤ min &lt; max ≤ 100) und bei nie gepflegten Werten gilt deshalb die
+        /// Vorgabe 10/90 % aus Fachkonzept 5.1 - protokolliert, nicht stillschweigend.
+        ///
+        /// <b><c>Ladeleistung_Max</c> wird ausschließlich protokolliert.</b> Die
+        /// Ladeleistung ist eine Geräteeigenschaft und steht bereits in
+        /// <c>Tab_Stromspeicher.Leistung</c> (Fachkonzept 5.1: genau EIN Leistungsfeld
+        /// für Laden und Entladen). Sie in die Variante zu kopieren hieße, zwei
+        /// Wahrheiten über dieselbe Größe anzulegen.
+        /// </summary>
+        private static void SpLadeparameterLesen(Lauf l, int idProjekt,
+                                                 out double socMin, out double socMax,
+                                                 out bool uebernommen, out double schwelle)
+        {
+            socMin = StromspeicherVarianteModel.SOC_MIN_VORGABE;
+            socMax = StromspeicherVarianteModel.SOC_MAX_VORGABE;
+            uebernommen = false;
+            schwelle = 0.0;
+
+            DataTable dt = Abfrage(l,
+                "SELECT Ladefuellstand_Min, Ladefuellstand_Min_Auswahl, Ladefuellstand_Max, " +
+                "Ladefuellstand_Max_Auswahl, Ladeleistung_Max, Ladeschwellwert " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                new OleDbParameter("@proj", idProjekt));
+
+            if (dt == null || dt.Rows.Count == 0)
+            {
+                l.Notiz("Projekt " + idProjekt + " 11d: kein Einstellungssatz - SoC-Band nach Vorgabe " +
+                        Anzeige(socMin) + "/" + Anzeige(socMax) + " %");
+                return;
+            }
+
+            DataRow r = dt.Rows[0];
+            schwelle = Kommazahl(Wert(r, "Ladeschwellwert"));
+
+            double leistung = Kommazahl(Wert(r, "Ladeleistung_Max"));
+            if (leistung > 0.0)
+                l.Notiz("Projekt " + idProjekt + " 11d: Ladeleistung_Max = " + Anzeige(leistung) +
+                        " nur protokolliert - die Leistung bleibt am Gerät (Tab_Stromspeicher.Leistung).");
+
+            double min = Kommazahl(Wert(r, "Ladefuellstand_Min"));
+            double max = Kommazahl(Wert(r, "Ladefuellstand_Max"));
+            string einheitMin = Txt(Wert(r, "Ladefuellstand_Min_Auswahl")).Trim();
+            string einheitMax = Txt(Wert(r, "Ladefuellstand_Max_Auswahl")).Trim();
+
+            bool inProzent =
+                (einheitMin.Length == 0 || einheitMin == DbWerte.SP_EINHEIT_PROZENT) &&
+                (einheitMax.Length == 0 || einheitMax == DbWerte.SP_EINHEIT_PROZENT);
+
+            if (!inProzent)
+            {
+                l.Notiz("Projekt " + idProjekt + " 11d: Ladefüllstand in '" + einheitMin + "'/'" +
+                        einheitMax + "' statt '" + DbWerte.SP_EINHEIT_PROZENT +
+                        "' - nicht umrechenbar, SoC-Band nach Vorgabe " +
+                        Anzeige(socMin) + "/" + Anzeige(socMax) + " %");
+                return;
+            }
+
+            if (!(min >= 0.0 && max > min && max <= 100.0))
+            {
+                l.Notiz("Projekt " + idProjekt + " 11d: SoC-Band nach Vorgabe " +
+                        Anzeige(socMin) + "/" + Anzeige(socMax) + " % (projektweite Werte " +
+                        Anzeige(min) + "/" + Anzeige(max) + " nicht verwendbar)");
+                return;
+            }
+
+            socMin = min;
+            socMax = max;
+            uebernommen = true;
+        }
+
+        // =================================================================================
+        // Schritt 12 - Preis- und Vergütungsmodell (AP4): Aufschlagsspalten,
+        //              Preisreihe, Kostenprofil, Vorbelegung
+        // =================================================================================
+
+        // Die Vorschlagswerte des Fachkonzepts 4.2 stehen im Modell StromAufschlagModel -
+        // EINE Wahrheit für Migration, Leseseite und Oberfläche, dieselbe Aufteilung wie
+        // bei StromspeicherVarianteModel und Schritt 11d.
+
+        /// <summary>
+        /// Kopf einer Preisreihe (Fachkonzept 4.1 a / 8.4), Muster
+        /// <c>Tab_Stromganglinie</c>.
+        ///
+        /// <b>Warum eine eigene Tabelle und nicht die Ganglinie.</b> Eine Ganglinie trägt
+        /// eine LEISTUNG bzw. Energiemenge je Intervall, eine Preisreihe einen Preis in
+        /// ct/kWh. Beides in dieselbe Tabelle zu legen hieße, die Einheit nur noch am
+        /// Bezeichner zu erkennen - und die Ganglinientabelle wird vom Lastgangimport
+        /// (AP5) gerade erweitert.
+        ///
+        /// <c>ID_Projekt</c> NULL bedeutet <b>Stammreihe</b>: eine importierte
+        /// Spotreihe, die allen Projekten zur Verfügung steht. Damit gibt es keine
+        /// zweite <c>_STAMM</c>-Tabelle und keinen Kopiervorgang - eine Preisreihe ist
+        /// unveränderliches Marktdatum, kein projektspezifisch anzupassender Stammsatz.
+        ///
+        /// <c>Aufloesung</c> trägt <c>DbWerte.PREISREIHE_AUFLOESUNG_*</c> (Stunde oder
+        /// Viertelstunde), <c>Einheit</c> die Anzeige- und Rechen-Einheit (ct/kWh).
+        /// Beide sind eingefrorene Persistenzwerte, keine Anzeigetexte.
+        /// </summary>
+        public const string SQL_CREATE_PREISREIHE =
+            "CREATE TABLE Tab_Preisreihe (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Projekt LONG, Bezeichner TEXT(255), Jahr LONG, " +
+            "Aufloesung TEXT(50), Einheit TEXT(50))";
+
+        /// <summary>Index über den Projektbezug - der Suchweg der Auswahllisten.</summary>
+        public const string SQL_INDEX_PREISREIHE =
+            "CREATE INDEX idx_Preisreihe ON Tab_Preisreihe (ID_Projekt)";
+
+        /// <summary>
+        /// Werte einer Preisreihe, Muster <c>Tab_StromganglinieDaten</c>: eine Zeile je
+        /// Intervall, Reihenfolge = ID-Reihenfolge.
+        ///
+        /// <b>ID explizit als LONG, nicht als AutoWert.</b> Die Bestandstabellen der
+        /// Ganglinien führen COUNTER, das Hausmuster für NEUE Tabellen ist seit ADR-001
+        /// aber die explizite Vergabe über MAX(ID)+1 (Fachkonzept 8.4). Für eine
+        /// Zeitreihe ist das sogar der sicherere Weg: Die Reihenfolge der 35.040 Werte
+        /// hängt dann nicht mehr davon ab, dass der Provider AutoWerte aufsteigend
+        /// vergibt.
+        /// </summary>
+        public const string SQL_CREATE_PREISREIHEDATEN =
+            "CREATE TABLE Tab_PreisreiheDaten (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Preisreihe LONG, Wert DOUBLE)";
+
+        /// <summary>Index über den Kopfverweis - der einzige Suchweg auf die Werte.</summary>
+        public const string SQL_INDEX_PREISREIHEDATEN =
+            "CREATE INDEX idx_PreisreiheDaten ON Tab_PreisreiheDaten (ID_Preisreihe)";
+
+        /// <summary>
+        /// Löschweitergabe vom Kopf auf die Werte - ohne sie blieben nach dem Löschen
+        /// einer Reihe bis zu 35.040 Waisenzeilen stehen, die wegen der
+        /// MAX(ID)+1-Vergabe später auf eine FREMDE Reihe zeigen würden (dieselbe
+        /// Begründung wie bei <c>FK_ErgPuffer</c>, Konzept 13.7).
+        /// </summary>
+        public const string SQL_FK_PREISREIHEDATEN =
+            "ALTER TABLE Tab_PreisreiheDaten ADD CONSTRAINT FK_PreisreiheDaten " +
+            "FOREIGN KEY (ID_Preisreihe) REFERENCES Tab_Preisreihe (ID) ON DELETE CASCADE";
+
+        /// <summary>
+        /// Kostenprofil (Fachkonzept 4.1 b): 12 Monats- und 7 × 24 Wochenwerte als
+        /// <c>";"</c>-Zeichenketten, exakt die Ablage von
+        /// <c>Tab_Energieanlagen.WQ_Monatswerte</c>/<c>WQ_Wochenwerte</c> und damit das
+        /// Persistenzformat, das <c>Form_Quellprofil</c> schon bedient.
+        ///
+        /// <b>TEXT(255) und MEMO</b> wie im Spaltenkatalog: 12 Werte passen in 255
+        /// Zeichen, 168 nicht.
+        /// </summary>
+        public const string SQL_CREATE_KOSTENPROFIL =
+            "CREATE TABLE Tab_Kostenprofil (ID LONG NOT NULL PRIMARY KEY, " +
+            "ID_Projekt LONG, Bezeichner TEXT(255), Monatswerte TEXT(255), Wochenwerte MEMO)";
+
+        /// <summary>Index über den Projektbezug.</summary>
+        public const string SQL_INDEX_KOSTENPROFIL =
+            "CREATE INDEX idx_Kostenprofil ON Tab_Kostenprofil (ID_Projekt)";
+
+        private const string CARRIER_STROM = "ELECTRICITY";
+
+        /// <summary>
+        /// <b>Schritt 12 (AP4, Preis- und Vergütungsmodell).</b> Vier Teile in fester
+        /// Reihenfolge - dieselbe Bauform wie Schritt 11:
+        ///
+        ///   <b>12a</b> Aufschlags- und Vergütungsspalten in
+        ///   <c>energy_project_settings</c>, additiv aus
+        ///   <see cref="SchemaKatalog.Schritt12_Preismodell"/>. HART: Ohne diese Spalten
+        ///   hätte 12d kein Ziel.
+        ///
+        ///   <b>12b</b> <c>Tab_Preisreihe</c> + <c>Tab_PreisreiheDaten</c> samt Index
+        ///   und Löschweitergabe.
+        ///
+        ///   <b>12c</b> <c>Tab_Kostenprofil</c> samt Index.
+        ///
+        ///   <b>12d</b> das einmalige DML: Vorbelegung der Aufschlagskomponenten für
+        ///   den Strom-Carrier.
+        ///
+        /// <b>Ergebnisneutral für den Bestand?</b> Nein - und das ist beabsichtigt. Bis
+        /// AP4 rechnete <c>StromspeicherSimCtrl</c> mit dem Platzhalter 20 ct/kWh
+        /// (<c>FIXPREIS_BEZUG_CT_KWH</c>); ab jetzt gilt der gepflegte Arbeitspreis des
+        /// Strom-Carriers zuzüglich der aktiven Aufschläge. Die Vergütungssätze werden
+        /// dagegen mit 5 ct/kWh vorbelegt - genau dem bisherigen Platzhalter -, damit
+        /// sich an dieser Stelle nichts ändert, solange der Anwender nichts pflegt.
+        /// </summary>
+        private static bool Schritt_12_Preismodell(Lauf l)
+        {
+            // --- 12a) Aufschlags- und Vergütungsspalten -------------------------------
+            if (!SpaltenAnlegen(l, SchemaKatalog.Schritt12_Preismodell)) return false;
+
+            // --- 12b) Preisreihe (Kopf + Werte) --------------------------------------
+            bool ok = PreisreiheTabellen(l);
+
+            // --- 12c) Kostenprofil ---------------------------------------------------
+            ok &= KostenprofilTabelle(l);
+
+            // --- 12d) Vorbelegung der Aufschlagskomponenten (Fachkonzept 4.2) --------
+            ok &= AufschlagVorbelegen(l);
+            ok &= AufschlagFlagVorbelegen(l);
+
+            return ok;
+        }
+
+        /// <summary>
+        /// 12b: <c>Tab_Preisreihe</c> und <c>Tab_PreisreiheDaten</c>.
+        ///
+        /// <b>Index und Beziehung sind WEICH</b> - nur die beiden Tabellen sind tragend.
+        /// Fehlt die Löschweitergabe auf einer fremden Datenbank, bleibt die Ablage
+        /// benutzbar; das Aufräumen übernimmt dann <c>PreisreiheCtrl.Delete</c>, das die
+        /// Werte ohnehin ausdrücklich mitlöscht (dieselbe Vorsorge wie bei
+        /// <c>FK_SpVariante_Anlage</c>).
+        /// </summary>
+        private static bool PreisreiheTabellen(Lauf l)
+        {
+            if (!Ddl(l, SQL_CREATE_PREISREIHE, "Tabelle Tab_Preisreihe")) return false;
+
+            if (!Ddl(l, SQL_INDEX_PREISREIHE, "Index idx_Preisreihe"))
+                l.Notiz("Index idx_Preisreihe fehlt - nur ein Tempoverlust beim Auflisten der Reihen.");
+
+            if (!Ddl(l, SQL_CREATE_PREISREIHEDATEN, "Tabelle Tab_PreisreiheDaten")) return false;
+
+            if (!Ddl(l, SQL_INDEX_PREISREIHEDATEN, "Index idx_PreisreiheDaten"))
+                l.Notiz("Index idx_PreisreiheDaten fehlt - das Lesen einer Reihe wird spürbar langsamer.");
+
+            if (!Ddl(l, SQL_FK_PREISREIHEDATEN, "Beziehung FK_PreisreiheDaten (mit Löschweitergabe)"))
+                l.Notiz("Beziehung FK_PreisreiheDaten fehlt - Werte gelöschter Reihen müssen dann vom " +
+                        "Programm abgeräumt werden (PreisreiheCtrl.Delete tut das ohnehin).");
+
+            return true;
+        }
+
+        /// <summary>12c: <c>Tab_Kostenprofil</c>. Der Index ist weich, die Tabelle tragend.</summary>
+        private static bool KostenprofilTabelle(Lauf l)
+        {
+            if (!Ddl(l, SQL_CREATE_KOSTENPROFIL, "Tabelle Tab_Kostenprofil")) return false;
+
+            if (!Ddl(l, SQL_INDEX_KOSTENPROFIL, "Index idx_Kostenprofil"))
+                l.Notiz("Index idx_Kostenprofil fehlt - nur ein Tempoverlust beim Auflisten der Profile.");
+
+            return true;
+        }
+
+        /// <summary>
+        /// <b>12d - Vorbelegung der Aufschlagskomponenten</b> (Fachkonzept 4.2).
+        ///
+        /// Für jede Zeile in <c>energy_project_settings</c>, deren Energieträger das
+        /// Preismodell <c>ELECTRICITY</c> führt, werden die fünf Komponenten mit den
+        /// Vorschlagswerten belegt und aktiviert, der Modus auf „aufgeschlüsselt"
+        /// gesetzt und die beiden Vergütungssätze vorbelegt.
+        ///
+        /// <b>NUR Strom.</b> Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe und
+        /// Vertrieb sind Bestandteile eines STROMpreises. Sie auf Gas oder Fernwärme zu
+        /// legen wäre eine fachliche Falschaussage - die Spalten bleiben dort NULL, und
+        /// die Leseseite behandelt NULL als „nicht gepflegt".
+        ///
+        /// <b>Idempotent</b> (unabhängig vom Marker): Vorbelegt wird ausschließlich, wo
+        /// <c>Aufschlag_Netzentgelt</c> noch NULL ist - also genau einmal je Zeile. Eine
+        /// vom Anwender geänderte oder bewusst auf 0 gesetzte Komponente wird nie
+        /// überschrieben.
+        ///
+        /// <b>Warum je Träger-ID statt einer Unterabfrage.</b> Jet/ACE bindet Parameter
+        /// in <c>UPDATE … WHERE … IN (SELECT …)</c> nicht zuverlässig positionsgleich.
+        /// Zwei einfache Anweisungen sind hier nicht nur sicherer, sie erlauben auch die
+        /// Protokollzeile je Energieträger.
+        /// </summary>
+        private static bool AufschlagVorbelegen(Lauf l)
+        {
+            DataTable traeger = Abfrage(l,
+                "SELECT id, name FROM energy_carrier WHERE pricing_model = ? ORDER BY id",
+                Par("@pm", OleDbType.VarWChar, CARRIER_STROM));
+
+            if (traeger == null)
+            {
+                l.Notiz("energy_carrier ist nicht lesbar - Teil 12d wurde nicht ausgeführt.");
+                return false;
+            }
+
+            if (traeger.Rows.Count == 0)
+            {
+                l.Notiz("12d: kein Energieträger mit pricing_model = " + CARRIER_STROM +
+                        " - nichts vorzubelegen.");
+                return true;
+            }
+
+            const string sql =
+                "UPDATE energy_project_settings SET " +
+                "Aufschlag_Netzentgelt = ?, Aufschlag_Netzentgelt_Aktiv = TRUE, " +
+                "Aufschlag_Umlagen = ?, Aufschlag_Umlagen_Aktiv = TRUE, " +
+                "Aufschlag_Stromsteuer = ?, Aufschlag_Stromsteuer_Aktiv = TRUE, " +
+                "Aufschlag_Konzession = ?, Aufschlag_Konzession_Aktiv = TRUE, " +
+                "Aufschlag_Vertrieb = ?, Aufschlag_Vertrieb_Aktiv = TRUE, " +
+                "Aufschlag_Modus = ?, Aufschlag_Override = ?, " +
+                "Verguetung_PV = ?, Verguetung_BHKW = ? " +
+                "WHERE Aufschlag_Netzentgelt IS NULL AND [ID_Energieträger] = ?";
+
+            bool ok = true;
+            foreach (DataRow r in traeger.Rows)
+            {
+                int idTraeger = Zahl(r["id"]);
+                if (idTraeger <= 0) continue;
+
+                int betroffen = NonQuery(l, sql,
+                    Par("@netz", OleDbType.Double, StromAufschlagModel.NETZENTGELT_VORGABE),
+                    Par("@uml", OleDbType.Double, StromAufschlagModel.UMLAGEN_VORGABE),
+                    Par("@steuer", OleDbType.Double, StromAufschlagModel.STROMSTEUER_REGELFALL),
+                    Par("@konz", OleDbType.Double, StromAufschlagModel.KONZESSION_VORGABE),
+                    Par("@vertr", OleDbType.Double, StromAufschlagModel.VERTRIEB_VORGABE),
+                    Par("@modus", OleDbType.VarWChar, DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT),
+                    Par("@over", OleDbType.Double, 0.0),
+                    Par("@vpv", OleDbType.Double, StromAufschlagModel.VERGUETUNG_PV_VORGABE),
+                    Par("@vbhkw", OleDbType.Double, StromAufschlagModel.VERGUETUNG_BHKW_VORGABE),
+                    Par("@eid", OleDbType.Integer, idTraeger));
+
+                if (betroffen < 0) { ok = false; continue; }
+                if (betroffen == 0) continue;
+
+                DatenAufschlagVorbelegt += betroffen;
+                l.Notiz("12d: " + betroffen + " Projektzeilen des Energieträgers " + idTraeger +
+                        " (" + Txt(r["name"]) + ") mit " +
+                        Anzeige(StromAufschlagModel.SUMME_REGELFALL) + " ct/kWh Aufschlag vorbelegt " +
+                        "(" + DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT + ", Vergütung je " +
+                        Anzeige(StromAufschlagModel.VERGUETUNG_PV_VORGABE) + " ct/kWh).");
+            }
+
+            return ok;
+        }
+
+        /// <summary>
+        /// <b>12d, zweiter Teil</b>: Das Flag „Aufschlag anwenden" jeder vorhandenen
+        /// Speichervariante auf WAHR setzen.
+        ///
+        /// <b>Warum das UPDATE nötig ist</b> — dieselbe Lage wie bei
+        /// <c>Extrapolation_erlaubt</c> in Schritt 7: <c>ALTER TABLE … ADD COLUMN …
+        /// YESNO</c> belegt bestehende Zeilen in Access mit <c>False</c>. Ohne dieses
+        /// UPDATE stünde jede Altvariante auf „keine Aufschläge", und der Bezugspreis
+        /// wäre der nackte Arbeitspreis — eine stille Ergebnisänderung genau
+        /// entgegengesetzt zur Vorgabe des Fachkonzepts 4.2 („Fixpreis = Arbeitspreis +
+        /// aktive Aufschläge").
+        ///
+        /// <b>Einmalig</b> (Marker 11 → 12): Ein später vom Anwender gesetztes „nein"
+        /// wird nicht wieder überschrieben. Varianten, die danach neu entstehen, belegt
+        /// <c>StromspeicherVarianteModel</c> selbst mit WAHR vor.
+        /// </summary>
+        private static bool AufschlagFlagVorbelegen(Lauf l)
+        {
+            int betroffen = NonQuery(l,
+                "UPDATE [" + SchemaKatalog.TAB_STROMSPEICHERVARIANTE + "] SET [" +
+                SchemaKatalog.SPALTE_VARIANTE_AUFSCHLAG_ANWENDEN + "] = TRUE");
+
+            if (betroffen < 0)
+            {
+                l.Notiz("Vorbelegung Aufschlag_Anwenden: UPDATE fehlgeschlagen");
+                return false;
+            }
+
+            l.Notiz("12d: " + betroffen + " Speichervarianten auf Aufschlag_Anwenden = WAHR vorbelegt " +
+                    "(Fachkonzept 4.2: Fixpreis = Arbeitspreis + aktive Aufschläge).");
+            return true;
         }
 
         /// <summary>

@@ -260,6 +260,19 @@ namespace WindowsFormsApplication1
             frm.ShowDialog();
         }
 
+        /// <summary>
+        /// Öffnet die Lastspitzenkappung (Peak-Shaving) – eigener Einstieg nach
+        /// Fachkonzept 6.4 (AP7). Ein geöffnetes Projekt ist ausdrücklich nicht
+        /// nötig: ohne Projekt stehen Stammganglinien und der Direktimport zur
+        /// Verfügung, deshalb hier auch keine Projektprüfung.
+        /// </summary>
+        public void PeakShavingBearbeiten()
+        {
+            int idProjekt = Program.startfrm != null ? Program.startfrm.m_ID_Projekt : 0;
+            using (Form_PeakShaving frm = new Form_PeakShaving(idProjekt))
+                frm.ShowDialog();
+        }
+
         public void GebaeudeBearbeiten()
         {
             Form_Gebaeude frm = new Form_Gebaeude();

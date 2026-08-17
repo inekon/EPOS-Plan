@@ -261,5 +261,122 @@ namespace WindowsFormsApplication1
         public const string BM_TYP_LAUFZEIT = "Laufzeit";
         public const string BM_TYP_LEISTUNG = "Leistung";
         public const string BM_TYP_PV = "PV";
+
+        // =====================================================================
+        // Stromspeicher — Betriebsart nach der Quellen-Matrix
+        //   Tab_StromspeicherVariante.Betriebsart  (Fachkonzept Stromspeicher 2.1)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Die Betriebsart entscheidet ausschliesslich ueber den NETZPFAD; welche
+        //   Erzeugungsquellen zulaessig sind, steht in den Flags PV_Zulaessig und
+        //   BHKW_Ueberschuss_Zulaessig derselben Zeile. Gegenstueck in der Engine ist
+        //   SpeicherEngine.SpeicherBetriebsart (Gruenstrom/Graustrom) - dort ein enum,
+        //   hier der eingefrorene Datenbankwert.
+        // =====================================================================
+
+        /// <summary>
+        /// Grünstromspeicher: Laden ausschließlich aus Erzeugungsüberschuss, keine
+        /// Netzladung. Vorbelegung jeder neuen Variante.
+        /// </summary>
+        public const string SP_BETRIEBSART_GRUENSTROM = "Grünstrom";
+
+        /// <summary>Graustromspeicher: zusätzlich Netzladung zulässig (AP10).</summary>
+        public const string SP_BETRIEBSART_GRAUSTROM = "Graustrom";
+
+        // =====================================================================
+        // Stromspeicher — Berechnungsart
+        //   Tab_StromspeicherVariante.Berechnungsart
+        //   (Fachkonzept Stromspeicher 6.1-6.5)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Dauernutzung (6.2) — der referenzverifizierte Standardfall.</summary>
+        public const string SP_BERECHNUNG_DAUERNUTZUNG = "Dauernutzung";
+
+        /// <summary>Start Nachtnutzung (6.1), Ausbaustufe AP6.</summary>
+        public const string SP_BERECHNUNG_NACHTNUTZUNG = "Nachtnutzung";
+
+        /// <summary>Optimierter Speicher (6.3), Ausbaustufe AP8.</summary>
+        public const string SP_BERECHNUNG_OPTIMIERT = "Optimiert";
+
+        /// <summary>Peak-Shaving (6.4) — eigene Funktionalität mit eigenem Einstieg, AP7.</summary>
+        public const string SP_BERECHNUNG_PEAKSHAVING = "Peak-Shaving";
+
+        /// <summary>Preisgesteuerte Arbitrage (6.5), Ausbaustufe AP10.</summary>
+        public const string SP_BERECHNUNG_ARBITRAGE = "Arbitrage";
+
+        // =====================================================================
+        // Stromspeicher — Preisquelle der Bezugspreisreihe
+        //   Tab_StromspeicherVariante.Preisquelle
+        //   (Fachkonzept Stromspeicher 4.1)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Ein Arbeitspreis [ct/kWh] als konstante Reihe — der Bestandsfall.</summary>
+        public const string SP_PREISQUELLE_FIXPREIS = "Fixpreis";
+
+        /// <summary>Kostenprofil aus 12 Monats- und 7×24 Wochenwerten (AP4).</summary>
+        public const string SP_PREISQUELLE_PROFIL = "Profil";
+
+        /// <summary>Importierte Spotmarktreihe (AP4).</summary>
+        public const string SP_PREISQUELLE_SPOTMARKT = "Spotmarkt";
+
+        // =====================================================================
+        // Stromspeicher — Einheit der projektweiten Ladeparameter
+        //   Tab_Einstellungen.Ladefuellstand_Min_Auswahl / _Max_Auswahl /
+        //   Ladeleistung_Max_Auswahl
+        //   Persistenzwert, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Ladefüllstand ist in PROZENT der Kapazität angegeben — die einzige
+        /// Einheit, aus der Migrationsschritt 11d ein SoC-Band übernehmen kann; die
+        /// Alternative „kWh/a" der Auswahlliste ist ohne Gerätekapazität nicht
+        /// umrechenbar (und als Einheit eines Füllstands ohnehin fragwürdig).
+        ///
+        /// Sprachneutral, deshalb auch auf englischer Oberfläche unverfänglich —
+        /// anders als die übrigen Auswahlwerte, die aus der lokalisierten
+        /// Formularressource stammen.
+        /// </summary>
+        public const string SP_EINHEIT_PROZENT = "%";
+
+        // =====================================================================
+        // Preismodell — Modus des Aufschlagsblocks
+        //   energy_project_settings.Aufschlag_Modus
+        //   (Fachkonzept Stromspeicher 4.2)
+        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// Standard: Der wirksame Aufschlag ist die Summe der aktiven Komponenten.
+        /// NULL in der Datenbank wird von der Leseseite ebenso behandelt — der Modus
+        /// ist damit die sichere Vorbelegung fuer jede nicht gepflegte Zeile.
+        /// </summary>
+        public const string SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT = "Aufgeschluesselt";
+
+        /// <summary>
+        /// Der Anwender traegt einen Gesamtaufschlag ein (Override); die Differenz zur
+        /// Komponentensumme wird als "nicht aufgeschluesselter Rest" ausgewiesen.
+        /// </summary>
+        public const string SP_AUFSCHLAG_MODUS_GESAMTWERT = "Gesamtwert";
+
+        // =====================================================================
+        // Preismodell — Aufloesung und Einheit einer Preisreihe
+        //   Tab_Preisreihe.Aufloesung / .Einheit
+        //   (Fachkonzept Stromspeicher 4.1, Persistenz 8.4)
+        //   Persistenzwert, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>8.760 Stundenwerte — das Raster der Spotmarktdateien.</summary>
+        public const string PREISREIHE_AUFLOESUNG_STUNDE = "Stunde";
+
+        /// <summary>35.040 Viertelstundenwerte — das Rechenraster der Engine.</summary>
+        public const string PREISREIHE_AUFLOESUNG_VIERTELSTUNDE = "Viertelstunde";
+
+        /// <summary>
+        /// Einheit jeder Preisreihe. Sprachneutral und zugleich Anzeigeeinheit — die
+        /// Engine kennt ausschliesslich ct/kWh (Fachkonzept 4.1).
+        /// </summary>
+        public const string PREISREIHE_EINHEIT_CT_KWH = "ct/kWh";
     }
 }

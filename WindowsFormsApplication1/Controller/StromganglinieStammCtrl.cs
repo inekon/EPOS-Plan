@@ -79,9 +79,14 @@ namespace WindowsFormsApplication1
 
         // Import einer neuen Ganglinie in die STAMM-Tabellen (Admin-Dialog "Einlesen").
         // Kopf-ID explizit (MAX+1), ReadOnly=false; Daten-ID ist AutoWert. Alles in einer Transaktion.
-        public bool ImportGanglinie(string szBezeichner, int zeitinterval, List<string> roheWerte)
+        //
+        // AP5: Der Parameter ist die bereits geprueffte und normalisierte Zahlenreihe
+        // (8.760 oder 35.040 Werte in kW) aus GanglinienPruefung statt der frueheren
+        // rohen Zeilenliste. Das Parsen liegt jetzt in der Leseschicht
+        // (Allgemein\Import\GanglinienDatei), das Transaktionsmuster ist unveraendert.
+        public bool ImportGanglinie(string szBezeichner, int zeitinterval, IList<double> werte)
         {
-            if (roheWerte == null || roheWerte.Count == 0) return false;
+            if (werte == null || werte.Count == 0) return false;
 
             var (conn, trans) = DataRepository.BeginTransaction();
             try
@@ -109,10 +114,10 @@ namespace WindowsFormsApplication1
                     var pG = c.Parameters.Add("@g", OleDbType.Integer);
                     var pW = c.Parameters.Add("@w", OleDbType.Double);
                     var pR = c.Parameters.Add("@r", OleDbType.Boolean);
-                    foreach (string s in roheWerte)
+                    foreach (double w in werte)
                     {
                         pG.Value = neueId;
-                        pW.Value = double.Parse(s, System.Globalization.CultureInfo.InvariantCulture);
+                        pW.Value = w;
                         pR.Value = false;
                         c.ExecuteNonQuery();
                     }

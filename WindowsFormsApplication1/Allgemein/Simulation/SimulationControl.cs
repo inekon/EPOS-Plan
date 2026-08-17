@@ -12,8 +12,7 @@ namespace WindowsFormsApplication1
         public SimulationWaermepumpe simulation_wp = new SimulationWaermepumpe();
         public SimulationSPK simulation_spk = new SimulationSPK();
         public SimulationSolarthermie simulation_solarthermie = new SimulationSolarthermie();
-        public SimulationPV simulation_pv = new SimulationPV(); 
-        public SimulationSSP simulation_ssp = new SimulationSSP();
+        public SimulationPV simulation_pv = new SimulationPV();
         public SimulationBHKW simulation_bhkw = new SimulationBHKW();
 
         private bool m_bError = false;
@@ -158,8 +157,60 @@ namespace WindowsFormsApplication1
         public bool bSimulationKessel = false;
         public bool bSimulationSolarthermie = false;
         public bool bSimulationPV = false;
+
+        /// <summary>
+        /// true, wenn der Stromspeicher in diesem Lauf WIRKLICH gerechnet hat (AP2b).
+        ///
+        /// Bis AP2a bedeutete das Flag nur „Tool 6 war aktiv": Es wurde auch dann
+        /// gesetzt, wenn der wirkungslose <c>SimulationSSP</c>-Stub Nullen lieferte.
+        /// Seit dem Engine-Einbau setzt es ausschließlich ein erfolgreicher Lauf der
+        /// <c>SpeicherEngine</c>; ein Projekt ohne Speicher, ohne Kapazität oder mit
+        /// abgebrochener Rechnung lässt es auf false. Über
+        /// <c>SimulationRunner.BaueErgebnis</c> geht es als
+        /// <c>Tab_Ergebnis.Sim_Stromspeicher</c> in die Persistenz — der Lauf
+        /// „behauptet" also keine Speicherrechnung mehr, die nicht stattgefunden hat.
+        /// </summary>
         public bool bSimulationSSP = false;
         public bool bSimulationBHKW = false;
+
+        /// <summary>
+        /// Ergebnis des Stromspeicher-Laufs (AP2b) oder <c>null</c>, wenn nicht
+        /// gerechnet wurde — die einzige Quelle für SoC-Ganglinie und
+        /// Speicherkennzahlen. Belegt genau dann, wenn <see cref="bSimulationSSP"/>
+        /// gesetzt ist.
+        /// </summary>
+        public SpeicherEngine.SpeicherErgebnis Speicherergebnis = null;
+
+        /// <summary>
+        /// Parametersatz, Variante und Anlagenbezug des Speicherlaufs (AP3b) —
+        /// belegt zusammen mit <see cref="Speicherergebnis"/>.
+        /// </summary>
+        /// <remarks>
+        /// Ergebnisseite und Ergebnispersistenz brauchen Größen, die das reine
+        /// Engine-Ergebnis nicht führt (SoC-Band, Nutzungsdauer, N_zyk, Anlagenzeile).
+        /// Sie hängen deshalb am Lauf statt aus der Datenbank nachgelesen zu werden —
+        /// sonst gäbe es zwei Parametersätze für dieselbe Rechnung.
+        /// </remarks>
+        public StromspeicherLaufKontext Speicherkontext = null;
+
+        /// <summary>
+        /// Ladezustandsganglinie des Stromspeichers [kWh] im Viertelstundenraster
+        /// (35.040) — Nullvektor, solange kein Speicher gerechnet hat.
+        /// </summary>
+        /// <remarks>
+        /// Löst <c>SimulationPV.Speicherfuellstand_viertelstunde</c> ab (Fachkonzept
+        /// 8.2, Rudiment 2). Die Reihe kommt <b>nativ</b> viertelstündlich aus der
+        /// Engine; die frühere Interpolation stündlicher Werte
+        /// (<c>Stundenwerte_zu_viertelstunden_Interpoliert</c>) entfällt damit — sie
+        /// hatte nur die Treppenstufen der Stundenrechnung geglättet.
+        /// </remarks>
+        public float[] Speicherfuellstand_viertelstuendlich = new float[8760 * 4];
+
+        /// <summary>
+        /// Ladezustandsganglinie des Stromspeichers [kWh] stündlich (8.760), Mittel
+        /// der vier Viertelstunden — für Berichte und Exporte im Stundenraster.
+        /// </summary>
+        public float[] Speicherfuellstand_stuendlich = new float[8760];
 
         /// <summary>
         /// Grund, aus dem der letzte Simulationsversuch gar nicht erst angelaufen ist
@@ -343,8 +394,14 @@ namespace WindowsFormsApplication1
             bSimulationKessel = false;
             bSimulationBHKW = false;
             bSimulationSolarthermie = false;
-            bSimulationPV = false;  
+            bSimulationPV = false;
             bSimulationSSP = false;
+
+            // Speicherergebnis des Vorlaufs verwerfen - sonst zeigten Chart und
+            // Kennzahlen die Werte eines früheren Projekts an.
+            Speicherergebnis = null;
+            Array.Clear(Speicherfuellstand_viertelstuendlich, 0, Speicherfuellstand_viertelstuendlich.Length);
+            Array.Clear(Speicherfuellstand_stuendlich, 0, Speicherfuellstand_stuendlich.Length);
 
             // Startpunkt der Simulation ist der Wärmebedarf
             Eingang = simulation_Waermebedarf.Waermebedarf;
@@ -461,12 +518,31 @@ namespace WindowsFormsApplication1
                 bSimulationPV = true;
             }
 
-            // Stromspeicher verrechnen
+            // ***********************************************************************
+            // Stromspeicher verrechnen (AP2b): die SpeicherEngine statt des
+            // wirkungslosen SimulationSSP-Stubs.
+            //
+            // EINGEBETTET WIRD NUR DIE ENTLADUNG. Sie deckt Residuallast und senkt
+            // damit den Netzbezug des Intervalls - genau die Größe, die dieser Vektor
+            // führt. Die LADUNG speist sich aus dem Erzeugungsüberschuss und mindert
+            // die Einspeisung, nicht den Netzbezug; sie darf hier deshalb NICHT
+            // aufgeschlagen werden (der Überschuss steht nach dem PV-Block ohnehin
+            // nicht mehr im Vektor - SubVectors klemmt bei 0).
+            //
+            // Die Stelle liegt hinter BEIDEN Rechenwegen (Altpfad und
+            // Kaskade_Zweikanalig): Beide bauen denselben Lastvektor aus denselben
+            // Reihen (WP-Strombedarf, Heizstab, Kesselstrom, BHKW-Erzeugung) und
+            // setzen dieselben Modulflags, die der Controller beim Beschaffen der
+            // Lastreihe auswertet.
+            // ***********************************************************************
             if (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER)
             {
-                temp = Simulation_Stromspeicher_Ctrl(Rest_Strombedarf_viertelstuendlich);
-                Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
-                bSimulationSSP = true;
+                temp = Simulation_Stromspeicher_Ctrl(m_ID_Projekt);
+                if (temp != null)
+                {
+                    Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
+                    bSimulationSSP = true;
+                }
             }
 
             // Wärmebedarf von kWh in MWh umrechnen
@@ -3148,24 +3224,65 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private float[] Simulation_Stromspeicher_Ctrl(float[] Strombedarf)
+        /// <summary>
+        /// Rechnet die aktive Speichervariante über die <c>SpeicherEngine</c> und
+        /// liefert die ENTLADUNG je Viertelstunde als Leistung [kW] — oder
+        /// <c>null</c>, wenn nicht gerechnet wurde.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Ersetzt den wirkungslosen <c>SimulationSSP</c>-Stub (AP2b, Fachkonzept 8.2,
+        /// Rudiment 1). Gerechnet wird die Anlagenzeile der <b>aktiven Speichervariante</b>
+        /// (AP9b, Fachkonzept 7.3) mit der Berechnungsart, die diese Variante vorgibt;
+        /// nur ohne bestimmbare aktive Variante fällt der Lauf auf die Aggregation über
+        /// alle <c>SP_TYP</c>-Anlagen zurück (Protokollhinweis). Die Reihen- und
+        /// Parameterbeschaffung liegt vollständig in <see cref="StromspeicherSimCtrl"/>,
+        /// die Formeln in der Engine.
+        /// </para>
+        /// <para>
+        /// <b>Der Speicher darf den Lauf nicht kippen.</b> Jeder Fehler — fehlende
+        /// Stammdaten, Rasterabweichung, Ausnahme aus der Engine — landet als Hinweis
+        /// bzw. Warnung im Protokoll; die Kette rechnet dann ohne Speicherwirkung
+        /// weiter, genau wie vor diesem Paket. Der Datenzugriff liegt im
+        /// dialogfreien Modus (der ganze Lauf steht in
+        /// <see cref="DataRepository.EngineModus"/>, Verschachtelung ist zulässig).
+        /// </para>
+        /// </remarks>
+        private float[] Simulation_Stromspeicher_Ctrl(int ID_Projekt)
         {
-            RecordSet rs = new RecordSet();
+            StromspeicherSimCtrl ctrl = new StromspeicherSimCtrl();
+            SpeicherEngine.SpeicherErgebnis ergebnis;
 
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
-
-            simulation_ssp.stromspeicher_list.Clear();
-            while (rs.Next())
+            try
             {
-                simulation_ssp.stromspeicher_list.Add((int)rs.Read("ID_SP"));
+                ergebnis = ctrl.RechneAktiveVariante(this, ID_Projekt);
             }
-            rs.Close();
+            catch (Exception ex)
+            {
+                Protokoll.Warnung(string.Format(MyResource.Resource.SIMENG_SPEICHER_FEHLGESCHLAGEN, ex.Message));
+                return null;
+            }
 
-            simulation_ssp.Strombedarf = Strombedarf;
+            // Hinweise des Controllers (kein Speicher, keine Kapazität, 1-C-Rückfall)
+            // gehören in jedem Fall ins Protokoll - auch wenn gerechnet wurde.
+            if (!string.IsNullOrEmpty(ctrl.LetzterHinweis)) Protokoll.Hinweis(ctrl.LetzterHinweis);
 
-            // Simulation starten
-            float[] temp = simulation_ssp.Berechnung(m_ID_Projekt);
-            return temp;
+            if (ergebnis == null) return null;
+
+            float[] entladung = StromspeicherSimCtrl.EntladungLeistungKw(ergebnis);
+            if (entladung.Length != Rest_Strombedarf_viertelstuendlich.Length)
+            {
+                Protokoll.Warnung(string.Format(MyResource.Resource.SIMENG_SPEICHER_RASTER_ABWEICHUNG,
+                                                entladung.Length, Rest_Strombedarf_viertelstuendlich.Length));
+                return null;
+            }
+
+            Speicherergebnis = ergebnis;
+            Speicherkontext = ctrl.LetzterKontext;
+            Speicherfuellstand_viertelstuendlich = SpeicherEngine.RasterAdapter.ZuFloat(ergebnis.SoCKwh);
+            Speicherfuellstand_stuendlich = Viertelstunden_zu_Stundenwerte_Mittelwert(Speicherfuellstand_viertelstuendlich);
+
+            return entladung;
         }
 
     }

@@ -18,6 +18,30 @@ namespace WindowsFormsApplication1
         public Form_AdminStromspeicher()
         {
             InitializeComponent();
+            EinheitenBeschriftungKorrigieren();
+            InitGeraetefelder();
+        }
+
+        /// <summary>
+        /// Berichtigt die beiden falschen EINHEITEN der Bestandsbeschriftung
+        /// (Abnahmebefund 1 zum ersten App-Start) — dieselbe Korrektur wie in
+        /// <see cref="Form_Stromspeicher"/>, hier nur an anderen Steuerelementen:
+        /// <c>label2</c> beschriftet das Kapazitätsfeld, <c>label8</c> trägt dessen
+        /// Einheit (Designer: „kW", richtig ist <b>kWh</b>), <c>label11</c> die Einheit
+        /// der Modulkosten (Designer: „€", richtig ist <b>€/kWh</b>, AP0-Entscheid vom
+        /// 16.08.2026).
+        ///
+        /// <para>
+        /// Die Wortmarke kommt aus <c>MyResource</c> (zweisprachig), das reine
+        /// Einheitensymbol steht sprachneutral direkt am Label — genau die Aufteilung,
+        /// die <see cref="InitGeraetefelder"/> für die AP3-Felder schon verwendet.
+        /// </para>
+        /// </summary>
+        private void EinheitenBeschriftungKorrigieren()
+        {
+            label2.Text = MyResource.Resource.SP_LABEL_ENERGIE_KURZ;
+            label8.Text = "kWh";
+            label11.Text = "€/kWh";
         }
 
         public void SetControls(string projekt)
@@ -90,6 +114,18 @@ namespace WindowsFormsApplication1
             if (!Program.ZahlPruefen(textBox_Ladezustand, "Ladezustand", out dLadezustand)) return;
             if (!Program.ZahlPruefen(textBox_Modulkosten, "Modulkosten", out dModulkosten)) return;
 
+            // AP3-Geraetefelder nach demselben Muster. Leer ist hier ERLAUBT und heisst
+            // "nicht gepflegt" (Wert 0): der Katalog enthaelt Altdatensaetze, die diese
+            // Groessen nie hatten, und ein Pflichtfeld wuerde deren Bearbeitung sperren.
+            double dWirkungsgrad, dVerschleiss, dLeistungskosten, dInvestFix, dStandby;
+            int nZyklen;
+            if (!Program.ZahlPruefen(textBox_WirkungsgradRT, MyResource.Resource.SP_LABEL_WIRKUNGSGRAD_RT, out dWirkungsgrad, true)) return;
+            if (!Program.GanzzahlPruefen(textBox_Zyklen, MyResource.Resource.SP_LABEL_ZYKLEN, out nZyklen, true)) return;
+            if (!Program.ZahlPruefen(textBox_Verschleisskosten, MyResource.Resource.SP_LABEL_VERSCHLEISSKOSTEN, out dVerschleiss, true)) return;
+            if (!Program.ZahlPruefen(textBox_Leistungskosten, MyResource.Resource.SP_LABEL_LEISTUNGSKOSTEN, out dLeistungskosten, true)) return;
+            if (!Program.ZahlPruefen(textBox_InvestitionFix, MyResource.Resource.SP_LABEL_INVESTITION_FIX, out dInvestFix, true)) return;
+            if (!Program.ZahlPruefen(textBox_Standby, MyResource.Resource.SP_LABEL_STANDBY, out dStandby, true)) return;
+
             try
             {
                 model.m_Energie = dEnergie;
@@ -97,6 +133,13 @@ namespace WindowsFormsApplication1
                 model.m_Degradation = dDegradation;
                 model.m_Ladezustand = dLadezustand;
                 model.m_Modulkosten = dModulkosten;
+
+                model.m_WirkungsgradRT = dWirkungsgrad;
+                model.m_ZyklenZugesichert = nZyklen;
+                model.m_Verschleisskosten = dVerschleiss;
+                model.m_Leistungskosten = dLeistungskosten;
+                model.m_InvestitionFix = dInvestFix;
+                model.m_StandbyVerbrauch = dStandby;
 
                 if (m_Neu)
                 {
@@ -108,6 +151,7 @@ namespace WindowsFormsApplication1
                     sctrl.m_Degradation = model.m_Degradation;
                     sctrl.m_Ladezustand = model.m_Ladezustand;
                     sctrl.m_Modulkosten = model.m_Modulkosten;
+                    GeraetefelderUebernehmen(sctrl);
 
                     if (!sctrl.Insert()) { MessageBox.Show("Fehler beim Speichern der Daten!"); return; }
 
@@ -126,6 +170,7 @@ namespace WindowsFormsApplication1
                     sctrl.m_Degradation = model.m_Degradation;
                     sctrl.m_Ladezustand = model.m_Ladezustand;
                     sctrl.m_Modulkosten = model.m_Modulkosten;
+                    GeraetefelderUebernehmen(sctrl);
 
                     if (!sctrl.Update(listBox_Stromspeicher.Text)) return;
 
@@ -188,6 +233,8 @@ namespace WindowsFormsApplication1
 
                 textBox_Bezeichner.Text = row["Bezeichner"].ToString();
                 model.m_szBezeichner = textBox_Bezeichner.Text;
+
+                GeraetefelderAnzeigen(row);
             }
         }
 
@@ -210,6 +257,18 @@ namespace WindowsFormsApplication1
                 textBox_Modulkosten.Text = "0";
                 textBox_Leistung.Text = "0";
                 textBox_Energie.Text = "0";
+
+                // AP3: fachliche Vorbelegung statt Nullen - eta_RT = 0,90 und
+                // c_ver = 0,025 sind die Vorgaben aus Fachkonzept 5.2/5.4, und eine 0
+                // beim Wirkungsgrad waere kein brauchbarer Startwert (die Engine weist
+                // sie zurueck). Die uebrigen drei Investitionsanteile starten bei 0 -
+                // das ist auch ihre fachliche Vorgabe.
+                textBox_WirkungsgradRT.Text = ZahlAnzeigen(StromspeicherModel.WIRKUNGSGRAD_RT_VORGABE);
+                textBox_Zyklen.Text = "0";
+                textBox_Verschleisskosten.Text = ZahlAnzeigen(C_VER_VORGABE);
+                textBox_Leistungskosten.Text = "0";
+                textBox_InvestitionFix.Text = "0";
+                textBox_Standby.Text = "0";
             }
         }
 
@@ -223,6 +282,13 @@ namespace WindowsFormsApplication1
             textBox_Energie.Text = "";
             textBox_Leistung.Text = "";
             textBox_Modulkosten.Text = "";
+
+            textBox_WirkungsgradRT.Text = "";
+            textBox_Zyklen.Text = "";
+            textBox_Verschleisskosten.Text = "";
+            textBox_Leistungskosten.Text = "";
+            textBox_InvestitionFix.Text = "";
+            textBox_Standby.Text = "";
         }
 
         private void btn_OK_Click(object sender, EventArgs e)
@@ -297,6 +363,144 @@ namespace WindowsFormsApplication1
         private void textBox_Degradation_Validating(object sender, CancelEventArgs e)
         {
             Program.ZahlFaerben(sender);
+        }
+
+        // =====================================================================
+        // AP3 - Gerätetechnik (Fachkonzept Stromspeicher 5.1)
+        //
+        // Die sechs neuen Felder entstehen HIER IM CODE und nicht im Designer.
+        // Grund: Das Formular legt jede Position, Größe und Beschriftung in
+        // Form_AdminStromspeicher.resx ab (durchgängig resources.ApplyResources).
+        // Neue Steuerelemente dort einzutragen hieße, die Designer- und
+        // Ressourcendateien von Hand zu schreiben - genau das, was CLAUDE.md
+        // ausschließt. Der Code-Weg ist außerdem das Muster, dem die jüngeren
+        // Masken des Projekts folgen (Form_Quellprofil, ErzeugerKarte,
+        // SpeicherKarte: vollständig programmatisch).
+        //
+        // Layout: zweite Spalte rechts neben den Bestandsfeldern, deren Raster
+        // (Label bei x = 240, Feld bei x = 336, Einheit bei x = 451, Zeilenhöhe
+        // 32 px) unverändert übernommen wird.
+        //
+        // Texte über MyResource.Resource.* in beiden Sprachen; Einheitensymbole
+        // ohne Wortanteil (-, EUR/kW, EUR, W) stehen sprachneutral direkt am
+        // Label, wie schon bei den Bestandseinheiten "kW" und "%".
+        // =====================================================================
+
+        /// <summary>Vorgabe der Zyklus-Verschleißkosten c_ver [€/(kWh·Zyklus)] (Fachkonzept 5.4).</summary>
+        private const double C_VER_VORGABE = 0.025;
+
+        private const int SPALTE_LABEL = 620;
+        private const int SPALTE_FELD = 800;
+        private const int SPALTE_EINHEIT = 916;
+        private const int ZEILE_ERSTE = 50;
+        private const int ZEILE_HOEHE = 32;
+        private const int FELD_BREITE = 110;
+
+        private TextBox textBox_WirkungsgradRT;
+        private TextBox textBox_Zyklen;
+        private TextBox textBox_Verschleisskosten;
+        private TextBox textBox_Leistungskosten;
+        private TextBox textBox_InvestitionFix;
+        private TextBox textBox_Standby;
+
+        private void InitGeraetefelder()
+        {
+            Label kopf = new Label();
+            kopf.Text = MyResource.Resource.SP_GRUPPE_GERAETETECHNIK;
+            kopf.Location = new Point(SPALTE_LABEL, ZEILE_ERSTE - 28);
+            kopf.AutoSize = true;
+            kopf.Font = new Font(Font, FontStyle.Bold);
+            Controls.Add(kopf);
+
+            int zeile = ZEILE_ERSTE;
+            textBox_WirkungsgradRT = FeldAnlegen(MyResource.Resource.SP_LABEL_WIRKUNGSGRAD_RT, "-", zeile, false);
+            zeile += ZEILE_HOEHE;
+            textBox_Zyklen = FeldAnlegen(MyResource.Resource.SP_LABEL_ZYKLEN, "-", zeile, true);
+            zeile += ZEILE_HOEHE;
+            textBox_Verschleisskosten = FeldAnlegen(MyResource.Resource.SP_LABEL_VERSCHLEISSKOSTEN,
+                                                    MyResource.Resource.SP_EINHEIT_ZYKLUSKOSTEN, zeile, false);
+            zeile += ZEILE_HOEHE;
+            textBox_Leistungskosten = FeldAnlegen(MyResource.Resource.SP_LABEL_LEISTUNGSKOSTEN, "€/kW", zeile, false);
+            zeile += ZEILE_HOEHE;
+            textBox_InvestitionFix = FeldAnlegen(MyResource.Resource.SP_LABEL_INVESTITION_FIX, "€", zeile, false);
+            zeile += ZEILE_HOEHE;
+            textBox_Standby = FeldAnlegen(MyResource.Resource.SP_LABEL_STANDBY, "W", zeile, false);
+
+            // Das Formular ist im Designer 904 px breit; die zweite Spalte braucht mehr.
+            if (ClientSize.Width < SPALTE_EINHEIT + 120)
+                ClientSize = new Size(SPALTE_EINHEIT + 120, ClientSize.Height);
+        }
+
+        /// <summary>
+        /// Legt Beschriftung, Eingabefeld und Einheit einer Zeile an. Die Prüfung
+        /// folgt dem Bestandsmuster dieser Maske: Validating färbt nur
+        /// (<see cref="Program.ZahlFaerben"/> bzw. <see cref="Program.GanzzahlFaerben"/>),
+        /// gemeldet wird erst am Speichern-Knopf.
+        /// </summary>
+        private TextBox FeldAnlegen(string beschriftung, string einheit, int oben, bool ganzzahl)
+        {
+            Label lbl = new Label();
+            lbl.Text = beschriftung;
+            lbl.Location = new Point(SPALTE_LABEL, oben + 4);
+            lbl.AutoSize = true;
+            Controls.Add(lbl);
+
+            TextBox tb = new TextBox();
+            tb.Location = new Point(SPALTE_FELD, oben);
+            tb.Size = new Size(FELD_BREITE, 25);
+            if (ganzzahl) tb.Validating += (s, e) => Program.GanzzahlFaerben(s);
+            else tb.Validating += (s, e) => Program.ZahlFaerben(s);
+            Controls.Add(tb);
+
+            Label lblEinheit = new Label();
+            lblEinheit.Text = einheit;
+            lblEinheit.Location = new Point(SPALTE_EINHEIT, oben + 4);
+            lblEinheit.AutoSize = true;
+            Controls.Add(lblEinheit);
+
+            return tb;
+        }
+
+        /// <summary>
+        /// Zeigt die Gerätefelder eines Katalogsatzes an. Wie bei den Bestandsfeldern
+        /// darf das Durchklicken nicht an fehlenden Spalten oder NULL scheitern: Auf
+        /// einer Datenbank vor Migrationsschritt 11 gibt es die Spalten nicht, dann
+        /// bleibt das Feld leer.
+        /// </summary>
+        private void GeraetefelderAnzeigen(DataRow row)
+        {
+            textBox_WirkungsgradRT.Text = Spaltentext(row, "Wirkungsgrad_RT");
+            textBox_Zyklen.Text = Spaltentext(row, "Zyklen_Zugesichert");
+            textBox_Verschleisskosten.Text = Spaltentext(row, "Verschleisskosten");
+            textBox_Leistungskosten.Text = Spaltentext(row, "Leistungskosten");
+            textBox_InvestitionFix.Text = Spaltentext(row, "Investition_Fix");
+            textBox_Standby.Text = Spaltentext(row, "Standby_Verbrauch");
+        }
+
+        private void GeraetefelderUebernehmen(StromspeicherStammCtrl sctrl)
+        {
+            sctrl.m_WirkungsgradRT = model.m_WirkungsgradRT;
+            sctrl.m_ZyklenZugesichert = model.m_ZyklenZugesichert;
+            sctrl.m_Verschleisskosten = model.m_Verschleisskosten;
+            sctrl.m_Leistungskosten = model.m_Leistungskosten;
+            sctrl.m_InvestitionFix = model.m_InvestitionFix;
+            sctrl.m_StandbyVerbrauch = model.m_StandbyVerbrauch;
+        }
+
+        private static string Spaltentext(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return "";
+            return row[spalte].ToString();
+        }
+
+        /// <summary>
+        /// Vorbelegungen für die Anzeige: in der Kultur des Anwenders, damit die
+        /// Zahl so aussieht wie eine selbst getippte (Fachkonzept 8.5 - UI in
+        /// CurrentCulture, Datei und Datenbank invariant).
+        /// </summary>
+        private static string ZahlAnzeigen(double wert)
+        {
+            return wert.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
     }
 }

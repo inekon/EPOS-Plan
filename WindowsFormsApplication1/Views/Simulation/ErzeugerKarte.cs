@@ -262,8 +262,21 @@ namespace WindowsFormsApplication1
 
             /// <summary>✎ anbieten (öffnet den Senkendialog).</summary>
             public bool Editierbar;
+
+            /// <summary>
+            /// Chips des AUFKLAPPBAREN Detailbereichs (Abnahmebefund 3).
+            ///
+            /// Leer = die Karte hat keinen Detailbereich und sieht aus wie bisher; sonst
+            /// erscheint links in der Kopfzeile das Dreieck ▸/▾, und diese Chips stehen
+            /// unter den <see cref="Chips"/> — nur solange die Karte aufgeklappt ist.
+            /// </summary>
+            public List<ChipDaten> Detailchips = new List<ChipDaten>();
+
+            /// <summary>Zustand des Detailbereichs beim Aufbau (die Seite merkt ihn sich).</summary>
+            public bool Aufgeklappt;
         }
 
+        private readonly Label _lblPfeil = new Label();
         private readonly Label _lblRang = new Label();
         private readonly Label _lblTitel = new Label();
         private readonly Label _lnkAuf = new Label();
@@ -272,11 +285,31 @@ namespace WindowsFormsApplication1
         private readonly Label _lnkAufnehmen = new Label();
         private readonly Label _lnkEntfernen = new Label();
         private readonly FlowLayoutPanel _chips = new FlowLayoutPanel();
+        private readonly FlowLayoutPanel _detail = new FlowLayoutPanel();
         private readonly ToolTip _tip = new ToolTip();
 
         private bool _aufbau;
         private Kartenzustand _zustand = Kartenzustand.Aufgenommen;
         private bool _hervorgehoben;
+        private bool _aufgeklappt;
+
+        /// <summary>
+        /// ABNAHMEBEFUND 3 — Detailbereich sichtbar?
+        ///
+        /// Die Karte kennt ihre Nachbarn nicht; dass höchstens eine Karte je Gruppe offen
+        /// ist, regelt <c>Form_Simulation_Config</c> — dieselbe Arbeitsteilung wie bei
+        /// <see cref="SpeicherKarte"/>.
+        /// </summary>
+        public bool Aufgeklappt
+        {
+            get { return _aufgeklappt; }
+            set
+            {
+                if (_aufgeklappt == value) return;
+                _aufgeklappt = value;
+                DetailZustandAnwenden();
+            }
+        }
 
         /// <summary>
         /// ETAPPE D4 — die Karte ist das im Schema markierte Element (oder umgekehrt).
@@ -317,6 +350,13 @@ namespace WindowsFormsApplication1
         public event Action<ChipDaten> ChipBearbeiten;
 
         /// <summary>
+        /// ABNAHMEBEFUND 3 — Klick auf ▸/▾: Der Detailbereich soll auf- bzw. zuklappen.
+        /// Gemeldet wird nur; umgeschaltet wird über <see cref="Aufgeklappt"/> von der
+        /// Seite aus, die auch die „höchstens eine offen"-Regel führt.
+        /// </summary>
+        public event EventHandler Umschalten;
+
+        /// <summary>
         /// ETAPPE D4 — einfacher Klick auf die Karte (nicht auf ▲▼✎+×).
         ///
         /// Er ist die Auswahl, die die Schema-Ansicht mitführt. Bewusst UNMITTELBAR und
@@ -339,6 +379,17 @@ namespace WindowsFormsApplication1
             _tip.AutoPopDelay = 15000;
             _tip.InitialDelay = 400;
             _tip.ReshowDelay = 100;
+
+            // Aufklapp-Dreieck (Abnahmebefund 3) - Glyphe und Verhalten wie in
+            // SpeicherKarte, damit beide Kartenarten dieselbe Sprache sprechen.
+            _lblPfeil.Text = "▸";
+            _lblPfeil.AutoSize = true;
+            _lblPfeil.BackColor = Color.Transparent;
+            _lblPfeil.ForeColor = KartenStil.TEXT_LEISE;
+            _lblPfeil.Cursor = Cursors.Hand;
+            _lblPfeil.Visible = false;
+            _lblPfeil.Click += delegate { if (Umschalten != null) Umschalten(this, EventArgs.Empty); };
+            _tip.SetToolTip(_lblPfeil, MyResource.Resource.SIM_KARTE_TIP_AUFKLAPPEN);
 
             _lblRang.AutoSize = true;
             _lblRang.ForeColor = KartenStil.TEXT_LEISE;
@@ -374,6 +425,18 @@ namespace WindowsFormsApplication1
             _chips.BackColor = Color.Transparent;
             _chips.SizeChanged += delegate { HoeheNachfuehren(); };
 
+            _detail.AutoSize = true;
+            _detail.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            _detail.WrapContents = true;
+            _detail.FlowDirection = FlowDirection.LeftToRight;
+            _detail.Margin = Padding.Empty;
+            _detail.Padding = Padding.Empty;
+            _detail.BackColor = Color.Transparent;
+            _detail.Visible = false;
+            _detail.SizeChanged += delegate { HoeheNachfuehren(); };
+
+            Controls.Add(_lblPfeil);
+            Controls.Add(_detail);
             Controls.Add(_lblRang);
             Controls.Add(_lblTitel);
             Controls.Add(_lnkAuf);
@@ -418,7 +481,7 @@ namespace WindowsFormsApplication1
         {
             if (ReferenceEquals(c, _lnkAuf) || ReferenceEquals(c, _lnkAb) ||
                 ReferenceEquals(c, _lnkEdit) || ReferenceEquals(c, _lnkAufnehmen) ||
-                ReferenceEquals(c, _lnkEntfernen)) return;
+                ReferenceEquals(c, _lnkEntfernen) || ReferenceEquals(c, _lblPfeil)) return;
 
             c.DoubleClick += KarteDoppelklick;
             c.Click += KarteGeklickt;                 // D4: Auswahl-Synchronisation
@@ -492,6 +555,30 @@ namespace WindowsFormsApplication1
                 _lnkEdit.Visible = a.Editierbar;
                 _lnkEntfernen.Visible = a.Umschaltbar && _zustand == Kartenzustand.Aufgenommen;
                 _lnkAufnehmen.Visible = a.Umschaltbar && _zustand == Kartenzustand.Verfuegbar;
+
+                // Detailbereich (Abnahmebefund 3): Das Dreieck erscheint nur, wenn es
+                // etwas aufzuklappen gibt - eine Karte ohne Detailchips sieht damit
+                // unverändert aus.
+                foreach (Control c in _detail.Controls) c.Dispose();
+                _detail.Controls.Clear();
+
+                if (a.Detailchips != null)
+                {
+                    foreach (ChipDaten d in a.Detailchips)
+                    {
+                        if (d == null || string.IsNullOrEmpty(d.Text)) continue;
+
+                        KartenChip chip = ChipBauen(d);
+                        chip.DoubleClick += KarteDoppelklick;
+                        chip.Click += KarteGeklickt;
+                        _detail.Controls.Add(chip);
+                    }
+                }
+
+                _aufgeklappt = a.Aufgeklappt && _detail.Controls.Count > 0;
+                _lblPfeil.Visible = _detail.Controls.Count > 0;
+                _lblPfeil.Text = _aufgeklappt ? "▾" : "▸";
+                _detail.Visible = _aufgeklappt;
 
                 foreach (Control c in _chips.Controls) c.Dispose();
                 _chips.Controls.Clear();
@@ -599,7 +686,15 @@ namespace WindowsFormsApplication1
             if (_aufbau) return;
 
             int y = KartenStil.RAND;
-            _lblRang.Location = new Point(KartenStil.RAND, y);
+            int links = KartenStil.RAND;
+
+            if (_lblPfeil.Visible)
+            {
+                _lblPfeil.Location = new Point(links, y);
+                links = _lblPfeil.Right + 4;
+            }
+
+            _lblRang.Location = new Point(links, y);
 
             // Schalter von rechts nach links: ×/+ ganz außen (die Auswahl),
             // davor ✎, davor ▼ und ▲ (die Reihenfolge).
@@ -613,7 +708,7 @@ namespace WindowsFormsApplication1
                 x -= 6;
             }
 
-            int titelLinks = _lblRang.Visible ? _lblRang.Right + 8 : KartenStil.RAND;
+            int titelLinks = _lblRang.Visible ? _lblRang.Right + 8 : links;
             int titelBreite = Math.Max(40, x - 8 - titelLinks);
             _lblTitel.Bounds = new Rectangle(titelLinks, y, titelBreite, _lblRang.Height);
 
@@ -623,6 +718,11 @@ namespace WindowsFormsApplication1
             _chips.Location = new Point(KartenStil.RAND, kopfUnten + 6);
             _chips.Width = Math.Max(60, ClientSize.Width - 2 * KartenStil.RAND);
 
+            // Der Detailbereich steht UNTER den Chips und in derselben Innenbreite.
+            _detail.Location = new Point(KartenStil.RAND,
+                                         (_chips.Controls.Count > 0 ? _chips.Bottom : kopfUnten) + 6);
+            _detail.Width = _chips.Width;
+
             HoeheNachfuehren();
         }
 
@@ -630,7 +730,19 @@ namespace WindowsFormsApplication1
         {
             int noetig = _chips.Bottom + KartenStil.RAND;
             if (_chips.Controls.Count == 0) noetig = _lblTitel.Bottom + KartenStil.RAND;
+            if (_detail.Visible && _detail.Controls.Count > 0) noetig = _detail.Bottom + KartenStil.RAND;
             if (Height != noetig) Height = noetig;
+        }
+
+        /// <summary>
+        /// Übernimmt <see cref="Aufgeklappt"/> in Pfeil, Sichtbarkeit und Höhe
+        /// (Abnahmebefund 3).
+        /// </summary>
+        private void DetailZustandAnwenden()
+        {
+            _lblPfeil.Text = _aufgeklappt ? "▾" : "▸";
+            _detail.Visible = _aufgeklappt && _detail.Controls.Count > 0;
+            Neuordnen();
         }
 
         protected override void OnPaint(PaintEventArgs e)

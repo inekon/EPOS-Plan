@@ -135,8 +135,11 @@ public class TabNavigationManager
                 int id = 0;
                 double speicherKWh = 0; //Standardwert, z.B. 5 kWh
 
-                // alle Sromspeicher zum Projekt durchgehen und Leistung aufsummieren (oder direkt aus sim-Objekt, falls dort schon vorhanden)
-                ctrl.ReadAllFilter("ID_Projekt=" + 15 + " and ID_Type=" + WizardItemClass.SP_TYP);
+                // Alle Stromspeicher des AKTIVEN Projekts durchgehen und die Kapazität
+                // aufsummieren. Bis AP2b stand hier die Projekt-ID 15 fest verdrahtet -
+                // die Kachel zeigte damit in jedem Projekt die Speichergröße eines
+                // fremden Datensatzes (oder den 5-kWh-Rückfall).
+                ctrl.ReadAllFilter("ID_Projekt=" + simctrl.m_ID_Projekt + " and ID_Type=" + WizardItemClass.SP_TYP);
                 for (int i = 0; i < ctrl.rows; i++)
                 {
                     id = ctrl.items[i].ID_SP;

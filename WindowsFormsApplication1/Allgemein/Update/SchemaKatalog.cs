@@ -53,6 +53,14 @@ namespace WindowsFormsApplication1
         public const string Z_PROJEKTPUFFERSP = "Z_ProjektPufferSp";
         public const string TAB_ERGEBNISPUFFERSPEICHER = "Tab_ErgebnisPufferspeicher";
         public const string TAB_ERGEBNISHEIZKESSEL = "Tab_ErgebnisHeizkessel";
+        public const string TAB_STROMSPEICHER = "Tab_Stromspeicher";
+        public const string TAB_STROMSPEICHER_STAMM = "Tab_Stromspeicher_STAMM";
+        public const string TAB_STROMSPEICHERVARIANTE = "Tab_StromspeicherVariante";
+        public const string TAB_ERGEBNISSTROMSPEICHER = "Tab_ErgebnisStromspeicher";
+        public const string ENERGY_PROJECT_SETTINGS = "energy_project_settings";
+        public const string TAB_PREISREIHE = "Tab_Preisreihe";
+        public const string TAB_PREISREIHEDATEN = "Tab_PreisreiheDaten";
+        public const string TAB_KOSTENPROFIL = "Tab_Kostenprofil";
 
         /// <summary>
         /// Bestand: die Spalten, die die Rückfallebene schon vor ADR-001 angelegt hat
@@ -272,6 +280,185 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// Schritt 11 der Migration — die Gerätetechnik des Stromspeichers in
+        /// <c>Tab_Stromspeicher</c> UND <c>Tab_Stromspeicher_STAMM</c> (Fachkonzept
+        /// Stromspeicher 5.1, Arbeitspaket AP3).
+        ///
+        /// <b>Beide Tabellen im selben Eintrag, identischer Satz.</b> Katalog- und
+        /// Projekttabelle sind spaltengleich (bis auf <c>ReadOnly</c> bzw.
+        /// <c>ID_Projekt</c>), und <c>StromspeicherCtrl.CopyFromStamm</c> kopiert Feld
+        /// für Feld — eine Spalte nur auf einer Seite wäre sofort ein Datenverlust beim
+        /// Übernehmen in ein Projekt. <see cref="SchemaMigration.SpaltenAnlegen"/>
+        /// gruppiert selbst nach Tabelle, ein zweiter Eintrag wäre also nur doppelte
+        /// Buchführung (dasselbe Muster wie <see cref="Schritt2_Speicher"/> mit seinen
+        /// drei Tabellen).
+        ///
+        /// <b>Was NICHT hier steht.</b> Die Bestandsfelder <c>Energie</c> (= C_nom),
+        /// <c>Leistung</c> (= P), <c>Degradation</c> (= d), <c>Ladezustand</c>
+        /// (= Start-SoC in %) und <c>Modulkosten</c> (= c_cap in €/kWh) bleiben
+        /// unverändert — die AP0-Entscheide vom 16.08.2026 deuten sie nur um, ohne die
+        /// Werte anzufassen. Die BETRIEBSFÜHRUNG (SoC-Band, Betriebsart, Quellen-Flags,
+        /// Berechnungsart, Zins, Nutzungsdauer) gehört nicht an das Gerät, sondern an die
+        /// Variante — dafür gibt es <c>Tab_StromspeicherVariante</c> (Fachkonzept 7.3).
+        ///
+        /// <b>Kein DEFAULT auf <c>Wirkungsgrad_RT</c>.</b> Fachlich ist η_RT = 0,90 der
+        /// Vorgabewert (Fachkonzept 5.2), ein DDL-DEFAULT würde ihn aber nur den ZUKÜNFTIG
+        /// eingefügten Zeilen mitgeben und die Bestandszeilen bei 0 belassen — also genau
+        /// die Hälfte der Datensätze auf einen unbrauchbaren Wirkungsgrad setzen, den die
+        /// Engine mit <c>ArgumentOutOfRangeException</c> zurückweist
+        /// (<c>SpeicherParameter.Pruefe</c>). „Nicht gepflegt" wird deshalb einheitlich
+        /// als 0 bzw. NULL geführt; die Vorgabe setzt die LESESEITE
+        /// (<c>StromspeicherCtrl</c>, <c>StromspeicherSimCtrl.ETA_RT_STANDARD</c>).
+        ///
+        /// <b>Ordinalposition.</b> <c>ALTER TABLE … ADD COLUMN</c> hängt in Access immer
+        /// hinten an. Folgenlos: beide Tabellen werden ausschließlich NAMENSBASIERT
+        /// gelesen (<c>StromspeicherCtrl.ReadAll/ReadSingle</c>,
+        /// <c>StromspeicherStammCtrl.FillFromRow</c> — durchgängig
+        /// <c>Columns.Contains</c>), eine <c>row[0…n]</c>-Kette wie bei
+        /// <c>Tab_Einstellungen</c> gibt es hier nicht.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt11_Stromspeicher =
+        {
+            // --- Projekttabelle -------------------------------------------------------
+            new SchemaSpalte(TAB_STROMSPEICHER, "Wirkungsgrad_RT",    "DOUBLE"), // η_RT [-], Vorgabe 0,90 (kein DDL-DEFAULT)
+            new SchemaSpalte(TAB_STROMSPEICHER, "Zyklen_Zugesichert", "LONG"),   // N_zyk [-], zugesicherte Volladezyklen
+            new SchemaSpalte(TAB_STROMSPEICHER, "Verschleisskosten",  "DOUBLE"), // c_ver [€/(kWh·Zyklus)]
+            new SchemaSpalte(TAB_STROMSPEICHER, "Leistungskosten",    "DOUBLE"), // c_pow [€/kW]
+            new SchemaSpalte(TAB_STROMSPEICHER, "Investition_Fix",    "DOUBLE"), // I_fix [€]
+            new SchemaSpalte(TAB_STROMSPEICHER, "Standby_Verbrauch",  "DOUBLE"), // Standby-/Eigenverbrauch [W]
+
+            // --- Katalogtabelle, identischer Satz -------------------------------------
+            new SchemaSpalte(TAB_STROMSPEICHER_STAMM, "Wirkungsgrad_RT",    "DOUBLE"),
+            new SchemaSpalte(TAB_STROMSPEICHER_STAMM, "Zyklen_Zugesichert", "LONG"),
+            new SchemaSpalte(TAB_STROMSPEICHER_STAMM, "Verschleisskosten",  "DOUBLE"),
+            new SchemaSpalte(TAB_STROMSPEICHER_STAMM, "Leistungskosten",    "DOUBLE"),
+            new SchemaSpalte(TAB_STROMSPEICHER_STAMM, "Investition_Fix",    "DOUBLE"),
+            new SchemaSpalte(TAB_STROMSPEICHER_STAMM, "Standby_Verbrauch",  "DOUBLE"),
+        };
+
+        // =====================================================================
+        // Schritt 12 - Preis- und Verguetungsmodell (AP4, Fachkonzept 4.2/4.3)
+        // =====================================================================
+
+        /// <summary>
+        /// Namen der Aufschlagsspalten in <c>energy_project_settings</c>. EINE Wahrheit
+        /// für Migration, Leseseite (<c>StromAufschlagCtrl</c>) und Oberfläche
+        /// (<c>ucStromAufschlaege</c>) — dasselbe Muster wie
+        /// <see cref="SPALTE_KASKADE_ZWEIKANALIG"/>.
+        ///
+        /// <b>Namensbasiert, nie ordinal.</b> <c>energy_project_settings</c> wird im
+        /// Bestand ausschließlich über <c>SELECT *</c> mit anschließendem
+        /// Spaltennamen-Zugriff gelesen (<c>ucFuelSettings.GetProjectPrice</c>,
+        /// <c>KostenEmissionRechner</c>); eine <c>row[0…n]</c>-Kette wie bei
+        /// <c>Tab_Einstellungen</c> gibt es hier nicht. Das Anhängen ist deshalb
+        /// gefahrlos.
+        /// </summary>
+        public const string SPALTE_AUFSCHLAG_NETZENTGELT = "Aufschlag_Netzentgelt";
+        public const string SPALTE_AUFSCHLAG_UMLAGEN = "Aufschlag_Umlagen";
+        public const string SPALTE_AUFSCHLAG_STROMSTEUER = "Aufschlag_Stromsteuer";
+        public const string SPALTE_AUFSCHLAG_KONZESSION = "Aufschlag_Konzession";
+        public const string SPALTE_AUFSCHLAG_VERTRIEB = "Aufschlag_Vertrieb";
+
+        /// <summary>Namenszusatz der Aktiv-Schalter je Aufschlagskomponente.</summary>
+        public const string SPALTE_AUFSCHLAG_AKTIV_SUFFIX = "_Aktiv";
+
+        /// <summary>Modus des Aufschlagsblocks (Werte aus <c>DbWerte.SP_AUFSCHLAG_MODUS_*</c>).</summary>
+        public const string SPALTE_AUFSCHLAG_MODUS = "Aufschlag_Modus";
+
+        /// <summary>Gesamtaufschlag im Override-Modus [ct/kWh].</summary>
+        public const string SPALTE_AUFSCHLAG_OVERRIDE = "Aufschlag_Override";
+
+        /// <summary>Einspeisevergütung PV v_pv [ct/kWh] (Fachkonzept 4.3).</summary>
+        public const string SPALTE_VERGUETUNG_PV = "Verguetung_PV";
+
+        /// <summary>Einspeise-/KWK-Erlös BHKW v_bhkw [ct/kWh] (Fachkonzept 4.3).</summary>
+        public const string SPALTE_VERGUETUNG_BHKW = "Verguetung_BHKW";
+
+        /// <summary>
+        /// Schritt 12 der Migration — der Aufschlagsblock und die Vergütungssätze an
+        /// <c>energy_project_settings</c> (Fachkonzept Stromspeicher 4.2/4.3,
+        /// Arbeitspaket AP4).
+        ///
+        /// <b>Warum an <c>energy_project_settings</c> und nicht an <c>energy_price</c>.</b>
+        /// Die Preishistorie in <c>energy_price</c> ist stichtagsversioniert
+        /// (<c>valid_from</c>/<c>valid_to</c>) und trägt den ARBEITSPREIS. Netzentgelt,
+        /// Umlagen, Stromsteuer, Konzessionsabgabe und Vertrieb sind dagegen
+        /// Projekteinstellungen ohne eigene Historie (Fachkonzept 4.2: „Erweiterung von
+        /// <c>energy_project_settings</c> je (ID_Projekt, Strom-Carrier), die
+        /// Preishistorie bleibt in <c>energy_price</c>"). Eine zweite Historie hier
+        /// hätte zwei Stichtagsregeln für denselben Bezugspreis ergeben.
+        ///
+        /// <b>Alle Träger, Vorbelegung nur Strom.</b> Die Spalten entstehen an der
+        /// ganzen Tabelle — Access kennt keine bedingte Spalte, und ein Aufschlag auf
+        /// Fernwärme ist fachlich nicht ausgeschlossen. VORBELEGT wird ausschließlich
+        /// der Strom-Carrier (<c>pricing_model = 'ELECTRICITY'</c>), siehe
+        /// <c>SchemaMigration.Schritt_12_Preismodell</c>; für alle übrigen Träger
+        /// bleiben die Werte NULL = „nicht gepflegt".
+        ///
+        /// <b>Kein DDL-DEFAULT.</b> Dieselbe Begründung wie bei
+        /// <see cref="Schritt11_Stromspeicher"/>: Ein DEFAULT gälte nur für künftig
+        /// eingefügte Zeilen und ließe den Bestand auf 0 stehen. Die Vorschlagswerte
+        /// des Fachkonzepts (6,44 / 2,946 / 2,05 / 0,11 / 0,20 ct/kWh) setzt deshalb
+        /// der DML-Teil des Schritts, und die Leseseite kennt ihre eigenen
+        /// Rückfallwerte.
+        ///
+        /// <b>YESNO ohne DEFAULT.</b> <c>ADD COLUMN … YESNO</c> belegt bestehende Zeilen
+        /// in Access mit <c>False</c> — die fünf Komponenten stünden damit auf
+        /// „inaktiv", obwohl Fachkonzept 4.2 alle fünf als aktiv führt. Genau dafür
+        /// gibt es den DML-Teil (Muster Schritt 7, <c>Extrapolation_erlaubt</c>).
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt12_Preismodell =
+        {
+            // --- Aufschlagskomponenten: Wert [ct/kWh] + Aktiv-Schalter --------------
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_NETZENTGELT, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_NETZENTGELT + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_UMLAGEN, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_UMLAGEN + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_STROMSTEUER, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_STROMSTEUER + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_KONZESSION, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_KONZESSION + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_VERTRIEB, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_VERTRIEB + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+
+            // --- Modus und Gesamtwert (Override, Fachkonzept 4.2) -------------------
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_MODUS, "TEXT(50)"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_OVERRIDE, "DOUBLE"),
+
+            // --- Vergütung (Fachkonzept 4.3) ---------------------------------------
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_VERGUETUNG_PV, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_VERGUETUNG_BHKW, "DOUBLE"),
+
+            // --- Preisquellen-Verweise an der Speichervariante ----------------------
+            //
+            // Die Variante führt seit Schritt 11b die Spalte `Preisquelle` (Fixpreis |
+            // Profil | Spotmarkt) — aber keinen Verweis darauf, WELCHE Reihe bzw.
+            // WELCHES Profil gemeint ist. Ohne ihn wäre die Auswahl auf der
+            // Parameterseite nicht persistierbar; „Spotmarkt" bliebe eine Absicht ohne
+            // Datum. NULL bedeutet „nicht gewählt" (FK-Regel des Katalogs), der
+            // Controller sucht dann die zum Simulationsjahr passende Reihe selbst.
+            //
+            // `Aufschlag_Anwenden` ist das Flag aus Fachkonzept 4.2 („je Quelle
+            // existiert das Flag 'Aufschlag anwenden'"). YESNO ohne DEFAULT; die
+            // Vorbelegung auf WAHR setzt der DML-Teil des Schritts — dieselbe Bauform
+            // wie `Extrapolation_erlaubt` in Schritt 7, und aus demselben Grund: Ein
+            // per ADD COLUMN angehängtes Ja/Nein-Feld steht in allen Bestandszeilen auf
+            // FALSCH, und „keine Aufschläge" wäre die stille Ergebnisänderung.
+            new SchemaSpalte(TAB_STROMSPEICHERVARIANTE, SPALTE_VARIANTE_ID_PREISREIHE, "LONG"),
+            new SchemaSpalte(TAB_STROMSPEICHERVARIANTE, SPALTE_VARIANTE_ID_KOSTENPROFIL, "LONG"),
+            new SchemaSpalte(TAB_STROMSPEICHERVARIANTE, SPALTE_VARIANTE_AUFSCHLAG_ANWENDEN, "YESNO"),
+        };
+
+        /// <summary>Verweis auf die gewählte Preisreihe (<c>Tab_Preisreihe.ID</c>), NULL = keine.</summary>
+        public const string SPALTE_VARIANTE_ID_PREISREIHE = "ID_Preisreihe";
+
+        /// <summary>Verweis auf das gewählte Kostenprofil (<c>Tab_Kostenprofil.ID</c>), NULL = keines.</summary>
+        public const string SPALTE_VARIANTE_ID_KOSTENPROFIL = "ID_Kostenprofil";
+
+        /// <summary>Flag „Aufschlag anwenden" der Variante (Fachkonzept 4.2).</summary>
+        public const string SPALTE_VARIANTE_AUFSCHLAG_ANWENDEN = "Aufschlag_Anwenden";
+
+        /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
         /// und ist deshalb nicht Teil von <see cref="Alle"/>.
@@ -301,6 +488,25 @@ namespace WindowsFormsApplication1
         /// Ergebnisspalte gibt es die eigene, tolerante Vorsorge unmittelbar vor dem
         /// Schreiben (<c>ErgebnisCtrl.StelleKesselSpaltenSicher</c>), genau wie für die
         /// Brennstoffspalten des BHKW und die Modulspalten.
+        ///
+        /// <see cref="Schritt11_Stromspeicher"/> steht dagegen sehr wohl hier: Das sind
+        /// EINGABEspalten (Gerätetechnik des Stromspeichers), also genau der Umfang, für
+        /// den die Rückfallebene gedacht ist — dieselbe Begründung wie bei den Schritten
+        /// 1, 2, 6 und 8. Die beiden NEUEN TABELLEN des Pakets
+        /// (<c>Tab_StromspeicherVariante</c>, <c>Tab_ErgebnisStromspeicher</c>) gehören
+        /// nicht hierher: <see cref="Alle"/> kennt nur additive SPALTEN. Für sie gibt es
+        /// die eigene, tolerante Vorsorge unmittelbar vor dem Zugriff
+        /// (<c>StromspeicherVarianteCtrl.StelleTabelleSicher</c>,
+        /// <c>ErgebnisCtrl.StelleStromspeicherTabelleSicher</c>) — dasselbe Muster wie
+        /// bei <c>Tab_ErgebnisPufferspeicher</c>.
+        ///
+        /// <see cref="Schritt12_Preismodell"/> ist BEWUSST NICHT aufgeführt: Die
+        /// Rückfallebene sichert die Eingabespalten der SIMULATION, nicht die des
+        /// Kostenmoduls. <c>energy_project_settings</c> gehört zu einem anderen Bereich
+        /// mit eigenem Lebenszyklus; für den Aufschlagsblock gibt es die eigene,
+        /// tolerante Vorsorge unmittelbar vor dem Zugriff
+        /// (<c>StromAufschlagCtrl.StelleSpaltenSicher</c>) — dasselbe Muster wie bei den
+        /// Brennstoffspalten des BHKW.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
@@ -311,6 +517,7 @@ namespace WindowsFormsApplication1
                 foreach (SchemaSpalte s in Schritt2_Speicher) yield return s;
                 foreach (SchemaSpalte s in Schritt6_FeatureFlag) yield return s;
                 foreach (SchemaSpalte s in Schritt8_Energietraeger) yield return s;
+                foreach (SchemaSpalte s in Schritt11_Stromspeicher) yield return s;
             }
         }
     }

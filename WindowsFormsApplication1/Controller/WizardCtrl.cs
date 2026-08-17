@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.OleDb;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -25,12 +27,16 @@ namespace WindowsFormsApplication1
 
         public bool Del_Projekt_Waermeerzeuger(int projektID)
         {
+            SpVariantenSichern(projektID, TYP_ALLE);
+
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
                 new OleDbParameter[] { new OleDbParameter("@pID", projektID) });
         }
 
         public bool Del_Projekt_Waermeerzeuger(int projektID, int nType)
         {
+            SpVariantenSichern(projektID, nType);
+
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
                 new OleDbParameter[] { new OleDbParameter("@pID", projektID), new OleDbParameter("@type", nType) });
         }
@@ -349,6 +355,404 @@ namespace WindowsFormsApplication1
             return vorhanden;
         }
 
+        // =================================================================================
+        //  AP9b - Rettung der Speicher-Variantenparameter ueber den Del+Add-Speicherweg
+        // =================================================================================
+        //
+        // DAS PROBLEM. Der Speicherweg aller Erzeuger ist Loeschen + Neuanlegen:
+        // Del_Projekt_Waermeerzeuger loescht die Anlagenzeilen des Projekts (wahlweise
+        // eines Typs), Add_WP_Waermeerzeuger schreibt die Liste des Dialogs komplett neu.
+        // Tab_Energieanlagen.ID ist ein AutoWert - die neuen Zeilen bekommen also NEUE
+        // IDs. Seit Migrationsschritt 11b haengt an jeder Speicheranlage eine Zeile in
+        // Tab_StromspeicherVariante, verbunden ueber ID_Energieanlage und mit
+        // Loeschweitergabe (FK_SpVariante_Anlage). Ohne Gegenmassnahme raeumt damit JEDES
+        // Speichern ueber Karte, Kontextmenue oder Wizard saemtliche Betriebsparameter des
+        // Projektspeichers ab: Betriebsart, Quellen-Flags, SoC-Band, Berechnungsart,
+        // Preisquelle, Zins, Nutzungsdauer und die Aktiv-Markierung.
+        //
+        // WARUM HIER UND NICHT AN DEN AUFRUFSTELLEN. Es sind zehn Del+Add-Paare in sechs
+        // Dateien (Karten der Startseite, Kontextmenues, Wizard, Simulationsdetail), und
+        // zwei davon loeschen ohne Typfilter ALLE Anlagen des Projekts. Eine Rettung je
+        // Aufrufstelle waere zehnmal dieselbe Wahrheit - und die elfte Aufrufstelle haette
+        // sie wieder nicht. Del und Add liegen an jeder Stelle auf DEMSELBEN
+        // WizardCtrl-Objekt; die Sicherung darf deshalb ein Feld dieses Objekts sein.
+        //
+        // ZUORDNUNG UEBER (ID_Type, Bezeichner). Die alte ID ist nach dem Loeschen wertlos,
+        // die Geraete-ID (ID_SP) nicht eindeutig - Varianten desselben Speichers teilen sich
+        // eine Geraetekopie. Der Bezeichner IST der Variantenname (Fachkonzept 7.3,
+        // Schritt 2) und ueberlebt den Rundumschlag, weil der Dialog ihn mitfuehrt. Wer
+        // eine Variante im Dialog UMBENENNT, verliert ihre Parameter - dieselbe Grenze wie
+        // bei CopyFromStamm, das ebenfalls ueber den Bezeichner sucht.
+        //
+        // ENTFERNTE ANLAGEN verfallen (gewollt), NEU HINZUGEKOMMENE bekommen die
+        // Standard-Variantenzeile - dieselbe Vorbelegung, die Migrationsschritt 11d und
+        // SpKontextMenuCtrl.VarianteSicherstellen schreiben.
+
+        /// <summary>Kein Typfilter - die Sicherung nimmt beide Speichertypen.</summary>
+        private const int TYP_ALLE = 0;
+
+        /// <summary>
+        /// <c>ID_Type IN (…)</c> der Speicheranlagen. Fest im SQL statt als Parameter:
+        /// OleDb bindet nach POSITION, und eine IN-Liste aus Parametern waere genau die
+        /// Reihenfolgefalle, die <see cref="AnlagenParameter"/> schon einmal gekostet hat.
+        /// Die Werte sind Konstanten des Programms, keine Anwendereingabe.
+        /// </summary>
+        private static readonly string SP_TYPEN =
+            WizardItemClass.SP_TYP.ToString(CultureInfo.InvariantCulture) + ", " +
+            WizardItemClass.REF_SP_TYP.ToString(CultureInfo.InvariantCulture);
+
+        /// <summary>Eine gesicherte Variantenzeile samt ihrem Wiedererkennungsmerkmal.</summary>
+        private sealed class SpVariantenSicherung
+        {
+            public int ID_Type;
+            public string Bezeichner = "";
+            public bool Aktiv;
+            public StromspeicherVarianteModel Parameter;
+        }
+
+        /// <summary>
+        /// Die Sicherung des laufenden Speichervorgangs. <c>null</c> heisst „dieser
+        /// Loeschbefehl hat keine Speicheranlage betroffen" - dann ruehrt das
+        /// anschliessende Add die Variantentabelle nicht an.
+        /// </summary>
+        private List<SpVariantenSicherung> m_SpVariantenSicherung;
+
+        /// <summary>
+        /// Das Projekt, zu dem <see cref="m_SpVariantenSicherung"/> gehoert.
+        ///
+        /// <para>
+        /// NOETIG, WEIL DIE INSTANZ UEBERLEBT. <c>Program.wizardctrl</c> ist ein
+        /// prozessweites Objekt: Der Wizard fuehrt ueber dieselbe Instanz sowohl den
+        /// Bearbeiten-Zweig (Del + Add) als auch den Neuanlage-Zweig, der
+        /// <see cref="Add_WP_Waermeerzeuger"/> OHNE vorheriges Loeschen aufruft
+        /// (<c>WizardParent.btnSpeichern_Click</c>). Bliebe eine Sicherung aus einem
+        /// abgebrochenen Speichervorgang liegen, koennte sie sonst in einem FREMDEN
+        /// Projekt landen, sobald dort zufaellig derselbe Bezeichner vorkommt.
+        /// </para>
+        /// </summary>
+        private int m_SpVariantenProjekt;
+
+        /// <summary>
+        /// Sichert die Betriebsparameter der Speichervarianten, die der folgende
+        /// Loeschbefehl mitnimmt - <b>nur im Arbeitsspeicher</b>, es wird nichts
+        /// geschrieben.
+        /// </summary>
+        /// <param name="projektID">Projekt-ID.</param>
+        /// <param name="nType">
+        /// Der zu loeschende Anlagentyp, oder <see cref="TYP_ALLE"/> fuer den
+        /// Rundumschlag ohne Typfilter. Ein anderer Typ (Kessel, BHKW, PV …) laesst die
+        /// Speicheranlagen unberuehrt - dann gibt es nichts zu sichern.
+        /// </param>
+        private void SpVariantenSichern(int projektID, int nType)
+        {
+            m_SpVariantenSicherung = null;
+            m_SpVariantenProjekt = 0;
+
+            if (projektID <= 0) return;
+            if (nType != TYP_ALLE &&
+                nType != WizardItemClass.SP_TYP && nType != WizardItemClass.REF_SP_TYP) return;
+
+            try
+            {
+                string sql = "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen " +
+                             "WHERE ID_Projekt = ? AND ID_Type IN (" + SP_TYPEN + ")";
+
+                List<OleDbParameter> ps = new List<OleDbParameter>
+                    { new OleDbParameter("@pID", projektID) };
+
+                if (nType != TYP_ALLE)
+                {
+                    sql += " AND ID_Type = ?";
+                    ps.Add(new OleDbParameter("@type", nType));
+                }
+
+                sql += " ORDER BY ID";
+
+                DataTable dt = DataRepository.GetDataTable(sql, ps.ToArray());
+                if (dt == null || dt.Rows.Count == 0) return;
+
+                StromspeicherVarianteCtrl ctrl = new StromspeicherVarianteCtrl();
+                List<SpVariantenSicherung> sicherung = new List<SpVariantenSicherung>();
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = SpZahl(r, "ID");
+                    if (idAnlage <= 0) continue;
+
+                    StromspeicherVarianteModel v = ctrl.ReadByEnergieanlage(idAnlage);
+                    if (v == null) continue;          // Anlage ohne Variantenzeile - nichts zu retten
+
+                    int idType = SpZahl(r, "ID_Type");
+                    string bezeichner = SpText(r, "Bezeichner");
+
+                    // Doppelte Bezeichner sind im Schema moeglich (der Primaerschluessel ist
+                    // ID + ID_Projekt). Die erste Zeile gewinnt - genau die Wahl, die auch
+                    // CopyFromStamm und NameVergeben treffen -, der Rest wird protokolliert.
+                    if (SpTreffer(sicherung, idType, bezeichner) != null)
+                    {
+                        Console.WriteLine("Speichervarianten-Rettung: \"" + bezeichner +
+                                          "\" kommt im Projekt " + projektID + " mehrfach vor - " +
+                                          "gesichert wird die erste Zeile, die Parameter der " +
+                                          "weiteren gehen verloren.");
+                        continue;
+                    }
+
+                    sicherung.Add(new SpVariantenSicherung
+                    {
+                        ID_Type = idType,
+                        Bezeichner = bezeichner,
+                        Aktiv = v.Aktiv,
+                        Parameter = v
+                    });
+                }
+
+                if (sicherung.Count > 0)
+                {
+                    m_SpVariantenSicherung = sicherung;
+                    m_SpVariantenProjekt = projektID;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Eine misslungene Sicherung darf den Speichervorgang nicht anhalten - sie
+                // fuehrt zurueck auf das Verhalten vor diesem Paket, nicht auf einen Fehler.
+                m_SpVariantenSicherung = null;
+                m_SpVariantenProjekt = 0;
+                Console.WriteLine("Die Speichervarianten konnten vor dem Loeschen nicht " +
+                                  "gesichert werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Schreibt die gesicherten Betriebsparameter auf die NEUEN Anlagenzeilen zurueck
+        /// und stellt genau eine aktive Variante her.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Erst nach einem vollstaendig gelungenen Add.</b> Scheitert das Neuanlegen,
+        /// wird gar nichts geschrieben (<see cref="SpVariantenVerwerfen"/>) - eine
+        /// Rettung auf halb wiederhergestellte Anlagenzeilen waere schlimmer als keine.
+        /// </para>
+        /// <para>
+        /// <b>Alles oder nichts.</b> Der Bestandsweg kennt keine Transaktion ueber
+        /// Del+Add hinweg (jeder <c>ExecuteSQL</c> oeffnet seine eigene Verbindung), eine
+        /// hier eingezogene Klammer koennte das Loeschen davor ohnehin nicht mehr
+        /// zuruecknehmen. Statt dessen raeumt diese Methode ihre EIGENEN Schreibvorgaenge
+        /// wieder ab, sobald einer scheitert: Der Zustand danach ist „keine
+        /// Variantenzeilen" - derselbe, den ein Datenbestand ohne Migrationslauf hat und
+        /// den <see cref="StromspeicherSimCtrl"/> als Rueckfall traegt. Eine halb
+        /// geschriebene Sicherung mit widerspruechlicher Aktiv-Markierung gibt es nicht.
+        /// </para>
+        /// <para>
+        /// <b>Aktiv ausschliesslich ueber <c>SetzeAktiv</c>.</b> Eingefuegt wird jede Zeile
+        /// mit <c>Aktiv = false</c>; die Markierung setzt am Ende der eine Schreibweg, der
+        /// die Zusage „hoechstens eine aktive Variante je Projekt" traegt. Zwischenstaende
+        /// mit zwei aktiven Varianten kann es dadurch nicht geben.
+        /// </para>
+        /// </remarks>
+        private void SpVariantenWiederherstellen(int projektID)
+        {
+            List<SpVariantenSicherung> sicherung = m_SpVariantenSicherung;
+            int projektDerSicherung = m_SpVariantenProjekt;
+
+            m_SpVariantenSicherung = null;            // eine Sicherung, ein Wiederherstellen
+            m_SpVariantenProjekt = 0;
+
+            if (sicherung == null || sicherung.Count == 0 || projektID <= 0) return;
+
+            if (projektDerSicherung != projektID)
+            {
+                Console.WriteLine("Speichervarianten-Rettung nicht ausgefuehrt: Die Sicherung " +
+                                  "gehoert zu Projekt " + projektDerSicherung + ", geschrieben wird " +
+                                  "aber Projekt " + projektID + ".");
+                return;
+            }
+
+            List<int> geschrieben = new List<int>();
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen " +
+                    "WHERE ID_Projekt = ? AND ID_Type IN (" + SP_TYPEN + ") ORDER BY ID",
+                    new OleDbParameter("@pID", projektID));
+
+                if (dt == null || dt.Rows.Count == 0) return;
+
+                StromspeicherVarianteCtrl ctrl = new StromspeicherVarianteCtrl();
+                int idVarianteAktiv = 0;
+                int idVarianteErsatz = 0;
+                int uebernommen = 0;
+                int neu = 0;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = SpZahl(r, "ID");
+                    if (idAnlage <= 0) continue;
+
+                    // Fuehrt die Zeile schon eine Variante, ist nichts zu tun. Nach der
+                    // Loeschweitergabe kann das nicht sein - auf einer Datenbank ohne die
+                    // Beziehung aber sehr wohl, und dann ist der vorhandene Satz der
+                    // juengere.
+                    if (ctrl.ReadByEnergieanlage(idAnlage) != null) continue;
+
+                    int idType = SpZahl(r, "ID_Type");
+                    string bezeichner = SpText(r, "Bezeichner");
+
+                    SpVariantenSicherung treffer = SpTreffer(sicherung, idType, bezeichner);
+
+                    // Ohne Treffer ist die Anlage im Dialog NEU hinzugekommen: Sie bekommt
+                    // die Vorbelegung des Modells - dieselben Werte wie aus
+                    // Migrationsschritt 11d.
+                    StromspeicherVarianteModel neuesatz = treffer != null
+                        ? SpParameterUebernehmen(treffer.Parameter)
+                        : new StromspeicherVarianteModel();
+
+                    neuesatz.ID_Energieanlage = idAnlage;
+                    neuesatz.Aktiv = false;           // SetzeAktiv ist die einzige Schreibstelle
+
+                    int idVariante = ctrl.Insert(neuesatz);
+                    if (idVariante <= 0)
+                        throw new InvalidOperationException(
+                            "Die Variantenzeile zu Anlage " + idAnlage + " (\"" + bezeichner +
+                            "\") konnte nicht angelegt werden.");
+
+                    geschrieben.Add(idVariante);
+
+                    if (treffer != null) { uebernommen++; if (treffer.Aktiv) idVarianteAktiv = idVariante; }
+                    else neu++;
+
+                    // Ersatzwahl, falls die gesicherte aktive Variante nicht wiederkehrt
+                    // (im Dialog entfernt oder umbenannt): die erste echte Speicheranlage
+                    // in Anlagenreihenfolge - dieselbe Wahl wie Migrationsschritt 11d und
+                    // SpKontextMenuCtrl.AktiveVarianteSicherstellen. Die Referenzliste
+                    // (REF_SP_TYP) kommt dafuer nicht in Frage: Sie fuehrt den
+                    // Vergleichsfall des Projekts, nicht dessen Planvarianten.
+                    if (idVarianteErsatz == 0 && idType == WizardItemClass.SP_TYP)
+                        idVarianteErsatz = idVariante;
+                }
+
+                if (geschrieben.Count == 0) return;
+
+                // Genau eine aktive Variante - ohne sie faellt die Gesamtsimulation auf die
+                // Aggregation ueber alle Speicheranlagen zurueck (StromspeicherSimCtrl).
+                int idAktiv = idVarianteAktiv > 0 ? idVarianteAktiv : idVarianteErsatz;
+                if (idAktiv > 0 && !ctrl.SetzeAktiv(projektID, idAktiv))
+                    Console.WriteLine("Speichervarianten-Rettung: Die aktive Variante des " +
+                                      "Projekts " + projektID + " konnte nicht gesetzt werden.");
+
+                Console.WriteLine("Speichervarianten-Rettung: " + uebernommen +
+                                  " Betriebsparametersaetze uebernommen, " + neu +
+                                  " neue Anlage(n) mit Vorgabewerten, aktiv = Variante " + idAktiv + ".");
+            }
+            catch (Exception ex)
+            {
+                SpVariantenZuruecknehmen(geschrieben, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Nimmt die bereits geschriebenen Variantenzeilen dieses Rettungslaufs wieder
+        /// zurueck. Der Zustand danach ist derselbe wie ohne Rettung; halb wiederhergestellte
+        /// Betriebsparameter waeren nicht erkennbar und damit gefaehrlicher als keine.
+        /// </summary>
+        private static void SpVariantenZuruecknehmen(List<int> geschrieben, string grund)
+        {
+            Console.WriteLine("Speichervarianten-Rettung abgebrochen: " + grund);
+
+            if (geschrieben == null || geschrieben.Count == 0) return;
+
+            try
+            {
+                StromspeicherVarianteCtrl ctrl = new StromspeicherVarianteCtrl();
+                foreach (int id in geschrieben) ctrl.Delete(id);
+
+                Console.WriteLine("Speichervarianten-Rettung: " + geschrieben.Count +
+                                  " bereits geschriebene Zeile(n) wieder entfernt.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die angefangene Speichervarianten-Rettung konnte nicht " +
+                                  "zurueckgenommen werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Verwirft eine Sicherung, ohne sie zu schreiben - der Weg bei einem
+        /// gescheiterten <see cref="Add_WP_Waermeerzeuger"/>.
+        /// </summary>
+        private void SpVariantenVerwerfen(string grund)
+        {
+            if (m_SpVariantenSicherung == null) return;
+
+            m_SpVariantenSicherung = null;
+            m_SpVariantenProjekt = 0;
+            Console.WriteLine("Speichervarianten-Rettung nicht ausgefuehrt (" + grund +
+                              ") - die Betriebsparameter des Projektspeichers sind verloren.");
+        }
+
+        /// <summary>
+        /// Betriebsparameter einer Sicherung in ein frisches Modell - ohne <c>ID</c>,
+        /// <c>ID_Energieanlage</c> und <c>Aktiv</c>. Wortgleich zu
+        /// <c>SpKontextMenuCtrl.ParameterUebernehmen</c>: Die drei sind Eigenschaften der
+        /// ZEILE, nicht der Betriebsfuehrung.
+        /// </summary>
+        private static StromspeicherVarianteModel SpParameterUebernehmen(StromspeicherVarianteModel vorlage)
+        {
+            if (vorlage == null) return new StromspeicherVarianteModel();
+
+            return new StromspeicherVarianteModel
+            {
+                Betriebsart = vorlage.Betriebsart,
+                PV_Zulaessig = vorlage.PV_Zulaessig,
+                BHKW_Ueberschuss_Zulaessig = vorlage.BHKW_Ueberschuss_Zulaessig,
+                BHKW_Stromgefuehrt = vorlage.BHKW_Stromgefuehrt,
+                Netzentladung = vorlage.Netzentladung,
+                SoC_Min_Prozent = vorlage.SoC_Min_Prozent,
+                SoC_Max_Prozent = vorlage.SoC_Max_Prozent,
+                Berechnungsart = vorlage.Berechnungsart,
+                Preisquelle = vorlage.Preisquelle,
+                ID_Preisreihe = vorlage.ID_Preisreihe,
+                ID_Kostenprofil = vorlage.ID_Kostenprofil,
+                Aufschlag_Anwenden = vorlage.Aufschlag_Anwenden,
+                Kompatibilitaetsmodus = vorlage.Kompatibilitaetsmodus,
+                Kapitalzins = vorlage.Kapitalzins,
+                Nutzungsdauer = vorlage.Nutzungsdauer,
+                L_P = vorlage.L_P,
+                A_Netzlade = vorlage.A_Netzlade,
+                Ladeschwellwert = vorlage.Ladeschwellwert
+            };
+        }
+
+        /// <summary>
+        /// Die Sicherung zu (<paramref name="idType"/>, <paramref name="bezeichner"/>),
+        /// oder <c>null</c>. Verglichen wird ohne Gross-/Kleinschreibung und ohne
+        /// Randleerzeichen - so, wie Access den Bezeichner in
+        /// <c>SpKontextMenuCtrl.NameVergeben</c> ebenfalls vergleicht.
+        /// </summary>
+        private static SpVariantenSicherung SpTreffer(List<SpVariantenSicherung> sicherung,
+                                                      int idType, string bezeichner)
+        {
+            foreach (SpVariantenSicherung s in sicherung)
+                if (s.ID_Type == idType &&
+                    string.Equals(s.Bezeichner, bezeichner, StringComparison.OrdinalIgnoreCase))
+                    return s;
+
+            return null;
+        }
+
+        private static int SpZahl(DataRow r, string spalte)
+        {
+            return (r.Table.Columns.Contains(spalte) && r[spalte] != DBNull.Value)
+                ? Convert.ToInt32(r[spalte]) : 0;
+        }
+
+        private static string SpText(DataRow r, string spalte)
+        {
+            if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return "";
+            return (r[spalte].ToString() ?? "").Trim();
+        }
+
         public bool Add_WP_Waermeerzeuger(int projektID, List<WErzeugerModel> list)
         {
             try
@@ -423,14 +827,23 @@ namespace WindowsFormsApplication1
                     // dieselbe Wahrheit, die auch WErzeugerCtrl.Insert benutzt.
                     if (!DataRepository.ExecuteSQL(SQL_ANLAGE_INSERT,
                                                    AnlagenParameter(projektID, item, pufferCache)))
+                    {
+                        SpVariantenVerwerfen("das Neuanlegen der Anlagen ist gescheitert");
                         return false;
+                    }
                 }
+
+                // AP9b: Erst jetzt, mit vollstaendig neu geschriebenen Anlagenzeilen, sind
+                // die neuen IDs bekannt und die Betriebsparameter des Projektspeichers
+                // koennen zurueck an ihre Variante (siehe Block ueber dieser Methode).
+                SpVariantenWiederherstellen(projektID);
 
                 Console.WriteLine("Daten erfolgreich aktualisiert.");
                 return true;
             }
             catch (Exception ex)
             {
+                SpVariantenVerwerfen("beim Neuanlegen der Anlagen kam es zu einem Fehler");
                 Console.WriteLine("Fehler beim Aktualisieren der Daten: " + ex.Message);
                 return false;
             }

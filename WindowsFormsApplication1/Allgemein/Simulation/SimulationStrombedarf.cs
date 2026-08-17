@@ -108,17 +108,37 @@ namespace WindowsFormsApplication1
 
                 index = 0;
                 wert = 0;
+                Interval = 0;
 
                 while (rs.Next())
                 {
                     Interval = (int)rs.Read("Zeitinterval");
                     wert = (double)rs.Read("Wert");
-                    Stromganglinie[index++] = (float)wert;
+                    if (index < Stromganglinie.Length) Stromganglinie[index] = (float)wert;
+                    index++;
                 }
                 rs.Close();
-                
+
+                // AP5 (Konzept 3.2): Sicherheitsnetz für Altbestände. Bis zur Import-
+                // erweiterung konnte eine Ganglinie mit unpassender Wertzahl in der Datenbank
+                // stehen. Die Additionsschleife unten lief dann stillschweigend über die
+                // Mindestlänge, der Rest blieb 0 - ein zu kleiner Jahresstrombedarf, der
+                // vollständig aussah. Minutenreihen (Zeitinterval 60, 525.600 Werte) passten
+                // außerdem nie in den 35.040er Vektor und liefen in eine IndexOutOfRange-
+                // Ausnahme. Neu importierte Ganglinien sind durch GanglinienPruefung auf
+                // 8.760 bzw. 35.040 normalisiert; hier darf nichts mehr anlaufen.
+                int erwartet = Interval == 1 ? 8760 : (Interval == 4 ? 8760 * 4 : 0);
+                if (erwartet == 0 || index != erwartet)
+                {
+                    Fehlertext = string.Format(MyResource.Resource.IMPORT_GANGLINIE_RASTER_PASST_NICHT,
+                                               waectrl.items[n].m_ID_Stromganglinie, index, Interval, erwartet);
+                    SimulationProtokoll.Aktuell.Fehlermeldung(
+                        MyResource.Resource.SIMENG_PRAEFIX_STROMBEDARF + Fehlertext);
+                    return;
+                }
+
                 // Ganglinie mit Stundenwerte aufspreitzen auf 1/4 Stunden
-                if (Interval == 1) 
+                if (Interval == 1)
                     Stromganglinie = Stundenwerte_zu_viertelstunden(Stromganglinie);
 
                 for (int i = 0; i < Strombedarf_viertelStundenwerte.Length && i < Stromganglinie.Length; i++)

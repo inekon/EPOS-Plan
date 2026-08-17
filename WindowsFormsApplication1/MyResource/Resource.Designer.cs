@@ -61,6 +61,159 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzladung [kWh] ähnelt.
+        /// </summary>
+        public static string ARB_CSV_LADUNG_NETZ {
+            get {
+                return ResourceManager.GetString("ARB_CSV_LADUNG_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzverkauf [kWh] ähnelt.
+        /// </summary>
+        public static string ARB_CSV_VERKAUF {
+            get {
+                return ResourceManager.GetString("ARB_CSV_VERKAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zyklenbudget war vor Jahresende aufgebraucht – die Preis [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ARB_ERG_AMPEL_ERSCHOEPFT {
+            get {
+                return ResourceManager.GetString("ARB_ERG_AMPEL_ERSCHOEPFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zyklenbudget (Jahresanteil) ähnelt.
+        /// </summary>
+        public static string ARB_ERG_BUDGET {
+            get {
+                return ResourceManager.GetString("ARB_ERG_BUDGET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zyklenbudget-Auslastung ähnelt.
+        /// </summary>
+        public static string ARB_ERG_BUDGET_AUSLASTUNG {
+            get {
+                return ResourceManager.GetString("ARB_ERG_BUDGET_AUSLASTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verschleiß je ausgespeicherter kWh ähnelt.
+        /// </summary>
+        public static string ARB_ERG_KVER {
+            get {
+                return ResourceManager.GetString("ARB_ERG_KVER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteuerung: angenommene Paarungen ähnelt.
+        /// </summary>
+        public static string ARB_ERG_PAARE {
+            get {
+                return ResourceManager.GetString("ARB_ERG_PAARE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladung ins Netz (Verkauf) ähnelt.
+        /// </summary>
+        public static string ARB_ERG_VERKAUF {
+            get {
+                return ResourceManager.GetString("ARB_ERG_VERKAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Excel-Kompatibilitätsmodus gilt nur für die Dauernutzung [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ARB_HINWEIS_KOMPATIBILITAET {
+            get {
+                return ResourceManager.GetString("ARB_HINWEIS_KOMPATIBILITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grünstrombetrieb: Aus dem Netz wird nicht geladen. Geplant w [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ARB_HINWEIS_NUR_VERKAUF {
+            get {
+                return ResourceManager.GetString("ARB_HINWEIS_NUR_VERKAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteuerung ohne Entladung ins Netz: Ohne Verkaufsmöglich [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ARB_HINWEIS_OHNE_NETZENTLADUNG {
+            get {
+                return ResourceManager.GetString("ARB_HINWEIS_OHNE_NETZENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Preisreihen der Preissteuerung fehlen. Gerechnet wird di [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ARB_HINWEIS_OHNE_PREISREIHEN {
+            get {
+                return ResourceManager.GetString("ARB_HINWEIS_OHNE_PREISREIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteuerung: {0} Paarungen, {1} Verkaufsslots, {2} Kandid [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ARB_HINWEIS_PLAN {
+            get {
+                return ResourceManager.GetString("ARB_HINWEIS_PLAN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Preissteuerung gibt es keine Excel-Referenz – die Ar [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ARB_OHNE_EXCEL_REFERENZ {
+            get {
+                return ResourceManager.GetString("ARB_OHNE_EXCEL_REFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zusätzliche Schranke für die Netzladung: Geladen wird nur, w [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ARB_PARAM_HINWEIS_LADESCHWELLE {
+            get {
+                return ResourceManager.GetString("ARB_PARAM_HINWEIS_LADESCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlaubt den aktiven Verkauf ins Netz. Wirksam wird er mit de [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ARB_PARAM_HINWEIS_NETZENTLADUNG {
+            get {
+                return ResourceManager.GetString("ARB_PARAM_HINWEIS_NETZENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Default 0 unterstellt Netzentgeltbefreiung für den Speicher. [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string ARB_PARAM_HINWEIS_NETZLADEAUFSCHLAG {
+            get {
+                return ResourceManager.GetString("ARB_PARAM_HINWEIS_NETZLADEAUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Bedarf &amp; Deckung (kWh) ähnelt.
         /// </summary>
         public static string CHART_ACHSE_ENERGIEBEDARF_DECKUNG {
@@ -4451,6 +4604,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher: Die Speicherrechnung ist fehlgeschlagen ({0}) - der Lauf rechnet ohne Speicherwirkung weiter. ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher: Dem Projekt ist kein Stromspeicher zugeordnet - die Speicherrechnung entfällt. ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_KEIN_SPEICHER {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_KEIN_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher: Der zugeordnete Speicher hat keine Kapazität (Energie = 0) - die Speicherrechnung entfällt. ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_OHNE_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_OHNE_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher: Für den Speicher ist keine Leistung hinterlegt - gerechnet wird mit 1 C (Leistung = Kapazität), wie im bisherigen Verhalten. ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_OHNE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_OHNE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher: Die Ergebnisreihe hat {0} statt {1} Intervalle - der Lauf rechnet ohne Speicherwirkung weiter. ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_RASTER_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_RASTER_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern des Ergebnisses: {0} ähnelt.
         /// </summary>
         public static string SIMENG_SPEICHERN_DES_ERGEBNISSES {
@@ -5917,6 +6115,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteuerung / Arbitrage ähnelt.
+        /// </summary>
+        public static string SP_BERECHNUNG_ANZEIGE_ARBITRAGE {
+            get {
+                return ResourceManager.GetString("SP_BERECHNUNG_ANZEIGE_ARBITRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
         /// </summary>
         public static string Text_Beschreibung {
@@ -6039,6 +6246,4983 @@ namespace WindowsFormsApplication1.MyResource {
         public static string Text_Select {
             get {
                 return ResourceManager.GetString("Text_Select", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätetechnik ähnelt.
+        /// </summary>
+        public static string SP_GRUPPE_GERAETETECHNIK {
+            get {
+                return ResourceManager.GetString("SP_GRUPPE_GERAETETECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad (Round-Trip) ähnelt.
+        /// </summary>
+        public static string SP_LABEL_WIRKUNGSGRAD_RT {
+            get {
+                return ResourceManager.GetString("SP_LABEL_WIRKUNGSGRAD_RT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zyklen (zugesichert) ähnelt.
+        /// </summary>
+        public static string SP_LABEL_ZYKLEN {
+            get {
+                return ResourceManager.GetString("SP_LABEL_ZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verschleißkosten ähnelt.
+        /// </summary>
+        public static string SP_LABEL_VERSCHLEISSKOSTEN {
+            get {
+                return ResourceManager.GetString("SP_LABEL_VERSCHLEISSKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungskosten ähnelt.
+        /// </summary>
+        public static string SP_LABEL_LEISTUNGSKOSTEN {
+            get {
+                return ResourceManager.GetString("SP_LABEL_LEISTUNGSKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition (fix) ähnelt.
+        /// </summary>
+        public static string SP_LABEL_INVESTITION_FIX {
+            get {
+                return ResourceManager.GetString("SP_LABEL_INVESTITION_FIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby-Verbrauch ähnelt.
+        /// </summary>
+        public static string SP_LABEL_STANDBY {
+            get {
+                return ResourceManager.GetString("SP_LABEL_STANDBY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/(kWh·Zyklus) ähnelt.
+        /// </summary>
+        public static string SP_EINHEIT_ZYKLUSKOSTEN {
+            get {
+                return ResourceManager.GetString("SP_EINHEIT_ZYKLUSKOSTEN", resourceCulture);
+            }
+        }
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsführung (aktive Variante) ähnelt.
+        /// </summary>
+        public static string SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG {
+            get {
+                return ResourceManager.GetString("SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässige Ladequellen ähnelt.
+        /// </summary>
+        public static string SP_PARAM_GRUPPE_QUELLEN {
+            get {
+                return ResourceManager.GetString("SP_PARAM_GRUPPE_QUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit ähnelt.
+        /// </summary>
+        public static string SP_PARAM_GRUPPE_WIRTSCHAFT {
+            get {
+                return ResourceManager.GetString("SP_PARAM_GRUPPE_WIRTSCHAFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand min. ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_SOC_MIN {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_SOC_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand max. ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_SOC_MAX {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_SOC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lade-/Entladeleistung [kW] ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_LADELEISTUNG {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_LADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladeschwellwert [ct/kWh] ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_LADESCHWELLE {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_LADESCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnungsart ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_BERECHNUNGSART {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_BERECHNUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Kompatibilitätsmodus ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_KOMPATIBILITAET {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_KOMPATIBILITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalzins ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_KAPITALZINS {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_KAPITALZINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis Netz ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag Netzladestrom ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_NETZLADEAUFSCHLAG {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_NETZLADEAUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Überschuss ähnelt.
+        /// </summary>
+        public static string SP_PARAM_CHK_PV {
+            get {
+                return ResourceManager.GetString("SP_PARAM_CHK_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Überschuss ähnelt.
+        /// </summary>
+        public static string SP_PARAM_CHK_BHKW {
+            get {
+                return ResourceManager.GetString("SP_PARAM_CHK_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW stromgeführt nachladen ähnelt.
+        /// </summary>
+        public static string SP_PARAM_CHK_BHKW_STROMGEFUEHRT {
+            get {
+                return ResourceManager.GetString("SP_PARAM_CHK_BHKW_STROMGEFUEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladung ins Netz (Verkauf) ähnelt.
+        /// </summary>
+        public static string SP_PARAM_CHK_NETZENTLADUNG {
+            get {
+                return ResourceManager.GetString("SP_PARAM_CHK_NETZENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ab Ausbaustufe – noch ohne Wirkung auf das Ergebnis ähnelt.
+        /// </summary>
+        public static string SP_PARAM_HINWEIS_AUSBAUSTUFE {
+            get {
+                return ResourceManager.GetString("SP_PARAM_HINWEIS_AUSBAUSTUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätedatum: Summe der Leistungen aller Speicheranlagen des  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SP_PARAM_HINWEIS_LADELEISTUNG {
+            get {
+                return ResourceManager.GetString("SP_PARAM_HINWEIS_LADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur für Referenzrechnungen gegen die Excel-Mappe – kein Prod [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SP_PARAM_HINWEIS_KOMPATIBILITAET {
+            get {
+                return ResourceManager.GetString("SP_PARAM_HINWEIS_KOMPATIBILITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das SoC-Band einer Variante steht immer in % der Nennkapazit [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SP_PARAM_HINWEIS_SOC_EINHEIT {
+            get {
+                return ResourceManager.GetString("SP_PARAM_HINWEIS_SOC_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktive Variante: {0} ähnelt.
+        /// </summary>
+        public static string SP_PARAM_STATUS_VARIANTE {
+            get {
+                return ResourceManager.GetString("SP_PARAM_STATUS_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine aktive Speichervariante – die Eingaben sind gesperrt. ähnelt.
+        /// </summary>
+        public static string SP_PARAM_STATUS_KEINE_VARIANTE {
+            get {
+                return ResourceManager.GetString("SP_PARAM_STATUS_KEINE_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grünstrom (nur Erzeugungsüberschuss) ähnelt.
+        /// </summary>
+        public static string SP_BETRIEBSART_ANZEIGE_GRUENSTROM {
+            get {
+                return ResourceManager.GetString("SP_BETRIEBSART_ANZEIGE_GRUENSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Graustrom (Netzladung zulässig) ähnelt.
+        /// </summary>
+        public static string SP_BETRIEBSART_ANZEIGE_GRAUSTROM {
+            get {
+                return ResourceManager.GetString("SP_BETRIEBSART_ANZEIGE_GRAUSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dauernutzung ähnelt.
+        /// </summary>
+        public static string SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG {
+            get {
+                return ResourceManager.GetString("SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher – Ergebnis ähnelt.
+        /// </summary>
+        public static string SP_ERG_TITEL {
+            get {
+                return ResourceManager.GetString("SP_ERG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Speicherrechnung – bitte die Simulation starten. ähnelt.
+        /// </summary>
+        public static string SP_ERG_KEIN_LAUF {
+            get {
+                return ResourceManager.GetString("SP_ERG_KEIN_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} · {2} ähnelt.
+        /// </summary>
+        public static string SP_ERG_KOPF_VARIANTE {
+            get {
+                return ResourceManager.GetString("SP_ERG_KOPF_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl ähnelt.
+        /// </summary>
+        public static string SP_ERG_SPALTE_KENNZAHL {
+            get {
+                return ResourceManager.GetString("SP_ERG_SPALTE_KENNZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string SP_ERG_SPALTE_WERT {
+            get {
+                return ResourceManager.GetString("SP_ERG_SPALTE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string SP_ERG_SPALTE_EINHEIT {
+            get {
+                return ResourceManager.GetString("SP_ERG_SPALTE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie ähnelt.
+        /// </summary>
+        public static string SP_ERG_GRUPPE_ENERGIE {
+            get {
+                return ResourceManager.GetString("SP_ERG_GRUPPE_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher ähnelt.
+        /// </summary>
+        public static string SP_ERG_GRUPPE_SPEICHER {
+            get {
+                return ResourceManager.GetString("SP_ERG_GRUPPE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaft ähnelt.
+        /// </summary>
+        public static string SP_ERG_GRUPPE_WIRTSCHAFT {
+            get {
+                return ResourceManager.GetString("SP_ERG_GRUPPE_WIRTSCHAFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladung aus PV-Überschuss ähnelt.
+        /// </summary>
+        public static string SP_ERG_LADUNG_PV {
+            get {
+                return ResourceManager.GetString("SP_ERG_LADUNG_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladung aus BHKW-Überschuss ähnelt.
+        /// </summary>
+        public static string SP_ERG_LADUNG_BHKW {
+            get {
+                return ResourceManager.GetString("SP_ERG_LADUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladung aus dem Netz ähnelt.
+        /// </summary>
+        public static string SP_ERG_LADUNG_NETZ {
+            get {
+                return ResourceManager.GetString("SP_ERG_LADUNG_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladung gesamt ähnelt.
+        /// </summary>
+        public static string SP_ERG_LADUNG_GESAMT {
+            get {
+                return ResourceManager.GetString("SP_ERG_LADUNG_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladung ähnelt.
+        /// </summary>
+        public static string SP_ERG_ENTLADUNG {
+            get {
+                return ResourceManager.GetString("SP_ERG_ENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherverluste ähnelt.
+        /// </summary>
+        public static string SP_ERG_VERLUSTE {
+            get {
+                return ResourceManager.GetString("SP_ERG_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug ohne Speicher ähnelt.
+        /// </summary>
+        public static string SP_ERG_NETZBEZUG_OHNE {
+            get {
+                return ResourceManager.GetString("SP_ERG_NETZBEZUG_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug mit Speicher ähnelt.
+        /// </summary>
+        public static string SP_ERG_NETZBEZUG_MIT {
+            get {
+                return ResourceManager.GetString("SP_ERG_NETZBEZUG_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung ohne Speicher ähnelt.
+        /// </summary>
+        public static string SP_ERG_EINSPEISUNG_OHNE {
+            get {
+                return ResourceManager.GetString("SP_ERG_EINSPEISUNG_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung mit Speicher ähnelt.
+        /// </summary>
+        public static string SP_ERG_EINSPEISUNG_MIT {
+            get {
+                return ResourceManager.GetString("SP_ERG_EINSPEISUNG_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauchsquote (mit Speicher) ähnelt.
+        /// </summary>
+        public static string SP_ERG_EIGENVERBRAUCH {
+            get {
+                return ResourceManager.GetString("SP_ERG_EIGENVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Autarkiegrad (mit Speicher) ähnelt.
+        /// </summary>
+        public static string SP_ERG_AUTARKIE {
+            get {
+                return ResourceManager.GetString("SP_ERG_AUTARKIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Äquivalente Vollzyklen n_zyk ähnelt.
+        /// </summary>
+        public static string SP_ERG_VOLLZYKLEN {
+            get {
+                return ResourceManager.GetString("SP_ERG_VOLLZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand Minimum ähnelt.
+        /// </summary>
+        public static string SP_ERG_SOC_MIN {
+            get {
+                return ResourceManager.GetString("SP_ERG_SOC_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand Mittel ähnelt.
+        /// </summary>
+        public static string SP_ERG_SOC_MITTEL {
+            get {
+                return ResourceManager.GetString("SP_ERG_SOC_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand Maximum ähnelt.
+        /// </summary>
+        public static string SP_ERG_SOC_MAX {
+            get {
+                return ResourceManager.GetString("SP_ERG_SOC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitanteil an der Untergrenze ähnelt.
+        /// </summary>
+        public static string SP_ERG_ZEITANTEIL_UNTEN {
+            get {
+                return ResourceManager.GetString("SP_ERG_ZEITANTEIL_UNTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitanteil an der Obergrenze ähnelt.
+        /// </summary>
+        public static string SP_ERG_ZEITANTEIL_OBEN {
+            get {
+                return ResourceManager.GetString("SP_ERG_ZEITANTEIL_OBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zyklen über die Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string SP_ERG_ZYKLEN_HOCHRECHNUNG {
+            get {
+                return ResourceManager.GetString("SP_ERG_ZYKLEN_HOCHRECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zugesicherte Zyklen N_zyk ähnelt.
+        /// </summary>
+        public static string SP_ERG_ZYKLEN_ZUGESICHERT {
+            get {
+                return ResourceManager.GetString("SP_ERG_ZYKLEN_ZUGESICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag: vermiedener Netzbezug ähnelt.
+        /// </summary>
+        public static string SP_ERG_ERTRAG_BEZUG {
+            get {
+                return ResourceManager.GetString("SP_ERG_ERTRAG_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abzug: entgangene Einspeisevergütung ähnelt.
+        /// </summary>
+        public static string SP_ERG_ERTRAG_VERGUETUNG {
+            get {
+                return ResourceManager.GetString("SP_ERG_ERTRAG_VERGUETUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag: Verkauf ins Netz ähnelt.
+        /// </summary>
+        public static string SP_ERG_ERTRAG_NETZ {
+            get {
+                return ResourceManager.GetString("SP_ERG_ERTRAG_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten: Netzladung ähnelt.
+        /// </summary>
+        public static string SP_ERG_KOSTEN_LADUNG {
+            get {
+                return ResourceManager.GetString("SP_ERG_KOSTEN_LADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag: Leistungspreisersparnis ähnelt.
+        /// </summary>
+        public static string SP_ERG_ERTRAG_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("SP_ERG_ERTRAG_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten: Verschleiß K_ver (nicht in ΔJ) ähnelt.
+        /// </summary>
+        public static string SP_ERG_VERSCHLEISS {
+            get {
+                return ResourceManager.GetString("SP_ERG_VERSCHLEISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition I ähnelt.
+        /// </summary>
+        public static string SP_ERG_INVESTITION {
+            get {
+                return ResourceManager.GetString("SP_ERG_INVESTITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annuität A ähnelt.
+        /// </summary>
+        public static string SP_ERG_ANNUITAET {
+            get {
+                return ResourceManager.GetString("SP_ERG_ANNUITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresüberschuss ΔJ ähnelt.
+        /// </summary>
+        public static string SP_ERG_JAHRESUEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("SP_ERG_JAHRESUEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag Referenzjahr E_a,1 ähnelt.
+        /// </summary>
+        public static string SP_ERG_ERTRAG_JAHR1 {
+            get {
+                return ResourceManager.GetString("SP_ERG_ERTRAG_JAHR1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag degradationsäquivalent E_a,äq ähnelt.
+        /// </summary>
+        public static string SP_ERG_ERTRAG_AEQUIVALENT {
+            get {
+                return ResourceManager.GetString("SP_ERG_ERTRAG_AEQUIVALENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation statisch ähnelt.
+        /// </summary>
+        public static string SP_ERG_AMORT_STATISCH {
+            get {
+                return ResourceManager.GetString("SP_ERG_AMORT_STATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation dynamisch ähnelt.
+        /// </summary>
+        public static string SP_ERG_AMORT_DYNAMISCH {
+            get {
+                return ResourceManager.GetString("SP_ERG_AMORT_DYNAMISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert (NPV) ähnelt.
+        /// </summary>
+        public static string SP_ERG_KAPITALWERT {
+            get {
+                return ResourceManager.GetString("SP_ERG_KAPITALWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht amortisierbar ähnelt.
+        /// </summary>
+        public static string SP_ERG_NICHT_AMORTISIERBAR {
+            get {
+                return ResourceManager.GetString("SP_ERG_NICHT_AMORTISIERBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die &gt; Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string SP_ERG_UEBER_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("SP_ERG_UEBER_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zyklenbudget eingehalten: {0:N0} von {1:N0} zugesicherten Zy [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SP_ERG_AMPEL_OK {
+            get {
+                return ResourceManager.GetString("SP_ERG_AMPEL_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zyklenbudget knapp: {0:N0} von {1:N0} zugesicherten Zyklen. ähnelt.
+        /// </summary>
+        public static string SP_ERG_AMPEL_KNAPP {
+            get {
+                return ResourceManager.GetString("SP_ERG_AMPEL_KNAPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zyklenbudget überschritten: {0:N0} hochgerechnete gegenüber  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SP_ERG_AMPEL_UEBERSCHRITTEN {
+            get {
+                return ResourceManager.GetString("SP_ERG_AMPEL_UEBERSCHRITTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne zugesicherte Zyklenzahl (N_zyk) ist keine Budgetbewertu [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SP_ERG_AMPEL_OHNE_ANGABE {
+            get {
+                return ResourceManager.GetString("SP_ERG_AMPEL_OHNE_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel-Kompatibilitätsmodus aktiv – dies ist kein Produktiver [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SP_ERG_KOMPATIBILITAET_AKTIV {
+            get {
+                return ResourceManager.GetString("SP_ERG_KOMPATIBILITAET_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand – Jahresgang ähnelt.
+        /// </summary>
+        public static string SP_CHART_TITEL_SOC {
+            get {
+                return ResourceManager.GetString("SP_CHART_TITEL_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher [kWh] ähnelt.
+        /// </summary>
+        public static string SP_CHART_ACHSE_SOC {
+            get {
+                return ResourceManager.GetString("SP_CHART_ACHSE_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand [kWh] ähnelt.
+        /// </summary>
+        public static string SP_CSV_SOC {
+            get {
+                return ResourceManager.GetString("SP_CSV_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladung [kWh] ähnelt.
+        /// </summary>
+        public static string SP_CSV_LADUNG {
+            get {
+                return ResourceManager.GetString("SP_CSV_LADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladung [kWh] ähnelt.
+        /// </summary>
+        public static string SP_CSV_ENTLADUNG {
+            get {
+                return ResourceManager.GetString("SP_CSV_ENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geldwert [€] ähnelt.
+        /// </summary>
+        public static string SP_CSV_GELDWERT {
+            get {
+                return ResourceManager.GetString("SP_CSV_GELDWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher_Projekt_{0}.csv ähnelt.
+        /// </summary>
+        public static string SP_DATEI_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("SP_DATEI_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherrechnung als CSV exportieren (Zeitstempel, Außentemp [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SP_TOOLTIP_CSV {
+            get {
+                return ResourceManager.GetString("SP_TOOLTIP_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherentladung ähnelt.
+        /// </summary>
+        public static string CHART_SEGMENT_SPEICHERENTLADUNG {
+            get {
+                return ResourceManager.GetString("CHART_SEGMENT_SPEICHERENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag [€/a] ähnelt.
+        /// </summary>
+        public static string SP_SPALTE_ERTRAG {
+            get {
+                return ResourceManager.GetString("SP_SPALTE_ERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation [a] ähnelt.
+        /// </summary>
+        public static string SP_SPALTE_AMORTISATION {
+            get {
+                return ResourceManager.GetString("SP_SPALTE_AMORTISATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (aktiv) ähnelt.
+        /// </summary>
+        public static string SP_MARKER_AKTIVE_VARIANTE {
+            get {
+                return ResourceManager.GetString("SP_MARKER_AKTIVE_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt fuehrt keine aktive Speichervariante - gerechnet [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_OHNE_VARIANTE {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_OHNE_VARIANTE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne aktive Speichervariante rechnet der Gesamtlauf wie bish [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_AGGREGATION {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_AGGREGATION", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die aktive Speichervariante gehoert zu keiner Speicheranlage  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_AKTIVE_OHNE_ANLAGE {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_AKTIVE_OHNE_ANLAGE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das SoC-Band der aktiven Variante ist unbrauchbar (max &lt;= mi [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_SOC_BAND {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_SOC_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Berechnungsart "{0}" ist noch nicht umgesetzt - gerechne [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_BERECHNUNGSART {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_BERECHNUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keinen einzigen Wert. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_KEINE_WERTE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_KEINE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: kein gültiger Zahlenwert (NaN oder unendlich). ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_UNGUELTIGER_WERT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_UNGUELTIGER_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert- und Zeitstempelspalte sind unterschiedlich lang ({0} z [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_ZEITSTEMPEL_ANZAHL {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_ZEITSTEMPEL_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraster erkannt: {0} Werte, {1} Intervalle je Stunde. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_RASTER_ERKANNT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_RASTER_ERKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Werte passen zu keinem Jahresraster (8.760 / 8.784 / 35. [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_RASTER_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_RASTER_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gewählte Raster ({0} Intervalle je Stunde) passt nicht z [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_RASTER_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_RASTER_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempelabstand {0} Minuten, also {1} Intervalle je Stund [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_RASTER_AUS_ZEIT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_RASTER_AUS_ZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempelabstand ({0} Intervalle je Stunde) und Wertanzahl [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_RASTER_WIDERSPRUCH {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_RASTER_WIDERSPRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zeitstempelabstand von {0} Minuten ergibt kein bekanntes [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_ZEITSCHRITT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_ZEITSCHRITT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempel werden als Intervallanfang gelesen. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_KONVENTION_ANFANG {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_KONVENTION_ANFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempel werden als Intervallende gelesen (erster Eintrag [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_KONVENTION_ENDE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_KONVENTION_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe beginnt nicht am 1. Januar um 00:00, sondern am {0 [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_JAHRESANFANG {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_JAHRESANFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {1}: der Zeitstempel {0} liegt vor dem vorhergehenden. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_NICHT_MONOTON {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_NICHT_MONOTON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelter Zeitstempel {0} ({1} Werte) außerhalb der Zeitumst [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_DUBLETTE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_DUBLETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ab {0} fehlen {1} Intervalle. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_LUECKE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_LUECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitumstellung: die doppelte Stunde {0} wurde aus {1} Werten [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_SOMMERZEIT_DUBLETTE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_SOMMERZEIT_DUBLETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitumstellung: die fehlende Stunde ab {0} wurde mit {1} Wie [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_SOMMERZEIT_LUECKE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_SOMMERZEIT_LUECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit umgerechnet: kWh je Intervall mal {0} ergibt kW. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_EINHEIT_UMGERECHNET {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_EINHEIT_UMGERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Minutenwerte auf 15 Minuten gemittelt: aus {0} Werten wurden [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_MINUTEN_GEMITTELT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_MINUTEN_GEMITTELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Minutenwerte sind nicht ohne Rest durch 15 teilbar. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_MINUTEN_REST {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_MINUTEN_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schaltjahr normalisiert: aus {0} Werten wurden {1}; der 29.  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_SCHALTJAHR {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_SCHALTJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Zeitstempel wurde der 29. Februar über die Position bes [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_SCHALTJAHR_POSITION {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_SCHALTJAHR_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe hat {0} Werte, erwartet werden {1}. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_LAENGE_FALSCH {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_LAENGE_FALSCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} negative Werte, kleinster Wert {1} kW. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_NEGATIVE_WERTE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_NEGATIVE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ab Zeile {0} stehen {1} Intervalle hintereinander auf null. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_NULLSERIE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_NULLSERIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gesamte Reihe ist null. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_ALLE_NULL {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_ALLE_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Werte liegen über dem {3}-fachen des Medians ({2} kW); g [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_AUSREISSER {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_AUSREISSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis: {0} Werte, {1} Intervalle je Stunde, Jahresarbeit  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei wurde nicht gefunden: {0} ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_DATEI_FEHLT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_DATEI_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keine auswertbare Zeile. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_DATEI_LEER {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_DATEI_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei kann nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Format erkannt: Trennzeichen "{0}", Dezimaltrenner "{1}", {2 [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_FORMAT_ERKANNT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_FORMAT_ERKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spaltenwahl: Wertspalte {0}, Zeitstempelspalte {1} (0 = kein [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_SPALTENWAHL {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_SPALTENWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: "{1}" ist keine Zahl. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_ZAHL_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_ZAHL_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: "{1}" ist kein Zeitstempel. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_ZEIT_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_ZEIT_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0} hat nur {1} Felder. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_SPALTE_FEHLT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_SPALTE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} weitere gleichartige Fehler wurden nicht einzeln aufgefü [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_WEITERE_FEHLER {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_WEITERE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Excel steht auf diesem Rechner nicht zur Verfügung. Bitte di [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_EXCEL_FEHLT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_EXCEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Tabellenblatt "{0}" wurde nicht gefunden; gelesen wird " [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_EXCEL_BLATT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_EXCEL_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gelesen: {0} Werte, {1} Zeitstempel. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_GELESEN {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang einlesen - Format und Vorschau ähnelt.
+        /// </summary>
+        public static string IMPORT_TITEL_OPTIONEN {
+            get {
+                return ResourceManager.GetString("IMPORT_TITEL_OPTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Format ähnelt.
+        /// </summary>
+        public static string IMPORT_GRP_OPTIONEN {
+            get {
+                return ResourceManager.GetString("IMPORT_GRP_OPTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau (erste {0} Zeilen) ähnelt.
+        /// </summary>
+        public static string IMPORT_GRP_VORSCHAU {
+            get {
+                return ResourceManager.GetString("IMPORT_GRP_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei: {0} ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_DATEI {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennzeichen: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_TRENNZEICHEN {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_TRENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezimaltrenner: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_DEZIMALTRENNER {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_DEZIMALTRENNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erste Zeile ist eine Kopfzeile ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_KOPFZEILE {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_KOPFZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wertspalte: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_WERTSPALTE {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_WERTSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempelspalte: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_ZEITSPALTE {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_ZEITSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit der Werte: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_EINHEIT {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraster: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_RASTER {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempel bezeichnet: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_KONVENTION {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_KONVENTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabellenblatt: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_BLATT {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorbelegung stammt aus der Dateianalyse. Nach einer Ände [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_HINWEIS_OPTIONEN {
+            get {
+                return ResourceManager.GetString("IMPORT_HINWEIS_OPTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau aktualisieren ähnelt.
+        /// </summary>
+        public static string IMPORT_BTN_AKTUALISIEREN {
+            get {
+                return ResourceManager.GetString("IMPORT_BTN_AKTUALISIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einlesen ähnelt.
+        /// </summary>
+        public static string IMPORT_BTN_OK {
+            get {
+                return ResourceManager.GetString("IMPORT_BTN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string IMPORT_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("IMPORT_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Semikolon  ; ähnelt.
+        /// </summary>
+        public static string IMPORT_TRENN_SEMIKOLON {
+            get {
+                return ResourceManager.GetString("IMPORT_TRENN_SEMIKOLON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komma  , ähnelt.
+        /// </summary>
+        public static string IMPORT_TRENN_KOMMA {
+            get {
+                return ResourceManager.GetString("IMPORT_TRENN_KOMMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabulator ähnelt.
+        /// </summary>
+        public static string IMPORT_TRENN_TABULATOR {
+            get {
+                return ResourceManager.GetString("IMPORT_TRENN_TABULATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Senkrechter Strich  | ähnelt.
+        /// </summary>
+        public static string IMPORT_TRENN_PIPE {
+            get {
+                return ResourceManager.GetString("IMPORT_TRENN_PIPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keines (ein Wert je Zeile) ähnelt.
+        /// </summary>
+        public static string IMPORT_TRENN_KEINES {
+            get {
+                return ResourceManager.GetString("IMPORT_TRENN_KEINES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komma  , ähnelt.
+        /// </summary>
+        public static string IMPORT_DEZ_KOMMA {
+            get {
+                return ResourceManager.GetString("IMPORT_DEZ_KOMMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Punkt  . ähnelt.
+        /// </summary>
+        public static string IMPORT_DEZ_PUNKT {
+            get {
+                return ResourceManager.GetString("IMPORT_DEZ_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kW (Leistung) ähnelt.
+        /// </summary>
+        public static string IMPORT_EINHEIT_KW {
+            get {
+                return ResourceManager.GetString("IMPORT_EINHEIT_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWh je Intervall (Arbeit) ähnelt.
+        /// </summary>
+        public static string IMPORT_EINHEIT_KWH {
+            get {
+                return ResourceManager.GetString("IMPORT_EINHEIT_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch erkennen ähnelt.
+        /// </summary>
+        public static string IMPORT_RASTER_AUTO {
+            get {
+                return ResourceManager.GetString("IMPORT_RASTER_AUTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte ähnelt.
+        /// </summary>
+        public static string IMPORT_RASTER_STUNDE {
+            get {
+                return ResourceManager.GetString("IMPORT_RASTER_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Viertelstundenwerte ähnelt.
+        /// </summary>
+        public static string IMPORT_RASTER_VIERTEL {
+            get {
+                return ResourceManager.GetString("IMPORT_RASTER_VIERTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Minutenwerte (werden auf 15 Minuten gemittelt) ähnelt.
+        /// </summary>
+        public static string IMPORT_RASTER_MINUTE {
+            get {
+                return ResourceManager.GetString("IMPORT_RASTER_MINUTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch erkennen ähnelt.
+        /// </summary>
+        public static string IMPORT_KONV_AUTO {
+            get {
+                return ResourceManager.GetString("IMPORT_KONV_AUTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Intervallanfang ähnelt.
+        /// </summary>
+        public static string IMPORT_KONV_ANFANG {
+            get {
+                return ResourceManager.GetString("IMPORT_KONV_ANFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Intervallende ähnelt.
+        /// </summary>
+        public static string IMPORT_KONV_ENDE {
+            get {
+                return ResourceManager.GetString("IMPORT_KONV_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine) ähnelt.
+        /// </summary>
+        public static string IMPORT_SPALTE_KEINE {
+            get {
+                return ResourceManager.GetString("IMPORT_SPALTE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spalte {0} ähnelt.
+        /// </summary>
+        public static string IMPORT_SPALTE_N {
+            get {
+                return ResourceManager.GetString("IMPORT_SPALTE_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile ähnelt.
+        /// </summary>
+        public static string IMPORT_SPALTE_ZEILE {
+            get {
+                return ResourceManager.GetString("IMPORT_SPALTE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfprotokoll des Lastgangimports ähnelt.
+        /// </summary>
+        public static string IMPORT_TITEL_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("IMPORT_TITEL_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe ähnelt.
+        /// </summary>
+        public static string IMPORT_SPALTE_STUFE {
+            get {
+                return ResourceManager.GetString("IMPORT_SPALTE_STUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meldung ähnelt.
+        /// </summary>
+        public static string IMPORT_SPALTE_MELDUNG {
+            get {
+                return ResourceManager.GetString("IMPORT_SPALTE_MELDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Info ähnelt.
+        /// </summary>
+        public static string IMPORT_STUFE_INFO {
+            get {
+                return ResourceManager.GetString("IMPORT_STUFE_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warnung ähnelt.
+        /// </summary>
+        public static string IMPORT_STUFE_WARNUNG {
+            get {
+                return ResourceManager.GetString("IMPORT_STUFE_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler ähnelt.
+        /// </summary>
+        public static string IMPORT_STUFE_FEHLER {
+            get {
+                return ResourceManager.GetString("IMPORT_STUFE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string IMPORT_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("IMPORT_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string IMPORT_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("IMPORT_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei wurde geprüft und kann übernommen werden. ähnelt.
+        /// </summary>
+        public static string IMPORT_KOPF_OK {
+            get {
+                return ResourceManager.GetString("IMPORT_KOPF_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe wurde angepasst oder es liegen Auffälligkeiten vor [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_KOPF_EINGRIFF {
+            get {
+                return ResourceManager.GetString("IMPORT_KOPF_EINGRIFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei kann nicht importiert werden. Die Fehler stehen un [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_KOPF_FEHLER {
+            get {
+                return ResourceManager.GetString("IMPORT_KOPF_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgangdateien (*.csv;*.txt;*.xlsx;*.xlsm;*.xls)|*.csv;*.tx [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("IMPORT_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Stromganglinie ist bereits in der Datenbank vorhanden. ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_BEREITS_VORHANDEN {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_BEREITS_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_HINWEIS {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Speichern der Ganglinie. Die Daten wurden nicht  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_FEHLER_SPEICHERN {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_FEHLER_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ganglinie "{0}" wurde mit {1} Werten eingelesen (Zeitint [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_ERFOLG {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_ERFOLG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang einlesen ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_TITEL {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromganglinie {0} hat {1} Werte, das gespeicherte Zeiti [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMPORT_GANGLINIE_RASTER_PASST_NICHT {
+            get {
+                return ResourceManager.GetString("IMPORT_GANGLINIE_RASTER_PASST_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dem Projekt ist kein Strom-Energietraeger zugeordnet - es ge [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_KEIN_STROMTRAEGER {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_KEIN_STROMTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante steht auf Kostenprofil, es ist aber keines gewa [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_KEIN_PROFIL {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_KEIN_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kostenprofil "{0}" hat keine zwoelf lesbaren Monatswerte [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_PROFIL_UNBRAUCHBAR {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_PROFIL_UNBRAUCHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante steht auf Spotmarkt, es liegt aber keine Preisr [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_KEINE_SPOTREIHE {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_KEINE_SPOTREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Preisreihe "{0}" hat {1} Werte statt 8760 oder 35040 - g [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_SPOTREIHE_LAENGE {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_SPOTREIHE_LAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fuer den Strombezug ist kein Arbeitspreis gepflegt - gerechn [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_RUECKFALL_FIXPREIS {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_RUECKFALL_FIXPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zum Stichtag {0} gab es noch keine Preisversion - es gilt di [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_VERSION_SPAETER {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_VERSION_SPAETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gueltige Preisversion fuehrt den Arbeitspreis 0 - es gil [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_ARBEITSPREIS_NULL {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_ARBEITSPREIS_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung (ohne Preishistorie) ähnelt.
+        /// </summary>
+        public static string PREIS_VERSION_PROJEKTEINSTELLUNG {
+            get {
+                return ResourceManager.GetString("PREIS_VERSION_PROJEKTEINSTELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fuer den Strombezug gibt es keine Preishistorie - es gilt de [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_OHNE_HISTORIE {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_OHNE_HISTORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogpreis des Energietraegers ähnelt.
+        /// </summary>
+        public static string PREIS_VERSION_KATALOG {
+            get {
+                return ResourceManager.GetString("PREIS_VERSION_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weder Preishistorie noch Projekteinstellung fuehren einen Ar [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_KATALOGPREIS {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_KATALOGPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthaelt keine lesbare Datenzeile. ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_KEINE_DATEN {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_KEINE_DATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spotpreisdatei Jahr {0}: {1} Datenzeilen gelesen. ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_KOPF {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeilen konnten nicht zerlegt werden (Zeilennummern: {1}) [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_UNLESBAR {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeilen tragen ein anderes Jahr als {1} - sie wurden trot [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_FREMDES_JAHR {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_FREMDES_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schaltjahr: {0} Zeilen des 29. Februar ausgelassen (der Rech [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_SCHALTJAHR {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_SCHALTJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herbstumstellung {0} Stunde {1}: {2} Werte gemittelt (Sommer [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_DOPPELSTUNDE {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_DOPPELSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fruehjahrsumstellung {0} Stunde {1}: existiert nicht, aus de [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_FEHLSTUNDE {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_FEHLSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luecke {0} Stunde {1}: kein Wert in der Datei, aus den Nachb [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_LUECKE {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_LUECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrfacheintrag {0} Stunde {1}: {2} Werte gemittelt (kein Um [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_MEHRFACH {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_MEHRFACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis: {0} Stundenwerte, {1} bis {2} ct/kWh, Mittel {3} c [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Davon {0} negative Preise - das ist zulaessig und wird mitge [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_NEGATIV {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe ist vollstaendig. ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_VOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_VOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihe ist UNVOLLSTAENDIG - die ergaenzten Stunden sind S [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlaege auf den Strombezugspreis ähnelt.
+        /// </summary>
+        public static string PREIS_GRUPPE_AUFSCHLAG {
+            get {
+                return ResourceManager.GetString("PREIS_GRUPPE_AUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aufgeschluesselt ähnelt.
+        /// </summary>
+        public static string PREIS_MODUS_AUFGESCHLUESSELT {
+            get {
+                return ResourceManager.GetString("PREIS_MODUS_AUFGESCHLUESSELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert (Override) ähnelt.
+        /// </summary>
+        public static string PREIS_MODUS_GESAMTWERT {
+            get {
+                return ResourceManager.GetString("PREIS_MODUS_GESAMTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzentgelt Arbeit ähnelt.
+        /// </summary>
+        public static string PREIS_KOMP_NETZENTGELT {
+            get {
+                return ResourceManager.GetString("PREIS_KOMP_NETZENTGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umlagen (Summe) ähnelt.
+        /// </summary>
+        public static string PREIS_KOMP_UMLAGEN {
+            get {
+                return ResourceManager.GetString("PREIS_KOMP_UMLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer ähnelt.
+        /// </summary>
+        public static string PREIS_KOMP_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("PREIS_KOMP_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konzessionsabgabe ähnelt.
+        /// </summary>
+        public static string PREIS_KOMP_KONZESSION {
+            get {
+                return ResourceManager.GetString("PREIS_KOMP_KONZESSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vertrieb ähnelt.
+        /// </summary>
+        public static string PREIS_KOMP_VERTRIEB {
+            get {
+                return ResourceManager.GetString("PREIS_KOMP_VERTRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 2,05 ähnelt.
+        /// </summary>
+        public static string PREIS_STROMSTEUER_REGELFALL {
+            get {
+                return ResourceManager.GetString("PREIS_STROMSTEUER_REGELFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 0,05 ähnelt.
+        /// </summary>
+        public static string PREIS_STROMSTEUER_REDUZIERT {
+            get {
+                return ResourceManager.GetString("PREIS_STROMSTEUER_REDUZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtaufschlag ähnelt.
+        /// </summary>
+        public static string PREIS_LABEL_GESAMTAUFSCHLAG {
+            get {
+                return ResourceManager.GetString("PREIS_LABEL_GESAMTAUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verguetung fuer eingespeisten Strom ähnelt.
+        /// </summary>
+        public static string PREIS_GRUPPE_VERGUETUNG {
+            get {
+                return ResourceManager.GetString("PREIS_GRUPPE_VERGUETUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik v_pv ähnelt.
+        /// </summary>
+        public static string PREIS_LABEL_VERGUETUNG_PV {
+            get {
+                return ResourceManager.GetString("PREIS_LABEL_VERGUETUNG_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW v_bhkw ähnelt.
+        /// </summary>
+        public static string PREIS_LABEL_VERGUETUNG_BHKW {
+            get {
+                return ResourceManager.GetString("PREIS_LABEL_VERGUETUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der aktiven Komponenten: {0} ct/kWh   |   wirksamer Au [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_SUMME_AKTIV {
+            get {
+                return ResourceManager.GetString("PREIS_SUMME_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aufgeschluesselter Rest: {0} ct/kWh ähnelt.
+        /// </summary>
+        public static string PREIS_REST_NICHT_AUFGESCHLUESSELT {
+            get {
+                return ResourceManager.GetString("PREIS_REST_NICHT_AUFGESCHLUESSELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Modus "aufgeschluesselt" ist der wirksame Aufschlag die S [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_REST_HINWEIS_MODUS {
+            get {
+                return ResourceManager.GetString("PREIS_REST_HINWEIS_MODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spotmarktpreise importieren ... ähnelt.
+        /// </summary>
+        public static string PREIS_BTN_SPOTIMPORT {
+            get {
+                return ResourceManager.GetString("PREIS_BTN_SPOTIMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenprofil bearbeiten ... ähnelt.
+        /// </summary>
+        public static string PREIS_BTN_KOSTENPROFIL {
+            get {
+                return ResourceManager.GetString("PREIS_BTN_KOSTENPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spotmarktpreise importieren ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_TITEL {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet wird eine CSV-Datei mit Semikolon und Dezimalkomma: [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_INFO {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei: ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_LABEL_DATEI {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_LABEL_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei waehlen ... ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_BTN_DATEI {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_BTN_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung: ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_LABEL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_LABEL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die allen Projekten zur Verfuegung stellen ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_CHK_STAMM {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_CHK_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Validierungsprotokoll: ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_LABEL_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_LABEL_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Uebernehmen ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spotpreisdateien (*.csv)|*.csv|Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereit zur Uebernahme (Jahr {0}). ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_STATUS_BEREIT {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_STATUS_BEREIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ergibt keine brauchbare Preisreihe. ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_STATUS_UNBRAUCHBAR {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_STATUS_UNBRAUCHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Preisreihe konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_STATUS_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_STATUS_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisreihe {0} mit {1} Werten gespeichert. ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_STATUS_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_STATUS_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Werte geschrieben ... ähnelt.
+        /// </summary>
+        public static string PREIS_IMPORT_STATUS_SCHREIBT {
+            get {
+                return ResourceManager.GetString("PREIS_IMPORT_STATUS_SCHREIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenprofil ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_TITEL {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neues Kostenprofil ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_NEU {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezugspreis ergibt sich aus dem Monatswert des jeweilige [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_INFO {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung: ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_LABEL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_LABEL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatswerte ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_TAB_MONATSWERTE {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_TAB_MONATSWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisniveau je Monat [ct/kWh] ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_KOPF_MONAT {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_KOPF_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Januarwert auf alle Monate uebertragen ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_BTN_ALLE_MONATE {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_BTN_ALLE_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Januarwert ist keine gueltige Zahl. ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_MSG_JANUAR {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_MSG_JANUAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenwerte ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_TAB_WOCHENWERTE {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_TAB_WOCHENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichung je Stunde des gewaehlten Wochentags [ct/kWh] ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_KOPF_WOCHE {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_KOPF_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochentag: ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_LBL_WOCHENTAG {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_LBL_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag kopieren ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_BTN_TAG_KOPIEREN {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_BTN_TAG_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag einfuegen ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_BTN_TAG_EINFUEGEN {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_BTN_TAG_EINFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf alle Tage uebertragen ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_BTN_ALLE_TAGE {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_BTN_ALLE_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte des Tages uebernehmen ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst einen Tag kopieren. ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_MSG_ERST_KOPIEREN {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_MSG_ERST_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgang gilt jetzt fuer alle sieben Wochentage. ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_MSG_ALLE_TAGE {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_MSG_ALLE_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenwerte sind Abweichungen vom Monatswert. Ein HT/NT- [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_HINWEIS_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_HINWEIS_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_TAB_GRAFIK {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_TAB_GRAFIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preis [ct/kWh] ähnelt.
+        /// </summary>
+        public static string PREIS_CHART_ACHSE_PREIS {
+            get {
+                return ResourceManager.GetString("PREIS_CHART_ACHSE_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenprofil ähnelt.
+        /// </summary>
+        public static string PREIS_CHART_SERIE_KOSTENPROFIL {
+            get {
+                return ResourceManager.GetString("PREIS_CHART_SERIE_KOSTENPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde {0}: "{1}" ist keine gueltige Zahl. ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_MSG_STUNDE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_MSG_STUNDE_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: "{1}" ist keine gueltige Zahl. ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_MSG_MONAT_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_MSG_MONAT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kostenprofil konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string PREIS_PROFIL_MSG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("PREIS_PROFIL_MSG_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisbeschaffung ähnelt.
+        /// </summary>
+        public static string PREIS_PARAM_GRUPPE_PREISQUELLE {
+            get {
+                return ResourceManager.GetString("PREIS_PARAM_GRUPPE_PREISQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisquelle ähnelt.
+        /// </summary>
+        public static string PREIS_PARAM_LABEL_PREISQUELLE {
+            get {
+                return ResourceManager.GetString("PREIS_PARAM_LABEL_PREISQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fixpreis aus dem Kostenmodul ähnelt.
+        /// </summary>
+        public static string PREIS_QUELLE_ANZEIGE_FIXPREIS {
+            get {
+                return ResourceManager.GetString("PREIS_QUELLE_ANZEIGE_FIXPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenprofil ähnelt.
+        /// </summary>
+        public static string PREIS_QUELLE_ANZEIGE_PROFIL {
+            get {
+                return ResourceManager.GetString("PREIS_QUELLE_ANZEIGE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spotmarktreihe ähnelt.
+        /// </summary>
+        public static string PREIS_QUELLE_ANZEIGE_SPOTMARKT {
+            get {
+                return ResourceManager.GetString("PREIS_QUELLE_ANZEIGE_SPOTMARKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisreihe ähnelt.
+        /// </summary>
+        public static string PREIS_PARAM_LABEL_REIHE {
+            get {
+                return ResourceManager.GetString("PREIS_PARAM_LABEL_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenprofil ähnelt.
+        /// </summary>
+        public static string PREIS_PARAM_LABEL_PROFIL {
+            get {
+                return ResourceManager.GetString("PREIS_PARAM_LABEL_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}, {2} Werte) ähnelt.
+        /// </summary>
+        public static string PREIS_PARAM_REIHE_EINTRAG {
+            get {
+                return ResourceManager.GetString("PREIS_PARAM_REIHE_EINTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlaege des Kostenmoduls anwenden ähnelt.
+        /// </summary>
+        public static string PREIS_PARAM_CHK_AUFSCHLAG {
+            get {
+                return ResourceManager.GetString("PREIS_PARAM_CHK_AUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus, wenn die gewaehlte Reihe bereits ein Vollpreis ist (Fac [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_PARAM_HINWEIS_AUFSCHLAG {
+            get {
+                return ResourceManager.GetString("PREIS_PARAM_HINWEIS_AUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiepreis im Mittel {0} ct/kWh + Aufschlag {1} ct/kWh = B [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string PREIS_PARAM_INFO {
+            get {
+                return ResourceManager.GetString("PREIS_PARAM_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtnutzung ähnelt.
+        /// </summary>
+        public static string SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG {
+            get {
+                return ResourceManager.GetString("SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dauernutzung (Vergleich) ähnelt.
+        /// </summary>
+        public static string NACHT_ERG_SPALTE_VERGLEICH {
+            get {
+                return ResourceManager.GetString("NACHT_ERG_SPALTE_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vergleichsspalte zeigt, was die Dauernutzung mit denselb [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string NACHT_ERG_VERGLEICH_HINWEIS {
+            get {
+                return ResourceManager.GetString("NACHT_ERG_VERGLEICH_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Excel-Kompatibilitätsmodus gilt nur für die Dauernutzung [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string NACHT_HINWEIS_KOMPATIBILITAET {
+            get {
+                return ResourceManager.GetString("NACHT_HINWEIS_KOMPATIBILITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vergleichslauf mit der Dauernutzung ist fehlgeschlagen:  [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string NACHT_HINWEIS_VERGLEICH_FEHLER {
+            get {
+                return ResourceManager.GetString("NACHT_HINWEIS_VERGLEICH_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nachtnutzung gibt es keine Excel-Referenz; der Kompa [rest der Zeichenfolge wurde abgeschnitten]&quot; ähnelt.
+        /// </summary>
+        public static string NACHT_OHNE_EXCEL_REFERENZ {
+            get {
+                return ResourceManager.GetString("NACHT_OHNE_EXCEL_REFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitzenkappung (Peak-Shaving) ähnelt.
+        /// </summary>
+        public static string PEAK_MENUE {
+            get {
+                return ResourceManager.GetString("PEAK_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitzenkappung (Peak-Shaving) ähnelt.
+        /// </summary>
+        public static string PEAK_TITEL {
+            get {
+                return ResourceManager.GetString("PEAK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang ähnelt.
+        /// </summary>
+        public static string PEAK_GRP_QUELLE {
+            get {
+                return ResourceManager.GetString("PEAK_GRP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorhandene Ganglinie ähnelt.
+        /// </summary>
+        public static string PEAK_OPT_GANGLINIE {
+            get {
+                return ResourceManager.GetString("PEAK_OPT_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei importieren ähnelt.
+        /// </summary>
+        public static string PEAK_OPT_DATEI {
+            get {
+                return ResourceManager.GetString("PEAK_OPT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei wählen … ähnelt.
+        /// </summary>
+        public static string PEAK_BTN_DATEI {
+            get {
+                return ResourceManager.GetString("PEAK_BTN_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Werte, Jahresmaximum {2} kW ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_REIHE {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Lastgang geladen. ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_KEINE_REIHE {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_KEINE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string PEAK_QUELLE_PROJEKT {
+            get {
+                return ResourceManager.GetString("PEAK_QUELLE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
+        /// </summary>
+        public static string PEAK_QUELLE_STAMM {
+            get {
+                return ResourceManager.GetString("PEAK_QUELLE_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}  [{1}] ähnelt.
+        /// </summary>
+        public static string PEAK_GANGLINIE_EINTRAG {
+            get {
+                return ResourceManager.GetString("PEAK_GANGLINIE_EINTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher- und Bewertungsparameter ähnelt.
+        /// </summary>
+        public static string PEAK_GRP_PARAMETER {
+            get {
+                return ResourceManager.GetString("PEAK_GRP_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung P [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_P {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_P", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad η_RT [-] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_ETA {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_ETA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand min. [%] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_SOCMIN {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_SOCMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand max. [%] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_SOCMAX {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_SOCMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Start-Ladezustand [%] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_STARTSOC {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_STARTSOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielschwelle P_ziel [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_ZIEL {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Adaptiv (Schwelle nachziehen) ähnelt.
+        /// </summary>
+        public static string PEAK_CHK_ADAPTIV {
+            get {
+                return ResourceManager.GetString("PEAK_CHK_ADAPTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Minimale haltbare Schwelle ermitteln ähnelt.
+        /// </summary>
+        public static string PEAK_BTN_MINIMAL {
+            get {
+                return ResourceManager.GetString("PEAK_BTN_MINIMAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis L_P [€/(kW·a)] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_LP {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_LP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspreis mittel [ct/kWh] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_BEZUGSPREIS {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_BEZUGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kompatibilitätsmodus (η = 1, SoC_min = 0) ähnelt.
+        /// </summary>
+        public static string PEAK_CHK_KOMPAT {
+            get {
+                return ResourceManager.GetString("PEAK_CHK_KOMPAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition c_cap [€/kWh] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_CCAP {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_CCAP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition c_pow [€/kW] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_CPOW {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_CPOW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition fix [€] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_IFIX {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_IFIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalzins [%] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_ZINS {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_ZINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer [a] ähnelt.
+        /// </summary>
+        public static string PEAK_LBL_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("PEAK_LBL_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnen ähnelt.
+        /// </summary>
+        public static string PEAK_BTN_RECHNEN {
+            get {
+                return ResourceManager.GetString("PEAK_BTN_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand im Diagramm zeigen ähnelt.
+        /// </summary>
+        public static string PEAK_CHK_SOC {
+            get {
+                return ResourceManager.GetString("PEAK_CHK_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Export ähnelt.
+        /// </summary>
+        public static string PEAK_BTN_CSV {
+            get {
+                return ResourceManager.GetString("PEAK_BTN_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string PEAK_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("PEAK_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen ähnelt.
+        /// </summary>
+        public static string PEAK_TAB_KENNZAHLEN {
+            get {
+                return ResourceManager.GetString("PEAK_TAB_KENNZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang vorher/nachher ähnelt.
+        /// </summary>
+        public static string PEAK_TAB_CHART {
+            get {
+                return ResourceManager.GetString("PEAK_TAB_CHART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatsspitzen ähnelt.
+        /// </summary>
+        public static string PEAK_TAB_MONATE {
+            get {
+                return ResourceManager.GetString("PEAK_TAB_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string PEAK_SP_GROESSE {
+            get {
+                return ResourceManager.GetString("PEAK_SP_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string PEAK_SP_WERT {
+            get {
+                return ResourceManager.GetString("PEAK_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string PEAK_SP_EINHEIT {
+            get {
+                return ResourceManager.GetString("PEAK_SP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string PEAK_SP_MONAT {
+            get {
+                return ResourceManager.GetString("PEAK_SP_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitze ohne Speicher [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_SP_ALT {
+            get {
+                return ResourceManager.GetString("PEAK_SP_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitze mit Speicher [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_SP_NEU {
+            get {
+                return ResourceManager.GetString("PEAK_SP_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kappung [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_SP_KAPPUNG {
+            get {
+                return ResourceManager.GetString("PEAK_SP_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitze ohne Speicher (Jahresmaximum) ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_SPITZE_ALT {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_SPITZE_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitze mit Speicher (Jahresmaximum) ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_SPITZE_NEU {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_SPITZE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kappung der Jahresspitze ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_KAPPUNG {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erreichte Schwelle ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_SCHWELLE {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_SCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwelle gerissen (Speicher zu klein) ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_GERISSEN {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_GERISSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ja ähnelt.
+        /// </summary>
+        public static string PEAK_JA {
+            get {
+                return ResourceManager.GetString("PEAK_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nein ähnelt.
+        /// </summary>
+        public static string PEAK_NEIN {
+            get {
+                return ResourceManager.GetString("PEAK_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladeenergie (AC) ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_LADEENERGIE {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_LADEENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladeenergie (AC) ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_ENTLADEENERGIE {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_ENTLADEENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umwandlungsverluste ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_VERLUSTE {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Äquivalente Vollzyklen ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_VOLLZYKLEN {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_VOLLZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreisersparnis ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_ERSPARNIS {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_ERSPARNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten der Verschiebeverluste ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_VERLUSTKOSTEN {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_VERLUSTKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag Peak-Shaving (E_a,1) ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_ERTRAG {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_ERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_INVEST {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annuität (Kapitaldienst) ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_ANNUITAET {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_ANNUITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresüberschuss ΔJ ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_UEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation statisch ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_AMORT_STAT {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_AMORT_STAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation dynamisch ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_AMORT_DYN {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_AMORT_DYN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert ähnelt.
+        /// </summary>
+        public static string PEAK_KZ_NPV {
+            get {
+                return ResourceManager.GetString("PEAK_KZ_NPV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die &gt; Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string PEAK_AMORT_UEBER {
+            get {
+                return ResourceManager.GetString("PEAK_AMORT_UEBER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht amortisierbar ähnelt.
+        /// </summary>
+        public static string PEAK_AMORT_NIE {
+            get {
+                return ResourceManager.GetString("PEAK_AMORT_NIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtreihe ähnelt.
+        /// </summary>
+        public static string PEAK_MONAT_GESAMT {
+            get {
+                return ResourceManager.GetString("PEAK_MONAT_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang vor und nach der Kappung ähnelt.
+        /// </summary>
+        public static string PEAK_CHART_TITEL {
+            get {
+                return ResourceManager.GetString("PEAK_CHART_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresverlauf ähnelt.
+        /// </summary>
+        public static string PEAK_CHART_X {
+            get {
+                return ResourceManager.GetString("PEAK_CHART_X", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_CHART_Y {
+            get {
+                return ResourceManager.GetString("PEAK_CHART_Y", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand [kWh] ähnelt.
+        /// </summary>
+        public static string PEAK_CHART_Y2 {
+            get {
+                return ResourceManager.GetString("PEAK_CHART_Y2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang ohne Speicher ähnelt.
+        /// </summary>
+        public static string PEAK_SERIE_ALT {
+            get {
+                return ResourceManager.GetString("PEAK_SERIE_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang mit Speicher ähnelt.
+        /// </summary>
+        public static string PEAK_SERIE_NEU {
+            get {
+                return ResourceManager.GetString("PEAK_SERIE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand ähnelt.
+        /// </summary>
+        public static string PEAK_SERIE_SOC {
+            get {
+                return ResourceManager.GetString("PEAK_SERIE_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang ohne Speicher [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_PALT {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_PALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang mit Speicher [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_PNEU {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_PNEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand [kWh] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_SOC {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladung [kWh] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_LADUNG {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_LADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladung [kWh] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_ENTLADUNG {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_ENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Shaving.csv ähnelt.
+        /// </summary>
+        public static string PEAK_DATEI {
+            get {
+                return ResourceManager.GetString("PEAK_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegung aus Gerät und aktiver Variante: {0} ähnelt.
+        /// </summary>
+        public static string PEAK_HERKUNFT_PROJEKT {
+            get {
+                return ResourceManager.GetString("PEAK_HERKUNFT_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegung: Vorgaben des Fachkonzepts ähnelt.
+        /// </summary>
+        public static string PEAK_HERKUNFT_VORGABE {
+            get {
+                return ResourceManager.GetString("PEAK_HERKUNFT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsgröße der Lastspitze ist das Jahresmaximum der Viertel [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string PEAK_HINWEIS {
+            get {
+                return ResourceManager.GetString("PEAK_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst einen Lastgang wählen oder importieren. ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_KEINE_REIHE {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_KEINE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst rechnen. ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_KEIN_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_KEIN_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kapazität muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der obere Ladezustand muss über dem unteren liegen. ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_BAND {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad muss im Bereich (0 … 1] liegen. ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_ETA {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_ETA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsdauer muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste haltbare Zielschwelle: {0} kW. Der Wert steht jetzt [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_MINIMAL {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_MINIMAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher hält die Zielschwelle nicht: die neue Spitze li [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_GERISSEN {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_GERISSEN", resourceCulture);
+            }
+        }
+        
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung optimieren ähnelt.
+        /// </summary>
+        public static string OPT_TITEL {
+            get {
+                return ResourceManager.GetString("OPT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suchraum ähnelt.
+        /// </summary>
+        public static string OPT_GRP_SUCHRAUM {
+            get {
+                return ResourceManager.GetString("OPT_GRP_SUCHRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis ähnelt.
+        /// </summary>
+        public static string OPT_GRP_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("OPT_GRP_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität von [kWh] ähnelt.
+        /// </summary>
+        public static string OPT_LBL_CMIN {
+            get {
+                return ResourceManager.GetString("OPT_LBL_CMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität bis [kWh] ähnelt.
+        /// </summary>
+        public static string OPT_LBL_CMAX {
+            get {
+                return ResourceManager.GetString("OPT_LBL_CMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stützstellen ähnelt.
+        /// </summary>
+        public static string OPT_LBL_STUETZSTELLEN {
+            get {
+                return ResourceManager.GetString("OPT_LBL_STUETZSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate von [1/h] ähnelt.
+        /// </summary>
+        public static string OPT_LBL_RMIN {
+            get {
+                return ResourceManager.GetString("OPT_LBL_RMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate bis [1/h] ähnelt.
+        /// </summary>
+        public static string OPT_LBL_RMAX {
+            get {
+                return ResourceManager.GetString("OPT_LBL_RMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schrittweite [1/h] ähnelt.
+        /// </summary>
+        public static string OPT_LBL_RSCHRITT {
+            get {
+                return ResourceManager.GetString("OPT_LBL_RSCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnungsart ähnelt.
+        /// </summary>
+        public static string OPT_LBL_STRATEGIE {
+            get {
+                return ResourceManager.GetString("OPT_LBL_STRATEGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feinraster um das Optimum ähnelt.
+        /// </summary>
+        public static string OPT_CHK_FEINRASTER {
+            get {
+                return ResourceManager.GetString("OPT_CHK_FEINRASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verschleißkosten in die Zielfunktion ähnelt.
+        /// </summary>
+        public static string OPT_CHK_KVER {
+            get {
+                return ResourceManager.GetString("OPT_CHK_KVER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterpunkte: {0} ähnelt.
+        /// </summary>
+        public static string OPT_LBL_PUNKTE {
+            get {
+                return ResourceManager.GetString("OPT_LBL_PUNKTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktuelle Auslegung: {0} kWh / {1} kW ({2} C) ähnelt.
+        /// </summary>
+        public static string OPT_LBL_AKTUELL {
+            get {
+                return ResourceManager.GetString("OPT_LBL_AKTUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximiert wird der Jahresüberschuss nach Kapitaldienst ΔJ =  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string OPT_HINWEIS_ZIELFUNKTION {
+            get {
+                return ResourceManager.GetString("OPT_HINWEIS_ZIELFUNKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Achtung: Annuität und Verschleißkosten bepreisen denselben S [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string OPT_HINWEIS_KVER {
+            get {
+                return ResourceManager.GetString("OPT_HINWEIS_KVER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag des Fachkonzepts: 500 … 5.000 kWh mit 10 Stützstel [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string OPT_HINWEIS_SUCHRAUM {
+            get {
+                return ResourceManager.GetString("OPT_HINWEIS_SUCHRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung optimieren … ähnelt.
+        /// </summary>
+        public static string OPT_BTN_OEFFNEN {
+            get {
+                return ResourceManager.GetString("OPT_BTN_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Optimierung starten ähnelt.
+        /// </summary>
+        public static string OPT_BTN_START {
+            get {
+                return ResourceManager.GetString("OPT_BTN_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string OPT_BTN_ABBRUCH {
+            get {
+                return ResourceManager.GetString("OPT_BTN_ABBRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestpunkt übernehmen … ähnelt.
+        /// </summary>
+        public static string OPT_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("OPT_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raster als CSV … ähnelt.
+        /// </summary>
+        public static string OPT_BTN_CSV {
+            get {
+                return ResourceManager.GetString("OPT_BTN_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string OPT_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("OPT_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereit. ähnelt.
+        /// </summary>
+        public static string OPT_STATUS_BEREIT {
+            get {
+                return ResourceManager.GetString("OPT_STATUS_BEREIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterpunkt {0} von {1} ähnelt.
+        /// </summary>
+        public static string OPT_STATUS_PUNKT {
+            get {
+                return ResourceManager.GetString("OPT_STATUS_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterpunkt {0} von {1} (Feinraster) ähnelt.
+        /// </summary>
+        public static string OPT_STATUS_PUNKT_FEIN {
+            get {
+                return ResourceManager.GetString("OPT_STATUS_PUNKT_FEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Rasterpunkte in {1} s — Optimum {2} kWh / {3} C ähnelt.
+        /// </summary>
+        public static string OPT_STATUS_FERTIG {
+            get {
+                return ResourceManager.GetString("OPT_STATUS_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgebrochen — es liegt kein vollständiges Raster vor. ähnelt.
+        /// </summary>
+        public static string OPT_STATUS_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("OPT_STATUS_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresüberschuss ΔJ [€/a] ähnelt.
+        /// </summary>
+        public static string OPT_CHART_HEATMAP_TITEL {
+            get {
+                return ResourceManager.GetString("OPT_CHART_HEATMAP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate [1/h] ähnelt.
+        /// </summary>
+        public static string OPT_CHART_X_CRATE {
+            get {
+                return ResourceManager.GetString("OPT_CHART_X_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
+        /// </summary>
+        public static string OPT_CHART_Y_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("OPT_CHART_Y_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnittkurve bei {0} C ähnelt.
+        /// </summary>
+        public static string OPT_CHART_SCHNITT_TITEL {
+            get {
+                return ResourceManager.GetString("OPT_CHART_SCHNITT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔJ [€/a] ähnelt.
+        /// </summary>
+        public static string OPT_CHART_SCHNITT_Y {
+            get {
+                return ResourceManager.GetString("OPT_CHART_SCHNITT_Y", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔJ [€/a] ähnelt.
+        /// </summary>
+        public static string OPT_CHART_FARBSKALA {
+            get {
+                return ResourceManager.GetString("OPT_CHART_FARBSKALA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zelle mit der Maus überfahren, um ihre Werte zu sehen. ähnelt.
+        /// </summary>
+        public static string OPT_ZELLE_LEER {
+            get {
+                return ResourceManager.GetString("OPT_ZELLE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kWh · {1} C · P = {2} kW · ΔJ = {3} €/a · T_stat = {4} ähnelt.
+        /// </summary>
+        public static string OPT_ZELLE {
+            get {
+                return ResourceManager.GetString("OPT_ZELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Optimum am Rand — Suchbereich erweitern ({0}). ähnelt.
+        /// </summary>
+        public static string OPT_WARN_RAND {
+            get {
+                return ResourceManager.GetString("OPT_WARN_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität an der Untergrenze ähnelt.
+        /// </summary>
+        public static string OPT_WARN_RAND_C_UNTEN {
+            get {
+                return ResourceManager.GetString("OPT_WARN_RAND_C_UNTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität an der Obergrenze ähnelt.
+        /// </summary>
+        public static string OPT_WARN_RAND_C_OBEN {
+            get {
+                return ResourceManager.GetString("OPT_WARN_RAND_C_OBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate an der Untergrenze ähnelt.
+        /// </summary>
+        public static string OPT_WARN_RAND_R_UNTEN {
+            get {
+                return ResourceManager.GetString("OPT_WARN_RAND_R_UNTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate an der Obergrenze ähnelt.
+        /// </summary>
+        public static string OPT_WARN_RAND_R_OBEN {
+            get {
+                return ResourceManager.GetString("OPT_WARN_RAND_R_OBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die leistungsbezogene Investition c_pow ist 0 — die C-Rate-A [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string OPT_WARN_CPOW {
+            get {
+                return ResourceManager.GetString("OPT_WARN_CPOW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die K_ver ist in ΔJ eingerechnet (Fachkonzept 5.4). ähnelt.
+        /// </summary>
+        public static string OPT_WARN_KVER_AKTIV {
+            get {
+                return ResourceManager.GetString("OPT_WARN_KVER_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bestpunkt rechnet {0} Vollzyklen über die Nutzungsdauer  [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string OPT_WARN_ZYKLEN {
+            get {
+                return ResourceManager.GetString("OPT_WARN_ZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string OPT_SP_GROESSE {
+            get {
+                return ResourceManager.GetString("OPT_SP_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string OPT_SP_WERT {
+            get {
+                return ResourceManager.GetString("OPT_SP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string OPT_SP_EINHEIT {
+            get {
+                return ResourceManager.GetString("OPT_SP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung des Bestpunkts ähnelt.
+        /// </summary>
+        public static string OPT_KZ_GRUPPE_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("OPT_KZ_GRUPPE_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit ähnelt.
+        /// </summary>
+        public static string OPT_KZ_GRUPPE_WIRTSCHAFT {
+            get {
+                return ResourceManager.GetString("OPT_KZ_GRUPPE_WIRTSCHAFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher und Energie ähnelt.
+        /// </summary>
+        public static string OPT_KZ_GRUPPE_SPEICHER {
+            get {
+                return ResourceManager.GetString("OPT_KZ_GRUPPE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkapazität C_nom ähnelt.
+        /// </summary>
+        public static string OPT_KZ_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("OPT_KZ_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate ähnelt.
+        /// </summary>
+        public static string OPT_KZ_CRATE {
+            get {
+                return ResourceManager.GetString("OPT_KZ_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lade-/Entladeleistung P ähnelt.
+        /// </summary>
+        public static string OPT_KZ_LEISTUNG {
+            get {
+                return ResourceManager.GetString("OPT_KZ_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielfunktion ΔJ ähnelt.
+        /// </summary>
+        public static string OPT_KZ_ZIELFUNKTION {
+            get {
+                return ResourceManager.GetString("OPT_KZ_ZIELFUNKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresüberschuss ohne K_ver ähnelt.
+        /// </summary>
+        public static string OPT_KZ_UEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("OPT_KZ_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag Referenzjahr E_a,1 ähnelt.
+        /// </summary>
+        public static string OPT_KZ_ERTRAG1 {
+            get {
+                return ResourceManager.GetString("OPT_KZ_ERTRAG1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag äquivalent E_a,äq ähnelt.
+        /// </summary>
+        public static string OPT_KZ_ERTRAGAEQ {
+            get {
+                return ResourceManager.GetString("OPT_KZ_ERTRAGAEQ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition I ähnelt.
+        /// </summary>
+        public static string OPT_KZ_INVEST {
+            get {
+                return ResourceManager.GetString("OPT_KZ_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annuität A ähnelt.
+        /// </summary>
+        public static string OPT_KZ_ANNUITAET {
+            get {
+                return ResourceManager.GetString("OPT_KZ_ANNUITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert NPV ähnelt.
+        /// </summary>
+        public static string OPT_KZ_NPV {
+            get {
+                return ResourceManager.GetString("OPT_KZ_NPV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation statisch ähnelt.
+        /// </summary>
+        public static string OPT_KZ_AMORT_STAT {
+            get {
+                return ResourceManager.GetString("OPT_KZ_AMORT_STAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation dynamisch ähnelt.
+        /// </summary>
+        public static string OPT_KZ_AMORT_DYN {
+            get {
+                return ResourceManager.GetString("OPT_KZ_AMORT_DYN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Äquivalente Vollzyklen ähnelt.
+        /// </summary>
+        public static string OPT_KZ_ZYKLEN {
+            get {
+                return ResourceManager.GetString("OPT_KZ_ZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zyklen über die Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string OPT_KZ_ZYKLEN_N {
+            get {
+                return ResourceManager.GetString("OPT_KZ_ZYKLEN_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verschleißkosten K_ver ähnelt.
+        /// </summary>
+        public static string OPT_KZ_KVER {
+            get {
+                return ResourceManager.GetString("OPT_KZ_KVER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauchsquote ähnelt.
+        /// </summary>
+        public static string OPT_KZ_EIGENVERBRAUCH {
+            get {
+                return ResourceManager.GetString("OPT_KZ_EIGENVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Autarkiegrad ähnelt.
+        /// </summary>
+        public static string OPT_KZ_AUTARKIE {
+            get {
+                return ResourceManager.GetString("OPT_KZ_AUTARKIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladeenergie ähnelt.
+        /// </summary>
+        public static string OPT_KZ_LADEENERGIE {
+            get {
+                return ResourceManager.GetString("OPT_KZ_LADEENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladeenergie ähnelt.
+        /// </summary>
+        public static string OPT_KZ_ENTLADEENERGIE {
+            get {
+                return ResourceManager.GetString("OPT_KZ_ENTLADEENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherverluste ähnelt.
+        /// </summary>
+        public static string OPT_KZ_VERLUSTE {
+            get {
+                return ResourceManager.GetString("OPT_KZ_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die &gt; Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string OPT_AMORT_UEBER {
+            get {
+                return ResourceManager.GetString("OPT_AMORT_UEBER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht amortisierbar ähnelt.
+        /// </summary>
+        public static string OPT_AMORT_NIE {
+            get {
+                return ResourceManager.GetString("OPT_AMORT_NIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Simulation ist noch nicht gerechnet. Die Auslegungsoptim [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string OPT_MSG_KEIN_LAUF {
+            get {
+                return ResourceManager.GetString("OPT_MSG_KEIN_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es liegt noch kein Optimierungsergebnis vor. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_KEIN_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("OPT_MSG_KEIN_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Optimierung ist fehlgeschlagen: {0} ähnelt.
+        /// </summary>
+        public static string OPT_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("OPT_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die untere Kapazitätsgrenze muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_CMIN {
+            get {
+                return ResourceManager.GetString("OPT_MSG_CMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die obere Kapazitätsgrenze muss über der unteren liegen. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_CMAX {
+            get {
+                return ResourceManager.GetString("OPT_MSG_CMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kapazitätsachse braucht mindestens 2 Stützstellen. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_STUETZSTELLEN {
+            get {
+                return ResourceManager.GetString("OPT_MSG_STUETZSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die untere C-Rate muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_RMIN {
+            get {
+                return ResourceManager.GetString("OPT_MSG_RMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die obere C-Rate darf nicht unter der unteren liegen. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_RMAX {
+            get {
+                return ResourceManager.GetString("OPT_MSG_RMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schrittweite der C-Rate muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_RSCHRITT {
+            get {
+                return ResourceManager.GetString("OPT_MSG_RSCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt mehrere Speicheranlagen. Die Optimierung r [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string OPT_MSG_MEHRERE_ANLAGEN {
+            get {
+                return ResourceManager.GetString("OPT_MSG_MEHRERE_ANLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität {0} kWh und Leistung {1} kW in die Gerätedaten der [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string OPT_MSG_UEBERNAHME_FRAGE {
+            get {
+                return ResourceManager.GetString("OPT_MSG_UEBERNAHME_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslegung wurde übernommen. Die Simulation ist damit nic [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string OPT_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("OPT_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auslegung konnte nicht geschrieben werden. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_UEBERNAHME_FEHLER {
+            get {
+                return ResourceManager.GetString("OPT_MSG_UEBERNAHME_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsraster_Projekt{0}.csv ähnelt.
+        /// </summary>
+        public static string OPT_DATEI {
+            get {
+                return ResourceManager.GetString("OPT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Export ähnelt.
+        /// </summary>
+        public static string OPT_CSV_TITEL {
+            get {
+                return ResourceManager.GetString("OPT_CSV_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Phase ähnelt.
+        /// </summary>
+        public static string OPT_CSV_PHASE {
+            get {
+                return ResourceManager.GetString("OPT_CSV_PHASE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grobraster ähnelt.
+        /// </summary>
+        public static string OPT_CSV_PHASE_GROB {
+            get {
+                return ResourceManager.GetString("OPT_CSV_PHASE_GROB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feinraster ähnelt.
+        /// </summary>
+        public static string OPT_CSV_PHASE_FEIN {
+            get {
+                return ResourceManager.GetString("OPT_CSV_PHASE_FEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei wurde erstellt: {0} ähnelt.
+        /// </summary>
+        public static string OPT_CSV_GESCHRIEBEN {
+            get {
+                return ResourceManager.GetString("OPT_CSV_GESCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Schreiben der CSV-Datei: {0} ähnelt.
+        /// </summary>
+        public static string OPT_CSV_FEHLER {
+            get {
+                return ResourceManager.GetString("OPT_CSV_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervarianten ähnelt.
+        /// </summary>
+        public static string VAR_TITEL {
+            get {
+                return ResourceManager.GetString("VAR_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Variante anlegen… ähnelt.
+        /// </summary>
+        public static string VAR_MENU_NEU {
+            get {
+                return ResourceManager.GetString("VAR_MENU_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante duplizieren ähnelt.
+        /// </summary>
+        public static string VAR_MENU_DUPLIZIEREN {
+            get {
+                return ResourceManager.GetString("VAR_MENU_DUPLIZIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als aktiv setzen ähnelt.
+        /// </summary>
+        public static string VAR_MENU_AKTIV {
+            get {
+                return ResourceManager.GetString("VAR_MENU_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante löschen ähnelt.
+        /// </summary>
+        public static string VAR_MENU_LOESCHEN {
+            get {
+                return ResourceManager.GetString("VAR_MENU_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich: in der Simulation nach einem Lauf ähnelt.
+        /// </summary>
+        public static string VAR_MENU_VERGLEICH {
+            get {
+                return ResourceManager.GetString("VAR_MENU_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Variante {1}) ähnelt.
+        /// </summary>
+        public static string VAR_NAME_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("VAR_NAME_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlagenzeile dieser Variante wurde nicht gefunden. Bitte die Übersicht auffrischen. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_ANLAGE_FEHLT {
+            get {
+                return ResourceManager.GetString("VAR_MSG_ANLAGE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu dieser Variante ist kein Speichergerät hinterlegt. Bitte zuerst über „Hinzufügen/Bearbeiten“ ein Gerät zuordnen. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_GERAET_FEHLT {
+            get {
+                return ResourceManager.GetString("VAR_MSG_GERAET_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ ist im Projekt bereits vergeben. Bitte einen anderen wählen. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_NAME_VERGEBEN {
+            get {
+                return ResourceManager.GetString("VAR_MSG_NAME_VERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante konnte nicht angelegt werden. Einzelheiten stehen im Protokoll. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_ANLEGEN_FEHLER {
+            get {
+                return ResourceManager.GetString("VAR_MSG_ANLEGEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlagenzeile wurde angelegt, die Betriebsparameter der Variante jedoch nicht. Bitte die Parameterseite prüfen. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_VARIANTENZEILE_FEHLER {
+            get {
+                return ResourceManager.GetString("VAR_MSG_VARIANTENZEILE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante „{0}“ mit allen Betriebsparametern löschen? ähnelt.
+        /// </summary>
+        public static string VAR_MSG_LOESCHEN_FRAGE {
+            get {
+                return ResourceManager.GetString("VAR_MSG_LOESCHEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante konnte nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_LOESCHEN_FEHLER {
+            get {
+                return ResourceManager.GetString("VAR_MSG_LOESCHEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante „{0}“ als aktive Variante des Projekts setzen?  Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simulationslauf bleibt unverändert. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_AKTIV_FRAGE {
+            get {
+                return ResourceManager.GetString("VAR_MSG_AKTIV_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die aktive Variante konnte nicht gesetzt werden. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_AKTIV_FEHLER {
+            get {
+                return ResourceManager.GetString("VAR_MSG_AKTIV_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variantenvergleich Stromspeicher ähnelt.
+        /// </summary>
+        public static string VAR_VGL_TITEL {
+            get {
+                return ResourceManager.GetString("VAR_VGL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten vergleichen… ähnelt.
+        /// </summary>
+        public static string VAR_VGL_BTN_OEFFNEN {
+            get {
+                return ResourceManager.GetString("VAR_VGL_BTN_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet jede Speichervariante des Projekts auf dem vorliegenden Simulationslauf und stellt die Kennzahlen nebeneinander. ähnelt.
+        /// </summary>
+        public static string VAR_VGL_TOOLTIP_OEFFNEN {
+            get {
+                return ResourceManager.GetString("VAR_VGL_TOOLTIP_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktiv ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_AKTIV {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnungsart ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_BERECHNUNGSART {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_BERECHNUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_LEISTUNG {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition [€] ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_INVESTITION {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_INVESTITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag E_a,äq [€/a] ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_ERTRAG {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_ERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔJ [€/a] ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_DELTAJ {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_DELTAJ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation [a] ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_AMORTISATION {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_AMORTISATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert [€] ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_NPV {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_NPV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollzyklen [1/a] ähnelt.
+        /// </summary>
+        public static string VAR_VGL_SP_VOLLZYKLEN {
+            get {
+                return ResourceManager.GetString("VAR_VGL_SP_VOLLZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aktiv ähnelt.
+        /// </summary>
+        public static string VAR_VGL_MARKER_AKTIV {
+            get {
+                return ResourceManager.GetString("VAR_VGL_MARKER_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als aktiv setzen ähnelt.
+        /// </summary>
+        public static string VAR_VGL_BTN_AKTIV {
+            get {
+                return ResourceManager.GetString("VAR_VGL_BTN_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Varianten gerechnet ({1} ms). Beste nach ΔJ: {2}. ähnelt.
+        /// </summary>
+        public static string VAR_VGL_STATUS {
+            get {
+                return ResourceManager.GetString("VAR_VGL_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt keine Speichervariante. ähnelt.
+        /// </summary>
+        public static string VAR_VGL_STATUS_LEER {
+            get {
+                return ResourceManager.GetString("VAR_VGL_STATUS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Variante konnte gerechnet werden — Einzelheiten stehen im Protokoll. ähnelt.
+        /// </summary>
+        public static string VAR_VGL_STATUS_OHNE_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("VAR_VGL_STATUS_OHNE_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vergleich braucht einen gerechneten Simulationslauf. Bitte zuerst die Simulation starten. ähnelt.
+        /// </summary>
+        public static string VAR_VGL_KEIN_LAUF {
+            get {
+                return ResourceManager.GetString("VAR_VGL_KEIN_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht rechenbar ähnelt.
+        /// </summary>
+        public static string VAR_VGL_FEHLER_ZEILE {
+            get {
+                return ResourceManager.GetString("VAR_VGL_FEHLER_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grün hinterlegt: beste Variante nach ΔJ = E_a,äq − I·a(i_z, N). Fett: die aktive Variante — sie speist Übersichtsanzeige und Gesamtsimulation. ähnelt.
+        /// </summary>
+        public static string VAR_VGL_LEGENDE {
+            get {
+                return ResourceManager.GetString("VAR_VGL_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Achtung: Keine dieser Varianten ist als aktiv markiert. Solange das so bleibt, rechnet die Gesamtsimulation ersatzweise über alle Speicheranlagen des Projekts zusammen — wählen Sie die gewünschte Zeile und drücken Sie „Als aktiv setzen". ähnelt.
+        /// </summary>
+        public static string VAR_VGL_HINWEIS_KEINE_AKTIVE {
+            get {
+                return ResourceManager.GetString("VAR_VGL_HINWEIS_KEINE_AKTIVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokoll ähnelt.
+        /// </summary>
+        public static string VAR_VGL_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("VAR_VGL_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
+        /// </summary>
+        public static string VAR_VGL_PROTOKOLL_ZEILE {
+            get {
+                return ResourceManager.GetString("VAR_VGL_PROTOKOLL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variantenvergleich_Projekt{0}.csv ähnelt.
+        /// </summary>
+        public static string VAR_VGL_DATEI {
+            get {
+                return ResourceManager.GetString("VAR_VGL_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst eine Variante in der Tabelle auswählen. ähnelt.
+        /// </summary>
+        public static string VAR_VGL_MSG_KEINE_AUSWAHL {
+            get {
+                return ResourceManager.GetString("VAR_VGL_MSG_KEINE_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Variantenvergleich ist fehlgeschlagen: {0} ähnelt.
+        /// </summary>
+        public static string VAR_VGL_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("VAR_VGL_MSG_FEHLER", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie (Kapazität) [kWh]: ähnelt.
+        /// </summary>
+        public static string SP_LABEL_ENERGIE {
+            get {
+                return ResourceManager.GetString("SP_LABEL_ENERGIE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie (Kapazität) ähnelt.
+        /// </summary>
+        public static string SP_LABEL_ENERGIE_KURZ {
+            get {
+                return ResourceManager.GetString("SP_LABEL_ENERGIE_KURZ", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten [€/kWh]: ähnelt.
+        /// </summary>
+        public static string SP_LABEL_MODULKOSTEN {
+            get {
+                return ResourceManager.GetString("SP_LABEL_MODULKOSTEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_KAPAZITAET", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätedatum: Kapazität der gerechneten Speicheranlage … ähnelt.
+        /// </summary>
+        public static string SP_PARAM_HINWEIS_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("SP_PARAM_HINWEIS_KAPAZITAET", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die = {0} kWh ähnelt.
+        /// </summary>
+        public static string SP_PARAM_SOC_KWH {
+            get {
+                return ResourceManager.GetString("SP_PARAM_SOC_KWH", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWh-Äquivalent des Prozentwerts … ähnelt.
+        /// </summary>
+        public static string SP_PARAM_HINWEIS_SOC_KWH {
+            get {
+                return ResourceManager.GetString("SP_PARAM_HINWEIS_SOC_KWH", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf (Last) ähnelt.
+        /// </summary>
+        public static string SP_ERG_LAST {
+            get {
+                return ResourceManager.GetString("SP_ERG_LAST", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Erzeugung ähnelt.
+        /// </summary>
+        public static string SP_ERG_ERZEUGUNG_PV {
+            get {
+                return ResourceManager.GetString("SP_ERG_ERZEUGUNG_PV", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Erzeugung ähnelt.
+        /// </summary>
+        public static string SP_ERG_ERZEUGUNG_BHKW {
+            get {
+                return ResourceManager.GetString("SP_ERG_ERZEUGUNG_BHKW", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktverbrauch aus Erzeugung ähnelt.
+        /// </summary>
+        public static string SP_ERG_DIREKTVERBRAUCH {
+            get {
+                return ResourceManager.GetString("SP_ERG_DIREKTVERBRAUCH", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Lauf enthält keine Erzeugung … ähnelt.
+        /// </summary>
+        public static string SP_ERG_OHNE_ERZEUGUNG {
+            get {
+                return ResourceManager.GetString("SP_ERG_OHNE_ERZEUGUNG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Stromspeicher wurde OHNE Erzeugungsreihe gerechnet ({0}). … ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_OHNE_ERZEUGUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_OHNE_ERZEUGUNG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Photovoltaik ist in diesem Lauf nicht aufgenommen ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_PV_NICHT_AKTIV {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_PV_NICHT_AKTIV", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Photovoltaik wurde gerechnet, liefert aber keinen Ertrag ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_PV_OHNE_ERTRAG {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_PV_OHNE_ERTRAG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätedaten ein- und ausblenden ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_TIP_AUFKLAPPEN {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_TIP_AUFKLAPPEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätedaten nicht gepflegt ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_OHNE_GERAET {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_OHNE_GERAET", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität {0} kWh ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SP_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SP_KAPAZITAET", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung {0} kW ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SP_LEISTUNG {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SP_LEISTUNG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die η_RT {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SP_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SP_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SP_TYP {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SP_TYP", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N_zyk {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SP_ZYKLEN {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SP_ZYKLEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SP_VARIANTE {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SP_VARIANTE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SoC-Band {0}–{1} % ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SP_BAND {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SP_BAND", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzentladung an ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SP_NETZENTLADUNG_AN {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SP_NETZENTLADUNG_AN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzentladung aus ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SP_NETZENTLADUNG_AUS {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SP_NETZENTLADUNG_AUS", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine aktive Variante ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_SP_OHNE_VARIANTE {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_SP_OHNE_VARIANTE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_PV_MODUL {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_PV_MODUL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Module ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_PV_ANZAHL {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_PV_ANZAHL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung {0}° · Azimut {1}° ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_PV_AUSRICHTUNG {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_PV_AUSRICHTUNG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kWp (rechnerisch) ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_PV_KWP {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_PV_KWP", resourceCulture);
             }
         }
     }

@@ -41,6 +41,12 @@ namespace WindowsFormsApplication1
         // Leere Liste = dieser Lauf hatte keinen Speicher.
         public List<ErgebnisPufferspeicherModel> Pufferspeicher = new List<ErgebnisPufferspeicherModel>();
 
+        // Stromspeicher des Laufs (Tab_ErgebnisStromspeicher, Fachkonzept
+        // Stromspeicher 7.1): eine Zeile je gerechneter Speicheranlage.
+        // Leere Liste = dieser Lauf hatte keinen Stromspeicher; das Flag
+        // Sim_Stromspeicher sagt, ob die Speicherrechnung ueberhaupt lief.
+        public List<ErgebnisStromspeicherModel> Stromspeicher = new List<ErgebnisStromspeicherModel>();
+
         public ErgebnisModel()
         {
             Zeitstempel = DateTime.Now;
@@ -210,5 +216,86 @@ namespace WindowsFormsApplication1
         public double Flaeche;          // m^2 gesamt
         public long Anzahl;             // Modulanzahl
         public double Stromproduktion;  // MWh/a
+    }
+
+    // ---------------------------------------------------------------------------
+    // Detail: Stromspeicher (Tab_ErgebnisStromspeicher) - der Kennzahlenblock aus
+    // Fachkonzept Stromspeicher 7.1, eine Zeile je gerechneter Speicheranlage.
+    //
+    // AUSSCHLIESSLICH SKALARE. Ergebniszeitreihen (SoC-Gang, Geldwert je Intervall,
+    // Netzbezug vor/nach) werden bewusst NICHT persistiert (AP0-Entscheid vom
+    // 16.08.2026, Frage 2): Ein Jahreslauf liegt im Millisekundenbereich, Neurechnen
+    // ist billiger als Speichern, und fuer Ergebniszeitreihen gibt es im Bestand kein
+    // Muster - alle Tab_Ergebnis*-Tabellen fuehren Skalare. Wer die Reihen dauerhaft
+    // braucht, exportiert sie als CSV (7.2).
+    //
+    // Anders als die Geschwister dieser Datei traegt der Satz KEINE Modulliste: die
+    // Aufteilung auf mehrere Speicher IST die Liste (eine Zeile je Anlage), und die
+    // Variantengliederung haengt an ID_Energieanlage (Fachkonzept 7.3).
+    // ---------------------------------------------------------------------------
+    public class ErgebnisStromspeicherModel
+    {
+        // --- Kopf ---
+
+        /// <summary>Anlagenzeile (Tab_Energieanlagen.ID) der gerechneten Variante, 0 = unbekannt.</summary>
+        public int ID_Energieanlage;
+
+        /// <summary>Bezeichner der Anlage bzw. Variante zum Zeitpunkt der Rechnung.</summary>
+        public string Bezeichner = "";
+
+        /// <summary>Betriebsart des Laufs (DbWerte.SP_BETRIEBSART_*) - festgehalten, weil die Variante danach umgestellt werden kann.</summary>
+        public string Betriebsart = "";
+
+        /// <summary>Berechnungsart des Laufs (DbWerte.SP_BERECHNUNG_*).</summary>
+        public string Berechnungsart = "";
+
+        // --- Energie (7.1, Block 1) ---
+
+        public double Ladung_PV;             // kWh/a aus PV-Ueberschuss
+        public double Ladung_BHKW;           // kWh/a aus BHKW-Ueberschuss
+        public double Ladung_Netz;           // kWh/a aus dem Netz (Graustrom, AP10)
+        public double Ladung_Gesamt;         // kWh/a
+        public double Entladung_Gesamt;      // kWh/a
+        public double Verluste_Gesamt;       // kWh/a (Lade- und Entladeverluste)
+        public double Netzbezug_Mit;         // kWh/a mit Speicher
+        public double Netzbezug_Ohne;        // kWh/a ohne Speicher
+        public double Einspeisung_Mit;       // kWh/a mit Speicher
+        public double Einspeisung_Ohne;      // kWh/a ohne Speicher
+        public double Eigenverbrauchsquote;  // % (mit Speicher)
+        public double Autarkiegrad;          // % (mit Speicher)
+
+        // --- Speicher (7.1, Block 2) ---
+
+        public double Vollzyklen;             // - aequivalente Vollzyklen p. a. (n_zyk)
+        public double SoC_Min;                // kWh Jahresminimum
+        public double SoC_Mittel;             // kWh Jahresmittel
+        public double SoC_Max;                // kWh Jahresmaximum
+        public double Zeitanteil_Untergrenze; // % der Intervalle an SoC_min
+        public double Zeitanteil_Obergrenze;  // % der Intervalle an SoC_max
+        public double Zyklen_Hochrechnung;    // - Zyklen ueber die Nutzungsdauer (gegen N_zyk)
+
+        // --- Wirtschaft (7.1, Block 3) ---
+
+        public double Ertrag_Bezugsersparnis;       // EUR/a vermiedener Netzbezug
+        public double Ertrag_Verguetung_Entgangen;  // EUR/a entgangene Einspeiseverguetung (Abzug)
+        public double Ertrag_Netzerloes;            // EUR/a Verkauf ins Netz (AP10)
+        public double Kosten_Ladung;                // EUR/a Ladekosten (Netzladung, AP10)
+        public double Ertrag_Leistungspreis;        // EUR/a Leistungspreisersparnis (Peak-Shaving)
+        public double Verschleisskosten;            // EUR/a K_ver - eigene Betriebskostenzeile (5.4)
+        public double Investition;                  // EUR   I = c_cap*C_nom + c_pow*P + I_fix
+        public double Annuitaet;                    // EUR/a
+        public double Jahresueberschuss;            // EUR/a Delta J
+        public double Ertrag_Jahr1;                 // EUR/a E_a,1 (unskaliertes Referenzjahr)
+        public double Ertrag_Aequivalent;           // EUR/a E_a,aeq (degradationsaequivalent)
+        public double Amortisation_Statisch;        // a     T_stat
+        public double Amortisation_Dynamisch;       // a     T_dyn
+        public double Kapitalwert;                  // EUR   NPV
+
+        /// <summary>
+        /// Verwendete Preisversion (Fachkonzept 4.1, Stichtagsregel) - damit ein
+        /// Ergebnis reproduzierbar bleibt, auch wenn der Preis danach neu versioniert
+        /// wird. Leer, solange das Preismodul (AP4) fehlt.
+        /// </summary>
+        public string Preisversion = "";
     }
 }

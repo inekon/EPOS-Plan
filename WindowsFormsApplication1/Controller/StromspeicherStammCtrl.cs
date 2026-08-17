@@ -73,11 +73,14 @@ namespace WindowsFormsApplication1
         // Legt einen neuen Stammdatensatz an (explizite ID, ReadOnly = false).
         public bool Insert()
         {
+            StromspeicherCtrl.StelleGeraetespaltenSicher();   // AP3-Spalten, bevor sie im INSERT stehen
+
             int neueId = DataRepository.GetMaxID(TABLE) + 1;
 
             string sql = @"INSERT INTO [" + TABLE + @"]
-                            (ID, Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            (ID, Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
+                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             OleDbParameter[] ps = {
                 new OleDbParameter("@id", neueId),
@@ -88,7 +91,13 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@deg", this.m_Degradation),
                 new OleDbParameter("@lad", this.m_Ladezustand),
                 new OleDbParameter("@mod", this.m_Modulkosten),
-                new OleDbParameter("@ro", false)
+                new OleDbParameter("@ro", false),
+                new OleDbParameter("@eta", this.m_WirkungsgradRT),
+                new OleDbParameter("@nzyk", this.m_ZyklenZugesichert),
+                new OleDbParameter("@cver", this.m_Verschleisskosten),
+                new OleDbParameter("@cpow", this.m_Leistungskosten),
+                new OleDbParameter("@ifix", this.m_InvestitionFix),
+                new OleDbParameter("@stby", this.m_StandbyVerbrauch)
             };
 
             bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -107,9 +116,13 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
+            StromspeicherCtrl.StelleGeraetespaltenSicher();   // AP3-Spalten, bevor sie im UPDATE stehen
+
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Bezeichner = ?, Typ = ?, Leistung = ?, Energie = ?,
-                            Degradation = ?, Ladezustand = ?, Modulkosten = ?
+                            Degradation = ?, Ladezustand = ?, Modulkosten = ?,
+                            Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Verschleisskosten = ?,
+                            Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?
                           WHERE Bezeichner = ?";
 
             OleDbParameter[] ps = {
@@ -120,6 +133,12 @@ namespace WindowsFormsApplication1
                 new OleDbParameter("@deg", this.m_Degradation),
                 new OleDbParameter("@lad", this.m_Ladezustand),
                 new OleDbParameter("@mod", this.m_Modulkosten),
+                new OleDbParameter("@eta", this.m_WirkungsgradRT),
+                new OleDbParameter("@nzyk", this.m_ZyklenZugesichert),
+                new OleDbParameter("@cver", this.m_Verschleisskosten),
+                new OleDbParameter("@cpow", this.m_Leistungskosten),
+                new OleDbParameter("@ifix", this.m_InvestitionFix),
+                new OleDbParameter("@stby", this.m_StandbyVerbrauch),
                 new OleDbParameter("@key", szKey ?? "")
             };
 
@@ -145,6 +164,8 @@ namespace WindowsFormsApplication1
         {
             m_ID = 0; m_szBezeichner = string.Empty; m_szTyp = string.Empty;
             m_Leistung = 0; m_Energie = 0; m_Degradation = 0; m_Ladezustand = 0; m_Modulkosten = 0;
+            m_WirkungsgradRT = 0; m_ZyklenZugesichert = 0; m_Verschleisskosten = 0;
+            m_Leistungskosten = 0; m_InvestitionFix = 0; m_StandbyVerbrauch = 0;
             m_bReadOnly = false;
         }
 
@@ -163,6 +184,16 @@ namespace WindowsFormsApplication1
             if (row.Table.Columns.Contains("Degradation") && row["Degradation"] != DBNull.Value) t.m_Degradation = Convert.ToDouble(row["Degradation"]);
             if (row.Table.Columns.Contains("Ladezustand") && row["Ladezustand"] != DBNull.Value) t.m_Ladezustand = Convert.ToDouble(row["Ladezustand"]);
             if (row.Table.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) t.m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
+
+            // AP3-Geraetetechnik (Fachkonzept 5.1) - dieselbe Columns.Contains-Wache wie
+            // darueber: auf einer Datenbank vor Migrationsschritt 11 fehlen die Spalten,
+            // die Felder behalten dann ihre 0.
+            if (row.Table.Columns.Contains("Wirkungsgrad_RT") && row["Wirkungsgrad_RT"] != DBNull.Value) t.m_WirkungsgradRT = Convert.ToDouble(row["Wirkungsgrad_RT"]);
+            if (row.Table.Columns.Contains("Zyklen_Zugesichert") && row["Zyklen_Zugesichert"] != DBNull.Value) t.m_ZyklenZugesichert = Convert.ToInt32(row["Zyklen_Zugesichert"]);
+            if (row.Table.Columns.Contains("Verschleisskosten") && row["Verschleisskosten"] != DBNull.Value) t.m_Verschleisskosten = Convert.ToDouble(row["Verschleisskosten"]);
+            if (row.Table.Columns.Contains("Leistungskosten") && row["Leistungskosten"] != DBNull.Value) t.m_Leistungskosten = Convert.ToDouble(row["Leistungskosten"]);
+            if (row.Table.Columns.Contains("Investition_Fix") && row["Investition_Fix"] != DBNull.Value) t.m_InvestitionFix = Convert.ToDouble(row["Investition_Fix"]);
+            if (row.Table.Columns.Contains("Standby_Verbrauch") && row["Standby_Verbrauch"] != DBNull.Value) t.m_StandbyVerbrauch = Convert.ToDouble(row["Standby_Verbrauch"]);
         }
 
         private StromspeicherModel MapRowToModel(DataRow row)
